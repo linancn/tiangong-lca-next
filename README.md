@@ -1,0 +1,54 @@
+# TianGong LCA NEXT
+
+## Install dependencies:
+
+    ```bash
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+
+    nvm install
+    nvm use
+   
+    npm install
+    ```
+
+## Provided Scripts
+
+Ant Design Pro provides some useful script to help you quick start and build with web project, code style check and test.
+
+Scripts provided in `package.json`. It's safe to modify or add additional script:
+
+### Start project
+
+```bash
+npm start
+```
+
+### Build project
+
+```bash
+npm run build
+```
+
+### Check code style
+
+```bash
+npm run lint
+```
+
+You can also use script to auto fix some lint error:
+
+```bash
+npm run lint:fix
+```
+
+### Test code
+
+```bash
+npm test
+```
+
+## You can now run the Next.js local development server:
+
+   🚀 **Use VSCode Launch Program configuration to Debug!** 🚀
+
+   The app should now be running on [localhost:8000](http://localhost:8000/).
