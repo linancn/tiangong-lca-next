@@ -1,15 +1,16 @@
 # TianGong LCA NEXT
 
-## Install dependencies:
+## Install dependencies
 
-    ```bash
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 
-    nvm install
-    nvm use
-   
-    npm install
-    ```
+nvm install
+nvm alias default 20
+nvm use
+
+npm install
+```
 
 ## Provided Scripts
 
@@ -47,8 +48,8 @@ npm run lint:fix
 npm test
 ```
 
-## You can now run the Next.js local development server:
+## You can now run the Next.js local development server
 
-   🚀 **Use VSCode Launch Program configuration to Debug!** 🚀
+🚀 **Use VSCode Launch Program configuration to Debug!** 🚀
 
-   The app should now be running on [localhost:8000](http://localhost:8000/).
+The app should now be running on [localhost:8000](http://localhost:8000/).
