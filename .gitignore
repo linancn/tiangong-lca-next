@@ -39,5 +39,3 @@ screenshot
 .eslintcache
 
 build
-
-/src/services/supabase/key.ts
