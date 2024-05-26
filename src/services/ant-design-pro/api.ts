@@ -11,34 +11,8 @@ export async function currentUser(options?: { [key: string]: any }) {
   }
   const user: API.CurrentUser = {
     name: session.data.session.user?.email,
-    avatar: session.data.session.user?.user_metadata?.avatar_url,
     userid: session.data.session.user?.id,
     email: session.data.session.user?.email,
-    signature: 'signature',
-    title: 'title',
-    group: 'group',
-    tags: [
-      {
-        key: '0',
-        label: 'label',
-      },
-    ],
-    notifyCount: 12,
-    unreadCount: 11,
-    country: 'country',
-    access: 'access',
-    geographic: {
-      province: {
-        label: 'province',
-        key: 'key',
-      },
-      city: {
-        label: 'city',
-        key: 'key',
-      },
-    },
-    address: 'address',
-    phone: 'phone',
   };
   return user;
 }
@@ -50,16 +24,16 @@ export async function outLogin(options?: { [key: string]: any }) {
 }
 
 /** 登录接口 POST /api/login/account */
-// export async function login(body: API.LoginParams, options?: { [key: string]: any }) {
-//   return request<API.LoginResult>('/api/login/account', {
-//     method: 'POST',
-//     headers: {
-//       'Content-Type': 'application/json',
-//     },
-//     data: body,
-//     ...(options || {}),
-//   });
-// }
+export async function login(body: API.LoginParams, options?: { [key: string]: any }) {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: body.username ?? '',
+    password: body.password ?? '',
+  });
+  if (error) {
+    return { status: 'error', type: body.type, currentAuthority: 'guest' };
+  }
+  return { status: 'ok', type: body.type, currentAuthority: data.user.role };
+}
 
 /** 此处后端没有提供注释 GET /api/notices */
 export async function getNotices(options?: { [key: string]: any }) {
