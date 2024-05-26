@@ -21,21 +21,19 @@ export async function getInitialState(): Promise<{
 }> {
   const fetchUserInfo = async () => {
     try {
-      const msg = queryCurrentUser({
+      const msg = await queryCurrentUser({
         skipErrorHandler: true,
       });
-      return msg;
+      return msg.data;
     } catch (error) {
       history.push(loginPath);
     }
     return undefined;
   };
-
   // 如果不是登录页面，执行
   const { location } = history;
   if (location.pathname !== loginPath) {
     const currentUser = await fetchUserInfo();
-    // console.log('currentUser', currentUser);
     return {
       fetchUserInfo,
       currentUser,
@@ -113,7 +111,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
               enableDarkTheme
               settings={initialState?.settings}
               onSettingChange={(settings) => {
-                setInitialState((preInitialState: any) => ({
+                setInitialState((preInitialState) => ({
                   ...preInitialState,
                   settings,
                 }));

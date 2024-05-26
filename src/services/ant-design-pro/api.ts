@@ -1,36 +1,65 @@
 // @ts-ignore
 /* eslint-disable */
+import { supabase } from '@/services/supabase';
 import { request } from '@umijs/max';
 
 /** 获取当前的用户 GET /api/currentUser */
 export async function currentUser(options?: { [key: string]: any }) {
-  return request<{
-    data: API.CurrentUser;
-  }>('/api/currentUser', {
-    method: 'GET',
-    ...(options || {}),
-  });
+  const session = await supabase.auth.getSession();
+  if (session.data.session === undefined || session.data.session === null) {
+    return null;
+  }
+  const user: API.CurrentUser = {
+    name: session.data.session.user?.email,
+    avatar: session.data.session.user?.user_metadata?.avatar_url,
+    userid: session.data.session.user?.id,
+    email: session.data.session.user?.email,
+    signature: 'signature',
+    title: 'title',
+    group: 'group',
+    tags: [
+      {
+        key: '0',
+        label: 'label',
+      },
+    ],
+    notifyCount: 12,
+    unreadCount: 11,
+    country: 'country',
+    access: 'access',
+    geographic: {
+      province: {
+        label: 'province',
+        key: 'key',
+      },
+      city: {
+        label: 'city',
+        key: 'key',
+      },
+    },
+    address: 'address',
+    phone: 'phone',
+  };
+  return user;
 }
 
 /** 退出登录接口 POST /api/login/outLogin */
 export async function outLogin(options?: { [key: string]: any }) {
-  return request<Record<string, any>>('/api/login/outLogin', {
-    method: 'POST',
-    ...(options || {}),
-  });
+  const { error } = await supabase.auth.signOut();
+  return error;
 }
 
 /** 登录接口 POST /api/login/account */
-export async function login(body: API.LoginParams, options?: { [key: string]: any }) {
-  return request<API.LoginResult>('/api/login/account', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    data: body,
-    ...(options || {}),
-  });
-}
+// export async function login(body: API.LoginParams, options?: { [key: string]: any }) {
+//   return request<API.LoginResult>('/api/login/account', {
+//     method: 'POST',
+//     headers: {
+//       'Content-Type': 'application/json',
+//     },
+//     data: body,
+//     ...(options || {}),
+//   });
+// }
 
 /** 此处后端没有提供注释 GET /api/notices */
 export async function getNotices(options?: { [key: string]: any }) {
@@ -64,10 +93,10 @@ export async function rule(
 export async function updateRule(options?: { [key: string]: any }) {
   return request<API.RuleListItem>('/api/rule', {
     method: 'POST',
-    data:{
+    data: {
       method: 'update',
       ...(options || {}),
-    }
+    },
   });
 }
 
@@ -75,10 +104,10 @@ export async function updateRule(options?: { [key: string]: any }) {
 export async function addRule(options?: { [key: string]: any }) {
   return request<API.RuleListItem>('/api/rule', {
     method: 'POST',
-    data:{
+    data: {
       method: 'post',
       ...(options || {}),
-    }
+    },
   });
 }
 
@@ -86,9 +115,9 @@ export async function addRule(options?: { [key: string]: any }) {
 export async function removeRule(options?: { [key: string]: any }) {
   return request<Record<string, any>>('/api/rule', {
     method: 'POST',
-    data:{
+    data: {
       method: 'delete',
       ...(options || {}),
-    }
+    },
   });
 }
