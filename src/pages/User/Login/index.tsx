@@ -2,12 +2,9 @@ import { Footer } from '@/components';
 import { login } from '@/services/ant-design-pro/api';
 import { getFakeCaptcha } from '@/services/ant-design-pro/login';
 import {
-  AlipayCircleOutlined,
   LockOutlined,
   MobileOutlined,
-  TaobaoCircleOutlined,
-  UserOutlined,
-  WeiboCircleOutlined,
+  UserOutlined
 } from '@ant-design/icons';
 import {
   LoginForm,
@@ -58,17 +55,17 @@ const useStyles = createStyles(({ token }) => {
   };
 });
 
-const ActionIcons = () => {
-  const { styles } = useStyles();
+// const ActionIcons = () => {
+//   const { styles } = useStyles();
 
-  return (
-    <>
-      <AlipayCircleOutlined key="AlipayCircleOutlined" className={styles.action} />
-      <TaobaoCircleOutlined key="TaobaoCircleOutlined" className={styles.action} />
-      <WeiboCircleOutlined key="WeiboCircleOutlined" className={styles.action} />
-    </>
-  );
-};
+//   return (
+//     <>
+//       <AlipayCircleOutlined key="AlipayCircleOutlined" className={styles.action} />
+//       <TaobaoCircleOutlined key="TaobaoCircleOutlined" className={styles.action} />
+//       <WeiboCircleOutlined key="WeiboCircleOutlined" className={styles.action} />
+//     </>
+//   );
+// };
 
 const Lang = () => {
   const { styles } = useStyles();
@@ -167,18 +164,18 @@ const Login: React.FC = () => {
             maxWidth: '75vw',
           }}
           logo={<img alt="logo" src="/logo.svg" />}
-          title="Ant Design"
-          subTitle={intl.formatMessage({ id: 'pages.layouts.userLayout.title' })}
+          title="TianGong LCA"
+          subTitle='  '
           initialValues={{
             autoLogin: true,
           }}
           actions={[
-            <FormattedMessage
-              key="loginWith"
-              id="pages.login.loginWith"
-              defaultMessage="其他登录方式"
-            />,
-            <ActionIcons key="icons" />,
+            // <FormattedMessage
+            //   key="loginWith"
+            //   id="pages.login.loginWith"
+            //   defaultMessage="其他登录方式"
+            // />,
+            // <ActionIcons key="icons" />,
           ]}
           onFinish={async (values) => {
             await handleSubmit(values as API.LoginParams);
@@ -196,13 +193,13 @@ const Login: React.FC = () => {
                   defaultMessage: '账户密码登录',
                 }),
               },
-              {
-                key: 'mobile',
-                label: intl.formatMessage({
-                  id: 'pages.login.phoneLogin.tab',
-                  defaultMessage: '手机号登录',
-                }),
-              },
+              // {
+              //   key: 'mobile',
+              //   label: intl.formatMessage({
+              //     id: 'pages.login.phoneLogin.tab',
+              //     defaultMessage: '手机号登录',
+              //   }),
+              // },
             ]}
           />
 
@@ -210,7 +207,7 @@ const Login: React.FC = () => {
             <LoginMessage
               content={intl.formatMessage({
                 id: 'pages.login.accountLogin.errorMessage',
-                defaultMessage: '账户或密码错误(admin/ant.design)',
+                defaultMessage: '账户或密码错误',
               })}
             />
           )}
@@ -224,7 +221,7 @@ const Login: React.FC = () => {
                 }}
                 placeholder={intl.formatMessage({
                   id: 'pages.login.username.placeholder',
-                  defaultMessage: '用户名: admin or user',
+                  defaultMessage: '用户名',
                 })}
                 rules={[
                   {
@@ -246,7 +243,7 @@ const Login: React.FC = () => {
                 }}
                 placeholder={intl.formatMessage({
                   id: 'pages.login.password.placeholder',
-                  defaultMessage: '密码: ant.design',
+                  defaultMessage: '密码',
                 })}
                 rules={[
                   {
