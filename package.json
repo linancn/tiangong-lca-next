@@ -48,7 +48,6 @@
   "dependencies": {
     "@ant-design/icons": "^4.8.1",
     "@ant-design/pro-components": "^2.6.48",
-    "@supabase/auth-ui-react": "^0.4.7",
     "@supabase/supabase-js": "^2.43.4",
     "@umijs/route-utils": "^2.2.2",
     "antd": "^5.13.2",
@@ -56,8 +55,8 @@
     "classnames": "^2.5.1",
     "omit.js": "^2.0.2",
     "querystring": "^0.2.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0"
   },
   "devDependencies": {
     "@ant-design/pro-cli": "^3.3.0",
