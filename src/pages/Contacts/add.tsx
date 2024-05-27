@@ -44,7 +44,7 @@ const Add: React.FC = () => {
                     </>
                   ))}
                   <Button type="dashed" onClick={() => subOpt.add()} block>
-                    + Add Name Item
+                    + Add Short Name Item
                   </Button>
                 </div>
               )}
@@ -60,19 +60,23 @@ const Add: React.FC = () => {
               {(subFields, subOpt) => (
                 <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
                   {subFields.map((subField) => (
-                    <Space key={subField.key}>
-                      <Form.Item noStyle name={[subField.name, '@xml:lang']}>
-                        <Input placeholder="lang" />
-                      </Form.Item>
-                      <Form.Item noStyle name={[subField.name, '#text']}>
-                        <Input placeholder="text" />
-                      </Form.Item>
-                      <CloseOutlined
-                        onClick={() => {
-                          subOpt.remove(subField.name);
-                        }}
-                      />
-                    </Space>
+                    <>
+                      <Space key={subField.key} direction="vertical">
+                        <Space>
+                          <Form.Item noStyle name={[subField.name, '@xml:lang']}>
+                            <Input placeholder="lang" />
+                          </Form.Item>
+                          <CloseOutlined
+                            onClick={() => {
+                              subOpt.remove(subField.name);
+                            }}
+                          />
+                        </Space>
+                        <Form.Item noStyle name={[subField.name, '#text']}>
+                          <Input placeholder="text" />
+                        </Form.Item>
+                      </Space>
+                    </>
                   ))}
                   <Button type="dashed" onClick={() => subOpt.add()} block>
                     + Add Name Item
