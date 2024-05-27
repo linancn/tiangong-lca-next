@@ -1,0 +1,50 @@
+{
+    "contactDataSet": {
+        "@xmlns:common": "http://lca.jrc.it/ILCD/Common",
+        "@xmlns": "http://lca.jrc.it/ILCD/Contact",
+        "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+        "@version": "1.1",
+        "@xsi:schemaLocation": "http://lca.jrc.it/ILCD/Contact ../../schemas/ILCD_ContactDataSet.xsd",
+        "contactInformation": {
+            "dataSetInformation": {
+                "common:UUID": "022b9b09-9e5d-4b02-90d6-1a04a76da69e",
+                "common:shortName": [
+                    {
+                        "@xml:lang": "zh",
+                        "#text": "\u82d7\u79cb\u6148"
+                    },
+                    {
+                        "@xml:lang": "en",
+                        "#text": "Miao, Qiuci"
+                    }
+                ],
+                "common:name": [
+                    {
+                        "@xml:lang": "zh",
+                        "#text": "\u82d7\u79cb\u6148"
+                    },
+                    {
+                        "@xml:lang": "en",
+                        "#text": "Miao, Qiuci"
+                    }
+                ],
+                "classificationInformation": {
+                    "common:classification": {
+                        "common:class": {
+                            "@level": "0",
+                            "#text": "Persons"
+                        }
+                    }
+                },
+                "email": "miaoqc@caep.org.cn"
+            }
+        },
+        "administrativeInformation": {
+            "publicationAndOwnership": {
+                "common:dataSetVersion": "01.00.005"
+            }
+        }
+    }
+}
+
+

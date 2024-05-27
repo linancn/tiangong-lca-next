@@ -12,6 +12,12 @@
  */
 export default [
   {
+    name: 'Contacts',
+    icon: 'table',
+    path: '/contacts/add',
+    component: './Contacts/add',
+  },
+  {
     path: '/user',
     layout: false,
     routes: [
