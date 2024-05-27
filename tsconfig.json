@@ -17,7 +17,8 @@
       "@/*": ["./src/*"],
       "@@/*": ["./src/.umi/*"],
       "@@test/*": ["./src/.umi-test/*"]
-    }
+    },
+    "forceConsistentCasingInFileNames": true
   },
   "include": ["./**/*.d.ts", "./**/*.ts", "./**/*.tsx"]
 }
