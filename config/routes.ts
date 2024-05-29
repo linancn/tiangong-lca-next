@@ -18,6 +18,12 @@ export default [
     component: './Contacts/add',
   },
   {
+    path: '/demo',
+    name: 'Demo',
+    icon: 'smile',
+    component: './Demo',
+  },
+  {
     path: '/user',
     layout: false,
     routes: [
@@ -50,12 +56,6 @@ export default [
         component: './Admin',
       },
     ],
-  },
-  {
-    name: 'list.table-list',
-    icon: 'table',
-    path: '/list',
-    component: './TableList',
   },
   {
     path: '/',
