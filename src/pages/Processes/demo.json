@@ -1,0 +1,844 @@
+{
+    "processDataSet": {
+        "@xmlns:common": "http://lca.jrc.it/ILCD/Common",
+        "@xmlns": "http://lca.jrc.it/ILCD/Process",
+        "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+        "@version": "1.1",
+        "@locations": "../ILCDLocations.xml",
+        "@xsi:schemaLocation": "http://lca.jrc.it/ILCD/Process ../../schemas/ILCD_ProcessDataSet.xsd",
+        "processInformation": {
+            "dataSetInformation": {
+                "common:UUID": "0059b3c2-8989-44a7-882e-c26a3dc06a2f",
+                "name": {
+                    "baseName": [
+                        {
+                            "@xml:lang": "en",
+                            "#text": "Propylene Production ; Propylene ; Naphtha Route ; Naphtha"
+                        },
+                        {
+                            "@xml:lang": "zh",
+                            "#text": "\u4e19\u70ef\u751f\u4ea7 ; \u4e19\u70ef ; \u77f3\u8111\u6cb9\u8def\u7ebf ; \u77f3\u8111\u6cb9"
+                        }
+                    ]
+                },
+                "classificationInformation": {
+                    "common:classification": {
+                        "common:class": [
+                            {
+                                "@level": "0",
+                                "#text": "Materials production"
+                            },
+                            {
+                                "@level": "1",
+                                "#text": "Organic chemicals"
+                            }
+                        ]
+                    }
+                },
+                "common:generalComment": [
+                    {
+                        "@xml:lang": "en",
+                        "#text": "In 2010, 4 million-ton enterprises of Sinopec and PetroChina; ethylene complex, by-product propylene"
+                    },
+                    {
+                        "@xml:lang": "zh",
+                        "#text": "2010\u5e74\u4e2d\u77f3\u5316\u548c\u4e2d\u77f3\u6cb9\u76844\u5bb6\u767e\u4e07\u5428\u4f01\u4e1a\uff1b\u4e59\u70ef\u8054\u5408\u88c5\u7f6e\uff0c\u526f\u4ea7\u4e19\u70ef"
+                    }
+                ]
+            },
+            "quantitativeReference": {
+                "@type": "Reference flow(s)",
+                "referenceToReferenceFlow": "7",
+                "functionalUnitOrOther": {
+                    "@xml:lang": "en",
+                    "#text": "The functional unit is 1t of propylene product"
+                }
+            },
+            "time": {
+                "common:referenceYear": "2010",
+                "common:timeRepresentativenessDescription": [
+                    {
+                        "@xml:lang": "en",
+                        "#text": "Four million-ton enterprises of Sinopec and PetroChina in 2010"
+                    },
+                    {
+                        "@xml:lang": "zh",
+                        "#text": "2010\u5e74\u4e2d\u77f3\u5316\u548c\u4e2d\u77f3\u6cb9\u76844\u5bb6\u767e\u4e07\u5428\u4f01\u4e1a"
+                    }
+                ]
+            },
+            "geography": {
+                "locationOfOperationSupplyOrProduction": {
+                    "@location": "CN",
+                    "descriptionOfRestrictions": [
+                        {
+                            "@xml:lang": "en",
+                            "#text": "Four million-ton enterprises of Sinopec and PetroChina in 2010"
+                        },
+                        {
+                            "@xml:lang": "zh",
+                            "#text": "2010\u5e74\u4e2d\u77f3\u5316\u548c\u4e2d\u77f3\u6cb9\u76844\u5bb6\u767e\u4e07\u5428\u4f01\u4e1a"
+                        }
+                    ]
+                }
+            },
+            "technology": {
+                "technologyDescriptionAndIncludedProcesses": [
+                    {
+                        "@xml:lang": "en",
+                        "#text": "There are many raw materials for propylene production in my country and the sources are complex, mainly including naphtha, cracked tail oil, ethylene-rich gas and liquefied petroleum gas, etc. Therefore, this study mainly investigates the tube furnace steam cracking method for the production of ethylene, and the upstream raw materials are four products of petroleum refining."
+                    },
+                    {
+                        "@xml:lang": "zh",
+                        "#text": "\u6211\u56fd\u4e19\u70ef\u751f\u4ea7\u7684\u539f\u6599\u8f83\u591a\u4e14\u6765\u6e90\u590d\u6742\uff0c\u4e3b\u8981\u5305\u62ec\u77f3\u8111\u6cb9\u3001\u52a0\u88c2\u5c3e\u6cb9\u3001\u5bcc\u4e59\u70ef\u6c14\u548c\u6db2\u5316\u6c14\u7b49 \uff0c\u56e0\u6b64\u672c\u7814\u7a76\u5bf9\u4e59\u70ef\u7684\u751f\u4ea7\u4e3b\u8981\u8003\u5bdf\u7ba1\u5f0f\u7089\u84b8\u6c7d\u88c2\u89e3\u6cd5\uff0c\u4e0a\u6e38\u539f\u6599\u4e3a\u56db\u79cd\u77f3\u6cb9\u70bc\u5236\u4ea7\u54c1\u3002"
+                    }
+                ],
+                "technologicalApplicability": [
+                    {
+                        "@xml:lang": "en",
+                        "#text": "The propylene produced via the naphtha route is intended for use in a variety of chemical products including plastics, packaging, textiles, and other consumer goods. This propylene, from Sinopec and PetroChina's four million-ton enterprises, typically comes as a by-product of ethylene production in an ethylene complex and is suitable for large scale synthesis in the petrochemical industry."
+                    },
+                    {
+                        "@xml:lang": "zh",
+                        "#text": "\u901a\u8fc7\u77f3\u8111\u6cb9\u8def\u7ebf\u751f\u4ea7\u7684\u4e19\u70ef\u7528\u4e8e\u591a\u79cd\u5316\u5de5\u4ea7\u54c1\uff0c\u5305\u62ec\u5851\u6599\u3001\u5305\u88c5\u3001\u7eba\u7ec7\u54c1\u548c\u5176\u4ed6\u6d88\u8d39\u54c1\u3002\u6765\u81ea\u4e2d\u77f3\u5316\u548c\u4e2d\u77f3\u6cb9\u56db\u5bb6\u767e\u4e07\u5428\u7ea7\u4f01\u4e1a\u7684\u8fd9\u79cd\u4e19\u70ef\uff0c\u901a\u5e38\u662f\u4e59\u70ef\u751f\u4ea7\u8fc7\u7a0b\u4e2d\u4e59\u70ef\u8054\u5408\u88c5\u7f6e\u7684\u526f\u4ea7\u54c1\uff0c\u9002\u7528\u4e8e\u77f3\u5316\u5de5\u4e1a\u7684\u5927\u89c4\u6a21\u5408\u6210\u3002"
+                    }
+                ],
+                "referenceToTechnologyFlowDiagrammOrPicture": {
+                    "@type": "source data set",
+                    "@refObjectId": "cc3e05d3-ed66-c61e-cae6-3941d031f843",
+                    "@uri": "../sources/cc3e05d3-ed66-c61e-cae6-3941d031f843.xml",
+                    "common:shortDescription": {
+                        "@xml:lang": "en",
+                        "#text": "Dd8Pby0K5o4HZaxwFLTc61oWnFc.png"
+                    }
+                }
+            },
+            "mathematicalRelations": {
+                "modelDescription": [
+                    {
+                        "@xml:lang": "en",
+                        "#text": "According to the literature (IPCC, 2006; China Petroleum and Chemical Corporation, 2007), the cooling water, purified air, etc. are discounted, and the unknown pollutant CO2 is estimated"
+                    },
+                    {
+                        "@xml:lang": "zh",
+                        "#text": "\u6309\u7167\u6587\u732e(IPCC\uff0c2006\uff1b\u4e2d\u56fd\u77f3\u6cb9\u5316\u5de5\u96c6\u56e2\u516c\u53f8\uff0c2007) \u5bf9\u51b7\u5374\u6c34\u3001\u51c0\u5316\u7a7a\u6c14\u7b49\u8fdb\u884c\u6298\u6807\uff0c\u5e76\u5bf9\u672a\u77e5\u6c61\u67d3\u7269CO2\u8fdb\u884c\u4f30\u7b97"
+                    }
+                ]
+            }
+        },
+        "modellingAndValidation": {
+            "LCIMethodAndAllocation": {
+                "typeOfDataSet": "Unit process, black box",
+                "LCIMethodPrinciple": "Attributional",
+                "deviationsFromLCIMethodPrinciple": [
+                    {
+                        "@xml:lang": "en",
+                        "#text": "None"
+                    },
+                    {
+                        "@xml:lang": "zh",
+                        "#text": "\u65e0"
+                    }
+                ],
+                "LCIMethodApproaches": "Allocation - mass",
+                "deviationsFromLCIMethodApproaches": [
+                    {
+                        "@xml:lang": "en",
+                        "#text": "According to the distribution principle of product mass proportion"
+                    },
+                    {
+                        "@xml:lang": "zh",
+                        "#text": "\u6309\u7167\u4ea7\u7269\u8d28\u91cf\u6bd4\u91cd\u5206\u914d\u539f\u5219\u8fdb\u884c\u5206\u914d"
+                    }
+                ],
+                "deviationsFromModellingConstants": [
+                    {
+                        "@xml:lang": "en",
+                        "#text": "None"
+                    },
+                    {
+                        "@xml:lang": "zh",
+                        "#text": "\u65e0"
+                    }
+                ]
+            },
+            "dataSourcesTreatmentAndRepresentativeness": {
+                "deviationsFromCutOffAndCompletenessPrinciples": [
+                    {
+                        "@xml:lang": "en",
+                        "#text": "None"
+                    },
+                    {
+                        "@xml:lang": "zh",
+                        "#text": "\u65e0"
+                    }
+                ],
+                "dataSelectionAndCombinationPrinciples": [
+                    {
+                        "@xml:lang": "en",
+                        "#text": "The inventory of raw material input, product output, energy consumption and pollutant discharge for propylene production comes from the 4 million-ton enterprises of Sinopec and PetroChina in 2010."
+                    },
+                    {
+                        "@xml:lang": "zh",
+                        "#text": "\u4e19\u70ef\u751f\u4ea7\u7684\u539f\u6599\u6295\u5165\u3001\u4ea7\u54c1\u4ea7\u51fa\u3001\u80fd\u6e90\u6d88\u8017\u53ca\u6c61\u67d3\u7269\u6392\u653e\u6e05\u5355\u6765\u6e90\u4e8e2010\u5e74\u4e2d\u77f3\u5316\u548c\u4e2d\u77f3\u6cb9\u76844\u5bb6\u767e\u4e07\u5428\u4f01\u4e1a\u3002"
+                    }
+                ],
+                "deviationsFromSelectionAndCombinationPrinciples": [
+                    {
+                        "@xml:lang": "en",
+                        "#text": "None"
+                    },
+                    {
+                        "@xml:lang": "zh",
+                        "#text": "\u65e0"
+                    }
+                ],
+                "dataTreatmentAndExtrapolationsPrinciples": [
+                    {
+                        "@xml:lang": "en",
+                        "#text": "According to the distribution principle of product mass proportion"
+                    },
+                    {
+                        "@xml:lang": "zh",
+                        "#text": "\u6309\u7167\u4ea7\u7269\u8d28\u91cf\u6bd4\u91cd\u5206\u914d\u539f\u5219\u8fdb\u884c\u5206\u914d"
+                    }
+                ],
+                "deviationsFromTreatmentAndExtrapolationPrinciples": [
+                    {
+                        "@xml:lang": "en",
+                        "#text": "None"
+                    },
+                    {
+                        "@xml:lang": "zh",
+                        "#text": "\u65e0"
+                    }
+                ],
+                "referenceToDataSource": {
+                    "@type": "source data set",
+                    "@refObjectId": "d8f49275-c20a-4610-b7f3-f42b88122f90",
+                    "@uri": "../sources/d8f49275-c20a-4610-b7f3-f42b88122f90.xml",
+                    "common:shortDescription": [
+                        {
+                            "@xml:lang": "en",
+                            "#text": "\u8d75\u5fd7\u4edd, \u738b\u5cf0, \u8d75\u5b81, \u674e\u5b66\u5bbd, \u9b4f\u4f1f, \u5b59\u4e88\u7f55. \u751f\u547d\u5468\u671f\u8bc4\u4ef7\u5728\u6211\u56fd\u4e59\u70ef\u884c\u4e1a\u73af\u5883\u8bc4\u4f30\u4e2d\u7684\u5e94\u7528. \u73af\u5883\u79d1\u5b66\u5b66\u62a5 34, 3200\u20133206 (2014)."
+                        },
+                        {
+                            "@xml:lang": "zh",
+                            "#text": "\u8d75\u5fd7\u4edd, \u738b\u5cf0, \u8d75\u5b81, \u674e\u5b66\u5bbd, \u9b4f\u4f1f, \u5b59\u4e88\u7f55. \u751f\u547d\u5468\u671f\u8bc4\u4ef7\u5728\u6211\u56fd\u4e59\u70ef\u884c\u4e1a\u73af\u5883\u8bc4\u4f30\u4e2d\u7684\u5e94\u7528. \u73af\u5883\u79d1\u5b66\u5b66\u62a5 34, 3200\u20133206 (2014)."
+                        }
+                    ]
+                },
+                "useAdviceForDataSet": [
+                    {
+                        "@xml:lang": "en",
+                        "#text": "When utilizing this LCA data set, users should consider that the propylene production data is based on the mixed feedstocks of naphtha, cracked tail oil, ethylene-rich gas, and liquefied petroleum gas, reflecting the complex input sources of the Chinese petrochemical industry in 2010. The allocation of environmental impacts is based on the product mass proportion, and this approach needs to be consistently applied when integrating the data into broader assessments. Adjustments have been made in accordance with IPCC and Sinopec guidelines for standardizing emissions and estimating unknown pollutants such as CO2. The functional unit for assessing impacts is 1 tonne of propylene product. Adjustments based on specific use cases, include or exclude such data accordingly."
+                    },
+                    {
+                        "@xml:lang": "zh",
+                        "#text": "\u5f53\u4f7f\u7528\u6b64\u751f\u547d\u5468\u671f\u8bc4\u4ef7\u6570\u636e\u96c6\u65f6\uff0c\u7528\u6237\u5e94\u8003\u8651\u4e19\u70ef\u751f\u4ea7\u6570\u636e\u662f\u57fa\u4e8e\u77f3\u8111\u6cb9\u3001\u52a0\u88c2\u5c3e\u6cb9\u3001\u5bcc\u4e59\u70ef\u6c14\u548c\u6db2\u5316\u77f3\u6cb9\u6c14\u7684\u6df7\u5408\u539f\u6599\uff0c\u53cd\u6620\u4e862010\u5e74\u4e2d\u56fd\u77f3\u5316\u5de5\u4e1a\u590d\u6742\u7684\u539f\u6599\u6765\u6e90\u3002\u73af\u5883\u5f71\u54cd\u7684\u5206\u914d\u662f\u57fa\u4e8e\u4ea7\u54c1\u8d28\u91cf\u6bd4\u4f8b\uff0c\u8fd9\u79cd\u65b9\u6cd5\u5728\u5c06\u6570\u636e\u96c6\u6210\u5230\u66f4\u5e7f\u6cdb\u7684\u8bc4\u4f30\u4e2d\u65f6\u9700\u8981\u4e00\u81f4\u5730\u5e94\u7528\u3002\u6839\u636eIPCC\u548c\u4e2d\u77f3\u5316\u7684\u6307\u5bfc\u65b9\u9488\u8c03\u6574\u4e86\u6807\u51c6\u6392\u653e\u91cf\uff0c\u5e76\u4f30\u7b97\u4e86\u8bf8\u5982CO2\u8fd9\u6837\u672a\u77e5\u7684\u6c61\u67d3\u7269\u3002\u8bc4\u4f30\u5f71\u54cd\u7684\u529f\u80fd\u5355\u4f4d\u662f1\u5428\u4e19\u70ef\u4ea7\u54c1\u3002\u6839\u636e\u5177\u4f53\u4f7f\u7528\u6848\u4f8b\u8c03\u6574\uff0c\u76f8\u5e94\u5730\u5305\u62ec\u6216\u6392\u9664\u6b64\u7c7b\u6570\u636e\u3002"
+                    }
+                ]
+            },
+            "completeness": null,
+            "validation": {
+                "review": {
+                    "@type": "Dependent internal review",
+                    "common:reviewDetails": [
+                        {
+                            "@xml:lang": "en",
+                            "#text": "Inventory: The internal review was done by several iteration steps concerning raw data validation, raw data documentation, representativity, completeness and consistency of modelling with regard to ISO 14040 and 14044."
+                        },
+                        {
+                            "@xml:lang": "zh",
+                            "#text": "\u6e05\u5355\uff1a \u5185\u90e8\u5ba1\u67e5\u901a\u8fc7\u51e0\u4e2a\u8fed\u4ee3\u6b65\u9aa4\u5b8c\u6210\uff0c\u6d89\u53ca\u539f\u59cb\u6570\u636e\u9a8c\u8bc1\u3001\u539f\u59cb\u6570\u636e\u8bb0\u5f55\u3001\u4ee3\u8868\u6027\u3001\u5b8c\u6574\u6027\u3001\u4e0e ISO 14040 \u548c 14044 \u6709\u5173\u7684\u5efa\u6a21\u7684\u4e00\u81f4\u6027\u3002"
+                        }
+                    ],
+                    "common:referenceToNameOfReviewerAndInstitution": {
+                        "@refObjectId": "f4b4c314-8c4c-4c83-968f-5b3c7724f6a8",
+                        "@type": "contact data set",
+                        "@uri": "../contacts/f4b4c314-8c4c-4c83-968f-5b3c7724f6a8.xml",
+                        "common:shortDescription": [
+                            {
+                                "@xml:lang": "en",
+                                "#text": "Tiangong LCI Data Working Group"
+                            },
+                            {
+                                "@xml:lang": "zh",
+                                "#text": "\u5929\u5de5LCI\u6570\u636e\u5de5\u4f5c\u5c0f\u7ec4"
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        "administrativeInformation": {
+            "dataGenerator": {
+                "common:referenceToPersonOrEntityGeneratingTheDataSet": {
+                    "@type": "contact data set",
+                    "@refObjectId": "f48fd4d7-2972-43e0-8ad1-37e52aa23d1a",
+                    "@uri": "../contacts/f48fd4d7-2972-43e0-8ad1-37e52aa23d1a.xml",
+                    "@version": "01.00.000",
+                    "common:shortDescription": [
+                        {
+                            "@xml:lang": "en",
+                            "#text": "Ren, Yanan, renyn15@tsinghua.org.cn"
+                        },
+                        {
+                            "@xml:lang": "zh",
+                            "#text": "\u4efb\u4e9a\u6960, renyn15@tsinghua.org.cn"
+                        }
+                    ]
+                }
+            },
+            "dataEntryBy": {
+                "common:timeStamp": "2023-12-18T16:34:07+08:00"
+            },
+            "publicationAndOwnership": {
+                "common:dateOfLastRevision": "2024-05-13T14:59:54.290263+08:00",
+                "common:dataSetVersion": "01.00.005",
+                "common:permanentDataSetURI": "https://lcadata.tiangong.world/showProcess.xhtml?uuid=0059b3c2-8989-44a7-882e-c26a3dc06a2f&amp;version=01.00.000&amp;stock=TianGong",
+                "common:referenceToOwnershipOfDataSet": {
+                    "@refObjectId": "f4b4c314-8c4c-4c83-968f-5b3c7724f6a8",
+                    "@type": "contact data set",
+                    "@uri": "../contacts/f4b4c314-8c4c-4c83-968f-5b3c7724f6a8.xml",
+                    "common:shortDescription": [
+                        {
+                            "@xml:lang": "en",
+                            "#text": "Tiangong LCI Data Working Group"
+                        },
+                        {
+                            "@xml:lang": "zh",
+                            "#text": "\u5929\u5de5LCI\u6570\u636e\u5de5\u4f5c\u5c0f\u7ec4"
+                        }
+                    ]
+                },
+                "common:copyright": "false",
+                "common:licenseType": "Free of charge for all users and uses"
+            }
+        },
+        "exchanges": {
+            "exchange": [
+                {
+                    "@dataSetInternalID": "0",
+                    "referenceToFlowDataSet": {
+                        "@type": "flow data set",
+                        "@refObjectId": "4f19ca0d-7b3b-11dd-ad8b-0800200c9a66",
+                        "@uri": "../flows/4f19ca0d-7b3b-11dd-ad8b-0800200c9a66.xml",
+                        "common:shortDescription": {
+                            "@xml:lang": "en",
+                            "#text": "naphtha"
+                        }
+                    },
+                    "exchangeDirection": "Input",
+                    "meanAmount": "700.0",
+                    "resultingAmount": "700.0",
+                    "dataDerivationTypeStatus": "Measured",
+                    "generalComment": [
+                        {
+                            "@xml:lang": "en",
+                            "#text": "naphtha"
+                        },
+                        {
+                            "@xml:lang": "zh",
+                            "#text": "\u77f3\u8111\u6cb9"
+                        }
+                    ]
+                },
+                {
+                    "@dataSetInternalID": "1",
+                    "referenceToFlowDataSet": {
+                        "@type": "flow data set",
+                        "@refObjectId": "923fd725-d53a-438c-af51-24064c0778f5",
+                        "@uri": "../flows/923fd725-d53a-438c-af51-24064c0778f5.xml",
+                        "common:shortDescription": {
+                            "@xml:lang": "en",
+                            "#text": "tall oil"
+                        }
+                    },
+                    "exchangeDirection": "Input",
+                    "meanAmount": "230.0",
+                    "resultingAmount": "230.0",
+                    "dataDerivationTypeStatus": "Measured",
+                    "generalComment": [
+                        {
+                            "@xml:lang": "en",
+                            "#text": "Add cracked tail oil"
+                        },
+                        {
+                            "@xml:lang": "zh",
+                            "#text": "\u52a0\u88c2\u5c3e\u6cb9"
+                        }
+                    ]
+                },
+                {
+                    "@dataSetInternalID": "2",
+                    "referenceToFlowDataSet": {
+                        "@type": "flow data set",
+                        "@refObjectId": "9d447e1a-a41a-43ac-b374-d0fc6dcb61df",
+                        "@uri": "../flows/9d447e1a-a41a-43ac-b374-d0fc6dcb61df.xml",
+                        "common:shortDescription": {
+                            "@xml:lang": "en",
+                            "#text": "Liquefied petroleum gas"
+                        }
+                    },
+                    "exchangeDirection": "Input",
+                    "meanAmount": "50.0",
+                    "resultingAmount": "50.0",
+                    "dataDerivationTypeStatus": "Measured",
+                    "generalComment": [
+                        {
+                            "@xml:lang": "en",
+                            "#text": "Liquefied gas"
+                        },
+                        {
+                            "@xml:lang": "zh",
+                            "#text": "\u6db2\u5316\u6c14"
+                        }
+                    ]
+                },
+                {
+                    "@dataSetInternalID": "3",
+                    "referenceToFlowDataSet": {
+                        "@type": "flow data set",
+                        "@refObjectId": "4f19a2f4-7b3b-11dd-ad8b-0800200c9a66",
+                        "@uri": "../flows/4f19a2f4-7b3b-11dd-ad8b-0800200c9a66.xml",
+                        "common:shortDescription": {
+                            "@xml:lang": "en",
+                            "#text": "ethene (ethylene)"
+                        }
+                    },
+                    "exchangeDirection": "Input",
+                    "meanAmount": "30.0",
+                    "resultingAmount": "30.0",
+                    "dataDerivationTypeStatus": "Measured",
+                    "generalComment": [
+                        {
+                            "@xml:lang": "en",
+                            "#text": "Ethylene-rich gas"
+                        },
+                        {
+                            "@xml:lang": "zh",
+                            "#text": "\u5bcc\u4e59\u70ef\u6c14"
+                        }
+                    ]
+                },
+                {
+                    "@dataSetInternalID": "4",
+                    "referenceToFlowDataSet": {
+                        "@type": "flow data set",
+                        "@refObjectId": "890a70b7-b677-4e2a-8a1b-7d017e0a10ae",
+                        "@uri": "../flows/890a70b7-b677-4e2a-8a1b-7d017e0a10ae.xml",
+                        "common:shortDescription": {
+                            "@xml:lang": "en",
+                            "#text": "Electricity"
+                        }
+                    },
+                    "exchangeDirection": "Input",
+                    "meanAmount": "137.484",
+                    "resultingAmount": "137.484",
+                    "dataDerivationTypeStatus": "Measured",
+                    "generalComment": [
+                        {
+                            "@xml:lang": "en",
+                            "#text": "electricity"
+                        },
+                        {
+                            "@xml:lang": "zh",
+                            "#text": "\u7535"
+                        }
+                    ]
+                },
+                {
+                    "@dataSetInternalID": "5",
+                    "referenceToFlowDataSet": {
+                        "@type": "flow data set",
+                        "@refObjectId": "4f19a2f8-7b3b-11dd-ad8b-0800200c9a66",
+                        "@uri": "../flows/4f19a2f8-7b3b-11dd-ad8b-0800200c9a66.xml",
+                        "common:shortDescription": {
+                            "@xml:lang": "en",
+                            "#text": "light fuel oil"
+                        }
+                    },
+                    "exchangeDirection": "Input",
+                    "meanAmount": "126.13",
+                    "resultingAmount": "126.13",
+                    "dataDerivationTypeStatus": "Measured",
+                    "generalComment": [
+                        {
+                            "@xml:lang": "en",
+                            "#text": "fuel oil"
+                        },
+                        {
+                            "@xml:lang": "zh",
+                            "#text": "\u71c3\u6599\u6cb9"
+                        }
+                    ]
+                },
+                {
+                    "@dataSetInternalID": "6",
+                    "referenceToFlowDataSet": {
+                        "@type": "flow data set",
+                        "@refObjectId": "4f19ca0e-7b3b-11dd-ad8b-0800200c9a66",
+                        "@uri": "../flows/4f19ca0e-7b3b-11dd-ad8b-0800200c9a66.xml",
+                        "common:shortDescription": {
+                            "@xml:lang": "en",
+                            "#text": "natural gas"
+                        }
+                    },
+                    "exchangeDirection": "Input",
+                    "meanAmount": "53.87",
+                    "resultingAmount": "53.87",
+                    "dataDerivationTypeStatus": "Measured",
+                    "generalComment": [
+                        {
+                            "@xml:lang": "en",
+                            "#text": "fuel gas"
+                        },
+                        {
+                            "@xml:lang": "zh",
+                            "#text": "\u71c3\u6599\u6c14"
+                        }
+                    ]
+                },
+                {
+                    "@dataSetInternalID": "7",
+                    "referenceToFlowDataSet": {
+                        "@type": "flow data set",
+                        "@refObjectId": "4f1a182b-7b3b-11dd-ad8b-0800200c9a66",
+                        "@uri": "../flows/4f1a182b-7b3b-11dd-ad8b-0800200c9a66.xml",
+                        "common:shortDescription": {
+                            "@xml:lang": "en",
+                            "#text": "propene (propylene)"
+                        }
+                    },
+                    "exchangeDirection": "Output",
+                    "meanAmount": "1000.0",
+                    "resultingAmount": "1000.0",
+                    "dataDerivationTypeStatus": "Measured",
+                    "generalComment": [
+                        {
+                            "@xml:lang": "en",
+                            "#text": "Acrylic"
+                        },
+                        {
+                            "@xml:lang": "zh",
+                            "#text": "\u4e19\u70ef"
+                        }
+                    ]
+                },
+                {
+                    "@dataSetInternalID": "8",
+                    "referenceToFlowDataSet": {
+                        "@type": "flow data set",
+                        "@refObjectId": "08a91e70-3ddc-11dd-923d-0050c2490048",
+                        "@uri": "../flows/08a91e70-3ddc-11dd-923d-0050c2490048.xml",
+                        "common:shortDescription": {
+                            "@xml:lang": "en",
+                            "#text": "carbon dioxide (fossil)"
+                        }
+                    },
+                    "exchangeDirection": "Output",
+                    "meanAmount": "560.0",
+                    "resultingAmount": "560.0",
+                    "dataDerivationTypeStatus": "Unknown derivation",
+                    "generalComment": [
+                        {
+                            "@xml:lang": "en",
+                            "#text": "CO2"
+                        },
+                        {
+                            "@xml:lang": "zh",
+                            "#text": "CO2"
+                        }
+                    ]
+                },
+                {
+                    "@dataSetInternalID": "9",
+                    "referenceToFlowDataSet": {
+                        "@type": "flow data set",
+                        "@refObjectId": "08a91e70-3ddc-11dd-924e-0050c2490048",
+                        "@uri": "../flows/08a91e70-3ddc-11dd-924e-0050c2490048.xml",
+                        "common:shortDescription": {
+                            "@xml:lang": "en",
+                            "#text": "carbon monoxide (fossil)"
+                        }
+                    },
+                    "exchangeDirection": "Output",
+                    "meanAmount": "0.03079",
+                    "resultingAmount": "0.03079",
+                    "dataDerivationTypeStatus": "Measured",
+                    "generalComment": [
+                        {
+                            "@xml:lang": "en",
+                            "#text": "CO"
+                        },
+                        {
+                            "@xml:lang": "zh",
+                            "#text": "CO"
+                        }
+                    ]
+                },
+                {
+                    "@dataSetInternalID": "10",
+                    "referenceToFlowDataSet": {
+                        "@type": "flow data set",
+                        "@refObjectId": "fe0acd60-3ddc-11dd-ac48-0050c2490048",
+                        "@uri": "../flows/fe0acd60-3ddc-11dd-ac48-0050c2490048.xml",
+                        "common:shortDescription": {
+                            "@xml:lang": "en",
+                            "#text": "sulfur dioxide"
+                        }
+                    },
+                    "exchangeDirection": "Output",
+                    "meanAmount": "1.36854",
+                    "resultingAmount": "1.36854",
+                    "dataDerivationTypeStatus": "Measured",
+                    "generalComment": [
+                        {
+                            "@xml:lang": "en",
+                            "#text": "SO2"
+                        },
+                        {
+                            "@xml:lang": "zh",
+                            "#text": "SO2"
+                        }
+                    ]
+                },
+                {
+                    "@dataSetInternalID": "11",
+                    "referenceToFlowDataSet": {
+                        "@type": "flow data set",
+                        "@refObjectId": "08a91e70-3ddc-11dd-96ee-0050c2490048",
+                        "@uri": "../flows/08a91e70-3ddc-11dd-96ee-0050c2490048.xml",
+                        "common:shortDescription": {
+                            "@xml:lang": "en",
+                            "#text": "nitrogen monoxide"
+                        }
+                    },
+                    "exchangeDirection": "Output",
+                    "meanAmount": "0.30795",
+                    "resultingAmount": "0.30795",
+                    "dataDerivationTypeStatus": "Measured",
+                    "generalComment": [
+                        {
+                            "@xml:lang": "en",
+                            "#text": "NOx"
+                        },
+                        {
+                            "@xml:lang": "zh",
+                            "#text": "NOx"
+                        }
+                    ]
+                },
+                {
+                    "@dataSetInternalID": "12",
+                    "referenceToFlowDataSet": {
+                        "@type": "flow data set",
+                        "@refObjectId": "08a91e70-3ddc-11dd-9610-0050c2490048",
+                        "@uri": "../flows/08a91e70-3ddc-11dd-9610-0050c2490048.xml",
+                        "common:shortDescription": {
+                            "@xml:lang": "en",
+                            "#text": "methane (fossil)"
+                        }
+                    },
+                    "exchangeDirection": "Output",
+                    "meanAmount": "0.01854",
+                    "resultingAmount": "0.01854",
+                    "dataDerivationTypeStatus": "Measured",
+                    "generalComment": [
+                        {
+                            "@xml:lang": "en",
+                            "#text": "CH4"
+                        },
+                        {
+                            "@xml:lang": "zh",
+                            "#text": "CH4"
+                        }
+                    ]
+                },
+                {
+                    "@dataSetInternalID": "13",
+                    "referenceToFlowDataSet": {
+                        "@type": "flow data set",
+                        "@refObjectId": "08a91e70-3ddc-11dd-94c3-0050c2490048",
+                        "@uri": "../flows/08a91e70-3ddc-11dd-94c3-0050c2490048.xml",
+                        "common:shortDescription": {
+                            "@xml:lang": "en",
+                            "#text": "nitrous oxide"
+                        }
+                    },
+                    "exchangeDirection": "Output",
+                    "meanAmount": "0.00331",
+                    "resultingAmount": "0.00331",
+                    "dataDerivationTypeStatus": "Measured",
+                    "generalComment": [
+                        {
+                            "@xml:lang": "en",
+                            "#text": "N2O"
+                        },
+                        {
+                            "@xml:lang": "zh",
+                            "#text": "N2O"
+                        }
+                    ]
+                },
+                {
+                    "@dataSetInternalID": "14",
+                    "referenceToFlowDataSet": {
+                        "@type": "flow data set",
+                        "@refObjectId": "618d3d9a-9f85-417d-b0c4-e87942a9e345",
+                        "@uri": "../flows/618d3d9a-9f85-417d-b0c4-e87942a9e345.xml",
+                        "common:shortDescription": {
+                            "@xml:lang": "en",
+                            "#text": "Suspended solids, unspecified,Suspended solids, unspecified"
+                        }
+                    },
+                    "exchangeDirection": "Output",
+                    "meanAmount": "0.31159",
+                    "resultingAmount": "0.31159",
+                    "dataDerivationTypeStatus": "Measured",
+                    "generalComment": [
+                        {
+                            "@xml:lang": "en",
+                            "#text": "TSP"
+                        },
+                        {
+                            "@xml:lang": "zh",
+                            "#text": "TSP"
+                        }
+                    ]
+                },
+                {
+                    "@dataSetInternalID": "15",
+                    "referenceToFlowDataSet": {
+                        "@type": "flow data set",
+                        "@refObjectId": "5e50fc01-19c6-4377-a1cc-bc65a12498ea",
+                        "@uri": "../flows/5e50fc01-19c6-4377-a1cc-bc65a12498ea.xml",
+                        "common:shortDescription": {
+                            "@xml:lang": "en",
+                            "#text": "Water"
+                        }
+                    },
+                    "exchangeDirection": "Output",
+                    "meanAmount": "92.72",
+                    "resultingAmount": "92.72",
+                    "dataDerivationTypeStatus": "Measured",
+                    "generalComment": [
+                        {
+                            "@xml:lang": "en",
+                            "#text": "wastewater"
+                        },
+                        {
+                            "@xml:lang": "zh",
+                            "#text": "\u5e9f\u6c34"
+                        }
+                    ]
+                },
+                {
+                    "@dataSetInternalID": "16",
+                    "referenceToFlowDataSet": {
+                        "@type": "flow data set",
+                        "@refObjectId": "08a91e70-3ddc-11dd-97ef-0050c2490048",
+                        "@uri": "../flows/08a91e70-3ddc-11dd-97ef-0050c2490048.xml",
+                        "common:shortDescription": {
+                            "@xml:lang": "en",
+                            "#text": "chemical oxygen demand"
+                        }
+                    },
+                    "exchangeDirection": "Output",
+                    "meanAmount": "0.0053",
+                    "resultingAmount": "0.0053",
+                    "dataDerivationTypeStatus": "Measured",
+                    "generalComment": [
+                        {
+                            "@xml:lang": "en",
+                            "#text": "COD"
+                        },
+                        {
+                            "@xml:lang": "zh",
+                            "#text": "COD"
+                        }
+                    ]
+                },
+                {
+                    "@dataSetInternalID": "17",
+                    "referenceToFlowDataSet": {
+                        "@type": "flow data set",
+                        "@refObjectId": "08a91e70-3ddc-11dd-954a-0050c2490048",
+                        "@uri": "../flows/08a91e70-3ddc-11dd-954a-0050c2490048.xml",
+                        "common:shortDescription": {
+                            "@xml:lang": "en",
+                            "#text": "ammonia"
+                        }
+                    },
+                    "exchangeDirection": "Output",
+                    "meanAmount": "0.00033",
+                    "resultingAmount": "0.00033",
+                    "dataDerivationTypeStatus": "Measured",
+                    "generalComment": [
+                        {
+                            "@xml:lang": "en",
+                            "#text": "NH3-N"
+                        },
+                        {
+                            "@xml:lang": "zh",
+                            "#text": "NH3-N"
+                        }
+                    ]
+                },
+                {
+                    "@dataSetInternalID": "18",
+                    "referenceToFlowDataSet": {
+                        "@type": "flow data set",
+                        "@refObjectId": "f0eb7560-7e0c-4205-ac9b-7a572dde4a42",
+                        "@uri": "../flows/f0eb7560-7e0c-4205-ac9b-7a572dde4a42.xml",
+                        "common:shortDescription": {
+                            "@xml:lang": "en",
+                            "#text": "Oils, unspecified"
+                        }
+                    },
+                    "exchangeDirection": "Output",
+                    "meanAmount": "0.00033",
+                    "resultingAmount": "0.00033",
+                    "dataDerivationTypeStatus": "Measured",
+                    "generalComment": [
+                        {
+                            "@xml:lang": "en",
+                            "#text": "Oil"
+                        },
+                        {
+                            "@xml:lang": "zh",
+                            "#text": "\u6cb9"
+                        }
+                    ]
+                },
+                {
+                    "@dataSetInternalID": "19",
+                    "referenceToFlowDataSet": {
+                        "@type": "flow data set",
+                        "@refObjectId": "618d3d9a-9f85-417d-b0c4-e87942a9e345",
+                        "@uri": "../flows/618d3d9a-9f85-417d-b0c4-e87942a9e345.xml",
+                        "common:shortDescription": {
+                            "@xml:lang": "en",
+                            "#text": "Suspended solids, unspecified,Suspended solids, unspecified"
+                        }
+                    },
+                    "exchangeDirection": "Output",
+                    "meanAmount": "0.00464",
+                    "resultingAmount": "0.00464",
+                    "dataDerivationTypeStatus": "Measured",
+                    "generalComment": [
+                        {
+                            "@xml:lang": "en",
+                            "#text": "SS"
+                        },
+                        {
+                            "@xml:lang": "zh",
+                            "#text": "SS"
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}
