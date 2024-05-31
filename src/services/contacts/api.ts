@@ -87,7 +87,7 @@ export async function addContacts(data: any) {
     const { error } = await supabase
         .from('contacts')
         .insert([
-            { id: uuidv4(), json_ordered: newData, created_at: new Date() },
+            { json_ordered: newData },
         ])
         .select()
     return error;

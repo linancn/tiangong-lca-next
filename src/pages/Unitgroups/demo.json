@@ -1,0 +1,93 @@
+{
+    "unitGroupDataSet": {
+        "@xmlns": "http://lca.jrc.it/ILCD/UnitGroup",
+        "@xmlns:common": "http://lca.jrc.it/ILCD/Common",
+        "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+        "@version": "1.1",
+        "@xsi:schemaLocation": "http://lca.jrc.it/ILCD/UnitGroup ../../schemas/ILCD_UnitGroupDataSet.xsd",
+        "unitGroupInformation": {
+            "dataSetInformation": {
+                "common:UUID": "03cc996d-7177-4738-aa32-1572a5172ccc",
+                "common:name": {
+                    "@xml:lang": "en",
+                    "#text": "Unit of currency"
+                },
+                "classificationInformation": {
+                    "common:classification": {
+                        "common:class": {
+                            "@level": "0",
+                            "#text": "Economic unit groups"
+                        }
+                    }
+                }
+            },
+            "quantitativeReference": {
+                "referenceToReferenceUnit": "0"
+            }
+        },
+        "modellingAndValidation": {
+            "complianceDeclarations": {
+                "compliance": {
+                    "common:referenceToComplianceSystem": {
+                        "@refObjectId": "9ba3ac1e-6797-4cc0-afd5-1b8f7bf28c6a",
+                        "@type": "source data set",
+                        "@uri": "../sources/9ba3ac1e-6797-4cc0-afd5-1b8f7bf28c6a.xml",
+                        "@version": "03.00.000",
+                        "common:shortDescription": {
+                            "@xml:lang": "en",
+                            "#text": "ILCD compliance 1.1"
+                        }
+                    },
+                    "common:approvalOfOverallCompliance": "Fully compliant"
+                }
+            }
+        },
+        "administrativeInformation": {
+            "dataEntryBy": {
+                "common:timeStamp": "2011-11-01T00:00:00+01:00",
+                "common:referenceToDataSetFormat": {
+                    "@refObjectId": "a97a0155-0234-4b87-b4ce-a45da52f2a40",
+                    "@type": "source data set",
+                    "@uri": "../sources/a97a0155-0234-4b87-b4ce-a45da52f2a40.xml",
+                    "@version": "03.00.000",
+                    "common:shortDescription": {
+                        "@xml:lang": "en",
+                        "#text": "ILCD format 1.1"
+                    }
+                }
+            },
+            "publicationAndOwnership": {
+                "common:dataSetVersion": "03.00.003"
+            }
+        },
+        "units": {
+            "unit": [
+                {
+                    "@dataSetInternalID": "0",
+                    "name": "EUR",
+                    "meanValue": "1"
+                },
+                {
+                    "@dataSetInternalID": "1",
+                    "name": "$",
+                    "meanValue": "1.1573037276"
+                },
+                {
+                    "@dataSetInternalID": "2",
+                    "name": "DM",
+                    "meanValue": "1.95583"
+                },
+                {
+                    "@dataSetInternalID": "3",
+                    "name": "sFr",
+                    "meanValue": "1.6617122846"
+                },
+                {
+                    "@dataSetInternalID": "4",
+                    "name": "Yen",
+                    "meanValue": "100"
+                }
+            ]
+        }
+    }
+}
