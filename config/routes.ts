@@ -12,10 +12,22 @@
  */
 export default [
   {
-    name: 'Contacts',
+    path: '/mydata',
+    name: 'My Data',
     icon: 'table',
-    path: '/contacts/add',
-    component: './Contacts/add',
+    routes: [
+      { path: '/mydata', redirect: '/mydata/contacts' },
+      {
+        name: 'Contacts',
+        path: '/mydata/contacts',
+        component: './Contacts',
+      },
+      {
+        name: 'Contacts Add',
+        path: '/mydata/contacts/add',
+        component: './Contacts/add',
+      },
+    ],
   },
   {
     path: '/demo',
