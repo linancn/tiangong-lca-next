@@ -1,6 +1,7 @@
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
 import { v4 } from 'uuid';
+import { classificationToString, getLangText } from '../general/util';
 
 export async function addContacts(data: any) {
   const newID = v4();
@@ -108,6 +109,7 @@ export async function getContactTable(
     pageSize?: number;
   },
   sort: Record<string, SortOrder>,
+  lang: string,
 ) {
   const sortBy = Object.keys(sort)[0] ?? 'created_at';
   const orderBy = sort[sortBy] ?? 'descend';
@@ -144,27 +146,27 @@ export async function getContactTable(
     const { count: data_count } = await supabase.from('contacts').select('id', { count: 'exact' });
 
     return Promise.resolve({
-      data: data.map((item: any) => {
+      data: data.map((i: any) => {
         try {
           return {
-            id: item.id,
-            lang: item['common:shortName'][0]['@xml:lang'] ?? '-',
-            shortName: item['common:shortName'][0]['#text'] ?? '-',
-            name: item['common:name'][0]['#text'] ?? '-',
-            classification: '',
-            email: item.email ?? '-',
-            createdAt: new Date(item.created_at),
+            id: i.id,
+            lang: lang,
+            shortName: getLangText(i['common:shortName'], lang),
+            name: getLangText(i['common:name'], lang),
+            classification: classificationToString(i['common:class']),
+            email: i.email ?? '-',
+            createdAt: new Date(i.created_at),
           };
         } catch (e) {
           console.error(e);
           return {
-            id: item.id,
+            id: i.id,
             lang: '-',
             shortName: '-',
             name: '-',
-            classification: '',
-            email: '-',
-            createdAt: new Date(item.created_at),
+            classification: '-',
+            email: i.email ?? '-',
+            createdAt: new Date(i.created_at),
           };
         }
       }),
