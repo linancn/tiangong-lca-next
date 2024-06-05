@@ -69,6 +69,7 @@
     "@types/react": "^18.2.48",
     "@types/react-dom": "^18.2.18",
     "@types/react-helmet": "^6.1.11",
+    "@types/uuid": "^9.0.8",
     "@umijs/fabric": "^2.14.1",
     "@umijs/lint": "^4.1.1",
     "@umijs/max": "^4.1.1",
