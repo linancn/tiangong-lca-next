@@ -1,0 +1,144 @@
+{
+  "flowDataSet": {
+    "@xmlns": "str",
+    "@xmlns:common": "str",
+    "@xmlns:ecn": "str",
+    "@xmlns:xsi": "str",
+    "@version": "str",
+    "@xsi:schemaLocation": "str",
+    "flowInformation": {
+      "dataSetInformation": {
+        "common:UUID": "str",
+        "name": {
+          "baseName": {
+            "@xml:lang": "str",
+            "#text": "str"
+          },
+          "treatmentStandardsRoutes": {
+            "@xml:lang": "str",
+            "#text": "str"
+          },
+          "mixAndLocationTypes": {
+            "@xml:lang": "str",
+            "#text": "str"
+          },
+          "flowProperties": {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        },
+        "common:synonyms": {
+          "@xml:lang": "str",
+          "#text": "str"
+        },
+        "classificationInformation": {
+          "common:elementaryFlowCategorization": {
+            "common:category": [
+              {
+                "@level": "str",
+                "#text": "str"
+              }
+            ]
+          },
+          "common:classification": {
+            "@name": "str",
+            "@classes": "str",
+            "common:class": [
+              {
+                "@level": "str",
+                "#text": "str"
+              }
+            ]
+          }
+        },
+        "CASNumber": "str",
+        "common:generalComment": {
+          "@xml:lang": "str",
+          "#text": "str"
+        },
+        "common:other": {
+          "ecn:ECNumber": "str"
+        },
+        "sumFormula": "str"
+      },
+      "quantitativeReference": {
+        "referenceToReferenceFlowProperty": "str"
+      }
+    },
+    "modellingAndValidation": {
+      "LCIMethod": {
+        "typeOfDataSet": "str"
+      },
+      "complianceDeclarations": {
+        "compliance": {
+          "common:referenceToComplianceSystem": {
+            "@refObjectId": "str",
+            "@type": "str",
+            "@uri": "str",
+            "common:shortDescription": {
+              "@xml:lang": "str",
+              "#text": "str"
+            },
+            "@version": "str"
+          },
+          "common:approvalOfOverallCompliance": "str"
+        }
+      }
+    },
+    "administrativeInformation": {
+      "dataEntryBy": {
+        "common:timeStamp": "str",
+        "common:referenceToDataSetFormat": {
+          "@refObjectId": "str",
+          "@type": "str",
+          "@uri": "str",
+          "common:shortDescription": {
+            "@xml:lang": "str",
+            "#text": "str"
+          },
+          "@version": "str"
+        }
+      },
+      "publicationAndOwnership": {
+        "common:dataSetVersion": "str",
+        "common:permanentDataSetURI": "str",
+        "common:referenceToPrecedingDataSetVersion": {
+          "@refObjectId": "str",
+          "@type": "str",
+          "@uri": "str",
+          "common:shortDescription": {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        },
+        "common:referenceToOwnershipOfDataSet": {
+          "@refObjectId": "str",
+          "@type": "str",
+          "@uri": "str",
+          "@version": "str",
+          "common:shortDescription": {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        }
+      }
+    },
+    "flowProperties": {
+      "flowProperty": {
+        "@dataSetInternalID": "str",
+        "referenceToFlowPropertyDataSet": {
+          "@refObjectId": "str",
+          "@type": "str",
+          "@uri": "str",
+          "common:shortDescription": {
+            "@xml:lang": "str",
+            "#text": "str"
+          },
+          "@version": "str"
+        },
+        "meanValue": "str"
+      }
+    },
+    "@locations": "str"
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "unitGroupDataSet": {
+    "@xmlns": "str",
+    "@xmlns:common": "str",
+    "@xmlns:xsi": "str",
+    "@version": "str",
+    "@xsi:schemaLocation": "str",
+    "unitGroupInformation": {
+      "dataSetInformation": {
+        "common:UUID": "str",
+        "common:name": {
+          "@xml:lang": "str",
+          "#text": "str"
+        },
+        "classificationInformation": {
+          "common:classification": {
+            "common:class": {
+              "@level": "str",
+              "#text": "str"
+            }
+          }
+        },
+        "common:generalComment": {
+          "@xml:lang": "str",
+          "#text": "str"
+        }
+      },
+      "quantitativeReference": {
+        "referenceToReferenceUnit": "str"
+      }
+    },
+    "modellingAndValidation": {
+      "complianceDeclarations": {
+        "compliance": {
+          "common:referenceToComplianceSystem": {
+            "@refObjectId": "str",
+            "@type": "str",
+            "@uri": "str",
+            "common:shortDescription": {
+              "@xml:lang": "str",
+              "#text": "str"
+            },
+            "@version": "str"
+          },
+          "common:approvalOfOverallCompliance": "str"
+        }
+      }
+    },
+    "administrativeInformation": {
+      "dataEntryBy": {
+        "common:timeStamp": "str",
+        "common:referenceToDataSetFormat": {
+          "@refObjectId": "str",
+          "@type": "str",
+          "@uri": "str",
+          "common:shortDescription": {
+            "@xml:lang": "str",
+            "#text": "str"
+          },
+          "@version": "str"
+        }
+      },
+      "publicationAndOwnership": {
+        "common:dataSetVersion": "str",
+        "common:referenceToPrecedingDataSetVersion": {
+          "@refObjectId": "str",
+          "@type": "str",
+          "@uri": "str",
+          "common:shortDescription": {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        },
+        "common:permanentDataSetURI": "str"
+      }
+    },
+    "units": {
+      "unit": [
+        {
+          "@dataSetInternalID": "str",
+          "name": "str",
+          "meanValue": "str",
+          "generalComment": {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        }
+      ]
+    }
+  }
+}

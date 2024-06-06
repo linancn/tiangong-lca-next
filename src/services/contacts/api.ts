@@ -1,8 +1,9 @@
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
 import { v4 } from 'uuid';
+import { classificationToString, getLangText } from '../general/util';
 
-export async function addContacts(data: any) {
+export async function createContacts(data: any) {
   const newID = v4();
   let common_shortName = {};
   if (data?.['common:shortName'] !== undefined) {
@@ -95,11 +96,16 @@ export async function addContacts(data: any) {
     },
   };
 
-  const { error } = await supabase
+  const result = await supabase
     .from('contacts')
-    .insert([{ json_ordered: newData }])
+    .insert([{ id: newID, json_ordered: newData }])
     .select();
-  return error;
+  return result;
+}
+
+export async function deleteContact(id: string) {
+  const result = await supabase.from('contacts').delete().eq('id', id);
+  return result;
 }
 
 export async function getContactTable(
@@ -108,13 +114,19 @@ export async function getContactTable(
     pageSize?: number;
   },
   sort: Record<string, SortOrder>,
+  lang: string,
+  dataSource: string,
 ) {
   const sortBy = Object.keys(sort)[0] ?? 'created_at';
   const orderBy = sort[sortBy] ?? 'descend';
-  const { data, error } = await supabase
-    .from('contacts')
-    .select(
-      `
+
+  let result: any = {};
+  let count_result: any = {};
+  if (dataSource === 'tg') {
+    result = await supabase
+      .from('contacts')
+      .select(
+        `
                 id,
                 json->contactDataSet->contactInformation->dataSetInformation->"common:shortName",
                 json->contactDataSet->contactInformation->dataSetInformation->"common:name",
@@ -122,55 +134,83 @@ export async function getContactTable(
                 json->contactDataSet->contactInformation->dataSetInformation->email,
                 created_at
             `,
-    )
-    .order(sortBy, { ascending: orderBy === 'ascend' })
-    .range(
-      ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-      (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-    );
+      )
+      .order(sortBy, { ascending: orderBy === 'ascend' })
+      .range(
+        ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
+        (params.current ?? 1) * (params.pageSize ?? 10) - 1,
+      );
 
-  if (error) {
-    console.log('error', error);
+    count_result = await supabase.from('contacts').select('id', { count: 'exact' });
+  } else if (dataSource === 'my') {
+    const session = await supabase.auth.getSession();
+    if (session.data.session) {
+      result = await supabase
+        .from('contacts')
+        .select(
+          `
+                id,
+                json->contactDataSet->contactInformation->dataSetInformation->"common:shortName",
+                json->contactDataSet->contactInformation->dataSetInformation->"common:name",
+                json->contactDataSet->contactInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
+                json->contactDataSet->contactInformation->dataSetInformation->email,
+                created_at
+            `,
+        )
+        .eq('user_id', session.data.session.user?.id)
+        .order(sortBy, { ascending: orderBy === 'ascend' })
+        .range(
+          ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
+          (params.current ?? 1) * (params.pageSize ?? 10) - 1,
+        );
+
+      count_result = await supabase
+        .from('contacts')
+        .select('id', { count: 'exact' })
+        .eq('user_id', session.data.session.user?.id);
+    }
   }
 
-  if (data) {
-    if (data.length === 0) {
+  if (result.error) {
+    console.log('error', result.error);
+  }
+
+  if (result.data) {
+    if (result.data.length === 0) {
       return Promise.resolve({
         data: [],
         success: true,
       });
     }
 
-    const { count: data_count } = await supabase.from('contacts').select('id', { count: 'exact' });
-
     return Promise.resolve({
-      data: data.map((item: any) => {
+      data: result.data.map((i: any) => {
         try {
           return {
-            id: item.id,
-            lang: item['common:shortName'][0]['@xml:lang'] ?? '-',
-            shortName: item['common:shortName'][0]['#text'] ?? '-',
-            name: item['common:name'][0]['#text'] ?? '-',
-            classification: '',
-            email: item.email ?? '-',
-            createdAt: new Date(item.created_at),
+            id: i.id,
+            lang: lang,
+            shortName: getLangText(i['common:shortName'], lang),
+            name: getLangText(i['common:name'], lang),
+            classification: classificationToString(i['common:class']),
+            email: i.email ?? '-',
+            createdAt: new Date(i.created_at),
           };
         } catch (e) {
           console.error(e);
           return {
-            id: item.id,
+            id: i.id,
             lang: '-',
             shortName: '-',
             name: '-',
-            classification: '',
-            email: '-',
-            createdAt: new Date(item.created_at),
+            classification: '-',
+            email: i.email ?? '-',
+            createdAt: new Date(i.created_at),
           };
         }
       }),
       page: params.current ?? 1,
       success: true,
-      total: data_count ?? 0,
+      total: count_result.count ?? 0,
     });
   }
   return Promise.resolve({

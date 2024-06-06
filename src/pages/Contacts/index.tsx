@@ -1,21 +1,16 @@
-// import { getFlowGrid } from '@/services/flow/api';
-// import type { Flow } from '@/services/flow/data';
-// import type { ListPagination } from '@/services/home/data';
 import { getContactTable } from '@/services/contacts/api';
 import { ContactTable } from '@/services/contacts/data';
-import { ListPagination } from '@/services/share/data';
+import { ListPagination } from '@/services/general/data';
+import { getLang } from '@/services/general/util';
 import { PageContainer } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
-import { Space } from 'antd';
+import { Space, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useRef } from 'react';
-import { FormattedMessage } from 'umi';
-// import FlowCreate from './components/create';
-// import FlowDelete from './components/delete';
-// import FlowEdit from './components/edit';
-// import FlowPropertyJsonList from './components/propertyjson';
-// import FlowView from './components/view';
+import { FormattedMessage, useIntl, useLocation } from 'umi';
+import ContactCreate from './Components/create';
+import ContactDelete from './Components/delete';
 
 type QueryProps = {
   location: {
@@ -26,8 +21,15 @@ type QueryProps = {
 };
 
 const TableList: FC<QueryProps> = () => {
-  // const { datatype } = porps.location.query;
-  // const [projectName, setProjectName] = useState('');
+  const location = useLocation();
+  let dataSource = '';
+  if (location.pathname.includes('/mydata')) {
+    dataSource = 'my';
+  } else if (location.pathname.includes('/tgdata')) {
+    dataSource = 'tg';
+  }
+  const { locale } = useIntl();
+  const lang = getLang(locale);
   const actionRef = useRef<ActionType>();
   const flowColumns: ProColumns<ContactTable>[] = [
     {
@@ -40,26 +42,17 @@ const TableList: FC<QueryProps> = () => {
       title: <FormattedMessage id="contact.shortName" defaultMessage="Data Name" />,
       dataIndex: 'shortName',
       sorter: false,
+      render: (_, row) => [
+        <Tooltip key={0} placement="topLeft" title={row.name}>
+          {row.shortName}
+        </Tooltip>,
+      ],
     },
     {
       title: <FormattedMessage id="contact.classification" defaultMessage="Classification" />,
       dataIndex: 'classification',
       sorter: false,
       search: false,
-      // render: (_, row) => [
-      //   <Space size={'small'} key={0}>
-      //     {row.categoryId === null
-      //       ? '-'
-      //       : row.categoryPath.replaceAll('", "', ' > ').replaceAll('["', '').replaceAll('"]', '')}
-      //     {/* <CategoryViewByParent
-      //       projectId={row.projectId}
-      //       id={row.categoryId}
-      //       parentType={'flow'}
-      //       parentId={row.id}
-      //       actionRef={actionRef}
-      //     /> */}
-      //   </Space>,
-      // ],
     },
     {
       title: <FormattedMessage id="contact.email" defaultMessage="Email" />,
@@ -78,7 +71,7 @@ const TableList: FC<QueryProps> = () => {
       title: <FormattedMessage id="options.option" defaultMessage="Option" />,
       dataIndex: 'option',
       search: false,
-      render: () => [
+      render: (_, row) => [
         <Space size={'small'} key={0}>
           {/* <FlowView pkid={row.pkid} actionRef={actionRef} />
           <FlowEdit
@@ -86,13 +79,13 @@ const TableList: FC<QueryProps> = () => {
             buttonType={'icon'}
             actionRef={actionRef}
             setViewDrawerVisible={() => {}}
-          />
-          <FlowDelete
-            pkid={row.pkid}
+          /> */}
+          <ContactDelete
+            id={row.id}
             buttonType={'icon'}
             actionRef={actionRef}
             setViewDrawerVisible={() => {}}
-          /> */}
+          />
         </Space>,
       ],
     },
@@ -119,10 +112,12 @@ const TableList: FC<QueryProps> = () => {
         pagination={{
           pageSize: 10,
         }}
-        // toolBarRender={() => [
-        //   <FlowCreate key={0} actionRef={actionRef} />,
-        // <FlowSelect key={1} parentActionRef={actionRef} />,
-        // ]}
+        toolBarRender={() => {
+          if (dataSource === 'my') {
+            return [<ContactCreate key={0} actionRef={actionRef} />];
+          }
+          return [];
+        }}
         request={async (
           params: {
             pageSize: number;
@@ -130,7 +125,7 @@ const TableList: FC<QueryProps> = () => {
           },
           sort,
         ) => {
-          return getContactTable(params, sort);
+          return getContactTable(params, sort, lang, dataSource);
         }}
         columns={flowColumns}
       />
