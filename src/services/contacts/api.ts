@@ -3,7 +3,7 @@ import { SortOrder } from 'antd/lib/table/interface';
 import { v4 } from 'uuid';
 import { classificationToString, getLangText } from '../general/util';
 
-export async function addContacts(data: any) {
+export async function createContacts(data: any) {
   const newID = v4();
   let common_shortName = {};
   if (data?.['common:shortName'] !== undefined) {
@@ -96,11 +96,11 @@ export async function addContacts(data: any) {
     },
   };
 
-  const { error } = await supabase
+  const result = await supabase
     .from('contacts')
-    .insert([{ json_ordered: newData }])
+    .insert([{ id: newID, json_ordered: newData }])
     .select();
-  return error;
+  return result;
 }
 
 export async function getContactTable(
@@ -110,13 +110,17 @@ export async function getContactTable(
   },
   sort: Record<string, SortOrder>,
   lang: string,
+  dataSource: string,
 ) {
   const sortBy = Object.keys(sort)[0] ?? 'created_at';
   const orderBy = sort[sortBy] ?? 'descend';
-  const { data, error } = await supabase
-    .from('contacts')
-    .select(
-      `
+
+  let result: any = {};
+  if (dataSource === 'tg') {
+    result = await supabase
+      .from('contacts')
+      .select(
+        `
                 id,
                 json->contactDataSet->contactInformation->dataSetInformation->"common:shortName",
                 json->contactDataSet->contactInformation->dataSetInformation->"common:name",
@@ -124,19 +128,42 @@ export async function getContactTable(
                 json->contactDataSet->contactInformation->dataSetInformation->email,
                 created_at
             `,
-    )
-    .order(sortBy, { ascending: orderBy === 'ascend' })
-    .range(
-      ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-      (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-    );
-
-  if (error) {
-    console.log('error', error);
+      )
+      .order(sortBy, { ascending: orderBy === 'ascend' })
+      .range(
+        ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
+        (params.current ?? 1) * (params.pageSize ?? 10) - 1,
+      );
+  } else if (dataSource === 'my') {
+    const session = await supabase.auth.getSession();
+    if (session.data.session) {
+      result = await supabase
+        .from('contacts')
+        .select(
+          `
+                id,
+                json->contactDataSet->contactInformation->dataSetInformation->"common:shortName",
+                json->contactDataSet->contactInformation->dataSetInformation->"common:name",
+                json->contactDataSet->contactInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
+                json->contactDataSet->contactInformation->dataSetInformation->email,
+                created_at
+            `,
+        )
+        .eq('user_id', session.data.session.user?.id)
+        .order(sortBy, { ascending: orderBy === 'ascend' })
+        .range(
+          ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
+          (params.current ?? 1) * (params.pageSize ?? 10) - 1,
+        );
+    }
   }
 
-  if (data) {
-    if (data.length === 0) {
+  if (result.error) {
+    console.log('error', result.error);
+  }
+
+  if (result.data) {
+    if (result.data.length === 0) {
       return Promise.resolve({
         data: [],
         success: true,
@@ -146,7 +173,7 @@ export async function getContactTable(
     const { count: data_count } = await supabase.from('contacts').select('id', { count: 'exact' });
 
     return Promise.resolve({
-      data: data.map((i: any) => {
+      data: result.data.map((i: any) => {
         try {
           return {
             id: i.id,
