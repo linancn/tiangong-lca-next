@@ -103,6 +103,11 @@ export async function createContacts(data: any) {
   return result;
 }
 
+export async function deleteContact(id: string) {
+  const result = await supabase.from('contacts').delete().eq('id', id);
+  return result;
+}
+
 export async function getContactTable(
   params: {
     current?: number;
@@ -116,6 +121,7 @@ export async function getContactTable(
   const orderBy = sort[sortBy] ?? 'descend';
 
   let result: any = {};
+  let count_result: any = {};
   if (dataSource === 'tg') {
     result = await supabase
       .from('contacts')
@@ -134,6 +140,8 @@ export async function getContactTable(
         ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
         (params.current ?? 1) * (params.pageSize ?? 10) - 1,
       );
+
+    count_result = await supabase.from('contacts').select('id', { count: 'exact' });
   } else if (dataSource === 'my') {
     const session = await supabase.auth.getSession();
     if (session.data.session) {
@@ -155,6 +163,11 @@ export async function getContactTable(
           ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
           (params.current ?? 1) * (params.pageSize ?? 10) - 1,
         );
+
+      count_result = await supabase
+        .from('contacts')
+        .select('id', { count: 'exact' })
+        .eq('user_id', session.data.session.user?.id);
     }
   }
 
@@ -169,8 +182,6 @@ export async function getContactTable(
         success: true,
       });
     }
-
-    const { count: data_count } = await supabase.from('contacts').select('id', { count: 'exact' });
 
     return Promise.resolve({
       data: result.data.map((i: any) => {
@@ -199,7 +210,7 @@ export async function getContactTable(
       }),
       page: params.current ?? 1,
       success: true,
-      total: data_count ?? 0,
+      total: count_result.count ?? 0,
     });
   }
   return Promise.resolve({
