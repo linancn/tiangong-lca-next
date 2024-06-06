@@ -1,6 +1,3 @@
-// import { getFlowGrid } from '@/services/flow/api';
-// import type { Flow } from '@/services/flow/data';
-// import type { ListPagination } from '@/services/home/data';
 import { getContactTable } from '@/services/contacts/api';
 import { ContactTable } from '@/services/contacts/data';
 import { ListPagination } from '@/services/general/data';
@@ -13,6 +10,7 @@ import type { FC } from 'react';
 import { useRef } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 import ContactCreate from './Components/create';
+import ContactDelete from './Components/delete';
 
 type QueryProps = {
   location: {
@@ -73,7 +71,7 @@ const TableList: FC<QueryProps> = () => {
       title: <FormattedMessage id="options.option" defaultMessage="Option" />,
       dataIndex: 'option',
       search: false,
-      render: () => [
+      render: (_, row) => [
         <Space size={'small'} key={0}>
           {/* <FlowView pkid={row.pkid} actionRef={actionRef} />
           <FlowEdit
@@ -81,13 +79,13 @@ const TableList: FC<QueryProps> = () => {
             buttonType={'icon'}
             actionRef={actionRef}
             setViewDrawerVisible={() => {}}
-          />
-          <FlowDelete
-            pkid={row.pkid}
+          /> */}
+          <ContactDelete
+            id={row.id}
             buttonType={'icon'}
             actionRef={actionRef}
             setViewDrawerVisible={() => {}}
-          /> */}
+          />
         </Space>,
       ],
     },
