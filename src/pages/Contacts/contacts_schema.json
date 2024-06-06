@@ -1,0 +1,101 @@
+{
+  "contactDataSet": {
+    "@xmlns:common": "str",
+    "@xmlns": "str",
+    "@xmlns:xsi": "str",
+    "@version": "str",
+    "@xsi:schemaLocation": "str",
+    "contactInformation": {
+      "dataSetInformation": {
+        "common:UUID": "str",
+        "common:shortName": [
+          {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        ],
+        "common:name": [
+          {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        ],
+        "classificationInformation": {
+          "common:classification": {
+            "common:class": {
+              "@level": "str",
+              "#text": "str"
+            },
+            "@name": "str",
+            "@classes": "str"
+          }
+        },
+        "email": "str",
+        "WWWAddress": "str",
+        "centralContactPoint": {
+          "@xml:lang": "str",
+          "#text": "str"
+        },
+        "contactDescriptionOrComment": {
+          "@xml:lang": "str",
+          "#text": "str"
+        },
+        "contactAddress": {
+          "@xml:lang": "str",
+          "#text": "str"
+        },
+        "telephone": "str",
+        "telefax": "str",
+        "referenceToContact": [
+          {
+            "@refObjectId": "str",
+            "@type": "str",
+            "@uri": "str",
+            "common:shortDescription": {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          }
+        ],
+        "referenceToLogo": {
+          "@refObjectId": "str",
+          "@version": "str",
+          "@type": "str",
+          "@uri": "str",
+          "common:shortDescription": {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        }
+      }
+    },
+    "administrativeInformation": {
+      "publicationAndOwnership": {
+        "common:dataSetVersion": "str",
+        "common:permanentDataSetURI": "str",
+        "common:referenceToPrecedingDataSetVersion": {
+          "@type": "str",
+          "@refObjectId": "str",
+          "@uri": "str",
+          "common:shortDescription": {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        }
+      },
+      "dataEntryBy": {
+        "common:timeStamp": "str",
+        "common:referenceToDataSetFormat": {
+          "@refObjectId": "str",
+          "@type": "str",
+          "@uri": "str",
+          "common:shortDescription": {
+            "@xml:lang": "str",
+            "#text": "str"
+          },
+          "@version": "str"
+        }
+      }
+    }
+  }
+}
