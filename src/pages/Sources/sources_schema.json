@@ -1,0 +1,177 @@
+{
+  "sourceDataSet": {
+    "@xmlns:common": "str",
+    "@xmlns": "str",
+    "@xmlns:xsi": "str",
+    "@version": "str",
+    "@xsi:schemaLocation": "str",
+    "sourceInformation": {
+      "dataSetInformation": {
+        "common:UUID": "str",
+        "common:shortName": {
+          "@xml:lang": "str",
+          "#text": "str"
+        },
+        "classificationInformation": {
+          "common:classification": {
+            "common:class": {
+              "@level": "str",
+              "@classId": "str",
+              "#text": "str"
+            }
+          }
+        },
+        "sourceDescriptionOrComment": [
+          {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        ],
+        "referenceToDigitalFile": {
+          "@uri": "str"
+        },
+        "sourceCitation": "str",
+        "publicationType": "str",
+        "referenceToContact": {
+          "@type": "str",
+          "@refObjectId": "str",
+          "@version": "str",
+          "@uri": "str",
+          "common:shortDescription": {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        }
+      }
+    },
+    "administrativeInformation": {
+      "dataEntryBy": {
+        "common:timeStamp": "str",
+        "common:referenceToDataSetFormat": {
+          "@type": "str",
+          "@refObjectId": "str",
+          "@uri": "str",
+          "common:shortDescription": {
+            "@xml:lang": "str",
+            "#text": "str"
+          },
+          "@version": "str"
+        }
+      },
+      "publicationAndOwnership": {
+        "common:dataSetVersion": "str",
+        "common:referenceToOwnershipOfDataSet": {
+          "@refObjectId": "str",
+          "@type": "str",
+          "@uri": "str",
+          "common:shortDescription": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ]
+        },
+        "common:permanentDataSetURI": "str",
+        "common:referenceToPrecedingDataSetVersion": {
+          "@refObjectId": "str",
+          "@type": "str",
+          "@uri": "str",
+          "common:shortDescription": {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        }
+      }
+    }
+  },
+  "source:sourceDataSet": {
+    "@xmlns:source": "str",
+    "@xmlns:common": "str",
+    "@xmlns:xsi": "str",
+    "@version": "str",
+    "@xsi:schemaLocation": "str",
+    "source:sourceInformation": {
+      "source:dataSetInformation": {
+        "common:UUID": "str",
+        "common:shortName": {
+          "@xml:lang": "str",
+          "#text": "str"
+        },
+        "source:classificationInformation": {
+          "common:classification": {
+            "common:class": {
+              "@level": "str",
+              "#text": "str"
+            }
+          }
+        },
+        "source:sourceCitation": "str",
+        "source:publicationType": "str",
+        "source:sourceDescriptionOrComment": {
+          "@xml:lang": "str",
+          "#text": "str"
+        }
+      }
+    },
+    "source:administrativeInformation": {
+      "source:dataEntryBy": {
+        "common:timeStamp": "str",
+        "common:referenceToDataSetFormat": {
+          "@refObjectId": "str",
+          "@type": "str",
+          "@uri": "str",
+          "common:shortDescription": {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        }
+      },
+      "source:publicationAndOwnership": {
+        "common:dataSetVersion": "str",
+        "common:permanentDataSetURI": "str"
+      }
+    }
+  },
+  "s:sourceDataSet": {
+    "@xmlns:s": "str",
+    "@xmlns": "str",
+    "@xmlns:c": "str",
+    "@xmlns:common": "str",
+    "@xmlns:f": "str",
+    "@xmlns:fp": "str",
+    "@xmlns:m": "str",
+    "@xmlns:u": "str",
+    "@version": "str",
+    "s:sourceInformation": {
+      "s:dataSetInformation": {
+        "common:UUID": "str",
+        "common:shortName": {
+          "@xml:lang": "str",
+          "#text": "str"
+        },
+        "s:classificationInformation": "NoneType",
+        "s:sourceDescriptionOrComment": {
+          "@xml:lang": "str"
+        }
+      }
+    },
+    "s:administrativeInformation": {
+      "s:dataEntryBy": {
+        "common:timeStamp": "str",
+        "common:referenceToDataSetFormat": {
+          "@refObjectId": "str",
+          "@type": "str",
+          "@uri": "str",
+          "@version": "str",
+          "common:shortDescription": {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        }
+      },
+      "s:publicationAndOwnership": {
+        "common:dataSetVersion": "str"
+      }
+    }
+  }
+}
