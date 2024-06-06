@@ -1,7 +1,7 @@
 import { PageContainer } from '@ant-design/pro-components';
 import { Button, Card, theme } from 'antd';
 import React from 'react';
-import { flowHybridSearch, returnUserEdgeFunction } from '../services/demo/api';
+import { flowHybridSearch, jsonSelectTest, returnUserEdgeFunction } from '../services/demo/api';
 
 const Demo: React.FC = () => {
   const { token } = theme.useToken();
@@ -38,6 +38,7 @@ const Demo: React.FC = () => {
           >
             <Button onClick={() => flowHybridSearch('猪肉')}>flowHybridSearch</Button>
             <Button onClick={() => returnUserEdgeFunction()}>returnUserEdgeFunction</Button>
+            <Button onClick={() => jsonSelectTest()}>jsonSelectTest</Button>
           </div>
         </div>
       </Card>

@@ -12,10 +12,30 @@
  */
 export default [
   {
-    name: 'Contacts',
+    path: '/mydata',
+    name: 'My Data',
     icon: 'table',
-    path: '/contacts/add',
-    component: './Contacts/add',
+    routes: [
+      { path: '/mydata', redirect: '/mydata/contacts' },
+      {
+        name: 'Contacts',
+        path: '/mydata/contacts',
+        component: './Contacts',
+      },
+    ],
+  },
+  {
+    path: '/tgdata',
+    name: 'TianGong Data',
+    icon: 'table',
+    routes: [
+      { path: '/tgdata', redirect: '/tgdata/contacts' },
+      {
+        name: 'Contacts',
+        path: '/tgdata/contacts',
+        component: './Contacts',
+      },
+    ],
   },
   {
     path: '/demo',
