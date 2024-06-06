@@ -11,7 +11,8 @@ import ProTable from '@ant-design/pro-table';
 import { Space, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useRef } from 'react';
-import { FormattedMessage, useIntl } from 'umi';
+import { FormattedMessage, useIntl, useLocation } from 'umi';
+import ContactCreate from './Components/create';
 
 type QueryProps = {
   location: {
@@ -22,6 +23,13 @@ type QueryProps = {
 };
 
 const TableList: FC<QueryProps> = () => {
+  const location = useLocation();
+  let dataSource = '';
+  if (location.pathname.includes('/mydata')) {
+    dataSource = 'my';
+  } else if (location.pathname.includes('/tgdata')) {
+    dataSource = 'tg';
+  }
   const { locale } = useIntl();
   const lang = getLang(locale);
   const actionRef = useRef<ActionType>();
@@ -106,10 +114,12 @@ const TableList: FC<QueryProps> = () => {
         pagination={{
           pageSize: 10,
         }}
-        // toolBarRender={() => [
-        //   <FlowCreate key={0} actionRef={actionRef} />,
-        // <FlowSelect key={1} parentActionRef={actionRef} />,
-        // ]}
+        toolBarRender={() => {
+          if (dataSource === 'my') {
+            return [<ContactCreate key={0} actionRef={actionRef} />];
+          }
+          return [];
+        }}
         request={async (
           params: {
             pageSize: number;
@@ -117,7 +127,7 @@ const TableList: FC<QueryProps> = () => {
           },
           sort,
         ) => {
-          return getContactTable(params, sort, lang);
+          return getContactTable(params, sort, lang, dataSource);
         }}
         columns={flowColumns}
       />
