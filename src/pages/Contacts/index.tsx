@@ -71,23 +71,28 @@ const TableList: FC<QueryProps> = () => {
       title: <FormattedMessage id="options.option" defaultMessage="Option" />,
       dataIndex: 'option',
       search: false,
-      render: (_, row) => [
-        <Space size={'small'} key={0}>
-          {/* <FlowView pkid={row.pkid} actionRef={actionRef} />
+      render: (_, row) => {
+        if (dataSource === 'my') {
+          return [
+            <Space size={'small'} key={0}>
+              {/* <FlowView pkid={row.pkid} actionRef={actionRef} />
           <FlowEdit
             pkid={row.pkid}
             buttonType={'icon'}
             actionRef={actionRef}
             setViewDrawerVisible={() => {}}
           /> */}
-          <ContactDelete
-            id={row.id}
-            buttonType={'icon'}
-            actionRef={actionRef}
-            setViewDrawerVisible={() => {}}
-          />
-        </Space>,
-      ],
+              <ContactDelete
+                id={row.id}
+                buttonType={'icon'}
+                actionRef={actionRef}
+                setViewDrawerVisible={() => {}}
+              />
+            </Space>,
+          ];
+        }
+        return [];
+      },
     },
   ];
   // useEffect(() => {
