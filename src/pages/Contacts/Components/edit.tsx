@@ -1,9 +1,9 @@
-import { createContact } from '@/services/contacts/api';
+import { getContactDetail, updateContact } from '@/services/contacts/api';
 import { langOptions } from '@/services/general/data';
 import styles from '@/style/custom.less';
-import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
+import { CloseOutlined, FormOutlined } from '@ant-design/icons';
+import { ProForm } from '@ant-design/pro-components';
 import type { ProFormInstance } from '@ant-design/pro-form';
-import ProForm from '@ant-design/pro-form';
 import type { ActionType } from '@ant-design/pro-table';
 import {
   Button,
@@ -13,6 +13,7 @@ import {
   Input,
   Select,
   Space,
+  Spin,
   Tooltip,
   Typography,
   message,
@@ -24,75 +25,48 @@ import { FormattedMessage } from 'umi';
 const { TextArea } = Input;
 
 type Props = {
+  id: string;
+  buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
+  setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
 };
-const ContactCreate: FC<Props> = ({ actionRef }) => {
+const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisible }) => {
+  const [editForm, setEditForm] = useState<JSX.Element>();
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const formRefCreate = useRef<ProFormInstance>();
+  const formRefEdit = useRef<ProFormInstance>();
 
-  const reload = useCallback(() => {
-    actionRef.current?.reload();
-  }, [actionRef]);
-
-  return (
-    <>
-      <Tooltip title={<FormattedMessage id="options.create" defaultMessage="Create" />}>
-        <Button
-          size={'middle'}
-          type="text"
-          icon={<PlusOutlined />}
-          onClick={() => {
-            setDrawerVisible(true);
-          }}
-        />
-      </Tooltip>
-      <Drawer
-        title={<FormattedMessage id="options.create" defaultMessage="Create" />}
-        width="600px"
-        closable={false}
-        extra={
-          <Button
-            icon={<CloseOutlined />}
-            style={{ border: 0 }}
-            onClick={() => setDrawerVisible(false)}
-          />
-        }
-        maskClosable={false}
-        open={drawerVisible}
-        onClose={() => setDrawerVisible(false)}
-        footer={
-          <Space size={'middle'} className={styles.footer_right}>
-            <Button onClick={() => setDrawerVisible(false)}>
-              {' '}
-              <FormattedMessage id="options.cancel" defaultMessage="Cancel" />
-            </Button>
-            <Button onClick={() => formRefCreate.current?.submit()} type="primary">
-              <FormattedMessage id="options.submit" defaultMessage="Submit" />
-            </Button>
-          </Space>
-        }
-      >
+  const onEdit = useCallback(() => {
+    setDrawerVisible(true);
+    setEditForm(
+      <div className={styles.loading_spin_div}>
+        <Spin />
+      </div>,
+    );
+    getContactDetail(id).then(async (result: any) => {
+      console.log(result.data);
+      await setEditForm(
         <ProForm
-          formRef={formRefCreate}
+          formRef={formRefEdit}
           submitter={{
             render: () => {
               return [];
             },
           }}
+          initialValues={result.data}
           onFinish={async (values) => {
-            const result = await createContact({ ...values });
-            if (result.data) {
+            const updateResult = await updateContact({ ...values });
+            if (updateResult?.data) {
               message.success(
                 <FormattedMessage
                   id="options.createsuccess"
                   defaultMessage="Created Successfully!"
                 />,
               );
-              formRefCreate.current?.resetFields();
               setDrawerVisible(false);
-              reload();
+              setViewDrawerVisible(false);
+              actionRef.current?.reload();
             } else {
-              message.error(result.error.message);
+              message.error(updateResult?.error?.message);
             }
             return true;
           }}
@@ -192,15 +166,71 @@ const ContactCreate: FC<Props> = ({ actionRef }) => {
             <Form.Item noStyle shouldUpdate>
               {() => (
                 <Typography>
-                  <pre>{JSON.stringify(formRefCreate.current?.getFieldsValue(), null, 2)}</pre>
+                  <pre>{JSON.stringify(formRefEdit.current?.getFieldsValue(), null, 2)}</pre>
                 </Typography>
               )}
             </Form.Item>
+            <Form.Item name="id" hidden>
+              <Input />
+            </Form.Item>
           </Space>
-        </ProForm>
+        </ProForm>,
+      );
+      await formRefEdit.current?.setFieldsValue(result.data);
+    });
+  }, [actionRef, id, setViewDrawerVisible]);
+
+  const onReset = () => {
+    getContactDetail(id).then(async (result) => {
+      formRefEdit.current?.setFieldsValue(result.data);
+    });
+  };
+
+  return (
+    <>
+      <Tooltip title={<FormattedMessage id="options.edit" defaultMessage="Edit" />}>
+        {buttonType === 'icon' ? (
+          <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
+        ) : (
+          <Button onClick={onEdit}>
+            <FormattedMessage id="options.edit" defaultMessage="Edit" />
+          </Button>
+        )}
+      </Tooltip>
+      <Drawer
+        title={<FormattedMessage id="options.edit" defaultMessage="Edit" />}
+        width="600px"
+        closable={false}
+        extra={
+          <Button
+            icon={<CloseOutlined />}
+            style={{ border: 0 }}
+            onClick={() => setDrawerVisible(false)}
+          />
+        }
+        maskClosable={true}
+        open={drawerVisible}
+        onClose={() => setDrawerVisible(false)}
+        footer={
+          <Space size={'middle'} className={styles.footer_right}>
+            <Button onClick={() => setDrawerVisible(false)}>
+              {' '}
+              <FormattedMessage id="options.cancel" defaultMessage="Cancel" />
+            </Button>
+            <Button onClick={onReset}>
+              {' '}
+              <FormattedMessage id="options.reset" defaultMessage="Reset" />
+            </Button>
+            <Button onClick={() => formRefEdit.current?.submit()} type="primary">
+              <FormattedMessage id="options.submit" defaultMessage="Submit" />
+            </Button>
+          </Space>
+        }
+      >
+        {editForm}
       </Drawer>
     </>
   );
 };
 
-export default ContactCreate;
+export default ContactEdit;

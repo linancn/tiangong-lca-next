@@ -11,6 +11,7 @@ import { useRef } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 import ContactCreate from './Components/create';
 import ContactDelete from './Components/delete';
+import ContactEdit from './Components/edit';
 import ContactView from './Components/view';
 
 type QueryProps = {
@@ -77,12 +78,12 @@ const TableList: FC<QueryProps> = () => {
           return [
             <Space size={'small'} key={0}>
               <ContactView id={row.id} />
-              {/* <FlowEdit
-            pkid={row.pkid}
-            buttonType={'icon'}
-            actionRef={actionRef}
-            setViewDrawerVisible={() => {}}
-          /> */}
+              <ContactEdit
+                id={row.id}
+                buttonType={'icon'}
+                actionRef={actionRef}
+                setViewDrawerVisible={() => {}}
+              />
               <ContactDelete
                 id={row.id}
                 buttonType={'icon'}

@@ -1,4 +1,4 @@
-import { getContactView } from '@/services/contacts/api';
+import { getContactDetail } from '@/services/contacts/api';
 import styles from '@/style/custom.less';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { Button, Descriptions, Drawer, Spin, Tooltip } from 'antd';
@@ -12,7 +12,6 @@ type Props = {
 const ContactView: FC<Props> = ({ id }) => {
   const [viewDescriptions, setViewDescriptions] = useState<JSX.Element>();
   const [drawerVisible, setDrawerVisible] = useState(false);
-  // const [footerButtons, setFooterButtons] = useState<JSX.Element>();
 
   const onView = () => {
     setDrawerVisible(true);
@@ -22,33 +21,48 @@ const ContactView: FC<Props> = ({ id }) => {
       </div>,
     );
 
-    getContactView(id).then(async (result: any) => {
+    getContactDetail(id).then(async (result: any) => {
       setViewDescriptions(
         <>
-          <Descriptions column={1}>
-            <p>Name</p>
-            {result.data.name.map((name: any, index: number) => (
+          <p>
+            <br /> Name
+          </p>
+          <Descriptions bordered size={'small'} column={1}>
+            {result.data['common:name'].map((name: any, index: number) => (
               <Descriptions.Item key={index} label={name['@xml:lang']}>
                 {name['#text'] ?? '-'}
               </Descriptions.Item>
             ))}
-            <p>Short Name</p>
-            {result.data.shortName.map((shortName: any, index: number) => (
+          </Descriptions>
+          <p>
+            <br /> Short Name
+          </p>
+          <Descriptions bordered size={'small'} column={1}>
+            {result.data['common:shortName'].map((shortName: any, index: number) => (
               <Descriptions.Item key={index} label={shortName['@xml:lang']}>
                 {shortName['#text'] ?? '-'}
               </Descriptions.Item>
             ))}
-            <p>Classification</p>
+          </Descriptions>
+          <p>
+            <br />
+            Classification
+          </p>
+          <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item key={0} label="Level 1">
-              {result.data.classification['@level_0'] ?? '-'}
+              {result.data['common:class']['@level_0'] ?? '-'}
             </Descriptions.Item>
             <Descriptions.Item key={0} label="Level 2">
-              {result.data.classification['@level_1'] ?? '-'}
+              {result.data['common:class']['@level_1'] ?? '-'}
             </Descriptions.Item>
             <Descriptions.Item key={0} label="Level 3">
-              {result.data.classification['@level_2'] ?? '-'}
+              {result.data['common:class']['@level_2'] ?? '-'}
             </Descriptions.Item>
-            <p></p>
+          </Descriptions>
+          <p>
+            <br />
+          </p>
+          <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item key={0} label="ID">
               {result.data.id ?? '-'}
             </Descriptions.Item>
@@ -56,7 +70,7 @@ const ContactView: FC<Props> = ({ id }) => {
               {result.data.email ?? '-'}
             </Descriptions.Item>
             <Descriptions.Item key={0} label="version">
-              {result.data.version ?? '-'}
+              {result.data['common:dataSetVersion'] ?? '-'}
             </Descriptions.Item>
             <Descriptions.Item key={0} label="Created At">
               {result.data.createdAt ?? '-'}
@@ -83,7 +97,7 @@ const ContactView: FC<Props> = ({ id }) => {
           />
         }
         // footer={
-        //   <Space size={'middle'} className={styles.footer_right}>
+        //   <Space size={"middle"} className={styles.footer_right}>
         //     {footerButtons}
         //   </Space>
         // }

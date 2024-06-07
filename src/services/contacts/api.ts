@@ -7,105 +7,42 @@ import {
   getLangList,
   getLangText,
 } from '../general/util';
+import { genContactJsonOrdered } from './util';
 
-export async function createContacts(data: any) {
+export async function createContact(data: any) {
   const newID = v4();
-  let common_shortName = {};
-  if (data?.['common:shortName'] !== undefined) {
-    if (data?.['common:shortName'].length === 1) {
-      common_shortName = data?.['common:shortName'][0];
-    } else if (data?.['common:shortName'].length > 1) {
-      common_shortName = data?.['common:shortName'];
-    }
-  }
-  let common_name = {};
-  if (data?.['common:name'] !== undefined) {
-    if (data?.['common:name'].length === 1) {
-      common_name = data?.['common:name'][0];
-    } else if (data?.['common:name'].length > 1) {
-      common_name = data?.['common:name'];
-    }
-  }
-  let common_class = {};
-  if (
-    data?.['common:class']?.['@level_0'] !== undefined &&
-    data?.['common:class']?.['@level_0'] !== null &&
-    data?.['common:class']?.['@level_0'].trim() !== ''
-  ) {
-    common_class = {
-      '@level': 0,
-      '#text': data?.['common:class']?.['@level_0'],
-    };
-    if (
-      data?.['common:class']?.['@level_1'] !== undefined &&
-      data?.['common:class']?.['@level_1'] !== null &&
-      data?.['common:class']?.['@level_1'].trim() !== ''
-    ) {
-      common_class = [
-        {
-          '@level': 0,
-          '#text': data?.['common:class']?.['@level_0'],
-        },
-        {
-          '@level': 1,
-          '#text': data?.['common:class']?.['@level_1'],
-        },
-      ];
-      if (
-        data?.['common:class']?.['@level_2'] !== undefined &&
-        data?.['common:class']?.['@level_2'] !== null &&
-        data?.['common:class']?.['@level_2'].trim() !== ''
-      ) {
-        common_class = [
-          {
-            '@level': 0,
-            '#text': data?.['common:class']?.['@level_0'],
-          },
-          {
-            '@level': 1,
-            '#text': data?.['common:class']?.['@level_1'],
-          },
-          {
-            '@level': 2,
-            '#text': data?.['common:class']?.['@level_2'],
-          },
-        ];
-      }
-    }
-  }
-  const newData = {
+  const oldData = {
     contactDataSet: {
       '@xmlns:common': 'http://lca.jrc.it/ILCD/Common',
       '@xmlns': 'http://lca.jrc.it/ILCD/Contact',
       '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
       '@version': '1.1',
       '@xsi:schemaLocation': 'http://lca.jrc.it/ILCD/Contact ../../schemas/ILCD_ContactDataSet.xsd',
-      contactInformation: {
-        dataSetInformation: {
-          'common:UUID': newID,
-          'common:shortName': common_shortName,
-          'common:name': common_name,
-          classificationInformation: {
-            'common:classification': {
-              'common:class': common_class,
-            },
-          },
-          email: data?.email,
-        },
-      },
-      administrativeInformation: {
-        publicationAndOwnership: {
-          'common:dataSetVersion': data?.['common:dataSetVersion'],
-        },
-      },
     },
   };
-
+  const newData = genContactJsonOrdered(newID, data, oldData);
   const result = await supabase
     .from('contacts')
     .insert([{ id: newID, json_ordered: newData }])
     .select();
   return result;
+}
+
+export async function updateContact(data: any) {
+  const result = await supabase.from('contacts').select('id, json').eq('id', data.id);
+  if (result.data && result.data.length === 1) {
+    const oldData = result.data[0].json;
+    const newData = genContactJsonOrdered(data.id, data, oldData);
+    console.log('newData', newData);
+    const updateResult = await supabase
+      .from('contacts')
+      .update({ json_ordered: newData })
+      .eq('id', data.id)
+      .select();
+    console.log('updateResult', updateResult);
+    return updateResult;
+  }
+  return null;
 }
 
 export async function deleteContact(id: string) {
@@ -224,29 +161,29 @@ export async function getContactTable(
   });
 }
 
-export async function getContactView(id: string) {
+export async function getContactDetail(id: string) {
   const result = await supabase.from('contacts').select('json, created_at').eq('id', id);
   if (result.data && result.data.length > 0) {
     const data = result.data[0];
     return Promise.resolve({
       data: {
         id: id,
-        shortName: getLangList(
+        'common:shortName': getLangList(
           data?.json?.contactDataSet?.contactInformation?.dataSetInformation?.['common:shortName'],
         ),
-        name: getLangList(
+        'common:name': getLangList(
           data?.json?.contactDataSet?.contactInformation?.dataSetInformation?.['common:name'],
         ),
-        classification: classificationToJson(
+        'common:class': classificationToJson(
           data?.json?.contactDataSet?.contactInformation?.dataSetInformation
             ?.classificationInformation?.['common:classification']?.['common:class'],
         ),
         email: data?.json?.contactDataSet?.contactInformation?.dataSetInformation?.email,
-        createdAt: data?.created_at,
-        version:
+        'common:dataSetVersion':
           data?.json?.contactDataSet?.administrativeInformation?.publicationAndOwnership?.[
             'common:dataSetVersion'
           ],
+        createdAt: data?.created_at,
       },
       success: true,
     });
