@@ -11,6 +11,8 @@ import { useRef } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 import ContactCreate from './Components/create';
 import ContactDelete from './Components/delete';
+import ContactEdit from './Components/edit';
+import ContactView from './Components/view';
 
 type QueryProps = {
   location: {
@@ -75,13 +77,13 @@ const TableList: FC<QueryProps> = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              {/* <FlowView pkid={row.pkid} actionRef={actionRef} />
-          <FlowEdit
-            pkid={row.pkid}
-            buttonType={'icon'}
-            actionRef={actionRef}
-            setViewDrawerVisible={() => {}}
-          /> */}
+              <ContactView id={row.id} />
+              <ContactEdit
+                id={row.id}
+                buttonType={'icon'}
+                actionRef={actionRef}
+                setViewDrawerVisible={() => {}}
+              />
               <ContactDelete
                 id={row.id}
                 buttonType={'icon'}
@@ -91,7 +93,11 @@ const TableList: FC<QueryProps> = () => {
             </Space>,
           ];
         }
-        return [];
+        return [
+          <Space size={'small'} key={0}>
+            <ContactView id={row.id} />
+          </Space>,
+        ];
       },
     },
   ];
@@ -115,6 +121,7 @@ const TableList: FC<QueryProps> = () => {
           defaultCollapsed: false,
         }}
         pagination={{
+          showSizeChanger: false,
           pageSize: 10,
         }}
         toolBarRender={() => {
