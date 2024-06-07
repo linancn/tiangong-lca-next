@@ -1,17 +1,22 @@
 import { getContactDetail } from '@/services/contacts/api';
 import styles from '@/style/custom.less';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
-import { Button, Descriptions, Drawer, Spin, Tooltip } from 'antd';
+import { ActionType } from '@ant-design/pro-components';
+import { Button, Descriptions, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
+import ContactDelete from './delete';
+import ContactEdit from './edit';
 
 type Props = {
   id: string;
+  actionRef: React.MutableRefObject<ActionType | undefined>;
 };
-const ContactView: FC<Props> = ({ id }) => {
+const ContactView: FC<Props> = ({ id, actionRef }) => {
   const [viewDescriptions, setViewDescriptions] = useState<JSX.Element>();
   const [drawerVisible, setDrawerVisible] = useState(false);
+  const [footerButtons, setFooterButtons] = useState<JSX.Element>();
 
   const onView = () => {
     setDrawerVisible(true);
@@ -78,6 +83,22 @@ const ContactView: FC<Props> = ({ id }) => {
           </Descriptions>
         </>,
       );
+      setFooterButtons(
+        <>
+          <ContactDelete
+            id={id}
+            buttonType={'text'}
+            actionRef={actionRef}
+            setViewDrawerVisible={setDrawerVisible}
+          />
+          <ContactEdit
+            id={id}
+            buttonType={'text'}
+            actionRef={actionRef}
+            setViewDrawerVisible={setDrawerVisible}
+          />
+        </>,
+      );
     });
   };
   return (
@@ -96,11 +117,11 @@ const ContactView: FC<Props> = ({ id }) => {
             onClick={() => setDrawerVisible(false)}
           />
         }
-        // footer={
-        //   <Space size={"middle"} className={styles.footer_right}>
-        //     {footerButtons}
-        //   </Space>
-        // }
+        footer={
+          <Space size={'middle'} className={styles.footer_right}>
+            {footerButtons}
+          </Space>
+        }
         maskClosable={true}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}

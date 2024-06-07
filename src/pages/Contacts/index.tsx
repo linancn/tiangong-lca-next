@@ -14,15 +14,7 @@ import ContactDelete from './Components/delete';
 import ContactEdit from './Components/edit';
 import ContactView from './Components/view';
 
-type QueryProps = {
-  location: {
-    query: {
-      datatype: string;
-    };
-  };
-};
-
-const TableList: FC<QueryProps> = () => {
+const TableList: FC = () => {
   const location = useLocation();
   let dataSource = '';
   if (location.pathname.includes('/mydata')) {
@@ -77,7 +69,7 @@ const TableList: FC<QueryProps> = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <ContactView id={row.id} />
+              <ContactView id={row.id} actionRef={actionRef} />
               <ContactEdit
                 id={row.id}
                 buttonType={'icon'}
@@ -95,26 +87,14 @@ const TableList: FC<QueryProps> = () => {
         }
         return [
           <Space size={'small'} key={0}>
-            <ContactView id={row.id} />
+            <ContactView id={row.id} actionRef={actionRef} />
           </Space>,
         ];
       },
     },
   ];
-  // useEffect(() => {
-  //   getProject(projectid).then((result) => setProjectName(result.name + ' - '));
-  // }, [projectid]);
   return (
-    <PageContainer
-    // header={{
-    //   title: (
-    //     <>
-    //       {projectName}
-    //       <FormattedMessage id="menu.flows" defaultMessage="Flows" />
-    //     </>
-    //   ),
-    // }}
-    >
+    <PageContainer>
       <ProTable<ContactTable, ListPagination>
         actionRef={actionRef}
         search={{

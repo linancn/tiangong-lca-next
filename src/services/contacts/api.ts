@@ -33,13 +33,11 @@ export async function updateContact(data: any) {
   if (result.data && result.data.length === 1) {
     const oldData = result.data[0].json;
     const newData = genContactJsonOrdered(data.id, data, oldData);
-    console.log('newData', newData);
     const updateResult = await supabase
       .from('contacts')
       .update({ json_ordered: newData })
       .eq('id', data.id)
       .select();
-    console.log('updateResult', updateResult);
     return updateResult;
   }
   return null;
@@ -62,21 +60,21 @@ export async function getContactTable(
   const sortBy = Object.keys(sort)[0] ?? 'created_at';
   const orderBy = sort[sortBy] ?? 'descend';
 
+  const selectStr = `
+    id,
+    json->contactDataSet->contactInformation->dataSetInformation->"common:shortName",
+    json->contactDataSet->contactInformation->dataSetInformation->"common:name",
+    json->contactDataSet->contactInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
+    json->contactDataSet->contactInformation->dataSetInformation->email,
+    created_at
+  `;
+
   let result: any = {};
   let count_result: any = {};
   if (dataSource === 'tg') {
     result = await supabase
       .from('contacts')
-      .select(
-        `
-                id,
-                json->contactDataSet->contactInformation->dataSetInformation->"common:shortName",
-                json->contactDataSet->contactInformation->dataSetInformation->"common:name",
-                json->contactDataSet->contactInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
-                json->contactDataSet->contactInformation->dataSetInformation->email,
-                created_at
-            `,
-      )
+      .select(selectStr)
       .order(sortBy, { ascending: orderBy === 'ascend' })
       .range(
         ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
@@ -89,16 +87,7 @@ export async function getContactTable(
     if (session.data.session) {
       result = await supabase
         .from('contacts')
-        .select(
-          `
-                id,
-                json->contactDataSet->contactInformation->dataSetInformation->"common:shortName",
-                json->contactDataSet->contactInformation->dataSetInformation->"common:name",
-                json->contactDataSet->contactInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
-                json->contactDataSet->contactInformation->dataSetInformation->email,
-                created_at
-            `,
-        )
+        .select(selectStr)
         .eq('user_id', session.data.session.user?.id)
         .order(sortBy, { ascending: orderBy === 'ascend' })
         .range(
