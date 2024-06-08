@@ -43,7 +43,6 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
       </div>,
     );
     getContactDetail(id).then(async (result: any) => {
-      console.log(result.data);
       await setEditForm(
         <ProForm
           formRef={formRefEdit}

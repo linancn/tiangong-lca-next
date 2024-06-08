@@ -25,7 +25,7 @@ const TableList: FC = () => {
   const { locale } = useIntl();
   const lang = getLang(locale);
   const actionRef = useRef<ActionType>();
-  const flowColumns: ProColumns<ContactTable>[] = [
+  const contactColumns: ProColumns<ContactTable>[] = [
     {
       title: <FormattedMessage id="contact.index" defaultMessage="Index" />,
       dataIndex: 'index',
@@ -69,7 +69,7 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <ContactView id={row.id} actionRef={actionRef} />
+              <ContactView id={row.id} dataSource={dataSource} actionRef={actionRef} />
               <ContactEdit
                 id={row.id}
                 buttonType={'icon'}
@@ -87,7 +87,7 @@ const TableList: FC = () => {
         }
         return [
           <Space size={'small'} key={0}>
-            <ContactView id={row.id} actionRef={actionRef} />
+            <ContactView id={row.id} dataSource={dataSource} actionRef={actionRef} />
           </Space>,
         ];
       },
@@ -119,7 +119,7 @@ const TableList: FC = () => {
         ) => {
           return getContactTable(params, sort, lang, dataSource);
         }}
-        columns={flowColumns}
+        columns={contactColumns}
       />
     </PageContainer>
   );

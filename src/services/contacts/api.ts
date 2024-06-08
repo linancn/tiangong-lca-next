@@ -70,35 +70,27 @@ export async function getContactTable(
   `;
 
   let result: any = {};
-  let count_result: any = {};
   if (dataSource === 'tg') {
     result = await supabase
       .from('contacts')
-      .select(selectStr)
+      .select(selectStr, { count: 'exact' })
       .order(sortBy, { ascending: orderBy === 'ascend' })
       .range(
         ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
         (params.current ?? 1) * (params.pageSize ?? 10) - 1,
       );
-
-    count_result = await supabase.from('contacts').select('id', { count: 'exact' });
   } else if (dataSource === 'my') {
     const session = await supabase.auth.getSession();
     if (session.data.session) {
       result = await supabase
         .from('contacts')
-        .select(selectStr)
+        .select(selectStr, { count: 'exact' })
         .eq('user_id', session.data.session.user?.id)
         .order(sortBy, { ascending: orderBy === 'ascend' })
         .range(
           ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
           (params.current ?? 1) * (params.pageSize ?? 10) - 1,
         );
-
-      count_result = await supabase
-        .from('contacts')
-        .select('id', { count: 'exact' })
-        .eq('user_id', session.data.session.user?.id);
     }
   }
 
@@ -130,18 +122,12 @@ export async function getContactTable(
           console.error(e);
           return {
             id: i.id,
-            lang: '-',
-            shortName: '-',
-            name: '-',
-            classification: '-',
-            email: i.email ?? '-',
-            createdAt: new Date(i.created_at),
           };
         }
       }),
       page: params.current ?? 1,
       success: true,
-      total: count_result.count ?? 0,
+      total: result.count ?? 0,
     });
   }
   return Promise.resolve({

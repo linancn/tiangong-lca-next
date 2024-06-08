@@ -37,13 +37,13 @@ export function getLangList(langTexts: any) {
 export function classificationToString(classifications: any) {
   let classificationStr = '-';
   if (Array.isArray(classifications)) {
-    const filterList0 = classifications.filter((i) => i['@level'] === 0);
+    const filterList0 = classifications.filter((i) => i['@level'] === '0');
     if (filterList0.length > 0) {
       classificationStr = filterList0[0]['#text'] ?? '-';
-      const filterList1 = classifications.filter((i) => i['@level'] === 1);
+      const filterList1 = classifications.filter((i) => i['@level'] === '1');
       if (filterList1.length > 0) {
         classificationStr = classificationStr + ' > ' + filterList1[0]['#text'] ?? '-';
-        const filterList2 = classifications.filter((i) => i['@level'] === 2);
+        const filterList2 = classifications.filter((i) => i['@level'] === '2');
         if (filterList2.length > 0) {
           classificationStr = classificationStr + ' > ' + filterList2[0]['#text'] ?? '-';
         }
@@ -52,6 +52,7 @@ export function classificationToString(classifications: any) {
   } else {
     classificationStr = classifications['#text'] ?? '-';
   }
+  console.log('classificationStr', classificationStr);
   return classificationStr;
 }
 
