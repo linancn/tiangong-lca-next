@@ -39,6 +39,7 @@ export default [
   },
   {
     path: '/demo',
+    menu: false,
     name: 'Demo',
     icon: 'smile',
     component: './Demo',
@@ -56,6 +57,7 @@ export default [
   },
   {
     path: '/welcome',
+    menu: false,
     name: 'welcome',
     icon: 'smile',
     component: './Welcome',

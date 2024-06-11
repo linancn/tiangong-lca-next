@@ -1,106 +1,46 @@
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
 import { v4 } from 'uuid';
-import { classificationToString, getLangText } from '../general/util';
+import {
+  classificationToJson,
+  classificationToString,
+  getLangList,
+  getLangText,
+} from '../general/util';
+import { genContactJsonOrdered } from './util';
 
-export async function createContacts(data: any) {
+export async function createContact(data: any) {
   const newID = v4();
-  let common_shortName = {};
-  if (data?.['common:shortName'] !== undefined) {
-    if (data?.['common:shortName'].length === 1) {
-      common_shortName = data?.['common:shortName'][0];
-    } else if (data?.['common:shortName'].length > 1) {
-      common_shortName = data?.['common:shortName'];
-    }
-  }
-  let common_name = {};
-  if (data?.['common:name'] !== undefined) {
-    if (data?.['common:name'].length === 1) {
-      common_name = data?.['common:name'][0];
-    } else if (data?.['common:name'].length > 1) {
-      common_name = data?.['common:name'];
-    }
-  }
-  let common_class = {};
-  if (
-    data?.['common:class']?.['@level_0'] !== undefined &&
-    data?.['common:class']?.['@level_0'] !== null &&
-    data?.['common:class']?.['@level_0'].trim() !== ''
-  ) {
-    common_class = {
-      '@level': 0,
-      '#text': data?.['common:class']?.['@level_0'],
-    };
-    if (
-      data?.['common:class']?.['@level_1'] !== undefined &&
-      data?.['common:class']?.['@level_1'] !== null &&
-      data?.['common:class']?.['@level_1'].trim() !== ''
-    ) {
-      common_class = [
-        {
-          '@level': 0,
-          '#text': data?.['common:class']?.['@level_0'],
-        },
-        {
-          '@level': 1,
-          '#text': data?.['common:class']?.['@level_1'],
-        },
-      ];
-      if (
-        data?.['common:class']?.['@level_2'] !== undefined &&
-        data?.['common:class']?.['@level_2'] !== null &&
-        data?.['common:class']?.['@level_2'].trim() !== ''
-      ) {
-        common_class = [
-          {
-            '@level': 0,
-            '#text': data?.['common:class']?.['@level_0'],
-          },
-          {
-            '@level': 1,
-            '#text': data?.['common:class']?.['@level_1'],
-          },
-          {
-            '@level': 2,
-            '#text': data?.['common:class']?.['@level_2'],
-          },
-        ];
-      }
-    }
-  }
-  const newData = {
+  const oldData = {
     contactDataSet: {
       '@xmlns:common': 'http://lca.jrc.it/ILCD/Common',
       '@xmlns': 'http://lca.jrc.it/ILCD/Contact',
       '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
       '@version': '1.1',
       '@xsi:schemaLocation': 'http://lca.jrc.it/ILCD/Contact ../../schemas/ILCD_ContactDataSet.xsd',
-      contactInformation: {
-        dataSetInformation: {
-          'common:UUID': newID,
-          'common:shortName': common_shortName,
-          'common:name': common_name,
-          classificationInformation: {
-            'common:classification': {
-              'common:class': common_class,
-            },
-          },
-          email: data?.email,
-        },
-      },
-      administrativeInformation: {
-        publicationAndOwnership: {
-          'common:dataSetVersion': data?.['common:dataSetVersion'],
-        },
-      },
     },
   };
-
+  const newData = genContactJsonOrdered(newID, data, oldData);
   const result = await supabase
     .from('contacts')
     .insert([{ id: newID, json_ordered: newData }])
     .select();
   return result;
+}
+
+export async function updateContact(data: any) {
+  const result = await supabase.from('contacts').select('id, json').eq('id', data.id);
+  if (result.data && result.data.length === 1) {
+    const oldData = result.data[0].json;
+    const newData = genContactJsonOrdered(data.id, data, oldData);
+    const updateResult = await supabase
+      .from('contacts')
+      .update({ json_ordered: newData })
+      .eq('id', data.id)
+      .select();
+    return updateResult;
+  }
+  return null;
 }
 
 export async function deleteContact(id: string) {
@@ -120,54 +60,37 @@ export async function getContactTable(
   const sortBy = Object.keys(sort)[0] ?? 'created_at';
   const orderBy = sort[sortBy] ?? 'descend';
 
+  const selectStr = `
+    id,
+    json->contactDataSet->contactInformation->dataSetInformation->"common:shortName",
+    json->contactDataSet->contactInformation->dataSetInformation->"common:name",
+    json->contactDataSet->contactInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
+    json->contactDataSet->contactInformation->dataSetInformation->email,
+    created_at
+  `;
+
   let result: any = {};
-  let count_result: any = {};
   if (dataSource === 'tg') {
     result = await supabase
       .from('contacts')
-      .select(
-        `
-                id,
-                json->contactDataSet->contactInformation->dataSetInformation->"common:shortName",
-                json->contactDataSet->contactInformation->dataSetInformation->"common:name",
-                json->contactDataSet->contactInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
-                json->contactDataSet->contactInformation->dataSetInformation->email,
-                created_at
-            `,
-      )
+      .select(selectStr, { count: 'exact' })
       .order(sortBy, { ascending: orderBy === 'ascend' })
       .range(
         ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
         (params.current ?? 1) * (params.pageSize ?? 10) - 1,
       );
-
-    count_result = await supabase.from('contacts').select('id', { count: 'exact' });
   } else if (dataSource === 'my') {
     const session = await supabase.auth.getSession();
     if (session.data.session) {
       result = await supabase
         .from('contacts')
-        .select(
-          `
-                id,
-                json->contactDataSet->contactInformation->dataSetInformation->"common:shortName",
-                json->contactDataSet->contactInformation->dataSetInformation->"common:name",
-                json->contactDataSet->contactInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
-                json->contactDataSet->contactInformation->dataSetInformation->email,
-                created_at
-            `,
-        )
+        .select(selectStr, { count: 'exact' })
         .eq('user_id', session.data.session.user?.id)
         .order(sortBy, { ascending: orderBy === 'ascend' })
         .range(
           ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
           (params.current ?? 1) * (params.pageSize ?? 10) - 1,
         );
-
-      count_result = await supabase
-        .from('contacts')
-        .select('id', { count: 'exact' })
-        .eq('user_id', session.data.session.user?.id);
     }
   }
 
@@ -199,22 +122,49 @@ export async function getContactTable(
           console.error(e);
           return {
             id: i.id,
-            lang: '-',
-            shortName: '-',
-            name: '-',
-            classification: '-',
-            email: i.email ?? '-',
-            createdAt: new Date(i.created_at),
           };
         }
       }),
       page: params.current ?? 1,
       success: true,
-      total: count_result.count ?? 0,
+      total: result.count ?? 0,
     });
   }
   return Promise.resolve({
     data: [],
     success: false,
+  });
+}
+
+export async function getContactDetail(id: string) {
+  const result = await supabase.from('contacts').select('json, created_at').eq('id', id);
+  if (result.data && result.data.length > 0) {
+    const data = result.data[0];
+    return Promise.resolve({
+      data: {
+        id: id,
+        'common:shortName': getLangList(
+          data?.json?.contactDataSet?.contactInformation?.dataSetInformation?.['common:shortName'],
+        ),
+        'common:name': getLangList(
+          data?.json?.contactDataSet?.contactInformation?.dataSetInformation?.['common:name'],
+        ),
+        'common:class': classificationToJson(
+          data?.json?.contactDataSet?.contactInformation?.dataSetInformation
+            ?.classificationInformation?.['common:classification']?.['common:class'],
+        ),
+        email: data?.json?.contactDataSet?.contactInformation?.dataSetInformation?.email,
+        'common:dataSetVersion':
+          data?.json?.contactDataSet?.administrativeInformation?.publicationAndOwnership?.[
+            'common:dataSetVersion'
+          ],
+        createdAt: data?.created_at,
+      },
+      success: true,
+    });
+  }
+  return Promise.resolve({
+    data: {},
+    success: true,
   });
 }

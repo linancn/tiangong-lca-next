@@ -11,16 +11,10 @@ import { useRef } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 import ContactCreate from './Components/create';
 import ContactDelete from './Components/delete';
+import ContactEdit from './Components/edit';
+import ContactView from './Components/view';
 
-type QueryProps = {
-  location: {
-    query: {
-      datatype: string;
-    };
-  };
-};
-
-const TableList: FC<QueryProps> = () => {
+const TableList: FC = () => {
   const location = useLocation();
   let dataSource = '';
   if (location.pathname.includes('/mydata')) {
@@ -31,7 +25,7 @@ const TableList: FC<QueryProps> = () => {
   const { locale } = useIntl();
   const lang = getLang(locale);
   const actionRef = useRef<ActionType>();
-  const flowColumns: ProColumns<ContactTable>[] = [
+  const contactColumns: ProColumns<ContactTable>[] = [
     {
       title: <FormattedMessage id="contact.index" defaultMessage="Index" />,
       dataIndex: 'index',
@@ -75,13 +69,13 @@ const TableList: FC<QueryProps> = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              {/* <FlowView pkid={row.pkid} actionRef={actionRef} />
-          <FlowEdit
-            pkid={row.pkid}
-            buttonType={'icon'}
-            actionRef={actionRef}
-            setViewDrawerVisible={() => {}}
-          /> */}
+              <ContactView id={row.id} dataSource={dataSource} actionRef={actionRef} />
+              <ContactEdit
+                id={row.id}
+                buttonType={'icon'}
+                actionRef={actionRef}
+                setViewDrawerVisible={() => {}}
+              />
               <ContactDelete
                 id={row.id}
                 buttonType={'icon'}
@@ -91,30 +85,23 @@ const TableList: FC<QueryProps> = () => {
             </Space>,
           ];
         }
-        return [];
+        return [
+          <Space size={'small'} key={0}>
+            <ContactView id={row.id} dataSource={dataSource} actionRef={actionRef} />
+          </Space>,
+        ];
       },
     },
   ];
-  // useEffect(() => {
-  //   getProject(projectid).then((result) => setProjectName(result.name + ' - '));
-  // }, [projectid]);
   return (
-    <PageContainer
-    // header={{
-    //   title: (
-    //     <>
-    //       {projectName}
-    //       <FormattedMessage id="menu.flows" defaultMessage="Flows" />
-    //     </>
-    //   ),
-    // }}
-    >
+    <PageContainer>
       <ProTable<ContactTable, ListPagination>
         actionRef={actionRef}
         search={{
           defaultCollapsed: false,
         }}
         pagination={{
+          showSizeChanger: false,
           pageSize: 10,
         }}
         toolBarRender={() => {
@@ -132,7 +119,7 @@ const TableList: FC<QueryProps> = () => {
         ) => {
           return getContactTable(params, sort, lang, dataSource);
         }}
-        columns={flowColumns}
+        columns={contactColumns}
       />
     </PageContainer>
   );
