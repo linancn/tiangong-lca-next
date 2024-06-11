@@ -1,0 +1,268 @@
+{
+  "processDataSet": {
+    "@xmlns:common": "str",
+    "@xmlns": "str",
+    "@xmlns:xsi": "str",
+    "@version": "str",
+    "@locations": "str",
+    "@xsi:schemaLocation": "str",
+    "processInformation": {
+      "dataSetInformation": {
+        "common:UUID": "str",
+        "name": {
+          "baseName": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ]
+        },
+        "classificationInformation": {
+          "common:classification": {
+            "common:class": [
+              {
+                "@level": "str",
+                "#text": "str"
+              }
+            ]
+          }
+        },
+        "common:generalComment": [
+          {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        ]
+      },
+      "quantitativeReference": {
+        "@type": "str",
+        "referenceToReferenceFlow": "str",
+        "functionalUnitOrOther": {
+          "@xml:lang": "str",
+          "#text": "str"
+        }
+      },
+      "time": {
+        "common:referenceYear": "str",
+        "common:timeRepresentativenessDescription": [
+          {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        ],
+        "common:dataSetValidUntil": "str"
+      },
+      "geography": {
+        "locationOfOperationSupplyOrProduction": {
+          "@location": "str",
+          "descriptionOfRestrictions": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ]
+        }
+      },
+      "technology": {
+        "technologyDescriptionAndIncludedProcesses": [
+          {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        ],
+        "technologicalApplicability": [
+          {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        ],
+        "referenceToTechnologyFlowDiagrammOrPicture": {
+          "@type": "str",
+          "@refObjectId": "str",
+          "@uri": "str",
+          "common:shortDescription": {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        }
+      },
+      "mathematicalRelations": {
+        "modelDescription": [
+          {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        ]
+      }
+    },
+    "modellingAndValidation": {
+      "LCIMethodAndAllocation": {
+        "typeOfDataSet": "str",
+        "deviationsFromLCIMethodPrinciple": [
+          {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        ],
+        "deviationsFromLCIMethodApproaches": [
+          {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        ],
+        "deviationsFromModellingConstants": [
+          {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        ],
+        "LCIMethodPrinciple": "str",
+        "LCIMethodApproaches": "str"
+      },
+      "dataSourcesTreatmentAndRepresentativeness": {
+        "deviationsFromCutOffAndCompletenessPrinciples": [
+          {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        ],
+        "dataSelectionAndCombinationPrinciples": [
+          {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        ],
+        "deviationsFromSelectionAndCombinationPrinciples": [
+          {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        ],
+        "dataTreatmentAndExtrapolationsPrinciples": [
+          {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        ],
+        "deviationsFromTreatmentAndExtrapolationPrinciples": [
+          {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        ],
+        "referenceToDataSource": {
+          "@type": "str",
+          "@refObjectId": "str",
+          "@uri": "str",
+          "common:shortDescription": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ]
+        },
+        "useAdviceForDataSet": [
+          {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        ],
+        "samplingProcedure": [
+          {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        ]
+      },
+      "completeness": "NoneType",
+      "validation": {
+        "review": {
+          "@type": "str",
+          "common:reviewDetails": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ],
+          "common:referenceToNameOfReviewerAndInstitution": {
+            "@refObjectId": "str",
+            "@type": "str",
+            "@uri": "str",
+            "common:shortDescription": [
+              {
+                "@xml:lang": "str",
+                "#text": "str"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "administrativeInformation": {
+      "dataGenerator": {
+        "common:referenceToPersonOrEntityGeneratingTheDataSet": {
+          "@type": "str",
+          "@refObjectId": "str",
+          "@uri": "str",
+          "@version": "str",
+          "common:shortDescription": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ]
+        }
+      },
+      "dataEntryBy": {
+        "common:timeStamp": "str"
+      },
+      "publicationAndOwnership": {
+        "common:dateOfLastRevision": "str",
+        "common:dataSetVersion": "str",
+        "common:permanentDataSetURI": "str",
+        "common:referenceToOwnershipOfDataSet": {
+          "@refObjectId": "str",
+          "@type": "str",
+          "@uri": "str",
+          "common:shortDescription": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ]
+        },
+        "common:copyright": "str",
+        "common:licenseType": "str"
+      }
+    },
+    "exchanges": {
+      "exchange": [
+        {
+          "@dataSetInternalID": "str",
+          "referenceToFlowDataSet": {
+            "@type": "str",
+            "@refObjectId": "str",
+            "@uri": "str",
+            "common:shortDescription": {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          },
+          "exchangeDirection": "str",
+          "meanAmount": "str",
+          "resultingAmount": "str",
+          "dataDerivationTypeStatus": "str",
+          "generalComment": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ],
+          "minimumAmount": "str",
+          "maximumAmount": "str",
+          "uncertaintyDistributionType": "str"
+        }
+      ]
+    }
+  }
+}

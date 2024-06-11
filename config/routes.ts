@@ -22,15 +22,24 @@ export default [
         path: '/mydata/contacts',
         component: './Contacts',
       },
+    ],
+  },
+  {
+    path: '/tgdata',
+    name: 'TianGong Data',
+    icon: 'table',
+    routes: [
+      { path: '/tgdata', redirect: '/tgdata/contacts' },
       {
-        name: 'Contacts Add',
-        path: '/mydata/contacts/add',
-        component: './Contacts/add',
+        name: 'Contacts',
+        path: '/tgdata/contacts',
+        component: './Contacts',
       },
     ],
   },
   {
     path: '/demo',
+    menu: false,
     name: 'Demo',
     icon: 'smile',
     component: './Demo',
@@ -48,6 +57,7 @@ export default [
   },
   {
     path: '/welcome',
+    menu: false,
     name: 'welcome',
     icon: 'smile',
     component: './Welcome',
