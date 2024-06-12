@@ -5,11 +5,12 @@ import { ProcessTable } from '@/services/processes/data';
 import { PageContainer } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
-import { Tooltip } from 'antd';
+import { Space, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useRef } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 import ProcessCreate from './Components/create';
+import ProcessView from './Components/view';
 
 const TableList: FC = () => {
   const location = useLocation();
@@ -68,32 +69,32 @@ const TableList: FC = () => {
       title: <FormattedMessage id="options.option" defaultMessage="Option" />,
       dataIndex: 'option',
       search: false,
-      // render: (_, row) => {
-      //   if (dataSource === 'my') {
-      //     return [
-      //       // <Space size={'small'} key={0}>
-      //       //   {/* <ContactView id={row.id} actionRef={actionRef} /> */}
-      //       //   <ContactEdit
-      //       //     id={row.id}
-      //       //     buttonType={'icon'}
-      //       //     actionRef={actionRef}
-      //       //     setViewDrawerVisible={() => {}}
-      //       //   />
-      //       //   <ContactDelete
-      //       //     id={row.id}
-      //       //     buttonType={'icon'}
-      //       //     actionRef={actionRef}
-      //       //     setViewDrawerVisible={() => {}}
-      //       //   />
-      //       // </Space>,
-      //     ];
-      //   }
-      //   return [
-      //     <Space size={'small'} key={0}>
-      //       {/* <ContactView id={row.id} actionRef={actionRef} /> */}
-      //     </Space>,
-      //   ];
-      // },
+      render: (_, row) => {
+        if (dataSource === 'my') {
+          return [
+            <Space size={'small'} key={0}>
+              <ProcessView id={row.id} dataSource={dataSource} actionRef={actionRef} />
+              {/* //       //   <ContactEdit
+            //       //     id={row.id}
+            //       //     buttonType={'icon'}
+            //       //     actionRef={actionRef}
+            //       //     setViewDrawerVisible={() => {}}
+            //       //   />
+            //       //   <ContactDelete
+            //       //     id={row.id}
+            //       //     buttonType={'icon'}
+            //       //     actionRef={actionRef}
+            //       //     setViewDrawerVisible={() => {}}
+            //       //   /> */}
+            </Space>,
+          ];
+        }
+        return [
+          <Space size={'small'} key={0}>
+            <ProcessView id={row.id} dataSource={dataSource} actionRef={actionRef} />
+          </Space>,
+        ];
+      },
     },
   ];
   return (

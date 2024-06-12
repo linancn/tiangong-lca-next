@@ -10,7 +10,7 @@ type Props = {
   labelName: string;
 };
 
-const FromItemLangText: FC<Props> = ({ keyName, labelName }) => {
+const LangTextItemFrom: FC<Props> = ({ keyName, labelName }) => {
   return (
     <Form.Item>
       <Form.List name={keyName}>
@@ -53,4 +53,4 @@ const FromItemLangText: FC<Props> = ({ keyName, labelName }) => {
   );
 };
 
-export default FromItemLangText;
+export default LangTextItemFrom;
