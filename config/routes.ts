@@ -16,11 +16,21 @@ export default [
     name: 'My Data',
     icon: 'table',
     routes: [
-      { path: '/mydata', redirect: '/mydata/contacts' },
+      { path: '/mydata', redirect: '/mydata/processes' },
+      {
+        name: 'Processes',
+        path: '/mydata/processes',
+        component: './Processes',
+      },
       {
         name: 'Contacts',
         path: '/mydata/contacts',
         component: './Contacts',
+      },
+      {
+        name: 'Sources',
+        path: '/mydata/sources',
+        component: './Sources',
       },
     ],
   },
@@ -29,7 +39,12 @@ export default [
     name: 'TianGong Data',
     icon: 'table',
     routes: [
-      { path: '/tgdata', redirect: '/tgdata/contacts' },
+      { path: '/tgdata', redirect: '/tgdata/processes' },
+      {
+        name: 'Processes',
+        path: '/tgdata/processes',
+        component: './Processes',
+      },
       {
         name: 'Contacts',
         path: '/tgdata/contacts',
