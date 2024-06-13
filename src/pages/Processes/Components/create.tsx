@@ -1,7 +1,10 @@
-import FromItemLangText from '@/components/FromItemLangText';
+import LangTextItemFrom from '@/components/LangTextItem/from';
+import { ListPagination } from '@/services/general/data';
 import { createProcess } from '@/services/processes/api';
+import { ProcessExchangeTable } from '@/services/processes/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
+import { ProColumns, ProTable } from '@ant-design/pro-components';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import ProForm from '@ant-design/pro-form';
 import type { ActionType } from '@ant-design/pro-table';
@@ -20,6 +23,7 @@ import {
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
+import ProcessExchangeCreate from './Exchange/create';
 
 type Props = {
   actionRef: React.MutableRefObject<ActionType | undefined>;
@@ -34,6 +38,90 @@ const ProcessCreate: FC<Props> = ({ actionRef }) => {
     actionRef.current?.reload();
   }, [actionRef]);
 
+  const processExchangeColumns: ProColumns<ProcessExchangeTable>[] = [
+    {
+      title: <FormattedMessage id="processExchange.index" defaultMessage="Index" />,
+      dataIndex: 'index',
+      valueType: 'index',
+      search: false,
+    },
+    {
+      title: (
+        <FormattedMessage
+          id="processExchange.exchangeDirection"
+          defaultMessage="Exchange Direction"
+        />
+      ),
+      dataIndex: 'exchangeDirection',
+      sorter: true,
+      search: false,
+    },
+    {
+      title: (
+        <FormattedMessage
+          id="processExchange.referenceToFlowDataSet"
+          defaultMessage="Reference To Flow DataSet"
+        />
+      ),
+      dataIndex: 'referenceToFlowDataSet',
+      sorter: false,
+      search: false,
+    },
+    {
+      title: <FormattedMessage id="processExchange.meanAmount" defaultMessage="Mean Amount" />,
+      dataIndex: 'meanAmount',
+      sorter: false,
+      search: false,
+    },
+    {
+      title: (
+        <FormattedMessage id="processExchange.resultingAmount" defaultMessage="Resulting Amount" />
+      ),
+      dataIndex: 'resultingAmount',
+      sorter: false,
+      search: false,
+    },
+    {
+      title: (
+        <FormattedMessage id="processExchange.generalComment" defaultMessage="General Comment" />
+      ),
+      dataIndex: 'generalComment',
+      sorter: false,
+      search: false,
+    },
+    {
+      title: <FormattedMessage id="options.option" defaultMessage="Option" />,
+      dataIndex: 'option',
+      search: false,
+      // render: (_, row) => {
+      //   if (dataSource === 'my') {
+      //     return [
+      //       // <Space size={'small'} key={0}>
+      //       //   {/* <ContactView id={row.id} actionRef={actionRef} /> */}
+      //       //   <ContactEdit
+      //       //     id={row.id}
+      //       //     buttonType={'icon'}
+      //       //     actionRef={actionRef}
+      //       //     setViewDrawerVisible={() => {}}
+      //       //   />
+      //       //   <ContactDelete
+      //       //     id={row.id}
+      //       //     buttonType={'icon'}
+      //       //     actionRef={actionRef}
+      //       //     setViewDrawerVisible={() => {}}
+      //       //   />
+      //       // </Space>,
+      //     ];
+      //   }
+      //   return [
+      //     <Space size={'small'} key={0}>
+      //       {/* <ContactView id={row.id} actionRef={actionRef} /> */}
+      //     </Space>,
+      //   ];
+      // },
+    },
+  ];
+
   const tabList = [
     { key: 'processInformation', tab: 'Process Information' },
     { key: 'modellingAndValidation', tab: 'Modelling And Validation' },
@@ -45,11 +133,11 @@ const ProcessCreate: FC<Props> = ({ actionRef }) => {
     processInformation: (
       <Space direction="vertical" style={{ width: '100%' }}>
         <Card size="small" title={'Base Name'}>
-          <FromItemLangText keyName="baseName" labelName="Base Name" />
+          <LangTextItemFrom keyName="baseName" labelName="Base Name" />
         </Card>
 
         <Card size="small" title={'General Comment'}>
-          <FromItemLangText keyName="common:generalComment" labelName="General Comment" />
+          <LangTextItemFrom keyName="common:generalComment" labelName="General Comment" />
         </Card>
 
         <Card size="small" title={'Classification'}>
@@ -79,7 +167,7 @@ const ProcessCreate: FC<Props> = ({ actionRef }) => {
           <Divider orientationMargin="0" orientation="left" plain>
             Functional Unit Or Other
           </Divider>
-          <FromItemLangText
+          <LangTextItemFrom
             keyName={['quantitativeReference', 'functionalUnitOrOther']}
             labelName="Functional Unit Or Other"
           />
@@ -92,7 +180,7 @@ const ProcessCreate: FC<Props> = ({ actionRef }) => {
           <Divider orientationMargin="0" orientation="left" plain>
             Time Representativeness Description
           </Divider>
-          <FromItemLangText
+          <LangTextItemFrom
             keyName={['time', 'common:timeRepresentativenessDescription']}
             labelName="Time Representativeness Description"
           />
@@ -105,7 +193,7 @@ const ProcessCreate: FC<Props> = ({ actionRef }) => {
           <Divider orientationMargin="0" orientation="left" plain>
             Description Of Restrictions
           </Divider>
-          <FromItemLangText
+          <LangTextItemFrom
             keyName={['locationOfOperationSupplyOrProduction', 'descriptionOfRestrictions']}
             labelName="Description Of Restrictions"
           />
@@ -115,14 +203,14 @@ const ProcessCreate: FC<Props> = ({ actionRef }) => {
           <Divider orientationMargin="0" orientation="left" plain>
             Technology Description And Included Processes
           </Divider>
-          <FromItemLangText
+          <LangTextItemFrom
             keyName={['technology', 'technologyDescriptionAndIncludedProcesses']}
             labelName="Technology Description And Included Processes"
           />
           <Divider orientationMargin="0" orientation="left" plain>
             Technological Applicability
           </Divider>
-          <FromItemLangText
+          <LangTextItemFrom
             keyName={['technology', 'technologicalApplicability']}
             labelName="Technological Applicability"
           />
@@ -148,7 +236,7 @@ const ProcessCreate: FC<Props> = ({ actionRef }) => {
             <Divider orientationMargin="0" orientation="left" plain>
               Short Description
             </Divider>
-            <FromItemLangText
+            <LangTextItemFrom
               keyName={[
                 'technology',
                 'referenceToTechnologyFlowDiagrammOrPicture',
@@ -160,7 +248,7 @@ const ProcessCreate: FC<Props> = ({ actionRef }) => {
         </Card>
 
         <Card size="small" title={'Mathematical Relations: Model Description'}>
-          <FromItemLangText
+          <LangTextItemFrom
             keyName={['mathematicalRelations', 'modelDescription']}
             labelName="Model Description"
           />
@@ -182,7 +270,7 @@ const ProcessCreate: FC<Props> = ({ actionRef }) => {
           <Divider orientationMargin="0" orientation="left" plain>
             Deviations From LCI Method Principle
           </Divider>
-          <FromItemLangText
+          <LangTextItemFrom
             keyName={['LCIMethodAndAllocation', 'deviationsFromLCIMethodPrinciple']}
             labelName="Deviations From LCI Method Principle"
           />
@@ -195,14 +283,14 @@ const ProcessCreate: FC<Props> = ({ actionRef }) => {
           <Divider orientationMargin="0" orientation="left" plain>
             Deviations From LCI Method Approaches
           </Divider>
-          <FromItemLangText
+          <LangTextItemFrom
             keyName={['LCIMethodAndAllocation', 'deviationsFromLCIMethodApproaches']}
             labelName="Deviations From LCI Method Approaches"
           />
           <Divider orientationMargin="0" orientation="left" plain>
             Deviations From Modelling Constants
           </Divider>
-          <FromItemLangText
+          <LangTextItemFrom
             keyName={['LCIMethodAndAllocation', 'deviationsFromModellingConstants']}
             labelName="Deviations From Modelling Constants"
           />
@@ -212,7 +300,7 @@ const ProcessCreate: FC<Props> = ({ actionRef }) => {
           <Divider orientationMargin="0" orientation="left" plain>
             Deviations From Cut Off And Completeness Principles
           </Divider>
-          <FromItemLangText
+          <LangTextItemFrom
             keyName={[
               'dataSourcesTreatmentAndRepresentativeness',
               'deviationsFromCutOffAndCompletenessPrinciples',
@@ -222,7 +310,7 @@ const ProcessCreate: FC<Props> = ({ actionRef }) => {
           <Divider orientationMargin="0" orientation="left" plain>
             Data Selection And Combination Principles
           </Divider>
-          <FromItemLangText
+          <LangTextItemFrom
             keyName={[
               'dataSourcesTreatmentAndRepresentativeness',
               'dataSelectionAndCombinationPrinciples',
@@ -232,7 +320,7 @@ const ProcessCreate: FC<Props> = ({ actionRef }) => {
           <Divider orientationMargin="0" orientation="left" plain>
             Deviations From Selection And Combination Principles
           </Divider>
-          <FromItemLangText
+          <LangTextItemFrom
             keyName={[
               'dataSourcesTreatmentAndRepresentativeness',
               'deviationsFromSelectionAndCombinationPrinciples',
@@ -242,7 +330,7 @@ const ProcessCreate: FC<Props> = ({ actionRef }) => {
           <Divider orientationMargin="0" orientation="left" plain>
             Data Treatment And Extrapolations Principles
           </Divider>
-          <FromItemLangText
+          <LangTextItemFrom
             keyName={[
               'dataSourcesTreatmentAndRepresentativeness',
               'dataTreatmentAndExtrapolationsPrinciples',
@@ -252,7 +340,7 @@ const ProcessCreate: FC<Props> = ({ actionRef }) => {
           <Divider orientationMargin="0" orientation="left" plain>
             Deviations From Treatment And Extrapolation Principles
           </Divider>
-          <FromItemLangText
+          <LangTextItemFrom
             keyName={[
               'dataSourcesTreatmentAndRepresentativeness',
               'deviationsFromTreatmentAndExtrapolationPrinciples',
@@ -288,7 +376,7 @@ const ProcessCreate: FC<Props> = ({ actionRef }) => {
             <Divider orientationMargin="0" orientation="left" plain>
               Short Description
             </Divider>
-            <FromItemLangText
+            <LangTextItemFrom
               keyName={[
                 'dataSourcesTreatmentAndRepresentativeness',
                 'referenceToDataSource',
@@ -301,7 +389,7 @@ const ProcessCreate: FC<Props> = ({ actionRef }) => {
           <Divider orientationMargin="0" orientation="left" plain>
             Use Advice For DataSet
           </Divider>
-          <FromItemLangText
+          <LangTextItemFrom
             keyName={['dataSourcesTreatmentAndRepresentativeness', 'useAdviceForDataSet']}
             labelName="Use Advice For DataSet"
           />
@@ -316,7 +404,7 @@ const ProcessCreate: FC<Props> = ({ actionRef }) => {
           <Divider orientationMargin="0" orientation="left" plain>
             Review Details
           </Divider>
-          <FromItemLangText
+          <LangTextItemFrom
             keyName={['validation', 'review', 'common:reviewDetails']}
             labelName="Review Details"
           />
@@ -358,7 +446,7 @@ const ProcessCreate: FC<Props> = ({ actionRef }) => {
             <Divider orientationMargin="0" orientation="left" plain>
               Short Description
             </Divider>
-            <FromItemLangText
+            <LangTextItemFrom
               keyName={[
                 'validation',
                 'review',
@@ -406,7 +494,7 @@ const ProcessCreate: FC<Props> = ({ actionRef }) => {
           <Divider orientationMargin="0" orientation="left" plain>
             Short Description
           </Divider>
-          <FromItemLangText
+          <LangTextItemFrom
             keyName={[
               'dataGenerator',
               'common:referenceToPersonOrEntityGeneratingTheDataSet',
@@ -468,7 +556,7 @@ const ProcessCreate: FC<Props> = ({ actionRef }) => {
             <Divider orientationMargin="0" orientation="left" plain>
               Short Description
             </Divider>
-            <FromItemLangText
+            <LangTextItemFrom
               keyName={[
                 'publicationAndOwnership',
                 'common:referenceToOwnershipOfDataSet',
@@ -489,9 +577,29 @@ const ProcessCreate: FC<Props> = ({ actionRef }) => {
       </Space>
     ),
     exchanges: (
-      <Space direction="vertical" style={{ width: '100%' }}>
-        <Card size="small" title={'Exchanges'}></Card>
-      </Space>
+      <ProTable<ProcessExchangeTable, ListPagination>
+        actionRef={actionRef}
+        search={{
+          defaultCollapsed: false,
+        }}
+        pagination={{
+          showSizeChanger: false,
+          pageSize: 10,
+        }}
+        toolBarRender={() => {
+          return [<ProcessExchangeCreate key={0} actionRef={actionRef} />];
+        }}
+        // request={async (
+        //   params: {
+        //     pageSize: number;
+        //     current: number;
+        //   },
+        //   sort,
+        // ) => {
+        //   return getProcessTable(params, sort, lang, dataSource);
+        // }}
+        columns={processExchangeColumns}
+      />
     ),
   };
 
@@ -517,7 +625,7 @@ const ProcessCreate: FC<Props> = ({ actionRef }) => {
         />
       </Tooltip>
       <Drawer
-        title={<FormattedMessage id="options.create" defaultMessage="Create" />}
+        title={<FormattedMessage id="processes.create" defaultMessage="Process Create" />}
         width="90%"
         closable={false}
         extra={

@@ -8,3 +8,13 @@ export type ProcessTable = {
   location: string;
   createdAt: Date;
 };
+
+export type ProcessExchangeTable = {
+  dataSetInternalID: string;
+  referenceToFlowDataSet: string;
+  exchangeDirection: string;
+  meanAmount: string;
+  resultingAmount: string;
+  dataDerivationTypeStatus: string;
+  generalComment: string;
+};
