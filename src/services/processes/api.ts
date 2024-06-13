@@ -113,3 +113,21 @@ export async function getProcessTable(
     success: false,
   });
 }
+
+export async function getProcessDetail(id: string) {
+  const result = await supabase.from('processes').select('json, created_at').eq('id', id);
+  if (result.data && result.data.length > 0) {
+    const data = result.data[0];
+    return Promise.resolve({
+      data: {
+        json: data.json,
+        createdAt: data?.created_at,
+      },
+      success: true,
+    });
+  }
+  return Promise.resolve({
+    data: {},
+    success: true,
+  });
+}
