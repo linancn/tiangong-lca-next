@@ -19,8 +19,12 @@ const LangTextItemDescription: FC<Props> = ({ data }) => {
   const items = getLangList(data);
   return (
     <Descriptions bordered size={'small'} column={1}>
-      {items.map((name: any, index: number) => (
-        <Descriptions.Item key={index} label={name['@xml:lang']} labelStyle={{ width: '100px' }}>
+      {items?.map((name: any, index: number) => (
+        <Descriptions.Item
+          key={index}
+          label={name['@xml:lang'] ?? '-'}
+          labelStyle={{ width: '100px' }}
+        >
           {name['#text'] ?? '-'}
         </Descriptions.Item>
       ))}
