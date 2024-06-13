@@ -1,9 +1,12 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
+import SourceDescription from '@/components/ReferenceData/description';
+import { ListPagination } from '@/services/general/data';
 import { getProcessDetail } from '@/services/processes/api';
+import { ProcessExchangeTable } from '@/services/processes/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
-import { ActionType } from '@ant-design/pro-components';
+import { ActionType, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useEffect, useState } from 'react';
@@ -38,6 +41,64 @@ const ProcessView: FC<Props> = ({ id, dataSource }) => {
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
   };
+
+  const processExchangeColumns: ProColumns<ProcessExchangeTable>[] = [
+    {
+      title: <FormattedMessage id="processExchange.index" defaultMessage="Index" />,
+      dataIndex: 'index',
+      valueType: 'index',
+      search: false,
+    },
+    {
+      title: (
+        <FormattedMessage
+          id="processExchange.exchangeDirection"
+          defaultMessage="Exchange Direction"
+        />
+      ),
+      dataIndex: 'exchangeDirection',
+      sorter: true,
+      search: false,
+    },
+    {
+      title: (
+        <FormattedMessage
+          id="processExchange.referenceToFlowDataSet"
+          defaultMessage="Reference To Flow DataSet"
+        />
+      ),
+      dataIndex: 'referenceToFlowDataSet',
+      sorter: false,
+      search: false,
+    },
+    {
+      title: <FormattedMessage id="processExchange.meanAmount" defaultMessage="Mean Amount" />,
+      dataIndex: 'meanAmount',
+      sorter: false,
+      search: false,
+    },
+    {
+      title: (
+        <FormattedMessage id="processExchange.resultingAmount" defaultMessage="Resulting Amount" />
+      ),
+      dataIndex: 'resultingAmount',
+      sorter: false,
+      search: false,
+    },
+    {
+      title: (
+        <FormattedMessage id="processExchange.generalComment" defaultMessage="General Comment" />
+      ),
+      dataIndex: 'generalComment',
+      sorter: false,
+      search: false,
+    },
+    {
+      title: <FormattedMessage id="options.option" defaultMessage="Option" />,
+      dataIndex: 'option',
+      search: false,
+    },
+  ];
 
   const onView = () => {
     setDrawerVisible(true);
@@ -177,38 +238,13 @@ const ProcessView: FC<Props> = ({ id, dataSource }) => {
                 }
               />
               <br />
-              <Card size="small" title={'Reference To Technology Flow Diagramm Or Picture'}>
-                <Descriptions bordered size={'small'} column={1}>
-                  <Descriptions.Item key={0} label="Type" labelStyle={{ width: '100px' }}>
-                    {result.data.json.processDataSet.processInformation.technology
-                      .referenceToTechnologyFlowDiagrammOrPicture['@type'] ?? '-'}
-                  </Descriptions.Item>
-                </Descriptions>
-                <br />
-                <Descriptions bordered size={'small'} column={1}>
-                  <Descriptions.Item key={0} label="Ref Object Id" labelStyle={{ width: '120px' }}>
-                    {result.data.json.processDataSet.processInformation.technology
-                      .referenceToTechnologyFlowDiagrammOrPicture['@refObjectId'] ?? '-'}
-                  </Descriptions.Item>
-                </Descriptions>
-                <br />
-                <Descriptions bordered size={'small'} column={1}>
-                  <Descriptions.Item key={0} label="URI" labelStyle={{ width: '100px' }}>
-                    {result.data.json.processDataSet.processInformation.technology
-                      .referenceToTechnologyFlowDiagrammOrPicture['@uri'] ?? '-'}
-                  </Descriptions.Item>
-                </Descriptions>
-
-                <Divider orientationMargin="0" orientation="left" plain>
-                  Short Description
-                </Divider>
-                <LangTextItemDescription
-                  data={
-                    result.data.json.processDataSet.processInformation.technology
-                      .referenceToTechnologyFlowDiagrammOrPicture['common:shortDescription']
-                  }
-                />
-              </Card>
+              <SourceDescription
+                title={'Reference To Technology Flow Diagramm Or Picture'}
+                data={
+                  result.data.json.processDataSet.processInformation.technology
+                    .referenceToTechnologyFlowDiagrammOrPicture
+                }
+              />
             </Card>
             <Divider orientationMargin="0" orientation="left" plain>
               Mathematical Relations: Model Description
@@ -221,9 +257,266 @@ const ProcessView: FC<Props> = ({ id, dataSource }) => {
             />
           </>
         ),
-        modellingAndValidation: <></>,
-        administrativeInformation: <></>,
-        exchanges: <></>,
+        modellingAndValidation: (
+          <>
+            <Card size="small" title={'LCI Method And Allocation'}>
+              <Descriptions bordered size={'small'} column={1}>
+                <Descriptions.Item key={0} label="Type Of Data Set" labelStyle={{ width: '220px' }}>
+                  {result.data.json?.processDataSet?.modellingAndValidation?.LCIMethodAndAllocation
+                    ?.typeOfDataSet ?? '-'}
+                </Descriptions.Item>
+              </Descriptions>
+              <br />
+              <Descriptions bordered size={'small'} column={1}>
+                <Descriptions.Item
+                  key={0}
+                  label="LCI Method Principle"
+                  labelStyle={{ width: '220px' }}
+                >
+                  {result.data.json?.processDataSet?.modellingAndValidation?.LCIMethodAndAllocation
+                    ?.LCIMethodPrinciple ?? '-'}
+                </Descriptions.Item>
+              </Descriptions>
+              <Divider orientationMargin="0" orientation="left" plain>
+                Deviations From LCI Method Principle
+              </Divider>
+              <LangTextItemDescription
+                data={
+                  result.data.json?.processDataSet?.modellingAndValidation?.LCIMethodAndAllocation
+                    ?.deviationsFromLCIMethodPrinciple
+                }
+              />
+              <br />
+              <Descriptions bordered size={'small'} column={1}>
+                <Descriptions.Item
+                  key={0}
+                  label="LCI Method Approaches"
+                  labelStyle={{ width: '220px' }}
+                >
+                  {result.data.json.processDataSet.modellingAndValidation.LCIMethodAndAllocation
+                    .LCIMethodApproaches ?? '-'}
+                </Descriptions.Item>
+              </Descriptions>
+
+              <Divider orientationMargin="0" orientation="left" plain>
+                Deviations From LCI Method Approaches
+              </Divider>
+              <LangTextItemDescription
+                data={
+                  result.data.json.processDataSet.modellingAndValidation.LCIMethodAndAllocation
+                    .deviationsFromLCIMethodApproaches
+                }
+              />
+              <Divider orientationMargin="0" orientation="left" plain>
+                Deviations From Modelling Constants
+              </Divider>
+              <LangTextItemDescription
+                data={
+                  result.data.json.processDataSet.modellingAndValidation.LCIMethodAndAllocation
+                    .deviationsFromModellingConstants
+                }
+              />
+            </Card>
+            <br />
+            <Card size="small" title={'Data Sources Treatment And Representativeness'}>
+              <Divider orientationMargin="0" orientation="left" plain>
+                Deviations From Cut Off And Completeness Principles
+              </Divider>
+              <LangTextItemDescription
+                data={
+                  result.data.json.processDataSet.modellingAndValidation
+                    .dataSourcesTreatmentAndRepresentativeness
+                    .deviationsFromCutOffAndCompletenessPrinciples
+                }
+              />
+              <Divider orientationMargin="0" orientation="left" plain>
+                Data Selection And Combination Principles
+              </Divider>
+              <LangTextItemDescription
+                data={
+                  result.data.json.processDataSet.modellingAndValidation
+                    .dataSourcesTreatmentAndRepresentativeness.dataSelectionAndCombinationPrinciples
+                }
+              />
+              <Divider orientationMargin="0" orientation="left" plain>
+                Deviations From Selection And Combination Principles
+              </Divider>
+              <LangTextItemDescription
+                data={
+                  result.data.json.processDataSet.modellingAndValidation
+                    .dataSourcesTreatmentAndRepresentativeness
+                    .deviationsFromSelectionAndCombinationPrinciples
+                }
+              />
+              <Divider orientationMargin="0" orientation="left" plain>
+                Data Treatment And Extrapolations Principles
+              </Divider>
+              <LangTextItemDescription
+                data={
+                  result.data.json.processDataSet.modellingAndValidation
+                    .dataSourcesTreatmentAndRepresentativeness
+                    .dataTreatmentAndExtrapolationsPrinciples
+                }
+              />
+              <Divider orientationMargin="0" orientation="left" plain>
+                Deviations From Treatment And Extrapolation Principles
+              </Divider>
+              <LangTextItemDescription
+                data={
+                  result.data.json?.processDataSet.modellingAndValidation
+                    ?.dataSourcesTreatmentAndRepresentativeness
+                    ?.deviationsFromTreatmentAndExtrapolationPrinciples
+                }
+              />
+              <br />
+              <SourceDescription
+                title={'Reference To Data Source'}
+                data={
+                  result.data.json?.processDataSet?.modellingAndValidation
+                    ?.dataSourcesTreatmentAndRepresentativeness?.referenceToDataSource
+                }
+              />
+
+              <Divider orientationMargin="0" orientation="left" plain>
+                Use Advice For DataSet
+              </Divider>
+              <LangTextItemDescription
+                data={
+                  result.data.json?.processDataSet?.modellingAndValidation
+                    ?.dataSourcesTreatmentAndRepresentativeness?.useAdviceForDataSet
+                }
+              />
+            </Card>
+            <br />
+            <Descriptions bordered size={'small'} column={1}>
+              <Descriptions.Item key={0} label="Completeness" labelStyle={{ width: '100px' }}>
+                {result.data.json?.processDataSet?.modellingAndValidation?.completeness ?? '-'}
+              </Descriptions.Item>
+            </Descriptions>
+            <br />
+            <Card size="small" title={'Validation: Review'}>
+              <Descriptions bordered size={'small'} column={1}>
+                <Descriptions.Item key={0} label="Type" labelStyle={{ width: '100px' }}>
+                  {result.data.json?.processDataSet?.modellingAndValidation?.validation?.review?.[
+                    '@type'
+                  ] ?? '-'}
+                </Descriptions.Item>
+              </Descriptions>
+              <br />
+              <Divider orientationMargin="0" orientation="left" plain>
+                Review Details
+              </Divider>
+              <LangTextItemDescription
+                data={
+                  result.data.json?.processDataSet?.modellingAndValidation?.validation?.review?.[
+                    'common:reviewDetails'
+                  ]
+                }
+              />
+              <br />
+              <SourceDescription
+                title={'Reference To Name Of Reviewer And Institution'}
+                data={
+                  result.data.json?.processDataSet?.modellingAndValidation?.validation?.review?.[
+                    'common:referenceToNameOfReviewerAndInstitution'
+                  ]
+                }
+              />
+            </Card>
+          </>
+        ),
+        administrativeInformation: (
+          <>
+            <SourceDescription
+              title={'Data Generator: Rreference To Person Or Entity Generating The Data Set'}
+              data={
+                result.data.json?.processDataSet?.administrativeInformation?.dataGenerator?.[
+                  'common:referenceToPersonOrEntityGeneratingTheDataSet'
+                ]
+              }
+            />
+            <br />
+            <Descriptions bordered size={'small'} column={1}>
+              <Descriptions.Item
+                key={0}
+                label="Data Entry By: Time Stamp"
+                labelStyle={{ width: '220px' }}
+              >
+                {result.data.json?.processDataSet?.administrativeInformation?.dataEntryBy?.[
+                  'common:timeStamp'
+                ] ?? '-'}
+              </Descriptions.Item>
+            </Descriptions>
+            <br />
+            <Card size="small" title={'Publication And Ownership'}>
+              <Descriptions bordered size={'small'} column={1}>
+                <Descriptions.Item
+                  key={0}
+                  label="Date Of Last Revision"
+                  labelStyle={{ width: '180px' }}
+                >
+                  {result.data.json?.processDataSet?.administrativeInformation
+                    ?.publicationAndOwnership?.['common:dateOfLastRevision'] ?? '-'}
+                </Descriptions.Item>
+              </Descriptions>
+              <br />
+              <Descriptions bordered size={'small'} column={1}>
+                <Descriptions.Item key={0} label="Data Set Version" labelStyle={{ width: '180px' }}>
+                  {result.data.json?.processDataSet?.administrativeInformation
+                    ?.publicationAndOwnership?.['common:dataSetVersion'] ?? '-'}
+                </Descriptions.Item>
+              </Descriptions>
+              <br />
+              <Descriptions bordered size={'small'} column={1}>
+                <Descriptions.Item
+                  key={0}
+                  label="Permanent Data Set URI"
+                  labelStyle={{ width: '180px' }}
+                >
+                  {result.data.json?.processDataSet?.administrativeInformation
+                    ?.publicationAndOwnership?.['common:permanentDataSetURI'] ?? '-'}
+                </Descriptions.Item>
+              </Descriptions>
+              <br />
+              <SourceDescription
+                title={'Reference To Ownership Of Data Set'}
+                data={
+                  result.data.json?.processDataSet?.administrativeInformation
+                    ?.publicationAndOwnership?.['common:referenceToOwnershipOfDataSet']
+                }
+              />
+              <br />
+              <Descriptions bordered size={'small'} column={1}>
+                <Descriptions.Item key={0} label="Copyright" labelStyle={{ width: '180px' }}>
+                  {result.data.json?.processDataSet?.administrativeInformation
+                    ?.publicationAndOwnership?.['common:copyright'] ?? '-'}
+                </Descriptions.Item>
+              </Descriptions>
+              <br />
+              <Descriptions bordered size={'small'} column={1}>
+                <Descriptions.Item key={0} label="License Type" labelStyle={{ width: '180px' }}>
+                  {result.data.json?.processDataSet?.administrativeInformation
+                    ?.publicationAndOwnership?.['common:licenseType'] ?? '-'}
+                </Descriptions.Item>
+              </Descriptions>
+            </Card>
+          </>
+        ),
+        exchanges: (
+          <>
+            <ProTable<ProcessExchangeTable, ListPagination>
+              // actionRef={actionRef}
+              search={{
+                defaultCollapsed: false,
+              }}
+              pagination={{
+                showSizeChanger: false,
+                pageSize: 10,
+              }}
+              columns={processExchangeColumns}
+            />
+          </>
+        ),
       });
     });
     if (dataSource === 'my') {

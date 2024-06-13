@@ -347,10 +347,7 @@ const ProcessCreate: FC<Props> = ({ actionRef }) => {
             ]}
             labelName="Deviations From Treatment And Extrapolation Principles"
           />
-          <Divider orientationMargin="0" orientation="left" plain>
-            Reference To DataSource
-          </Divider>
-          <Card size="small" title={'Reference To Technology Flow Diagramm Or Picture'}>
+          <Card size="small" title={'Reference To Data Source'}>
             <Form.Item
               label="Type"
               name={['dataSourcesTreatmentAndRepresentativeness', 'referenceToDataSource', '@type']}
@@ -409,7 +406,7 @@ const ProcessCreate: FC<Props> = ({ actionRef }) => {
             labelName="Review Details"
           />
 
-          <Card size="small" title={'Reference To Technology Flow Diagramm Or Picture'}>
+          <Card size="small" title={'Reference To Name Of Reviewer And Institution'}>
             <Form.Item
               label="Type"
               name={[
