@@ -61,6 +61,11 @@ export default [
         component: './Contacts',
       },
       {
+        name: 'Sources',
+        path: '/tgdata/sources',
+        component: './Sources',
+      },
+      {
         name: 'UnitGroups',
         path: '/tgdata/unitgroups',
         component: './Unitgroups',
