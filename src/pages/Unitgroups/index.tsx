@@ -1,18 +1,18 @@
-import { getContactTable } from '@/services/contacts/api';
-import { ContactTable } from '@/services/contacts/data';
 import { ListPagination } from '@/services/general/data';
 import { getLang } from '@/services/general/util';
+import { getUnitGroupTable } from '@/services/unitgroups/api';
+import { UnitGroupTable } from '@/services/unitgroups/data';
 import { PageContainer } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
-import { Space, Tooltip } from 'antd';
+import { Space } from 'antd';
 import type { FC } from 'react';
 import { useRef } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
-import ContactCreate from './Components/create';
-import ContactDelete from './Components/delete';
-import ContactEdit from './Components/edit';
-import ContactView from './Components/view';
+import UnitGroupCreate from './Components/create';
+import UnitGroupDelete from './Components/delete';
+// import UnitGroupEdit from './Components/edit';
+import UnitGroupView from './Components/view';
 
 const TableList: FC = () => {
   const location = useLocation();
@@ -25,37 +25,32 @@ const TableList: FC = () => {
   const { locale } = useIntl();
   const lang = getLang(locale);
   const actionRef = useRef<ActionType>();
-  const contactColumns: ProColumns<ContactTable>[] = [
+  const unitGroupColumns: ProColumns<UnitGroupTable>[] = [
     {
-      title: <FormattedMessage id="contact.index" defaultMessage="Index" />,
+      title: <FormattedMessage id="unitGroup.index" defaultMessage="Index" />,
       dataIndex: 'index',
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="contact.shortName" defaultMessage="Data Name" />,
-      dataIndex: 'shortName',
+      title: <FormattedMessage id="unitGroup.name" defaultMessage="Name" />,
+      dataIndex: 'name',
       sorter: false,
-      render: (_, row) => [
-        <Tooltip key={0} placement="topLeft" title={row.name}>
-          {row.shortName}
-        </Tooltip>,
-      ],
     },
     {
-      title: <FormattedMessage id="contact.classification" defaultMessage="Classification" />,
+      title: <FormattedMessage id="unitGroup.classification" defaultMessage="Classification" />,
       dataIndex: 'classification',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="contact.email" defaultMessage="Email" />,
-      dataIndex: 'email',
+      title: <FormattedMessage id="unitGroup.email" defaultMessage="Reference Unit" />,
+      dataIndex: 'referenceToReferenceUnit',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="contact.createdAt" defaultMessage="Created At" />,
+      title: <FormattedMessage id="unitGroup.createdAt" defaultMessage="Created At" />,
       dataIndex: 'createdAt',
       valueType: 'dateTime',
       sorter: true,
@@ -69,14 +64,14 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <ContactView id={row.id} dataSource={dataSource} actionRef={actionRef} />
-              <ContactEdit
+              <UnitGroupView id={row.id} dataSource={dataSource} actionRef={actionRef} />
+              {/* <UnitGroupEdit
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
-              />
-              <ContactDelete
+                setViewDrawerVisible={() => { }}
+              /> */}
+              <UnitGroupDelete
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={actionRef}
@@ -87,7 +82,7 @@ const TableList: FC = () => {
         }
         return [
           <Space size={'small'} key={0}>
-            <ContactView id={row.id} dataSource={dataSource} actionRef={actionRef} />
+            <UnitGroupView id={row.id} dataSource={dataSource} actionRef={actionRef} />
           </Space>,
         ];
       },
@@ -95,7 +90,7 @@ const TableList: FC = () => {
   ];
   return (
     <PageContainer>
-      <ProTable<ContactTable, ListPagination>
+      <ProTable<UnitGroupTable, ListPagination>
         actionRef={actionRef}
         search={{
           defaultCollapsed: false,
@@ -106,7 +101,7 @@ const TableList: FC = () => {
         }}
         toolBarRender={() => {
           if (dataSource === 'my') {
-            return [<ContactCreate key={0} actionRef={actionRef} />];
+            return [<UnitGroupCreate key={0} actionRef={actionRef} />];
           }
           return [];
         }}
@@ -117,9 +112,9 @@ const TableList: FC = () => {
           },
           sort,
         ) => {
-          return getContactTable(params, sort, lang, dataSource);
+          return getUnitGroupTable(params, sort, lang, dataSource);
         }}
-        columns={contactColumns}
+        columns={unitGroupColumns}
       />
     </PageContainer>
   );

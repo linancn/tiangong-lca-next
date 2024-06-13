@@ -107,42 +107,6 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
                 </Form.List>
               </Form.Item>
             </Card>
-            <Card size="small" title={'Name'}>
-              <Form.Item>
-                <Form.List name={'common:name'}>
-                  {(subFields, subOpt) => (
-                    <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
-                      {subFields.map((subField) => (
-                        <>
-                          <Space key={subField.key} direction="vertical">
-                            <Space>
-                              <Form.Item noStyle name={[subField.name, '@xml:lang']}>
-                                <Select
-                                  placeholder="Select a lang"
-                                  optionFilterProp="lang"
-                                  options={langOptions}
-                                />
-                              </Form.Item>
-                              <CloseOutlined
-                                onClick={() => {
-                                  subOpt.remove(subField.name);
-                                }}
-                              />
-                            </Space>
-                            <Form.Item noStyle name={[subField.name, '#text']}>
-                              <Input placeholder="text" />
-                            </Form.Item>
-                          </Space>
-                        </>
-                      ))}
-                      <Button type="dashed" onClick={() => subOpt.add()} block>
-                        + Add Name Item
-                      </Button>
-                    </div>
-                  )}
-                </Form.List>
-              </Form.Item>
-            </Card>
             <Card size="small" title={'Classification'}>
               <Space>
                 <Form.Item name={['common:class', '@level_0']}>
@@ -156,7 +120,10 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
                 </Form.Item>
               </Space>
             </Card>
-            <Form.Item label="Email" name={'email'}>
+            <Form.Item label="SourceCitation" name={'sourceCitation'}>
+              <Input />
+            </Form.Item>
+            <Form.Item label="PublicationType" name={'publicationType'}>
               <Input />
             </Form.Item>
             <Form.Item label="Data Set Version" name={'common:dataSetVersion'}>

@@ -7,34 +7,35 @@ import {
   getLangList,
   getLangText,
 } from '../general/util';
-import { genContactJsonOrdered } from './util';
+import { genSourceJsonOrdered } from './util';
 
-export async function createContact(data: any) {
+export async function createSource(data: any) {
   const newID = v4();
   const oldData = {
-    contactDataSet: {
+    sourceDataSet: {
       '@xmlns:common': 'http://lca.jrc.it/ILCD/Common',
-      '@xmlns': 'http://lca.jrc.it/ILCD/Contact',
+      '@xmlns': 'http://lca.jrc.it/ILCD/Source',
       '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
       '@version': '1.1',
-      '@xsi:schemaLocation': 'http://lca.jrc.it/ILCD/Contact ../../schemas/ILCD_ContactDataSet.xsd',
+      '@xsi:schemaLocation': 'http://lca.jrc.it/ILCD/Source ../../schemas/ILCD_SourceDataSet.xsd',
     },
   };
-  const newData = genContactJsonOrdered(newID, data, oldData);
+  const newData = genSourceJsonOrdered(newID, data, oldData);
   const result = await supabase
-    .from('contacts')
+    .from('sources')
     .insert([{ id: newID, json_ordered: newData }])
     .select();
+console.log(result);
   return result;
 }
 
-export async function updateContact(data: any) {
-  const result = await supabase.from('contacts').select('id, json').eq('id', data.id);
+export async function updateSource(data: any) {
+  const result = await supabase.from('sources').select('id, json').eq('id', data.id);
   if (result.data && result.data.length === 1) {
     const oldData = result.data[0].json;
-    const newData = genContactJsonOrdered(data.id, data, oldData);
+    const newData = genSourceJsonOrdered(data.id, data, oldData);
     const updateResult = await supabase
-      .from('contacts')
+      .from('sources')
       .update({ json_ordered: newData })
       .eq('id', data.id)
       .select();
@@ -43,12 +44,12 @@ export async function updateContact(data: any) {
   return null;
 }
 
-export async function deleteContact(id: string) {
-  const result = await supabase.from('contacts').delete().eq('id', id);
+export async function deleteSource(id: string) {
+  const result = await supabase.from('sources').delete().eq('id', id);
   return result;
 }
 
-export async function getContactTable(
+export async function getSourceTable(
   params: {
     current?: number;
     pageSize?: number;
@@ -62,17 +63,17 @@ export async function getContactTable(
 
   const selectStr = `
     id,
-    json->contactDataSet->contactInformation->dataSetInformation->"common:shortName",
-    json->contactDataSet->contactInformation->dataSetInformation->"common:name",
-    json->contactDataSet->contactInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
-    json->contactDataSet->contactInformation->dataSetInformation->email,
+    json->sourceDataSet->sourceInformation->dataSetInformation->"common:shortName",
+    json->sourceDataSet->sourceInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
+    json->sourceDataSet->sourceInformation->dataSetInformation->sourceCitation,
+    json->sourceDataSet->sourceInformation->dataSetInformation->publicationType,
     created_at
   `;
 
   let result: any = {};
   if (dataSource === 'tg') {
     result = await supabase
-      .from('contacts')
+      .from('sources')
       .select(selectStr, { count: 'exact' })
       .order(sortBy, { ascending: orderBy === 'ascend' })
       .range(
@@ -83,7 +84,7 @@ export async function getContactTable(
     const session = await supabase.auth.getSession();
     if (session.data.session) {
       result = await supabase
-        .from('contacts')
+        .from('sources')
         .select(selectStr, { count: 'exact' })
         .eq('user_id', session.data.session.user?.id)
         .order(sortBy, { ascending: orderBy === 'ascend' })
@@ -113,9 +114,9 @@ export async function getContactTable(
             id: i.id,
             lang: lang,
             shortName: getLangText(i['common:shortName'], lang),
-            name: getLangText(i['common:name'], lang),
             classification: classificationToString(i['common:class']),
-            email: i.email ?? '-',
+            sourceCitation: i.sourceCitation ?? '-',
+            publicationType: i.publicationType ?? '-',
             createdAt: new Date(i.created_at),
           };
         } catch (e) {
@@ -136,26 +137,24 @@ export async function getContactTable(
   });
 }
 
-export async function getContactDetail(id: string) {
-  const result = await supabase.from('contacts').select('json, created_at').eq('id', id);
+export async function getSourceDetail(id: string) {
+  const result = await supabase.from('sources').select('json, created_at').eq('id', id);
   if (result.data && result.data.length > 0) {
     const data = result.data[0];
     return Promise.resolve({
       data: {
         id: id,
         'common:shortName': getLangList(
-          data?.json?.contactDataSet?.contactInformation?.dataSetInformation?.['common:shortName'],
-        ),
-        'common:name': getLangList(
-          data?.json?.contactDataSet?.contactInformation?.dataSetInformation?.['common:name'],
+          data?.json?.sourceDataSet?.sourceInformation?.dataSetInformation?.['common:shortName'],
         ),
         'common:class': classificationToJson(
-          data?.json?.contactDataSet?.contactInformation?.dataSetInformation
+          data?.json?.sourceDataSet?.sourceInformation?.dataSetInformation
             ?.classificationInformation?.['common:classification']?.['common:class'],
         ),
-        email: data?.json?.contactDataSet?.contactInformation?.dataSetInformation?.email,
+        sourceCitation: data?.json?.sourceDataSet?.sourceInformation?.dataSetInformation?.sourceCitation,
+        publicationType: data?.json?.sourceDataSet?.sourceInformation?.dataSetInformation?.publicationType,
         'common:dataSetVersion':
-          data?.json?.contactDataSet?.administrativeInformation?.publicationAndOwnership?.[
+          data?.json?.sourceDataSet?.administrativeInformation?.publicationAndOwnership?.[
             'common:dataSetVersion'
           ],
         createdAt: data?.created_at,

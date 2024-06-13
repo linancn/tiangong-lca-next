@@ -1,7 +1,7 @@
-import { getContactTable } from '@/services/contacts/api';
-import { ContactTable } from '@/services/contacts/data';
 import { ListPagination } from '@/services/general/data';
 import { getLang } from '@/services/general/util';
+import { getProcessTable } from '@/services/processes/api';
+import { ProcessTable } from '@/services/processes/data';
 import { PageContainer } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
@@ -9,10 +9,8 @@ import { Space, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useRef } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
-import ContactCreate from './Components/create';
-import ContactDelete from './Components/delete';
-import ContactEdit from './Components/edit';
-import ContactView from './Components/view';
+import ProcessCreate from './Components/create';
+import ProcessView from './Components/view';
 
 const TableList: FC = () => {
   const location = useLocation();
@@ -25,37 +23,43 @@ const TableList: FC = () => {
   const { locale } = useIntl();
   const lang = getLang(locale);
   const actionRef = useRef<ActionType>();
-  const contactColumns: ProColumns<ContactTable>[] = [
+  const processColumns: ProColumns<ProcessTable>[] = [
     {
-      title: <FormattedMessage id="contact.index" defaultMessage="Index" />,
+      title: <FormattedMessage id="process.index" defaultMessage="Index" />,
       dataIndex: 'index',
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="contact.shortName" defaultMessage="Data Name" />,
-      dataIndex: 'shortName',
+      title: <FormattedMessage id="process.baseName" defaultMessage="Base Name" />,
+      dataIndex: 'baseName',
       sorter: false,
       render: (_, row) => [
-        <Tooltip key={0} placement="topLeft" title={row.name}>
-          {row.shortName}
+        <Tooltip key={0} placement="topLeft" title={row.generalComment}>
+          {row.baseName}
         </Tooltip>,
       ],
     },
     {
-      title: <FormattedMessage id="contact.classification" defaultMessage="Classification" />,
+      title: <FormattedMessage id="process.classification" defaultMessage="Classification" />,
       dataIndex: 'classification',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="contact.email" defaultMessage="Email" />,
-      dataIndex: 'email',
+      title: <FormattedMessage id="process.referenceYear" defaultMessage="Reference Year" />,
+      dataIndex: 'referenceYear',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="contact.createdAt" defaultMessage="Created At" />,
+      title: <FormattedMessage id="process.location" defaultMessage="Location" />,
+      dataIndex: 'location',
+      sorter: false,
+      search: false,
+    },
+    {
+      title: <FormattedMessage id="process.createdAt" defaultMessage="Created At" />,
       dataIndex: 'createdAt',
       valueType: 'dateTime',
       sorter: true,
@@ -69,25 +73,25 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <ContactView id={row.id} dataSource={dataSource} actionRef={actionRef} />
-              <ContactEdit
-                id={row.id}
-                buttonType={'icon'}
-                actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
-              />
-              <ContactDelete
-                id={row.id}
-                buttonType={'icon'}
-                actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
-              />
+              <ProcessView id={row.id} dataSource={dataSource} lang={lang} actionRef={actionRef} />
+              {/* //       //   <ContactEdit
+            //       //     id={row.id}
+            //       //     buttonType={'icon'}
+            //       //     actionRef={actionRef}
+            //       //     setViewDrawerVisible={() => {}}
+            //       //   />
+            //       //   <ContactDelete
+            //       //     id={row.id}
+            //       //     buttonType={'icon'}
+            //       //     actionRef={actionRef}
+            //       //     setViewDrawerVisible={() => {}}
+            //       //   /> */}
             </Space>,
           ];
         }
         return [
           <Space size={'small'} key={0}>
-            <ContactView id={row.id} dataSource={dataSource} actionRef={actionRef} />
+            <ProcessView id={row.id} dataSource={dataSource} lang={lang} actionRef={actionRef} />
           </Space>,
         ];
       },
@@ -95,7 +99,7 @@ const TableList: FC = () => {
   ];
   return (
     <PageContainer>
-      <ProTable<ContactTable, ListPagination>
+      <ProTable<ProcessTable, ListPagination>
         actionRef={actionRef}
         search={{
           defaultCollapsed: false,
@@ -106,7 +110,7 @@ const TableList: FC = () => {
         }}
         toolBarRender={() => {
           if (dataSource === 'my') {
-            return [<ContactCreate key={0} actionRef={actionRef} />];
+            return [<ProcessCreate key={0} actionRef={actionRef} />];
           }
           return [];
         }}
@@ -117,9 +121,9 @@ const TableList: FC = () => {
           },
           sort,
         ) => {
-          return getContactTable(params, sort, lang, dataSource);
+          return getProcessTable(params, sort, lang, dataSource);
         }}
-        columns={contactColumns}
+        columns={processColumns}
       />
     </PageContainer>
   );
