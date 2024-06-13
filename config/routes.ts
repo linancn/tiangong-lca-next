@@ -32,6 +32,11 @@ export default [
         path: '/mydata/sources',
         component: './Sources',
       },
+      {
+        name: 'UnitGroups',
+        path: '/mydata/unitgroups',
+        component: './Unitgroups',
+      },
     ],
   },
   {
@@ -49,6 +54,11 @@ export default [
         name: 'Contacts',
         path: '/tgdata/contacts',
         component: './Contacts',
+      },
+      {
+        name: 'UnitGroups',
+        path: '/tgdata/unitgroups',
+        component: './Unitgroups',
       },
     ],
   },
