@@ -27,6 +27,11 @@ export default [
         path: '/mydata/contacts',
         component: './Contacts',
       },
+      {
+        name: 'Flowproperties',
+        path: '/mydata/flowproperties',
+        component: './Flowproperties',
+      },
     ],
   },
   {
