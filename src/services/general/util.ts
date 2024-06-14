@@ -26,6 +26,17 @@ export function getLangText(langTexts: any, lang: string) {
   return text;
 }
 
+export function getLangJson(data: any) {
+  if (data) {
+    if (data.length === 1) {
+      return data[0];
+    } else if (data.length > 1) {
+      return data;
+    }
+  }
+  return {};
+}
+
 export function getLangList(langTexts: any) {
   if (!langTexts) {
     return null;
@@ -55,7 +66,6 @@ export function classificationToString(classifications: any) {
   } else {
     classificationStr = classifications['#text'] ?? '-';
   }
-  console.log('classificationStr', classificationStr);
   return classificationStr;
 }
 
@@ -78,7 +88,19 @@ export function classificationToJson(classifications: any) {
       }
     }
   } else {
-    classificationJson = { '@level_0': classifications['#text'] ?? '-' };
+    classificationJson = { '@level_0': classifications?.['#text'] ?? '-' };
   }
   return classificationJson;
+}
+
+export function removeEmptyObjects(obj: any) {
+  Object.keys(obj).forEach((key) => {
+    if (obj[key] && typeof obj[key] === 'object') {
+      removeEmptyObjects(obj[key]);
+      if (Object.keys(obj[key]).length === 0) {
+        delete obj[key];
+      }
+    }
+  });
+  return obj;
 }

@@ -10,6 +10,7 @@ import type { FC } from 'react';
 import { useRef } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 import ProcessCreate from './Components/create';
+import ProcessDelete from './Components/delete';
 import ProcessView from './Components/view';
 
 const TableList: FC = () => {
@@ -35,7 +36,7 @@ const TableList: FC = () => {
       dataIndex: 'baseName',
       sorter: false,
       render: (_, row) => [
-        <Tooltip key={0} placement="topLeft" title={row.generalComment}>
+        <Tooltip key={0} placement="topLeft" title={row.generalComment ?? '-'}>
           {row.baseName}
         </Tooltip>,
       ],
@@ -79,13 +80,13 @@ const TableList: FC = () => {
             //       //     buttonType={'icon'}
             //       //     actionRef={actionRef}
             //       //     setViewDrawerVisible={() => {}}
-            //       //   />
-            //       //   <ContactDelete
-            //       //     id={row.id}
-            //       //     buttonType={'icon'}
-            //       //     actionRef={actionRef}
-            //       //     setViewDrawerVisible={() => {}}
-            //       //   /> */}
+            //       //   />*/}
+              <ProcessDelete
+                id={row.id}
+                buttonType={'icon'}
+                actionRef={actionRef}
+                setViewDrawerVisible={() => {}}
+              />
             </Space>,
           ];
         }

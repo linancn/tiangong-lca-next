@@ -5,9 +5,10 @@ import { classificationToString, getLangText } from '../general/util';
 import { genProcessJsonOrdered } from './util';
 
 export async function createProcess(data: any) {
+  console.log('createProcess', data);
   const newID = v4();
   const oldData = {
-    contactDataSet: {
+    processDataSet: {
       '@xmlns:common': 'http://lca.jrc.it/ILCD/Common',
       '@xmlns': 'http://lca.jrc.it/ILCD/Process',
       '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
@@ -89,11 +90,11 @@ export async function getProcessTable(
           return {
             id: i.id,
             lang: lang,
-            baseName: getLangText(i['baseName'], lang),
-            generalComment: getLangText(i['common:generalComment'], lang),
-            classification: classificationToString(i['common:class']),
-            referenceYear: i['common:referenceYear'],
-            location: i['@location'],
+            baseName: getLangText(i['baseName'] ?? {}, lang),
+            generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
+            classification: classificationToString(i['common:class'] ?? {}),
+            referenceYear: i['common:referenceYear'] ?? '-',
+            location: i['@location'] ?? '-',
             createdAt: new Date(i.created_at),
           };
         } catch (e) {
@@ -130,4 +131,9 @@ export async function getProcessDetail(id: string) {
     data: {},
     success: true,
   });
+}
+
+export async function deleteProcess(id: string) {
+  const result = await supabase.from('processes').delete().eq('id', id);
+  return result;
 }

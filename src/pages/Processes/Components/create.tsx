@@ -133,22 +133,49 @@ const ProcessCreate: FC<Props> = ({ actionRef }) => {
     processInformation: (
       <Space direction="vertical" style={{ width: '100%' }}>
         <Card size="small" title={'Base Name'}>
-          <LangTextItemFrom keyName="baseName" labelName="Base Name" />
+          <LangTextItemFrom
+            keyName={['dataSetInformation', 'name', 'baseName']}
+            labelName="Base Name"
+          />
         </Card>
 
         <Card size="small" title={'General Comment'}>
-          <LangTextItemFrom keyName="common:generalComment" labelName="General Comment" />
+          <LangTextItemFrom
+            keyName={['classificationInformation', 'common:generalComment']}
+            labelName="General Comment"
+          />
         </Card>
 
         <Card size="small" title={'Classification'}>
           <Space>
-            <Form.Item name={['common:class', '@level_0']}>
+            <Form.Item
+              name={[
+                'classificationInformation',
+                'common:classification',
+                'common:class',
+                '@level_0',
+              ]}
+            >
               <Input placeholder="Level 1" />
             </Form.Item>
-            <Form.Item name={['common:class', '@level_1']}>
+            <Form.Item
+              name={[
+                'classificationInformation',
+                'common:classification',
+                'common:class',
+                '@level_1',
+              ]}
+            >
               <Input placeholder="Level 2" />
             </Form.Item>
-            <Form.Item name={['common:class', '@level_2']}>
+            <Form.Item
+              name={[
+                'classificationInformation',
+                'common:classification',
+                'common:class',
+                '@level_2',
+              ]}
+            >
               <Input placeholder="Level 3" />
             </Form.Item>
           </Space>
@@ -391,9 +418,13 @@ const ProcessCreate: FC<Props> = ({ actionRef }) => {
             labelName="Use Advice For DataSet"
           />
         </Card>
-        <Form.Item label="Completeness" name={'completeness'}>
-          <Input />
-        </Form.Item>
+        <Divider orientationMargin="0" orientation="left" plain>
+          Completeness: Completeness Description
+        </Divider>
+        <LangTextItemFrom
+          keyName={['completeness', 'completenessDescription']}
+          labelName="Completeness Description"
+        />
         <Card size="small" title={'Validation: Review'}>
           <Form.Item label="Type" name={['validation', 'review', '@type']}>
             <Input />
@@ -654,8 +685,8 @@ const ProcessCreate: FC<Props> = ({ actionRef }) => {
               return [];
             },
           }}
-          onFinish={async (values) => {
-            const result = await createProcess({ ...values });
+          onFinish={async () => {
+            const result = await createProcess({ ...fromData });
             if (result.data) {
               message.success(
                 <FormattedMessage
