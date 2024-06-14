@@ -52,6 +52,14 @@ function getAttribute(key: string, value: any) {
         }
       }
     }
+    let dataEntryBy_common_shortDescription = {};
+    if (data?.['dataEntryBy:common:shortDescription']) {
+      if (data?.['dataEntryBy:common:shortDescription'].length === 1) {
+        dataEntryBy_common_shortDescription = data?.['dataEntryBy:common:shortDescription'][0];
+      } else if (data?.['dataEntryBy:common:shortDescription'].length > 1) {
+        dataEntryBy_common_shortDescription = data?.['dataEntryBy:common:shortDescription'];
+      }
+    }
     const newData = {
       sourceDataSet: {
         ...getAttribute('@xmlns:common', oldData.sourceDataSet['@xmlns:common']),
@@ -72,9 +80,18 @@ function getAttribute(key: string, value: any) {
             publicationType: data?.publicationType,
           },
         },
-        administrativeInformation: {            
+        administrativeInformation: {
+            dataEntryBy: {
+              'common:timeStamp': data?.['dataEntryBy:common:timeStamp'],
+              'common:referenceToDataSetFormat': {
+                '@type': data?.['dataEntryBy:common:@type'],
+                '@refObjectId': data?.['dataEntryBy:common:@refObjectId'],
+                '@uri': data?.['dataEntryBy:common:@uri'],
+                'common:shortDescription': dataEntryBy_common_shortDescription,
+              },
+            },            
             publicationAndOwnership: {
-              'common:dataSetVersion': data?.['common:dataSetVersion'],
+              'common:dataSetVersion': data?.['publicationAndOwnership:common:dataSetVersion'],
             },
         },
       },
