@@ -111,7 +111,7 @@ const TableList: FC = () => {
         }}
         toolBarRender={() => {
           if (dataSource === 'my') {
-            return [<ProcessCreate key={0} actionRef={actionRef} />];
+            return [<ProcessCreate key={0} lang={lang} actionRef={actionRef} />];
           }
           return [];
         }}

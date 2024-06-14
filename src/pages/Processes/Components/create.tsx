@@ -1,5 +1,6 @@
 import LangTextItemFrom from '@/components/LangTextItem/from';
 import { ListPagination } from '@/services/general/data';
+import { getLangText } from '@/services/general/util';
 import { createProcess } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import styles from '@/style/custom.less';
@@ -26,17 +27,23 @@ import { FormattedMessage } from 'umi';
 import ProcessExchangeCreate from './Exchange/create';
 
 type Props = {
+  lang: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
 };
-const ProcessCreate: FC<Props> = ({ actionRef }) => {
+const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
   const [activeTabKey, setActiveTabKey] = useState<string>('processInformation');
   const [fromData, setFromData] = useState<any>({});
+  const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
 
   const reload = useCallback(() => {
     actionRef.current?.reload();
   }, [actionRef]);
+
+  const handletExchangeData = (data: any) => {
+    setExchangeDataSource([...exchangeDataSource, data]);
+  };
 
   const processExchangeColumns: ProColumns<ProcessExchangeTable>[] = [
     {
@@ -88,6 +95,7 @@ const ProcessCreate: FC<Props> = ({ actionRef }) => {
       dataIndex: 'generalComment',
       sorter: false,
       search: false,
+      render: (_, row) => getLangText(row.generalComment ?? {}, lang),
     },
     {
       title: <FormattedMessage id="options.option" defaultMessage="Option" />,
@@ -606,7 +614,6 @@ const ProcessCreate: FC<Props> = ({ actionRef }) => {
     ),
     exchanges: (
       <ProTable<ProcessExchangeTable, ListPagination>
-        actionRef={actionRef}
         search={{
           defaultCollapsed: false,
         }}
@@ -615,17 +622,9 @@ const ProcessCreate: FC<Props> = ({ actionRef }) => {
           pageSize: 10,
         }}
         toolBarRender={() => {
-          return [<ProcessExchangeCreate key={0} actionRef={actionRef} />];
+          return [<ProcessExchangeCreate key={0} onData={handletExchangeData} />];
         }}
-        // request={async (
-        //   params: {
-        //     pageSize: number;
-        //     current: number;
-        //   },
-        //   sort,
-        // ) => {
-        //   return getProcessTable(params, sort, lang, dataSource);
-        // }}
+        dataSource={exchangeDataSource}
         columns={processExchangeColumns}
       />
     ),
@@ -637,8 +636,14 @@ const ProcessCreate: FC<Props> = ({ actionRef }) => {
   };
 
   useEffect(() => {
+    if (!drawerVisible) return;
+    if (activeTabKey === 'exchanges') return;
     setFromData({ ...fromData, [activeTabKey]: formRefCreate.current?.getFieldsValue() });
   }, [drawerVisible, formRefCreate.current?.getFieldsValue()]);
+
+  useEffect(() => {
+    setFromData({ ...fromData, exchanges: { exchange: exchangeDataSource } });
+  }, [exchangeDataSource]);
 
   return (
     <>

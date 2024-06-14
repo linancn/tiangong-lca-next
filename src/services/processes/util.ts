@@ -248,9 +248,7 @@ export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
             ],
         },
       },
-      exchanges: {
-        exchange: [],
-      },
+      exchanges: data?.exchanges ?? {},
     },
   });
 }
