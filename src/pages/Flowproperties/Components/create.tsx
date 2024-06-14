@@ -1,5 +1,6 @@
 import { createFlowproperties } from '@/services/flowproperties/api';
-import { langOptions } from '@/services/general/data';
+import LangTextItemFrom from '@/components/LangTextItem/from';
+// import { langOptions } from '@/services/general/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-form';
@@ -8,17 +9,19 @@ import type { ActionType } from '@ant-design/pro-table';
 import {
   Button,
   Card,
+  // DatePicker,
   Drawer,
   Form,
   Input,
-  Select,
+  // Select,
   Space,
   Tooltip,
   Typography,
   message,
+  Divider
 } from 'antd';
 import type { FC } from 'react';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 
 type Props = {
@@ -27,9 +30,197 @@ type Props = {
 const FlowpropertiesCreate: FC<Props> = ({ actionRef }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
+  const [activeTabKey, setActiveTabKey] = useState<string>('flowPropertiesInformation');
+  const [fromData, setFromData] = useState<any>({});
+
   const reload = useCallback(() => {
     actionRef.current?.reload();
   }, [actionRef]);
+
+  const tabList = [
+    { key: 'flowPropertiesInformation', tab: 'Flow Properties Information' },
+    { key: 'modellingAndValidation', tab: 'Modelling And Validation' },
+    { key: 'administrativeInformation', tab: 'Administrative Information' },
+  ];
+  const contentList: Record<string, React.ReactNode> = {
+    flowPropertiesInformation: (<Space direction="vertical" style={{ width: '100%' }}>
+      <Card size="small" title={'FlowProperties Information'}>
+        <Card size="small" title={'Data Set Information'}>
+          <Card size="small" title={'Name'}>
+            <LangTextItemFrom keyName={['dataSetInformation', 'common:name']} labelName="Name" />
+          </Card>
+
+          <Card size="small" title={'General Comment'}>
+            <LangTextItemFrom keyName={['dataSetInformation', "common:generalComment"]} labelName="General Comment" />
+          </Card>
+
+          <Card size="small" title={'Classification'}>
+            <Space>
+              <Form.Item name={['dataSetInformation', 'common:class', '@level_0']}>
+                <Input placeholder="Level 1" />
+              </Form.Item>
+              <Form.Item name={['dataSetInformation', 'common:class', '@level_1']}>
+                <Input placeholder="Level 2" />
+              </Form.Item>
+              <Form.Item name={['dataSetInformation', 'common:class', '@level_2']}>
+                <Input placeholder="Level 3" />
+              </Form.Item>
+            </Space>
+          </Card>
+
+        </Card>
+
+        <Card size="small" title={'Quantitative Reference'}>
+          <Form.Item label='Ref Object Id' name={['quantitativeReference', 'referenceToReferenceUnitGroup', '@refObjectId']}>
+            <Input />
+          </Form.Item>
+          <Form.Item label="Type" name={['quantitativeReference', 'referenceToReferenceUnitGroup', '@type']}>
+            <Input />
+          </Form.Item>
+          <Form.Item label="URI" name={['quantitativeReference', 'referenceToReferenceUnitGroup', '@uri']}>
+            <Input placeholder="@uri" />
+          </Form.Item>
+          <Divider orientationMargin="0" orientation="left" plain>
+            Short Description
+          </Divider>
+          <LangTextItemFrom
+            keyName={['quantitativeReference', 'referenceToReferenceUnitGroup', 'common:shortDescription']}
+            labelName="Short Description"
+          />
+        </Card>
+      </Card>
+    </Space>),
+    modellingAndValidation: (<Space direction="vertical" style={{ width: '100%' }}>
+      <Form.Item label="Ref Object Id" name={['complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem', '@refObjectId']}>
+        <Input placeholder="@refObjectId" />
+      </Form.Item>
+      <Form.Item label='Type' name={['complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem', '@type']}>
+        <Input placeholder="@type" />
+      </Form.Item>
+      <Form.Item label='URI' name={['complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem', '@uri']}>
+        <Input placeholder="@uri" />
+      </Form.Item>
+      <Divider orientationMargin="0" orientation="left" plain>
+        Short Description
+      </Divider>
+      <LangTextItemFrom
+        keyName={['complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem', 'common:shortDescription']}
+        labelName="Short Description"
+      />
+      <Form.Item label="Approval Of Overall Compliance" name={['complianceDeclarations', 'compliance', 'common:approvalOfOverallCompliance']}>
+        <Input />
+      </Form.Item>
+    </Space>),
+    administrativeInformation: (<Space direction="vertical" style={{ width: '100%' }}>
+      <Card
+        size="small"
+        title={'Data Entry By'}
+      >
+        <Form.Item label="Time Stamp" name={['dataEntryBy', 'common:timeStamp']}>
+          <Input />
+        </Form.Item>
+        <Card
+          size="small"
+          title={'Reference To Data Set Format'}
+        >
+          <Form.Item
+            label="Type"
+            name={[
+              'dataEntryBy',
+              'common:referenceToDataSetFormat',
+              '@type',
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="Ref Object Id"
+            name={[
+              'dataEntryBy',
+              'common:referenceToDataSetFormat',
+              '@refObjectId',
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="URI"
+            name={['dataEntryBy', 'common:referenceToDataSetFormat', '@uri']}
+          >
+            <Input />
+          </Form.Item>
+          <Divider orientationMargin="0" orientation="left" plain>
+            Short Description
+          </Divider>
+          <LangTextItemFrom
+            keyName={[
+              'dataEntryBy',
+              'common:referenceToDataSetFormat',
+              'common:shortDescription',
+            ]}
+            labelName="Short Description"
+          />
+        </Card>
+
+      </Card>
+
+      <Card size="small" title={'Publication And Ownership'}>
+        <Form.Item label="Data Set Version" name={['publicationAndOwnership', 'common:dataSetVersion']}>
+          <Input />
+        </Form.Item>
+        <Card size="small" title={'Reference To Preceding Data Set Version'}>
+          <Form.Item
+            label="Type"
+            name={[
+              'publicationAndOwnership',
+              'common:referenceToPrecedingDataSetVersion',
+              '@type',
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="Ref Object Id"
+            name={[
+              'publicationAndOwnership',
+              'common:referenceToPrecedingDataSetVersion',
+              '@refObjectId',
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="URI"
+            name={['publicationAndOwnership', 'common:referenceToPrecedingDataSetVersion', '@uri']}
+          >
+            <Input />
+          </Form.Item>
+          <Divider orientationMargin="0" orientation="left" plain>
+            Short Description
+          </Divider>
+          <LangTextItemFrom
+            keyName={[
+              'publicationAndOwnership',
+              'common:referenceToPrecedingDataSetVersion',
+              'common:shortDescription',
+            ]}
+            labelName="Short Description"
+          />
+        </Card>
+
+        <Form.Item label="Permanent Data Set URI" name={['publicationAndOwnership', 'common:permanentDataSetURI']}>
+          <Input />
+        </Form.Item>
+      </Card>
+    </Space>)
+  }
+  const onTabChange = (key: string) => {
+    setFromData({ ...fromData, [activeTabKey]: formRefCreate.current?.getFieldsValue() });
+    setActiveTabKey(key);
+  };
+  useEffect(() => {
+    setFromData({ ...fromData, [activeTabKey]: formRefCreate.current?.getFieldsValue() });
+  }, [drawerVisible, formRefCreate.current?.getFieldsValue()]);
   return (
     <>
       <Tooltip title={<FormattedMessage id="options.create" defaultMessage="Create" />}>
@@ -43,8 +234,8 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef }) => {
         />
       </Tooltip>
       <Drawer
-        title={<FormattedMessage id="options.create" defaultMessage="Create" />}
-        width="600px"
+        title={<FormattedMessage id="options.create" defaultMessage="Flow Properties Create" />}
+        width="90%"
         closable={false}
         extra={
           <Button
@@ -75,8 +266,8 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef }) => {
               return [];
             },
           }}
-          onFinish={async (values) => {
-            const result = await createFlowproperties({ ...values });
+          onFinish={async () => {
+            const result = await createFlowproperties({ ...fromData });
             if (result.data) {
               message.success(
                 <FormattedMessage
@@ -93,139 +284,21 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef }) => {
             return true;
           }}
         >
-          <Space direction="vertical">
-            {/* <Card size="small" title={'Short Name'}>
-                        <Form.Item>
-                            <Form.List name={'common:shortName'}>
-                                {(subFields, subOpt) => (
-                                    <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
-                                        {subFields.map((subField) => (
-                                            <>
-                                                <Space key={subField.key} direction="vertical">
-                                                    <Space>
-                                                        <Form.Item noStyle name={[subField.name, '@xml:lang']}>
-                                                            <Select
-                                                                placeholder="Select a lang"
-                                                                optionFilterProp="lang"
-                                                                options={langOptions}
-                                                            />
-                                                        </Form.Item>
-                                                        <CloseOutlined
-                                                            onClick={() => {
-                                                                subOpt.remove(subField.name);
-                                                            }}
-                                                        />
-                                                    </Space>
-                                                    <Form.Item noStyle name={[subField.name, '#text']}>
-                                                        <TextArea placeholder="text" rows={1} />
-                                                    </Form.Item>
-                                                </Space>
-                                            </>
-                                        ))}
-                                        <Button type="dashed" onClick={() => subOpt.add()} block>
-                                            + Add Short Name Item
-                                        </Button>
-                                    </div>
-                                )}
-                            </Form.List>
-                        </Form.Item>
-                    </Card> */}
-            <Card size="small" title={'Name'}>
-              <Form.Item>
-                <Form.List name={'common:name'}>
-                  {(subFields, subOpt) => (
-                    <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
-                      {subFields.map((subField) => (
-                        <>
-                          <Space key={subField.key} direction="vertical">
-                            <Space>
-                              <Form.Item noStyle name={[subField.name, '@xml:lang']}>
-                                <Select
-                                  placeholder="Select a lang"
-                                  optionFilterProp="lang"
-                                  options={langOptions}
-                                />
-                              </Form.Item>
-                              <CloseOutlined
-                                onClick={() => {
-                                  subOpt.remove(subField.name);
-                                }}
-                              />
-                            </Space>
-                            <Form.Item noStyle name={[subField.name, '#text']}>
-                              <Input placeholder="text" />
-                            </Form.Item>
-                          </Space>
-                        </>
-                      ))}
-                      <Button type="dashed" onClick={() => subOpt.add()} block>
-                        + Add Name Item
-                      </Button>
-                    </div>
-                  )}
-                </Form.List>
-              </Form.Item>
-            </Card>
-            <Card size="small" title={'Classification'}>
-              <Space>
-                <Form.Item name={['common:class', '@level_0']}>
-                  <Input placeholder="Level 1" />
-                </Form.Item>
-                <Form.Item name={['common:class', '@level_1']}>
-                  <Input placeholder="Level 2" />
-                </Form.Item>
-                <Form.Item name={['common:class', '@level_2']}>
-                  <Input placeholder="Level 3" />
-                </Form.Item>
-              </Space>
-            </Card>
-            <Card size="small" title={'GeneralComment'}>
-              <Form.Item>
-                <Form.List name={'common:generalComment'}>
-                  {(subFields, subOpt) => (
-                    <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
-                      {subFields.map((subField) => (
-                        <>
-                          <Space key={subField.key} direction="vertical">
-                            <Space>
-                              <Form.Item noStyle name={[subField.name, '@xml:lang']}>
-                                <Select
-                                  placeholder="Select a lang"
-                                  optionFilterProp="lang"
-                                  options={langOptions}
-                                />
-                              </Form.Item>
-                              <CloseOutlined
-                                onClick={() => {
-                                  subOpt.remove(subField.name);
-                                }}
-                              />
-                            </Space>
-                            <Form.Item noStyle name={[subField.name, '#text']}>
-                              <Input placeholder="text" />
-                            </Form.Item>
-                          </Space>
-                        </>
-                      ))}
-                      <Button type="dashed" onClick={() => subOpt.add()} block>
-                        + Add GeneralComment Item
-                      </Button>
-                    </div>
-                  )}
-                </Form.List>
-              </Form.Item>
-            </Card>
-            <Form.Item label="Data Set Version" name={'common:dataSetVersion'}>
-              <Input />
-            </Form.Item>
-            <Form.Item noStyle shouldUpdate>
-              {() => (
-                <Typography>
-                  <pre>{JSON.stringify(formRefCreate.current?.getFieldsValue(), null, 2)}</pre>
-                </Typography>
-              )}
-            </Form.Item>
-          </Space>
+          <Card
+            style={{ width: '100%' }}
+            tabList={tabList}
+            activeTabKey={activeTabKey}
+            onTabChange={onTabChange}
+          >
+            {contentList[activeTabKey]}
+          </Card>
+          <Form.Item noStyle shouldUpdate>
+            {() => (
+              <Typography>
+                <pre>{JSON.stringify(fromData, null, 2)}</pre>
+              </Typography>
+            )}
+          </Form.Item>
         </ProForm>
       </Drawer>
     </>

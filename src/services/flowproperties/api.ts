@@ -112,11 +112,9 @@ export async function getFlowpropertiesTable(
           return {
             id: i.id,
             lang: lang,
-            // shortName: getLangText(i['common:shortName'], lang),
             name: getLangText(i['common:name'], lang),
             classification: classificationToString(i['common:class']),
             generalComment: getLangText(i['common:generalComment'], lang),
-            // email: i.email ?? '-',
             createdAt: new Date(i.created_at),
           };
         } catch (e) {
@@ -141,15 +139,14 @@ export async function getFlowpropertiesDetail(id: string) {
   const result = await supabase.from('flowproperties').select('json, created_at').eq('id', id);
   if (result.data && result.data.length > 0) {
     const data = result.data[0];
+    console.log('data', data);
     return Promise.resolve({
       data: {
         id: id,
-        // 'common:shortName': getLangList(
-        //   data?.json?.contactDataSet?.contactInformation?.dataSetInformation?.['common:shortName'],
-        // ),
+
         'common:name': getLangList(
           data?.json?.flowPropertyDataSet?.flowPropertiesInformation?.dataSetInformation?.[
-            'common:name'
+          'common:name'
           ],
         ),
         'common:class': classificationToJson(
@@ -158,14 +155,31 @@ export async function getFlowpropertiesDetail(id: string) {
         ),
         'common:generalComment': getLangList(
           data?.json?.flowPropertyDataSet?.flowPropertiesInformation?.dataSetInformation?.[
-            'common:generalComment'
+          'common:generalComment'
           ],
         ),
-        // email: data?.json?.contactDataSet?.contactInformation?.dataSetInformation?.email,
-        // 'common:dataSetVersion':
-        //   data?.json?.contactDataSet?.administrativeInformation?.publicationAndOwnership?.[
-        //     'common:dataSetVersion'
-        //   ],
+        'referenceToReferenceUnitGroup:common:@refObjectId': data?.json?.flowPropertyDataSet?.flowPropertiesInformation?.quantitativeReference?.referenceToReferenceUnitGroup?.['@refObjectId'],
+        'referenceToReferenceUnitGroup:common:@type': data?.json?.flowPropertyDataSet?.flowPropertiesInformation?.quantitativeReference?.referenceToReferenceUnitGroup?.['@type'],
+        'referenceToReferenceUnitGroup:common:@uri': data?.json?.flowPropertyDataSet?.flowPropertiesInformation?.quantitativeReference?.referenceToReferenceUnitGroup?.['@uri'],
+        'referenceToReferenceUnitGrou:common:shortDescription': getLangList(data?.json?.flowPropertyDataSet?.flowPropertiesInformation?.quantitativeReference?.referenceToReferenceUnitGroup?.['common:shortDescription']),
+
+        'compliance:common:@refObjectId': data?.json?.flowPropertyDataSet?.modellingAndValidation?.complianceDeclarations?.compliance?.['common:referenceToComplianceSystem']?.['@refObjectId'],
+        'compliance:common:@type': data?.json?.flowPropertyDataSet?.modellingAndValidation?.complianceDeclarations?.compliance?.['common:referenceToComplianceSystem']?.['@type'],
+        'compliance:common:@uri': data?.json?.flowPropertyDataSet?.modellingAndValidation?.complianceDeclarations?.compliance?.['common:referenceToComplianceSystem']?.['@uri'],
+        'compliance:common:shortDescription': getLangList(data?.json?.flowPropertyDataSet?.modellingAndValidation?.complianceDeclarations?.compliance?.['common:referenceToComplianceSystem']?.['common:shortDescription']),
+
+        'dataEntryBy:common:timeStamp': data?.json?.flowPropertyDataSet?.administrativeInformation?.dataEntryBy?.['common:timeStamp'],
+        'dataEntryBy:common:@refObjectId': data?.json?.flowPropertyDataSet?.administrativeInformation?.dataEntryBy?.["common:referenceToDataSetFormat"]?.['@refObjectId'],
+        'dataEntryBy:common:@type': data?.json?.flowPropertyDataSet?.administrativeInformation?.dataEntryBy?.["common:referenceToDataSetFormat"]?.['@type'],
+        'dataEntryBy:common:@uri': data?.json?.flowPropertyDataSet?.administrativeInformation?.dataEntryBy?.["common:referenceToDataSetFormat"]?.['@uri'],
+        'dataEntryBy:common:shortDescription': getLangList(data?.json?.flowPropertyDataSet?.administrativeInformation?.dataEntryBy?.["common:referenceToDataSetFormat"]?.['common:shortDescription']),
+
+        'publicationAndOwnership:common:dataSetVersion': data?.json?.flowPropertyDataSet?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'],
+        'publicationAndOwnership:common:@refObjectId': data?.json?.flowPropertyDataSet?.administrativeInformation?.publicationAndOwnership?.["common:referenceToDataSetFormat"]?.['@refObjectId'],
+        'publicationAndOwnership:common:@type': data?.json?.flowPropertyDataSet?.administrativeInformation?.publicationAndOwnership?.["common:referenceToDataSetFormat"]?.['@type'],
+        'publicationAndOwnership:common:@uri': data?.json?.flowPropertyDataSet?.administrativeInformation?.publicationAndOwnership?.["common:referenceToDataSetFormat"]?.['@uri'],
+        'publicationAndOwnership:common:shortDescription': getLangList(data?.json?.flowPropertyDataSet?.administrativeInformation?.publicationAndOwnership?.["common:referenceToDataSetFormat"]?.['common:shortDescription']),
+        'publicationAndOwnership:common:permanentDataSetURI': data?.json?.flowPropertyDataSet?.administrativeInformation?.publicationAndOwnership?.['common:permanentDataSetURI'],
         createdAt: data?.created_at,
       },
       success: true,

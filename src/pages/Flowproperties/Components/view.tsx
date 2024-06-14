@@ -82,9 +82,6 @@ const FlowpropertiesView: FC<Props> = ({ id, dataSource, actionRef }) => {
             <Descriptions.Item key={0} label="ID" labelStyle={{ width: '100px' }}>
               {result.data.id ?? '-'}
             </Descriptions.Item>
-            {/* <Descriptions.Item key={0} label="Email" labelStyle={{ width: '100px' }}>
-              {result.data.email ?? '-'}
-            </Descriptions.Item> */}
             <Descriptions.Item key={0} label="version" labelStyle={{ width: '100px' }}>
               {result.data['common:dataSetVersion'] ?? '-'}
             </Descriptions.Item>
@@ -123,7 +120,7 @@ const FlowpropertiesView: FC<Props> = ({ id, dataSource, actionRef }) => {
       </Tooltip>
       <Drawer
         title={<FormattedMessage id="options.view" defaultMessage="View" />}
-        width="600px"
+        width="90%"
         closable={false}
         extra={
           <Button

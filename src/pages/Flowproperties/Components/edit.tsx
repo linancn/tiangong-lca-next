@@ -1,5 +1,6 @@
 import { getFlowpropertiesDetail, updateFlowproperties } from '@/services/flowproperties/api';
 import { langOptions } from '@/services/general/data';
+import LangTextItemFrom from '@/components/LangTextItem/from';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ProForm } from '@ant-design/pro-components';
@@ -17,6 +18,7 @@ import {
   Tooltip,
   Typography,
   message,
+  Divider
 } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useRef, useState } from 'react';
@@ -32,8 +34,8 @@ type Props = {
 };
 const FlowpropertiesEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisible }) => {
   const [editForm, setEditForm] = useState<JSX.Element>();
-  const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
+  const [drawerVisible, setDrawerVisible] = useState(false);
 
   const onEdit = useCallback(() => {
     setDrawerVisible(true);
@@ -195,7 +197,7 @@ const FlowpropertiesEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawe
       </Tooltip>
       <Drawer
         title={<FormattedMessage id="options.edit" defaultMessage="Edit" />}
-        width="600px"
+        width="90%"
         closable={false}
         extra={
           <Button
