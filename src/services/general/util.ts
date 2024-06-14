@@ -21,12 +21,15 @@ export function getLangText(langTexts: any, lang: string) {
       }
     }
   } else {
-    text = langTexts['#text'] ?? '-';
+    text = langTexts?.['#text'] ?? '-';
   }
   return text;
 }
 
 export function getLangList(langTexts: any) {
+  if (!langTexts) {
+    return null;
+  }
   if (Array.isArray(langTexts)) {
     return langTexts;
   } else {

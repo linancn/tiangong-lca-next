@@ -153,7 +153,28 @@ export async function getSourceDetail(id: string) {
         ),
         sourceCitation: data?.json?.sourceDataSet?.sourceInformation?.dataSetInformation?.sourceCitation,
         publicationType: data?.json?.sourceDataSet?.sourceInformation?.dataSetInformation?.publicationType,
-        'common:dataSetVersion':
+        'dataEntryBy:common:timeStamp':
+          data?.json?.sourceDataSet?.administrativeInformation?.dataEntryBy?.[
+            'common:timeStamp'
+          ],
+        'dataEntryBy:common:@type':
+          data?.json?.sourceDataSet?.administrativeInformation?.dataEntryBy?.[
+            'common:referenceToDataSetFormat'
+          ]?.['@type'],
+        'dataEntryBy:common:@refObjectId':
+          data?.json?.sourceDataSet?.administrativeInformation?.dataEntryBy?.[
+            'common:referenceToDataSetFormat'
+          ]?.['@refObjectId'],
+        'dataEntryBy:common:@uri':
+          data?.json?.sourceDataSet?.administrativeInformation?.dataEntryBy?.[
+            'common:referenceToDataSetFormat'
+          ]?.['@uri'],
+        'dataEntryBy:common:shortDescription': getLangList(
+          data?.json?.sourceDataSet?.administrativeInformation?.dataEntryBy?.[
+            'common:referenceToDataSetFormat'
+          ]?.['common:shortDescription'],
+        ),
+        'publicationAndOwnership:common:dataSetVersion':
           data?.json?.sourceDataSet?.administrativeInformation?.publicationAndOwnership?.[
             'common:dataSetVersion'
           ],

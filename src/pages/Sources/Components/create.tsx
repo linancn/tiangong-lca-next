@@ -8,6 +8,7 @@ import type { ActionType } from '@ant-design/pro-table';
 import {
     Button,
     Card,
+    DatePicker,
     Drawer,
     Form,
     Input,
@@ -98,64 +99,117 @@ const SourceCreate: FC<Props> = ({ actionRef }) => {
                     }}
                 >
                     <Space direction="vertical">
-                        <Card size="small" title={'Short Name'}>
-                            <Form.Item>
-                                <Form.List name={'common:shortName'}>
-                                    {(subFields, subOpt) => (
-                                        <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
-                                            {subFields.map((subField) => (
-                                                <>
-                                                    <Space key={subField.key} direction="vertical">
-                                                        <Space>
-                                                            <Form.Item noStyle name={[subField.name, '@xml:lang']}>
-                                                                <Select
-                                                                    placeholder="Select a lang"
-                                                                    optionFilterProp="lang"
-                                                                    options={langOptions}
+                        <Card size="small" title={'Sources Information'}>
+                            <Card size="small" title={'Short Name'}>
+                                <Form.Item>
+                                    <Form.List name={'common:shortName'}>
+                                        {(subFields, subOpt) => (
+                                            <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
+                                                {subFields.map((subField) => (
+                                                    <>
+                                                        <Space key={subField.key} direction="vertical">
+                                                            <Space>
+                                                                <Form.Item noStyle name={[subField.name, '@xml:lang']}>
+                                                                    <Select
+                                                                        placeholder="Select a lang"
+                                                                        optionFilterProp="lang"
+                                                                        options={langOptions}
+                                                                    />
+                                                                </Form.Item>
+                                                                <CloseOutlined
+                                                                    onClick={() => {
+                                                                        subOpt.remove(subField.name);
+                                                                    }}
                                                                 />
+                                                            </Space>
+                                                            <Form.Item noStyle name={[subField.name, '#text']}>
+                                                                <TextArea placeholder="text" rows={1} />
                                                             </Form.Item>
-                                                            <CloseOutlined
-                                                                onClick={() => {
-                                                                    subOpt.remove(subField.name);
-                                                                }}
-                                                            />
                                                         </Space>
-                                                        <Form.Item noStyle name={[subField.name, '#text']}>
-                                                            <TextArea placeholder="text" rows={1} />
-                                                        </Form.Item>
-                                                    </Space>
-                                                </>
-                                            ))}
-                                            <Button type="dashed" onClick={() => subOpt.add()} block>
-                                                + Add Short Name Item
-                                            </Button>
-                                        </div>
-                                    )}
-                                </Form.List>
+                                                    </>
+                                                ))}
+                                                <Button type="dashed" onClick={() => subOpt.add()} block>
+                                                    + Add Short Name Item
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </Form.List>
+                                </Form.Item>
+                            </Card>
+                            <Card size="small" title={'Classification'}>
+                                <Space>
+                                    <Form.Item name={['common:class', '@level_0']}>
+                                        <Input placeholder="Level 1" />
+                                    </Form.Item>
+                                    <Form.Item name={['common:class', '@level_1']}>
+                                        <Input placeholder="Level 2" />
+                                    </Form.Item>
+                                    <Form.Item name={['common:class', '@level_2']}>
+                                        <Input placeholder="Level 3" />
+                                    </Form.Item>
+                                </Space>
+                            </Card>
+                            <Form.Item label="SourceCitation" name={'sourceCitation'}>
+                                <Input />
+                            </Form.Item>
+                            <Form.Item label="PublicationType" name={'publicationType'}>
+                                <Input />
                             </Form.Item>
                         </Card>
-                        <Card size="small" title={'Classification'}>
-                            <Space>
-                                <Form.Item name={['common:class', '@level_0']}>
-                                    <Input placeholder="Level 1" />
+                        <Card size="small" title={'Administrative Information'}>
+                            <Form.Item name={'dataEntryBy:common:timeStamp'}>
+                                <DatePicker showTime placeholder="Select" />
+                            </Form.Item>
+                            <Form.Item name={'dataEntryBy:common:@type'}>
+                                <Input placeholder="@type" />
+                            </Form.Item>
+                            <Form.Item name={'dataEntryBy:common:@refObjectId'}>
+                                <Input placeholder="@refObjectId" />
+                            </Form.Item>
+                            <Form.Item name={'dataEntryBy:common:@uri'}>
+                                <Input placeholder="@uri" />
+                            </Form.Item>
+                            <Card size="small" title={'Short Description'}>
+                                <Form.Item>
+                                    <Form.List name={'dataEntryBy:common:shortDescription'}>
+                                        {(subFields, subOpt) => (
+                                            <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
+                                                {subFields.map((subField) => (
+                                                    <>
+                                                        <Space key={subField.key} direction="vertical">
+                                                            <Space>
+                                                                <Form.Item noStyle name={[subField.name, '@xml:lang']}>
+                                                                    <Select
+                                                                        placeholder="Select a lang"
+                                                                        optionFilterProp="lang"
+                                                                        options={langOptions}
+                                                                    />
+                                                                </Form.Item>
+                                                                <CloseOutlined
+                                                                    onClick={() => {
+                                                                        subOpt.remove(subField.name);
+                                                                    }}
+                                                                />
+                                                            </Space>
+                                                            <Form.Item noStyle name={[subField.name, '#text']}>
+                                                                <Input placeholder="text" />
+                                                            </Form.Item>
+                                                        </Space>
+                                                    </>
+                                                ))}
+                                                <Button type="dashed" onClick={() => subOpt.add()} block>
+                                                    + Add Short Description Item
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </Form.List>
                                 </Form.Item>
-                                <Form.Item name={['common:class', '@level_1']}>
-                                    <Input placeholder="Level 2" />
-                                </Form.Item>
-                                <Form.Item name={['common:class', '@level_2']}>
-                                    <Input placeholder="Level 3" />
-                                </Form.Item>
-                            </Space>
+                            </Card>
+                            <br />
+                            <Form.Item name={'publicationAndOwnership:common:dataSetVersion'}>
+                                <Input placeholder="DataSet Version" />
+                            </Form.Item>
                         </Card>
-                        <Form.Item label="SourceCitation" name={'sourceCitation'}>
-                            <Input />
-                        </Form.Item>
-                        <Form.Item label="PublicationType" name={'publicationType'}>
-                            <Input />
-                        </Form.Item>
-                        <Form.Item label="Data Set Version" name={'common:dataSetVersion'}>
-                            <Input />
-                        </Form.Item>
                         <Form.Item noStyle shouldUpdate>
                             {() => (
                                 <Typography>
