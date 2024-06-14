@@ -126,7 +126,7 @@ function initAdministrativeInformation(data: any) {
     }
   }
   let publicationAndOwnership = data?.publicationAndOwnership;
-  let referenceToPrecedingDataSetVersion = publicationAndOwnership?.["common:referenceToDataSetFormat"];
+  let referenceToPrecedingDataSetVersion = publicationAndOwnership?.["common:referenceToPrecedingDataSetVersion"];
   let publicationAndOwnership_common_shortDescription = {}
   if (referenceToPrecedingDataSetVersion?.['common:shortDescription']) {
     if (referenceToPrecedingDataSetVersion?.['common:shortDescription'].length === 1) {
@@ -161,7 +161,7 @@ export function genFlowpropertiesJsonOrdered(id: string, data: any, oldData: any
   let flowPropertiesInformation = initFlowPropertiesInformation(data?.flowPropertiesInformation, id);
   let modellingAndValidation = initModellingAndValidation(data?.modellingAndValidation);
   let administrativeInformation = initAdministrativeInformation(data?.administrativeInformation);
-
+  console.log('administrativeInformation', administrativeInformation)
   const newData = {
     flowPropertyDataSet: {
       ...getAttribute('@xmlns:common', oldData.flowPropertyDataSet['@xmlns:common']),

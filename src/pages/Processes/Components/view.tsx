@@ -146,7 +146,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
             <LangTextItemDescription
               data={
                 result.data.json?.processDataSet?.processInformation?.dataSetInformation?.[
-                  'common:generalComment'
+                'common:generalComment'
                 ]
               }
             />
@@ -205,7 +205,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
               <LangTextItemDescription
                 data={
                   result.data.json?.processDataSet?.processInformation?.time?.[
-                    'common:timeRepresentativenessDescription'
+                  'common:timeRepresentativenessDescription'
                   ]
                 }
               />
@@ -425,7 +425,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
               <LangTextItemDescription
                 data={
                   result.data.json?.processDataSet?.modellingAndValidation?.validation?.review?.[
-                    'common:reviewDetails'
+                  'common:reviewDetails'
                   ]
                 }
               />
@@ -434,7 +434,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
                 title={'Reference To Name Of Reviewer And Institution'}
                 data={
                   result.data.json?.processDataSet?.modellingAndValidation?.validation?.review?.[
-                    'common:referenceToNameOfReviewerAndInstitution'
+                  'common:referenceToNameOfReviewerAndInstitution'
                   ]
                 }
               />
@@ -447,7 +447,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
               title={'Data Generator: Rreference To Person Or Entity Generating The Data Set'}
               data={
                 result.data.json?.processDataSet?.administrativeInformation?.dataGenerator?.[
-                  'common:referenceToPersonOrEntityGeneratingTheDataSet'
+                'common:referenceToPersonOrEntityGeneratingTheDataSet'
                 ]
               }
             />

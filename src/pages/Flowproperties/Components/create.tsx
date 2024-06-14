@@ -49,11 +49,11 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef }) => {
           <Card size="small" title={'Name'}>
             <LangTextItemFrom keyName={['dataSetInformation', 'common:name']} labelName="Name" />
           </Card>
-
+          <br />
           <Card size="small" title={'General Comment'}>
             <LangTextItemFrom keyName={['dataSetInformation', "common:generalComment"]} labelName="General Comment" />
           </Card>
-
+          <br />
           <Card size="small" title={'Classification'}>
             <Space>
               <Form.Item name={['dataSetInformation', 'common:class', '@level_0']}>
@@ -69,7 +69,7 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef }) => {
           </Card>
 
         </Card>
-
+        <br />
         <Card size="small" title={'Quantitative Reference'}>
           <Form.Item label='Ref Object Id' name={['quantitativeReference', 'referenceToReferenceUnitGroup', '@refObjectId']}>
             <Input />
@@ -277,6 +277,8 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef }) => {
               );
               formRefCreate.current?.resetFields();
               setDrawerVisible(false);
+              setActiveTabKey('flowPropertiesInformation');
+              setFromData({});
               reload();
             } else {
               message.error(result.error.message);

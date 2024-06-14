@@ -7,7 +7,9 @@ type Props = {
 };
 
 const LevelTextItemDescription: FC<Props> = ({ data }) => {
+  console.log(data)
   const items: { [key: string]: string } = classificationToJson(data);
+  console.log(items)
   return (
     <Descriptions bordered size={'small'} column={1}>
       <Descriptions.Item key={0} label="Level 1" labelStyle={{ width: '100px' }}>
