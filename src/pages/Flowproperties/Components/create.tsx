@@ -21,7 +21,11 @@ import {
   Divider
 } from 'antd';
 import type { FC } from 'react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  // useEffect,
+  useRef, useState
+} from 'react';
 import { FormattedMessage } from 'umi';
 
 type Props = {
@@ -56,13 +60,13 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef }) => {
           <br />
           <Card size="small" title={'Classification'}>
             <Space>
-              <Form.Item name={['dataSetInformation', 'common:class', '@level_0']}>
+              <Form.Item name={['dataSetInformation', "classificationInformation", 'common:classification', 'common:class', '@level_0']}>
                 <Input placeholder="Level 1" />
               </Form.Item>
-              <Form.Item name={['dataSetInformation', 'common:class', '@level_1']}>
+              <Form.Item name={['dataSetInformation', "classificationInformation", 'common:classification', 'common:class', '@level_1']}>
                 <Input placeholder="Level 2" />
               </Form.Item>
-              <Form.Item name={['dataSetInformation', 'common:class', '@level_2']}>
+              <Form.Item name={['dataSetInformation', "classificationInformation", 'common:classification', 'common:class', '@level_2']}>
                 <Input placeholder="Level 3" />
               </Form.Item>
             </Space>
@@ -215,12 +219,12 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef }) => {
     </Space>)
   }
   const onTabChange = (key: string) => {
-    setFromData({ ...fromData, [activeTabKey]: formRefCreate.current?.getFieldsValue() });
+    // setFromData({ ...fromData, [activeTabKey]: formRefCreate.current?.getFieldsValue() });
     setActiveTabKey(key);
   };
-  useEffect(() => {
-    setFromData({ ...fromData, [activeTabKey]: formRefCreate.current?.getFieldsValue() });
-  }, [drawerVisible, formRefCreate.current?.getFieldsValue()]);
+  // useEffect(() => {
+  //   setFromData({ ...fromData, [activeTabKey]: formRefCreate.current?.getFieldsValue() });
+  // }, [drawerVisible, formRefCreate.current?.getFieldsValue()]);
   return (
     <>
       <Tooltip title={<FormattedMessage id="options.create" defaultMessage="Create" />}>
@@ -284,6 +288,9 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef }) => {
               message.error(result.error.message);
             }
             return true;
+          }}
+          onValuesChange={async (changedValues, allValues) => {
+            setFromData({ ...fromData, [activeTabKey]: allValues })
           }}
         >
           <Card

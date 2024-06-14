@@ -12,41 +12,42 @@ function initFlowPropertiesInformation(data: any, id: string) {
     }
   }
   let common_class = {};
-  if (dataSetInformation?.['common:class']?.['@level_0'] && dataSetInformation?.['common:class']?.['@level_0'].trim() !== '') {
+  let classification = dataSetInformation?.classificationInformation?.['common:classification'];
+  if (classification?.['common:class']?.['@level_0'] && classification?.['common:class']?.['@level_0'].trim() !== '') {
     common_class = {
       '@level': 0,
-      '#text': dataSetInformation?.['common:class']?.['@level_0'],
+      '#text': classification?.['common:class']?.['@level_0'],
     };
     if (
-      dataSetInformation?.['common:class']?.['@level_1'] &&
-      dataSetInformation?.['common:class']?.['@level_1'].trim() !== ''
+      classification?.['common:class']?.['@level_1'] &&
+      classification?.['common:class']?.['@level_1'].trim() !== ''
     ) {
       common_class = [
         {
           '@level': 0,
-          '#text': dataSetInformation?.['common:class']?.['@level_0'],
+          '#text': classification?.['common:class']?.['@level_0'],
         },
         {
           '@level': 1,
-          '#text': dataSetInformation?.['common:class']?.['@level_1'],
+          '#text': classification?.['common:class']?.['@level_1'],
         },
       ];
       if (
-        dataSetInformation?.['common:class']?.['@level_2'] &&
-        dataSetInformation?.['common:class']?.['@level_2'].trim() !== ''
+        classification?.['common:class']?.['@level_2'] &&
+        classification?.['common:class']?.['@level_2'].trim() !== ''
       ) {
         common_class = [
           {
             '@level': 0,
-            '#text': dataSetInformation?.['common:class']?.['@level_0'],
+            '#text': classification?.['common:class']?.['@level_0'],
           },
           {
             '@level': 1,
-            '#text': dataSetInformation?.['common:class']?.['@level_1'],
+            '#text': classification?.['common:class']?.['@level_1'],
           },
           {
             '@level': 2,
-            '#text': dataSetInformation?.['common:class']?.['@level_2'],
+            '#text': classification?.['common:class']?.['@level_2'],
           },
         ];
       }
@@ -161,7 +162,6 @@ export function genFlowpropertiesJsonOrdered(id: string, data: any, oldData: any
   let flowPropertiesInformation = initFlowPropertiesInformation(data?.flowPropertiesInformation, id);
   let modellingAndValidation = initModellingAndValidation(data?.modellingAndValidation);
   let administrativeInformation = initAdministrativeInformation(data?.administrativeInformation);
-  console.log('administrativeInformation', administrativeInformation)
   const newData = {
     flowPropertyDataSet: {
       ...getAttribute('@xmlns:common', oldData.flowPropertyDataSet['@xmlns:common']),

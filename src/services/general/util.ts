@@ -55,7 +55,6 @@ export function classificationToString(classifications: any) {
   } else {
     classificationStr = classifications['#text'] ?? '-';
   }
-  console.log('classificationStr', classificationStr);
   return classificationStr;
 }
 

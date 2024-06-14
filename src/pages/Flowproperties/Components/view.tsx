@@ -133,7 +133,6 @@ const FlowpropertiesView: FC<Props> = ({ id, dataSource }) => {
   function initAdministrativeInformation(data: any) {
     let dataEntryBy = data?.dataEntryBy
     let publicationAndOwnership = data?.publicationAndOwnership
-    console.log(publicationAndOwnership)
     return (
       <>
         <Card size="small" title={'Data Entry By'}>
