@@ -20,6 +20,8 @@ export default {
   'options.submit': '提交',
   'options.option': '配置',
   'options.createsuccess': '创建成功',
+  'options.editsuccess': '编辑成功',
+  'options.deleteMessage': '你确定删除该条数据?',
   'options.view': '查看',
   ...pages,
   ...globalHeader,

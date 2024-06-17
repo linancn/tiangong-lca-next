@@ -20,6 +20,8 @@ export default {
   'options.submit': 'Submit',
   'options.option': 'Option',
   'options.createsuccess': 'Create success',
+  'options.editsuccess': 'Edit Success',
+  'options.deleteMessage': 'Are you sure you want to delete this data?',
   'options.view': 'View',
   ...globalHeader,
   ...menu,
