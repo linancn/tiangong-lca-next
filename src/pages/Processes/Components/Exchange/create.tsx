@@ -1,10 +1,8 @@
 import LangTextItemFrom from '@/components/LangTextItem/from';
-import { createContact } from '@/services/contacts/api';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import ProForm from '@ant-design/pro-form';
-import type { ActionType } from '@ant-design/pro-table';
 import {
   Button,
   Card,
@@ -16,22 +14,17 @@ import {
   Space,
   Tooltip,
   Typography,
-  message,
 } from 'antd';
 import type { FC } from 'react';
-import { useCallback, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 
 type Props = {
-  actionRef: React.MutableRefObject<ActionType | undefined>;
+  onData: (data: any) => void;
 };
-const ProcessExchangeCreate: FC<Props> = ({ actionRef }) => {
+const ProcessExchangeCreate: FC<Props> = ({ onData }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
-
-  const reload = useCallback(() => {
-    actionRef.current?.reload();
-  }, [actionRef]);
 
   return (
     <>
@@ -79,20 +72,9 @@ const ProcessExchangeCreate: FC<Props> = ({ actionRef }) => {
             },
           }}
           onFinish={async (values) => {
-            const result = await createContact({ ...values });
-            if (result.data) {
-              message.success(
-                <FormattedMessage
-                  id="options.createsuccess"
-                  defaultMessage="Created Successfully!"
-                />,
-              );
-              formRefCreate.current?.resetFields();
-              setDrawerVisible(false);
-              reload();
-            } else {
-              message.error(result.error.message);
-            }
+            onData({ ...values });
+            formRefCreate.current?.resetFields();
+            setDrawerVisible(false);
             return true;
           }}
         >
