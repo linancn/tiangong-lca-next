@@ -1,4 +1,10 @@
-import { getLangJson, removeEmptyObjects } from '../general/util';
+import {
+  classificationToJson,
+  classificationToList,
+  getLangJson,
+  getLangList,
+  removeEmptyObjects,
+} from '../general/util';
 
 export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
   return removeEmptyObjects({
@@ -16,7 +22,7 @@ export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
           },
           classificationInformation: {
             'common:classification': {
-              'common:class': getLangJson(
+              'common:class': classificationToList(
                 data?.processInformation?.dataSetInformation?.classificationInformation?.[
                   'common:classification'
                 ]?.['common:class'],
@@ -249,6 +255,88 @@ export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
         },
       },
       exchanges: data?.exchanges ?? {},
+    },
+  });
+}
+
+export function genProcessFromData(data: any) {
+  return removeEmptyObjects({
+    processInformation: {
+      dataSetInformation: {
+        name: {
+          baseName: getLangList(data?.processInformation?.dataSetInformation?.name?.baseName),
+        },
+        classificationInformation: {
+          'common:classification': {
+            'common:class': classificationToJson(
+              data?.processInformation?.dataSetInformation?.classificationInformation?.[
+                'common:classification'
+              ]?.['common:class'],
+            ),
+          },
+        },
+        'common:generalComment': getLangList(
+          data?.processInformation?.dataSetInformation?.['common:generalComment'],
+        ),
+      },
+      quantitativeReference: {
+        '@type': data?.processInformation?.quantitativeReference?.['@type'] ?? {},
+        referenceToReferenceFlow:
+          data?.processInformation?.quantitativeReference?.referenceToReferenceFlow ?? {},
+        functionalUnitOrOther: getLangList(
+          data?.processInformation?.quantitativeReference?.functionalUnitOrOther,
+        ),
+      },
+      time: {
+        'common:referenceYear': data?.processInformation?.time?.['common:referenceYear'] ?? {},
+        'common:timeRepresentativenessDescription': getLangList(
+          data?.processInformation?.time?.['common:timeRepresentativenessDescription'],
+        ),
+      },
+      geography: {
+        locationOfOperationSupplyOrProduction: {
+          '@location':
+            data?.processInformation?.geography?.locationOfOperationSupplyOrProduction?.[
+              '@location'
+            ] ?? {},
+          descriptionOfRestrictions: getLangList(
+            data?.processInformation?.geography?.locationOfOperationSupplyOrProduction
+              ?.descriptionOfRestrictions,
+          ),
+        },
+      },
+      technology: {
+        technologyDescriptionAndIncludedProcesses: getLangList(
+          data?.processInformation?.technology?.technologyDescriptionAndIncludedProcesses,
+        ),
+        technologicalApplicability: getLangList(
+          data?.processInformation?.technology?.technologicalApplicability,
+        ),
+        referenceToTechnologyFlowDiagrammOrPicture: {
+          '@type':
+            data?.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.[
+              '@type'
+            ] ?? {},
+          '@refObjectId':
+            data?.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.[
+              '@refObjectId'
+            ] ?? {},
+          '@uri':
+            data?.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.[
+              '@uri'
+            ] ?? {},
+          'common:shortDescription': getLangList(
+            data?.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.[
+              'common:shortDescription'
+            ],
+          ),
+        },
+      },
+      mathematicalRelations: {
+        modelDescription: getLangList(
+          data?.processInformation?.mathematicalRelations?.modelDescription,
+        ),
+      },
     },
   });
 }

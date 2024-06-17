@@ -5,7 +5,6 @@ import { classificationToString, getLangText } from '../general/util';
 import { genProcessJsonOrdered } from './util';
 
 export async function createProcess(data: any) {
-  console.log('createProcess', data);
   const newID = v4();
   const oldData = {
     processDataSet: {
@@ -17,11 +16,13 @@ export async function createProcess(data: any) {
       '@xsi:schemaLocation': 'http://lca.jrc.it/ILCD/Process ../../schemas/ILCD_ProcessDataSet.xsd',
     },
   };
+  console.log(data);
   const newData = genProcessJsonOrdered(newID, data, oldData);
   const result = await supabase
     .from('processes')
     .insert([{ id: newID, json_ordered: newData }])
     .select();
+  console.log(result);
   return result;
 }
 
@@ -128,7 +129,7 @@ export async function getProcessDetail(id: string) {
     });
   }
   return Promise.resolve({
-    data: {},
+    data: null,
     success: true,
   });
 }
