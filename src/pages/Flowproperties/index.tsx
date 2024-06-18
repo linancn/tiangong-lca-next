@@ -78,8 +78,9 @@ const TableList: FC = () => {
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
+                
               />
+              {/* setViewDrawerVisible={() => {}} */}
               <FlowpropertiesDelete
                 id={row.id}
                 buttonType={'icon'}

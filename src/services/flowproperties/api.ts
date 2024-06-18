@@ -112,11 +112,9 @@ export async function getFlowpropertiesTable(
           return {
             id: i.id,
             lang: lang,
-            // shortName: getLangText(i['common:shortName'], lang),
             name: getLangText(i['common:name'], lang),
             classification: classificationToString(i['common:class']),
             generalComment: getLangText(i['common:generalComment'], lang),
-            // email: i.email ?? '-',
             createdAt: new Date(i.created_at),
           };
         } catch (e) {
@@ -144,28 +142,7 @@ export async function getFlowpropertiesDetail(id: string) {
     return Promise.resolve({
       data: {
         id: id,
-        // 'common:shortName': getLangList(
-        //   data?.json?.contactDataSet?.contactInformation?.dataSetInformation?.['common:shortName'],
-        // ),
-        'common:name': getLangList(
-          data?.json?.flowPropertyDataSet?.flowPropertiesInformation?.dataSetInformation?.[
-            'common:name'
-          ],
-        ),
-        'common:class': classificationToJson(
-          data?.json?.flowPropertyDataSet?.flowPropertiesInformation?.dataSetInformation
-            ?.classificationInformation?.['common:classification']?.['common:class'],
-        ),
-        'common:generalComment': getLangList(
-          data?.json?.flowPropertyDataSet?.flowPropertiesInformation?.dataSetInformation?.[
-            'common:generalComment'
-          ],
-        ),
-        // email: data?.json?.contactDataSet?.contactInformation?.dataSetInformation?.email,
-        // 'common:dataSetVersion':
-        //   data?.json?.contactDataSet?.administrativeInformation?.publicationAndOwnership?.[
-        //     'common:dataSetVersion'
-        //   ],
+        json: data.json,
         createdAt: data?.created_at,
       },
       success: true,
