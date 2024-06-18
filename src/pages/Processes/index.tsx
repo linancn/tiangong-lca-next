@@ -10,6 +10,8 @@ import type { FC } from 'react';
 import { useRef } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 import ProcessCreate from './Components/create';
+import ProcessDelete from './Components/delete';
+import ProcessEdit from './Components/edit';
 import ProcessView from './Components/view';
 
 const TableList: FC = () => {
@@ -35,7 +37,7 @@ const TableList: FC = () => {
       dataIndex: 'baseName',
       sorter: false,
       render: (_, row) => [
-        <Tooltip key={0} placement="topLeft" title={row.generalComment}>
+        <Tooltip key={0} placement="topLeft" title={row.generalComment ?? '-'}>
           {row.baseName}
         </Tooltip>,
       ],
@@ -73,25 +75,25 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <ProcessView id={row.id} dataSource={dataSource} actionRef={actionRef} />
-              {/* //       //   <ContactEdit
-            //       //     id={row.id}
-            //       //     buttonType={'icon'}
-            //       //     actionRef={actionRef}
-            //       //     setViewDrawerVisible={() => {}}
-            //       //   />
-            //       //   <ContactDelete
-            //       //     id={row.id}
-            //       //     buttonType={'icon'}
-            //       //     actionRef={actionRef}
-            //       //     setViewDrawerVisible={() => {}}
-            //       //   /> */}
+              <ProcessView id={row.id} dataSource={dataSource} lang={lang} actionRef={actionRef} />
+              <ProcessEdit
+                id={row.id}
+                buttonType={'icon'}
+                actionRef={actionRef}
+                setViewDrawerVisible={() => {}}
+              />
+              <ProcessDelete
+                id={row.id}
+                buttonType={'icon'}
+                actionRef={actionRef}
+                setViewDrawerVisible={() => {}}
+              />
             </Space>,
           ];
         }
         return [
           <Space size={'small'} key={0}>
-            <ProcessView id={row.id} dataSource={dataSource} actionRef={actionRef} />
+            <ProcessView id={row.id} dataSource={dataSource} lang={lang} actionRef={actionRef} />
           </Space>,
         ];
       },
@@ -110,7 +112,7 @@ const TableList: FC = () => {
         }}
         toolBarRender={() => {
           if (dataSource === 'my') {
-            return [<ProcessCreate key={0} actionRef={actionRef} />];
+            return [<ProcessCreate key={0} lang={lang} actionRef={actionRef} />];
           }
           return [];
         }}

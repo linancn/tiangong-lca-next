@@ -2,11 +2,12 @@ import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import SourceDescription from '@/components/ReferenceData/description';
 import { ListPagination } from '@/services/general/data';
+import { getLangText } from '@/services/general/util';
 import { getProcessDetail } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
-import { ActionType, ProTable } from '@ant-design/pro-components';
+import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useEffect, useState } from 'react';
@@ -16,10 +17,11 @@ import { FormattedMessage } from 'umi';
 
 type Props = {
   id: string;
+  lang: string;
   dataSource: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
 };
-const ProcessView: FC<Props> = ({ id, dataSource }) => {
+const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
   const [contentList, setContentList] = useState<Record<string, React.ReactNode>>({
     processInformation: <></>,
     modellingAndValidation: <></>,
@@ -70,6 +72,11 @@ const ProcessView: FC<Props> = ({ id, dataSource }) => {
       dataIndex: 'referenceToFlowDataSet',
       sorter: false,
       search: false,
+      render: (_, row) => [
+        <Tooltip key={0} placement="topLeft" title={row.generalComment}>
+          {row.referenceToFlowDataSet}
+        </Tooltip>,
+      ],
     },
     {
       title: <FormattedMessage id="processExchange.meanAmount" defaultMessage="Mean Amount" />,
@@ -87,9 +94,12 @@ const ProcessView: FC<Props> = ({ id, dataSource }) => {
     },
     {
       title: (
-        <FormattedMessage id="processExchange.generalComment" defaultMessage="General Comment" />
+        <FormattedMessage
+          id="processExchange.dataDerivationTypeStatus"
+          defaultMessage="Data Derivation Type Status"
+        />
       ),
-      dataIndex: 'generalComment',
+      dataIndex: 'dataDerivationTypeStatus',
       sorter: false,
       search: false,
     },
@@ -114,7 +124,7 @@ const ProcessView: FC<Props> = ({ id, dataSource }) => {
           <>
             <Descriptions bordered size={'small'} column={1}>
               <Descriptions.Item key={0} label="ID" labelStyle={{ width: '100px' }}>
-                {result.data.json.processDataSet.processInformation.dataSetInformation[
+                {result.data.json?.processDataSet?.processInformation?.dataSetInformation?.[
                   'common:UUID'
                 ] ?? '-'}
               </Descriptions.Item>
@@ -125,7 +135,8 @@ const ProcessView: FC<Props> = ({ id, dataSource }) => {
             </Divider>
             <LangTextItemDescription
               data={
-                result.data.json.processDataSet.processInformation.dataSetInformation.name.baseName
+                result.data.json?.processDataSet?.processInformation?.dataSetInformation?.name
+                  ?.baseName
               }
             />
 
@@ -134,7 +145,7 @@ const ProcessView: FC<Props> = ({ id, dataSource }) => {
             </Divider>
             <LangTextItemDescription
               data={
-                result.data.json.processDataSet.processInformation.dataSetInformation[
+                result.data.json?.processDataSet?.processInformation?.dataSetInformation?.[
                   'common:generalComment'
                 ]
               }
@@ -145,15 +156,15 @@ const ProcessView: FC<Props> = ({ id, dataSource }) => {
             </Divider>
             <LevelTextItemDescription
               data={
-                result.data.json.processDataSet.processInformation.dataSetInformation
-                  .classificationInformation['common:classification']['common:class']
+                result.data.json?.processDataSet?.processInformation?.dataSetInformation
+                  ?.classificationInformation?.['common:classification']?.['common:class']
               }
             />
             <br />
             <Card size="small" title={'Quantitative Reference'}>
               <Descriptions bordered size={'small'} column={1}>
                 <Descriptions.Item key={0} label="Type" labelStyle={{ width: '100px' }}>
-                  {result.data.json.processDataSet.processInformation.quantitativeReference[
+                  {result.data.json?.processDataSet?.processInformation?.quantitativeReference?.[
                     '@type'
                   ] ?? '-'}
                 </Descriptions.Item>
@@ -165,8 +176,8 @@ const ProcessView: FC<Props> = ({ id, dataSource }) => {
                   label="Reference To Reference Flow"
                   labelStyle={{ width: '220px' }}
                 >
-                  {result.data.json.processDataSet.processInformation.quantitativeReference
-                    .referenceToReferenceFlow ?? '-'}
+                  {result.data.json?.processDataSet?.processInformation?.quantitativeReference
+                    ?.referenceToReferenceFlow ?? '-'}
                 </Descriptions.Item>
               </Descriptions>
               <Divider orientationMargin="0" orientation="left" plain>
@@ -174,8 +185,8 @@ const ProcessView: FC<Props> = ({ id, dataSource }) => {
               </Divider>
               <LangTextItemDescription
                 data={
-                  result.data.json.processDataSet.processInformation.quantitativeReference
-                    .functionalUnitOrOther
+                  result.data.json?.processDataSet?.processInformation?.quantitativeReference
+                    ?.functionalUnitOrOther
                 }
               />
             </Card>
@@ -183,7 +194,7 @@ const ProcessView: FC<Props> = ({ id, dataSource }) => {
             <Card size="small" title={'Time'}>
               <Descriptions bordered size={'small'} column={1}>
                 <Descriptions.Item key={0} label="Reference Year" labelStyle={{ width: '140px' }}>
-                  {result.data.json.processDataSet.processInformation.time[
+                  {result.data.json?.processDataSet?.processInformation?.time?.[
                     'common:referenceYear'
                   ] ?? '-'}
                 </Descriptions.Item>
@@ -193,7 +204,7 @@ const ProcessView: FC<Props> = ({ id, dataSource }) => {
               </Divider>
               <LangTextItemDescription
                 data={
-                  result.data.json.processDataSet.processInformation.time[
+                  result.data.json?.processDataSet?.processInformation?.time?.[
                     'common:timeRepresentativenessDescription'
                   ]
                 }
@@ -203,8 +214,8 @@ const ProcessView: FC<Props> = ({ id, dataSource }) => {
             <Card size="small" title={'Geography: Location Of Operation Supply Or Production'}>
               <Descriptions bordered size={'small'} column={1}>
                 <Descriptions.Item key={0} label="Location" labelStyle={{ width: '100px' }}>
-                  {result.data.json.processDataSet.processInformation.geography
-                    .locationOfOperationSupplyOrProduction['@location'] ?? '-'}
+                  {result.data.json?.processDataSet?.processInformation?.geography
+                    ?.locationOfOperationSupplyOrProduction?.['@location'] ?? '-'}
                 </Descriptions.Item>
               </Descriptions>
               <Divider orientationMargin="0" orientation="left" plain>
@@ -212,8 +223,8 @@ const ProcessView: FC<Props> = ({ id, dataSource }) => {
               </Divider>
               <LangTextItemDescription
                 data={
-                  result.data.json.processDataSet.processInformation.geography
-                    .locationOfOperationSupplyOrProduction.descriptionOfRestrictions
+                  result.data.json?.processDataSet?.processInformation?.geography
+                    ?.locationOfOperationSupplyOrProduction?.descriptionOfRestrictions
                 }
               />
             </Card>
@@ -224,8 +235,8 @@ const ProcessView: FC<Props> = ({ id, dataSource }) => {
               </Divider>
               <LangTextItemDescription
                 data={
-                  result.data.json.processDataSet.processInformation.technology
-                    .technologyDescriptionAndIncludedProcesses
+                  result.data.json?.processDataSet?.processInformation?.technology
+                    ?.technologyDescriptionAndIncludedProcesses
                 }
               />
               <Divider orientationMargin="0" orientation="left" plain>
@@ -233,16 +244,16 @@ const ProcessView: FC<Props> = ({ id, dataSource }) => {
               </Divider>
               <LangTextItemDescription
                 data={
-                  result.data.json.processDataSet.processInformation.technology
-                    .technologicalApplicability
+                  result.data.json?.processDataSet?.processInformation?.technology
+                    ?.technologicalApplicability
                 }
               />
               <br />
               <SourceDescription
                 title={'Reference To Technology Flow Diagramm Or Picture'}
                 data={
-                  result.data.json.processDataSet.processInformation.technology
-                    .referenceToTechnologyFlowDiagrammOrPicture
+                  result.data.json?.processDataSet?.processInformation?.technology
+                    ?.referenceToTechnologyFlowDiagrammOrPicture
                 }
               />
             </Card>
@@ -251,7 +262,7 @@ const ProcessView: FC<Props> = ({ id, dataSource }) => {
             </Divider>
             <LangTextItemDescription
               data={
-                result.data.json.processDataSet.processInformation.mathematicalRelations
+                result.data.json?.processDataSet?.processInformation?.mathematicalRelations
                   ?.modelDescription
               }
             />
@@ -293,8 +304,8 @@ const ProcessView: FC<Props> = ({ id, dataSource }) => {
                   label="LCI Method Approaches"
                   labelStyle={{ width: '220px' }}
                 >
-                  {result.data.json.processDataSet.modellingAndValidation.LCIMethodAndAllocation
-                    .LCIMethodApproaches ?? '-'}
+                  {result.data.json?.processDataSet?.modellingAndValidation?.LCIMethodAndAllocation
+                    ?.LCIMethodApproaches ?? '-'}
                 </Descriptions.Item>
               </Descriptions>
 
@@ -303,8 +314,8 @@ const ProcessView: FC<Props> = ({ id, dataSource }) => {
               </Divider>
               <LangTextItemDescription
                 data={
-                  result.data.json.processDataSet.modellingAndValidation.LCIMethodAndAllocation
-                    .deviationsFromLCIMethodApproaches
+                  result.data.json?.processDataSet?.modellingAndValidation?.LCIMethodAndAllocation
+                    ?.deviationsFromLCIMethodApproaches
                 }
               />
               <Divider orientationMargin="0" orientation="left" plain>
@@ -312,8 +323,8 @@ const ProcessView: FC<Props> = ({ id, dataSource }) => {
               </Divider>
               <LangTextItemDescription
                 data={
-                  result.data.json.processDataSet.modellingAndValidation.LCIMethodAndAllocation
-                    .deviationsFromModellingConstants
+                  result.data.json?.processDataSet?.modellingAndValidation?.LCIMethodAndAllocation
+                    ?.deviationsFromModellingConstants
                 }
               />
             </Card>
@@ -324,9 +335,9 @@ const ProcessView: FC<Props> = ({ id, dataSource }) => {
               </Divider>
               <LangTextItemDescription
                 data={
-                  result.data.json.processDataSet.modellingAndValidation
-                    .dataSourcesTreatmentAndRepresentativeness
-                    .deviationsFromCutOffAndCompletenessPrinciples
+                  result.data.json?.processDataSet?.modellingAndValidation
+                    ?.dataSourcesTreatmentAndRepresentativeness
+                    ?.deviationsFromCutOffAndCompletenessPrinciples
                 }
               />
               <Divider orientationMargin="0" orientation="left" plain>
@@ -334,8 +345,9 @@ const ProcessView: FC<Props> = ({ id, dataSource }) => {
               </Divider>
               <LangTextItemDescription
                 data={
-                  result.data.json.processDataSet.modellingAndValidation
-                    .dataSourcesTreatmentAndRepresentativeness.dataSelectionAndCombinationPrinciples
+                  result.data.json?.processDataSet?.modellingAndValidation
+                    ?.dataSourcesTreatmentAndRepresentativeness
+                    ?.dataSelectionAndCombinationPrinciples
                 }
               />
               <Divider orientationMargin="0" orientation="left" plain>
@@ -343,9 +355,9 @@ const ProcessView: FC<Props> = ({ id, dataSource }) => {
               </Divider>
               <LangTextItemDescription
                 data={
-                  result.data.json.processDataSet.modellingAndValidation
-                    .dataSourcesTreatmentAndRepresentativeness
-                    .deviationsFromSelectionAndCombinationPrinciples
+                  result.data.json?.processDataSet?.modellingAndValidation
+                    ?.dataSourcesTreatmentAndRepresentativeness
+                    ?.deviationsFromSelectionAndCombinationPrinciples
                 }
               />
               <Divider orientationMargin="0" orientation="left" plain>
@@ -353,9 +365,9 @@ const ProcessView: FC<Props> = ({ id, dataSource }) => {
               </Divider>
               <LangTextItemDescription
                 data={
-                  result.data.json.processDataSet.modellingAndValidation
-                    .dataSourcesTreatmentAndRepresentativeness
-                    .dataTreatmentAndExtrapolationsPrinciples
+                  result.data.json?.processDataSet?.modellingAndValidation
+                    ?.dataSourcesTreatmentAndRepresentativeness
+                    ?.dataTreatmentAndExtrapolationsPrinciples
                 }
               />
               <Divider orientationMargin="0" orientation="left" plain>
@@ -363,7 +375,7 @@ const ProcessView: FC<Props> = ({ id, dataSource }) => {
               </Divider>
               <LangTextItemDescription
                 data={
-                  result.data.json?.processDataSet.modellingAndValidation
+                  result.data.json?.processDataSet?.modellingAndValidation
                     ?.dataSourcesTreatmentAndRepresentativeness
                     ?.deviationsFromTreatmentAndExtrapolationPrinciples
                 }
@@ -388,11 +400,15 @@ const ProcessView: FC<Props> = ({ id, dataSource }) => {
               />
             </Card>
             <br />
-            <Descriptions bordered size={'small'} column={1}>
-              <Descriptions.Item key={0} label="Completeness" labelStyle={{ width: '100px' }}>
-                {result.data.json?.processDataSet?.modellingAndValidation?.completeness ?? '-'}
-              </Descriptions.Item>
-            </Descriptions>
+            <Divider orientationMargin="0" orientation="left" plain>
+              Completeness Other Problem Field
+            </Divider>
+            <LangTextItemDescription
+              data={
+                result.data.json?.processDataSet?.modellingAndValidation?.completeness
+                  ?.completenessOtherProblemField
+              }
+            />
             <br />
             <Card size="small" title={'Validation: Review'}>
               <Descriptions bordered size={'small'} column={1}>
@@ -503,19 +519,35 @@ const ProcessView: FC<Props> = ({ id, dataSource }) => {
           </>
         ),
         exchanges: (
-          <>
-            <ProTable<ProcessExchangeTable, ListPagination>
-              // actionRef={actionRef}
-              search={{
-                defaultCollapsed: false,
-              }}
-              pagination={{
-                showSizeChanger: false,
-                pageSize: 10,
-              }}
-              columns={processExchangeColumns}
-            />
-          </>
+          <ProTable<ProcessExchangeTable, ListPagination>
+            // actionRef={actionRef}
+            search={{
+              defaultCollapsed: false,
+            }}
+            pagination={{
+              showSizeChanger: false,
+              pageSize: 10,
+            }}
+            columns={processExchangeColumns}
+            dataSource={result.data.json?.processDataSet?.exchanges?.exchange?.map(
+              (item: any, index: number) => {
+                console.log('item', item);
+                return {
+                  index: index + 1,
+                  id: item['@dataSetInternalID'] ?? '-',
+                  exchangeDirection: item.exchangeDirection ?? '-',
+                  referenceToFlowDataSet: getLangText(
+                    item.referenceToFlowDataSet?.['common:shortDescription'],
+                    lang,
+                  ),
+                  meanAmount: item.meanAmount ?? '-',
+                  resultingAmount: item.resultingAmount ?? '-',
+                  dataDerivationTypeStatus: item.dataDerivationTypeStatus ?? '-',
+                  generalComment: getLangText(item.generalComment, lang),
+                };
+              },
+            )}
+          />
         ),
       });
     });

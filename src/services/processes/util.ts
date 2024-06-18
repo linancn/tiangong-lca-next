@@ -1,92 +1,342 @@
-function getAttribute(key: string, value: any) {
-  return value ? { [key]: value } : {};
-}
+import {
+  classificationToJson,
+  classificationToList,
+  getLangJson,
+  getLangList,
+  removeEmptyObjects,
+} from '../general/util';
 
 export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
-  let common_shortName = {};
-  if (data?.['common:shortName']) {
-    if (data?.['common:shortName'].length === 1) {
-      common_shortName = data?.['common:shortName'][0];
-    } else if (data?.['common:shortName'].length > 1) {
-      common_shortName = data?.['common:shortName'];
-    }
-  }
-  let common_name = {};
-  if (data?.['common:name']) {
-    if (data?.['common:name'].length === 1) {
-      common_name = data?.['common:name'][0];
-    } else if (data?.['common:name'].length > 1) {
-      common_name = data?.['common:name'];
-    }
-  }
-  let common_class = {};
-  if (data?.['common:class']?.['@level_0'] && data?.['common:class']?.['@level_0'].trim() !== '') {
-    common_class = {
-      '@level': 0,
-      '#text': data?.['common:class']?.['@level_0'],
-    };
-    if (
-      data?.['common:class']?.['@level_1'] &&
-      data?.['common:class']?.['@level_1'].trim() !== ''
-    ) {
-      common_class = [
-        {
-          '@level': 0,
-          '#text': data?.['common:class']?.['@level_0'],
-        },
-        {
-          '@level': 1,
-          '#text': data?.['common:class']?.['@level_1'],
-        },
-      ];
-      if (
-        data?.['common:class']?.['@level_2'] &&
-        data?.['common:class']?.['@level_2'].trim() !== ''
-      ) {
-        common_class = [
-          {
-            '@level': 0,
-            '#text': data?.['common:class']?.['@level_0'],
-          },
-          {
-            '@level': 1,
-            '#text': data?.['common:class']?.['@level_1'],
-          },
-          {
-            '@level': 2,
-            '#text': data?.['common:class']?.['@level_2'],
-          },
-        ];
-      }
-    }
-  }
-  const newData = {
-    contactDataSet: {
-      ...getAttribute('@xmlns:common', oldData.contactDataSet['@xmlns:common']),
-      ...getAttribute('@xmlns', oldData.contactDataSet['@xmlns']),
-      ...getAttribute('@xmlns:xsi', oldData.contactDataSet['@xmlns:xsi']),
-      ...getAttribute('@version', oldData.contactDataSet['@version']),
-      ...getAttribute('@xsi:schemaLocation', oldData.contactDataSet['@xsi:schemaLocation']),
-      contactInformation: {
+  return removeEmptyObjects({
+    processDataSet: {
+      '@xmlns:common': oldData.processDataSet?.['@xmlns:common'] ?? {},
+      '@xmlns': oldData.processDataSet?.['@xmlns'] ?? {},
+      '@xmlns:xsi': oldData.processDataSet?.['@xmlns:xsi'] ?? {},
+      '@version': oldData.processDataSet['@version'] ?? {},
+      '@xsi:schemaLocation': oldData.processDataSet['@xsi:schemaLocation'] ?? {},
+      processInformation: {
         dataSetInformation: {
           'common:UUID': id,
-          'common:shortName': common_shortName,
-          'common:name': common_name,
+          name: {
+            baseName: getLangJson(data?.processInformation?.dataSetInformation?.name?.baseName),
+          },
           classificationInformation: {
             'common:classification': {
-              'common:class': common_class,
+              'common:class': classificationToList(
+                data?.processInformation?.dataSetInformation?.classificationInformation?.[
+                  'common:classification'
+                ]?.['common:class'],
+              ),
             },
           },
-          email: data?.email,
+          'common:generalComment': getLangJson(
+            data?.processInformation?.dataSetInformation?.['common:generalComment'],
+          ),
+        },
+        quantitativeReference: {
+          '@type': data?.processInformation?.quantitativeReference?.['@type'] ?? {},
+          referenceToReferenceFlow:
+            data?.processInformation?.quantitativeReference?.referenceToReferenceFlow ?? {},
+          functionalUnitOrOther: getLangJson(
+            data?.processInformation?.quantitativeReference?.functionalUnitOrOther,
+          ),
+        },
+        time: {
+          'common:referenceYear': data?.processInformation?.time?.['common:referenceYear'] ?? {},
+          'common:timeRepresentativenessDescription': getLangJson(
+            data?.processInformation?.time?.['common:timeRepresentativenessDescription'],
+          ),
+        },
+        geography: {
+          locationOfOperationSupplyOrProduction: {
+            '@location':
+              data?.processInformation?.geography?.locationOfOperationSupplyOrProduction?.[
+                '@location'
+              ] ?? {},
+            descriptionOfRestrictions: getLangJson(
+              data?.processInformation?.geography?.locationOfOperationSupplyOrProduction
+                ?.descriptionOfRestrictions,
+            ),
+          },
+        },
+        technology: {
+          technologyDescriptionAndIncludedProcesses: getLangJson(
+            data?.processInformation?.technology?.technologyDescriptionAndIncludedProcesses,
+          ),
+          technologicalApplicability: getLangJson(
+            data?.processInformation?.technology?.technologicalApplicability,
+          ),
+          referenceToTechnologyFlowDiagrammOrPicture: {
+            '@type':
+              data?.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.[
+                '@type'
+              ] ?? {},
+            '@refObjectId':
+              data?.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.[
+                '@refObjectId'
+              ] ?? {},
+            '@uri':
+              data?.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.[
+                '@uri'
+              ] ?? {},
+            'common:shortDescription': getLangJson(
+              data?.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.[
+                'common:shortDescription'
+              ],
+            ),
+          },
+        },
+        mathematicalRelations: {
+          modelDescription: getLangJson(
+            data?.processInformation?.mathematicalRelations?.modelDescription,
+          ),
+        },
+      },
+      modellingAndValidation: {
+        LCIMethodAndAllocation: {
+          typeOfDataSet: data?.modellingAndValidation?.LCIMethodAndAllocation?.typeOfDataSet ?? {},
+          LCIMethodPrinciple:
+            data?.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodPrinciple ?? {},
+          deviationsFromLCIMethodPrinciple: getLangJson(
+            data?.modellingAndValidation?.LCIMethodAndAllocation?.deviationsFromLCIMethodPrinciple,
+          ),
+          LCIMethodApproaches:
+            data?.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodApproaches ?? {},
+          deviationsFromLCIMethodApproaches: getLangJson(
+            data?.modellingAndValidation?.LCIMethodAndAllocation?.deviationsFromLCIMethodApproaches,
+          ),
+          deviationsFromModellingConstants: getLangJson(
+            data?.modellingAndValidation?.LCIMethodAndAllocation?.deviationsFromModellingConstants,
+          ),
+        },
+        dataSourcesTreatmentAndRepresentativeness: {
+          deviationsFromCutOffAndCompletenessPrinciples: getLangJson(
+            data?.modellingAndValidation?.LCIMethodAndAllocation
+              ?.deviationsFromCutOffAndCompletenessPrinciples,
+          ),
+          dataSelectionAndCombinationPrinciples: getLangJson(
+            data?.modellingAndValidation?.LCIMethodAndAllocation
+              ?.dataSelectionAndCombinationPrinciples,
+          ),
+          deviationsFromSelectionAndCombinationPrinciples: getLangJson(
+            data?.modellingAndValidation?.LCIMethodAndAllocation
+              ?.deviationsFromSelectionAndCombinationPrinciples,
+          ),
+          dataTreatmentAndExtrapolationsPrinciples: getLangJson(
+            data?.modellingAndValidation?.LCIMethodAndAllocation
+              ?.dataTreatmentAndExtrapolationsPrinciples,
+          ),
+          deviationsFromTreatmentAndExtrapolationPrinciples: getLangJson(
+            data?.modellingAndValidation?.LCIMethodAndAllocation
+              ?.deviationsFromTreatmentAndExtrapolationPrinciples,
+          ),
+          referenceToDataSource: {
+            '@type':
+              data?.modellingAndValidation?.LCIMethodAndAllocation?.referenceToDataSource?.[
+                '@type'
+              ] ?? {},
+            '@refObjectId':
+              data?.modellingAndValidation?.LCIMethodAndAllocation?.referenceToDataSource?.[
+                '@refObjectId'
+              ] ?? {},
+            '@uri':
+              data?.modellingAndValidation?.LCIMethodAndAllocation?.referenceToDataSource?.[
+                '@uri'
+              ] ?? {},
+            'common:shortDescription': getLangJson(
+              data?.modellingAndValidation?.LCIMethodAndAllocation?.referenceToDataSource?.[
+                'common:shortDescription'
+              ],
+            ),
+          },
+          useAdviceForDataSet: getLangJson(
+            data?.modellingAndValidation?.LCIMethodAndAllocation?.useAdviceForDataSet,
+          ),
+        },
+        completeness: {
+          completenessDescription: getLangJson(
+            data?.modellingAndValidation?.completeness?.completenessDescription,
+          ),
+        },
+        validation: {
+          review: {
+            '@type': data?.modellingAndValidation?.validation?.review?.['@type'] ?? {},
+            'common:reviewDetails': getLangJson(
+              data?.modellingAndValidation?.validation?.review?.['common:reviewDetails'],
+            ),
+            'common:referenceToNameOfReviewerAndInstitution': {
+              '@refObjectId':
+                data?.modellingAndValidation?.validation?.review?.[
+                  'common:referenceToNameOfReviewerAndInstitution'
+                ]?.['@refObjectId'] ?? {},
+              '@type':
+                data?.modellingAndValidation?.validation?.review?.[
+                  'common:referenceToNameOfReviewerAndInstitution'
+                ]?.['@type'] ?? {},
+              '@uri':
+                data?.modellingAndValidation?.validation?.review?.[
+                  'common:referenceToNameOfReviewerAndInstitution'
+                ]?.['@uri'] ?? {},
+              'common:shortDescription': getLangJson(
+                data?.modellingAndValidation?.validation?.review?.[
+                  'common:referenceToNameOfReviewerAndInstitution'
+                ]?.['common:shortDescription'],
+              ),
+            },
+          },
         },
       },
       administrativeInformation: {
+        dataGenerator: {
+          'common:referenceToPersonOrEntityGeneratingTheDataSet': {
+            '@refObjectId':
+              data?.administrativeInformation?.dataGenerator?.[
+                'common:referenceToPersonOrEntityGeneratingTheDataSet'
+              ]?.['@refObjectId'] ?? {},
+            '@type':
+              data?.administrativeInformation?.dataGenerator?.[
+                'common:referenceToPersonOrEntityGeneratingTheDataSet'
+              ]?.['@type'] ?? {},
+            '@uri':
+              data?.administrativeInformation?.dataGenerator?.[
+                'common:referenceToPersonOrEntityGeneratingTheDataSet'
+              ]?.['@uri'] ?? {},
+            'common:shortDescription': getLangJson(
+              data?.administrativeInformation?.dataGenerator?.[
+                'common:referenceToPersonOrEntityGeneratingTheDataSet'
+              ]?.['common:shortDescription'],
+            ),
+          },
+        },
+        dataEntryBy: {
+          'common:timeStamp':
+            data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? {},
+        },
         publicationAndOwnership: {
-          'common:dataSetVersion': data?.['common:dataSetVersion'],
+          'common:dateOfLastRevision':
+            data?.administrativeInformation?.dataEntryBy?.publicationAndOwnership?.[
+              'common:dateOfLastRevision'
+            ] ?? {},
+          'common:dataSetVersion':
+            data?.administrativeInformation?.dataEntryBy?.publicationAndOwnership?.[
+              'common:dataSetVersion'
+            ] ?? {},
+          'common:permanentDataSetURI':
+            data?.administrativeInformation?.dataEntryBy?.publicationAndOwnership?.[
+              'common:permanentDataSetURI'
+            ] ?? {},
+          'common:referenceToOwnershipOfDataSet': {
+            '@refObjectId':
+              data?.administrativeInformation?.dataEntryBy?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]?.['@refObjectId'] ?? {},
+            '@type':
+              data?.administrativeInformation?.dataEntryBy?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]?.['@type'] ?? {},
+            '@uri':
+              data?.administrativeInformation?.dataEntryBy?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]?.['@uri'] ?? {},
+            'common:shortDescription': getLangJson(
+              data?.administrativeInformation?.dataEntryBy?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]?.['common:shortDescription'],
+            ),
+          },
+          'common:copyright':
+            data?.administrativeInformation?.dataEntryBy?.publicationAndOwnership?.[
+              'common:copyright'
+            ],
+          'common:licenseType':
+            data?.administrativeInformation?.dataEntryBy?.publicationAndOwnership?.[
+              'common:licenseType'
+            ],
         },
       },
+      exchanges: data?.exchanges ?? {},
     },
-  };
+  });
+}
 
-  return newData;
+export function genProcessFromData(data: any) {
+  return removeEmptyObjects({
+    processInformation: {
+      dataSetInformation: {
+        name: {
+          baseName: getLangList(data?.processInformation?.dataSetInformation?.name?.baseName),
+        },
+        classificationInformation: {
+          'common:classification': {
+            'common:class': classificationToJson(
+              data?.processInformation?.dataSetInformation?.classificationInformation?.[
+                'common:classification'
+              ]?.['common:class'],
+            ),
+          },
+        },
+        'common:generalComment': getLangList(
+          data?.processInformation?.dataSetInformation?.['common:generalComment'],
+        ),
+      },
+      quantitativeReference: {
+        '@type': data?.processInformation?.quantitativeReference?.['@type'] ?? {},
+        referenceToReferenceFlow:
+          data?.processInformation?.quantitativeReference?.referenceToReferenceFlow ?? {},
+        functionalUnitOrOther: getLangList(
+          data?.processInformation?.quantitativeReference?.functionalUnitOrOther,
+        ),
+      },
+      time: {
+        'common:referenceYear': data?.processInformation?.time?.['common:referenceYear'] ?? {},
+        'common:timeRepresentativenessDescription': getLangList(
+          data?.processInformation?.time?.['common:timeRepresentativenessDescription'],
+        ),
+      },
+      geography: {
+        locationOfOperationSupplyOrProduction: {
+          '@location':
+            data?.processInformation?.geography?.locationOfOperationSupplyOrProduction?.[
+              '@location'
+            ] ?? {},
+          descriptionOfRestrictions: getLangList(
+            data?.processInformation?.geography?.locationOfOperationSupplyOrProduction
+              ?.descriptionOfRestrictions,
+          ),
+        },
+      },
+      technology: {
+        technologyDescriptionAndIncludedProcesses: getLangList(
+          data?.processInformation?.technology?.technologyDescriptionAndIncludedProcesses,
+        ),
+        technologicalApplicability: getLangList(
+          data?.processInformation?.technology?.technologicalApplicability,
+        ),
+        referenceToTechnologyFlowDiagrammOrPicture: {
+          '@type':
+            data?.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.[
+              '@type'
+            ] ?? {},
+          '@refObjectId':
+            data?.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.[
+              '@refObjectId'
+            ] ?? {},
+          '@uri':
+            data?.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.[
+              '@uri'
+            ] ?? {},
+          'common:shortDescription': getLangList(
+            data?.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.[
+              'common:shortDescription'
+            ],
+          ),
+        },
+      },
+      mathematicalRelations: {
+        modelDescription: getLangList(
+          data?.processInformation?.mathematicalRelations?.modelDescription,
+        ),
+      },
+    },
+  });
 }

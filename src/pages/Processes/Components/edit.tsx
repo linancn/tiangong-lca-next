@@ -1,49 +1,41 @@
 import LangTextItemFrom from '@/components/LangTextItem/from';
 import { ListPagination } from '@/services/general/data';
-import { getLangText } from '@/services/general/util';
-import { createProcess } from '@/services/processes/api';
+import { getProcessDetail } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
+import { genProcessFromData } from '@/services/processes/util';
 import styles from '@/style/custom.less';
-import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
-import { ProColumns, ProTable } from '@ant-design/pro-components';
+import { CloseOutlined, FormOutlined } from '@ant-design/icons';
+import { ProColumns, ProForm, ProTable } from '@ant-design/pro-components';
 import type { ProFormInstance } from '@ant-design/pro-form';
-import ProForm from '@ant-design/pro-form';
 import type { ActionType } from '@ant-design/pro-table';
-import {
-  Button,
-  Card,
-  Divider,
-  Drawer,
-  Form,
-  Input,
-  Space,
-  Tooltip,
-  Typography,
-  message,
-} from 'antd';
+import { Button, Card, Divider, Drawer, Form, Input, Space, Spin, Tooltip, Typography } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import ProcessExchangeCreate from './Exchange/create';
 
 type Props = {
-  lang: string;
+  id: string;
+  buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
+  setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
 };
-const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
+const ProcessEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisible }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const formRefCreate = useRef<ProFormInstance>();
+  const formRefEdit = useRef<ProFormInstance>();
   const [activeTabKey, setActiveTabKey] = useState<string>('processInformation');
   const [fromData, setFromData] = useState<any>({});
+  const [initData, setInitData] = useState<any>({});
   const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
-
-  const reload = useCallback(() => {
-    actionRef.current?.reload();
-  }, [actionRef]);
+  const [spinning, setSpinning] = useState(false);
 
   const handletExchangeData = (data: any) => {
     setExchangeDataSource([...exchangeDataSource, data]);
   };
+
+  const reload = useCallback(() => {
+    actionRef.current?.reload();
+  }, [actionRef]);
 
   const processExchangeColumns: ProColumns<ProcessExchangeTable>[] = [
     {
@@ -142,14 +134,14 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
       <Space direction="vertical" style={{ width: '100%' }}>
         <Card size="small" title={'Base Name'}>
           <LangTextItemFrom
-            keyName={['dataSetInformation', 'name', 'baseName']}
+            keyName={['processInformation', 'dataSetInformation', 'name', 'baseName']}
             labelName="Base Name"
           />
         </Card>
 
         <Card size="small" title={'General Comment'}>
           <LangTextItemFrom
-            keyName={['classificationInformation', 'common:generalComment']}
+            keyName={['processInformation', 'classificationInformation', 'common:generalComment']}
             labelName="General Comment"
           />
         </Card>
@@ -158,6 +150,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
           <Space>
             <Form.Item
               name={[
+                'processInformation',
                 'classificationInformation',
                 'common:classification',
                 'common:class',
@@ -168,6 +161,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             </Form.Item>
             <Form.Item
               name={[
+                'processInformation',
                 'classificationInformation',
                 'common:classification',
                 'common:class',
@@ -178,6 +172,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             </Form.Item>
             <Form.Item
               name={[
+                'processInformation',
                 'classificationInformation',
                 'common:classification',
                 'common:class',
@@ -190,12 +185,12 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
         </Card>
 
         <Card size="small" title={'Quantitative Reference'}>
-          <Form.Item label="Type" name={['quantitativeReference', '@type']}>
+          <Form.Item label="Type" name={['processInformation', 'quantitativeReference', '@type']}>
             <Input />
           </Form.Item>
           <Form.Item
             label="Reference To Reference Flow"
-            name={['quantitativeReference', 'referenceToReferenceFlow']}
+            name={['processInformation', 'quantitativeReference', 'referenceToReferenceFlow']}
           >
             <Input />
           </Form.Item>
@@ -203,33 +198,43 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             Functional Unit Or Other
           </Divider>
           <LangTextItemFrom
-            keyName={['quantitativeReference', 'functionalUnitOrOther']}
+            keyName={['processInformation', 'quantitativeReference', 'functionalUnitOrOther']}
             labelName="Functional Unit Or Other"
           />
         </Card>
 
         <Card size="small" title={'Time'}>
-          <Form.Item label="Reference Year" name={['time', 'common:referenceYear']}>
+          <Form.Item
+            label="Reference Year"
+            name={['processInformation', 'time', 'common:referenceYear']}
+          >
             <Input />
           </Form.Item>
           <Divider orientationMargin="0" orientation="left" plain>
             Time Representativeness Description
           </Divider>
           <LangTextItemFrom
-            keyName={['time', 'common:timeRepresentativenessDescription']}
+            keyName={['processInformation', 'time', 'common:timeRepresentativenessDescription']}
             labelName="Time Representativeness Description"
           />
         </Card>
 
         <Card size="small" title={'Geography: Location Of Operation Supply Or Production'}>
-          <Form.Item label="Location" name={['locationOfOperationSupplyOrProduction', '@location']}>
+          <Form.Item
+            label="Location"
+            name={['processInformation', 'locationOfOperationSupplyOrProduction', '@location']}
+          >
             <Input />
           </Form.Item>
           <Divider orientationMargin="0" orientation="left" plain>
             Description Of Restrictions
           </Divider>
           <LangTextItemFrom
-            keyName={['locationOfOperationSupplyOrProduction', 'descriptionOfRestrictions']}
+            keyName={[
+              'processInformation',
+              'locationOfOperationSupplyOrProduction',
+              'descriptionOfRestrictions',
+            ]}
             labelName="Description Of Restrictions"
           />
         </Card>
@@ -239,32 +244,51 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             Technology Description And Included Processes
           </Divider>
           <LangTextItemFrom
-            keyName={['technology', 'technologyDescriptionAndIncludedProcesses']}
+            keyName={[
+              'processInformation',
+              'technology',
+              'technologyDescriptionAndIncludedProcesses',
+            ]}
             labelName="Technology Description And Included Processes"
           />
           <Divider orientationMargin="0" orientation="left" plain>
             Technological Applicability
           </Divider>
           <LangTextItemFrom
-            keyName={['technology', 'technologicalApplicability']}
+            keyName={['processInformation', 'technology', 'technologicalApplicability']}
             labelName="Technological Applicability"
           />
           <Card size="small" title={'Reference To Technology Flow Diagramm Or Picture'}>
             <Form.Item
               label="Type"
-              name={['technology', 'referenceToTechnologyFlowDiagrammOrPicture', '@type']}
+              name={[
+                'processInformation',
+                'technology',
+                'referenceToTechnologyFlowDiagrammOrPicture',
+                '@type',
+              ]}
             >
               <Input />
             </Form.Item>
             <Form.Item
               label="Ref Object Id"
-              name={['technology', 'referenceToTechnologyFlowDiagrammOrPicture', '@refObjectId']}
+              name={[
+                'processInformation',
+                'technology',
+                'referenceToTechnologyFlowDiagrammOrPicture',
+                '@refObjectId',
+              ]}
             >
               <Input />
             </Form.Item>
             <Form.Item
               label="URI"
-              name={['technology', 'referenceToTechnologyFlowDiagrammOrPicture', '@uri']}
+              name={[
+                'processInformation',
+                'technology',
+                'referenceToTechnologyFlowDiagrammOrPicture',
+                '@uri',
+              ]}
             >
               <Input />
             </Form.Item>
@@ -273,6 +297,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             </Divider>
             <LangTextItemFrom
               keyName={[
+                'processInformation',
                 'technology',
                 'referenceToTechnologyFlowDiagrammOrPicture',
                 'common:shortDescription',
@@ -284,7 +309,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
 
         <Card size="small" title={'Mathematical Relations: Model Description'}>
           <LangTextItemFrom
-            keyName={['mathematicalRelations', 'modelDescription']}
+            keyName={['processInformation', 'mathematicalRelations', 'modelDescription']}
             labelName="Model Description"
           />
         </Card>
@@ -631,34 +656,51 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
   };
 
   const onTabChange = (key: string) => {
-    // setFromData({ ...fromData, [activeTabKey]: formRefCreate.current?.getFieldsValue() });
     setActiveTabKey(key);
   };
 
-  useEffect(() => {
-    if (!drawerVisible) return;
-    if (activeTabKey === 'exchanges') return;
-    setFromData({ ...fromData, [activeTabKey]: formRefCreate.current?.getFieldsValue() });
-  }, [drawerVisible, formRefCreate.current?.getFieldsValue()]);
+  const onEdit = useCallback(() => {
+    setDrawerVisible(true);
+  }, [setViewDrawerVisible]);
+
+  const onReset = () => {
+    setSpinning(true);
+    formRefEdit.current?.resetFields();
+    getProcessDetail(id).then(async (result) => {
+      formRefEdit.current?.setFieldsValue(
+        genProcessFromData(result.data?.json?.processDataSet ?? {}),
+      );
+      setSpinning(false);
+    });
+  };
 
   useEffect(() => {
-    setFromData({ ...fromData, exchanges: { exchange: exchangeDataSource } });
-  }, [exchangeDataSource]);
+    if (drawerVisible) return;
+    setSpinning(true);
+    getProcessDetail(id).then(async (result: any) => {
+      setInitData({ ...genProcessFromData(result.data?.json?.processDataSet ?? {}) });
+      setFromData({ ...genProcessFromData(result.data?.json?.processDataSet ?? {}) });
+      formRefEdit.current?.resetFields();
+      formRefEdit.current?.setFieldsValue(
+        genProcessFromData(result.data?.json?.processDataSet ?? {}),
+      );
+      setSpinning(false);
+    });
+  }, [drawerVisible]);
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="options.create" defaultMessage="Create" />}>
-        <Button
-          size={'middle'}
-          type="text"
-          icon={<PlusOutlined />}
-          onClick={() => {
-            setDrawerVisible(true);
-          }}
-        />
+      <Tooltip title={<FormattedMessage id="options.edit" defaultMessage="Edit" />}>
+        {buttonType === 'icon' ? (
+          <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
+        ) : (
+          <Button onClick={onEdit}>
+            <FormattedMessage id="options.edit" defaultMessage="Edit" />
+          </Button>
+        )}
       </Tooltip>
       <Drawer
-        title={<FormattedMessage id="processes.create" defaultMessage="Process Create" />}
+        title={<FormattedMessage id="options.edit" defaultMessage="Edit" />}
         width="90%"
         closable={false}
         extra={
@@ -668,7 +710,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             onClick={() => setDrawerVisible(false)}
           />
         }
-        maskClosable={false}
+        maskClosable={true}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         footer={
@@ -677,58 +719,65 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
               {' '}
               <FormattedMessage id="options.cancel" defaultMessage="Cancel" />
             </Button>
-            <Button onClick={() => formRefCreate.current?.submit()} type="primary">
+            <Button onClick={onReset}>
+              {' '}
+              <FormattedMessage id="options.reset" defaultMessage="Reset" />
+            </Button>
+            <Button onClick={() => formRefEdit.current?.submit()} type="primary">
               <FormattedMessage id="options.submit" defaultMessage="Submit" />
             </Button>
           </Space>
         }
       >
-        <ProForm
-          formRef={formRefCreate}
-          submitter={{
-            render: () => {
-              return [];
-            },
-          }}
-          onFinish={async () => {
-            const result = await createProcess({ ...fromData });
-            if (result.data) {
-              message.success(
-                <FormattedMessage
-                  id="options.createsuccess"
-                  defaultMessage="Created Successfully!"
-                />,
-              );
-              formRefCreate.current?.resetFields();
+        <Spin spinning={spinning}>
+          <ProForm
+            formRef={formRefEdit}
+            initialValues={initData}
+            onValuesChange={(_, allValues) => {
+              setFromData({ ...fromData, [activeTabKey]: allValues ?? {} });
+            }}
+            submitter={{
+              render: () => {
+                return [];
+              },
+            }}
+            onFinish={async () => {
+              // const result = await createProcess({ ...fromData });
+              // if (result.data) {
+              //   message.success(
+              //     <FormattedMessage
+              //       id="options.createsuccess"
+              //       defaultMessage="Created Successfully!"
+              //     />,
+              //   );
+              //   formRefCreate.current?.resetFields();
+              //   setDrawerVisible(false);
+              //   reload();
+              // } else {
+              //   message.error(result.error.message);
+              // }
+              formRefEdit.current?.resetFields();
               setDrawerVisible(false);
               reload();
-            } else {
-              message.error(result.error.message);
-            }
-            return true;
-          }}
-        >
-          <Card
-            style={{ width: '100%' }}
-            // title="Card title"
-            // extra={<a href="#">More</a>}
-            tabList={tabList}
-            activeTabKey={activeTabKey}
-            onTabChange={onTabChange}
+              return true;
+            }}
           >
-            {contentList[activeTabKey]}
-          </Card>
-          <Form.Item noStyle shouldUpdate>
-            {() => (
-              <Typography>
-                <pre>{JSON.stringify(fromData, null, 2)}</pre>
-              </Typography>
-            )}
-          </Form.Item>
-        </ProForm>
+            <Card
+              style={{ width: '100%' }}
+              tabList={tabList}
+              activeTabKey={activeTabKey}
+              onTabChange={onTabChange}
+            >
+              {contentList[activeTabKey]}
+            </Card>
+          </ProForm>
+          <Typography>
+            <pre>{JSON.stringify(fromData, null, 2)}</pre>
+          </Typography>
+        </Spin>
       </Drawer>
     </>
   );
 };
 
-export default ProcessCreate;
+export default ProcessEdit;

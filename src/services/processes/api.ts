@@ -7,7 +7,7 @@ import { genProcessJsonOrdered } from './util';
 export async function createProcess(data: any) {
   const newID = v4();
   const oldData = {
-    contactDataSet: {
+    processDataSet: {
       '@xmlns:common': 'http://lca.jrc.it/ILCD/Common',
       '@xmlns': 'http://lca.jrc.it/ILCD/Process',
       '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
@@ -16,11 +16,13 @@ export async function createProcess(data: any) {
       '@xsi:schemaLocation': 'http://lca.jrc.it/ILCD/Process ../../schemas/ILCD_ProcessDataSet.xsd',
     },
   };
+  console.log(data);
   const newData = genProcessJsonOrdered(newID, data, oldData);
   const result = await supabase
     .from('processes')
     .insert([{ id: newID, json_ordered: newData }])
     .select();
+  console.log(result);
   return result;
 }
 
@@ -89,11 +91,11 @@ export async function getProcessTable(
           return {
             id: i.id,
             lang: lang,
-            baseName: getLangText(i['baseName'], lang),
-            generalComment: getLangText(i['common:generalComment'], lang),
-            classification: classificationToString(i['common:class']),
-            referenceYear: i['common:referenceYear'],
-            location: i['@location'],
+            baseName: getLangText(i['baseName'] ?? {}, lang),
+            generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
+            classification: classificationToString(i['common:class'] ?? {}),
+            referenceYear: i['common:referenceYear'] ?? '-',
+            location: i['@location'] ?? '-',
             createdAt: new Date(i.created_at),
           };
         } catch (e) {
@@ -127,7 +129,12 @@ export async function getProcessDetail(id: string) {
     });
   }
   return Promise.resolve({
-    data: {},
+    data: null,
     success: true,
   });
+}
+
+export async function deleteProcess(id: string) {
+  const result = await supabase.from('processes').delete().eq('id', id);
+  return result;
 }
