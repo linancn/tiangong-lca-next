@@ -1,5 +1,6 @@
 import LangTextItemFrom from '@/components/LangTextItem/from';
 import { ListPagination } from '@/services/general/data';
+import { getLangText } from '@/services/general/util';
 import { getProcessDetail } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessFromData } from '@/services/processes/util';
@@ -16,11 +17,12 @@ import ProcessExchangeCreate from './Exchange/create';
 
 type Props = {
   id: string;
+  lang: string;
   buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
 };
-const ProcessEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisible }) => {
+const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawerVisible }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
   const [activeTabKey, setActiveTabKey] = useState<string>('processInformation');
@@ -318,12 +320,15 @@ const ProcessEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
     modellingAndValidation: (
       <Space direction="vertical" style={{ width: '100%' }}>
         <Card size="small" title={'LCI Method And Allocation'}>
-          <Form.Item label="Type Of DataSet" name={['LCIMethodAndAllocation', 'typeOfDataSet']}>
+          <Form.Item
+            label="Type Of DataSet"
+            name={['modellingAndValidation', 'LCIMethodAndAllocation', 'typeOfDataSet']}
+          >
             <Input />
           </Form.Item>
           <Form.Item
             label="LCI Method Principle"
-            name={['LCIMethodAndAllocation', 'LCIMethodPrinciple']}
+            name={['modellingAndValidation', 'LCIMethodAndAllocation', 'LCIMethodPrinciple']}
           >
             <Input />
           </Form.Item>
@@ -331,12 +336,16 @@ const ProcessEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
             Deviations From LCI Method Principle
           </Divider>
           <LangTextItemFrom
-            keyName={['LCIMethodAndAllocation', 'deviationsFromLCIMethodPrinciple']}
+            keyName={[
+              'modellingAndValidation',
+              'LCIMethodAndAllocation',
+              'deviationsFromLCIMethodPrinciple',
+            ]}
             labelName="Deviations From LCI Method Principle"
           />
           <Form.Item
             label="LCI Method Approaches"
-            name={['LCIMethodAndAllocation', 'LCIMethodApproaches']}
+            name={['modellingAndValidation', 'LCIMethodAndAllocation', 'LCIMethodApproaches']}
           >
             <Input />
           </Form.Item>
@@ -344,14 +353,22 @@ const ProcessEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
             Deviations From LCI Method Approaches
           </Divider>
           <LangTextItemFrom
-            keyName={['LCIMethodAndAllocation', 'deviationsFromLCIMethodApproaches']}
+            keyName={[
+              'modellingAndValidation',
+              'LCIMethodAndAllocation',
+              'deviationsFromLCIMethodApproaches',
+            ]}
             labelName="Deviations From LCI Method Approaches"
           />
           <Divider orientationMargin="0" orientation="left" plain>
             Deviations From Modelling Constants
           </Divider>
           <LangTextItemFrom
-            keyName={['LCIMethodAndAllocation', 'deviationsFromModellingConstants']}
+            keyName={[
+              'modellingAndValidation',
+              'LCIMethodAndAllocation',
+              'deviationsFromModellingConstants',
+            ]}
             labelName="Deviations From Modelling Constants"
           />
         </Card>
@@ -362,6 +379,7 @@ const ProcessEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
           </Divider>
           <LangTextItemFrom
             keyName={[
+              'modellingAndValidation',
               'dataSourcesTreatmentAndRepresentativeness',
               'deviationsFromCutOffAndCompletenessPrinciples',
             ]}
@@ -372,6 +390,7 @@ const ProcessEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
           </Divider>
           <LangTextItemFrom
             keyName={[
+              'modellingAndValidation',
               'dataSourcesTreatmentAndRepresentativeness',
               'dataSelectionAndCombinationPrinciples',
             ]}
@@ -382,6 +401,7 @@ const ProcessEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
           </Divider>
           <LangTextItemFrom
             keyName={[
+              'modellingAndValidation',
               'dataSourcesTreatmentAndRepresentativeness',
               'deviationsFromSelectionAndCombinationPrinciples',
             ]}
@@ -392,6 +412,7 @@ const ProcessEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
           </Divider>
           <LangTextItemFrom
             keyName={[
+              'modellingAndValidation',
               'dataSourcesTreatmentAndRepresentativeness',
               'dataTreatmentAndExtrapolationsPrinciples',
             ]}
@@ -402,6 +423,7 @@ const ProcessEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
           </Divider>
           <LangTextItemFrom
             keyName={[
+              'modellingAndValidation',
               'dataSourcesTreatmentAndRepresentativeness',
               'deviationsFromTreatmentAndExtrapolationPrinciples',
             ]}
@@ -410,13 +432,19 @@ const ProcessEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
           <Card size="small" title={'Reference To Data Source'}>
             <Form.Item
               label="Type"
-              name={['dataSourcesTreatmentAndRepresentativeness', 'referenceToDataSource', '@type']}
+              name={[
+                'modellingAndValidation',
+                'dataSourcesTreatmentAndRepresentativeness',
+                'referenceToDataSource',
+                '@type',
+              ]}
             >
               <Input />
             </Form.Item>
             <Form.Item
               label="Ref Object Id"
               name={[
+                'modellingAndValidation',
                 'dataSourcesTreatmentAndRepresentativeness',
                 'referenceToDataSource',
                 '@refObjectId',
@@ -426,7 +454,12 @@ const ProcessEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
             </Form.Item>
             <Form.Item
               label="URI"
-              name={['dataSourcesTreatmentAndRepresentativeness', 'referenceToDataSource', '@uri']}
+              name={[
+                'modellingAndValidation',
+                'dataSourcesTreatmentAndRepresentativeness',
+                'referenceToDataSource',
+                '@uri',
+              ]}
             >
               <Input />
             </Form.Item>
@@ -435,6 +468,7 @@ const ProcessEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
             </Divider>
             <LangTextItemFrom
               keyName={[
+                'modellingAndValidation',
                 'dataSourcesTreatmentAndRepresentativeness',
                 'referenceToDataSource',
                 'common:shortDescription',
@@ -447,7 +481,11 @@ const ProcessEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
             Use Advice For DataSet
           </Divider>
           <LangTextItemFrom
-            keyName={['dataSourcesTreatmentAndRepresentativeness', 'useAdviceForDataSet']}
+            keyName={[
+              'modellingAndValidation',
+              'dataSourcesTreatmentAndRepresentativeness',
+              'useAdviceForDataSet',
+            ]}
             labelName="Use Advice For DataSet"
           />
         </Card>
@@ -455,7 +493,7 @@ const ProcessEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
           Completeness: Completeness Description
         </Divider>
         <LangTextItemFrom
-          keyName={['completeness', 'completenessDescription']}
+          keyName={['modellingAndValidation', 'completeness', 'completenessDescription']}
           labelName="Completeness Description"
         />
         <Card size="small" title={'Validation: Review'}>
@@ -466,7 +504,7 @@ const ProcessEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
             Review Details
           </Divider>
           <LangTextItemFrom
-            keyName={['validation', 'review', 'common:reviewDetails']}
+            keyName={['modellingAndValidation', 'validation', 'review', 'common:reviewDetails']}
             labelName="Review Details"
           />
 
@@ -474,6 +512,7 @@ const ProcessEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
             <Form.Item
               label="Type"
               name={[
+                'modellingAndValidation',
                 'validation',
                 'review',
                 'common:referenceToNameOfReviewerAndInstitution',
@@ -485,6 +524,7 @@ const ProcessEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
             <Form.Item
               label="Ref Object Id"
               name={[
+                'modellingAndValidation',
                 'validation',
                 'review',
                 'common:referenceToNameOfReviewerAndInstitution',
@@ -496,6 +536,7 @@ const ProcessEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
             <Form.Item
               label="URI"
               name={[
+                'modellingAndValidation',
                 'validation',
                 'review',
                 'common:referenceToNameOfReviewerAndInstitution',
@@ -509,6 +550,7 @@ const ProcessEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
             </Divider>
             <LangTextItemFrom
               keyName={[
+                'modellingAndValidation',
                 'validation',
                 'review',
                 'common:referenceToNameOfReviewerAndInstitution',
@@ -529,6 +571,7 @@ const ProcessEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
           <Form.Item
             label="Type"
             name={[
+              'administrativeInformation',
               'dataGenerator',
               'common:referenceToPersonOrEntityGeneratingTheDataSet',
               '@type',
@@ -539,6 +582,7 @@ const ProcessEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
           <Form.Item
             label="Ref Object Id"
             name={[
+              'administrativeInformation',
               'dataGenerator',
               'common:referenceToPersonOrEntityGeneratingTheDataSet',
               '@refObjectId',
@@ -548,7 +592,12 @@ const ProcessEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
           </Form.Item>
           <Form.Item
             label="URI"
-            name={['dataGenerator', 'common:referenceToPersonOrEntityGeneratingTheDataSet', '@uri']}
+            name={[
+              'administrativeInformation',
+              'dataGenerator',
+              'common:referenceToPersonOrEntityGeneratingTheDataSet',
+              '@uri',
+            ]}
           >
             <Input />
           </Form.Item>
@@ -557,6 +606,7 @@ const ProcessEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
           </Divider>
           <LangTextItemFrom
             keyName={[
+              'administrativeInformation',
               'dataGenerator',
               'common:referenceToPersonOrEntityGeneratingTheDataSet',
               'common:shortDescription',
@@ -572,21 +622,29 @@ const ProcessEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
         <Card size="small" title={'Publication And Ownership'}>
           <Form.Item
             label="Date Of Last Revision"
-            name={['publicationAndOwnership', 'common:dateOfLastRevision']}
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:dateOfLastRevision',
+            ]}
           >
             <Input />
           </Form.Item>
 
           <Form.Item
             label="Data Set Version"
-            name={['publicationAndOwnership', 'common:dataSetVersion']}
+            name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
           >
             <Input />
           </Form.Item>
 
           <Form.Item
             label="Permanent Data Set URI"
-            name={['publicationAndOwnership', 'common:permanentDataSetURI']}
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:permanentDataSetURI',
+            ]}
           >
             <Input />
           </Form.Item>
@@ -594,13 +652,19 @@ const ProcessEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
           <Card size="small" title={'Reference To Ownership Of Data Set'}>
             <Form.Item
               label="Type"
-              name={['publicationAndOwnership', 'common:referenceToOwnershipOfDataSet', '@type']}
+              name={[
+                'administrativeInformation',
+                'publicationAndOwnership',
+                'common:referenceToOwnershipOfDataSet',
+                '@type',
+              ]}
             >
               <Input />
             </Form.Item>
             <Form.Item
               label="Ref Object Id"
               name={[
+                'administrativeInformation',
                 'publicationAndOwnership',
                 'common:referenceToOwnershipOfDataSet',
                 '@refObjectId',
@@ -610,7 +674,12 @@ const ProcessEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
             </Form.Item>
             <Form.Item
               label="URI"
-              name={['publicationAndOwnership', 'common:referenceToOwnershipOfDataSet', '@uri']}
+              name={[
+                'administrativeInformation',
+                'publicationAndOwnership',
+                'common:referenceToOwnershipOfDataSet',
+                '@uri',
+              ]}
             >
               <Input />
             </Form.Item>
@@ -619,6 +688,7 @@ const ProcessEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
             </Divider>
             <LangTextItemFrom
               keyName={[
+                'administrativeInformation',
                 'publicationAndOwnership',
                 'common:referenceToOwnershipOfDataSet',
                 'common:shortDescription',
@@ -627,11 +697,17 @@ const ProcessEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
             />
           </Card>
 
-          <Form.Item label="Copyright" name={['publicationAndOwnership', 'common:copyright']}>
+          <Form.Item
+            label="Copyright"
+            name={['administrativeInformation', 'publicationAndOwnership', 'common:copyright']}
+          >
             <Input />
           </Form.Item>
 
-          <Form.Item label="License Type" name={['publicationAndOwnership', 'common:licenseType']}>
+          <Form.Item
+            label="License Type"
+            name={['administrativeInformation', 'publicationAndOwnership', 'common:licenseType']}
+          >
             <Input />
           </Form.Item>
         </Card>
@@ -688,6 +764,10 @@ const ProcessEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
     });
   }, [drawerVisible]);
 
+  useEffect(() => {
+    setFromData({ ...fromData, exchanges: { exchange: exchangeDataSource } });
+  }, [exchangeDataSource]);
+
   return (
     <>
       <Tooltip title={<FormattedMessage id="options.edit" defaultMessage="Edit" />}>
@@ -734,7 +814,7 @@ const ProcessEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
             formRef={formRefEdit}
             initialValues={initData}
             onValuesChange={(_, allValues) => {
-              setFromData({ ...fromData, [activeTabKey]: allValues ?? {} });
+              setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
             }}
             submitter={{
               render: () => {
