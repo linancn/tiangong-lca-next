@@ -11,7 +11,7 @@ import { useRef } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 import UnitGroupCreate from './Components/create';
 import UnitGroupDelete from './Components/delete';
-// import UnitGroupEdit from './Components/edit';
+import UnitGroupEdit from './Components/edit';
 import UnitGroupView from './Components/view';
 
 const TableList: FC = () => {
@@ -65,17 +65,17 @@ const TableList: FC = () => {
           return [
             <Space size={'small'} key={0}>
               <UnitGroupView id={row.id} dataSource={dataSource} actionRef={actionRef} />
-              {/* <UnitGroupEdit
+              <UnitGroupEdit
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={actionRef}
                 setViewDrawerVisible={() => { }}
-              /> */}
+              />
               <UnitGroupDelete
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
+                setViewDrawerVisible={() => { }}
               />
             </Space>,
           ];

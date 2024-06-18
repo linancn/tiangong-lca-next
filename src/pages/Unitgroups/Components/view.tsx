@@ -9,7 +9,7 @@ import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import UnitGroupDelete from './delete';
-// import UnitGroupEdit from './edit';
+import UnitGroupEdit from './edit';
 
 type Props = {
   id: string;
@@ -246,12 +246,12 @@ const ContactView: FC<Props> = ({ id, dataSource, actionRef }) => {
               actionRef={actionRef}
               setViewDrawerVisible={setDrawerVisible}
             />
-            {/* <UnitGroupEdit
-                            id={id}
-                            buttonType={'text'}
-                            actionRef={actionRef}
-                            setViewDrawerVisible={setDrawerVisible}
-                        /> */}
+            <UnitGroupEdit
+              id={id}
+              buttonType={'text'}
+              actionRef={actionRef}
+              setViewDrawerVisible={setDrawerVisible}
+            />
           </>,
         );
       } else {

@@ -24,6 +24,7 @@ import type { FC } from 'react';
 import { useCallback, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { v4 } from 'uuid';
+// import dayjs from 'dayjs';
 
 // const { TextArea } = Input;
 
@@ -44,8 +45,8 @@ const UnitGroupCreate: FC<Props> = ({ actionRef }) => {
   const unitColumns: ProColumns<UnitTable>[] = [
     {
       title: <FormattedMessage id="unit.dataSetInternalID" defaultMessage="DataSet Internal ID" />,
-      dataIndex: 'dataSetInternalID',
-      valueType: 'digit',
+      dataIndex: '@dataSetInternalID',
+      // valueType: 'digit',
       formItemProps: () => {
         return {
           rules: [
@@ -62,34 +63,34 @@ const UnitGroupCreate: FC<Props> = ({ actionRef }) => {
     {
       title: <FormattedMessage id="unit.name" defaultMessage="Name" />,
       dataIndex: 'name',
-      formItemProps: () => {
-        return {
-          rules: [
-            {
-              required: true,
-              message: (
-                <FormattedMessage id="options.required" defaultMessage="This field is required" />
-              ),
-            },
-          ],
-        };
-      },
+      // formItemProps: () => {
+      //   return {
+      //     rules: [
+      //       {
+      //         required: true,
+      //         message: (
+      //           <FormattedMessage id="options.required" defaultMessage="This field is required" />
+      //         ),
+      //       },
+      //     ],
+      //   };
+      // },
     },
     {
       title: <FormattedMessage id="unit.meanValue" defaultMessage="Mean Value" />,
       dataIndex: 'meanValue',
-      formItemProps: () => {
-        return {
-          rules: [
-            {
-              required: true,
-              message: (
-                <FormattedMessage id="options.required" defaultMessage="This field is required" />
-              ),
-            },
-          ],
-        };
-      },
+      // formItemProps: () => {
+      //   return {
+      //     rules: [
+      //       {
+      //         required: true,
+      //         message: (
+      //           <FormattedMessage id="options.required" defaultMessage="This field is required" />
+      //         ),
+      //       },
+      //     ],
+      //   };
+      // },
     },
     {
       title: <FormattedMessage id="unit.selected" defaultMessage="Selected" />,
@@ -162,7 +163,7 @@ const UnitGroupCreate: FC<Props> = ({ actionRef }) => {
             <Button onClick={() => setDrawerVisible(false)}>
               <FormattedMessage id="options.cancel" defaultMessage="Cancel" />
             </Button>
-            <Button onClick={() => formRefCreate.current?.submit()} type="primary">
+            <Button onClick={() => formRefCreate.current?.submit()} type="primary" size={'middle'}>
               <FormattedMessage id="options.submit" defaultMessage="Submit" />
             </Button>
           </Space>
@@ -380,7 +381,7 @@ const UnitGroupCreate: FC<Props> = ({ actionRef }) => {
                     }
                     return {
                       id: v4(),
-                      dataSetInternalID: index + '',
+                      '@dataSetInternalID': index + '',
                       name: '',
                       meanValue: '',
                       selected: false,

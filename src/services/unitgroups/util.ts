@@ -5,11 +5,16 @@ function getAttribute(key: string, value: any) {
 function computeUnits(units: any) {
   if (units) {
     return units.map((i: any) => {
-      return {
-        '@dataSetInternalID': i.dataSetInternalID,
-        name: i.name,
-        meanValue: i.meanValue,
-      };
+      try {
+        return {
+          '@dataSetInternalID': i['@dataSetInternalID'],
+          name: i.name,
+          meanValue: i.meanValue,
+        };
+      } catch (e) {
+        console.error(e);
+        return {};
+      }
     });
   }
   return [];
@@ -27,7 +32,7 @@ export function genUnitGroupJsonOrdered(id: string, data: any, oldData: any) {
   let common_class = {};
   if (data?.['common:class']?.['@level_0'] && data?.['common:class']?.['@level_0'].trim() !== '') {
     common_class = {
-      '@level': 0,
+      '@level': '0',
       '#text': data?.['common:class']?.['@level_0'],
     };
     if (
@@ -36,11 +41,11 @@ export function genUnitGroupJsonOrdered(id: string, data: any, oldData: any) {
     ) {
       common_class = [
         {
-          '@level': 0,
+          '@level': '0',
           '#text': data?.['common:class']?.['@level_0'],
         },
         {
-          '@level': 1,
+          '@level': '1',
           '#text': data?.['common:class']?.['@level_1'],
         },
       ];
@@ -50,15 +55,15 @@ export function genUnitGroupJsonOrdered(id: string, data: any, oldData: any) {
       ) {
         common_class = [
           {
-            '@level': 0,
+            '@level': '0',
             '#text': data?.['common:class']?.['@level_0'],
           },
           {
-            '@level': 1,
+            '@level': '1',
             '#text': data?.['common:class']?.['@level_1'],
           },
           {
-            '@level': 2,
+            '@level': '2',
             '#text': data?.['common:class']?.['@level_2'],
           },
         ];
