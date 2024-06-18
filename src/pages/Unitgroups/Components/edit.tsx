@@ -90,8 +90,8 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisi
                         onClick={() => {
                             // editorActionRef.current?.startEditable(row.id);
                             // setEditableRowKeys([...editableKeys, row.id]);
-                            console.log(action?.startEditable,row);
-                            
+                            console.log(action?.startEditable, row);
+
                             action?.startEditable?.(row.id);
                         }}
                     />
@@ -149,7 +149,317 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisi
         getUnitGroupDetail(id).then((result: any) => {
             setDate(result.data);
             setUnits(result.data);
-            setEditForm(
+            // setEditForm(
+            //     <ProForm<{
+            //         unit: UnitTable[];
+            //     }>
+            //         formRef={formRefEdit}
+            //         validateTrigger="onBlur"
+            //         submitter={{
+            //             render: () => {
+            //                 return [];
+            //             },
+            //         }}
+            //         initialValues={result.data}
+            //         onFinish={async (values) => {
+            //             const updateResult = await updateUnitGroup({ ...values });
+            //             if (updateResult?.data) {
+            //                 message.success(
+            //                     <FormattedMessage
+            //                         id="options.createsuccess"
+            //                         defaultMessage="Created Successfully!" />
+            //                 );
+            //                 setDrawerVisible(false);
+            //                 setViewDrawerVisible(false);
+            //                 actionRef.current?.reload();
+            //             } else {
+            //                 message.error(updateResult?.error?.message);
+            //             }
+            //             return true;
+            //         }}
+            //     >
+            //         <Space direction="vertical">
+            //             <Card size="small" title={'UnitGroup Information'}>
+            //                 <Card size="small" title={'Name'}>
+            //                     <Form.Item>
+            //                         <Form.List name={'common:name'}>
+            //                             {(subFields, subOpt) => (
+            //                                 <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
+            //                                     {subFields.map((subField) => (
+            //                                         <>
+            //                                             <Space key={subField.key} direction="vertical">
+            //                                                 <Space>
+            //                                                     <Form.Item noStyle name={[subField.name, '@xml:lang']}>
+            //                                                         <Select
+            //                                                             placeholder="Select a lang"
+            //                                                             optionFilterProp="lang"
+            //                                                             options={langOptions}
+            //                                                         />
+            //                                                     </Form.Item>
+            //                                                     <CloseOutlined
+            //                                                         onClick={() => {
+            //                                                             subOpt.remove(subField.name);
+            //                                                         }}
+            //                                                     />
+            //                                                 </Space>
+            //                                                 <Form.Item noStyle name={[subField.name, '#text']}>
+            //                                                     <Input placeholder="text" />
+            //                                                 </Form.Item>
+            //                                             </Space>
+            //                                         </>
+            //                                     ))}
+            //                                     <Button type="dashed" onClick={() => subOpt.add()} block>
+            //                                         + Add Name Item
+            //                                     </Button>
+            //                                 </div>
+            //                             )}
+            //                         </Form.List>
+            //                     </Form.Item>
+            //                 </Card>
+            //                 <br />
+            //                 <Card size="small" title={'Classification'}>
+            //                     <Space>
+            //                         <Form.Item name={['common:class', '@level_0']}>
+            //                             <Input placeholder="Level 1" />
+            //                         </Form.Item>
+            //                         <Form.Item name={['common:class', '@level_1']}>
+            //                             <Input placeholder="Level 2" />
+            //                         </Form.Item>
+            //                         <Form.Item name={['common:class', '@level_2']}>
+            //                             <Input placeholder="Level 3" />
+            //                         </Form.Item>
+            //                     </Space>
+            //                 </Card>
+            //                 <br />
+            //                 <Form.Item name={'referenceToReferenceUnit'}>
+            //                     <Input placeholder="Quantitative Reference" />
+            //                 </Form.Item>
+            //             </Card>
+            //             <Card size="small" title={'Modelling And Validation'}>
+            //                 <Form.Item name={'compliance:common:@refObjectId'}>
+            //                     <Input placeholder="@refObjectId" />
+            //                 </Form.Item>
+            //                 <Form.Item name={'compliance:common:@type'}>
+            //                     <Input placeholder="@type" />
+            //                 </Form.Item>
+            //                 <Form.Item name={'compliance:common:@uri'}>
+            //                     <Input placeholder="@uri" />
+            //                 </Form.Item>
+            //                 <Form.Item name={'compliance:common:@version'}>
+            //                     <Input placeholder="@version" />
+            //                 </Form.Item>
+            //                 <Card size="small" title={'Short Description'}>
+            //                     <Form.Item>
+            //                         <Form.List name={'compliance:common:shortDescription'}>
+            //                             {(subFields, subOpt) => (
+            //                                 <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
+            //                                     {subFields.map((subField) => (
+            //                                         <>
+            //                                             <Space key={subField.key} direction="vertical">
+            //                                                 <Space>
+            //                                                     <Form.Item noStyle name={[subField.name, '@xml:lang']}>
+            //                                                         <Select
+            //                                                             placeholder="Select a lang"
+            //                                                             optionFilterProp="lang"
+            //                                                             options={langOptions}
+            //                                                         />
+            //                                                     </Form.Item>
+            //                                                     <CloseOutlined
+            //                                                         onClick={() => {
+            //                                                             subOpt.remove(subField.name);
+            //                                                         }}
+            //                                                     />
+            //                                                 </Space>
+            //                                                 <Form.Item noStyle name={[subField.name, '#text']}>
+            //                                                     <Input placeholder="text" />
+            //                                                 </Form.Item>
+            //                                             </Space>
+            //                                         </>
+            //                                     ))}
+            //                                     <Button type="dashed" onClick={() => subOpt.add()} block>
+            //                                         + Add Short Description Item
+            //                                     </Button>
+            //                                 </div>
+            //                             )}
+            //                         </Form.List>
+            //                     </Form.Item>
+            //                 </Card>
+            //                 <br />
+            //                 <Form.Item name={'compliance:common:approvalOfOverallCompliance'}>
+            //                     <Input placeholder="Approval Of Overall Compliance" />
+            //                 </Form.Item>
+            //             </Card>
+            //             <Card size="small" title={'Administrative Information'}>
+            //                 <Form.Item name={'dataEntryBy:common:timeStamp'}>
+            //                     <DatePicker showTime placeholder="Select" />
+            //                 </Form.Item>
+            //                 <Form.Item name={'dataEntryBy:common:@refObjectId'}>
+            //                     <Input placeholder="@refObjectId" />
+            //                 </Form.Item>
+            //                 <Form.Item name={'dataEntryBy:common:@type'}>
+            //                     <Input placeholder="@type" />
+            //                 </Form.Item>
+            //                 <Form.Item name={'dataEntryBy:common:@uri'}>
+            //                     <Input placeholder="@uri" />
+            //                 </Form.Item>
+            //                 <Form.Item name={'dataEntryBy:common:@version'}>
+            //                     <Input placeholder="@version" />
+            //                 </Form.Item>
+            //                 <Card size="small" title={'Short Description'}>
+            //                     <Form.Item>
+            //                         <Form.List name={'dataEntryBy:common:shortDescription'}>
+            //                             {(subFields, subOpt) => (
+            //                                 <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
+            //                                     {subFields.map((subField) => (
+            //                                         <>
+            //                                             <Space key={subField.key} direction="vertical">
+            //                                                 <Space>
+            //                                                     <Form.Item noStyle name={[subField.name, '@xml:lang']}>
+            //                                                         <Select
+            //                                                             placeholder="Select a lang"
+            //                                                             optionFilterProp="lang"
+            //                                                             options={langOptions}
+            //                                                         />
+            //                                                     </Form.Item>
+            //                                                     <CloseOutlined
+            //                                                         onClick={() => {
+            //                                                             subOpt.remove(subField.name);
+            //                                                         }}
+            //                                                     />
+            //                                                 </Space>
+            //                                                 <Form.Item noStyle name={[subField.name, '#text']}>
+            //                                                     <Input placeholder="text" />
+            //                                                 </Form.Item>
+            //                                             </Space>
+            //                                         </>
+            //                                     ))}
+            //                                     <Button type="dashed" onClick={() => subOpt.add()} block>
+            //                                         + Add Short Description Item
+            //                                     </Button>
+            //                                 </div>
+            //                             )}
+            //                         </Form.List>
+            //                     </Form.Item>
+            //                 </Card>
+            //                 <br />
+            //                 <Form.Item name={'publicationAndOwnership:common:dataSetVersion'}>
+            //                     <Input placeholder="DataSet Version" />
+            //                 </Form.Item>
+            //             </Card>
+            //             <Card size="small" title={'Units'}>
+            //                 <EditableProTable<UnitTable>
+            //                     rowKey="id"
+            //                     editableFormRef={editorFormRef}
+            //                     // actionRef={editorActionRef}
+            //                     name="unit"
+            //                     recordCreatorProps={{
+            //                         record: () => {
+            //                             let index = 0;
+            //                             const tableDataSource = formRefEdit.current?.getFieldValue(
+            //                                 'unit',
+            //                             ) as UnitTable[];
+            //                             if (tableDataSource) {
+            //                                 index = tableDataSource.length;
+            //                             }
+            //                             return {
+            //                                 id: v4(),
+            //                                 '@dataSetInternalID': index + '',
+            //                                 name: '',
+            //                                 meanValue: '',
+            //                                 selected: false,
+            //                             };
+            //                         },
+            //                     }}
+            //                     columns={unitColumns}
+            //                     // request={async () => ({
+            //                     //     data: result.data.unit,
+            //                     //     total: result.data.unit.length,
+            //                     //     success: true,
+            //                     // })}
+            //                     value={unitDataSource}
+            //                     onChange={setUnitDataSource}
+            //                     editable={{
+            //                         type: 'multiple',
+            //                         // editableKeys: unitDataSource.map((item: any) => item.id),
+            //                         editableKeys,
+            //                         onChange: setEditableRowKeys,
+            //                         // onSave: async (key, row) => {
+            //                         // },
+            //                         // onDelete: async (key) => {
+            //                         // },
+            //                         // onCancel: async (key, row) => {
+            //                         //     const newEditableKeys = editableKeys.filter(itemKey => itemKey !== key);
+            //                         //     setEditableRowKeys(newEditableKeys);
+            //                         // }
+            //                     }}
+            //                 />
+            //             </Card>
+            //             <Form.Item noStyle shouldUpdate>
+            //                 {() => (
+            //                     <Typography>
+            //                         <pre>{JSON.stringify(formRefEdit.current?.getFieldsValue(), null, 2)}</pre>
+            //                     </Typography>
+            //                 )}
+            //             </Form.Item>
+            //             <Form.Item name="id" hidden>
+            //                 <Input />
+            //             </Form.Item>
+            //         </Space>
+            //     </ProForm>
+            // );
+            formRefEdit.current?.setFieldsValue(result.data);
+        });
+    }, [actionRef, id, setViewDrawerVisible]);
+
+    const onReset = () => {
+        getUnitGroupDetail(id).then((result) => {
+            setDate(result.data);
+            setUnits(result.data);
+            formRefEdit.current?.setFieldsValue(result.data);
+        });
+    };
+
+    return (
+        <>
+            <Tooltip title={<FormattedMessage id="options.edit" defaultMessage="Edit" />}>
+                {buttonType === 'icon' ? (
+                    <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
+                ) : (
+                    <Button size="small" onClick={onEdit}>
+                        <FormattedMessage id="options.edit" defaultMessage="Edit" />
+                    </Button>
+                )}
+            </Tooltip>
+            <Drawer
+                title={<FormattedMessage id="options.edit" defaultMessage="Edit" />}
+                width="800px"
+                closable={false}
+                extra={
+                    <Button
+                        icon={<CloseOutlined />}
+                        style={{ border: 0 }}
+                        onClick={() => setDrawerVisible(false)}
+                    />
+                }
+                maskClosable={true}
+                open={drawerVisible}
+                onClose={() => setDrawerVisible(false)}
+                footer={
+                    <Space size={'middle'} className={styles.footer_right}>
+                        <Button onClick={() => setDrawerVisible(false)}>
+                            <FormattedMessage id="options.cancel" defaultMessage="Cancel" />
+                        </Button>
+                        <Button onClick={onReset}>
+                            <FormattedMessage id="options.reset" defaultMessage="Reset" />
+                        </Button>
+                        <Button onClick={() => formRefEdit.current?.submit()} type="primary">
+                            <FormattedMessage id="options.submit" defaultMessage="Submit" />
+                        </Button>
+                    </Space>
+                }
+            >
+                {/* {editForm} */}
+                {/* initialValues={result.data} */}
                 <ProForm<{
                     unit: UnitTable[];
                 }>
@@ -160,7 +470,7 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisi
                             return [];
                         },
                     }}
-                    initialValues={result.data}
+
                     onFinish={async (values) => {
                         const updateResult = await updateUnitGroup({ ...values });
                         if (updateResult?.data) {
@@ -406,59 +716,6 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisi
                         </Form.Item>
                     </Space>
                 </ProForm>
-            );
-            formRefEdit.current?.setFieldsValue(result.data);
-        });
-    }, [actionRef, id, setViewDrawerVisible]);
-
-    const onReset = () => {
-        getUnitGroupDetail(id).then((result) => {
-            setDate(result.data);
-            setUnits(result.data);
-            formRefEdit.current?.setFieldsValue(result.data);
-        });
-    };
-
-    return (
-        <>
-            <Tooltip title={<FormattedMessage id="options.edit" defaultMessage="Edit" />}>
-                {buttonType === 'icon' ? (
-                    <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
-                ) : (
-                    <Button size="small" onClick={onEdit}>
-                        <FormattedMessage id="options.edit" defaultMessage="Edit" />
-                    </Button>
-                )}
-            </Tooltip>
-            <Drawer
-                title={<FormattedMessage id="options.edit" defaultMessage="Edit" />}
-                width="800px"
-                closable={false}
-                extra={
-                    <Button
-                        icon={<CloseOutlined />}
-                        style={{ border: 0 }}
-                        onClick={() => setDrawerVisible(false)}
-                    />
-                }
-                maskClosable={true}
-                open={drawerVisible}
-                onClose={() => setDrawerVisible(false)}
-                footer={
-                    <Space size={'middle'} className={styles.footer_right}>
-                        <Button onClick={() => setDrawerVisible(false)}>
-                            <FormattedMessage id="options.cancel" defaultMessage="Cancel" />
-                        </Button>
-                        <Button onClick={onReset}>
-                            <FormattedMessage id="options.reset" defaultMessage="Reset" />
-                        </Button>
-                        <Button onClick={() => formRefEdit.current?.submit()} type="primary">
-                            <FormattedMessage id="options.submit" defaultMessage="Submit" />
-                        </Button>
-                    </Space>
-                }
-            >
-                {editForm}
             </Drawer>
         </>
     );
