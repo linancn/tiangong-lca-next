@@ -4,6 +4,7 @@ import menu from './zh-CN/menu';
 import pages from './zh-CN/pages';
 import pages_contact from './zh-CN/pages_contact';
 import pages_general from './zh-CN/pages_general';
+import pages_unitgroup from './zh-CN/pages_unitgroup';
 import pwa from './zh-CN/pwa';
 import settingDrawer from './zh-CN/settingDrawer';
 import settings from './zh-CN/settings';
@@ -34,4 +35,5 @@ export default {
   ...component,
   ...pages_general,
   ...pages_contact,
+  ...pages_unitgroup,
 };

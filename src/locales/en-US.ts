@@ -4,6 +4,7 @@ import menu from './en-US/menu';
 import pages from './en-US/pages';
 import pages_contact from './en-US/pages_contact';
 import pages_general from './en-US/pages_general';
+import pages_unitgroup from './en-US/pages_unitgroup';
 import pwa from './en-US/pwa';
 import settingDrawer from './en-US/settingDrawer';
 import settings from './en-US/settings';
@@ -34,4 +35,5 @@ export default {
   ...pages,
   ...pages_general,
   ...pages_contact,
+  ...pages_unitgroup,
 };
