@@ -102,7 +102,7 @@ const ProcessExchangeCreate: FC<Props> = ({ onData }) => {
             <Divider orientationMargin="0" orientation="left" plain>
               General Comment
             </Divider>
-            <LangTextItemFrom keyName="generalComment" labelName="General Comment" />
+            <LangTextItemFrom name="generalComment" label="General Comment" />
 
             <Form.Item noStyle shouldUpdate>
               {() => (

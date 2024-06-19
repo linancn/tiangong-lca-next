@@ -6,14 +6,14 @@ import { FC } from 'react';
 const { TextArea } = Input;
 
 type Props = {
-  keyName: any;
-  labelName: string;
+  name: any;
+  label: string;
 };
 
-const LangTextItemFrom: FC<Props> = ({ keyName, labelName }) => {
+const LangTextItemFrom: FC<Props> = ({ name, label }) => {
   return (
     <Form.Item>
-      <Form.List name={keyName}>
+      <Form.List name={name}>
         {(subFields, subOpt) => (
           <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
             {subFields.map((subField) => (
@@ -44,7 +44,7 @@ const LangTextItemFrom: FC<Props> = ({ keyName, labelName }) => {
               </Row>
             ))}
             <Button type="dashed" onClick={() => subOpt.add()} block>
-              + Add {labelName} Item
+              + Add {label} Item
             </Button>
           </div>
         )}

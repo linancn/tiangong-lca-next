@@ -1,92 +1,63 @@
-function getAttribute(key: string, value: any) {
-  return value ? { [key]: value } : {};
-}
+import {
+  classificationToJson,
+  classificationToList,
+  getLangJson,
+  getLangList,
+  removeEmptyObjects,
+} from '../general/util';
 
 export function genContactJsonOrdered(id: string, data: any, oldData: any) {
-  let common_shortName = {};
-  if (data?.['common:shortName']) {
-    if (data?.['common:shortName'].length === 1) {
-      common_shortName = data?.['common:shortName'][0];
-    } else if (data?.['common:shortName'].length > 1) {
-      common_shortName = data?.['common:shortName'];
-    }
-  }
-  let common_name = {};
-  if (data?.['common:name']) {
-    if (data?.['common:name'].length === 1) {
-      common_name = data?.['common:name'][0];
-    } else if (data?.['common:name'].length > 1) {
-      common_name = data?.['common:name'];
-    }
-  }
-  let common_class = {};
-  if (data?.['common:class']?.['@level_0'] && data?.['common:class']?.['@level_0'].trim() !== '') {
-    common_class = {
-      '@level': 0,
-      '#text': data?.['common:class']?.['@level_0'],
-    };
-    if (
-      data?.['common:class']?.['@level_1'] &&
-      data?.['common:class']?.['@level_1'].trim() !== ''
-    ) {
-      common_class = [
-        {
-          '@level': 0,
-          '#text': data?.['common:class']?.['@level_0'],
-        },
-        {
-          '@level': 1,
-          '#text': data?.['common:class']?.['@level_1'],
-        },
-      ];
-      if (
-        data?.['common:class']?.['@level_2'] &&
-        data?.['common:class']?.['@level_2'].trim() !== ''
-      ) {
-        common_class = [
-          {
-            '@level': 0,
-            '#text': data?.['common:class']?.['@level_0'],
-          },
-          {
-            '@level': 1,
-            '#text': data?.['common:class']?.['@level_1'],
-          },
-          {
-            '@level': 2,
-            '#text': data?.['common:class']?.['@level_2'],
-          },
-        ];
-      }
-    }
-  }
-  const newData = {
+  return removeEmptyObjects({
     contactDataSet: {
-      ...getAttribute('@xmlns:common', oldData.contactDataSet['@xmlns:common']),
-      ...getAttribute('@xmlns', oldData.contactDataSet['@xmlns']),
-      ...getAttribute('@xmlns:xsi', oldData.contactDataSet['@xmlns:xsi']),
-      ...getAttribute('@version', oldData.contactDataSet['@version']),
-      ...getAttribute('@xsi:schemaLocation', oldData.contactDataSet['@xsi:schemaLocation']),
+      '@xmlns:common': oldData.contactDataSet?.['@xmlns:common'] ?? {},
+      '@xmlns': oldData.contactDataSet?.['@xmlns'] ?? {},
+      '@xmlns:xsi': oldData.contactDataSet?.['@xmlns:xsi'] ?? {},
+      '@version': oldData.contactDataSet['@version'] ?? {},
+      '@xsi:schemaLocation': oldData.contactDataSet['@xsi:schemaLocation'] ?? {},
       contactInformation: {
         dataSetInformation: {
           'common:UUID': id,
-          'common:shortName': common_shortName,
-          'common:name': common_name,
+          'common:shortName': getLangJson(
+            data?.contactInformation?.dataSetInformation?.['common:shortName'],
+          ),
+          'common:name': getLangJson(data?.contactInformation?.dataSetInformation?.['common:name']),
           classificationInformation: {
             'common:classification': {
-              'common:class': common_class,
+              'common:class': classificationToList(
+                data?.contactInformation?.dataSetInformation?.classificationInformation?.[
+                  'common:classification'
+                ]?.['common:class'],
+              ),
             },
           },
-          email: data?.email,
+          email: data?.contactInformation?.dataSetInformation?.email,
         },
       },
-      administrativeInformation: {
-        publicationAndOwnership: {
-          'common:dataSetVersion': data?.['common:dataSetVersion'],
+      administrativeInformation: data?.administrativeInformation ?? {},
+    },
+  });
+}
+
+export function genContactFromData(data: any) {
+  return removeEmptyObjects({
+    contactInformation: {
+      dataSetInformation: {
+        'common:shortName': getLangList(
+          data?.contactInformation?.dataSetInformation?.['common:shortName'],
+        ),
+        'common:name': getLangList(data?.contactInformation?.dataSetInformation?.['common:name']),
+        classificationInformation: {
+          'common:classification': {
+            'common:class': classificationToJson(
+              data?.contactInformation?.dataSetInformation?.classificationInformation?.[
+                'common:classification'
+              ]?.['common:class'],
+            ),
+          },
         },
+        email: data?.contactInformation?.dataSetInformation?.email,
       },
     },
-  };
-
-  return newData;
+    administrativeInformation: data?.administrativeInformation ?? {},
+  });
 }
