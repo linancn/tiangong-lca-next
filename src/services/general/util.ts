@@ -106,11 +106,10 @@ export function classificationToJson(classifications: any) {
 }
 
 export function classificationToList(classifications: any) {
-  console.log(classifications);
   let common_class = {};
   if ((classifications?.['@level_0'] ?? '').trim() !== '') {
     common_class = {
-      '@level': 0,
+      '@level': '0',
       '#text': classifications['@level_0'],
     };
     if ((classifications?.['@level_1'] ?? '').trim() !== '') {
@@ -127,15 +126,15 @@ export function classificationToList(classifications: any) {
       if ((classifications?.['@level_2'] ?? '').trim() !== '') {
         common_class = [
           {
-            '@level': 0,
+            '@level': '0',
             '#text': classifications['@level_0'],
           },
           {
-            '@level': 1,
+            '@level': '1',
             '#text': classifications['@level_1'],
           },
           {
-            '@level': 2,
+            '@level': '2',
             '#text': classifications['@level_2'],
           },
         ];

@@ -43,12 +43,17 @@ const ContactDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisi
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="options.delete" defaultMessage="Delete" />}>
+      <Tooltip title={<FormattedMessage id="pages.table.option.delete" defaultMessage="Delete" />}>
         {buttonType === 'icon' ? (
           <>
             <Button shape="circle" icon={<DeleteOutlined />} size="small" onClick={showModal} />
             <Modal
-              title={<FormattedMessage id="options.delete" defaultMessage="Delete" />}
+              title={
+                <FormattedMessage
+                  id="pages.contact.drawer.title.delete"
+                  defaultMessage="Delete Contact"
+                />
+              }
               open={isModalVisible}
               onOk={handleOk}
               onCancel={handleCancel}

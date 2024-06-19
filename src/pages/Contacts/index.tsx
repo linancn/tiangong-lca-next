@@ -27,13 +27,13 @@ const TableList: FC = () => {
   const actionRef = useRef<ActionType>();
   const contactColumns: ProColumns<ContactTable>[] = [
     {
-      title: <FormattedMessage id="contact.index" defaultMessage="Index" />,
+      title: <FormattedMessage id="pages.table.index" defaultMessage="Index" />,
       dataIndex: 'index',
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="contact.shortName" defaultMessage="Data Name" />,
+      title: <FormattedMessage id="pages.contact.shortName" defaultMessage="Short Name" />,
       dataIndex: 'shortName',
       sorter: false,
       render: (_, row) => [
@@ -43,26 +43,26 @@ const TableList: FC = () => {
       ],
     },
     {
-      title: <FormattedMessage id="contact.classification" defaultMessage="Classification" />,
+      title: <FormattedMessage id="pages.contact.classification" defaultMessage="Classification" />,
       dataIndex: 'classification',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="contact.email" defaultMessage="Email" />,
+      title: <FormattedMessage id="pages.contact.email" defaultMessage="Email" />,
       dataIndex: 'email',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="contact.createdAt" defaultMessage="Created At" />,
+      title: <FormattedMessage id="pages.contact.createdAt" defaultMessage="Created At" />,
       dataIndex: 'createdAt',
       valueType: 'dateTime',
       sorter: true,
       search: false,
     },
     {
-      title: <FormattedMessage id="options.option" defaultMessage="Option" />,
+      title: <FormattedMessage id="pages.table.option" defaultMessage="Option" />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {

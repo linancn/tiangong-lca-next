@@ -1,42 +1,38 @@
+import LangTextItemFrom from '@/components/LangTextItem/from';
+import LevelTextItemFrom from '@/components/LevelTextItem/from';
 import { createContact } from '@/services/contacts/api';
-import { langOptions } from '@/services/general/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import ProForm from '@ant-design/pro-form';
 import type { ActionType } from '@ant-design/pro-table';
-import {
-  Button,
-  Card,
-  Drawer,
-  Form,
-  Input,
-  Select,
-  Space,
-  Tooltip,
-  Typography,
-  message,
-} from 'antd';
+import { Button, Card, Drawer, Form, Input, Space, Tooltip, Typography, message } from 'antd';
 import type { FC } from 'react';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-
-const { TextArea } = Input;
 
 type Props = {
   actionRef: React.MutableRefObject<ActionType | undefined>;
 };
 const ContactCreate: FC<Props> = ({ actionRef }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
+  const [fromData, setFromData] = useState<any>({});
   const formRefCreate = useRef<ProFormInstance>();
 
   const reload = useCallback(() => {
     actionRef.current?.reload();
   }, [actionRef]);
 
+  useEffect(() => {
+    if (drawerVisible) return;
+    formRefCreate.current?.resetFields();
+    formRefCreate.current?.setFieldsValue({});
+    setFromData({});
+  }, [drawerVisible]);
+
   return (
     <>
-      <Tooltip title={<FormattedMessage id="options.create" defaultMessage="Create" />}>
+      <Tooltip title={<FormattedMessage id="pages.table.option.create" defaultMessage="Create" />}>
         <Button
           size={'middle'}
           type="text"
@@ -47,8 +43,13 @@ const ContactCreate: FC<Props> = ({ actionRef }) => {
         />
       </Tooltip>
       <Drawer
-        title={<FormattedMessage id="options.create" defaultMessage="Create" />}
-        width="600px"
+        title={
+          <FormattedMessage
+            id="pages.contact.drawer.title.create"
+            defaultMessage="Create Contact"
+          />
+        }
+        width="90%"
         closable={false}
         extra={
           <Button
@@ -74,13 +75,16 @@ const ContactCreate: FC<Props> = ({ actionRef }) => {
       >
         <ProForm
           formRef={formRefCreate}
+          onValuesChange={(_, allValues) => {
+            setFromData(allValues ?? {});
+          }}
           submitter={{
             render: () => {
               return [];
             },
           }}
-          onFinish={async (values) => {
-            const result = await createContact({ ...values });
+          onFinish={async () => {
+            const result = await createContact({ ...fromData });
             if (result.data) {
               message.success(
                 <FormattedMessage
@@ -97,107 +101,51 @@ const ContactCreate: FC<Props> = ({ actionRef }) => {
             return true;
           }}
         >
-          <Space direction="vertical">
+          <Space direction="vertical" style={{ width: '100%' }}>
             <Card size="small" title={'Short Name'}>
-              <Form.Item>
-                <Form.List name={'common:shortName'}>
-                  {(subFields, subOpt) => (
-                    <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
-                      {subFields.map((subField) => (
-                        <>
-                          <Space key={subField.key} direction="vertical">
-                            <Space>
-                              <Form.Item noStyle name={[subField.name, '@xml:lang']}>
-                                <Select
-                                  placeholder="Select a lang"
-                                  optionFilterProp="lang"
-                                  options={langOptions}
-                                />
-                              </Form.Item>
-                              <CloseOutlined
-                                onClick={() => {
-                                  subOpt.remove(subField.name);
-                                }}
-                              />
-                            </Space>
-                            <Form.Item noStyle name={[subField.name, '#text']}>
-                              <TextArea placeholder="text" rows={1} />
-                            </Form.Item>
-                          </Space>
-                        </>
-                      ))}
-                      <Button type="dashed" onClick={() => subOpt.add()} block>
-                        + Add Short Name Item
-                      </Button>
-                    </div>
-                  )}
-                </Form.List>
-              </Form.Item>
+              <LangTextItemFrom
+                name={['contactInformation', 'dataSetInformation', 'common:shortName']}
+                label="Short Name"
+              />
             </Card>
             <Card size="small" title={'Name'}>
-              <Form.Item>
-                <Form.List name={'common:name'}>
-                  {(subFields, subOpt) => (
-                    <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
-                      {subFields.map((subField) => (
-                        <>
-                          <Space key={subField.key} direction="vertical">
-                            <Space>
-                              <Form.Item noStyle name={[subField.name, '@xml:lang']}>
-                                <Select
-                                  placeholder="Select a lang"
-                                  optionFilterProp="lang"
-                                  options={langOptions}
-                                />
-                              </Form.Item>
-                              <CloseOutlined
-                                onClick={() => {
-                                  subOpt.remove(subField.name);
-                                }}
-                              />
-                            </Space>
-                            <Form.Item noStyle name={[subField.name, '#text']}>
-                              <Input placeholder="text" />
-                            </Form.Item>
-                          </Space>
-                        </>
-                      ))}
-                      <Button type="dashed" onClick={() => subOpt.add()} block>
-                        + Add Name Item
-                      </Button>
-                    </div>
-                  )}
-                </Form.List>
-              </Form.Item>
+              <LangTextItemFrom
+                name={['contactInformation', 'dataSetInformation', 'common:name']}
+                label="Name"
+              />
             </Card>
             <Card size="small" title={'Classification'}>
-              <Space>
-                <Form.Item name={['common:class', '@level_0']}>
-                  <Input placeholder="Level 1" />
-                </Form.Item>
-                <Form.Item name={['common:class', '@level_1']}>
-                  <Input placeholder="Level 2" />
-                </Form.Item>
-                <Form.Item name={['common:class', '@level_2']}>
-                  <Input placeholder="Level 3" />
-                </Form.Item>
-              </Space>
+              <LevelTextItemFrom
+                name={[
+                  'contactInformation',
+                  'dataSetInformation',
+                  'classificationInformation',
+                  'common:classification',
+                  'common:class',
+                ]}
+              />
             </Card>
-            <Form.Item label="Email" name={'email'}>
+            <Form.Item label="Email" name={['contactInformation', 'dataSetInformation', 'email']}>
               <Input />
             </Form.Item>
-            <Form.Item label="Data Set Version" name={'common:dataSetVersion'}>
+            <Form.Item
+              label="Data Set Version"
+              name={[
+                'administrativeInformation',
+                'publicationAndOwnership',
+                'common:dataSetVersion',
+              ]}
+            >
               <Input />
             </Form.Item>
-            <Form.Item noStyle shouldUpdate>
-              {() => (
-                <Typography>
-                  <pre>{JSON.stringify(formRefCreate.current?.getFieldsValue(), null, 2)}</pre>
-                </Typography>
-              )}
+            <Form.Item name="id" hidden>
+              <Input />
             </Form.Item>
           </Space>
         </ProForm>
+        <Typography>
+          <pre>{JSON.stringify(fromData, null, 2)}</pre>
+        </Typography>
       </Drawer>
     </>
   );
