@@ -78,6 +78,7 @@ const TableList: FC = () => {
               <ProcessView id={row.id} dataSource={dataSource} lang={lang} actionRef={actionRef} />
               <ProcessEdit
                 id={row.id}
+                lang={lang}
                 buttonType={'icon'}
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}

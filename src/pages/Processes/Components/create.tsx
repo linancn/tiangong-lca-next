@@ -142,14 +142,14 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
       <Space direction="vertical" style={{ width: '100%' }}>
         <Card size="small" title={'Base Name'}>
           <LangTextItemFrom
-            keyName={['dataSetInformation', 'name', 'baseName']}
+            keyName={['processInformation', 'dataSetInformation', 'name', 'baseName']}
             labelName="Base Name"
           />
         </Card>
 
         <Card size="small" title={'General Comment'}>
           <LangTextItemFrom
-            keyName={['classificationInformation', 'common:generalComment']}
+            keyName={['processInformation', 'classificationInformation', 'common:generalComment']}
             labelName="General Comment"
           />
         </Card>
@@ -158,6 +158,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
           <Space>
             <Form.Item
               name={[
+                'processInformation',
                 'classificationInformation',
                 'common:classification',
                 'common:class',
@@ -168,6 +169,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             </Form.Item>
             <Form.Item
               name={[
+                'processInformation',
                 'classificationInformation',
                 'common:classification',
                 'common:class',
@@ -178,6 +180,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             </Form.Item>
             <Form.Item
               name={[
+                'processInformation',
                 'classificationInformation',
                 'common:classification',
                 'common:class',
@@ -190,12 +193,12 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
         </Card>
 
         <Card size="small" title={'Quantitative Reference'}>
-          <Form.Item label="Type" name={['quantitativeReference', '@type']}>
+          <Form.Item label="Type" name={['processInformation', 'quantitativeReference', '@type']}>
             <Input />
           </Form.Item>
           <Form.Item
             label="Reference To Reference Flow"
-            name={['quantitativeReference', 'referenceToReferenceFlow']}
+            name={['processInformation', 'quantitativeReference', 'referenceToReferenceFlow']}
           >
             <Input />
           </Form.Item>
@@ -203,33 +206,43 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             Functional Unit Or Other
           </Divider>
           <LangTextItemFrom
-            keyName={['quantitativeReference', 'functionalUnitOrOther']}
+            keyName={['processInformation', 'quantitativeReference', 'functionalUnitOrOther']}
             labelName="Functional Unit Or Other"
           />
         </Card>
 
         <Card size="small" title={'Time'}>
-          <Form.Item label="Reference Year" name={['time', 'common:referenceYear']}>
+          <Form.Item
+            label="Reference Year"
+            name={['processInformation', 'time', 'common:referenceYear']}
+          >
             <Input />
           </Form.Item>
           <Divider orientationMargin="0" orientation="left" plain>
             Time Representativeness Description
           </Divider>
           <LangTextItemFrom
-            keyName={['time', 'common:timeRepresentativenessDescription']}
+            keyName={['processInformation', 'time', 'common:timeRepresentativenessDescription']}
             labelName="Time Representativeness Description"
           />
         </Card>
 
         <Card size="small" title={'Geography: Location Of Operation Supply Or Production'}>
-          <Form.Item label="Location" name={['locationOfOperationSupplyOrProduction', '@location']}>
+          <Form.Item
+            label="Location"
+            name={['processInformation', 'locationOfOperationSupplyOrProduction', '@location']}
+          >
             <Input />
           </Form.Item>
           <Divider orientationMargin="0" orientation="left" plain>
             Description Of Restrictions
           </Divider>
           <LangTextItemFrom
-            keyName={['locationOfOperationSupplyOrProduction', 'descriptionOfRestrictions']}
+            keyName={[
+              'processInformation',
+              'locationOfOperationSupplyOrProduction',
+              'descriptionOfRestrictions',
+            ]}
             labelName="Description Of Restrictions"
           />
         </Card>
@@ -239,32 +252,51 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             Technology Description And Included Processes
           </Divider>
           <LangTextItemFrom
-            keyName={['technology', 'technologyDescriptionAndIncludedProcesses']}
+            keyName={[
+              'processInformation',
+              'technology',
+              'technologyDescriptionAndIncludedProcesses',
+            ]}
             labelName="Technology Description And Included Processes"
           />
           <Divider orientationMargin="0" orientation="left" plain>
             Technological Applicability
           </Divider>
           <LangTextItemFrom
-            keyName={['technology', 'technologicalApplicability']}
+            keyName={['processInformation', 'technology', 'technologicalApplicability']}
             labelName="Technological Applicability"
           />
           <Card size="small" title={'Reference To Technology Flow Diagramm Or Picture'}>
             <Form.Item
               label="Type"
-              name={['technology', 'referenceToTechnologyFlowDiagrammOrPicture', '@type']}
+              name={[
+                'processInformation',
+                'technology',
+                'referenceToTechnologyFlowDiagrammOrPicture',
+                '@type',
+              ]}
             >
               <Input />
             </Form.Item>
             <Form.Item
               label="Ref Object Id"
-              name={['technology', 'referenceToTechnologyFlowDiagrammOrPicture', '@refObjectId']}
+              name={[
+                'processInformation',
+                'technology',
+                'referenceToTechnologyFlowDiagrammOrPicture',
+                '@refObjectId',
+              ]}
             >
               <Input />
             </Form.Item>
             <Form.Item
               label="URI"
-              name={['technology', 'referenceToTechnologyFlowDiagrammOrPicture', '@uri']}
+              name={[
+                'processInformation',
+                'technology',
+                'referenceToTechnologyFlowDiagrammOrPicture',
+                '@uri',
+              ]}
             >
               <Input />
             </Form.Item>
@@ -273,6 +305,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             </Divider>
             <LangTextItemFrom
               keyName={[
+                'processInformation',
                 'technology',
                 'referenceToTechnologyFlowDiagrammOrPicture',
                 'common:shortDescription',
@@ -284,7 +317,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
 
         <Card size="small" title={'Mathematical Relations: Model Description'}>
           <LangTextItemFrom
-            keyName={['mathematicalRelations', 'modelDescription']}
+            keyName={['processInformation', 'mathematicalRelations', 'modelDescription']}
             labelName="Model Description"
           />
         </Card>
@@ -293,12 +326,15 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
     modellingAndValidation: (
       <Space direction="vertical" style={{ width: '100%' }}>
         <Card size="small" title={'LCI Method And Allocation'}>
-          <Form.Item label="Type Of DataSet" name={['LCIMethodAndAllocation', 'typeOfDataSet']}>
+          <Form.Item
+            label="Type Of DataSet"
+            name={['modellingAndValidation', 'LCIMethodAndAllocation', 'typeOfDataSet']}
+          >
             <Input />
           </Form.Item>
           <Form.Item
             label="LCI Method Principle"
-            name={['LCIMethodAndAllocation', 'LCIMethodPrinciple']}
+            name={['modellingAndValidation', 'LCIMethodAndAllocation', 'LCIMethodPrinciple']}
           >
             <Input />
           </Form.Item>
@@ -306,12 +342,16 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             Deviations From LCI Method Principle
           </Divider>
           <LangTextItemFrom
-            keyName={['LCIMethodAndAllocation', 'deviationsFromLCIMethodPrinciple']}
+            keyName={[
+              'modellingAndValidation',
+              'LCIMethodAndAllocation',
+              'deviationsFromLCIMethodPrinciple',
+            ]}
             labelName="Deviations From LCI Method Principle"
           />
           <Form.Item
             label="LCI Method Approaches"
-            name={['LCIMethodAndAllocation', 'LCIMethodApproaches']}
+            name={['modellingAndValidation', 'LCIMethodAndAllocation', 'LCIMethodApproaches']}
           >
             <Input />
           </Form.Item>
@@ -319,14 +359,22 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             Deviations From LCI Method Approaches
           </Divider>
           <LangTextItemFrom
-            keyName={['LCIMethodAndAllocation', 'deviationsFromLCIMethodApproaches']}
+            keyName={[
+              'modellingAndValidation',
+              'LCIMethodAndAllocation',
+              'deviationsFromLCIMethodApproaches',
+            ]}
             labelName="Deviations From LCI Method Approaches"
           />
           <Divider orientationMargin="0" orientation="left" plain>
             Deviations From Modelling Constants
           </Divider>
           <LangTextItemFrom
-            keyName={['LCIMethodAndAllocation', 'deviationsFromModellingConstants']}
+            keyName={[
+              'modellingAndValidation',
+              'LCIMethodAndAllocation',
+              'deviationsFromModellingConstants',
+            ]}
             labelName="Deviations From Modelling Constants"
           />
         </Card>
@@ -337,6 +385,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
           </Divider>
           <LangTextItemFrom
             keyName={[
+              'modellingAndValidation',
               'dataSourcesTreatmentAndRepresentativeness',
               'deviationsFromCutOffAndCompletenessPrinciples',
             ]}
@@ -347,6 +396,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
           </Divider>
           <LangTextItemFrom
             keyName={[
+              'modellingAndValidation',
               'dataSourcesTreatmentAndRepresentativeness',
               'dataSelectionAndCombinationPrinciples',
             ]}
@@ -357,6 +407,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
           </Divider>
           <LangTextItemFrom
             keyName={[
+              'modellingAndValidation',
               'dataSourcesTreatmentAndRepresentativeness',
               'deviationsFromSelectionAndCombinationPrinciples',
             ]}
@@ -367,6 +418,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
           </Divider>
           <LangTextItemFrom
             keyName={[
+              'modellingAndValidation',
               'dataSourcesTreatmentAndRepresentativeness',
               'dataTreatmentAndExtrapolationsPrinciples',
             ]}
@@ -377,6 +429,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
           </Divider>
           <LangTextItemFrom
             keyName={[
+              'modellingAndValidation',
               'dataSourcesTreatmentAndRepresentativeness',
               'deviationsFromTreatmentAndExtrapolationPrinciples',
             ]}
@@ -385,13 +438,19 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
           <Card size="small" title={'Reference To Data Source'}>
             <Form.Item
               label="Type"
-              name={['dataSourcesTreatmentAndRepresentativeness', 'referenceToDataSource', '@type']}
+              name={[
+                'modellingAndValidation',
+                'dataSourcesTreatmentAndRepresentativeness',
+                'referenceToDataSource',
+                '@type',
+              ]}
             >
               <Input />
             </Form.Item>
             <Form.Item
               label="Ref Object Id"
               name={[
+                'modellingAndValidation',
                 'dataSourcesTreatmentAndRepresentativeness',
                 'referenceToDataSource',
                 '@refObjectId',
@@ -401,7 +460,12 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             </Form.Item>
             <Form.Item
               label="URI"
-              name={['dataSourcesTreatmentAndRepresentativeness', 'referenceToDataSource', '@uri']}
+              name={[
+                'modellingAndValidation',
+                'dataSourcesTreatmentAndRepresentativeness',
+                'referenceToDataSource',
+                '@uri',
+              ]}
             >
               <Input />
             </Form.Item>
@@ -410,6 +474,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             </Divider>
             <LangTextItemFrom
               keyName={[
+                'modellingAndValidation',
                 'dataSourcesTreatmentAndRepresentativeness',
                 'referenceToDataSource',
                 'common:shortDescription',
@@ -422,7 +487,11 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             Use Advice For DataSet
           </Divider>
           <LangTextItemFrom
-            keyName={['dataSourcesTreatmentAndRepresentativeness', 'useAdviceForDataSet']}
+            keyName={[
+              'modellingAndValidation',
+              'dataSourcesTreatmentAndRepresentativeness',
+              'useAdviceForDataSet',
+            ]}
             labelName="Use Advice For DataSet"
           />
         </Card>
@@ -430,7 +499,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
           Completeness: Completeness Description
         </Divider>
         <LangTextItemFrom
-          keyName={['completeness', 'completenessDescription']}
+          keyName={['modellingAndValidation', 'completeness', 'completenessDescription']}
           labelName="Completeness Description"
         />
         <Card size="small" title={'Validation: Review'}>
@@ -441,7 +510,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             Review Details
           </Divider>
           <LangTextItemFrom
-            keyName={['validation', 'review', 'common:reviewDetails']}
+            keyName={['modellingAndValidation', 'validation', 'review', 'common:reviewDetails']}
             labelName="Review Details"
           />
 
@@ -449,6 +518,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             <Form.Item
               label="Type"
               name={[
+                'modellingAndValidation',
                 'validation',
                 'review',
                 'common:referenceToNameOfReviewerAndInstitution',
@@ -460,6 +530,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             <Form.Item
               label="Ref Object Id"
               name={[
+                'modellingAndValidation',
                 'validation',
                 'review',
                 'common:referenceToNameOfReviewerAndInstitution',
@@ -471,6 +542,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             <Form.Item
               label="URI"
               name={[
+                'modellingAndValidation',
                 'validation',
                 'review',
                 'common:referenceToNameOfReviewerAndInstitution',
@@ -484,6 +556,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             </Divider>
             <LangTextItemFrom
               keyName={[
+                'modellingAndValidation',
                 'validation',
                 'review',
                 'common:referenceToNameOfReviewerAndInstitution',
@@ -504,6 +577,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
           <Form.Item
             label="Type"
             name={[
+              'administrativeInformation',
               'dataGenerator',
               'common:referenceToPersonOrEntityGeneratingTheDataSet',
               '@type',
@@ -514,6 +588,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
           <Form.Item
             label="Ref Object Id"
             name={[
+              'administrativeInformation',
               'dataGenerator',
               'common:referenceToPersonOrEntityGeneratingTheDataSet',
               '@refObjectId',
@@ -523,7 +598,12 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
           </Form.Item>
           <Form.Item
             label="URI"
-            name={['dataGenerator', 'common:referenceToPersonOrEntityGeneratingTheDataSet', '@uri']}
+            name={[
+              'administrativeInformation',
+              'dataGenerator',
+              'common:referenceToPersonOrEntityGeneratingTheDataSet',
+              '@uri',
+            ]}
           >
             <Input />
           </Form.Item>
@@ -532,6 +612,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
           </Divider>
           <LangTextItemFrom
             keyName={[
+              'administrativeInformation',
               'dataGenerator',
               'common:referenceToPersonOrEntityGeneratingTheDataSet',
               'common:shortDescription',
@@ -547,21 +628,29 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
         <Card size="small" title={'Publication And Ownership'}>
           <Form.Item
             label="Date Of Last Revision"
-            name={['publicationAndOwnership', 'common:dateOfLastRevision']}
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:dateOfLastRevision',
+            ]}
           >
             <Input />
           </Form.Item>
 
           <Form.Item
             label="Data Set Version"
-            name={['publicationAndOwnership', 'common:dataSetVersion']}
+            name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
           >
             <Input />
           </Form.Item>
 
           <Form.Item
             label="Permanent Data Set URI"
-            name={['publicationAndOwnership', 'common:permanentDataSetURI']}
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:permanentDataSetURI',
+            ]}
           >
             <Input />
           </Form.Item>
@@ -569,13 +658,19 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
           <Card size="small" title={'Reference To Ownership Of Data Set'}>
             <Form.Item
               label="Type"
-              name={['publicationAndOwnership', 'common:referenceToOwnershipOfDataSet', '@type']}
+              name={[
+                'administrativeInformation',
+                'publicationAndOwnership',
+                'common:referenceToOwnershipOfDataSet',
+                '@type',
+              ]}
             >
               <Input />
             </Form.Item>
             <Form.Item
               label="Ref Object Id"
               name={[
+                'administrativeInformation',
                 'publicationAndOwnership',
                 'common:referenceToOwnershipOfDataSet',
                 '@refObjectId',
@@ -585,7 +680,12 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             </Form.Item>
             <Form.Item
               label="URI"
-              name={['publicationAndOwnership', 'common:referenceToOwnershipOfDataSet', '@uri']}
+              name={[
+                'administrativeInformation',
+                'publicationAndOwnership',
+                'common:referenceToOwnershipOfDataSet',
+                '@uri',
+              ]}
             >
               <Input />
             </Form.Item>
@@ -594,6 +694,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             </Divider>
             <LangTextItemFrom
               keyName={[
+                'administrativeInformation',
                 'publicationAndOwnership',
                 'common:referenceToOwnershipOfDataSet',
                 'common:shortDescription',
@@ -602,11 +703,17 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             />
           </Card>
 
-          <Form.Item label="Copyright" name={['publicationAndOwnership', 'common:copyright']}>
+          <Form.Item
+            label="Copyright"
+            name={['administrativeInformation', 'publicationAndOwnership', 'common:copyright']}
+          >
             <Input />
           </Form.Item>
 
-          <Form.Item label="License Type" name={['publicationAndOwnership', 'common:licenseType']}>
+          <Form.Item
+            label="License Type"
+            name={['administrativeInformation', 'publicationAndOwnership', 'common:licenseType']}
+          >
             <Input />
           </Form.Item>
         </Card>
@@ -631,15 +738,8 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
   };
 
   const onTabChange = (key: string) => {
-    // setFromData({ ...fromData, [activeTabKey]: formRefCreate.current?.getFieldsValue() });
     setActiveTabKey(key);
   };
-
-  useEffect(() => {
-    if (!drawerVisible) return;
-    if (activeTabKey === 'exchanges') return;
-    setFromData({ ...fromData, [activeTabKey]: formRefCreate.current?.getFieldsValue() });
-  }, [drawerVisible, formRefCreate.current?.getFieldsValue()]);
 
   useEffect(() => {
     setFromData({ ...fromData, exchanges: { exchange: exchangeDataSource } });
@@ -685,6 +785,9 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
       >
         <ProForm
           formRef={formRefCreate}
+          onValuesChange={(_, allValues) => {
+            setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+          }}
           submitter={{
             render: () => {
               return [];
