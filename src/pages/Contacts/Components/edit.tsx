@@ -50,17 +50,19 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="options.edit" defaultMessage="Edit" />}>
+      <Tooltip title={<FormattedMessage id="pages.table.option.edit" defaultMessage="Edit" />}>
         {buttonType === 'icon' ? (
           <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
         ) : (
           <Button onClick={onEdit}>
-            <FormattedMessage id="options.edit" defaultMessage="Edit" />
+            <FormattedMessage id="pages.table.option.edit" defaultMessage="Edit" />
           </Button>
         )}
       </Tooltip>
       <Drawer
-        title={<FormattedMessage id="contact.edit" defaultMessage="Contact Edit" />}
+        title={
+          <FormattedMessage id="pages.contact.drawer.title.edit" defaultMessage="Edit Contact" />
+        }
         width="90%"
         closable={false}
         extra={

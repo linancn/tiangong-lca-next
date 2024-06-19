@@ -114,11 +114,13 @@ const ContactView: FC<Props> = ({ id, dataSource, actionRef }) => {
   };
   return (
     <>
-      <Tooltip title={<FormattedMessage id="options.view" defaultMessage="View" />}>
+      <Tooltip title={<FormattedMessage id="pages.table.option.view" defaultMessage="View" />}>
         <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
       </Tooltip>
       <Drawer
-        title={<FormattedMessage id="contact.view" defaultMessage=" Contact View" />}
+        title={
+          <FormattedMessage id="pages.contact.drawer.title.view" defaultMessage="View Contact" />
+        }
         width="90%"
         closable={false}
         extra={
