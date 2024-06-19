@@ -32,7 +32,7 @@ const ContactCreate: FC<Props> = ({ actionRef }) => {
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="options.create" defaultMessage="Create" />}>
+      <Tooltip title={<FormattedMessage id="pages.table.option.create" defaultMessage="Create" />}>
         <Button
           size={'middle'}
           type="text"
@@ -43,7 +43,12 @@ const ContactCreate: FC<Props> = ({ actionRef }) => {
         />
       </Tooltip>
       <Drawer
-        title={<FormattedMessage id="contact.create" defaultMessage="Contact Create" />}
+        title={
+          <FormattedMessage
+            id="pages.contact.drawer.title.create"
+            defaultMessage="Create Contact"
+          />
+        }
         width="90%"
         closable={false}
         extra={
