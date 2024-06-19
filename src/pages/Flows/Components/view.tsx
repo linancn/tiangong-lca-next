@@ -295,11 +295,11 @@ const FlowsView: FC<Props> = ({ id, dataSource }) => {
     }, [contentList, activeTabKey]);
     return (
         <>
-            <Tooltip title={<FormattedMessage id="options.view" defaultMessage="View" />}>
+            <Tooltip title={<FormattedMessage id="pages.table.option.view" defaultMessage="View" />}>
                 <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
             </Tooltip>
             <Drawer
-                title={<FormattedMessage id="options.view" defaultMessage="View" />}
+                title={<FormattedMessage id="pages.table.option.view" defaultMessage="View" />}
                 width="90%"
                 closable={false}
                 extra={

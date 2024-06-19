@@ -1,5 +1,6 @@
 import { createFlows } from '@/services/flows/api';
 import LangTextItemFrom from '@/components/LangTextItem/from';
+import LevelTextItemFrom from '@/components/LevelTextItem/from';
 // import { langOptions } from '@/services/general/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
@@ -52,15 +53,16 @@ const FlowsCreate: FC<Props> = ({ actionRef }) => {
             <Card size="small" title={'Flow Information'}>
                 <Card size="small" title={'Data Set Information'}>
                     <Card size="small" title={'Name'}>
-                        <LangTextItemFrom keyName={['dataSetInformation', 'name', 'baseName']} labelName="Base Name" />
+                        <LangTextItemFrom name={['dataSetInformation', 'name', 'baseName']} label="Base Name" />
                     </Card>
                     <br />
                     <Card size="small" title={'Synonyms'}>
-                        <LangTextItemFrom keyName={['dataSetInformation', 'common:synonyms']} labelName="Synonyms" />
+                        <LangTextItemFrom name={['dataSetInformation', 'common:synonyms']} label="Synonyms" />
                     </Card>
                     <br />
                     <Card size="small" title={'Classification'}>
-                        <Space>
+                        <LevelTextItemFrom name={['dataSetInformation', "classificationInformation", 'common:elementaryFlowCategorization', 'common:category']} />
+                        {/* <Space>
                             <Form.Item name={['dataSetInformation', "classificationInformation", 'common:elementaryFlowCategorization', 'common:category', '@level_0']}>
                                 <Input placeholder="Emissions" />
                             </Form.Item>
@@ -70,7 +72,7 @@ const FlowsCreate: FC<Props> = ({ actionRef }) => {
                             <Form.Item name={['dataSetInformation', "classificationInformation", 'common:elementaryFlowCategorization', 'common:category', '@level_2']}>
                                 <Input placeholder="Emissions to air" />
                             </Form.Item>
-                        </Space>
+                        </Space> */}
                     </Card>
                     <br />
                     <Card size="small">
@@ -80,7 +82,7 @@ const FlowsCreate: FC<Props> = ({ actionRef }) => {
                     </Card>
                     <br />
                     <Card size="small" title={'General Comment'}>
-                        <LangTextItemFrom keyName={['dataSetInformation', "common:generalComment"]} labelName="General Comment" />
+                        <LangTextItemFrom name={['dataSetInformation', "common:generalComment"]} label="General Comment" />
                     </Card>
                     <br />
                     <Card size="small">
@@ -119,8 +121,8 @@ const FlowsCreate: FC<Props> = ({ actionRef }) => {
                     Short Description
                 </Divider>
                 <LangTextItemFrom
-                    keyName={['complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem', 'common:shortDescription']}
-                    labelName="Short Description"
+                    name={['complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem', 'common:shortDescription']}
+                    label="Short Description"
                 />
                 <Form.Item label="Approval Of Overall Compliance" name={['complianceDeclarations', 'compliance', 'common:approvalOfOverallCompliance']}>
                     <Input />
@@ -170,12 +172,12 @@ const FlowsCreate: FC<Props> = ({ actionRef }) => {
                         Short Description
                     </Divider>
                     <LangTextItemFrom
-                        keyName={[
+                        name={[
                             'dataEntryBy',
                             'common:referenceToDataSetFormat',
                             'common:shortDescription',
                         ]}
-                        labelName="Short Description"
+                        label="Short Description"
                     />
                 </Card>
 
@@ -210,8 +212,8 @@ const FlowsCreate: FC<Props> = ({ actionRef }) => {
                         Short Description
                     </Divider>
                     <LangTextItemFrom
-                        keyName={['flowProperty', 'referenceToFlowPropertyDataSet', 'common:shortDescription']}
-                        labelName="Short Description"
+                        name={['flowProperty', 'referenceToFlowPropertyDataSet', 'common:shortDescription']}
+                        label="Short Description"
                     />
                 </Card>
                 <br />
@@ -226,7 +228,7 @@ const FlowsCreate: FC<Props> = ({ actionRef }) => {
     };
     return (
         <>
-            <Tooltip title={<FormattedMessage id="options.create" defaultMessage="Create" />}>
+            <Tooltip title={<FormattedMessage id="pages.table.option.create" defaultMessage="Create" />}>
                 <Button
                     size={'middle'}
                     type="text"
@@ -237,7 +239,7 @@ const FlowsCreate: FC<Props> = ({ actionRef }) => {
                 />
             </Tooltip>
             <Drawer
-                title={<FormattedMessage id="options.create" defaultMessage="Flows Create" />}
+                title={<FormattedMessage id="pages.table.option.create" defaultMessage="Flows Create" />}
                 width="90%"
                 closable={false}
                 extra={
@@ -254,10 +256,10 @@ const FlowsCreate: FC<Props> = ({ actionRef }) => {
                     <Space size={'middle'} className={styles.footer_right}>
                         <Button onClick={() => setDrawerVisible(false)}>
                             {' '}
-                            <FormattedMessage id="options.cancel" defaultMessage="Cancel" />
+                            <FormattedMessage id="pages.table.option.cancel" defaultMessage="Cancel" />
                         </Button>
                         <Button onClick={() => formRefCreate.current?.submit()} type="primary">
-                            <FormattedMessage id="options.submit" defaultMessage="Submit" />
+                            <FormattedMessage id="pages.table.option.submit" defaultMessage="Submit" />
                         </Button>
                     </Space>
                 }
@@ -274,7 +276,7 @@ const FlowsCreate: FC<Props> = ({ actionRef }) => {
                         if (result.data) {
                             message.success(
                                 <FormattedMessage
-                                    id="options.createsuccess"
+                                    id="pages.flows.createsuccess"
                                     defaultMessage="Created Successfully!"
                                 />,
                             );

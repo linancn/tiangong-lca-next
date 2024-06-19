@@ -27,13 +27,13 @@ const TableList: FC = () => {
   const actionRef = useRef<ActionType>();
   const flowpropertiesColumns: ProColumns<FlowpropertiesTable>[] = [
     {
-      title: <FormattedMessage id="flowproperties.index" defaultMessage="Index" />,
+      title: <FormattedMessage id="pages.table.index" defaultMessage="Index" />,
       dataIndex: 'index',
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="flowproperties.name" defaultMessage="Data Name" />,
+      title: <FormattedMessage id="pages.flowproperties.name" defaultMessage="Data Name" />,
       dataIndex: 'name',
       sorter: false,
       render: (_, row) => [
@@ -44,7 +44,7 @@ const TableList: FC = () => {
     },
     {
       title: (
-        <FormattedMessage id="flowproperties.classification" defaultMessage="Classification" />
+        <FormattedMessage id="pages.flowproperties.classification" defaultMessage="Classification" />
       ),
       dataIndex: 'classification',
       sorter: false,
@@ -52,21 +52,21 @@ const TableList: FC = () => {
     },
     {
       title: (
-        <FormattedMessage id="flowproperties.generalComment" defaultMessage="General Comment" />
+        <FormattedMessage id="pages.flowproperties.generalComment" defaultMessage="General Comment" />
       ),
       dataIndex: 'generalComment',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="flowproperties.createdAt" defaultMessage="Created At" />,
+      title: <FormattedMessage id="pages.flowproperties.createdAt" defaultMessage="Created At" />,
       dataIndex: 'createdAt',
       valueType: 'dateTime',
       sorter: true,
       search: false,
     },
     {
-      title: <FormattedMessage id="options.option" defaultMessage="Option" />,
+      title: <FormattedMessage id="pages.table.option" defaultMessage="Option" />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {

@@ -61,12 +61,12 @@ export async function getFlowsTable(
 ) {
   const sortBy = Object.keys(sort)[0] ?? 'created_at';
   const orderBy = sort[sortBy] ?? 'descend';
-  // json->flowDataSet->flowInformation->dataSetInformation->name->baseName,
-  // json->flowDataSet->flowInformation->dataSetInformation->classificationInformation->"common:elementaryFlowCategorization"->"common:category",
-  // json->flowDataSet->flowInformation->dataSetInformation->"common:generalComment",
+
   const selectStr = `
     id,
-    
+    json->flowDataSet->flowInformation->dataSetInformation->name->baseName,
+    json->flowDataSet->flowInformation->dataSetInformation->classificationInformation->"common:elementaryFlowCategorization"->"common:category",
+    json->flowDataSet->flowInformation->dataSetInformation->"common:generalComment",
     created_at
   `;
 

@@ -1,5 +1,6 @@
 import { getFlowsDetail, updateFlows } from '@/services/flows/api';
 import LangTextItemFrom from '@/components/LangTextItem/from';
+import LevelTextItemFrom from '@/components/LevelTextItem/from';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ProForm } from '@ant-design/pro-components';
@@ -22,7 +23,7 @@ import {
 import type { FC } from 'react';
 import {
     // useCallback, useEffect,
-    useRef, useState
+    useRef, useState, React
 } from 'react';
 import { FormattedMessage } from 'umi';
 import {
@@ -57,15 +58,16 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef }) => {
             <Card size="small" title={'Flow Information'}>
                 <Card size="small" title={'Data Set Information'}>
                     <Card size="small" title={'Name'}>
-                        <LangTextItemFrom keyName={['dataSetInformation', 'name', 'baseName']} labelName="Base Name" />
+                        <LangTextItemFrom name={['dataSetInformation', 'name', 'baseName']} label="Base Name" />
                     </Card>
                     <br />
                     <Card size="small" title={'Synonyms'}>
-                        <LangTextItemFrom keyName={['dataSetInformation', 'common:synonyms']} labelName="Synonyms" />
+                        <LangTextItemFrom name={['dataSetInformation', 'common:synonyms']} label="Synonyms" />
                     </Card>
                     <br />
                     <Card size="small" title={'Classification'}>
-                        <Space>
+                        <LevelTextItemFrom name={['dataSetInformation', "classificationInformation", 'common:elementaryFlowCategorization', 'common:category']} />
+                        {/* <Space>
                             <Form.Item name={['dataSetInformation', "classificationInformation", 'common:elementaryFlowCategorization', 'common:category', '@level_0']}>
                                 <Input placeholder="Emissions" />
                             </Form.Item>
@@ -75,7 +77,7 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef }) => {
                             <Form.Item name={['dataSetInformation', "classificationInformation", 'common:elementaryFlowCategorization', 'common:category', '@level_2']}>
                                 <Input placeholder="Emissions to air" />
                             </Form.Item>
-                        </Space>
+                        </Space> */}
                     </Card>
                     <br />
                     <Card size="small">
@@ -85,7 +87,7 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef }) => {
                     </Card>
                     <br />
                     <Card size="small" title={'General Comment'}>
-                        <LangTextItemFrom keyName={['dataSetInformation', "common:generalComment"]} labelName="General Comment" />
+                        <LangTextItemFrom name={['dataSetInformation', "common:generalComment"]} label="General Comment" />
                     </Card>
                     <br />
                     <Card size="small">
@@ -126,8 +128,8 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef }) => {
                     Short Description
                 </Divider>
                 <LangTextItemFrom
-                    keyName={['complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem', 'common:shortDescription']}
-                    labelName="Short Description"
+                    name={['complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem', 'common:shortDescription']}
+                    label="Short Description"
                 />
                 <Form.Item label="Approval Of Overall Compliance" name={['complianceDeclarations', 'compliance', 'common:approvalOfOverallCompliance']}>
                     <Input />
@@ -178,12 +180,12 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef }) => {
                         Short Description
                     </Divider>
                     <LangTextItemFrom
-                        keyName={[
+                        name={[
                             'dataEntryBy',
                             'common:referenceToDataSetFormat',
                             'common:shortDescription',
                         ]}
-                        labelName="Short Description"
+                        label="Short Description"
                     />
                 </Card>
 
@@ -220,8 +222,8 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef }) => {
                         Short Description
                     </Divider>
                     <LangTextItemFrom
-                        keyName={['flowProperty', 'referenceToFlowPropertyDataSet', 'common:shortDescription']}
-                        labelName="Short Description"
+                        name={['flowProperty', 'referenceToFlowPropertyDataSet', 'common:shortDescription']}
+                        label="Short Description"
                     />
                 </Card>
                 <br />
@@ -352,17 +354,17 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef }) => {
 
     return (
         <>
-            <Tooltip title={<FormattedMessage id="options.edit" defaultMessage="Edit" />}>
+            <Tooltip title={<FormattedMessage id="pages.table.option.edit" defaultMessage="Edit" />}>
                 {buttonType === 'icon' ? (
                     <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
                 ) : (
                     <Button onClick={onEdit}>
-                        <FormattedMessage id="options.edit" defaultMessage="Edit" />
+                        <FormattedMessage id="pages.table.option.edit" defaultMessage="Edit" />
                     </Button>
                 )}
             </Tooltip>
             <Drawer
-                title={<FormattedMessage id="options.edit" defaultMessage="Edit" />}
+                title={<FormattedMessage id="pages.table.option.edit" defaultMessage="Edit" />}
                 width="90%"
                 closable={false}
                 extra={
@@ -379,14 +381,14 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef }) => {
                     <Space size={'middle'} className={styles.footer_right}>
                         <Button onClick={() => setDrawerVisible(false)}>
                             {' '}
-                            <FormattedMessage id="options.cancel" defaultMessage="Cancel" />
+                            <FormattedMessage id="pages.table.option.cancel" defaultMessage="Cancel" />
                         </Button>
                         <Button onClick={onReset}>
                             {' '}
-                            <FormattedMessage id="options.reset" defaultMessage="Reset" />
+                            <FormattedMessage id="pages.table.option.reset" defaultMessage="Reset" />
                         </Button>
                         <Button onClick={() => formRefEdit.current?.submit()} type="primary">
-                            <FormattedMessage id="options.submit" defaultMessage="Submit" />
+                            <FormattedMessage id="pages.table.option.submit" defaultMessage="Submit" />
                         </Button>
                     </Space>
                 }
@@ -403,7 +405,7 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef }) => {
                         if (updateResult?.data) {
                             message.success(
                                 <FormattedMessage
-                                    id="options.editsuccess"
+                                    id="pages.flows.editsuccess"
                                     defaultMessage="Edit Successfully!"
                                 />,
                             );

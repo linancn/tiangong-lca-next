@@ -24,8 +24,8 @@ const FlowsDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
             if (result.status === 204) {
                 message.success(
                     <FormattedMessage
-                        id="options.deletesuccess"
-                        defaultMessage="Selected contact has been deleted."
+                        id="pages.flows.deletesuccess"
+                        defaultMessage="Selected flow has been deleted."
                     />,
                 );
                 setViewDrawerVisible(false);
@@ -43,18 +43,18 @@ const FlowsDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
 
     return (
         <>
-            <Tooltip title={<FormattedMessage id="options.delete" defaultMessage="Delete" />}>
+            <Tooltip title={<FormattedMessage id="pages.table.option.delete" defaultMessage="Delete" />}>
                 {buttonType === 'icon' ? (
                     <>
                         <Button shape="circle" icon={<DeleteOutlined />} size="small" onClick={showModal} />
                         <Modal
-                            title={<FormattedMessage id="options.delete" defaultMessage="Delete" />}
+                            title={<FormattedMessage id="pages.table.option.delete" defaultMessage="Delete" />}
                             open={isModalVisible}
                             onOk={handleOk}
                             onCancel={handleCancel}
                         >
                             <FormattedMessage
-                                id="options.deleteMessage"
+                                id="pages.flows.deleteMessage"
                                 defaultMessage="Are you sure you want to delete this data?"
                             />
                         </Modal>
@@ -62,16 +62,16 @@ const FlowsDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
                 ) : (
                     <>
                         <Button size="small" onClick={showModal}>
-                            <FormattedMessage id="options.delete" defaultMessage="Delete" />
+                            <FormattedMessage id="pages.table.option.delete" defaultMessage="Delete" />
                         </Button>
                         <Modal
-                            title={<FormattedMessage id="options.delete" defaultMessage="Delete" />}
+                            title={<FormattedMessage id="pages.table.option.delete" defaultMessage="Delete" />}
                             open={isModalVisible}
                             onOk={handleOk}
                             onCancel={handleCancel}
                         >
                             <FormattedMessage
-                                id="options.deleteMessage"
+                                id="pages.flows.deleteMessage"
                                 defaultMessage="Are you sure you want to delete this data?"
                             />
                         </Modal>
