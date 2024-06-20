@@ -5,23 +5,26 @@ import styles from '@/style/custom.less';
 import { CloseOutlined, DatabaseOutlined } from '@ant-design/icons';
 import { ProTable } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
-import { Button, Drawer, Space, Tooltip } from 'antd';
+import { Button, Card, Drawer, Space, Tooltip } from 'antd';
 import type { FC, Key } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
+import ContactDelete from '../delete';
+import ContactEdit from '../edit';
 import ContactView from '../view';
 
 type Props = {
   buttonType: string;
   lang: string;
-  dataSource: string;
   onData: (rowKey: any) => void;
 };
 
-const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, dataSource, onData }) => {
+const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
-  const actionRefSelect = useRef<ActionType>();
+  const [activeTabKey, setActiveTabKey] = useState<string>('tg');
+  const tgActionRefSelect = useRef<ActionType>();
+  const myActionRefSelect = useRef<ActionType>();
 
   const onSelect = () => {
     setDrawerVisible(true);
@@ -29,6 +32,16 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, dataSource, onData }
 
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
     setSelectedRowKeys(newSelectedRowKeys);
+  };
+
+  const onTabChange = async (key: string) => {
+    await setActiveTabKey(key);
+    if (key === 'tg') {
+      tgActionRefSelect.current?.reload();
+    }
+    if (key === 'my') {
+      myActionRefSelect.current?.reload();
+    }
   };
 
   const contactColumns: ProColumns<ContactTable>[] = [
@@ -72,14 +85,98 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, dataSource, onData }
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
-        return [
-          <Space size={'small'} key={0}>
-            <ContactView id={row.id} dataSource={dataSource} actionRef={actionRefSelect} />
-          </Space>,
-        ];
+        if (activeTabKey === 'tg') {
+          return [
+            <Space size={'small'} key={0}>
+              <ContactView id={row.id} dataSource="tg" actionRef={tgActionRefSelect} />
+            </Space>,
+          ];
+        } else if (activeTabKey === 'my') {
+          return [
+            <Space size={'small'} key={0}>
+              <ContactView id={row.id} dataSource="my" actionRef={myActionRefSelect} />
+              <ContactEdit
+                id={row.id}
+                buttonType={'icon'}
+                actionRef={myActionRefSelect}
+                setViewDrawerVisible={() => {}}
+              />
+              <ContactDelete
+                id={row.id}
+                buttonType={'icon'}
+                actionRef={myActionRefSelect}
+                setViewDrawerVisible={() => {}}
+              />
+            </Space>,
+          ];
+        } else return [];
       },
     },
   ];
+
+  const tabList = [
+    { key: 'tg', tab: 'TianGong Data' },
+    { key: 'my', tab: 'My Data' },
+  ];
+
+  const databaseList: Record<string, React.ReactNode> = {
+    tg: (
+      <ProTable<ContactTable, ListPagination>
+        actionRef={tgActionRefSelect}
+        search={{
+          defaultCollapsed: false,
+        }}
+        pagination={{
+          showSizeChanger: false,
+          pageSize: 10,
+        }}
+        request={async (
+          params: {
+            pageSize: number;
+            current: number;
+          },
+          sort,
+        ) => {
+          return getContactTable(params, sort, lang, 'tg');
+        }}
+        columns={contactColumns}
+        rowSelection={{
+          type: 'radio',
+          alwaysShowAlert: true,
+          selectedRowKeys,
+          onChange: onSelectChange,
+        }}
+      />
+    ),
+    my: (
+      <ProTable<ContactTable, ListPagination>
+        actionRef={myActionRefSelect}
+        search={{
+          defaultCollapsed: false,
+        }}
+        pagination={{
+          showSizeChanger: false,
+          pageSize: 10,
+        }}
+        request={async (
+          params: {
+            pageSize: number;
+            current: number;
+          },
+          sort,
+        ) => {
+          return getContactTable(params, sort, lang, 'my');
+        }}
+        columns={contactColumns}
+        rowSelection={{
+          type: 'radio',
+          alwaysShowAlert: true,
+          selectedRowKeys,
+          onChange: onSelectChange,
+        }}
+      />
+    ),
+  };
 
   useEffect(() => {
     if (!drawerVisible) return;
@@ -102,7 +199,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, dataSource, onData }
           <Button onClick={onSelect} style={{ marginTop: '6px' }}>
             <FormattedMessage
               id="pages.contact.drawer.title.select"
-              defaultMessage="Selete Contact"
+              defaultMessage="select Contact"
             />
           </Button>
         )}
@@ -144,32 +241,14 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, dataSource, onData }
           </Space>
         }
       >
-        <ProTable<ContactTable, ListPagination>
-          actionRef={actionRefSelect}
-          search={{
-            defaultCollapsed: false,
-          }}
-          pagination={{
-            showSizeChanger: false,
-            pageSize: 10,
-          }}
-          request={async (
-            params: {
-              pageSize: number;
-              current: number;
-            },
-            sort,
-          ) => {
-            return getContactTable(params, sort, lang, dataSource);
-          }}
-          columns={contactColumns}
-          rowSelection={{
-            type: 'radio',
-            alwaysShowAlert: true,
-            selectedRowKeys,
-            onChange: onSelectChange,
-          }}
-        />
+        <Card
+          style={{ width: '100%' }}
+          tabList={tabList}
+          activeTabKey={activeTabKey}
+          onTabChange={onTabChange}
+        >
+          {databaseList[activeTabKey]}
+        </Card>
       </Drawer>
     </>
   );

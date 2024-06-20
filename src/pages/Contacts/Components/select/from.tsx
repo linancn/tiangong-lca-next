@@ -11,11 +11,10 @@ type Props = {
   name: any;
   label: string;
   lang: string;
-  dataSource: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
 };
 
-const ContactSelectFrom: FC<Props> = ({ name, label, lang, dataSource, formRef }) => {
+const ContactSelectFrom: FC<Props> = ({ name, label, lang, formRef }) => {
   const getShortDescription = (dataSetInformation: any) => {
     const shortName = dataSetInformation?.['common:shortName'];
     if (Array.isArray(shortName)) {
@@ -50,12 +49,7 @@ const ContactSelectFrom: FC<Props> = ({ name, label, lang, dataSource, formRef }
         <Form.Item label="Ref Object Id" name={[...name, '@refObjectId']}>
           <Input disabled={true} style={{ width: '300px' }} />
         </Form.Item>
-        <ContactSelectDrawer
-          buttonType="text"
-          lang={lang}
-          dataSource={dataSource}
-          onData={handletContactData}
-        />
+        <ContactSelectDrawer buttonType="text" lang={lang} onData={handletContactData} />
       </Space>
       <Form.Item label="Type" name={[...name, '@type']}>
         <Input disabled={true} defaultValue={'contact data set'} />

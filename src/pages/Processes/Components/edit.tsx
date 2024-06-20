@@ -522,7 +522,6 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
             ]}
             label={'Reference To Name Of Reviewer And Institution'}
             lang={lang}
-            dataSource={'tg'}
             formRef={formRefEdit}
           />
         </Card>
@@ -538,7 +537,6 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
           ]}
           label={'Data Generator: Reference To Person Or Entity Generating The DataSet'}
           lang={lang}
-          dataSource={'tg'}
           formRef={formRefEdit}
         />
 
@@ -584,7 +582,6 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
             ]}
             label={'Reference To Owner Of DataSet'}
             lang={lang}
-            dataSource={'tg'}
             formRef={formRefEdit}
           />
 
