@@ -105,6 +105,7 @@ export async function getContactTable(
       data: result.data.map((i: any) => {
         try {
           return {
+            key: i.id,
             id: i.id,
             lang: lang,
             shortName: getLangText(i['common:shortName'], lang),

@@ -1,7 +1,8 @@
 import LangTextItemFrom from '@/components/LangTextItem/from';
+import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
 import { ListPagination } from '@/services/general/data';
 import { getLangText } from '@/services/general/util';
-import { getProcessDetail } from '@/services/processes/api';
+import { getProcessDetail, updateProcess } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessFromData } from '@/services/processes/util';
 import styles from '@/style/custom.less';
@@ -9,7 +10,19 @@ import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ProColumns, ProForm, ProTable } from '@ant-design/pro-components';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import type { ActionType } from '@ant-design/pro-table';
-import { Button, Card, Divider, Drawer, Form, Input, Space, Spin, Tooltip, Typography } from 'antd';
+import {
+  Button,
+  Card,
+  Divider,
+  Drawer,
+  Form,
+  Input,
+  Space,
+  Spin,
+  Tooltip,
+  Typography,
+  message,
+} from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -34,10 +47,6 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
   const handletExchangeData = (data: any) => {
     setExchangeDataSource([...exchangeDataSource, data]);
   };
-
-  const reload = useCallback(() => {
-    actionRef.current?.reload();
-  }, [actionRef]);
 
   const processExchangeColumns: ProColumns<ProcessExchangeTable>[] = [
     {
@@ -504,112 +513,32 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
             label="Review Details"
           />
 
-          <Card size="small" title={'Reference To Name Of Reviewer And Institution'}>
-            <Form.Item
-              label="Type"
-              name={[
-                'modellingAndValidation',
-                'validation',
-                'review',
-                'common:referenceToNameOfReviewerAndInstitution',
-                '@type',
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="Ref Object Id"
-              name={[
-                'modellingAndValidation',
-                'validation',
-                'review',
-                'common:referenceToNameOfReviewerAndInstitution',
-                '@refObjectId',
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="URI"
-              name={[
-                'modellingAndValidation',
-                'validation',
-                'review',
-                'common:referenceToNameOfReviewerAndInstitution',
-                '@uri',
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Divider orientationMargin="0" orientation="left" plain>
-              Short Description
-            </Divider>
-            <LangTextItemFrom
-              name={[
-                'modellingAndValidation',
-                'validation',
-                'review',
-                'common:referenceToNameOfReviewerAndInstitution',
-                'common:shortDescription',
-              ]}
-              label="Short Description"
-            />
-          </Card>
+          <ContactSelectFrom
+            name={[
+              'modellingAndValidation',
+              'validation',
+              'review',
+              'common:referenceToNameOfReviewerAndInstitution',
+            ]}
+            label={'Reference To Name Of Reviewer And Institution'}
+            lang={lang}
+            formRef={formRefEdit}
+          />
         </Card>
       </Space>
     ),
     administrativeInformation: (
       <Space direction="vertical" style={{ width: '100%' }}>
-        <Card
-          size="small"
-          title={'Data Generator: Reference To Person Or Entity Generating The DataSet'}
-        >
-          <Form.Item
-            label="Type"
-            name={[
-              'administrativeInformation',
-              'dataGenerator',
-              'common:referenceToPersonOrEntityGeneratingTheDataSet',
-              '@type',
-            ]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label="Ref Object Id"
-            name={[
-              'administrativeInformation',
-              'dataGenerator',
-              'common:referenceToPersonOrEntityGeneratingTheDataSet',
-              '@refObjectId',
-            ]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label="URI"
-            name={[
-              'administrativeInformation',
-              'dataGenerator',
-              'common:referenceToPersonOrEntityGeneratingTheDataSet',
-              '@uri',
-            ]}
-          >
-            <Input />
-          </Form.Item>
-          <Divider orientationMargin="0" orientation="left" plain>
-            Short Description
-          </Divider>
-          <LangTextItemFrom
-            name={[
-              'administrativeInformation',
-              'dataGenerator',
-              'common:referenceToPersonOrEntityGeneratingTheDataSet',
-              'common:shortDescription',
-            ]}
-            label="Short Description"
-          />
-        </Card>
+        <ContactSelectFrom
+          name={[
+            'administrativeInformation',
+            'dataGenerator',
+            'common:referenceToPersonOrEntityGeneratingTheDataSet',
+          ]}
+          label={'Data Generator: Reference To Person Or Entity Generating The DataSet'}
+          lang={lang}
+          formRef={formRefEdit}
+        />
 
         <Form.Item label="Data Entry By: Time Stamp" name={['dataEntryBy', 'common:timeStamp']}>
           <Input />
@@ -645,53 +574,16 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
             <Input />
           </Form.Item>
 
-          <Card size="small" title={'Reference To Ownership Of Data Set'}>
-            <Form.Item
-              label="Type"
-              name={[
-                'administrativeInformation',
-                'publicationAndOwnership',
-                'common:referenceToOwnershipOfDataSet',
-                '@type',
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="Ref Object Id"
-              name={[
-                'administrativeInformation',
-                'publicationAndOwnership',
-                'common:referenceToOwnershipOfDataSet',
-                '@refObjectId',
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="URI"
-              name={[
-                'administrativeInformation',
-                'publicationAndOwnership',
-                'common:referenceToOwnershipOfDataSet',
-                '@uri',
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Divider orientationMargin="0" orientation="left" plain>
-              Short Description
-            </Divider>
-            <LangTextItemFrom
-              name={[
-                'administrativeInformation',
-                'publicationAndOwnership',
-                'common:referenceToOwnershipOfDataSet',
-                'common:shortDescription',
-              ]}
-              label="Short Description"
-            />
-          </Card>
+          <ContactSelectFrom
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:referenceToOwnershipOfDataSet',
+            ]}
+            label={'Reference To Owner Of DataSet'}
+            lang={lang}
+            formRef={formRefEdit}
+          />
 
           <Form.Item
             label="Copyright"
@@ -739,9 +631,10 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
     setSpinning(true);
     formRefEdit.current?.resetFields();
     getProcessDetail(id).then(async (result) => {
-      formRefEdit.current?.setFieldsValue(
-        genProcessFromData(result.data?.json?.processDataSet ?? {}),
-      );
+      formRefEdit.current?.setFieldsValue({
+        ...genProcessFromData(result.data?.json?.processDataSet ?? {}),
+        id: id,
+      });
       setSpinning(false);
     });
   };
@@ -750,19 +643,27 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
     if (drawerVisible) return;
     setSpinning(true);
     getProcessDetail(id).then(async (result: any) => {
-      setInitData({ ...genProcessFromData(result.data?.json?.processDataSet ?? {}) });
-      setFromData({ ...genProcessFromData(result.data?.json?.processDataSet ?? {}) });
-      formRefEdit.current?.resetFields();
-      formRefEdit.current?.setFieldsValue(
-        genProcessFromData(result.data?.json?.processDataSet ?? {}),
+      setInitData({ ...genProcessFromData(result.data?.json?.processDataSet ?? {}), id: id });
+      setFromData({ ...genProcessFromData(result.data?.json?.processDataSet ?? {}), id: id });
+      setExchangeDataSource(
+        genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? [],
       );
+      formRefEdit.current?.resetFields();
+      formRefEdit.current?.setFieldsValue({
+        ...genProcessFromData(result.data?.json?.processDataSet ?? {}),
+        id: id,
+      });
       setSpinning(false);
     });
   }, [drawerVisible]);
 
   useEffect(() => {
-    setFromData({ ...fromData, exchanges: { exchange: exchangeDataSource } });
-  }, [exchangeDataSource]);
+    if (activeTabKey === 'exchanges') return;
+    setFromData({
+      ...fromData,
+      [activeTabKey]: formRefEdit.current?.getFieldsValue()?.[activeTabKey] ?? {},
+    });
+  }, [formRefEdit.current?.getFieldsValue()]);
 
   return (
     <>
@@ -818,23 +719,23 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
               },
             }}
             onFinish={async () => {
-              // const result = await createProcess({ ...fromData });
-              // if (result.data) {
-              //   message.success(
-              //     <FormattedMessage
-              //       id="options.createsuccess"
-              //       defaultMessage="Created Successfully!"
-              //     />,
-              //   );
-              //   formRefCreate.current?.resetFields();
-              //   setDrawerVisible(false);
-              //   reload();
-              // } else {
-              //   message.error(result.error.message);
-              // }
-              formRefEdit.current?.resetFields();
-              setDrawerVisible(false);
-              reload();
+              const updateResult = await updateProcess({
+                ...fromData,
+                exchanges: { exchange: [...exchangeDataSource] },
+              });
+              if (updateResult?.data) {
+                message.success(
+                  <FormattedMessage
+                    id="options.createsuccess"
+                    defaultMessage="Created Successfully!"
+                  />,
+                );
+                setDrawerVisible(false);
+                setViewDrawerVisible(false);
+                actionRef.current?.reload();
+              } else {
+                message.error(updateResult?.error?.message);
+              }
               return true;
             }}
           >
@@ -846,9 +747,26 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
             >
               {contentList[activeTabKey]}
             </Card>
+            <Form.Item name="id" hidden>
+              <Input />
+            </Form.Item>
           </ProForm>
           <Typography>
             <pre>{JSON.stringify(fromData, null, 2)}</pre>
+            <pre>
+              {JSON.stringify(
+                {
+                  exchanges: {
+                    exchange: [...exchangeDataSource].map((item: any, index: number) => ({
+                      ...item,
+                      '@dataSetInternalID': index.toString(),
+                    })),
+                  },
+                },
+                null,
+                2,
+              )}
+            </pre>
           </Typography>
         </Spin>
       </Drawer>
