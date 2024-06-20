@@ -88,13 +88,23 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
         if (activeTabKey === 'tg') {
           return [
             <Space size={'small'} key={0}>
-              <ContactView id={row.id} dataSource="tg" actionRef={tgActionRefSelect} />
+              <ContactView
+                id={row.id}
+                dataSource="tg"
+                buttonType="icon"
+                actionRef={tgActionRefSelect}
+              />
             </Space>,
           ];
         } else if (activeTabKey === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <ContactView id={row.id} dataSource="my" actionRef={myActionRefSelect} />
+              <ContactView
+                id={row.id}
+                dataSource="my"
+                buttonType="icon"
+                actionRef={myActionRefSelect}
+              />
               <ContactEdit
                 id={row.id}
                 buttonType={'icon'}
@@ -196,11 +206,8 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
         {buttonType === 'icon' ? (
           <Button shape="circle" icon={<DatabaseOutlined />} size="small" onClick={onSelect} />
         ) : (
-          <Button onClick={onSelect} style={{ marginTop: '6px' }}>
-            <FormattedMessage
-              id="pages.contact.drawer.title.select"
-              defaultMessage="select Contact"
-            />
+          <Button onClick={onSelect}>
+            <FormattedMessage id="pages.contact.drawer.title.select" defaultMessage="Select" />
           </Button>
         )}
       </Tooltip>
