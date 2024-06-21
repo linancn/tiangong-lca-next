@@ -69,7 +69,12 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <ContactView id={row.id} dataSource={dataSource} actionRef={actionRef} />
+              <ContactView
+                id={row.id}
+                dataSource={dataSource}
+                buttonType="icon"
+                actionRef={actionRef}
+              />
               <ContactEdit
                 id={row.id}
                 buttonType={'icon'}
@@ -87,7 +92,12 @@ const TableList: FC = () => {
         }
         return [
           <Space size={'small'} key={0}>
-            <ContactView id={row.id} dataSource={dataSource} actionRef={actionRef} />
+            <ContactView
+              id={row.id}
+              dataSource={dataSource}
+              buttonType="icon"
+              actionRef={actionRef}
+            />
           </Space>,
         ];
       },
