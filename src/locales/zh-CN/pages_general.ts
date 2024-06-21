@@ -5,4 +5,7 @@ export default {
   'pages.table.option.view': '查看',
   'pages.table.option.edit': '编辑',
   'pages.table.option.delete': '删除',
+  'pages.table.option.cancel': '取消',
+  'pages.table.option.submit': '提交',
+  
 };

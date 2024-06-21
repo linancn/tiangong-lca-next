@@ -5,4 +5,6 @@ export default {
   'pages.table.option.view': 'View',
   'pages.table.option.edit': 'Edit',
   'pages.table.option.delete': 'Delete',
+  'pages.table.option.cancel': 'Cancel',
+  'pages.table.option.submit': 'Submit',
 };

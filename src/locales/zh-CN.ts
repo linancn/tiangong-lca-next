@@ -5,6 +5,8 @@ import pages from './zh-CN/pages';
 import pages_contact from './zh-CN/pages_contact';
 import pages_general from './zh-CN/pages_general';
 import pages_unitgroup from './zh-CN/pages_unitgroup';
+import pages_flowproperties from './zh-CN/pages_flowproperties';
+import pages_flows from './zh-CN/pages_flows';
 import pwa from './zh-CN/pwa';
 import settingDrawer from './zh-CN/settingDrawer';
 import settings from './zh-CN/settings';
@@ -17,15 +19,6 @@ export default {
   'app.preview.down.block': '下载此页面到本地项目',
   'app.welcome.link.fetch-blocks': '获取全部区块',
   'app.welcome.link.block-list': '基于 block 开发，快速构建标准页面',
-  'options.edit': '编辑',
-  'options.cancel': '取消',
-  'options.reset': '重置',
-  'options.submit': '提交',
-  'options.option': '配置',
-  'options.createsuccess': '创建成功',
-  'options.editsuccess': '编辑成功',
-  'options.deleteMessage': '你确定删除该条数据?',
-  'options.view': '查看',
   ...pages,
   ...globalHeader,
   ...menu,
@@ -36,4 +29,6 @@ export default {
   ...pages_general,
   ...pages_contact,
   ...pages_unitgroup,
+  ...pages_flowproperties,
+  ...pages_flows
 };

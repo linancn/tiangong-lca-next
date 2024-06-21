@@ -1,5 +1,6 @@
 import { createFlowproperties } from '@/services/flowproperties/api';
 import LangTextItemFrom from '@/components/LangTextItem/from';
+import LevelTextItemFrom from '@/components/LevelTextItem/from';
 // import { langOptions } from '@/services/general/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
@@ -51,15 +52,16 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef }) => {
       <Card size="small" title={'FlowProperties Information'}>
         <Card size="small" title={'Data Set Information'}>
           <Card size="small" title={'Name'}>
-            <LangTextItemFrom keyName={['dataSetInformation', 'common:name']} labelName="Name" />
+            <LangTextItemFrom name={['dataSetInformation', 'common:name']} label="Name" />
           </Card>
           <br />
           <Card size="small" title={'General Comment'}>
-            <LangTextItemFrom keyName={['dataSetInformation', "common:generalComment"]} labelName="General Comment" />
+            <LangTextItemFrom name={['dataSetInformation', "common:generalComment"]} label="General Comment" />
           </Card>
           <br />
           <Card size="small" title={'Classification'}>
-            <Space>
+            <LevelTextItemFrom name={['dataSetInformation', "classificationInformation", 'common:classification', 'common:class']} />
+            {/* <Space>
               <Form.Item name={['dataSetInformation', "classificationInformation", 'common:classification', 'common:class', '@level_0']}>
                 <Input placeholder="Level 1" />
               </Form.Item>
@@ -69,7 +71,7 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef }) => {
               <Form.Item name={['dataSetInformation', "classificationInformation", 'common:classification', 'common:class', '@level_2']}>
                 <Input placeholder="Level 3" />
               </Form.Item>
-            </Space>
+            </Space> */}
           </Card>
 
         </Card>
@@ -88,8 +90,8 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef }) => {
             Short Description
           </Divider>
           <LangTextItemFrom
-            keyName={['quantitativeReference', 'referenceToReferenceUnitGroup', 'common:shortDescription']}
-            labelName="Short Description"
+            name={['quantitativeReference', 'referenceToReferenceUnitGroup', 'common:shortDescription']}
+            label="Short Description"
           />
         </Card>
       </Card>
@@ -108,8 +110,8 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef }) => {
         Short Description
       </Divider>
       <LangTextItemFrom
-        keyName={['complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem', 'common:shortDescription']}
-        labelName="Short Description"
+        name={['complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem', 'common:shortDescription']}
+        label="Short Description"
       />
       <Form.Item label="Approval Of Overall Compliance" name={['complianceDeclarations', 'compliance', 'common:approvalOfOverallCompliance']}>
         <Input />
@@ -157,12 +159,12 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef }) => {
             Short Description
           </Divider>
           <LangTextItemFrom
-            keyName={[
+            name={[
               'dataEntryBy',
               'common:referenceToDataSetFormat',
               'common:shortDescription',
             ]}
-            labelName="Short Description"
+            label="Short Description"
           />
         </Card>
 
@@ -203,12 +205,12 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef }) => {
             Short Description
           </Divider>
           <LangTextItemFrom
-            keyName={[
+            name={[
               'publicationAndOwnership',
               'common:referenceToPrecedingDataSetVersion',
               'common:shortDescription',
             ]}
-            labelName="Short Description"
+            label="Short Description"
           />
         </Card>
 
@@ -227,7 +229,7 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef }) => {
   // }, [drawerVisible, formRefCreate.current?.getFieldsValue()]);
   return (
     <>
-      <Tooltip title={<FormattedMessage id="options.create" defaultMessage="Create" />}>
+      <Tooltip title={<FormattedMessage id="pages.table.option.create" defaultMessage="Create" />}>
         <Button
           size={'middle'}
           type="text"
@@ -238,7 +240,7 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef }) => {
         />
       </Tooltip>
       <Drawer
-        title={<FormattedMessage id="options.create" defaultMessage="Flow Properties Create" />}
+        title={<FormattedMessage id="pages.table.option.create" defaultMessage="Flow Properties Create" />}
         width="90%"
         closable={false}
         extra={
@@ -255,10 +257,10 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef }) => {
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
               {' '}
-              <FormattedMessage id="options.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id="pages.table.option.cancel" defaultMessage="Cancel" />
             </Button>
             <Button onClick={() => formRefCreate.current?.submit()} type="primary">
-              <FormattedMessage id="options.submit" defaultMessage="Submit" />
+              <FormattedMessage id="pages.table.option.submit" defaultMessage="Submit" />
             </Button>
           </Space>
         }
@@ -275,7 +277,7 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef }) => {
             if (result.data) {
               message.success(
                 <FormattedMessage
-                  id="options.createsuccess"
+                  id="pages.flowproperties.createsuccess"
                   defaultMessage="Created Successfully!"
                 />,
               );

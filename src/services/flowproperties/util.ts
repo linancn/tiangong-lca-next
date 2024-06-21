@@ -164,8 +164,8 @@ export function genFlowpropertiesJsonOrdered(id: string, data: any, oldData: any
   let administrativeInformation = initAdministrativeInformation(data?.administrativeInformation);
   const newData = {
     flowPropertyDataSet: {
-      ...getAttribute('@xmlns:common', oldData.flowPropertyDataSet['@xmlns:common']),
       ...getAttribute('@xmlns', oldData.flowPropertyDataSet['@xmlns']),
+      ...getAttribute('@xmlns:common', oldData.flowPropertyDataSet['@xmlns:common']),
       ...getAttribute('@xmlns:xsi', oldData.flowPropertyDataSet['@xmlns:xsi']),
       ...getAttribute('@version', oldData.flowPropertyDataSet['@version']),
       ...getAttribute('@xsi:schemaLocation', oldData.flowPropertyDataSet['@xsi:schemaLocation']),

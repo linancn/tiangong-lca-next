@@ -1,5 +1,5 @@
 import { getFlowpropertiesDetail, updateFlowproperties } from '@/services/flowproperties/api';
-// import { langOptions } from '@/services/general/data';
+import LevelTextItemFrom from '@/components/LevelTextItem/from';
 import LangTextItemFrom from '@/components/LangTextItem/from';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
@@ -60,15 +60,16 @@ const FlowpropertiesEdit: FC<Props> = ({ id, buttonType, actionRef }) => {
       <Card size="small" title={'FlowProperties Information'}>
         <Card size="small" title={'Data Set Information'}>
           <Card size="small" title={'Name'}>
-            <LangTextItemFrom keyName={['dataSetInformation', 'common:name']} labelName="Name" />
+            <LangTextItemFrom name={['dataSetInformation', 'common:name']} label="Name" />
           </Card>
           <br />
           <Card size="small" title={'General Comment'}>
-            <LangTextItemFrom keyName={['dataSetInformation', "common:generalComment"]} labelName="General Comment" />
+            <LangTextItemFrom name={['dataSetInformation', "common:generalComment"]} label="General Comment" />
           </Card>
           <br />
           <Card size="small" title={'Classification'}>
-            <Space>
+            <LevelTextItemFrom name={['dataSetInformation', "classificationInformation", 'common:classification', 'common:class',]} />
+            {/* <Space>
               <Form.Item name={['dataSetInformation', "classificationInformation", 'common:classification', 'common:class', '@level_0']}>
                 < Input placeholder="Level 1" />
               </Form.Item>
@@ -78,7 +79,7 @@ const FlowpropertiesEdit: FC<Props> = ({ id, buttonType, actionRef }) => {
               <Form.Item name={['dataSetInformation', "classificationInformation", 'common:classification', 'common:class', '@level_2']}>
                 <Input placeholder="Level 3" />
               </Form.Item>
-            </Space>
+            </Space> */}
           </Card>
 
         </Card>
@@ -97,8 +98,8 @@ const FlowpropertiesEdit: FC<Props> = ({ id, buttonType, actionRef }) => {
             Short Description
           </Divider>
           <LangTextItemFrom
-            keyName={['quantitativeReference', 'referenceToReferenceUnitGroup', 'common:shortDescription']}
-            labelName="Short Description"
+            name={['quantitativeReference', 'referenceToReferenceUnitGroup', 'common:shortDescription']}
+            label="Short Description"
           />
         </Card>
       </Card>
@@ -119,8 +120,8 @@ const FlowpropertiesEdit: FC<Props> = ({ id, buttonType, actionRef }) => {
         Short Description
       </Divider>
       <LangTextItemFrom
-        keyName={['complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem', 'common:shortDescription']}
-        labelName="Short Description"
+        name={['complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem', 'common:shortDescription']}
+        label="Short Description"
       />
       <Form.Item label="Approval Of Overall Compliance" name={['complianceDeclarations', 'compliance', 'common:approvalOfOverallCompliance']}>
         <Input />
@@ -170,12 +171,12 @@ const FlowpropertiesEdit: FC<Props> = ({ id, buttonType, actionRef }) => {
             Short Description
           </Divider>
           <LangTextItemFrom
-            keyName={[
+            name={[
               'dataEntryBy',
               'common:referenceToDataSetFormat',
               'common:shortDescription',
             ]}
-            labelName="Short Description"
+            label="Short Description"
           />
         </Card>
 
@@ -216,12 +217,12 @@ const FlowpropertiesEdit: FC<Props> = ({ id, buttonType, actionRef }) => {
             Short Description
           </Divider>
           <LangTextItemFrom
-            keyName={[
+            name={[
               'publicationAndOwnership',
               'common:referenceToPrecedingDataSetVersion',
               'common:shortDescription',
             ]}
-            labelName="Short Description"
+            label="Short Description"
           />
         </Card>
 
@@ -342,17 +343,17 @@ const FlowpropertiesEdit: FC<Props> = ({ id, buttonType, actionRef }) => {
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="options.edit" defaultMessage="Edit" />}>
+      <Tooltip title={<FormattedMessage id="pages.table.option.edit" defaultMessage="Edit" />}>
         {buttonType === 'icon' ? (
           <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
         ) : (
           <Button onClick={onEdit}>
-            <FormattedMessage id="options.edit" defaultMessage="Edit" />
+            <FormattedMessage id="pages.table.option.edit" defaultMessage="Edit" />
           </Button>
         )}
       </Tooltip>
       <Drawer
-        title={<FormattedMessage id="options.edit" defaultMessage="Edit" />}
+        title={<FormattedMessage id="pages.table.option.edit" defaultMessage="Edit" />}
         width="90%"
         closable={false}
         extra={
@@ -369,14 +370,14 @@ const FlowpropertiesEdit: FC<Props> = ({ id, buttonType, actionRef }) => {
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
               {' '}
-              <FormattedMessage id="options.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id="pages.table.option.cancel" defaultMessage="Cancel" />
             </Button>
             <Button onClick={onReset}>
               {' '}
-              <FormattedMessage id="options.reset" defaultMessage="Reset" />
+              <FormattedMessage id="pages.table.option.reset" defaultMessage="Reset" />
             </Button>
             <Button onClick={() => formRefEdit.current?.submit()} type="primary">
-              <FormattedMessage id="options.submit" defaultMessage="Submit" />
+              <FormattedMessage id="pages.table.option.submit" defaultMessage="Submit" />
             </Button>
           </Space>
         }
@@ -393,8 +394,8 @@ const FlowpropertiesEdit: FC<Props> = ({ id, buttonType, actionRef }) => {
             if (updateResult?.data) {
               message.success(
                 <FormattedMessage
-                  id="options.editsuccess"
-                  defaultMessage="Edit Successfully!"
+                  id="pages.flowproperties.editsuccess"
+                  defaultMessage="Edit flowproperties Successfully!"
                 />,
               );
               setDrawerVisible(false);
