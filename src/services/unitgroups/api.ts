@@ -1,12 +1,7 @@
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
 import { v4 } from 'uuid';
-import {
-  classificationToJson,
-  classificationToString,
-  getLangList,
-  getLangText,
-} from '../general/util';
+import { classificationToString, getLangText } from '../general/util';
 import { genUnitGroupJsonOrdered } from './util';
 
 const table_name = 'unitgroups';
@@ -143,66 +138,7 @@ export async function getUnitGroupDetail(id: string) {
     const data = result.data[0];
     return Promise.resolve({
       data: {
-        id: id,
-        'common:name': getLangList(
-          data?.json?.unitGroupDataSet?.unitGroupInformation?.dataSetInformation?.['common:name'],
-        ),
-        'common:class': classificationToJson(
-          data?.json?.unitGroupDataSet?.unitGroupInformation?.dataSetInformation
-            ?.classificationInformation?.['common:classification']?.['common:class'],
-        ),
-        referenceToReferenceUnit:
-          data?.json?.unitGroupDataSet?.unitGroupInformation?.quantitativeReference
-            ?.referenceToReferenceUnit,
-        'compliance:common:@refObjectId':
-          data?.json?.unitGroupDataSet?.modellingAndValidation?.complianceDeclarations
-            ?.compliance?.['common:referenceToComplianceSystem']?.['@refObjectId'],
-        'compliance:common:@type':
-          data?.json?.unitGroupDataSet?.modellingAndValidation?.complianceDeclarations
-            ?.compliance?.['common:referenceToComplianceSystem']?.['@type'],
-        'compliance:common:@uri':
-          data?.json?.unitGroupDataSet?.modellingAndValidation?.complianceDeclarations
-            ?.compliance?.['common:referenceToComplianceSystem']?.['@uri'],
-        'compliance:common:@version':
-          data?.json?.unitGroupDataSet?.modellingAndValidation?.complianceDeclarations
-            ?.compliance?.['common:referenceToComplianceSystem']?.['@version'],
-        'compliance:common:shortDescription': getLangList(
-          data?.json?.unitGroupDataSet?.modellingAndValidation?.complianceDeclarations
-            ?.compliance?.['common:referenceToComplianceSystem']?.['common:shortDescription'],
-        ),
-        'compliance:common:approvalOfOverallCompliance':
-          data?.json?.unitGroupDataSet?.modellingAndValidation?.complianceDeclarations
-            ?.compliance?.['common:approvalOfOverallCompliance'],
-        'dataEntryBy:common:timeStamp':
-          data?.json?.unitGroupDataSet?.administrativeInformation?.dataEntryBy?.[
-            'common:timeStamp'
-          ],
-        'dataEntryBy:common:@refObjectId':
-          data?.json?.unitGroupDataSet?.administrativeInformation?.dataEntryBy?.[
-            'common:referenceToDataSetFormat'
-          ]?.['@refObjectId'],
-        'dataEntryBy:common:@type':
-          data?.json?.unitGroupDataSet?.administrativeInformation?.dataEntryBy?.[
-            'common:referenceToDataSetFormat'
-          ]?.['@type'],
-        'dataEntryBy:common:@uri':
-          data?.json?.unitGroupDataSet?.administrativeInformation?.dataEntryBy?.[
-            'common:referenceToDataSetFormat'
-          ]?.['@uri'],
-        'dataEntryBy:common:@version':
-          data?.json?.unitGroupDataSet?.administrativeInformation?.dataEntryBy?.[
-            'common:referenceToDataSetFormat'
-          ]?.['@version'],
-        'dataEntryBy:common:shortDescription': getLangList(
-          data?.json?.unitGroupDataSet?.administrativeInformation?.dataEntryBy?.[
-            'common:referenceToDataSetFormat'
-          ]?.['common:shortDescription'],
-        ),
-        'publicationAndOwnership:common:dataSetVersion':
-          data?.json?.unitGroupDataSet?.administrativeInformation?.publicationAndOwnership?.[
-            'common:dataSetVersion'
-          ],
-        unit: data?.json?.unitGroupDataSet?.units?.unit,
+        json: data?.json,
         createdAt: data?.created_at,
       },
       success: true,
