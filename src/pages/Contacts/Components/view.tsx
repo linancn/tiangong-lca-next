@@ -14,9 +14,10 @@ import ContactEdit from './edit';
 type Props = {
   id: string;
   dataSource: string;
+  buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
 };
-const ContactView: FC<Props> = ({ id, dataSource, actionRef }) => {
+const ContactView: FC<Props> = ({ id, dataSource, buttonType, actionRef }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [spinning, setSpinning] = useState(false);
@@ -52,8 +53,16 @@ const ContactView: FC<Props> = ({ id, dataSource, actionRef }) => {
   };
   return (
     <>
-      <Tooltip title={<FormattedMessage id="pages.table.option.view" defaultMessage="View" />}>
-        <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
+      <Tooltip
+        title={<FormattedMessage id="pages.table.option.view" defaultMessage="View Cantact" />}
+      >
+        {buttonType === 'icon' ? (
+          <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
+        ) : (
+          <Button onClick={onView}>
+            <FormattedMessage id="pages.table.option.view" defaultMessage="View" />
+          </Button>
+        )}
       </Tooltip>
       <Drawer
         title={

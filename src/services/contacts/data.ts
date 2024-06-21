@@ -1,4 +1,5 @@
 export type ContactTable = {
+  key: React.Key;
   id: string;
   lang: string;
   shortName: string;

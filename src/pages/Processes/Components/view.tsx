@@ -531,9 +531,8 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
             columns={processExchangeColumns}
             dataSource={result.data.json?.processDataSet?.exchanges?.exchange?.map(
               (item: any, index: number) => {
-                console.log('item', item);
                 return {
-                  index: index + 1,
+                  index: index,
                   id: item['@dataSetInternalID'] ?? '-',
                   exchangeDirection: item.exchangeDirection ?? '-',
                   referenceToFlowDataSet: getLangText(

@@ -103,16 +103,11 @@ const ProcessExchangeCreate: FC<Props> = ({ onData }) => {
               General Comment
             </Divider>
             <LangTextItemFrom name="generalComment" label="General Comment" />
-
-            <Form.Item noStyle shouldUpdate>
-              {() => (
-                <Typography>
-                  <pre>{JSON.stringify(formRefCreate.current?.getFieldsValue(), null, 2)}</pre>
-                </Typography>
-              )}
-            </Form.Item>
           </Space>
         </ProForm>
+        <Typography>
+          <pre>{JSON.stringify(formRefCreate.current?.getFieldsValue(), null, 2)}</pre>
+        </Typography>
       </Drawer>
     </>
   );

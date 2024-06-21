@@ -16,14 +16,28 @@ export async function createProcess(data: any) {
       '@xsi:schemaLocation': 'http://lca.jrc.it/ILCD/Process ../../schemas/ILCD_ProcessDataSet.xsd',
     },
   };
-  console.log(data);
   const newData = genProcessJsonOrdered(newID, data, oldData);
   const result = await supabase
     .from('processes')
     .insert([{ id: newID, json_ordered: newData }])
     .select();
-  console.log(result);
   return result;
+}
+
+export async function updateProcess(data: any) {
+  const result = await supabase.from('processes').select('id, json').eq('id', data.id);
+  if (result.data && result.data.length === 1) {
+    const oldData = result.data[0].json;
+    const newData = genProcessJsonOrdered(data.id, data, oldData);
+    console.log('newData', newData);
+    const updateResult = await supabase
+      .from('processes')
+      .update({ json_ordered: newData })
+      .eq('id', data.id)
+      .select();
+    return updateResult;
+  }
+  return null;
 }
 
 export async function getProcessTable(
