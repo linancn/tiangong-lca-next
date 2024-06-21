@@ -1,8 +1,9 @@
 import { getContactDetail } from '@/services/contacts/api';
 import { langOptions } from '@/services/general/data';
-import { ProFormInstance } from '@ant-design/pro-components';
-import { Card, Col, Divider, Form, Input, Row, Select, Space } from 'antd';
-import { FC } from 'react';
+import { ActionType, ProFormInstance } from '@ant-design/pro-components';
+import { Button, Card, Col, Divider, Form, Input, Row, Select, Space } from 'antd';
+import React, { FC } from 'react';
+import ContactView from '../view';
 import ContactSelectDrawer from './drawer';
 
 const { TextArea } = Input;
@@ -43,16 +44,24 @@ const ContactSelectFrom: FC<Props> = ({ name, label, lang, formRef }) => {
     });
   };
 
+  const actionRef = React.useRef<ActionType | undefined>(undefined);
+
+  const id = formRef.current?.getFieldValue([...name, '@refObjectId']);
+
   return (
     <Card size="small" title={label}>
       <Space direction="horizontal">
         <Form.Item label="Ref Object Id" name={[...name, '@refObjectId']}>
           <Input disabled={true} style={{ width: '300px' }} />
         </Form.Item>
-        <ContactSelectDrawer buttonType="text" lang={lang} onData={handletContactData} />
+        <Space direction="horizontal" style={{ marginTop: '6px' }}>
+          <ContactSelectDrawer buttonType="text" lang={lang} onData={handletContactData} />
+          {id && <ContactView id={id} dataSource="tg" buttonType="text" actionRef={actionRef} />}
+          <Button onClick={() => formRef.current?.setFieldValue([...name], {})}>Clear</Button>
+        </Space>
       </Space>
       <Form.Item label="Type" name={[...name, '@type']}>
-        <Input disabled={true} defaultValue={'contact data set'} />
+        <Input disabled={true} />
       </Form.Item>
       <Form.Item label="URI" name={[...name, '@uri']}>
         <Input disabled={true} />
@@ -86,6 +95,7 @@ const ContactSelectFrom: FC<Props> = ({ name, label, lang, formRef }) => {
                   </Col>
                 </Row>
               ))}
+              {subFields.length < 1 && <Input disabled={true} />}
             </div>
           )}
         </Form.List>
