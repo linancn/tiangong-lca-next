@@ -6,4 +6,5 @@ export default {
   'pages.flowproperties.editsuccess': '编辑成功。',
   'pages.flowproperties.deleteMessage': '您确定要删除此数据吗？',
   'pages.flowproperties.createsuccess': '创建成功。',
+  'pages.flowproperties.drawer.title.select': '选择流程属性',
 };

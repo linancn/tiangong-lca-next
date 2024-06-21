@@ -6,6 +6,7 @@ import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ProForm } from '@ant-design/pro-components';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import type { ActionType } from '@ant-design/pro-table';
+import FlowpropertiesSelect from '@/pages/Flowproperties/Components/select/from';
 import {
     Button,
     Card,
@@ -35,9 +36,10 @@ import {
 type Props = {
     id: string;
     buttonType: string;
+    lang: string;
     actionRef: React.MutableRefObject<ActionType | undefined>;
 };
-const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef }) => {
+const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
     const formRefEdit = useRef<ProFormInstance>();
     const [drawerVisible, setDrawerVisible] = useState(false);
     const [activeTabKey, setActiveTabKey] = useState<string>('flowInformation');
@@ -67,17 +69,6 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef }) => {
                     <br />
                     <Card size="small" title={'Classification'}>
                         <LevelTextItemFrom name={['dataSetInformation', "classificationInformation", 'common:elementaryFlowCategorization', 'common:category']} />
-                        {/* <Space>
-                            <Form.Item name={['dataSetInformation', "classificationInformation", 'common:elementaryFlowCategorization', 'common:category', '@level_0']}>
-                                <Input placeholder="Emissions" />
-                            </Form.Item>
-                            <Form.Item name={['dataSetInformation', "classificationInformation", 'common:elementaryFlowCategorization', 'common:category', '@level_1']}>
-                                <Input placeholder="Emissions to air" />
-                            </Form.Item>
-                            <Form.Item name={['dataSetInformation', "classificationInformation", 'common:elementaryFlowCategorization', 'common:category', '@level_2']}>
-                                <Input placeholder="Emissions to air" />
-                            </Form.Item>
-                        </Space> */}
                     </Card>
                     <br />
                     <Card size="small">
@@ -208,7 +199,12 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef }) => {
                     <Input />
                 </Form.Item>
                 <br />
-                <Card size="small" title={'Reference To Flow Property Data Set'}>
+                <FlowpropertiesSelect
+                    label='Reference To Flow Property Data Set'
+                    name={['flowProperty', 'referenceToFlowPropertyDataSet']}
+                    lang={lang}
+                    formRef={formRefEdit} />
+                {/* <Card size="small" title={'Reference To Flow Property Data Set'}>
                     <Form.Item label="Type" name={['flowProperty', 'referenceToFlowPropertyDataSet', '@type']}>
                         <Input />
                     </Form.Item>
@@ -225,7 +221,7 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef }) => {
                         name={['flowProperty', 'referenceToFlowPropertyDataSet', 'common:shortDescription']}
                         label="Short Description"
                     />
-                </Card>
+                </Card> */}
                 <br />
                 <Form.Item label="Mean Value" name={['flowProperty', 'meanValue']}>
                     <Input />

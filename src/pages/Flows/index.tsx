@@ -36,10 +36,9 @@ const TableList: FC = () => {
       title: <FormattedMessage id="pages.flows.baseName" defaultMessage="Base Name" />,
       dataIndex: 'baseName',
       sorter: false,
-      sorter: false,
       render: (_, row) => [
-        <Tooltip key={0} placement="topLeft" title={row.name}>
-          {row.name}
+        <Tooltip key={0} placement="topLeft" title={row.baseName}>
+          {row.baseName || '-'}
         </Tooltip>,
       ],
     },
@@ -79,7 +78,6 @@ const TableList: FC = () => {
                 lang={lang}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => { }}
               />
               <FlowsDelete
                 id={row.id}

@@ -2,9 +2,9 @@ import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
 import { v4 } from 'uuid';
 import {
-  classificationToJson,
+  // classificationToJson,
   classificationToString,
-  getLangList,
+  // getLangList,
   getLangText,
 } from '../general/util';
 import { genFlowpropertiesJsonOrdered } from './util';
@@ -110,6 +110,7 @@ export async function getFlowpropertiesTable(
       data: result.data.map((i: any) => {
         try {
           return {
+            key: i.id,
             id: i.id,
             lang: lang,
             name: getLangText(i['common:name'], lang),

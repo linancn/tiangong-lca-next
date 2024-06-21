@@ -28,11 +28,13 @@ import React, {
     useRef, useState
 } from 'react';
 import { FormattedMessage } from 'umi';
+import FlowpropertiesSelect from '@/pages/Flowproperties/Components/select/from';
 
 type Props = {
+    lang: string,
     actionRef: React.MutableRefObject<ActionType | undefined>;
 };
-const FlowsCreate: FC<Props> = ({ actionRef }) => {
+const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
     const [drawerVisible, setDrawerVisible] = useState(false);
     const formRefCreate = useRef<ProFormInstance>();
     const [activeTabKey, setActiveTabKey] = useState<string>('flowInformation');
@@ -48,6 +50,10 @@ const FlowsCreate: FC<Props> = ({ actionRef }) => {
         { key: 'administrativeInformation', tab: 'Administrative Information' },
         { key: 'flowProperties', tab: 'Flow Properties' }
     ];
+    const handleDataChange = (changedValues: any, allValues: any) => {
+        setFromData({ ...fromData, [activeTabKey]: allValues })
+    }
+
     const contentList: Record<string, React.ReactNode> = {
         flowInformation: (<Space direction="vertical" style={{ width: '100%' }}>
             <Card size="small" title={'Flow Information'}>
@@ -62,17 +68,6 @@ const FlowsCreate: FC<Props> = ({ actionRef }) => {
                     <br />
                     <Card size="small" title={'Classification'}>
                         <LevelTextItemFrom name={['dataSetInformation', "classificationInformation", 'common:elementaryFlowCategorization', 'common:category']} />
-                        {/* <Space>
-                            <Form.Item name={['dataSetInformation', "classificationInformation", 'common:elementaryFlowCategorization', 'common:category', '@level_0']}>
-                                <Input placeholder="Emissions" />
-                            </Form.Item>
-                            <Form.Item name={['dataSetInformation', "classificationInformation", 'common:elementaryFlowCategorization', 'common:category', '@level_1']}>
-                                <Input placeholder="Emissions to air" />
-                            </Form.Item>
-                            <Form.Item name={['dataSetInformation', "classificationInformation", 'common:elementaryFlowCategorization', 'common:category', '@level_2']}>
-                                <Input placeholder="Emissions to air" />
-                            </Form.Item>
-                        </Space> */}
                     </Card>
                     <br />
                     <Card size="small">
@@ -198,7 +193,12 @@ const FlowsCreate: FC<Props> = ({ actionRef }) => {
                     <Input />
                 </Form.Item>
                 <br />
-                <Card size="small" title={'Reference To Flow Property Data Set'}>
+                <FlowpropertiesSelect
+                    label='Reference To Flow Property Data Set'
+                    name={['flowProperty', 'referenceToFlowPropertyDataSet']}
+                    lang={lang}
+                    formRef={formRefCreate} />
+                {/* <Card size="small" title={'Reference To Flow Property Data Set'}>
                     <Form.Item label="Type" name={['flowProperty', 'referenceToFlowPropertyDataSet', '@type']}>
                         <Input />
                     </Form.Item>
@@ -215,7 +215,7 @@ const FlowsCreate: FC<Props> = ({ actionRef }) => {
                         name={['flowProperty', 'referenceToFlowPropertyDataSet', 'common:shortDescription']}
                         label="Short Description"
                     />
-                </Card>
+                </Card> */}
                 <br />
                 <Form.Item label="Mean Value" name={['flowProperty', 'meanValue']}>
                     <Input />
@@ -226,6 +226,7 @@ const FlowsCreate: FC<Props> = ({ actionRef }) => {
     const onTabChange = (key: string) => {
         setActiveTabKey(key);
     };
+
     return (
         <>
             <Tooltip title={<FormattedMessage id="pages.table.option.create" defaultMessage="Create" />}>
@@ -290,9 +291,7 @@ const FlowsCreate: FC<Props> = ({ actionRef }) => {
                         }
                         return true;
                     }}
-                    onValuesChange={async (changedValues, allValues) => {
-                        setFromData({ ...fromData, [activeTabKey]: allValues })
-                    }}
+                    onValuesChange={handleDataChange}
                 >
                     <Card
                         style={{ width: '100%' }}

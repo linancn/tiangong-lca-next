@@ -9,12 +9,14 @@ import type { FC } from 'react';
 import { useState, useEffect } from 'react';
 import { FormattedMessage } from 'umi';
 
+
 type Props = {
     id: string;
     dataSource: string;
+    lang: string;
     actionRef: React.MutableRefObject<ActionType | undefined>;
 };
-const FlowsView: FC<Props> = ({ id, dataSource }) => {
+const FlowsView: FC<Props> = ({ id, dataSource, lang }) => {
     const [contentList, setContentList] = useState<Record<string, React.ReactNode>>({
         flowInformation: <></>,
         modellingAndValidation: <></>,

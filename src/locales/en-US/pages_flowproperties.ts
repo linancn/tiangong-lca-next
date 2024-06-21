@@ -6,4 +6,5 @@ export default {
   'pages.flowproperties.editsuccess': 'Edit flowproperties Successfully!',
   'pages.flowproperties.deleteMessage': 'Are you sure you want to delete this data?',
   'pages.flowproperties.createsuccess': 'Create flowproperties Successfully!',
+  'pages.flowproperties.drawer.title.select': 'Select Flowproperties',
 };

@@ -111,6 +111,7 @@ export async function getFlowsTable(
       data: result.data.map((i: any) => {
         try {
           return {
+            key: i.id,
             id: i.id,
             lang: lang,
             baseName: getLangText(i['name']?.["baseName"], lang),
