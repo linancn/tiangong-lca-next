@@ -104,6 +104,7 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
             }}
             initialValues={initData}
             onFinish={async () => {
+              setSpinning(true);
               const updateResult = await updateContact({ ...fromData });
               if (updateResult?.data) {
                 message.success(
@@ -118,6 +119,7 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
               } else {
                 message.error(updateResult?.error?.message);
               }
+              setSpinning(true);
               return true;
             }}
           >

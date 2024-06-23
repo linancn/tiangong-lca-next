@@ -1,6 +1,7 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import { getContactDetail } from '@/services/contacts/api';
+import { genContactFromData } from '@/services/contacts/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
@@ -27,7 +28,7 @@ const ContactView: FC<Props> = ({ id, dataSource, buttonType, actionRef }) => {
     setDrawerVisible(true);
     setSpinning(true);
     getContactDetail(id).then(async (result: any) => {
-      setInitData(result.data.json?.contactDataSet);
+      setInitData({ ...genContactFromData(result.data?.json?.contactDataSet ?? {}) });
       if (dataSource === 'my') {
         setFooterButtons(
           <>

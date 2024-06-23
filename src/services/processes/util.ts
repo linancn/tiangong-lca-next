@@ -268,6 +268,7 @@ export function genProcessFromData(data: any) {
   return removeEmptyObjects({
     processInformation: {
       dataSetInformation: {
+        'common:UUID': data?.processInformation?.dataSetInformation?.['common:UUID'] ?? '-',
         name: {
           baseName: getLangList(data?.processInformation?.dataSetInformation?.name?.baseName),
         },
@@ -515,9 +516,9 @@ export function genProcessFromData(data: any) {
           referenceToFlowDataSet: {
             '@type': item.referenceToFlowDataSet?.['@type'],
             '@refObjectId': item.referenceToFlowDataSet?.['@refObjectId'],
-            '@uri': item.referenceToFlowDataSet?.['@type'],
-            'common:shortDescriptio': getLangList(
-              item.referenceToFlowDataSet?.['common:shortDescriptio'],
+            '@uri': item.referenceToFlowDataSet?.['@uri'],
+            'common:shortDescription': getLangList(
+              item.referenceToFlowDataSet?.['common:shortDescription'],
             ),
           },
           exchangeDirection: item.exchangeDirection,

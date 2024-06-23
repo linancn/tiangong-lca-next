@@ -94,7 +94,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, dataSource, buttonType }) =>
         <br />
         <SourceDescription
           title="Reference To Flow Data Set"
-          data={viewData.referenceToFlowDataSet}
+          data={viewData.referenceToFlowDataSet ?? {}}
         />
         <br />
         <Descriptions bordered size={'small'} column={1}>
