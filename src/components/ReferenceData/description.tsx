@@ -8,17 +8,17 @@ type Props = {
 };
 
 const SourceDescription: FC<Props> = ({ title, data }) => {
-  if (!data) {
-    return (
-      <Card size="small" title={title}>
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item key={0} labelStyle={{ display: 'none' }}>
-            -
-          </Descriptions.Item>
-        </Descriptions>
-      </Card>
-    );
-  }
+  // if (!data) {
+  //   return (
+  //     <Card size="small" title={title}>
+  //       <Descriptions bordered size={'small'} column={1}>
+  //         <Descriptions.Item key={0} labelStyle={{ display: 'none' }}>
+  //           -
+  //         </Descriptions.Item>
+  //       </Descriptions>
+  //     </Card>
+  //   );
+  // }
   return (
     <Card size="small" title={title}>
       <Descriptions bordered size={'small'} column={1}>

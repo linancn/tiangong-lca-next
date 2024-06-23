@@ -1,6 +1,7 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import SourceDescription from '@/components/ReferenceData/description';
+import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 import { ListPagination } from '@/services/general/data';
 import { getLangText } from '@/services/general/util';
 import { getProcessDetail } from '@/services/processes/api';
@@ -10,8 +11,9 @@ import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
+import ProcessExchangeView from './Exchange/view';
 // import ContactDelete from './delete';
 // import ContactEdit from './edit';
 
@@ -32,6 +34,8 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [activeTabKey, setActiveTabKey] = useState<string>('processInformation');
+
+  const actionRefExchangeTable = useRef<ActionType>();
 
   const tabList = [
     { key: 'processInformation', tab: 'Process Information' },
@@ -69,7 +73,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
           defaultMessage="Reference To Flow DataSet"
         />
       ),
-      dataIndex: 'referenceToFlowDataSet',
+      dataIndex: 'referenceToFlowDataSetText',
       sorter: false,
       search: false,
       render: (_, row) => [
@@ -107,6 +111,43 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
       title: <FormattedMessage id="options.option" defaultMessage="Option" />,
       dataIndex: 'option',
       search: false,
+      render: (_, row) => {
+        if (dataSource === 'my') {
+          return [
+            <Space size={'small'} key={0}>
+              <ProcessExchangeView
+                initData={row}
+                dataSource={dataSource}
+                buttonType={'icon'}
+                actionRef={actionRefExchangeTable}
+              />
+              {/* <ProcessEdit
+                id={row.id}
+                lang={lang}
+                buttonType={'icon'}
+                actionRef={actionRef}
+                setViewDrawerVisible={() => { }}
+              />
+              <ProcessDelete
+                id={row.id}
+                buttonType={'icon'}
+                actionRef={actionRef}
+                setViewDrawerVisible={() => { }}
+              /> */}
+            </Space>,
+          ];
+        }
+        return [
+          <Space size={'small'} key={0}>
+            <ProcessExchangeView
+              initData={row}
+              dataSource={dataSource}
+              buttonType={'icon'}
+              actionRef={actionRefExchangeTable}
+            />
+          </Space>,
+        ];
+      },
     },
   ];
 
@@ -256,6 +297,11 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
                     ?.referenceToTechnologyFlowDiagrammOrPicture
                 }
               />
+              {/* <ContactSelectDescription title={'Reference To Technology Flow Diagramm Or Picture'}
+                data={
+                  result.data.json?.processDataSet?.processInformation?.technology
+                    ?.referenceToTechnologyFlowDiagrammOrPicture
+                } /> */}
             </Card>
             <Divider orientationMargin="0" orientation="left" plain>
               Mathematical Relations: Model Description
@@ -430,7 +476,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
                 }
               />
               <br />
-              <SourceDescription
+              <ContactSelectDescription
                 title={'Reference To Name Of Reviewer And Institution'}
                 data={
                   result.data.json?.processDataSet?.modellingAndValidation?.validation?.review?.[
@@ -443,7 +489,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
         ),
         administrativeInformation: (
           <>
-            <SourceDescription
+            <ContactSelectDescription
               title={'Data Generator: Rreference To Person Or Entity Generating The Data Set'}
               data={
                 result.data.json?.processDataSet?.administrativeInformation?.dataGenerator?.[
@@ -487,14 +533,14 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
                 <Descriptions.Item
                   key={0}
                   label="Permanent Data Set URI"
-                  labelStyle={{ width: '180px' }}
+                  labelStyle={{ width: '200px' }}
                 >
                   {result.data.json?.processDataSet?.administrativeInformation
                     ?.publicationAndOwnership?.['common:permanentDataSetURI'] ?? '-'}
                 </Descriptions.Item>
               </Descriptions>
               <br />
-              <SourceDescription
+              <ContactSelectDescription
                 title={'Reference To Ownership Of Data Set'}
                 data={
                   result.data.json?.processDataSet?.administrativeInformation
@@ -520,7 +566,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
         ),
         exchanges: (
           <ProTable<ProcessExchangeTable, ListPagination>
-            // actionRef={actionRef}
+            actionRef={actionRefExchangeTable}
             search={{
               defaultCollapsed: false,
             }}
@@ -535,14 +581,16 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
                   index: index,
                   id: item['@dataSetInternalID'] ?? '-',
                   exchangeDirection: item.exchangeDirection ?? '-',
-                  referenceToFlowDataSet: getLangText(
+                  referenceToFlowDataSet: item.referenceToFlowDataSet,
+                  referenceToFlowDataSetText: getLangText(
                     item.referenceToFlowDataSet?.['common:shortDescription'],
                     lang,
                   ),
                   meanAmount: item.meanAmount ?? '-',
                   resultingAmount: item.resultingAmount ?? '-',
                   dataDerivationTypeStatus: item.dataDerivationTypeStatus ?? '-',
-                  generalComment: getLangText(item.generalComment, lang),
+                  generalComment: item.generalComment,
+                  generalCommentText: getLangText(item.generalComment, lang),
                 };
               },
             )}

@@ -1,10 +1,9 @@
 import LangTextItemFrom from '@/components/LangTextItem/from';
 import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
 import { ListPagination } from '@/services/general/data';
-import { getLangText } from '@/services/general/util';
 import { getProcessDetail, updateProcess } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
-import { genProcessFromData } from '@/services/processes/util';
+import { genProcessExchangeTableData, genProcessFromData } from '@/services/processes/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ProColumns, ProForm, ProTable } from '@ant-design/pro-components';
@@ -27,6 +26,9 @@ import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import ProcessExchangeCreate from './Exchange/create';
+import ProcessExchangeDelete from './Exchange/delete';
+import ProcessExchangeEdit from './Exchange/edit';
+import ProcessExchangeView from './Exchange/view';
 
 type Props = {
   id: string;
@@ -44,8 +46,17 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
   const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
   const [spinning, setSpinning] = useState(false);
 
+  const actionRefExchangeTable = useRef<ActionType>();
+
+  const handletExchangeDataCreate = (data: any) => {
+    setExchangeDataSource([
+      ...exchangeDataSource,
+      { ...data, '@dataSetInternalID': exchangeDataSource.length.toString() },
+    ]);
+  };
+
   const handletExchangeData = (data: any) => {
-    setExchangeDataSource([...exchangeDataSource, data]);
+    setExchangeDataSource([...data]);
   };
 
   const processExchangeColumns: ProColumns<ProcessExchangeTable>[] = [
@@ -76,6 +87,11 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
       dataIndex: 'referenceToFlowDataSet',
       sorter: false,
       search: false,
+      render: (_, row) => [
+        <Tooltip key={0} placement="topLeft" title={row.generalComment}>
+          {row.referenceToFlowDataSet}
+        </Tooltip>,
+      ],
     },
     {
       title: <FormattedMessage id="processExchange.meanAmount" defaultMessage="Mean Amount" />,
@@ -93,43 +109,48 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
     },
     {
       title: (
-        <FormattedMessage id="processExchange.generalComment" defaultMessage="General Comment" />
+        <FormattedMessage
+          id="processExchange.dataDerivationTypeStatus"
+          defaultMessage="Data Derivation Type Status"
+        />
       ),
-      dataIndex: 'generalComment',
+      dataIndex: 'dataDerivationTypeStatus',
       sorter: false,
       search: false,
-      render: (_, row) => getLangText(row.generalComment ?? {}, lang),
     },
     {
       title: <FormattedMessage id="options.option" defaultMessage="Option" />,
       dataIndex: 'option',
       search: false,
-      // render: (_, row) => {
-      //   if (dataSource === 'my') {
-      //     return [
-      //       // <Space size={'small'} key={0}>
-      //       //   {/* <ContactView id={row.id} actionRef={actionRef} /> */}
-      //       //   <ContactEdit
-      //       //     id={row.id}
-      //       //     buttonType={'icon'}
-      //       //     actionRef={actionRef}
-      //       //     setViewDrawerVisible={() => {}}
-      //       //   />
-      //       //   <ContactDelete
-      //       //     id={row.id}
-      //       //     buttonType={'icon'}
-      //       //     actionRef={actionRef}
-      //       //     setViewDrawerVisible={() => {}}
-      //       //   />
-      //       // </Space>,
-      //     ];
-      //   }
-      //   return [
-      //     <Space size={'small'} key={0}>
-      //       {/* <ContactView id={row.id} actionRef={actionRef} /> */}
-      //     </Space>,
-      //   ];
-      // },
+      render: (_, row) => {
+        return [
+          <Space size={'small'} key={0}>
+            <ProcessExchangeView
+              id={row.dataSetInternalID}
+              data={exchangeDataSource}
+              dataSource={'my'}
+              buttonType={'icon'}
+              actionRef={actionRefExchangeTable}
+            />
+            <ProcessExchangeEdit
+              id={row.dataSetInternalID}
+              data={exchangeDataSource}
+              buttonType={'icon'}
+              actionRef={actionRefExchangeTable}
+              onData={handletExchangeData}
+              setViewDrawerVisible={() => {}}
+            />
+            <ProcessExchangeDelete
+              id={row.dataSetInternalID}
+              data={exchangeDataSource}
+              buttonType={'icon'}
+              actionRef={actionRef}
+              setViewDrawerVisible={() => {}}
+              onData={handletExchangeData}
+            />
+          </Space>,
+        ];
+      },
     },
   ];
 
@@ -603,6 +624,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
     ),
     exchanges: (
       <ProTable<ProcessExchangeTable, ListPagination>
+        actionRef={actionRefExchangeTable}
         search={{
           defaultCollapsed: false,
         }}
@@ -611,9 +633,9 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
           pageSize: 10,
         }}
         toolBarRender={() => {
-          return [<ProcessExchangeCreate key={0} onData={handletExchangeData} />];
+          return [<ProcessExchangeCreate key={0} onData={handletExchangeDataCreate} />];
         }}
-        dataSource={exchangeDataSource}
+        dataSource={genProcessExchangeTableData(exchangeDataSource, lang)}
         columns={processExchangeColumns}
       />
     ),
@@ -677,7 +699,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
         )}
       </Tooltip>
       <Drawer
-        title={<FormattedMessage id="options.edit" defaultMessage="Edit" />}
+        title={<FormattedMessage id="options.edit" defaultMessage="Edit Process" />}
         width="90%"
         closable={false}
         extra={
@@ -757,10 +779,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
               {JSON.stringify(
                 {
                   exchanges: {
-                    exchange: [...exchangeDataSource].map((item: any, index: number) => ({
-                      ...item,
-                      '@dataSetInternalID': index.toString(),
-                    })),
+                    exchange: [...exchangeDataSource],
                   },
                 },
                 null,

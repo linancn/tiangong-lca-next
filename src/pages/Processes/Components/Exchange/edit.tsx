@@ -1,6 +1,7 @@
 import LangTextItemFrom from '@/components/LangTextItem/from';
 import styles from '@/style/custom.less';
-import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
+import { CloseOutlined, FormOutlined } from '@ant-design/icons';
+import { ActionType } from '@ant-design/pro-components';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import ProForm from '@ant-design/pro-form';
 import {
@@ -16,35 +17,59 @@ import {
   Typography,
 } from 'antd';
 import type { FC } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 
 type Props = {
+  id: string;
+  data: any;
+  buttonType: string;
+  actionRef: React.MutableRefObject<ActionType | undefined>;
+  setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
   onData: (data: any) => void;
 };
-const ProcessExchangeCreate: FC<Props> = ({ onData }) => {
+const ProcessExchangeEdit: FC<Props> = ({
+  id,
+  data,
+  buttonType,
+  actionRef,
+  setViewDrawerVisible,
+  onData,
+}) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const formRefCreate = useRef<ProFormInstance>();
+  const formRefEdit = useRef<ProFormInstance>();
   const [fromData, setFromData] = useState<any>({});
+  const [initData, setInitData] = useState<any>({});
+
+  const onEdit = useCallback(() => {
+    setDrawerVisible(true);
+  }, [setViewDrawerVisible]);
+
+  const onReset = () => {
+    // setSpinning(true);
+    formRefEdit.current?.resetFields();
+    const filteredData = data.find((item: any) => item['@dataSetInternalID'] === id) ?? {};
+    setInitData(filteredData);
+    formRefEdit.current?.setFieldsValue(filteredData);
+    setFromData(filteredData);
+    // setSpinning(false);
+  };
 
   useEffect(() => {
     if (drawerVisible) return;
-    formRefCreate.current?.resetFields();
-    formRefCreate.current?.setFieldsValue({});
-    setFromData({});
+    onReset();
   }, [drawerVisible]);
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="options.create" defaultMessage="Create" />}>
-        <Button
-          size={'middle'}
-          type="text"
-          icon={<PlusOutlined />}
-          onClick={() => {
-            setDrawerVisible(true);
-          }}
-        />
+      <Tooltip title={<FormattedMessage id="pages.table.option.edit" defaultMessage="Edit" />}>
+        {buttonType === 'icon' ? (
+          <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
+        ) : (
+          <Button onClick={onEdit}>
+            <FormattedMessage id="pages.table.option.edit" defaultMessage="Edit Exchange" />
+          </Button>
+        )}
       </Tooltip>
       <Drawer
         title={<FormattedMessage id="exchanges.create" defaultMessage="Process Exchange Create" />}
@@ -66,14 +91,15 @@ const ProcessExchangeCreate: FC<Props> = ({ onData }) => {
               {' '}
               <FormattedMessage id="options.cancel" defaultMessage="Cancel" />
             </Button>
-            <Button onClick={() => formRefCreate.current?.submit()} type="primary">
+            <Button onClick={() => formRefEdit.current?.submit()} type="primary">
               <FormattedMessage id="options.submit" defaultMessage="Submit" />
             </Button>
           </Space>
         }
       >
         <ProForm
-          formRef={formRefCreate}
+          formRef={formRefEdit}
+          initialValues={initData}
           onValuesChange={(_, allValues) => {
             setFromData(allValues ?? {});
           }}
@@ -83,13 +109,24 @@ const ProcessExchangeCreate: FC<Props> = ({ onData }) => {
             },
           }}
           onFinish={async () => {
-            onData({ ...fromData });
-            formRefCreate.current?.resetFields();
+            onData(
+              data.map((item: any) => {
+                if (item['@dataSetInternalID'] === id) {
+                  return fromData;
+                }
+                return item;
+              }),
+            );
+            formRefEdit.current?.resetFields();
             setDrawerVisible(false);
+            actionRef.current?.reload();
             return true;
           }}
         >
           <Space direction="vertical" style={{ width: '100%' }}>
+            <Form.Item name={'@dataSetInternalID'} hidden>
+              <Input />
+            </Form.Item>
             <Form.Item label="Exchange Direction" name={'exchangeDirection'}>
               <Select
                 placeholder="Select a direction"
@@ -124,4 +161,4 @@ const ProcessExchangeCreate: FC<Props> = ({ onData }) => {
   );
 };
 
-export default ProcessExchangeCreate;
+export default ProcessExchangeEdit;

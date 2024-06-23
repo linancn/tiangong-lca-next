@@ -3,6 +3,7 @@ import {
   classificationToList,
   getLangJson,
   getLangList,
+  getLangText,
   removeEmptyObjects,
 } from '../general/util';
 
@@ -507,6 +508,45 @@ export function genProcessFromData(data: any) {
           ],
       },
     },
-    exchanges: data?.exchanges ?? {},
+    exchanges: {
+      exchange: data?.exchanges?.exchange?.map((item: any) => {
+        return {
+          '@dataSetInternalID': item['@dataSetInternalID'],
+          referenceToFlowDataSet: {
+            '@type': item.referenceToFlowDataSet?.['@type'],
+            '@refObjectId': item.referenceToFlowDataSet?.['@refObjectId'],
+            '@uri': item.referenceToFlowDataSet?.['@type'],
+            'common:shortDescriptio': getLangList(
+              item.referenceToFlowDataSet?.['common:shortDescriptio'],
+            ),
+          },
+          exchangeDirection: item.exchangeDirection,
+          meanAmount: item.meanAmount,
+          resultingAmount: item.resultingAmount,
+          dataDerivationTypeStatus: item.dataDerivationTypeStatus,
+          generalComment: getLangList(item.generalComment),
+        };
+      }),
+    },
   });
+}
+
+export function genProcessExchangeTableData(data: any, lang: string) {
+  if (data) {
+    return data.map((item: any) => {
+      return removeEmptyObjects({
+        dataSetInternalID: item['@dataSetInternalID'],
+        exchangeDirection: item.exchangeDirection ?? '-',
+        referenceToFlowDataSet: getLangText(
+          item.referenceToFlowDataSet?.['common:shortDescription'],
+          lang,
+        ),
+        meanAmount: item.meanAmount ?? '-',
+        resultingAmount: item.resultingAmount ?? '-',
+        dataDerivationTypeStatus: item.dataDerivationTypeStatus ?? '-',
+        generalComment: getLangText(item.generalComment, lang),
+      });
+    });
+  }
+  return {};
 }

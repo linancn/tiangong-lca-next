@@ -29,7 +29,6 @@ export async function updateProcess(data: any) {
   if (result.data && result.data.length === 1) {
     const oldData = result.data[0].json;
     const newData = genProcessJsonOrdered(data.id, data, oldData);
-    console.log('newData', newData);
     const updateResult = await supabase
       .from('processes')
       .update({ json_ordered: newData })

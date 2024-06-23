@@ -1,4 +1,5 @@
 import LangTextItemFrom from '@/components/LangTextItem/from';
+import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
 import { ListPagination } from '@/services/general/data';
 import { getLangText } from '@/services/general/util';
 import { createProcess } from '@/services/processes/api';
@@ -499,7 +500,10 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
           label="Completeness Description"
         />
         <Card size="small" title={'Validation: Review'}>
-          <Form.Item label="Type" name={['validation', 'review', '@type']}>
+          <Form.Item
+            label="Type"
+            name={['modellingAndValidation', 'validation', 'review', '@type']}
+          >
             <Input />
           </Form.Item>
           <Divider orientationMargin="0" orientation="left" plain>
@@ -510,112 +514,32 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             label="Review Details"
           />
 
-          <Card size="small" title={'Reference To Name Of Reviewer And Institution'}>
-            <Form.Item
-              label="Type"
-              name={[
-                'modellingAndValidation',
-                'validation',
-                'review',
-                'common:referenceToNameOfReviewerAndInstitution',
-                '@type',
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="Ref Object Id"
-              name={[
-                'modellingAndValidation',
-                'validation',
-                'review',
-                'common:referenceToNameOfReviewerAndInstitution',
-                '@refObjectId',
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="URI"
-              name={[
-                'modellingAndValidation',
-                'validation',
-                'review',
-                'common:referenceToNameOfReviewerAndInstitution',
-                '@uri',
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Divider orientationMargin="0" orientation="left" plain>
-              Short Description
-            </Divider>
-            <LangTextItemFrom
-              name={[
-                'modellingAndValidation',
-                'validation',
-                'review',
-                'common:referenceToNameOfReviewerAndInstitution',
-                'common:shortDescription',
-              ]}
-              label="Short Description"
-            />
-          </Card>
+          <ContactSelectFrom
+            name={[
+              'modellingAndValidation',
+              'validation',
+              'review',
+              'common:referenceToNameOfReviewerAndInstitution',
+            ]}
+            label={'Reference To Name Of Reviewer And Institution'}
+            lang={lang}
+            formRef={formRefCreate}
+          />
         </Card>
       </Space>
     ),
     administrativeInformation: (
       <Space direction="vertical" style={{ width: '100%' }}>
-        <Card
-          size="small"
-          title={'Data Generator: Reference To Person Or Entity Generating The DataSet'}
-        >
-          <Form.Item
-            label="Type"
-            name={[
-              'administrativeInformation',
-              'dataGenerator',
-              'common:referenceToPersonOrEntityGeneratingTheDataSet',
-              '@type',
-            ]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label="Ref Object Id"
-            name={[
-              'administrativeInformation',
-              'dataGenerator',
-              'common:referenceToPersonOrEntityGeneratingTheDataSet',
-              '@refObjectId',
-            ]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label="URI"
-            name={[
-              'administrativeInformation',
-              'dataGenerator',
-              'common:referenceToPersonOrEntityGeneratingTheDataSet',
-              '@uri',
-            ]}
-          >
-            <Input />
-          </Form.Item>
-          <Divider orientationMargin="0" orientation="left" plain>
-            Short Description
-          </Divider>
-          <LangTextItemFrom
-            name={[
-              'administrativeInformation',
-              'dataGenerator',
-              'common:referenceToPersonOrEntityGeneratingTheDataSet',
-              'common:shortDescription',
-            ]}
-            label="Short Description"
-          />
-        </Card>
+        <ContactSelectFrom
+          name={[
+            'administrativeInformation',
+            'dataGenerator',
+            'common:referenceToPersonOrEntityGeneratingTheDataSet',
+          ]}
+          label={'Data Generator: Reference To Person Or Entity Generating The DataSet'}
+          lang={lang}
+          formRef={formRefCreate}
+        />
 
         <Form.Item label="Data Entry By: Time Stamp" name={['dataEntryBy', 'common:timeStamp']}>
           <Input />
@@ -651,53 +575,16 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             <Input />
           </Form.Item>
 
-          <Card size="small" title={'Reference To Ownership Of Data Set'}>
-            <Form.Item
-              label="Type"
-              name={[
-                'administrativeInformation',
-                'publicationAndOwnership',
-                'common:referenceToOwnershipOfDataSet',
-                '@type',
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="Ref Object Id"
-              name={[
-                'administrativeInformation',
-                'publicationAndOwnership',
-                'common:referenceToOwnershipOfDataSet',
-                '@refObjectId',
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="URI"
-              name={[
-                'administrativeInformation',
-                'publicationAndOwnership',
-                'common:referenceToOwnershipOfDataSet',
-                '@uri',
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Divider orientationMargin="0" orientation="left" plain>
-              Short Description
-            </Divider>
-            <LangTextItemFrom
-              name={[
-                'administrativeInformation',
-                'publicationAndOwnership',
-                'common:referenceToOwnershipOfDataSet',
-                'common:shortDescription',
-              ]}
-              label="Short Description"
-            />
-          </Card>
+          <ContactSelectFrom
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:referenceToOwnershipOfDataSet',
+            ]}
+            label={'Reference To Owner Of DataSet'}
+            lang={lang}
+            formRef={formRefCreate}
+          />
 
           <Form.Item
             label="Copyright"
@@ -740,6 +627,14 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
   useEffect(() => {
     setFromData({ ...fromData, exchanges: { exchange: exchangeDataSource } });
   }, [exchangeDataSource]);
+
+  useEffect(() => {
+    if (activeTabKey === 'exchanges') return;
+    setFromData({
+      ...fromData,
+      [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
+    });
+  }, [formRefCreate.current?.getFieldsValue()]);
 
   return (
     <>
