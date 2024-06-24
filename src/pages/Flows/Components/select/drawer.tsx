@@ -7,6 +7,7 @@ import { ProTable } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
 import { Button, Card, Drawer, Space, Tooltip } from 'antd';
 import type { FC, Key } from 'react';
+import React from 'react'
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import FlowsDelete from '../delete';
@@ -91,16 +92,17 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
         if (activeTabKey === 'tg') {
           return [
             <Space size={'small'} key={0}>
-              <FlowsView id={row.id} dataSource="tg" actionRef={tgActionRefSelect} />
+              <FlowsView id={row.id} dataSource="tg" actionRef={tgActionRefSelect} lang={lang} />
             </Space>,
           ];
         } else if (activeTabKey === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <FlowsView id={row.id} dataSource="my" actionRef={myActionRefSelect} />
+              <FlowsView id={row.id} dataSource="my" actionRef={myActionRefSelect} lang={lang} />
               <FlowsEdit
                 id={row.id}
                 buttonType={'icon'}
+                lang={lang}
                 actionRef={myActionRefSelect}
               />
               <FlowsDelete

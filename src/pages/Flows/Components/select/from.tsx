@@ -10,7 +10,7 @@ import {
   // Select,
   Space
 } from 'antd';
-import { FC } from 'react';
+import React, { FC } from 'react';
 import FlowsSelectDrawer from './drawer';
 import LangTextItemFrom from '@/components/LangTextItem/from';
 // const { TextArea } = Input;
