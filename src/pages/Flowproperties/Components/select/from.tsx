@@ -45,10 +45,10 @@ const FlowpropertiesSelectFrom: FC<Props> = ({ name, label, lang, formRef, onDat
         //   result.data.json?.flowPropertyDataSet?.flowPropertiesInformation?.dataSetInformation,
         // ),
         'common:shortDescription': [],
-        '@version':
-          result.data.json?.flowPropertyDataSet?.administrativeInformation?.publicationAndOwnership?.[
-          'common:dataSetVersion'
-          ],
+        // '@version':
+        //   result.data.json?.flowPropertyDataSet?.administrativeInformation?.publicationAndOwnership?.[
+        //   'common:dataSetVersion'
+        //   ],
       }
       formRef.current?.setFieldValue(name, data);
       // let formData = formRef.current?.getFieldsValue();

@@ -20,10 +20,10 @@ type Props = {
   label: string;
   lang: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
-  // onData: (key: any, data: any) => void
+  onData: (key: any, data: any) => void
 };
 
-const FlowsSelectFrom: FC<Props> = ({ name, label, lang, formRef }) => {
+const FlowsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => {
 
 
   const handletFlowsData = (rowKey: any) => {
@@ -43,7 +43,7 @@ const FlowsSelectFrom: FC<Props> = ({ name, label, lang, formRef }) => {
       }
       formRef.current?.setFieldValue(name, data);
       // let formData = formRef.current?.getFieldsValue();
-      // onData({}, formData)
+      onData(name, data)
     });
   };
 
