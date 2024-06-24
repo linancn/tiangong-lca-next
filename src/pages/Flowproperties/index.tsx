@@ -1,18 +1,18 @@
+import { getFlowpropertiesTable } from '@/services/flowproperties/api';
+import { FlowpropertiesTable } from '@/services/flowproperties/data';
 import { ListPagination } from '@/services/general/data';
 import { getLang } from '@/services/general/util';
-import { getUnitGroupTable } from '@/services/unitgroups/api';
-import { UnitGroupTable } from '@/services/unitgroups/data';
 import { PageContainer } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
-import { Space } from 'antd';
+import { Space, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useRef } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
-import UnitGroupCreate from './Components/create';
-import UnitGroupDelete from './Components/delete';
-import UnitGroupEdit from './Components/edit';
-import UnitGroupView from './Components/view';
+import FlowpropertiesCreate from './Components/create';
+import FlowpropertiesDelete from './Components/delete';
+import FlowpropertiesEdit from './Components/edit';
+import FlowpropertiesView from './Components/view';
 
 const TableList: FC = () => {
   const location = useLocation();
@@ -25,63 +25,74 @@ const TableList: FC = () => {
   const { locale } = useIntl();
   const lang = getLang(locale);
   const actionRef = useRef<ActionType>();
-  const unitGroupColumns: ProColumns<UnitGroupTable>[] = [
+  const flowpropertiesColumns: ProColumns<FlowpropertiesTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.index" defaultMessage="Index"></FormattedMessage>,
+      title: <FormattedMessage id="pages.table.index" defaultMessage="Index" />,
+      dataIndex: 'index',
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.unitgroup.name" defaultMessage="Name"></FormattedMessage>,
+      title: <FormattedMessage id="pages.flowproperties.name" defaultMessage="Data Name" />,
       dataIndex: 'name',
       sorter: false,
+      render: (_, row) => [
+        <Tooltip key={0} placement="topLeft" title={row.name}>
+          {row.name}
+        </Tooltip>,
+      ],
     },
     {
-      title: <FormattedMessage id="pages.unitgroup.classification" defaultMessage="Classification"></FormattedMessage>,
+      title: (
+        <FormattedMessage id="pages.flowproperties.classification" defaultMessage="Classification" />
+      ),
       dataIndex: 'classification',
       sorter: false,
       search: false,
     },
-    // {
-    //   title: <FormattedMessage id="unitGroup.email" defaultMessage="Reference Unit"></FormattedMessage>,
-    //   dataIndex: 'referenceToReferenceUnit',
-    //   sorter: false,
-    //   search: false,
-    // },
     {
-      title: <FormattedMessage id="pages.unitgroup.createdAt" defaultMessage="Created At"></FormattedMessage>,
+      title: (
+        <FormattedMessage id="pages.flowproperties.generalComment" defaultMessage="General Comment" />
+      ),
+      dataIndex: 'generalComment',
+      sorter: false,
+      search: false,
+    },
+    {
+      title: <FormattedMessage id="pages.flowproperties.createdAt" defaultMessage="Created At" />,
       dataIndex: 'createdAt',
       valueType: 'dateTime',
       sorter: true,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.option" defaultMessage="Option"></FormattedMessage>,
+      title: <FormattedMessage id="pages.table.option" defaultMessage="Option" />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <UnitGroupView id={row.id} dataSource={dataSource} actionRef={actionRef}></UnitGroupView>
-              <UnitGroupEdit
+              <FlowpropertiesView id={row.id} dataSource={dataSource} actionRef={actionRef} />
+              <FlowpropertiesEdit
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => { }}
-              ></UnitGroupEdit>
-              <UnitGroupDelete
+                
+              />
+              {/* setViewDrawerVisible={() => {}} */}
+              <FlowpropertiesDelete
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => { }}
-              ></UnitGroupDelete>
+                setViewDrawerVisible={() => {}}
+              />
             </Space>,
           ];
         }
         return [
           <Space size={'small'} key={0}>
-            <UnitGroupView id={row.id} dataSource={dataSource} actionRef={actionRef}></UnitGroupView>
+            <FlowpropertiesView id={row.id} dataSource={dataSource} actionRef={actionRef} />
           </Space>,
         ];
       },
@@ -89,7 +100,7 @@ const TableList: FC = () => {
   ];
   return (
     <PageContainer>
-      <ProTable<UnitGroupTable, ListPagination>
+      <ProTable<FlowpropertiesTable, ListPagination>
         actionRef={actionRef}
         search={{
           defaultCollapsed: false,
@@ -100,7 +111,7 @@ const TableList: FC = () => {
         }}
         toolBarRender={() => {
           if (dataSource === 'my') {
-            return [<UnitGroupCreate key={0} actionRef={actionRef}></UnitGroupCreate>];
+            return [<FlowpropertiesCreate key={0} actionRef={actionRef} />];
           }
           return [];
         }}
@@ -111,10 +122,10 @@ const TableList: FC = () => {
           },
           sort,
         ) => {
-          return getUnitGroupTable(params, sort, lang, dataSource);
+          return getFlowpropertiesTable(params, sort, lang, dataSource);
         }}
-        columns={unitGroupColumns}
-      ></ProTable>
+        columns={flowpropertiesColumns}
+      />
     </PageContainer>
   );
 };

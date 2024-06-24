@@ -1,4 +1,4 @@
-import { deleteUnitGroup } from '@/services/unitgroups/api';
+import { deleteFlowproperties } from '@/services/flowproperties/api';
 import { DeleteOutlined } from '@ant-design/icons';
 import type { ActionType } from '@ant-design/pro-table';
 import { Button, message, Modal, Tooltip } from 'antd';
@@ -12,7 +12,7 @@ type Props = {
   actionRef: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
 };
-const UnitGroupDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisible }) => {
+const FlowpropertiesDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisible }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const showModal = useCallback(() => {
@@ -20,13 +20,13 @@ const UnitGroupDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVi
   }, []);
 
   const handleOk = useCallback(() => {
-    deleteUnitGroup(id).then(async (result: any) => {
+    deleteFlowproperties(id).then(async (result: any) => {
       if (result.status === 204) {
         message.success(
           <FormattedMessage
-            id="options.deletesuccess"
-            defaultMessage="Selected contact has been deleted."
-          ></FormattedMessage>,
+            id="pages.flowproperties.deletesuccess"
+            defaultMessage="Selected flowproperties has been deleted."
+          />,
         );
         setViewDrawerVisible(false);
         setIsModalVisible(false);
@@ -43,37 +43,43 @@ const UnitGroupDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVi
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="pages.table.option.delete" defaultMessage="Delete"></FormattedMessage>}>
+      <Tooltip title={<FormattedMessage id="pages.table.option.delete" defaultMessage="Delete" />}>
         {buttonType === 'icon' ? (
           <>
-            <Button shape="circle" icon={<DeleteOutlined />} size="small" onClick={showModal}></Button>
+            <Button shape="circle" icon={<DeleteOutlined />} size="small" onClick={showModal} />
             <Modal
-              title={<FormattedMessage id="pages.table.option.delete" defaultMessage="Delete"></FormattedMessage>}
+              title={<FormattedMessage id="pages.table.option.delete" defaultMessage="Delete" />}
               open={isModalVisible}
               onOk={handleOk}
               onCancel={handleCancel}
             >
-              <FormattedMessage id="pages.table.option.delete.confirm" defaultMessage="Delete"></FormattedMessage>
+              <FormattedMessage
+                id="pages.flowproperties.deleteMessage"
+                defaultMessage="Are you sure you want to delete this data?"
+              />
             </Modal>
           </>
         ) : (
           <>
             <Button size="small" onClick={showModal}>
-              <FormattedMessage id="pages.table.option.delete" defaultMessage="Delete"></FormattedMessage>
+              <FormattedMessage id="pages.table.option.delete" defaultMessage="Delete" />
             </Button>
             <Modal
-              title={<FormattedMessage id="pages.table.option.delete" defaultMessage="Delete"></FormattedMessage>}
+              title={<FormattedMessage id="pages.table.option.delete" defaultMessage="Delete" />}
               open={isModalVisible}
               onOk={handleOk}
               onCancel={handleCancel}
             >
-              <FormattedMessage id="pages.table.option.delete.confirm" defaultMessage="Delete"></FormattedMessage>
+              <FormattedMessage
+                id="pages.flowproperties.deleteMessage"
+                defaultMessage="Are you sure you want to delete this data?"
+              />
             </Modal>
           </>
-        )}
+        )}{' '}
       </Tooltip>
     </>
   );
 };
 
-export default UnitGroupDelete;
+export default FlowpropertiesDelete;

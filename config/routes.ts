@@ -28,6 +28,16 @@ export default [
         component: './Contacts',
       },
       {
+        name: 'Flows',
+        path: '/mydata/flows',
+        component: './Flows',
+      }, 
+      {
+        name: 'Flowproperties',
+        path: '/mydata/flowproperties',
+        component: './Flowproperties',
+      }, 
+      {
         name: 'Sources',
         path: '/mydata/sources',
         component: './Sources',

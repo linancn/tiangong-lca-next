@@ -1,38 +1,42 @@
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
 import { v4 } from 'uuid';
-import { classificationToString, getLangText } from '../general/util';
-import { genUnitGroupJsonOrdered } from './util';
+import {
+  // classificationToJson,
+  classificationToString,
+  // getLangList,
+  getLangText,
+} from '../general/util';
+import { genFlowsJsonOrdered } from './util';
 
-const table_name = 'unitgroups';
-
-export async function createUnitGroup(data: any) {
+export async function createFlows(data: any) {
   const newID = v4();
   const oldData = {
-    unitGroupDataSet: {
-      '@xmlns': 'http://lca.jrc.it/ILCD/UnitGroup',
+    flowDataSet: {
+      '@xmlns': 'http://lca.jrc.it/ILCD/Flow',
       '@xmlns:common': 'http://lca.jrc.it/ILCD/Common',
+      "@xmlns:ecn": "http://eplca.jrc.ec.europa.eu/ILCD/Extensions/2018/ECNumber",
       '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
       '@version': '1.1',
       '@xsi:schemaLocation':
-        'http://lca.jrc.it/ILCD/UnitGroup ../../schemas/ILCD_UnitGroupDataSet.xsd',
+        'http://lca.jrc.it/ILCD/Flow ../../schemas/ILCD_FlowDataSet.xsd',
     },
   };
-  const newData = genUnitGroupJsonOrdered(newID, data, oldData);
+  const newData = genFlowsJsonOrdered(newID, data, oldData);
   const result = await supabase
-    .from(table_name)
+    .from('flows')
     .insert([{ id: newID, json_ordered: newData }])
     .select();
   return result;
 }
 
-export async function updateUnitGroup(data: any) {
-  const result = await supabase.from(table_name).select('id, json').eq('id', data.id);
+export async function updateFlows(data: any) {
+  const result = await supabase.from('flows').select('id, json').eq('id', data.id);
   if (result.data && result.data.length === 1) {
     const oldData = result.data[0].json;
-    const newData = genUnitGroupJsonOrdered(data.id, data, oldData);
+    const newData = genFlowsJsonOrdered(data.id, data, oldData);
     const updateResult = await supabase
-      .from(table_name)
+      .from('flows')
       .update({ json_ordered: newData })
       .eq('id', data.id)
       .select();
@@ -41,12 +45,12 @@ export async function updateUnitGroup(data: any) {
   return null;
 }
 
-export async function deleteUnitGroup(id: string) {
-  const result = await supabase.from(table_name).delete().eq('id', id);
+export async function deleteFlows(id: string) {
+  const result = await supabase.from('flows').delete().eq('id', id);
   return result;
 }
 
-export async function getUnitGroupTable(
+export async function getFlowsTable(
   params: {
     current?: number;
     pageSize?: number;
@@ -59,17 +63,17 @@ export async function getUnitGroupTable(
   const orderBy = sort[sortBy] ?? 'descend';
 
   const selectStr = `
-        id,
-        json->unitGroupDataSet->unitGroupInformation->dataSetInformation->"common:name",
-        json->unitGroupDataSet->unitGroupInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
-        json->unitGroupDataSet->unitGroupInformation->quantitativeReference->referenceToReferenceUnit,
-        created_at
-    `;
+    id,
+    json->flowDataSet->flowInformation->dataSetInformation->name->baseName,
+    json->flowDataSet->flowInformation->dataSetInformation->classificationInformation->"common:elementaryFlowCategorization"->"common:category",
+    json->flowDataSet->flowInformation->dataSetInformation->"common:generalComment",
+    created_at
+  `;
 
   let result: any = {};
   if (dataSource === 'tg') {
     result = await supabase
-      .from(table_name)
+      .from('flows')
       .select(selectStr, { count: 'exact' })
       .order(sortBy, { ascending: orderBy === 'ascend' })
       .range(
@@ -80,7 +84,7 @@ export async function getUnitGroupTable(
     const session = await supabase.auth.getSession();
     if (session.data.session) {
       result = await supabase
-        .from(table_name)
+        .from('flows')
         .select(selectStr, { count: 'exact' })
         .eq('user_id', session.data.session.user?.id)
         .order(sortBy, { ascending: orderBy === 'ascend' })
@@ -102,16 +106,16 @@ export async function getUnitGroupTable(
         success: true,
       });
     }
-
     return Promise.resolve({
       data: result.data.map((i: any) => {
         try {
           return {
+            key: i.id,
             id: i.id,
             lang: lang,
-            name: getLangText(i['common:name'], lang),
-            classification: classificationToString(i['common:class']),
-            referenceToReferenceUnit: i.referenceToReferenceUnit ?? '-',
+            baseName: getLangText(i["baseName"], lang),
+            classification: classificationToString(i['common:category']),
+            generalComment: getLangText(i['common:generalComment'], lang),
             createdAt: new Date(i.created_at),
           };
         } catch (e) {
@@ -132,13 +136,14 @@ export async function getUnitGroupTable(
   });
 }
 
-export async function getUnitGroupDetail(id: string) {
-  const result = await supabase.from(table_name).select('json, created_at').eq('id', id);
+export async function getFlowsDetail(id: string) {
+  const result = await supabase.from('flows').select('json, created_at').eq('id', id);
   if (result.data && result.data.length > 0) {
     const data = result.data[0];
     return Promise.resolve({
       data: {
-        json: data?.json,
+        id: id,
+        json: data.json,
         createdAt: data?.created_at,
       },
       success: true,
