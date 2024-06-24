@@ -53,6 +53,23 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
     const handleDataChange = (changedValues: any, allValues: any) => {
         setFromData({ ...fromData, [activeTabKey]: allValues })
     }
+    const handleFlowPropertiesData = (keys: string[], data: any) => {
+        // 创建一个新对象，以避免直接修改状态
+        const newData = { ...fromData[activeTabKey] };
+        // 递归地设置嵌套值
+        let current = newData;
+        for (let i = 0; i < keys.length - 1; i++) {
+            const key = keys[i];
+            if (!current[key]) {
+                current[key] = {};
+            }
+            current = current[key];
+        }
+        // 设置最后一个键的值
+        current[keys[keys.length - 1]] = data;
+        // 更新状态
+        setFromData({ ...fromData, [activeTabKey]: newData });
+    }
 
     const contentList: Record<string, React.ReactNode> = {
         flowInformation: (<Space direction="vertical" style={{ width: '100%' }}>
@@ -197,7 +214,8 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
                     label='Reference To Flow Property Data Set'
                     name={['flowProperty', 'referenceToFlowPropertyDataSet']}
                     lang={lang}
-                    formRef={formRefCreate} />
+                    formRef={formRefCreate}
+                    onData={handleFlowPropertiesData} />
                 {/* <Card size="small" title={'Reference To Flow Property Data Set'}>
                     <Form.Item label="Type" name={['flowProperty', 'referenceToFlowPropertyDataSet', '@type']}>
                         <Input />

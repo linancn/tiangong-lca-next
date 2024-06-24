@@ -106,7 +106,6 @@ export async function getFlowsTable(
         success: true,
       });
     }
-
     return Promise.resolve({
       data: result.data.map((i: any) => {
         try {
@@ -114,8 +113,8 @@ export async function getFlowsTable(
             key: i.id,
             id: i.id,
             lang: lang,
-            baseName: getLangText(i['name']?.["baseName"], lang),
-            classification: classificationToString(i['common:class']),
+            baseName: getLangText(i["baseName"], lang),
+            classification: classificationToString(i['common:category']),
             generalComment: getLangText(i['common:generalComment'], lang),
             createdAt: new Date(i.created_at),
           };

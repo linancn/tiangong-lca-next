@@ -54,7 +54,23 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
         setActiveTabKey(key);
         formRefEdit.current?.setFieldsValue(fromData[key]);
     };
-
+    const handleFlowPropertiesData = (keys: string[], data: any) => {
+        // 创建一个新对象，以避免直接修改状态
+        const newData = { ...fromData[activeTabKey] };
+        // 递归地设置嵌套值
+        let current = newData;
+        for (let i = 0; i < keys.length - 1; i++) {
+            const key = keys[i];
+            if (!current[key]) {
+                current[key] = {};
+            }
+            current = current[key];
+        }
+        // 设置最后一个键的值
+        current[keys[keys.length - 1]] = data;
+        // 更新状态
+        setFromData({ ...fromData, [activeTabKey]: newData });
+    }
     function initFlowsInformation() {
         return (<Space direction="vertical" style={{ width: '100%' }}>
             <Card size="small" title={'Flow Information'}>
@@ -203,7 +219,8 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
                     label='Reference To Flow Property Data Set'
                     name={['flowProperty', 'referenceToFlowPropertyDataSet']}
                     lang={lang}
-                    formRef={formRefEdit} />
+                    formRef={formRefEdit}
+                    onData={handleFlowPropertiesData} />
                 {/* <Card size="small" title={'Reference To Flow Property Data Set'}>
                     <Form.Item label="Type" name={['flowProperty', 'referenceToFlowPropertyDataSet', '@type']}>
                         <Input />
@@ -313,11 +330,10 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
         flowInformation: initFlowsInformation(),
         modellingAndValidation: initModellingAndValidation(),
         administrativeInformation: initAdministrativeInformation(),
-        flowPropertis: initFlowPropertis()
+        flowProperties: initFlowPropertis()
     }
     const initDataFn = (data: any) => {
         let flowInformation = initFlowsInformationData(data?.['flowInformation'])
-
         let modellingAndValidation = initModellingAndValidationData(data?.['modellingAndValidation'])
         let administrativeInformation = initAdministrativeInformationData(data?.['administrativeInformation'])
         let flowProperties = initFlowproperties(data?.['flowProperties'])

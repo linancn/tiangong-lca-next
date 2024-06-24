@@ -20,10 +20,10 @@ type Props = {
   label: string;
   lang: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
-  // onData: (key: any, data: any) => void
+  onData: (key: any, data: any) => void
 };
 
-const FlowpropertiesSelectFrom: FC<Props> = ({ name, label, lang, formRef }) => {
+const FlowpropertiesSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => {
   // const getShortDescription = (dataSetInformation: any) => {
   //   const shortName = dataSetInformation?.['common:shortName'];
   //   if (Array.isArray(shortName)) {
@@ -52,7 +52,7 @@ const FlowpropertiesSelectFrom: FC<Props> = ({ name, label, lang, formRef }) => 
       }
       formRef.current?.setFieldValue(name, data);
       // let formData = formRef.current?.getFieldsValue();
-      // onData({}, formData)
+      onData(name, data)
     });
   };
 
