@@ -7,35 +7,36 @@ import {
   // getLangList,
   getLangText,
 } from '../general/util';
-import { genFlowpropertiesJsonOrdered } from './util';
+import { genFlowsJsonOrdered } from './util';
 
-export async function createFlowproperties(data: any) {
+export async function createFlows(data: any) {
   const newID = v4();
   const oldData = {
-    flowPropertyDataSet: {
+    flowDataSet: {
+      '@xmlns': 'http://lca.jrc.it/ILCD/Flow',
       '@xmlns:common': 'http://lca.jrc.it/ILCD/Common',
-      '@xmlns': 'http://lca.jrc.it/ILCD/FlowProperty',
+      "@xmlns:ecn": "http://eplca.jrc.ec.europa.eu/ILCD/Extensions/2018/ECNumber",
       '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
       '@version': '1.1',
       '@xsi:schemaLocation':
-        'http://lca.jrc.it/ILCD/FlowProperty ../../schemas/ILCD_FlowPropertyDataSet.xsd',
+        'http://lca.jrc.it/ILCD/Flow ../../schemas/ILCD_FlowDataSet.xsd',
     },
   };
-  const newData = genFlowpropertiesJsonOrdered(newID, data, oldData);
+  const newData = genFlowsJsonOrdered(newID, data, oldData);
   const result = await supabase
-    .from('flowproperties')
+    .from('flows')
     .insert([{ id: newID, json_ordered: newData }])
     .select();
   return result;
 }
 
-export async function updateFlowproperties(data: any) {
-  const result = await supabase.from('flowproperties').select('id, json').eq('id', data.id);
+export async function updateFlows(data: any) {
+  const result = await supabase.from('flows').select('id, json').eq('id', data.id);
   if (result.data && result.data.length === 1) {
     const oldData = result.data[0].json;
-    const newData = genFlowpropertiesJsonOrdered(data.id, data, oldData);
+    const newData = genFlowsJsonOrdered(data.id, data, oldData);
     const updateResult = await supabase
-      .from('flowproperties')
+      .from('flows')
       .update({ json_ordered: newData })
       .eq('id', data.id)
       .select();
@@ -44,12 +45,12 @@ export async function updateFlowproperties(data: any) {
   return null;
 }
 
-export async function deleteFlowproperties(id: string) {
-  const result = await supabase.from('flowproperties').delete().eq('id', id);
+export async function deleteFlows(id: string) {
+  const result = await supabase.from('flows').delete().eq('id', id);
   return result;
 }
 
-export async function getFlowpropertiesTable(
+export async function getFlowsTable(
   params: {
     current?: number;
     pageSize?: number;
@@ -63,16 +64,16 @@ export async function getFlowpropertiesTable(
 
   const selectStr = `
     id,
-    json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->"common:name",
-    json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
-    json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->"common:generalComment",
+    json->flowDataSet->flowInformation->dataSetInformation->name->baseName,
+    json->flowDataSet->flowInformation->dataSetInformation->classificationInformation->"common:elementaryFlowCategorization"->"common:category",
+    json->flowDataSet->flowInformation->dataSetInformation->"common:generalComment",
     created_at
   `;
 
   let result: any = {};
   if (dataSource === 'tg') {
     result = await supabase
-      .from('flowproperties')
+      .from('flows')
       .select(selectStr, { count: 'exact' })
       .order(sortBy, { ascending: orderBy === 'ascend' })
       .range(
@@ -83,7 +84,7 @@ export async function getFlowpropertiesTable(
     const session = await supabase.auth.getSession();
     if (session.data.session) {
       result = await supabase
-        .from('flowproperties')
+        .from('flows')
         .select(selectStr, { count: 'exact' })
         .eq('user_id', session.data.session.user?.id)
         .order(sortBy, { ascending: orderBy === 'ascend' })
@@ -105,7 +106,6 @@ export async function getFlowpropertiesTable(
         success: true,
       });
     }
-
     return Promise.resolve({
       data: result.data.map((i: any) => {
         try {
@@ -113,8 +113,8 @@ export async function getFlowpropertiesTable(
             key: i.id,
             id: i.id,
             lang: lang,
-            name: getLangText(i['common:name'], lang),
-            classification: classificationToString(i['common:class']),
+            baseName: getLangText(i["baseName"], lang),
+            classification: classificationToString(i['common:category']),
             generalComment: getLangText(i['common:generalComment'], lang),
             createdAt: new Date(i.created_at),
           };
@@ -136,8 +136,8 @@ export async function getFlowpropertiesTable(
   });
 }
 
-export async function getFlowpropertiesDetail(id: string) {
-  const result = await supabase.from('flowproperties').select('json, created_at').eq('id', id);
+export async function getFlowsDetail(id: string) {
+  const result = await supabase.from('flows').select('json, created_at').eq('id', id);
   if (result.data && result.data.length > 0) {
     const data = result.data[0];
     return Promise.resolve({
