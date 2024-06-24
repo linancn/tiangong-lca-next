@@ -1,14 +1,13 @@
 import LangTextItemFrom from '@/components/LangTextItem/from';
 import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
 import { ListPagination } from '@/services/general/data';
-import { getLangText } from '@/services/general/util';
-import { createProcess } from '@/services/processes/api';
+import { getProcessDetail, updateProcess } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
+import { genProcessExchangeTableData, genProcessFromData } from '@/services/processes/util';
 import styles from '@/style/custom.less';
-import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
-import { ProColumns, ProTable } from '@ant-design/pro-components';
+import { CloseOutlined, FormOutlined } from '@ant-design/icons';
+import { ProColumns, ProForm, ProTable } from '@ant-design/pro-components';
 import type { ProFormInstance } from '@ant-design/pro-form';
-import ProForm from '@ant-design/pro-form';
 import type { ActionType } from '@ant-design/pro-table';
 import {
   Button,
@@ -18,6 +17,7 @@ import {
   Form,
   Input,
   Space,
+  Spin,
   Tooltip,
   Typography,
   message,
@@ -26,24 +26,37 @@ import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import ProcessExchangeCreate from './Exchange/create';
+import ProcessExchangeDelete from './Exchange/delete';
+import ProcessExchangeEdit from './Exchange/edit';
+import ProcessExchangeView from './Exchange/view';
 
 type Props = {
+  id: string;
   lang: string;
+  buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
+  setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
 };
-const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
+const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawerVisible }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const formRefCreate = useRef<ProFormInstance>();
+  const formRefEdit = useRef<ProFormInstance>();
   const [activeTabKey, setActiveTabKey] = useState<string>('processInformation');
   const [fromData, setFromData] = useState<any>({});
+  const [initData, setInitData] = useState<any>({});
   const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
+  const [spinning, setSpinning] = useState(false);
 
-  const reload = useCallback(() => {
-    actionRef.current?.reload();
-  }, [actionRef]);
+  const actionRefExchangeTable = useRef<ActionType>();
+
+  const handletExchangeDataCreate = (data: any) => {
+    setExchangeDataSource([
+      ...exchangeDataSource,
+      { ...data, '@dataSetInternalID': exchangeDataSource.length.toString() },
+    ]);
+  };
 
   const handletExchangeData = (data: any) => {
-    setExchangeDataSource([...exchangeDataSource, data]);
+    setExchangeDataSource([...data]);
   };
 
   const processExchangeColumns: ProColumns<ProcessExchangeTable>[] = [
@@ -74,6 +87,11 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
       dataIndex: 'referenceToFlowDataSet',
       sorter: false,
       search: false,
+      render: (_, row) => [
+        <Tooltip key={0} placement="topLeft" title={row.generalComment}>
+          {row.referenceToFlowDataSet}
+        </Tooltip>,
+      ],
     },
     {
       title: <FormattedMessage id="processExchange.meanAmount" defaultMessage="Mean Amount" />,
@@ -91,43 +109,48 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
     },
     {
       title: (
-        <FormattedMessage id="processExchange.generalComment" defaultMessage="General Comment" />
+        <FormattedMessage
+          id="processExchange.dataDerivationTypeStatus"
+          defaultMessage="Data Derivation Type Status"
+        />
       ),
-      dataIndex: 'generalComment',
+      dataIndex: 'dataDerivationTypeStatus',
       sorter: false,
       search: false,
-      render: (_, row) => getLangText(row.generalComment ?? {}, lang),
     },
     {
       title: <FormattedMessage id="options.option" defaultMessage="Option" />,
       dataIndex: 'option',
       search: false,
-      // render: (_, row) => {
-      //   if (dataSource === 'my') {
-      //     return [
-      //       // <Space size={'small'} key={0}>
-      //       //   {/* <ContactView id={row.id} actionRef={actionRef} /> */}
-      //       //   <ContactEdit
-      //       //     id={row.id}
-      //       //     buttonType={'icon'}
-      //       //     actionRef={actionRef}
-      //       //     setViewDrawerVisible={() => {}}
-      //       //   />
-      //       //   <ContactDelete
-      //       //     id={row.id}
-      //       //     buttonType={'icon'}
-      //       //     actionRef={actionRef}
-      //       //     setViewDrawerVisible={() => {}}
-      //       //   />
-      //       // </Space>,
-      //     ];
-      //   }
-      //   return [
-      //     <Space size={'small'} key={0}>
-      //       {/* <ContactView id={row.id} actionRef={actionRef} /> */}
-      //     </Space>,
-      //   ];
-      // },
+      render: (_, row) => {
+        return [
+          <Space size={'small'} key={0}>
+            <ProcessExchangeView
+              id={row.dataSetInternalID}
+              data={exchangeDataSource}
+              dataSource={'my'}
+              buttonType={'icon'}
+              actionRef={actionRefExchangeTable}
+            />
+            <ProcessExchangeEdit
+              id={row.dataSetInternalID}
+              data={exchangeDataSource}
+              buttonType={'icon'}
+              actionRef={actionRefExchangeTable}
+              onData={handletExchangeData}
+              setViewDrawerVisible={() => {}}
+            />
+            <ProcessExchangeDelete
+              id={row.dataSetInternalID}
+              data={exchangeDataSource}
+              buttonType={'icon'}
+              actionRef={actionRef}
+              setViewDrawerVisible={() => {}}
+              onData={handletExchangeData}
+            />
+          </Space>,
+        ];
+      },
     },
   ];
 
@@ -500,10 +523,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
           label="Completeness Description"
         />
         <Card size="small" title={'Validation: Review'}>
-          <Form.Item
-            label="Type"
-            name={['modellingAndValidation', 'validation', 'review', '@type']}
-          >
+          <Form.Item label="Type" name={['validation', 'review', '@type']}>
             <Input />
           </Form.Item>
           <Divider orientationMargin="0" orientation="left" plain>
@@ -523,7 +543,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             ]}
             label={'Reference To Name Of Reviewer And Institution'}
             lang={lang}
-            formRef={formRefCreate}
+            formRef={formRefEdit}
           />
         </Card>
       </Space>
@@ -538,7 +558,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
           ]}
           label={'Data Generator: Reference To Person Or Entity Generating The DataSet'}
           lang={lang}
-          formRef={formRefCreate}
+          formRef={formRefEdit}
         />
 
         <Form.Item label="Data Entry By: Time Stamp" name={['dataEntryBy', 'common:timeStamp']}>
@@ -583,7 +603,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             ]}
             label={'Reference To Owner Of DataSet'}
             lang={lang}
-            formRef={formRefCreate}
+            formRef={formRefEdit}
           />
 
           <Form.Item
@@ -604,6 +624,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
     ),
     exchanges: (
       <ProTable<ProcessExchangeTable, ListPagination>
+        actionRef={actionRefExchangeTable}
         search={{
           defaultCollapsed: false,
         }}
@@ -612,9 +633,9 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
           pageSize: 10,
         }}
         toolBarRender={() => {
-          return [<ProcessExchangeCreate key={0} onData={handletExchangeData} />];
+          return [<ProcessExchangeCreate key={0} onData={handletExchangeDataCreate} />];
         }}
-        dataSource={exchangeDataSource}
+        dataSource={genProcessExchangeTableData(exchangeDataSource, lang)}
         columns={processExchangeColumns}
       />
     ),
@@ -624,32 +645,61 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
     setActiveTabKey(key);
   };
 
+  const onEdit = useCallback(() => {
+    setDrawerVisible(true);
+  }, [setViewDrawerVisible]);
+
+  const onReset = () => {
+    setSpinning(true);
+    formRefEdit.current?.resetFields();
+    getProcessDetail(id).then(async (result) => {
+      formRefEdit.current?.setFieldsValue({
+        ...genProcessFromData(result.data?.json?.processDataSet ?? {}),
+        id: id,
+      });
+      setSpinning(false);
+    });
+  };
+
   useEffect(() => {
-    setFromData({ ...fromData, exchanges: { exchange: exchangeDataSource } });
-  }, [exchangeDataSource]);
+    if (drawerVisible) return;
+    setSpinning(true);
+    getProcessDetail(id).then(async (result: any) => {
+      setInitData({ ...genProcessFromData(result.data?.json?.processDataSet ?? {}), id: id });
+      setFromData({ ...genProcessFromData(result.data?.json?.processDataSet ?? {}), id: id });
+      setExchangeDataSource(
+        genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? [],
+      );
+      formRefEdit.current?.resetFields();
+      formRefEdit.current?.setFieldsValue({
+        ...genProcessFromData(result.data?.json?.processDataSet ?? {}),
+        id: id,
+      });
+      setSpinning(false);
+    });
+  }, [drawerVisible]);
 
   useEffect(() => {
     if (activeTabKey === 'exchanges') return;
     setFromData({
       ...fromData,
-      [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
+      [activeTabKey]: formRefEdit.current?.getFieldsValue()?.[activeTabKey] ?? {},
     });
-  }, [formRefCreate.current?.getFieldsValue()]);
+  }, [formRefEdit.current?.getFieldsValue()]);
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="options.create" defaultMessage="Create" />}>
-        <Button
-          size={'middle'}
-          type="text"
-          icon={<PlusOutlined />}
-          onClick={() => {
-            setDrawerVisible(true);
-          }}
-        />
+      <Tooltip title={<FormattedMessage id="options.edit" defaultMessage="Edit" />}>
+        {buttonType === 'icon' ? (
+          <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
+        ) : (
+          <Button onClick={onEdit}>
+            <FormattedMessage id="options.edit" defaultMessage="Edit" />
+          </Button>
+        )}
       </Tooltip>
       <Drawer
-        title={<FormattedMessage id="processes.create" defaultMessage="Process Create" />}
+        title={<FormattedMessage id="options.edit" defaultMessage="Edit Process" />}
         width="90%"
         closable={false}
         extra={
@@ -659,7 +709,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             onClick={() => setDrawerVisible(false)}
           />
         }
-        maskClosable={false}
+        maskClosable={true}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         footer={
@@ -668,61 +718,79 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
               {' '}
               <FormattedMessage id="options.cancel" defaultMessage="Cancel" />
             </Button>
-            <Button onClick={() => formRefCreate.current?.submit()} type="primary">
+            <Button onClick={onReset}>
+              {' '}
+              <FormattedMessage id="options.reset" defaultMessage="Reset" />
+            </Button>
+            <Button onClick={() => formRefEdit.current?.submit()} type="primary">
               <FormattedMessage id="options.submit" defaultMessage="Submit" />
             </Button>
           </Space>
         }
       >
-        <ProForm
-          formRef={formRefCreate}
-          onValuesChange={(_, allValues) => {
-            setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
-          }}
-          submitter={{
-            render: () => {
-              return [];
-            },
-          }}
-          onFinish={async () => {
-            const result = await createProcess({ ...fromData });
-            if (result.data) {
-              message.success(
-                <FormattedMessage
-                  id="options.createsuccess"
-                  defaultMessage="Created Successfully!"
-                />,
-              );
-              formRefCreate.current?.resetFields();
-              setDrawerVisible(false);
-              reload();
-            } else {
-              message.error(result.error.message);
-            }
-            return true;
-          }}
-        >
-          <Card
-            style={{ width: '100%' }}
-            // title="Card title"
-            // extra={<a href="#">More</a>}
-            tabList={tabList}
-            activeTabKey={activeTabKey}
-            onTabChange={onTabChange}
+        <Spin spinning={spinning}>
+          <ProForm
+            formRef={formRefEdit}
+            initialValues={initData}
+            onValuesChange={(_, allValues) => {
+              setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+            }}
+            submitter={{
+              render: () => {
+                return [];
+              },
+            }}
+            onFinish={async () => {
+              const updateResult = await updateProcess({
+                ...fromData,
+                exchanges: { exchange: [...exchangeDataSource] },
+              });
+              if (updateResult?.data) {
+                message.success(
+                  <FormattedMessage
+                    id="options.createsuccess"
+                    defaultMessage="Created Successfully!"
+                  />,
+                );
+                setDrawerVisible(false);
+                setViewDrawerVisible(false);
+                actionRef.current?.reload();
+              } else {
+                message.error(updateResult?.error?.message);
+              }
+              return true;
+            }}
           >
-            {contentList[activeTabKey]}
-          </Card>
-          <Form.Item noStyle shouldUpdate>
-            {() => (
-              <Typography>
-                <pre>{JSON.stringify(fromData, null, 2)}</pre>
-              </Typography>
-            )}
-          </Form.Item>
-        </ProForm>
+            <Card
+              style={{ width: '100%' }}
+              tabList={tabList}
+              activeTabKey={activeTabKey}
+              onTabChange={onTabChange}
+            >
+              {contentList[activeTabKey]}
+            </Card>
+            <Form.Item name="id" hidden>
+              <Input />
+            </Form.Item>
+          </ProForm>
+          <Typography>
+            <pre>{JSON.stringify(fromData, null, 2)}</pre>
+            <pre>
+              {JSON.stringify(
+                {
+                  exchanges: {
+                    exchange: [...exchangeDataSource],
+                  },
+                },
+                null,
+                2,
+              )}
+            </pre>
+          </Typography>
+        </Spin>
       </Drawer>
     </>
   );
 };
 
-export default ProcessCreate;
+export default ProcessEdit;

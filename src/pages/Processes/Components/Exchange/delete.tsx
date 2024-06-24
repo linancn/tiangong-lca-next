@@ -1,4 +1,3 @@
-import { deleteContact } from '@/services/contacts/api';
 import { DeleteOutlined } from '@ant-design/icons';
 import type { ActionType } from '@ant-design/pro-table';
 import { Button, message, Modal, Tooltip } from 'antd';
@@ -8,11 +7,21 @@ import { FormattedMessage } from 'umi';
 
 type Props = {
   id: string;
+  data: any;
   buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  onData: (data: any) => void;
 };
-const ContactDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisible }) => {
+
+const ProcessExchangeDelete: FC<Props> = ({
+  id,
+  data,
+  buttonType,
+  actionRef,
+  setViewDrawerVisible,
+  onData,
+}) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const showModal = useCallback(() => {
@@ -20,21 +29,24 @@ const ContactDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisi
   }, []);
 
   const handleOk = useCallback(() => {
-    deleteContact(id).then(async (result: any) => {
-      if (result.status === 204) {
-        message.success(
-          <FormattedMessage
-            id="options.deletesuccess"
-            defaultMessage="Selected contact has been deleted."
-          />,
-        );
-        setViewDrawerVisible(false);
-        setIsModalVisible(false);
-        actionRef.current?.reload();
-      } else {
-        message.error(result.error.message ?? 'Error');
-      }
-    });
+    const filteredData = data.filter((item: any) => item['@dataSetInternalID'] !== id);
+    onData(
+      filteredData.map((item: any, index: number) => {
+        return {
+          ...item,
+          dataSetInternalID: index.toString(),
+        };
+      }),
+    );
+    message.success(
+      <FormattedMessage
+        id="options.deletesuccess"
+        defaultMessage="Selected data has been deleted."
+      />,
+    );
+    setViewDrawerVisible(false);
+    setIsModalVisible(false);
+    actionRef.current?.reload();
   }, [actionRef, id, setViewDrawerVisible]);
 
   const handleCancel = useCallback(() => {
@@ -43,17 +55,12 @@ const ContactDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisi
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="pages.table.option.delete" defaultMessage="Delete" />}>
+      <Tooltip title={<FormattedMessage id="options.delete" defaultMessage="Delete" />}>
         {buttonType === 'icon' ? (
           <>
             <Button shape="circle" icon={<DeleteOutlined />} size="small" onClick={showModal} />
             <Modal
-              title={
-                <FormattedMessage
-                  id="pages.contact.drawer.title.delete"
-                  defaultMessage="Delete Contact"
-                />
-              }
+              title={<FormattedMessage id="options.delete" defaultMessage="Delete" />}
               open={isModalVisible}
               onOk={handleOk}
               onCancel={handleCancel}
@@ -87,4 +94,4 @@ const ContactDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisi
   );
 };
 
-export default ContactDelete;
+export default ProcessExchangeDelete;

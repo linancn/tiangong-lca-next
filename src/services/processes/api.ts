@@ -5,7 +5,6 @@ import { classificationToString, getLangText } from '../general/util';
 import { genProcessJsonOrdered } from './util';
 
 export async function createProcess(data: any) {
-  console.log('createProcess', data);
   const newID = v4();
   const oldData = {
     processDataSet: {
@@ -23,6 +22,21 @@ export async function createProcess(data: any) {
     .insert([{ id: newID, json_ordered: newData }])
     .select();
   return result;
+}
+
+export async function updateProcess(data: any) {
+  const result = await supabase.from('processes').select('id, json').eq('id', data.id);
+  if (result.data && result.data.length === 1) {
+    const oldData = result.data[0].json;
+    const newData = genProcessJsonOrdered(data.id, data, oldData);
+    const updateResult = await supabase
+      .from('processes')
+      .update({ json_ordered: newData })
+      .eq('id', data.id)
+      .select();
+    return updateResult;
+  }
+  return null;
 }
 
 export async function getProcessTable(
@@ -128,7 +142,7 @@ export async function getProcessDetail(id: string) {
     });
   }
   return Promise.resolve({
-    data: {},
+    data: null,
     success: true,
   });
 }

@@ -11,6 +11,7 @@ import { useRef } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 import ProcessCreate from './Components/create';
 import ProcessDelete from './Components/delete';
+import ProcessEdit from './Components/edit';
 import ProcessView from './Components/view';
 
 const TableList: FC = () => {
@@ -75,12 +76,13 @@ const TableList: FC = () => {
           return [
             <Space size={'small'} key={0}>
               <ProcessView id={row.id} dataSource={dataSource} lang={lang} actionRef={actionRef} />
-              {/* //       //   <ContactEdit
-            //       //     id={row.id}
-            //       //     buttonType={'icon'}
-            //       //     actionRef={actionRef}
-            //       //     setViewDrawerVisible={() => {}}
-            //       //   />*/}
+              <ProcessEdit
+                id={row.id}
+                lang={lang}
+                buttonType={'icon'}
+                actionRef={actionRef}
+                setViewDrawerVisible={() => {}}
+              />
               <ProcessDelete
                 id={row.id}
                 buttonType={'icon'}

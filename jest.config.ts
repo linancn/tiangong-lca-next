@@ -6,7 +6,7 @@ export default async () => {
       target: 'browser',
     }),
   });
-  console.log(JSON.stringify(config));
+  // console.log(JSON.stringify(config));
 
   return {
     ...config,
