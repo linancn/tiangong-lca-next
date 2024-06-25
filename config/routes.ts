@@ -16,36 +16,39 @@ export default [
     name: 'My Data',
     icon: 'table',
     routes: [
-      { path: '/mydata', redirect: '/mydata/processes' },
+      {
+        path: '/mydata',
+        redirect: '/mydata/processes'
+      },
       {
         name: 'Processes',
         path: '/mydata/processes',
         component: './Processes',
       },
       {
-        name: 'Contacts',
-        path: '/mydata/contacts',
-        component: './Contacts',
-      },
-      {
         name: 'Flows',
         path: '/mydata/flows',
         component: './Flows',
-      }, 
+      },
       {
         name: 'Flowproperties',
         path: '/mydata/flowproperties',
         component: './Flowproperties',
-      }, 
+      },
+      {
+        name: 'UnitGroups',
+        path: '/mydata/unitgroups',
+        component: './Unitgroups',
+      },
       {
         name: 'Sources',
         path: '/mydata/sources',
         component: './Sources',
       },
       {
-        name: 'UnitGroups',
-        path: '/mydata/unitgroups',
-        component: './Unitgroups',
+        name: 'Contacts',
+        path: '/mydata/contacts',
+        component: './Contacts',
       },
     ],
   },
@@ -54,16 +57,29 @@ export default [
     name: 'TianGong Data',
     icon: 'table',
     routes: [
-      { path: '/tgdata', redirect: '/tgdata/processes' },
+      {
+        path: '/tgdata',
+        redirect: '/tgdata/processes'
+      },
       {
         name: 'Processes',
         path: '/tgdata/processes',
         component: './Processes',
       },
       {
-        name: 'Contacts',
-        path: '/tgdata/contacts',
-        component: './Contacts',
+        name: 'Flows',
+        path: '/tgdata/flows',
+        component: './Flows',
+      },
+      {
+        name: 'Flowproperties',
+        path: '/tgdata/flowproperties',
+        component: './Flowproperties',
+      },
+      {
+        name: 'UnitGroups',
+        path: '/tgdata/unitgroups',
+        component: './Unitgroups',
       },
       {
         name: 'Sources',
@@ -71,9 +87,9 @@ export default [
         component: './Sources',
       },
       {
-        name: 'UnitGroups',
-        path: '/tgdata/unitgroups',
-        component: './Unitgroups',
+        name: 'Contacts',
+        path: '/tgdata/contacts',
+        component: './Contacts',
       },
     ],
   },
