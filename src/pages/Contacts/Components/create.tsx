@@ -19,6 +19,10 @@ const ContactCreate: FC<Props> = ({ actionRef }) => {
   const [fromData, setFromData] = useState<any>({});
   const formRefCreate = useRef<ProFormInstance>();
 
+  const handletFromData = (data: any) => {
+    setFromData({ ...data });
+  };
+
   const reload = useCallback(() => {
     actionRef.current?.reload();
   }, [actionRef]);
@@ -123,6 +127,9 @@ const ContactCreate: FC<Props> = ({ actionRef }) => {
                   'common:classification',
                   'common:class',
                 ]}
+                dataType={'Contact'}
+                formRef={formRefCreate}
+                onData={handletFromData}
               />
             </Card>
             <Form.Item label="Email" name={['contactInformation', 'dataSetInformation', 'email']}>

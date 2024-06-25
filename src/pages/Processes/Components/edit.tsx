@@ -1,4 +1,5 @@
 import LangTextItemFrom from '@/components/LangTextItem/from';
+import LevelTextItemFrom from '@/components/LevelTextItem/from';
 import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
 import { ListPagination } from '@/services/general/data';
 import { getProcessDetail, updateProcess } from '@/services/processes/api';
@@ -55,6 +56,10 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
     ]);
   };
 
+  const handletFromData = (data: any) => {
+    setFromData({ ...data });
+  };
+  
   const handletExchangeData = (data: any) => {
     setExchangeDataSource([...data]);
   };
@@ -171,49 +176,26 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
           />
         </Card>
 
-        <Card size="small" title={'General Comment'}>
-          <LangTextItemFrom
-            name={['processInformation', 'classificationInformation', 'common:generalComment']}
-            label="General Comment"
+        <Card size="small" title={'Classification'}>
+        <LevelTextItemFrom
+            name={[
+              'processInformation',
+              'dataSetInformation',
+              'classificationInformation',
+              'common:classification',
+              'common:class',
+            ]}
+            dataType={'Process'}
+            formRef={formRefEdit}
+            onData={handletFromData}
           />
         </Card>
 
-        <Card size="small" title={'Classification'}>
-          <Space>
-            <Form.Item
-              name={[
-                'processInformation',
-                'classificationInformation',
-                'common:classification',
-                'common:class',
-                '@level_0',
-              ]}
-            >
-              <Input placeholder="Level 1" />
-            </Form.Item>
-            <Form.Item
-              name={[
-                'processInformation',
-                'classificationInformation',
-                'common:classification',
-                'common:class',
-                '@level_1',
-              ]}
-            >
-              <Input placeholder="Level 2" />
-            </Form.Item>
-            <Form.Item
-              name={[
-                'processInformation',
-                'classificationInformation',
-                'common:classification',
-                'common:class',
-                '@level_2',
-              ]}
-            >
-              <Input placeholder="Level 3" />
-            </Form.Item>
-          </Space>
+        <Card size="small" title={'General Comment'}>
+          <LangTextItemFrom
+            name={['processInformation','dataSetInformation', 'common:generalComment']}
+            label="General Comment"
+          />
         </Card>
 
         <Card size="small" title={'Quantitative Reference'}>
@@ -741,6 +723,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
               },
             }}
             onFinish={async () => {
+              setSpinning(true);
               const updateResult = await updateProcess({
                 ...fromData,
                 exchanges: { exchange: [...exchangeDataSource] },
@@ -752,10 +735,12 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
                     defaultMessage="Created Successfully!"
                   />,
                 );
+                setSpinning(false);
                 setDrawerVisible(false);
                 setViewDrawerVisible(false);
                 actionRef.current?.reload();
               } else {
+                setSpinning(false);
                 message.error(updateResult?.error?.message);
               }
               return true;

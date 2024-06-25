@@ -29,6 +29,10 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
     setDrawerVisible(true);
   }, [setViewDrawerVisible]);
 
+  const handletFromData = (data: any) => {
+    setFromData({ ...data });
+  };
+
   const onReset = () => {
     setSpinning(true);
     formRefEdit.current?.resetFields();
@@ -145,6 +149,9 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
                     'common:classification',
                     'common:class',
                   ]}
+                  dataType={'Contact'}
+                  formRef={formRefEdit}
+                  onData={handletFromData}
                 />
               </Card>
               <Form.Item label="Email" name={['contactInformation', 'dataSetInformation', 'email']}>
