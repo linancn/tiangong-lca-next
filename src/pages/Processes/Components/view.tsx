@@ -1,7 +1,7 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
-import SourceDescription from '@/components/ReferenceData/description';
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
+import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 import { ListPagination } from '@/services/general/data';
 import { getProcessDetail } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
@@ -185,7 +185,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
         <LevelTextItemDescription
           data={
             initData.processInformation?.dataSetInformation?.classificationInformation?.[
-              'common:classification'
+            'common:classification'
             ]?.['common:class']
           }
         />
@@ -263,18 +263,12 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
             data={initData.processInformation?.technology?.technologicalApplicability}
           />
           <br />
-          <SourceDescription
-            title={'Reference To Technology Flow Diagramm Or Picture'}
+          <SourceSelectDescription title={'Reference To Technology Flow Diagramm Or Picture'}
             data={
               initData.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture ??
               {}
             }
           />
-          {/* <ContactSelectDescription title={'Reference To Technology Flow Diagramm Or Picture'}
-            data={
-              initData.processInformation?.technology
-                ?.referenceToTechnologyFlowDiagrammOrPicture
-            } /> */}
         </Card>
         <Divider orientationMargin="0" orientation="left" plain>
           Mathematical Relations: Model Description
@@ -385,7 +379,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
             }
           />
           <br />
-          <SourceDescription
+          <SourceSelectDescription
             title={'Reference To Data Source'}
             data={
               initData.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
@@ -429,7 +423,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
             title={'Reference To Name Of Reviewer And Institution'}
             data={
               initData.modellingAndValidation?.validation?.review?.[
-                'common:referenceToNameOfReviewerAndInstitution'
+              'common:referenceToNameOfReviewerAndInstitution'
               ]
             }
           />
@@ -442,7 +436,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
           title={'Data Generator: Rreference To Person Or Entity Generating The Data Set'}
           data={
             initData.administrativeInformation?.dataGenerator?.[
-              'common:referenceToPersonOrEntityGeneratingTheDataSet'
+            'common:referenceToPersonOrEntityGeneratingTheDataSet'
             ]
           }
         />
@@ -494,7 +488,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
             title={'Reference To Ownership Of Data Set'}
             data={
               initData.administrativeInformation?.publicationAndOwnership?.[
-                'common:referenceToOwnershipOfDataSet'
+              'common:referenceToOwnershipOfDataSet'
               ]
             }
           />

@@ -2,10 +2,8 @@ import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
 import { v4 } from 'uuid';
 import {
-  classificationToJson,
   classificationToString,
-  getLangList,
-  getLangText,
+  getLangText
 } from '../general/util';
 import { genSourceJsonOrdered } from './util';
 
@@ -111,6 +109,7 @@ export async function getSourceTable(
       data: result.data.map((i: any) => {
         try {
           return {
+            key: i.id,
             id: i.id,
             lang: lang,
             shortName: getLangText(i['common:shortName'], lang),
@@ -137,54 +136,73 @@ export async function getSourceTable(
   });
 }
 
+// export async function getSourceDetail(id: string) {
+//   const result = await supabase.from('sources').select('json, created_at').eq('id', id);
+//   if (result.data && result.data.length > 0) {
+//     const data = result.data[0];
+//     return Promise.resolve({
+//       data: {
+//         id: id,
+//         'common:shortName': getLangList(
+//           data?.json?.sourceDataSet?.sourceInformation?.dataSetInformation?.['common:shortName'],
+//         ),
+//         'common:class': classificationToJson(
+//           data?.json?.sourceDataSet?.sourceInformation?.dataSetInformation
+//             ?.classificationInformation?.['common:classification']?.['common:class'],
+//         ),
+//         sourceCitation: data?.json?.sourceDataSet?.sourceInformation?.dataSetInformation?.sourceCitation,
+//         publicationType: data?.json?.sourceDataSet?.sourceInformation?.dataSetInformation?.publicationType,
+//         'dataEntryBy:common:timeStamp':
+//           data?.json?.sourceDataSet?.administrativeInformation?.dataEntryBy?.[
+//             'common:timeStamp'
+//           ],
+//         'dataEntryBy:common:@type':
+//           data?.json?.sourceDataSet?.administrativeInformation?.dataEntryBy?.[
+//             'common:referenceToDataSetFormat'
+//           ]?.['@type'],
+//         'dataEntryBy:common:@refObjectId':
+//           data?.json?.sourceDataSet?.administrativeInformation?.dataEntryBy?.[
+//             'common:referenceToDataSetFormat'
+//           ]?.['@refObjectId'],
+//         'dataEntryBy:common:@uri':
+//           data?.json?.sourceDataSet?.administrativeInformation?.dataEntryBy?.[
+//             'common:referenceToDataSetFormat'
+//           ]?.['@uri'],
+//         'dataEntryBy:common:shortDescription': getLangList(
+//           data?.json?.sourceDataSet?.administrativeInformation?.dataEntryBy?.[
+//             'common:referenceToDataSetFormat'
+//           ]?.['common:shortDescription'],
+//         ),
+//         'publicationAndOwnership:common:dataSetVersion':
+//           data?.json?.sourceDataSet?.administrativeInformation?.publicationAndOwnership?.[
+//             'common:dataSetVersion'
+//           ],
+//         createdAt: data?.created_at,
+//       },
+//       success: true,
+//     });
+//   }
+//   return Promise.resolve({
+//     data: {},
+//     success: true,
+//   });
+// }
+
+
 export async function getSourceDetail(id: string) {
   const result = await supabase.from('sources').select('json, created_at').eq('id', id);
   if (result.data && result.data.length > 0) {
     const data = result.data[0];
     return Promise.resolve({
       data: {
-        id: id,
-        'common:shortName': getLangList(
-          data?.json?.sourceDataSet?.sourceInformation?.dataSetInformation?.['common:shortName'],
-        ),
-        'common:class': classificationToJson(
-          data?.json?.sourceDataSet?.sourceInformation?.dataSetInformation
-            ?.classificationInformation?.['common:classification']?.['common:class'],
-        ),
-        sourceCitation: data?.json?.sourceDataSet?.sourceInformation?.dataSetInformation?.sourceCitation,
-        publicationType: data?.json?.sourceDataSet?.sourceInformation?.dataSetInformation?.publicationType,
-        'dataEntryBy:common:timeStamp':
-          data?.json?.sourceDataSet?.administrativeInformation?.dataEntryBy?.[
-            'common:timeStamp'
-          ],
-        'dataEntryBy:common:@type':
-          data?.json?.sourceDataSet?.administrativeInformation?.dataEntryBy?.[
-            'common:referenceToDataSetFormat'
-          ]?.['@type'],
-        'dataEntryBy:common:@refObjectId':
-          data?.json?.sourceDataSet?.administrativeInformation?.dataEntryBy?.[
-            'common:referenceToDataSetFormat'
-          ]?.['@refObjectId'],
-        'dataEntryBy:common:@uri':
-          data?.json?.sourceDataSet?.administrativeInformation?.dataEntryBy?.[
-            'common:referenceToDataSetFormat'
-          ]?.['@uri'],
-        'dataEntryBy:common:shortDescription': getLangList(
-          data?.json?.sourceDataSet?.administrativeInformation?.dataEntryBy?.[
-            'common:referenceToDataSetFormat'
-          ]?.['common:shortDescription'],
-        ),
-        'publicationAndOwnership:common:dataSetVersion':
-          data?.json?.sourceDataSet?.administrativeInformation?.publicationAndOwnership?.[
-            'common:dataSetVersion'
-          ],
+        json: data.json,
         createdAt: data?.created_at,
       },
       success: true,
     });
   }
   return Promise.resolve({
-    data: {},
+    data: null,
     success: true,
   });
 }

@@ -1,7 +1,7 @@
-import { getSourceTable } from '@/services/sources/api';
-import { SourceTable } from '@/services/sources/data';
 import { ListPagination } from '@/services/general/data';
 import { getLang } from '@/services/general/util';
+import { getSourceTable } from '@/services/sources/api';
+import { SourceTable } from '@/services/sources/data';
 import { PageContainer } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
@@ -75,7 +75,7 @@ const TableList: FC = () => {
                 if (dataSource === 'my') {
                     return [
                         <Space size={'small'} key={0}>
-                            <SourceView id={row.id} dataSource={dataSource} actionRef={actionRef} />
+                            <SourceView id={row.id} dataSource={dataSource} buttonType={'icon'} actionRef={actionRef} />
                             <SourceEdit
                                 id={row.id}
                                 buttonType={'icon'}
@@ -93,7 +93,7 @@ const TableList: FC = () => {
                 }
                 return [
                     <Space size={'small'} key={0}>
-                        <SourceView id={row.id} dataSource={dataSource} actionRef={actionRef} />
+                        <SourceView id={row.id} dataSource={dataSource} buttonType={'icon'} actionRef={actionRef} />
                     </Space>,
                 ];
             },

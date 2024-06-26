@@ -1,6 +1,7 @@
 import LangTextItemFrom from '@/components/LangTextItem/from';
 import LevelTextItemFrom from '@/components/LevelTextItem/from';
 import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
+import SourceSelectFrom from '@/pages/Sources/Components/select/from';
 import { ListPagination } from '@/services/general/data';
 import { getLangText } from '@/services/general/util';
 import { createProcess } from '@/services/processes/api';
@@ -414,53 +415,8 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             ]}
             label="Deviations From Treatment And Extrapolation Principles"
           />
-          <Card size="small" title={'Reference To Data Source'}>
-            <Form.Item
-              label="Type"
-              name={[
-                'modellingAndValidation',
-                'dataSourcesTreatmentAndRepresentativeness',
-                'referenceToDataSource',
-                '@type',
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="Ref Object Id"
-              name={[
-                'modellingAndValidation',
-                'dataSourcesTreatmentAndRepresentativeness',
-                'referenceToDataSource',
-                '@refObjectId',
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="URI"
-              name={[
-                'modellingAndValidation',
-                'dataSourcesTreatmentAndRepresentativeness',
-                'referenceToDataSource',
-                '@uri',
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Divider orientationMargin="0" orientation="left" plain>
-              Short Description
-            </Divider>
-            <LangTextItemFrom
-              name={[
-                'modellingAndValidation',
-                'dataSourcesTreatmentAndRepresentativeness',
-                'referenceToDataSource',
-                'common:shortDescription',
-              ]}
-              label="Short Description"
-            />
-          </Card>
+          
+          <SourceSelectFrom name={['modellingAndValidation', 'dataSourcesTreatmentAndRepresentativeness']} label={'Reference To Data Source'} lang={lang} formRef={formRefCreate} />
 
           <Divider orientationMargin="0" orientation="left" plain>
             Use Advice For DataSet
