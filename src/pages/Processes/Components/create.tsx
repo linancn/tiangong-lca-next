@@ -416,7 +416,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             label="Deviations From Treatment And Extrapolation Principles"
           />
           
-          <SourceSelectFrom name={['modellingAndValidation', 'dataSourcesTreatmentAndRepresentativeness']} label={'Reference To Data Source'} lang={lang} formRef={formRefCreate} />
+          <SourceSelectFrom name={['modellingAndValidation', 'dataSourcesTreatmentAndRepresentativeness','referenceToDataSource']} label={'Reference To Data Source'} lang={lang} formRef={formRefCreate} />
 
           <Divider orientationMargin="0" orientation="left" plain>
             Use Advice For DataSet

@@ -133,19 +133,19 @@ export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
           ),
           referenceToDataSource: {
             '@type':
-              data?.modellingAndValidation?.LCIMethodAndAllocation?.referenceToDataSource?.[
+              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.referenceToDataSource?.[
                 '@type'
               ] ?? {},
             '@refObjectId':
-              data?.modellingAndValidation?.LCIMethodAndAllocation?.referenceToDataSource?.[
+              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.referenceToDataSource?.[
                 '@refObjectId'
               ] ?? {},
             '@uri':
-              data?.modellingAndValidation?.LCIMethodAndAllocation?.referenceToDataSource?.[
+              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.referenceToDataSource?.[
                 '@uri'
               ] ?? {},
             'common:shortDescription': getLangJson(
-              data?.modellingAndValidation?.LCIMethodAndAllocation?.referenceToDataSource?.[
+              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.referenceToDataSource?.[
                 'common:shortDescription'
               ],
             ),
@@ -363,45 +363,45 @@ export function genProcessFromData(data: any) {
       },
       dataSourcesTreatmentAndRepresentativeness: {
         deviationsFromCutOffAndCompletenessPrinciples: getLangList(
-          data?.modellingAndValidation?.LCIMethodAndAllocation
+          data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
             ?.deviationsFromCutOffAndCompletenessPrinciples,
         ),
         dataSelectionAndCombinationPrinciples: getLangList(
-          data?.modellingAndValidation?.LCIMethodAndAllocation
+          data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
             ?.dataSelectionAndCombinationPrinciples,
         ),
         deviationsFromSelectionAndCombinationPrinciples: getLangList(
-          data?.modellingAndValidation?.LCIMethodAndAllocation
+          data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
             ?.deviationsFromSelectionAndCombinationPrinciples,
         ),
         dataTreatmentAndExtrapolationsPrinciples: getLangList(
-          data?.modellingAndValidation?.LCIMethodAndAllocation
+          data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
             ?.dataTreatmentAndExtrapolationsPrinciples,
         ),
         deviationsFromTreatmentAndExtrapolationPrinciples: getLangList(
-          data?.modellingAndValidation?.LCIMethodAndAllocation
+          data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
             ?.deviationsFromTreatmentAndExtrapolationPrinciples,
         ),
         referenceToDataSource: {
           '@type':
-            data?.modellingAndValidation?.LCIMethodAndAllocation?.referenceToDataSource?.[
+            data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.referenceToDataSource?.[
               '@type'
             ] ?? {},
           '@refObjectId':
-            data?.modellingAndValidation?.LCIMethodAndAllocation?.referenceToDataSource?.[
+            data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.referenceToDataSource?.[
               '@refObjectId'
             ] ?? {},
           '@uri':
-            data?.modellingAndValidation?.LCIMethodAndAllocation?.referenceToDataSource?.['@uri'] ??
+            data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.referenceToDataSource?.['@uri'] ??
             {},
           'common:shortDescription': getLangList(
-            data?.modellingAndValidation?.LCIMethodAndAllocation?.referenceToDataSource?.[
+            data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.referenceToDataSource?.[
               'common:shortDescription'
             ],
           ),
         },
         useAdviceForDataSet: getLangList(
-          data?.modellingAndValidation?.LCIMethodAndAllocation?.useAdviceForDataSet,
+          data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.useAdviceForDataSet,
         ),
       },
       completeness: {

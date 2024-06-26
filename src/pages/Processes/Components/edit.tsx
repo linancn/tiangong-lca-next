@@ -1,6 +1,7 @@
 import LangTextItemFrom from '@/components/LangTextItem/from';
 import LevelTextItemFrom from '@/components/LevelTextItem/from';
 import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
+import SourceSelectFrom from '@/pages/Sources/Components/select/from';
 import { ListPagination } from '@/services/general/data';
 import { getProcessDetail, updateProcess } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
@@ -59,7 +60,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
   const handletFromData = (data: any) => {
     setFromData({ ...data });
   };
-  
+
   const handletExchangeData = (data: any) => {
     setExchangeDataSource([...data]);
   };
@@ -143,14 +144,14 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
               buttonType={'icon'}
               actionRef={actionRefExchangeTable}
               onData={handletExchangeData}
-              setViewDrawerVisible={() => {}}
+              setViewDrawerVisible={() => { }}
             />
             <ProcessExchangeDelete
               id={row.dataSetInternalID}
               data={exchangeDataSource}
               buttonType={'icon'}
               actionRef={actionRef}
-              setViewDrawerVisible={() => {}}
+              setViewDrawerVisible={() => { }}
               onData={handletExchangeData}
             />
           </Space>,
@@ -177,7 +178,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
         </Card>
 
         <Card size="small" title={'Classification'}>
-        <LevelTextItemFrom
+          <LevelTextItemFrom
             name={[
               'processInformation',
               'dataSetInformation',
@@ -193,7 +194,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
 
         <Card size="small" title={'General Comment'}>
           <LangTextItemFrom
-            name={['processInformation','dataSetInformation', 'common:generalComment']}
+            name={['processInformation', 'dataSetInformation', 'common:generalComment']}
             label="General Comment"
           />
         </Card>
@@ -437,53 +438,8 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
             ]}
             label="Deviations From Treatment And Extrapolation Principles"
           />
-          <Card size="small" title={'Reference To Data Source'}>
-            <Form.Item
-              label="Type"
-              name={[
-                'modellingAndValidation',
-                'dataSourcesTreatmentAndRepresentativeness',
-                'referenceToDataSource',
-                '@type',
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="Ref Object Id"
-              name={[
-                'modellingAndValidation',
-                'dataSourcesTreatmentAndRepresentativeness',
-                'referenceToDataSource',
-                '@refObjectId',
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="URI"
-              name={[
-                'modellingAndValidation',
-                'dataSourcesTreatmentAndRepresentativeness',
-                'referenceToDataSource',
-                '@uri',
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Divider orientationMargin="0" orientation="left" plain>
-              Short Description
-            </Divider>
-            <LangTextItemFrom
-              name={[
-                'modellingAndValidation',
-                'dataSourcesTreatmentAndRepresentativeness',
-                'referenceToDataSource',
-                'common:shortDescription',
-              ]}
-              label="Short Description"
-            />
-          </Card>
+
+          <SourceSelectFrom name={['modellingAndValidation', 'dataSourcesTreatmentAndRepresentativeness','referenceToDataSource']} label={'Reference To Data Source'} lang={lang} formRef={formRefEdit} />
 
           <Divider orientationMargin="0" orientation="left" plain>
             Use Advice For DataSet
