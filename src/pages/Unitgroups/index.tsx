@@ -11,7 +11,7 @@ import { useRef } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 import UnitGroupCreate from './Components/create';
 import UnitGroupDelete from './Components/delete';
-// import UnitGroupEdit from './Components/edit';
+import UnitGroupEdit from './Components/edit';
 import UnitGroupView from './Components/view';
 
 const TableList: FC = () => {
@@ -27,62 +27,61 @@ const TableList: FC = () => {
   const actionRef = useRef<ActionType>();
   const unitGroupColumns: ProColumns<UnitGroupTable>[] = [
     {
-      title: <FormattedMessage id="unitGroup.index" defaultMessage="Index" />,
-      dataIndex: 'index',
+      title: <FormattedMessage id="pages.table.index" defaultMessage="Index"></FormattedMessage>,
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="unitGroup.name" defaultMessage="Name" />,
+      title: <FormattedMessage id="pages.unitgroup.name" defaultMessage="Name"></FormattedMessage>,
       dataIndex: 'name',
       sorter: false,
     },
     {
-      title: <FormattedMessage id="unitGroup.classification" defaultMessage="Classification" />,
+      title: <FormattedMessage id="pages.unitgroup.classification" defaultMessage="Classification"></FormattedMessage>,
       dataIndex: 'classification',
       sorter: false,
       search: false,
     },
+    // {
+    //   title: <FormattedMessage id="unitGroup.email" defaultMessage="Reference Unit"></FormattedMessage>,
+    //   dataIndex: 'referenceToReferenceUnit',
+    //   sorter: false,
+    //   search: false,
+    // },
     {
-      title: <FormattedMessage id="unitGroup.email" defaultMessage="Reference Unit" />,
-      dataIndex: 'referenceToReferenceUnit',
-      sorter: false,
-      search: false,
-    },
-    {
-      title: <FormattedMessage id="unitGroup.createdAt" defaultMessage="Created At" />,
+      title: <FormattedMessage id="pages.unitgroup.createdAt" defaultMessage="Created At"></FormattedMessage>,
       dataIndex: 'createdAt',
       valueType: 'dateTime',
       sorter: true,
       search: false,
     },
     {
-      title: <FormattedMessage id="options.option" defaultMessage="Option" />,
+      title: <FormattedMessage id="pages.table.option" defaultMessage="Option"></FormattedMessage>,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <UnitGroupView id={row.id} dataSource={dataSource} actionRef={actionRef} />
-              {/* <UnitGroupEdit
+              <UnitGroupView id={row.id} dataSource={dataSource} actionRef={actionRef}></UnitGroupView>
+              <UnitGroupEdit
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={actionRef}
                 setViewDrawerVisible={() => { }}
-              /> */}
+              ></UnitGroupEdit>
               <UnitGroupDelete
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
-              />
+                setViewDrawerVisible={() => { }}
+              ></UnitGroupDelete>
             </Space>,
           ];
         }
         return [
           <Space size={'small'} key={0}>
-            <UnitGroupView id={row.id} dataSource={dataSource} actionRef={actionRef} />
+            <UnitGroupView id={row.id} dataSource={dataSource} actionRef={actionRef}></UnitGroupView>
           </Space>,
         ];
       },
@@ -101,7 +100,7 @@ const TableList: FC = () => {
         }}
         toolBarRender={() => {
           if (dataSource === 'my') {
-            return [<UnitGroupCreate key={0} actionRef={actionRef} />];
+            return [<UnitGroupCreate key={0} actionRef={actionRef}></UnitGroupCreate>];
           }
           return [];
         }}
@@ -115,7 +114,7 @@ const TableList: FC = () => {
           return getUnitGroupTable(params, sort, lang, dataSource);
         }}
         columns={unitGroupColumns}
-      />
+      ></ProTable>
     </PageContainer>
   );
 };

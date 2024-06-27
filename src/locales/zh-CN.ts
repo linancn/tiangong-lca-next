@@ -2,6 +2,11 @@ import component from './zh-CN/component';
 import globalHeader from './zh-CN/globalHeader';
 import menu from './zh-CN/menu';
 import pages from './zh-CN/pages';
+import pages_contact from './zh-CN/pages_contact';
+import pages_general from './zh-CN/pages_general';
+import pages_unitgroup from './zh-CN/pages_unitgroup';
+import pages_flowproperties from './zh-CN/pages_flowproperties';
+import pages_flows from './zh-CN/pages_flows';
 import pwa from './zh-CN/pwa';
 import settingDrawer from './zh-CN/settingDrawer';
 import settings from './zh-CN/settings';
@@ -21,4 +26,9 @@ export default {
   ...settings,
   ...pwa,
   ...component,
+  ...pages_general,
+  ...pages_contact,
+  ...pages_unitgroup,
+  ...pages_flowproperties,
+  ...pages_flows
 };

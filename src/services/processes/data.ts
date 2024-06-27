@@ -11,8 +11,8 @@ export type ProcessTable = {
 
 export type ProcessExchangeTable = {
   dataSetInternalID: string;
-  referenceToFlowDataSet: string;
   exchangeDirection: string;
+  referenceToFlowDataSet: string;
   meanAmount: string;
   resultingAmount: string;
   dataDerivationTypeStatus: string;

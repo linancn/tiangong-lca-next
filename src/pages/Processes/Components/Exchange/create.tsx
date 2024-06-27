@@ -1,10 +1,8 @@
 import LangTextItemFrom from '@/components/LangTextItem/from';
-import { createContact } from '@/services/contacts/api';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import ProForm from '@ant-design/pro-form';
-import type { ActionType } from '@ant-design/pro-table';
 import {
   Button,
   Card,
@@ -16,22 +14,25 @@ import {
   Space,
   Tooltip,
   Typography,
-  message,
 } from 'antd';
 import type { FC } from 'react';
-import { useCallback, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 
 type Props = {
-  actionRef: React.MutableRefObject<ActionType | undefined>;
+  onData: (data: any) => void;
 };
-const ProcessExchangeCreate: FC<Props> = ({ actionRef }) => {
+const ProcessExchangeCreate: FC<Props> = ({ onData }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
+  const [fromData, setFromData] = useState<any>({});
 
-  const reload = useCallback(() => {
-    actionRef.current?.reload();
-  }, [actionRef]);
+  useEffect(() => {
+    if (drawerVisible) return;
+    formRefCreate.current?.resetFields();
+    formRefCreate.current?.setFieldsValue({});
+    setFromData({});
+  }, [drawerVisible]);
 
   return (
     <>
@@ -47,7 +48,7 @@ const ProcessExchangeCreate: FC<Props> = ({ actionRef }) => {
       </Tooltip>
       <Drawer
         title={<FormattedMessage id="exchanges.create" defaultMessage="Process Exchange Create" />}
-        width="600px"
+        width="90%"
         closable={false}
         extra={
           <Button
@@ -73,26 +74,18 @@ const ProcessExchangeCreate: FC<Props> = ({ actionRef }) => {
       >
         <ProForm
           formRef={formRefCreate}
+          onValuesChange={(_, allValues) => {
+            setFromData(allValues ?? {});
+          }}
           submitter={{
             render: () => {
               return [];
             },
           }}
-          onFinish={async (values) => {
-            const result = await createContact({ ...values });
-            if (result.data) {
-              message.success(
-                <FormattedMessage
-                  id="options.createsuccess"
-                  defaultMessage="Created Successfully!"
-                />,
-              );
-              formRefCreate.current?.resetFields();
-              setDrawerVisible(false);
-              reload();
-            } else {
-              message.error(result.error.message);
-            }
+          onFinish={async () => {
+            onData({ ...fromData });
+            formRefCreate.current?.resetFields();
+            setDrawerVisible(false);
             return true;
           }}
         >
@@ -120,17 +113,12 @@ const ProcessExchangeCreate: FC<Props> = ({ actionRef }) => {
             <Divider orientationMargin="0" orientation="left" plain>
               General Comment
             </Divider>
-            <LangTextItemFrom keyName="generalComment" labelName="General Comment" />
-
-            <Form.Item noStyle shouldUpdate>
-              {() => (
-                <Typography>
-                  <pre>{JSON.stringify(formRefCreate.current?.getFieldsValue(), null, 2)}</pre>
-                </Typography>
-              )}
-            </Form.Item>
+            <LangTextItemFrom name="generalComment" label="General Comment" />
           </Space>
         </ProForm>
+        <Typography>
+          <pre>{JSON.stringify(fromData, null, 2)}</pre>
+        </Typography>
       </Drawer>
     </>
   );

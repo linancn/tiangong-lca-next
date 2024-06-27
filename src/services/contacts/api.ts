@@ -1,12 +1,7 @@
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
 import { v4 } from 'uuid';
-import {
-  classificationToJson,
-  classificationToString,
-  getLangList,
-  getLangText,
-} from '../general/util';
+import { classificationToString, getLangText } from '../general/util';
 import { genContactJsonOrdered } from './util';
 
 export async function createContact(data: any) {
@@ -110,6 +105,7 @@ export async function getContactTable(
       data: result.data.map((i: any) => {
         try {
           return {
+            key: i.id,
             id: i.id,
             lang: lang,
             shortName: getLangText(i['common:shortName'], lang),
@@ -142,29 +138,14 @@ export async function getContactDetail(id: string) {
     const data = result.data[0];
     return Promise.resolve({
       data: {
-        id: id,
-        'common:shortName': getLangList(
-          data?.json?.contactDataSet?.contactInformation?.dataSetInformation?.['common:shortName'],
-        ),
-        'common:name': getLangList(
-          data?.json?.contactDataSet?.contactInformation?.dataSetInformation?.['common:name'],
-        ),
-        'common:class': classificationToJson(
-          data?.json?.contactDataSet?.contactInformation?.dataSetInformation
-            ?.classificationInformation?.['common:classification']?.['common:class'],
-        ),
-        email: data?.json?.contactDataSet?.contactInformation?.dataSetInformation?.email,
-        'common:dataSetVersion':
-          data?.json?.contactDataSet?.administrativeInformation?.publicationAndOwnership?.[
-            'common:dataSetVersion'
-          ],
+        json: data.json,
         createdAt: data?.created_at,
       },
       success: true,
     });
   }
   return Promise.resolve({
-    data: {},
+    data: null,
     success: true,
   });
 }
