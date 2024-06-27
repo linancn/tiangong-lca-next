@@ -16,7 +16,6 @@ export async function createProcess(data: any) {
       '@xsi:schemaLocation': 'http://lca.jrc.it/ILCD/Process ../../schemas/ILCD_ProcessDataSet.xsd',
     },
   };
-  console.log('createProcess', data);
   const newData = genProcessJsonOrdered(newID, data, oldData);
   const result = await supabase
     .from('processes')

@@ -12,28 +12,17 @@ type Props = {
 const ContactSelectDescription: FC<Props> = ({ title, data }) => {
   const actionRef = React.useRef<ActionType | undefined>(undefined);
 
-  if (!data) {
-    return (
-      <Card size="small" title={title}>
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item key={0} labelStyle={{ display: 'none' }}>
-            -
-          </Descriptions.Item>
-        </Descriptions>
-      </Card>
-    );
-  }
   return (
     <Card size="small" title={title}>
       <Space direction="horizontal">
         <Descriptions bordered size={'small'} column={1} style={{ width: '420px' }}>
           <Descriptions.Item key={0} label="Ref Object Id" labelStyle={{ width: '120px' }}>
-            {data['@refObjectId'] ?? '-'}
+            {data?.['@refObjectId'] ?? '-'}
           </Descriptions.Item>
         </Descriptions>
-        {data['@refObjectId'] && (
+        {data?.['@refObjectId'] && (
           <ContactView
-            id={data['@refObjectId']}
+            id={data?.['@refObjectId']}
             dataSource="tg"
             buttonType="text"
             actionRef={actionRef}
@@ -44,25 +33,25 @@ const ContactSelectDescription: FC<Props> = ({ title, data }) => {
       <br />
       <Descriptions bordered size={'small'} column={1}>
         <Descriptions.Item key={0} label="Type" labelStyle={{ width: '120px' }}>
-          {data['@type'] ?? '-'}
+          {data?.['@type'] ?? '-'}
         </Descriptions.Item>
       </Descriptions>
       <br />
       <Descriptions bordered size={'small'} column={1}>
         <Descriptions.Item key={0} label="URI" labelStyle={{ width: '120px' }}>
-          {data['@uri'] ?? '-'}
+          {data?.['@uri'] ?? '-'}
         </Descriptions.Item>
       </Descriptions>
       <br />
       <Descriptions bordered size={'small'} column={1}>
         <Descriptions.Item key={0} label="Version" labelStyle={{ width: '120px' }}>
-          {data['@version'] ?? '-'}
+          {data?.['@version'] ?? '-'}
         </Descriptions.Item>
       </Descriptions>
       <Divider orientationMargin="0" orientation="left" plain>
         Short Description
       </Divider>
-      <LangTextItemDescription data={data['common:shortDescription']} />
+      <LangTextItemDescription data={data?.['common:shortDescription']} />
     </Card>
   );
 };

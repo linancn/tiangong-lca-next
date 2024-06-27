@@ -1,5 +1,5 @@
-import { getSourceDetail, updateSource } from '@/services/sources/api';
 import { langOptions } from '@/services/general/data';
+import { getSourceDetail, updateSource } from '@/services/sources/api';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ProForm } from '@ant-design/pro-components';
@@ -8,7 +8,6 @@ import type { ActionType } from '@ant-design/pro-table';
 import {
     Button,
     Card,
-    DatePicker,
     Drawer,
     Form,
     Input,
@@ -17,7 +16,7 @@ import {
     Spin,
     Tooltip,
     Typography,
-    message,
+    message
 } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useRef, useState } from 'react';
@@ -71,7 +70,7 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisible
                         return true;
                     }}
                 >
-                    <Space direction="vertical">
+                    <Space direction="vertical" style={{ width: '100%' }}>
                         <Card size="small" title={'Sources Information'}>
                             <Card size="small" title={'Short Name'}>
                                 <Form.Item>
@@ -219,7 +218,7 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisible
             </Tooltip>
             <Drawer
                 title={<FormattedMessage id="options.edit" defaultMessage="Edit" />}
-                width="600px"
+                width="90%"
                 closable={false}
                 extra={
                     <Button

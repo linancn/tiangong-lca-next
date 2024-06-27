@@ -9,8 +9,6 @@ import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } fro
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
-import SourceDelete from './delete';
-import SourceEdit from './edit';
 import SourceSelectDescription from './select/description';
 
 type Props = {
@@ -19,7 +17,7 @@ type Props = {
   buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
 };
-const SourceView: FC<Props> = ({ id, dataSource, buttonType, actionRef }) => {
+const SourceView: FC<Props> = ({ id, dataSource, buttonType }) => {
   const [activeTabKey, setActiveTabKey] = useState<string>('sourceInformation');
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [footerButtons, setFooterButtons] = useState<JSX.Element>();
@@ -73,7 +71,6 @@ const SourceView: FC<Props> = ({ id, dataSource, buttonType, actionRef }) => {
             {initData.sourceInformation?.dataSetInformation?.publicationType ?? '-'}
           </Descriptions.Item>
         </Descriptions>
-        <br />
       </>
     ),
     administrativeInformation: (
@@ -99,9 +96,7 @@ const SourceView: FC<Props> = ({ id, dataSource, buttonType, actionRef }) => {
         <br />
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item key={0} label="Data Set Version" labelStyle={{ width: '180px' }}>
-            {initData.administrativeInformation?.publicationAndOwnership?.[
-              'common:dataSetVersion'
-            ] ?? '-'}
+            {initData.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'] ?? '-'}
           </Descriptions.Item>
         </Descriptions>
       </>
@@ -112,6 +107,8 @@ const SourceView: FC<Props> = ({ id, dataSource, buttonType, actionRef }) => {
     setDrawerVisible(true);
     setSpinning(true);
     getSourceDetail(id).then(async (result: any) => {
+      console.log('getSourceDetail', result);
+      console.log('genSourceFromData', genSourceFromData(result.data?.json?.sourceDataSet ?? {}));
       setInitData({ ...genSourceFromData(result.data?.json?.sourceDataSet ?? {}), id: id });
       if (dataSource === 'my') {
         setFooterButtons(
@@ -135,32 +132,6 @@ const SourceView: FC<Props> = ({ id, dataSource, buttonType, actionRef }) => {
       }
       setSpinning(false);
     });
-
-
-
-    getSourceDetail(id).then(async (result: any) => {
-      setInitData({ ...genSourceFromData(result.data?.json?.sourceDataSet ?? {}) });
-      if (dataSource === 'my') {
-        setFooterButtons(
-          <>
-            <SourceDelete
-              id={id}
-              buttonType={'text'}
-              actionRef={actionRef}
-              setViewDrawerVisible={setDrawerVisible}
-            />
-            <SourceEdit
-              id={id}
-              buttonType={'text'}
-              actionRef={actionRef}
-              setViewDrawerVisible={setDrawerVisible}
-            />
-          </>,
-        );
-      } else {
-        setFooterButtons(<></>);
-      }
-    });
   };
   return (
     <>
@@ -177,7 +148,7 @@ const SourceView: FC<Props> = ({ id, dataSource, buttonType, actionRef }) => {
       </Tooltip>
 
       <Drawer
-        title={<FormattedMessage id="options.view" defaultMessage="View" />}
+        title={<FormattedMessage id="options.view" defaultMessage="Source View" />}
         width="90%"
         closable={false}
         extra={

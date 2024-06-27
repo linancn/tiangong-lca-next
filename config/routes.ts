@@ -14,7 +14,7 @@ export default [
   {
     path: '/mydata',
     name: 'My Data',
-    icon: 'table',
+    icon: 'HomeOutlined',
     routes: [
       {
         path: '/mydata',
@@ -55,7 +55,7 @@ export default [
   {
     path: '/tgdata',
     name: 'TianGong Data',
-    icon: 'table',
+    icon: 'DatabaseOutlined',
     routes: [
       {
         path: '/tgdata',

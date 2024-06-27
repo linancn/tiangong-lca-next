@@ -23,7 +23,6 @@ export async function createSource(data: any) {
     .from('sources')
     .insert([{ id: newID, json_ordered: newData }])
     .select();
-console.log(result);
   return result;
 }
 

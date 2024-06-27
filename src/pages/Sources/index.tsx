@@ -48,12 +48,12 @@ const TableList: FC = () => {
             sorter: false,
             search: false,
         },
-        {
-            title: <FormattedMessage id="source.sourceCitation" defaultMessage="SourceCitation" />,
-            dataIndex: 'sourceCitation',
-            sorter: false,
-            search: false,
-        },
+        // {
+        //     title: <FormattedMessage id="source.sourceCitation" defaultMessage="SourceCitation" />,
+        //     dataIndex: 'sourceCitation',
+        //     sorter: false,
+        //     search: false,
+        // },
         {
             title: <FormattedMessage id="source.publicationType" defaultMessage="PublicationType" />,
             dataIndex: 'publicationType',

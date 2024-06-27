@@ -246,53 +246,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             name={['processInformation', 'technology', 'technologicalApplicability']}
             label="Technological Applicability"
           />
-          <Card size="small" title={'Reference To Technology Flow Diagramm Or Picture'}>
-            <Form.Item
-              label="Type"
-              name={[
-                'processInformation',
-                'technology',
-                'referenceToTechnologyFlowDiagrammOrPicture',
-                '@type',
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="Ref Object Id"
-              name={[
-                'processInformation',
-                'technology',
-                'referenceToTechnologyFlowDiagrammOrPicture',
-                '@refObjectId',
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="URI"
-              name={[
-                'processInformation',
-                'technology',
-                'referenceToTechnologyFlowDiagrammOrPicture',
-                '@uri',
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Divider orientationMargin="0" orientation="left" plain>
-              Short Description
-            </Divider>
-            <LangTextItemFrom
-              name={[
-                'processInformation',
-                'technology',
-                'referenceToTechnologyFlowDiagrammOrPicture',
-                'common:shortDescription',
-              ]}
-              label="Short Description"
-            />
-          </Card>
+          <SourceSelectFrom name={['processInformation', 'technology', 'referenceToTechnologyFlowDiagrammOrPicture']} label={'Reference To Technology Flow Diagramm Or Picture'} lang={lang} formRef={formRefCreate} />
         </Card>
 
         <Card size="small" title={'Mathematical Relations: Model Description'}>
@@ -415,8 +369,8 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             ]}
             label="Deviations From Treatment And Extrapolation Principles"
           />
-          
-          <SourceSelectFrom name={['modellingAndValidation', 'dataSourcesTreatmentAndRepresentativeness','referenceToDataSource']} label={'Reference To Data Source'} lang={lang} formRef={formRefCreate} />
+
+          <SourceSelectFrom name={['modellingAndValidation', 'dataSourcesTreatmentAndRepresentativeness', 'referenceToDataSource']} label={'Reference To Data Source'} lang={lang} formRef={formRefCreate} />
 
           <Divider orientationMargin="0" orientation="left" plain>
             Use Advice For DataSet
@@ -650,14 +604,10 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
           >
             {contentList[activeTabKey]}
           </Card>
-          <Form.Item noStyle shouldUpdate>
-            {() => (
-              <Typography>
-                <pre>{JSON.stringify(fromData, null, 2)}</pre>
-              </Typography>
-            )}
-          </Form.Item>
         </ProForm>
+        <Typography>
+          <pre>{JSON.stringify(fromData, null, 2)}</pre>
+        </Typography>
       </Drawer>
     </>
   );
