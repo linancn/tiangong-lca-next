@@ -517,6 +517,13 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
   };
 
   useEffect(() => {
+    if (drawerVisible === false) return;
+    formRefCreate.current?.resetFields();
+    formRefCreate.current?.setFieldsValue({});
+    setExchangeDataSource([]);
+  }, [drawerVisible]);
+
+  useEffect(() => {
     setFromData({ ...fromData, exchanges: { exchange: exchangeDataSource } });
   }, [exchangeDataSource]);
 

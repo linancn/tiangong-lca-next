@@ -107,8 +107,6 @@ const SourceView: FC<Props> = ({ id, dataSource, buttonType }) => {
     setDrawerVisible(true);
     setSpinning(true);
     getSourceDetail(id).then(async (result: any) => {
-      console.log('getSourceDetail', result);
-      console.log('genSourceFromData', genSourceFromData(result.data?.json?.sourceDataSet ?? {}));
       setInitData({ ...genSourceFromData(result.data?.json?.sourceDataSet ?? {}), id: id });
       if (dataSource === 'my') {
         setFooterButtons(

@@ -111,6 +111,7 @@ const SourceCreate: FC<Props> = ({ actionRef }) => {
 
     useEffect(() => {
         if (drawerVisible === false) return;
+        setFromData({});
         formRefCreate.current?.resetFields();
         formRefCreate.current?.setFieldsValue({});
     }, [drawerVisible]);
@@ -179,7 +180,9 @@ const SourceCreate: FC<Props> = ({ actionRef }) => {
                                     defaultMessage="Created Successfully!"
                                 />,
                             );
+                            setFromData({});
                             formRefCreate.current?.resetFields();
+                            formRefCreate.current?.setFieldsValue({});
                             setDrawerVisible(false);
                             reload();
                         } else {
