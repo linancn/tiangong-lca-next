@@ -1,19 +1,19 @@
 import LangTextItemFrom from '@/components/LangTextItem/from';
 import LevelTextItemFrom from '@/components/LevelTextItem/from';
+import SourceSelectFrom from '@/pages/Sources/Components/select/from';
 import { ListPagination } from '@/services/general/data';
 import { createUnitGroup } from '@/services/unitgroups/api';
 import { UnitTable } from '@/services/unitgroups/data';
 import styles from '@/style/custom.less';
-import { CloseOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
+import { CloseOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import ProForm from '@ant-design/pro-form';
-import ProTable from '@ant-design/pro-table';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
+import ProTable from '@ant-design/pro-table';
 import {
   Button,
   Card,
   DatePicker,
-  Divider,
   Drawer,
   Form,
   Input,
@@ -21,7 +21,7 @@ import {
   Space,
   Tooltip,
   Typography,
-  message,
+  message
 } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -30,9 +30,10 @@ import UnitCreate from './Unit/create';
 import UnitEdit from './Unit/edit';
 
 type Props = {
+  lang: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
 };
-const UnitGroupCreate: FC<Props> = ({ actionRef }) => {
+const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
   const [activeTabKey, setActiveTabKey] = useState<string>('unitGroupInformation');
@@ -43,8 +44,16 @@ const UnitGroupCreate: FC<Props> = ({ actionRef }) => {
     actionRef.current?.reload();
   }, [actionRef]);
 
-  const createUnitData = (data: any) => {
+  const handletFromData = (data: any) => {
+    setFromData({ ...data });
+  };
+
+  const handletUnitData = (data: any) => {
     setUnitDataSource([...unitDataSource, data]);
+  };
+
+  const onTabChange = (key: string) => {
+    setActiveTabKey(key);
   };
 
   const editUnitData = (data: any) => {
@@ -120,66 +129,40 @@ const UnitGroupCreate: FC<Props> = ({ actionRef }) => {
     unitGroupInformation: (
       <Space direction="vertical" style={{ width: '100%' }}>
         <Card size="small" title={'Name'}>
-          <LangTextItemFrom name={['dataSetInformation', 'common:name']} label="Name"></LangTextItemFrom>
+          <LangTextItemFrom name={['unitGroupInformation', 'dataSetInformation', 'common:name']} label="Name" />
         </Card>
         <Card size="small" title={'Classification'}>
-          <LevelTextItemFrom name={['dataSetInformation', "classificationInformation", 'common:classification', 'common:class']}></LevelTextItemFrom>
+          <LevelTextItemFrom name={['unitGroupInformation', 'dataSetInformation', "classificationInformation", 'common:classification', 'common:class']} dataType={'UnitGroup'} formRef={formRefCreate} onData={handletFromData} />
         </Card>
-        <Form.Item label="Reference To Reference Unit" name={['quantitativeReference', 'referenceToReferenceUnit']}>
-          <Input></Input>
+        <Form.Item label="Reference To Reference Unit" name={['unitGroupInformation', 'quantitativeReference', 'referenceToReferenceUnit']}>
+          <Input />
         </Form.Item>
       </Space>
     ),
     modellingAndValidation: (
       <Space direction="vertical" style={{ width: '100%' }}>
-        <Card size="small" title={'Reference To Compliance System'}>
-          <Form.Item label="Ref Object Id" name={['complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem', '@refObjectId']}>
-            <Input></Input>
-          </Form.Item>
-          <Form.Item label="Type" name={['complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem', '@type']}>
-            <Input></Input>
-          </Form.Item>
-          <Form.Item label="URI" name={['complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem', '@uri']}>
-            <Input></Input>
-          </Form.Item>
-          <Form.Item label="Version" name={['complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem', '@version']}>
-            <Input></Input>
-          </Form.Item>
-          <Divider orientationMargin="0" orientation="left" plain>
-            Short Description
-          </Divider>
-          <LangTextItemFrom label="Name" name={['complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem', 'common:shortDescription']}></LangTextItemFrom>
-        </Card>
-        <Form.Item label="Approval Of Overall Compliance" name={['complianceDeclarations', 'compliance', 'common:approvalOfOverallCompliance']}>
-          <Input></Input>
+        <SourceSelectFrom
+          name={['modellingAndValidation', 'complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem']}
+          label={"Reference To Compliance System"}
+          lang={lang}
+          formRef={formRefCreate} />
+        <Form.Item label="Approval Of Overall Compliance" name={['modellingAndValidation', 'complianceDeclarations', 'compliance', 'common:approvalOfOverallCompliance']}>
+          <Input />
         </Form.Item>
       </Space>
     ),
     administrativeInformation: (
       <Space direction="vertical" style={{ width: '100%' }}>
-        <Form.Item label="TimeStamp" name={['dataEntryBy', 'common:timeStamp']}>
+        <Form.Item label="TimeStamp" name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}>
           <DatePicker showTime></DatePicker>
         </Form.Item>
-        <Card size="small" title={'Reference To DataSet Format'}>
-          <Form.Item label="Ref Object Id" name={['dataEntryBy', 'common:referenceToDataSetFormat', '@refObjectId']}>
-            <Input></Input>
-          </Form.Item>
-          <Form.Item label="Type" name={['dataEntryBy', 'common:referenceToDataSetFormat', '@type']}>
-            <Input></Input>
-          </Form.Item>
-          <Form.Item label="URI" name={['dataEntryBy', 'common:referenceToDataSetFormat', '@uri']}>
-            <Input></Input>
-          </Form.Item>
-          <Form.Item label="Version" name={['dataEntryBy', 'common:referenceToDataSetFormat', '@version']}>
-            <Input></Input>
-          </Form.Item>
-          <Divider orientationMargin="0" orientation="left" plain>
-            Short Description
-          </Divider>
-          <LangTextItemFrom label="Name" name={['dataEntryBy', 'common:referenceToDataSetFormat', 'common:shortDescription']}></LangTextItemFrom>
-        </Card>
-        <Form.Item label="DataSet Version" name={['publicationAndOwnership', 'common:dataSetVersion']}>
-          <Input></Input>
+        <SourceSelectFrom
+          name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
+          label={'Reference To DataSet Format'}
+          lang={lang}
+          formRef={formRefCreate} />
+        <Form.Item label="DataSet Version" name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}>
+          <Input />
         </Form.Item>
       </Space>
     ),
@@ -193,21 +176,32 @@ const UnitGroupCreate: FC<Props> = ({ actionRef }) => {
           pageSize: 10,
         }}
         toolBarRender={() => {
-          return [<UnitCreate key={0} onData={createUnitData}></UnitCreate>];
+          return [<UnitCreate key={0} onData={handletUnitData}></UnitCreate>];
         }}
         dataSource={unitDataSource}
         columns={unitColumns}
-      ></ProTable>
+      />
     ),
   };
 
-  const onTabChange = (key: string) => {
-    setActiveTabKey(key);
-  };
+  useEffect(() => {
+    if (drawerVisible === false) return;
+    formRefCreate.current?.resetFields();
+    formRefCreate.current?.setFieldsValue({});
+    setUnitDataSource([]);
+  }, [drawerVisible]);
 
   useEffect(() => {
     setFromData({ ...fromData, units: { unit: unitDataSource } });
   }, [unitDataSource]);
+
+  useEffect(() => {
+    if (activeTabKey === 'units') return;
+    setFromData({
+      ...fromData,
+      [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
+    });
+  }, [formRefCreate.current?.getFieldsValue()]);
 
   return (
     <>
@@ -256,8 +250,8 @@ const UnitGroupCreate: FC<Props> = ({ actionRef }) => {
       >
         <ProForm
           formRef={formRefCreate}
-          onValuesChange={(changedValues, allValues) => {
-            setFromData({ ...fromData, [activeTabKey]: allValues ?? {} });
+          onValuesChange={(_, allValues) => {
+            setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
           }}
           submitter={{
             render: () => {
@@ -290,14 +284,10 @@ const UnitGroupCreate: FC<Props> = ({ actionRef }) => {
           >
             {contentList[activeTabKey]}
           </Card>
-          <Form.Item noStyle shouldUpdate>
-            {() => (
-              <Typography>
-                <pre>{JSON.stringify(fromData, null, 2)}</pre>
-              </Typography>
-            )}
-          </Form.Item>
         </ProForm>
+        <Typography>
+          <pre>{JSON.stringify(fromData, null, 2)}</pre>
+        </Typography>
       </Drawer>
     </>
   );
