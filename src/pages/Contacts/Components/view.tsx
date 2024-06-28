@@ -5,7 +5,7 @@ import { genContactFromData } from '@/services/contacts/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
-import { Button, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
+import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -23,6 +23,67 @@ const ContactView: FC<Props> = ({ id, dataSource, buttonType, actionRef }) => {
   const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<any>({});
+  const [activeTabKey, setActiveTabKey] = useState<string>('contactInformation');
+
+  const tabList = [
+    { key: 'contactInformation', tab: 'Contact Information' },
+    { key: 'administrativeInformation', tab: 'Administrative Information' },
+  ];
+
+  const onTabChange = (key: string) => {
+    setActiveTabKey(key);
+  };
+
+  const contactList: Record<string, React.ReactNode> = {
+    contactInformation: (
+      <>
+        <Descriptions bordered size={'small'} column={1}>
+          <Descriptions.Item key={0} label="ID" labelStyle={{ width: '100px' }}>
+            {initData.contactInformation?.dataSetInformation?.['common:UUID'] ?? '-'}
+          </Descriptions.Item>
+        </Descriptions>
+        <Divider orientationMargin="0" orientation="left" plain>
+          Name
+        </Divider>
+        <LangTextItemDescription
+          data={initData.contactInformation?.dataSetInformation?.['common:name']}
+        />
+        <Divider orientationMargin="0" orientation="left" plain>
+          Short Name
+        </Divider>
+        <LangTextItemDescription
+          data={initData.contactInformation?.dataSetInformation?.['common:shortName']}
+        />
+        <Divider orientationMargin="0" orientation="left" plain>
+          Classification
+        </Divider>
+        <LevelTextItemDescription
+          data={
+            initData.contactInformation?.dataSetInformation?.classificationInformation?.[
+            'common:classification'
+            ]?.['common:class']
+          }
+        />
+        <br />
+        <Descriptions bordered size={'small'} column={1}>
+          <Descriptions.Item key={0} label="Email" labelStyle={{ width: '100px' }}>
+            {initData.contactInformation?.dataSetInformation?.email ?? '-'}
+          </Descriptions.Item>
+        </Descriptions>
+      </>
+    ),
+    administrativeInformation: (
+      <>
+        <Descriptions bordered size={'small'} column={1}>
+          <Descriptions.Item key={0} label="version" labelStyle={{ width: '100px' }}>
+            {initData.administrativeInformation?.publicationAndOwnership?.[
+              'common:dataSetVersion'
+            ] ?? '-'}
+          </Descriptions.Item>
+        </Descriptions>
+      </>
+    ),
+  };
 
   const onView = () => {
     setDrawerVisible(true);
@@ -88,47 +149,14 @@ const ContactView: FC<Props> = ({ id, dataSource, buttonType, actionRef }) => {
         onClose={() => setDrawerVisible(false)}
       >
         <Spin spinning={spinning}>
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item key={0} label="ID" labelStyle={{ width: '100px' }}>
-              {initData.contactInformation?.dataSetInformation?.['common:UUID'] ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
-          <Divider orientationMargin="0" orientation="left" plain>
-            Name
-          </Divider>
-          <LangTextItemDescription
-            data={initData.contactInformation?.dataSetInformation?.['common:name']}
-          />
-          <Divider orientationMargin="0" orientation="left" plain>
-            Short Name
-          </Divider>
-          <LangTextItemDescription
-            data={initData.contactInformation?.dataSetInformation?.['common:shortName']}
-          />
-          <Divider orientationMargin="0" orientation="left" plain>
-            Classification
-          </Divider>
-          <LevelTextItemDescription
-            data={
-              initData.contactInformation?.dataSetInformation?.classificationInformation?.[
-                'common:classification'
-              ]?.['common:class']
-            }
-          />
-          <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item key={0} label="Email" labelStyle={{ width: '100px' }}>
-              {initData.contactInformation?.dataSetInformation?.email ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
-          <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item key={0} label="version" labelStyle={{ width: '100px' }}>
-              {initData.administrativeInformation?.publicationAndOwnership?.[
-                'common:dataSetVersion'
-              ] ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Card
+            style={{ width: '100%' }}
+            tabList={tabList}
+            activeTabKey={activeTabKey}
+            onTabChange={onTabChange}
+          >
+            {contactList[activeTabKey]}
+          </Card>
         </Spin>
       </Drawer>
     </>
