@@ -58,7 +58,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
   };
 
   const handletFromData = (data: any) => {
-    setFromData({ ...data });
+    setFromData({ ...fromData, data });
   };
 
   const handletExchangeData = (data: any) => {
@@ -439,7 +439,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
             label="Deviations From Treatment And Extrapolation Principles"
           />
 
-          <SourceSelectFrom name={['modellingAndValidation', 'dataSourcesTreatmentAndRepresentativeness','referenceToDataSource']} label={'Reference To Data Source'} lang={lang} formRef={formRefEdit} />
+          <SourceSelectFrom name={['modellingAndValidation', 'dataSourcesTreatmentAndRepresentativeness', 'referenceToDataSource']} label={'Reference To Data Source'} lang={lang} formRef={formRefEdit} />
 
           <Divider orientationMargin="0" orientation="left" plain>
             Use Advice For DataSet
@@ -595,6 +595,9 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
         ...genProcessFromData(result.data?.json?.processDataSet ?? {}),
         id: id,
       });
+      setExchangeDataSource(
+        genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? [],
+      );
       setSpinning(false);
     });
   };
@@ -616,6 +619,15 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
       setSpinning(false);
     });
   }, [drawerVisible]);
+
+  useEffect(() => {
+    setFromData({
+      ...fromData,
+      exchanges: {
+        exchange: [...exchangeDataSource]
+      }
+    });
+  }, [exchangeDataSource]);
 
   useEffect(() => {
     if (activeTabKey === 'exchanges') return;

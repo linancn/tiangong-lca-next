@@ -32,7 +32,7 @@ const SourceCreate: FC<Props> = ({ actionRef }) => {
     const [activeTabKey, setActiveTabKey] = useState<string>('sourceInformation');
 
     const handletFromData = (data: any) => {
-        setFromData({ ...data });
+        setFromData({ ...fromData, data });
     };
 
     const tabList = [

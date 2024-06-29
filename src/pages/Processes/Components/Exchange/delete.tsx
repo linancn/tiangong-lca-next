@@ -34,7 +34,7 @@ const ProcessExchangeDelete: FC<Props> = ({
       filteredData.map((item: any, index: number) => {
         return {
           ...item,
-          dataSetInternalID: index.toString(),
+          '@dataSetInternalID': index.toString(),
         };
       }),
     );

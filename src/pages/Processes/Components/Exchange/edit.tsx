@@ -48,7 +48,7 @@ const ProcessExchangeEdit: FC<Props> = ({
   const onReset = () => {
     // setSpinning(true);
     formRefEdit.current?.resetFields();
-    const filteredData = data.find((item: any) => item['@dataSetInternalID'] === id) ?? {};
+    const filteredData = data?.find((item: any) => item['@dataSetInternalID'] === id) ?? {};
     setInitData(filteredData);
     formRefEdit.current?.setFieldsValue(filteredData);
     setFromData(filteredData);

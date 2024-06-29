@@ -28,6 +28,9 @@ import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import ProcessExchangeCreate from './Exchange/create';
+import ProcessExchangeDelete from './Exchange/delete';
+import ProcessExchangeEdit from './Exchange/edit';
+import ProcessExchangeView from './Exchange/view';
 
 type Props = {
   lang: string;
@@ -40,16 +43,25 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
   const [fromData, setFromData] = useState<any>({});
   const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
 
+  const actionRefExchangeTable = useRef<ActionType>();
+
   const reload = useCallback(() => {
     actionRef.current?.reload();
   }, [actionRef]);
 
+  const handletExchangeDataCreate = (data: any) => {
+    setExchangeDataSource([
+      ...exchangeDataSource,
+      { ...data, '@dataSetInternalID': exchangeDataSource.length.toString() },
+    ]);
+  };
+
   const handletFromData = (data: any) => {
-    setFromData({ ...data });
+    setFromData({ ...fromData, data });
   };
 
   const handletExchangeData = (data: any) => {
-    setExchangeDataSource([...exchangeDataSource, data]);
+    setExchangeDataSource([...data]);
   };
 
   const processExchangeColumns: ProColumns<ProcessExchangeTable>[] = [
@@ -108,32 +120,35 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
       title: <FormattedMessage id="options.option" defaultMessage="Option" />,
       dataIndex: 'option',
       search: false,
-      // render: (_, row) => {
-      //   if (dataSource === 'my') {
-      //     return [
-      //       // <Space size={'small'} key={0}>
-      //       //   {/* <ContactView id={row.id} actionRef={actionRef} /> */}
-      //       //   <ContactEdit
-      //       //     id={row.id}
-      //       //     buttonType={'icon'}
-      //       //     actionRef={actionRef}
-      //       //     setViewDrawerVisible={() => {}}
-      //       //   />
-      //       //   <ContactDelete
-      //       //     id={row.id}
-      //       //     buttonType={'icon'}
-      //       //     actionRef={actionRef}
-      //       //     setViewDrawerVisible={() => {}}
-      //       //   />
-      //       // </Space>,
-      //     ];
-      //   }
-      //   return [
-      //     <Space size={'small'} key={0}>
-      //       {/* <ContactView id={row.id} actionRef={actionRef} /> */}
-      //     </Space>,
-      //   ];
-      // },
+      render: (_, row) => {
+        return [
+          <Space size={'small'} key={0}>
+            <ProcessExchangeView
+              id={row.dataSetInternalID}
+              data={exchangeDataSource}
+              dataSource={'my'}
+              buttonType={'icon'}
+              actionRef={actionRefExchangeTable}
+            />
+            <ProcessExchangeEdit
+              id={row.dataSetInternalID}
+              data={exchangeDataSource}
+              buttonType={'icon'}
+              actionRef={actionRefExchangeTable}
+              onData={handletExchangeData}
+              setViewDrawerVisible={() => { }}
+            />
+            <ProcessExchangeDelete
+              id={row.dataSetInternalID}
+              data={exchangeDataSource}
+              buttonType={'icon'}
+              actionRef={actionRef}
+              setViewDrawerVisible={() => { }}
+              onData={handletExchangeData}
+            />
+          </Space>,
+        ];
+      },
     },
   ];
 
@@ -496,6 +511,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
     ),
     exchanges: (
       <ProTable<ProcessExchangeTable, ListPagination>
+        actionRef={actionRefExchangeTable}
         search={{
           defaultCollapsed: false,
         }}
@@ -504,7 +520,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
           pageSize: 10,
         }}
         toolBarRender={() => {
-          return [<ProcessExchangeCreate key={0} onData={handletExchangeData} />];
+          return [<ProcessExchangeCreate key={0} onData={handletExchangeDataCreate} />];
         }}
         dataSource={exchangeDataSource}
         columns={processExchangeColumns}
