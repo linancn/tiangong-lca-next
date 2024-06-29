@@ -5,7 +5,7 @@ import { ListPagination } from '@/services/general/data';
 import { createUnitGroup } from '@/services/unitgroups/api';
 import { UnitTable } from '@/services/unitgroups/data';
 import styles from '@/style/custom.less';
-import { CloseOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import ProForm from '@ant-design/pro-form';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
@@ -17,7 +17,6 @@ import {
   Drawer,
   Form,
   Input,
-  Popconfirm,
   Space,
   Tooltip,
   Typography,
@@ -27,6 +26,7 @@ import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import UnitCreate from './Unit/create';
+import UnitDelete from './Unit/delete';
 import UnitEdit from './Unit/edit';
 
 type Props = {
@@ -40,30 +40,30 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
   const [fromData, setFromData] = useState<any>({});
   const [unitDataSource, setUnitDataSource] = useState<any>([]);
 
+  const actionRefUnitTable = useRef<ActionType>();
+
   const reload = useCallback(() => {
     actionRef.current?.reload();
   }, [actionRef]);
 
+
+  const handletUnitDataCreate = (data: any) => {
+    setUnitDataSource([
+      ...unitDataSource,
+      { ...data, '@dataSetInternalID': unitDataSource.length.toString() },
+    ]);
+  };
+
   const handletFromData = (data: any) => {
-    setFromData({ ...data });
+    setFromData({ ...fromData, data });
   };
 
   const handletUnitData = (data: any) => {
-    setUnitDataSource([...unitDataSource, data]);
+    setUnitDataSource([...data]);
   };
 
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
-  };
-
-  const editUnitData = (data: any) => {
-    const newUnitDataSource = unitDataSource.map((item: UnitTable) => {
-      if (item.id === data.id) {
-        return data;
-      }
-      return item;
-    });
-    setUnitDataSource(newUnitDataSource);
   };
 
   const unitColumns: ProColumns<UnitTable>[] = [
@@ -72,11 +72,11 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
       valueType: 'index',
       search: false,
     },
-    {
-      title: <FormattedMessage id="pages.unitgroup.unit.dataSetInternalID" defaultMessage="DataSet Internal ID"></FormattedMessage>,
-      dataIndex: '@dataSetInternalID',
-      search: false,
-    },
+    // {
+    //   title: <FormattedMessage id="pages.unitgroup.unit.dataSetInternalID" defaultMessage="DataSet Internal ID"></FormattedMessage>,
+    //   dataIndex: '@dataSetInternalID',
+    //   search: false,
+    // },
     {
       title: <FormattedMessage id="pages.unitgroup.unit.name" defaultMessage="Name"></FormattedMessage>,
       dataIndex: 'name',
@@ -100,18 +100,22 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
       render: (_, row) => {
         return [
           <Space size={'small'} key={0}>
-            <Tooltip title={<FormattedMessage id="pages.table.option.edit" defaultMessage="Edit"></FormattedMessage>}>
-              <UnitEdit buttonType={'icon'} editData={row} onData={editUnitData}></UnitEdit>
-            </Tooltip>
-            <Tooltip title={<FormattedMessage id="pages.table.option.delete" defaultMessage="Delete"></FormattedMessage>}>
-              <Popconfirm title={<FormattedMessage id="pages.table.option.delete.confirm" defaultMessage="Delete"></FormattedMessage>}
-                onConfirm={() => {
-                  const newUnitDataSource = unitDataSource.filter((item: UnitTable) => item.id !== row.id);
-                  setUnitDataSource(newUnitDataSource);
-                }}>
-                <Button size={'small'} shape="circle" icon={<DeleteOutlined />}></Button>
-              </Popconfirm>
-            </Tooltip>
+            <UnitEdit
+              id={row.dataSetInternalID}
+              data={unitDataSource}
+              buttonType={'icon'}
+              actionRef={actionRefUnitTable}
+              onData={handletUnitData}
+              setViewDrawerVisible={() => { }}
+            />
+            <UnitDelete
+              id={row.dataSetInternalID}
+              data={unitDataSource}
+              buttonType={'icon'}
+              actionRef={actionRefUnitTable}
+              setViewDrawerVisible={() => { }}
+              onData={handletUnitData}
+            />
           </Space>
         ];
       }
@@ -168,6 +172,7 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
     ),
     units: (
       <ProTable<UnitTable, ListPagination>
+        actionRef={actionRefUnitTable}
         search={{
           defaultCollapsed: false,
         }}
@@ -176,7 +181,7 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
           pageSize: 10,
         }}
         toolBarRender={() => {
-          return [<UnitCreate key={0} onData={handletUnitData}></UnitCreate>];
+          return [<UnitCreate key={0} onData={handletUnitDataCreate}></UnitCreate>];
         }}
         dataSource={unitDataSource}
         columns={unitColumns}

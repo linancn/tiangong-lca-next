@@ -9,7 +9,7 @@ export type UnitGroupTable = {
 
 export type UnitTable = {
   id: string;
-  '@dataSetInternalID': string;
+  dataSetInternalID: string;
   name: string;
   meanValue: string;
   selected: boolean;

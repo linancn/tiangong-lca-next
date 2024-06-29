@@ -67,6 +67,7 @@ const TableList: FC = () => {
               <UnitGroupEdit
                 id={row.id}
                 buttonType={'icon'}
+                lang={lang}
                 actionRef={actionRef}
                 setViewDrawerVisible={() => { }}
               ></UnitGroupEdit>
@@ -100,7 +101,7 @@ const TableList: FC = () => {
         }}
         toolBarRender={() => {
           if (dataSource === 'my') {
-            return [<UnitGroupCreate key={0} actionRef={actionRef}></UnitGroupCreate>];
+            return [<UnitGroupCreate key={0} lang={lang} actionRef={actionRef} />];
           }
           return [];
         }}
