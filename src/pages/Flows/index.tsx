@@ -59,7 +59,7 @@ const TableList: FC = () => {
     },
     {
       title: <FormattedMessage id="pages.flows.createdAt" defaultMessage="Created At" />,
-      dataIndex: 'createdAt',
+      dataIndex: 'created_at',
       valueType: 'dateTime',
       sorter: true,
       search: false,
@@ -72,7 +72,12 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <FlowsView id={row.id} dataSource={dataSource} lang={lang} actionRef={actionRef} />
+              <FlowsView
+                buttonType={'icon'}
+                id={row.id}
+                dataSource={dataSource}
+                lang={lang}
+                actionRef={actionRef} />
               <FlowsEdit
                 id={row.id}
                 lang={lang}
@@ -90,7 +95,12 @@ const TableList: FC = () => {
         }
         return [
           <Space size={'small'} key={0}>
-            <FlowsView id={row.id} dataSource={dataSource} lang={lang} actionRef={actionRef} />
+            <FlowsView
+              buttonType={'icon'}
+              id={row.id}
+              dataSource={dataSource}
+              lang={lang}
+              actionRef={actionRef} />
           </Space>,
         ];
       },

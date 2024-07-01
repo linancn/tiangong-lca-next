@@ -8,15 +8,20 @@ import { Button, Descriptions, Card, Divider, Drawer, Space, Spin, Tooltip } fro
 import type { FC } from 'react';
 import { useState, useEffect } from 'react';
 import { FormattedMessage } from 'umi';
-
+import {
+    classificationToList,
+} from '@/services/general/util';
+import SourceSelectDescription from '@/pages/Sources/Components/select/description';
+import FlowpropertiesDescription from '@/pages/Flowproperties/Components/select/description';
 
 type Props = {
     id: string;
     dataSource: string;
     lang: string;
     actionRef: React.MutableRefObject<ActionType | undefined>;
+    buttonType: string;
 };
-const FlowsView: FC<Props> = ({ id, dataSource, lang }) => {
+const FlowsView: FC<Props> = ({ id, dataSource, buttonType, lang }) => {
     const [contentList, setContentList] = useState<Record<string, React.ReactNode>>({
         flowInformation: <></>,
         modellingAndValidation: <></>,
@@ -40,6 +45,7 @@ const FlowsView: FC<Props> = ({ id, dataSource, lang }) => {
     function initFlowInformation(data: any) {
         let dataSetInformation = data?.dataSetInformation
         let referenceToReferenceFlowProperty = data?.quantitativeReference?.referenceToReferenceFlowProperty
+        let categoryList = classificationToList(dataSetInformation?.classificationInformation?.['common:elementaryFlowCategorization']?.['common:category'])
         return (
             <>
                 <Descriptions bordered size={'small'} column={1}>
@@ -62,8 +68,8 @@ const FlowsView: FC<Props> = ({ id, dataSource, lang }) => {
                 <Divider orientationMargin="0" orientation="left" plain>
                     Classification
                 </Divider>
-                <LevelTextItemDescription data={dataSetInformation?.classificationInformation?.['common:elementaryFlowCategorization']?.['common:category']} />
-
+                <LevelTextItemDescription data={categoryList} />
+                <br />
                 <Descriptions bordered size={'small'} column={1}>
                     <Descriptions.Item key={0} label="CAS Number" labelStyle={{ width: '100px' }}>
                         {dataSetInformation?.[
@@ -76,7 +82,7 @@ const FlowsView: FC<Props> = ({ id, dataSource, lang }) => {
                     General Comment
                 </Divider>
                 <LangTextItemDescription data={dataSetInformation?.['common:generalComment']} />
-
+                <br />
                 <Descriptions bordered size={'small'} column={1}>
                     <Descriptions.Item key={0} label="EC Number" labelStyle={{ width: '100px' }}>
                         {dataSetInformation?.[
@@ -88,7 +94,7 @@ const FlowsView: FC<Props> = ({ id, dataSource, lang }) => {
 
                 <Card size="small" title={'Quantitative Reference'}>
                     <Descriptions bordered size={'small'} column={1}>
-                        <Descriptions.Item key={0} label="Reference To Reference Flow Property" labelStyle={{ width: '100px' }}>
+                        <Descriptions.Item key={0} label="Reference To Reference Flow Property" labelStyle={{ width: '200px' }}>
                             {referenceToReferenceFlowProperty ?? '-'}
                         </Descriptions.Item>
                     </Descriptions>
@@ -109,7 +115,8 @@ const FlowsView: FC<Props> = ({ id, dataSource, lang }) => {
                 </Descriptions>
                 <br />
                 <Card size="small" title={'Compliance Declarations'}>
-                    <Descriptions bordered size={'small'} column={1}>
+                    <SourceSelectDescription data={referenceToComplianceSystem} title={'Reference To Compliance System'} />
+                    {/* <Descriptions bordered size={'small'} column={1}>
                         <Descriptions.Item key={0} label="Ref Object Id" labelStyle={{ width: '220px' }}>
                             {referenceToComplianceSystem?.["@refObjectId"] ?? '-'}
                         </Descriptions.Item>
@@ -131,7 +138,7 @@ const FlowsView: FC<Props> = ({ id, dataSource, lang }) => {
                         Short Description
                     </Divider>
                     <LangTextItemDescription data={referenceToComplianceSystem?.["common:shortDescription"]} />
-                    <br />
+                    <br /> */}
                     <Descriptions bordered size={'small'} column={1}>
                         <Descriptions.Item key={0} label="Approval Of Overall Compliance" labelStyle={{ width: '220px' }}>
                             {approvalOfOverallCompliance ?? '-'}
@@ -149,12 +156,13 @@ const FlowsView: FC<Props> = ({ id, dataSource, lang }) => {
             <>
                 <Card size="small" title={'Data Entry By'}>
                     <Descriptions bordered size={'small'} column={1}>
-                        <Descriptions.Item key={0} label="Time Stamp" labelStyle={{ width: '100px' }}>
+                        <Descriptions.Item key={0} label="Time Stamp" labelStyle={{ width: '150px' }}>
                             {dataEntryBy?.["common:timeStamp"] ?? '-'}
                         </Descriptions.Item>
                     </Descriptions>
                     <br />
-                    <Card size="small" title={'Reference To Data Set Format'}>
+                    <SourceSelectDescription data={dataEntryBy?.['common:referenceToDataSetFormat']} title={'Reference To Data Set Format'} />
+                    {/* <Card size="small" title={'Reference To Data Set Format'}>
                         <Descriptions bordered size={'small'} column={1}>
                             <Descriptions.Item key={0} label="Ref Object Id" labelStyle={{ width: '100px' }}>
                                 {dataEntryBy?.['common:referenceToDataSetFormat']?.["@refObjectId"] ?? '-'}
@@ -178,18 +186,18 @@ const FlowsView: FC<Props> = ({ id, dataSource, lang }) => {
                         </Divider>
                         <LangTextItemDescription data={dataEntryBy?.['common:referenceToDataSetFormat']?.["common:shortDescription"]} />
 
-                    </Card>
+                    </Card> */}
                 </Card>
                 <br />
                 <Card size="small" title={'Publication And Ownership'}>
                     <Descriptions bordered size={'small'} column={1}>
-                        <Descriptions.Item key={0} label="Data Set Version" labelStyle={{ width: '100px' }}>
+                        <Descriptions.Item key={0} label="Data Set Version" labelStyle={{ width: '150px' }}>
                             {publicationAndOwnership?.["common:dataSetVersion"] ?? '-'}
                         </Descriptions.Item>
                     </Descriptions>
                     <br />
                     <Descriptions bordered size={'small'} column={1}>
-                        <Descriptions.Item key={0} label="Permanent Data Set URI" labelStyle={{ width: '100px' }}>
+                        <Descriptions.Item key={0} label="Permanent Data Set URI" labelStyle={{ width: '150px' }}>
                             {publicationAndOwnership?.["common:permanentDataSetURI"] ?? '-'}
                         </Descriptions.Item>
                     </Descriptions>
@@ -202,12 +210,13 @@ const FlowsView: FC<Props> = ({ id, dataSource, lang }) => {
         return (
             <>
                 <Descriptions bordered size={'small'} column={1}>
-                    <Descriptions.Item key={0} label="Data Set Internal ID" labelStyle={{ width: '100px' }}>
+                    <Descriptions.Item key={0} label="Data Set Internal ID" labelStyle={{ width: '200px' }}>
                         {flowProperty?.["@dataSetInternalID"] ?? '-'}
                     </Descriptions.Item>
                 </Descriptions>
                 <br />
-                <Card size="small" title={'Reference To Data Set Format'}>
+                <FlowpropertiesDescription data={flowProperty?.['referenceToFlowPropertyDataSet']} lang={lang} title={'Reference To Data Set Format'} />
+                {/* <Card size="small" title={'Reference To Data Set Format'}>
                     <Descriptions bordered size={'small'} column={1}>
                         <Descriptions.Item key={0} label="Ref Object Id" labelStyle={{ width: '100px' }}>
                             {flowProperty?.['referenceToFlowPropertyDataSet']?.["@refObjectId"] ?? '-'}
@@ -231,10 +240,10 @@ const FlowsView: FC<Props> = ({ id, dataSource, lang }) => {
                     </Divider>
                     <LangTextItemDescription data={flowProperty?.['referenceToFlowPropertyDataSet']?.["common:shortDescription"]} />
 
-                </Card>
+                </Card> */}
                 <br />
                 <Descriptions bordered size={'small'} column={1}>
-                    <Descriptions.Item key={0} label="Mean Value" labelStyle={{ width: '100px' }}>
+                    <Descriptions.Item key={0} label="Mean Value" labelStyle={{ width: '150px' }}>
                         {flowProperty?.["meanValue"] ?? '-'}
                     </Descriptions.Item>
                 </Descriptions>
@@ -298,7 +307,14 @@ const FlowsView: FC<Props> = ({ id, dataSource, lang }) => {
     return (
         <>
             <Tooltip title={<FormattedMessage id="pages.table.option.view" defaultMessage="View" />}>
-                <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
+                {/* <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} /> */}
+                {buttonType === 'icon' ? (
+                    <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
+                ) : (
+                    <Button onClick={onView}>
+                        <FormattedMessage id="pages.table.option.view" defaultMessage="View" />
+                    </Button>
+                )}
             </Tooltip>
             <Drawer
                 title={<FormattedMessage id="pages.table.option.view" defaultMessage="View" />}

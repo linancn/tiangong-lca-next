@@ -1,68 +1,64 @@
 import { getFlowpropertiesDetail } from '@/services/flowproperties/api';
-// import { langOptions } from '@/services/general/data';
-import { ProFormInstance } from '@ant-design/pro-components';
+import { langOptions } from '@/services/general/data';
+import { ActionType, ProFormInstance } from '@ant-design/pro-components';
 import {
   Card,
-  // Col,
+  Col,
   Divider,
   Form, Input,
-  // Row,
-  // Select,
-  Space
+  Row,
+  Select,
+  Space,
+  Button
 } from 'antd';
-import { FC } from 'react';
+import React, { FC } from 'react';
 import FlowpropertiesSelectDrawer from './drawer';
-import LangTextItemFrom from '@/components/LangTextItem/from';
-// const { TextArea } = Input;
+import FlowpropertiesView from '../view';
+// import LangTextItemFrom from '@/components/LangTextItem/from';
+const { TextArea } = Input;
 
 type Props = {
   name: any;
   label: string;
   lang: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
-  onData: (key: any, data: any) => void
+  onData?: (key: any, data: any) => void
 };
 
 const FlowpropertiesSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => {
-  // const getShortDescription = (dataSetInformation: any) => {
-  //   const shortName = dataSetInformation?.['common:shortName'];
-  //   if (Array.isArray(shortName)) {
-  //     return shortName.map((item: any) => {
-  //       return { ...item, '#text': `${item['#text']}, ${dataSetInformation.email}` };
-  //     });
-  //   } else {
-  //     return { ...shortName, '#text': `${shortName['#text']}, ${dataSetInformation.email}` };
-  //   }
-  // };
-
+  const handleResetData = (data: any) => {
+    formRef.current?.setFieldValue(name, data);
+    if (onData) {
+      onData(name, data)
+    }
+  }
   const handletFlowpropertiesData = (rowKey: any) => {
     getFlowpropertiesDetail(rowKey).then(async (result: any) => {
       let data = {
         '@refObjectId': `${rowKey}`,
         '@type': 'flowproperties data set',
         '@uri': `../flowproperties/${rowKey}.xml`,
-        // 'common:shortDescription': getShortDescription(
-        //   result.data.json?.flowPropertyDataSet?.flowPropertiesInformation?.dataSetInformation,
-        // ),
         'common:shortDescription': [],
-        // '@version':
-        //   result.data.json?.flowPropertyDataSet?.administrativeInformation?.publicationAndOwnership?.[
-        //   'common:dataSetVersion'
-        //   ],
       }
-      formRef.current?.setFieldValue(name, data);
-      // let formData = formRef.current?.getFieldsValue();
-      onData(name, data)
+      handleResetData(data)
     });
   };
-
+  const actionRef = React.useRef<ActionType | undefined>(undefined);
+  const id = formRef.current?.getFieldValue([...name, '@refObjectId']);
   return (
     <Card size="small" title={label}>
       <Space direction="horizontal">
         <Form.Item label="Ref Object Id" name={[...name, '@refObjectId']}>
           <Input disabled={true} style={{ width: '300px' }} />
         </Form.Item>
-        <FlowpropertiesSelectDrawer buttonType="text" lang={lang} onData={handletFlowpropertiesData} />
+        <Space direction="horizontal" style={{ marginTop: '6px' }}>
+          <FlowpropertiesSelectDrawer buttonType="text" lang={lang} onData={handletFlowpropertiesData} />
+          {id && <FlowpropertiesView lang={lang} id={id} dataSource="tg" buttonType="text" actionRef={actionRef} />}
+          {id && (
+            <Button onClick={() => handleResetData({})}>Clear</Button>
+          )}
+        </Space>
+
       </Space>
       <Form.Item label="Type" name={[...name, '@type']}>
         <Input disabled={true} />
@@ -70,17 +66,17 @@ const FlowpropertiesSelectFrom: FC<Props> = ({ name, label, lang, formRef, onDat
       <Form.Item label="URI" name={[...name, '@uri']}>
         <Input disabled={true} />
       </Form.Item>
-      <Form.Item label="Version" name={[...name, '@version']}>
+      {/* <Form.Item label="Version" name={[...name, '@version']}>
         <Input disabled={true} />
-      </Form.Item>
+      </Form.Item> */}
       <Divider orientationMargin="0" orientation="left" plain>
         Short Description
       </Divider>
-      <LangTextItemFrom
+      {/* <LangTextItemFrom
         name={[...name, 'common:shortDescription']}
         label="Short Description"
-      />
-      {/* <Form.Item>
+      /> */}
+      <Form.Item>
         <Form.List name={[...name, 'common:shortDescription']}>
           {(subFields) => (
             <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
@@ -103,10 +99,11 @@ const FlowpropertiesSelectFrom: FC<Props> = ({ name, label, lang, formRef, onDat
                   </Col>
                 </Row>
               ))}
+              {subFields.length < 1 && <Input disabled={true} />}
             </div>
           )}
         </Form.List>
-      </Form.Item> */}
+      </Form.Item>
     </Card>
   );
 };

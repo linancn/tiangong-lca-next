@@ -11,14 +11,17 @@ import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import ContactDelete from './delete';
 import ContactEdit from './edit';
+import ContractDescription from './select/description';
+import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 
 type Props = {
   id: string;
+  lang: string;
   dataSource: string;
   buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
 };
-const ContactView: FC<Props> = ({ id, dataSource, buttonType, actionRef }) => {
+const ContactView: FC<Props> = ({ id, lang, dataSource, buttonType, actionRef }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [spinning, setSpinning] = useState(false);
@@ -65,22 +68,163 @@ const ContactView: FC<Props> = ({ id, dataSource, buttonType, actionRef }) => {
           }
         />
         <br />
+        <Divider orientationMargin="0" orientation="left" plain>
+          Contact Address
+        </Divider>
+        <LangTextItemDescription
+          data={initData.contactInformation?.dataSetInformation?.['contactAddress']}
+        />
+        <br />
+        <Descriptions bordered size={'small'} column={1}>
+          <Descriptions.Item key={0} label="Telephone" labelStyle={{ width: '100px' }}>
+            {initData.contactInformation?.dataSetInformation?.telephone ?? '-'}
+          </Descriptions.Item>
+        </Descriptions>
+        <br />
+        <Descriptions bordered size={'small'} column={1}>
+          <Descriptions.Item key={0} label="Telefax" labelStyle={{ width: '100px' }}>
+            {initData.contactInformation?.dataSetInformation?.telefax ?? '-'}
+          </Descriptions.Item>
+        </Descriptions>
+        <br />
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item key={0} label="Email" labelStyle={{ width: '100px' }}>
             {initData.contactInformation?.dataSetInformation?.email ?? '-'}
           </Descriptions.Item>
         </Descriptions>
+        <br />
+        <Descriptions bordered size={'small'} column={1}>
+          <Descriptions.Item key={0} label="WWW Address" labelStyle={{ width: '100px' }}>
+            {initData.contactInformation?.dataSetInformation?.WWWAddress ?? '-'}
+          </Descriptions.Item>
+        </Descriptions>
+        <br />
+        <Divider orientationMargin="0" orientation="left" plain>
+          Central Contact Point
+        </Divider>
+        <LangTextItemDescription
+          data={initData.contactInformation?.dataSetInformation?.['centralContactPoint']}
+        />
+        <br />
+        <Divider orientationMargin="0" orientation="left" plain>
+          Contact Description Or Comment
+        </Divider>
+        <LangTextItemDescription
+          data={initData.contactInformation?.dataSetInformation?.['contactDescriptionOrComment']}
+        />
+        <br />
+        <ContractDescription data={initData.contactInformation?.dataSetInformation?.referenceToContact} lang={lang} title={'Reference To Contact'} ></ContractDescription>
+        {/* <Card size="small" title={'Reference To Contact'}>
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item key={0} label="Ref Object Id" labelStyle={{ width: '220px' }}>
+              {initData.contactInformation?.dataSetInformation?.referenceToContact?.["@refObjectId"] ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
+          <br />
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item key={0} label="Type" labelStyle={{ width: '220px' }}>
+              {initData.contactInformation?.dataSetInformation?.referenceToContact?.["@type"] ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
+          <br />
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item key={0} label="URI" labelStyle={{ width: '220px' }}>
+              {initData.contactInformation?.dataSetInformation?.referenceToContact?.["@uri"] ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
+          <br />
+          <Divider orientationMargin="0" orientation="left" plain>
+            Short Description
+          </Divider>
+          <LangTextItemDescription data={initData.contactInformation?.dataSetInformation?.referenceToContact?.["common:shortDescription"]} />
+          <br />
+        </Card> */}
       </>
     ),
     administrativeInformation: (
       <>
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item key={0} label="version" labelStyle={{ width: '100px' }}>
-            {initData.administrativeInformation?.publicationAndOwnership?.[
-              'common:dataSetVersion'
-            ] ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
+        <Card size="small" title={'Data Entry By'}>
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item key={0} label="Time Stamp" labelStyle={{ width: '100px' }}>
+              {initData.administrativeInformation?.dataEntryBy?.[
+                'common:timeStamp'
+              ] ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
+          <br />
+          <SourceSelectDescription title={'Reference To Data Set Format'} data={initData.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']} />
+          {/* <Card size="small" title={'Reference To Data Set Format'}>
+            <Descriptions bordered size={'small'} column={1}>
+              <Descriptions.Item key={0} label="Ref Object Id" labelStyle={{ width: '220px' }}>
+                {initData.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.["@refObjectId"] ?? '-'}
+              </Descriptions.Item>
+            </Descriptions>
+            <br />
+            <Descriptions bordered size={'small'} column={1}>
+              <Descriptions.Item key={0} label="Type" labelStyle={{ width: '220px' }}>
+                {initData.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.["@type"] ?? '-'}
+              </Descriptions.Item>
+            </Descriptions>
+            <br />
+            <Descriptions bordered size={'small'} column={1}>
+              <Descriptions.Item key={0} label="URI" labelStyle={{ width: '220px' }}>
+                {initData.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.["@uri"] ?? '-'}
+              </Descriptions.Item>
+            </Descriptions>
+            <br />
+            <Divider orientationMargin="0" orientation="left" plain>
+              Short Description
+            </Divider>
+            <LangTextItemDescription data={initData.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.["common:shortDescription"]} />
+            <br />
+          </Card> */}
+        </Card>
+        <br />
+        <Card size="small" title={'Publication And Ownership'}>
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item key={0} label="Data Set Version" labelStyle={{ width: '100px' }}>
+              {initData.administrativeInformation?.publicationAndOwnership?.[
+                'common:dataSetVersion'
+              ] ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
+          <br />
+          <ContractDescription data={initData.administrativeInformation?.publicationAndOwnership?.['common:referenceToPrecedingDataSetVersion']} lang={lang} title={'Reference To Preceding Data Set Version'} ></ContractDescription>
+          {/* <Card size="small" title={'Reference To Preceding Data Set Version'}>
+            <Descriptions bordered size={'small'} column={1}>
+              <Descriptions.Item key={0} label="Ref Object Id" labelStyle={{ width: '220px' }}>
+                {initData.administrativeInformation?.publicationAndOwnership?.['common:referenceToPrecedingDataSetVersion']?.["@refObjectId"] ?? '-'}
+              </Descriptions.Item>
+            </Descriptions>
+            <br />
+            <Descriptions bordered size={'small'} column={1}>
+              <Descriptions.Item key={0} label="Type" labelStyle={{ width: '220px' }}>
+                {initData.administrativeInformation?.publicationAndOwnership?.['common:referenceToPrecedingDataSetVersion']?.["@type"] ?? '-'}
+              </Descriptions.Item>
+            </Descriptions>
+            <br />
+            <Descriptions bordered size={'small'} column={1}>
+              <Descriptions.Item key={0} label="URI" labelStyle={{ width: '220px' }}>
+                {initData.administrativeInformation?.publicationAndOwnership?.['common:referenceToPrecedingDataSetVersion']?.["@uri"] ?? '-'}
+              </Descriptions.Item>
+            </Descriptions>
+            <br />
+            <Divider orientationMargin="0" orientation="left" plain>
+              Short Description
+            </Divider>
+            <LangTextItemDescription data={initData.administrativeInformation?.publicationAndOwnership?.['common:referenceToPrecedingDataSetVersion']?.["common:shortDescription"]} />
+            <br />
+          </Card> */}
+          <br />
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item key={0} label="Permanent Data Set URI" labelStyle={{ width: '100px' }}>
+              {initData.administrativeInformation?.publicationAndOwnership?.[
+                'common:permanentDataSetURI'
+              ] ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
+        </Card>
+
       </>
     ),
   };
@@ -101,6 +245,7 @@ const ContactView: FC<Props> = ({ id, dataSource, buttonType, actionRef }) => {
             />
             <ContactEdit
               id={id}
+              lang={lang}
               buttonType={'text'}
               actionRef={actionRef}
               setViewDrawerVisible={setDrawerVisible}

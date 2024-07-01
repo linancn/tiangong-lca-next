@@ -10,13 +10,17 @@ import { useState, useEffect } from 'react';
 import { FormattedMessage } from 'umi';
 // import FlowpropertiesDelete from './delete';
 // import FlowpropertiesEdit from './edit';
-
+import {
+  classificationToList,
+} from '@/services/general/util';
 type Props = {
   id: string;
   dataSource: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
+  buttonType: string;
+  lang: string
 };
-const FlowpropertiesView: FC<Props> = ({ id, dataSource }) => {
+const FlowpropertiesView: FC<Props> = ({ id, dataSource, buttonType, }) => {
   const [contentList, setContentList] = useState<Record<string, React.ReactNode>>({
     flowPropertiesInformation: <></>,
     modellingAndValidation: <></>,
@@ -38,6 +42,7 @@ const FlowpropertiesView: FC<Props> = ({ id, dataSource }) => {
   function initFlowPropertiesInformation(data: any) {
     let dataSetInformation = data?.dataSetInformation
     let referenceToReferenceUnitGroup = data?.quantitativeReference?.referenceToReferenceUnitGroup
+    let classList = classificationToList(dataSetInformation?.classificationInformation?.['common:classification']?.['common:class'])
     return (
       <>
         <Descriptions bordered size={'small'} column={1}>
@@ -60,7 +65,7 @@ const FlowpropertiesView: FC<Props> = ({ id, dataSource }) => {
         <Divider orientationMargin="0" orientation="left" plain>
           Classification
         </Divider>
-        <LevelTextItemDescription data={dataSetInformation?.classificationInformation?.['common:classification']?.['common:class']} />
+        <LevelTextItemDescription data={classList} />
         <br />
 
         <Card size="small" title={'Quantitative Reference'}>
@@ -267,7 +272,14 @@ const FlowpropertiesView: FC<Props> = ({ id, dataSource }) => {
   return (
     <>
       <Tooltip title={<FormattedMessage id="pages.table.option.view" defaultMessage="View" />}>
-        <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
+        {/* <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} /> */}
+        {buttonType === 'icon' ? (
+          <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
+        ) : (
+          <Button onClick={onView}>
+            <FormattedMessage id="pages.table.option.view" defaultMessage="View" />
+          </Button>
+        )}
       </Tooltip>
       <Drawer
         title={<FormattedMessage id="pages.table.option.view" defaultMessage="View" />}

@@ -90,6 +90,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
             <Space size={'small'} key={0}>
               <ContactView
                 id={row.id}
+                lang={lang}
                 dataSource="tg"
                 buttonType="icon"
                 actionRef={tgActionRefSelect}
@@ -101,12 +102,14 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
             <Space size={'small'} key={0}>
               <ContactView
                 id={row.id}
+                lang={lang}
                 dataSource="my"
                 buttonType="icon"
                 actionRef={myActionRefSelect}
               />
               <ContactEdit
                 id={row.id}
+                lang={lang}
                 buttonType={'icon'}
                 actionRef={myActionRefSelect}
                 setViewDrawerVisible={() => {}}

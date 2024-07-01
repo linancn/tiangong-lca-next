@@ -7,6 +7,7 @@ import { ProForm } from '@ant-design/pro-components';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import type { ActionType } from '@ant-design/pro-table';
 import FlowpropertiesSelect from '@/pages/Flowproperties/Components/select/from';
+import SourceSelectFrom from '@/pages/Sources/Components/select/from';
 import {
     Button,
     Card,
@@ -19,12 +20,12 @@ import {
     Tooltip,
     Typography,
     message,
-    Divider
+    // Divider
 } from 'antd';
 import type { FC } from 'react';
 import {
     // useCallback, useEffect,
-    useRef, useState, React
+    useRef, useState,
 } from 'react';
 import { FormattedMessage } from 'umi';
 import {
@@ -54,7 +55,7 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
         setActiveTabKey(key);
         formRefEdit.current?.setFieldsValue(fromData[key]);
     };
-    const handleFlowPropertiesData = (keys: string[], data: any) => {
+    const handleData = (keys: string[], data: any) => {
         // 创建一个新对象，以避免直接修改状态
         const newData = { ...fromData[activeTabKey] };
         // 递归地设置嵌套值
@@ -84,7 +85,11 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
                     </Card>
                     <br />
                     <Card size="small" title={'Classification'}>
-                        <LevelTextItemFrom name={['dataSetInformation', "classificationInformation", 'common:elementaryFlowCategorization', 'common:category']} />
+                        <LevelTextItemFrom
+                            dataType='Flows'
+                            formRef={formRefEdit}
+                            onData={() => { }}
+                            name={['dataSetInformation', "classificationInformation", 'common:elementaryFlowCategorization', 'common:category']} />
                     </Card>
                     <br />
                     <Card size="small">
@@ -122,7 +127,13 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
             </Card>
             <br />
             <Card size="small" title={'Compliance Declarations'}>
-                <Form.Item label="Ref Object Id" name={['complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem', '@refObjectId']}>
+                <SourceSelectFrom
+                    lang={lang}
+                    formRef={formRefEdit}
+                    label={'Reference To Compliance System'}
+                    name={['complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem']}
+                    onData={handleData} />
+                {/* <Form.Item label="Ref Object Id" name={['complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem', '@refObjectId']}>
                     <Input placeholder="@refObjectId" />
                 </Form.Item>
                 <Form.Item label='Type' name={['complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem', '@type']}>
@@ -137,7 +148,7 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
                 <LangTextItemFrom
                     name={['complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem', 'common:shortDescription']}
                     label="Short Description"
-                />
+                /> */}
                 <Form.Item label="Approval Of Overall Compliance" name={['complianceDeclarations', 'compliance', 'common:approvalOfOverallCompliance']}>
                     <Input />
                 </Form.Item>
@@ -153,7 +164,13 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
                 <Form.Item label="Time Stamp" name={['dataEntryBy', 'common:timeStamp']}>
                     <Input />
                 </Form.Item>
-                <Card
+                <SourceSelectFrom
+                    lang={lang}
+                    formRef={formRefEdit}
+                    label={'Reference To Data Set Format'}
+                    name={['dataEntryBy', 'common:referenceToDataSetFormat']}
+                    onData={handleData} />
+                {/* <Card
                     size="small"
                     title={'Reference To Data Set Format'}
                 >
@@ -194,7 +211,7 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
                         ]}
                         label="Short Description"
                     />
-                </Card>
+                </Card> */}
 
             </Card>
 
@@ -220,7 +237,7 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
                     name={['flowProperty', 'referenceToFlowPropertyDataSet']}
                     lang={lang}
                     formRef={formRefEdit}
-                    onData={handleFlowPropertiesData} />
+                    onData={handleData} />
                 {/* <Card size="small" title={'Reference To Flow Property Data Set'}>
                     <Form.Item label="Type" name={['flowProperty', 'referenceToFlowPropertyDataSet', '@type']}>
                         <Input />
