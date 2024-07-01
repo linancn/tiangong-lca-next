@@ -219,42 +219,42 @@ export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
         },
         publicationAndOwnership: {
           'common:dateOfLastRevision':
-            data?.administrativeInformation?.dataEntryBy?.publicationAndOwnership?.[
+            data?.administrativeInformation?.publicationAndOwnership?.[
               'common:dateOfLastRevision'
             ] ?? {},
           'common:dataSetVersion':
-            data?.administrativeInformation?.dataEntryBy?.publicationAndOwnership?.[
+            data?.administrativeInformation?.publicationAndOwnership?.[
               'common:dataSetVersion'
             ] ?? {},
           'common:permanentDataSetURI':
-            data?.administrativeInformation?.dataEntryBy?.publicationAndOwnership?.[
+            data?.administrativeInformation?.publicationAndOwnership?.[
               'common:permanentDataSetURI'
             ] ?? {},
           'common:referenceToOwnershipOfDataSet': {
             '@refObjectId':
-              data?.administrativeInformation?.dataEntryBy?.publicationAndOwnership?.[
+              data?.administrativeInformation?.publicationAndOwnership?.[
                 'common:referenceToOwnershipOfDataSet'
               ]?.['@refObjectId'] ?? {},
             '@type':
-              data?.administrativeInformation?.dataEntryBy?.publicationAndOwnership?.[
+              data?.administrativeInformation?.publicationAndOwnership?.[
                 'common:referenceToOwnershipOfDataSet'
               ]?.['@type'] ?? {},
             '@uri':
-              data?.administrativeInformation?.dataEntryBy?.publicationAndOwnership?.[
+              data?.administrativeInformation?.publicationAndOwnership?.[
                 'common:referenceToOwnershipOfDataSet'
               ]?.['@uri'] ?? {},
             'common:shortDescription': getLangJson(
-              data?.administrativeInformation?.dataEntryBy?.publicationAndOwnership?.[
+              data?.administrativeInformation?.publicationAndOwnership?.[
                 'common:referenceToOwnershipOfDataSet'
               ]?.['common:shortDescription'],
             ),
           },
           'common:copyright':
-            data?.administrativeInformation?.dataEntryBy?.publicationAndOwnership?.[
+            data?.administrativeInformation?.publicationAndOwnership?.[
               'common:copyright'
             ],
           'common:licenseType':
-            data?.administrativeInformation?.dataEntryBy?.publicationAndOwnership?.[
+            data?.administrativeInformation?.publicationAndOwnership?.[
               'common:licenseType'
             ],
         },
@@ -469,42 +469,42 @@ export function genProcessFromData(data: any) {
       },
       publicationAndOwnership: {
         'common:dateOfLastRevision':
-          data?.administrativeInformation?.dataEntryBy?.publicationAndOwnership?.[
+          data?.administrativeInformation?.publicationAndOwnership?.[
             'common:dateOfLastRevision'
           ] ?? {},
         'common:dataSetVersion':
-          data?.administrativeInformation?.dataEntryBy?.publicationAndOwnership?.[
+          data?.administrativeInformation?.publicationAndOwnership?.[
             'common:dataSetVersion'
           ] ?? {},
         'common:permanentDataSetURI':
-          data?.administrativeInformation?.dataEntryBy?.publicationAndOwnership?.[
+          data?.administrativeInformation?.publicationAndOwnership?.[
             'common:permanentDataSetURI'
           ] ?? {},
         'common:referenceToOwnershipOfDataSet': {
           '@refObjectId':
-            data?.administrativeInformation?.dataEntryBy?.publicationAndOwnership?.[
+            data?.administrativeInformation?.publicationAndOwnership?.[
               'common:referenceToOwnershipOfDataSet'
             ]?.['@refObjectId'] ?? {},
           '@type':
-            data?.administrativeInformation?.dataEntryBy?.publicationAndOwnership?.[
+            data?.administrativeInformation?.publicationAndOwnership?.[
               'common:referenceToOwnershipOfDataSet'
             ]?.['@type'] ?? {},
           '@uri':
-            data?.administrativeInformation?.dataEntryBy?.publicationAndOwnership?.[
+            data?.administrativeInformation?.publicationAndOwnership?.[
               'common:referenceToOwnershipOfDataSet'
             ]?.['@uri'] ?? {},
           'common:shortDescription': getLangList(
-            data?.administrativeInformation?.dataEntryBy?.publicationAndOwnership?.[
+            data?.administrativeInformation?.publicationAndOwnership?.[
               'common:referenceToOwnershipOfDataSet'
             ]?.['common:shortDescription'],
           ),
         },
         'common:copyright':
-          data?.administrativeInformation?.dataEntryBy?.publicationAndOwnership?.[
+          data?.administrativeInformation?.publicationAndOwnership?.[
             'common:copyright'
           ],
         'common:licenseType':
-          data?.administrativeInformation?.dataEntryBy?.publicationAndOwnership?.[
+          data?.administrativeInformation?.publicationAndOwnership?.[
             'common:licenseType'
           ],
       },

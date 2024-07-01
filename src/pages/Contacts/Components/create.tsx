@@ -23,7 +23,7 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
   const [activeTabKey, setActiveTabKey] = useState<string>('contactInformation');
 
   const handletFromData = (data: any) => {
-    setFromData({ ...data });
+    setFromData({ ...fromData, data });
   };
 
   const tabList = [

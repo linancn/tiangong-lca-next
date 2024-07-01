@@ -1,49 +1,67 @@
 import LangTextItemFrom from '@/components/LangTextItem/from';
 import LevelTextItemFrom from '@/components/LevelTextItem/from';
+import SourceSelectFrom from '@/pages/Sources/Components/select/from';
 import { ListPagination } from '@/services/general/data';
 import { getUnitGroupDetail, updateUnitGroup } from '@/services/unitgroups/api';
-import { classificationToJson, getLangList, } from '@/services/general/util';
 import { UnitTable } from '@/services/unitgroups/data';
+import { genUnitGroupFromData } from '@/services/unitgroups/util';
 import styles from '@/style/custom.less';
-import { CloseOutlined, DeleteOutlined, FormOutlined } from '@ant-design/icons';
+import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ProForm } from '@ant-design/pro-components';
-import ProTable from '@ant-design/pro-table';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
+import ProTable from '@ant-design/pro-table';
 import {
     Button,
     Card,
-    DatePicker,
-    Divider,
     Drawer,
     Form,
     Input,
-    Popconfirm,
     Space,
+    Spin,
     Tooltip,
     Typography,
-    message,
+    message
 } from 'antd';
 import type { FC } from 'react';
-import { useCallback, useRef, useState, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import { v4 } from 'uuid';
-import dayjs from 'dayjs';
 import UnitCreate from './Unit/create';
+import UnitDelete from './Unit/delete';
 import UnitEdit from './Unit/edit';
 
 type Props = {
     id: string;
     buttonType: string;
+    lang: string;
     actionRef: React.MutableRefObject<ActionType | undefined>;
     setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
 };
-const UnitGroupEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisible }) => {
+const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDrawerVisible }) => {
     const [drawerVisible, setDrawerVisible] = useState(false);
     const formRefEdit = useRef<ProFormInstance>();
     const [activeTabKey, setActiveTabKey] = useState<string>('unitGroupInformation');
+    const [initData, setInitData] = useState<any>({});
     const [fromData, setFromData] = useState<any>({});
     const [unitDataSource, setUnitDataSource] = useState<readonly UnitTable[]>([]);
+    const [spinning, setSpinning] = useState(false);
+
+    const actionRefUnitTable = useRef<ActionType>();
+
+    const handletUnitDataCreate = (data: any) => {
+        setUnitDataSource([
+            ...unitDataSource,
+            { ...data, '@dataSetInternalID': unitDataSource.length.toString() },
+        ]);
+    };
+
+    const handletFromData = (data: any) => {
+        setFromData({ ...fromData, data });
+    };
+
+    const handletUnitData = (data: any) => {
+        setUnitDataSource([...data]);
+    };
 
     const tabList = [
         { key: 'unitGroupInformation', tab: 'UnitGroup Information' },
@@ -52,117 +70,17 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisi
         { key: 'units', tab: 'Units' },
     ];
 
-    const setUnitGroupInformationData = (data: any) => {
-        let dataSetInformation = data?.dataSetInformation;
-        return {
-            unitGroupInformation: {
-                dataSetInformation: {
-                    'common:UUID': dataSetInformation?.['common:UUID'],
-                    'common:name': getLangList(dataSetInformation?.["common:name"]),
-                    classificationInformation: {
-                        'common:classification': {
-                            'common:class': classificationToJson(dataSetInformation?.classificationInformation?.['common:classification']?.['common:class']),
-                        },
-                    },
-                },
-                quantitativeReference: {
-                    referenceToReferenceUnit: data?.quantitativeReference?.referenceToReferenceUnit,
-                }
-            }
-        };
-    };
-    const setModellingAndValidationData = (data: any) => {
-        let referenceToComplianceSystem = data?.complianceDeclarations?.compliance?.['common:referenceToComplianceSystem'];
-        return {
-            modellingAndValidation: {
-                complianceDeclarations: {
-                    compliance: {
-                        'common:referenceToComplianceSystem': {
-                            '@refObjectId': referenceToComplianceSystem?.['@refObjectId'],
-                            '@type': referenceToComplianceSystem?.['@type'],
-                            '@uri': referenceToComplianceSystem?.['@uri'],
-                            '@version': referenceToComplianceSystem?.['@version'],
-                            'common:shortDescription': getLangList(referenceToComplianceSystem?.['common:shortDescription']),
-                        },
-                        'common:approvalOfOverallCompliance': data?.complianceDeclarations?.compliance?.['common:approvalOfOverallCompliance'],
-                    }
-                }
-            }
-        };
-    };
-    const setAdministrativeInformationData = (data: any) => {
-        let referenceToDataSetFormat = data?.dataEntryBy?.['common:referenceToDataSetFormat'];
-        return {
-            administrativeInformation: {
-                dataEntryBy: {
-                    'common:timeStamp': dayjs(data?.dataEntryBy?.['common:timeStamp'], 'YYYY.MM.DD HH:mm:ss'),
-                    'common:referenceToDataSetFormat': {
-                        '@refObjectId': referenceToDataSetFormat?.['@refObjectId'],
-                        '@type': referenceToDataSetFormat?.['@type'],
-                        '@uri': referenceToDataSetFormat?.['@uri'],
-                        '@version': referenceToDataSetFormat?.['@version'],
-                        'common:shortDescription': getLangList(referenceToDataSetFormat?.['common:shortDescription']),
-                    }
-                },
-                publicationAndOwnership: {
-                    'common:dataSetVersion': data?.publicationAndOwnership?.['common:dataSetVersion'],
-                }
-            }
-        };
-    };
-    const setUnitsData = (data: any) => {
-        let compute_units = [];
-        if (data?.unit) {
-            compute_units = data?.unit.map((item: any) => {
-                return {
-                    id: v4(),
-                    '@dataSetInternalID': item['@dataSetInternalID'],
-                    name: item.name,
-                    meanValue: item.meanValue,
-                    selected: false,
-                };
-            });
-        }
-        return {
-            units: {
-                unit: compute_units,
-            }
-        };
-    };
-    const setData = (data: any) => {
-        return {
-            ...setUnitGroupInformationData(data?.unitGroupInformation),
-            ...setModellingAndValidationData(data?.modellingAndValidation),
-            ...setAdministrativeInformationData(data?.administrativeInformation),
-            ...setUnitsData(data?.units),
-        };
-    };
-
-    const createUnitData = (data: any) => {
-        setUnitDataSource([...unitDataSource, data]);
-    };
-
-    const editUnitData = (data: any) => {
-        const newUnitDataSource = unitDataSource.map((item: UnitTable) => {
-            if (item.id === data.id) {
-                return data;
-            }
-            return item;
-        });
-        setUnitDataSource(newUnitDataSource);
-    };
-
     const unitColumns: ProColumns<UnitTable>[] = [
         {
             title: <FormattedMessage id="pages.table.index" defaultMessage="Index"></FormattedMessage>,
             valueType: 'index',
             search: false,
         },
-        {
-            title: <FormattedMessage id="pages.unitgroup.unit.dataSetInternalID" defaultMessage="DataSet Internal ID"></FormattedMessage>,
-            dataIndex: '@dataSetInternalID',
-            search: false,
-        },
+        // {
+        //     title: <FormattedMessage id="pages.unitgroup.unit.dataSetInternalID" defaultMessage="DataSet Internal ID"></FormattedMessage>,
+        //     dataIndex: '@dataSetInternalID',
+        //     search: false,
+        // },
         {
             title: <FormattedMessage id="pages.unitgroup.unit.name" defaultMessage="Name"></FormattedMessage>,
             dataIndex: 'name',
@@ -186,18 +104,22 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisi
             render: (_, row) => {
                 return [
                     <Space size={'small'} key={0}>
-                        <Tooltip title={<FormattedMessage id="pages.table.option.edit" defaultMessage="Edit"></FormattedMessage>}>
-                            <UnitEdit buttonType={'icon'} editData={row} onData={editUnitData}></UnitEdit>
-                        </Tooltip>
-                        <Tooltip title={<FormattedMessage id="pages.table.option.delete" defaultMessage="Delete"></FormattedMessage>}>
-                            <Popconfirm title={<FormattedMessage id="pages.table.option.delete.confirm" defaultMessage="Delete"></FormattedMessage>}
-                                onConfirm={() => {
-                                    const newUnitDataSource = unitDataSource.filter((item: UnitTable) => item.id !== row.id);
-                                    setUnitDataSource(newUnitDataSource);
-                                }}>
-                                <Button size={'small'} shape="circle" icon={<DeleteOutlined />}></Button>
-                            </Popconfirm>
-                        </Tooltip>
+                        <UnitEdit
+                            id={row.dataSetInternalID}
+                            data={unitDataSource}
+                            buttonType={'icon'}
+                            actionRef={actionRefUnitTable}
+                            onData={handletUnitData}
+                            setViewDrawerVisible={() => { }}
+                        />
+                        <UnitDelete
+                            id={row.dataSetInternalID}
+                            data={unitDataSource}
+                            buttonType={'icon'}
+                            actionRef={actionRefUnitTable}
+                            setViewDrawerVisible={() => { }}
+                            onData={handletUnitData}
+                        />
                     </Space>
                 ];
             }
@@ -208,74 +130,50 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisi
         unitGroupInformation: (
             <Space direction="vertical" style={{ width: '100%' }}>
                 <Card size="small" title={'Name'}>
-                    <LangTextItemFrom name={['dataSetInformation', 'common:name']} label="Name"></LangTextItemFrom>
+                    <LangTextItemFrom name={['unitGroupInformation', 'dataSetInformation', 'common:name']} label="Name"></LangTextItemFrom>
                 </Card>
                 <Card size="small" title={'Classification'}>
-                    <LevelTextItemFrom name={['dataSetInformation', "classificationInformation", 'common:classification', 'common:class']}></LevelTextItemFrom>
+                    <LevelTextItemFrom name={['unitGroupInformation', 'dataSetInformation', "classificationInformation", 'common:classification', 'common:class']} dataType={'UnitGroup'} formRef={formRefEdit} onData={handletFromData} />
                 </Card>
                 <Form.Item label="Reference To Reference Unit" name={['quantitativeReference', 'referenceToReferenceUnit']}>
                     <Input></Input>
                 </Form.Item>
-                <Form.Item label="ID" name={['dataSetInformation', 'common:UUID']} hidden>
+                <Form.Item label="ID" name={['unitGroupInformation', 'dataSetInformation', 'common:UUID']} hidden>
                     <Input></Input>
                 </Form.Item>
             </Space>
         ),
         modellingAndValidation: (
             <Space direction="vertical" style={{ width: '100%' }}>
-                <Card size="small" title={'Reference To Compliance System'}>
-                    <Form.Item label="Ref Object Id" name={['complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem', '@refObjectId']}>
-                        <Input></Input>
-                    </Form.Item>
-                    <Form.Item label="Type" name={['complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem', '@type']}>
-                        <Input></Input>
-                    </Form.Item>
-                    <Form.Item label="URI" name={['complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem', '@uri']}>
-                        <Input></Input>
-                    </Form.Item>
-                    <Form.Item label="Version" name={['complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem', '@version']}>
-                        <Input></Input>
-                    </Form.Item>
-                    <Divider orientationMargin="0" orientation="left" plain>
-                        Short Description
-                    </Divider>
-                    <LangTextItemFrom label="Name" name={['complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem', 'common:shortDescription']}></LangTextItemFrom>
-                </Card>
-                <Form.Item label="Approval Of Overall Compliance" name={['complianceDeclarations', 'compliance', 'common:approvalOfOverallCompliance']}>
+                <SourceSelectFrom
+                    name={['modellingAndValidation', 'complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem']}
+                    label={"Reference To Compliance System"}
+                    lang={lang}
+                    formRef={formRefEdit} />
+                <Form.Item label="Approval Of Overall Compliance" name={['modellingAndValidation', 'complianceDeclarations', 'compliance', 'common:approvalOfOverallCompliance']}>
                     <Input></Input>
                 </Form.Item>
             </Space>
         ),
         administrativeInformation: (
             <Space direction="vertical" style={{ width: '100%' }}>
-                <Form.Item label="TimeStamp" name={['dataEntryBy', 'common:timeStamp']}>
-                    <DatePicker showTime></DatePicker>
+                <Form.Item label="TimeStamp" name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}>
+                    {/* <DatePicker showTime></DatePicker> */}
+                    <Input />
                 </Form.Item>
-                <Card size="small" title={'Reference To DataSet Format'}>
-                    <Form.Item label="Ref Object Id" name={['dataEntryBy', 'common:referenceToDataSetFormat', '@refObjectId']}>
-                        <Input></Input>
-                    </Form.Item>
-                    <Form.Item label="Type" name={['dataEntryBy', 'common:referenceToDataSetFormat', '@type']}>
-                        <Input></Input>
-                    </Form.Item>
-                    <Form.Item label="URI" name={['dataEntryBy', 'common:referenceToDataSetFormat', '@uri']}>
-                        <Input></Input>
-                    </Form.Item>
-                    <Form.Item label="Version" name={['dataEntryBy', 'common:referenceToDataSetFormat', '@version']}>
-                        <Input></Input>
-                    </Form.Item>
-                    <Divider orientationMargin="0" orientation="left" plain>
-                        Short Description
-                    </Divider>
-                    <LangTextItemFrom label="Name" name={['dataEntryBy', 'common:referenceToDataSetFormat', 'common:shortDescription']}></LangTextItemFrom>
-                </Card>
-                <Form.Item label="DataSet Version" name={['publicationAndOwnership', 'common:dataSetVersion']}>
-                    <Input></Input>
+                <SourceSelectFrom
+                    name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
+                    label={'Reference To DataSet Format'}
+                    lang={lang}
+                    formRef={formRefEdit} />
+                <Form.Item label="DataSet Version" name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}>
+                    <Input />
                 </Form.Item>
             </Space>
         ),
         units: (
             <ProTable<UnitTable, ListPagination>
+                actionRef={actionRefUnitTable}
                 search={{
                     defaultCollapsed: false,
                 }}
@@ -284,7 +182,7 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisi
                     pageSize: 10,
                 }}
                 toolBarRender={() => {
-                    return [<UnitCreate key={0} onData={createUnitData}></UnitCreate>];
+                    return [<UnitCreate key={0} onData={handletUnitDataCreate}></UnitCreate>];
                 }}
                 dataSource={unitDataSource}
                 columns={unitColumns}
@@ -294,34 +192,60 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisi
 
     const onTabChange = (key: string) => {
         setActiveTabKey(key);
-        if (key === 'units') setUnitDataSource(fromData[key]?.unit ?? []);
-        formRefEdit.current?.setFieldsValue(fromData[key]);
     };
 
     const onEdit = useCallback(() => {
         setDrawerVisible(true);
-        getUnitGroupDetail(id).then((result: any) => {
-            let unitGroupDataSet = result.data?.json?.unitGroupDataSet;
-            let data: { [key: string]: any } = setData(unitGroupDataSet);
-            setFromData(data);
-            setUnitDataSource(data?.units?.unit ?? []);
-            formRefEdit.current?.setFieldsValue(data?.[activeTabKey]);
-        });
-    }, [actionRef, id, setViewDrawerVisible]);
+    }, [setViewDrawerVisible]);
 
     const onReset = () => {
-        getUnitGroupDetail(id).then((result: any) => {
-            let unitGroupDataSet = result.data?.json?.unitGroupDataSet;
-            let data: { [key: string]: any } = setData(unitGroupDataSet);
-            setFromData(data);
-            setUnitDataSource(data?.units?.unit ?? []);
-            formRefEdit.current?.setFieldsValue(data?.[activeTabKey]);
+        setSpinning(true);
+        formRefEdit.current?.resetFields();
+        getUnitGroupDetail(id).then(async (result: any) => {
+            // formRefEdit.current?.setFieldsValue({
+            //     ...genUnitGroupFromData(result.data?.json?.processDataSet ?? {}),
+            //     id: id,
+            // });
+            setUnitDataSource(result.data?.json?.unitGroupDataSet?.units?.unit ?? []);
+            setSpinning(false);
         });
     };
 
     useEffect(() => {
-        setFromData({ ...fromData, units: { unit: unitDataSource } });
+        if (drawerVisible) return;
+        setSpinning(true);
+        getUnitGroupDetail(id).then(async (result: any) => {
+            setInitData({ ...genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {}), id: id });
+            setFromData({
+                ...genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {}),
+                id: id,
+            });
+            setUnitDataSource(genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {})?.units?.unit ?? []);
+            formRefEdit.current?.resetFields();
+            formRefEdit.current?.setFieldsValue({
+                ...genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {}),
+                id: id,
+            });
+            setSpinning(false);
+        });
+    }, [drawerVisible]);
+
+    useEffect(() => {
+        setFromData({
+            ...fromData,
+            units: {
+                unit: [...unitDataSource]
+            }
+        });
     }, [unitDataSource]);
+
+    useEffect(() => {
+        if (activeTabKey === 'units') return;
+        setFromData({
+            ...fromData,
+            [activeTabKey]: formRefEdit.current?.getFieldsValue()?.[activeTabKey] ?? {},
+        });
+    }, [formRefEdit.current?.getFieldsValue()]);
 
     return (
         <>
@@ -370,51 +294,50 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisi
                     </Space>
                 }
             >
-                <ProForm
-                    formRef={formRefEdit}
-                    onValuesChange={(changedValues, allValues) => {
-                        setFromData({ ...fromData, [activeTabKey]: allValues ?? {} });
-                    }}
-                    submitter={{
-                        render: () => {
-                            return [];
-                        },
-                    }}
-                    onFinish={async () => {
-                        const updateResult = await updateUnitGroup({ ...fromData, id });
-                        if (updateResult?.data) {
-                            message.success(
-                                <FormattedMessage
-                                    id="options.createsuccess"
-                                    defaultMessage="Created Successfully!">
-                                </FormattedMessage>
-                            );
-                            setDrawerVisible(false);
-                            setViewDrawerVisible(false);
-                            setActiveTabKey('unitGroupInformation');
-                            actionRef.current?.reload();
-                        } else {
-                            message.error(updateResult?.error?.message);
-                        }
-                        return true;
-                    }}
-                >
-                    <Card
-                        style={{ width: '100%' }}
-                        tabList={tabList}
-                        activeTabKey={activeTabKey}
-                        onTabChange={onTabChange}
+                <Spin spinning={spinning}>
+                    <ProForm
+                        formRef={formRefEdit}
+                        initialValues={initData}
+                        onValuesChange={(_, allValues) => {
+                            setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+                        }}
+                        submitter={{
+                            render: () => {
+                                return [];
+                            },
+                        }}
+                        onFinish={async () => {
+                            const updateResult = await updateUnitGroup({ ...fromData, id });
+                            if (updateResult?.data) {
+                                message.success(
+                                    <FormattedMessage
+                                        id="options.createsuccess"
+                                        defaultMessage="Created Successfully!">
+                                    </FormattedMessage>
+                                );
+                                setDrawerVisible(false);
+                                setViewDrawerVisible(false);
+                                setActiveTabKey('unitGroupInformation');
+                                actionRef.current?.reload();
+                            } else {
+                                message.error(updateResult?.error?.message);
+                            }
+                            return true;
+                        }}
                     >
-                        {contentList[activeTabKey]}
-                    </Card>
-                    <Form.Item noStyle shouldUpdate>
-                        {() => (
-                            <Typography>
-                                <pre>{JSON.stringify(fromData, null, 2)}</pre>
-                            </Typography>
-                        )}
-                    </Form.Item>
-                </ProForm>
+                        <Card
+                            style={{ width: '100%' }}
+                            tabList={tabList}
+                            activeTabKey={activeTabKey}
+                            onTabChange={onTabChange}
+                        >
+                            {contentList[activeTabKey]}
+                        </Card>
+                        <Typography>
+                            <pre>{JSON.stringify(fromData, null, 2)}</pre>
+                        </Typography>
+                    </ProForm>
+                </ Spin>
             </Drawer >
         </>
     );

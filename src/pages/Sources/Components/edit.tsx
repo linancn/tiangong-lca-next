@@ -39,7 +39,7 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisible
     const [spinning, setSpinning] = useState(false);
 
     const handletFromData = (data: any) => {
-        setFromData({ ...data });
+        setFromData({ ...fromData, data });
     };
 
     const reload = useCallback(() => {

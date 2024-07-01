@@ -23,7 +23,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, dataSource, buttonType }) =>
 
   const onView = () => {
     setDrawerVisible(true);
-    const filteredData = data.find((item: any) => item['@dataSetInternalID'] === id) ?? {};
+    const filteredData = data?.find((item: any) => item['@dataSetInternalID'] === id) ?? {};
     setViewData(filteredData);
     // setSpinning(true);
     if (dataSource === 'my') {

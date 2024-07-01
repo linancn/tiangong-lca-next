@@ -42,7 +42,6 @@ export function genSourceJsonOrdered(id: string, data: any, oldData: any) {
 }
 
 export function genSourceFromData(data: any) {
-  console.log(data);
   return removeEmptyObjects({
     sourceInformation: {
       dataSetInformation: {

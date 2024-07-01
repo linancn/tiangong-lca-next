@@ -1,4 +1,3 @@
-import { UnitTable } from '@/services/unitgroups/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-form';
@@ -14,9 +13,8 @@ import {
     Typography,
 } from 'antd';
 import type { FC } from 'react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import { v4 } from 'uuid';
 
 type Props = {
     onData: (data: any) => void;
@@ -24,14 +22,14 @@ type Props = {
 const UnitCreate: FC<Props> = ({ onData }) => {
     const [drawerVisible, setDrawerVisible] = useState(false);
     const formRefCreate = useRef<ProFormInstance>();
-    const defaultData = {
-        id: v4(),
-        '@dataSetInternalID': '',
-        name: '',
-        meanValue: '',
-        selected: false,
-    };
-    const [fromData, setFromData] = useState<UnitTable>(() => defaultData);
+    const [fromData, setFromData] = useState<any>({});
+
+    useEffect(() => {
+        if (drawerVisible) return;
+        formRefCreate.current?.resetFields();
+        formRefCreate.current?.setFieldsValue({});
+        setFromData({});
+    }, [drawerVisible]);
 
     return (
         <>
@@ -47,7 +45,7 @@ const UnitCreate: FC<Props> = ({ onData }) => {
             </Tooltip>
             <Drawer
                 title={<FormattedMessage id="pages.unitgroup.unit.drawer.title.create" defaultMessage="Unit Create"></FormattedMessage>}
-                width="600px"
+                width="90%"
                 closable={false}
                 extra={
                     <Button
@@ -80,8 +78,7 @@ const UnitCreate: FC<Props> = ({ onData }) => {
             >
                 <ProForm
                     formRef={formRefCreate}
-                    initialValues={defaultData}
-                    onValuesChange={(changedValues, allValues) => {
+                    onValuesChange={(_, allValues) => {
                         setFromData(allValues);
                     }}
                     submitter={{
@@ -89,21 +86,14 @@ const UnitCreate: FC<Props> = ({ onData }) => {
                             return [];
                         },
                     }}
-                    onFinish={async (values) => {
-                        onData({
-                            id: v4(),
-                            ...values,
-                        });
-                        setFromData(defaultData);
+                    onFinish={async () => {
+                        onData({ ...fromData });
                         formRefCreate.current?.resetFields();
                         setDrawerVisible(false);
                         return true;
                     }}
                 >
                     <Space direction="vertical" style={{ width: '100%' }}>
-                        <Form.Item label="DataSet Internal ID" name={'@dataSetInternalID'}>
-                            <Input></Input>
-                        </Form.Item>
                         <Form.Item label="Name" name={'name'}>
                             <Input></Input>
                         </Form.Item>
@@ -113,15 +103,11 @@ const UnitCreate: FC<Props> = ({ onData }) => {
                         <Form.Item label="Selected" name={'selected'}>
                             <Switch></Switch>
                         </Form.Item>
-                        <Form.Item noStyle shouldUpdate>
-                            {() => (
-                                <Typography>
-                                    <pre>{JSON.stringify(fromData, null, 2)}</pre>
-                                </Typography>
-                            )}
-                        </Form.Item>
                     </Space>
                 </ProForm>
+                <Typography>
+                    <pre>{JSON.stringify(fromData, null, 2)}</pre>
+                </Typography>
             </Drawer>
         </>
     );

@@ -58,7 +58,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
   };
 
   const handletFromData = (data: any) => {
-    setFromData({ ...data });
+    setFromData({ ...fromData, data });
   };
 
   const handletExchangeData = (data: any) => {
@@ -269,53 +269,12 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
             name={['processInformation', 'technology', 'technologicalApplicability']}
             label="Technological Applicability"
           />
-          <Card size="small" title={'Reference To Technology Flow Diagramm Or Picture'}>
-            <Form.Item
-              label="Type"
-              name={[
-                'processInformation',
-                'technology',
-                'referenceToTechnologyFlowDiagrammOrPicture',
-                '@type',
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="Ref Object Id"
-              name={[
-                'processInformation',
-                'technology',
-                'referenceToTechnologyFlowDiagrammOrPicture',
-                '@refObjectId',
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="URI"
-              name={[
-                'processInformation',
-                'technology',
-                'referenceToTechnologyFlowDiagrammOrPicture',
-                '@uri',
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Divider orientationMargin="0" orientation="left" plain>
-              Short Description
-            </Divider>
-            <LangTextItemFrom
-              name={[
-                'processInformation',
-                'technology',
-                'referenceToTechnologyFlowDiagrammOrPicture',
-                'common:shortDescription',
-              ]}
-              label="Short Description"
-            />
-          </Card>
+
+          <SourceSelectFrom
+            name={['processInformation', 'technology', 'referenceToTechnologyFlowDiagrammOrPicture']}
+            label="Reference To Technology Flow Diagramm Or Picture"
+            lang="en"
+            formRef={formRefEdit} />
         </Card>
 
         <Card size="small" title={'Mathematical Relations: Model Description'}>
@@ -439,7 +398,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
             label="Deviations From Treatment And Extrapolation Principles"
           />
 
-          <SourceSelectFrom name={['modellingAndValidation', 'dataSourcesTreatmentAndRepresentativeness','referenceToDataSource']} label={'Reference To Data Source'} lang={lang} formRef={formRefEdit} />
+          <SourceSelectFrom name={['modellingAndValidation', 'dataSourcesTreatmentAndRepresentativeness', 'referenceToDataSource']} label={'Reference To Data Source'} lang={lang} formRef={formRefEdit} />
 
           <Divider orientationMargin="0" orientation="left" plain>
             Use Advice For DataSet
@@ -539,7 +498,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
               'publicationAndOwnership',
               'common:referenceToOwnershipOfDataSet',
             ]}
-            label={'Reference To Owner Of DataSet'}
+            label={'Reference To Ownership Of Data Set'}
             lang={lang}
             formRef={formRefEdit}
           />
@@ -595,6 +554,9 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
         ...genProcessFromData(result.data?.json?.processDataSet ?? {}),
         id: id,
       });
+      setExchangeDataSource(
+        genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? [],
+      );
       setSpinning(false);
     });
   };
@@ -616,6 +578,15 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
       setSpinning(false);
     });
   }, [drawerVisible]);
+
+  useEffect(() => {
+    setFromData({
+      ...fromData,
+      exchanges: {
+        exchange: [...exchangeDataSource]
+      }
+    });
+  }, [exchangeDataSource]);
 
   useEffect(() => {
     if (activeTabKey === 'exchanges') return;
