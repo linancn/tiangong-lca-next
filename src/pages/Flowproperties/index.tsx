@@ -60,7 +60,7 @@ const TableList: FC = () => {
     },
     {
       title: <FormattedMessage id="pages.flowproperties.createdAt" defaultMessage="Created At" />,
-      dataIndex: 'createdAt',
+      dataIndex: 'created_at',
       valueType: 'dateTime',
       sorter: true,
       search: false,
@@ -73,12 +73,12 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <FlowpropertiesView id={row.id} dataSource={dataSource} actionRef={actionRef} />
+              <FlowpropertiesView lang={lang}  buttonType={'icon'} id={row.id} dataSource={dataSource} actionRef={actionRef} />
               <FlowpropertiesEdit
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                
+                lang={lang} 
               />
               {/* setViewDrawerVisible={() => {}} */}
               <FlowpropertiesDelete
@@ -92,7 +92,7 @@ const TableList: FC = () => {
         }
         return [
           <Space size={'small'} key={0}>
-            <FlowpropertiesView id={row.id} dataSource={dataSource} actionRef={actionRef} />
+            <FlowpropertiesView lang={lang}  buttonType={'icon'} id={row.id} dataSource={dataSource} actionRef={actionRef} />
           </Space>,
         ];
       },
@@ -111,7 +111,7 @@ const TableList: FC = () => {
         }}
         toolBarRender={() => {
           if (dataSource === 'my') {
-            return [<FlowpropertiesCreate key={0} actionRef={actionRef} />];
+            return [<FlowpropertiesCreate lang={lang}  key={0} actionRef={actionRef} />];
           }
           return [];
         }}

@@ -61,11 +61,11 @@ const TableList: FC = () => {
             search: false,
         },
         {
-          title: <FormattedMessage id="contact.createdAt" defaultMessage="Created At" />,
-          dataIndex: 'createdAt',
-          valueType: 'dateTime',
-          sorter: true,
-          search: false,
+            title: <FormattedMessage id="contact.createdAt" defaultMessage="Created At" />,
+            dataIndex: 'created_at',
+            valueType: 'dateTime',
+            sorter: true,
+            search: false,
         },
         {
             title: <FormattedMessage id="options.option" defaultMessage="Option" />,
@@ -75,25 +75,26 @@ const TableList: FC = () => {
                 if (dataSource === 'my') {
                     return [
                         <Space size={'small'} key={0}>
-                            <SourceView id={row.id} dataSource={dataSource} buttonType={'icon'} actionRef={actionRef} />
+                            <SourceView lang={lang} id={row.id} dataSource={dataSource} buttonType={'icon'} actionRef={actionRef} />
                             <SourceEdit
                                 id={row.id}
+                                lang={lang}
                                 buttonType={'icon'}
                                 actionRef={actionRef}
-                                setViewDrawerVisible={() => {}}
+                                setViewDrawerVisible={() => { }}
                             />
                             <SourceDelete
                                 id={row.id}
                                 buttonType={'icon'}
                                 actionRef={actionRef}
-                                setViewDrawerVisible={() => {}}
+                                setViewDrawerVisible={() => { }}
                             />
                         </Space>,
                     ];
                 }
                 return [
                     <Space size={'small'} key={0}>
-                        <SourceView id={row.id} dataSource={dataSource} buttonType={'icon'} actionRef={actionRef} />
+                        <SourceView lang={lang} id={row.id} dataSource={dataSource} buttonType={'icon'} actionRef={actionRef} />
                     </Space>,
                 ];
             },
@@ -112,7 +113,7 @@ const TableList: FC = () => {
                 }}
                 toolBarRender={() => {
                     if (dataSource === 'my') {
-                        return [<SourceCreate key={0} actionRef={actionRef} />];
+                        return [<SourceCreate lang={lang} key={0} actionRef={actionRef} />];
                     }
                     return [];
                 }}

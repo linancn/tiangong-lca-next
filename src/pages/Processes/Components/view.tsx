@@ -438,6 +438,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
           <br />
           <ContactSelectDescription
             title={'Reference To Name Of Reviewer And Institution'}
+            lang={lang}
             data={
               initData.modellingAndValidation?.validation?.review?.[
               'common:referenceToNameOfReviewerAndInstitution'
@@ -451,6 +452,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
       <>
         <ContactSelectDescription
           title={'Data Generator: Rreference To Person Or Entity Generating The Data Set'}
+          lang={lang}
           data={
             initData.administrativeInformation?.dataGenerator?.[
             'common:referenceToPersonOrEntityGeneratingTheDataSet'
@@ -503,6 +505,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
           <br />
           <ContactSelectDescription
             title={'Reference To Ownership Of Data Set'}
+            lang={lang}
             data={
               initData.administrativeInformation?.publicationAndOwnership?.[
               'common:referenceToOwnershipOfDataSet'

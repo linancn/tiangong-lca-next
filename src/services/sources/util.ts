@@ -21,6 +21,17 @@ export function genSourceJsonOrdered(id: string, data: any, oldData: any) {
           },
           sourceCitation: data?.sourceInformation?.dataSetInformation?.sourceCitation ?? {},
           publicationType: data?.sourceInformation?.dataSetInformation?.publicationType ?? {},
+          sourceDescriptionOrComment: getLangJson(data?.sourceInformation?.dataSetInformation?.sourceDescriptionOrComment),
+          referenceToDigitalFile: {
+            '@uri': data?.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri'],
+          },
+          referenceToContact: {
+            "@refObjectId": data?.sourceInformation?.dataSetInformation?.referenceToContact?.["@refObjectId"],
+            "@type": data?.sourceInformation?.dataSetInformation?.referenceToContact?.["@type"],
+            "@uri": data?.sourceInformation?.dataSetInformation?.referenceToContact?.["@uri"],
+            '@version': data?.sourceInformation?.dataSetInformation?.referenceToContact?.['@version'],
+            "common:shortDescription": getLangJson(data?.sourceInformation?.dataSetInformation?.referenceToContact?.["common:shortDescription"]),
+          }
         },
       },
       administrativeInformation: {
@@ -35,6 +46,7 @@ export function genSourceJsonOrdered(id: string, data: any, oldData: any) {
         },
         publicationAndOwnership: {
           'common:dataSetVersion': data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'] ?? {},
+          "common:permanentDataSetURI": data?.administrativeInformation?.publicationAndOwnership?.["common:permanentDataSetURI"] ?? {},
         },
       },
     },
@@ -60,6 +72,17 @@ export function genSourceFromData(data: any) {
         },
         sourceCitation: data?.sourceInformation?.dataSetInformation?.sourceCitation,
         publicationType: data?.sourceInformation?.dataSetInformation?.publicationType,
+        sourceDescriptionOrComment: getLangList(data?.sourceInformation?.dataSetInformation?.sourceDescriptionOrComment),
+        referenceToDigitalFile: {
+          '@uri': data?.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri'],
+        },
+        referenceToContact: {
+          "@refObjectId": data?.sourceInformation?.dataSetInformation?.referenceToContact?.["@refObjectId"],
+          "@type": data?.sourceInformation?.dataSetInformation?.referenceToContact?.["@type"],
+          "@uri": data?.sourceInformation?.dataSetInformation?.referenceToContact?.["@uri"],
+          '@version': data?.sourceInformation?.dataSetInformation?.referenceToContact?.['@version'],
+          "common:shortDescription": getLangList(data?.sourceInformation?.dataSetInformation?.referenceToContact?.["common:shortDescription"]),
+        }
       },
     },
     administrativeInformation: {
@@ -80,6 +103,7 @@ export function genSourceFromData(data: any) {
       },
       publicationAndOwnership: {
         'common:dataSetVersion': data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'],
+        "common:permanentDataSetURI": data?.administrativeInformation?.publicationAndOwnership?.["common:permanentDataSetURI"],
       }
     }
   });

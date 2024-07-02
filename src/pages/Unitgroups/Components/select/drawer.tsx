@@ -1,5 +1,5 @@
-import { getContactTable } from '@/services/contacts/api';
-import { ContactTable } from '@/services/contacts/data';
+import { getUnitGroupTable } from '@/services/unitgroups/api';
+import { UnitGroupTable } from '@/services/unitgroups/data';
 import { ListPagination } from '@/services/general/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, DatabaseOutlined } from '@ant-design/icons';
@@ -7,11 +7,11 @@ import { ProTable } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
 import { Button, Card, Drawer, Space, Tooltip } from 'antd';
 import type { FC, Key } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import ContactDelete from '../delete';
-import ContactEdit from '../edit';
-import ContactView from '../view';
+import UnitGroupDelete from '../delete';
+import UnitGroupEdit from '../edit';
+import UnitGroupView from '../view';
 
 type Props = {
   buttonType: string;
@@ -19,7 +19,7 @@ type Props = {
   onData: (rowKey: any) => void;
 };
 
-const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
+const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [activeTabKey, setActiveTabKey] = useState<string>('tg');
@@ -44,85 +44,69 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
     }
   };
 
-  const contactColumns: ProColumns<ContactTable>[] = [
+  const unitGroupColumns: ProColumns<UnitGroupTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.index" defaultMessage="Index" />,
-      dataIndex: 'index',
+      title: <FormattedMessage id="pages.table.index" defaultMessage="Index"></FormattedMessage>,
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.contact.shortName" defaultMessage="Short Name" />,
-      dataIndex: 'shortName',
+      title: <FormattedMessage id="pages.unitgroup.name" defaultMessage="Name"></FormattedMessage>,
+      dataIndex: 'name',
       sorter: false,
-      render: (_, row) => [
-        <Tooltip key={0} placement="topLeft" title={row.name}>
-          {row.shortName}
-        </Tooltip>,
-      ],
     },
     {
-      title: <FormattedMessage id="pages.contact.classification" defaultMessage="Classification" />,
+      title: <FormattedMessage id="pages.unitgroup.classification" defaultMessage="Classification"></FormattedMessage>,
       dataIndex: 'classification',
       sorter: false,
       search: false,
     },
+    // {
+    //   title: <FormattedMessage id="unitGroup.email" defaultMessage="Reference Unit"></FormattedMessage>,
+    //   dataIndex: 'referenceToReferenceUnit',
+    //   sorter: false,
+    //   search: false,
+    // },
     {
-      title: <FormattedMessage id="pages.contact.email" defaultMessage="Email" />,
-      dataIndex: 'email',
-      sorter: false,
-      search: false,
-    },
-    {
-      title: <FormattedMessage id="pages.contact.createdAt" defaultMessage="Created At" />,
+      title: <FormattedMessage id="pages.unitgroup.createdAt" defaultMessage="Created At"></FormattedMessage>,
       dataIndex: 'createdAt',
       valueType: 'dateTime',
       sorter: true,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.option" defaultMessage="Option" />,
+      title: <FormattedMessage id="pages.table.option" defaultMessage="Option"></FormattedMessage>,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
-        if (activeTabKey === 'tg') {
+        if (activeTabKey === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <ContactView
-                id={row.id}
-                lang={lang}
-                dataSource="tg"
-                buttonType="icon"
-                actionRef={tgActionRefSelect}
-              />
-            </Space>,
-          ];
-        } else if (activeTabKey === 'my') {
-          return [
-            <Space size={'small'} key={0}>
-              <ContactView
-                id={row.id}
-                lang={lang}
-                dataSource="my"
-                buttonType="icon"
-                actionRef={myActionRefSelect}
-              />
-              <ContactEdit
-                id={row.id}
-                lang={lang}
+              <UnitGroupView
                 buttonType={'icon'}
+                lang={lang} id={row.id} dataSource={'my'} actionRef={myActionRefSelect}></UnitGroupView>
+              <UnitGroupEdit
+                id={row.id}
+                buttonType={'icon'}
+                lang={lang}
                 actionRef={myActionRefSelect}
-                setViewDrawerVisible={() => {}}
-              />
-              <ContactDelete
+                setViewDrawerVisible={() => { }}
+              ></UnitGroupEdit>
+              <UnitGroupDelete
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={myActionRefSelect}
-                setViewDrawerVisible={() => {}}
-              />
+                setViewDrawerVisible={() => { }}
+              ></UnitGroupDelete>
             </Space>,
           ];
-        } else return [];
+        }
+        return [
+          <Space size={'small'} key={0}>
+            <UnitGroupView buttonType={'icon'}
+              lang={lang} id={row.id} dataSource={'tg'} actionRef={tgActionRefSelect}></UnitGroupView>
+          </Space>,
+        ];
       },
     },
   ];
@@ -134,7 +118,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
 
   const databaseList: Record<string, React.ReactNode> = {
     tg: (
-      <ProTable<ContactTable, ListPagination>
+      <ProTable<UnitGroupTable, ListPagination>
         actionRef={tgActionRefSelect}
         search={{
           defaultCollapsed: false,
@@ -150,9 +134,9 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
           },
           sort,
         ) => {
-          return getContactTable(params, sort, lang, 'tg');
+          return getUnitGroupTable(params, sort, lang, 'tg');
         }}
-        columns={contactColumns}
+        columns={unitGroupColumns}
         rowSelection={{
           type: 'radio',
           alwaysShowAlert: true,
@@ -162,7 +146,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       />
     ),
     my: (
-      <ProTable<ContactTable, ListPagination>
+      <ProTable<UnitGroupTable, ListPagination>
         actionRef={myActionRefSelect}
         search={{
           defaultCollapsed: false,
@@ -178,9 +162,9 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
           },
           sort,
         ) => {
-          return getContactTable(params, sort, lang, 'my');
+          return getUnitGroupTable(params, sort, lang, 'my');
         }}
-        columns={contactColumns}
+        columns={unitGroupColumns}
         rowSelection={{
           type: 'radio',
           alwaysShowAlert: true,
@@ -201,24 +185,27 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       <Tooltip
         title={
           <FormattedMessage
-            id="pages.contact.drawer.title.select"
-            defaultMessage="Select Cantact"
+            id="pages.unitgroup.drawer.title.select"
+            defaultMessage="Select UnitGroups"
           />
         }
       >
         {buttonType === 'icon' ? (
           <Button shape="circle" icon={<DatabaseOutlined />} size="small" onClick={onSelect} />
         ) : (
-          <Button onClick={onSelect}>
-            <FormattedMessage id="pages.contact.drawer.title.select" defaultMessage="Select" />
+          <Button onClick={onSelect} style={{ marginTop: '6px' }}>
+            <FormattedMessage
+              id="pages.unitgroup.drawer.title.select"
+              defaultMessage="select UnitGroups"
+            />
           </Button>
         )}
       </Tooltip>
       <Drawer
         title={
           <FormattedMessage
-            id="pages.contact.drawer.title.select"
-            defaultMessage="Selete Contact"
+            id="pages.unitgroup.drawer.title.select"
+            defaultMessage="Selete UnitGroups"
           />
         }
         width="90%"
@@ -237,7 +224,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
               {' '}
-              <FormattedMessage id="options.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id="pages.table.option.cancel" defaultMessage="Cancel" />
             </Button>
             <Button
               onClick={() => {
@@ -246,7 +233,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
               }}
               type="primary"
             >
-              <FormattedMessage id="options.submit" defaultMessage="Submit" />
+              <FormattedMessage id="pages.table.option.submit" defaultMessage="Submit" />
             </Button>
           </Space>
         }
@@ -264,4 +251,4 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
   );
 };
 
-export default ContactSelectDrawer;
+export default UnitgroupsSelectDrawer;

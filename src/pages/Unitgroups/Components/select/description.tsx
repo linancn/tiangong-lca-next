@@ -2,7 +2,7 @@ import LangTextItemDescription from '@/components/LangTextItem/description';
 import { ActionType } from '@ant-design/pro-components';
 import { Card, Descriptions, Divider, Space } from 'antd';
 import React, { FC } from 'react';
-import ContactView from '../view';
+import UnitGroupView from '../view';
 
 type Props = {
   title: string;
@@ -10,7 +10,7 @@ type Props = {
   lang: string;
 };
 
-const ContactSelectDescription: FC<Props> = ({ title, data, lang }) => {
+const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
   const actionRef = React.useRef<ActionType | undefined>(undefined);
 
   return (
@@ -22,7 +22,7 @@ const ContactSelectDescription: FC<Props> = ({ title, data, lang }) => {
           </Descriptions.Item>
         </Descriptions>
         {data?.['@refObjectId'] && (
-          <ContactView
+          <UnitGroupView
             id={data?.['@refObjectId']}
             lang={lang}
             dataSource="tg"
@@ -45,11 +45,11 @@ const ContactSelectDescription: FC<Props> = ({ title, data, lang }) => {
         </Descriptions.Item>
       </Descriptions>
       <br />
-      <Descriptions bordered size={'small'} column={1}>
+      {/* <Descriptions bordered size={'small'} column={1}>
         <Descriptions.Item key={0} label="Version" labelStyle={{ width: '120px' }}>
           {data?.['@version'] ?? '-'}
         </Descriptions.Item>
-      </Descriptions>
+      </Descriptions> */}
       <Divider orientationMargin="0" orientation="left" plain>
         Short Description
       </Divider>
@@ -58,4 +58,4 @@ const ContactSelectDescription: FC<Props> = ({ title, data, lang }) => {
   );
 };
 
-export default ContactSelectDescription;
+export default UnitGroupSelectDescription;

@@ -65,6 +65,10 @@ export function genUnitGroupJsonOrdered(id: string, data: any, oldData: any) {
 
 
 export function genUnitGroupFromData(data: any) {
+  let units = data?.units
+  if (units && !Array.isArray(units)) { 
+    units = [units]
+  }
   return removeEmptyObjects({
     unitGroupInformation: {
       dataSetInformation: {
@@ -116,6 +120,6 @@ export function genUnitGroupFromData(data: any) {
         'common:dataSetVersion': data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'],
       },
     },
-    units: data?.units ?? {},
+    units: units,
   });
 }

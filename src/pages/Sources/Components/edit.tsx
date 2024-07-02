@@ -23,14 +23,16 @@ import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import SourceSelectFrom from './select/from';
+import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
 
 type Props = {
     id: string;
+    lang: string;
     buttonType: string;
     actionRef: React.MutableRefObject<ActionType | undefined>;
     setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
 };
-const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisible }) => {
+const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerVisible }) => {
     const [drawerVisible, setDrawerVisible] = useState(false);
     const formRefEdit = useRef<ProFormInstance>();
     const [activeTabKey, setActiveTabKey] = useState<string>('sourceInformation');
@@ -39,7 +41,7 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisible
     const [spinning, setSpinning] = useState(false);
 
     const handletFromData = (data: any) => {
-        setFromData({ ...fromData, data });
+        // setFromData({ ...fromData, data });
     };
 
     const reload = useCallback(() => {
@@ -90,6 +92,28 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisible
                 ]}>
                     <Input />
                 </Form.Item>
+                <br />
+                <Card size="small" title={'Source Description Or Comment'}>
+                    <LangTextItemFrom
+                        name={['sourceInformation', 'dataSetInformation', 'sourceDescriptionOrComment']}
+                        label="Source Description Or Comment"
+                    />
+                </Card>
+                <br />
+                <Form.Item label="Reference To Digital File" name={[
+                    'sourceInformation',
+                    'dataSetInformation',
+                    'referenceToDigitalFile',
+                    '@uri'
+                ]}>
+                    <Input />
+                </Form.Item>
+                <br />
+                <ContactSelectFrom
+                    name={['sourceInformation', 'dataSetInformation', 'referenceToContact']}
+                    label="Reference To Contact"
+                    lang={lang}
+                    formRef={formRefEdit} />
             </Space>
         ),
         administrativeInformation: (
@@ -105,9 +129,15 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisible
                         formRef={formRefEdit} />
                 </Card>
                 <br />
-                <Form.Item label='DataSet Version' name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}>
-                    <Input />
-                </Form.Item>
+                <Card size="small" title={'Publication And Ownership'}>
+                    <Form.Item label='DataSet Version' name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}>
+                        <Input />
+                    </Form.Item>
+
+                    <Form.Item label='Permanent Data Set URI' name={['administrativeInformation', 'publicationAndOwnership', 'common:permanentDataSetURI']}>
+                        <Input />
+                    </Form.Item>
+                </Card>
             </Space>
         ),
     };

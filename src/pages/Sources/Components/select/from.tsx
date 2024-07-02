@@ -13,18 +13,25 @@ type Props = {
   label: string;
   lang: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
+  onData?: (key: any, data: any) => void
 };
 
-const SourceSelectFrom: FC<Props> = ({ name, label, lang, formRef }) => {
+const SourceSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => {
+  const handleResetData = (data: any) => {
+    formRef.current?.setFieldValue(name, data);
+    if (onData) {
+      onData(name, data)
+    }
+  }
   const handletSourcetData = (rowKey: any) => {
     getSourceDetail(rowKey).then(async (result: any) => {
-      console.log('getSourceDetail',result);
-      formRef.current?.setFieldValue(name, {
+      let data = {
         '@refObjectId': `${rowKey}`,
         '@type': 'source data set',
         '@uri': `../source/${rowKey}.xml`,
         'common:shortDescription': result.data.json?.sourceDataSet?.sourceInformation?.dataSetInformation?.['common:shortName'],
-      });
+      }
+      handleResetData(data)
     });
   };
 
@@ -40,9 +47,9 @@ const SourceSelectFrom: FC<Props> = ({ name, label, lang, formRef }) => {
         </Form.Item>
         <Space direction="horizontal" style={{ marginTop: '6px' }}>
           <SourceSelectDrawer buttonType="text" lang={lang} onData={handletSourcetData} />
-          {id && <SourceView id={id} dataSource="tg" buttonType="text" actionRef={actionRef} />}
+          {id && <SourceView lang={lang} id={id} dataSource="tg" buttonType="text" actionRef={actionRef} />}
           {id && (
-            <Button onClick={() => formRef.current?.setFieldValue([...name], {})}>Clear</Button>
+            <Button onClick={() => handleResetData({})}>Clear</Button>
           )}
         </Space>
       </Space>
@@ -52,9 +59,6 @@ const SourceSelectFrom: FC<Props> = ({ name, label, lang, formRef }) => {
       <Form.Item label="URI" name={[...name, '@uri']}>
         <Input disabled={true} />
       </Form.Item>
-      {/* <Form.Item label="Version" name={[...name, '@version']}>
-        <Input disabled={true} />
-      </Form.Item> */}
       <Divider orientationMargin="0" orientation="left" plain>
         Short Description
       </Divider>

@@ -15,4 +15,7 @@ export default {
     'pages.unitgroup.unit.drawer.title.view': '查看单位',
     'pages.unitgroup.unit.drawer.title.edit': '编辑单位',
     'pages.unitgroup.unit.drawer.title.delete': '删除单位',
+
+    'pages.unitgroup.drawer.title.select': '选择单位组',
+    
 };
