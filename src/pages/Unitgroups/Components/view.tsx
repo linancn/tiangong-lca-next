@@ -19,8 +19,10 @@ type Props = {
   id: string;
   dataSource: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
+  lang: string;
+  buttonType: string;
 };
-const ContactView: FC<Props> = ({ id, dataSource }) => {
+const ContactView: FC<Props> = ({ id, dataSource, buttonType }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [spinning, setSpinning] = useState(false);
@@ -169,7 +171,14 @@ const ContactView: FC<Props> = ({ id, dataSource }) => {
   return (
     <>
       <Tooltip title={<FormattedMessage id="pages.table.option.view" defaultMessage="View"></FormattedMessage>}>
-        <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView}></Button>
+        {/* <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView}></Button> */}
+        {buttonType === 'icon' ? (
+          <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
+        ) : (
+          <Button onClick={onView}>
+            <FormattedMessage id="pages.table.option.view" defaultMessage="View" />
+          </Button>
+        )}
       </Tooltip>
       <Drawer
         title={<FormattedMessage id="pages.unitgroup.drawer.title.view" defaultMessage="View Unit Group"></FormattedMessage>}

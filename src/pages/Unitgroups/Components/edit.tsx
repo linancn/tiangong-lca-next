@@ -202,10 +202,6 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
         setSpinning(true);
         formRefEdit.current?.resetFields();
         getUnitGroupDetail(id).then(async (result: any) => {
-            // formRefEdit.current?.setFieldsValue({
-            //     ...genUnitGroupFromData(result.data?.json?.processDataSet ?? {}),
-            //     id: id,
-            // });
             setUnitDataSource(result.data?.json?.unitGroupDataSet?.units?.unit ?? []);
             setSpinning(false);
         });

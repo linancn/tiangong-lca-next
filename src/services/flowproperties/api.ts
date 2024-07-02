@@ -116,7 +116,7 @@ export async function getFlowpropertiesTable(
             name: getLangText(i['common:name'], lang),
             classification: classificationToString(i['common:class']),
             generalComment: getLangText(i['common:generalComment'], lang),
-            createdAt: new Date(i.created_at),
+            created_at: new Date(i.created_at),
           };
         } catch (e) {
           console.error(e);

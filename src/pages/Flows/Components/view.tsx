@@ -9,7 +9,8 @@ import type { FC } from 'react';
 import { useState, useEffect } from 'react';
 import { FormattedMessage } from 'umi';
 import {
-    classificationToList,
+    classificationToJson,
+    // classificationToList,
 } from '@/services/general/util';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 import FlowpropertiesDescription from '@/pages/Flowproperties/Components/select/description';
@@ -44,8 +45,9 @@ const FlowsView: FC<Props> = ({ id, dataSource, buttonType, lang }) => {
     };
     function initFlowInformation(data: any) {
         let dataSetInformation = data?.dataSetInformation
-        let referenceToReferenceFlowProperty = data?.quantitativeReference?.referenceToReferenceFlowProperty
-        let categoryList = classificationToList(dataSetInformation?.classificationInformation?.['common:elementaryFlowCategorization']?.['common:category'])
+        let referenceToReferenceFlowProperty = data?.quantitativeReference?.referenceToReferenceFlowProperty;
+        let categoryList = classificationToJson(dataSetInformation?.classificationInformation?.['common:elementaryFlowCategorization']?.['common:category'])
+
         return (
             <>
                 <Descriptions bordered size={'small'} column={1}>

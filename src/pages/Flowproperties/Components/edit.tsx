@@ -18,7 +18,7 @@ import {
   Tooltip,
   Typography,
   message,
-  Divider
+  // Divider
 } from 'antd';
 import type { FC } from 'react';
 import {
@@ -33,6 +33,7 @@ import {
 
 import SourceSelectFrom from '@/pages/Sources/Components/select/from';
 import FlowpropertiesSelectFrom from './select/from';
+import UnitGroupSelectFrom from '@/pages/Unitgroups/Components/select/from';
 
 type Props = {
   id: string;
@@ -95,7 +96,14 @@ const FlowpropertiesEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
         </Card>
         <br />
         <Card size="small" title={'Quantitative Reference'}>
-          <Form.Item label='Ref Object Id' name={['quantitativeReference', 'referenceToReferenceUnitGroup', '@refObjectId']}>
+          <UnitGroupSelectFrom
+            name={['quantitativeReference', 'referenceToReferenceUnitGroup']}
+            label='Reference To Reference Unit Group'
+            lang={lang}
+            formRef={formRefEdit}
+            onData={handleData}
+          />
+          {/* <Form.Item label='Ref Object Id' name={['quantitativeReference', 'referenceToReferenceUnitGroup', '@refObjectId']}>
             <Input />
           </Form.Item>
           <Form.Item label="Type" name={['quantitativeReference', 'referenceToReferenceUnitGroup', '@type']}>
@@ -110,7 +118,7 @@ const FlowpropertiesEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
           <LangTextItemFrom
             name={['quantitativeReference', 'referenceToReferenceUnitGroup', 'common:shortDescription']}
             label="Short Description"
-          />
+          /> */}
         </Card>
       </Card>
     </Space >)

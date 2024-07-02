@@ -6,5 +6,5 @@ export type FlowsTable = {
   classification: string;
   generalComment: string;
   // email: string;
-  createdAt: Date;
+  created_at: Date;
 };

@@ -1,5 +1,5 @@
-import { getFlowpropertiesTable } from '@/services/flowproperties/api';
-import { FlowpropertiesTable } from '@/services/flowproperties/data';
+import { getUnitGroupTable } from '@/services/unitgroups/api';
+import { UnitGroupTable } from '@/services/unitgroups/data';
 import { ListPagination } from '@/services/general/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, DatabaseOutlined } from '@ant-design/icons';
@@ -7,11 +7,11 @@ import { ProTable } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
 import { Button, Card, Drawer, Space, Tooltip } from 'antd';
 import type { FC, Key } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import FlowpropertiesDelete from '../delete';
-import FlowpropertiesEdit from '../edit';
-import FlowpropertiesView from '../view';
+import UnitGroupDelete from '../delete';
+import UnitGroupEdit from '../edit';
+import UnitGroupView from '../view';
 
 type Props = {
   buttonType: string;
@@ -19,7 +19,7 @@ type Props = {
   onData: (rowKey: any) => void;
 };
 
-const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
+const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [activeTabKey, setActiveTabKey] = useState<string>('tg');
@@ -31,7 +31,6 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
   };
 
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
-    console.log(newSelectedRowKeys);
     setSelectedRowKeys(newSelectedRowKeys);
   };
 
@@ -45,76 +44,69 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
     }
   };
 
-  const FlowpropertiesColumns: ProColumns<FlowpropertiesTable>[] = [
+  const unitGroupColumns: ProColumns<UnitGroupTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.index" defaultMessage="Index" />,
-      dataIndex: 'index',
+      title: <FormattedMessage id="pages.table.index" defaultMessage="Index"></FormattedMessage>,
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.flowproperties.name" defaultMessage="Data Name" />,
+      title: <FormattedMessage id="pages.unitgroup.name" defaultMessage="Name"></FormattedMessage>,
       dataIndex: 'name',
       sorter: false,
-      render: (_, row) => [
-        <Tooltip key={0} placement="topLeft" title={row.name}>
-          {row.name}
-        </Tooltip>,
-      ],
     },
     {
-      title: (
-        <FormattedMessage id="pages.flowproperties.classification" defaultMessage="Classification" />
-      ),
+      title: <FormattedMessage id="pages.unitgroup.classification" defaultMessage="Classification"></FormattedMessage>,
       dataIndex: 'classification',
       sorter: false,
       search: false,
     },
+    // {
+    //   title: <FormattedMessage id="unitGroup.email" defaultMessage="Reference Unit"></FormattedMessage>,
+    //   dataIndex: 'referenceToReferenceUnit',
+    //   sorter: false,
+    //   search: false,
+    // },
     {
-      title: (
-        <FormattedMessage id="pages.flowproperties.generalComment" defaultMessage="General Comment" />
-      ),
-      dataIndex: 'generalComment',
-      sorter: false,
-      search: false,
-    },
-    {
-      title: <FormattedMessage id="pages.flowproperties.createdAt" defaultMessage="Created At" />,
+      title: <FormattedMessage id="pages.unitgroup.createdAt" defaultMessage="Created At"></FormattedMessage>,
       dataIndex: 'createdAt',
       valueType: 'dateTime',
       sorter: true,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.option" defaultMessage="Option" />,
+      title: <FormattedMessage id="pages.table.option" defaultMessage="Option"></FormattedMessage>,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
-        if (activeTabKey === 'tg') {
+        if (activeTabKey === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <FlowpropertiesView lang={lang} buttonType={'icon'} id={row.id} dataSource="tg" actionRef={tgActionRefSelect} />
-            </Space>,
-          ];
-        } else if (activeTabKey === 'my') {
-          return [
-            <Space size={'small'} key={0}>
-              <FlowpropertiesView lang={lang} buttonType={'icon'} id={row.id} dataSource="my" actionRef={myActionRefSelect} />
-              <FlowpropertiesEdit
-                lang={lang}
+              <UnitGroupView
+                buttonType={'icon'}
+                lang={lang} id={row.id} dataSource={'my'} actionRef={myActionRefSelect}></UnitGroupView>
+              <UnitGroupEdit
                 id={row.id}
                 buttonType={'icon'}
+                lang={lang}
                 actionRef={myActionRefSelect}
-              />
-              <FlowpropertiesDelete
+                setViewDrawerVisible={() => { }}
+              ></UnitGroupEdit>
+              <UnitGroupDelete
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={myActionRefSelect}
                 setViewDrawerVisible={() => { }}
-              />
+              ></UnitGroupDelete>
             </Space>,
           ];
-        } else return [];
+        }
+        return [
+          <Space size={'small'} key={0}>
+            <UnitGroupView buttonType={'icon'}
+              lang={lang} id={row.id} dataSource={'tg'} actionRef={tgActionRefSelect}></UnitGroupView>
+          </Space>,
+        ];
       },
     },
   ];
@@ -126,7 +118,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
 
   const databaseList: Record<string, React.ReactNode> = {
     tg: (
-      <ProTable<FlowpropertiesTable, ListPagination>
+      <ProTable<UnitGroupTable, ListPagination>
         actionRef={tgActionRefSelect}
         search={{
           defaultCollapsed: false,
@@ -142,9 +134,9 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
           },
           sort,
         ) => {
-          return getFlowpropertiesTable(params, sort, lang, 'tg');
+          return getUnitGroupTable(params, sort, lang, 'tg');
         }}
-        columns={FlowpropertiesColumns}
+        columns={unitGroupColumns}
         rowSelection={{
           type: 'radio',
           alwaysShowAlert: true,
@@ -154,7 +146,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
       />
     ),
     my: (
-      <ProTable<FlowpropertiesTable, ListPagination>
+      <ProTable<UnitGroupTable, ListPagination>
         actionRef={myActionRefSelect}
         search={{
           defaultCollapsed: false,
@@ -170,9 +162,9 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
           },
           sort,
         ) => {
-          return getFlowpropertiesTable(params, sort, lang, 'my');
+          return getUnitGroupTable(params, sort, lang, 'my');
         }}
-        columns={FlowpropertiesColumns}
+        columns={unitGroupColumns}
         rowSelection={{
           type: 'radio',
           alwaysShowAlert: true,
@@ -193,8 +185,8 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
       <Tooltip
         title={
           <FormattedMessage
-            id="pages.flowproperties.drawer.title.select"
-            defaultMessage="Select Flowproperties"
+            id="pages.unitgroup.drawer.title.select"
+            defaultMessage="Select UnitGroups"
           />
         }
       >
@@ -203,8 +195,8 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
         ) : (
           <Button onClick={onSelect} style={{ marginTop: '6px' }}>
             <FormattedMessage
-              id="pages.flowproperties.drawer.title.select"
-              defaultMessage="select Flowproperties"
+              id="pages.unitgroup.drawer.title.select"
+              defaultMessage="select UnitGroups"
             />
           </Button>
         )}
@@ -212,8 +204,8 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
       <Drawer
         title={
           <FormattedMessage
-            id="pages.flowproperties.drawer.title.select"
-            defaultMessage="Selete Flowproperties"
+            id="pages.unitgroup.drawer.title.select"
+            defaultMessage="Selete UnitGroups"
           />
         }
         width="90%"
@@ -259,4 +251,4 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
   );
 };
 
-export default FlowpropertiesSelectDrawer;
+export default UnitgroupsSelectDrawer;

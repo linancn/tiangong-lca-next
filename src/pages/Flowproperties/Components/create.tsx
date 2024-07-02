@@ -19,7 +19,7 @@ import {
   Tooltip,
   Typography,
   message,
-  Divider
+  // Divider
 } from 'antd';
 import type { FC } from 'react';
 import React, {
@@ -30,6 +30,7 @@ import React, {
 import { FormattedMessage } from 'umi';
 // import UnitgroupsFrom from '@/pages/Unitgroups/Components/Unit/edit';
 import SourceSelectFrom from '@/pages/Sources/Components/select/from';
+import UnitGroupSelectFrom from '@/pages/Unitgroups/Components/select/from';
 import FlowpropertiesSelectFrom from './select/from';
 
 type Props = {
@@ -75,19 +76,25 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
             <LangTextItemFrom name={['dataSetInformation', 'common:name']} label="Name" />
           </Card>
           <br />
-          <Card size="small" title={'General Comment'}>
-            <LangTextItemFrom name={['dataSetInformation', "common:generalComment"]} label="General Comment" />
-          </Card>
-          <br />
           <Card size="small" title={'Classification'}>
             <LevelTextItemFrom dataType={'FlowProperty'} formRef={formRefCreate} onData={() => { }} name={['dataSetInformation', "classificationInformation", 'common:classification', 'common:class']} />
           </Card>
-
+          <br />
+          <Card size="small" title={'General Comment'}>
+            <LangTextItemFrom name={['dataSetInformation', "common:generalComment"]} label="General Comment" />
+          </Card>
         </Card>
         <br />
         <Card size="small" title={'Quantitative Reference'}>
+          <UnitGroupSelectFrom
+            name={['quantitativeReference', 'referenceToReferenceUnitGroup']}
+            label='Reference To Reference Unit Group'
+            lang={lang}
+            formRef={formRefCreate}
+            onData={handleData}
+          />
           {/* <UnitgroupsFrom /> */}
-          <Form.Item label='Ref Object Id' name={['quantitativeReference', 'referenceToReferenceUnitGroup', '@refObjectId']}>
+          {/* <Form.Item label='Ref Object Id' name={['quantitativeReference', 'referenceToReferenceUnitGroup', '@refObjectId']}>
             <Input />
           </Form.Item>
           <Form.Item label="Type" name={['quantitativeReference', 'referenceToReferenceUnitGroup', '@type']}>
@@ -102,7 +109,7 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
           <LangTextItemFrom
             name={['quantitativeReference', 'referenceToReferenceUnitGroup', 'common:shortDescription']}
             label="Short Description"
-          />
+          /> */}
         </Card>
       </Card>
     </Space>),
