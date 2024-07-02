@@ -13,6 +13,7 @@ import {
   Input,
   Select,
   Space,
+  Switch,
   Tooltip,
   Typography,
 } from 'antd';
@@ -40,6 +41,7 @@ const ProcessExchangeEdit: FC<Props> = ({
   const formRefEdit = useRef<ProFormInstance>();
   const [fromData, setFromData] = useState<any>({});
   const [initData, setInitData] = useState<any>({});
+  const [functionalUnitOrOther, setFunctionalUnitOrOther] = useState(false);
 
   const onEdit = useCallback(() => {
     setDrawerVisible(true);
@@ -52,6 +54,7 @@ const ProcessExchangeEdit: FC<Props> = ({
     setInitData(filteredData);
     formRefEdit.current?.setFieldsValue(filteredData);
     setFromData(filteredData);
+    setFunctionalUnitOrOther(filteredData?.quantitativeReference ?? false);
     // setSpinning(false);
   };
 
@@ -102,6 +105,7 @@ const ProcessExchangeEdit: FC<Props> = ({
           initialValues={initData}
           onValuesChange={(_, allValues) => {
             setFromData(allValues ?? {});
+            setFunctionalUnitOrOther(allValues?.quantitativeReference ?? false);
           }}
           submitter={{
             render: () => {
@@ -151,6 +155,18 @@ const ProcessExchangeEdit: FC<Props> = ({
               General Comment
             </Divider>
             <LangTextItemFrom name="generalComment" label="General Comment" />
+
+            <Card size="small" title={'Quantitative Reference'}>
+              <Form.Item label="Reference To Reference Flow" name={'quantitativeReference'}>
+                <Switch />
+              </Form.Item>
+              {functionalUnitOrOther ? (<>
+                <Divider orientationMargin="0" orientation="left" plain>
+                  Functional Unit Or Other
+                </Divider>
+                <LangTextItemFrom name="functionalUnitOrOther" label="Functional Unit Or Other" /></>)
+                : <></>}
+            </Card>
           </Space>
         </ProForm>
         <Typography>
