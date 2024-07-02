@@ -7,7 +7,7 @@ import { getProcessDetail, updateProcess } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData, genProcessFromData } from '@/services/processes/util';
 import styles from '@/style/custom.less';
-import { CloseOutlined, FormOutlined } from '@ant-design/icons';
+import { CheckCircleTwoTone, CloseCircleOutlined, CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ProColumns, ProForm, ProTable } from '@ant-design/pro-components';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import type { ActionType } from '@ant-design/pro-table';
@@ -58,7 +58,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
   };
 
   const handletFromData = (data: any) => {
-    setFromData({ ...data });
+    setFromData({ ...fromData, data });
   };
 
   const handletExchangeData = (data: any) => {
@@ -70,6 +70,11 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
       title: <FormattedMessage id="processExchange.index" defaultMessage="Index" />,
       dataIndex: 'index',
       valueType: 'index',
+      search: false,
+    },
+    {
+      title: <FormattedMessage id="processExchange.dataSetInternalID" defaultMessage="DataSet Internal ID" />,
+      dataIndex: 'dataSetInternalID',
       search: false,
     },
     {
@@ -123,6 +128,23 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
       dataIndex: 'dataDerivationTypeStatus',
       sorter: false,
       search: false,
+    },
+    {
+      title: (
+        <FormattedMessage
+          id="processExchange.quantitativeReference"
+          defaultMessage="Quantitative Reference"
+        />
+      ),
+      dataIndex: 'quantitativeReference',
+      sorter: false,
+      search: false,
+      render: (_, row) => {
+        if (row.quantitativeReference) {
+          return <CheckCircleTwoTone twoToneColor="#52c41a" />;
+        }
+        return <CloseCircleOutlined />;
+      }
     },
     {
       title: <FormattedMessage id="options.option" defaultMessage="Option" />,
@@ -199,25 +221,6 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
           />
         </Card>
 
-        <Card size="small" title={'Quantitative Reference'}>
-          <Form.Item label="Type" name={['processInformation', 'quantitativeReference', '@type']}>
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label="Reference To Reference Flow"
-            name={['processInformation', 'quantitativeReference', 'referenceToReferenceFlow']}
-          >
-            <Input />
-          </Form.Item>
-          <Divider orientationMargin="0" orientation="left" plain>
-            Functional Unit Or Other
-          </Divider>
-          <LangTextItemFrom
-            name={['processInformation', 'quantitativeReference', 'functionalUnitOrOther']}
-            label="Functional Unit Or Other"
-          />
-        </Card>
-
         <Card size="small" title={'Time'}>
           <Form.Item
             label="Reference Year"
@@ -269,53 +272,12 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
             name={['processInformation', 'technology', 'technologicalApplicability']}
             label="Technological Applicability"
           />
-          <Card size="small" title={'Reference To Technology Flow Diagramm Or Picture'}>
-            <Form.Item
-              label="Type"
-              name={[
-                'processInformation',
-                'technology',
-                'referenceToTechnologyFlowDiagrammOrPicture',
-                '@type',
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="Ref Object Id"
-              name={[
-                'processInformation',
-                'technology',
-                'referenceToTechnologyFlowDiagrammOrPicture',
-                '@refObjectId',
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="URI"
-              name={[
-                'processInformation',
-                'technology',
-                'referenceToTechnologyFlowDiagrammOrPicture',
-                '@uri',
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Divider orientationMargin="0" orientation="left" plain>
-              Short Description
-            </Divider>
-            <LangTextItemFrom
-              name={[
-                'processInformation',
-                'technology',
-                'referenceToTechnologyFlowDiagrammOrPicture',
-                'common:shortDescription',
-              ]}
-              label="Short Description"
-            />
-          </Card>
+
+          <SourceSelectFrom
+            name={['processInformation', 'technology', 'referenceToTechnologyFlowDiagrammOrPicture']}
+            label="Reference To Technology Flow Diagramm Or Picture"
+            lang="en"
+            formRef={formRefEdit} />
         </Card>
 
         <Card size="small" title={'Mathematical Relations: Model Description'}>
@@ -439,7 +401,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
             label="Deviations From Treatment And Extrapolation Principles"
           />
 
-          <SourceSelectFrom name={['modellingAndValidation', 'dataSourcesTreatmentAndRepresentativeness','referenceToDataSource']} label={'Reference To Data Source'} lang={lang} formRef={formRefEdit} />
+          <SourceSelectFrom name={['modellingAndValidation', 'dataSourcesTreatmentAndRepresentativeness', 'referenceToDataSource']} label={'Reference To Data Source'} lang={lang} formRef={formRefEdit} />
 
           <Divider orientationMargin="0" orientation="left" plain>
             Use Advice For DataSet
@@ -539,7 +501,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
               'publicationAndOwnership',
               'common:referenceToOwnershipOfDataSet',
             ]}
-            label={'Reference To Owner Of DataSet'}
+            label={'Reference To Ownership Of Data Set'}
             lang={lang}
             formRef={formRefEdit}
           />
@@ -595,12 +557,30 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
         ...genProcessFromData(result.data?.json?.processDataSet ?? {}),
         id: id,
       });
+      const quantitativeReferenceId = result.data?.json?.processDataSet?.processInformation?.quantitativeReference?.referenceToReferenceFlow ?? '';
+      setExchangeDataSource(
+        (genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? []).map(
+          (item: any) => {
+            if (item['@dataSetInternalID'] === quantitativeReferenceId) {
+              console.log('item.dataSetInternalID', item);
+              return {
+                ...item,
+                quantitativeReference: true,
+              };
+            }
+            else {
+              return {
+                ...item,
+                quantitativeReference: false,
+              };
+            }
+          }),);
       setSpinning(false);
     });
   };
 
   useEffect(() => {
-    if (drawerVisible) return;
+    if (!drawerVisible) return;
     setSpinning(true);
     getProcessDetail(id).then(async (result: any) => {
       setInitData({ ...genProcessFromData(result.data?.json?.processDataSet ?? {}), id: id });
@@ -616,6 +596,15 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
       setSpinning(false);
     });
   }, [drawerVisible]);
+
+  useEffect(() => {
+    setFromData({
+      ...fromData,
+      exchanges: {
+        exchange: [...exchangeDataSource]
+      }
+    });
+  }, [exchangeDataSource]);
 
   useEffect(() => {
     if (activeTabKey === 'exchanges') return;

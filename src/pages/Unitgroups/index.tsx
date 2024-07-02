@@ -63,10 +63,13 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <UnitGroupView id={row.id} dataSource={dataSource} actionRef={actionRef}></UnitGroupView>
+              <UnitGroupView
+                buttonType={'icon'}
+                lang={lang} id={row.id} dataSource={dataSource} actionRef={actionRef}></UnitGroupView>
               <UnitGroupEdit
                 id={row.id}
                 buttonType={'icon'}
+                lang={lang}
                 actionRef={actionRef}
                 setViewDrawerVisible={() => { }}
               ></UnitGroupEdit>
@@ -81,7 +84,8 @@ const TableList: FC = () => {
         }
         return [
           <Space size={'small'} key={0}>
-            <UnitGroupView id={row.id} dataSource={dataSource} actionRef={actionRef}></UnitGroupView>
+            <UnitGroupView buttonType={'icon'}
+              lang={lang} id={row.id} dataSource={dataSource} actionRef={actionRef}></UnitGroupView>
           </Space>,
         ];
       },
@@ -100,7 +104,7 @@ const TableList: FC = () => {
         }}
         toolBarRender={() => {
           if (dataSource === 'my') {
-            return [<UnitGroupCreate key={0} actionRef={actionRef}></UnitGroupCreate>];
+            return [<UnitGroupCreate key={0} lang={lang} actionRef={actionRef} />];
           }
           return [];
         }}

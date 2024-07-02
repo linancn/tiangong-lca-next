@@ -19,7 +19,7 @@ import {
   Tooltip,
   Typography,
   message,
-  Divider
+  // Divider
 } from 'antd';
 import type { FC } from 'react';
 import React, {
@@ -28,11 +28,16 @@ import React, {
   useRef, useState
 } from 'react';
 import { FormattedMessage } from 'umi';
+// import UnitgroupsFrom from '@/pages/Unitgroups/Components/Unit/edit';
+import SourceSelectFrom from '@/pages/Sources/Components/select/from';
+import UnitGroupSelectFrom from '@/pages/Unitgroups/Components/select/from';
+import FlowpropertiesSelectFrom from './select/from';
 
 type Props = {
   actionRef: React.MutableRefObject<ActionType | undefined>;
+  lang: string
 };
-const FlowpropertiesCreate: FC<Props> = ({ actionRef }) => {
+const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
   const [activeTabKey, setActiveTabKey] = useState<string>('flowPropertiesInformation');
@@ -41,7 +46,23 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef }) => {
   const reload = useCallback(() => {
     actionRef.current?.reload();
   }, [actionRef]);
-
+  const handleData = (keys: string[], data: any) => {
+    // 创建一个新对象，以避免直接修改状态
+    const newData = { ...fromData[activeTabKey] };
+    // 递归地设置嵌套值
+    let current = newData;
+    for (let i = 0; i < keys.length - 1; i++) {
+      const key = keys[i];
+      if (!current[key]) {
+        current[key] = {};
+      }
+      current = current[key];
+    }
+    // 设置最后一个键的值
+    current[keys[keys.length - 1]] = data;
+    // 更新状态
+    setFromData({ ...fromData, [activeTabKey]: newData });
+  }
   const tabList = [
     { key: 'flowPropertiesInformation', tab: 'Flow Properties Information' },
     { key: 'modellingAndValidation', tab: 'Modelling And Validation' },
@@ -55,29 +76,25 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef }) => {
             <LangTextItemFrom name={['dataSetInformation', 'common:name']} label="Name" />
           </Card>
           <br />
+          <Card size="small" title={'Classification'}>
+            <LevelTextItemFrom dataType={'FlowProperty'} formRef={formRefCreate} onData={() => { }} name={['dataSetInformation', "classificationInformation", 'common:classification', 'common:class']} />
+          </Card>
+          <br />
           <Card size="small" title={'General Comment'}>
             <LangTextItemFrom name={['dataSetInformation', "common:generalComment"]} label="General Comment" />
           </Card>
-          <br />
-          <Card size="small" title={'Classification'}>
-            <LevelTextItemFrom name={['dataSetInformation', "classificationInformation", 'common:classification', 'common:class']} />
-            {/* <Space>
-              <Form.Item name={['dataSetInformation', "classificationInformation", 'common:classification', 'common:class', '@level_0']}>
-                <Input placeholder="Level 1" />
-              </Form.Item>
-              <Form.Item name={['dataSetInformation', "classificationInformation", 'common:classification', 'common:class', '@level_1']}>
-                <Input placeholder="Level 2" />
-              </Form.Item>
-              <Form.Item name={['dataSetInformation', "classificationInformation", 'common:classification', 'common:class', '@level_2']}>
-                <Input placeholder="Level 3" />
-              </Form.Item>
-            </Space> */}
-          </Card>
-
         </Card>
         <br />
         <Card size="small" title={'Quantitative Reference'}>
-          <Form.Item label='Ref Object Id' name={['quantitativeReference', 'referenceToReferenceUnitGroup', '@refObjectId']}>
+          <UnitGroupSelectFrom
+            name={['quantitativeReference', 'referenceToReferenceUnitGroup']}
+            label='Reference To Reference Unit Group'
+            lang={lang}
+            formRef={formRefCreate}
+            onData={handleData}
+          />
+          {/* <UnitgroupsFrom /> */}
+          {/* <Form.Item label='Ref Object Id' name={['quantitativeReference', 'referenceToReferenceUnitGroup', '@refObjectId']}>
             <Input />
           </Form.Item>
           <Form.Item label="Type" name={['quantitativeReference', 'referenceToReferenceUnitGroup', '@type']}>
@@ -92,12 +109,19 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef }) => {
           <LangTextItemFrom
             name={['quantitativeReference', 'referenceToReferenceUnitGroup', 'common:shortDescription']}
             label="Short Description"
-          />
+          /> */}
         </Card>
       </Card>
     </Space>),
     modellingAndValidation: (<Space direction="vertical" style={{ width: '100%' }}>
-      <Form.Item label="Ref Object Id" name={['complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem', '@refObjectId']}>
+      <SourceSelectFrom
+        name={['complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem']}
+        lang={lang}
+        label="Reference To Compliance System"
+        formRef={formRefCreate}
+        onData={handleData}
+      />
+      {/* <Form.Item label="Ref Object Id" name={['complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem', '@refObjectId']}>
         <Input placeholder="@refObjectId" />
       </Form.Item>
       <Form.Item label='Type' name={['complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem', '@type']}>
@@ -112,7 +136,7 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef }) => {
       <LangTextItemFrom
         name={['complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem', 'common:shortDescription']}
         label="Short Description"
-      />
+      /> */}
       <Form.Item label="Approval Of Overall Compliance" name={['complianceDeclarations', 'compliance', 'common:approvalOfOverallCompliance']}>
         <Input />
       </Form.Item>
@@ -125,7 +149,14 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef }) => {
         <Form.Item label="Time Stamp" name={['dataEntryBy', 'common:timeStamp']}>
           <Input />
         </Form.Item>
-        <Card
+        <SourceSelectFrom
+          name={['dataEntryBy', 'common:referenceToDataSetFormat',]}
+          lang={lang}
+          label="Reference To Compliance System"
+          formRef={formRefCreate}
+          onData={handleData}
+        />
+        {/* <Card
           size="small"
           title={'Reference To Data Set Format'}
         >
@@ -166,7 +197,7 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef }) => {
             ]}
             label="Short Description"
           />
-        </Card>
+        </Card> */}
 
       </Card>
 
@@ -174,7 +205,14 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef }) => {
         <Form.Item label="Data Set Version" name={['publicationAndOwnership', 'common:dataSetVersion']}>
           <Input />
         </Form.Item>
-        <Card size="small" title={'Reference To Preceding Data Set Version'}>
+        <FlowpropertiesSelectFrom
+          name={['publicationAndOwnership', 'common:referenceToPrecedingDataSetVersion']}
+          lang={lang}
+          label={'Reference To Preceding Data Set Version'}
+          formRef={formRefCreate}
+          onData={handleData}
+        />
+        {/* <Card size="small" title={'Reference To Preceding Data Set Version'}>
           <Form.Item
             label="Type"
             name={[
@@ -212,7 +250,7 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef }) => {
             ]}
             label="Short Description"
           />
-        </Card>
+        </Card> */}
 
         <Form.Item label="Permanent Data Set URI" name={['publicationAndOwnership', 'common:permanentDataSetURI']}>
           <Input />

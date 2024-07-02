@@ -15,4 +15,6 @@ export default {
     'pages.unitgroup.unit.drawer.title.view': 'View Unit',
     'pages.unitgroup.unit.drawer.title.edit': 'Edit Unit',
     'pages.unitgroup.unit.drawer.title.delete': 'Delete Unit',
+
+    'pages.unitgroup.drawer.title.select': 'Select UnitGroups',
 };

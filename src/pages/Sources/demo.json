@@ -1,41 +1,51 @@
 {
     "sourceDataSet": {
-        "@xmlns:common": "http://lca.jrc.it/ILCD/Common",
         "@xmlns": "http://lca.jrc.it/ILCD/Source",
+        "@xmlns:common": "http://lca.jrc.it/ILCD/Common",
         "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
         "@version": "1.1",
         "@xsi:schemaLocation": "http://lca.jrc.it/ILCD/Source ../../schemas/ILCD_SourceDataSet.xsd",
         "sourceInformation": {
             "dataSetInformation": {
-                "common:UUID": "0018c3c0-0b40-472d-b10b-19ce52fe932e",
-                "common:shortName": [
-                    {
-                        "@xml:lang": "en",
-                        "#text": "Tagliaferri, C., Clift, R., Lettieri, P. & Chapman, C. Shale gas: a life-cycle perspective for UK production. Int J Life Cycle Assess 22, 919\u2013937 (2017)."
-                    },
-                    {
-                        "@xml:lang": "zh",
-                        "#text": "Tagliaferri, C., Clift, R., Lettieri, P. & Chapman, C. Shale gas: a life-cycle perspective for UK production. Int J Life Cycle Assess 22, 919\u2013937 (2017)."
-                    }
-                ],
+                "common:UUID": "9ba3ac1e-6797-4cc0-afd5-1b8f7bf28c6a",
+                "common:shortName": {
+                    "@xml:lang": "en",
+                    "#text": "ILCD Data Network - compliance (non-Process)"
+                },
                 "classificationInformation": {
                     "common:classification": {
                         "common:class": {
                             "@level": "0",
-                            "#text": "Publications and communications"
+                            "#text": "Compliance systems"
                         }
                     }
                 },
-                "sourceCitation": "https://doi.org/10.1007/s11367-016-1207-5",
-                "publicationType": "Article in periodical"
+                "sourceCitation": "European Commission, Joint Research Centre, Institute for Environment and Sustainability (2012): International Reference Life Cycle Data System (ILCD) - Data Network - Compliance rules and entry-level requirements. Definition of: ILCD Data Network - compliance for non-Process data sets. Version 1.1. January 2012",
+                "publicationType": "Monograph",
+                "sourceDescriptionOrComment": {
+                    "@xml:lang": "en",
+                    "#text": "The referenced file defines the compliance rules and entry-level requirements of the International Reference Life Cycle Data System (ILCD) Data Network, which can also be used for general ILCD-compliance under the ILCD Handbook. This document provides the overview and refers to specific documents that define the detailed requirements in the five areas quality, method, nomenclature, review, and documentation of LCA data sets. Note that application areas (via archetype goal situations) and data quality levels are differentiated that are to be referenced explicitly when identifying the compliance of a data set. While the document defines all variants, this reference relates to the definition of: \"ILCD Data Network - compliance\", which shall be used ONLY for Flow, Flow property and Unit group data sets."
+                },
+                "referenceToDigitalFile": {
+                    "@uri": "../external_docs/ILCD-Data-Network_Compliance-Entry-level_Version1.1_Jan2012.pdf"
+                },
+                "referenceToContact": {
+                    "@refObjectId": "d0d5f8bb-9311-49d1-9e30-2f20a6977f4f",
+                    "@type": "contact data set",
+                    "@uri": "../contacts/d0d5f8bb-9311-49d1-9e30-2f20a6977f4f.xml",
+                    "common:shortDescription": {
+                        "@xml:lang": "en",
+                        "#text": "European Commission - JRC directorate D"
+                    }
+                }
             }
         },
         "administrativeInformation": {
             "dataEntryBy": {
-                "common:timeStamp": "2023-12-12T20:42:25+08:00",
+                "common:timeStamp": "2010-03-12T00:00:00+01:00",
                 "common:referenceToDataSetFormat": {
-                    "@type": "source data set",
                     "@refObjectId": "a97a0155-0234-4b87-b4ce-a45da52f2a40",
+                    "@type": "source data set",
                     "@uri": "../sources/a97a0155-0234-4b87-b4ce-a45da52f2a40.xml",
                     "common:shortDescription": {
                         "@xml:lang": "en",
@@ -44,7 +54,8 @@
                 }
             },
             "publicationAndOwnership": {
-                "common:dataSetVersion": "01.00.005"
+                "common:dataSetVersion": "03.00.003",
+                "common:permanentDataSetURI": "http://lca.jrc.ec.europa.eu/lcainfohub/datasets/ilcd/sources/9ba3ac1e-6797-4cc0-afd5-1b8f7bf28c6a.xml"
             }
         }
     }

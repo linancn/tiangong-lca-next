@@ -1,5 +1,6 @@
+import LangTextItemFrom from '@/components/LangTextItem/from';
+import LevelTextItemFrom from '@/components/LevelTextItem/from';
 import { createSource } from '@/services/sources/api';
-import { langOptions } from '@/services/general/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-form';
@@ -8,32 +9,149 @@ import type { ActionType } from '@ant-design/pro-table';
 import {
     Button,
     Card,
-    DatePicker,
     Drawer,
     Form,
     Input,
-    Select,
     Space,
     Tooltip,
     Typography,
-    message,
+    message
 } from 'antd';
 import type { FC } from 'react';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-
-const { TextArea } = Input;
-
+import SourceSelectFrom from './select/from';
+import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
 type Props = {
     actionRef: React.MutableRefObject<ActionType | undefined>;
+    lang: string;
 };
-const SourceCreate: FC<Props> = ({ actionRef }) => {
+const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
     const [drawerVisible, setDrawerVisible] = useState(false);
     const formRefCreate = useRef<ProFormInstance>();
+    const [fromData, setFromData] = useState<any>({});
+    const [activeTabKey, setActiveTabKey] = useState<string>('sourceInformation');
+
+    const handletFromData = (data: any) => {
+        // setFromData({ ...fromData, data });
+    };
+
+    const tabList = [
+        { key: 'sourceInformation', tab: 'Source Information' },
+        { key: 'administrativeInformation', tab: 'Administrative Information' },
+    ];
+
+    const sourceList: Record<string, React.ReactNode> = {
+        sourceInformation: (
+            <Space direction="vertical" style={{ width: '100%' }}>
+                <Card size="small" title={'Short Name'}>
+                    <LangTextItemFrom
+                        name={['sourceInformation', 'dataSetInformation', 'common:shortName']}
+                        label="Short Name"
+                    />
+                </Card>
+                <br />
+                <Card size="small" title={'Classification'}>
+                    <LevelTextItemFrom
+                        name={[
+                            'sourceInformation',
+                            'dataSetInformation',
+                            'classificationInformation',
+                            'common:classification',
+                            'common:class',
+                        ]}
+                        dataType={'Source'}
+                        formRef={formRefCreate}
+                        onData={handletFromData}
+                    />
+                </Card>
+                <br />
+                <Form.Item label="Source Citation" name={[
+                    'sourceInformation',
+                    'dataSetInformation',
+                    'sourceCitation',
+                ]}>
+                    <Input />
+                </Form.Item>
+                <Form.Item label="Publication Type" name={[
+                    'sourceInformation',
+                    'dataSetInformation',
+                    'publicationType',
+                ]}>
+                    <Input />
+                </Form.Item>
+                <br />
+                <Card size="small" title={'Source Description Or Comment'}>
+                    <LangTextItemFrom
+                        name={['sourceInformation', 'dataSetInformation', 'sourceDescriptionOrComment']}
+                        label="Source Description Or Comment"
+                    />
+                </Card>
+                <br />
+                <Form.Item label="Reference To Digital File" name={[
+                    'sourceInformation',
+                    'dataSetInformation',
+                    'referenceToDigitalFile',
+                    '@uri'
+                ]}>
+                    <Input />
+                </Form.Item>
+                <br />
+                <ContactSelectFrom
+                    name={['sourceInformation', 'dataSetInformation', 'referenceToContact']}
+                    label="Reference To Contact"
+                    lang={lang}
+                    formRef={formRefCreate} />
+            </Space>
+        ),
+        administrativeInformation: (
+            <Space direction="vertical" style={{ width: '100%' }}>
+                <Card size="small" title={'Data Entry By'}>
+                    <Form.Item label="Time Stamp" name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}>
+                        <Input />
+                    </Form.Item>
+                    <SourceSelectFrom
+                        name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
+                        label="Reference To Data Set Format"
+                        lang={lang}
+                        formRef={formRefCreate} />
+                </Card>
+                <br />
+                <Card size="small" title={'Publication And Ownership'}>
+                    <Form.Item label='DataSet Version' name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}>
+                        <Input />
+                    </Form.Item>
+
+                    <Form.Item label='Permanent Data Set URI' name={['administrativeInformation', 'publicationAndOwnership', 'common:permanentDataSetURI']}>
+                        <Input />
+                    </Form.Item>
+                </Card>
+
+            </Space>
+        ),
+    };
+
+    const onTabChange = (key: string) => {
+        setActiveTabKey(key);
+    };
 
     const reload = useCallback(() => {
         actionRef.current?.reload();
     }, [actionRef]);
+
+    useEffect(() => {
+        if (drawerVisible === false) return;
+        setFromData({});
+        formRefCreate.current?.resetFields();
+        formRefCreate.current?.setFieldsValue({});
+    }, [drawerVisible]);
+
+    useEffect(() => {
+        setFromData({
+            ...fromData,
+            [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
+        });
+    }, [formRefCreate.current?.getFieldsValue()]);
 
     return (
         <>
@@ -46,10 +164,17 @@ const SourceCreate: FC<Props> = ({ actionRef }) => {
                         setDrawerVisible(true);
                     }}
                 />
+                {/* {buttonType === 'icon' ? (
+                    <Button shape="circle" icon={<PlusOutlined />} size="small" onClick={() => setDrawerVisible(true)} />
+                ) : (
+                    <Button onClick={() => setDrawerVisible(true)}>
+                        <FormattedMessage id="options.create" defaultMessage="Edit" />
+                    </Button>
+                )} */}
             </Tooltip>
             <Drawer
                 title={<FormattedMessage id="options.create" defaultMessage="Create" />}
-                width="600px"
+                width="90%"
                 closable={false}
                 extra={
                     <Button
@@ -75,13 +200,16 @@ const SourceCreate: FC<Props> = ({ actionRef }) => {
             >
                 <ProForm
                     formRef={formRefCreate}
+                    onValuesChange={(_, allValues) => {
+                        setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+                    }}
                     submitter={{
                         render: () => {
                             return [];
                         },
                     }}
-                    onFinish={async (values) => {
-                        const result = await createSource({ ...values });
+                    onFinish={async () => {
+                        const result = await createSource({ ...fromData });
                         if (result.data) {
                             message.success(
                                 <FormattedMessage
@@ -89,7 +217,9 @@ const SourceCreate: FC<Props> = ({ actionRef }) => {
                                     defaultMessage="Created Successfully!"
                                 />,
                             );
+                            setFromData({});
                             formRefCreate.current?.resetFields();
+                            formRefCreate.current?.setFieldsValue({});
                             setDrawerVisible(false);
                             reload();
                         } else {
@@ -98,127 +228,20 @@ const SourceCreate: FC<Props> = ({ actionRef }) => {
                         return true;
                     }}
                 >
-                    <Space direction="vertical">
-                        <Card size="small" title={'Sources Information'}>
-                            <Card size="small" title={'Short Name'}>
-                                <Form.Item>
-                                    <Form.List name={'common:shortName'}>
-                                        {(subFields, subOpt) => (
-                                            <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
-                                                {subFields.map((subField) => (
-                                                    <>
-                                                        <Space key={subField.key} direction="vertical">
-                                                            <Space>
-                                                                <Form.Item noStyle name={[subField.name, '@xml:lang']}>
-                                                                    <Select
-                                                                        placeholder="Select a lang"
-                                                                        optionFilterProp="lang"
-                                                                        options={langOptions}
-                                                                    />
-                                                                </Form.Item>
-                                                                <CloseOutlined
-                                                                    onClick={() => {
-                                                                        subOpt.remove(subField.name);
-                                                                    }}
-                                                                />
-                                                            </Space>
-                                                            <Form.Item noStyle name={[subField.name, '#text']}>
-                                                                <TextArea placeholder="text" rows={1} />
-                                                            </Form.Item>
-                                                        </Space>
-                                                    </>
-                                                ))}
-                                                <Button type="dashed" onClick={() => subOpt.add()} block>
-                                                    + Add Short Name Item
-                                                </Button>
-                                            </div>
-                                        )}
-                                    </Form.List>
-                                </Form.Item>
-                            </Card>
-                            <Card size="small" title={'Classification'}>
-                                <Space>
-                                    <Form.Item name={['common:class', '@level_0']}>
-                                        <Input placeholder="Level 1" />
-                                    </Form.Item>
-                                    <Form.Item name={['common:class', '@level_1']}>
-                                        <Input placeholder="Level 2" />
-                                    </Form.Item>
-                                    <Form.Item name={['common:class', '@level_2']}>
-                                        <Input placeholder="Level 3" />
-                                    </Form.Item>
-                                </Space>
-                            </Card>
-                            <Form.Item label="SourceCitation" name={'sourceCitation'}>
-                                <Input />
-                            </Form.Item>
-                            <Form.Item label="PublicationType" name={'publicationType'}>
-                                <Input />
-                            </Form.Item>
-                        </Card>
-                        <Card size="small" title={'Administrative Information'}>
-                            <Form.Item name={'dataEntryBy:common:timeStamp'}>
-                                <DatePicker showTime placeholder="Select" />
-                            </Form.Item>
-                            <Form.Item name={'dataEntryBy:common:@type'}>
-                                <Input placeholder="@type" />
-                            </Form.Item>
-                            <Form.Item name={'dataEntryBy:common:@refObjectId'}>
-                                <Input placeholder="@refObjectId" />
-                            </Form.Item>
-                            <Form.Item name={'dataEntryBy:common:@uri'}>
-                                <Input placeholder="@uri" />
-                            </Form.Item>
-                            <Card size="small" title={'Short Description'}>
-                                <Form.Item>
-                                    <Form.List name={'dataEntryBy:common:shortDescription'}>
-                                        {(subFields, subOpt) => (
-                                            <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
-                                                {subFields.map((subField) => (
-                                                    <>
-                                                        <Space key={subField.key} direction="vertical">
-                                                            <Space>
-                                                                <Form.Item noStyle name={[subField.name, '@xml:lang']}>
-                                                                    <Select
-                                                                        placeholder="Select a lang"
-                                                                        optionFilterProp="lang"
-                                                                        options={langOptions}
-                                                                    />
-                                                                </Form.Item>
-                                                                <CloseOutlined
-                                                                    onClick={() => {
-                                                                        subOpt.remove(subField.name);
-                                                                    }}
-                                                                />
-                                                            </Space>
-                                                            <Form.Item noStyle name={[subField.name, '#text']}>
-                                                                <Input placeholder="text" />
-                                                            </Form.Item>
-                                                        </Space>
-                                                    </>
-                                                ))}
-                                                <Button type="dashed" onClick={() => subOpt.add()} block>
-                                                    + Add Short Description Item
-                                                </Button>
-                                            </div>
-                                        )}
-                                    </Form.List>
-                                </Form.Item>
-                            </Card>
-                            <br />
-                            <Form.Item name={'publicationAndOwnership:common:dataSetVersion'}>
-                                <Input placeholder="DataSet Version" />
-                            </Form.Item>
-                        </Card>
-                        <Form.Item noStyle shouldUpdate>
-                            {() => (
-                                <Typography>
-                                    <pre>{JSON.stringify(formRefCreate.current?.getFieldsValue(), null, 2)}</pre>
-                                </Typography>
-                            )}
-                        </Form.Item>
-                    </Space>
+                    <Card
+                        style={{ width: '100%' }}
+                        // title="Card title"
+                        // extra={<a href="#">More</a>}
+                        tabList={tabList}
+                        activeTabKey={activeTabKey}
+                        onTabChange={onTabChange}
+                    >
+                        {sourceList[activeTabKey]}
+                    </Card>
                 </ProForm>
+                <Typography>
+                    <pre>{JSON.stringify(fromData, null, 2)}</pre>
+                </Typography>
             </Drawer>
         </>
     );

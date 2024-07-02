@@ -1,4 +1,4 @@
-import { getFlowpropertiesDetail } from '@/services/flowproperties/api';
+import { getUnitGroupDetail } from '@/services/unitgroups/api';
 import { langOptions } from '@/services/general/data';
 import { ActionType, ProFormInstance } from '@ant-design/pro-components';
 import {
@@ -12,8 +12,8 @@ import {
   Button
 } from 'antd';
 import React, { FC } from 'react';
-import FlowpropertiesSelectDrawer from './drawer';
-import FlowpropertiesView from '../view';
+import UnitgroupsSelectDrawer from './drawer';
+import UnitgroupsView from '../view';
 // import LangTextItemFrom from '@/components/LangTextItem/from';
 const { TextArea } = Input;
 
@@ -25,19 +25,19 @@ type Props = {
   onData?: (key: any, data: any) => void
 };
 
-const FlowpropertiesSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => {
+const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => {
   const handleResetData = (data: any) => {
     formRef.current?.setFieldValue(name, data);
     if (onData) {
       onData(name, data)
     }
   }
-  const handletFlowpropertiesData = (rowKey: any) => {
-    getFlowpropertiesDetail(rowKey).then(async (result: any) => {
+  const handletUnitgroupsData = (rowKey: any) => {
+    getUnitGroupDetail(rowKey).then(async (result: any) => {
       let data = {
         '@refObjectId': `${rowKey}`,
-        '@type': 'flowproperties data set',
-        '@uri': `../flowproperties/${rowKey}.xml`,
+        '@type': 'unit group data set',
+        '@uri': `../unitgroups/${rowKey}.xml`,
         'common:shortDescription': [],
       }
       handleResetData(data)
@@ -52,8 +52,8 @@ const FlowpropertiesSelectFrom: FC<Props> = ({ name, label, lang, formRef, onDat
           <Input disabled={true} style={{ width: '300px' }} />
         </Form.Item>
         <Space direction="horizontal" style={{ marginTop: '6px' }}>
-          <FlowpropertiesSelectDrawer buttonType="text" lang={lang} onData={handletFlowpropertiesData} />
-          {id && <FlowpropertiesView lang={lang} id={id} dataSource="tg" buttonType="text" actionRef={actionRef} />}
+          <UnitgroupsSelectDrawer buttonType="text" lang={lang} onData={handletUnitgroupsData} />
+          {id && <UnitgroupsView lang={lang} id={id} dataSource="tg" buttonType="text" actionRef={actionRef} />}
           {id && (
             <Button onClick={() => handleResetData({})}>Clear</Button>
           )}
@@ -108,4 +108,4 @@ const FlowpropertiesSelectFrom: FC<Props> = ({ name, label, lang, formRef, onDat
   );
 };
 
-export default FlowpropertiesSelectFrom;
+export default UnitgroupsSelectFrom;

@@ -10,18 +10,185 @@ import { Button, Card, Drawer, Form, Input, Space, Tooltip, Typography, message 
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-
+import SourceSelectFrom from '@/pages/Sources/Components/select/from';
+import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
 type Props = {
+  lang: string,
   actionRef: React.MutableRefObject<ActionType | undefined>;
 };
-const ContactCreate: FC<Props> = ({ actionRef }) => {
+const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [fromData, setFromData] = useState<any>({});
   const formRefCreate = useRef<ProFormInstance>();
+  const [activeTabKey, setActiveTabKey] = useState<string>('contactInformation');
 
   const handletFromData = (data: any) => {
-    setFromData({ ...data });
+    setFromData({ ...fromData, data });
   };
+
+  const tabList = [
+    { key: 'contactInformation', tab: 'Contact Information' },
+    { key: 'administrativeInformation', tab: 'Administrative Information' },
+  ];
+
+  const onTabChange = (key: string) => {
+    setActiveTabKey(key);
+  };
+
+  const contactList: Record<string, React.ReactNode> = {
+    contactInformation: (
+      <>
+        <Space direction="vertical" style={{ width: '100%' }}>
+          <Card size="small" title={'Short Name'}>
+            <LangTextItemFrom
+              name={['contactInformation', 'dataSetInformation', 'common:shortName']}
+              label="Short Name"
+            />
+          </Card>
+          <Card size="small" title={'Name'}>
+            <LangTextItemFrom
+              name={['contactInformation', 'dataSetInformation', 'common:name']}
+              label="Name"
+            />
+          </Card>
+          <Card size="small" title={'Classification'}>
+            <LevelTextItemFrom
+              name={[
+                'contactInformation',
+                'dataSetInformation',
+                'classificationInformation',
+                'common:classification',
+                'common:class',
+              ]}
+              dataType={'Contact'}
+              formRef={formRefCreate}
+              onData={handletFromData}
+            />
+          </Card>
+          <Card size="small" title={'Contact Address'}>
+            <LangTextItemFrom
+              name={['contactInformation', 'dataSetInformation', 'contactAddress']}
+              label="Contact Address"
+            />
+          </Card>
+          <Form.Item label="Telephone" name={['contactInformation', 'dataSetInformation', 'telephone']}>
+            <Input />
+          </Form.Item>
+          <Form.Item label="Telefax" name={['contactInformation', 'dataSetInformation', 'telefax']}>
+            <Input />
+          </Form.Item>
+          <Form.Item label="Email" name={['contactInformation', 'dataSetInformation', 'email']}>
+            <Input />
+          </Form.Item>
+          <Form.Item label="WWWAddress" name={['contactInformation', 'dataSetInformation', 'WWWAddress']}>
+            <Input />
+          </Form.Item>
+          <Card size="small" title={'Central Contact Point'}>
+            <LangTextItemFrom
+              name={['contactInformation', 'dataSetInformation', 'centralContactPoint']}
+              label="Central Contact Point"
+            />
+          </Card>
+          <Card size="small" title={'Contact Description Or Comment'}>
+            <LangTextItemFrom
+              name={['contactInformation', 'dataSetInformation', 'contactDescriptionOrComment']}
+              label="Contact Description Or Comment"
+            />
+          </Card>
+          <ContactSelectFrom label='Reference To Contact'
+            name={['contactInformation', 'dataSetInformation', 'referenceToContact']}
+            lang={lang}
+            formRef={formRefCreate} />
+          {/* <Card size="small" title={'Reference To Contact'}>
+            <Form.Item label="Ref Object Id" name={['contactInformation', 'dataSetInformation', 'referenceToContact', '@refObjectId']}>
+              <Input placeholder="@refObjectId" />
+            </Form.Item>
+            <Form.Item label='Type' name={['contactInformation', 'dataSetInformation', 'referenceToContact', '@type']}>
+              <Input placeholder="@type" />
+            </Form.Item>
+            <Form.Item label='URI' name={['contactInformation', 'dataSetInformation', 'referenceToContact', '@uri']}>
+              <Input placeholder="@uri" />
+            </Form.Item>
+            <Divider orientationMargin="0" orientation="left" plain>
+              Short Description
+            </Divider>
+            <LangTextItemFrom
+              name={['contactInformation', 'dataSetInformation', 'referenceToContact', 'common:shortDescription']}
+              label="Short Description"
+            />
+          </Card> */}
+        </Space>
+      </>
+    ),
+    administrativeInformation: (
+      <>
+        <Space direction="vertical" style={{ width: '100%' }}>
+          <Card size="small" title={'Data Entry By'}>
+            <Form.Item
+              label="Time Stamp"
+              name={[
+                'administrativeInformation',
+                'dataEntryBy',
+                'common:timeStamp',
+              ]}
+            >
+              <Input />
+            </Form.Item>
+            <br />
+            <SourceSelectFrom label='Reference To Data Set Format'
+              name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
+              lang={lang}
+              formRef={formRefCreate} />
+          </Card>
+          <Card size="small" title={'Publication And Ownership'}>
+            <Form.Item
+              label="Data Set Version"
+              name={[
+                'administrativeInformation',
+                'publicationAndOwnership',
+                'common:dataSetVersion',
+              ]}
+            >
+              <Input />
+            </Form.Item>
+            <ContactSelectFrom
+              label='Reference To Preceding Data Set Version'
+              name={['administrativeInformation', 'publicationAndOwnership', 'common:referenceToPrecedingDataSetVersion']}
+              lang={lang}
+              formRef={formRefCreate} />
+            {/* <Card size="small" title={'Reference To Preceding Data Set Version'}>
+              <Form.Item label="Type" name={['administrativeInformation', 'publicationAndOwnership', 'common:referenceToPrecedingDataSetVersion', '@type']}>
+                <Input />
+              </Form.Item>
+              <Form.Item label="Ref Object Id" name={['administrativeInformation', 'publicationAndOwnership', 'common:referenceToPrecedingDataSetVersion', '@refObjectId']}>
+                <Input />
+              </Form.Item>
+              <Form.Item label="URI" name={['administrativeInformation', 'publicationAndOwnership', 'common:referenceToPrecedingDataSetVersion', '@uri']}>
+                <Input />
+              </Form.Item>
+              <Divider orientationMargin="0" orientation="left" plain>
+                Short Description
+              </Divider>
+              <LangTextItemFrom
+                name={['administrativeInformation', 'publicationAndOwnership', 'common:referenceToPrecedingDataSetVersion', 'common:shortDescription']}
+                label="Short Description"
+              />
+            </Card> */}
+            <Form.Item
+              label="Permanent Data Set URI"
+              name={[
+                'administrativeInformation',
+                'publicationAndOwnership',
+                'common:permanentDataSetURI',
+              ]}
+            >
+              <Input />
+            </Form.Item>
+          </Card>
+        </Space>
+      </>
+    ),
+  }
 
   const reload = useCallback(() => {
     actionRef.current?.reload();
@@ -33,6 +200,13 @@ const ContactCreate: FC<Props> = ({ actionRef }) => {
     formRefCreate.current?.setFieldsValue({});
     setFromData({});
   }, [drawerVisible]);
+
+  useEffect(() => {
+    setFromData({
+      ...fromData,
+      [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
+    });
+  }, [formRefCreate.current?.getFieldsValue()]);
 
   return (
     <>
@@ -80,7 +254,7 @@ const ContactCreate: FC<Props> = ({ actionRef }) => {
         <ProForm
           formRef={formRefCreate}
           onValuesChange={(_, allValues) => {
-            setFromData(allValues ?? {});
+            setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
           }}
           submitter={{
             render: () => {
@@ -105,55 +279,21 @@ const ContactCreate: FC<Props> = ({ actionRef }) => {
             return true;
           }}
         >
-          <Space direction="vertical" style={{ width: '100%' }}>
-            <Card size="small" title={'Short Name'}>
-              <LangTextItemFrom
-                name={['contactInformation', 'dataSetInformation', 'common:shortName']}
-                label="Short Name"
-              />
-            </Card>
-            <Card size="small" title={'Name'}>
-              <LangTextItemFrom
-                name={['contactInformation', 'dataSetInformation', 'common:name']}
-                label="Name"
-              />
-            </Card>
-            <Card size="small" title={'Classification'}>
-              <LevelTextItemFrom
-                name={[
-                  'contactInformation',
-                  'dataSetInformation',
-                  'classificationInformation',
-                  'common:classification',
-                  'common:class',
-                ]}
-                dataType={'Contact'}
-                formRef={formRefCreate}
-                onData={handletFromData}
-              />
-            </Card>
-            <Form.Item label="Email" name={['contactInformation', 'dataSetInformation', 'email']}>
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="Data Set Version"
-              name={[
-                'administrativeInformation',
-                'publicationAndOwnership',
-                'common:dataSetVersion',
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item name="id" hidden>
-              <Input />
-            </Form.Item>
-          </Space>
+          <Card
+            style={{ width: '100%' }}
+            // title="Card title"
+            // extra={<a href="#">More</a>}
+            tabList={tabList}
+            activeTabKey={activeTabKey}
+            onTabChange={onTabChange}
+          >
+            {contactList[activeTabKey]}
+          </Card>
         </ProForm>
         <Typography>
           <pre>{JSON.stringify(fromData, null, 2)}</pre>
         </Typography>
-      </Drawer>
+      </Drawer >
     </>
   );
 };

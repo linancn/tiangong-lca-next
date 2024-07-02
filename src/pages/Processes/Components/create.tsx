@@ -7,7 +7,7 @@ import { getLangText } from '@/services/general/util';
 import { createProcess } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import styles from '@/style/custom.less';
-import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
+import { CheckCircleTwoTone, CloseCircleOutlined, CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import ProForm from '@ant-design/pro-form';
@@ -28,6 +28,9 @@ import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import ProcessExchangeCreate from './Exchange/create';
+import ProcessExchangeDelete from './Exchange/delete';
+import ProcessExchangeEdit from './Exchange/edit';
+import ProcessExchangeView from './Exchange/view';
 
 type Props = {
   lang: string;
@@ -40,16 +43,25 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
   const [fromData, setFromData] = useState<any>({});
   const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
 
+  const actionRefExchangeTable = useRef<ActionType>();
+
   const reload = useCallback(() => {
     actionRef.current?.reload();
   }, [actionRef]);
 
+  const handletExchangeDataCreate = (data: any) => {
+    setExchangeDataSource([
+      ...exchangeDataSource,
+      { ...data, '@dataSetInternalID': exchangeDataSource.length.toString() },
+    ]);
+  };
+
   const handletFromData = (data: any) => {
-    setFromData({ ...data });
+    setFromData({ ...fromData, data });
   };
 
   const handletExchangeData = (data: any) => {
-    setExchangeDataSource([...exchangeDataSource, data]);
+    setExchangeDataSource([...data]);
   };
 
   const processExchangeColumns: ProColumns<ProcessExchangeTable>[] = [
@@ -105,35 +117,55 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
       render: (_, row) => getLangText(row.generalComment ?? {}, lang),
     },
     {
+      title: (
+        <FormattedMessage
+          id="processExchange.quantitativeReference"
+          defaultMessage="Quantitative Reference"
+        />
+      ),
+      dataIndex: 'quantitativeReference',
+      sorter: false,
+      search: false,
+      render: (_, row) => {
+        if (row.quantitativeReference) {
+          return <CheckCircleTwoTone twoToneColor="#52c41a" />;
+        }
+        return <CloseCircleOutlined />;
+      }
+    },
+    {
       title: <FormattedMessage id="options.option" defaultMessage="Option" />,
       dataIndex: 'option',
       search: false,
-      // render: (_, row) => {
-      //   if (dataSource === 'my') {
-      //     return [
-      //       // <Space size={'small'} key={0}>
-      //       //   {/* <ContactView id={row.id} actionRef={actionRef} /> */}
-      //       //   <ContactEdit
-      //       //     id={row.id}
-      //       //     buttonType={'icon'}
-      //       //     actionRef={actionRef}
-      //       //     setViewDrawerVisible={() => {}}
-      //       //   />
-      //       //   <ContactDelete
-      //       //     id={row.id}
-      //       //     buttonType={'icon'}
-      //       //     actionRef={actionRef}
-      //       //     setViewDrawerVisible={() => {}}
-      //       //   />
-      //       // </Space>,
-      //     ];
-      //   }
-      //   return [
-      //     <Space size={'small'} key={0}>
-      //       {/* <ContactView id={row.id} actionRef={actionRef} /> */}
-      //     </Space>,
-      //   ];
-      // },
+      render: (_, row) => {
+        return [
+          <Space size={'small'} key={0}>
+            <ProcessExchangeView
+              id={row.dataSetInternalID}
+              data={exchangeDataSource}
+              dataSource={'my'}
+              buttonType={'icon'}
+              actionRef={actionRefExchangeTable}
+            />
+            <ProcessExchangeEdit
+              id={row.dataSetInternalID}
+              data={exchangeDataSource}
+              buttonType={'icon'}
+              actionRef={actionRefExchangeTable}
+              onData={handletExchangeData}
+              setViewDrawerVisible={() => { }}
+            />
+            <ProcessExchangeDelete
+              id={row.dataSetInternalID}
+              data={exchangeDataSource}
+              buttonType={'icon'}
+              actionRef={actionRef}
+              setViewDrawerVisible={() => { }}
+              onData={handletExchangeData}
+            />
+          </Space>,
+        ];
+      },
     },
   ];
 
@@ -173,25 +205,6 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
           <LangTextItemFrom
             name={['processInformation', 'dataSetInformation', 'common:generalComment']}
             label="General Comment"
-          />
-        </Card>
-
-        <Card size="small" title={'Quantitative Reference'}>
-          <Form.Item label="Type" name={['processInformation', 'quantitativeReference', '@type']}>
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label="Reference To Reference Flow"
-            name={['processInformation', 'quantitativeReference', 'referenceToReferenceFlow']}
-          >
-            <Input />
-          </Form.Item>
-          <Divider orientationMargin="0" orientation="left" plain>
-            Functional Unit Or Other
-          </Divider>
-          <LangTextItemFrom
-            name={['processInformation', 'quantitativeReference', 'functionalUnitOrOther']}
-            label="Functional Unit Or Other"
           />
         </Card>
 
@@ -246,53 +259,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             name={['processInformation', 'technology', 'technologicalApplicability']}
             label="Technological Applicability"
           />
-          <Card size="small" title={'Reference To Technology Flow Diagramm Or Picture'}>
-            <Form.Item
-              label="Type"
-              name={[
-                'processInformation',
-                'technology',
-                'referenceToTechnologyFlowDiagrammOrPicture',
-                '@type',
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="Ref Object Id"
-              name={[
-                'processInformation',
-                'technology',
-                'referenceToTechnologyFlowDiagrammOrPicture',
-                '@refObjectId',
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="URI"
-              name={[
-                'processInformation',
-                'technology',
-                'referenceToTechnologyFlowDiagrammOrPicture',
-                '@uri',
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Divider orientationMargin="0" orientation="left" plain>
-              Short Description
-            </Divider>
-            <LangTextItemFrom
-              name={[
-                'processInformation',
-                'technology',
-                'referenceToTechnologyFlowDiagrammOrPicture',
-                'common:shortDescription',
-              ]}
-              label="Short Description"
-            />
-          </Card>
+          <SourceSelectFrom name={['processInformation', 'technology', 'referenceToTechnologyFlowDiagrammOrPicture']} label={'Reference To Technology Flow Diagramm Or Picture'} lang={lang} formRef={formRefCreate} />
         </Card>
 
         <Card size="small" title={'Mathematical Relations: Model Description'}>
@@ -415,8 +382,8 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             ]}
             label="Deviations From Treatment And Extrapolation Principles"
           />
-          
-          <SourceSelectFrom name={['modellingAndValidation', 'dataSourcesTreatmentAndRepresentativeness','referenceToDataSource']} label={'Reference To Data Source'} lang={lang} formRef={formRefCreate} />
+
+          <SourceSelectFrom name={['modellingAndValidation', 'dataSourcesTreatmentAndRepresentativeness', 'referenceToDataSource']} label={'Reference To Data Source'} lang={lang} formRef={formRefCreate} />
 
           <Divider orientationMargin="0" orientation="left" plain>
             Use Advice For DataSet
@@ -542,6 +509,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
     ),
     exchanges: (
       <ProTable<ProcessExchangeTable, ListPagination>
+        actionRef={actionRefExchangeTable}
         search={{
           defaultCollapsed: false,
         }}
@@ -550,7 +518,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
           pageSize: 10,
         }}
         toolBarRender={() => {
-          return [<ProcessExchangeCreate key={0} onData={handletExchangeData} />];
+          return [<ProcessExchangeCreate key={0} onData={handletExchangeDataCreate} />];
         }}
         dataSource={exchangeDataSource}
         columns={processExchangeColumns}
@@ -561,6 +529,13 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
   };
+
+  useEffect(() => {
+    if (drawerVisible === false) return;
+    formRefCreate.current?.resetFields();
+    formRefCreate.current?.setFieldsValue({});
+    setExchangeDataSource([]);
+  }, [drawerVisible]);
 
   useEffect(() => {
     setFromData({ ...fromData, exchanges: { exchange: exchangeDataSource } });
@@ -650,14 +625,10 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
           >
             {contentList[activeTabKey]}
           </Card>
-          <Form.Item noStyle shouldUpdate>
-            {() => (
-              <Typography>
-                <pre>{JSON.stringify(fromData, null, 2)}</pre>
-              </Typography>
-            )}
-          </Form.Item>
         </ProForm>
+        <Typography>
+          <pre>{JSON.stringify(fromData, null, 2)}</pre>
+        </Typography>
       </Drawer>
     </>
   );

@@ -1,6 +1,6 @@
-import { UnitTable } from '@/services/unitgroups/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
+import { ActionType } from '@ant-design/pro-components';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import ProForm from '@ant-design/pro-form';
 import {
@@ -14,37 +14,56 @@ import {
     Typography,
 } from 'antd';
 import type { FC } from 'react';
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 
 type Props = {
+    id: string;
+    data: any;
     buttonType: string;
-    editData: UnitTable;
+    actionRef: React.MutableRefObject<ActionType | undefined>;
+    setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
     onData: (data: any) => void;
 };
-const UnitEdit: FC<Props> = ({ buttonType, editData, onData }) => {
+const UnitEdit: FC<Props> = ({ id, data, buttonType, actionRef, setViewDrawerVisible, onData }) => {
     const [drawerVisible, setDrawerVisible] = useState(false);
-    const formRefCreate = useRef<ProFormInstance>();
-    const [fromData, setFromData] = useState<UnitTable>(() => editData);
+    const [fromData, setFromData] = useState<any>({});
+    const [initData, setInitData] = useState<any>({});
+    const formRefEdit = useRef<ProFormInstance>();
+
+    const onEdit = useCallback(() => {
+        setDrawerVisible(true);
+    }, [setViewDrawerVisible]);
+
+    const onReset = () => {
+        // setSpinning(true);
+        formRefEdit.current?.resetFields();
+        const filteredData = data?.find((item: any) => item['dataSetInternalID'] === id) ?? {};
+        setInitData(filteredData);
+        formRefEdit.current?.setFieldsValue(filteredData);
+        setFromData(filteredData);
+        // setSpinning(false);
+    };
+
+    useEffect(() => {
+        if (drawerVisible) return;
+        onReset();
+    }, [drawerVisible]);
 
     return (
         <>
             <Tooltip title={<FormattedMessage id="pages.table.option.edit" defaultMessage="Edit"></FormattedMessage>}>
                 {buttonType === 'icon' ? (
-                    <Button shape="circle" icon={<FormOutlined />} size="small" onClick={() => {
-                        setDrawerVisible(true);
-                    }}></Button>
+                    <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit}></Button>
                 ) : (
-                    <Button onClick={() => {
-                        setDrawerVisible(true);
-                    }}>
+                    <Button onClick={onEdit}>
                         <FormattedMessage id="pages.table.option.edit" defaultMessage="Edit"></FormattedMessage>
                     </Button>
                 )}
             </Tooltip>
             <Drawer
                 title={<FormattedMessage id="pages.unitgroup.unit.drawer.title.edit" defaultMessage="Unit Edit"></FormattedMessage>}
-                width="600px"
+                width="90%"
                 closable={false}
                 extra={
                     <Button
@@ -62,61 +81,60 @@ const UnitEdit: FC<Props> = ({ buttonType, editData, onData }) => {
                 }}
                 footer={
                     <Space size={'middle'} className={styles.footer_right}>
-                        <Button onClick={() => {
-                            setDrawerVisible(false);
-                        }}>
-                            <FormattedMessage id="pages.table.option.cancel" defaultMessage="Cancel"></FormattedMessage>
+                        <Button onClick={() => setDrawerVisible(false)}>
+                            {' '}
+                            <FormattedMessage id="pages.table.option.cancel" defaultMessage="Cancel" />
                         </Button>
-                        <Button onClick={() => {
-                            formRefCreate.current?.submit();
-                        }} type="primary">
-                            <FormattedMessage id="pages.table.option.submit" defaultMessage="Submit"></FormattedMessage>
+                        <Button onClick={() => formRefEdit.current?.submit()} type="primary">
+                            <FormattedMessage id="pages.table.option.submit" defaultMessage="Submit" />
                         </Button>
                     </Space>
                 }
             >
                 <ProForm
-                    formRef={formRefCreate}
-                    initialValues={editData}
-                    onValuesChange={(changedValues, allValues) => {
-                        setFromData(allValues);
+                    formRef={formRefEdit}
+                    initialValues={initData}
+                    onValuesChange={(_, allValues) => {
+                        setFromData(allValues ?? {});
                     }}
                     submitter={{
                         render: () => {
                             return [];
                         },
                     }}
-                    onFinish={async (values) => {
-                        onData({ ...values });
+                    onFinish={async () => {
+                        onData(
+                            data.map((item: any) => {
+                                if (item['@dataSetInternalID'] === id) {
+                                    return fromData;
+                                }
+                                return item;
+                            }),
+                        );
+                        formRefEdit.current?.resetFields();
                         setDrawerVisible(false);
+                        actionRef.current?.reload();
                         return true;
                     }}
                 >
                     <Space direction="vertical" style={{ width: '100%' }}>
-                        <Form.Item label="DataSet Internal ID" name={'@dataSetInternalID'}>
-                            <Input></Input>
+                        <Form.Item name={'@dataSetInternalID'} hidden>
+                            <Input />
                         </Form.Item>
                         <Form.Item label="Name" name={'name'}>
-                            <Input></Input>
+                            <Input />
                         </Form.Item>
                         <Form.Item label="Mean Value" name={'meanValue'}>
-                            <Input></Input>
+                            <Input />
                         </Form.Item>
                         <Form.Item label="Selected" name={'selected'}>
                             <Switch></Switch>
                         </Form.Item>
-                        <Form.Item name="id" hidden>
-                            <Input></Input>
-                        </Form.Item>
-                        <Form.Item noStyle shouldUpdate>
-                            {() => (
-                                <Typography>
-                                    <pre>{JSON.stringify(fromData, null, 2)}</pre>
-                                </Typography>
-                            )}
-                        </Form.Item>
                     </Space>
                 </ProForm>
+                <Typography>
+                    <pre>{JSON.stringify(fromData, null, 2)}</pre>
+                </Typography>
             </Drawer>
         </>
     );

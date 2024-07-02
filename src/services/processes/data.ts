@@ -17,4 +17,6 @@ export type ProcessExchangeTable = {
   resultingAmount: string;
   dataDerivationTypeStatus: string;
   generalComment: string;
+  quantitativeReference: boolean;
+  functionalUnitOrOther: any;
 };

@@ -23,7 +23,6 @@ export async function createSource(data: any) {
     .from('sources')
     .insert([{ id: newID, json_ordered: newData }])
     .select();
-console.log(result);
   return result;
 }
 
@@ -116,7 +115,7 @@ export async function getSourceTable(
             classification: classificationToString(i['common:class']),
             sourceCitation: i.sourceCitation ?? '-',
             publicationType: i.publicationType ?? '-',
-            createdAt: new Date(i.created_at),
+            created_at: new Date(i.created_at),
           };
         } catch (e) {
           console.error(e);

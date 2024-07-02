@@ -14,7 +14,7 @@ type Props = {
   onData: (data: any) => void;
 };
 
-const ProcessExchangeDelete: FC<Props> = ({
+const UnitDelete: FC<Props> = ({
   id,
   data,
   buttonType,
@@ -94,4 +94,4 @@ const ProcessExchangeDelete: FC<Props> = ({
   );
 };
 
-export default ProcessExchangeDelete;
+export default UnitDelete;

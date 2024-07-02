@@ -71,12 +71,14 @@ const TableList: FC = () => {
             <Space size={'small'} key={0}>
               <ContactView
                 id={row.id}
+                lang={lang}
                 dataSource={dataSource}
                 buttonType="icon"
                 actionRef={actionRef}
               />
               <ContactEdit
                 id={row.id}
+                lang={lang}
                 buttonType={'icon'}
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
@@ -94,6 +96,7 @@ const TableList: FC = () => {
           <Space size={'small'} key={0}>
             <ContactView
               id={row.id}
+              lang={lang}
               dataSource={dataSource}
               buttonType="icon"
               actionRef={actionRef}
@@ -116,7 +119,7 @@ const TableList: FC = () => {
         }}
         toolBarRender={() => {
           if (dataSource === 'my') {
-            return [<ContactCreate key={0} actionRef={actionRef} />];
+            return [<ContactCreate lang={lang} key={0} actionRef={actionRef} />];
           }
           return [];
         }}

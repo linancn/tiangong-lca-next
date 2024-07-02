@@ -31,7 +31,6 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
   };
 
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
-    console.log(newSelectedRowKeys);
     setSelectedRowKeys(newSelectedRowKeys);
   };
 
@@ -93,14 +92,15 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
         if (activeTabKey === 'tg') {
           return [
             <Space size={'small'} key={0}>
-              <FlowpropertiesView id={row.id} dataSource="tg" actionRef={tgActionRefSelect} />
+              <FlowpropertiesView lang={lang} buttonType={'icon'} id={row.id} dataSource="tg" actionRef={tgActionRefSelect} />
             </Space>,
           ];
         } else if (activeTabKey === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <FlowpropertiesView id={row.id} dataSource="my" actionRef={myActionRefSelect} />
+              <FlowpropertiesView lang={lang} buttonType={'icon'} id={row.id} dataSource="my" actionRef={myActionRefSelect} />
               <FlowpropertiesEdit
+                lang={lang}
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={myActionRefSelect}

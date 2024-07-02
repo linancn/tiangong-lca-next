@@ -1,105 +1,56 @@
-import { classificationToJson, getLangList, removeEmptyObjects } from "../general/util";
-
-function getAttribute(key: string, value: any) {
-  return value ? { [key]: value } : {};
-}
+import { classificationToJson, classificationToList, getLangJson, getLangList, removeEmptyObjects } from "../general/util";
 
 export function genSourceJsonOrdered(id: string, data: any, oldData: any) {
-  let common_shortName = {};
-  if (data?.['common:shortName']) {
-    if (data?.['common:shortName'].length === 1) {
-      common_shortName = data?.['common:shortName'][0];
-    } else if (data?.['common:shortName'].length > 1) {
-      common_shortName = data?.['common:shortName'];
-    }
-  }
-  let common_class = {};
-  if (data?.['common:class']?.['@level_0'] && data?.['common:class']?.['@level_0'].trim() !== '') {
-    common_class = {
-      '@level': 0,
-      '#text': data?.['common:class']?.['@level_0'],
-    };
-    if (
-      data?.['common:class']?.['@level_1'] &&
-      data?.['common:class']?.['@level_1'].trim() !== ''
-    ) {
-      common_class = [
-        {
-          '@level': 0,
-          '#text': data?.['common:class']?.['@level_0'],
-        },
-        {
-          '@level': 1,
-          '#text': data?.['common:class']?.['@level_1'],
-        },
-      ];
-      if (
-        data?.['common:class']?.['@level_2'] &&
-        data?.['common:class']?.['@level_2'].trim() !== ''
-      ) {
-        common_class = [
-          {
-            '@level': 0,
-            '#text': data?.['common:class']?.['@level_0'],
-          },
-          {
-            '@level': 1,
-            '#text': data?.['common:class']?.['@level_1'],
-          },
-          {
-            '@level': 2,
-            '#text': data?.['common:class']?.['@level_2'],
-          },
-        ];
-      }
-    }
-  }
-  let dataEntryBy_common_shortDescription = {};
-  if (data?.['dataEntryBy:common:shortDescription']) {
-    if (data?.['dataEntryBy:common:shortDescription'].length === 1) {
-      dataEntryBy_common_shortDescription = data?.['dataEntryBy:common:shortDescription'][0];
-    } else if (data?.['dataEntryBy:common:shortDescription'].length > 1) {
-      dataEntryBy_common_shortDescription = data?.['dataEntryBy:common:shortDescription'];
-    }
-  }
-  const newData = {
+  return removeEmptyObjects({
     sourceDataSet: {
-      ...getAttribute('@xmlns:common', oldData.sourceDataSet['@xmlns:common']),
-      ...getAttribute('@xmlns', oldData.sourceDataSet['@xmlns']),
-      ...getAttribute('@xmlns:xsi', oldData.sourceDataSet['@xmlns:xsi']),
-      ...getAttribute('@version', oldData.sourceDataSet['@version']),
-      ...getAttribute('@xsi:schemaLocation', oldData.sourceDataSet['@xsi:schemaLocation']),
+      '@xmlns:common': oldData.sourceDataSet?.['@xmlns:common'] ?? {},
+      '@xmlns': oldData.sourceDataSet?.['@xmlns'] ?? {},
+      '@xmlns:xsi': oldData.sourceDataSet?.['@xmlns:xsi'] ?? {},
+      '@version': oldData.sourceDataSet?.['@version'] ?? {},
+      '@xsi:schemaLocation': oldData.sourceDataSet?.['@xsi:schemaLocation'] ?? {},
       sourceInformation: {
         dataSetInformation: {
           'common:UUID': id,
-          'common:shortName': common_shortName,
+          'common:shortName': getLangJson(data?.sourceInformation?.dataSetInformation?.['common:shortName']),
           classificationInformation: {
             'common:classification': {
-              'common:class': common_class,
+              'common:class': classificationToList(
+                data?.sourceInformation?.dataSetInformation?.classificationInformation?.['common:classification']?.['common:class'],
+              ),
             },
           },
-          sourceCitation: data?.sourceCitation,
-          publicationType: data?.publicationType,
+          sourceCitation: data?.sourceInformation?.dataSetInformation?.sourceCitation ?? {},
+          publicationType: data?.sourceInformation?.dataSetInformation?.publicationType ?? {},
+          sourceDescriptionOrComment: getLangJson(data?.sourceInformation?.dataSetInformation?.sourceDescriptionOrComment),
+          referenceToDigitalFile: {
+            '@uri': data?.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri'],
+          },
+          referenceToContact: {
+            "@refObjectId": data?.sourceInformation?.dataSetInformation?.referenceToContact?.["@refObjectId"],
+            "@type": data?.sourceInformation?.dataSetInformation?.referenceToContact?.["@type"],
+            "@uri": data?.sourceInformation?.dataSetInformation?.referenceToContact?.["@uri"],
+            '@version': data?.sourceInformation?.dataSetInformation?.referenceToContact?.['@version'],
+            "common:shortDescription": getLangJson(data?.sourceInformation?.dataSetInformation?.referenceToContact?.["common:shortDescription"]),
+          }
         },
       },
       administrativeInformation: {
         dataEntryBy: {
-          'common:timeStamp': data?.['dataEntryBy:common:timeStamp'],
+          'common:timeStamp': data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? {},
           'common:referenceToDataSetFormat': {
-            '@type': data?.['dataEntryBy:common:@type'],
-            '@refObjectId': data?.['dataEntryBy:common:@refObjectId'],
-            '@uri': data?.['dataEntryBy:common:@uri'],
-            'common:shortDescription': dataEntryBy_common_shortDescription,
+            '@type': data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.['@type'] ?? {},
+            '@refObjectId': data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.['@refObjectId'] ?? {},
+            '@uri': data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.['@uri'] ?? {},
+            'common:shortDescription': getLangJson(data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.['common:shortDescription']),
           },
         },
         publicationAndOwnership: {
-          'common:dataSetVersion': data?.['publicationAndOwnership:common:dataSetVersion'],
+          'common:dataSetVersion': data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'] ?? {},
+          "common:permanentDataSetURI": data?.administrativeInformation?.publicationAndOwnership?.["common:permanentDataSetURI"] ?? {},
         },
       },
     },
-  };
-
-  return newData;
+  });
 }
 
 export function genSourceFromData(data: any) {
@@ -121,6 +72,17 @@ export function genSourceFromData(data: any) {
         },
         sourceCitation: data?.sourceInformation?.dataSetInformation?.sourceCitation,
         publicationType: data?.sourceInformation?.dataSetInformation?.publicationType,
+        sourceDescriptionOrComment: getLangList(data?.sourceInformation?.dataSetInformation?.sourceDescriptionOrComment),
+        referenceToDigitalFile: {
+          '@uri': data?.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri'],
+        },
+        referenceToContact: {
+          "@refObjectId": data?.sourceInformation?.dataSetInformation?.referenceToContact?.["@refObjectId"],
+          "@type": data?.sourceInformation?.dataSetInformation?.referenceToContact?.["@type"],
+          "@uri": data?.sourceInformation?.dataSetInformation?.referenceToContact?.["@uri"],
+          '@version': data?.sourceInformation?.dataSetInformation?.referenceToContact?.['@version'],
+          "common:shortDescription": getLangList(data?.sourceInformation?.dataSetInformation?.referenceToContact?.["common:shortDescription"]),
+        }
       },
     },
     administrativeInformation: {
@@ -138,9 +100,10 @@ export function genSourceFromData(data: any) {
             ?.['common:shortDescription'],
           ),
         },
-        publicationAndOwnership: {
-          'common:dataSetVersion': data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'],
-        }
+      },
+      publicationAndOwnership: {
+        'common:dataSetVersion': data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'],
+        "common:permanentDataSetURI": data?.administrativeInformation?.publicationAndOwnership?.["common:permanentDataSetURI"],
       }
     }
   });

@@ -116,7 +116,7 @@ export async function getFlowsTable(
             baseName: getLangText(i["baseName"], lang),
             classification: classificationToString(i['common:category']),
             generalComment: getLangText(i['common:generalComment'], lang),
-            createdAt: new Date(i.created_at),
+            created_at: new Date(i.created_at),
           };
         } catch (e) {
           console.error(e);

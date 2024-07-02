@@ -7,7 +7,7 @@ import { getProcessDetail } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData, genProcessFromData } from '@/services/processes/util';
 import styles from '@/style/custom.less';
-import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
+import { CheckCircleTwoTone, CloseCircleOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
@@ -24,13 +24,6 @@ type Props = {
   actionRef: React.MutableRefObject<ActionType | undefined>;
 };
 const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
-  // const [contentList, setContentList] = useState<Record<string, React.ReactNode>>({
-  //   processInformation: <></>,
-  //   modellingAndValidation: <></>,
-  //   administrativeInformation: <></>,
-  //   exchanges: <></>,
-  // });
-
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [activeTabKey, setActiveTabKey] = useState<string>('processInformation');
@@ -56,6 +49,11 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
       title: <FormattedMessage id="processExchange.index" defaultMessage="Index" />,
       dataIndex: 'index',
       valueType: 'index',
+      search: false,
+    },
+    {
+      title: <FormattedMessage id="processExchange.dataSetInternalID" defaultMessage="DataSet Internal ID" />,
+      dataIndex: 'dataSetInternalID',
       search: false,
     },
     {
@@ -109,6 +107,25 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
       dataIndex: 'dataDerivationTypeStatus',
       sorter: false,
       search: false,
+    },
+    {
+      title: (
+        <FormattedMessage
+          id="processExchange.quantitativeReference"
+          defaultMessage="Quantitative Reference"
+        />
+      ),
+      dataIndex: 'quantitativeReference',
+      sorter: false,
+      search: false,
+      render: (_, row) => {
+        if (row.quantitativeReference) {
+          return <Tooltip title={row.functionalUnitOrOther}>
+            <CheckCircleTwoTone twoToneColor="#52c41a" />
+          </Tooltip>;
+        }
+        return <CloseCircleOutlined />;
+      }
     },
     {
       title: <FormattedMessage id="options.option" defaultMessage="Option" />,
@@ -190,7 +207,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
           }
         />
         <br />
-        <Card size="small" title={'Quantitative Reference'}>
+        {/* <Card size="small" title={'Quantitative Reference'}>
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item key={0} label="Type" labelStyle={{ width: '100px' }}>
               {initData.processInformation?.quantitativeReference?.['@type'] ?? '-'}
@@ -213,7 +230,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
             data={initData.processInformation?.quantitativeReference?.functionalUnitOrOther}
           />
         </Card>
-        <br />
+        <br /> */}
         <Card size="small" title={'Time'}>
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item key={0} label="Reference Year" labelStyle={{ width: '140px' }}>
@@ -421,6 +438,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
           <br />
           <ContactSelectDescription
             title={'Reference To Name Of Reviewer And Institution'}
+            lang={lang}
             data={
               initData.modellingAndValidation?.validation?.review?.[
               'common:referenceToNameOfReviewerAndInstitution'
@@ -434,6 +452,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
       <>
         <ContactSelectDescription
           title={'Data Generator: Rreference To Person Or Entity Generating The Data Set'}
+          lang={lang}
           data={
             initData.administrativeInformation?.dataGenerator?.[
             'common:referenceToPersonOrEntityGeneratingTheDataSet'
@@ -486,6 +505,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
           <br />
           <ContactSelectDescription
             title={'Reference To Ownership Of Data Set'}
+            lang={lang}
             data={
               initData.administrativeInformation?.publicationAndOwnership?.[
               'common:referenceToOwnershipOfDataSet'
@@ -531,9 +551,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
     setSpinning(true);
     getProcessDetail(id).then(async (result: any) => {
       setInitData({ ...genProcessFromData(result.data?.json?.processDataSet ?? {}), id: id });
-      setExchangeDataSource(
-        genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? [],
-      );
+      setExchangeDataSource([...genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? []]);
       if (dataSource === 'my') {
         setFooterButtons(
           <>
