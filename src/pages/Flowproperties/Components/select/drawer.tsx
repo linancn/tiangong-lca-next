@@ -31,7 +31,6 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
   };
 
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
-    console.log(newSelectedRowKeys);
     setSelectedRowKeys(newSelectedRowKeys);
   };
 

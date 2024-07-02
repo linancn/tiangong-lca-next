@@ -21,18 +21,19 @@ import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import SourceSelectFrom from './select/from';
-
+import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
 type Props = {
     actionRef: React.MutableRefObject<ActionType | undefined>;
+    lang: string;
 };
-const SourceCreate: FC<Props> = ({ actionRef }) => {
+const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
     const [drawerVisible, setDrawerVisible] = useState(false);
     const formRefCreate = useRef<ProFormInstance>();
     const [fromData, setFromData] = useState<any>({});
     const [activeTabKey, setActiveTabKey] = useState<string>('sourceInformation');
 
     const handletFromData = (data: any) => {
-        setFromData({ ...fromData, data });
+        // setFromData({ ...fromData, data });
     };
 
     const tabList = [
@@ -79,6 +80,28 @@ const SourceCreate: FC<Props> = ({ actionRef }) => {
                 ]}>
                     <Input />
                 </Form.Item>
+                <br />
+                <Card size="small" title={'Source Description Or Comment'}>
+                    <LangTextItemFrom
+                        name={['sourceInformation', 'dataSetInformation', 'sourceDescriptionOrComment']}
+                        label="Source Description Or Comment"
+                    />
+                </Card>
+                <br />
+                <Form.Item label="Reference To Digital File" name={[
+                    'sourceInformation',
+                    'dataSetInformation',
+                    'referenceToDigitalFile',
+                    '@uri'
+                ]}>
+                    <Input />
+                </Form.Item>
+                <br />
+                <ContactSelectFrom
+                    name={['sourceInformation', 'dataSetInformation', 'referenceToContact']}
+                    label="Reference To Contact"
+                    lang={lang}
+                    formRef={formRefCreate} />
             </Space>
         ),
         administrativeInformation: (
@@ -90,13 +113,20 @@ const SourceCreate: FC<Props> = ({ actionRef }) => {
                     <SourceSelectFrom
                         name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
                         label="Reference To Data Set Format"
-                        lang="en"
+                        lang={lang}
                         formRef={formRefCreate} />
                 </Card>
                 <br />
-                <Form.Item label='DataSet Version' name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}>
-                    <Input />
-                </Form.Item>
+                <Card size="small" title={'Publication And Ownership'}>
+                    <Form.Item label='DataSet Version' name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}>
+                        <Input />
+                    </Form.Item>
+
+                    <Form.Item label='Permanent Data Set URI' name={['administrativeInformation', 'publicationAndOwnership', 'common:permanentDataSetURI']}>
+                        <Input />
+                    </Form.Item>
+                </Card>
+
             </Space>
         ),
     };
@@ -134,6 +164,13 @@ const SourceCreate: FC<Props> = ({ actionRef }) => {
                         setDrawerVisible(true);
                     }}
                 />
+                {/* {buttonType === 'icon' ? (
+                    <Button shape="circle" icon={<PlusOutlined />} size="small" onClick={() => setDrawerVisible(true)} />
+                ) : (
+                    <Button onClick={() => setDrawerVisible(true)}>
+                        <FormattedMessage id="options.create" defaultMessage="Edit" />
+                    </Button>
+                )} */}
             </Tooltip>
             <Drawer
                 title={<FormattedMessage id="options.create" defaultMessage="Create" />}

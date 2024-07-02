@@ -47,7 +47,7 @@ const SourceSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => 
         </Form.Item>
         <Space direction="horizontal" style={{ marginTop: '6px' }}>
           <SourceSelectDrawer buttonType="text" lang={lang} onData={handletSourcetData} />
-          {id && <SourceView id={id} dataSource="tg" buttonType="text" actionRef={actionRef} />}
+          {id && <SourceView lang={lang} id={id} dataSource="tg" buttonType="text" actionRef={actionRef} />}
           {id && (
             <Button onClick={() => handleResetData({})}>Clear</Button>
           )}

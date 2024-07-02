@@ -6,7 +6,6 @@ type Props = {
 };
 
 const LevelTextItemDescription: FC<Props> = ({ data }) => {
-  console.log(data);
   // const items: { [key: string]: string } = classificationToJson(data);
   return (
     <Descriptions bordered size={'small'} column={1}>

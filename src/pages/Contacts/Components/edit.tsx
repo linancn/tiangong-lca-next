@@ -207,7 +207,6 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
     setSpinning(true);
     formRefEdit.current?.resetFields();
     getContactDetail(id).then(async (result) => {
-      console.log(result);
       setInitData({ ...genContactFromData(result.data?.json?.contactDataSet ?? {}), id: id });
       formRefEdit.current?.setFieldsValue({
         ...genContactFromData(result.data?.json?.contactDataSet ?? {}),

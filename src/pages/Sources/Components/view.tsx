@@ -10,14 +10,15 @@ import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import SourceSelectDescription from './select/description';
-
+import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 type Props = {
   id: string;
   dataSource: string;
   buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
+  lang: string;
 };
-const SourceView: FC<Props> = ({ id, dataSource, buttonType }) => {
+const SourceView: FC<Props> = ({ id, dataSource, buttonType, lang }) => {
   const [activeTabKey, setActiveTabKey] = useState<string>('sourceInformation');
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [footerButtons, setFooterButtons] = useState<JSX.Element>();
@@ -71,34 +72,59 @@ const SourceView: FC<Props> = ({ id, dataSource, buttonType }) => {
             {initData.sourceInformation?.dataSetInformation?.publicationType ?? '-'}
           </Descriptions.Item>
         </Descriptions>
+        <br />
+        <Divider orientationMargin="0" orientation="left" plain>
+          Source Description Or Comment
+        </Divider>
+        <LangTextItemDescription
+          data={initData.sourceInformation?.dataSetInformation?.sourceDescriptionOrComment}
+        />
+        <br />
+        <Descriptions bordered size={'small'} column={1}>
+          <Descriptions.Item key={0} label="Reference To Digital File" labelStyle={{ width: '180px' }}>
+            {initData.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri'] ?? '-'}
+          </Descriptions.Item>
+        </Descriptions>
+        <br />
+        <ContactSelectDescription title={'Reference To Contact'} lang={lang} data={initData.sourceInformation?.dataSetInformation?.referenceToContact} />
       </>
     ),
     administrativeInformation: (
       <>
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label="Data Entry By: Time Stamp"
-            labelStyle={{ width: '220px' }}
-          >
-            {initData.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
-        <br />
-        <SourceSelectDescription
-          title={'Reference To Data Set Format'}
-          data={
-            initData.administrativeInformation?.dataEntryBy?.[
-            'common:referenceToDataSetFormat'
-            ]
-          }
-        />
-        <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item key={0} label="Data Set Version" labelStyle={{ width: '180px' }}>
-            {initData.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'] ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
+        <Card size="small" title={'Data Entry By'}>
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label="Data Entry By: Time Stamp"
+              labelStyle={{ width: '220px' }}
+            >
+              {initData.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
+          <br />
+          <SourceSelectDescription
+            title={'Reference To Data Set Format'}
+            data={
+              initData.administrativeInformation?.dataEntryBy?.[
+              'common:referenceToDataSetFormat'
+              ]
+            }
+          />
+        </Card>
+        <Card size="small" title={'Publication And Ownership'}>
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item key={0} label="Data Set Version" labelStyle={{ width: '180px' }}>
+              {initData.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'] ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
+          <br />
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item key={0} label="Permanent Data Set URI" labelStyle={{ width: '180px' }}>
+              {initData.administrativeInformation?.publicationAndOwnership?.['common:permanentDataSetURI'] ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
+        </Card>
+
       </>
     ),
   };
