@@ -7,7 +7,7 @@ import { getProcessDetail, updateProcess } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData, genProcessFromData } from '@/services/processes/util';
 import styles from '@/style/custom.less';
-import { CloseOutlined, FormOutlined } from '@ant-design/icons';
+import { CheckCircleTwoTone, CloseCircleOutlined, CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ProColumns, ProForm, ProTable } from '@ant-design/pro-components';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import type { ActionType } from '@ant-design/pro-table';
@@ -73,6 +73,11 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
       search: false,
     },
     {
+      title: <FormattedMessage id="processExchange.dataSetInternalID" defaultMessage="DataSet Internal ID" />,
+      dataIndex: 'dataSetInternalID',
+      search: false,
+    },
+    {
       title: (
         <FormattedMessage
           id="processExchange.exchangeDirection"
@@ -123,6 +128,23 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
       dataIndex: 'dataDerivationTypeStatus',
       sorter: false,
       search: false,
+    },
+    {
+      title: (
+        <FormattedMessage
+          id="processExchange.quantitativeReference"
+          defaultMessage="Quantitative Reference"
+        />
+      ),
+      dataIndex: 'quantitativeReference',
+      sorter: false,
+      search: false,
+      render: (_, row) => {
+        if (row.quantitativeReference) {
+          return <CheckCircleTwoTone twoToneColor="#52c41a" />;
+        }
+        return <CloseCircleOutlined />;
+      }
     },
     {
       title: <FormattedMessage id="options.option" defaultMessage="Option" />,
@@ -196,25 +218,6 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
           <LangTextItemFrom
             name={['processInformation', 'dataSetInformation', 'common:generalComment']}
             label="General Comment"
-          />
-        </Card>
-
-        <Card size="small" title={'Quantitative Reference'}>
-          <Form.Item label="Type" name={['processInformation', 'quantitativeReference', '@type']}>
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label="Reference To Reference Flow"
-            name={['processInformation', 'quantitativeReference', 'referenceToReferenceFlow']}
-          >
-            <Input />
-          </Form.Item>
-          <Divider orientationMargin="0" orientation="left" plain>
-            Functional Unit Or Other
-          </Divider>
-          <LangTextItemFrom
-            name={['processInformation', 'quantitativeReference', 'functionalUnitOrOther']}
-            label="Functional Unit Or Other"
           />
         </Card>
 
@@ -554,15 +557,30 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
         ...genProcessFromData(result.data?.json?.processDataSet ?? {}),
         id: id,
       });
+      const quantitativeReferenceId = result.data?.json?.processDataSet?.processInformation?.quantitativeReference?.referenceToReferenceFlow ?? '';
       setExchangeDataSource(
-        genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? [],
-      );
+        (genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? []).map(
+          (item: any) => {
+            if (item['@dataSetInternalID'] === quantitativeReferenceId) {
+              console.log('item.dataSetInternalID', item);
+              return {
+                ...item,
+                quantitativeReference: true,
+              };
+            }
+            else {
+              return {
+                ...item,
+                quantitativeReference: false,
+              };
+            }
+          }),);
       setSpinning(false);
     });
   };
 
   useEffect(() => {
-    if (drawerVisible) return;
+    if (!drawerVisible) return;
     setSpinning(true);
     getProcessDetail(id).then(async (result: any) => {
       setInitData({ ...genProcessFromData(result.data?.json?.processDataSet ?? {}), id: id });
