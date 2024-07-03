@@ -7,7 +7,7 @@ type Props = {
   name: any;
   dataType: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
-  onData: (data: any) => void;
+  onData: () => void;
 };
 
 const LevelTextItemFrom: FC<Props> = ({ name, dataType, formRef, onData }) => {
@@ -21,14 +21,14 @@ const LevelTextItemFrom: FC<Props> = ({ name, dataType, formRef, onData }) => {
     setL2([]);
     await formRef.current?.setFieldValue([...name, '@level_1'], null);
     await formRef.current?.setFieldValue([...name, '@level_2'], null);
-    onData({ ...formRef.current?.getFieldsValue() });
+    onData();
   };
 
   const handleL1Change = async (value: string) => {
     const filteredData = l1.filter((l: any) => l.value === value);
     setL2(filteredData[0]?.children?.map((l: any) => ({ label: l['@name'], value: l['@name'], children: l.category ?? [] })) ?? []);
     await formRef.current?.setFieldValue([...name, '@level_2'], null);
-    onData({ ...formRef.current?.getFieldsValue() });
+    onData();
   };
 
   useEffect(() => {

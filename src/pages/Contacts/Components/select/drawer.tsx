@@ -9,8 +9,6 @@ import { Button, Card, Drawer, Space, Tooltip } from 'antd';
 import type { FC, Key } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import ContactDelete from '../delete';
-import ContactEdit from '../edit';
 import ContactView from '../view';
 
 type Props = {
@@ -22,7 +20,7 @@ type Props = {
 const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
-  const [activeTabKey, setActiveTabKey] = useState<string>('tg');
+  const [activeTabKey, setActiveTabKey] = useState<string>('my');
   const tgActionRefSelect = useRef<ActionType>();
   const myActionRefSelect = useRef<ActionType>();
 
@@ -85,51 +83,60 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
-        if (activeTabKey === 'tg') {
-          return [
-            <Space size={'small'} key={0}>
-              <ContactView
-                id={row.id}
-                lang={lang}
-                dataSource="tg"
-                buttonType="icon"
-                actionRef={tgActionRefSelect}
-              />
-            </Space>,
-          ];
-        } else if (activeTabKey === 'my') {
-          return [
-            <Space size={'small'} key={0}>
-              <ContactView
-                id={row.id}
-                lang={lang}
-                dataSource="my"
-                buttonType="icon"
-                actionRef={myActionRefSelect}
-              />
-              <ContactEdit
-                id={row.id}
-                lang={lang}
-                buttonType={'icon'}
-                actionRef={myActionRefSelect}
-                setViewDrawerVisible={() => {}}
-              />
-              <ContactDelete
-                id={row.id}
-                buttonType={'icon'}
-                actionRef={myActionRefSelect}
-                setViewDrawerVisible={() => {}}
-              />
-            </Space>,
-          ];
-        } else return [];
+        return [
+          <Space size={'small'} key={0}>
+            <ContactView
+              id={row.id}
+              lang={lang}
+              dataSource="tg"
+              buttonType="icon"
+            />
+          </Space>,
+        ];
+
+        // if (activeTabKey === 'tg') {
+        //   return [
+        //     <Space size={'small'} key={0}>
+        //       <ContactView
+        //         id={row.id}
+        //         lang={lang}
+        //         dataSource="tg"
+        //         buttonType="icon"
+        //       />
+        //     </Space>,
+        //   ];
+        // } else if (activeTabKey === 'my') {
+        //   return [
+        //     <Space size={'small'} key={0}>
+        //       <ContactView
+        //         id={row.id}
+        //         lang={lang}
+        //         dataSource="my"
+        //         buttonType="icon"
+        //       />
+        //       <ContactEdit
+        //         id={row.id}
+        //         lang={lang}
+        //         buttonType={'icon'}
+        //         actionRef={myActionRefSelect}
+        //         setViewDrawerVisible={() => {}}
+        //       />
+        //       <ContactDelete
+        //         id={row.id}
+        //         buttonType={'icon'}
+        //         actionRef={myActionRefSelect}
+        //         setViewDrawerVisible={() => {}}
+        //       />
+        //     </Space>,
+        //   ];
+        // } else return [];
       },
     },
   ];
 
   const tabList = [
-    { key: 'tg', tab: 'TianGong Data' },
     { key: 'my', tab: 'My Data' },
+    { key: 'tg', tab: 'TianGong Data' },
   ];
 
   const databaseList: Record<string, React.ReactNode> = {

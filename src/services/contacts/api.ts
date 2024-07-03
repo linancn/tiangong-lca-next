@@ -69,6 +69,7 @@ export async function getContactTable(
     result = await supabase
       .from('contacts')
       .select(selectStr, { count: 'exact' })
+      .eq('state_code', 100)
       .order(sortBy, { ascending: orderBy === 'ascend' })
       .range(
         ((params.current ?? 1) - 1) * (params.pageSize ?? 10),

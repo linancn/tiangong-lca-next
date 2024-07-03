@@ -74,7 +74,7 @@ const TableList: FC = () => {
                 lang={lang}
                 dataSource={dataSource}
                 buttonType="icon"
-                actionRef={actionRef}
+                // actionRef={actionRef}
               />
               <ContactEdit
                 id={row.id}
@@ -99,7 +99,7 @@ const TableList: FC = () => {
               lang={lang}
               dataSource={dataSource}
               buttonType="icon"
-              actionRef={actionRef}
+              // actionRef={actionRef}
             />
           </Space>,
         ];
