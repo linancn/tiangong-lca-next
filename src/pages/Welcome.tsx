@@ -1,8 +1,9 @@
 import { getLang, getLangText } from '@/services/general/util';
 import { PageContainer } from '@ant-design/pro-components';
-import { Card, Col, Row, theme } from 'antd';
+import { Card, Col, Divider, Row, Statistic, StatisticProps, theme } from 'antd';
 import Meta from 'antd/es/card/Meta';
 import React from 'react';
+import CountUp from 'react-countup';
 import { useIntl } from 'umi';
 
 const Welcome: React.FC = () => {
@@ -87,7 +88,59 @@ const Welcome: React.FC = () => {
           "#text": <>Our database continuously grows, adding new data and broadening its coverage. While prioritizing expansion, we remain vigilant in ensuring accuracy, making careful updates and corrections as needed.</>
         },
       ]
-    }
+    },
+    data1: {
+      value: 4000,
+      title: [
+        {
+          "@xml:lang": "zh",
+          "#text": "单元过程 & 清单"
+        },
+        {
+          "@xml:lang": "en",
+          "#text": "unit processs & inventories"
+        },
+      ]
+    },
+    data2: {
+      value: 50,
+      title: [
+        {
+          "@xml:lang": "zh",
+          "#text": "行业 / 部门"
+        },
+        {
+          "@xml:lang": "en",
+          "#text": "domains / sectors"
+        },
+      ]
+    },
+    data3: {
+      value: 200,
+      title: [
+        {
+          "@xml:lang": "zh",
+          "#text": "产品"
+        },
+        {
+          "@xml:lang": "en",
+          "#text": "products"
+        },
+      ]
+    },
+    data4: {
+      value: 150,
+      title: [
+        {
+          "@xml:lang": "zh",
+          "#text": "全球贡献者"
+        },
+        {
+          "@xml:lang": "en",
+          "#text": "contributors across the world"
+        },
+      ]
+    },
   };
 
   const SVG1: React.FC = () => (
@@ -146,6 +199,11 @@ const Welcome: React.FC = () => {
       </g>
     </svg>
   );
+
+  const formatter: StatisticProps['formatter'] = (value) => (
+    <CountUp end={value as number} separator="," />
+  );
+
   return (
     <PageContainer title={false}>
       <div
@@ -178,7 +236,7 @@ const Welcome: React.FC = () => {
           <Col span={8}>
             <Card
               hoverable
-              style={{ width: '100%', backgroundColor: 'transparent', border: 'none'}}
+              style={{ width: '100%', backgroundColor: 'transparent', border: 'none' }}
               cover={<SVG1 />}
             >
               <Meta title={getLangText(info.meta1.title, lang)} description={getLangText(info.meta1.description, lang)} />
@@ -187,7 +245,7 @@ const Welcome: React.FC = () => {
           <Col span={8}>
             <Card
               hoverable
-              style={{ width: '100%', backgroundColor: 'transparent', border: 'none'}}
+              style={{ width: '100%', backgroundColor: 'transparent', border: 'none' }}
               cover={<SVG2 />}
             >
               <Meta title={getLangText(info.meta2.title, lang)} description={getLangText(info.meta2.description, lang)} />
@@ -196,11 +254,26 @@ const Welcome: React.FC = () => {
           <Col span={8}>
             <Card
               hoverable
-              style={{ width: '100%', backgroundColor: 'transparent', border: 'none'}}
+              style={{ width: '100%', backgroundColor: 'transparent', border: 'none' }}
               cover={<SVG3 />}
             >
               <Meta title={getLangText(info.meta3.title, lang)} description={getLangText(info.meta3.description, lang)} />
             </Card>
+          </Col>
+        </Row>
+        <Divider />
+        <Row gutter={16}>
+          <Col span={6}>
+            <Statistic title={getLangText(info.data1.title, lang)} value={info.data1.value} formatter={formatter} />
+          </Col>
+          <Col span={6}>
+            <Statistic title={getLangText(info.data2.title, lang)} value={info.data2.value} formatter={formatter} />
+          </Col>
+          <Col span={6}>
+            <Statistic title={getLangText(info.data3.title, lang)} value={info.data3.value} formatter={formatter} />
+          </Col>
+          <Col span={6}>
+            <Statistic title={getLangText(info.data4.title, lang)} value={info.data4.value} formatter={formatter} />
           </Col>
         </Row>
       </div>
