@@ -1,162 +1,209 @@
+import { getLang, getLangText } from '@/services/general/util';
 import { PageContainer } from '@ant-design/pro-components';
-import { useModel } from '@umijs/max';
-import { Card, theme } from 'antd';
+import { Card, Col, Row, theme } from 'antd';
+import Meta from 'antd/es/card/Meta';
 import React from 'react';
-
-/**
- * 每个单独的卡片，为了复用样式抽成了组件
- * @param param0
- * @returns
- */
-const InfoCard: React.FC<{
-  title: string;
-  index: number;
-  desc: string;
-  href: string;
-}> = ({ title, href, index, desc }) => {
-  const { useToken } = theme;
-
-  const { token } = useToken();
-
-  return (
-    <div
-      style={{
-        backgroundColor: token.colorBgContainer,
-        boxShadow: token.boxShadow,
-        borderRadius: '8px',
-        fontSize: '14px',
-        color: token.colorTextSecondary,
-        lineHeight: '22px',
-        padding: '16px 19px',
-        minWidth: '220px',
-        flex: 1,
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          gap: '4px',
-          alignItems: 'center',
-        }}
-      >
-        <div
-          style={{
-            width: 48,
-            height: 48,
-            lineHeight: '22px',
-            backgroundSize: '100%',
-            textAlign: 'center',
-            padding: '8px 16px 16px 12px',
-            color: '#FFF',
-            fontWeight: 'bold',
-            backgroundImage:
-              "url('https://gw.alipayobjects.com/zos/bmw-prod/daaf8d50-8e6d-4251-905d-676a24ddfa12.svg')",
-          }}
-        >
-          {index}
-        </div>
-        <div
-          style={{
-            fontSize: '16px',
-            color: token.colorText,
-            paddingBottom: 8,
-          }}
-        >
-          {title}
-        </div>
-      </div>
-      <div
-        style={{
-          fontSize: '14px',
-          color: token.colorTextSecondary,
-          textAlign: 'justify',
-          lineHeight: '22px',
-          marginBottom: 8,
-        }}
-      >
-        {desc}
-      </div>
-      <a href={href} target="_blank" rel="noreferrer">
-        了解更多 {'>'}
-      </a>
-    </div>
-  );
-};
+import { useIntl } from 'umi';
 
 const Welcome: React.FC = () => {
   const { token } = theme.useToken();
-  const { initialState } = useModel('@@initialState');
+
+  const { locale } = useIntl();
+  const lang = getLang(locale);
+
+  const info = {
+    title: [
+      {
+        "@xml:lang": "zh",
+        "#text": "欢迎使用天工数据库"
+      },
+      {
+        "@xml:lang": "en",
+        "#text": "Welcome to use TianGong Database"
+      },
+    ],
+    meta1: {
+      title: [
+        {
+          "@xml:lang": "zh",
+          "#text": "开放 & 免费"
+        },
+        {
+          "@xml:lang": "en",
+          "#text": "Open & Free"
+        },
+      ],
+      description: [
+        {
+          "@xml:lang": "zh",
+          "#text": <>天工数据库对所有人免费开放，促进 LCA 数据的公开、公平、共享，助力全球可持续发展。</>
+        },
+        {
+          "@xml:lang": "en",
+          "#text": <>Our database is openly accessible and free for all, promoting the democratization of sustainability data to foster global collaboration and innovation.</>
+        },
+      ]
+    },
+    meta2: {
+      title: [
+        {
+          "@xml:lang": "zh",
+          "#text": "可追溯 & 可信赖"
+        },
+        {
+          "@xml:lang": "en",
+          "#text": "Traceable & Crediable"
+        },
+      ],
+      description: [
+        {
+          "@xml:lang": "zh",
+          "#text": <>天工数据库基于透明和可靠的价值观构建，确保每一条数据来源清晰且经过仔细验证，基于可信的数据支撑准确的评估。</>
+        },
+        {
+          "@xml:lang": "en",
+          "#text": <>Built on a foundation of transparency and reliability, our database ensures every piece of data is meticulously verified and clearly sourced, offering trusted information for accurate assessments.</>
+        },
+      ]
+    },
+    meta3: {
+      title: [
+        {
+          "@xml:lang": "zh",
+          "#text": "持续更新 & 扩展"
+        },
+        {
+          "@xml:lang": "en",
+          "#text": "Updating & Expanding"
+        },
+      ],
+      description: [
+        {
+          "@xml:lang": "zh",
+          "#text": <>天工数据库持续动态更新，在扩展行业、部门和产品覆盖的同时，持续进行修正和更新。</>
+        },
+        {
+          "@xml:lang": "en",
+          "#text": <>Our database continuously grows, adding new data and broadening its coverage. While prioritizing expansion, we remain vigilant in ensuring accuracy, making careful updates and corrections as needed.</>
+        },
+      ]
+    }
+  };
+
+  const SVG1: React.FC = () => (
+    <svg preserveAspectRatio="xMidYMid meet" data-bbox="26.5 23.75 147 152.5" viewBox="26.5 23.75 147 152.5" height="200" width="200" xmlns="http://www.w3.org/2000/svg" data-type="color" role="presentation" aria-hidden="true" aria-label="">
+      <defs>
+        <style>
+          {`
+            #comp-kq5dfsen svg [data-color="1"] {fill: #16163F;}
+            #comp-kq5dfsen svg [data-color="2"] {fill: #DDBBFF;}
+            #comp-kq5dfsen svg [data-color="3"] {fill: #9E3FFD;}
+          `}
+        </style>
+      </defs>
+      <g>
+        <path fill="#16163F" clipRule="evenodd" fillRule="evenodd" d="M42 170.25a6 6 0 1 1-12 0 6 6 0 0 1 12 0z" data-color="1"></path>
+        <path fill="#E7E7EB" clipRule="evenodd" fillRule="evenodd" d="M173.5 103.75c0 31.48-25.52 57-57 57s-57-25.52-57-57 25.52-57 57-57 57 25.52 57 57z" data-color="2"></path>
+        <path fill="#9E3FFD" clipRule="evenodd" fillRule="evenodd" d="M116.5 68.75c0 24.853-20.147 45-45 45s-45-20.147-45-45 20.147-45 45-45 45 20.147 45 45z" data-color="3"></path>
+      </g>
+    </svg>
+  );
+
+  const SVG2: React.FC = () => (
+    <svg preserveAspectRatio="xMidYMid meet" data-bbox="20 34.606 159.999 126.634" viewBox="20 34.606 159.999 126.634" height="200" width="200" xmlns="http://www.w3.org/2000/svg" data-type="color" role="presentation" aria-hidden="true" aria-label="">
+      <defs>
+        <style>
+          {`
+          #comp-kq9ag33l svg [data-color="1"] {fill: #16163F;}
+          #comp-kq9ag33l svg [data-color="2"] {fill: #DDBBFF;}
+          #comp-kq9ag33l svg [data-color="3"] {fill: #9E3FFD;}
+        `}
+        </style>
+      </defs>
+      <g>
+        <path clipRule="evenodd" fillRule="evenodd" d="M60.163 40.369a5.763 5.763 0 1 1-11.526 0 5.763 5.763 0 0 1 11.526 0z" fill="#000000" data-color="1"></path>
+        <path d="M37.029 103.69l40.464 40.531a9.606 9.606 0 0 1 0 13.572l-.627.628a9.604 9.604 0 0 1-13.583.011l-.011-.011-40.465-40.531a9.606 9.606 0 0 1 0-13.572l.627-.628a9.604 9.604 0 0 1 13.583-.011c.005.003.008.007.012.011z" fill="#E7E7EB" clipRule="evenodd" fillRule="evenodd" data-color="2"></path>
+        <path d="M62.556 144.076L162.971 43.492a9.604 9.604 0 0 1 13.583-.011l.011.011.627.628a9.606 9.606 0 0 1 0 13.572L76.777 158.276a9.604 9.604 0 0 1-13.583.011l-.011-.011-.627-.628a9.604 9.604 0 0 1 0-13.572z" fill="#9E3FFD" clipRule="evenodd" fillRule="evenodd" data-color="3"></path>
+      </g>
+    </svg>
+  );
+
+  const SVG3: React.FC = () => (
+    <svg preserveAspectRatio="xMidYMid meet" data-bbox="26.982 26 146.037 148" viewBox="26.982 26 146.037 148" height="200" width="200" xmlns="http://www.w3.org/2000/svg" data-type="color" role="presentation" aria-hidden="true" aria-label="">
+      <defs>
+        <style>
+          {`
+          #comp-kq5dfsf71 svg [data-color="1"] {fill: #16163F;}
+          #comp-kq5dfsf71 svg [data-color="2"] {fill: #DDBBFF;}
+          #comp-kq5dfsf71 svg [data-color="3"] {fill: #9E3FFD;}
+        `}
+        </style>
+      </defs>
+      <g>
+        <path fill="#16163F" clipRule="evenodd" fillRule="evenodd" d="M173.019 168.11a5.89 5.89 0 1 1-11.78 0 5.89 5.89 0 0 1 11.78 0z" data-color="1"></path>
+        <path fill="#E7E7EB" clipRule="evenodd" fillRule="evenodd" d="M153.608 59.374v93.252H60.356V59.374h93.252z" data-color="2"></path>
+        <path fill="#9E3FFD" clipRule="evenodd" fillRule="evenodd" d="M92.749 26v65.767H26.982V26h65.767z" data-color="3"></path>
+      </g>
+    </svg>
+  );
   return (
-    <PageContainer>
-      <Card
+    <PageContainer title={false}>
+      <div
         style={{
-          borderRadius: 8,
-        }}
-        bodyStyle={{
-          backgroundImage:
-            initialState?.settings?.navTheme === 'realDark'
-              ? 'background-image: linear-gradient(75deg, #1A1B1F 0%, #191C1F 100%)'
-              : 'background-image: linear-gradient(75deg, #FBFDFF 0%, #F5F7FF 100%)',
+          backgroundPosition: '100% -30%',
+          backgroundRepeat: 'no-repeat',
+          backgroundSize: '274px auto',
         }}
       >
         <div
           style={{
-            backgroundPosition: '100% -30%',
-            backgroundRepeat: 'no-repeat',
-            backgroundSize: '274px auto',
-            backgroundImage:
-              "url('https://gw.alipayobjects.com/mdn/rms_a9745b/afts/img/A*BuFmQqsB2iAAAAAAAAAAAAAAARQnAQ')",
+            fontSize: '20px',
+            color: token.colorTextHeading,
           }}
         >
-          <div
-            style={{
-              fontSize: '20px',
-              color: token.colorTextHeading,
-            }}
-          >
-            欢迎使用 Ant Design Pro
-          </div>
-          <p
-            style={{
-              fontSize: '14px',
-              color: token.colorTextSecondary,
-              lineHeight: '22px',
-              marginTop: 16,
-              marginBottom: 32,
-              width: '65%',
-            }}
-          >
-            Ant Design Pro 是一个整合了 umi，Ant Design 和 ProComponents
-            的脚手架方案。致力于在设计规范和基础组件的基础上，继续向上构建，提炼出典型模板/业务组件/配套设计资源，进一步提升企业级中后台产品设计研发过程中的『用户』和『设计者』的体验。
-          </p>
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: 16,
-            }}
-          >
-            <InfoCard
-              index={1}
-              href="https://umijs.org/docs/introduce/introduce"
-              title="了解 umi"
-              desc="umi 是一个可扩展的企业级前端应用框架,umi 以路由为基础的，同时支持配置式路由和约定式路由，保证路由的功能完备，并以此进行功能扩展。"
-            />
-            <InfoCard
-              index={2}
-              title="了解 ant design"
-              href="https://ant.design"
-              desc="antd 是基于 Ant Design 设计体系的 React UI 组件库，主要用于研发企业级中后台产品。"
-            />
-            <InfoCard
-              index={3}
-              title="了解 Pro Components"
-              href="https://procomponents.ant.design"
-              desc="ProComponents 是一个基于 Ant Design 做了更高抽象的模板组件，以 一个组件就是一个页面为开发理念，为中后台开发带来更好的体验。"
-            />
-          </div>
+          {getLangText(info.title, lang)}
         </div>
-      </Card>
+        <p
+          style={{
+            fontSize: '14px',
+            color: token.colorTextSecondary,
+            lineHeight: '22px',
+            marginTop: 16,
+            marginBottom: 32,
+            width: '65%',
+          }}
+        >
+        </p>
+        <Row gutter={16}>
+          <Col span={8}>
+            <Card
+              hoverable
+              style={{ width: '100%', backgroundColor: 'transparent', border: 'none'}}
+              cover={<SVG1 />}
+            >
+              <Meta title={getLangText(info.meta1.title, lang)} description={getLangText(info.meta1.description, lang)} />
+            </Card>
+          </Col>
+          <Col span={8}>
+            <Card
+              hoverable
+              style={{ width: '100%', backgroundColor: 'transparent', border: 'none'}}
+              cover={<SVG2 />}
+            >
+              <Meta title={getLangText(info.meta2.title, lang)} description={getLangText(info.meta2.description, lang)} />
+            </Card>
+          </Col>
+          <Col span={8}>
+            <Card
+              hoverable
+              style={{ width: '100%', backgroundColor: 'transparent', border: 'none'}}
+              cover={<SVG3 />}
+            >
+              <Meta title={getLangText(info.meta3.title, lang)} description={getLangText(info.meta3.description, lang)} />
+            </Card>
+          </Col>
+        </Row>
+      </div>
     </PageContainer>
   );
 };
