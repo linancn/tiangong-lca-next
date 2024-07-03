@@ -1,5 +1,6 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
+import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 import { getContactDetail } from '@/services/contacts/api';
 import { genContactFromData } from '@/services/contacts/util';
 import styles from '@/style/custom.less';
@@ -12,7 +13,6 @@ import { FormattedMessage } from 'umi';
 import ContactDelete from './delete';
 import ContactEdit from './edit';
 import ContractDescription from './select/description';
-import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 
 type Props = {
   id: string;
@@ -94,7 +94,7 @@ const ContactView: FC<Props> = ({ id, lang, dataSource, buttonType, actionRef })
         </Descriptions>
         <br />
         <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item key={0} label="WWW Address" labelStyle={{ width: '100px' }}>
+          <Descriptions.Item key={0} label="WWW Address" labelStyle={{ width: '140px' }}>
             {initData.contactInformation?.dataSetInformation?.WWWAddress ?? '-'}
           </Descriptions.Item>
         </Descriptions>
@@ -145,7 +145,7 @@ const ContactView: FC<Props> = ({ id, lang, dataSource, buttonType, actionRef })
       <>
         <Card size="small" title={'Data Entry By'}>
           <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item key={0} label="Time Stamp" labelStyle={{ width: '100px' }}>
+            <Descriptions.Item key={0} label="Time Stamp" labelStyle={{ width: '120px' }}>
               {initData.administrativeInformation?.dataEntryBy?.[
                 'common:timeStamp'
               ] ?? '-'}
@@ -182,7 +182,7 @@ const ContactView: FC<Props> = ({ id, lang, dataSource, buttonType, actionRef })
         <br />
         <Card size="small" title={'Publication And Ownership'}>
           <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item key={0} label="Data Set Version" labelStyle={{ width: '100px' }}>
+            <Descriptions.Item key={0} label="Data Set Version" labelStyle={{ width: '160px' }}>
               {initData.administrativeInformation?.publicationAndOwnership?.[
                 'common:dataSetVersion'
               ] ?? '-'}
@@ -217,7 +217,7 @@ const ContactView: FC<Props> = ({ id, lang, dataSource, buttonType, actionRef })
           </Card> */}
           <br />
           <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item key={0} label="Permanent Data Set URI" labelStyle={{ width: '100px' }}>
+            <Descriptions.Item key={0} label="Permanent Data Set URI" labelStyle={{ width: '220px' }}>
               {initData.administrativeInformation?.publicationAndOwnership?.[
                 'common:permanentDataSetURI'
               ] ?? '-'}

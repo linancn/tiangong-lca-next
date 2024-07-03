@@ -1,4 +1,5 @@
 import LangTextItemFrom from '@/components/LangTextItem/from';
+import FlowsSelectFrom from '@/pages/Flows/Components/select/from';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-form';
@@ -21,9 +22,10 @@ import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 
 type Props = {
+  lang: string;
   onData: (data: any) => void;
 };
-const ProcessExchangeCreate: FC<Props> = ({ onData }) => {
+const ProcessExchangeCreate: FC<Props> = ({ lang, onData }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
   const [fromData, setFromData] = useState<any>({});
@@ -103,7 +105,12 @@ const ProcessExchangeCreate: FC<Props> = ({ onData }) => {
                 ]}
               />
             </Form.Item>
-            <Card size="small" title={'Reference To Flow Data Set'}></Card>
+            <FlowsSelectFrom
+              name={['referenceToFlowDataSet']}
+              label="Reference To Flow Data Set"
+              lang={lang}
+              formRef={formRefCreate}
+            />
             <Form.Item label="Mean Amount" name={'meanAmount'}>
               <Input />
             </Form.Item>

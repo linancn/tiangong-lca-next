@@ -1,5 +1,6 @@
 import LangTextItemFrom from '@/components/LangTextItem/from';
 import LevelTextItemFrom from '@/components/LevelTextItem/from';
+import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
 import { getSourceDetail, updateSource } from '@/services/sources/api';
 import { genSourceFromData } from '@/services/sources/util';
 import styles from '@/style/custom.less';
@@ -23,7 +24,6 @@ import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import SourceSelectFrom from './select/from';
-import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
 
 type Props = {
     id: string;
@@ -41,7 +41,7 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerV
     const [spinning, setSpinning] = useState(false);
 
     const handletFromData = (data: any) => {
-        // setFromData({ ...fromData, data });
+        setFromData({ ...fromData, data });
     };
 
     const reload = useCallback(() => {

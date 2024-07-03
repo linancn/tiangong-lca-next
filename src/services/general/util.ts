@@ -19,7 +19,6 @@ export function getLang(locale: string) {
 }
 
 export function getLangText(langTexts: any, lang: string) {
-  console.log(langTexts, lang);
   let text = '-';
   if (Array.isArray(langTexts)) {
     const filterList = langTexts.filter((i) => i['@xml:lang'] === lang);

@@ -163,6 +163,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
             <ProcessExchangeView
               id={row.dataSetInternalID}
               data={exchangeDataSource}
+              lang={lang}
               dataSource={'tg'}
               buttonType={'icon'}
               actionRef={actionRefExchangeTable}

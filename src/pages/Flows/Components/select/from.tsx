@@ -2,18 +2,18 @@ import { getFlowsDetail } from '@/services/flows/api';
 import { langOptions } from '@/services/general/data';
 import { ActionType, ProFormInstance } from '@ant-design/pro-components';
 import {
+  Button,
   Card,
   Col,
   Divider,
   Form, Input,
   Row,
   Select,
-  Space,
-  Button
+  Space
 } from 'antd';
 import React, { FC } from 'react';
-import FlowsSelectDrawer from './drawer';
 import FlowsView from '../view';
+import FlowsSelectDrawer from './drawer';
 // import LangTextItemFrom from '@/components/LangTextItem/from';
 const { TextArea } = Input;
 
@@ -34,7 +34,7 @@ const FlowsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => {
     }
   }
   const handletFlowsData = (rowKey: any) => {
-    getFlowsDetail(rowKey).then(async (result: any) => {
+    getFlowsDetail(rowKey).then(async () => {
       let data = {
         '@refObjectId': `${rowKey}`,
         '@type': 'flows data set',

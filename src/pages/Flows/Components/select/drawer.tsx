@@ -7,8 +7,7 @@ import { ProTable } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
 import { Button, Card, Drawer, Space, Tooltip } from 'antd';
 import type { FC, Key } from 'react';
-import React from 'react'
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import FlowsDelete from '../delete';
 import FlowsEdit from '../edit';
@@ -79,7 +78,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
     },
     {
       title: <FormattedMessage id="pages.flows.createdAt" defaultMessage="Created At" />,
-      dataIndex: 'createdAt',
+      dataIndex: 'created_at',
       valueType: 'dateTime',
       sorter: true,
       search: false,
@@ -92,13 +91,13 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
         if (activeTabKey === 'tg') {
           return [
             <Space size={'small'} key={0}>
-              <FlowsView id={row.id} dataSource="tg" actionRef={tgActionRefSelect} lang={lang} />
+              <FlowsView id={row.id} dataSource="tg" actionRef={tgActionRefSelect} lang={lang} buttonType={'icon'} />
             </Space>,
           ];
         } else if (activeTabKey === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <FlowsView id={row.id} dataSource="my" actionRef={myActionRefSelect} lang={lang} />
+              <FlowsView id={row.id} dataSource="my" actionRef={myActionRefSelect} lang={lang} buttonType={'icon'} />
               <FlowsEdit
                 id={row.id}
                 buttonType={'icon'}

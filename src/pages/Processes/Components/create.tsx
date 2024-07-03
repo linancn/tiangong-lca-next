@@ -143,6 +143,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             <ProcessExchangeView
               id={row.dataSetInternalID}
               data={exchangeDataSource}
+              lang={lang}
               dataSource={'my'}
               buttonType={'icon'}
               actionRef={actionRefExchangeTable}
@@ -518,7 +519,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
           pageSize: 10,
         }}
         toolBarRender={() => {
-          return [<ProcessExchangeCreate key={0} onData={handletExchangeDataCreate} />];
+          return [<ProcessExchangeCreate key={0} lang={lang} onData={handletExchangeDataCreate} />];
         }}
         dataSource={exchangeDataSource}
         columns={processExchangeColumns}

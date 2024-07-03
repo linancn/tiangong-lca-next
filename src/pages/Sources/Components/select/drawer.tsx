@@ -85,6 +85,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
               <Space size={'small'} key={0}>
                 <SourceView
                   id={row.id}
+                  lang={lang}
                   dataSource="tg"
                   buttonType="icon"
                   actionRef={tgActionRefSelect}
@@ -96,12 +97,14 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
               <Space size={'small'} key={0}>
                 <SourceView
                   id={row.id}
+                  lang={lang}
                   dataSource="my"
                   buttonType="icon"
                   actionRef={myActionRefSelect}
                 />
                 <SourceEdit
                   id={row.id}
+                  lang={lang}
                   buttonType={'icon'}
                   actionRef={myActionRefSelect}
                   setViewDrawerVisible={() => {}}

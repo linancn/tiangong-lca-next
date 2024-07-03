@@ -156,6 +156,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
             <ProcessExchangeView
               id={row.dataSetInternalID}
               data={exchangeDataSource}
+              lang={lang}
               dataSource={'my'}
               buttonType={'icon'}
               actionRef={actionRefExchangeTable}
@@ -533,7 +534,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
           pageSize: 10,
         }}
         toolBarRender={() => {
-          return [<ProcessExchangeCreate key={0} onData={handletExchangeDataCreate} />];
+          return [<ProcessExchangeCreate key={0} lang={lang} onData={handletExchangeDataCreate} />];
         }}
         dataSource={genProcessExchangeTableData(exchangeDataSource, lang)}
         columns={processExchangeColumns}
@@ -562,7 +563,6 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
         (genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? []).map(
           (item: any) => {
             if (item['@dataSetInternalID'] === quantitativeReferenceId) {
-              console.log('item.dataSetInternalID', item);
               return {
                 ...item,
                 quantitativeReference: true,
