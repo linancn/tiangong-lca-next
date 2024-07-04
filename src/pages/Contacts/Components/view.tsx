@@ -124,7 +124,8 @@ const ContactView: FC<Props> = ({ id, lang, dataSource, buttonType }) => {
             </Descriptions.Item>
           </Descriptions>
           <br />
-          <SourceSelectDescription title={'Reference To Data Set Format'} data={initData.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']} />
+          <SourceSelectDescription title={'Reference To Data Set Format'} data={initData.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']}
+            lang={lang} />
         </Card>
         <br />
         <Card size="small" title={'Publication And Ownership'}>
@@ -183,7 +184,7 @@ const ContactView: FC<Props> = ({ id, lang, dataSource, buttonType }) => {
   return (
     <>
       <Tooltip
-        title={<FormattedMessage id="pages.table.option.view" defaultMessage="View Cantact" />}
+        title={<FormattedMessage id="pages.table.option.view" defaultMessage="View" />}
       >
         {buttonType === 'icon' ? (
           <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />

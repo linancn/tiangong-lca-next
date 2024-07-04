@@ -125,7 +125,9 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
             <SourceSelectFrom label='Reference To Data Set Format'
               name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
               lang={lang}
-              formRef={formRefCreate} />
+              formRef={formRefCreate}
+              onData={handletFromData}
+              />
           </Card>
           <Card size="small" title={'Publication And Ownership'}>
             <Form.Item

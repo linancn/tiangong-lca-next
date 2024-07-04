@@ -10,5 +10,13 @@ export default {
   'pages.table.option.delete.success': '删除成功!',
   'pages.table.option.cancel': '取消',
   'pages.table.option.submit': '提交',
-  
+
+  'page.button.view': '查看',
+  'page.button.edit': '编辑',
+  'page.button.delete': '删除',
+  'page.button.create': '创建',
+  'page.button.cancel': '取消',
+  'page.button.submit': '提交',
+  'page.button.select': '选择',
+  'page.button.export': '导出',
 };

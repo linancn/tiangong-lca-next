@@ -24,8 +24,8 @@ const ContactDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisi
       if (result.status === 204) {
         message.success(
           <FormattedMessage
-            id="options.deletesuccess"
-            defaultMessage="Selected contact has been deleted."
+            id="pages.table.option.delete.success"
+            defaultMessage="Deleted Successfully!"
           />,
         );
         setViewDrawerVisible(false);
@@ -59,8 +59,8 @@ const ContactDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisi
               onCancel={handleCancel}
             >
               <FormattedMessage
-                id="pages.contact.deleteMessage"
-                defaultMessage="Are you sure you want to delete this data?"
+                id="pages.table.option.delete.confirm"
+                defaultMessage="Are you sure want to delete this data?"
               />
             </Modal>
           </>
@@ -76,8 +76,8 @@ const ContactDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisi
               onCancel={handleCancel}
             >
               <FormattedMessage
-                id="pages.contact.deleteMessage"
-                defaultMessage="Are you sure you want to delete this data?"
+                id="pages.table.option.delete.confirm"
+                defaultMessage="Are you sure want to delete this data?"
               />
             </Modal>
           </>

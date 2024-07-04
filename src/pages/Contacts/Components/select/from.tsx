@@ -3,7 +3,7 @@ import { genContactFromData } from '@/services/contacts/util';
 import { langOptions } from '@/services/general/data';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Divider, Form, Input, Row, Select, Space } from 'antd';
-import React, { FC } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import ContactView from '../view';
 import ContactSelectDrawer from './drawer';
 
@@ -18,6 +18,8 @@ type Props = {
 };
 
 const ContactSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => {
+  const [id, setId] = useState<string | undefined>(undefined);
+
   const handletContactData = (rowKey: any) => {
     getContactDetail(rowKey).then(async (result: any) => {
       const selectedData = genContactFromData(result.data?.json?.contactDataSet ?? {});
@@ -39,7 +41,11 @@ const ContactSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) =>
 
   // const actionRef = React.useRef<ActionType | undefined>(undefined);
 
-  const id = formRef.current?.getFieldValue([...name, '@refObjectId']);
+  // const id = formRef.current?.getFieldValue([...name, '@refObjectId']);
+
+  useEffect(() => {
+    setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
+  },);
 
   return (
     <Card size="small" title={label}>

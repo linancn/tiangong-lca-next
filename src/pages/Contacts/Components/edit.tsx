@@ -137,7 +137,9 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
             <SourceSelectFrom label='Reference To Data Set Format'
               name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
               lang={lang}
-              formRef={formRefEdit} />
+              formRef={formRefEdit}
+              onData={handletFromData}
+            />
           </Card>
           <Card size="small" title={'Publication And Ownership'}>
             <Form.Item
@@ -156,7 +158,7 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
               lang={lang}
               formRef={formRefEdit}
               onData={handletFromData}
-               />
+            />
             <Form.Item
               label="Permanent Data Set URI"
               name={[

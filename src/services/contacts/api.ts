@@ -108,7 +108,6 @@ export async function getContactTable(
           return {
             key: i.id,
             id: i.id,
-            lang: lang,
             shortName: getLangText(i['common:shortName'], lang),
             name: getLangText(i['common:name'], lang),
             classification: classificationToString(i['common:class']),

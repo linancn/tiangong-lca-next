@@ -1,17 +1,15 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
-import { ActionType } from '@ant-design/pro-components';
 import { Card, Descriptions, Divider, Space } from 'antd';
-import React, { FC } from 'react';
+import { FC } from 'react';
 import SourceView from '../view';
 
 type Props = {
   title: string;
+  lang: string;
   data: any;
 };
 
-const SourceSelectDescription: FC<Props> = ({ title, data }) => {
-  const actionRef = React.useRef<ActionType | undefined>(undefined);
-
+const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
   return (
     <Card size="small" title={title}>
       <Space direction="horizontal">
@@ -25,8 +23,7 @@ const SourceSelectDescription: FC<Props> = ({ title, data }) => {
             id={data?.['@refObjectId']}
             dataSource="tg"
             buttonType="text"
-            actionRef={actionRef}
-          />
+            lang={lang} />
         )}
       </Space>
       <br />
