@@ -59,7 +59,7 @@ const ContactDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisi
               onCancel={handleCancel}
             >
               <FormattedMessage
-                id="options.deleteMessage"
+                id="pages.contact.deleteMessage"
                 defaultMessage="Are you sure you want to delete this data?"
               />
             </Modal>
@@ -76,7 +76,7 @@ const ContactDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisi
               onCancel={handleCancel}
             >
               <FormattedMessage
-                id="options.deleteMessage"
+                id="pages.contact.deleteMessage"
                 defaultMessage="Are you sure you want to delete this data?"
               />
             </Modal>
