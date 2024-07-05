@@ -125,7 +125,6 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
                 return [
                     <Space size={'small'} key={0}>
                         <UnitView
-                            key={0}
                             id={row.dataSetInternalID}
                             data={unitDataSource}
                             buttonType={'icon'}

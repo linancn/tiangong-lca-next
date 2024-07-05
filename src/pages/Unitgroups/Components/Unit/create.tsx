@@ -1,9 +1,11 @@
+import LangTextItemFrom from '@/components/LangTextItem/from';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import ProForm from '@ant-design/pro-form';
 import {
     Button,
+    Card,
     Drawer,
     Form,
     Input,
@@ -94,13 +96,19 @@ const UnitCreate: FC<Props> = ({ onData }) => {
                     }}
                 >
                     <Space direction="vertical" style={{ width: '100%' }}>
+                        <Form.Item name={'@dataSetInternalID'} hidden>
+                            <Input />
+                        </Form.Item>
                         <Form.Item label="Name" name={'name'}>
-                            <Input></Input>
+                            <Input />
                         </Form.Item>
+                        <Card size="small" title={'General Comment'}>
+                            <LangTextItemFrom name={'generalComment'} label={'General Comment'} />
+                        </Card>
                         <Form.Item label="Mean Value" name={'meanValue'}>
-                            <Input></Input>
+                            <Input />
                         </Form.Item>
-                        <Form.Item label="Selected" name={'selected'}>
+                        <Form.Item label="Quantitative Reference" name={'quantitativeReference'}>
                             <Switch></Switch>
                         </Form.Item>
                     </Space>
