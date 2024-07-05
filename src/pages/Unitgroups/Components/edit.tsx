@@ -4,9 +4,9 @@ import SourceSelectFrom from '@/pages/Sources/Components/select/from';
 import { ListPagination } from '@/services/general/data';
 import { getUnitGroupDetail, updateUnitGroup } from '@/services/unitgroups/api';
 import { UnitTable } from '@/services/unitgroups/data';
-import { genUnitGroupFromData } from '@/services/unitgroups/util';
+import { genUnitGroupFromData, genUnitTableData } from '@/services/unitgroups/util';
 import styles from '@/style/custom.less';
-import { CloseOutlined, FormOutlined } from '@ant-design/icons';
+import { CheckCircleTwoTone, CloseCircleOutlined, CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ProForm } from '@ant-design/pro-components';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
@@ -29,6 +29,7 @@ import { FormattedMessage } from 'umi';
 import UnitCreate from './Unit/create';
 import UnitDelete from './Unit/delete';
 import UnitEdit from './Unit/edit';
+import UnitView from './Unit/view';
 
 type Props = {
     id: string;
@@ -48,15 +49,18 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
 
     const actionRefUnitTable = useRef<ActionType>();
 
+    const handletFromData = () => {
+        setFromData({
+            ...fromData,
+            [activeTabKey]: formRefEdit.current?.getFieldsValue()?.[activeTabKey] ?? {},
+        });
+    };
+
     const handletUnitDataCreate = (data: any) => {
         setUnitDataSource([
             ...unitDataSource,
             { ...data, '@dataSetInternalID': unitDataSource.length.toString() },
         ]);
-    };
-
-    const handletFromData = (data: any) => {
-        setFromData({ ...fromData, data });
     };
 
     const handletUnitData = (data: any) => {
@@ -76,14 +80,19 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
             valueType: 'index',
             search: false,
         },
-        // {
-        //     title: <FormattedMessage id="pages.unitgroup.unit.dataSetInternalID" defaultMessage="DataSet Internal ID"></FormattedMessage>,
-        //     dataIndex: '@dataSetInternalID',
-        //     search: false,
-        // },
+        {
+            title: <FormattedMessage id="pages.unitgroup.unit.dataSetInternalID" defaultMessage="DataSet Internal ID"></FormattedMessage>,
+            dataIndex: 'dataSetInternalID',
+            search: false,
+        },
         {
             title: <FormattedMessage id="pages.unitgroup.unit.name" defaultMessage="Name"></FormattedMessage>,
             dataIndex: 'name',
+            search: false,
+        },
+        {
+            title: <FormattedMessage id="pages.unitgroup.unit.generalComment" defaultMessage="General Comment"></FormattedMessage>,
+            dataIndex: 'generalComment',
             search: false,
         },
         {
@@ -92,10 +101,21 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
             search: false,
         },
         {
-            title: <FormattedMessage id="pages.unitgroup.unit.selected" defaultMessage="Selected"></FormattedMessage>,
-            dataIndex: 'selected',
-            valueType: 'switch',
+            title: (
+                <FormattedMessage
+                    id="processExchange.quantitativeReference"
+                    defaultMessage="Quantitative Reference"
+                />
+            ),
+            dataIndex: 'quantitativeReference',
+            sorter: false,
             search: false,
+            render: (_, row) => {
+                if (row.quantitativeReference) {
+                    return <CheckCircleTwoTone twoToneColor="#52c41a" />;
+                }
+                return <CloseCircleOutlined />;
+            }
         },
         {
             title: <FormattedMessage id="pages.table.option" defaultMessage="Option"></FormattedMessage>,
@@ -104,6 +124,12 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
             render: (_, row) => {
                 return [
                     <Space size={'small'} key={0}>
+                        <UnitView
+                            key={0}
+                            id={row.dataSetInternalID}
+                            data={unitDataSource}
+                            buttonType={'icon'}
+                        />
                         <UnitEdit
                             id={row.dataSetInternalID}
                             data={unitDataSource}
@@ -135,9 +161,6 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
                 <Card size="small" title={'Classification'}>
                     <LevelTextItemFrom name={['unitGroupInformation', 'dataSetInformation', "classificationInformation", 'common:classification', 'common:class']} dataType={'UnitGroup'} formRef={formRefEdit} onData={handletFromData} />
                 </Card>
-                <Form.Item label="Reference To Reference Unit" name={['quantitativeReference', 'referenceToReferenceUnit']}>
-                    <Input></Input>
-                </Form.Item>
                 <Form.Item label="ID" name={['unitGroupInformation', 'dataSetInformation', 'common:UUID']} hidden>
                     <Input></Input>
                 </Form.Item>
@@ -149,7 +172,9 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
                     name={['modellingAndValidation', 'complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem']}
                     label={"Reference To Compliance System"}
                     lang={lang}
-                    formRef={formRefEdit} />
+                    formRef={formRefEdit}
+                    onData={handletFromData}
+                />
                 <Form.Item label="Approval Of Overall Compliance" name={['modellingAndValidation', 'complianceDeclarations', 'compliance', 'common:approvalOfOverallCompliance']}>
                     <Input></Input>
                 </Form.Item>
@@ -165,7 +190,9 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
                     name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
                     label={'Reference To DataSet Format'}
                     lang={lang}
-                    formRef={formRefEdit} />
+                    formRef={formRefEdit}
+                    onData={handletFromData}
+                />
                 <Form.Item label="DataSet Version" name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}>
                     <Input />
                 </Form.Item>
@@ -184,7 +211,7 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
                 toolBarRender={() => {
                     return [<UnitCreate key={0} onData={handletUnitDataCreate}></UnitCreate>];
                 }}
-                dataSource={unitDataSource}
+                dataSource={genUnitTableData(unitDataSource, lang)}
                 columns={unitColumns}
             ></ProTable>
         ),
@@ -235,13 +262,13 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
         });
     }, [unitDataSource]);
 
-    useEffect(() => {
-        if (activeTabKey === 'units') return;
-        setFromData({
-            ...fromData,
-            [activeTabKey]: formRefEdit.current?.getFieldsValue()?.[activeTabKey] ?? {},
-        });
-    }, [formRefEdit.current?.getFieldsValue()]);
+    // useEffect(() => {
+    //     if (activeTabKey === 'units') return;
+    //     setFromData({
+    //         ...fromData,
+    //         [activeTabKey]: formRefEdit.current?.getFieldsValue()?.[activeTabKey] ?? {},
+    //     });
+    // }, [formRefEdit.current?.getFieldsValue()]);
 
     return (
         <>

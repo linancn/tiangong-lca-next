@@ -1,3 +1,4 @@
+import LangTextItemFrom from '@/components/LangTextItem/from';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
@@ -5,6 +6,7 @@ import type { ProFormInstance } from '@ant-design/pro-form';
 import ProForm from '@ant-design/pro-form';
 import {
     Button,
+    Card,
     Drawer,
     Form,
     Input,
@@ -38,7 +40,7 @@ const UnitEdit: FC<Props> = ({ id, data, buttonType, actionRef, setViewDrawerVis
     const onReset = () => {
         // setSpinning(true);
         formRefEdit.current?.resetFields();
-        const filteredData = data?.find((item: any) => item['dataSetInternalID'] === id) ?? {};
+        const filteredData = data?.find((item: any) => item['@dataSetInternalID'] === id) ?? {};
         setInitData(filteredData);
         formRefEdit.current?.setFieldsValue(filteredData);
         setFromData(filteredData);
@@ -124,10 +126,13 @@ const UnitEdit: FC<Props> = ({ id, data, buttonType, actionRef, setViewDrawerVis
                         <Form.Item label="Name" name={'name'}>
                             <Input />
                         </Form.Item>
+                        <Card size="small" title={'General Comment'}>
+                            <LangTextItemFrom name={'generalComment'} label={'General Comment'} />
+                        </Card>
                         <Form.Item label="Mean Value" name={'meanValue'}>
                             <Input />
                         </Form.Item>
-                        <Form.Item label="Selected" name={'selected'}>
+                        <Form.Item label="Quantitative Reference" name={'quantitativeReference'}>
                             <Switch></Switch>
                         </Form.Item>
                     </Space>

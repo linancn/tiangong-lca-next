@@ -140,6 +140,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
                 data={exchangeDataSource}
                 dataSource={'my'}
                 buttonType={'icon'}
+                lang={lang}
                 actionRef={actionRefExchangeTable}
               />
               {/* <ProcessEdit
@@ -286,6 +287,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
               initData.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture ??
               {}
             }
+            lang={lang}
           />
         </Card>
         <Divider orientationMargin="0" orientation="left" plain>
@@ -403,6 +405,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
               initData.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
                 ?.referenceToDataSource ?? {}
             }
+            lang={lang}
           />
 
           <Divider orientationMargin="0" orientation="left" plain>

@@ -71,6 +71,7 @@ export async function getUnitGroupTable(
     result = await supabase
       .from(table_name)
       .select(selectStr, { count: 'exact' })
+      .eq('state_code', 100)
       .order(sortBy, { ascending: orderBy === 'ascend' })
       .range(
         ((params.current ?? 1) - 1) * (params.pageSize ?? 10),

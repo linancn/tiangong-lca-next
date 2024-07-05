@@ -1,6 +1,21 @@
-import { classificationToJson, classificationToList, getLangJson, getLangList, removeEmptyObjects } from "../general/util";
+import { classificationToJson, classificationToList, getLangJson, getLangList, getLangText, removeEmptyObjects } from "../general/util";
 
 export function genUnitGroupJsonOrdered(id: string, data: any, oldData: any) {
+  let quantitativeReference = {};
+  const unit = data?.units?.unit?.map((item: any) => {
+    if (item.quantitativeReference) {
+      quantitativeReference = {
+        referenceToReferenceUnit: item['@dataSetInternalID'],
+      };
+    }
+    return {
+      '@dataSetInternalID': item['@dataSetInternalID'],
+      name: item.name,
+      meanValue: item.meanValue,
+      generalComment: getLangJson(item.generalComment),
+    };
+  }) ?? [];
+
   return removeEmptyObjects({
     unitGroupDataSet: {
       '@xmlns': oldData.unitGroupDataSet?.['@xmlns'] ?? {},
@@ -25,9 +40,7 @@ export function genUnitGroupJsonOrdered(id: string, data: any, oldData: any) {
           },
           email: data?.unitGroupInformation?.dataSetInformation?.email ?? {},
         },
-        quantitativeReference: {
-          referenceToReferenceUnit: data?.unitGroupInformation?.quantitativeReference?.referenceToReferenceUnit ?? {},
-        },
+        quantitativeReference: quantitativeReference,
       },
       modellingAndValidation: {
         complianceDeclarations: {
@@ -58,16 +71,18 @@ export function genUnitGroupJsonOrdered(id: string, data: any, oldData: any) {
           'common:dataSetVersion': data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'] ?? {},
         },
       },
-      units: data?.units ?? {},
+      units: {
+        unit: unit,
+      }
     }
   });
 }
 
 
 export function genUnitGroupFromData(data: any) {
-  let units = data?.units
-  if (units && !Array.isArray(units)) { 
-    units = [units]
+  let unit = data?.units?.unit
+  if (unit && !Array.isArray(unit)) {
+    unit = [unit]
   }
   return removeEmptyObjects({
     unitGroupInformation: {
@@ -120,6 +135,47 @@ export function genUnitGroupFromData(data: any) {
         'common:dataSetVersion': data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'],
       },
     },
-    units: units,
+    units: {
+      unit:
+        unit?.map((item: any) => {
+          if (item['@dataSetInternalID'] === (data?.unitGroupInformation?.quantitativeReference?.referenceToReferenceUnit ?? '')) {
+            return {
+              '@dataSetInternalID': item['@dataSetInternalID'],
+              'name': item['name'],
+              'meanValue': item['meanValue'],
+              'generalComment': item['generalComment'],
+              'quantitativeReference': true,
+            }
+          }
+          else {
+            return {
+              '@dataSetInternalID': item['@dataSetInternalID'],
+              'name': item['name'],
+              'meanValue': item['meanValue'],
+              'generalComment': item['generalComment'],
+              'quantitativeReference': false,
+            }
+          }
+        })
+    },
   });
+}
+
+
+export function genUnitTableData(data: any, lang: string) {
+  if (data) {
+    return data.map((item: any) => {
+      return removeEmptyObjects({
+        dataSetInternalID: item['@dataSetInternalID'],
+        name: item.name ?? '-',
+        generalComment: getLangText(
+          item.generalComment,
+          lang,
+        ),
+        quantitativeReference: item.quantitativeReference ?? false,
+        meanValue: item.meanValue ?? '-',
+      });
+    });
+  }
+  return {};
 }
