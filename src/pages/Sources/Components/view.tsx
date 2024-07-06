@@ -26,7 +26,7 @@ const SourceView: FC<Props> = ({ id, dataSource, buttonType, lang }) => {
 
 
   const tabList = [
-    { key: 'sourceInformation', tab: 'sourceInformation' },
+    { key: 'sourceInformation', tab: 'Source Information' },
     { key: 'administrativeInformation', tab: 'Administrative Information' },
   ];
 

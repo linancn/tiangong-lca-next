@@ -153,12 +153,12 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
         formRefCreate.current?.setFieldsValue({});
     }, [drawerVisible]);
 
-    useEffect(() => {
-        setFromData({
-            ...fromData,
-            [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
-        });
-    }, [formRefCreate.current?.getFieldsValue()]);
+    // useEffect(() => {
+    //     setFromData({
+    //         ...fromData,
+    //         [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
+    //     });
+    // }, [formRefCreate.current?.getFieldsValue()]);
 
     return (
         <>

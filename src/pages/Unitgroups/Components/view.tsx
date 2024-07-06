@@ -7,7 +7,6 @@ import { UnitTable } from '@/services/unitgroups/data';
 import { genUnitGroupFromData, genUnitTableData } from '@/services/unitgroups/util';
 import styles from '@/style/custom.less';
 import { CheckCircleTwoTone, CloseCircleOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
-import { ActionType } from '@ant-design/pro-components';
 import type { ProColumns } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
@@ -19,7 +18,7 @@ import UnitView from './Unit/view';
 type Props = {
   id: string;
   dataSource: string;
-  actionRef: React.MutableRefObject<ActionType | undefined>;
+  // actionRef: React.MutableRefObject<ActionType | undefined>;
   lang: string;
   buttonType: string;
 };

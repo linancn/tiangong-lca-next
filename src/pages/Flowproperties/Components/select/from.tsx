@@ -1,19 +1,20 @@
-import { getFlowpropertiesDetail } from '@/services/flowproperties/api';
+import { getFlowpropertyDetail } from '@/services/flowproperties/api';
+import { genFlowpropertyFromData } from '@/services/flowproperties/util';
 import { langOptions } from '@/services/general/data';
-import { ActionType, ProFormInstance } from '@ant-design/pro-components';
+import { ProFormInstance } from '@ant-design/pro-components';
 import {
+  Button,
   Card,
   Col,
   Divider,
   Form, Input,
   Row,
   Select,
-  Space,
-  Button
+  Space
 } from 'antd';
-import React, { FC } from 'react';
+import React, { FC, useEffect, useState } from 'react';
+import FlowpropertyView from '../view';
 import FlowpropertiesSelectDrawer from './drawer';
-import FlowpropertiesView from '../view';
 // import LangTextItemFrom from '@/components/LangTextItem/from';
 const { TextArea } = Input;
 
@@ -22,29 +23,30 @@ type Props = {
   label: string;
   lang: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
-  onData?: (key: any, data: any) => void
+  onData: () => void
 };
 
 const FlowpropertiesSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => {
-  const handleResetData = (data: any) => {
-    formRef.current?.setFieldValue(name, data);
-    if (onData) {
-      onData(name, data)
-    }
-  }
-  const handletFlowpropertiesData = (rowKey: any) => {
-    getFlowpropertiesDetail(rowKey).then(async (result: any) => {
-      let data = {
+
+  const [id, setId] = useState<string | undefined>(undefined);
+
+  const handletFlowpropertyData = (rowKey: any) => {
+    getFlowpropertyDetail(rowKey).then(async (result: any) => {
+      const selectedData = genFlowpropertyFromData(result.data?.json?.flowPropertyDataSet ?? {});
+      await formRef.current?.setFieldValue(name, {
         '@refObjectId': `${rowKey}`,
-        '@type': 'flowproperties data set',
+        '@type': 'flow property data set',
         '@uri': `../flowproperties/${rowKey}.xml`,
-        'common:shortDescription': [],
-      }
-      handleResetData(data)
+        'common:shortDescription': selectedData?.flowPropertiesInformation?.dataSetInformation?.['common:name'] ?? [],
+      });
+      onData();
     });
   };
-  const actionRef = React.useRef<ActionType | undefined>(undefined);
-  const id = formRef.current?.getFieldValue([...name, '@refObjectId']);
+
+  useEffect(() => {
+    setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
+  },);
+
   return (
     <Card size="small" title={label}>
       <Space direction="horizontal">
@@ -52,11 +54,9 @@ const FlowpropertiesSelectFrom: FC<Props> = ({ name, label, lang, formRef, onDat
           <Input disabled={true} style={{ width: '300px' }} />
         </Form.Item>
         <Space direction="horizontal" style={{ marginTop: '6px' }}>
-          <FlowpropertiesSelectDrawer buttonType="text" lang={lang} onData={handletFlowpropertiesData} />
-          {id && <FlowpropertiesView lang={lang} id={id} dataSource="tg" buttonType="text" actionRef={actionRef} />}
-          {id && (
-            <Button onClick={() => handleResetData({})}>Clear</Button>
-          )}
+          <FlowpropertiesSelectDrawer buttonType="text" lang={lang} onData={handletFlowpropertyData} />
+          {id && <FlowpropertyView lang={lang} id={id} buttonType="text" />}
+          {id && <Button onClick={() => { formRef.current?.setFieldValue([...name], {}); onData() }}>Clear</Button>}
         </Space>
 
       </Space>

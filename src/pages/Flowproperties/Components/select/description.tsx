@@ -1,7 +1,6 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
-import { ActionType } from '@ant-design/pro-components';
 import { Card, Descriptions, Divider, Space } from 'antd';
-import React, { FC } from 'react';
+import { FC } from 'react';
 import FlowpropertiesView from '../view';
 
 type Props = {
@@ -11,8 +10,6 @@ type Props = {
 };
 
 const FlowpropertiesSelectDescription: FC<Props> = ({ title, data, lang }) => {
-  const actionRef = React.useRef<ActionType | undefined>(undefined);
-
   return (
     <Card size="small" title={title}>
       <Space direction="horizontal">
@@ -25,9 +22,7 @@ const FlowpropertiesSelectDescription: FC<Props> = ({ title, data, lang }) => {
           <FlowpropertiesView
             id={data?.['@refObjectId']}
             lang={lang}
-            dataSource="tg"
             buttonType="text"
-            actionRef={actionRef}
           />
         )}
       </Space>
