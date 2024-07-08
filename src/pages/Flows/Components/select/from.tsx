@@ -1,6 +1,7 @@
-import { getFlowsDetail } from '@/services/flows/api';
+import { getFlowDetail } from '@/services/flows/api';
+import { genFlowFromData } from '@/services/flows/util';
 import { langOptions } from '@/services/general/data';
-import { ActionType, ProFormInstance } from '@ant-design/pro-components';
+import { ProFormInstance } from '@ant-design/pro-components';
 import {
   Button,
   Card,
@@ -11,10 +12,9 @@ import {
   Select,
   Space
 } from 'antd';
-import React, { FC } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import FlowsView from '../view';
 import FlowsSelectDrawer from './drawer';
-// import LangTextItemFrom from '@/components/LangTextItem/from';
 const { TextArea } = Input;
 
 type Props = {
@@ -22,31 +22,29 @@ type Props = {
   label: string;
   lang: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
-  onData?: (key: any, data: any) => void
+  onData: () => void
 };
 
 const FlowsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => {
 
-  const handleResetData = (data: any) => {
-    formRef.current?.setFieldValue(name, data);
-    if (onData) {
-      onData(name, data)
-    }
-  }
+  const [id, setId] = useState<string | undefined>(undefined);
+
   const handletFlowsData = (rowKey: any) => {
-    getFlowsDetail(rowKey).then(async () => {
-      let data = {
+    getFlowDetail(rowKey).then(async (result: any) => {
+      const selectedData = genFlowFromData(result.data?.json?.flowDataSet ?? {});
+      await formRef.current?.setFieldValue(name, {
         '@refObjectId': `${rowKey}`,
-        '@type': 'flows data set',
+        '@type': 'flow data set',
         '@uri': `../flows/${rowKey}.xml`,
-        'common:shortDescription': [],
-      }
-      handleResetData(data)
+        'common:shortDescription': selectedData?.flowInformation?.dataSetInformation?.dataSetInformation?.name?.baseName ?? [],
+      });
+      onData();
     });
   };
-  const actionRef = React.useRef<ActionType | undefined>(undefined);
 
-  const id = formRef.current?.getFieldValue([...name, '@refObjectId']);
+  useEffect(() => {
+    setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
+  },);
 
   return (
     <Card size="small" title={label}>
@@ -56,10 +54,8 @@ const FlowsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => {
         </Form.Item>
         <Space direction="horizontal" style={{ marginTop: '6px' }}>
           <FlowsSelectDrawer buttonType="text" lang={lang} onData={handletFlowsData} />
-          {id && <FlowsView lang={lang} id={id} dataSource="tg" buttonType="text" actionRef={actionRef} />}
-          {id && (
-            <Button onClick={() => handleResetData({})}>Clear</Button>
-          )}
+          {id && <FlowsView lang={lang} id={id} buttonType="text" />}
+          {id && <Button onClick={() => { formRef.current?.setFieldValue([...name], {}); onData() }}>Clear</Button>}
         </Space>
 
       </Space>
@@ -69,16 +65,9 @@ const FlowsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => {
       <Form.Item label="URI" name={[...name, '@uri']}>
         <Input disabled={true} />
       </Form.Item>
-      {/* <Form.Item label="Version" name={[...name, '@version']}>
-        <Input disabled={true} />
-      </Form.Item> */}
       <Divider orientationMargin="0" orientation="left" plain>
         Short Description
       </Divider>
-      {/* <LangTextItemFrom
-        name={[...name, 'common:shortDescription']}
-        label="Short Description"
-      /> */}
       <Form.Item>
         <Form.List name={[...name, 'common:shortDescription']}>
           {(subFields) => (

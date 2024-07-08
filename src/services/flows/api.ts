@@ -1,13 +1,8 @@
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
 import { v4 } from 'uuid';
-import {
-  // classificationToJson,
-  classificationToString,
-  // getLangList,
-  getLangText,
-} from '../general/util';
-import { genFlowsJsonOrdered } from './util';
+import { classificationToString, getLangText } from '../general/util';
+import { genFlowJsonOrdered } from './util';
 
 export async function createFlows(data: any) {
   const newID = v4();
@@ -22,7 +17,7 @@ export async function createFlows(data: any) {
         'http://lca.jrc.it/ILCD/Flow ../../schemas/ILCD_FlowDataSet.xsd',
     },
   };
-  const newData = genFlowsJsonOrdered(newID, data, oldData);
+  const newData = genFlowJsonOrdered(newID, data, oldData);
   const result = await supabase
     .from('flows')
     .insert([{ id: newID, json_ordered: newData }])
@@ -34,7 +29,7 @@ export async function updateFlows(data: any) {
   const result = await supabase.from('flows').select('id, json').eq('id', data.id);
   if (result.data && result.data.length === 1) {
     const oldData = result.data[0].json;
-    const newData = genFlowsJsonOrdered(data.id, data, oldData);
+    const newData = genFlowJsonOrdered(data.id, data, oldData);
     const updateResult = await supabase
       .from('flows')
       .update({ json_ordered: newData })
@@ -50,7 +45,7 @@ export async function deleteFlows(id: string) {
   return result;
 }
 
-export async function getFlowsTable(
+export async function getFlowTable(
   params: {
     current?: number;
     pageSize?: number;
@@ -67,6 +62,7 @@ export async function getFlowsTable(
     json->flowDataSet->flowInformation->dataSetInformation->name->baseName,
     json->flowDataSet->flowInformation->dataSetInformation->classificationInformation->"common:elementaryFlowCategorization"->"common:category",
     json->flowDataSet->flowInformation->dataSetInformation->"common:generalComment",
+    json->flowDataSet->flowInformation->dataSetInformation->CASNumber,
     created_at
   `;
 
@@ -75,6 +71,7 @@ export async function getFlowsTable(
     result = await supabase
       .from('flows')
       .select(selectStr, { count: 'exact' })
+      .eq('state_code', 100)
       .order(sortBy, { ascending: orderBy === 'ascend' })
       .range(
         ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
@@ -112,10 +109,10 @@ export async function getFlowsTable(
           return {
             key: i.id,
             id: i.id,
-            lang: lang,
-            baseName: getLangText(i["baseName"], lang),
+            baseName: getLangText(i.baseName, lang),
             classification: classificationToString(i['common:category']),
             generalComment: getLangText(i['common:generalComment'], lang),
+            CASNumber: i.CASNumber ?? '-',
             created_at: new Date(i.created_at),
           };
         } catch (e) {
@@ -136,7 +133,7 @@ export async function getFlowsTable(
   });
 }
 
-export async function getFlowsDetail(id: string) {
+export async function getFlowDetail(id: string) {
   const result = await supabase.from('flows').select('json, created_at').eq('id', id);
   if (result.data && result.data.length > 0) {
     const data = result.data[0];

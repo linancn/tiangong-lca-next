@@ -1,4 +1,4 @@
-import { getFlowsTable } from '@/services/flows/api';
+import { getFlowTable } from '@/services/flows/api';
 import { FlowsTable } from '@/services/flows/data';
 import { ListPagination } from '@/services/general/data';
 import styles from '@/style/custom.less';
@@ -91,13 +91,13 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
         if (activeTabKey === 'tg') {
           return [
             <Space size={'small'} key={0}>
-              <FlowsView id={row.id} dataSource="tg" actionRef={tgActionRefSelect} lang={lang} buttonType={'icon'} />
+              <FlowsView id={row.id} lang={lang} buttonType={'icon'} />
             </Space>,
           ];
         } else if (activeTabKey === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <FlowsView id={row.id} dataSource="my" actionRef={myActionRefSelect} lang={lang} buttonType={'icon'} />
+              <FlowsView id={row.id} lang={lang} buttonType={'icon'} />
               <FlowsEdit
                 id={row.id}
                 buttonType={'icon'}
@@ -140,7 +140,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
           },
           sort,
         ) => {
-          return getFlowsTable(params, sort, lang, 'tg');
+          return getFlowTable(params, sort, lang, 'tg');
         }}
         columns={FlowsColumns}
         rowSelection={{
@@ -168,7 +168,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
           },
           sort,
         ) => {
-          return getFlowsTable(params, sort, lang, 'my');
+          return getFlowTable(params, sort, lang, 'my');
         }}
         columns={FlowsColumns}
         rowSelection={{

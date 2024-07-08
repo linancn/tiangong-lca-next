@@ -1,80 +1,64 @@
-import { getFlowsDetail } from '@/services/flows/api';
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
-import styles from '@/style/custom.less';
-import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
-import { ActionType } from '@ant-design/pro-components';
-import { Button, Descriptions, Card, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
-import type { FC } from 'react';
-import { useState, useEffect } from 'react';
-import { FormattedMessage } from 'umi';
-import {
-    classificationToJson,
-    // classificationToList,
-} from '@/services/general/util';
-import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 import FlowpropertiesDescription from '@/pages/Flowproperties/Components/select/description';
+import SourceSelectDescription from '@/pages/Sources/Components/select/description';
+import { getFlowDetail } from '@/services/flows/api';
+import { genFlowFromData } from '@/services/flows/util';
+import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
+import { Button, Card, Descriptions, Divider, Drawer, Spin, Tooltip } from 'antd';
+import type { FC } from 'react';
+import { useState } from 'react';
+import { FormattedMessage } from 'umi';
 
 type Props = {
     id: string;
-    dataSource: string;
     lang: string;
-    actionRef: React.MutableRefObject<ActionType | undefined>;
     buttonType: string;
 };
-const FlowsView: FC<Props> = ({ id, dataSource, buttonType, lang }) => {
-    const [contentList, setContentList] = useState<Record<string, React.ReactNode>>({
-        flowInformation: <></>,
-        modellingAndValidation: <></>,
-        administrativeInformation: <></>,
-        flowproperties: <></>,
-    });
-    const [viewDescriptions, setViewDescriptions] = useState<JSX.Element>();
+const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
     const [drawerVisible, setDrawerVisible] = useState(false);
-    const [footerButtons, setFooterButtons] = useState<JSX.Element>();
     const [activeTabKey, setActiveTabKey] = useState<string>('flowInformation');
+    const [spinning, setSpinning] = useState(false);
+    const [initData, setInitData] = useState<any>({});
 
     const tabList = [
         { key: 'flowInformation', tab: 'Flow Information' },
         { key: 'modellingAndValidation', tab: 'Modelling And Validation' },
         { key: 'administrativeInformation', tab: 'Administrative Information' },
-        { key: 'flowproperties', tab: 'Flow Properties' },
+        { key: 'flowProperties', tab: 'Flow Property' },
     ];
     const onTabChange = (key: string) => {
         setActiveTabKey(key);
     };
-    function initFlowInformation(data: any) {
-        let dataSetInformation = data?.dataSetInformation
-        let referenceToReferenceFlowProperty = data?.quantitativeReference?.referenceToReferenceFlowProperty;
-        let categoryList = classificationToJson(dataSetInformation?.classificationInformation?.['common:elementaryFlowCategorization']?.['common:category'])
 
-        return (
+    const contentList: Record<string, React.ReactNode> = {
+        flowInformation: (
             <>
                 <Descriptions bordered size={'small'} column={1}>
                     <Descriptions.Item key={0} label="ID" labelStyle={{ width: '100px' }}>
-                        {dataSetInformation?.[
+                        {initData?.flowInformation?.dataSetInformation?.[
                             'common:UUID'
                         ] ?? '-'}
                     </Descriptions.Item>
                 </Descriptions>
                 <Divider orientationMargin="0" orientation="left" plain>
-                    Name
+                    Base Name
                 </Divider>
-                <LangTextItemDescription data={dataSetInformation?.["name"]?.["baseName"]} />
+                <LangTextItemDescription data={initData?.flowInformation?.dataSetInformation?.["name"]?.["baseName"]} />
 
                 <Divider orientationMargin="0" orientation="left" plain>
                     Synonyms
                 </Divider>
-                <LangTextItemDescription data={dataSetInformation?.["common:synonyms"]} />
+                <LangTextItemDescription data={initData?.flowInformation?.dataSetInformation?.["common:synonyms"]} />
 
                 <Divider orientationMargin="0" orientation="left" plain>
                     Classification
                 </Divider>
-                <LevelTextItemDescription data={categoryList} />
+                <LevelTextItemDescription data={initData?.flowInformation?.dataSetInformation?.classificationInformation?.['common:elementaryFlowCategorization']?.['common:category']} />
                 <br />
                 <Descriptions bordered size={'small'} column={1}>
-                    <Descriptions.Item key={0} label="CAS Number" labelStyle={{ width: '100px' }}>
-                        {dataSetInformation?.[
+                    <Descriptions.Item key={0} label="CAS Number" labelStyle={{ width: '140px' }}>
+                        {initData?.flowInformation?.dataSetInformation?.[
                             'CASNumber'
                         ] ?? '-'}
                     </Descriptions.Item>
@@ -83,229 +67,101 @@ const FlowsView: FC<Props> = ({ id, dataSource, buttonType, lang }) => {
                 <Divider orientationMargin="0" orientation="left" plain>
                     General Comment
                 </Divider>
-                <LangTextItemDescription data={dataSetInformation?.['common:generalComment']} />
+                <LangTextItemDescription data={initData?.flowInformation?.dataSetInformation?.['common:generalComment']} />
                 <br />
                 <Descriptions bordered size={'small'} column={1}>
-                    <Descriptions.Item key={0} label="EC Number" labelStyle={{ width: '100px' }}>
-                        {dataSetInformation?.[
+                    <Descriptions.Item key={0} label="EC Number" labelStyle={{ width: '140px' }}>
+                        {initData?.flowInformation?.dataSetInformation?.[
                             'common:other'
                         ]?.["ecn:ECNumber"] ?? '-'}
                     </Descriptions.Item>
                 </Descriptions>
                 <br />
 
-                <Card size="small" title={'Quantitative Reference'}>
+                {/* <Card size="small" title={'Quantitative Reference'}>
                     <Descriptions bordered size={'small'} column={1}>
                         <Descriptions.Item key={0} label="Reference To Reference Flow Property" labelStyle={{ width: '200px' }}>
-                            {referenceToReferenceFlowProperty ?? '-'}
+                            {initData?.flowInformation?.quantitativeReference?.referenceToReferenceFlowProperty ?? '-'}
                         </Descriptions.Item>
                     </Descriptions>
-                </Card>
-
+                </Card> */}
             </>
-        )
-    }
-    function initModellingAndValidation(data: any) {
-        let referenceToComplianceSystem = data?.complianceDeclarations?.compliance?.["common:referenceToComplianceSystem"]
-        let approvalOfOverallCompliance = data?.complianceDeclarations?.compliance?.["common:approvalOfOverallCompliance"]
-        return (
+        ),
+        modellingAndValidation: (
             <>
                 <Descriptions bordered size={'small'} column={1}>
-                    <Descriptions.Item key={0} label="Type Of Data Set" labelStyle={{ width: '220px' }}>
-                        {data?.["LCIMethod"]?.["typeOfDataSet"] ?? '-'}
+                    <Descriptions.Item key={0} label="LCI Method: Type Of Data Set" labelStyle={{ width: '220px' }}>
+                        {initData?.modellingAndValidation?.LCIMethod?.typeOfDataSet ?? '-'}
                     </Descriptions.Item>
                 </Descriptions>
                 <br />
                 <Card size="small" title={'Compliance Declarations'}>
-                    <SourceSelectDescription data={referenceToComplianceSystem} title={'Reference To Compliance System'} />
-                    {/* <Descriptions bordered size={'small'} column={1}>
-                        <Descriptions.Item key={0} label="Ref Object Id" labelStyle={{ width: '220px' }}>
-                            {referenceToComplianceSystem?.["@refObjectId"] ?? '-'}
-                        </Descriptions.Item>
-                    </Descriptions>
+                    <SourceSelectDescription data={initData?.modellingAndValidation?.complianceDeclarations?.compliance?.["common:referenceToComplianceSystem"]} title={'Reference To Compliance System'} lang={lang} />
                     <br />
                     <Descriptions bordered size={'small'} column={1}>
-                        <Descriptions.Item key={0} label="Type" labelStyle={{ width: '220px' }}>
-                            {referenceToComplianceSystem?.["@type"] ?? '-'}
-                        </Descriptions.Item>
-                    </Descriptions>
-                    <br />
-                    <Descriptions bordered size={'small'} column={1}>
-                        <Descriptions.Item key={0} label="URI" labelStyle={{ width: '220px' }}>
-                            {referenceToComplianceSystem?.["@uri"] ?? '-'}
-                        </Descriptions.Item>
-                    </Descriptions>
-                    <br />
-                    <Divider orientationMargin="0" orientation="left" plain>
-                        Short Description
-                    </Divider>
-                    <LangTextItemDescription data={referenceToComplianceSystem?.["common:shortDescription"]} />
-                    <br /> */}
-                    <Descriptions bordered size={'small'} column={1}>
-                        <Descriptions.Item key={0} label="Approval Of Overall Compliance" labelStyle={{ width: '220px' }}>
-                            {approvalOfOverallCompliance ?? '-'}
+                        <Descriptions.Item key={0} label="Approval Of Overall Compliance" labelStyle={{ width: '240px' }}>
+                            {initData?.modellingAndValidation?.complianceDeclarations?.compliance?.["common:approvalOfOverallCompliance"] ?? '-'}
                         </Descriptions.Item>
                     </Descriptions>
                     <br />
                 </Card>
             </>
-        )
-    }
-    function initAdministrativeInformation(data: any) {
-        let dataEntryBy = data?.dataEntryBy
-        let publicationAndOwnership = data?.publicationAndOwnership
-        return (
+        ),
+        administrativeInformation: (
             <>
                 <Card size="small" title={'Data Entry By'}>
                     <Descriptions bordered size={'small'} column={1}>
                         <Descriptions.Item key={0} label="Time Stamp" labelStyle={{ width: '150px' }}>
-                            {dataEntryBy?.["common:timeStamp"] ?? '-'}
+                            {initData?.administrativeInformation?.dataEntryBy?.["common:timeStamp"] ?? '-'}
                         </Descriptions.Item>
                     </Descriptions>
                     <br />
-                    <SourceSelectDescription data={dataEntryBy?.['common:referenceToDataSetFormat']} title={'Reference To Data Set Format'} />
-                    {/* <Card size="small" title={'Reference To Data Set Format'}>
-                        <Descriptions bordered size={'small'} column={1}>
-                            <Descriptions.Item key={0} label="Ref Object Id" labelStyle={{ width: '100px' }}>
-                                {dataEntryBy?.['common:referenceToDataSetFormat']?.["@refObjectId"] ?? '-'}
-                            </Descriptions.Item>
-                        </Descriptions>
-                        <br />
-                        <Descriptions bordered size={'small'} column={1}>
-                            <Descriptions.Item key={0} label="Type" labelStyle={{ width: '100px' }}>
-                                {dataEntryBy?.['common:referenceToDataSetFormat']?.["@type"] ?? '-'}
-                            </Descriptions.Item>
-                        </Descriptions>
-                        <br />
-                        <Descriptions bordered size={'small'} column={1}>
-                            <Descriptions.Item key={0} label="URI" labelStyle={{ width: '100px' }}>
-                                {dataEntryBy?.['common:referenceToDataSetFormat']?.["@uri"] ?? '-'}
-                            </Descriptions.Item>
-                        </Descriptions>
-                        <br />
-                        <Divider orientationMargin="0" orientation="left" plain>
-                            Short Description
-                        </Divider>
-                        <LangTextItemDescription data={dataEntryBy?.['common:referenceToDataSetFormat']?.["common:shortDescription"]} />
-
-                    </Card> */}
+                    <SourceSelectDescription data={initData?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']} title={'Reference To Data Set Format'} lang={lang} />
                 </Card>
                 <br />
                 <Card size="small" title={'Publication And Ownership'}>
                     <Descriptions bordered size={'small'} column={1}>
-                        <Descriptions.Item key={0} label="Data Set Version" labelStyle={{ width: '150px' }}>
-                            {publicationAndOwnership?.["common:dataSetVersion"] ?? '-'}
+                        <Descriptions.Item key={0} label="Data Set Version" labelStyle={{ width: '160px' }}>
+                            {initData?.administrativeInformation?.publicationAndOwnership?.["common:dataSetVersion"] ?? '-'}
                         </Descriptions.Item>
                     </Descriptions>
                     <br />
                     <Descriptions bordered size={'small'} column={1}>
-                        <Descriptions.Item key={0} label="Permanent Data Set URI" labelStyle={{ width: '150px' }}>
-                            {publicationAndOwnership?.["common:permanentDataSetURI"] ?? '-'}
+                        <Descriptions.Item key={0} label="Permanent Data Set URI" labelStyle={{ width: '200px' }}>
+                            {initData?.administrativeInformation?.publicationAndOwnership?.["common:permanentDataSetURI"] ?? '-'}
                         </Descriptions.Item>
                     </Descriptions>
                 </Card>
             </>
-        )
-    }
-    function initFlowProperties(data: any) {
-        let flowProperty = data?.flowProperty
-        return (
+        ),
+        flowProperties: (
             <>
-                <Descriptions bordered size={'small'} column={1}>
+                {/* <Descriptions bordered size={'small'} column={1}>
                     <Descriptions.Item key={0} label="Data Set Internal ID" labelStyle={{ width: '200px' }}>
-                        {flowProperty?.["@dataSetInternalID"] ?? '-'}
+                        {initData?.flowProperties?.flowProperty?.["@dataSetInternalID"] ?? '-'}
                     </Descriptions.Item>
                 </Descriptions>
-                <br />
-                <FlowpropertiesDescription data={flowProperty?.['referenceToFlowPropertyDataSet']} lang={lang} title={'Reference To Data Set Format'} />
-                {/* <Card size="small" title={'Reference To Data Set Format'}>
-                    <Descriptions bordered size={'small'} column={1}>
-                        <Descriptions.Item key={0} label="Ref Object Id" labelStyle={{ width: '100px' }}>
-                            {flowProperty?.['referenceToFlowPropertyDataSet']?.["@refObjectId"] ?? '-'}
-                        </Descriptions.Item>
-                    </Descriptions>
-                    <br />
-                    <Descriptions bordered size={'small'} column={1}>
-                        <Descriptions.Item key={0} label="Type" labelStyle={{ width: '100px' }}>
-                            {flowProperty?.['referenceToFlowPropertyDataSet']?.["@type"] ?? '-'}
-                        </Descriptions.Item>
-                    </Descriptions>
-                    <br />
-                    <Descriptions bordered size={'small'} column={1}>
-                        <Descriptions.Item key={0} label="URI" labelStyle={{ width: '100px' }}>
-                            {flowProperty?.['referenceToFlowPropertyDataSet']?.["@uri"] ?? '-'}
-                        </Descriptions.Item>
-                    </Descriptions>
-                    <br />
-                    <Divider orientationMargin="0" orientation="left" plain>
-                        Short Description
-                    </Divider>
-                    <LangTextItemDescription data={flowProperty?.['referenceToFlowPropertyDataSet']?.["common:shortDescription"]} />
-
-                </Card> */}
+                <br /> */}
+                <FlowpropertiesDescription data={initData?.flowProperties?.flowProperty?.['referenceToFlowPropertyDataSet']} lang={lang} title={'Reference To Data Set Format'} />
                 <br />
                 <Descriptions bordered size={'small'} column={1}>
                     <Descriptions.Item key={0} label="Mean Value" labelStyle={{ width: '150px' }}>
-                        {flowProperty?.["meanValue"] ?? '-'}
+                        {initData?.flowProperties?.flowProperty?.["meanValue"] ?? '-'}
                     </Descriptions.Item>
                 </Descriptions>
             </>
-        )
-    }
+        ),
+    };
+
     const onView = () => {
         setDrawerVisible(true);
-        setViewDescriptions(
-            <div className={styles.loading_spin_div}>
-                <Spin />
-            </div>,
-        );
-
-        getFlowsDetail(id).then(async (result: any) => {
-            let flowDataSet = result.data?.json?.['flowDataSet']
-            let flowInformation = initFlowInformation(flowDataSet?.flowInformation)
-            let modellingAndValidation = initModellingAndValidation(flowDataSet?.modellingAndValidation)
-            let administrativeInformation = initAdministrativeInformation(flowDataSet?.administrativeInformation)
-            let flowproperties = initFlowProperties(flowDataSet?.flowProperties)
-            setContentList({
-                flowInformation: flowInformation,
-                modellingAndValidation: modellingAndValidation,
-                administrativeInformation: administrativeInformation,
-                flowproperties: flowproperties
-            });
-            if (dataSource === 'my') {
-                setFooterButtons(
-                    <>
-                        {/* <FlowpropertiesDelete
-              id={id}
-              buttonType={'text'}
-              actionRef={actionRef}
-              setViewDrawerVisible={setDrawerVisible}
-            />
-            <FlowpropertiesEdit
-              id={id}
-              buttonType={'text'}
-              actionRef={actionRef}
-              setViewDrawerVisible={setDrawerVisible}
-            /> */}
-                    </>,
-                );
-            } else {
-                setFooterButtons(<></>);
-            }
+        setSpinning(true);
+        getFlowDetail(id).then(async (result: any) => {
+            setInitData({ ...genFlowFromData(result.data?.json?.flowDataSet ?? {}), id: id });
+            setSpinning(false);
         });
     };
-    useEffect(() => {
-        setViewDescriptions(
-            <Card
-                style={{ width: '100%' }}
-                tabList={tabList}
-                activeTabKey={activeTabKey}
-                onTabChange={onTabChange}
-            >
-                {contentList[activeTabKey]}
-            </Card>,
-        );
-    }, [contentList, activeTabKey]);
+
     return (
         <>
             <Tooltip title={<FormattedMessage id="pages.table.option.view" defaultMessage="View" />}>
@@ -329,16 +185,20 @@ const FlowsView: FC<Props> = ({ id, dataSource, buttonType, lang }) => {
                         onClick={() => setDrawerVisible(false)}
                     />
                 }
-                footer={
-                    <Space size={'middle'} className={styles.footer_right}>
-                        {footerButtons}
-                    </Space>
-                }
                 maskClosable={true}
                 open={drawerVisible}
                 onClose={() => setDrawerVisible(false)}
             >
-                {viewDescriptions}
+                <Spin spinning={spinning}>
+                    <Card
+                        style={{ width: '100%' }}
+                        tabList={tabList}
+                        activeTabKey={activeTabKey}
+                        onTabChange={onTabChange}
+                    >
+                        {contentList[activeTabKey]}
+                    </Card>
+                </Spin>
             </Drawer>
         </>
     );

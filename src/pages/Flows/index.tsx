@@ -1,7 +1,7 @@
+import { getFlowTable } from '@/services/flows/api';
+import { FlowsTable } from '@/services/flows/data';
 import { ListPagination } from '@/services/general/data';
 import { getLang } from '@/services/general/util';
-import { getFlowsTable } from '@/services/flows/api';
-import { FlowsTable } from '@/services/flows/data';
 import { PageContainer } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
@@ -37,8 +37,8 @@ const TableList: FC = () => {
       dataIndex: 'baseName',
       sorter: false,
       render: (_, row) => [
-        <Tooltip key={0} placement="topLeft" title={row.baseName}>
-          {row.baseName || '-'}
+        <Tooltip key={0} placement="topLeft" title={row.generalComment}>
+          {row.baseName}
         </Tooltip>,
       ],
     },
@@ -51,9 +51,9 @@ const TableList: FC = () => {
 
     {
       title: (
-        <FormattedMessage id="pages.flows.generalComment" defaultMessage="General Comment" />
+        <FormattedMessage id="pages.flows.CASNumber" defaultMessage="CAS Number" />
       ),
-      dataIndex: 'generalComment',
+      dataIndex: 'CASNumber',
       sorter: false,
       search: false,
     },
@@ -130,7 +130,7 @@ const TableList: FC = () => {
           },
           sort,
         ) => {
-          return getFlowsTable(params, sort, lang, dataSource);
+          return getFlowTable(params, sort, lang, dataSource);
         }}
         columns={flowsColumns}
       />
