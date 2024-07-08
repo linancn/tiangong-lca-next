@@ -65,7 +65,7 @@ const TableList: FC = () => {
             <Space size={'small'} key={0}>
               <UnitGroupView
                 buttonType={'icon'}
-                lang={lang} id={row.id} dataSource={dataSource} actionRef={actionRef}></UnitGroupView>
+                lang={lang} id={row.id} dataSource={dataSource} />
               <UnitGroupEdit
                 id={row.id}
                 buttonType={'icon'}
@@ -85,7 +85,7 @@ const TableList: FC = () => {
         return [
           <Space size={'small'} key={0}>
             <UnitGroupView buttonType={'icon'}
-              lang={lang} id={row.id} dataSource={dataSource} actionRef={actionRef}></UnitGroupView>
+              lang={lang} id={row.id} dataSource={dataSource} />
           </Space>,
         ];
       },

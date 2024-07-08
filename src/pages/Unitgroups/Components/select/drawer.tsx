@@ -1,6 +1,6 @@
+import { ListPagination } from '@/services/general/data';
 import { getUnitGroupTable } from '@/services/unitgroups/api';
 import { UnitGroupTable } from '@/services/unitgroups/data';
-import { ListPagination } from '@/services/general/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, DatabaseOutlined } from '@ant-design/icons';
 import { ProTable } from '@ant-design/pro-components';
@@ -9,8 +9,6 @@ import { Button, Card, Drawer, Space, Tooltip } from 'antd';
 import type { FC, Key } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import UnitGroupDelete from '../delete';
-import UnitGroupEdit from '../edit';
 import UnitGroupView from '../view';
 
 type Props = {
@@ -79,34 +77,39 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
-        if (activeTabKey === 'my') {
-          return [
-            <Space size={'small'} key={0}>
-              <UnitGroupView
-                buttonType={'icon'}
-                lang={lang} id={row.id} dataSource={'my'} actionRef={myActionRefSelect}></UnitGroupView>
-              <UnitGroupEdit
-                id={row.id}
-                buttonType={'icon'}
-                lang={lang}
-                actionRef={myActionRefSelect}
-                setViewDrawerVisible={() => { }}
-              ></UnitGroupEdit>
-              <UnitGroupDelete
-                id={row.id}
-                buttonType={'icon'}
-                actionRef={myActionRefSelect}
-                setViewDrawerVisible={() => { }}
-              ></UnitGroupDelete>
-            </Space>,
-          ];
-        }
         return [
-          <Space size={'small'} key={0}>
-            <UnitGroupView buttonType={'icon'}
-              lang={lang} id={row.id} dataSource={'tg'} actionRef={tgActionRefSelect}></UnitGroupView>
-          </Space>,
+          <UnitGroupView key={0}
+            buttonType={'icon'}
+            lang={lang} id={row.id} dataSource={'my'} />
         ];
+        // if (activeTabKey === 'my') {
+        //   return [
+        //     <Space size={'small'} key={0}>
+        //       <UnitGroupView
+        //         buttonType={'icon'}
+        //         lang={lang} id={row.id} dataSource={'my'} />
+        //       <UnitGroupEdit
+        //         id={row.id}
+        //         buttonType={'icon'}
+        //         lang={lang}
+        //         actionRef={myActionRefSelect}
+        //         setViewDrawerVisible={() => { }}
+        //       ></UnitGroupEdit>
+        //       <UnitGroupDelete
+        //         id={row.id}
+        //         buttonType={'icon'}
+        //         actionRef={myActionRefSelect}
+        //         setViewDrawerVisible={() => { }}
+        //       ></UnitGroupDelete>
+        //     </Space>,
+        //   ];
+        // }
+        // return [
+        //   <Space size={'small'} key={0}>
+        //     <UnitGroupView buttonType={'icon'}
+        //       lang={lang} id={row.id} dataSource={'tg'} actionRef={tgActionRefSelect}></UnitGroupView>
+        //   </Space>,
+        // ];
       },
     },
   ];

@@ -75,9 +75,8 @@ const TableList: FC = () => {
               <FlowsView
                 buttonType={'icon'}
                 id={row.id}
-                dataSource={dataSource}
                 lang={lang}
-                actionRef={actionRef} />
+              />
               <FlowsEdit
                 id={row.id}
                 lang={lang}
@@ -98,9 +97,8 @@ const TableList: FC = () => {
             <FlowsView
               buttonType={'icon'}
               id={row.id}
-              dataSource={dataSource}
               lang={lang}
-              actionRef={actionRef} />
+            />
           </Space>,
         ];
       },
