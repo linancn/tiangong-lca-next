@@ -3,9 +3,8 @@ import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 import { getContactDetail } from '@/services/contacts/api';
 import { genContactFromData } from '@/services/contacts/util';
-import styles from '@/style/custom.less';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
-import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
+import { Button, Card, Descriptions, Divider, Drawer, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -14,13 +13,12 @@ import ContractDescription from './select/description';
 type Props = {
   id: string;
   lang: string;
-  dataSource: string;
   buttonType: string;
   // actionRef: React.MutableRefObject<ActionType | undefined>;
 };
-const ContactView: FC<Props> = ({ id, lang, dataSource, buttonType }) => {
+const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [footerButtons, setFooterButtons] = useState<JSX.Element>();
+  // const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<any>({});
   const [activeTabKey, setActiveTabKey] = useState<string>('contactInformation');
@@ -157,27 +155,27 @@ const ContactView: FC<Props> = ({ id, lang, dataSource, buttonType }) => {
     setSpinning(true);
     getContactDetail(id).then(async (result: any) => {
       setInitData({ ...genContactFromData(result.data?.json?.contactDataSet ?? {}) });
-      if (dataSource === 'my') {
-        setFooterButtons(
-          <>
-            {/* <ContactDelete
-              id={id}
-              buttonType={'text'}
-              actionRef={actionRef}
-              setViewDrawerVisible={setDrawerVisible}
-            />
-            <ContactEdit
-              id={id}
-              lang={lang}
-              buttonType={'text'}
-              actionRef={actionRef}
-              setViewDrawerVisible={setDrawerVisible}
-            /> */}
-          </>,
-        );
-      } else {
-        setFooterButtons(<></>);
-      }
+      // if (dataSource === 'my') {
+      //   setFooterButtons(
+      //     <>
+      //       <ContactDelete
+      //         id={id}
+      //         buttonType={'text'}
+      //         actionRef={actionRef}
+      //         setViewDrawerVisible={setDrawerVisible}
+      //       />
+      //       <ContactEdit
+      //         id={id}
+      //         lang={lang}
+      //         buttonType={'text'}
+      //         actionRef={actionRef}
+      //         setViewDrawerVisible={setDrawerVisible}
+      //       />
+      //     </>,
+      //   );
+      // } else {
+      //   setFooterButtons(<></>);
+      // }
       setSpinning(false);
     });
   };
@@ -207,11 +205,11 @@ const ContactView: FC<Props> = ({ id, lang, dataSource, buttonType }) => {
             onClick={() => setDrawerVisible(false)}
           />
         }
-        footer={
-          <Space size={'middle'} className={styles.footer_right}>
-            {footerButtons}
-          </Space>
-        }
+        // footer={
+        //   <Space size={'middle'} className={styles.footer_right}>
+        //     {footerButtons}
+        //   </Space>
+        // }
         maskClosable={true}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}

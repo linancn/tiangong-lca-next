@@ -24,7 +24,6 @@ const ContactSelectDescription: FC<Props> = ({ title, data, lang }) => {
           <ContactView
             id={data?.['@refObjectId']}
             lang={lang}
-            dataSource="tg"
             buttonType="text"
           />
         )}

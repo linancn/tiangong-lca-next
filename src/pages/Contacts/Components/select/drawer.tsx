@@ -20,7 +20,7 @@ type Props = {
 const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
-  const [activeTabKey, setActiveTabKey] = useState<string>('my');
+  const [activeTabKey, setActiveTabKey] = useState<string>('tg');
   const tgActionRefSelect = useRef<ActionType>();
   const myActionRefSelect = useRef<ActionType>();
 
@@ -88,7 +88,6 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
             <ContactView
               id={row.id}
               lang={lang}
-              dataSource="tg"
               buttonType="icon"
             />
           </Space>,
@@ -135,8 +134,8 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
   ];
 
   const tabList = [
-    { key: 'my', tab: 'My Data' },
     { key: 'tg', tab: 'TianGong Data' },
+    { key: 'my', tab: 'My Data' },
   ];
 
   const databaseList: Record<string, React.ReactNode> = {
