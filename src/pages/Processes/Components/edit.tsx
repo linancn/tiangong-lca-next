@@ -50,15 +50,18 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
 
   const actionRefExchangeTable = useRef<ActionType>();
 
+  const handletFromData = () => {
+    setFromData({
+      ...fromData,
+      [activeTabKey]: formRefEdit.current?.getFieldsValue()?.[activeTabKey] ?? {},
+    });
+  };
+
   const handletExchangeDataCreate = (data: any) => {
     setExchangeDataSource([
       ...exchangeDataSource,
       { ...data, '@dataSetInternalID': exchangeDataSource.length.toString() },
     ]);
-  };
-
-  const handletFromData = (data: any) => {
-    setFromData({ ...fromData, data });
   };
 
   const handletExchangeData = (data: any) => {
@@ -278,7 +281,9 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
             name={['processInformation', 'technology', 'referenceToTechnologyFlowDiagrammOrPicture']}
             label="Reference To Technology Flow Diagramm Or Picture"
             lang="en"
-            formRef={formRefEdit} />
+            formRef={formRefEdit}
+            onData={handletFromData}
+          />
         </Card>
 
         <Card size="small" title={'Mathematical Relations: Model Description'}>
@@ -402,7 +407,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
             label="Deviations From Treatment And Extrapolation Principles"
           />
 
-          <SourceSelectFrom name={['modellingAndValidation', 'dataSourcesTreatmentAndRepresentativeness', 'referenceToDataSource']} label={'Reference To Data Source'} lang={lang} formRef={formRefEdit} />
+          <SourceSelectFrom name={['modellingAndValidation', 'dataSourcesTreatmentAndRepresentativeness', 'referenceToDataSource']} label={'Reference To Data Source'} lang={lang} formRef={formRefEdit} onData={handletFromData} />
 
           <Divider orientationMargin="0" orientation="left" plain>
             Use Advice For DataSet
@@ -445,6 +450,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
             label={'Reference To Name Of Reviewer And Institution'}
             lang={lang}
             formRef={formRefEdit}
+            onData={handletFromData}
           />
         </Card>
       </Space>
@@ -460,6 +466,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
           label={'Data Generator: Reference To Person Or Entity Generating The DataSet'}
           lang={lang}
           formRef={formRefEdit}
+          onData={handletFromData}
         />
 
         <Form.Item label="Data Entry By: Time Stamp" name={['dataEntryBy', 'common:timeStamp']}>
@@ -505,6 +512,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
             label={'Reference To Ownership Of Data Set'}
             lang={lang}
             formRef={formRefEdit}
+            onData={handletFromData}
           />
 
           <Form.Item

@@ -31,6 +31,10 @@ const ProcessExchangeCreate: FC<Props> = ({ lang, onData }) => {
   const [fromData, setFromData] = useState<any>({});
   const [functionalUnitOrOther, setFunctionalUnitOrOther] = useState(false);
 
+  const handletFromData = () => {
+    setFromData(formRefCreate.current?.getFieldsValue() ?? {},);
+  };
+
   useEffect(() => {
     if (drawerVisible) return;
     formRefCreate.current?.resetFields();
@@ -110,6 +114,7 @@ const ProcessExchangeCreate: FC<Props> = ({ lang, onData }) => {
               label="Reference To Flow Data Set"
               lang={lang}
               formRef={formRefCreate}
+              onData={handletFromData}
             />
             <Form.Item label="Mean Amount" name={'meanAmount'}>
               <Input />

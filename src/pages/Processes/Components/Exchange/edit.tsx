@@ -44,6 +44,10 @@ const ProcessExchangeEdit: FC<Props> = ({
   const [initData, setInitData] = useState<any>({});
   const [functionalUnitOrOther, setFunctionalUnitOrOther] = useState(false);
 
+  const handletFromData = () => {
+    setFromData(formRefEdit.current?.getFieldsValue() ?? {},);
+  };
+
   const onEdit = useCallback(() => {
     setDrawerVisible(true);
   }, [setViewDrawerVisible]);
@@ -147,6 +151,7 @@ const ProcessExchangeEdit: FC<Props> = ({
               label="Reference To Flow Data Set"
               lang="en"
               formRef={formRefEdit}
+              onData={handletFromData}
             />
             <Form.Item label="Mean Amount" name={'meanAmount'}>
               <Input />

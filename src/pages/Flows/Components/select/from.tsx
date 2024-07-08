@@ -36,7 +36,7 @@ const FlowsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => {
         '@refObjectId': `${rowKey}`,
         '@type': 'flow data set',
         '@uri': `../flows/${rowKey}.xml`,
-        'common:shortDescription': selectedData?.flowInformation?.dataSetInformation?.dataSetInformation?.name?.baseName ?? [],
+        'common:shortDescription': selectedData?.flowInformation?.dataSetInformation?.name?.baseName ?? [],
       });
       onData();
     });
