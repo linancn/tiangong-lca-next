@@ -27,13 +27,13 @@ const TableList: FC = () => {
   const actionRef = useRef<ActionType>();
   const flowpropertiesColumns: ProColumns<FlowpropertyTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.index" defaultMessage="Index" />,
+      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
       dataIndex: 'index',
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.flowproperties.name" defaultMessage="Name" />,
+      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name" />,
       dataIndex: 'name',
       sorter: false,
       render: (_, row) => [
@@ -44,7 +44,7 @@ const TableList: FC = () => {
     },
     {
       title: (
-        <FormattedMessage id="pages.flowproperties.classification" defaultMessage="Classification" />
+        <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />
       ),
       dataIndex: 'classification',
       sorter: false,
@@ -52,21 +52,21 @@ const TableList: FC = () => {
     },
     {
       title: (
-        <FormattedMessage id="pages.flowproperties.referenceToReferenceUnitGroup" defaultMessage="Reference Unit Group" />
+        <FormattedMessage id="pages.flowproperty.referenceToReferenceUnitGroup" defaultMessage="Reference Unit Group" />
       ),
       dataIndex: 'referenceToReferenceUnitGroup',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.flowproperties.createdAt" defaultMessage="Created At" />,
+      title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At" />,
       dataIndex: 'created_at',
       valueType: 'dateTime',
       sorter: true,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.option" defaultMessage="Option" />,
+      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
@@ -80,7 +80,6 @@ const TableList: FC = () => {
                 actionRef={actionRef}
                 lang={lang}
               />
-              {/* setViewDrawerVisible={() => {}} */}
               <FlowpropertiesDelete
                 id={row.id}
                 buttonType={'icon'}

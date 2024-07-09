@@ -569,7 +569,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
         />
       </Tooltip>
       <Drawer
-        title={<FormattedMessage id="processes.create" defaultMessage="Process Create" />}
+        title={<FormattedMessage id="pages.process.drawer.title.create" defaultMessage="Create Process" />}
         width="90%"
         closable={false}
         extra={
@@ -586,10 +586,10 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
               {' '}
-              <FormattedMessage id="options.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
             </Button>
             <Button onClick={() => formRefCreate.current?.submit()} type="primary">
-              <FormattedMessage id="options.submit" defaultMessage="Submit" />
+              <FormattedMessage id="pages.button.submit" defaultMessage="Submit" />
             </Button>
           </Space>
         }

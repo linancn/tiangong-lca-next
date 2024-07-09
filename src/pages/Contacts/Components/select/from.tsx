@@ -55,7 +55,7 @@ const ContactSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) =>
         </Form.Item>
         <Space direction="horizontal" style={{ marginTop: '6px' }}>
           <ContactSelectDrawer buttonType="text" lang={lang} onData={handletContactData} />
-          {id && <ContactView lang={lang} id={id} dataSource="tg" buttonType="text" />}
+          {id && <ContactView lang={lang} id={id} buttonType="text" />}
           {id && (
             <Button onClick={() => { formRef.current?.setFieldValue([...name], {}); onData() }}>Clear</Button>
           )}

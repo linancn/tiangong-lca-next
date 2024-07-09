@@ -1,5 +1,5 @@
 export default {
-  'pages.table.index': 'Index',
+  'pages.table.title.index': 'Index',
   'pages.table.option': 'Option',
   'pages.table.option.create': 'Create',
   'pages.table.option.reset': 'Reset',

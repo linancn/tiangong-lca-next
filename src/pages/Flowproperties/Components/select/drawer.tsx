@@ -46,24 +46,24 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
 
   const FlowpropertyColumns: ProColumns<FlowpropertyTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.index" defaultMessage="Index" />,
+      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
       dataIndex: 'index',
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.flowproperties.name" defaultMessage="Data Name" />,
+      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name" />,
       dataIndex: 'name',
       sorter: false,
       render: (_, row) => [
-        <Tooltip key={0} placement="topLeft" title={row.name}>
+        <Tooltip key={0} placement="topLeft" title={row.generalComment}>
           {row.name}
         </Tooltip>,
       ],
     },
     {
       title: (
-        <FormattedMessage id="pages.flowproperties.classification" defaultMessage="Classification" />
+        <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />
       ),
       dataIndex: 'classification',
       sorter: false,
@@ -71,21 +71,21 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
     },
     {
       title: (
-        <FormattedMessage id="pages.flowproperties.generalComment" defaultMessage="General Comment" />
+        <FormattedMessage id="pages.flowproperties.referenceToReferenceUnitGroup" defaultMessage="Reference Unit Group" />
       ),
-      dataIndex: 'generalComment',
+      dataIndex: 'referenceToReferenceUnitGroup',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.flowproperties.createdAt" defaultMessage="Created At" />,
-      dataIndex: 'createdAt',
+      title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At" />,
+      dataIndex: 'created_at',
       valueType: 'dateTime',
       sorter: true,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.option" defaultMessage="Option" />,
+      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {

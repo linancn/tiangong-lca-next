@@ -27,13 +27,13 @@ const TableList: FC = () => {
   const actionRef = useRef<ActionType>();
   const flowsColumns: ProColumns<FlowsTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.index" defaultMessage="Index" />,
+      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
       dataIndex: 'index',
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.flows.baseName" defaultMessage="Base Name" />,
+      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Base Name" />,
       dataIndex: 'baseName',
       sorter: false,
       render: (_, row) => [
@@ -43,7 +43,7 @@ const TableList: FC = () => {
       ],
     },
     {
-      title: <FormattedMessage id="pages.flows.classification" defaultMessage="Classification" />,
+      title: <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />,
       dataIndex: 'classification',
       sorter: false,
       search: false,
@@ -51,21 +51,21 @@ const TableList: FC = () => {
 
     {
       title: (
-        <FormattedMessage id="pages.flows.CASNumber" defaultMessage="CAS Number" />
+        <FormattedMessage id="pages.flow.CASNumber" defaultMessage="CAS Number" />
       ),
       dataIndex: 'CASNumber',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.flows.createdAt" defaultMessage="Created At" />,
+      title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At" />,
       dataIndex: 'created_at',
       valueType: 'dateTime',
       sorter: true,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.option" defaultMessage="Option" />,
+      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {

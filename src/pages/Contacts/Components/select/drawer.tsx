@@ -44,13 +44,13 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
 
   const contactColumns: ProColumns<ContactTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.index" defaultMessage="Index" />,
+      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
       dataIndex: 'index',
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.contact.shortName" defaultMessage="Short Name" />,
+      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name" />,
       dataIndex: 'shortName',
       sorter: false,
       render: (_, row) => [
@@ -60,7 +60,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       ],
     },
     {
-      title: <FormattedMessage id="pages.contact.classification" defaultMessage="Classification" />,
+      title: <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />,
       dataIndex: 'classification',
       sorter: false,
       search: false,
@@ -72,14 +72,14 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.contact.createdAt" defaultMessage="Created At" />,
+      title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At" />,
       dataIndex: 'createdAt',
       valueType: 'dateTime',
       sorter: true,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.option" defaultMessage="Option" />,
+      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {

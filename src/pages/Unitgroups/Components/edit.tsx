@@ -76,7 +76,7 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
 
     const unitColumns: ProColumns<UnitTable>[] = [
         {
-            title: <FormattedMessage id="pages.table.index" defaultMessage="Index"></FormattedMessage>,
+            title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index"></FormattedMessage>,
             valueType: 'index',
             search: false,
         },

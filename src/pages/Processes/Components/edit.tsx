@@ -651,14 +651,14 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
               {' '}
-              <FormattedMessage id="options.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
             </Button>
             <Button onClick={onReset}>
               {' '}
-              <FormattedMessage id="options.reset" defaultMessage="Reset" />
+              <FormattedMessage id="pages.button.reset" defaultMessage="Reset" />
             </Button>
             <Button onClick={() => formRefEdit.current?.submit()} type="primary">
-              <FormattedMessage id="options.submit" defaultMessage="Submit" />
+              <FormattedMessage id="pages.button.submit" defaultMessage="Submit" />
             </Button>
           </Space>
         }

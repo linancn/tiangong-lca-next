@@ -27,13 +27,13 @@ const TableList: FC = () => {
   const actionRef = useRef<ActionType>();
   const processColumns: ProColumns<ProcessTable>[] = [
     {
-      title: <FormattedMessage id="process.index" defaultMessage="Index" />,
+      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
       dataIndex: 'index',
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="process.baseName" defaultMessage="Base Name" />,
+      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name" />,
       dataIndex: 'baseName',
       sorter: false,
       render: (_, row) => [
@@ -43,32 +43,32 @@ const TableList: FC = () => {
       ],
     },
     {
-      title: <FormattedMessage id="process.classification" defaultMessage="Classification" />,
+      title: <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />,
       dataIndex: 'classification',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="process.referenceYear" defaultMessage="Reference Year" />,
+      title: <FormattedMessage id="pages.process.referenceYear" defaultMessage="Reference Year" />,
       dataIndex: 'referenceYear',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="process.location" defaultMessage="Location" />,
+      title: <FormattedMessage id="pages.process.location" defaultMessage="Location" />,
       dataIndex: 'location',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="process.createdAt" defaultMessage="Created At" />,
+      title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At" />,
       dataIndex: 'createdAt',
       valueType: 'dateTime',
       sorter: true,
       search: false,
     },
     {
-      title: <FormattedMessage id="options.option" defaultMessage="Option" />,
+      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
