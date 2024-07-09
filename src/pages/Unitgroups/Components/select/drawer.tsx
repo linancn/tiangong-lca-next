@@ -1,6 +1,6 @@
+import { ListPagination } from '@/services/general/data';
 import { getUnitGroupTable } from '@/services/unitgroups/api';
 import { UnitGroupTable } from '@/services/unitgroups/data';
-import { ListPagination } from '@/services/general/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, DatabaseOutlined } from '@ant-design/icons';
 import { ProTable } from '@ant-design/pro-components';
@@ -9,8 +9,6 @@ import { Button, Card, Drawer, Space, Tooltip } from 'antd';
 import type { FC, Key } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import UnitGroupDelete from '../delete';
-import UnitGroupEdit from '../edit';
 import UnitGroupView from '../view';
 
 type Props = {
@@ -46,17 +44,17 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
 
   const unitGroupColumns: ProColumns<UnitGroupTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.index" defaultMessage="Index"></FormattedMessage>,
+      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index"></FormattedMessage>,
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.unitgroup.name" defaultMessage="Name"></FormattedMessage>,
+      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name"></FormattedMessage>,
       dataIndex: 'name',
       sorter: false,
     },
     {
-      title: <FormattedMessage id="pages.unitgroup.classification" defaultMessage="Classification"></FormattedMessage>,
+      title: <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification"></FormattedMessage>,
       dataIndex: 'classification',
       sorter: false,
       search: false,
@@ -68,45 +66,50 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
     //   search: false,
     // },
     {
-      title: <FormattedMessage id="pages.unitgroup.createdAt" defaultMessage="Created At"></FormattedMessage>,
+      title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At"></FormattedMessage>,
       dataIndex: 'createdAt',
       valueType: 'dateTime',
       sorter: true,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.option" defaultMessage="Option"></FormattedMessage>,
+      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option"></FormattedMessage>,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
-        if (activeTabKey === 'my') {
-          return [
-            <Space size={'small'} key={0}>
-              <UnitGroupView
-                buttonType={'icon'}
-                lang={lang} id={row.id} dataSource={'my'} actionRef={myActionRefSelect}></UnitGroupView>
-              <UnitGroupEdit
-                id={row.id}
-                buttonType={'icon'}
-                lang={lang}
-                actionRef={myActionRefSelect}
-                setViewDrawerVisible={() => { }}
-              ></UnitGroupEdit>
-              <UnitGroupDelete
-                id={row.id}
-                buttonType={'icon'}
-                actionRef={myActionRefSelect}
-                setViewDrawerVisible={() => { }}
-              ></UnitGroupDelete>
-            </Space>,
-          ];
-        }
         return [
-          <Space size={'small'} key={0}>
-            <UnitGroupView buttonType={'icon'}
-              lang={lang} id={row.id} dataSource={'tg'} actionRef={tgActionRefSelect}></UnitGroupView>
-          </Space>,
+          <UnitGroupView key={0}
+            buttonType={'icon'}
+            lang={lang} id={row.id} dataSource={'my'} />
         ];
+        // if (activeTabKey === 'my') {
+        //   return [
+        //     <Space size={'small'} key={0}>
+        //       <UnitGroupView
+        //         buttonType={'icon'}
+        //         lang={lang} id={row.id} dataSource={'my'} />
+        //       <UnitGroupEdit
+        //         id={row.id}
+        //         buttonType={'icon'}
+        //         lang={lang}
+        //         actionRef={myActionRefSelect}
+        //         setViewDrawerVisible={() => { }}
+        //       ></UnitGroupEdit>
+        //       <UnitGroupDelete
+        //         id={row.id}
+        //         buttonType={'icon'}
+        //         actionRef={myActionRefSelect}
+        //         setViewDrawerVisible={() => { }}
+        //       ></UnitGroupDelete>
+        //     </Space>,
+        //   ];
+        // }
+        // return [
+        //   <Space size={'small'} key={0}>
+        //     <UnitGroupView buttonType={'icon'}
+        //       lang={lang} id={row.id} dataSource={'tg'} actionRef={tgActionRefSelect}></UnitGroupView>
+        //   </Space>,
+        // ];
       },
     },
   ];

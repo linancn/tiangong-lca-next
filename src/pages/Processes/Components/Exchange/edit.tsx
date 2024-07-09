@@ -1,4 +1,5 @@
 import LangTextItemFrom from '@/components/LangTextItem/from';
+import FlowsSelectFrom from '@/pages/Flows/Components/select/from';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
@@ -42,6 +43,10 @@ const ProcessExchangeEdit: FC<Props> = ({
   const [fromData, setFromData] = useState<any>({});
   const [initData, setInitData] = useState<any>({});
   const [functionalUnitOrOther, setFunctionalUnitOrOther] = useState(false);
+
+  const handletFromData = () => {
+    setFromData(formRefEdit.current?.getFieldsValue() ?? {},);
+  };
 
   const onEdit = useCallback(() => {
     setDrawerVisible(true);
@@ -141,7 +146,13 @@ const ProcessExchangeEdit: FC<Props> = ({
                 ]}
               />
             </Form.Item>
-            <Card size="small" title={'Reference To Flow Data Set'}></Card>
+            <FlowsSelectFrom
+              name={['referenceToFlowDataSet']}
+              label="Reference To Flow Data Set"
+              lang="en"
+              formRef={formRefEdit}
+              onData={handletFromData}
+            />
             <Form.Item label="Mean Amount" name={'meanAmount'}>
               <Input />
             </Form.Item>

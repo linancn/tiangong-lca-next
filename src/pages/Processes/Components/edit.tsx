@@ -50,15 +50,18 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
 
   const actionRefExchangeTable = useRef<ActionType>();
 
+  const handletFromData = () => {
+    setFromData({
+      ...fromData,
+      [activeTabKey]: formRefEdit.current?.getFieldsValue()?.[activeTabKey] ?? {},
+    });
+  };
+
   const handletExchangeDataCreate = (data: any) => {
     setExchangeDataSource([
       ...exchangeDataSource,
       { ...data, '@dataSetInternalID': exchangeDataSource.length.toString() },
     ]);
-  };
-
-  const handletFromData = (data: any) => {
-    setFromData({ ...fromData, data });
   };
 
   const handletExchangeData = (data: any) => {
@@ -156,6 +159,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
             <ProcessExchangeView
               id={row.dataSetInternalID}
               data={exchangeDataSource}
+              lang={lang}
               dataSource={'my'}
               buttonType={'icon'}
               actionRef={actionRefExchangeTable}
@@ -277,7 +281,9 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
             name={['processInformation', 'technology', 'referenceToTechnologyFlowDiagrammOrPicture']}
             label="Reference To Technology Flow Diagramm Or Picture"
             lang="en"
-            formRef={formRefEdit} />
+            formRef={formRefEdit}
+            onData={handletFromData}
+          />
         </Card>
 
         <Card size="small" title={'Mathematical Relations: Model Description'}>
@@ -401,7 +407,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
             label="Deviations From Treatment And Extrapolation Principles"
           />
 
-          <SourceSelectFrom name={['modellingAndValidation', 'dataSourcesTreatmentAndRepresentativeness', 'referenceToDataSource']} label={'Reference To Data Source'} lang={lang} formRef={formRefEdit} />
+          <SourceSelectFrom name={['modellingAndValidation', 'dataSourcesTreatmentAndRepresentativeness', 'referenceToDataSource']} label={'Reference To Data Source'} lang={lang} formRef={formRefEdit} onData={handletFromData} />
 
           <Divider orientationMargin="0" orientation="left" plain>
             Use Advice For DataSet
@@ -444,6 +450,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
             label={'Reference To Name Of Reviewer And Institution'}
             lang={lang}
             formRef={formRefEdit}
+            onData={handletFromData}
           />
         </Card>
       </Space>
@@ -459,6 +466,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
           label={'Data Generator: Reference To Person Or Entity Generating The DataSet'}
           lang={lang}
           formRef={formRefEdit}
+          onData={handletFromData}
         />
 
         <Form.Item label="Data Entry By: Time Stamp" name={['dataEntryBy', 'common:timeStamp']}>
@@ -504,6 +512,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
             label={'Reference To Ownership Of Data Set'}
             lang={lang}
             formRef={formRefEdit}
+            onData={handletFromData}
           />
 
           <Form.Item
@@ -533,7 +542,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
           pageSize: 10,
         }}
         toolBarRender={() => {
-          return [<ProcessExchangeCreate key={0} onData={handletExchangeDataCreate} />];
+          return [<ProcessExchangeCreate key={0} lang={lang} onData={handletExchangeDataCreate} />];
         }}
         dataSource={genProcessExchangeTableData(exchangeDataSource, lang)}
         columns={processExchangeColumns}
@@ -562,7 +571,6 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
         (genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? []).map(
           (item: any) => {
             if (item['@dataSetInternalID'] === quantitativeReferenceId) {
-              console.log('item.dataSetInternalID', item);
               return {
                 ...item,
                 quantitativeReference: true,
@@ -643,14 +651,14 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
               {' '}
-              <FormattedMessage id="options.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
             </Button>
             <Button onClick={onReset}>
               {' '}
-              <FormattedMessage id="options.reset" defaultMessage="Reset" />
+              <FormattedMessage id="pages.button.reset" defaultMessage="Reset" />
             </Button>
             <Button onClick={() => formRefEdit.current?.submit()} type="primary">
-              <FormattedMessage id="options.submit" defaultMessage="Submit" />
+              <FormattedMessage id="pages.button.submit" defaultMessage="Submit" />
             </Button>
           </Space>
         }

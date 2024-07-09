@@ -1,5 +1,6 @@
 import LangTextItemFrom from '@/components/LangTextItem/from';
 import LevelTextItemFrom from '@/components/LevelTextItem/from';
+import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
 import { getSourceDetail, updateSource } from '@/services/sources/api';
 import { genSourceFromData } from '@/services/sources/util';
 import styles from '@/style/custom.less';
@@ -23,7 +24,6 @@ import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import SourceSelectFrom from './select/from';
-import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
 
 type Props = {
     id: string;
@@ -40,8 +40,11 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerV
     const [initData, setInitData] = useState<any>({});
     const [spinning, setSpinning] = useState(false);
 
-    const handletFromData = (data: any) => {
-        // setFromData({ ...fromData, data });
+    const handletFromData = () => {
+        setFromData({
+            ...fromData,
+            [activeTabKey]: formRefEdit.current?.getFieldsValue()?.[activeTabKey] ?? {},
+        });
     };
 
     const reload = useCallback(() => {
@@ -113,7 +116,9 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerV
                     name={['sourceInformation', 'dataSetInformation', 'referenceToContact']}
                     label="Reference To Contact"
                     lang={lang}
-                    formRef={formRefEdit} />
+                    formRef={formRefEdit}
+                    onData={handletFromData}
+                />
             </Space>
         ),
         administrativeInformation: (
@@ -125,8 +130,10 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerV
                     <SourceSelectFrom
                         name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
                         label="Reference To Data Set Format"
-                        lang="en"
-                        formRef={formRefEdit} />
+                        lang={lang}
+                        formRef={formRefEdit}
+                        onData={handletFromData}
+                    />
                 </Card>
                 <br />
                 <Card size="small" title={'Publication And Ownership'}>

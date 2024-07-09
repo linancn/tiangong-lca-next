@@ -1,19 +1,20 @@
-import { getUnitGroupDetail } from '@/services/unitgroups/api';
 import { langOptions } from '@/services/general/data';
-import { ActionType, ProFormInstance } from '@ant-design/pro-components';
+import { getUnitGroupDetail } from '@/services/unitgroups/api';
+import { genUnitGroupFromData } from '@/services/unitgroups/util';
+import { ProFormInstance } from '@ant-design/pro-components';
 import {
+  Button,
   Card,
   Col,
   Divider,
   Form, Input,
   Row,
   Select,
-  Space,
-  Button
+  Space
 } from 'antd';
-import React, { FC } from 'react';
-import UnitgroupsSelectDrawer from './drawer';
+import React, { FC, useEffect, useState } from 'react';
 import UnitgroupsView from '../view';
+import UnitgroupsSelectDrawer from './drawer';
 // import LangTextItemFrom from '@/components/LangTextItem/from';
 const { TextArea } = Input;
 
@@ -22,29 +23,29 @@ type Props = {
   label: string;
   lang: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
-  onData?: (key: any, data: any) => void
+  onData: () => void
 };
 
 const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => {
-  const handleResetData = (data: any) => {
-    formRef.current?.setFieldValue(name, data);
-    if (onData) {
-      onData(name, data)
-    }
-  }
+  const [id, setId] = useState<string | undefined>(undefined);
+  
   const handletUnitgroupsData = (rowKey: any) => {
     getUnitGroupDetail(rowKey).then(async (result: any) => {
-      let data = {
+      const selectedData = genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {});
+      await formRef.current?.setFieldValue(name, {
         '@refObjectId': `${rowKey}`,
         '@type': 'unit group data set',
         '@uri': `../unitgroups/${rowKey}.xml`,
-        'common:shortDescription': [],
-      }
-      handleResetData(data)
+        'common:shortDescription': selectedData?.unitGroupInformation?.dataSetInformation?.['common:name'] ?? [],
+      });
+      onData();
     });
   };
-  const actionRef = React.useRef<ActionType | undefined>(undefined);
-  const id = formRef.current?.getFieldValue([...name, '@refObjectId']);
+
+  useEffect(() => {
+    setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
+  },);
+  
   return (
     <Card size="small" title={label}>
       <Space direction="horizontal">
@@ -53,12 +54,9 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData })
         </Form.Item>
         <Space direction="horizontal" style={{ marginTop: '6px' }}>
           <UnitgroupsSelectDrawer buttonType="text" lang={lang} onData={handletUnitgroupsData} />
-          {id && <UnitgroupsView lang={lang} id={id} dataSource="tg" buttonType="text" actionRef={actionRef} />}
-          {id && (
-            <Button onClick={() => handleResetData({})}>Clear</Button>
-          )}
+          {id && <UnitgroupsView lang={lang} id={id} dataSource="tg" buttonType="text" />}
+          {id && <Button onClick={() => { formRef.current?.setFieldValue([...name], {}); onData() }}>Clear</Button>}
         </Space>
-
       </Space>
       <Form.Item label="Type" name={[...name, '@type']}>
         <Input disabled={true} />

@@ -66,6 +66,7 @@ export async function getProcessTable(
     result = await supabase
       .from('processes')
       .select(selectStr, { count: 'exact' })
+      .eq('state_code', 100)
       .order(sortBy, { ascending: orderBy === 'ascend' })
       .range(
         ((params.current ?? 1) - 1) * (params.pageSize ?? 10),

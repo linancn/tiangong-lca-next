@@ -6,7 +6,6 @@ import { ListPagination } from '@/services/general/data';
 import { getProcessDetail } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData, genProcessFromData } from '@/services/processes/util';
-import styles from '@/style/custom.less';
 import { CheckCircleTwoTone, CloseCircleOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
@@ -14,8 +13,6 @@ import type { FC } from 'react';
 import { useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import ProcessExchangeView from './Exchange/view';
-// import ContactDelete from './delete';
-// import ContactEdit from './edit';
 
 type Props = {
   id: string;
@@ -25,7 +22,7 @@ type Props = {
 };
 const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [footerButtons, setFooterButtons] = useState<JSX.Element>();
+  // const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [activeTabKey, setActiveTabKey] = useState<string>('processInformation');
   const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
   const [spinning, setSpinning] = useState(false);
@@ -46,7 +43,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
 
   const processExchangeColumns: ProColumns<ProcessExchangeTable>[] = [
     {
-      title: <FormattedMessage id="processExchange.index" defaultMessage="Index" />,
+      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
       dataIndex: 'index',
       valueType: 'index',
       search: false,
@@ -128,7 +125,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
       }
     },
     {
-      title: <FormattedMessage id="options.option" defaultMessage="Option" />,
+      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
@@ -140,6 +137,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
                 data={exchangeDataSource}
                 dataSource={'my'}
                 buttonType={'icon'}
+                lang={lang}
                 actionRef={actionRefExchangeTable}
               />
               {/* <ProcessEdit
@@ -163,6 +161,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
             <ProcessExchangeView
               id={row.dataSetInternalID}
               data={exchangeDataSource}
+              lang={lang}
               dataSource={'tg'}
               buttonType={'icon'}
               actionRef={actionRefExchangeTable}
@@ -285,6 +284,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
               initData.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture ??
               {}
             }
+            lang={lang}
           />
         </Card>
         <Divider orientationMargin="0" orientation="left" plain>
@@ -402,6 +402,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
               initData.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
                 ?.referenceToDataSource ?? {}
             }
+            lang={lang}
           />
 
           <Divider orientationMargin="0" orientation="left" plain>
@@ -552,37 +553,37 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
     getProcessDetail(id).then(async (result: any) => {
       setInitData({ ...genProcessFromData(result.data?.json?.processDataSet ?? {}), id: id });
       setExchangeDataSource([...genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? []]);
-      if (dataSource === 'my') {
-        setFooterButtons(
-          <>
-            {/* <ContactDelete
-              id={id}
-              buttonType={'text'}
-              actionRef={actionRef}
-              setViewDrawerVisible={setDrawerVisible}
-            />
-            <ContactEdit
-              id={id}
-              buttonType={'text'}
-              actionRef={actionRef}
-              setViewDrawerVisible={setDrawerVisible}
-            /> */}
-          </>,
-        );
-      } else {
-        setFooterButtons(<></>);
-      }
+      // if (dataSource === 'my') {
+      //   setFooterButtons(
+      //     <>
+      //       {/* <ContactDelete
+      //         id={id}
+      //         buttonType={'text'}
+      //         actionRef={actionRef}
+      //         setViewDrawerVisible={setDrawerVisible}
+      //       />
+      //       <ContactEdit
+      //         id={id}
+      //         buttonType={'text'}
+      //         actionRef={actionRef}
+      //         setViewDrawerVisible={setDrawerVisible}
+      //       /> */}
+      //     </>,
+      //   );
+      // } else {
+      //   setFooterButtons(<></>);
+      // }
       setSpinning(false);
     });
   };
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="options.view" defaultMessage="View" />}>
+      <Tooltip title={<FormattedMessage id="pages.button.view" defaultMessage="View" />}>
         <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
       </Tooltip>
       <Drawer
-        title={<FormattedMessage id="options.view" defaultMessage="Process View" />}
+        title={<FormattedMessage id="pages.process.drawer.title.view" defaultMessage="View Process" />}
         width="90%"
         closable={false}
         extra={
@@ -592,11 +593,11 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
             onClick={() => setDrawerVisible(false)}
           />
         }
-        footer={
-          <Space size={'middle'} className={styles.footer_right}>
-            {footerButtons}
-          </Space>
-        }
+        // footer={
+        //   <Space size={'middle'} className={styles.footer_right}>
+        //     {footerButtons}
+        //   </Space>
+        // }
         maskClosable={true}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}

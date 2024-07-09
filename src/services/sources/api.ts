@@ -72,6 +72,7 @@ export async function getSourceTable(
     result = await supabase
       .from('sources')
       .select(selectStr, { count: 'exact' })
+      .eq('state_code', 100)
       .order(sortBy, { ascending: orderBy === 'ascend' })
       .range(
         ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
@@ -110,7 +111,6 @@ export async function getSourceTable(
           return {
             key: i.id,
             id: i.id,
-            lang: lang,
             shortName: getLangText(i['common:shortName'], lang),
             classification: classificationToString(i['common:class']),
             sourceCitation: i.sourceCitation ?? '-',

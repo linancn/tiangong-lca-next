@@ -12,5 +12,6 @@ export type UnitTable = {
   dataSetInternalID: string;
   name: string;
   meanValue: string;
-  selected: boolean;
+  generalComment: any;
+  quantitativeReference: boolean;
 };

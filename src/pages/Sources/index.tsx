@@ -27,13 +27,13 @@ const TableList: FC = () => {
     const actionRef = useRef<ActionType>();
     const sourceColumns: ProColumns<SourceTable>[] = [
         {
-            title: <FormattedMessage id="source.index" defaultMessage="Index" />,
+            title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
             dataIndex: 'index',
             valueType: 'index',
             search: false,
         },
         {
-            title: <FormattedMessage id="source.shortName" defaultMessage="Data Name" />,
+            title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name" />,
             dataIndex: 'shortName',
             sorter: false,
             render: (_, row) => [
@@ -43,39 +43,33 @@ const TableList: FC = () => {
             ],
         },
         {
-            title: <FormattedMessage id="source.classification" defaultMessage="Classification" />,
+            title: <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />,
             dataIndex: 'classification',
             sorter: false,
             search: false,
         },
-        // {
-        //     title: <FormattedMessage id="source.sourceCitation" defaultMessage="SourceCitation" />,
-        //     dataIndex: 'sourceCitation',
-        //     sorter: false,
-        //     search: false,
-        // },
         {
-            title: <FormattedMessage id="source.publicationType" defaultMessage="PublicationType" />,
+            title: <FormattedMessage id="pages.source.publicationType" defaultMessage="PublicationType" />,
             dataIndex: 'publicationType',
             sorter: true,
             search: false,
         },
         {
-            title: <FormattedMessage id="contact.createdAt" defaultMessage="Created At" />,
+            title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At" />,
             dataIndex: 'created_at',
             valueType: 'dateTime',
             sorter: true,
             search: false,
         },
         {
-            title: <FormattedMessage id="options.option" defaultMessage="Option" />,
+            title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
             dataIndex: 'option',
             search: false,
             render: (_, row) => {
                 if (dataSource === 'my') {
                     return [
                         <Space size={'small'} key={0}>
-                            <SourceView lang={lang} id={row.id} dataSource={dataSource} buttonType={'icon'} actionRef={actionRef} />
+                            <SourceView lang={lang} id={row.id} dataSource={dataSource} buttonType={'icon'} />
                             <SourceEdit
                                 id={row.id}
                                 lang={lang}
@@ -94,7 +88,7 @@ const TableList: FC = () => {
                 }
                 return [
                     <Space size={'small'} key={0}>
-                        <SourceView lang={lang} id={row.id} dataSource={dataSource} buttonType={'icon'} actionRef={actionRef} />
+                        <SourceView lang={lang} id={row.id} dataSource={dataSource} buttonType={'icon'} />
                     </Space>,
                 ];
             },

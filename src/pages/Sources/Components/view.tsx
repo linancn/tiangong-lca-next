@@ -1,21 +1,20 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
+import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 import { getSourceDetail } from '@/services/sources/api';
 import { genSourceFromData } from '@/services/sources/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
-import { ActionType } from '@ant-design/pro-components';
 import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import SourceSelectDescription from './select/description';
-import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 type Props = {
   id: string;
   dataSource: string;
   buttonType: string;
-  actionRef: React.MutableRefObject<ActionType | undefined>;
+  // actionRef: React.MutableRefObject<ActionType | undefined>;
   lang: string;
 };
 const SourceView: FC<Props> = ({ id, dataSource, buttonType, lang }) => {
@@ -27,7 +26,7 @@ const SourceView: FC<Props> = ({ id, dataSource, buttonType, lang }) => {
 
 
   const tabList = [
-    { key: 'sourceInformation', tab: 'sourceInformation' },
+    { key: 'sourceInformation', tab: 'Source Information' },
     { key: 'administrativeInformation', tab: 'Administrative Information' },
   ];
 
@@ -81,7 +80,7 @@ const SourceView: FC<Props> = ({ id, dataSource, buttonType, lang }) => {
         />
         <br />
         <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item key={0} label="Reference To Digital File" labelStyle={{ width: '180px' }}>
+          <Descriptions.Item key={0} label="Reference To Digital File" labelStyle={{ width: '220px' }}>
             {initData.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri'] ?? '-'}
           </Descriptions.Item>
         </Descriptions>
@@ -104,6 +103,7 @@ const SourceView: FC<Props> = ({ id, dataSource, buttonType, lang }) => {
           <br />
           <SourceSelectDescription
             title={'Reference To Data Set Format'}
+            lang={lang}
             data={
               initData.administrativeInformation?.dataEntryBy?.[
               'common:referenceToDataSetFormat'
@@ -111,15 +111,16 @@ const SourceView: FC<Props> = ({ id, dataSource, buttonType, lang }) => {
             }
           />
         </Card>
+        <br />
         <Card size="small" title={'Publication And Ownership'}>
           <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item key={0} label="Data Set Version" labelStyle={{ width: '180px' }}>
+            <Descriptions.Item key={0} label="Data Set Version" labelStyle={{ width: '200px' }}>
               {initData.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'] ?? '-'}
             </Descriptions.Item>
           </Descriptions>
           <br />
           <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item key={0} label="Permanent Data Set URI" labelStyle={{ width: '180px' }}>
+            <Descriptions.Item key={0} label="Permanent Data Set URI" labelStyle={{ width: '200px' }}>
               {initData.administrativeInformation?.publicationAndOwnership?.['common:permanentDataSetURI'] ?? '-'}
             </Descriptions.Item>
           </Descriptions>

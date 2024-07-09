@@ -27,13 +27,13 @@ const TableList: FC = () => {
   const actionRef = useRef<ActionType>();
   const contactColumns: ProColumns<ContactTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.index" defaultMessage="Index" />,
+      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
       dataIndex: 'index',
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.contact.shortName" defaultMessage="Short Name" />,
+      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name" />,
       dataIndex: 'shortName',
       sorter: false,
       render: (_, row) => [
@@ -43,7 +43,7 @@ const TableList: FC = () => {
       ],
     },
     {
-      title: <FormattedMessage id="pages.contact.classification" defaultMessage="Classification" />,
+      title: <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />,
       dataIndex: 'classification',
       sorter: false,
       search: false,
@@ -55,14 +55,14 @@ const TableList: FC = () => {
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.contact.createdAt" defaultMessage="Created At" />,
+      title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At" />,
       dataIndex: 'createdAt',
       valueType: 'dateTime',
       sorter: true,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.option" defaultMessage="Option" />,
+      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
@@ -72,9 +72,8 @@ const TableList: FC = () => {
               <ContactView
                 id={row.id}
                 lang={lang}
-                dataSource={dataSource}
                 buttonType="icon"
-                actionRef={actionRef}
+                // actionRef={actionRef}
               />
               <ContactEdit
                 id={row.id}
@@ -97,9 +96,8 @@ const TableList: FC = () => {
             <ContactView
               id={row.id}
               lang={lang}
-              dataSource={dataSource}
               buttonType="icon"
-              actionRef={actionRef}
+              // actionRef={actionRef}
             />
           </Space>,
         ];

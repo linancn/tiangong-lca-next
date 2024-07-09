@@ -1,5 +1,6 @@
 export default {
-  'pages.flowproperties.name': '数据名称',
+  'pages.flowproperty.referenceToReferenceUnitGroup': '单位',
+
   'pages.flowproperties.classification': '分类',
   'pages.flowproperties.createdAt': '创建时间',
   'pages.flowproperties.generalComment': '评论',

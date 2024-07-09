@@ -27,36 +27,30 @@ const TableList: FC = () => {
   const actionRef = useRef<ActionType>();
   const unitGroupColumns: ProColumns<UnitGroupTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.index" defaultMessage="Index"></FormattedMessage>,
+      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index"></FormattedMessage>,
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.unitgroup.name" defaultMessage="Name"></FormattedMessage>,
+      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name"></FormattedMessage>,
       dataIndex: 'name',
       sorter: false,
     },
     {
-      title: <FormattedMessage id="pages.unitgroup.classification" defaultMessage="Classification"></FormattedMessage>,
+      title: <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification"></FormattedMessage>,
       dataIndex: 'classification',
       sorter: false,
       search: false,
     },
-    // {
-    //   title: <FormattedMessage id="unitGroup.email" defaultMessage="Reference Unit"></FormattedMessage>,
-    //   dataIndex: 'referenceToReferenceUnit',
-    //   sorter: false,
-    //   search: false,
-    // },
     {
-      title: <FormattedMessage id="pages.unitgroup.createdAt" defaultMessage="Created At"></FormattedMessage>,
+      title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At"></FormattedMessage>,
       dataIndex: 'createdAt',
       valueType: 'dateTime',
       sorter: true,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.option" defaultMessage="Option"></FormattedMessage>,
+      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option"></FormattedMessage>,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
@@ -65,7 +59,7 @@ const TableList: FC = () => {
             <Space size={'small'} key={0}>
               <UnitGroupView
                 buttonType={'icon'}
-                lang={lang} id={row.id} dataSource={dataSource} actionRef={actionRef}></UnitGroupView>
+                lang={lang} id={row.id} dataSource={dataSource} />
               <UnitGroupEdit
                 id={row.id}
                 buttonType={'icon'}
@@ -85,7 +79,7 @@ const TableList: FC = () => {
         return [
           <Space size={'small'} key={0}>
             <UnitGroupView buttonType={'icon'}
-              lang={lang} id={row.id} dataSource={dataSource} actionRef={actionRef}></UnitGroupView>
+              lang={lang} id={row.id} dataSource={dataSource} />
           </Space>,
         ];
       },

@@ -1,4 +1,4 @@
-import { getFlowsTable } from '@/services/flows/api';
+import { getFlowTable } from '@/services/flows/api';
 import { FlowsTable } from '@/services/flows/data';
 import { ListPagination } from '@/services/general/data';
 import styles from '@/style/custom.less';
@@ -7,8 +7,7 @@ import { ProTable } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
 import { Button, Card, Drawer, Space, Tooltip } from 'antd';
 import type { FC, Key } from 'react';
-import React from 'react'
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import FlowsDelete from '../delete';
 import FlowsEdit from '../edit';
@@ -47,23 +46,23 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
 
   const FlowsColumns: ProColumns<FlowsTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.index" defaultMessage="Index" />,
+      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
       dataIndex: 'index',
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.flows.baseName" defaultMessage="Base Name" />,
+      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Base Name" />,
       dataIndex: 'baseName',
       sorter: false,
       render: (_, row) => [
-        <Tooltip key={0} placement="topLeft" title={row.baseName}>
-          {row.baseName || '-'}
+        <Tooltip key={0} placement="topLeft" title={row.generalComment}>
+          {row.baseName}
         </Tooltip>,
       ],
     },
     {
-      title: <FormattedMessage id="pages.flows.classification" defaultMessage="Classification" />,
+      title: <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />,
       dataIndex: 'classification',
       sorter: false,
       search: false,
@@ -71,34 +70,34 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
 
     {
       title: (
-        <FormattedMessage id="pages.flows.generalComment" defaultMessage="General Comment" />
+        <FormattedMessage id="pages.flows.CASNumber" defaultMessage="CAS Number" />
       ),
-      dataIndex: 'generalComment',
+      dataIndex: 'CASNumber',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.flows.createdAt" defaultMessage="Created At" />,
-      dataIndex: 'createdAt',
+      title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At" />,
+      dataIndex: 'created_at',
       valueType: 'dateTime',
       sorter: true,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.option" defaultMessage="Option" />,
+      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
         if (activeTabKey === 'tg') {
           return [
             <Space size={'small'} key={0}>
-              <FlowsView id={row.id} dataSource="tg" actionRef={tgActionRefSelect} lang={lang} />
+              <FlowsView id={row.id} lang={lang} buttonType={'icon'} />
             </Space>,
           ];
         } else if (activeTabKey === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <FlowsView id={row.id} dataSource="my" actionRef={myActionRefSelect} lang={lang} />
+              <FlowsView id={row.id} lang={lang} buttonType={'icon'} />
               <FlowsEdit
                 id={row.id}
                 buttonType={'icon'}
@@ -141,7 +140,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
           },
           sort,
         ) => {
-          return getFlowsTable(params, sort, lang, 'tg');
+          return getFlowTable(params, sort, lang, 'tg');
         }}
         columns={FlowsColumns}
         rowSelection={{
@@ -169,7 +168,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
           },
           sort,
         ) => {
-          return getFlowsTable(params, sort, lang, 'my');
+          return getFlowTable(params, sort, lang, 'my');
         }}
         columns={FlowsColumns}
         rowSelection={{

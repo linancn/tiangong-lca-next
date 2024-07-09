@@ -1,8 +1,9 @@
 import { getContactDetail } from '@/services/contacts/api';
+import { genContactFromData } from '@/services/contacts/util';
 import { langOptions } from '@/services/general/data';
-import { ActionType, ProFormInstance } from '@ant-design/pro-components';
+import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Divider, Form, Input, Row, Select, Space } from 'antd';
-import React, { FC } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import ContactView from '../view';
 import ContactSelectDrawer from './drawer';
 
@@ -13,40 +14,38 @@ type Props = {
   label: string;
   lang: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
+  onData: () => void;
 };
 
-const ContactSelectFrom: FC<Props> = ({ name, label, lang, formRef }) => {
-  const getShortDescription = (dataSetInformation: any) => {
-    const shortName = dataSetInformation?.['common:shortName'];
-    if (Array.isArray(shortName)) {
-      return shortName.map((item: any) => {
-        return { ...item, '#text': `${item['#text']}, ${dataSetInformation.email}` };
-      });
-    } else {
-      return { ...shortName, '#text': `${shortName['#text']}, ${dataSetInformation.email}` };
-    }
-  };
+const ContactSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => {
+  const [id, setId] = useState<string | undefined>(undefined);
 
   const handletContactData = (rowKey: any) => {
     getContactDetail(rowKey).then(async (result: any) => {
-      formRef.current?.setFieldValue(name, {
+      const selectedData = genContactFromData(result.data?.json?.contactDataSet ?? {});
+      await formRef.current?.setFieldValue(name, {
         '@refObjectId': `${rowKey}`,
         '@type': 'contact data set',
         '@uri': `../contacts/${rowKey}.xml`,
-        'common:shortDescription': getShortDescription(
-          result.data.json?.contactDataSet?.contactInformation?.dataSetInformation,
-        ),
+        'common:shortDescription': selectedData?.contactInformation?.dataSetInformation?.['common:shortName']?.map((item: any) => {
+          return { ...item, '#text': `${item['#text']}, ${selectedData?.contactInformation?.dataSetInformation?.email ?? ''}` };
+        }) ?? [],
         '@version':
           result.data.json?.contactDataSet?.administrativeInformation?.publicationAndOwnership?.[
-            'common:dataSetVersion'
+          'common:dataSetVersion'
           ],
       });
+      onData();
     });
   };
 
-  const actionRef = React.useRef<ActionType | undefined>(undefined);
+  // const actionRef = React.useRef<ActionType | undefined>(undefined);
 
-  const id = formRef.current?.getFieldValue([...name, '@refObjectId']);
+  // const id = formRef.current?.getFieldValue([...name, '@refObjectId']);
+
+  useEffect(() => {
+    setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
+  },);
 
   return (
     <Card size="small" title={label}>
@@ -56,9 +55,9 @@ const ContactSelectFrom: FC<Props> = ({ name, label, lang, formRef }) => {
         </Form.Item>
         <Space direction="horizontal" style={{ marginTop: '6px' }}>
           <ContactSelectDrawer buttonType="text" lang={lang} onData={handletContactData} />
-          {id && <ContactView lang={lang} id={id} dataSource="tg" buttonType="text" actionRef={actionRef} />}
+          {id && <ContactView lang={lang} id={id} buttonType="text" />}
           {id && (
-            <Button onClick={() => formRef.current?.setFieldValue([...name], {})}>Clear</Button>
+            <Button onClick={() => { formRef.current?.setFieldValue([...name], {}); onData() }}>Clear</Button>
           )}
         </Space>
       </Space>

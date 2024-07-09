@@ -1,5 +1,5 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
-import SourceDescription from '@/components/ReferenceData/description';
+import FlowsSelectDescription from '@/pages/Flows/Components/select/description';
 import styles from '@/style/custom.less';
 import { CheckCircleTwoTone, CloseCircleOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
@@ -11,11 +11,12 @@ import { FormattedMessage } from 'umi';
 type Props = {
   id: string;
   data: any;
+  lang: string;
   dataSource: string;
   buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
 };
-const ProcessExchangeView: FC<Props> = ({ id, data, dataSource, buttonType }) => {
+const ProcessExchangeView: FC<Props> = ({ id, data, lang, dataSource, buttonType }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [viewData, setViewData] = useState<any>({});
@@ -92,9 +93,10 @@ const ProcessExchangeView: FC<Props> = ({ id, data, dataSource, buttonType }) =>
           </Descriptions.Item>
         </Descriptions>
         <br />
-        <SourceDescription
+        <FlowsSelectDescription
           title="Reference To Flow Data Set"
           data={viewData.referenceToFlowDataSet ?? {}}
+          lang={lang}
         />
         <br />
         <Descriptions bordered size={'small'} column={1}>

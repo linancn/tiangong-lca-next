@@ -9,8 +9,6 @@ import { Button, Card, Drawer, Space, Tooltip } from 'antd';
 import type { FC, Key } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import ContactDelete from '../delete';
-import ContactEdit from '../edit';
 import ContactView from '../view';
 
 type Props = {
@@ -46,13 +44,13 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
 
   const contactColumns: ProColumns<ContactTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.index" defaultMessage="Index" />,
+      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
       dataIndex: 'index',
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.contact.shortName" defaultMessage="Short Name" />,
+      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name" />,
       dataIndex: 'shortName',
       sorter: false,
       render: (_, row) => [
@@ -62,7 +60,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       ],
     },
     {
-      title: <FormattedMessage id="pages.contact.classification" defaultMessage="Classification" />,
+      title: <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />,
       dataIndex: 'classification',
       sorter: false,
       search: false,
@@ -74,55 +72,63 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.contact.createdAt" defaultMessage="Created At" />,
+      title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At" />,
       dataIndex: 'createdAt',
       valueType: 'dateTime',
       sorter: true,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.option" defaultMessage="Option" />,
+      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
-        if (activeTabKey === 'tg') {
-          return [
-            <Space size={'small'} key={0}>
-              <ContactView
-                id={row.id}
-                lang={lang}
-                dataSource="tg"
-                buttonType="icon"
-                actionRef={tgActionRefSelect}
-              />
-            </Space>,
-          ];
-        } else if (activeTabKey === 'my') {
-          return [
-            <Space size={'small'} key={0}>
-              <ContactView
-                id={row.id}
-                lang={lang}
-                dataSource="my"
-                buttonType="icon"
-                actionRef={myActionRefSelect}
-              />
-              <ContactEdit
-                id={row.id}
-                lang={lang}
-                buttonType={'icon'}
-                actionRef={myActionRefSelect}
-                setViewDrawerVisible={() => {}}
-              />
-              <ContactDelete
-                id={row.id}
-                buttonType={'icon'}
-                actionRef={myActionRefSelect}
-                setViewDrawerVisible={() => {}}
-              />
-            </Space>,
-          ];
-        } else return [];
+        return [
+          <Space size={'small'} key={0}>
+            <ContactView
+              id={row.id}
+              lang={lang}
+              buttonType="icon"
+            />
+          </Space>,
+        ];
+
+        // if (activeTabKey === 'tg') {
+        //   return [
+        //     <Space size={'small'} key={0}>
+        //       <ContactView
+        //         id={row.id}
+        //         lang={lang}
+        //         dataSource="tg"
+        //         buttonType="icon"
+        //       />
+        //     </Space>,
+        //   ];
+        // } else if (activeTabKey === 'my') {
+        //   return [
+        //     <Space size={'small'} key={0}>
+        //       <ContactView
+        //         id={row.id}
+        //         lang={lang}
+        //         dataSource="my"
+        //         buttonType="icon"
+        //       />
+        //       <ContactEdit
+        //         id={row.id}
+        //         lang={lang}
+        //         buttonType={'icon'}
+        //         actionRef={myActionRefSelect}
+        //         setViewDrawerVisible={() => {}}
+        //       />
+        //       <ContactDelete
+        //         id={row.id}
+        //         buttonType={'icon'}
+        //         actionRef={myActionRefSelect}
+        //         setViewDrawerVisible={() => {}}
+        //       />
+        //     </Space>,
+        //   ];
+        // } else return [];
       },
     },
   ];

@@ -7,7 +7,7 @@ import {
   // getLangList,
   getLangText,
 } from '../general/util';
-import { genFlowpropertiesJsonOrdered } from './util';
+import { genFlowpropertyJsonOrdered } from './util';
 
 export async function createFlowproperties(data: any) {
   const newID = v4();
@@ -21,7 +21,7 @@ export async function createFlowproperties(data: any) {
         'http://lca.jrc.it/ILCD/FlowProperty ../../schemas/ILCD_FlowPropertyDataSet.xsd',
     },
   };
-  const newData = genFlowpropertiesJsonOrdered(newID, data, oldData);
+  const newData = genFlowpropertyJsonOrdered(newID, data, oldData);
   const result = await supabase
     .from('flowproperties')
     .insert([{ id: newID, json_ordered: newData }])
@@ -33,7 +33,7 @@ export async function updateFlowproperties(data: any) {
   const result = await supabase.from('flowproperties').select('id, json').eq('id', data.id);
   if (result.data && result.data.length === 1) {
     const oldData = result.data[0].json;
-    const newData = genFlowpropertiesJsonOrdered(data.id, data, oldData);
+    const newData = genFlowpropertyJsonOrdered(data.id, data, oldData);
     const updateResult = await supabase
       .from('flowproperties')
       .update({ json_ordered: newData })
@@ -49,7 +49,7 @@ export async function deleteFlowproperties(id: string) {
   return result;
 }
 
-export async function getFlowpropertiesTable(
+export async function getFlowpropertyTable(
   params: {
     current?: number;
     pageSize?: number;
@@ -66,6 +66,7 @@ export async function getFlowpropertiesTable(
     json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->"common:name",
     json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
     json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->"common:generalComment",
+    json->flowPropertyDataSet->flowPropertiesInformation->quantitativeReference->referenceToReferenceUnitGroup->"common:shortDescription",
     created_at
   `;
 
@@ -74,6 +75,7 @@ export async function getFlowpropertiesTable(
     result = await supabase
       .from('flowproperties')
       .select(selectStr, { count: 'exact' })
+      .eq('state_code', 100)
       .order(sortBy, { ascending: orderBy === 'ascend' })
       .range(
         ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
@@ -112,10 +114,10 @@ export async function getFlowpropertiesTable(
           return {
             key: i.id,
             id: i.id,
-            lang: lang,
             name: getLangText(i['common:name'], lang),
             classification: classificationToString(i['common:class']),
             generalComment: getLangText(i['common:generalComment'], lang),
+            referenceToReferenceUnitGroup: getLangText(i['common:shortDescription'], lang),
             created_at: new Date(i.created_at),
           };
         } catch (e) {
@@ -136,7 +138,7 @@ export async function getFlowpropertiesTable(
   });
 }
 
-export async function getFlowpropertiesDetail(id: string) {
+export async function getFlowpropertyDetail(id: string) {
   const result = await supabase.from('flowproperties').select('json, created_at').eq('id', id);
   if (result.data && result.data.length > 0) {
     const data = result.data[0];

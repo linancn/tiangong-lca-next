@@ -1,7 +1,7 @@
+import { getFlowTable } from '@/services/flows/api';
+import { FlowsTable } from '@/services/flows/data';
 import { ListPagination } from '@/services/general/data';
 import { getLang } from '@/services/general/util';
-import { getFlowsTable } from '@/services/flows/api';
-import { FlowsTable } from '@/services/flows/data';
 import { PageContainer } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
@@ -27,23 +27,23 @@ const TableList: FC = () => {
   const actionRef = useRef<ActionType>();
   const flowsColumns: ProColumns<FlowsTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.index" defaultMessage="Index" />,
+      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
       dataIndex: 'index',
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.flows.baseName" defaultMessage="Base Name" />,
+      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Base Name" />,
       dataIndex: 'baseName',
       sorter: false,
       render: (_, row) => [
-        <Tooltip key={0} placement="topLeft" title={row.baseName}>
-          {row.baseName || '-'}
+        <Tooltip key={0} placement="topLeft" title={row.generalComment}>
+          {row.baseName}
         </Tooltip>,
       ],
     },
     {
-      title: <FormattedMessage id="pages.flows.classification" defaultMessage="Classification" />,
+      title: <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />,
       dataIndex: 'classification',
       sorter: false,
       search: false,
@@ -51,21 +51,21 @@ const TableList: FC = () => {
 
     {
       title: (
-        <FormattedMessage id="pages.flows.generalComment" defaultMessage="General Comment" />
+        <FormattedMessage id="pages.flow.CASNumber" defaultMessage="CAS Number" />
       ),
-      dataIndex: 'generalComment',
+      dataIndex: 'CASNumber',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.flows.createdAt" defaultMessage="Created At" />,
+      title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At" />,
       dataIndex: 'created_at',
       valueType: 'dateTime',
       sorter: true,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.option" defaultMessage="Option" />,
+      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
@@ -75,9 +75,8 @@ const TableList: FC = () => {
               <FlowsView
                 buttonType={'icon'}
                 id={row.id}
-                dataSource={dataSource}
                 lang={lang}
-                actionRef={actionRef} />
+              />
               <FlowsEdit
                 id={row.id}
                 lang={lang}
@@ -98,9 +97,8 @@ const TableList: FC = () => {
             <FlowsView
               buttonType={'icon'}
               id={row.id}
-              dataSource={dataSource}
               lang={lang}
-              actionRef={actionRef} />
+            />
           </Space>,
         ];
       },
@@ -130,7 +128,7 @@ const TableList: FC = () => {
           },
           sort,
         ) => {
-          return getFlowsTable(params, sort, lang, dataSource);
+          return getFlowTable(params, sort, lang, dataSource);
         }}
         columns={flowsColumns}
       />

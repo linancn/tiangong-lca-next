@@ -1,8 +1,9 @@
 import { langOptions } from '@/services/general/data';
 import { getSourceDetail } from '@/services/sources/api';
-import { ActionType, ProFormInstance } from '@ant-design/pro-components';
+import { genSourceFromData } from '@/services/sources/util';
+import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Divider, Form, Input, Row, Select, Space } from 'antd';
-import React, { FC } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import SourceView from '../view';
 import SourceSelectDrawer from './drawer';
 
@@ -13,31 +14,31 @@ type Props = {
   label: string;
   lang: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
-  onData?: (key: any, data: any) => void
+  onData: () => void;
 };
 
 const SourceSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => {
-  const handleResetData = (data: any) => {
-    formRef.current?.setFieldValue(name, data);
-    if (onData) {
-      onData(name, data)
-    }
-  }
-  const handletSourcetData = (rowKey: any) => {
+
+  const [id, setId] = useState<string | undefined>(undefined);
+
+  const handletSourceData = (rowKey: any) => {
     getSourceDetail(rowKey).then(async (result: any) => {
-      let data = {
+      const selectedData = genSourceFromData(result.data?.json?.sourceDataSet ?? {});
+      await formRef.current?.setFieldValue(name, {
         '@refObjectId': `${rowKey}`,
         '@type': 'source data set',
-        '@uri': `../source/${rowKey}.xml`,
-        'common:shortDescription': result.data.json?.sourceDataSet?.sourceInformation?.dataSetInformation?.['common:shortName'],
-      }
-      handleResetData(data)
+        '@uri': `../sources/${rowKey}.xml`,
+        'common:shortDescription': selectedData?.sourceInformation?.dataSetInformation?.['common:shortName'] ?? [],
+      });
+      onData();
     });
   };
 
-  const actionRef = React.useRef<ActionType | undefined>(undefined);
+  // const id = formRef.current?.getFieldValue([...name, '@refObjectId']);
 
-  const id = formRef.current?.getFieldValue([...name, '@refObjectId']);
+  useEffect(() => {
+    setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
+  },);
 
   return (
     <Card size="small" title={label}>
@@ -46,11 +47,9 @@ const SourceSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => 
           <Input disabled={true} style={{ width: '300px' }} />
         </Form.Item>
         <Space direction="horizontal" style={{ marginTop: '6px' }}>
-          <SourceSelectDrawer buttonType="text" lang={lang} onData={handletSourcetData} />
-          {id && <SourceView lang={lang} id={id} dataSource="tg" buttonType="text" actionRef={actionRef} />}
-          {id && (
-            <Button onClick={() => handleResetData({})}>Clear</Button>
-          )}
+          <SourceSelectDrawer buttonType="text" lang={lang} onData={handletSourceData} />
+          {id && <SourceView lang={lang} id={id} dataSource="tg" buttonType="text" />}
+          {id && <Button onClick={() => { formRef.current?.setFieldValue([...name], {}); onData() }}>Clear</Button>}
         </Space>
       </Space>
       <Form.Item label="Type" name={[...name, '@type']}>

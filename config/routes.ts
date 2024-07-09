@@ -13,7 +13,7 @@
 export default [
   {
     path: '/mydata',
-    name: 'My Data',
+    name: 'mydata',
     icon: 'HomeOutlined',
     routes: [
       {
@@ -21,32 +21,32 @@ export default [
         redirect: '/mydata/processes'
       },
       {
-        name: 'Processes',
+        name: 'processes',
         path: '/mydata/processes',
         component: './Processes',
       },
       {
-        name: 'Flows',
+        name: 'flows',
         path: '/mydata/flows',
         component: './Flows',
       },
       {
-        name: 'Flowproperties',
+        name: 'flowproperties',
         path: '/mydata/flowproperties',
         component: './Flowproperties',
       },
       {
-        name: 'UnitGroups',
+        name: 'unitgroups',
         path: '/mydata/unitgroups',
         component: './Unitgroups',
       },
       {
-        name: 'Sources',
+        name: 'sources',
         path: '/mydata/sources',
         component: './Sources',
       },
       {
-        name: 'Contacts',
+        name: 'contacts',
         path: '/mydata/contacts',
         component: './Contacts',
       },
@@ -54,7 +54,7 @@ export default [
   },
   {
     path: '/tgdata',
-    name: 'TianGong Data',
+    name: 'tgdata',
     icon: 'DatabaseOutlined',
     routes: [
       {
@@ -62,32 +62,32 @@ export default [
         redirect: '/tgdata/processes'
       },
       {
-        name: 'Processes',
+        name: 'processes',
         path: '/tgdata/processes',
         component: './Processes',
       },
       {
-        name: 'Flows',
+        name: 'flows',
         path: '/tgdata/flows',
         component: './Flows',
       },
       {
-        name: 'Flowproperties',
+        name: 'flowproperties',
         path: '/tgdata/flowproperties',
         component: './Flowproperties',
       },
       {
-        name: 'UnitGroups',
+        name: 'unitgroups',
         path: '/tgdata/unitgroups',
         component: './Unitgroups',
       },
       {
-        name: 'Sources',
+        name: 'sources',
         path: '/tgdata/sources',
         component: './Sources',
       },
       {
-        name: 'Contacts',
+        name: 'contacts',
         path: '/tgdata/contacts',
         component: './Contacts',
       },

@@ -1,10 +1,8 @@
-export type FlowpropertiesTable = {
+export type FlowpropertyTable = {
   id: string;
-  lang: string;
-  // shortName: string;
   name: string;
   classification: string;
   generalComment: string;
-  // email: string;
+  referenceToReferenceUnitGroup: string;
   created_at: Date;
 };

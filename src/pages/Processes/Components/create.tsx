@@ -45,6 +45,13 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
 
   const actionRefExchangeTable = useRef<ActionType>();
 
+  const handletFromData = () => {
+    setFromData({
+      ...fromData,
+      [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
+    });
+  };
+
   const reload = useCallback(() => {
     actionRef.current?.reload();
   }, [actionRef]);
@@ -54,10 +61,6 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
       ...exchangeDataSource,
       { ...data, '@dataSetInternalID': exchangeDataSource.length.toString() },
     ]);
-  };
-
-  const handletFromData = (data: any) => {
-    setFromData({ ...fromData, data });
   };
 
   const handletExchangeData = (data: any) => {
@@ -143,6 +146,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             <ProcessExchangeView
               id={row.dataSetInternalID}
               data={exchangeDataSource}
+              lang={lang}
               dataSource={'my'}
               buttonType={'icon'}
               actionRef={actionRefExchangeTable}
@@ -259,7 +263,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             name={['processInformation', 'technology', 'technologicalApplicability']}
             label="Technological Applicability"
           />
-          <SourceSelectFrom name={['processInformation', 'technology', 'referenceToTechnologyFlowDiagrammOrPicture']} label={'Reference To Technology Flow Diagramm Or Picture'} lang={lang} formRef={formRefCreate} />
+          <SourceSelectFrom name={['processInformation', 'technology', 'referenceToTechnologyFlowDiagrammOrPicture']} label={'Reference To Technology Flow Diagramm Or Picture'} lang={lang} formRef={formRefCreate} onData={handletFromData} />
         </Card>
 
         <Card size="small" title={'Mathematical Relations: Model Description'}>
@@ -383,7 +387,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             label="Deviations From Treatment And Extrapolation Principles"
           />
 
-          <SourceSelectFrom name={['modellingAndValidation', 'dataSourcesTreatmentAndRepresentativeness', 'referenceToDataSource']} label={'Reference To Data Source'} lang={lang} formRef={formRefCreate} />
+          <SourceSelectFrom name={['modellingAndValidation', 'dataSourcesTreatmentAndRepresentativeness', 'referenceToDataSource']} label={'Reference To Data Source'} lang={lang} formRef={formRefCreate} onData={handletFromData} />
 
           <Divider orientationMargin="0" orientation="left" plain>
             Use Advice For DataSet
@@ -429,6 +433,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             label={'Reference To Name Of Reviewer And Institution'}
             lang={lang}
             formRef={formRefCreate}
+            onData={handletFromData}
           />
         </Card>
       </Space>
@@ -444,6 +449,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
           label={'Data Generator: Reference To Person Or Entity Generating The DataSet'}
           lang={lang}
           formRef={formRefCreate}
+          onData={handletFromData}
         />
 
         <Form.Item label="Data Entry By: Time Stamp" name={['dataEntryBy', 'common:timeStamp']}>
@@ -489,6 +495,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             label={'Reference To Owner Of DataSet'}
             lang={lang}
             formRef={formRefCreate}
+            onData={handletFromData}
           />
 
           <Form.Item
@@ -518,7 +525,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
           pageSize: 10,
         }}
         toolBarRender={() => {
-          return [<ProcessExchangeCreate key={0} onData={handletExchangeDataCreate} />];
+          return [<ProcessExchangeCreate key={0} lang={lang} onData={handletExchangeDataCreate} />];
         }}
         dataSource={exchangeDataSource}
         columns={processExchangeColumns}
@@ -541,13 +548,13 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
     setFromData({ ...fromData, exchanges: { exchange: exchangeDataSource } });
   }, [exchangeDataSource]);
 
-  useEffect(() => {
-    if (activeTabKey === 'exchanges') return;
-    setFromData({
-      ...fromData,
-      [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
-    });
-  }, [formRefCreate.current?.getFieldsValue()]);
+  // useEffect(() => {
+  //   if (activeTabKey === 'exchanges') return;
+  //   setFromData({
+  //     ...fromData,
+  //     [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
+  //   });
+  // }, [formRefCreate.current?.getFieldsValue()]);
 
   return (
     <>
@@ -562,7 +569,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
         />
       </Tooltip>
       <Drawer
-        title={<FormattedMessage id="processes.create" defaultMessage="Process Create" />}
+        title={<FormattedMessage id="pages.process.drawer.title.create" defaultMessage="Create Process" />}
         width="90%"
         closable={false}
         extra={
@@ -579,10 +586,10 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
               {' '}
-              <FormattedMessage id="options.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
             </Button>
             <Button onClick={() => formRefCreate.current?.submit()} type="primary">
-              <FormattedMessage id="options.submit" defaultMessage="Submit" />
+              <FormattedMessage id="pages.button.submit" defaultMessage="Submit" />
             </Button>
           </Space>
         }

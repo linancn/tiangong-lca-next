@@ -1,5 +1,5 @@
-import { getFlowpropertiesTable } from '@/services/flowproperties/api';
-import { FlowpropertiesTable } from '@/services/flowproperties/data';
+import { getFlowpropertyTable } from '@/services/flowproperties/api';
+import { FlowpropertyTable } from '@/services/flowproperties/data';
 import { ListPagination } from '@/services/general/data';
 import { getLang } from '@/services/general/util';
 import { PageContainer } from '@ant-design/pro-components';
@@ -12,7 +12,7 @@ import { FormattedMessage, useIntl, useLocation } from 'umi';
 import FlowpropertiesCreate from './Components/create';
 import FlowpropertiesDelete from './Components/delete';
 import FlowpropertiesEdit from './Components/edit';
-import FlowpropertiesView from './Components/view';
+import FlowpropertyView from './Components/view';
 
 const TableList: FC = () => {
   const location = useLocation();
@@ -25,26 +25,26 @@ const TableList: FC = () => {
   const { locale } = useIntl();
   const lang = getLang(locale);
   const actionRef = useRef<ActionType>();
-  const flowpropertiesColumns: ProColumns<FlowpropertiesTable>[] = [
+  const flowpropertiesColumns: ProColumns<FlowpropertyTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.index" defaultMessage="Index" />,
+      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
       dataIndex: 'index',
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.flowproperties.name" defaultMessage="Data Name" />,
+      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name" />,
       dataIndex: 'name',
       sorter: false,
       render: (_, row) => [
-        <Tooltip key={0} placement="topLeft" title={row.name}>
+        <Tooltip key={0} placement="topLeft" title={row.generalComment}>
           {row.name}
         </Tooltip>,
       ],
     },
     {
       title: (
-        <FormattedMessage id="pages.flowproperties.classification" defaultMessage="Classification" />
+        <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />
       ),
       dataIndex: 'classification',
       sorter: false,
@@ -52,47 +52,46 @@ const TableList: FC = () => {
     },
     {
       title: (
-        <FormattedMessage id="pages.flowproperties.generalComment" defaultMessage="General Comment" />
+        <FormattedMessage id="pages.flowproperty.referenceToReferenceUnitGroup" defaultMessage="Reference Unit Group" />
       ),
-      dataIndex: 'generalComment',
+      dataIndex: 'referenceToReferenceUnitGroup',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.flowproperties.createdAt" defaultMessage="Created At" />,
+      title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At" />,
       dataIndex: 'created_at',
       valueType: 'dateTime',
       sorter: true,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.option" defaultMessage="Option" />,
+      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <FlowpropertiesView lang={lang}  buttonType={'icon'} id={row.id} dataSource={dataSource} actionRef={actionRef} />
+              <FlowpropertyView lang={lang} buttonType={'icon'} id={row.id} />
               <FlowpropertiesEdit
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                lang={lang} 
+                lang={lang}
               />
-              {/* setViewDrawerVisible={() => {}} */}
               <FlowpropertiesDelete
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
+                setViewDrawerVisible={() => { }}
               />
             </Space>,
           ];
         }
         return [
           <Space size={'small'} key={0}>
-            <FlowpropertiesView lang={lang}  buttonType={'icon'} id={row.id} dataSource={dataSource} actionRef={actionRef} />
+            <FlowpropertyView lang={lang} buttonType={'icon'} id={row.id} />
           </Space>,
         ];
       },
@@ -100,7 +99,7 @@ const TableList: FC = () => {
   ];
   return (
     <PageContainer>
-      <ProTable<FlowpropertiesTable, ListPagination>
+      <ProTable<FlowpropertyTable, ListPagination>
         actionRef={actionRef}
         search={{
           defaultCollapsed: false,
@@ -111,7 +110,7 @@ const TableList: FC = () => {
         }}
         toolBarRender={() => {
           if (dataSource === 'my') {
-            return [<FlowpropertiesCreate lang={lang}  key={0} actionRef={actionRef} />];
+            return [<FlowpropertiesCreate lang={lang} key={0} actionRef={actionRef} />];
           }
           return [];
         }}
@@ -122,7 +121,7 @@ const TableList: FC = () => {
           },
           sort,
         ) => {
-          return getFlowpropertiesTable(params, sort, lang, dataSource);
+          return getFlowpropertyTable(params, sort, lang, dataSource);
         }}
         columns={flowpropertiesColumns}
       />

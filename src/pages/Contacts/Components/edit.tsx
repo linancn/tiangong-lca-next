@@ -1,5 +1,7 @@
 import LangTextItemFrom from '@/components/LangTextItem/from';
 import LevelTextItemFrom from '@/components/LevelTextItem/from';
+import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
+import SourceSelectFrom from '@/pages/Sources/Components/select/from';
 import { getContactDetail, updateContact } from '@/services/contacts/api';
 import { genContactFromData } from '@/services/contacts/util';
 import styles from '@/style/custom.less';
@@ -11,8 +13,6 @@ import { Button, Card, Drawer, Form, Input, Space, Spin, Tooltip, Typography, me
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import SourceSelectFrom from '@/pages/Sources/Components/select/from';
-import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
 type Props = {
   id: string;
   buttonType: string;
@@ -33,8 +33,11 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
     setDrawerVisible(true);
   }, [setViewDrawerVisible]);
 
-  const handletFromData = (data: any) => {
-    setFromData({ ...fromData, data });
+  const handletFromData = () => {
+    setFromData({
+      ...fromData,
+      [activeTabKey]: formRefEdit.current?.getFieldsValue()?.[activeTabKey] ?? {},
+    });
   };
 
   const onTabChange = (key: string) => {
@@ -45,7 +48,6 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
     { key: 'contactInformation', tab: 'Contact Information' },
     { key: 'administrativeInformation', tab: 'Administrative Information' },
   ];
-
 
   const contactList: Record<string, React.ReactNode> = {
     contactInformation: (
@@ -111,25 +113,9 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
             label='Reference To Contact'
             name={['contactInformation', 'dataSetInformation', 'referenceToContact']}
             lang={lang}
-            formRef={formRefEdit} />
-          {/* <Card size="small" title={'Reference To Contact'}>
-            <Form.Item label="Ref Object Id" name={['contactInformation', 'dataSetInformation', 'referenceToContact', '@refObjectId']}>
-              <Input placeholder="@refObjectId" />
-            </Form.Item>
-            <Form.Item label='Type' name={['contactInformation', 'dataSetInformation', 'referenceToContact', '@type']}>
-              <Input placeholder="@type" />
-            </Form.Item>
-            <Form.Item label='URI' name={['contactInformation', 'dataSetInformation', 'referenceToContact', '@uri']}>
-              <Input placeholder="@uri" />
-            </Form.Item>
-            <Divider orientationMargin="0" orientation="left" plain>
-              Short Description
-            </Divider>
-            <LangTextItemFrom
-              name={['contactInformation', 'dataSetInformation', 'referenceToContact', 'common:shortDescription']}
-              label="Short Description"
-            />
-          </Card> */}
+            formRef={formRefEdit}
+            onData={handletFromData}
+          />
         </Space>
       </>
     ),
@@ -151,7 +137,9 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
             <SourceSelectFrom label='Reference To Data Set Format'
               name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
               lang={lang}
-              formRef={formRefEdit} />
+              formRef={formRefEdit}
+              onData={handletFromData}
+            />
           </Card>
           <Card size="small" title={'Publication And Ownership'}>
             <Form.Item
@@ -168,25 +156,9 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
               label='Reference To Preceding Data Set Version'
               name={['administrativeInformation', 'publicationAndOwnership', 'common:referenceToPrecedingDataSetVersion']}
               lang={lang}
-              formRef={formRefEdit} />
-            {/* <Card size="small" title={'Reference To Preceding Data Set Version'}>
-              <Form.Item label="Type" name={['administrativeInformation', 'publicationAndOwnership', 'common:referenceToPrecedingDataSetVersion', '@type']}>
-                <Input />
-              </Form.Item>
-              <Form.Item label="Ref Object Id" name={['administrativeInformation', 'publicationAndOwnership', 'common:referenceToPrecedingDataSetVersion', '@refObjectId']}>
-                <Input />
-              </Form.Item>
-              <Form.Item label="URI" name={['administrativeInformation', 'publicationAndOwnership', 'common:referenceToPrecedingDataSetVersion', '@uri']}>
-                <Input />
-              </Form.Item>
-              <Divider orientationMargin="0" orientation="left" plain>
-                Short Description
-              </Divider>
-              <LangTextItemFrom
-                name={['administrativeInformation', 'publicationAndOwnership', 'common:referenceToPrecedingDataSetVersion', 'common:shortDescription']}
-                label="Short Description"
-              />
-            </Card> */}
+              formRef={formRefEdit}
+              onData={handletFromData}
+            />
             <Form.Item
               label="Permanent Data Set URI"
               name={[

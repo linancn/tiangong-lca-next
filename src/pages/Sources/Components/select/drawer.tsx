@@ -9,8 +9,6 @@ import { Button, Card, Drawer, Space, Tooltip } from 'antd';
 import type { FC, Key } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import { default as SourceDelete } from '../delete';
-import { default as SourceEdit } from '../edit';
 import { default as SourceView } from '../view';
 
 type Props = {
@@ -22,7 +20,7 @@ type Props = {
 const SourceSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
-  const [activeTabKey, setActiveTabKey] = useState<string>('tg');
+  const [activeTabKey, setActiveTabKey] = useState<string>('my');
   const tgActionRefSelect = useRef<ActionType>();
   const myActionRefSelect = useRef<ActionType>();
 
@@ -46,113 +44,93 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
 
   const sourceColumns: ProColumns<SourceTable>[] = [
     {
-        title: <FormattedMessage id="source.index" defaultMessage="Index" />,
-        dataIndex: 'index',
-        valueType: 'index',
-        search: false,
+      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
+      dataIndex: 'index',
+      valueType: 'index',
+      search: false,
     },
     {
-        title: <FormattedMessage id="source.shortName" defaultMessage="Data Name" />,
-        dataIndex: 'shortName',
-        sorter: false,
+      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name" />,
+      dataIndex: 'shortName',
+      sorter: false,
     },
     {
-        title: <FormattedMessage id="source.classification" defaultMessage="Classification" />,
-        dataIndex: 'classification',
-        sorter: false,
-        search: false,
+      title: <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />,
+      dataIndex: 'classification',
+      sorter: false,
+      search: false,
     },
     {
-        title: <FormattedMessage id="source.publicationType" defaultMessage="Publication Type" />,
-        dataIndex: 'publicationType',
-        sorter: false,
-        search: false,
+      title: <FormattedMessage id="source.publicationType" defaultMessage="Publication Type" />,
+      dataIndex: 'publicationType',
+      sorter: false,
+      search: false,
     },
     {
-      title: <FormattedMessage id="contact.createdAt" defaultMessage="Created At" />,
+      title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At" />,
       dataIndex: 'createdAt',
       valueType: 'dateTime',
       sorter: true,
       search: false,
     },
     {
-        title: <FormattedMessage id="options.option" defaultMessage="Option" />,
-        dataIndex: 'option',
-        search: false,
-        render: (_, row) => {
-          if (activeTabKey === 'tg') {
-            return [
-              <Space size={'small'} key={0}>
-                <SourceView
-                  id={row.id}
-                  dataSource="tg"
-                  buttonType="icon"
-                  actionRef={tgActionRefSelect}
-                />
-              </Space>,
-            ];
-          } else if (activeTabKey === 'my') {
-            return [
-              <Space size={'small'} key={0}>
-                <SourceView
-                  id={row.id}
-                  dataSource="my"
-                  buttonType="icon"
-                  actionRef={myActionRefSelect}
-                />
-                <SourceEdit
-                  id={row.id}
-                  buttonType={'icon'}
-                  actionRef={myActionRefSelect}
-                  setViewDrawerVisible={() => {}}
-                />
-                <SourceDelete
-                  id={row.id}
-                  buttonType={'icon'}
-                  actionRef={myActionRefSelect}
-                  setViewDrawerVisible={() => {}}
-                />
-              </Space>,
-            ];
-          } else return [];
-        },
+      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
+      dataIndex: 'option',
+      search: false,
+      render: (_, row) => {
+        if (activeTabKey === 'tg') {
+          return [
+            <SourceView
+              key={0}
+              id={row.id}
+              lang={lang}
+              dataSource="tg"
+              buttonType="icon"
+            />
+            //      <Space size={'small'} key={0}>
+            //       <SourceView
+            //         id={row.id}
+            //         lang={lang}
+            //         dataSource="tg"
+            //         buttonType="icon"
+            //       />
+            //     </Space>,
+            //   ];
+            // } else if (activeTabKey === 'my') {
+            //   return [
+            //     <Space size={'small'} key={0}>
+            //       <SourceView
+            //         id={row.id}
+            //         lang={lang}
+            //         dataSource="my"
+            //         buttonType="icon"
+            //       />
+            //        <SourceEdit
+            //         id={row.id}
+            //         lang={lang}
+            //         buttonType={'icon'}
+            //         actionRef={myActionRefSelect}
+            //         setViewDrawerVisible={() => {}}
+            //       />
+            //       <SourceDelete
+            //         id={row.id}
+            //         buttonType={'icon'}
+            //         actionRef={myActionRefSelect}
+            //         setViewDrawerVisible={() => {}}
+            //       /> 
+            //     </Space>,
+          ];
+        } else return [];
+      },
     },
-];
+  ];
 
   const tabList = [
-    { key: 'tg', tab: 'TianGong Data' },
     { key: 'my', tab: 'My Data' },
+    { key: 'tg', tab: 'TianGong Data' },
   ];
 
   const databaseList: Record<string, React.ReactNode> = {
-    tg: (
-      <ProTable<SourceTable, ListPagination>
-        actionRef={tgActionRefSelect}
-        search={{
-          defaultCollapsed: false,
-        }}
-        pagination={{
-          showSizeChanger: false,
-          pageSize: 10,
-        }}
-        request={async (
-          params: {
-            pageSize: number;
-            current: number;
-          },
-          sort,
-        ) => {
-          return getSourceTable(params, sort, lang, 'tg');
-        }}
-        columns={sourceColumns}
-        rowSelection={{
-          type: 'radio',
-          alwaysShowAlert: true,
-          selectedRowKeys,
-          onChange: onSelectChange,
-        }}
-      />
-    ),
     my: (
       <ProTable<SourceTable, ListPagination>
         actionRef={myActionRefSelect}
@@ -171,6 +149,34 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
           sort,
         ) => {
           return getSourceTable(params, sort, lang, 'my');
+        }}
+        columns={sourceColumns}
+        rowSelection={{
+          type: 'radio',
+          alwaysShowAlert: true,
+          selectedRowKeys,
+          onChange: onSelectChange,
+        }}
+      />
+    ),
+    tg: (
+      <ProTable<SourceTable, ListPagination>
+        actionRef={tgActionRefSelect}
+        search={{
+          defaultCollapsed: false,
+        }}
+        pagination={{
+          showSizeChanger: false,
+          pageSize: 10,
+        }}
+        request={async (
+          params: {
+            pageSize: number;
+            current: number;
+          },
+          sort,
+        ) => {
+          return getSourceTable(params, sort, lang, 'tg');
         }}
         columns={sourceColumns}
         rowSelection={{

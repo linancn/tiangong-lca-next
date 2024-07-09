@@ -1,5 +1,6 @@
 import LangTextItemFrom from '@/components/LangTextItem/from';
 import LevelTextItemFrom from '@/components/LevelTextItem/from';
+import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
 import { createSource } from '@/services/sources/api';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
@@ -21,7 +22,6 @@ import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import SourceSelectFrom from './select/from';
-import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
 type Props = {
     actionRef: React.MutableRefObject<ActionType | undefined>;
     lang: string;
@@ -32,8 +32,11 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
     const [fromData, setFromData] = useState<any>({});
     const [activeTabKey, setActiveTabKey] = useState<string>('sourceInformation');
 
-    const handletFromData = (data: any) => {
-        // setFromData({ ...fromData, data });
+    const handletFromData = () => {
+        setFromData({
+            ...fromData,
+            [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
+        });
     };
 
     const tabList = [
@@ -101,7 +104,9 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
                     name={['sourceInformation', 'dataSetInformation', 'referenceToContact']}
                     label="Reference To Contact"
                     lang={lang}
-                    formRef={formRefCreate} />
+                    formRef={formRefCreate}
+                    onData={handletFromData}
+                    />
             </Space>
         ),
         administrativeInformation: (
@@ -114,7 +119,9 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
                         name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
                         label="Reference To Data Set Format"
                         lang={lang}
-                        formRef={formRefCreate} />
+                        formRef={formRefCreate}
+                        onData={handletFromData}
+                        />
                 </Card>
                 <br />
                 <Card size="small" title={'Publication And Ownership'}>
@@ -146,12 +153,12 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
         formRefCreate.current?.setFieldsValue({});
     }, [drawerVisible]);
 
-    useEffect(() => {
-        setFromData({
-            ...fromData,
-            [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
-        });
-    }, [formRefCreate.current?.getFieldsValue()]);
+    // useEffect(() => {
+    //     setFromData({
+    //         ...fromData,
+    //         [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
+    //     });
+    // }, [formRefCreate.current?.getFieldsValue()]);
 
     return (
         <>
