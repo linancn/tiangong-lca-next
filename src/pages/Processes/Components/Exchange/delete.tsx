@@ -40,7 +40,7 @@ const ProcessExchangeDelete: FC<Props> = ({
     );
     message.success(
       <FormattedMessage
-        id="options.deletesuccess"
+        id="pages.button.deletesuccess"
         defaultMessage="Selected data has been deleted."
       />,
     );
@@ -55,18 +55,18 @@ const ProcessExchangeDelete: FC<Props> = ({
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="options.delete" defaultMessage="Delete" />}>
+      <Tooltip title={<FormattedMessage id="pages.button.delete" defaultMessage="Delete" />}>
         {buttonType === 'icon' ? (
           <>
             <Button shape="circle" icon={<DeleteOutlined />} size="small" onClick={showModal} />
             <Modal
-              title={<FormattedMessage id="options.delete" defaultMessage="Delete" />}
+              title={<FormattedMessage id="pages.button.delete" defaultMessage="Delete" />}
               open={isModalVisible}
               onOk={handleOk}
               onCancel={handleCancel}
             >
               <FormattedMessage
-                id="options.deleteMessage"
+                id="pages.button.deleteMessage"
                 defaultMessage="Are you sure you want to delete this data?"
               />
             </Modal>
@@ -74,16 +74,16 @@ const ProcessExchangeDelete: FC<Props> = ({
         ) : (
           <>
             <Button size="small" onClick={showModal}>
-              <FormattedMessage id="options.delete" defaultMessage="Delete" />
+              <FormattedMessage id="pages.button.delete" defaultMessage="Delete" />
             </Button>
             <Modal
-              title={<FormattedMessage id="options.delete" defaultMessage="Delete" />}
+              title={<FormattedMessage id="pages.button.delete" defaultMessage="Delete" />}
               open={isModalVisible}
               onOk={handleOk}
               onCancel={handleCancel}
             >
               <FormattedMessage
-                id="options.deleteMessage"
+                id="pages.button.deleteMessage"
                 defaultMessage="Are you sure you want to delete this data?"
               />
             </Modal>

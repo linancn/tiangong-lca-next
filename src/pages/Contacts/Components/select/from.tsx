@@ -4,6 +4,7 @@ import { langOptions } from '@/services/general/data';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Divider, Form, Input, Row, Select, Space } from 'antd';
 import React, { FC, useEffect, useState } from 'react';
+import { FormattedMessage } from 'umi';
 import ContactView from '../view';
 import ContactSelectDrawer from './drawer';
 
@@ -57,7 +58,7 @@ const ContactSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) =>
           <ContactSelectDrawer buttonType="text" lang={lang} onData={handletContactData} />
           {id && <ContactView lang={lang} id={id} buttonType="text" />}
           {id && (
-            <Button onClick={() => { formRef.current?.setFieldValue([...name], {}); onData() }}>Clear</Button>
+            <Button onClick={() => { formRef.current?.setFieldValue([...name], {}); onData() }}><FormattedMessage id="pages.button.clear" defaultMessage="Clear" /></Button>
           )}
         </Space>
       </Space>

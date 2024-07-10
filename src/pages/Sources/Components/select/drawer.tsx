@@ -61,7 +61,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       search: false,
     },
     {
-      title: <FormattedMessage id="source.publicationType" defaultMessage="Publication Type" />,
+      title: <FormattedMessage id="pages.source.publicationType" defaultMessage="Publication Type" />,
       dataIndex: 'publicationType',
       sorter: false,
       search: false,
@@ -78,49 +78,49 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
-        if (activeTabKey === 'tg') {
-          return [
-            <SourceView
-              key={0}
-              id={row.id}
-              lang={lang}
-              dataSource="tg"
-              buttonType="icon"
-            />
-            //      <Space size={'small'} key={0}>
-            //       <SourceView
-            //         id={row.id}
-            //         lang={lang}
-            //         dataSource="tg"
-            //         buttonType="icon"
-            //       />
-            //     </Space>,
-            //   ];
-            // } else if (activeTabKey === 'my') {
-            //   return [
-            //     <Space size={'small'} key={0}>
-            //       <SourceView
-            //         id={row.id}
-            //         lang={lang}
-            //         dataSource="my"
-            //         buttonType="icon"
-            //       />
-            //        <SourceEdit
-            //         id={row.id}
-            //         lang={lang}
-            //         buttonType={'icon'}
-            //         actionRef={myActionRefSelect}
-            //         setViewDrawerVisible={() => {}}
-            //       />
-            //       <SourceDelete
-            //         id={row.id}
-            //         buttonType={'icon'}
-            //         actionRef={myActionRefSelect}
-            //         setViewDrawerVisible={() => {}}
-            //       /> 
-            //     </Space>,
-          ];
-        } else return [];
+        return [
+          <SourceView
+            key={0}
+            id={row.id}
+            lang={lang}
+            buttonType="icon"
+          />
+        ];
+        //  if (activeTabKey === 'tg') {
+        //      <Space size={'small'} key={0}>
+        //       <SourceView
+        //         id={row.id}
+        //         lang={lang}
+        //         dataSource="tg"
+        //         buttonType="icon"
+        //       />
+        //     </Space>,
+        //   ];
+        // } else if (activeTabKey === 'my') {
+        //   return [
+        //     <Space size={'small'} key={0}>
+        //       <SourceView
+        //         id={row.id}
+        //         lang={lang}
+        //         dataSource="my"
+        //         buttonType="icon"
+        //       />
+        //        <SourceEdit
+        //         id={row.id}
+        //         lang={lang}
+        //         buttonType={'icon'}
+        //         actionRef={myActionRefSelect}
+        //         setViewDrawerVisible={() => {}}
+        //       />
+        //       <SourceDelete
+        //         id={row.id}
+        //         buttonType={'icon'}
+        //         actionRef={myActionRefSelect}
+        //         setViewDrawerVisible={() => {}}
+        //       /> 
+        //     </Space>,
+        //   ];
+        // } else return [];
       },
     },
   ];
@@ -196,27 +196,28 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
 
   return (
     <>
-      <Tooltip
-        title={
-          <FormattedMessage
-            id="pages.contact.drawer.title.select"
-            defaultMessage="Select Source"
-          />
-        }
-      >
-        {buttonType === 'icon' ? (
+      {buttonType === 'icon' ? (
+        <Tooltip
+          title={
+            <FormattedMessage
+              id="pages.button.select"
+              defaultMessage="Select"
+            />
+          }
+        >
           <Button shape="circle" icon={<DatabaseOutlined />} size="small" onClick={onSelect} />
-        ) : (
-          <Button onClick={onSelect}>
-            <FormattedMessage id="pages.contact.drawer.title.select" defaultMessage="Select" />
-          </Button>
-        )}
-      </Tooltip>
+        </Tooltip>
+      ) : (
+        <Button onClick={onSelect}>
+          <FormattedMessage id="pages.button.select" defaultMessage="Select" />
+        </Button>
+      )}
+
       <Drawer
         title={
           <FormattedMessage
-            id="pages.contact.drawer.title.select"
-            defaultMessage="Selete Source"
+            id="pages.source.drawer.title.select"
+            defaultMessage="Select Source"
           />
         }
         width="90%"
@@ -234,8 +235,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
         footer={
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
-              {' '}
-              <FormattedMessage id="options.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
             </Button>
             <Button
               onClick={() => {
@@ -244,7 +244,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
               }}
               type="primary"
             >
-              <FormattedMessage id="options.submit" defaultMessage="Submit" />
+              <FormattedMessage id="pages.button.submit" defaultMessage="Submit" />
             </Button>
           </Space>
         }

@@ -3,24 +3,23 @@ import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 import { getSourceDetail } from '@/services/sources/api';
 import { genSourceFromData } from '@/services/sources/util';
-import styles from '@/style/custom.less';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
-import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
+import { Button, Card, Descriptions, Divider, Drawer, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import SourceSelectDescription from './select/description';
 type Props = {
   id: string;
-  dataSource: string;
+  // dataSource: string;
   buttonType: string;
   // actionRef: React.MutableRefObject<ActionType | undefined>;
   lang: string;
 };
-const SourceView: FC<Props> = ({ id, dataSource, buttonType, lang }) => {
+const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
   const [activeTabKey, setActiveTabKey] = useState<string>('sourceInformation');
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [footerButtons, setFooterButtons] = useState<JSX.Element>();
+  // const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<any>({});
 
@@ -135,45 +134,44 @@ const SourceView: FC<Props> = ({ id, dataSource, buttonType, lang }) => {
     setSpinning(true);
     getSourceDetail(id).then(async (result: any) => {
       setInitData({ ...genSourceFromData(result.data?.json?.sourceDataSet ?? {}), id: id });
-      if (dataSource === 'my') {
-        setFooterButtons(
-          <>
-            {/* <ContactDelete
-              id={id}
-              buttonType={'text'}
-              actionRef={actionRef}
-              setViewDrawerVisible={setDrawerVisible}
-            />
-            <ContactEdit
-              id={id}
-              buttonType={'text'}
-              actionRef={actionRef}
-              setViewDrawerVisible={setDrawerVisible}
-            /> */}
-          </>,
-        );
-      } else {
-        setFooterButtons(<></>);
-      }
+      // if (dataSource === 'my') {
+      //   setFooterButtons(
+      //     <>
+      //       {/* <ContactDelete
+      //         id={id}
+      //         buttonType={'text'}
+      //         actionRef={actionRef}
+      //         setViewDrawerVisible={setDrawerVisible}
+      //       />
+      //       <ContactEdit
+      //         id={id}
+      //         buttonType={'text'}
+      //         actionRef={actionRef}
+      //         setViewDrawerVisible={setDrawerVisible}
+      //       /> */}
+      //     </>,
+      //   );
+      // } else {
+      //   setFooterButtons(<></>);
+      // }
       setSpinning(false);
     });
   };
   return (
     <>
-      <Tooltip
-        title={<FormattedMessage id="pages.table.option.view" defaultMessage="View Cantact" />}
-      >
-        {buttonType === 'icon' ? (
+      {buttonType === 'icon' ? (
+        <Tooltip
+          title={<FormattedMessage id="pages.button.view" defaultMessage="View" />}
+        >
           <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
-        ) : (
-          <Button onClick={onView}>
-            <FormattedMessage id="pages.table.option.view" defaultMessage="View" />
-          </Button>
-        )}
-      </Tooltip>
-
+        </Tooltip>
+      ) : (
+        <Button onClick={onView}>
+          <FormattedMessage id="pages.button.view" defaultMessage="View" />
+        </Button>
+      )}
       <Drawer
-        title={<FormattedMessage id="options.view" defaultMessage="Source View" />}
+        title={<FormattedMessage id="pages.source.drawer.title.view" defaultMessage="View Source" />}
         width="90%"
         closable={false}
         extra={
@@ -183,11 +181,11 @@ const SourceView: FC<Props> = ({ id, dataSource, buttonType, lang }) => {
             onClick={() => setDrawerVisible(false)}
           />
         }
-        footer={
-          <Space size={'middle'} className={styles.footer_right}>
-            {footerButtons}
-          </Space>
-        }
+        // footer={
+        //   <Space size={'middle'} className={styles.footer_right}>
+        //     {footerButtons}
+        //   </Space>
+        // }
         maskClosable={true}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}

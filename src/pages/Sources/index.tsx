@@ -49,7 +49,7 @@ const TableList: FC = () => {
             search: false,
         },
         {
-            title: <FormattedMessage id="pages.source.publicationType" defaultMessage="PublicationType" />,
+            title: <FormattedMessage id="pages.source.publicationType" defaultMessage="Publication Type" />,
             dataIndex: 'publicationType',
             sorter: true,
             search: false,
@@ -69,7 +69,7 @@ const TableList: FC = () => {
                 if (dataSource === 'my') {
                     return [
                         <Space size={'small'} key={0}>
-                            <SourceView lang={lang} id={row.id} dataSource={dataSource} buttonType={'icon'} />
+                            <SourceView lang={lang} id={row.id} buttonType={'icon'} />
                             <SourceEdit
                                 id={row.id}
                                 lang={lang}
@@ -88,7 +88,7 @@ const TableList: FC = () => {
                 }
                 return [
                     <Space size={'small'} key={0}>
-                        <SourceView lang={lang} id={row.id} dataSource={dataSource} buttonType={'icon'} />
+                        <SourceView lang={lang} id={row.id} buttonType={'icon'} />
                     </Space>,
                 ];
             },

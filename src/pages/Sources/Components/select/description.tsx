@@ -21,7 +21,6 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
         {data?.['@refObjectId'] && (
           <SourceView
             id={data?.['@refObjectId']}
-            dataSource="tg"
             buttonType="text"
             lang={lang} />
         )}

@@ -80,13 +80,13 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
             valueType: 'index',
             search: false,
         },
+        // {
+        //     title: <FormattedMessage id="pages.unitgroup.unit.dataSetInternalID" defaultMessage="DataSet Internal ID"></FormattedMessage>,
+        //     dataIndex: 'dataSetInternalID',
+        //     search: false,
+        // },
         {
-            title: <FormattedMessage id="pages.unitgroup.unit.dataSetInternalID" defaultMessage="DataSet Internal ID"></FormattedMessage>,
-            dataIndex: 'dataSetInternalID',
-            search: false,
-        },
-        {
-            title: <FormattedMessage id="pages.unitgroup.unit.name" defaultMessage="Name"></FormattedMessage>,
+            title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name"></FormattedMessage>,
             dataIndex: 'name',
             search: false,
         },
@@ -103,7 +103,7 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
         {
             title: (
                 <FormattedMessage
-                    id="processExchange.quantitativeReference"
+                    id="pages.unitgroup.unit.quantitativeReference"
                     defaultMessage="Quantitative Reference"
                 />
             ),
@@ -118,7 +118,7 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
             }
         },
         {
-            title: <FormattedMessage id="pages.table.option" defaultMessage="Option"></FormattedMessage>,
+            title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option"></FormattedMessage>,
             valueType: 'option',
             search: false,
             render: (_, row) => {
@@ -271,15 +271,17 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
 
     return (
         <>
-            <Tooltip title={<FormattedMessage id="pages.table.option.edit" defaultMessage="Edit"></FormattedMessage>}>
-                {buttonType === 'icon' ? (
+
+            {buttonType === 'icon' ? (
+                <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit"></FormattedMessage>}>
                     <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit}></Button>
-                ) : (
-                    <Button size="small" onClick={onEdit}>
-                        <FormattedMessage id="pages.table.option.edit" defaultMessage="Edit"></FormattedMessage>
-                    </Button>
-                )}
-            </Tooltip>
+                </Tooltip>
+            ) : (
+                <Button size="small" onClick={onEdit}>
+                    <FormattedMessage id="pages.button.edit" defaultMessage="Edit"></FormattedMessage>
+                </Button>
+            )}
+
             <Drawer
                 title={<FormattedMessage id="pages.unitgroup.drawer.title.edit" defaultMessage="Edit"></FormattedMessage>}
                 width="90%"
@@ -303,15 +305,15 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
                         <Button onClick={() => {
                             setDrawerVisible(false);
                         }}>
-                            <FormattedMessage id="pages.table.option.cancel" defaultMessage="Cancel"></FormattedMessage>
+                            <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel"></FormattedMessage>
                         </Button>
                         <Button onClick={onReset}>
-                            <FormattedMessage id="pages.table.option.reset" defaultMessage="Reset"></FormattedMessage>
+                            <FormattedMessage id="pages.button.reset" defaultMessage="Reset"></FormattedMessage>
                         </Button>
                         <Button onClick={() => {
                             formRefEdit.current?.submit();
                         }} type="primary">
-                            <FormattedMessage id="pages.table.option.submit" defaultMessage="Submit"></FormattedMessage>
+                            <FormattedMessage id="pages.button.submit" defaultMessage="Submit"></FormattedMessage>
                         </Button>
                     </Space>
                 }

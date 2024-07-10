@@ -75,13 +75,13 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
       valueType: 'index',
       search: false,
     },
+    // {
+    //   title: <FormattedMessage id="pages.unitgroup.unit.dataSetInternalID" defaultMessage="DataSet Internal ID"></FormattedMessage>,
+    //   dataIndex: 'dataSetInternalID',
+    //   search: false,
+    // },
     {
-      title: <FormattedMessage id="pages.unitgroup.unit.dataSetInternalID" defaultMessage="DataSet Internal ID"></FormattedMessage>,
-      dataIndex: 'dataSetInternalID',
-      search: false,
-    },
-    {
-      title: <FormattedMessage id="pages.unitgroup.unit.name" defaultMessage="Name"></FormattedMessage>,
+      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name"></FormattedMessage>,
       dataIndex: 'name',
       search: false,
     },
@@ -98,7 +98,7 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
     {
       title: (
         <FormattedMessage
-          id="processExchange.quantitativeReference"
+          id="pages.unitgroup.unit.quantitativeReference"
           defaultMessage="Quantitative Reference"
         />
       ),
@@ -113,7 +113,7 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
       }
     },
     {
-      title: <FormattedMessage id="pages.table.option" defaultMessage="Option"></FormattedMessage>,
+      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option"></FormattedMessage>,
       valueType: 'option',
       search: false,
       render: (_, row) => {
@@ -236,7 +236,7 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="pages.table.option.create" defaultMessage="Create"></FormattedMessage>}>
+      <Tooltip title={<FormattedMessage id="pages.button.create" defaultMessage="Create"></FormattedMessage>}>
         <Button
           size={'middle'}
           type="text"
@@ -269,12 +269,12 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
             <Button onClick={() => {
               setDrawerVisible(false);
             }}>
-              <FormattedMessage id="pages.table.option.cancel" defaultMessage="Cancel"></FormattedMessage>
+              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel"></FormattedMessage>
             </Button>
             <Button onClick={() => {
               formRefCreate.current?.submit();
             }} type="primary">
-              <FormattedMessage id="pages.table.option.submit" defaultMessage="Submit"></FormattedMessage>
+              <FormattedMessage id="pages.button.submit" defaultMessage="Submit"></FormattedMessage>
             </Button>
           </Space>
         }

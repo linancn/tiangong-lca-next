@@ -204,17 +204,17 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
 
     return (
         <>
-            <Tooltip title={<FormattedMessage id="pages.table.option.edit" defaultMessage="Edit" />}>
+            <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
                 {buttonType === 'icon' ? (
                     <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
                 ) : (
                     <Button onClick={onEdit}>
-                        <FormattedMessage id="pages.table.option.edit" defaultMessage="Edit" />
+                        <FormattedMessage id="pages.button.edit" defaultMessage="Edit" />
                     </Button>
                 )}
             </Tooltip>
             <Drawer
-                title={<FormattedMessage id="pages.table.option.edit" defaultMessage="Edit" />}
+                title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}
                 width="90%"
                 closable={false}
                 extra={
@@ -231,14 +231,14 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
                     <Space size={'middle'} className={styles.footer_right}>
                         <Button onClick={() => setDrawerVisible(false)}>
                             {' '}
-                            <FormattedMessage id="pages.table.option.cancel" defaultMessage="Cancel" />
+                            <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
                         </Button>
                         <Button onClick={onReset}>
                             {' '}
-                            <FormattedMessage id="pages.table.option.reset" defaultMessage="Reset" />
+                            <FormattedMessage id="pages.button.reset" defaultMessage="Reset" />
                         </Button>
                         <Button onClick={() => formRefEdit.current?.submit()} type="primary">
-                            <FormattedMessage id="pages.table.option.submit" defaultMessage="Submit" />
+                            <FormattedMessage id="pages.button.submit" defaultMessage="Submit" />
                         </Button>
                     </Space>
                 }

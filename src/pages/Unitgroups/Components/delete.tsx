@@ -24,7 +24,7 @@ const UnitGroupDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVi
       if (result.status === 204) {
         message.success(
           <FormattedMessage
-            id="options.deletesuccess"
+            id="pages.button.deletesuccess"
             defaultMessage="Selected contact has been deleted."
           ></FormattedMessage>,
         );
@@ -43,35 +43,35 @@ const UnitGroupDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVi
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="pages.table.option.delete" defaultMessage="Delete"></FormattedMessage>}>
-        {buttonType === 'icon' ? (
-          <>
+      {buttonType === 'icon' ? (
+        <>
+          <Tooltip title={<FormattedMessage id="pages.button.delete" defaultMessage="Delete"></FormattedMessage>}>
             <Button shape="circle" icon={<DeleteOutlined />} size="small" onClick={showModal}></Button>
-            <Modal
-              title={<FormattedMessage id="pages.table.option.delete" defaultMessage="Delete"></FormattedMessage>}
-              open={isModalVisible}
-              onOk={handleOk}
-              onCancel={handleCancel}
-            >
-              <FormattedMessage id="pages.table.option.delete.confirm" defaultMessage="Delete"></FormattedMessage>
-            </Modal>
-          </>
-        ) : (
-          <>
-            <Button size="small" onClick={showModal}>
-              <FormattedMessage id="pages.table.option.delete" defaultMessage="Delete"></FormattedMessage>
-            </Button>
-            <Modal
-              title={<FormattedMessage id="pages.table.option.delete" defaultMessage="Delete"></FormattedMessage>}
-              open={isModalVisible}
-              onOk={handleOk}
-              onCancel={handleCancel}
-            >
-              <FormattedMessage id="pages.table.option.delete.confirm" defaultMessage="Delete"></FormattedMessage>
-            </Modal>
-          </>
-        )}
-      </Tooltip>
+          </Tooltip>
+          <Modal
+            title={<FormattedMessage id="pages.button.delete" defaultMessage="Delete"></FormattedMessage>}
+            open={isModalVisible}
+            onOk={handleOk}
+            onCancel={handleCancel}
+          >
+            <FormattedMessage id="pages.button.delete.confirm" defaultMessage="Delete"></FormattedMessage>
+          </Modal>
+        </>
+      ) : (
+        <>
+          <Button size="small" onClick={showModal}>
+            <FormattedMessage id="pages.button.delete" defaultMessage="Delete"></FormattedMessage>
+          </Button>
+          <Modal
+            title={<FormattedMessage id="pages.button.delete" defaultMessage="Delete"></FormattedMessage>}
+            open={isModalVisible}
+            onOk={handleOk}
+            onCancel={handleCancel}
+          >
+            <FormattedMessage id="pages.button.delete.confirm" defaultMessage="Delete"></FormattedMessage>
+          </Modal>
+        </>
+      )}
     </>
   );
 };

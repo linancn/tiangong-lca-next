@@ -24,7 +24,6 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
           <UnitGroupView
             id={data?.['@refObjectId']}
             lang={lang}
-            dataSource="tg"
             buttonType="text"
           />
         )}

@@ -196,15 +196,17 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="pages.table.option.edit" defaultMessage="Edit" />}>
-        {buttonType === 'icon' ? (
+
+      {buttonType === 'icon' ? (
+        <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
           <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
-        ) : (
-          <Button onClick={onEdit}>
-            <FormattedMessage id="pages.table.option.edit" defaultMessage="Edit" />
-          </Button>
-        )}
-      </Tooltip>
+        </Tooltip>
+      ) : (
+        <Button onClick={onEdit}>
+          <FormattedMessage id="pages.button.edit" defaultMessage="Edit" />
+        </Button>
+      )}
+
       <Drawer
         title={
           <FormattedMessage id="pages.contact.drawer.title.edit" defaultMessage="Edit Contact" />
@@ -224,15 +226,13 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
         footer={
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
-              {' '}
-              <FormattedMessage id="options.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
             </Button>
             <Button onClick={onReset}>
-              {' '}
-              <FormattedMessage id="options.reset" defaultMessage="Reset" />
+              <FormattedMessage id="pages.button.reset" defaultMessage="Reset" />
             </Button>
             <Button onClick={() => formRefEdit.current?.submit()} type="primary">
-              <FormattedMessage id="options.submit" defaultMessage="Submit" />
+              <FormattedMessage id="pages.button.submit" defaultMessage="Submit" />
             </Button>
           </Space>
         }

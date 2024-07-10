@@ -181,17 +181,19 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
   };
   return (
     <>
-      <Tooltip
-        title={<FormattedMessage id="pages.table.option.view" defaultMessage="View" />}
-      >
-        {buttonType === 'icon' ? (
+
+      {buttonType === 'icon' ? (
+        <Tooltip
+          title={<FormattedMessage id="pages.button.view" defaultMessage="View" />}
+        >
           <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
-        ) : (
-          <Button onClick={onView}>
-            <FormattedMessage id="pages.table.option.view" defaultMessage="View" />
-          </Button>
-        )}
-      </Tooltip>
+        </Tooltip>
+      ) : (
+        <Button onClick={onView}>
+          <FormattedMessage id="pages.button.view" defaultMessage="View" />
+        </Button>
+      )}
+
       <Drawer
         title={
           <FormattedMessage id="pages.contact.drawer.title.view" defaultMessage="View Contact" />
