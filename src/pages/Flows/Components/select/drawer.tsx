@@ -9,6 +9,7 @@ import { Button, Card, Drawer, Input, Space, Tooltip } from 'antd';
 import type { SearchProps } from 'antd/es/input/Search';
 import type { FC, Key } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
+import { useIntl } from 'react-intl';
 import { FormattedMessage } from 'umi';
 import FlowsDelete from '../delete';
 import FlowsEdit from '../edit';
@@ -28,6 +29,8 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
   const [tableLoading, setTableLoading] = useState<boolean>(false);
   const tgActionRefSelect = useRef<ActionType>();
   const myActionRefSelect = useRef<ActionType>();
+
+  const intl = useIntl();
 
   const { Search } = Input;
 
@@ -61,11 +64,11 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       dataIndex: 'baseName',
       sorter: false,
       search: false,
-    render: (_, row) => [
-      <Tooltip key={0} placement="topLeft" title={row.generalComment}>
-        {row.baseName}
-      </Tooltip>,
-    ],
+      render: (_, row) => [
+        <Tooltip key={0} placement="topLeft" title={row.generalComment}>
+          {row.baseName}
+        </Tooltip>,
+      ],
     },
     {
       title: <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />,
@@ -138,7 +141,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
     tg: (
       <>
         <Card>
-          <Search size={'large'} placeholder="Key Word" onSearch={onSearch} enterButton />
+          <Search size={'large'} placeholder={intl.formatMessage({ id: 'pages.search.placeholder' })} onSearch={onSearch} enterButton />
         </Card>
         <ProTable<FlowsTable, ListPagination>
           actionRef={tgActionRefSelect}

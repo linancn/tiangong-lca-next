@@ -13,6 +13,7 @@ import {
   Space
 } from 'antd';
 import React, { FC, useEffect, useState } from 'react';
+import { FormattedMessage } from 'umi';
 import FlowsView from '../view';
 import FlowsSelectDrawer from './drawer';
 const { TextArea } = Input;
@@ -26,7 +27,6 @@ type Props = {
 };
 
 const FlowsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => {
-
   const [id, setId] = useState<string | undefined>(undefined);
 
   const handletFlowsData = (rowKey: any) => {
@@ -55,7 +55,7 @@ const FlowsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => {
         <Space direction="horizontal" >
           <FlowsSelectDrawer buttonType="text" lang={lang} onData={handletFlowsData} />
           {id && <FlowsView lang={lang} id={id} buttonType="text" />}
-          {id && <Button onClick={() => { formRef.current?.setFieldValue([...name], {}); onData() }}>Clear</Button>}
+          {id && <Button onClick={() => { formRef.current?.setFieldValue([...name], {}); onData() }}><FormattedMessage id="pages.button.clear" defaultMessage="Clear" /></Button>}
         </Space>
 
       </Space>

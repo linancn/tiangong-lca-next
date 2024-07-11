@@ -6,17 +6,17 @@ import { ActionType } from '@ant-design/pro-components';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import ProForm from '@ant-design/pro-form';
 import {
-    Button,
-    Card,
-    Divider,
-    Drawer,
-    Form,
-    Input,
-    Select,
-    Space,
-    Switch,
-    Tooltip,
-    Typography,
+  Button,
+  Card,
+  Divider,
+  Drawer,
+  Form,
+  Input,
+  Select,
+  Space,
+  Switch,
+  Tooltip,
+  Typography,
 } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -25,6 +25,7 @@ import { FormattedMessage } from 'umi';
 type Props = {
   id: string;
   data: any;
+  lang: string;
   buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
@@ -33,6 +34,7 @@ type Props = {
 const ProcessExchangeEdit: FC<Props> = ({
   id,
   data,
+  lang,
   buttonType,
   actionRef,
   setViewDrawerVisible,
@@ -75,12 +77,12 @@ const ProcessExchangeEdit: FC<Props> = ({
           <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
         ) : (
           <Button onClick={onEdit}>
-            <FormattedMessage id="pages.button.edit" defaultMessage="Edit Exchange" />
+            <FormattedMessage id="pages.button.edit" defaultMessage="Edit" />
           </Button>
         )}
       </Tooltip>
       <Drawer
-        title={<FormattedMessage id="exchanges.create" defaultMessage="Process Exchange Create" />}
+        title={<FormattedMessage id="pages.process.exchange.drawer.title.edit" defaultMessage="Edit Exchange" />}
         width="90%"
         closable={false}
         extra={
@@ -96,11 +98,10 @@ const ProcessExchangeEdit: FC<Props> = ({
         footer={
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
-              {' '}
-              <FormattedMessage id="options.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
             </Button>
             <Button onClick={() => formRefEdit.current?.submit()} type="primary">
-              <FormattedMessage id="options.submit" defaultMessage="Submit" />
+              <FormattedMessage id="pages.button.submit" defaultMessage="Submit" />
             </Button>
           </Space>
         }
@@ -149,7 +150,7 @@ const ProcessExchangeEdit: FC<Props> = ({
             <FlowsSelectFrom
               name={['referenceToFlowDataSet']}
               label="Reference To Flow Data Set"
-              lang="en"
+              lang={lang}
               formRef={formRefEdit}
               onData={handletFromData}
             />

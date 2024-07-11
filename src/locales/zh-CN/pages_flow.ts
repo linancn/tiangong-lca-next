@@ -9,4 +9,7 @@ export default {
   'pages.flow.editsuccess': '编辑成功。',
   'pages.flow.deleteMessage': '您确定要删除此数据吗？',
   'pages.flow.createsuccess': '创建成功。',
+
+
+  'pages.flow.drawer.title.view': '查看流',
 };
