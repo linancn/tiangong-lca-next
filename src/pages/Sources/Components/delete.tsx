@@ -24,7 +24,7 @@ const SourceDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisib
       if (result.status === 204) {
         message.success(
           <FormattedMessage
-            id="options.deletesuccess"
+            id="pages.button.deletesuccess"
             defaultMessage="Selected source has been deleted."
           />,
         );
@@ -43,41 +43,42 @@ const SourceDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisib
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="options.delete" defaultMessage="Delete" />}>
-        {buttonType === 'icon' ? (
-          <>
-            <Button shape="circle" icon={<DeleteOutlined />} size="small" onClick={showModal} />
-            <Modal
-              title={<FormattedMessage id="options.delete" defaultMessage="Delete" />}
-              open={isModalVisible}
-              onOk={handleOk}
-              onCancel={handleCancel}
-            >
-              <FormattedMessage
-                id="options.deleteMessage"
-                defaultMessage="Are you sure you want to delete this data?"
-              />
-            </Modal>
-          </>
-        ) : (
-          <>
-            <Button size="small" onClick={showModal}>
-              <FormattedMessage id="options.delete" defaultMessage="Delete" />
-            </Button>
-            <Modal
-              title={<FormattedMessage id="options.delete" defaultMessage="Delete" />}
-              open={isModalVisible}
-              onOk={handleOk}
-              onCancel={handleCancel}
-            >
-              <FormattedMessage
-                id="options.deleteMessage"
-                defaultMessage="Are you sure you want to delete this data?"
-              />
-            </Modal>
-          </>
-        )}{' '}
-      </Tooltip>
+
+      {buttonType === 'icon' ? (
+        <><Tooltip title={<FormattedMessage id="pages.button.delete" defaultMessage="Delete" />}>
+          <Button shape="circle" icon={<DeleteOutlined />} size="small" onClick={showModal} />
+        </Tooltip>
+          <Modal
+            title={<FormattedMessage id="pages.button.delete" defaultMessage="Delete" />}
+            open={isModalVisible}
+            onOk={handleOk}
+            onCancel={handleCancel}
+          >
+            <FormattedMessage
+              id="pages.button.deleteMessage"
+              defaultMessage="Are you sure you want to delete this data?"
+            />
+          </Modal>
+        </>
+      ) : (
+        <>
+          <Button size="small" onClick={showModal}>
+            <FormattedMessage id="pages.button.delete" defaultMessage="Delete" />
+          </Button>
+          <Modal
+            title={<FormattedMessage id="pages.button.delete" defaultMessage="Delete" />}
+            open={isModalVisible}
+            onOk={handleOk}
+            onCancel={handleCancel}
+          >
+            <FormattedMessage
+              id="pages.button.deleteMessage"
+              defaultMessage="Are you sure you want to delete this data?"
+            />
+          </Modal>
+        </>
+      )}{' '}
+
     </>
   );
 };

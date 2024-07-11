@@ -164,18 +164,18 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
 
     return (
         <>
-            <Tooltip title={<FormattedMessage id="pages.table.option.view" defaultMessage="View" />}>
+            <Tooltip title={<FormattedMessage id="pages.button.view" defaultMessage="View" />}>
                 {/* <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} /> */}
                 {buttonType === 'icon' ? (
                     <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
                 ) : (
                     <Button onClick={onView}>
-                        <FormattedMessage id="pages.table.option.view" defaultMessage="View" />
+                        <FormattedMessage id="pages.button.view" defaultMessage="View" />
                     </Button>
                 )}
             </Tooltip>
             <Drawer
-                title={<FormattedMessage id="pages.table.option.view" defaultMessage="View" />}
+                title={<FormattedMessage id="pages.button.view" defaultMessage="View" />}
                 width="90%"
                 closable={false}
                 extra={

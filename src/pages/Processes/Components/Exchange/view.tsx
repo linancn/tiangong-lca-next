@@ -54,13 +54,13 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, dataSource, buttonType
   return (
     <>
       <Tooltip
-        title={<FormattedMessage id="pages.table.option.view" defaultMessage="View Exchange" />}
+        title={<FormattedMessage id="pages.button.view" defaultMessage="View Exchange" />}
       >
         {buttonType === 'icon' ? (
           <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
         ) : (
           <Button onClick={onView}>
-            <FormattedMessage id="pages.table.option.view" defaultMessage="View" />
+            <FormattedMessage id="pages.button.view" defaultMessage="View" />
           </Button>
         )}
       </Tooltip>

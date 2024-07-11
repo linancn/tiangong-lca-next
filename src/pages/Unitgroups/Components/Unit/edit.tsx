@@ -54,15 +54,17 @@ const UnitEdit: FC<Props> = ({ id, data, buttonType, actionRef, setViewDrawerVis
 
     return (
         <>
-            <Tooltip title={<FormattedMessage id="pages.table.option.edit" defaultMessage="Edit"></FormattedMessage>}>
-                {buttonType === 'icon' ? (
+
+            {buttonType === 'icon' ? (
+                <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit"></FormattedMessage>}>
                     <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit}></Button>
-                ) : (
-                    <Button onClick={onEdit}>
-                        <FormattedMessage id="pages.table.option.edit" defaultMessage="Edit"></FormattedMessage>
-                    </Button>
-                )}
-            </Tooltip>
+                </Tooltip>
+            ) : (
+                <Button onClick={onEdit}>
+                    <FormattedMessage id="pages.button.edit" defaultMessage="Edit"></FormattedMessage>
+                </Button>
+            )}
+
             <Drawer
                 title={<FormattedMessage id="pages.unitgroup.unit.drawer.title.edit" defaultMessage="Unit Edit"></FormattedMessage>}
                 width="90%"
@@ -85,10 +87,10 @@ const UnitEdit: FC<Props> = ({ id, data, buttonType, actionRef, setViewDrawerVis
                     <Space size={'middle'} className={styles.footer_right}>
                         <Button onClick={() => setDrawerVisible(false)}>
                             {' '}
-                            <FormattedMessage id="pages.table.option.cancel" defaultMessage="Cancel" />
+                            <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
                         </Button>
                         <Button onClick={() => formRefEdit.current?.submit()} type="primary">
-                            <FormattedMessage id="pages.table.option.submit" defaultMessage="Submit" />
+                            <FormattedMessage id="pages.button.submit" defaultMessage="Submit" />
                         </Button>
                     </Space>
                 }

@@ -54,7 +54,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData })
         </Form.Item>
         <Space direction="horizontal" style={{ marginTop: '6px' }}>
           <UnitgroupsSelectDrawer buttonType="text" lang={lang} onData={handletUnitgroupsData} />
-          {id && <UnitgroupsView lang={lang} id={id} dataSource="tg" buttonType="text" />}
+          {id && <UnitgroupsView lang={lang} id={id} buttonType="text" />}
           {id && <Button onClick={() => { formRef.current?.setFieldValue([...name], {}); onData() }}>Clear</Button>}
         </Space>
       </Space>

@@ -5,11 +5,10 @@ import { ListPagination } from '@/services/general/data';
 import { getUnitGroupDetail } from '@/services/unitgroups/api';
 import { UnitTable } from '@/services/unitgroups/data';
 import { genUnitGroupFromData, genUnitTableData } from '@/services/unitgroups/util';
-import styles from '@/style/custom.less';
 import { CheckCircleTwoTone, CloseCircleOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import type { ProColumns } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
-import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
+import { Button, Card, Descriptions, Divider, Drawer, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -17,14 +16,14 @@ import UnitView from './Unit/view';
 
 type Props = {
   id: string;
-  dataSource: string;
+  // dataSource: string;
   // actionRef: React.MutableRefObject<ActionType | undefined>;
   lang: string;
   buttonType: string;
 };
-const ContactView: FC<Props> = ({ id, dataSource, lang, buttonType }) => {
+const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [footerButtons, setFooterButtons] = useState<JSX.Element>();
+  // const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<any>({});
   const [unitDataSource, setUnitDataSource] = useState<any>([]);
@@ -42,13 +41,13 @@ const ContactView: FC<Props> = ({ id, dataSource, lang, buttonType }) => {
       valueType: 'index',
       search: false,
     },
+    // {
+    //   title: <FormattedMessage id="pages.unitgroup.unit.dataSetInternalID" defaultMessage="DataSet Internal ID"></FormattedMessage>,
+    //   dataIndex: 'dataSetInternalID',
+    //   search: false,
+    // },
     {
-      title: <FormattedMessage id="pages.unitgroup.unit.dataSetInternalID" defaultMessage="DataSet Internal ID"></FormattedMessage>,
-      dataIndex: 'dataSetInternalID',
-      search: false,
-    },
-    {
-      title: <FormattedMessage id="pages.unitgroup.unit.name" defaultMessage="Name"></FormattedMessage>,
+      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name"></FormattedMessage>,
       dataIndex: 'name',
       search: false,
     },
@@ -65,7 +64,7 @@ const ContactView: FC<Props> = ({ id, dataSource, lang, buttonType }) => {
     {
       title: (
         <FormattedMessage
-          id="processExchange.quantitativeReference"
+          id="pages.unitgroup.unit.quantitativeReference"
           defaultMessage="Quantitative Reference"
         />
       ),
@@ -80,7 +79,7 @@ const ContactView: FC<Props> = ({ id, dataSource, lang, buttonType }) => {
       }
     },
     {
-      title: <FormattedMessage id="options.option" defaultMessage="Option" />,
+      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
@@ -214,42 +213,42 @@ const ContactView: FC<Props> = ({ id, dataSource, lang, buttonType }) => {
       console.log('genUnitGroupFromData', { ...genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {}) })
       setInitData({ ...genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {}) });
       setUnitDataSource([...genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {})?.units?.unit ?? []]);
-      if (dataSource === 'my') {
-        setFooterButtons(
-          <>
-            {/* <ContactDelete
-              id={id}
-              buttonType={'text'}
-              actionRef={actionRef}
-              setViewDrawerVisible={setDrawerVisible}
-            />
-            <ContactEdit
-              id={id}
-              buttonType={'text'}
-              actionRef={actionRef}
-              setViewDrawerVisible={setDrawerVisible}
-            /> */}
-          </>,
-        );
-      } else {
-        setFooterButtons(<></>);
-      }
+      // if (dataSource === 'my') {
+      //   setFooterButtons(
+      //     <>
+      //       {/* <ContactDelete
+      //         id={id}
+      //         buttonType={'text'}
+      //         actionRef={actionRef}
+      //         setViewDrawerVisible={setDrawerVisible}
+      //       />
+      //       <ContactEdit
+      //         id={id}
+      //         buttonType={'text'}
+      //         actionRef={actionRef}
+      //         setViewDrawerVisible={setDrawerVisible}
+      //       /> */}
+      //     </>,
+      //   );
+      // } else {
+      //   setFooterButtons(<></>);
+      // }
       setSpinning(false);
     });
   };
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="pages.table.option.view" defaultMessage="View"></FormattedMessage>}>
-        {/* <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView}></Button> */}
-        {buttonType === 'icon' ? (
+      {buttonType === 'icon' ? (
+        <Tooltip title={<FormattedMessage id="pages.button.view" defaultMessage="View"></FormattedMessage>}>
           <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
-        ) : (
-          <Button onClick={onView}>
-            <FormattedMessage id="pages.table.option.view" defaultMessage="View" />
-          </Button>
-        )}
-      </Tooltip>
+        </Tooltip>
+      ) : (
+        <Button onClick={onView}>
+          <FormattedMessage id="pages.button.view" defaultMessage="View" />
+        </Button>
+      )}
+
       <Drawer
         title={<FormattedMessage id="pages.unitgroup.drawer.title.view" defaultMessage="View Unit Group"></FormattedMessage>}
         width="90%"
@@ -263,11 +262,11 @@ const ContactView: FC<Props> = ({ id, dataSource, lang, buttonType }) => {
             }}
           ></Button>
         }
-        footer={
-          <Space size={'middle'} className={styles.footer_right}>
-            {footerButtons}
-          </Space>
-        }
+        // footer={
+        //   <Space size={'middle'} className={styles.footer_right}>
+        //     {footerButtons}
+        //   </Space>
+        // }
         maskClosable={true}
         open={drawerVisible}
         onClose={() => {

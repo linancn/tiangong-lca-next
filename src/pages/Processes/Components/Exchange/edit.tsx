@@ -6,17 +6,17 @@ import { ActionType } from '@ant-design/pro-components';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import ProForm from '@ant-design/pro-form';
 import {
-  Button,
-  Card,
-  Divider,
-  Drawer,
-  Form,
-  Input,
-  Select,
-  Space,
-  Switch,
-  Tooltip,
-  Typography,
+    Button,
+    Card,
+    Divider,
+    Drawer,
+    Form,
+    Input,
+    Select,
+    Space,
+    Switch,
+    Tooltip,
+    Typography,
 } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -70,12 +70,12 @@ const ProcessExchangeEdit: FC<Props> = ({
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="pages.table.option.edit" defaultMessage="Edit" />}>
+      <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
         {buttonType === 'icon' ? (
           <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
         ) : (
           <Button onClick={onEdit}>
-            <FormattedMessage id="pages.table.option.edit" defaultMessage="Edit Exchange" />
+            <FormattedMessage id="pages.button.edit" defaultMessage="Edit Exchange" />
           </Button>
         )}
       </Tooltip>

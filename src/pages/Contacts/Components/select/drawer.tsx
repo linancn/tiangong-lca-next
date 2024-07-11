@@ -204,22 +204,22 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
 
   return (
     <>
-      <Tooltip
-        title={
-          <FormattedMessage
-            id="pages.contact.drawer.title.select"
-            defaultMessage="Select Cantact"
-          />
-        }
-      >
-        {buttonType === 'icon' ? (
-          <Button shape="circle" icon={<DatabaseOutlined />} size="small" onClick={onSelect} />
-        ) : (
-          <Button onClick={onSelect}>
-            <FormattedMessage id="pages.contact.drawer.title.select" defaultMessage="Select" />
-          </Button>
-        )}
-      </Tooltip>
+      {buttonType === 'icon' ? (
+        <Tooltip
+          title={
+            <FormattedMessage
+              id="pages.button.select"
+              defaultMessage="Select"
+            />
+          }
+        ><Button shape="circle" icon={<DatabaseOutlined />} size="small" onClick={onSelect} />
+        </Tooltip>
+      ) : (
+        <Button onClick={onSelect}>
+          <FormattedMessage id="pages.button.select" defaultMessage="Select" />
+        </Button>
+      )}
+
       <Drawer
         title={
           <FormattedMessage
@@ -243,7 +243,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
               {' '}
-              <FormattedMessage id="options.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
             </Button>
             <Button
               onClick={() => {
@@ -252,7 +252,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
               }}
               type="primary"
             >
-              <FormattedMessage id="options.submit" defaultMessage="Submit" />
+              <FormattedMessage id="pages.button.submit" defaultMessage="Submit" />
             </Button>
           </Space>
         }

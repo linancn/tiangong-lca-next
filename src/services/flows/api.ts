@@ -1,4 +1,5 @@
 import { supabase } from '@/services/supabase';
+import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/lib/table/interface';
 import { v4 } from 'uuid';
 import { classificationToString, getLangText } from '../general/util';
@@ -150,4 +151,26 @@ export async function getFlowDetail(id: string) {
     data: {},
     success: true,
   });
+}
+
+export async function flow_hybrid_search(query: string, filter: any, lang: string) {
+  const session = await supabase.auth.getSession();
+  const { data } = await supabase.functions.invoke('flow_hybrid_search', {
+    headers: {
+      Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+    },
+    body: { query: query, filter: filter },
+    region: FunctionRegion.UsEast1,
+  });
+  const result = data?.map((i: any) => {
+    return {
+      key: i.id,
+      id: i.id,
+      baseName: getLangText(i.json?.flowDataSet?.flowInformation?.dataSetInformation?.name?.baseName, lang),
+      classification: classificationToString(i.json?.flowDataSet?.flowInformation?.dataSetInformation?.classificationInformation?.['common:classification']?.['common:class']),
+      generalComment: getLangText(i.json?.flowDataSet?.flowInformation?.dataSetInformation?.['common:generalComment'], lang),
+      CASNumber: i.json?.flowDataSet?.flowInformation?.dataSetInformation?.CASNumber ?? '-',
+    };
+  })
+  return result;
 }

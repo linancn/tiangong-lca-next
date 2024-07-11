@@ -80,7 +80,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
         return [
           <UnitGroupView key={0}
             buttonType={'icon'}
-            lang={lang} id={row.id} dataSource={'my'} />
+            lang={lang} id={row.id} />
         ];
         // if (activeTabKey === 'my') {
         //   return [
@@ -185,30 +185,31 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
 
   return (
     <>
-      <Tooltip
-        title={
-          <FormattedMessage
-            id="pages.unitgroup.drawer.title.select"
-            defaultMessage="Select UnitGroups"
-          />
-        }
-      >
-        {buttonType === 'icon' ? (
-          <Button shape="circle" icon={<DatabaseOutlined />} size="small" onClick={onSelect} />
-        ) : (
-          <Button onClick={onSelect} style={{ marginTop: '6px' }}>
+      {buttonType === 'icon' ? (
+        <Tooltip
+          title={
             <FormattedMessage
-              id="pages.unitgroup.drawer.title.select"
-              defaultMessage="select UnitGroups"
+              id="pages.button.select"
+              defaultMessage="Select"
             />
-          </Button>
-        )}
-      </Tooltip>
+          }
+        >
+          <Button shape="circle" icon={<DatabaseOutlined />} size="small" onClick={onSelect} />
+        </Tooltip>
+      ) : (
+        <Button onClick={onSelect} >
+          <FormattedMessage
+            id="pages.button.select"
+            defaultMessage="select"
+          />
+        </Button>
+      )}
+
       <Drawer
         title={
           <FormattedMessage
             id="pages.unitgroup.drawer.title.select"
-            defaultMessage="Selete UnitGroups"
+            defaultMessage="Selete UnitGroup"
           />
         }
         width="90%"
@@ -227,7 +228,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
               {' '}
-              <FormattedMessage id="pages.table.option.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
             </Button>
             <Button
               onClick={() => {
@@ -236,7 +237,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
               }}
               type="primary"
             >
-              <FormattedMessage id="pages.table.option.submit" defaultMessage="Submit" />
+              <FormattedMessage id="pages.button.submit" defaultMessage="Submit" />
             </Button>
           </Space>
         }

@@ -43,12 +43,12 @@ const FlowpropertiesDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDra
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="pages.table.option.delete" defaultMessage="Delete" />}>
+      <Tooltip title={<FormattedMessage id="pages.button.delete" defaultMessage="Delete" />}>
         {buttonType === 'icon' ? (
           <>
             <Button shape="circle" icon={<DeleteOutlined />} size="small" onClick={showModal} />
             <Modal
-              title={<FormattedMessage id="pages.table.option.delete" defaultMessage="Delete" />}
+              title={<FormattedMessage id="pages.button.delete" defaultMessage="Delete" />}
               open={isModalVisible}
               onOk={handleOk}
               onCancel={handleCancel}
@@ -62,10 +62,10 @@ const FlowpropertiesDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDra
         ) : (
           <>
             <Button size="small" onClick={showModal}>
-              <FormattedMessage id="pages.table.option.delete" defaultMessage="Delete" />
+              <FormattedMessage id="pages.button.delete" defaultMessage="Delete" />
             </Button>
             <Modal
-              title={<FormattedMessage id="pages.table.option.delete" defaultMessage="Delete" />}
+              title={<FormattedMessage id="pages.button.delete" defaultMessage="Delete" />}
               open={isModalVisible}
               onOk={handleOk}
               onCancel={handleCancel}

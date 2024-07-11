@@ -2,6 +2,7 @@ import { langOptions } from '@/services/general/data';
 import { getSourceDetail } from '@/services/sources/api';
 import { genSourceFromData } from '@/services/sources/util';
 import { ProFormInstance } from '@ant-design/pro-components';
+import { FormattedMessage } from '@umijs/max';
 import { Button, Card, Col, Divider, Form, Input, Row, Select, Space } from 'antd';
 import React, { FC, useEffect, useState } from 'react';
 import SourceView from '../view';
@@ -48,8 +49,8 @@ const SourceSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => 
         </Form.Item>
         <Space direction="horizontal" style={{ marginTop: '6px' }}>
           <SourceSelectDrawer buttonType="text" lang={lang} onData={handletSourceData} />
-          {id && <SourceView lang={lang} id={id} dataSource="tg" buttonType="text" />}
-          {id && <Button onClick={() => { formRef.current?.setFieldValue([...name], {}); onData() }}>Clear</Button>}
+          {id && <SourceView lang={lang} id={id} buttonType="text" />}
+          {id && <Button onClick={() => { formRef.current?.setFieldValue([...name], {}); onData() }}><FormattedMessage id="pages.button.clear" defaultMessage="Clear" /></Button>}
         </Space>
       </Space>
       <Form.Item label="Type" name={[...name, '@type']}>

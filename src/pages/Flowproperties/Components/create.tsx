@@ -152,7 +152,7 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="pages.table.option.create" defaultMessage="Create" />}>
+      <Tooltip title={<FormattedMessage id="pages.button.create" defaultMessage="Create" />}>
         <Button
           size={'middle'}
           type="text"
@@ -163,7 +163,7 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
         />
       </Tooltip>
       <Drawer
-        title={<FormattedMessage id="pages.table.option.create" defaultMessage="Flow Properties Create" />}
+        title={<FormattedMessage id="pages.flowproperty.drawer.title.create" defaultMessage="Create Flow Property" />}
         width="90%"
         closable={false}
         extra={
@@ -180,10 +180,10 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
               {' '}
-              <FormattedMessage id="pages.table.option.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
             </Button>
             <Button onClick={() => formRefCreate.current?.submit()} type="primary">
-              <FormattedMessage id="pages.table.option.submit" defaultMessage="Submit" />
+              <FormattedMessage id="pages.button.submit" defaultMessage="Submit" />
             </Button>
           </Space>
         }

@@ -35,7 +35,7 @@ const UnitCreate: FC<Props> = ({ onData }) => {
 
     return (
         <>
-            <Tooltip title={<FormattedMessage id="pages.table.option.create" defaultMessage="Create"></FormattedMessage>}>
+            <Tooltip title={<FormattedMessage id="pages.button.create" defaultMessage="Create"></FormattedMessage>}>
                 <Button
                     size={'middle'}
                     type="text"
@@ -68,12 +68,12 @@ const UnitCreate: FC<Props> = ({ onData }) => {
                         <Button onClick={() => {
                             setDrawerVisible(false);
                         }}>
-                            <FormattedMessage id="pages.table.option.cancel" defaultMessage="Cancel"></FormattedMessage>
+                            <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel"></FormattedMessage>
                         </Button>
                         <Button onClick={() => {
                             formRefCreate.current?.submit();
                         }} type="primary">
-                            <FormattedMessage id="pages.table.option.submit" defaultMessage="Submit"></FormattedMessage>
+                            <FormattedMessage id="pages.button.submit" defaultMessage="Submit"></FormattedMessage>
                         </Button>
                     </Space>
                 }

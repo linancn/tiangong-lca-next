@@ -183,7 +183,7 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="pages.table.option.create" defaultMessage="Create" />}>
+      <Tooltip title={<FormattedMessage id="pages.button.create" defaultMessage="Create" />}>
         <Button
           size={'middle'}
           type="text"
@@ -215,11 +215,10 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
         footer={
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
-              {' '}
-              <FormattedMessage id="options.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
             </Button>
             <Button onClick={() => formRefCreate.current?.submit()} type="primary">
-              <FormattedMessage id="options.submit" defaultMessage="Submit" />
+              <FormattedMessage id="pages.button.submit" defaultMessage="Submit" />
             </Button>
           </Space>
         }
