@@ -158,6 +158,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
               actionRef={actionRefExchangeTable}
               onData={handletExchangeData}
               setViewDrawerVisible={() => { }}
+              lang={lang}
             />
             <ProcessExchangeDelete
               id={row.dataSetInternalID}

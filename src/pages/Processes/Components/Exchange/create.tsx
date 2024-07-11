@@ -44,7 +44,7 @@ const ProcessExchangeCreate: FC<Props> = ({ lang, onData }) => {
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="options.create" defaultMessage="Create" />}>
+      <Tooltip title={<FormattedMessage id="pages.button.create" defaultMessage="Create" />}>
         <Button
           size={'middle'}
           type="text"
@@ -55,7 +55,7 @@ const ProcessExchangeCreate: FC<Props> = ({ lang, onData }) => {
         />
       </Tooltip>
       <Drawer
-        title={<FormattedMessage id="exchanges.create" defaultMessage="Process Exchange Create" />}
+        title={<FormattedMessage id="pages.process.exchange.drawer.title.create" defaultMessage="Create Exchange" />}
         width="90%"
         closable={false}
         extra={
@@ -71,11 +71,10 @@ const ProcessExchangeCreate: FC<Props> = ({ lang, onData }) => {
         footer={
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
-              {' '}
-              <FormattedMessage id="options.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
             </Button>
             <Button onClick={() => formRefCreate.current?.submit()} type="primary">
-              <FormattedMessage id="options.submit" defaultMessage="Submit" />
+              <FormattedMessage id="pages.button.submit" defaultMessage="Submit" />
             </Button>
           </Space>
         }

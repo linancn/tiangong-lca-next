@@ -25,4 +25,6 @@ export default {
   'pages.button.select': '选择',
   'pages.button.export': '导出',
   'pages.button.clear': '清空',
+
+  'pages.search.placeholder': '智能查询：用一句话或几个关键词描述您所需要的数据。',
 };

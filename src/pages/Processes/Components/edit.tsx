@@ -70,16 +70,16 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
 
   const processExchangeColumns: ProColumns<ProcessExchangeTable>[] = [
     {
-      title: <FormattedMessage id="processExchange.index" defaultMessage="Index" />,
+      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
       dataIndex: 'index',
       valueType: 'index',
       search: false,
     },
-    {
-      title: <FormattedMessage id="processExchange.dataSetInternalID" defaultMessage="DataSet Internal ID" />,
-      dataIndex: 'dataSetInternalID',
-      search: false,
-    },
+    // {
+    //   title: <FormattedMessage id="processExchange.dataSetInternalID" defaultMessage="DataSet Internal ID" />,
+    //   dataIndex: 'dataSetInternalID',
+    //   search: false,
+    // },
     {
       title: (
         <FormattedMessage
@@ -150,7 +150,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
       }
     },
     {
-      title: <FormattedMessage id="options.option" defaultMessage="Option" />,
+      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
@@ -167,6 +167,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
             <ProcessExchangeEdit
               id={row.dataSetInternalID}
               data={exchangeDataSource}
+              lang={lang}
               buttonType={'icon'}
               actionRef={actionRefExchangeTable}
               onData={handletExchangeData}
@@ -624,17 +625,17 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="options.edit" defaultMessage="Edit" />}>
+      <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
         {buttonType === 'icon' ? (
           <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
         ) : (
           <Button onClick={onEdit}>
-            <FormattedMessage id="options.edit" defaultMessage="Edit" />
+            <FormattedMessage id="pages.button.edit" defaultMessage="Edit" />
           </Button>
         )}
       </Tooltip>
       <Drawer
-        title={<FormattedMessage id="options.edit" defaultMessage="Edit Process" />}
+        title={<FormattedMessage id="pages.process.drawer.title.edit" defaultMessage="Edit Process" />}
         width="90%"
         closable={false}
         extra={
@@ -679,6 +680,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
               setSpinning(true);
               const updateResult = await updateProcess({
                 ...fromData,
+                id: id,
                 exchanges: { exchange: [...exchangeDataSource] },
               });
               if (updateResult?.data) {
