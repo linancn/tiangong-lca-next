@@ -1,11 +1,12 @@
-import { getFlowTable } from '@/services/flows/api';
+import { flow_hybrid_search, getFlowTable } from '@/services/flows/api';
 import { FlowsTable } from '@/services/flows/data';
 import { ListPagination } from '@/services/general/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, DatabaseOutlined } from '@ant-design/icons';
 import { ProTable } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
-import { Button, Card, Drawer, Space, Tooltip } from 'antd';
+import { Button, Card, Drawer, Input, Space, Tooltip } from 'antd';
+import type { SearchProps } from 'antd/es/input/Search';
 import type { FC, Key } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -23,8 +24,12 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [activeTabKey, setActiveTabKey] = useState<string>('tg');
+  const [dataSource, setDataSource] = useState<any>([]);
+  const [tableLoading, setTableLoading] = useState<boolean>(false);
   const tgActionRefSelect = useRef<ActionType>();
   const myActionRefSelect = useRef<ActionType>();
+
+  const { Search } = Input;
 
   const onSelect = () => {
     setDrawerVisible(true);
@@ -55,11 +60,12 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       title: <FormattedMessage id="pages.table.title.name" defaultMessage="Base Name" />,
       dataIndex: 'baseName',
       sorter: false,
-      render: (_, row) => [
-        <Tooltip key={0} placement="topLeft" title={row.generalComment}>
-          {row.baseName}
-        </Tooltip>,
-      ],
+      search: false,
+    render: (_, row) => [
+      <Tooltip key={0} placement="topLeft" title={row.generalComment}>
+        {row.baseName}
+      </Tooltip>,
+    ],
     },
     {
       title: <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />,
@@ -76,13 +82,13 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       sorter: false,
       search: false,
     },
-    {
-      title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At" />,
-      dataIndex: 'created_at',
-      valueType: 'dateTime',
-      sorter: true,
-      search: false,
-    },
+    // {
+    //   title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At" />,
+    //   dataIndex: 'created_at',
+    //   valueType: 'dateTime',
+    //   sorter: false,
+    //   search: false,
+    // },
     {
       title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
       dataIndex: 'option',
@@ -122,34 +128,45 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
     { key: 'my', tab: 'My Data' },
   ];
 
+  const onSearch: SearchProps['onSearch'] = async (value) => {
+    setTableLoading(true);
+    setDataSource(await flow_hybrid_search(value, {}, lang));
+    setTableLoading(false);
+  };
+
   const databaseList: Record<string, React.ReactNode> = {
     tg: (
-      <ProTable<FlowsTable, ListPagination>
-        actionRef={tgActionRefSelect}
-        search={{
-          defaultCollapsed: false,
-        }}
-        pagination={{
-          showSizeChanger: false,
-          pageSize: 10,
-        }}
-        request={async (
-          params: {
-            pageSize: number;
-            current: number;
-          },
-          sort,
-        ) => {
-          return getFlowTable(params, sort, lang, 'tg');
-        }}
-        columns={FlowsColumns}
-        rowSelection={{
-          type: 'radio',
-          alwaysShowAlert: true,
-          selectedRowKeys,
-          onChange: onSelectChange,
-        }}
-      />
+      <>
+        <Card>
+          <Search size={'large'} placeholder="Key Word" onSearch={onSearch} enterButton />
+        </Card>
+        <ProTable<FlowsTable, ListPagination>
+          actionRef={tgActionRefSelect}
+          loading={tableLoading}
+          search={false}
+          pagination={{
+            showSizeChanger: false,
+            pageSize: 10,
+          }}
+          dataSource={dataSource}
+          // request={async (
+          //   params: {
+          //     pageSize: number;
+          //     current: number;
+          //   },
+          //   sort,
+          // ) => {
+          //   return getFlowTable(params, sort, lang, 'tg');
+          // }}
+          columns={FlowsColumns}
+          rowSelection={{
+            type: 'radio',
+            alwaysShowAlert: true,
+            selectedRowKeys,
+            onChange: onSelectChange,
+          }}
+        />
+      </>
     ),
     my: (
       <ProTable<FlowsTable, ListPagination>
@@ -188,30 +205,31 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
 
   return (
     <>
-      <Tooltip
-        title={
-          <FormattedMessage
-            id="pages.flows.drawer.title.select"
-            defaultMessage="Select Flows"
-          />
-        }
-      >
-        {buttonType === 'icon' ? (
-          <Button shape="circle" icon={<DatabaseOutlined />} size="small" onClick={onSelect} />
-        ) : (
-          <Button onClick={onSelect} style={{ marginTop: '6px' }}>
+      {buttonType === 'icon' ? (
+        <Tooltip
+          title={
             <FormattedMessage
-              id="pages.flows.drawer.title.select"
-              defaultMessage="select Flows"
+              id="pages.button.select"
+              defaultMessage="Select"
             />
-          </Button>
-        )}
-      </Tooltip>
+          }
+        >
+          <Button shape="circle" icon={<DatabaseOutlined />} size="small" onClick={onSelect} />
+        </Tooltip>
+      ) : (
+        <Button onClick={onSelect} style={{ marginTop: '6px' }}>
+          <FormattedMessage
+            id="pages.button.select"
+            defaultMessage="select"
+          />
+        </Button>
+      )}
+
       <Drawer
         title={
           <FormattedMessage
             id="pages.flows.drawer.title.select"
-            defaultMessage="Selete Flows"
+            defaultMessage="Selete Flow"
           />
         }
         width="90%"
