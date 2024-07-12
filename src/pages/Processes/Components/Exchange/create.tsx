@@ -7,6 +7,7 @@ import ProForm from '@ant-design/pro-form';
 import {
   Button,
   Card,
+  Collapse,
   Divider,
   Drawer,
   Form,
@@ -100,7 +101,7 @@ const ProcessExchangeCreate: FC<Props> = ({ lang, onData }) => {
           <Space direction="vertical" style={{ width: '100%' }}>
             <Form.Item label="Exchange Direction" name={'exchangeDirection'}>
               <Select
-                placeholder="Select a direction"
+                // placeholder="Select a direction"
                 optionFilterProp="direction"
                 options={[
                   { value: 'input', label: 'Input' },
@@ -142,9 +143,15 @@ const ProcessExchangeCreate: FC<Props> = ({ lang, onData }) => {
             </Card>
           </Space>
         </ProForm>
-        <Typography>
-          <pre>{JSON.stringify(fromData, null, 2)}</pre>
-        </Typography>
+        <Collapse
+          items={[{
+            key: '1', label: 'JSON Data',
+            children:
+              <Typography>
+                <pre>{JSON.stringify(fromData, null, 2)}</pre>
+              </Typography>
+          }]}
+        />
       </Drawer>
     </>
   );

@@ -11,6 +11,7 @@ import type { ActionType } from '@ant-design/pro-table';
 import {
     Button,
     Card,
+    Collapse,
     Drawer,
     Form,
     Input,
@@ -263,9 +264,15 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerV
                             {sourceList[activeTabKey]}
                         </Card>
                     </ProForm>
-                    <Typography>
-                        <pre>{JSON.stringify(fromData, null, 2)}</pre>
-                    </Typography>
+                    <Collapse
+                        items={[{
+                            key: '1', label: 'JSON Data',
+                            children:
+                                <Typography>
+                                    <pre>{JSON.stringify(fromData, null, 2)}</pre>
+                                </Typography>
+                        }]}
+                    />
                 </Spin>
             </Drawer>
         </>

@@ -6,6 +6,7 @@ import ProForm from '@ant-design/pro-form';
 import {
     Button,
     Card,
+    Collapse,
     Drawer,
     Form,
     Input,
@@ -113,9 +114,15 @@ const UnitCreate: FC<Props> = ({ onData }) => {
                         </Form.Item>
                     </Space>
                 </ProForm>
-                <Typography>
-                    <pre>{JSON.stringify(fromData, null, 2)}</pre>
-                </Typography>
+                <Collapse
+                    items={[{
+                        key: '1', label: 'JSON Data',
+                        children:
+                            <Typography>
+                                <pre>{JSON.stringify(fromData, null, 2)}</pre>
+                            </Typography>
+                    }]}
+                />
             </Drawer>
         </>
     );

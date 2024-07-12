@@ -7,5 +7,6 @@ export default {
   'pages.contact.drawer.title.view': '查看联系人',
   'pages.contact.drawer.title.edit': '编辑联系人',
   'pages.contact.drawer.title.delete': '删除联系人',
+  'pages.contact.drawer.title.select': '选择联系人',
   'pages.contact.deleteMessage': '确定要删除此数据吗？',
 };

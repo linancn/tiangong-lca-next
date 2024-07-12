@@ -3,6 +3,8 @@ export default {
 
   'pages.flowproperty.drawer.title.view': '查看流属性',
   'pages.flowproperty.drawer.title.create': '创建流属性',
+  'pages.flowproperty.drawer.title.edit': '编辑流属性',
+  'pages.flowproperty.drawer.title.select': '选择流属性',
 
   'pages.flowproperties.classification': '分类',
   'pages.flowproperties.createdAt': '创建时间',

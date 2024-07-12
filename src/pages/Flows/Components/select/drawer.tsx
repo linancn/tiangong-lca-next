@@ -1,5 +1,5 @@
 import { flow_hybrid_search, getFlowTable } from '@/services/flows/api';
-import { FlowsTable } from '@/services/flows/data';
+import { FlowTable } from '@/services/flows/data';
 import { ListPagination } from '@/services/general/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, DatabaseOutlined } from '@ant-design/icons';
@@ -52,7 +52,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
     }
   };
 
-  const FlowsColumns: ProColumns<FlowsTable>[] = [
+  const FlowsColumns: ProColumns<FlowTable>[] = [
     {
       title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
       dataIndex: 'index',
@@ -76,10 +76,15 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       sorter: false,
       search: false,
     },
-
+    {
+      title: <FormattedMessage id="pages.flow.dataType" defaultMessage="Data Type" />,
+      dataIndex: 'dataType',
+      sorter: false,
+      search: false,
+    },
     {
       title: (
-        <FormattedMessage id="pages.flows.CASNumber" defaultMessage="CAS Number" />
+        <FormattedMessage id="pages.flow.CASNumber" defaultMessage="CAS Number" />
       ),
       dataIndex: 'CASNumber',
       sorter: false,
@@ -127,8 +132,8 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
   ];
 
   const tabList = [
-    { key: 'tg', tab: 'TianGong Data' },
-    { key: 'my', tab: 'My Data' },
+    { key: 'tg', tab: <FormattedMessage id="pages.tab.title.tgdata" defaultMessage="TianGong Data" /> },
+    { key: 'my', tab: <FormattedMessage id="pages.tab.title.mydata" defaultMessage="My Data" /> },
   ];
 
   const onSearch: SearchProps['onSearch'] = async (value) => {
@@ -143,13 +148,13 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
         <Card>
           <Search size={'large'} placeholder={intl.formatMessage({ id: 'pages.search.placeholder' })} onSearch={onSearch} enterButton />
         </Card>
-        <ProTable<FlowsTable, ListPagination>
+        <ProTable<FlowTable, ListPagination>
           actionRef={tgActionRefSelect}
           loading={tableLoading}
           search={false}
           pagination={{
             showSizeChanger: false,
-            pageSize: 10,
+            pageSize: 10000,
           }}
           dataSource={dataSource}
           // request={async (
@@ -172,7 +177,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       </>
     ),
     my: (
-      <ProTable<FlowsTable, ListPagination>
+      <ProTable<FlowTable, ListPagination>
         actionRef={myActionRefSelect}
         search={{
           defaultCollapsed: false,
@@ -220,7 +225,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
           <Button shape="circle" icon={<DatabaseOutlined />} size="small" onClick={onSelect} />
         </Tooltip>
       ) : (
-        <Button onClick={onSelect} style={{ marginTop: '6px' }}>
+        <Button onClick={onSelect}>
           <FormattedMessage
             id="pages.button.select"
             defaultMessage="select"
@@ -231,7 +236,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       <Drawer
         title={
           <FormattedMessage
-            id="pages.flows.drawer.title.select"
+            id="pages.flow.drawer.title.select"
             defaultMessage="Selete Flow"
           />
         }

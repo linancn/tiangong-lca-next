@@ -8,6 +8,7 @@ import ProForm from '@ant-design/pro-form';
 import {
   Button,
   Card,
+  Collapse,
   Divider,
   Drawer,
   Form,
@@ -181,9 +182,15 @@ const ProcessExchangeEdit: FC<Props> = ({
             </Card>
           </Space>
         </ProForm>
-        <Typography>
-          <pre>{JSON.stringify(fromData, null, 2)}</pre>
-        </Typography>
+        <Collapse
+          items={[{
+            key: '1', label: 'JSON Data',
+            children:
+              <Typography>
+                <pre>{JSON.stringify(fromData, null, 2)}</pre>
+              </Typography>
+          }]}
+        />
       </Drawer>
     </>
   );

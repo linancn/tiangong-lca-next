@@ -10,6 +10,7 @@ import type { ActionType } from '@ant-design/pro-table';
 import {
     Button,
     Card,
+    Collapse,
     Drawer,
     Form,
     Input,
@@ -106,7 +107,7 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
                     lang={lang}
                     formRef={formRefCreate}
                     onData={handletFromData}
-                    />
+                />
             </Space>
         ),
         administrativeInformation: (
@@ -121,7 +122,7 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
                         lang={lang}
                         formRef={formRefCreate}
                         onData={handletFromData}
-                        />
+                    />
                 </Card>
                 <br />
                 <Card size="small" title={'Publication And Ownership'}>
@@ -245,9 +246,15 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
                         {sourceList[activeTabKey]}
                     </Card>
                 </ProForm>
-                <Typography>
-                    <pre>{JSON.stringify(fromData, null, 2)}</pre>
-                </Typography>
+                <Collapse
+                    items={[{
+                        key: '1', label: 'JSON Data',
+                        children:
+                            <Typography>
+                                <pre>{JSON.stringify(fromData, null, 2)}</pre>
+                            </Typography>
+                    }]}
+                />
             </Drawer>
         </>
     );

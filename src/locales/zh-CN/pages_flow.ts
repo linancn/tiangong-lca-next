@@ -1,5 +1,6 @@
 export default {
   'pages.flow.CASNumber': 'CAS号',
+  'pages.flow.dataType': '类型',
 
   'pages.flow.baseName': '基础名称',
   'pages.flow.classification': '分类',
@@ -12,4 +13,5 @@ export default {
 
 
   'pages.flow.drawer.title.view': '查看流',
+  'pages.flow.drawer.title.select': '选择流',
 };

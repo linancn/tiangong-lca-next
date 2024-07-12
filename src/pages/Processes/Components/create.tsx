@@ -15,6 +15,7 @@ import type { ActionType } from '@ant-design/pro-table';
 import {
   Button,
   Card,
+  Collapse,
   Divider,
   Drawer,
   Form,
@@ -559,7 +560,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="options.create" defaultMessage="Create" />}>
+      <Tooltip title={<FormattedMessage id="pages.button.create" defaultMessage="Create" />}>
         <Button
           size={'middle'}
           type="text"
@@ -634,9 +635,15 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             {contentList[activeTabKey]}
           </Card>
         </ProForm>
-        <Typography>
-          <pre>{JSON.stringify(fromData, null, 2)}</pre>
-        </Typography>
+        <Collapse
+            items={[{
+              key: '1', label: 'JSON Data',
+              children:
+                <Typography>
+                  <pre>{JSON.stringify(fromData, null, 2)}</pre>
+                </Typography>
+            }]}
+          />
       </Drawer>
     </>
   );

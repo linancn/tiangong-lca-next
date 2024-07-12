@@ -13,6 +13,7 @@ import {
   Space
 } from 'antd';
 import React, { FC, useEffect, useState } from 'react';
+import { FormattedMessage } from 'umi';
 import FlowpropertyView from '../view';
 import FlowpropertiesSelectDrawer from './drawer';
 // import LangTextItemFrom from '@/components/LangTextItem/from';
@@ -56,7 +57,7 @@ const FlowpropertiesSelectFrom: FC<Props> = ({ name, label, lang, formRef, onDat
         <Space direction="horizontal" style={{ marginTop: '6px' }}>
           <FlowpropertiesSelectDrawer buttonType="text" lang={lang} onData={handletFlowpropertyData} />
           {id && <FlowpropertyView lang={lang} id={id} buttonType="text" />}
-          {id && <Button onClick={() => { formRef.current?.setFieldValue([...name], {}); onData() }}>Clear</Button>}
+          {id && <Button onClick={() => { formRef.current?.setFieldValue([...name], {}); onData() }}><FormattedMessage id="pages.button.clear" defaultMessage="Clear" /></Button>}
         </Space>
 
       </Space>

@@ -14,6 +14,7 @@ import ProTable from '@ant-design/pro-table';
 import {
     Button,
     Card,
+    Collapse,
     Drawer,
     Form,
     Input,
@@ -357,10 +358,16 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
                         >
                             {contentList[activeTabKey]}
                         </Card>
-                        <Typography>
-                            <pre>{JSON.stringify(fromData, null, 2)}</pre>
-                        </Typography>
                     </ProForm>
+                    <Collapse
+                        items={[{
+                            key: '1', label: 'JSON Data',
+                            children:
+                                <Typography>
+                                    <pre>{JSON.stringify(fromData, null, 2)}</pre>
+                                </Typography>
+                        }]}
+                    />
                 </ Spin>
             </Drawer >
         </>

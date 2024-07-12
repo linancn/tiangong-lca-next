@@ -119,8 +119,8 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
   ];
 
   const tabList = [
-    { key: 'tg', tab: 'TianGong Data' },
-    { key: 'my', tab: 'My Data' },
+    { key: 'tg', tab: <FormattedMessage id="pages.tab.title.tgdata" defaultMessage="TianGong Data" /> },
+    { key: 'my', tab: <FormattedMessage id="pages.tab.title.mydata" defaultMessage="My Data" /> },
   ];
 
   const databaseList: Record<string, React.ReactNode> = {
@@ -189,30 +189,32 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
 
   return (
     <>
-      <Tooltip
-        title={
-          <FormattedMessage
-            id="pages.flowproperties.drawer.title.select"
-            defaultMessage="Select Flowproperties"
-          />
-        }
-      >
+      
         {buttonType === 'icon' ? (
-          <Button shape="circle" icon={<DatabaseOutlined />} size="small" onClick={onSelect} />
-        ) : (
-          <Button onClick={onSelect} style={{ marginTop: '6px' }}>
+          <Tooltip
+          title={
             <FormattedMessage
-              id="pages.flowproperties.drawer.title.select"
-              defaultMessage="select Flowproperties"
+              id="pages.button.select"
+              defaultMessage="Select"
+            />
+          }
+        >
+          <Button shape="circle" icon={<DatabaseOutlined />} size="small" onClick={onSelect} />
+          </Tooltip>
+        ) : (
+          <Button onClick={onSelect}>
+            <FormattedMessage
+              id="pages.button.select"
+              defaultMessage="Select"
             />
           </Button>
         )}
-      </Tooltip>
+      
       <Drawer
         title={
           <FormattedMessage
-            id="pages.flowproperties.drawer.title.select"
-            defaultMessage="Selete Flowproperties"
+            id="pages.flowproperty.drawer.title.select"
+            defaultMessage="Selete Flow Property"
           />
         }
         width="90%"
