@@ -58,7 +58,8 @@
     "querystring": "^0.2.1",
     "react": "^18.3.0",
     "react-countup": "^6.5.3",
-    "react-dom": "^18.3.0"
+    "react-dom": "^18.3.0",
+    "react-intl":"^6.6.8"
   },
   "devDependencies": {
     "@ant-design/pro-cli": "^3.3.0",
