@@ -10,6 +10,7 @@ import type { ActionType } from '@ant-design/pro-table';
 import {
   Button,
   Card,
+  Collapse,
   // DatePicker,
   Drawer,
   Form,
@@ -227,9 +228,15 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
             {contentList[activeTabKey]}
           </Card>
         </ProForm>
-        <Typography>
-          <pre>{JSON.stringify(fromData, null, 2)}</pre>
-        </Typography>
+        <Collapse
+            items={[{
+              key: '1', label: 'JSON Data',
+              children:
+                <Typography>
+                  <pre>{JSON.stringify(fromData, null, 2)}</pre>
+                </Typography>
+            }]}
+          />
       </Drawer>
     </>
   );

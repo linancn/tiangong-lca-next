@@ -115,8 +115,8 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
   ];
 
   const tabList = [
-    { key: 'tg', tab: 'TianGong Data' },
-    { key: 'my', tab: 'My Data' },
+    { key: 'tg', tab: <FormattedMessage id="pages.tab.title.tgdata" defaultMessage="TianGong Data" /> },
+    { key: 'my', tab: <FormattedMessage id="pages.tab.title.mydata" defaultMessage="My Data" /> },
   ];
 
   const databaseList: Record<string, React.ReactNode> = {

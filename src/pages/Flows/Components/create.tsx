@@ -11,6 +11,7 @@ import type { ActionType } from '@ant-design/pro-table';
 import {
     Button,
     Card,
+    Collapse,
     Drawer,
     Form,
     Input,
@@ -254,14 +255,16 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
                     >
                         {contentList[activeTabKey]}
                     </Card>
-                    <Form.Item noStyle shouldUpdate>
-                        {() => (
+                </ProForm>
+                <Collapse
+                    items={[{
+                        key: '1', label: 'JSON Data',
+                        children:
                             <Typography>
                                 <pre>{JSON.stringify(fromData, null, 2)}</pre>
                             </Typography>
-                        )}
-                    </Form.Item>
-                </ProForm>
+                    }]}
+                />
             </Drawer>
         </>
     );

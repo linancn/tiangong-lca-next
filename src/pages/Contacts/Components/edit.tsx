@@ -9,7 +9,7 @@ import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ProForm } from '@ant-design/pro-components';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import type { ActionType } from '@ant-design/pro-table';
-import { Button, Card, Drawer, Form, Input, Space, Spin, Tooltip, Typography, message } from 'antd';
+import { Button, Card, Collapse, Drawer, Form, Input, Space, Spin, Tooltip, Typography, message } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -283,9 +283,15 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
               <Input />
             </Form.Item>
           </ProForm>
-          <Typography>
-            <pre>{JSON.stringify(fromData, null, 2)}</pre>
-          </Typography>
+          <Collapse
+            items={[{
+              key: '1', label: 'JSON Data',
+              children:
+                <Typography>
+                  <pre>{JSON.stringify(fromData, null, 2)}</pre>
+                </Typography>
+            }]}
+          />
         </Spin>
       </Drawer>
     </>

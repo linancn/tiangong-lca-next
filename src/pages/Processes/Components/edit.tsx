@@ -14,6 +14,7 @@ import type { ActionType } from '@ant-design/pro-table';
 import {
   Button,
   Card,
+  Collapse,
   Divider,
   Drawer,
   Form,
@@ -83,8 +84,8 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
     {
       title: (
         <FormattedMessage
-          id="processExchange.exchangeDirection"
-          defaultMessage="Exchange Direction"
+          id="pages.process.exchange.exchangeDirection"
+          defaultMessage="Direction"
         />
       ),
       dataIndex: 'exchangeDirection',
@@ -94,8 +95,8 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
     {
       title: (
         <FormattedMessage
-          id="processExchange.referenceToFlowDataSet"
-          defaultMessage="Reference To Flow DataSet"
+          id="pages.table.title.name"
+          defaultMessage="Name"
         />
       ),
       dataIndex: 'referenceToFlowDataSet',
@@ -108,14 +109,14 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
       ],
     },
     {
-      title: <FormattedMessage id="processExchange.meanAmount" defaultMessage="Mean Amount" />,
+      title: <FormattedMessage id="pages.process.exchange.meanAmount" defaultMessage="Mean Amount" />,
       dataIndex: 'meanAmount',
       sorter: false,
       search: false,
     },
     {
       title: (
-        <FormattedMessage id="processExchange.resultingAmount" defaultMessage="Resulting Amount" />
+        <FormattedMessage id="pages.process.exchange.resultingAmount" defaultMessage="Resulting Amount" />
       ),
       dataIndex: 'resultingAmount',
       sorter: false,
@@ -124,7 +125,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
     {
       title: (
         <FormattedMessage
-          id="processExchange.dataDerivationTypeStatus"
+          id="pages.process.exchange.dataDerivationTypeStatus"
           defaultMessage="Data Derivation Type Status"
         />
       ),
@@ -135,7 +136,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
     {
       title: (
         <FormattedMessage
-          id="processExchange.quantitativeReference"
+          id="pages.process.exchange.quantitativeReference"
           defaultMessage="Quantitative Reference"
         />
       ),
@@ -713,20 +714,26 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
               <Input />
             </Form.Item>
           </ProForm>
-          <Typography>
-            <pre>{JSON.stringify(fromData, null, 2)}</pre>
-            <pre>
-              {JSON.stringify(
-                {
-                  exchanges: {
-                    exchange: [...exchangeDataSource],
-                  },
-                },
-                null,
-                2,
-              )}
-            </pre>
-          </Typography>
+          <Collapse
+            items={[{
+              key: '1', label: 'JSON Data',
+              children:
+                <Typography>
+                  <pre>{JSON.stringify(fromData, null, 2)}</pre>
+                  <pre>
+                    {JSON.stringify(
+                      {
+                        exchanges: {
+                          exchange: [...exchangeDataSource],
+                        },
+                      },
+                      null,
+                      2,
+                    )}
+                  </pre>
+                </Typography>
+            }]}
+          />
         </Spin>
       </Drawer>
     </>

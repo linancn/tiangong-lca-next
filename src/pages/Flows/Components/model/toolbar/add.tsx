@@ -1,19 +1,15 @@
-import { flow_hybrid_search, getFlowTable } from '@/services/flows/api';
-import { FlowTable } from '@/services/flows/data';
+import ProcessView from '@/pages/Processes/Components/view';
 import { ListPagination } from '@/services/general/data';
+import { getProcessTable } from '@/services/processes/api';
+import { ProcessTable } from '@/services/processes/data';
 import styles from '@/style/custom.less';
-import { CloseOutlined, DatabaseOutlined } from '@ant-design/icons';
+import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { ProTable } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
-import { Button, Card, Drawer, Input, Space, Tooltip } from 'antd';
-import type { SearchProps } from 'antd/es/input/Search';
+import { Button, Card, Drawer, Space, Tooltip } from 'antd';
 import type { FC, Key } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
-import { useIntl } from 'react-intl';
 import { FormattedMessage } from 'umi';
-import FlowsDelete from '../delete';
-import FlowsEdit from '../edit';
-import FlowsView from '../view';
 
 type Props = {
   buttonType: string;
@@ -21,18 +17,12 @@ type Props = {
   onData: (rowKey: any) => void;
 };
 
-const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
+const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [activeTabKey, setActiveTabKey] = useState<string>('tg');
-  const [dataSource, setDataSource] = useState<any>([]);
-  const [tableLoading, setTableLoading] = useState<boolean>(false);
   const tgActionRefSelect = useRef<ActionType>();
   const myActionRefSelect = useRef<ActionType>();
-
-  const intl = useIntl();
-
-  const { Search } = Input;
 
   const onSelect = () => {
     setDrawerVisible(true);
@@ -52,7 +42,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
     }
   };
 
-  const FlowsColumns: ProColumns<FlowTable>[] = [
+  const processColumns: ProColumns<ProcessTable>[] = [
     {
       title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
       dataIndex: 'index',
@@ -60,12 +50,11 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Base Name" />,
+      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name" />,
       dataIndex: 'baseName',
       sorter: false,
-      search: false,
       render: (_, row) => [
-        <Tooltip key={0} placement="topLeft" title={row.generalComment}>
+        <Tooltip key={0} placement="topLeft" title={row.generalComment ?? '-'}>
           {row.baseName}
         </Tooltip>,
       ],
@@ -77,56 +66,59 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.flow.dataType" defaultMessage="Data Type" />,
-      dataIndex: 'dataType',
+      title: <FormattedMessage id="pages.process.referenceYear" defaultMessage="Reference Year" />,
+      dataIndex: 'referenceYear',
       sorter: false,
       search: false,
     },
     {
-      title: (
-        <FormattedMessage id="pages.flow.CASNumber" defaultMessage="CAS Number" />
-      ),
-      dataIndex: 'CASNumber',
+      title: <FormattedMessage id="pages.process.location" defaultMessage="Location" />,
+      dataIndex: 'location',
       sorter: false,
       search: false,
     },
-    // {
-    //   title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At" />,
-    //   dataIndex: 'created_at',
-    //   valueType: 'dateTime',
-    //   sorter: false,
-    //   search: false,
-    // },
+    {
+      title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At" />,
+      dataIndex: 'createdAt',
+      valueType: 'dateTime',
+      sorter: true,
+      search: false,
+    },
     {
       title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
-        if (activeTabKey === 'tg') {
+        return [
+          <Space size={'small'} key={0}>
+            <ProcessView id={row.id} dataSource={'tg'} lang={lang} />
+          </Space>,
+        ];
+        {/* if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <FlowsView id={row.id} lang={lang} buttonType={'icon'} />
-            </Space>,
-          ];
-        } else if (activeTabKey === 'my') {
-          return [
-            <Space size={'small'} key={0}>
-              <FlowsView id={row.id} lang={lang} buttonType={'icon'} />
-              <FlowsEdit
+              <ProcessView id={row.id} dataSource={dataSource} lang={lang} actionRef={actionRef} />
+              <ProcessEdit
                 id={row.id}
-                buttonType={'icon'}
                 lang={lang}
-                actionRef={myActionRefSelect}
+                buttonType={'icon'}
+                actionRef={actionRef}
+                setViewDrawerVisible={() => {}}
               />
-              <FlowsDelete
+              <ProcessDelete
                 id={row.id}
                 buttonType={'icon'}
-                actionRef={myActionRefSelect}
-                setViewDrawerVisible={() => { }}
+                actionRef={actionRef}
+                setViewDrawerVisible={() => {}}
               />
-            </Space>,
+            </Space >,
           ];
-        } else return [];
+        }
+return [
+  <Space size={'small'} key={0}>
+    <ProcessView id={row.id} dataSource={dataSource} lang={lang} actionRef={actionRef} />
+  </Space>,
+];*/}
       },
     },
   ];
@@ -136,37 +128,28 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
     { key: 'my', tab: <FormattedMessage id="pages.tab.title.mydata" defaultMessage="My Data" /> },
   ];
 
-  const onSearch: SearchProps['onSearch'] = async (value) => {
-    setTableLoading(true);
-    setDataSource(await flow_hybrid_search(value, {}, lang));
-    setTableLoading(false);
-  };
-
   const databaseList: Record<string, React.ReactNode> = {
     tg: (
       <>
-        <Card>
-          <Search size={'large'} placeholder={intl.formatMessage({ id: 'pages.search.placeholder' })} onSearch={onSearch} enterButton />
-        </Card>
-        <ProTable<FlowTable, ListPagination>
+        <ProTable<ProcessTable, ListPagination>
           actionRef={tgActionRefSelect}
-          loading={tableLoading}
-          search={false}
+          search={{
+            defaultCollapsed: false,
+          }}
           pagination={{
             showSizeChanger: false,
-            pageSize: 10000,
+            pageSize: 10,
           }}
-          dataSource={dataSource}
-          // request={async (
-          //   params: {
-          //     pageSize: number;
-          //     current: number;
-          //   },
-          //   sort,
-          // ) => {
-          //   return getFlowTable(params, sort, lang, 'tg');
-          // }}
-          columns={FlowsColumns}
+          request={async (
+            params: {
+              pageSize: number;
+              current: number;
+            },
+            sort,
+          ) => {
+            return getProcessTable(params, sort, lang, 'tg');
+          }}
+          columns={processColumns}
           rowSelection={{
             type: 'radio',
             alwaysShowAlert: true,
@@ -177,7 +160,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       </>
     ),
     my: (
-      <ProTable<FlowTable, ListPagination>
+      <ProTable<ProcessTable, ListPagination>
         actionRef={myActionRefSelect}
         search={{
           defaultCollapsed: false,
@@ -193,9 +176,9 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
           },
           sort,
         ) => {
-          return getFlowTable(params, sort, lang, 'my');
+          return getProcessTable(params, sort, lang, 'my');
         }}
-        columns={FlowsColumns}
+        columns={processColumns}
         rowSelection={{
           type: 'radio',
           alwaysShowAlert: true,
@@ -217,18 +200,18 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
         <Tooltip
           title={
             <FormattedMessage
-              id="pages.button.select"
-              defaultMessage="Select"
+              id="pages.button.add"
+              defaultMessage="Add"
             />
           }
         >
-          <Button shape="circle" icon={<DatabaseOutlined />} size="small" onClick={onSelect} />
+          <Button shape="circle" icon={<PlusOutlined />} size="small" onClick={onSelect} />
         </Tooltip>
       ) : (
         <Button onClick={onSelect}>
           <FormattedMessage
-            id="pages.button.select"
-            defaultMessage="select"
+            id="pages.button.add"
+            defaultMessage="Add"
           />
         </Button>
       )}
@@ -236,8 +219,8 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       <Drawer
         title={
           <FormattedMessage
-            id="pages.flow.drawer.title.select"
-            defaultMessage="Selete Flow"
+            id="pages.process.drawer.title.add"
+            defaultMessage="Add Process"
           />
         }
         width="90%"
@@ -255,12 +238,11 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
         footer={
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
-              {' '}
               <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
             </Button>
             <Button
               onClick={() => {
-                onData(selectedRowKeys);
+                onData(selectedRowKeys[0]);
                 setDrawerVisible(false);
               }}
               type="primary"
@@ -283,4 +265,4 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
   );
 };
 
-export default FlowsSelectDrawer;
+export default ModelToolbarAdd;

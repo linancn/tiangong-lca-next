@@ -7,24 +7,25 @@ import { ProForm } from '@ant-design/pro-components';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import type { ActionType } from '@ant-design/pro-table';
 import {
-    Button,
-    Card,
-    Drawer,
-    Form,
-    Input,
-    // Select,
-    Space,
-    Spin,
-    // Spin,
-    Tooltip,
-    Typography,
-    message,
+  Button,
+  Card,
+  Collapse,
+  Drawer,
+  Form,
+  Input,
+  // Select,
+  Space,
+  Spin,
+  // Spin,
+  Tooltip,
+  Typography,
+  message,
 } from 'antd';
 import type { FC } from 'react';
 import {
-    useEffect,
-    // useCallback, useEffect,
-    useRef, useState
+  useEffect,
+  // useCallback, useEffect,
+  useRef, useState
 } from 'react';
 import { FormattedMessage } from 'umi';
 
@@ -251,9 +252,15 @@ const FlowpropertiesEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
               {contentList[activeTabKey]}
             </Card>
           </ProForm>
-          <Typography>
-            <pre>{JSON.stringify(fromData, null, 2)}</pre>
-          </Typography>
+          <Collapse
+            items={[{
+              key: '1', label: 'JSON Data',
+              children:
+                <Typography>
+                  <pre>{JSON.stringify(fromData, null, 2)}</pre>
+                </Typography>
+            }]}
+          />
         </Spin>
       </Drawer >
     </>

@@ -124,16 +124,18 @@ const FlowpropertyView: FC<Props> = ({ id, buttonType, lang }) => {
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="pages.button.view" defaultMessage="View" />}>
-        {/* <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} /> */}
-        {buttonType === 'icon' ? (
+
+      {/* <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} /> */}
+      {buttonType === 'icon' ? (
+        <Tooltip title={<FormattedMessage id="pages.button.view" defaultMessage="View" />}>
           <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
-        ) : (
-          <Button onClick={onView}>
-            <FormattedMessage id="pages.button.view" defaultMessage="View" />
-          </Button>
-        )}
-      </Tooltip>
+        </Tooltip>
+      ) : (
+        <Button onClick={onView}>
+          <FormattedMessage id="pages.button.view" defaultMessage="View" />
+        </Button>
+      )}
+
       <Drawer
         title={<FormattedMessage id="pages.flowproperty.drawer.title.view" defaultMessage="View Flow Property" />}
         width="90%"

@@ -52,7 +52,7 @@ const FlowsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => {
         <Form.Item label="Ref Object Id" name={[...name, '@refObjectId']}>
           <Input disabled={true} style={{ width: '300px' }} />
         </Form.Item>
-        <Space direction="horizontal" >
+        <Space direction="horizontal" style={{ marginTop: '6px' }}>
           <FlowsSelectDrawer buttonType="text" lang={lang} onData={handletFlowsData} />
           {id && <FlowsView lang={lang} id={id} buttonType="text" />}
           {id && <Button onClick={() => { formRef.current?.setFieldValue([...name], {}); onData() }}><FormattedMessage id="pages.button.clear" defaultMessage="Clear" /></Button>}

@@ -25,6 +25,11 @@ export default {
   'pages.button.select': '选择',
   'pages.button.export': '导出',
   'pages.button.clear': '清空',
+  'pages.button.model': '模型',
+  'pages.button.add': '添加',
+
+  'pages.tab.title.mydata': '我的数据',
+  'pages.tab.title.tgdata': '天工数据',
 
   'pages.search.placeholder': '智能查询：用一句话或几个关键词描述您所需要的数据。',
 };

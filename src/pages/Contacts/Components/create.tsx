@@ -8,7 +8,7 @@ import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import ProForm from '@ant-design/pro-form';
 import type { ActionType } from '@ant-design/pro-table';
-import { Button, Card, Drawer, Form, Input, Space, Tooltip, Typography, message } from 'antd';
+import { Button, Card, Collapse, Drawer, Form, Input, Space, Tooltip, Typography, message } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -262,9 +262,15 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
             {contactList[activeTabKey]}
           </Card>
         </ProForm>
-        <Typography>
-          <pre>{JSON.stringify(fromData, null, 2)}</pre>
-        </Typography>
+        <Collapse
+            items={[{
+              key: '1', label: 'JSON Data',
+              children:
+                <Typography>
+                  <pre>{JSON.stringify(fromData, null, 2)}</pre>
+                </Typography>
+            }]}
+          />
       </Drawer >
     </>
   );
