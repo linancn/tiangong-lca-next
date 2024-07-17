@@ -9,7 +9,19 @@ import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ProForm } from '@ant-design/pro-components';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import type { ActionType } from '@ant-design/pro-table';
-import { Button, Card, Collapse, Drawer, Form, Input, Space, Spin, Tooltip, Typography, message } from 'antd';
+import {
+  Button,
+  Card,
+  Collapse,
+  Drawer,
+  Form,
+  Input,
+  Space,
+  Spin,
+  Tooltip,
+  Typography,
+  message,
+} from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -27,7 +39,6 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
   const [initData, setInitData] = useState<any>({});
   const [fromData, setFromData] = useState<any>({});
   const [activeTabKey, setActiveTabKey] = useState<string>('contactInformation');
-
 
   const onEdit = useCallback(() => {
     setDrawerVisible(true);
@@ -85,7 +96,10 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
               label="Contact Address"
             />
           </Card>
-          <Form.Item label="Telephone" name={['contactInformation', 'dataSetInformation', 'telephone']}>
+          <Form.Item
+            label="Telephone"
+            name={['contactInformation', 'dataSetInformation', 'telephone']}
+          >
             <Input />
           </Form.Item>
           <Form.Item label="Telefax" name={['contactInformation', 'dataSetInformation', 'telefax']}>
@@ -94,7 +108,10 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
           <Form.Item label="Email" name={['contactInformation', 'dataSetInformation', 'email']}>
             <Input />
           </Form.Item>
-          <Form.Item label="WWWAddress" name={['contactInformation', 'dataSetInformation', 'WWWAddress']}>
+          <Form.Item
+            label="WWWAddress"
+            name={['contactInformation', 'dataSetInformation', 'WWWAddress']}
+          >
             <Input />
           </Form.Item>
           <Card size="small" title={'Central Contact Point'}>
@@ -110,7 +127,7 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
             />
           </Card>
           <ContactSelectFrom
-            label='Reference To Contact'
+            label="Reference To Contact"
             name={['contactInformation', 'dataSetInformation', 'referenceToContact']}
             lang={lang}
             formRef={formRefEdit}
@@ -125,16 +142,13 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
           <Card size="small" title={'Data Entry By'}>
             <Form.Item
               label="Time Stamp"
-              name={[
-                'administrativeInformation',
-                'dataEntryBy',
-                'common:timeStamp',
-              ]}
+              name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
             >
               <Input />
             </Form.Item>
             <br />
-            <SourceSelectFrom label='Reference To Data Set Format'
+            <SourceSelectFrom
+              label="Reference To Data Set Format"
               name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
               lang={lang}
               formRef={formRefEdit}
@@ -153,8 +167,12 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
               <Input />
             </Form.Item>
             <ContactSelectFrom
-              label='Reference To Preceding Data Set Version'
-              name={['administrativeInformation', 'publicationAndOwnership', 'common:referenceToPrecedingDataSetVersion']}
+              label="Reference To Preceding Data Set Version"
+              name={[
+                'administrativeInformation',
+                'publicationAndOwnership',
+                'common:referenceToPrecedingDataSetVersion',
+              ]}
               lang={lang}
               formRef={formRefEdit}
               onData={handletFromData}
@@ -173,7 +191,7 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
         </Space>
       </>
     ),
-  }
+  };
 
   const onReset = () => {
     setSpinning(true);
@@ -196,7 +214,6 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
 
   return (
     <>
-
       {buttonType === 'icon' ? (
         <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
           <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
@@ -284,13 +301,17 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
             </Form.Item>
           </ProForm>
           <Collapse
-            items={[{
-              key: '1', label: 'JSON Data',
-              children:
-                <Typography>
-                  <pre>{JSON.stringify(fromData, null, 2)}</pre>
-                </Typography>
-            }]}
+            items={[
+              {
+                key: '1',
+                label: 'JSON Data',
+                children: (
+                  <Typography>
+                    <pre>{JSON.stringify(fromData, null, 2)}</pre>
+                  </Typography>
+                ),
+              },
+            ]}
           />
         </Spin>
       </Drawer>

@@ -44,16 +44,16 @@ const TableList: FC = () => {
       ],
     },
     {
-      title: <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />,
+      title: (
+        <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />
+      ),
       dataIndex: 'classification',
       sorter: false,
       search: false,
     },
 
     {
-      title: (
-        <FormattedMessage id="pages.flow.CASNumber" defaultMessage="CAS Number" />
-      ),
+      title: <FormattedMessage id="pages.flow.CASNumber" defaultMessage="CAS Number" />,
       dataIndex: 'CASNumber',
       sorter: false,
       search: false,
@@ -73,38 +73,21 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <FlowModel
-                buttonType={'icon'}
-                flowId={row.id}
-                lang={lang}
-              />
-              <FlowsView
-                buttonType={'icon'}
-                id={row.id}
-                lang={lang}
-              />
-              <FlowsEdit
-                id={row.id}
-                lang={lang}
-                buttonType={'icon'}
-                actionRef={actionRef}
-              />
+              <FlowModel buttonType={'icon'} flowId={row.id} lang={lang} />
+              <FlowsView buttonType={'icon'} id={row.id} lang={lang} />
+              <FlowsEdit id={row.id} lang={lang} buttonType={'icon'} actionRef={actionRef} />
               <FlowsDelete
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => { }}
+                setViewDrawerVisible={() => {}}
               />
             </Space>,
           ];
         }
         return [
           <Space size={'small'} key={0}>
-            <FlowsView
-              buttonType={'icon'}
-              id={row.id}
-              lang={lang}
-            />
+            <FlowsView buttonType={'icon'} id={row.id} lang={lang} />
           </Space>,
         ];
       },

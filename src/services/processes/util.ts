@@ -9,24 +9,25 @@ import {
 
 export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
   let quantitativeReference = {};
-  const exchange = data?.exchanges?.exchange?.map((item: any) => {
-    if (item.quantitativeReference) {
-      quantitativeReference = {
-        '@type': 'Reference flow(s)',
-        referenceToReferenceFlow: item['@dataSetInternalID'],
-        functionalUnitOrOther: getLangJson(item.functionalUnitOrOther),
+  const exchange =
+    data?.exchanges?.exchange?.map((item: any) => {
+      if (item.quantitativeReference) {
+        quantitativeReference = {
+          '@type': 'Reference flow(s)',
+          referenceToReferenceFlow: item['@dataSetInternalID'],
+          functionalUnitOrOther: getLangJson(item.functionalUnitOrOther),
+        };
+      }
+      return {
+        '@dataSetInternalID': item['@dataSetInternalID'],
+        referenceToFlowDataSet: item.referenceToFlowDataSet,
+        exchangeDirection: item.exchangeDirection,
+        meanAmount: item.meanAmount,
+        resultingAmount: item.resultingAmount,
+        dataDerivationTypeStatus: item.dataDerivationTypeStatus,
+        generalComment: getLangJson(item.generalComment),
       };
-    }
-    return {
-      '@dataSetInternalID': item['@dataSetInternalID'],
-      referenceToFlowDataSet: item.referenceToFlowDataSet,
-      exchangeDirection: item.exchangeDirection,
-      meanAmount: item.meanAmount,
-      resultingAmount: item.resultingAmount,
-      dataDerivationTypeStatus: item.dataDerivationTypeStatus,
-      generalComment: getLangJson(item.generalComment),
-    };
-  }) ?? [];
+    }) ?? [];
   return removeEmptyObjects({
     processDataSet: {
       '@xmlns:common': oldData.processDataSet?.['@xmlns:common'] ?? {},
@@ -44,7 +45,7 @@ export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
             'common:classification': {
               'common:class': classificationToList(
                 data?.processInformation?.dataSetInformation?.classificationInformation?.[
-                'common:classification'
+                  'common:classification'
                 ]?.['common:class'],
               ),
             },
@@ -64,7 +65,7 @@ export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
           locationOfOperationSupplyOrProduction: {
             '@location':
               data?.processInformation?.geography?.locationOfOperationSupplyOrProduction?.[
-              '@location'
+                '@location'
               ] ?? {},
             descriptionOfRestrictions: getLangJson(
               data?.processInformation?.geography?.locationOfOperationSupplyOrProduction
@@ -82,19 +83,19 @@ export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
           referenceToTechnologyFlowDiagrammOrPicture: {
             '@type':
               data?.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.[
-              '@type'
+                '@type'
               ] ?? {},
             '@refObjectId':
               data?.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.[
-              '@refObjectId'
+                '@refObjectId'
               ] ?? {},
             '@uri':
               data?.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.[
-              '@uri'
+                '@uri'
               ] ?? {},
             'common:shortDescription': getLangJson(
               data?.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.[
-              'common:shortDescription'
+                'common:shortDescription'
               ],
             ),
           },
@@ -145,21 +146,17 @@ export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
           ),
           referenceToDataSource: {
             '@type':
-              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.referenceToDataSource?.[
-              '@type'
-              ] ?? {},
+              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.referenceToDataSource?.['@type'] ?? {},
             '@refObjectId':
-              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.referenceToDataSource?.[
-              '@refObjectId'
-              ] ?? {},
+              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.referenceToDataSource?.['@refObjectId'] ?? {},
             '@uri':
-              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.referenceToDataSource?.[
-              '@uri'
-              ] ?? {},
+              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.referenceToDataSource?.['@uri'] ?? {},
             'common:shortDescription': getLangJson(
-              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.referenceToDataSource?.[
-              'common:shortDescription'
-              ],
+              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.referenceToDataSource?.['common:shortDescription'],
             ),
           },
           useAdviceForDataSet: getLangJson(
@@ -180,19 +177,19 @@ export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
             'common:referenceToNameOfReviewerAndInstitution': {
               '@refObjectId':
                 data?.modellingAndValidation?.validation?.review?.[
-                'common:referenceToNameOfReviewerAndInstitution'
+                  'common:referenceToNameOfReviewerAndInstitution'
                 ]?.['@refObjectId'] ?? {},
               '@type':
                 data?.modellingAndValidation?.validation?.review?.[
-                'common:referenceToNameOfReviewerAndInstitution'
+                  'common:referenceToNameOfReviewerAndInstitution'
                 ]?.['@type'] ?? {},
               '@uri':
                 data?.modellingAndValidation?.validation?.review?.[
-                'common:referenceToNameOfReviewerAndInstitution'
+                  'common:referenceToNameOfReviewerAndInstitution'
                 ]?.['@uri'] ?? {},
               'common:shortDescription': getLangJson(
                 data?.modellingAndValidation?.validation?.review?.[
-                'common:referenceToNameOfReviewerAndInstitution'
+                  'common:referenceToNameOfReviewerAndInstitution'
                 ]?.['common:shortDescription'],
               ),
             },
@@ -204,23 +201,23 @@ export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
           'common:referenceToPersonOrEntityGeneratingTheDataSet': {
             '@refObjectId':
               data?.administrativeInformation?.dataGenerator?.[
-              'common:referenceToPersonOrEntityGeneratingTheDataSet'
+                'common:referenceToPersonOrEntityGeneratingTheDataSet'
               ]?.['@refObjectId'] ?? {},
             '@type':
               data?.administrativeInformation?.dataGenerator?.[
-              'common:referenceToPersonOrEntityGeneratingTheDataSet'
+                'common:referenceToPersonOrEntityGeneratingTheDataSet'
               ]?.['@type'] ?? {},
             '@uri':
               data?.administrativeInformation?.dataGenerator?.[
-              'common:referenceToPersonOrEntityGeneratingTheDataSet'
+                'common:referenceToPersonOrEntityGeneratingTheDataSet'
               ]?.['@uri'] ?? {},
             '@version':
               data?.administrativeInformation?.dataGenerator?.[
-              'common:referenceToPersonOrEntityGeneratingTheDataSet'
+                'common:referenceToPersonOrEntityGeneratingTheDataSet'
               ]?.['@version'] ?? {},
             'common:shortDescription': getLangJson(
               data?.administrativeInformation?.dataGenerator?.[
-              'common:referenceToPersonOrEntityGeneratingTheDataSet'
+                'common:referenceToPersonOrEntityGeneratingTheDataSet'
               ]?.['common:shortDescription'],
             ),
           },
@@ -232,43 +229,38 @@ export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
         publicationAndOwnership: {
           'common:dateOfLastRevision':
             data?.administrativeInformation?.publicationAndOwnership?.[
-            'common:dateOfLastRevision'
+              'common:dateOfLastRevision'
             ] ?? {},
           'common:dataSetVersion':
-            data?.administrativeInformation?.publicationAndOwnership?.[
-            'common:dataSetVersion'
-            ] ?? {},
+            data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'] ??
+            {},
           'common:permanentDataSetURI':
             data?.administrativeInformation?.publicationAndOwnership?.[
-            'common:permanentDataSetURI'
+              'common:permanentDataSetURI'
             ] ?? {},
           'common:referenceToOwnershipOfDataSet': {
             '@refObjectId':
               data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToOwnershipOfDataSet'
+                'common:referenceToOwnershipOfDataSet'
               ]?.['@refObjectId'] ?? {},
             '@type':
               data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToOwnershipOfDataSet'
+                'common:referenceToOwnershipOfDataSet'
               ]?.['@type'] ?? {},
             '@uri':
               data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToOwnershipOfDataSet'
+                'common:referenceToOwnershipOfDataSet'
               ]?.['@uri'] ?? {},
             'common:shortDescription': getLangJson(
               data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToOwnershipOfDataSet'
+                'common:referenceToOwnershipOfDataSet'
               ]?.['common:shortDescription'],
             ),
           },
           'common:copyright':
-            data?.administrativeInformation?.publicationAndOwnership?.[
-            'common:copyright'
-            ],
+            data?.administrativeInformation?.publicationAndOwnership?.['common:copyright'],
           'common:licenseType':
-            data?.administrativeInformation?.publicationAndOwnership?.[
-            'common:licenseType'
-            ],
+            data?.administrativeInformation?.publicationAndOwnership?.['common:licenseType'],
         },
       },
       exchanges: {
@@ -290,7 +282,7 @@ export function genProcessFromData(data: any) {
           'common:classification': {
             'common:class': classificationToJson(
               data?.processInformation?.dataSetInformation?.classificationInformation?.[
-              'common:classification'
+                'common:classification'
               ]?.['common:class'],
             ),
           },
@@ -317,7 +309,7 @@ export function genProcessFromData(data: any) {
         locationOfOperationSupplyOrProduction: {
           '@location':
             data?.processInformation?.geography?.locationOfOperationSupplyOrProduction?.[
-            '@location'
+              '@location'
             ] ?? {},
           descriptionOfRestrictions: getLangList(
             data?.processInformation?.geography?.locationOfOperationSupplyOrProduction
@@ -335,19 +327,19 @@ export function genProcessFromData(data: any) {
         referenceToTechnologyFlowDiagrammOrPicture: {
           '@type':
             data?.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.[
-            '@type'
+              '@type'
             ] ?? {},
           '@refObjectId':
             data?.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.[
-            '@refObjectId'
+              '@refObjectId'
             ] ?? {},
           '@uri':
             data?.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.[
-            '@uri'
+              '@uri'
             ] ?? {},
           'common:shortDescription': getLangList(
             data?.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.[
-            'common:shortDescription'
+              'common:shortDescription'
             ],
           ),
         },
@@ -398,24 +390,22 @@ export function genProcessFromData(data: any) {
         ),
         referenceToDataSource: {
           '@type':
-            data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.referenceToDataSource?.[
-            '@type'
-            ] ?? {},
+            data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+              ?.referenceToDataSource?.['@type'] ?? {},
           '@refObjectId':
-            data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.referenceToDataSource?.[
-            '@refObjectId'
-            ] ?? {},
+            data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+              ?.referenceToDataSource?.['@refObjectId'] ?? {},
           '@uri':
-            data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.referenceToDataSource?.['@uri'] ??
-            {},
+            data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+              ?.referenceToDataSource?.['@uri'] ?? {},
           'common:shortDescription': getLangList(
-            data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.referenceToDataSource?.[
-            'common:shortDescription'
-            ],
+            data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+              ?.referenceToDataSource?.['common:shortDescription'],
           ),
         },
         useAdviceForDataSet: getLangList(
-          data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.useAdviceForDataSet,
+          data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+            ?.useAdviceForDataSet,
         ),
       },
       completeness: {
@@ -432,19 +422,19 @@ export function genProcessFromData(data: any) {
           'common:referenceToNameOfReviewerAndInstitution': {
             '@refObjectId':
               data?.modellingAndValidation?.validation?.review?.[
-              'common:referenceToNameOfReviewerAndInstitution'
+                'common:referenceToNameOfReviewerAndInstitution'
               ]?.['@refObjectId'] ?? {},
             '@type':
               data?.modellingAndValidation?.validation?.review?.[
-              'common:referenceToNameOfReviewerAndInstitution'
+                'common:referenceToNameOfReviewerAndInstitution'
               ]?.['@type'] ?? {},
             '@uri':
               data?.modellingAndValidation?.validation?.review?.[
-              'common:referenceToNameOfReviewerAndInstitution'
+                'common:referenceToNameOfReviewerAndInstitution'
               ]?.['@uri'] ?? {},
             'common:shortDescription': getLangList(
               data?.modellingAndValidation?.validation?.review?.[
-              'common:referenceToNameOfReviewerAndInstitution'
+                'common:referenceToNameOfReviewerAndInstitution'
               ]?.['common:shortDescription'],
             ),
           },
@@ -456,23 +446,23 @@ export function genProcessFromData(data: any) {
         'common:referenceToPersonOrEntityGeneratingTheDataSet': {
           '@refObjectId':
             data?.administrativeInformation?.dataGenerator?.[
-            'common:referenceToPersonOrEntityGeneratingTheDataSet'
+              'common:referenceToPersonOrEntityGeneratingTheDataSet'
             ]?.['@refObjectId'] ?? {},
           '@type':
             data?.administrativeInformation?.dataGenerator?.[
-            'common:referenceToPersonOrEntityGeneratingTheDataSet'
+              'common:referenceToPersonOrEntityGeneratingTheDataSet'
             ]?.['@type'] ?? {},
           '@uri':
             data?.administrativeInformation?.dataGenerator?.[
-            'common:referenceToPersonOrEntityGeneratingTheDataSet'
+              'common:referenceToPersonOrEntityGeneratingTheDataSet'
             ]?.['@uri'] ?? {},
           '@version':
             data?.administrativeInformation?.dataGenerator?.[
-            'common:referenceToPersonOrEntityGeneratingTheDataSet'
+              'common:referenceToPersonOrEntityGeneratingTheDataSet'
             ]?.['@version'] ?? {},
           'common:shortDescription': getLangList(
             data?.administrativeInformation?.dataGenerator?.[
-            'common:referenceToPersonOrEntityGeneratingTheDataSet'
+              'common:referenceToPersonOrEntityGeneratingTheDataSet'
             ]?.['common:shortDescription'],
           ),
         },
@@ -483,49 +473,45 @@ export function genProcessFromData(data: any) {
       },
       publicationAndOwnership: {
         'common:dateOfLastRevision':
-          data?.administrativeInformation?.publicationAndOwnership?.[
-          'common:dateOfLastRevision'
-          ] ?? {},
+          data?.administrativeInformation?.publicationAndOwnership?.['common:dateOfLastRevision'] ??
+          {},
         'common:dataSetVersion':
-          data?.administrativeInformation?.publicationAndOwnership?.[
-          'common:dataSetVersion'
-          ] ?? {},
+          data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'] ?? {},
         'common:permanentDataSetURI':
           data?.administrativeInformation?.publicationAndOwnership?.[
-          'common:permanentDataSetURI'
+            'common:permanentDataSetURI'
           ] ?? {},
         'common:referenceToOwnershipOfDataSet': {
           '@refObjectId':
             data?.administrativeInformation?.publicationAndOwnership?.[
-            'common:referenceToOwnershipOfDataSet'
+              'common:referenceToOwnershipOfDataSet'
             ]?.['@refObjectId'] ?? {},
           '@type':
             data?.administrativeInformation?.publicationAndOwnership?.[
-            'common:referenceToOwnershipOfDataSet'
+              'common:referenceToOwnershipOfDataSet'
             ]?.['@type'] ?? {},
           '@uri':
             data?.administrativeInformation?.publicationAndOwnership?.[
-            'common:referenceToOwnershipOfDataSet'
+              'common:referenceToOwnershipOfDataSet'
             ]?.['@uri'] ?? {},
           'common:shortDescription': getLangList(
             data?.administrativeInformation?.publicationAndOwnership?.[
-            'common:referenceToOwnershipOfDataSet'
+              'common:referenceToOwnershipOfDataSet'
             ]?.['common:shortDescription'],
           ),
         },
         'common:copyright':
-          data?.administrativeInformation?.publicationAndOwnership?.[
-          'common:copyright'
-          ],
+          data?.administrativeInformation?.publicationAndOwnership?.['common:copyright'],
         'common:licenseType':
-          data?.administrativeInformation?.publicationAndOwnership?.[
-          'common:licenseType'
-          ],
+          data?.administrativeInformation?.publicationAndOwnership?.['common:licenseType'],
       },
     },
     exchanges: {
       exchange: data?.exchanges?.exchange?.map((item: any) => {
-        if (item['@dataSetInternalID'] === (data?.processInformation?.quantitativeReference?.referenceToReferenceFlow ?? '')) {
+        if (
+          item['@dataSetInternalID'] ===
+          (data?.processInformation?.quantitativeReference?.referenceToReferenceFlow ?? '')
+        ) {
           return {
             '@dataSetInternalID': item['@dataSetInternalID'],
             referenceToFlowDataSet: {
@@ -545,9 +531,8 @@ export function genProcessFromData(data: any) {
             functionalUnitOrOther: getLangList(
               data?.processInformation?.quantitativeReference?.functionalUnitOrOther,
             ),
-          }
-        }
-        else {
+          };
+        } else {
           return {
             '@dataSetInternalID': item['@dataSetInternalID'],
             referenceToFlowDataSet: {
@@ -564,8 +549,8 @@ export function genProcessFromData(data: any) {
             dataDerivationTypeStatus: item.dataDerivationTypeStatus,
             generalComment: getLangList(item.generalComment),
             quantitativeReference: false,
-          }
-        };
+          };
+        }
       }),
     },
   });

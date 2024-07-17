@@ -11,11 +11,10 @@ export async function createFlows(data: any) {
     flowDataSet: {
       '@xmlns': 'http://lca.jrc.it/ILCD/Flow',
       '@xmlns:common': 'http://lca.jrc.it/ILCD/Common',
-      "@xmlns:ecn": "http://eplca.jrc.ec.europa.eu/ILCD/Extensions/2018/ECNumber",
+      '@xmlns:ecn': 'http://eplca.jrc.ec.europa.eu/ILCD/Extensions/2018/ECNumber',
       '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
       '@version': '1.1',
-      '@xsi:schemaLocation':
-        'http://lca.jrc.it/ILCD/Flow ../../schemas/ILCD_FlowDataSet.xsd',
+      '@xsi:schemaLocation': 'http://lca.jrc.it/ILCD/Flow ../../schemas/ILCD_FlowDataSet.xsd',
     },
   };
   const newData = genFlowJsonOrdered(newID, data, oldData);
@@ -166,12 +165,22 @@ export async function flow_hybrid_search(query: string, filter: any, lang: strin
     return {
       key: i.id,
       id: i.id,
-      baseName: getLangText(i.json?.flowDataSet?.flowInformation?.dataSetInformation?.name?.baseName, lang),
-      classification: classificationToString(i.json?.flowDataSet?.flowInformation?.dataSetInformation?.classificationInformation?.['common:classification']?.['common:class']),
-      generalComment: getLangText(i.json?.flowDataSet?.flowInformation?.dataSetInformation?.['common:generalComment'], lang),
+      baseName: getLangText(
+        i.json?.flowDataSet?.flowInformation?.dataSetInformation?.name?.baseName,
+        lang,
+      ),
+      classification: classificationToString(
+        i.json?.flowDataSet?.flowInformation?.dataSetInformation?.classificationInformation?.[
+          'common:classification'
+        ]?.['common:class'],
+      ),
+      generalComment: getLangText(
+        i.json?.flowDataSet?.flowInformation?.dataSetInformation?.['common:generalComment'],
+        lang,
+      ),
       dataType: i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet ?? '-',
       CASNumber: i.json?.flowDataSet?.flowInformation?.dataSetInformation?.CASNumber ?? '-',
     };
-  })
+  });
   return result;
 }

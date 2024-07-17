@@ -1,7 +1,12 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import FlowsSelectDescription from '@/pages/Flows/Components/select/description';
 import styles from '@/style/custom.less';
-import { CheckCircleTwoTone, CloseCircleOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
+import {
+  CheckCircleTwoTone,
+  CloseCircleOutlined,
+  CloseOutlined,
+  ProfileOutlined,
+} from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
 import { Button, Card, Descriptions, Divider, Drawer, Space, Tooltip } from 'antd';
 import type { FC } from 'react';
@@ -53,9 +58,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, dataSource, buttonType
 
   return (
     <>
-      <Tooltip
-        title={<FormattedMessage id="pages.button.view" defaultMessage="View Exchange" />}
-      >
+      <Tooltip title={<FormattedMessage id="pages.button.view" defaultMessage="View Exchange" />}>
         {buttonType === 'icon' ? (
           <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
         ) : (
@@ -133,15 +136,17 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, dataSource, buttonType
               label="Reference To Reference Flow"
               labelStyle={{ width: '220px' }}
             >
-              {viewData.quantitativeReference ? <CheckCircleTwoTone twoToneColor="#52c41a" /> : <CloseCircleOutlined />}
+              {viewData.quantitativeReference ? (
+                <CheckCircleTwoTone twoToneColor="#52c41a" />
+              ) : (
+                <CloseCircleOutlined />
+              )}
             </Descriptions.Item>
           </Descriptions>
           <Divider orientationMargin="0" orientation="left" plain>
             Functional Unit Or Other
           </Divider>
-          <LangTextItemDescription
-            data={viewData.functionalUnitOrOther}
-          />
+          <LangTextItemDescription data={viewData.functionalUnitOrOther} />
         </Card>
         {/* </Spin> */}
       </Drawer>

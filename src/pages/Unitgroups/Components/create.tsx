@@ -6,7 +6,12 @@ import { createUnitGroup } from '@/services/unitgroups/api';
 import { UnitTable } from '@/services/unitgroups/data';
 import { genUnitTableData } from '@/services/unitgroups/util';
 import styles from '@/style/custom.less';
-import { CheckCircleTwoTone, CloseCircleOutlined, CloseOutlined, PlusOutlined } from '@ant-design/icons';
+import {
+  CheckCircleTwoTone,
+  CloseCircleOutlined,
+  CloseOutlined,
+  PlusOutlined,
+} from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import ProForm from '@ant-design/pro-form';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
@@ -21,7 +26,7 @@ import {
   Space,
   Tooltip,
   Typography,
-  message
+  message,
 } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -72,7 +77,9 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
 
   const unitColumns: ProColumns<UnitTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index"></FormattedMessage>,
+      title: (
+        <FormattedMessage id="pages.table.title.index" defaultMessage="Index"></FormattedMessage>
+      ),
       valueType: 'index',
       search: false,
     },
@@ -82,17 +89,29 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
     //   search: false,
     // },
     {
-      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name"></FormattedMessage>,
+      title: (
+        <FormattedMessage id="pages.table.title.name" defaultMessage="Name"></FormattedMessage>
+      ),
       dataIndex: 'name',
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.unitgroup.unit.generalComment" defaultMessage="General Comment"></FormattedMessage>,
+      title: (
+        <FormattedMessage
+          id="pages.unitgroup.unit.generalComment"
+          defaultMessage="General Comment"
+        ></FormattedMessage>
+      ),
       dataIndex: 'generalComment',
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.unitgroup.unit.meanValue" defaultMessage="Mean Value"></FormattedMessage>,
+      title: (
+        <FormattedMessage
+          id="pages.unitgroup.unit.meanValue"
+          defaultMessage="Mean Value"
+        ></FormattedMessage>
+      ),
       dataIndex: 'meanValue',
       search: false,
     },
@@ -111,39 +130,37 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
           return <CheckCircleTwoTone twoToneColor="#52c41a" />;
         }
         return <CloseCircleOutlined />;
-      }
+      },
     },
     {
-      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option"></FormattedMessage>,
+      title: (
+        <FormattedMessage id="pages.table.title.option" defaultMessage="Option"></FormattedMessage>
+      ),
       valueType: 'option',
       search: false,
       render: (_, row) => {
         return [
           <Space size={'small'} key={0}>
-            <UnitView
-              id={row.dataSetInternalID}
-              data={unitDataSource}
-              buttonType={'icon'}
-            />
+            <UnitView id={row.dataSetInternalID} data={unitDataSource} buttonType={'icon'} />
             <UnitEdit
               id={row.dataSetInternalID}
               data={unitDataSource}
               buttonType={'icon'}
               actionRef={actionRefUnitTable}
               onData={handletUnitData}
-              setViewDrawerVisible={() => { }}
+              setViewDrawerVisible={() => {}}
             />
             <UnitDelete
               id={row.dataSetInternalID}
               data={unitDataSource}
               buttonType={'icon'}
               actionRef={actionRefUnitTable}
-              setViewDrawerVisible={() => { }}
+              setViewDrawerVisible={() => {}}
               onData={handletUnitData}
             />
-          </Space>
+          </Space>,
         ];
-      }
+      },
     },
   ];
 
@@ -158,30 +175,60 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
     unitGroupInformation: (
       <Space direction="vertical" style={{ width: '100%' }}>
         <Card size="small" title={'Name'}>
-          <LangTextItemFrom name={['unitGroupInformation', 'dataSetInformation', 'common:name']} label="Name" />
+          <LangTextItemFrom
+            name={['unitGroupInformation', 'dataSetInformation', 'common:name']}
+            label="Name"
+          />
         </Card>
         <Card size="small" title={'Classification'}>
-          <LevelTextItemFrom name={['unitGroupInformation', 'dataSetInformation', "classificationInformation", 'common:classification', 'common:class']} dataType={'UnitGroup'} formRef={formRefCreate} onData={handletFromData} />
+          <LevelTextItemFrom
+            name={[
+              'unitGroupInformation',
+              'dataSetInformation',
+              'classificationInformation',
+              'common:classification',
+              'common:class',
+            ]}
+            dataType={'UnitGroup'}
+            formRef={formRefCreate}
+            onData={handletFromData}
+          />
         </Card>
       </Space>
     ),
     modellingAndValidation: (
       <Space direction="vertical" style={{ width: '100%' }}>
         <SourceSelectFrom
-          name={['modellingAndValidation', 'complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem']}
-          label={"Reference To Compliance System"}
+          name={[
+            'modellingAndValidation',
+            'complianceDeclarations',
+            'compliance',
+            'common:referenceToComplianceSystem',
+          ]}
+          label={'Reference To Compliance System'}
           lang={lang}
           formRef={formRefCreate}
           onData={handletFromData}
         />
-        <Form.Item label="Approval Of Overall Compliance" name={['modellingAndValidation', 'complianceDeclarations', 'compliance', 'common:approvalOfOverallCompliance']}>
+        <Form.Item
+          label="Approval Of Overall Compliance"
+          name={[
+            'modellingAndValidation',
+            'complianceDeclarations',
+            'compliance',
+            'common:approvalOfOverallCompliance',
+          ]}
+        >
           <Input />
         </Form.Item>
       </Space>
     ),
     administrativeInformation: (
       <Space direction="vertical" style={{ width: '100%' }}>
-        <Form.Item label="TimeStamp" name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}>
+        <Form.Item
+          label="TimeStamp"
+          name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
+        >
           <Input />
           {/* <DatePicker showTime></DatePicker> */}
         </Form.Item>
@@ -192,7 +239,10 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
           formRef={formRefCreate}
           onData={handletFromData}
         />
-        <Form.Item label="DataSet Version" name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}>
+        <Form.Item
+          label="DataSet Version"
+          name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
+        >
           <Input />
         </Form.Item>
       </Space>
@@ -237,7 +287,11 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="pages.button.create" defaultMessage="Create"></FormattedMessage>}>
+      <Tooltip
+        title={
+          <FormattedMessage id="pages.button.create" defaultMessage="Create"></FormattedMessage>
+        }
+      >
         <Button
           size={'middle'}
           type="text"
@@ -248,7 +302,12 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
         ></Button>
       </Tooltip>
       <Drawer
-        title={<FormattedMessage id="pages.unitgroup.drawer.title.create" defaultMessage="Create"></FormattedMessage>}
+        title={
+          <FormattedMessage
+            id="pages.unitgroup.drawer.title.create"
+            defaultMessage="Create"
+          ></FormattedMessage>
+        }
         width="90%"
         closable={false}
         extra={
@@ -267,14 +326,19 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
         }}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
-            <Button onClick={() => {
-              setDrawerVisible(false);
-            }}>
+            <Button
+              onClick={() => {
+                setDrawerVisible(false);
+              }}
+            >
               <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel"></FormattedMessage>
             </Button>
-            <Button onClick={() => {
-              formRefCreate.current?.submit();
-            }} type="primary">
+            <Button
+              onClick={() => {
+                formRefCreate.current?.submit();
+              }}
+              type="primary"
+            >
               <FormattedMessage id="pages.button.submit" defaultMessage="Submit"></FormattedMessage>
             </Button>
           </Space>
@@ -318,13 +382,17 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
           </Card>
         </ProForm>
         <Collapse
-          items={[{
-            key: '1', label: 'JSON Data',
-            children:
-              <Typography>
-                <pre>{JSON.stringify(fromData, null, 2)}</pre>
-              </Typography>
-          }]}
+          items={[
+            {
+              key: '1',
+              label: 'JSON Data',
+              children: (
+                <Typography>
+                  <pre>{JSON.stringify(fromData, null, 2)}</pre>
+                </Typography>
+              ),
+            },
+          ]}
         />
       </Drawer>
     </>

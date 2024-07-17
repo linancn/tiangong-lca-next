@@ -55,13 +55,17 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       sorter: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />,
+      title: (
+        <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />
+      ),
       dataIndex: 'classification',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.source.publicationType" defaultMessage="Publication Type" />,
+      title: (
+        <FormattedMessage id="pages.source.publicationType" defaultMessage="Publication Type" />
+      ),
       dataIndex: 'publicationType',
       sorter: false,
       search: false,
@@ -78,14 +82,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
-        return [
-          <SourceView
-            key={0}
-            id={row.id}
-            lang={lang}
-            buttonType="icon"
-          />
-        ];
+        return [<SourceView key={0} id={row.id} lang={lang} buttonType="icon" />];
         //  if (activeTabKey === 'tg') {
         //      <Space size={'small'} key={0}>
         //       <SourceView
@@ -117,7 +114,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
         //         buttonType={'icon'}
         //         actionRef={myActionRefSelect}
         //         setViewDrawerVisible={() => {}}
-        //       /> 
+        //       />
         //     </Space>,
         //   ];
         // } else return [];
@@ -126,7 +123,10 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
   ];
 
   const tabList = [
-    { key: 'tg', tab: <FormattedMessage id="pages.tab.title.tgdata" defaultMessage="TianGong Data" /> },
+    {
+      key: 'tg',
+      tab: <FormattedMessage id="pages.tab.title.tgdata" defaultMessage="TianGong Data" />,
+    },
     { key: 'my', tab: <FormattedMessage id="pages.tab.title.mydata" defaultMessage="My Data" /> },
   ];
 
@@ -197,14 +197,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
   return (
     <>
       {buttonType === 'icon' ? (
-        <Tooltip
-          title={
-            <FormattedMessage
-              id="pages.button.select"
-              defaultMessage="Select"
-            />
-          }
-        >
+        <Tooltip title={<FormattedMessage id="pages.button.select" defaultMessage="Select" />}>
           <Button shape="circle" icon={<DatabaseOutlined />} size="small" onClick={onSelect} />
         </Tooltip>
       ) : (
@@ -215,10 +208,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
 
       <Drawer
         title={
-          <FormattedMessage
-            id="pages.source.drawer.title.select"
-            defaultMessage="Select Source"
-          />
+          <FormattedMessage id="pages.source.drawer.title.select" defaultMessage="Select Source" />
         }
         width="90%"
         closable={false}

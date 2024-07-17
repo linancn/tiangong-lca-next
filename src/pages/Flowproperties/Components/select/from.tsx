@@ -2,16 +2,7 @@ import { getFlowpropertyDetail } from '@/services/flowproperties/api';
 import { genFlowpropertyFromData } from '@/services/flowproperties/util';
 import { langOptions } from '@/services/general/data';
 import { ProFormInstance } from '@ant-design/pro-components';
-import {
-  Button,
-  Card,
-  Col,
-  Divider,
-  Form, Input,
-  Row,
-  Select,
-  Space
-} from 'antd';
+import { Button, Card, Col, Divider, Form, Input, Row, Select, Space } from 'antd';
 import React, { FC, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import FlowpropertyView from '../view';
@@ -24,11 +15,10 @@ type Props = {
   label: string;
   lang: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
-  onData: () => void
+  onData: () => void;
 };
 
 const FlowpropertiesSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => {
-
   const [id, setId] = useState<string | undefined>(undefined);
 
   const handletFlowpropertyData = (rowKey: any) => {
@@ -38,7 +28,8 @@ const FlowpropertiesSelectFrom: FC<Props> = ({ name, label, lang, formRef, onDat
         '@refObjectId': `${rowKey}`,
         '@type': 'flow property data set',
         '@uri': `../flowproperties/${rowKey}.xml`,
-        'common:shortDescription': selectedData?.flowPropertiesInformation?.dataSetInformation?.['common:name'] ?? [],
+        'common:shortDescription':
+          selectedData?.flowPropertiesInformation?.dataSetInformation?.['common:name'] ?? [],
       });
       onData();
     });
@@ -46,7 +37,7 @@ const FlowpropertiesSelectFrom: FC<Props> = ({ name, label, lang, formRef, onDat
 
   useEffect(() => {
     setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
-  },);
+  });
 
   return (
     <Card size="small" title={label}>
@@ -55,11 +46,23 @@ const FlowpropertiesSelectFrom: FC<Props> = ({ name, label, lang, formRef, onDat
           <Input disabled={true} style={{ width: '300px' }} />
         </Form.Item>
         <Space direction="horizontal" style={{ marginTop: '6px' }}>
-          <FlowpropertiesSelectDrawer buttonType="text" lang={lang} onData={handletFlowpropertyData} />
+          <FlowpropertiesSelectDrawer
+            buttonType="text"
+            lang={lang}
+            onData={handletFlowpropertyData}
+          />
           {id && <FlowpropertyView lang={lang} id={id} buttonType="text" />}
-          {id && <Button onClick={() => { formRef.current?.setFieldValue([...name], {}); onData() }}><FormattedMessage id="pages.button.clear" defaultMessage="Clear" /></Button>}
+          {id && (
+            <Button
+              onClick={() => {
+                formRef.current?.setFieldValue([...name], {});
+                onData();
+              }}
+            >
+              <FormattedMessage id="pages.button.clear" defaultMessage="Clear" />
+            </Button>
+          )}
         </Space>
-
       </Space>
       <Form.Item label="Type" name={[...name, '@type']}>
         <Input disabled={true} />

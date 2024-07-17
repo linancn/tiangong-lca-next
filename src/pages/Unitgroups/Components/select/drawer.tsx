@@ -44,17 +44,26 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
 
   const unitGroupColumns: ProColumns<UnitGroupTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index"></FormattedMessage>,
+      title: (
+        <FormattedMessage id="pages.table.title.index" defaultMessage="Index"></FormattedMessage>
+      ),
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name"></FormattedMessage>,
+      title: (
+        <FormattedMessage id="pages.table.title.name" defaultMessage="Name"></FormattedMessage>
+      ),
       dataIndex: 'name',
       sorter: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification"></FormattedMessage>,
+      title: (
+        <FormattedMessage
+          id="pages.table.title.classification"
+          defaultMessage="Classification"
+        ></FormattedMessage>
+      ),
       dataIndex: 'classification',
       sorter: false,
       search: false,
@@ -66,22 +75,25 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
     //   search: false,
     // },
     {
-      title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At"></FormattedMessage>,
+      title: (
+        <FormattedMessage
+          id="pages.table.title.createdAt"
+          defaultMessage="Created At"
+        ></FormattedMessage>
+      ),
       dataIndex: 'createdAt',
       valueType: 'dateTime',
       sorter: true,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option"></FormattedMessage>,
+      title: (
+        <FormattedMessage id="pages.table.title.option" defaultMessage="Option"></FormattedMessage>
+      ),
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
-        return [
-          <UnitGroupView key={0}
-            buttonType={'icon'}
-            lang={lang} id={row.id} />
-        ];
+        return [<UnitGroupView key={0} buttonType={'icon'} lang={lang} id={row.id} />];
         // if (activeTabKey === 'my') {
         //   return [
         //     <Space size={'small'} key={0}>
@@ -115,7 +127,10 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
   ];
 
   const tabList = [
-    { key: 'tg', tab: <FormattedMessage id="pages.tab.title.tgdata" defaultMessage="TianGong Data" /> },
+    {
+      key: 'tg',
+      tab: <FormattedMessage id="pages.tab.title.tgdata" defaultMessage="TianGong Data" />,
+    },
     { key: 'my', tab: <FormattedMessage id="pages.tab.title.mydata" defaultMessage="My Data" /> },
   ];
 
@@ -186,22 +201,12 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
   return (
     <>
       {buttonType === 'icon' ? (
-        <Tooltip
-          title={
-            <FormattedMessage
-              id="pages.button.select"
-              defaultMessage="Select"
-            />
-          }
-        >
+        <Tooltip title={<FormattedMessage id="pages.button.select" defaultMessage="Select" />}>
           <Button shape="circle" icon={<DatabaseOutlined />} size="small" onClick={onSelect} />
         </Tooltip>
       ) : (
-        <Button onClick={onSelect} >
-          <FormattedMessage
-            id="pages.button.select"
-            defaultMessage="select"
-          />
+        <Button onClick={onSelect}>
+          <FormattedMessage id="pages.button.select" defaultMessage="select" />
         </Button>
       )}
 

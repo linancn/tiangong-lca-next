@@ -11,7 +11,6 @@ export default {
   'pages.flow.deleteMessage': '您确定要删除此数据吗？',
   'pages.flow.createsuccess': '创建成功。',
 
-
   'pages.flow.drawer.title.view': '查看流',
   'pages.flow.drawer.title.select': '选择流',
   'pages.flow.drawer.title.edit': '编辑流',

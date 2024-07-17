@@ -43,7 +43,10 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
   };
 
   const tabList = [
-    { key: 'tg', tab: <FormattedMessage id="pages.tab.title.tgdata" defaultMessage="TianGong Data" /> },
+    {
+      key: 'tg',
+      tab: <FormattedMessage id="pages.tab.title.tgdata" defaultMessage="TianGong Data" />,
+    },
     { key: 'my', tab: <FormattedMessage id="pages.tab.title.mydata" defaultMessage="My Data" /> },
   ];
 
@@ -65,7 +68,9 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       ],
     },
     {
-      title: <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />,
+      title: (
+        <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />
+      ),
       dataIndex: 'classification',
       sorter: false,
       search: false,
@@ -90,11 +95,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       render: (_, row) => {
         return [
           <Space size={'small'} key={0}>
-            <ContactView
-              id={row.id}
-              lang={lang}
-              buttonType="icon"
-            />
+            <ContactView id={row.id} lang={lang} buttonType="icon" />
           </Space>,
         ];
 
@@ -205,14 +206,8 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
   return (
     <>
       {buttonType === 'icon' ? (
-        <Tooltip
-          title={
-            <FormattedMessage
-              id="pages.button.select"
-              defaultMessage="Select"
-            />
-          }
-        ><Button shape="circle" icon={<DatabaseOutlined />} size="small" onClick={onSelect} />
+        <Tooltip title={<FormattedMessage id="pages.button.select" defaultMessage="Select" />}>
+          <Button shape="circle" icon={<DatabaseOutlined />} size="small" onClick={onSelect} />
         </Tooltip>
       ) : (
         <Button onClick={onSelect}>

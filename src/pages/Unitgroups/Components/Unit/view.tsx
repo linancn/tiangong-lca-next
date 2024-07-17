@@ -1,5 +1,10 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
-import { CheckCircleTwoTone, CloseCircleOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
+import {
+  CheckCircleTwoTone,
+  CloseCircleOutlined,
+  CloseOutlined,
+  ProfileOutlined,
+} from '@ant-design/icons';
 import { Button, Descriptions, Divider, Drawer, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
@@ -23,11 +28,8 @@ const UnitView: FC<Props> = ({ id, data, buttonType }) => {
 
   return (
     <>
-
       {buttonType === 'icon' ? (
-        <Tooltip
-          title={<FormattedMessage id="pages.button.view" defaultMessage="View" />}
-        >
+        <Tooltip title={<FormattedMessage id="pages.button.view" defaultMessage="View" />}>
           <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
         </Tooltip>
       ) : (
@@ -38,7 +40,10 @@ const UnitView: FC<Props> = ({ id, data, buttonType }) => {
 
       <Drawer
         title={
-          <FormattedMessage id="pages.unitgroup.unit.drawer.title.view" defaultMessage="View Unit" />
+          <FormattedMessage
+            id="pages.unitgroup.unit.drawer.title.view"
+            defaultMessage="View Unit"
+          />
         }
         width="90%"
         closable={false}
@@ -73,7 +78,11 @@ const UnitView: FC<Props> = ({ id, data, buttonType }) => {
         <br />
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item key={0} label="Quantitative Reference" labelStyle={{ width: '180px' }}>
-            {viewData.quantitativeReference ? <CheckCircleTwoTone twoToneColor="#52c41a" /> : <CloseCircleOutlined />}
+            {viewData.quantitativeReference ? (
+              <CheckCircleTwoTone twoToneColor="#52c41a" />
+            ) : (
+              <CloseCircleOutlined />
+            )}
           </Descriptions.Item>
         </Descriptions>
         <br />

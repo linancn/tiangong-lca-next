@@ -19,10 +19,7 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
           </Descriptions.Item>
         </Descriptions>
         {data?.['@refObjectId'] && (
-          <SourceView
-            id={data?.['@refObjectId']}
-            buttonType="text"
-            lang={lang} />
+          <SourceView id={data?.['@refObjectId']} buttonType="text" lang={lang} />
         )}
       </Space>
       <br />

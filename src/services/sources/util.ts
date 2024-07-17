@@ -1,4 +1,10 @@
-import { classificationToJson, classificationToList, getLangJson, getLangList, removeEmptyObjects } from "../general/util";
+import {
+  classificationToJson,
+  classificationToList,
+  getLangJson,
+  getLangList,
+  removeEmptyObjects,
+} from '../general/util';
 
 export function genSourceJsonOrdered(id: string, data: any, oldData: any) {
   return removeEmptyObjects({
@@ -11,42 +17,73 @@ export function genSourceJsonOrdered(id: string, data: any, oldData: any) {
       sourceInformation: {
         dataSetInformation: {
           'common:UUID': id,
-          'common:shortName': getLangJson(data?.sourceInformation?.dataSetInformation?.['common:shortName']),
+          'common:shortName': getLangJson(
+            data?.sourceInformation?.dataSetInformation?.['common:shortName'],
+          ),
           classificationInformation: {
             'common:classification': {
               'common:class': classificationToList(
-                data?.sourceInformation?.dataSetInformation?.classificationInformation?.['common:classification']?.['common:class'],
+                data?.sourceInformation?.dataSetInformation?.classificationInformation?.[
+                  'common:classification'
+                ]?.['common:class'],
               ),
             },
           },
           sourceCitation: data?.sourceInformation?.dataSetInformation?.sourceCitation ?? {},
           publicationType: data?.sourceInformation?.dataSetInformation?.publicationType ?? {},
-          sourceDescriptionOrComment: getLangJson(data?.sourceInformation?.dataSetInformation?.sourceDescriptionOrComment),
+          sourceDescriptionOrComment: getLangJson(
+            data?.sourceInformation?.dataSetInformation?.sourceDescriptionOrComment,
+          ),
           referenceToDigitalFile: {
             '@uri': data?.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri'],
           },
           referenceToContact: {
-            "@refObjectId": data?.sourceInformation?.dataSetInformation?.referenceToContact?.["@refObjectId"],
-            "@type": data?.sourceInformation?.dataSetInformation?.referenceToContact?.["@type"],
-            "@uri": data?.sourceInformation?.dataSetInformation?.referenceToContact?.["@uri"],
-            '@version': data?.sourceInformation?.dataSetInformation?.referenceToContact?.['@version'],
-            "common:shortDescription": getLangJson(data?.sourceInformation?.dataSetInformation?.referenceToContact?.["common:shortDescription"]),
-          }
+            '@refObjectId':
+              data?.sourceInformation?.dataSetInformation?.referenceToContact?.['@refObjectId'],
+            '@type': data?.sourceInformation?.dataSetInformation?.referenceToContact?.['@type'],
+            '@uri': data?.sourceInformation?.dataSetInformation?.referenceToContact?.['@uri'],
+            '@version':
+              data?.sourceInformation?.dataSetInformation?.referenceToContact?.['@version'],
+            'common:shortDescription': getLangJson(
+              data?.sourceInformation?.dataSetInformation?.referenceToContact?.[
+                'common:shortDescription'
+              ],
+            ),
+          },
         },
       },
       administrativeInformation: {
         dataEntryBy: {
-          'common:timeStamp': data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? {},
+          'common:timeStamp':
+            data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? {},
           'common:referenceToDataSetFormat': {
-            '@type': data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.['@type'] ?? {},
-            '@refObjectId': data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.['@refObjectId'] ?? {},
-            '@uri': data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.['@uri'] ?? {},
-            'common:shortDescription': getLangJson(data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.['common:shortDescription']),
+            '@type':
+              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
+                '@type'
+              ] ?? {},
+            '@refObjectId':
+              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
+                '@refObjectId'
+              ] ?? {},
+            '@uri':
+              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
+                '@uri'
+              ] ?? {},
+            'common:shortDescription': getLangJson(
+              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
+                'common:shortDescription'
+              ],
+            ),
           },
         },
         publicationAndOwnership: {
-          'common:dataSetVersion': data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'] ?? {},
-          "common:permanentDataSetURI": data?.administrativeInformation?.publicationAndOwnership?.["common:permanentDataSetURI"] ?? {},
+          'common:dataSetVersion':
+            data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'] ??
+            {},
+          'common:permanentDataSetURI':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:permanentDataSetURI'
+            ] ?? {},
         },
       },
     },
@@ -65,46 +102,62 @@ export function genSourceFromData(data: any) {
           'common:classification': {
             'common:class': classificationToJson(
               data?.sourceInformation?.dataSetInformation?.classificationInformation?.[
-              'common:classification'
+                'common:classification'
               ]?.['common:class'],
             ),
           },
         },
         sourceCitation: data?.sourceInformation?.dataSetInformation?.sourceCitation,
         publicationType: data?.sourceInformation?.dataSetInformation?.publicationType,
-        sourceDescriptionOrComment: getLangList(data?.sourceInformation?.dataSetInformation?.sourceDescriptionOrComment),
+        sourceDescriptionOrComment: getLangList(
+          data?.sourceInformation?.dataSetInformation?.sourceDescriptionOrComment,
+        ),
         referenceToDigitalFile: {
           '@uri': data?.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri'],
         },
         referenceToContact: {
-          "@refObjectId": data?.sourceInformation?.dataSetInformation?.referenceToContact?.["@refObjectId"],
-          "@type": data?.sourceInformation?.dataSetInformation?.referenceToContact?.["@type"],
-          "@uri": data?.sourceInformation?.dataSetInformation?.referenceToContact?.["@uri"],
+          '@refObjectId':
+            data?.sourceInformation?.dataSetInformation?.referenceToContact?.['@refObjectId'],
+          '@type': data?.sourceInformation?.dataSetInformation?.referenceToContact?.['@type'],
+          '@uri': data?.sourceInformation?.dataSetInformation?.referenceToContact?.['@uri'],
           '@version': data?.sourceInformation?.dataSetInformation?.referenceToContact?.['@version'],
-          "common:shortDescription": getLangList(data?.sourceInformation?.dataSetInformation?.referenceToContact?.["common:shortDescription"]),
-        }
+          'common:shortDescription': getLangList(
+            data?.sourceInformation?.dataSetInformation?.referenceToContact?.[
+              'common:shortDescription'
+            ],
+          ),
+        },
       },
     },
     administrativeInformation: {
       dataEntryBy: {
         'common:timeStamp': data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'],
         'common:referenceToDataSetFormat': {
-          '@type': data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']
-            ?.['@type'],
-          '@refObjectId': data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']
-            ?.['@refObjectId'],
-          '@uri': data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']
-            ?.['@uri'],
+          '@type':
+            data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
+              '@type'
+            ],
+          '@refObjectId':
+            data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
+              '@refObjectId'
+            ],
+          '@uri':
+            data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
+              '@uri'
+            ],
           'common:shortDescription': getLangList(
-            data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']
-            ?.['common:shortDescription'],
+            data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
+              'common:shortDescription'
+            ],
           ),
         },
       },
       publicationAndOwnership: {
-        'common:dataSetVersion': data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'],
-        "common:permanentDataSetURI": data?.administrativeInformation?.publicationAndOwnership?.["common:permanentDataSetURI"],
-      }
-    }
+        'common:dataSetVersion':
+          data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'],
+        'common:permanentDataSetURI':
+          data?.administrativeInformation?.publicationAndOwnership?.['common:permanentDataSetURI'],
+      },
+    },
   });
 }

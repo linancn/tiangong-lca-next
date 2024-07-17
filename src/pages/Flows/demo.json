@@ -1,106 +1,106 @@
 {
-    "flowDataSet": {
-        "@xmlns": "http://lca.jrc.it/ILCD/Flow",
-        "@xmlns:common": "http://lca.jrc.it/ILCD/Common",
-        "@xmlns:ecn": "http://eplca.jrc.ec.europa.eu/ILCD/Extensions/2018/ECNumber",
-        "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
-        "@version": "1.1",
-        "@xsi:schemaLocation": "http://lca.jrc.it/ILCD/Flow ../../schemas/ILCD_FlowDataSet.xsd",
-        "flowInformation": {
-            "dataSetInformation": {
-                "common:UUID": "0000b186-aea3-4c0a-b0c2-c284de7cdf92",
-                "name": {
-                    "baseName": {
-                        "@xml:lang": "en",
-                        "#text": "(3r,3ar,6s,6ar)-hexahydrofuro[3,2-b]furan-3,6-diyl dioctanoate"
-                    }
-                },
-                "common:synonyms": {
-                    "@xml:lang": "en",
-                    "#text": "organic;radia7762"
-                },
-                "classificationInformation": {
-                    "common:elementaryFlowCategorization": {
-                        "common:category": [
-                            {
-                                "@level": "0",
-                                "#text": "Emissions"
-                            },
-                            {
-                                "@level": "1",
-                                "#text": "Emissions to air"
-                            },
-                            {
-                                "@level": "2",
-                                "#text": "Emissions to air, indoor"
-                            }
-                        ]
-                    }
-                },
-                "CASNumber": "64896-70-4",
-                "common:generalComment": {
-                    "@xml:lang": "en",
-                    "#text": "Reference elementary flow of the International Reference Life Cycle Data System (ILCD)."
-                },
-                "common:other": {
-                    "ecn:ECNumber": "807-840-4"
-                }
-            },
-            "quantitativeReference": {
-                "referenceToReferenceFlowProperty": "0"
-            }
+  "flowDataSet": {
+    "@xmlns": "http://lca.jrc.it/ILCD/Flow",
+    "@xmlns:common": "http://lca.jrc.it/ILCD/Common",
+    "@xmlns:ecn": "http://eplca.jrc.ec.europa.eu/ILCD/Extensions/2018/ECNumber",
+    "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+    "@version": "1.1",
+    "@xsi:schemaLocation": "http://lca.jrc.it/ILCD/Flow ../../schemas/ILCD_FlowDataSet.xsd",
+    "flowInformation": {
+      "dataSetInformation": {
+        "common:UUID": "0000b186-aea3-4c0a-b0c2-c284de7cdf92",
+        "name": {
+          "baseName": {
+            "@xml:lang": "en",
+            "#text": "(3r,3ar,6s,6ar)-hexahydrofuro[3,2-b]furan-3,6-diyl dioctanoate"
+          }
         },
-        "modellingAndValidation": {
-            "LCIMethod": {
-                "typeOfDataSet": "Elementary flow"
-            },
-            "complianceDeclarations": {
-                "compliance": {
-                    "common:referenceToComplianceSystem": {
-                        "@refObjectId": "9ba3ac1e-6797-4cc0-afd5-1b8f7bf28c6a",
-                        "@type": "source data set",
-                        "@uri": "../sources/9ba3ac1e-6797-4cc0-afd5-1b8f7bf28c6a.xml",
-                        "common:shortDescription": {
-                            "@xml:lang": "en",
-                            "#text": "ILCD Data Network - compliance (non-Process)"
-                        }
-                    },
-                    "common:approvalOfOverallCompliance": "Fully compliant"
-                }
-            }
+        "common:synonyms": {
+          "@xml:lang": "en",
+          "#text": "organic;radia7762"
         },
-        "administrativeInformation": {
-            "dataEntryBy": {
-                "common:timeStamp": "2018-07-12T15:52:21.041+01:00",
-                "common:referenceToDataSetFormat": {
-                    "@refObjectId": "a97a0155-0234-4b87-b4ce-a45da52f2a40",
-                    "@type": "source data set",
-                    "@uri": "../sources/a97a0155-0234-4b87-b4ce-a45da52f2a40.xml",
-                    "common:shortDescription": {
-                        "@xml:lang": "en",
-                        "#text": "ILCD format"
-                    }
-                }
-            },
-            "publicationAndOwnership": {
-                "common:dataSetVersion": "00.00.002",
-                "common:permanentDataSetURI": "http://eplca.jrc.ec.europa.eu/EF-node/resource/flows/0000b186-aea3-4c0a-b0c2-c284de7cdf92.xml"
-            }
+        "classificationInformation": {
+          "common:elementaryFlowCategorization": {
+            "common:category": [
+              {
+                "@level": "0",
+                "#text": "Emissions"
+              },
+              {
+                "@level": "1",
+                "#text": "Emissions to air"
+              },
+              {
+                "@level": "2",
+                "#text": "Emissions to air, indoor"
+              }
+            ]
+          }
         },
-        "flowProperties": {
-            "flowProperty": {
-                "@dataSetInternalID": "0",
-                "referenceToFlowPropertyDataSet": {
-                    "@refObjectId": "93a60a56-a3c8-11da-a746-0800200b9a66",
-                    "@type": "flow property data set",
-                    "@uri": "../flowproperties/93a60a56-a3c8-11da-a746-0800200b9a66.xml",
-                    "common:shortDescription": {
-                        "@xml:lang": "en",
-                        "#text": "Mass"
-                    }
-                },
-                "meanValue": "1.0"
-            }
+        "CASNumber": "64896-70-4",
+        "common:generalComment": {
+          "@xml:lang": "en",
+          "#text": "Reference elementary flow of the International Reference Life Cycle Data System (ILCD)."
+        },
+        "common:other": {
+          "ecn:ECNumber": "807-840-4"
         }
+      },
+      "quantitativeReference": {
+        "referenceToReferenceFlowProperty": "0"
+      }
+    },
+    "modellingAndValidation": {
+      "LCIMethod": {
+        "typeOfDataSet": "Elementary flow"
+      },
+      "complianceDeclarations": {
+        "compliance": {
+          "common:referenceToComplianceSystem": {
+            "@refObjectId": "9ba3ac1e-6797-4cc0-afd5-1b8f7bf28c6a",
+            "@type": "source data set",
+            "@uri": "../sources/9ba3ac1e-6797-4cc0-afd5-1b8f7bf28c6a.xml",
+            "common:shortDescription": {
+              "@xml:lang": "en",
+              "#text": "ILCD Data Network - compliance (non-Process)"
+            }
+          },
+          "common:approvalOfOverallCompliance": "Fully compliant"
+        }
+      }
+    },
+    "administrativeInformation": {
+      "dataEntryBy": {
+        "common:timeStamp": "2018-07-12T15:52:21.041+01:00",
+        "common:referenceToDataSetFormat": {
+          "@refObjectId": "a97a0155-0234-4b87-b4ce-a45da52f2a40",
+          "@type": "source data set",
+          "@uri": "../sources/a97a0155-0234-4b87-b4ce-a45da52f2a40.xml",
+          "common:shortDescription": {
+            "@xml:lang": "en",
+            "#text": "ILCD format"
+          }
+        }
+      },
+      "publicationAndOwnership": {
+        "common:dataSetVersion": "00.00.002",
+        "common:permanentDataSetURI": "http://eplca.jrc.ec.europa.eu/EF-node/resource/flows/0000b186-aea3-4c0a-b0c2-c284de7cdf92.xml"
+      }
+    },
+    "flowProperties": {
+      "flowProperty": {
+        "@dataSetInternalID": "0",
+        "referenceToFlowPropertyDataSet": {
+          "@refObjectId": "93a60a56-a3c8-11da-a746-0800200b9a66",
+          "@type": "flow property data set",
+          "@uri": "../flowproperties/93a60a56-a3c8-11da-a746-0800200b9a66.xml",
+          "common:shortDescription": {
+            "@xml:lang": "en",
+            "#text": "Mass"
+          }
+        },
+        "meanValue": "1.0"
+      }
     }
+  }
 }

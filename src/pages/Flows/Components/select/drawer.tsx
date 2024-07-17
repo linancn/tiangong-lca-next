@@ -71,7 +71,9 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       ],
     },
     {
-      title: <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />,
+      title: (
+        <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />
+      ),
       dataIndex: 'classification',
       sorter: false,
       search: false,
@@ -83,9 +85,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       search: false,
     },
     {
-      title: (
-        <FormattedMessage id="pages.flow.CASNumber" defaultMessage="CAS Number" />
-      ),
+      title: <FormattedMessage id="pages.flow.CASNumber" defaultMessage="CAS Number" />,
       dataIndex: 'CASNumber',
       sorter: false,
       search: false,
@@ -122,7 +122,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={myActionRefSelect}
-                setViewDrawerVisible={() => { }}
+                setViewDrawerVisible={() => {}}
               />
             </Space>,
           ];
@@ -132,7 +132,10 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
   ];
 
   const tabList = [
-    { key: 'tg', tab: <FormattedMessage id="pages.tab.title.tgdata" defaultMessage="TianGong Data" /> },
+    {
+      key: 'tg',
+      tab: <FormattedMessage id="pages.tab.title.tgdata" defaultMessage="TianGong Data" />,
+    },
     { key: 'my', tab: <FormattedMessage id="pages.tab.title.mydata" defaultMessage="My Data" /> },
   ];
 
@@ -146,7 +149,12 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
     tg: (
       <>
         <Card>
-          <Search size={'large'} placeholder={intl.formatMessage({ id: 'pages.search.placeholder' })} onSearch={onSearch} enterButton />
+          <Search
+            size={'large'}
+            placeholder={intl.formatMessage({ id: 'pages.search.placeholder' })}
+            onSearch={onSearch}
+            enterButton
+          />
         </Card>
         <ProTable<FlowTable, ListPagination>
           actionRef={tgActionRefSelect}
@@ -214,31 +222,18 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
   return (
     <>
       {buttonType === 'icon' ? (
-        <Tooltip
-          title={
-            <FormattedMessage
-              id="pages.button.select"
-              defaultMessage="Select"
-            />
-          }
-        >
+        <Tooltip title={<FormattedMessage id="pages.button.select" defaultMessage="Select" />}>
           <Button shape="circle" icon={<DatabaseOutlined />} size="small" onClick={onSelect} />
         </Tooltip>
       ) : (
         <Button onClick={onSelect}>
-          <FormattedMessage
-            id="pages.button.select"
-            defaultMessage="select"
-          />
+          <FormattedMessage id="pages.button.select" defaultMessage="select" />
         </Button>
       )}
 
       <Drawer
         title={
-          <FormattedMessage
-            id="pages.flow.drawer.title.select"
-            defaultMessage="Selete Flow"
-          />
+          <FormattedMessage id="pages.flow.drawer.title.select" defaultMessage="Selete Flow" />
         }
         width="90%"
         closable={false}

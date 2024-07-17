@@ -43,11 +43,11 @@ const SourceDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisib
 
   return (
     <>
-
       {buttonType === 'icon' ? (
-        <><Tooltip title={<FormattedMessage id="pages.button.delete" defaultMessage="Delete" />}>
-          <Button shape="circle" icon={<DeleteOutlined />} size="small" onClick={showModal} />
-        </Tooltip>
+        <>
+          <Tooltip title={<FormattedMessage id="pages.button.delete" defaultMessage="Delete" />}>
+            <Button shape="circle" icon={<DeleteOutlined />} size="small" onClick={showModal} />
+          </Tooltip>
           <Modal
             title={<FormattedMessage id="pages.button.delete" defaultMessage="Delete" />}
             open={isModalVisible}
@@ -78,7 +78,6 @@ const SourceDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisib
           </Modal>
         </>
       )}{' '}
-
     </>
   );
 };
