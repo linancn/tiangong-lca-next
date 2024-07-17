@@ -1,5 +1,5 @@
 import { supabase } from '@/services/supabase';
-import { SortOrder } from 'antd/lib/table/interface';
+import { SortOrder } from 'antd/es/table/interface';
 import { v4 } from 'uuid';
 import { classificationToString, getLangText } from '../general/util';
 import { genProcessJsonOrdered } from './util';
@@ -103,6 +103,7 @@ export async function getProcessTable(
       data: result.data.map((i: any) => {
         try {
           return {
+            key: i.id,
             id: i.id,
             lang: lang,
             baseName: getLangText(i['baseName'] ?? {}, lang),

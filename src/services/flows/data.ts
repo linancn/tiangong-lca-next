@@ -7,3 +7,10 @@ export type FlowTable = {
   CASNumber: string;
   created_at: Date;
 };
+
+export type FlowModelTable = {
+  id: string;
+  name: string;
+  description: string;
+  created_at: Date;
+};

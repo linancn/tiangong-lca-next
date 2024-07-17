@@ -18,7 +18,7 @@ type Props = {
   id: string;
   lang: string;
   dataSource: string;
-  actionRef: React.MutableRefObject<ActionType | undefined>;
+  // actionRef: React.MutableRefObject<ActionType | undefined>;
 };
 const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -48,11 +48,11 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
       valueType: 'index',
       search: false,
     },
-    {
-      title: <FormattedMessage id="processExchange.dataSetInternalID" defaultMessage="DataSet Internal ID" />,
-      dataIndex: 'dataSetInternalID',
-      search: false,
-    },
+    // {
+    //   title: <FormattedMessage id="processExchange.dataSetInternalID" defaultMessage="DataSet Internal ID" />,
+    //   dataIndex: 'dataSetInternalID',
+    //   search: false,
+    // },
     {
       title: (
         <FormattedMessage

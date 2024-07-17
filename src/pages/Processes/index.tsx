@@ -75,26 +75,26 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <ProcessView id={row.id} dataSource={dataSource} lang={lang} actionRef={actionRef} />
+              <ProcessView id={row.id} dataSource={dataSource} lang={lang} />
               <ProcessEdit
                 id={row.id}
                 lang={lang}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
+                setViewDrawerVisible={() => { }}
               />
               <ProcessDelete
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
+                setViewDrawerVisible={() => { }}
               />
             </Space>,
           ];
         }
         return [
           <Space size={'small'} key={0}>
-            <ProcessView id={row.id} dataSource={dataSource} lang={lang} actionRef={actionRef} />
+            <ProcessView id={row.id} dataSource={dataSource} lang={lang} />
           </Space>,
         ];
       },

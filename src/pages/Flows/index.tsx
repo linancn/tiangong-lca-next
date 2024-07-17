@@ -1,5 +1,5 @@
 import { getFlowTable } from '@/services/flows/api';
-import { FlowsTable } from '@/services/flows/data';
+import { FlowTable } from '@/services/flows/data';
 import { ListPagination } from '@/services/general/data';
 import { getLang } from '@/services/general/util';
 import { PageContainer } from '@ant-design/pro-components';
@@ -12,6 +12,7 @@ import { FormattedMessage, useIntl, useLocation } from 'umi';
 import FlowsCreate from './Components/create';
 import FlowsDelete from './Components/delete';
 import FlowsEdit from './Components/edit';
+import FlowModel from './Components/model';
 import FlowsView from './Components/view';
 
 const TableList: FC = () => {
@@ -25,7 +26,7 @@ const TableList: FC = () => {
   const { locale } = useIntl();
   const lang = getLang(locale);
   const actionRef = useRef<ActionType>();
-  const flowsColumns: ProColumns<FlowsTable>[] = [
+  const flowsColumns: ProColumns<FlowTable>[] = [
     {
       title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
       dataIndex: 'index',
@@ -72,6 +73,11 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
+              <FlowModel
+                buttonType={'icon'}
+                flowId={row.id}
+                lang={lang}
+              />
               <FlowsView
                 buttonType={'icon'}
                 id={row.id}
@@ -106,7 +112,7 @@ const TableList: FC = () => {
   ];
   return (
     <PageContainer>
-      <ProTable<FlowsTable, ListPagination>
+      <ProTable<FlowTable, ListPagination>
         actionRef={actionRef}
         search={{
           defaultCollapsed: false,
