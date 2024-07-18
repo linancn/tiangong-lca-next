@@ -3,7 +3,7 @@ import { genFlowpropertyFromData } from '@/services/flowproperties/util';
 import { langOptions } from '@/services/general/data';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Divider, Form, Input, Row, Select, Space } from 'antd';
-import React, { FC, useEffect, useState } from 'react';
+import React, { FC, ReactNode, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import FlowpropertyView from '../view';
 import FlowpropertiesSelectDrawer from './drawer';
@@ -12,7 +12,7 @@ const { TextArea } = Input;
 
 type Props = {
   name: any;
-  label: string;
+  label: ReactNode | string;
   lang: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;

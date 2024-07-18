@@ -3,7 +3,7 @@ import { getUnitGroupDetail } from '@/services/unitgroups/api';
 import { genUnitGroupFromData } from '@/services/unitgroups/util';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Divider, Form, Input, Row, Select, Space } from 'antd';
-import React, { FC, useEffect, useState } from 'react';
+import React, { FC, ReactNode, useEffect, useState } from 'react';
 import UnitgroupsView from '../view';
 import UnitgroupsSelectDrawer from './drawer';
 // import LangTextItemFrom from '@/components/LangTextItem/from';
@@ -11,7 +11,7 @@ const { TextArea } = Input;
 
 type Props = {
   name: any;
-  label: string;
+  label: ReactNode | string;
   lang: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;

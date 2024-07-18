@@ -4,7 +4,7 @@ import { genSourceFromData } from '@/services/sources/util';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { FormattedMessage } from '@umijs/max';
 import { Button, Card, Col, Divider, Form, Input, Row, Select, Space } from 'antd';
-import React, { FC, useEffect, useState } from 'react';
+import React, { FC, ReactNode, useEffect, useState } from 'react';
 import SourceView from '../view';
 import SourceSelectDrawer from './drawer';
 
@@ -12,7 +12,7 @@ const { TextArea } = Input;
 
 type Props = {
   name: any;
-  label: string;
+  label: ReactNode | string;
   lang: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;
