@@ -48,7 +48,7 @@ const ProcessExchangeEdit: FC<Props> = ({
   const [functionalUnitOrOther, setFunctionalUnitOrOther] = useState(false);
 
   const handletFromData = () => {
-    setFromData(formRefEdit.current?.getFieldsValue() ?? {},);
+    setFromData(formRefEdit.current?.getFieldsValue() ?? {});
   };
 
   const onEdit = useCallback(() => {
@@ -83,7 +83,12 @@ const ProcessExchangeEdit: FC<Props> = ({
         )}
       </Tooltip>
       <Drawer
-        title={<FormattedMessage id="pages.process.exchange.drawer.title.edit" defaultMessage="Edit Exchange" />}
+        title={
+          <FormattedMessage
+            id="pages.process.exchange.drawer.title.edit"
+            defaultMessage="Edit Exchange"
+          />
+        }
         width="90%"
         closable={false}
         extra={
@@ -173,23 +178,31 @@ const ProcessExchangeEdit: FC<Props> = ({
               <Form.Item label="Reference To Reference Flow" name={'quantitativeReference'}>
                 <Switch />
               </Form.Item>
-              {functionalUnitOrOther ? (<>
-                <Divider orientationMargin="0" orientation="left" plain>
-                  Functional Unit Or Other
-                </Divider>
-                <LangTextItemFrom name="functionalUnitOrOther" label="Functional Unit Or Other" /></>)
-                : <></>}
+              {functionalUnitOrOther ? (
+                <>
+                  <Divider orientationMargin="0" orientation="left" plain>
+                    Functional Unit Or Other
+                  </Divider>
+                  <LangTextItemFrom name="functionalUnitOrOther" label="Functional Unit Or Other" />
+                </>
+              ) : (
+                <></>
+              )}
             </Card>
           </Space>
         </ProForm>
         <Collapse
-          items={[{
-            key: '1', label: 'JSON Data',
-            children:
-              <Typography>
-                <pre>{JSON.stringify(fromData, null, 2)}</pre>
-              </Typography>
-          }]}
+          items={[
+            {
+              key: '1',
+              label: 'JSON Data',
+              children: (
+                <Typography>
+                  <pre>{JSON.stringify(fromData, null, 2)}</pre>
+                </Typography>
+              ),
+            },
+          ]}
         />
       </Drawer>
     </>

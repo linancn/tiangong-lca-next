@@ -43,7 +43,9 @@ const TableList: FC = () => {
       ],
     },
     {
-      title: <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />,
+      title: (
+        <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />
+      ),
       dataIndex: 'classification',
       sorter: false,
       search: false,

@@ -1,1063 +1,1063 @@
 {
-    "CategorySystem": {
-        "@name": "ILCD",
-        "@xmlns": "http://lca.jrc.it/ILCD/Categories",
-        "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
-        "@xsi:schemaLocation": "http://lca.jrc.it/ILCD/Categories ../schemas/ILCD_Categories.xsd",
-        "categories": [
-            {
-                "@dataType": "Process",
-                "category": [
-                    {
-                        "@id": "1",
-                        "@name": "Energy carriers and technologies",
-                        "category": [
-                            {
-                                "@id": "1.1",
-                                "@name": "Energetic raw materials"
-                            },
-                            {
-                                "@id": "1.2",
-                                "@name": "Electricity"
-                            },
-                            {
-                                "@id": "1.3",
-                                "@name": "Heat and steam"
-                            },
-                            {
-                                "@id": "1.4",
-                                "@name": "Mechanical energy"
-                            },
-                            {
-                                "@id": "1.5",
-                                "@name": "Hard coal based fuels"
-                            },
-                            {
-                                "@id": "1.6",
-                                "@name": "Lignite based fuels"
-                            },
-                            {
-                                "@id": "1.7",
-                                "@name": "Crude oil based fuels"
-                            },
-                            {
-                                "@id": "1.8",
-                                "@name": "Natural gas based fuels"
-                            },
-                            {
-                                "@id": "1.9",
-                                "@name": "Nuclear fuels"
-                            },
-                            {
-                                "@id": "1.10",
-                                "@name": "Other non-renewable fuels"
-                            },
-                            {
-                                "@id": "1.11",
-                                "@name": "Renewable fuels"
-                            }
-                        ]
-                    },
-                    {
-                        "@id": "2",
-                        "@name": "Materials production",
-                        "category": [
-                            {
-                                "@id": "2.1",
-                                "@name": "Non-energetic raw materials"
-                            },
-                            {
-                                "@id": "2.2",
-                                "@name": "Metals and semimetals"
-                            },
-                            {
-                                "@id": "2.3",
-                                "@name": "Organic chemicals"
-                            },
-                            {
-                                "@id": "2.4",
-                                "@name": "Inorganic chemicals"
-                            },
-                            {
-                                "@id": "2.5",
-                                "@name": "Glass and ceramics"
-                            },
-                            {
-                                "@id": "2.6",
-                                "@name": "Other mineralic materials"
-                            },
-                            {
-                                "@id": "2.7",
-                                "@name": "Plastics"
-                            },
-                            {
-                                "@id": "2.8",
-                                "@name": "Paper and cardboards"
-                            },
-                            {
-                                "@id": "2.9",
-                                "@name": "Water"
-                            },
-                            {
-                                "@id": "2.10",
-                                "@name": "Agricultural production means"
-                            },
-                            {
-                                "@id": "2.11",
-                                "@name": "Food and renewable raw materials"
-                            },
-                            {
-                                "@id": "2.12",
-                                "@name": "Wood"
-                            },
-                            {
-                                "@id": "2.13",
-                                "@name": "Other materials"
-                            }
-                        ]
-                    },
-                    {
-                        "@id": "3",
-                        "@name": "Systems",
-                        "category": [
-                            {
-                                "@id": "3.1",
-                                "@name": "Packaging"
-                            },
-                            {
-                                "@id": "3.2",
-                                "@name": "Electrics and electronics"
-                            },
-                            {
-                                "@id": "3.3",
-                                "@name": "Vehicles"
-                            },
-                            {
-                                "@id": "3.4",
-                                "@name": "Other machines"
-                            },
-                            {
-                                "@id": "3.5",
-                                "@name": "Construction"
-                            },
-                            {
-                                "@id": "3.6",
-                                "@name": "White goods"
-                            },
-                            {
-                                "@id": "3.7",
-                                "@name": "Textiles, furnitures and other interiors"
-                            },
-                            {
-                                "@id": "3.8",
-                                "@name": "Unspecific parts"
-                            },
-                            {
-                                "@id": "3.9",
-                                "@name": "Paints and chemical preparations"
-                            },
-                            {
-                                "@id": "3.10",
-                                "@name": "Other systems"
-                            }
-                        ]
-                    },
-                    {
-                        "@id": "4",
-                        "@name": "End-of-life treatment",
-                        "category": [
-                            {
-                                "@id": "4.1",
-                                "@name": "Reuse or further use"
-                            },
-                            {
-                                "@id": "4.2",
-                                "@name": "Material recycling"
-                            },
-                            {
-                                "@id": "4.3",
-                                "@name": "Raw material recycling"
-                            },
-                            {
-                                "@id": "4.4",
-                                "@name": "Energy recycling"
-                            },
-                            {
-                                "@id": "4.5",
-                                "@name": "Landfilling"
-                            },
-                            {
-                                "@id": "4.6",
-                                "@name": "Waste collection"
-                            },
-                            {
-                                "@id": "4.7",
-                                "@name": "Waste water treatment"
-                            },
-                            {
-                                "@id": "4.8",
-                                "@name": "Raw gas treatment"
-                            },
-                            {
-                                "@id": "4.9",
-                                "@name": "Other end-of-life services"
-                            }
-                        ]
-                    },
-                    {
-                        "@id": "5",
-                        "@name": "Transport services",
-                        "category": [
-                            {
-                                "@id": "5.1",
-                                "@name": "Road"
-                            },
-                            {
-                                "@id": "5.2",
-                                "@name": "Rail"
-                            },
-                            {
-                                "@id": "5.3",
-                                "@name": "Water"
-                            },
-                            {
-                                "@id": "5.4",
-                                "@name": "Air"
-                            },
-                            {
-                                "@id": "5.5",
-                                "@name": "Other transport"
-                            }
-                        ]
-                    },
-                    {
-                        "@id": "6",
-                        "@name": "Other Services",
-                        "category": [
-                            {
-                                "@id": "6.1",
-                                "@name": "Cleaning"
-                            },
-                            {
-                                "@id": "6.2",
-                                "@name": "Storage"
-                            },
-                            {
-                                "@id": "6.3",
-                                "@name": "Health, social services, beauty and wellness"
-                            },
-                            {
-                                "@id": "6.4",
-                                "@name": "Repair and maintenance"
-                            },
-                            {
-                                "@id": "6.5",
-                                "@name": "Sale and whole sale"
-                            },
-                            {
-                                "@id": "6.6",
-                                "@name": "Communication and information services"
-                            },
-                            {
-                                "@id": "6.7",
-                                "@name": "Financial, legal, and insurance"
-                            },
-                            {
-                                "@id": "6.8",
-                                "@name": "Administration and government"
-                            },
-                            {
-                                "@id": "6.9",
-                                "@name": "Defence"
-                            },
-                            {
-                                "@id": "6.10",
-                                "@name": "Lodging and gastronomy"
-                            },
-                            {
-                                "@id": "6.11",
-                                "@name": "Education"
-                            },
-                            {
-                                "@id": "6.12",
-                                "@name": "Research and development"
-                            },
-                            {
-                                "@id": "6.13",
-                                "@name": "Entertainment"
-                            },
-                            {
-                                "@id": "6.14",
-                                "@name": "Renting"
-                            },
-                            {
-                                "@id": "6.15",
-                                "@name": "Engineering and consulting"
-                            },
-                            {
-                                "@id": "6.16",
-                                "@name": "Other services"
-                            }
-                        ]
-                    },
-                    {
-                        "@id": "7",
-                        "@name": "Use and consumption",
-                        "category": [
-                            {
-                                "@id": "7.1",
-                                "@name": "Consumption of goods"
-                            },
-                            {
-                                "@id": "7.2",
-                                "@name": "Use of energy-using products"
-                            },
-                            {
-                                "@id": "7.3",
-                                "@name": "Other use and consumption"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "@dataType": "LCIAMethod",
-                "category": [
-                    {
-                        "@id": "1",
-                        "@name": "Damage level LCIA methods",
-                        "category": [
-                            {
-                                "@id": "1.1",
-                                "@name": "Total impact across areas of protection"
-                            },
-                            {
-                                "@id": "1.2",
-                                "@name": "Human health",
-                                "category": [
-                                    {
-                                        "@id": "1.2.1",
-                                        "@name": "Total human health, combined"
-                                    },
-                                    {
-                                        "@id": "1.2.2",
-                                        "@name": "Human health, toxicity"
-                                    },
-                                    {
-                                        "@id": "1.2.3",
-                                        "@name": "Human health, climate change"
-                                    },
-                                    {
-                                        "@id": "1.2.4",
-                                        "@name": "Human health, ionising radiation"
-                                    },
-                                    {
-                                        "@id": "1.2.5",
-                                        "@name": "Human health, ozone depletion"
-                                    },
-                                    {
-                                        "@id": "1.2.6",
-                                        "@name": "Human health, photooxidant creation"
-                                    },
-                                    {
-                                        "@id": "1.2.7",
-                                        "@name": "Human health, other"
-                                    }
-                                ]
-                            },
-                            {
-                                "@id": "1.3",
-                                "@name": "Natural environment",
-                                "category": [
-                                    {
-                                        "@id": "1.3.1",
-                                        "@name": "Total natural environment, combined"
-                                    },
-                                    {
-                                        "@id": "1.3.2",
-                                        "@name": "Natural environment, climate change"
-                                    },
-                                    {
-                                        "@id": "1.3.3",
-                                        "@name": "Natural environment, ozone depletion"
-                                    },
-                                    {
-                                        "@id": "1.3.4",
-                                        "@name": "Natural environment, land use"
-                                    },
-                                    {
-                                        "@id": "1.3.5",
-                                        "@name": "Natural environment, freshwater ecotoxicity"
-                                    },
-                                    {
-                                        "@id": "1.3.6",
-                                        "@name": "Natural environment, seawater ecotoxicity"
-                                    },
-                                    {
-                                        "@id": "1.3.7",
-                                        "@name": "Natural environment, terrestric ecotoxicity"
-                                    },
-                                    {
-                                        "@id": "1.3.8",
-                                        "@name": "Natural environment, acidification"
-                                    },
-                                    {
-                                        "@id": "1.3.9",
-                                        "@name": "Natural environment, eutrophication"
-                                    },
-                                    {
-                                        "@id": "1.3.10",
-                                        "@name": "Natural environment, photooxidant creation"
-                                    },
-                                    {
-                                        "@id": "1.3.11",
-                                        "@name": "Natural environment, ionising radiation"
-                                    },
-                                    {
-                                        "@id": "1.3.12",
-                                        "@name": "Natural environment, other"
-                                    }
-                                ]
-                            },
-                            {
-                                "@id": "1.4",
-                                "@name": "Man-made environment",
-                                "category": [
-                                    {
-                                        "@id": "1.4.1",
-                                        "@name": "Total man-made environment, combined"
-                                    },
-                                    {
-                                        "@id": "1.4.2",
-                                        "@name": "Man-made environment, acidification"
-                                    },
-                                    {
-                                        "@id": "1.4.3",
-                                        "@name": "Man-made environment, climate change"
-                                    },
-                                    {
-                                        "@id": "1.4.4",
-                                        "@name": "Man-made environment, eutrophication"
-                                    },
-                                    {
-                                        "@id": "1.4.5",
-                                        "@name": "Man-made environment, other"
-                                    }
-                                ]
-                            },
-                            {
-                                "@id": "1.5",
-                                "@name": "Resource availability",
-                                "category": [
-                                    {
-                                        "@id": "1.5.1",
-                                        "@name": "Total resource depletion, combined"
-                                    },
-                                    {
-                                        "@id": "1.5.2",
-                                        "@name": "Resource depletion, minerals and metals"
-                                    },
-                                    {
-                                        "@id": "1.5.3",
-                                        "@name": "Resource depletion, non-renewable energy resourcess"
-                                    },
-                                    {
-                                        "@id": "1.5.4",
-                                        "@name": "Resource depletion, land use"
-                                    },
-                                    {
-                                        "@id": "1.5.5",
-                                        "@name": "Resource depletion, renewable energy resources"
-                                    },
-                                    {
-                                        "@id": "1.5.6",
-                                        "@name": "Resource depletion, renewable non-energy resources"
-                                    },
-                                    {
-                                        "@id": "1.5.6",
-                                        "@name": "Resource depletion, other"
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        "@id": "2",
-                        "@name": "Midpoint level LCIA methods",
-                        "category": [
-                            {
-                                "@id": "2.1",
-                                "@name": "Combined methods"
-                            },
-                            {
-                                "@id": "2.2",
-                                "@name": "Climate change"
-                            },
-                            {
-                                "@id": "2.3",
-                                "@name": "Ozone depletion"
-                            },
-                            {
-                                "@id": "2.4",
-                                "@name": "Land use"
-                            },
-                            {
-                                "@id": "2.5",
-                                "@name": "Ecotoxicity"
-                            },
-                            {
-                                "@id": "2.6",
-                                "@name": "Acidification"
-                            },
-                            {
-                                "@id": "2.7",
-                                "@name": "Eutrophication"
-                            },
-                            {
-                                "@id": "2.8",
-                                "@name": "Photooxidant creation"
-                            },
-                            {
-                                "@id": "2.9",
-                                "@name": "Nuclear radiation"
-                            },
-                            {
-                                "@id": "2.10",
-                                "@name": "Human toxicity"
-                            },
-                            {
-                                "@id": "2.11",
-                                "@name": "Respiratory effects"
-                            },
-                            {
-                                "@id": "2.12",
-                                "@name": "Noise"
-                            },
-                            {
-                                "@id": "2.13",
-                                "@name": "Resource depletion"
-                            },
-                            {
-                                "@id": "2.14",
-                                "@name": "Other midpoint categories"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "@dataType": "Flow",
-                "category": [
-                    {
-                        "@id": "1",
-                        "@name": "Emissions",
-                        "category": [
-                            {
-                                "@id": "1.1",
-                                "@name": "Radioactives"
-                            },
-                            {
-                                "@id": "1.2",
-                                "@name": "Pesticides"
-                            },
-                            {
-                                "@id": "1.3",
-                                "@name": "Particles"
-                            },
-                            {
-                                "@id": "1.4",
-                                "@name": "Metal and semimetal elements and ions"
-                            },
-                            {
-                                "@id": "1.5",
-                                "@name": "Non-metallic or -semimetallic ions"
-                            },
-                            {
-                                "@id": "1.6",
-                                "@name": "Inorganic covalent compounds"
-                            },
-                            {
-                                "@id": "1.7",
-                                "@name": "Cyclic organics"
-                            },
-                            {
-                                "@id": "1.8",
-                                "@name": "Acylic organics"
-                            },
-                            {
-                                "@id": "1.9",
-                                "@name": "Other substance type"
-                            }
-                        ]
-                    },
-                    {
-                        "@id": "5",
-                        "@name": "Energy carriers and technologies",
-                        "category": [
-                            {
-                                "@id": "5.1",
-                                "@name": "Energetic raw materials"
-                            },
-                            {
-                                "@id": "5.2",
-                                "@name": "Electricity"
-                            },
-                            {
-                                "@id": "5.3",
-                                "@name": "Heat and steam"
-                            },
-                            {
-                                "@id": "5.4",
-                                "@name": "Mechanical energy"
-                            },
-                            {
-                                "@id": "5.5",
-                                "@name": "Hard coal based fuels"
-                            },
-                            {
-                                "@id": "5.6",
-                                "@name": "Lignite based fuels"
-                            },
-                            {
-                                "@id": "5.7",
-                                "@name": "Crude oil based fuels"
-                            },
-                            {
-                                "@id": "5.8",
-                                "@name": "Natural gas based fuels"
-                            },
-                            {
-                                "@id": "5.9",
-                                "@name": "Nuclear fuels"
-                            },
-                            {
-                                "@id": "5.10",
-                                "@name": "Other non-renewable fuels"
-                            },
-                            {
-                                "@id": "5.11",
-                                "@name": "Renewable fuels"
-                            }
-                        ]
-                    },
-                    {
-                        "@id": "6",
-                        "@name": "Materials production",
-                        "category": [
-                            {
-                                "@id": "6.1",
-                                "@name": "Raw materials"
-                            },
-                            {
-                                "@id": "6.2",
-                                "@name": "Metals and semimetals"
-                            },
-                            {
-                                "@id": "6.3",
-                                "@name": "Organic chemicals"
-                            },
-                            {
-                                "@id": "6.4",
-                                "@name": "Inorganic chemicals"
-                            },
-                            {
-                                "@id": "6.5",
-                                "@name": "Glass and ceramics"
-                            },
-                            {
-                                "@id": "6.6",
-                                "@name": "Other mineralic materials"
-                            },
-                            {
-                                "@id": "6.7",
-                                "@name": "Plastics"
-                            },
-                            {
-                                "@id": "6.8",
-                                "@name": "Paper and cardboards"
-                            },
-                            {
-                                "@id": "6.9",
-                                "@name": "Water"
-                            },
-                            {
-                                "@id": "6.10",
-                                "@name": "Agricultural production means"
-                            },
-                            {
-                                "@id": "6.11",
-                                "@name": "Food and renewable raw materials"
-                            },
-                            {
-                                "@id": "6.12",
-                                "@name": "Wood"
-                            },
-                            {
-                                "@id": "6.13",
-                                "@name": "Other materials"
-                            }
-                        ]
-                    },
-                    {
-                        "@id": "7",
-                        "@name": "Systems",
-                        "category": [
-                            {
-                                "@id": "7.1",
-                                "@name": "Packaging"
-                            },
-                            {
-                                "@id": "7.2",
-                                "@name": "Electrics and electronics"
-                            },
-                            {
-                                "@id": "7.3",
-                                "@name": "Vehicles"
-                            },
-                            {
-                                "@id": "7.4",
-                                "@name": "Other machines"
-                            },
-                            {
-                                "@id": "7.5",
-                                "@name": "Construction"
-                            },
-                            {
-                                "@id": "7.6",
-                                "@name": "White goods"
-                            },
-                            {
-                                "@id": "7.7",
-                                "@name": "Textiles, furnitures and other interiors"
-                            },
-                            {
-                                "@id": "7.8",
-                                "@name": "Unspecific parts"
-                            },
-                            {
-                                "@id": "7.9",
-                                "@name": "Paints and chemical preparations"
-                            },
-                            {
-                                "@id": "7.10",
-                                "@name": "Other systems"
-                            }
-                        ]
-                    },
-                    {
-                        "@id": "8",
-                        "@name": "End-of-life treatment",
-                        "category": [
-                            {
-                                "@id": "8.1",
-                                "@name": "Reuse or further use"
-                            },
-                            {
-                                "@id": "8.2",
-                                "@name": "Material recycling"
-                            },
-                            {
-                                "@id": "8.3",
-                                "@name": "Raw material recycling"
-                            },
-                            {
-                                "@id": "8.4",
-                                "@name": "Energy recycling"
-                            },
-                            {
-                                "@id": "8.5",
-                                "@name": "Landfilling"
-                            },
-                            {
-                                "@id": "8.6",
-                                "@name": "Waste collection"
-                            },
-                            {
-                                "@id": "8.7",
-                                "@name": "Waste water treatment"
-                            },
-                            {
-                                "@id": "8.8",
-                                "@name": "Raw gas treatment"
-                            },
-                            {
-                                "@id": "8.9",
-                                "@name": "Other end-of-life services"
-                            }
-                        ]
-                    },
-                    {
-                        "@id": "9",
-                        "@name": "Transport services",
-                        "category": [
-                            {
-                                "@id": "9.1",
-                                "@name": "Road"
-                            },
-                            {
-                                "@id": "9.2",
-                                "@name": "Rail"
-                            },
-                            {
-                                "@id": "9.3",
-                                "@name": "Water"
-                            },
-                            {
-                                "@id": "9.4",
-                                "@name": "Air"
-                            },
-                            {
-                                "@id": "9.5",
-                                "@name": "Other transport"
-                            }
-                        ]
-                    },
-                    {
-                        "@id": "10",
-                        "@name": "Other Services",
-                        "category": [
-                            {
-                                "@id": "10.1",
-                                "@name": "Cleaning"
-                            },
-                            {
-                                "@id": "10.2",
-                                "@name": "Storage"
-                            },
-                            {
-                                "@id": "10.3",
-                                "@name": "Health, social services, beauty and wellness"
-                            },
-                            {
-                                "@id": "10.4",
-                                "@name": "Repair and maintenance"
-                            },
-                            {
-                                "@id": "10.5",
-                                "@name": "Sale and whole sale"
-                            },
-                            {
-                                "@id": "10.6",
-                                "@name": "Communication and information services"
-                            },
-                            {
-                                "@id": "10.7",
-                                "@name": "Financial, legal, and insurance"
-                            },
-                            {
-                                "@id": "10.8",
-                                "@name": "Administration and government"
-                            },
-                            {
-                                "@id": "10.9",
-                                "@name": "Defence"
-                            },
-                            {
-                                "@id": "10.10",
-                                "@name": "Lodging and gastronomy"
-                            },
-                            {
-                                "@id": "10.11",
-                                "@name": "Education"
-                            },
-                            {
-                                "@id": "10.12",
-                                "@name": "Research and development"
-                            },
-                            {
-                                "@id": "10.13",
-                                "@name": "Entertainment"
-                            },
-                            {
-                                "@id": "10.14",
-                                "@name": "Renting"
-                            },
-                            {
-                                "@id": "10.15",
-                                "@name": "Engineering and consulting"
-                            },
-                            {
-                                "@id": "10.16",
-                                "@name": "Other services"
-                            }
-                        ]
-                    },
-                    {
-                        "@id": "11",
-                        "@name": "Use and consumption",
-                        "category": [
-                            {
-                                "@id": "11.1",
-                                "@name": "Consumption of goods"
-                            },
-                            {
-                                "@id": "11.2",
-                                "@name": "Use of energy-using products"
-                            },
-                            {
-                                "@id": "11.3",
-                                "@name": "Other use and consumption"
-                            }
-                        ]
-                    },
-                    {
-                        "@id": "12",
-                        "@name": "Wastes",
-                        "category": [
-                            {
-                                "@id": "12.1",
-                                "@name": "Mining waste"
-                            },
-                            {
-                                "@id": "12.2",
-                                "@name": "Construction waste"
-                            },
-                            {
-                                "@id": "12.3",
-                                "@name": "Production residues"
-                            },
-                            {
-                                "@id": "12.4",
-                                "@name": "Post consumer waste"
-                            },
-                            {
-                                "@id": "12.5",
-                                "@name": "Radioactive waste"
-                            },
-                            {
-                                "@id": "12.6",
-                                "@name": "Raw gas"
-                            },
-                            {
-                                "@id": "12.7",
-                                "@name": "Waste water"
-                            },
-                            {
-                                "@id": "12.8",
-                                "@name": "Other waste"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "@dataType": "FlowProperty",
-                "category": [
-                    {
-                        "@id": "1",
-                        "@name": "Technical flow properties"
-                    },
-                    {
-                        "@id": "2",
-                        "@name": "Chemical composition of flows"
-                    },
-                    {
-                        "@id": "3",
-                        "@name": "Economic flow properties"
-                    },
-                    {
-                        "@id": "4",
-                        "@name": "Other flow properties"
-                    }
-                ]
-            },
-            {
-                "@dataType": "UnitGroup",
-                "category": [
-                    {
-                        "@id": "1",
-                        "@name": "Technical unit groups"
-                    },
-                    {
-                        "@id": "2",
-                        "@name": "Chemical composition unit groups"
-                    },
-                    {
-                        "@id": "3",
-                        "@name": "Economic unit groups"
-                    },
-                    {
-                        "@id": "4",
-                        "@name": "Other unit groups"
-                    }
-                ]
-            },
-            {
-                "@dataType": "Contact",
-                "category": [
-                    {
-                        "@id": "1",
-                        "@name": "Group of organisations, project"
-                    },
-                    {
-                        "@id": "2",
-                        "@name": "Organisations",
-                        "category": [
-                            {
-                                "@id": "2.1",
-                                "@name": "Private companies"
-                            },
-                            {
-                                "@id": "2.2",
-                                "@name": "Governmental organisations"
-                            },
-                            {
-                                "@id": "2.3",
-                                "@name": "Non-governmental organisations"
-                            },
-                            {
-                                "@id": "2.4",
-                                "@name": "Other organisations"
-                            }
-                        ]
-                    },
-                    {
-                        "@id": "3",
-                        "@name": "Working groups within organisation"
-                    },
-                    {
-                        "@id": "4",
-                        "@name": "Persons"
-                    },
-                    {
-                        "@id": "5",
-                        "@name": "Other"
-                    }
-                ]
-            },
-            {
-                "@dataType": "Source",
-                "category": [
-                    {
-                        "@id": "0",
-                        "@name": "Images"
-                    },
-                    {
-                        "@id": "1",
-                        "@name": "Data set formats"
-                    },
-                    {
-                        "@id": "2",
-                        "@name": "Databases"
-                    },
-                    {
-                        "@id": "3",
-                        "@name": "Compliance systems"
-                    },
-                    {
-                        "@id": "4",
-                        "@name": "Statistical classifications"
-                    },
-                    {
-                        "@id": "5",
-                        "@name": "Publications and communications"
-                    },
-                    {
-                        "@id": "6",
-                        "@name": "Other source types"
-                    }
-                ]
-            }
+  "CategorySystem": {
+    "@name": "ILCD",
+    "@xmlns": "http://lca.jrc.it/ILCD/Categories",
+    "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+    "@xsi:schemaLocation": "http://lca.jrc.it/ILCD/Categories ../schemas/ILCD_Categories.xsd",
+    "categories": [
+      {
+        "@dataType": "Process",
+        "category": [
+          {
+            "@id": "1",
+            "@name": "Energy carriers and technologies",
+            "category": [
+              {
+                "@id": "1.1",
+                "@name": "Energetic raw materials"
+              },
+              {
+                "@id": "1.2",
+                "@name": "Electricity"
+              },
+              {
+                "@id": "1.3",
+                "@name": "Heat and steam"
+              },
+              {
+                "@id": "1.4",
+                "@name": "Mechanical energy"
+              },
+              {
+                "@id": "1.5",
+                "@name": "Hard coal based fuels"
+              },
+              {
+                "@id": "1.6",
+                "@name": "Lignite based fuels"
+              },
+              {
+                "@id": "1.7",
+                "@name": "Crude oil based fuels"
+              },
+              {
+                "@id": "1.8",
+                "@name": "Natural gas based fuels"
+              },
+              {
+                "@id": "1.9",
+                "@name": "Nuclear fuels"
+              },
+              {
+                "@id": "1.10",
+                "@name": "Other non-renewable fuels"
+              },
+              {
+                "@id": "1.11",
+                "@name": "Renewable fuels"
+              }
+            ]
+          },
+          {
+            "@id": "2",
+            "@name": "Materials production",
+            "category": [
+              {
+                "@id": "2.1",
+                "@name": "Non-energetic raw materials"
+              },
+              {
+                "@id": "2.2",
+                "@name": "Metals and semimetals"
+              },
+              {
+                "@id": "2.3",
+                "@name": "Organic chemicals"
+              },
+              {
+                "@id": "2.4",
+                "@name": "Inorganic chemicals"
+              },
+              {
+                "@id": "2.5",
+                "@name": "Glass and ceramics"
+              },
+              {
+                "@id": "2.6",
+                "@name": "Other mineralic materials"
+              },
+              {
+                "@id": "2.7",
+                "@name": "Plastics"
+              },
+              {
+                "@id": "2.8",
+                "@name": "Paper and cardboards"
+              },
+              {
+                "@id": "2.9",
+                "@name": "Water"
+              },
+              {
+                "@id": "2.10",
+                "@name": "Agricultural production means"
+              },
+              {
+                "@id": "2.11",
+                "@name": "Food and renewable raw materials"
+              },
+              {
+                "@id": "2.12",
+                "@name": "Wood"
+              },
+              {
+                "@id": "2.13",
+                "@name": "Other materials"
+              }
+            ]
+          },
+          {
+            "@id": "3",
+            "@name": "Systems",
+            "category": [
+              {
+                "@id": "3.1",
+                "@name": "Packaging"
+              },
+              {
+                "@id": "3.2",
+                "@name": "Electrics and electronics"
+              },
+              {
+                "@id": "3.3",
+                "@name": "Vehicles"
+              },
+              {
+                "@id": "3.4",
+                "@name": "Other machines"
+              },
+              {
+                "@id": "3.5",
+                "@name": "Construction"
+              },
+              {
+                "@id": "3.6",
+                "@name": "White goods"
+              },
+              {
+                "@id": "3.7",
+                "@name": "Textiles, furnitures and other interiors"
+              },
+              {
+                "@id": "3.8",
+                "@name": "Unspecific parts"
+              },
+              {
+                "@id": "3.9",
+                "@name": "Paints and chemical preparations"
+              },
+              {
+                "@id": "3.10",
+                "@name": "Other systems"
+              }
+            ]
+          },
+          {
+            "@id": "4",
+            "@name": "End-of-life treatment",
+            "category": [
+              {
+                "@id": "4.1",
+                "@name": "Reuse or further use"
+              },
+              {
+                "@id": "4.2",
+                "@name": "Material recycling"
+              },
+              {
+                "@id": "4.3",
+                "@name": "Raw material recycling"
+              },
+              {
+                "@id": "4.4",
+                "@name": "Energy recycling"
+              },
+              {
+                "@id": "4.5",
+                "@name": "Landfilling"
+              },
+              {
+                "@id": "4.6",
+                "@name": "Waste collection"
+              },
+              {
+                "@id": "4.7",
+                "@name": "Waste water treatment"
+              },
+              {
+                "@id": "4.8",
+                "@name": "Raw gas treatment"
+              },
+              {
+                "@id": "4.9",
+                "@name": "Other end-of-life services"
+              }
+            ]
+          },
+          {
+            "@id": "5",
+            "@name": "Transport services",
+            "category": [
+              {
+                "@id": "5.1",
+                "@name": "Road"
+              },
+              {
+                "@id": "5.2",
+                "@name": "Rail"
+              },
+              {
+                "@id": "5.3",
+                "@name": "Water"
+              },
+              {
+                "@id": "5.4",
+                "@name": "Air"
+              },
+              {
+                "@id": "5.5",
+                "@name": "Other transport"
+              }
+            ]
+          },
+          {
+            "@id": "6",
+            "@name": "Other Services",
+            "category": [
+              {
+                "@id": "6.1",
+                "@name": "Cleaning"
+              },
+              {
+                "@id": "6.2",
+                "@name": "Storage"
+              },
+              {
+                "@id": "6.3",
+                "@name": "Health, social services, beauty and wellness"
+              },
+              {
+                "@id": "6.4",
+                "@name": "Repair and maintenance"
+              },
+              {
+                "@id": "6.5",
+                "@name": "Sale and whole sale"
+              },
+              {
+                "@id": "6.6",
+                "@name": "Communication and information services"
+              },
+              {
+                "@id": "6.7",
+                "@name": "Financial, legal, and insurance"
+              },
+              {
+                "@id": "6.8",
+                "@name": "Administration and government"
+              },
+              {
+                "@id": "6.9",
+                "@name": "Defence"
+              },
+              {
+                "@id": "6.10",
+                "@name": "Lodging and gastronomy"
+              },
+              {
+                "@id": "6.11",
+                "@name": "Education"
+              },
+              {
+                "@id": "6.12",
+                "@name": "Research and development"
+              },
+              {
+                "@id": "6.13",
+                "@name": "Entertainment"
+              },
+              {
+                "@id": "6.14",
+                "@name": "Renting"
+              },
+              {
+                "@id": "6.15",
+                "@name": "Engineering and consulting"
+              },
+              {
+                "@id": "6.16",
+                "@name": "Other services"
+              }
+            ]
+          },
+          {
+            "@id": "7",
+            "@name": "Use and consumption",
+            "category": [
+              {
+                "@id": "7.1",
+                "@name": "Consumption of goods"
+              },
+              {
+                "@id": "7.2",
+                "@name": "Use of energy-using products"
+              },
+              {
+                "@id": "7.3",
+                "@name": "Other use and consumption"
+              }
+            ]
+          }
         ]
-    }
+      },
+      {
+        "@dataType": "LCIAMethod",
+        "category": [
+          {
+            "@id": "1",
+            "@name": "Damage level LCIA methods",
+            "category": [
+              {
+                "@id": "1.1",
+                "@name": "Total impact across areas of protection"
+              },
+              {
+                "@id": "1.2",
+                "@name": "Human health",
+                "category": [
+                  {
+                    "@id": "1.2.1",
+                    "@name": "Total human health, combined"
+                  },
+                  {
+                    "@id": "1.2.2",
+                    "@name": "Human health, toxicity"
+                  },
+                  {
+                    "@id": "1.2.3",
+                    "@name": "Human health, climate change"
+                  },
+                  {
+                    "@id": "1.2.4",
+                    "@name": "Human health, ionising radiation"
+                  },
+                  {
+                    "@id": "1.2.5",
+                    "@name": "Human health, ozone depletion"
+                  },
+                  {
+                    "@id": "1.2.6",
+                    "@name": "Human health, photooxidant creation"
+                  },
+                  {
+                    "@id": "1.2.7",
+                    "@name": "Human health, other"
+                  }
+                ]
+              },
+              {
+                "@id": "1.3",
+                "@name": "Natural environment",
+                "category": [
+                  {
+                    "@id": "1.3.1",
+                    "@name": "Total natural environment, combined"
+                  },
+                  {
+                    "@id": "1.3.2",
+                    "@name": "Natural environment, climate change"
+                  },
+                  {
+                    "@id": "1.3.3",
+                    "@name": "Natural environment, ozone depletion"
+                  },
+                  {
+                    "@id": "1.3.4",
+                    "@name": "Natural environment, land use"
+                  },
+                  {
+                    "@id": "1.3.5",
+                    "@name": "Natural environment, freshwater ecotoxicity"
+                  },
+                  {
+                    "@id": "1.3.6",
+                    "@name": "Natural environment, seawater ecotoxicity"
+                  },
+                  {
+                    "@id": "1.3.7",
+                    "@name": "Natural environment, terrestric ecotoxicity"
+                  },
+                  {
+                    "@id": "1.3.8",
+                    "@name": "Natural environment, acidification"
+                  },
+                  {
+                    "@id": "1.3.9",
+                    "@name": "Natural environment, eutrophication"
+                  },
+                  {
+                    "@id": "1.3.10",
+                    "@name": "Natural environment, photooxidant creation"
+                  },
+                  {
+                    "@id": "1.3.11",
+                    "@name": "Natural environment, ionising radiation"
+                  },
+                  {
+                    "@id": "1.3.12",
+                    "@name": "Natural environment, other"
+                  }
+                ]
+              },
+              {
+                "@id": "1.4",
+                "@name": "Man-made environment",
+                "category": [
+                  {
+                    "@id": "1.4.1",
+                    "@name": "Total man-made environment, combined"
+                  },
+                  {
+                    "@id": "1.4.2",
+                    "@name": "Man-made environment, acidification"
+                  },
+                  {
+                    "@id": "1.4.3",
+                    "@name": "Man-made environment, climate change"
+                  },
+                  {
+                    "@id": "1.4.4",
+                    "@name": "Man-made environment, eutrophication"
+                  },
+                  {
+                    "@id": "1.4.5",
+                    "@name": "Man-made environment, other"
+                  }
+                ]
+              },
+              {
+                "@id": "1.5",
+                "@name": "Resource availability",
+                "category": [
+                  {
+                    "@id": "1.5.1",
+                    "@name": "Total resource depletion, combined"
+                  },
+                  {
+                    "@id": "1.5.2",
+                    "@name": "Resource depletion, minerals and metals"
+                  },
+                  {
+                    "@id": "1.5.3",
+                    "@name": "Resource depletion, non-renewable energy resourcess"
+                  },
+                  {
+                    "@id": "1.5.4",
+                    "@name": "Resource depletion, land use"
+                  },
+                  {
+                    "@id": "1.5.5",
+                    "@name": "Resource depletion, renewable energy resources"
+                  },
+                  {
+                    "@id": "1.5.6",
+                    "@name": "Resource depletion, renewable non-energy resources"
+                  },
+                  {
+                    "@id": "1.5.6",
+                    "@name": "Resource depletion, other"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "@id": "2",
+            "@name": "Midpoint level LCIA methods",
+            "category": [
+              {
+                "@id": "2.1",
+                "@name": "Combined methods"
+              },
+              {
+                "@id": "2.2",
+                "@name": "Climate change"
+              },
+              {
+                "@id": "2.3",
+                "@name": "Ozone depletion"
+              },
+              {
+                "@id": "2.4",
+                "@name": "Land use"
+              },
+              {
+                "@id": "2.5",
+                "@name": "Ecotoxicity"
+              },
+              {
+                "@id": "2.6",
+                "@name": "Acidification"
+              },
+              {
+                "@id": "2.7",
+                "@name": "Eutrophication"
+              },
+              {
+                "@id": "2.8",
+                "@name": "Photooxidant creation"
+              },
+              {
+                "@id": "2.9",
+                "@name": "Nuclear radiation"
+              },
+              {
+                "@id": "2.10",
+                "@name": "Human toxicity"
+              },
+              {
+                "@id": "2.11",
+                "@name": "Respiratory effects"
+              },
+              {
+                "@id": "2.12",
+                "@name": "Noise"
+              },
+              {
+                "@id": "2.13",
+                "@name": "Resource depletion"
+              },
+              {
+                "@id": "2.14",
+                "@name": "Other midpoint categories"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "@dataType": "Flow",
+        "category": [
+          {
+            "@id": "1",
+            "@name": "Emissions",
+            "category": [
+              {
+                "@id": "1.1",
+                "@name": "Radioactives"
+              },
+              {
+                "@id": "1.2",
+                "@name": "Pesticides"
+              },
+              {
+                "@id": "1.3",
+                "@name": "Particles"
+              },
+              {
+                "@id": "1.4",
+                "@name": "Metal and semimetal elements and ions"
+              },
+              {
+                "@id": "1.5",
+                "@name": "Non-metallic or -semimetallic ions"
+              },
+              {
+                "@id": "1.6",
+                "@name": "Inorganic covalent compounds"
+              },
+              {
+                "@id": "1.7",
+                "@name": "Cyclic organics"
+              },
+              {
+                "@id": "1.8",
+                "@name": "Acylic organics"
+              },
+              {
+                "@id": "1.9",
+                "@name": "Other substance type"
+              }
+            ]
+          },
+          {
+            "@id": "5",
+            "@name": "Energy carriers and technologies",
+            "category": [
+              {
+                "@id": "5.1",
+                "@name": "Energetic raw materials"
+              },
+              {
+                "@id": "5.2",
+                "@name": "Electricity"
+              },
+              {
+                "@id": "5.3",
+                "@name": "Heat and steam"
+              },
+              {
+                "@id": "5.4",
+                "@name": "Mechanical energy"
+              },
+              {
+                "@id": "5.5",
+                "@name": "Hard coal based fuels"
+              },
+              {
+                "@id": "5.6",
+                "@name": "Lignite based fuels"
+              },
+              {
+                "@id": "5.7",
+                "@name": "Crude oil based fuels"
+              },
+              {
+                "@id": "5.8",
+                "@name": "Natural gas based fuels"
+              },
+              {
+                "@id": "5.9",
+                "@name": "Nuclear fuels"
+              },
+              {
+                "@id": "5.10",
+                "@name": "Other non-renewable fuels"
+              },
+              {
+                "@id": "5.11",
+                "@name": "Renewable fuels"
+              }
+            ]
+          },
+          {
+            "@id": "6",
+            "@name": "Materials production",
+            "category": [
+              {
+                "@id": "6.1",
+                "@name": "Raw materials"
+              },
+              {
+                "@id": "6.2",
+                "@name": "Metals and semimetals"
+              },
+              {
+                "@id": "6.3",
+                "@name": "Organic chemicals"
+              },
+              {
+                "@id": "6.4",
+                "@name": "Inorganic chemicals"
+              },
+              {
+                "@id": "6.5",
+                "@name": "Glass and ceramics"
+              },
+              {
+                "@id": "6.6",
+                "@name": "Other mineralic materials"
+              },
+              {
+                "@id": "6.7",
+                "@name": "Plastics"
+              },
+              {
+                "@id": "6.8",
+                "@name": "Paper and cardboards"
+              },
+              {
+                "@id": "6.9",
+                "@name": "Water"
+              },
+              {
+                "@id": "6.10",
+                "@name": "Agricultural production means"
+              },
+              {
+                "@id": "6.11",
+                "@name": "Food and renewable raw materials"
+              },
+              {
+                "@id": "6.12",
+                "@name": "Wood"
+              },
+              {
+                "@id": "6.13",
+                "@name": "Other materials"
+              }
+            ]
+          },
+          {
+            "@id": "7",
+            "@name": "Systems",
+            "category": [
+              {
+                "@id": "7.1",
+                "@name": "Packaging"
+              },
+              {
+                "@id": "7.2",
+                "@name": "Electrics and electronics"
+              },
+              {
+                "@id": "7.3",
+                "@name": "Vehicles"
+              },
+              {
+                "@id": "7.4",
+                "@name": "Other machines"
+              },
+              {
+                "@id": "7.5",
+                "@name": "Construction"
+              },
+              {
+                "@id": "7.6",
+                "@name": "White goods"
+              },
+              {
+                "@id": "7.7",
+                "@name": "Textiles, furnitures and other interiors"
+              },
+              {
+                "@id": "7.8",
+                "@name": "Unspecific parts"
+              },
+              {
+                "@id": "7.9",
+                "@name": "Paints and chemical preparations"
+              },
+              {
+                "@id": "7.10",
+                "@name": "Other systems"
+              }
+            ]
+          },
+          {
+            "@id": "8",
+            "@name": "End-of-life treatment",
+            "category": [
+              {
+                "@id": "8.1",
+                "@name": "Reuse or further use"
+              },
+              {
+                "@id": "8.2",
+                "@name": "Material recycling"
+              },
+              {
+                "@id": "8.3",
+                "@name": "Raw material recycling"
+              },
+              {
+                "@id": "8.4",
+                "@name": "Energy recycling"
+              },
+              {
+                "@id": "8.5",
+                "@name": "Landfilling"
+              },
+              {
+                "@id": "8.6",
+                "@name": "Waste collection"
+              },
+              {
+                "@id": "8.7",
+                "@name": "Waste water treatment"
+              },
+              {
+                "@id": "8.8",
+                "@name": "Raw gas treatment"
+              },
+              {
+                "@id": "8.9",
+                "@name": "Other end-of-life services"
+              }
+            ]
+          },
+          {
+            "@id": "9",
+            "@name": "Transport services",
+            "category": [
+              {
+                "@id": "9.1",
+                "@name": "Road"
+              },
+              {
+                "@id": "9.2",
+                "@name": "Rail"
+              },
+              {
+                "@id": "9.3",
+                "@name": "Water"
+              },
+              {
+                "@id": "9.4",
+                "@name": "Air"
+              },
+              {
+                "@id": "9.5",
+                "@name": "Other transport"
+              }
+            ]
+          },
+          {
+            "@id": "10",
+            "@name": "Other Services",
+            "category": [
+              {
+                "@id": "10.1",
+                "@name": "Cleaning"
+              },
+              {
+                "@id": "10.2",
+                "@name": "Storage"
+              },
+              {
+                "@id": "10.3",
+                "@name": "Health, social services, beauty and wellness"
+              },
+              {
+                "@id": "10.4",
+                "@name": "Repair and maintenance"
+              },
+              {
+                "@id": "10.5",
+                "@name": "Sale and whole sale"
+              },
+              {
+                "@id": "10.6",
+                "@name": "Communication and information services"
+              },
+              {
+                "@id": "10.7",
+                "@name": "Financial, legal, and insurance"
+              },
+              {
+                "@id": "10.8",
+                "@name": "Administration and government"
+              },
+              {
+                "@id": "10.9",
+                "@name": "Defence"
+              },
+              {
+                "@id": "10.10",
+                "@name": "Lodging and gastronomy"
+              },
+              {
+                "@id": "10.11",
+                "@name": "Education"
+              },
+              {
+                "@id": "10.12",
+                "@name": "Research and development"
+              },
+              {
+                "@id": "10.13",
+                "@name": "Entertainment"
+              },
+              {
+                "@id": "10.14",
+                "@name": "Renting"
+              },
+              {
+                "@id": "10.15",
+                "@name": "Engineering and consulting"
+              },
+              {
+                "@id": "10.16",
+                "@name": "Other services"
+              }
+            ]
+          },
+          {
+            "@id": "11",
+            "@name": "Use and consumption",
+            "category": [
+              {
+                "@id": "11.1",
+                "@name": "Consumption of goods"
+              },
+              {
+                "@id": "11.2",
+                "@name": "Use of energy-using products"
+              },
+              {
+                "@id": "11.3",
+                "@name": "Other use and consumption"
+              }
+            ]
+          },
+          {
+            "@id": "12",
+            "@name": "Wastes",
+            "category": [
+              {
+                "@id": "12.1",
+                "@name": "Mining waste"
+              },
+              {
+                "@id": "12.2",
+                "@name": "Construction waste"
+              },
+              {
+                "@id": "12.3",
+                "@name": "Production residues"
+              },
+              {
+                "@id": "12.4",
+                "@name": "Post consumer waste"
+              },
+              {
+                "@id": "12.5",
+                "@name": "Radioactive waste"
+              },
+              {
+                "@id": "12.6",
+                "@name": "Raw gas"
+              },
+              {
+                "@id": "12.7",
+                "@name": "Waste water"
+              },
+              {
+                "@id": "12.8",
+                "@name": "Other waste"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "@dataType": "FlowProperty",
+        "category": [
+          {
+            "@id": "1",
+            "@name": "Technical flow properties"
+          },
+          {
+            "@id": "2",
+            "@name": "Chemical composition of flows"
+          },
+          {
+            "@id": "3",
+            "@name": "Economic flow properties"
+          },
+          {
+            "@id": "4",
+            "@name": "Other flow properties"
+          }
+        ]
+      },
+      {
+        "@dataType": "UnitGroup",
+        "category": [
+          {
+            "@id": "1",
+            "@name": "Technical unit groups"
+          },
+          {
+            "@id": "2",
+            "@name": "Chemical composition unit groups"
+          },
+          {
+            "@id": "3",
+            "@name": "Economic unit groups"
+          },
+          {
+            "@id": "4",
+            "@name": "Other unit groups"
+          }
+        ]
+      },
+      {
+        "@dataType": "Contact",
+        "category": [
+          {
+            "@id": "1",
+            "@name": "Group of organisations, project"
+          },
+          {
+            "@id": "2",
+            "@name": "Organisations",
+            "category": [
+              {
+                "@id": "2.1",
+                "@name": "Private companies"
+              },
+              {
+                "@id": "2.2",
+                "@name": "Governmental organisations"
+              },
+              {
+                "@id": "2.3",
+                "@name": "Non-governmental organisations"
+              },
+              {
+                "@id": "2.4",
+                "@name": "Other organisations"
+              }
+            ]
+          },
+          {
+            "@id": "3",
+            "@name": "Working groups within organisation"
+          },
+          {
+            "@id": "4",
+            "@name": "Persons"
+          },
+          {
+            "@id": "5",
+            "@name": "Other"
+          }
+        ]
+      },
+      {
+        "@dataType": "Source",
+        "category": [
+          {
+            "@id": "0",
+            "@name": "Images"
+          },
+          {
+            "@id": "1",
+            "@name": "Data set formats"
+          },
+          {
+            "@id": "2",
+            "@name": "Databases"
+          },
+          {
+            "@id": "3",
+            "@name": "Compliance systems"
+          },
+          {
+            "@id": "4",
+            "@name": "Statistical classifications"
+          },
+          {
+            "@id": "5",
+            "@name": "Publications and communications"
+          },
+          {
+            "@id": "6",
+            "@name": "Other source types"
+          }
+        ]
+      }
+    ]
+  }
 }

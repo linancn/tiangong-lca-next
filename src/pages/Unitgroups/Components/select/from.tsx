@@ -2,16 +2,7 @@ import { langOptions } from '@/services/general/data';
 import { getUnitGroupDetail } from '@/services/unitgroups/api';
 import { genUnitGroupFromData } from '@/services/unitgroups/util';
 import { ProFormInstance } from '@ant-design/pro-components';
-import {
-  Button,
-  Card,
-  Col,
-  Divider,
-  Form, Input,
-  Row,
-  Select,
-  Space
-} from 'antd';
+import { Button, Card, Col, Divider, Form, Input, Row, Select, Space } from 'antd';
 import React, { FC, useEffect, useState } from 'react';
 import UnitgroupsView from '../view';
 import UnitgroupsSelectDrawer from './drawer';
@@ -23,12 +14,12 @@ type Props = {
   label: string;
   lang: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
-  onData: () => void
+  onData: () => void;
 };
 
 const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => {
   const [id, setId] = useState<string | undefined>(undefined);
-  
+
   const handletUnitgroupsData = (rowKey: any) => {
     getUnitGroupDetail(rowKey).then(async (result: any) => {
       const selectedData = genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {});
@@ -36,7 +27,8 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData })
         '@refObjectId': `${rowKey}`,
         '@type': 'unit group data set',
         '@uri': `../unitgroups/${rowKey}.xml`,
-        'common:shortDescription': selectedData?.unitGroupInformation?.dataSetInformation?.['common:name'] ?? [],
+        'common:shortDescription':
+          selectedData?.unitGroupInformation?.dataSetInformation?.['common:name'] ?? [],
       });
       onData();
     });
@@ -44,8 +36,8 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData })
 
   useEffect(() => {
     setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
-  },);
-  
+  });
+
   return (
     <Card size="small" title={label}>
       <Space direction="horizontal">
@@ -55,7 +47,16 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData })
         <Space direction="horizontal" style={{ marginTop: '6px' }}>
           <UnitgroupsSelectDrawer buttonType="text" lang={lang} onData={handletUnitgroupsData} />
           {id && <UnitgroupsView lang={lang} id={id} buttonType="text" />}
-          {id && <Button onClick={() => { formRef.current?.setFieldValue([...name], {}); onData() }}>Clear</Button>}
+          {id && (
+            <Button
+              onClick={() => {
+                formRef.current?.setFieldValue([...name], {});
+                onData();
+              }}
+            >
+              Clear
+            </Button>
+          )}
         </Space>
       </Space>
       <Form.Item label="Type" name={[...name, '@type']}>

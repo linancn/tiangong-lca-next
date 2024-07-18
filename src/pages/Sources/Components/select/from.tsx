@@ -19,7 +19,6 @@ type Props = {
 };
 
 const SourceSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => {
-
   const [id, setId] = useState<string | undefined>(undefined);
 
   const handletSourceData = (rowKey: any) => {
@@ -29,7 +28,8 @@ const SourceSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => 
         '@refObjectId': `${rowKey}`,
         '@type': 'source data set',
         '@uri': `../sources/${rowKey}.xml`,
-        'common:shortDescription': selectedData?.sourceInformation?.dataSetInformation?.['common:shortName'] ?? [],
+        'common:shortDescription':
+          selectedData?.sourceInformation?.dataSetInformation?.['common:shortName'] ?? [],
       });
       onData();
     });
@@ -39,7 +39,7 @@ const SourceSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => 
 
   useEffect(() => {
     setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
-  },);
+  });
 
   return (
     <Card size="small" title={label}>
@@ -50,7 +50,16 @@ const SourceSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => 
         <Space direction="horizontal" style={{ marginTop: '6px' }}>
           <SourceSelectDrawer buttonType="text" lang={lang} onData={handletSourceData} />
           {id && <SourceView lang={lang} id={id} buttonType="text" />}
-          {id && <Button onClick={() => { formRef.current?.setFieldValue([...name], {}); onData() }}><FormattedMessage id="pages.button.clear" defaultMessage="Clear" /></Button>}
+          {id && (
+            <Button
+              onClick={() => {
+                formRef.current?.setFieldValue([...name], {});
+                onData();
+              }}
+            >
+              <FormattedMessage id="pages.button.clear" defaultMessage="Clear" />
+            </Button>
+          )}
         </Space>
       </Space>
       <Form.Item label="Type" name={[...name, '@type']}>

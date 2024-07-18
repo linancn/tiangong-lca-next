@@ -6,7 +6,12 @@ import { ListPagination } from '@/services/general/data';
 import { getProcessDetail } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData, genProcessFromData } from '@/services/processes/util';
-import { CheckCircleTwoTone, CloseCircleOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
+import {
+  CheckCircleTwoTone,
+  CloseCircleOutlined,
+  CloseOutlined,
+  ProfileOutlined,
+} from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
@@ -117,12 +122,14 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
       search: false,
       render: (_, row) => {
         if (row.quantitativeReference) {
-          return <Tooltip title={row.functionalUnitOrOther}>
-            <CheckCircleTwoTone twoToneColor="#52c41a" />
-          </Tooltip>;
+          return (
+            <Tooltip title={row.functionalUnitOrOther}>
+              <CheckCircleTwoTone twoToneColor="#52c41a" />
+            </Tooltip>
+          );
         }
         return <CloseCircleOutlined />;
-      }
+      },
     },
     {
       title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
@@ -201,7 +208,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
         <LevelTextItemDescription
           data={
             initData.processInformation?.dataSetInformation?.classificationInformation?.[
-            'common:classification'
+              'common:classification'
             ]?.['common:class']
           }
         />
@@ -279,7 +286,8 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
             data={initData.processInformation?.technology?.technologicalApplicability}
           />
           <br />
-          <SourceSelectDescription title={'Reference To Technology Flow Diagramm Or Picture'}
+          <SourceSelectDescription
+            title={'Reference To Technology Flow Diagramm Or Picture'}
             data={
               initData.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture ??
               {}
@@ -442,7 +450,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
             lang={lang}
             data={
               initData.modellingAndValidation?.validation?.review?.[
-              'common:referenceToNameOfReviewerAndInstitution'
+                'common:referenceToNameOfReviewerAndInstitution'
               ]
             }
           />
@@ -456,7 +464,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
           lang={lang}
           data={
             initData.administrativeInformation?.dataGenerator?.[
-            'common:referenceToPersonOrEntityGeneratingTheDataSet'
+              'common:referenceToPersonOrEntityGeneratingTheDataSet'
             ]
           }
         />
@@ -509,7 +517,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
             lang={lang}
             data={
               initData.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToOwnershipOfDataSet'
+                'common:referenceToOwnershipOfDataSet'
               ]
             }
           />
@@ -552,7 +560,9 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
     setSpinning(true);
     getProcessDetail(id).then(async (result: any) => {
       setInitData({ ...genProcessFromData(result.data?.json?.processDataSet ?? {}), id: id });
-      setExchangeDataSource([...genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? []]);
+      setExchangeDataSource([
+        ...(genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? []),
+      ]);
       // if (dataSource === 'my') {
       //   setFooterButtons(
       //     <>
@@ -583,7 +593,9 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
         <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
       </Tooltip>
       <Drawer
-        title={<FormattedMessage id="pages.process.drawer.title.view" defaultMessage="View Process" />}
+        title={
+          <FormattedMessage id="pages.process.drawer.title.view" defaultMessage="View Process" />
+        }
         width="90%"
         closable={false}
         extra={

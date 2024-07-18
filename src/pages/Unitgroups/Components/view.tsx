@@ -5,7 +5,12 @@ import { ListPagination } from '@/services/general/data';
 import { getUnitGroupDetail } from '@/services/unitgroups/api';
 import { UnitTable } from '@/services/unitgroups/data';
 import { genUnitGroupFromData, genUnitTableData } from '@/services/unitgroups/util';
-import { CheckCircleTwoTone, CloseCircleOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
+import {
+  CheckCircleTwoTone,
+  CloseCircleOutlined,
+  CloseOutlined,
+  ProfileOutlined,
+} from '@ant-design/icons';
 import type { ProColumns } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import { Button, Card, Descriptions, Divider, Drawer, Spin, Tooltip } from 'antd';
@@ -34,10 +39,11 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
     setActiveTabKey(key);
   };
 
-
   const unitColumns: ProColumns<UnitTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index"></FormattedMessage>,
+      title: (
+        <FormattedMessage id="pages.table.title.index" defaultMessage="Index"></FormattedMessage>
+      ),
       valueType: 'index',
       search: false,
     },
@@ -47,17 +53,29 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
     //   search: false,
     // },
     {
-      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name"></FormattedMessage>,
+      title: (
+        <FormattedMessage id="pages.table.title.name" defaultMessage="Name"></FormattedMessage>
+      ),
       dataIndex: 'name',
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.unitgroup.unit.generalComment" defaultMessage="General Comment"></FormattedMessage>,
+      title: (
+        <FormattedMessage
+          id="pages.unitgroup.unit.generalComment"
+          defaultMessage="General Comment"
+        ></FormattedMessage>
+      ),
       dataIndex: 'generalComment',
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.unitgroup.unit.meanValue" defaultMessage="Mean Value"></FormattedMessage>,
+      title: (
+        <FormattedMessage
+          id="pages.unitgroup.unit.meanValue"
+          defaultMessage="Mean Value"
+        ></FormattedMessage>
+      ),
       dataIndex: 'meanValue',
       search: false,
     },
@@ -76,19 +94,16 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
           return <CheckCircleTwoTone twoToneColor="#52c41a" />;
         }
         return <CloseCircleOutlined />;
-      }
+      },
     },
     {
       title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
-        return <UnitView
-          key={0}
-          id={row.dataSetInternalID}
-          data={unitDataSource}
-          buttonType={'icon'}
-        />
+        return (
+          <UnitView key={0} id={row.dataSetInternalID} data={unitDataSource} buttonType={'icon'} />
+        );
 
         // if (dataSource === 'my') {
         //   return [
@@ -151,20 +166,42 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
         <Divider orientationMargin="0" orientation="left" plain>
           Name
         </Divider>
-        <LangTextItemDescription data={initData.unitGroupInformation?.dataSetInformation?.["common:name"] ?? {}} />
+        <LangTextItemDescription
+          data={initData.unitGroupInformation?.dataSetInformation?.['common:name'] ?? {}}
+        />
         <Divider orientationMargin="0" orientation="left" plain>
           Classification
         </Divider>
-        <LevelTextItemDescription data={initData.unitGroupInformation?.dataSetInformation?.classificationInformation?.['common:classification']?.['common:class'] ?? {}} />
+        <LevelTextItemDescription
+          data={
+            initData.unitGroupInformation?.dataSetInformation?.classificationInformation?.[
+              'common:classification'
+            ]?.['common:class'] ?? {}
+          }
+        />
       </>
     ),
     modellingAndValidation: (
       <>
-        <SourceSelectDescription title='Reference To Compliance System' data={initData.modellingAndValidation?.complianceDeclarations?.compliance?.['common:referenceToComplianceSystem'] ?? {}} lang={lang} />
+        <SourceSelectDescription
+          title="Reference To Compliance System"
+          data={
+            initData.modellingAndValidation?.complianceDeclarations?.compliance?.[
+              'common:referenceToComplianceSystem'
+            ] ?? {}
+          }
+          lang={lang}
+        />
         <br />
         <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item key={0} label="Approval Of Overall Compliance" labelStyle={{ width: '240px' }}>
-            {initData.modellingAndValidation?.complianceDeclarations?.compliance?.['common:approvalOfOverallCompliance'] ?? '-'}
+          <Descriptions.Item
+            key={0}
+            label="Approval Of Overall Compliance"
+            labelStyle={{ width: '240px' }}
+          >
+            {initData.modellingAndValidation?.complianceDeclarations?.compliance?.[
+              'common:approvalOfOverallCompliance'
+            ] ?? '-'}
           </Descriptions.Item>
         </Descriptions>
       </>
@@ -177,11 +214,20 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
           </Descriptions.Item>
         </Descriptions>
         <br />
-        <SourceSelectDescription title='Reference To DataSet Format' data={initData.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat'] ?? {}} lang={lang} />
+        <SourceSelectDescription
+          title="Reference To DataSet Format"
+          data={
+            initData.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat'] ??
+            {}
+          }
+          lang={lang}
+        />
         <br />
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item key={0} label="DataSet Version" labelStyle={{ width: '140px' }}>
-            {initData.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'] ?? '-'}
+            {initData.administrativeInformation?.publicationAndOwnership?.[
+              'common:dataSetVersion'
+            ] ?? '-'}
           </Descriptions.Item>
         </Descriptions>
       </>
@@ -204,15 +250,19 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
         />
       </>
     ),
-  }
+  };
 
   const onView = () => {
     setDrawerVisible(true);
     setSpinning(true);
     getUnitGroupDetail(id).then(async (result: any) => {
-      console.log('genUnitGroupFromData', { ...genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {}) })
+      console.log('genUnitGroupFromData', {
+        ...genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {}),
+      });
       setInitData({ ...genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {}) });
-      setUnitDataSource([...genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {})?.units?.unit ?? []]);
+      setUnitDataSource([
+        ...(genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {})?.units?.unit ?? []),
+      ]);
       // if (dataSource === 'my') {
       //   setFooterButtons(
       //     <>
@@ -240,7 +290,9 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
   return (
     <>
       {buttonType === 'icon' ? (
-        <Tooltip title={<FormattedMessage id="pages.button.view" defaultMessage="View"></FormattedMessage>}>
+        <Tooltip
+          title={<FormattedMessage id="pages.button.view" defaultMessage="View"></FormattedMessage>}
+        >
           <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
         </Tooltip>
       ) : (
@@ -250,7 +302,12 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
       )}
 
       <Drawer
-        title={<FormattedMessage id="pages.unitgroup.drawer.title.view" defaultMessage="View Unit Group"></FormattedMessage>}
+        title={
+          <FormattedMessage
+            id="pages.unitgroup.drawer.title.view"
+            defaultMessage="View Unit Group"
+          ></FormattedMessage>
+        }
         width="90%"
         closable={false}
         extra={

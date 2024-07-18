@@ -30,5 +30,5 @@ export default {
   ...pages_contact,
   ...pages_unitgroup,
   ...pages_flowproperties,
-  ...pages_flows
+  ...pages_flows,
 };

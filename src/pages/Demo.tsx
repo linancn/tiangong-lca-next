@@ -1,7 +1,12 @@
 import { PageContainer } from '@ant-design/pro-components';
 import { Button, Card, theme } from 'antd';
 import React from 'react';
-import { flow_hybrid_search, hybrid_search, jsonSelectTest, returnUserEdgeFunction } from '../services/demo/api';
+import {
+  flow_hybrid_search,
+  hybrid_search,
+  jsonSelectTest,
+  returnUserEdgeFunction,
+} from '../services/demo/api';
 
 const Demo: React.FC = () => {
   const { token } = theme.useToken();

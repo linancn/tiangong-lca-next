@@ -36,8 +36,7 @@ export function getLangText(langTexts: any, lang: string) {
     } else {
       text = langTexts?.['#text'] ?? '-';
     }
-  }
-  catch (e) {
+  } catch (e) {
     console.log(e);
   }
   return text;
@@ -84,8 +83,7 @@ export function classificationToString(classifications: any) {
     } else {
       classificationStr = classifications['#text'] ?? '-';
     }
-  }
-  catch (e) {
+  } catch (e) {
     console.log(e);
   }
   return classificationStr;

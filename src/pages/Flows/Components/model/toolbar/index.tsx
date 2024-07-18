@@ -5,7 +5,6 @@ import { Space } from 'antd';
 import { FC } from 'react';
 import Add from './add';
 
-
 type Props = {
   id: string;
   lang: string;

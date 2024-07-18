@@ -7,7 +7,12 @@ import { getProcessDetail, updateProcess } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData, genProcessFromData } from '@/services/processes/util';
 import styles from '@/style/custom.less';
-import { CheckCircleTwoTone, CloseCircleOutlined, CloseOutlined, FormOutlined } from '@ant-design/icons';
+import {
+  CheckCircleTwoTone,
+  CloseCircleOutlined,
+  CloseOutlined,
+  FormOutlined,
+} from '@ant-design/icons';
 import { ProColumns, ProForm, ProTable } from '@ant-design/pro-components';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import type { ActionType } from '@ant-design/pro-table';
@@ -93,12 +98,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
       search: false,
     },
     {
-      title: (
-        <FormattedMessage
-          id="pages.table.title.name"
-          defaultMessage="Name"
-        />
-      ),
+      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name" />,
       dataIndex: 'referenceToFlowDataSet',
       sorter: false,
       search: false,
@@ -109,14 +109,19 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
       ],
     },
     {
-      title: <FormattedMessage id="pages.process.exchange.meanAmount" defaultMessage="Mean Amount" />,
+      title: (
+        <FormattedMessage id="pages.process.exchange.meanAmount" defaultMessage="Mean Amount" />
+      ),
       dataIndex: 'meanAmount',
       sorter: false,
       search: false,
     },
     {
       title: (
-        <FormattedMessage id="pages.process.exchange.resultingAmount" defaultMessage="Resulting Amount" />
+        <FormattedMessage
+          id="pages.process.exchange.resultingAmount"
+          defaultMessage="Resulting Amount"
+        />
       ),
       dataIndex: 'resultingAmount',
       sorter: false,
@@ -148,7 +153,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
           return <CheckCircleTwoTone twoToneColor="#52c41a" />;
         }
         return <CloseCircleOutlined />;
-      }
+      },
     },
     {
       title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
@@ -172,14 +177,14 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
               buttonType={'icon'}
               actionRef={actionRefExchangeTable}
               onData={handletExchangeData}
-              setViewDrawerVisible={() => { }}
+              setViewDrawerVisible={() => {}}
             />
             <ProcessExchangeDelete
               id={row.dataSetInternalID}
               data={exchangeDataSource}
               buttonType={'icon'}
               actionRef={actionRef}
-              setViewDrawerVisible={() => { }}
+              setViewDrawerVisible={() => {}}
               onData={handletExchangeData}
             />
           </Space>,
@@ -280,7 +285,11 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
           />
 
           <SourceSelectFrom
-            name={['processInformation', 'technology', 'referenceToTechnologyFlowDiagrammOrPicture']}
+            name={[
+              'processInformation',
+              'technology',
+              'referenceToTechnologyFlowDiagrammOrPicture',
+            ]}
             label="Reference To Technology Flow Diagramm Or Picture"
             lang="en"
             formRef={formRefEdit}
@@ -409,7 +418,17 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
             label="Deviations From Treatment And Extrapolation Principles"
           />
 
-          <SourceSelectFrom name={['modellingAndValidation', 'dataSourcesTreatmentAndRepresentativeness', 'referenceToDataSource']} label={'Reference To Data Source'} lang={lang} formRef={formRefEdit} onData={handletFromData} />
+          <SourceSelectFrom
+            name={[
+              'modellingAndValidation',
+              'dataSourcesTreatmentAndRepresentativeness',
+              'referenceToDataSource',
+            ]}
+            label={'Reference To Data Source'}
+            lang={lang}
+            formRef={formRefEdit}
+            onData={handletFromData}
+          />
 
           <Divider orientationMargin="0" orientation="left" plain>
             Use Advice For DataSet
@@ -568,23 +587,26 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
         ...genProcessFromData(result.data?.json?.processDataSet ?? {}),
         id: id,
       });
-      const quantitativeReferenceId = result.data?.json?.processDataSet?.processInformation?.quantitativeReference?.referenceToReferenceFlow ?? '';
+      const quantitativeReferenceId =
+        result.data?.json?.processDataSet?.processInformation?.quantitativeReference
+          ?.referenceToReferenceFlow ?? '';
       setExchangeDataSource(
-        (genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? []).map(
-          (item: any) => {
-            if (item['@dataSetInternalID'] === quantitativeReferenceId) {
-              return {
-                ...item,
-                quantitativeReference: true,
-              };
-            }
-            else {
-              return {
-                ...item,
-                quantitativeReference: false,
-              };
-            }
-          }),);
+        (
+          genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? []
+        ).map((item: any) => {
+          if (item['@dataSetInternalID'] === quantitativeReferenceId) {
+            return {
+              ...item,
+              quantitativeReference: true,
+            };
+          } else {
+            return {
+              ...item,
+              quantitativeReference: false,
+            };
+          }
+        }),
+      );
       setSpinning(false);
     });
   };
@@ -611,8 +633,8 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
     setFromData({
       ...fromData,
       exchanges: {
-        exchange: [...exchangeDataSource]
-      }
+        exchange: [...exchangeDataSource],
+      },
     });
   }, [exchangeDataSource]);
 
@@ -636,7 +658,9 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
         )}
       </Tooltip>
       <Drawer
-        title={<FormattedMessage id="pages.process.drawer.title.edit" defaultMessage="Edit Process" />}
+        title={
+          <FormattedMessage id="pages.process.drawer.title.edit" defaultMessage="Edit Process" />
+        }
         width="90%"
         closable={false}
         extra={
@@ -715,24 +739,28 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
             </Form.Item>
           </ProForm>
           <Collapse
-            items={[{
-              key: '1', label: 'JSON Data',
-              children:
-                <Typography>
-                  <pre>{JSON.stringify(fromData, null, 2)}</pre>
-                  <pre>
-                    {JSON.stringify(
-                      {
-                        exchanges: {
-                          exchange: [...exchangeDataSource],
+            items={[
+              {
+                key: '1',
+                label: 'JSON Data',
+                children: (
+                  <Typography>
+                    <pre>{JSON.stringify(fromData, null, 2)}</pre>
+                    <pre>
+                      {JSON.stringify(
+                        {
+                          exchanges: {
+                            exchange: [...exchangeDataSource],
+                          },
                         },
-                      },
-                      null,
-                      2,
-                    )}
-                  </pre>
-                </Typography>
-            }]}
+                        null,
+                        2,
+                      )}
+                    </pre>
+                  </Typography>
+                ),
+              },
+            ]}
           />
         </Spin>
       </Drawer>

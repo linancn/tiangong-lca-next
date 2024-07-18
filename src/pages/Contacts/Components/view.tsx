@@ -58,7 +58,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
         <LevelTextItemDescription
           data={
             initData.contactInformation?.dataSetInformation?.classificationInformation?.[
-            'common:classification'
+              'common:classification'
             ]?.['common:class']
           }
         />
@@ -108,7 +108,11 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
           data={initData.contactInformation?.dataSetInformation?.['contactDescriptionOrComment']}
         />
         <br />
-        <ContractDescription data={initData.contactInformation?.dataSetInformation?.referenceToContact} lang={lang} title={'Reference To Contact'} ></ContractDescription>
+        <ContractDescription
+          data={initData.contactInformation?.dataSetInformation?.referenceToContact}
+          lang={lang}
+          title={'Reference To Contact'}
+        ></ContractDescription>
       </>
     ),
     administrativeInformation: (
@@ -116,14 +120,17 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
         <Card size="small" title={'Data Entry By'}>
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item key={0} label="Time Stamp" labelStyle={{ width: '120px' }}>
-              {initData.administrativeInformation?.dataEntryBy?.[
-                'common:timeStamp'
-              ] ?? '-'}
+              {initData.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-'}
             </Descriptions.Item>
           </Descriptions>
           <br />
-          <SourceSelectDescription title={'Reference To Data Set Format'} data={initData.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']}
-            lang={lang} />
+          <SourceSelectDescription
+            title={'Reference To Data Set Format'}
+            data={
+              initData.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']
+            }
+            lang={lang}
+          />
         </Card>
         <br />
         <Card size="small" title={'Publication And Ownership'}>
@@ -135,17 +142,28 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
             </Descriptions.Item>
           </Descriptions>
           <br />
-          <ContractDescription data={initData.administrativeInformation?.publicationAndOwnership?.['common:referenceToPrecedingDataSetVersion']} lang={lang} title={'Reference To Preceding Data Set Version'} ></ContractDescription>
+          <ContractDescription
+            data={
+              initData.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToPrecedingDataSetVersion'
+              ]
+            }
+            lang={lang}
+            title={'Reference To Preceding Data Set Version'}
+          ></ContractDescription>
           <br />
           <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item key={0} label="Permanent Data Set URI" labelStyle={{ width: '220px' }}>
+            <Descriptions.Item
+              key={0}
+              label="Permanent Data Set URI"
+              labelStyle={{ width: '220px' }}
+            >
               {initData.administrativeInformation?.publicationAndOwnership?.[
                 'common:permanentDataSetURI'
               ] ?? '-'}
             </Descriptions.Item>
           </Descriptions>
         </Card>
-
       </>
     ),
   };
@@ -181,11 +199,8 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
   };
   return (
     <>
-
       {buttonType === 'icon' ? (
-        <Tooltip
-          title={<FormattedMessage id="pages.button.view" defaultMessage="View" />}
-        >
+        <Tooltip title={<FormattedMessage id="pages.button.view" defaultMessage="View" />}>
           <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
         </Tooltip>
       ) : (

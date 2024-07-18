@@ -52,7 +52,10 @@ const TableList: FC = () => {
     },
     {
       title: (
-        <FormattedMessage id="pages.flowproperty.referenceToReferenceUnitGroup" defaultMessage="Reference Unit Group" />
+        <FormattedMessage
+          id="pages.flowproperty.referenceToReferenceUnitGroup"
+          defaultMessage="Reference Unit Group"
+        />
       ),
       dataIndex: 'referenceToReferenceUnitGroup',
       sorter: false,
@@ -84,7 +87,7 @@ const TableList: FC = () => {
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => { }}
+                setViewDrawerVisible={() => {}}
               />
             </Space>,
           ];

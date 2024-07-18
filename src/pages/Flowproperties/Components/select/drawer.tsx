@@ -71,7 +71,10 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
     },
     {
       title: (
-        <FormattedMessage id="pages.flowproperties.referenceToReferenceUnitGroup" defaultMessage="Reference Unit Group" />
+        <FormattedMessage
+          id="pages.flowproperties.referenceToReferenceUnitGroup"
+          defaultMessage="Reference Unit Group"
+        />
       ),
       dataIndex: 'referenceToReferenceUnitGroup',
       sorter: false,
@@ -109,7 +112,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={myActionRefSelect}
-                setViewDrawerVisible={() => { }}
+                setViewDrawerVisible={() => {}}
               />
             </Space>,
           ];
@@ -119,7 +122,10 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
   ];
 
   const tabList = [
-    { key: 'tg', tab: <FormattedMessage id="pages.tab.title.tgdata" defaultMessage="TianGong Data" /> },
+    {
+      key: 'tg',
+      tab: <FormattedMessage id="pages.tab.title.tgdata" defaultMessage="TianGong Data" />,
+    },
     { key: 'my', tab: <FormattedMessage id="pages.tab.title.mydata" defaultMessage="My Data" /> },
   ];
 
@@ -189,27 +195,16 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
 
   return (
     <>
-      
-        {buttonType === 'icon' ? (
-          <Tooltip
-          title={
-            <FormattedMessage
-              id="pages.button.select"
-              defaultMessage="Select"
-            />
-          }
-        >
+      {buttonType === 'icon' ? (
+        <Tooltip title={<FormattedMessage id="pages.button.select" defaultMessage="Select" />}>
           <Button shape="circle" icon={<DatabaseOutlined />} size="small" onClick={onSelect} />
-          </Tooltip>
-        ) : (
-          <Button onClick={onSelect}>
-            <FormattedMessage
-              id="pages.button.select"
-              defaultMessage="Select"
-            />
-          </Button>
-        )}
-      
+        </Tooltip>
+      ) : (
+        <Button onClick={onSelect}>
+          <FormattedMessage id="pages.button.select" defaultMessage="Select" />
+        </Button>
+      )}
+
       <Drawer
         title={
           <FormattedMessage

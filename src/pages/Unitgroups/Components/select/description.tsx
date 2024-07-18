@@ -21,11 +21,7 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
           </Descriptions.Item>
         </Descriptions>
         {data?.['@refObjectId'] && (
-          <UnitGroupView
-            id={data?.['@refObjectId']}
-            lang={lang}
-            buttonType="text"
-          />
+          <UnitGroupView id={data?.['@refObjectId']} lang={lang} buttonType="text" />
         )}
       </Space>
       <br />

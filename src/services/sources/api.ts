@@ -1,10 +1,7 @@
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
 import { v4 } from 'uuid';
-import {
-  classificationToString,
-  getLangText
-} from '../general/util';
+import { classificationToString, getLangText } from '../general/util';
 import { genSourceJsonOrdered } from './util';
 
 export async function createSource(data: any) {
@@ -186,7 +183,6 @@ export async function getSourceTable(
 //     success: true,
 //   });
 // }
-
 
 export async function getSourceDetail(id: string) {
   const result = await supabase.from('sources').select('json, created_at').eq('id', id);

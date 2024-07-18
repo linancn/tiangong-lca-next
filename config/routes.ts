@@ -18,7 +18,7 @@ export default [
     routes: [
       {
         path: '/mydata',
-        redirect: '/mydata/processes'
+        redirect: '/mydata/processes',
       },
       {
         name: 'processes',
@@ -59,7 +59,7 @@ export default [
     routes: [
       {
         path: '/tgdata',
-        redirect: '/tgdata/processes'
+        redirect: '/tgdata/processes',
       },
       {
         name: 'processes',

@@ -17,7 +17,13 @@ const LevelTextItemFrom: FC<Props> = ({ name, dataType, formRef, onData }) => {
 
   const handleL0Change = async (value: string) => {
     const filteredData = l0.filter((l: any) => l.value === value);
-    setL1(filteredData[0]?.children?.map((l: any) => ({ label: l['@name'], value: l['@name'], children: l.category ?? [] })) ?? []);
+    setL1(
+      filteredData[0]?.children?.map((l: any) => ({
+        label: l['@name'],
+        value: l['@name'],
+        children: l.category ?? [],
+      })) ?? [],
+    );
     setL2([]);
     await formRef.current?.setFieldValue([...name, '@level_1'], null);
     await formRef.current?.setFieldValue([...name, '@level_2'], null);
@@ -26,7 +32,13 @@ const LevelTextItemFrom: FC<Props> = ({ name, dataType, formRef, onData }) => {
 
   const handleL1Change = async (value: string) => {
     const filteredData = l1.filter((l: any) => l.value === value);
-    setL2(filteredData[0]?.children?.map((l: any) => ({ label: l['@name'], value: l['@name'], children: l.category ?? [] })) ?? []);
+    setL2(
+      filteredData[0]?.children?.map((l: any) => ({
+        label: l['@name'],
+        value: l['@name'],
+        children: l.category ?? [],
+      })) ?? [],
+    );
     await formRef.current?.setFieldValue([...name, '@level_2'], null);
     onData();
   };
@@ -34,7 +46,13 @@ const LevelTextItemFrom: FC<Props> = ({ name, dataType, formRef, onData }) => {
   useEffect(() => {
     const fetchClassification = async (dt: string) => {
       const result = await getILCDClassification(dt);
-      setL0(result.data?.category?.map((l: any) => ({ label: l['@name'], value: l['@name'], children: l.category ?? [] })) ?? []);
+      setL0(
+        result.data?.category?.map((l: any) => ({
+          label: l['@name'],
+          value: l['@name'],
+          children: l.category ?? [],
+        })) ?? [],
+      );
       setL1([]);
       setL2([]);
     };
@@ -44,26 +62,14 @@ const LevelTextItemFrom: FC<Props> = ({ name, dataType, formRef, onData }) => {
 
   return (
     <Space direction="vertical" style={{ width: '100%' }}>
-      <Form.Item label='Level 1' name={[...name, '@level_0']}>
-        <Select
-          defaultValue={null}
-          onChange={handleL0Change}
-          options={l0}
-        />
+      <Form.Item label="Level 1" name={[...name, '@level_0']}>
+        <Select defaultValue={null} onChange={handleL0Change} options={l0} />
       </Form.Item>
-      <Form.Item label='Level 2' name={[...name, '@level_1']}>
-        <Select
-          defaultValue={null}
-          onChange={handleL1Change}
-          options={l1}
-        />
+      <Form.Item label="Level 2" name={[...name, '@level_1']}>
+        <Select defaultValue={null} onChange={handleL1Change} options={l1} />
       </Form.Item>
-      <Form.Item label='Level 3' name={[...name, '@level_2']}>
-        <Select
-          defaultValue={null}
-          onChange={() => { }}
-          options={l2}
-        />
+      <Form.Item label="Level 3" name={[...name, '@level_2']}>
+        <Select defaultValue={null} onChange={() => {}} options={l2} />
       </Form.Item>
     </Space>
   );

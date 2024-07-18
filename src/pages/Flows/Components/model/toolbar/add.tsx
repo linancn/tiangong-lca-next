@@ -60,7 +60,9 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
       ],
     },
     {
-      title: <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />,
+      title: (
+        <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />
+      ),
       dataIndex: 'classification',
       sorter: false,
       search: false,
@@ -94,7 +96,8 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
             <ProcessView id={row.id} dataSource={'tg'} lang={lang} />
           </Space>,
         ];
-        {/* if (dataSource === 'my') {
+        {
+          /* if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
               <ProcessView id={row.id} dataSource={dataSource} lang={lang} actionRef={actionRef} />
@@ -118,13 +121,17 @@ return [
   <Space size={'small'} key={0}>
     <ProcessView id={row.id} dataSource={dataSource} lang={lang} actionRef={actionRef} />
   </Space>,
-];*/}
+];*/
+        }
       },
     },
   ];
 
   const tabList = [
-    { key: 'tg', tab: <FormattedMessage id="pages.tab.title.tgdata" defaultMessage="TianGong Data" /> },
+    {
+      key: 'tg',
+      tab: <FormattedMessage id="pages.tab.title.tgdata" defaultMessage="TianGong Data" />,
+    },
     { key: 'my', tab: <FormattedMessage id="pages.tab.title.mydata" defaultMessage="My Data" /> },
   ];
 
@@ -197,31 +204,18 @@ return [
   return (
     <>
       {buttonType === 'icon' ? (
-        <Tooltip
-          title={
-            <FormattedMessage
-              id="pages.button.add"
-              defaultMessage="Add"
-            />
-          }
-        >
+        <Tooltip title={<FormattedMessage id="pages.button.add" defaultMessage="Add" />}>
           <Button shape="circle" icon={<PlusOutlined />} size="small" onClick={onSelect} />
         </Tooltip>
       ) : (
         <Button onClick={onSelect}>
-          <FormattedMessage
-            id="pages.button.add"
-            defaultMessage="Add"
-          />
+          <FormattedMessage id="pages.button.add" defaultMessage="Add" />
         </Button>
       )}
 
       <Drawer
         title={
-          <FormattedMessage
-            id="pages.process.drawer.title.add"
-            defaultMessage="Add Process"
-          />
+          <FormattedMessage id="pages.process.drawer.title.add" defaultMessage="Add Process" />
         }
         width="90%"
         closable={false}

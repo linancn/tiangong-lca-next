@@ -1,82 +1,82 @@
 {
-    "contactDataSet": {
-        "@xmlns": "http://lca.jrc.it/ILCD/Contact",
-        "@xmlns:common": "http://lca.jrc.it/ILCD/Common",
-        "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
-        "@version": "1.1",
-        "@xsi:schemaLocation": "http://lca.jrc.it/ILCD/Contact ../../schemas/ILCD_ContactDataSet.xsd",
-        "contactInformation": {
-            "dataSetInformation": {
-                "common:UUID": "d0d5f8bb-9311-49d1-9e30-2f20a6977f4f",
-                "common:shortName": {
-                    "@xml:lang": "en",
-                    "#text": "European Commission - JRC directorate D"
-                },
-                "common:name": {
-                    "@xml:lang": "en",
-                    "#text": "European Commission, Joint Research Centre (JRC), Institute for Environment and Sustainability (IES)"
-                },
-                "classificationInformation": {
-                    "common:classification": {
-                        "common:class": {
-                            "@level": "0",
-                            "#text": "Organisations"
-                        }
-                    }
-                },
-                "contactAddress": {
-                    "@xml:lang": "en",
-                    "#text": "European Commission, JRC, IES, Via E. Fermi 2749; 21027 Ispra (VA); Italy"
-                },
-                "telephone": "+390332789111",
-                "telefax": "+390332789001",
-                "email": "IES-contact@jrc.ec.europa.eu",
-                "WWWAddress": "http://ies.jrc.ec.europa.eu",
-                "centralContactPoint": {
-                    "@xml:lang": "en",
-                    "#text": "European Commission, JRC, IES, Via E. Fermi 2749; 21027 Ispra (VA); Italy"
-                },
-                "contactDescriptionOrComment": {
-                    "@xml:lang": "en",
-                    "#text": "Central contact at organisation level. For enquiries related to LCA try also directly the functional email LCA@jrc.ec.europa.eu at the Sustainability Assessment Unit H08."
-                },
-                "referenceToContact": {
-                    "@refObjectId": "97f476bd-415a-4463-955a-019202b70ae4",
-                    "@type": "contact data set",
-                    "@uri": "./97f476bd-415a-4463-955a-019202b70ae4.xml",
-                    "common:shortDescription": {
-                        "@xml:lang": "en",
-                        "#text": "EC, JRC"
-                    }
-                }
-            }
+  "contactDataSet": {
+    "@xmlns": "http://lca.jrc.it/ILCD/Contact",
+    "@xmlns:common": "http://lca.jrc.it/ILCD/Common",
+    "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+    "@version": "1.1",
+    "@xsi:schemaLocation": "http://lca.jrc.it/ILCD/Contact ../../schemas/ILCD_ContactDataSet.xsd",
+    "contactInformation": {
+      "dataSetInformation": {
+        "common:UUID": "d0d5f8bb-9311-49d1-9e30-2f20a6977f4f",
+        "common:shortName": {
+          "@xml:lang": "en",
+          "#text": "European Commission - JRC directorate D"
         },
-        "administrativeInformation": {
-            "dataEntryBy": {
-                "common:timeStamp": "2012-01-16T15:59:57.359+01:00",
-                "common:referenceToDataSetFormat": {
-                    "@refObjectId": "a97a0155-0234-4b87-b4ce-a45da52f2a40",
-                    "@type": "source data set",
-                    "@uri": "../sources/a97a0155-0234-4b87-b4ce-a45da52f2a40.xml",
-                    "common:shortDescription": {
-                        "@xml:lang": "en",
-                        "#text": "ILCD format"
-                    }
-                }
-            },
-            "publicationAndOwnership": {
-                "common:dataSetVersion": "01.02.004",
-                "common:referenceToPrecedingDataSetVersion": {
-                    "@refObjectId": "d0d5f8bb-9311-49d1-9e30-2f20a6977f4f",
-                    "@type": "contact data set",
-                    "@uri": "http://lca.jrc.ec.europa.eu/lcainfohub/datasets/elcd/contacts/d0d5f8bb-9311-49d1-9e30-2f20a6977f4f.xml",
-                    "common:shortDescription": {
-                        "@xml:lang": "en",
-                        "#text": "EPLCA project team"
-                    }
-                },
-                "common:permanentDataSetURI": "http://lca.jrc.ec.europa.eu/lcainfohub/datasets/elcd/contacts/d0d5f8bb-9311-49d1-9e30-2f20a6977f4f.xml"
+        "common:name": {
+          "@xml:lang": "en",
+          "#text": "European Commission, Joint Research Centre (JRC), Institute for Environment and Sustainability (IES)"
+        },
+        "classificationInformation": {
+          "common:classification": {
+            "common:class": {
+              "@level": "0",
+              "#text": "Organisations"
             }
+          }
+        },
+        "contactAddress": {
+          "@xml:lang": "en",
+          "#text": "European Commission, JRC, IES, Via E. Fermi 2749; 21027 Ispra (VA); Italy"
+        },
+        "telephone": "+390332789111",
+        "telefax": "+390332789001",
+        "email": "IES-contact@jrc.ec.europa.eu",
+        "WWWAddress": "http://ies.jrc.ec.europa.eu",
+        "centralContactPoint": {
+          "@xml:lang": "en",
+          "#text": "European Commission, JRC, IES, Via E. Fermi 2749; 21027 Ispra (VA); Italy"
+        },
+        "contactDescriptionOrComment": {
+          "@xml:lang": "en",
+          "#text": "Central contact at organisation level. For enquiries related to LCA try also directly the functional email LCA@jrc.ec.europa.eu at the Sustainability Assessment Unit H08."
+        },
+        "referenceToContact": {
+          "@refObjectId": "97f476bd-415a-4463-955a-019202b70ae4",
+          "@type": "contact data set",
+          "@uri": "./97f476bd-415a-4463-955a-019202b70ae4.xml",
+          "common:shortDescription": {
+            "@xml:lang": "en",
+            "#text": "EC, JRC"
+          }
         }
+      }
+    },
+    "administrativeInformation": {
+      "dataEntryBy": {
+        "common:timeStamp": "2012-01-16T15:59:57.359+01:00",
+        "common:referenceToDataSetFormat": {
+          "@refObjectId": "a97a0155-0234-4b87-b4ce-a45da52f2a40",
+          "@type": "source data set",
+          "@uri": "../sources/a97a0155-0234-4b87-b4ce-a45da52f2a40.xml",
+          "common:shortDescription": {
+            "@xml:lang": "en",
+            "#text": "ILCD format"
+          }
+        }
+      },
+      "publicationAndOwnership": {
+        "common:dataSetVersion": "01.02.004",
+        "common:referenceToPrecedingDataSetVersion": {
+          "@refObjectId": "d0d5f8bb-9311-49d1-9e30-2f20a6977f4f",
+          "@type": "contact data set",
+          "@uri": "http://lca.jrc.ec.europa.eu/lcainfohub/datasets/elcd/contacts/d0d5f8bb-9311-49d1-9e30-2f20a6977f4f.xml",
+          "common:shortDescription": {
+            "@xml:lang": "en",
+            "#text": "EPLCA project team"
+          }
+        },
+        "common:permanentDataSetURI": "http://lca.jrc.ec.europa.eu/lcainfohub/datasets/elcd/contacts/d0d5f8bb-9311-49d1-9e30-2f20a6977f4f.xml"
+      }
     }
+  }
 }

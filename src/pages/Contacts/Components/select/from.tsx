@@ -28,12 +28,20 @@ const ContactSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) =>
         '@refObjectId': `${rowKey}`,
         '@type': 'contact data set',
         '@uri': `../contacts/${rowKey}.xml`,
-        'common:shortDescription': selectedData?.contactInformation?.dataSetInformation?.['common:shortName']?.map((item: any) => {
-          return { ...item, '#text': `${item['#text']}, ${selectedData?.contactInformation?.dataSetInformation?.email ?? ''}` };
-        }) ?? [],
+        'common:shortDescription':
+          selectedData?.contactInformation?.dataSetInformation?.['common:shortName']?.map(
+            (item: any) => {
+              return {
+                ...item,
+                '#text': `${item['#text']}, ${
+                  selectedData?.contactInformation?.dataSetInformation?.email ?? ''
+                }`,
+              };
+            },
+          ) ?? [],
         '@version':
           result.data.json?.contactDataSet?.administrativeInformation?.publicationAndOwnership?.[
-          'common:dataSetVersion'
+            'common:dataSetVersion'
           ],
       });
       onData();
@@ -46,7 +54,7 @@ const ContactSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) =>
 
   useEffect(() => {
     setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
-  },);
+  });
 
   return (
     <Card size="small" title={label}>
@@ -58,7 +66,14 @@ const ContactSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) =>
           <ContactSelectDrawer buttonType="text" lang={lang} onData={handletContactData} />
           {id && <ContactView lang={lang} id={id} buttonType="text" />}
           {id && (
-            <Button onClick={() => { formRef.current?.setFieldValue([...name], {}); onData() }}><FormattedMessage id="pages.button.clear" defaultMessage="Clear" /></Button>
+            <Button
+              onClick={() => {
+                formRef.current?.setFieldValue([...name], {});
+                onData();
+              }}
+            >
+              <FormattedMessage id="pages.button.clear" defaultMessage="Clear" />
+            </Button>
           )}
         </Space>
       </Space>

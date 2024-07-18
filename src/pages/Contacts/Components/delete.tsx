@@ -43,7 +43,6 @@ const ContactDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisi
 
   return (
     <>
-
       {buttonType === 'icon' ? (
         <>
           <Tooltip title={<FormattedMessage id="pages.button.delete" defaultMessage="Delete" />}>

@@ -25,7 +25,8 @@ import type { FC } from 'react';
 import {
   useEffect,
   // useCallback, useEffect,
-  useRef, useState
+  useRef,
+  useState,
 } from 'react';
 import { FormattedMessage } from 'umi';
 
@@ -70,21 +71,42 @@ const FlowpropertiesEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
       <Space direction="vertical" style={{ width: '100%' }}>
         <Card size="small" title={'Data Set Information'}>
           <Card size="small" title={'Name'}>
-            <LangTextItemFrom name={['flowPropertiesInformation', 'dataSetInformation', 'common:name']} label="Name" />
+            <LangTextItemFrom
+              name={['flowPropertiesInformation', 'dataSetInformation', 'common:name']}
+              label="Name"
+            />
           </Card>
           <br />
           <Card size="small" title={'Classification'}>
-            <LevelTextItemFrom dataType={'FlowProperty'} formRef={formRefEdit} onData={handletFromData} name={['flowPropertiesInformation', 'dataSetInformation', "classificationInformation", 'common:classification', 'common:class']} />
+            <LevelTextItemFrom
+              dataType={'FlowProperty'}
+              formRef={formRefEdit}
+              onData={handletFromData}
+              name={[
+                'flowPropertiesInformation',
+                'dataSetInformation',
+                'classificationInformation',
+                'common:classification',
+                'common:class',
+              ]}
+            />
           </Card>
           <br />
           <Card size="small" title={'General Comment'}>
-            <LangTextItemFrom name={['flowPropertiesInformation', 'dataSetInformation', "common:generalComment"]} label="General Comment" />
+            <LangTextItemFrom
+              name={['flowPropertiesInformation', 'dataSetInformation', 'common:generalComment']}
+              label="General Comment"
+            />
           </Card>
         </Card>
         <br />
         <UnitGroupSelectFrom
-          name={['flowPropertiesInformation', 'quantitativeReference', 'referenceToReferenceUnitGroup']}
-          label='Quantitative Reference: Reference To Reference Unit Group'
+          name={[
+            'flowPropertiesInformation',
+            'quantitativeReference',
+            'referenceToReferenceUnitGroup',
+          ]}
+          label="Quantitative Reference: Reference To Reference Unit Group"
           lang={lang}
           formRef={formRefEdit}
           onData={handletFromData}
@@ -94,28 +116,41 @@ const FlowpropertiesEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
     modellingAndValidation: (
       <Space direction="vertical" style={{ width: '100%' }}>
         <SourceSelectFrom
-          name={['modellingAndValidation', 'complianceDeclarations', 'compliance', 'common:referenceToComplianceSystem']}
+          name={[
+            'modellingAndValidation',
+            'complianceDeclarations',
+            'compliance',
+            'common:referenceToComplianceSystem',
+          ]}
           lang={lang}
           label="Reference To Compliance System"
           formRef={formRefEdit}
           onData={handletFromData}
         />
-        <Form.Item label="Approval Of Overall Compliance" name={['modellingAndValidation', 'complianceDeclarations', 'compliance', 'common:approvalOfOverallCompliance']}>
+        <Form.Item
+          label="Approval Of Overall Compliance"
+          name={[
+            'modellingAndValidation',
+            'complianceDeclarations',
+            'compliance',
+            'common:approvalOfOverallCompliance',
+          ]}
+        >
           <Input />
         </Form.Item>
       </Space>
     ),
     administrativeInformation: (
       <Space direction="vertical" style={{ width: '100%' }}>
-        <Card
-          size="small"
-          title={'Data Entry By'}
-        >
-          <Form.Item label="Time Stamp" name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}>
+        <Card size="small" title={'Data Entry By'}>
+          <Form.Item
+            label="Time Stamp"
+            name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
+          >
             <Input />
           </Form.Item>
           <SourceSelectFrom
-            name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat',]}
+            name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
             lang={lang}
             label="Reference To Compliance System"
             formRef={formRefEdit}
@@ -124,34 +159,49 @@ const FlowpropertiesEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
         </Card>
 
         <Card size="small" title={'Publication And Ownership'}>
-          <Form.Item label="Data Set Version" name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}>
+          <Form.Item
+            label="Data Set Version"
+            name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
+          >
             <Input />
           </Form.Item>
           <FlowpropertiesSelectFrom
-            name={['administrativeInformation', 'publicationAndOwnership', 'common:referenceToPrecedingDataSetVersion']}
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:referenceToPrecedingDataSetVersion',
+            ]}
             lang={lang}
             label={'Reference To Preceding Data Set Version'}
             formRef={formRefEdit}
             onData={handletFromData}
           />
-          <Form.Item label="Permanent Data Set URI" name={['administrativeInformation', 'publicationAndOwnership', 'common:permanentDataSetURI']}>
+          <Form.Item
+            label="Permanent Data Set URI"
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:permanentDataSetURI',
+            ]}
+          >
             <Input />
           </Form.Item>
         </Card>
       </Space>
     ),
-  }
+  };
 
   const onEdit = () => {
     setDrawerVisible(true);
-  }
+  };
 
   const onReset = () => {
     setSpinning(true);
     formRefEdit.current?.resetFields();
     getFlowpropertyDetail(id).then(async (result: any) => {
       formRefEdit.current?.setFieldsValue({
-        ...genFlowpropertyFromData(result.data?.json?.flowPropertyDataSet ?? {}), id: id,
+        ...genFlowpropertyFromData(result.data?.json?.flowPropertyDataSet ?? {}),
+        id: id,
       });
       setSpinning(false);
     });
@@ -161,11 +211,18 @@ const FlowpropertiesEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
     if (drawerVisible === false) return;
     setSpinning(true);
     getFlowpropertyDetail(id).then(async (result: any) => {
-      setInitData({ ...genFlowpropertyFromData(result.data?.json?.flowPropertyDataSet ?? {}), id: id });
-      setFromData({ ...genFlowpropertyFromData(result.data?.json?.flowPropertyDataSet ?? {}), id: id });
+      setInitData({
+        ...genFlowpropertyFromData(result.data?.json?.flowPropertyDataSet ?? {}),
+        id: id,
+      });
+      setFromData({
+        ...genFlowpropertyFromData(result.data?.json?.flowPropertyDataSet ?? {}),
+        id: id,
+      });
       formRefEdit.current?.resetFields();
       formRefEdit.current?.setFieldsValue({
-        ...genFlowpropertyFromData(result.data?.json?.flowPropertyDataSet ?? {}), id: id,
+        ...genFlowpropertyFromData(result.data?.json?.flowPropertyDataSet ?? {}),
+        id: id,
       });
       setSpinning(false);
     });
@@ -232,7 +289,7 @@ const FlowpropertiesEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
                 );
                 setDrawerVisible(false);
                 // setViewDrawerVisible(false);
-                setActiveTabKey('flowPropertiesInformation')
+                setActiveTabKey('flowPropertiesInformation');
                 actionRef.current?.reload();
               } else {
                 message.error(updateResult?.error?.message);
@@ -240,7 +297,7 @@ const FlowpropertiesEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
               return true;
             }}
             onValuesChange={async (changedValues, allValues) => {
-              setFromData({ ...fromData, [activeTabKey]: allValues })
+              setFromData({ ...fromData, [activeTabKey]: allValues });
             }}
           >
             <Card
@@ -253,16 +310,20 @@ const FlowpropertiesEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
             </Card>
           </ProForm>
           <Collapse
-            items={[{
-              key: '1', label: 'JSON Data',
-              children:
-                <Typography>
-                  <pre>{JSON.stringify(fromData, null, 2)}</pre>
-                </Typography>
-            }]}
+            items={[
+              {
+                key: '1',
+                label: 'JSON Data',
+                children: (
+                  <Typography>
+                    <pre>{JSON.stringify(fromData, null, 2)}</pre>
+                  </Typography>
+                ),
+              },
+            ]}
           />
         </Spin>
-      </Drawer >
+      </Drawer>
     </>
   );
 };

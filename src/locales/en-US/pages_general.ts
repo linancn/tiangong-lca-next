@@ -20,5 +20,6 @@ export default {
   'page.button.select': 'Select',
   'page.button.export': 'Export',
 
-  'pages.search.placeholder': 'AI Search: Describe the data you need in one sentence or a few key words.',
+  'pages.search.placeholder':
+    'AI Search: Describe the data you need in one sentence or a few key words.',
 };

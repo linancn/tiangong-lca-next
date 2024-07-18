@@ -27,59 +27,72 @@ const TableList: FC = () => {
   const actionRef = useRef<ActionType>();
   const unitGroupColumns: ProColumns<UnitGroupTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index"></FormattedMessage>,
+      title: (
+        <FormattedMessage id="pages.table.title.index" defaultMessage="Index"></FormattedMessage>
+      ),
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name"></FormattedMessage>,
+      title: (
+        <FormattedMessage id="pages.table.title.name" defaultMessage="Name"></FormattedMessage>
+      ),
       dataIndex: 'name',
       sorter: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification"></FormattedMessage>,
+      title: (
+        <FormattedMessage
+          id="pages.table.title.classification"
+          defaultMessage="Classification"
+        ></FormattedMessage>
+      ),
       dataIndex: 'classification',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At"></FormattedMessage>,
+      title: (
+        <FormattedMessage
+          id="pages.table.title.createdAt"
+          defaultMessage="Created At"
+        ></FormattedMessage>
+      ),
       dataIndex: 'createdAt',
       valueType: 'dateTime',
       sorter: true,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option"></FormattedMessage>,
+      title: (
+        <FormattedMessage id="pages.table.title.option" defaultMessage="Option"></FormattedMessage>
+      ),
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <UnitGroupView
-                buttonType={'icon'}
-                lang={lang} id={row.id} />
+              <UnitGroupView buttonType={'icon'} lang={lang} id={row.id} />
               <UnitGroupEdit
                 id={row.id}
                 buttonType={'icon'}
                 lang={lang}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => { }}
+                setViewDrawerVisible={() => {}}
               ></UnitGroupEdit>
               <UnitGroupDelete
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => { }}
+                setViewDrawerVisible={() => {}}
               ></UnitGroupDelete>
             </Space>,
           ];
         }
         return [
           <Space size={'small'} key={0}>
-            <UnitGroupView buttonType={'icon'}
-              lang={lang} id={row.id} />
+            <UnitGroupView buttonType={'icon'} lang={lang} id={row.id} />
           </Space>,
         ];
       },

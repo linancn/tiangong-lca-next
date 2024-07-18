@@ -23,7 +23,6 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<any>({});
 
-
   const tabList = [
     { key: 'sourceInformation', tab: 'Source Information' },
     { key: 'administrativeInformation', tab: 'Administrative Information' },
@@ -54,7 +53,7 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
         <LevelTextItemDescription
           data={
             initData.sourceInformation?.dataSetInformation?.classificationInformation?.[
-            'common:classification'
+              'common:classification'
             ]?.['common:class']
           }
         />
@@ -79,12 +78,21 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
         />
         <br />
         <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item key={0} label="Reference To Digital File" labelStyle={{ width: '220px' }}>
-            {initData.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri'] ?? '-'}
+          <Descriptions.Item
+            key={0}
+            label="Reference To Digital File"
+            labelStyle={{ width: '220px' }}
+          >
+            {initData.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri'] ??
+              '-'}
           </Descriptions.Item>
         </Descriptions>
         <br />
-        <ContactSelectDescription title={'Reference To Contact'} lang={lang} data={initData.sourceInformation?.dataSetInformation?.referenceToContact} />
+        <ContactSelectDescription
+          title={'Reference To Contact'}
+          lang={lang}
+          data={initData.sourceInformation?.dataSetInformation?.referenceToContact}
+        />
       </>
     ),
     administrativeInformation: (
@@ -104,9 +112,7 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
             title={'Reference To Data Set Format'}
             lang={lang}
             data={
-              initData.administrativeInformation?.dataEntryBy?.[
-              'common:referenceToDataSetFormat'
-              ]
+              initData.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']
             }
           />
         </Card>
@@ -114,17 +120,24 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
         <Card size="small" title={'Publication And Ownership'}>
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item key={0} label="Data Set Version" labelStyle={{ width: '200px' }}>
-              {initData.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'] ?? '-'}
+              {initData.administrativeInformation?.publicationAndOwnership?.[
+                'common:dataSetVersion'
+              ] ?? '-'}
             </Descriptions.Item>
           </Descriptions>
           <br />
           <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item key={0} label="Permanent Data Set URI" labelStyle={{ width: '200px' }}>
-              {initData.administrativeInformation?.publicationAndOwnership?.['common:permanentDataSetURI'] ?? '-'}
+            <Descriptions.Item
+              key={0}
+              label="Permanent Data Set URI"
+              labelStyle={{ width: '200px' }}
+            >
+              {initData.administrativeInformation?.publicationAndOwnership?.[
+                'common:permanentDataSetURI'
+              ] ?? '-'}
             </Descriptions.Item>
           </Descriptions>
         </Card>
-
       </>
     ),
   };
@@ -160,9 +173,7 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
   return (
     <>
       {buttonType === 'icon' ? (
-        <Tooltip
-          title={<FormattedMessage id="pages.button.view" defaultMessage="View" />}
-        >
+        <Tooltip title={<FormattedMessage id="pages.button.view" defaultMessage="View" />}>
           <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
         </Tooltip>
       ) : (
@@ -171,7 +182,9 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
         </Button>
       )}
       <Drawer
-        title={<FormattedMessage id="pages.source.drawer.title.view" defaultMessage="View Source" />}
+        title={
+          <FormattedMessage id="pages.source.drawer.title.view" defaultMessage="View Source" />
+        }
         width="90%"
         closable={false}
         extra={
