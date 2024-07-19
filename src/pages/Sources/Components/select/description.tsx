@@ -13,7 +13,7 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
   return (
     <Card size="small" title={title}>
       <Space direction="horizontal">
-        <Descriptions bordered size={'small'} column={1} style={{ width: '420px' }}>
+        <Descriptions bordered size={'small'} column={1} style={{ width: '470px' }}>
           <Descriptions.Item key={0} label="Ref Object Id" labelStyle={{ width: '120px' }}>
             {data?.['@refObjectId'] ?? '-'}
           </Descriptions.Item>
