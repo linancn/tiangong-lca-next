@@ -1,4 +1,8 @@
 export default {
+  'pages.contact.contactInformation': '联系人信息',
+  'pages.contact.administrativeInformation': '管理信息',
+  'pages.contact.name': '名称',
+  'pages.contact.shortName': '简称',
   'pages.contact.email': '邮箱',
 
   'pages.contact.drawer.title.create': '创建联系人',
