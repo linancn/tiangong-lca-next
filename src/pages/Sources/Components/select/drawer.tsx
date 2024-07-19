@@ -9,6 +9,7 @@ import { Button, Card, Drawer, Space, Tooltip } from 'antd';
 import type { FC, Key } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
+import SourceCreate from '../create';
 import { default as SourceView } from '../view';
 
 type Props = {
@@ -140,6 +141,9 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
         pagination={{
           showSizeChanger: false,
           pageSize: 10,
+        }}
+        toolBarRender={() => {
+            return [<SourceCreate lang={lang} key={0} actionRef={myActionRefSelect} />];
         }}
         request={async (
           params: {

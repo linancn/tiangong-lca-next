@@ -11,6 +11,7 @@ import type { FC, Key } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
 import { useIntl } from 'react-intl';
 import { FormattedMessage } from 'umi';
+import FlowsCreate from '../create';
 import FlowsDelete from '../delete';
 import FlowsEdit from '../edit';
 import FlowsView from '../view';
@@ -189,6 +190,9 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
         actionRef={myActionRefSelect}
         search={{
           defaultCollapsed: false,
+        }}
+        toolBarRender={() => {
+            return [<FlowsCreate key={0} lang={lang} actionRef={myActionRefSelect} />];
         }}
         pagination={{
           showSizeChanger: false,

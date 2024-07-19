@@ -9,6 +9,7 @@ import { Button, Card, Drawer, Space, Tooltip } from 'antd';
 import type { FC, Key } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
+import ContactCreate from '../create';
 import ContactView from '../view';
 
 type Props = {
@@ -187,6 +188,9 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
         ) => {
           return getContactTable(params, sort, lang, 'my');
         }}
+        toolBarRender={() => {
+            return [<ContactCreate lang={lang} key={0} actionRef={myActionRefSelect} />];
+        }}
         columns={contactColumns}
         rowSelection={{
           type: 'radio',
@@ -237,7 +241,6 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
         footer={
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
-              {' '}
               <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
             </Button>
             <Button
