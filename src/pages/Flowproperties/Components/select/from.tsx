@@ -42,7 +42,7 @@ const FlowpropertiesSelectFrom: FC<Props> = ({ name, label, lang, formRef, onDat
     <Card size="small" title={label}>
       <Space direction="horizontal">
         <Form.Item label="Ref Object Id" name={[...name, '@refObjectId']}>
-          <Input disabled={true} style={{ width: '350px', color:'#000' }}/>
+          <Input disabled={true} style={{ width: '350px', color: '#000' }} />
         </Form.Item>
         <Space direction="horizontal" style={{ marginTop: '6px' }}>
           <FlowpropertiesSelectDrawer
@@ -64,10 +64,10 @@ const FlowpropertiesSelectFrom: FC<Props> = ({ name, label, lang, formRef, onDat
         </Space>
       </Space>
       <Form.Item label="Type" name={[...name, '@type']}>
-        <Input disabled={true} style={{ color: '#000' }}/>
+        <Input disabled={true} style={{ color: '#000' }} />
       </Form.Item>
       <Form.Item label="URI" name={[...name, '@uri']}>
-        <Input disabled={true} style={{ color: '#000' }}/>
+        <Input disabled={true} style={{ color: '#000' }} />
       </Form.Item>
       {/* <Form.Item label="Version" name={[...name, '@version']}>
         <Input disabled={true} />
@@ -92,7 +92,12 @@ const FlowpropertiesSelectFrom: FC<Props> = ({ name, label, lang, formRef, onDat
                   </Col>
                   <Col flex="auto" style={{ marginRight: '10px' }}>
                     <Form.Item noStyle name={[subField.name, '#text']}>
-                      <TextArea placeholder="text" rows={1} disabled={true} style={{ color: '#000' }} />
+                      <TextArea
+                        placeholder="text"
+                        rows={1}
+                        disabled={true}
+                        style={{ color: '#000' }}
+                      />
                     </Form.Item>
                   </Col>
                 </Row>

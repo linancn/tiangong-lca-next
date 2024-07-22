@@ -171,7 +171,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
           defaultCollapsed: false,
         }}
         toolBarRender={() => {
-            return [<UnitGroupCreate key={0} lang={lang} actionRef={myActionRefSelect} />];
+          return [<UnitGroupCreate key={0} lang={lang} actionRef={myActionRefSelect} />];
         }}
         pagination={{
           showSizeChanger: false,

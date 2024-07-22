@@ -24,8 +24,24 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
   const [activeTabKey, setActiveTabKey] = useState<string>('contactInformation');
 
   const tabList = [
-    { key: 'contactInformation', tab: <FormattedMessage id="pages.contact.contactInformation" defaultMessage="Contact Information" /> },
-    { key: 'administrativeInformation', tab: <FormattedMessage id="pages.contact.administrativeInformation" defaultMessage="Administrative Information" /> },
+    {
+      key: 'contactInformation',
+      tab: (
+        <FormattedMessage
+          id="pages.contact.contactInformation"
+          defaultMessage="Contact Information"
+        />
+      ),
+    },
+    {
+      key: 'administrativeInformation',
+      tab: (
+        <FormattedMessage
+          id="pages.contact.administrativeInformation"
+          defaultMessage="Administrative Information"
+        />
+      ),
+    },
   ];
 
   const onTabChange = (key: string) => {
@@ -58,7 +74,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
         <LevelTextItemDescription
           data={
             initData.contactInformation?.dataSetInformation?.classificationInformation?.[
-            'common:classification'
+              'common:classification'
             ]?.['common:class']
           }
         />
@@ -145,7 +161,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
           <ContractDescription
             data={
               initData.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToPrecedingDataSetVersion'
+                'common:referenceToPrecedingDataSetVersion'
               ]
             }
             lang={lang}

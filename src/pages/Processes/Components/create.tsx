@@ -164,7 +164,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
               buttonType={'icon'}
               actionRef={actionRefExchangeTable}
               onData={handletExchangeData}
-              setViewDrawerVisible={() => { }}
+              setViewDrawerVisible={() => {}}
               lang={lang}
             />
             <ProcessExchangeDelete
@@ -172,7 +172,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
               data={exchangeDataSource}
               buttonType={'icon'}
               actionRef={actionRef}
-              setViewDrawerVisible={() => { }}
+              setViewDrawerVisible={() => {}}
               onData={handletExchangeData}
             />
           </Space>,

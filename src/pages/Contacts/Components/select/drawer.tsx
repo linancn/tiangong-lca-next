@@ -189,7 +189,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
           return getContactTable(params, sort, lang, 'my');
         }}
         toolBarRender={() => {
-            return [<ContactCreate lang={lang} key={0} actionRef={myActionRefSelect} />];
+          return [<ContactCreate lang={lang} key={0} actionRef={myActionRefSelect} />];
         }}
         columns={contactColumns}
         rowSelection={{
