@@ -24,8 +24,8 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
   const [activeTabKey, setActiveTabKey] = useState<string>('contactInformation');
 
   const tabList = [
-    { key: 'contactInformation', tab: 'Contact Information' },
-    { key: 'administrativeInformation', tab: 'Administrative Information' },
+    { key: 'contactInformation', tab: <FormattedMessage id="pages.contact.contactInformation" defaultMessage="Contact Information" /> },
+    { key: 'administrativeInformation', tab: <FormattedMessage id="pages.contact.administrativeInformation" defaultMessage="Administrative Information" /> },
   ];
 
   const onTabChange = (key: string) => {
@@ -41,13 +41,13 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
           </Descriptions.Item>
         </Descriptions>
         <Divider orientationMargin="0" orientation="left" plain>
-          Name
+          <FormattedMessage id="pages.contact.name" defaultMessage="Name" />
         </Divider>
         <LangTextItemDescription
           data={initData.contactInformation?.dataSetInformation?.['common:name']}
         />
         <Divider orientationMargin="0" orientation="left" plain>
-          Short Name
+          <FormattedMessage id="pages.contact.shortName" defaultMessage="Short Name" />
         </Divider>
         <LangTextItemDescription
           data={initData.contactInformation?.dataSetInformation?.['common:shortName']}
@@ -58,7 +58,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
         <LevelTextItemDescription
           data={
             initData.contactInformation?.dataSetInformation?.classificationInformation?.[
-              'common:classification'
+            'common:classification'
             ]?.['common:class']
           }
         />
@@ -145,7 +145,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
           <ContractDescription
             data={
               initData.administrativeInformation?.publicationAndOwnership?.[
-                'common:referenceToPrecedingDataSetVersion'
+              'common:referenceToPrecedingDataSetVersion'
               ]
             }
             lang={lang}

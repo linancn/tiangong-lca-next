@@ -1,5 +1,6 @@
 import LangTextItemFrom from '@/components/LangTextItem/from';
 import LevelTextItemFrom from '@/components/LevelTextItem/from';
+import YearInput from '@/components/YearInput';
 import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
 import SourceSelectFrom from '@/pages/Sources/Components/select/from';
 import { ListPagination } from '@/services/general/data';
@@ -177,14 +178,14 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
               buttonType={'icon'}
               actionRef={actionRefExchangeTable}
               onData={handletExchangeData}
-              setViewDrawerVisible={() => {}}
+              setViewDrawerVisible={() => { }}
             />
             <ProcessExchangeDelete
               id={row.dataSetInternalID}
               data={exchangeDataSource}
               buttonType={'icon'}
               actionRef={actionRef}
-              setViewDrawerVisible={() => {}}
+              setViewDrawerVisible={() => { }}
               onData={handletExchangeData}
             />
           </Space>,
@@ -237,7 +238,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
             label="Reference Year"
             name={['processInformation', 'time', 'common:referenceYear']}
           >
-            <Input />
+            <YearInput initValue={initData?.processInformation?.time?.['common:referenceYear'] ?? ''} />
           </Form.Item>
           <Divider orientationMargin="0" orientation="left" plain>
             Time Representativeness Description

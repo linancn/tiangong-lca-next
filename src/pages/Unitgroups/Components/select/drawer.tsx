@@ -9,6 +9,7 @@ import { Button, Card, Drawer, Space, Tooltip } from 'antd';
 import type { FC, Key } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
+import UnitGroupCreate from '../create';
 import UnitGroupView from '../view';
 
 type Props = {
@@ -168,6 +169,9 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
         actionRef={myActionRefSelect}
         search={{
           defaultCollapsed: false,
+        }}
+        toolBarRender={() => {
+            return [<UnitGroupCreate key={0} lang={lang} actionRef={myActionRefSelect} />];
         }}
         pagination={{
           showSizeChanger: false,

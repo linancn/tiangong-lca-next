@@ -1,6 +1,10 @@
 export default {
   'pages.table.title.index': 'Index',
-  'pages.button': 'Option',
+  'pages.table.title.name': 'Name',
+  'pages.table.title.classification': 'Classification',
+  'pages.table.title.createdAt': 'Created At',
+  'pages.table.title.option': 'Option',
+
   'pages.button.create': 'Create',
   'pages.button.reset': 'Reset',
   'pages.button.view': 'View',
@@ -10,15 +14,14 @@ export default {
   'pages.button.delete.success': 'Deleted Successfully!',
   'pages.button.cancel': 'Cancel',
   'pages.button.submit': 'Submit',
-
-  'page.button.view': 'View',
-  'page.button.edit': 'Edit',
-  'page.button.delete': 'Delete',
-  'page.button.create': 'Create',
-  'page.button.cancel': 'Cancel',
-  'page.button.submit': 'Submit',
   'page.button.select': 'Select',
   'page.button.export': 'Export',
+  'pages.button.clear': 'Clear',
+  'pages.button.model': 'Model',
+  'pages.button.add': 'Add',
+
+  'pages.tab.title.mydata': 'My Data',
+  'pages.tab.title.tgdata': 'TianGong Data',
 
   'pages.search.placeholder':
     'AI Search: Describe the data you need in one sentence or a few key words.',

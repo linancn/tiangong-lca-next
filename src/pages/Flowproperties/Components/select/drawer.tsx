@@ -9,6 +9,7 @@ import { Button, Card, Drawer, Space, Tooltip } from 'antd';
 import type { FC, Key } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
+import FlowpropertiesCreate from '../create';
 import FlowpropertiesDelete from '../delete';
 import FlowpropertiesEdit from '../edit';
 import FlowpropertyView from '../view';
@@ -163,6 +164,9 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
         actionRef={myActionRefSelect}
         search={{
           defaultCollapsed: false,
+        }}
+        toolBarRender={() => {
+            return [<FlowpropertiesCreate lang={lang} key={0} actionRef={myActionRefSelect} />];
         }}
         pagination={{
           showSizeChanger: false,

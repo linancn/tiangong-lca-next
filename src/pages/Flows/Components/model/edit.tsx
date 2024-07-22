@@ -14,12 +14,12 @@ type Props = {
   lang: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
 };
-const ModelFlowEdit: FC<Props> = ({ buttonType }) => {
-  // const formRefEdit = useRef<ProFormInstance>();
-  const [drawerVisible, setDrawerVisible] = useState(false);
-  // const [fromData, setFromData] = useState<any>({});
-  // const [initData, setInitData] = useState<any>({});
-  const [spinning, setSpinning] = useState(false);
+const ModelFlowEdit: FC<Props> = ({ buttonType, lang }) => {
+    // const formRefEdit = useRef<ProFormInstance>();
+    const [drawerVisible, setDrawerVisible] = useState(false);
+    // const [fromData, setFromData] = useState<any>({});
+    // const [initData, setInitData] = useState<any>({});
+    const [spinning, setSpinning] = useState(false);
 
   // const { Sider, Content } = Layout;
 
@@ -43,36 +43,34 @@ const ModelFlowEdit: FC<Props> = ({ buttonType }) => {
         </Button>
       )}
 
-      <Drawer
-        title={
-          <FormattedMessage id="pages.flow.model.drawer.title.edit" defaultMessage="Edit Model" />
-        }
-        width="100%"
-        closable={false}
-        extra={
-          <Button
-            icon={<CloseOutlined />}
-            style={{ border: 0 }}
-            onClick={() => setDrawerVisible(false)}
-          />
-        }
-        maskClosable={true}
-        open={drawerVisible}
-        onClose={() => setDrawerVisible(false)}
-      >
-        {/* <Spin spinning={spinning}> */}
-        <FlowEditorProvider>
-          <FlowEditor nodeTypes={{ StringNode: StringRender }}>
-            <FlowPanel position="top-right">
-              <Toolbar id={''} onSpin={onSpin} />
-            </FlowPanel>
-          </FlowEditor>
-        </FlowEditorProvider>
-        {/* </Spin> */}
-        <Spin spinning={spinning} fullscreen />
-      </Drawer>
-    </>
-  );
+            <Drawer
+                title={<FormattedMessage id="pages.flow.model.drawer.title.edit" defaultMessage="Edit Model" />}
+                width="100%"
+                closable={false}
+                extra={
+                    <Button
+                        icon={<CloseOutlined />}
+                        style={{ border: 0 }}
+                        onClick={() => setDrawerVisible(false)}
+                    />
+                }
+                maskClosable={true}
+                open={drawerVisible}
+                onClose={() => setDrawerVisible(false)}
+            >
+                {/* <Spin spinning={spinning}> */}
+                <FlowEditorProvider>
+                    <FlowEditor nodeTypes={{ StringNode: StringRender }}>
+                        <FlowPanel position="top-right">
+                            <Toolbar id={''} lang={lang} onSpin={onSpin} />
+                        </FlowPanel>
+                    </FlowEditor>
+                </FlowEditorProvider>
+                {/* </Spin> */}
+                <Spin spinning={spinning} fullscreen />
+            </Drawer>
+        </>
+    );
 };
 
 export default ModelFlowEdit;
