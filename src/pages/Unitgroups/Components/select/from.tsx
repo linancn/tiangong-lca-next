@@ -87,7 +87,12 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData })
                   </Col>
                   <Col flex="auto" style={{ marginRight: '10px' }}>
                     <Form.Item noStyle name={[subField.name, '#text']}>
-                      <TextArea placeholder="text" rows={1} disabled={true} style={{ color: '#000' }} />
+                      <TextArea
+                        placeholder="text"
+                        rows={1}
+                        disabled={true}
+                        style={{ color: '#000' }}
+                      />
                     </Form.Item>
                   </Col>
                 </Row>

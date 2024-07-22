@@ -11,7 +11,7 @@ type Props = {
   onSpin: (spin: boolean) => void;
 };
 
-const Toolbar: FC<Props> = ({ onSpin }) => {
+const Toolbar: FC<Props> = ({ onSpin, lang }) => {
   const editor = useFlowEditor();
 
   const addProcessNode = (id: any) => {
@@ -23,24 +23,28 @@ const Toolbar: FC<Props> = ({ onSpin }) => {
         type: 'StringNode',
         position: { x: 200, y: 100 },
         data: {
-          title: getLangText(result?.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name?.baseName ?? {}, lang),
+          title: getLangText(
+            result?.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name
+              ?.baseName ?? {},
+            lang,
+          ),
           handles: {
             source: 'a1-source',
             target: 'a1-target',
           },
-          titleLang:[
+          titleLang: [
             {
               lang: 'en',
-              title: 'String Node'
+              title: 'String Node',
             },
             {
               lang: 'zh',
-              title: '字符串节点'
-            }
-          ]
+              title: '字符串节点',
+            },
+          ],
         },
       });
-      
+
       console.log(editor.getFlattenNodes());
       console.log(editor.getFlattenEdges());
       onSpin(false);
@@ -49,7 +53,7 @@ const Toolbar: FC<Props> = ({ onSpin }) => {
 
   return (
     <Space direction="vertical">
-      <Add buttonType={'icon'} lang={''} onData={addProcessNode} />
+      <Add buttonType={'icon'} lang={lang} onData={addProcessNode} />
     </Space>
   );
 };

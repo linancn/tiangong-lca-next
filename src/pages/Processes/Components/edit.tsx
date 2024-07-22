@@ -178,14 +178,14 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
               buttonType={'icon'}
               actionRef={actionRefExchangeTable}
               onData={handletExchangeData}
-              setViewDrawerVisible={() => { }}
+              setViewDrawerVisible={() => {}}
             />
             <ProcessExchangeDelete
               id={row.dataSetInternalID}
               data={exchangeDataSource}
               buttonType={'icon'}
               actionRef={actionRef}
-              setViewDrawerVisible={() => { }}
+              setViewDrawerVisible={() => {}}
               onData={handletExchangeData}
             />
           </Space>,
@@ -238,7 +238,9 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
             label="Reference Year"
             name={['processInformation', 'time', 'common:referenceYear']}
           >
-            <YearInput initValue={initData?.processInformation?.time?.['common:referenceYear'] ?? ''} />
+            <YearInput
+              initValue={initData?.processInformation?.time?.['common:referenceYear'] ?? ''}
+            />
           </Form.Item>
           <Divider orientationMargin="0" orientation="left" plain>
             Time Representativeness Description

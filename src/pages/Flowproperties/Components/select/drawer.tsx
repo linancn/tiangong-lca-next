@@ -166,7 +166,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
           defaultCollapsed: false,
         }}
         toolBarRender={() => {
-            return [<FlowpropertiesCreate lang={lang} key={0} actionRef={myActionRefSelect} />];
+          return [<FlowpropertiesCreate lang={lang} key={0} actionRef={myActionRefSelect} />];
         }}
         pagination={{
           showSizeChanger: false,
