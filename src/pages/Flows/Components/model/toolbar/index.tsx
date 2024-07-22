@@ -7,7 +7,7 @@ type Props = {
   onSpin: (spin: boolean) => void;
 };
 
-const Toolbar: FC<Props> = ({  }) => {
+const Toolbar: FC<Props> = ({}) => {
   // const editor = useFlowEditor();
 
   // const addProcessNode = (id: any) => {

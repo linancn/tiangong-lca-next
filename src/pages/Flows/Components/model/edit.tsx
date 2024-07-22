@@ -58,7 +58,9 @@ const ModelFlowEdit: FC<Props> = ({ buttonType }) => {
       )}
 
       <Drawer
-        title={<FormattedMessage id="pages.flow.model.drawer.title.edit" defaultMessage="Edit Model" />}
+        title={
+          <FormattedMessage id="pages.flow.model.drawer.title.edit" defaultMessage="Edit Model" />
+        }
         width="100%"
         closable={false}
         extra={
@@ -89,14 +91,10 @@ const ModelFlowEdit: FC<Props> = ({ buttonType }) => {
               </Content>
             </Layout>
             <Sider width="50px" style={siderStyle}>
-              <Button
-                shape="circle"
-                icon={<FormOutlined />}
-                onClick={onEdit}
-              />
+              <Button shape="circle" icon={<FormOutlined />} onClick={onEdit} />
             </Sider>
           </Layout>
-        </ XFlow>
+        </XFlow>
         {/* </Spin> */}
         {/* <Spin spinning={spinning} fullscreen /> */}
       </Drawer>
