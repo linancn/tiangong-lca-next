@@ -67,13 +67,13 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
           <Card size="small" title={'Short Name'}>
             <LangTextItemFrom
               name={['contactInformation', 'dataSetInformation', 'common:shortName']}
-              label="Short Name"
+              label={<FormattedMessage id="pages.contact.shortName" defaultMessage="Short Name" />}
             />
           </Card>
           <Card size="small" title={'Name'}>
             <LangTextItemFrom
               name={['contactInformation', 'dataSetInformation', 'common:name']}
-              label="Name"
+              label={<FormattedMessage id="pages.contact.name" defaultMessage="Name" />}
             />
           </Card>
           <Card size="small" title={'Classification'}>
