@@ -96,33 +96,6 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
             <ProcessView id={row.id} dataSource={'tg'} lang={lang} />
           </Space>,
         ];
-        {
-          /* if (dataSource === 'my') {
-          return [
-            <Space size={'small'} key={0}>
-              <ProcessView id={row.id} dataSource={dataSource} lang={lang} actionRef={actionRef} />
-              <ProcessEdit
-                id={row.id}
-                lang={lang}
-                buttonType={'icon'}
-                actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
-              />
-              <ProcessDelete
-                id={row.id}
-                buttonType={'icon'}
-                actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
-              />
-            </Space >,
-          ];
-        }
-return [
-  <Space size={'small'} key={0}>
-    <ProcessView id={row.id} dataSource={dataSource} lang={lang} actionRef={actionRef} />
-  </Space>,
-];*/
-        }
       },
     },
   ];
@@ -204,7 +177,7 @@ return [
   return (
     <>
       {buttonType === 'icon' ? (
-        <Tooltip title={<FormattedMessage id="pages.button.add" defaultMessage="Add" />}>
+        <Tooltip title={<FormattedMessage id="pages.button.add" defaultMessage="Add" />} placement="left"  >
           <Button shape="circle" icon={<PlusOutlined />} size="small" onClick={onSelect} />
         </Tooltip>
       ) : (

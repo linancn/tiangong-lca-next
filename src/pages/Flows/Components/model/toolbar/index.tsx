@@ -1,5 +1,10 @@
-import { Space } from 'antd';
-import { FC } from 'react';
+import { getLangText } from '@/services/general/util';
+import { getProcessDetail } from '@/services/processes/api';
+import { useGraphEvent, useGraphStore } from '@antv/xflow';
+import { Space, Spin } from 'antd';
+import { FC, useEffect, useState } from 'react';
+import { node } from '../config/node';
+import Add from './add';
 
 type Props = {
   id: string;
@@ -7,36 +12,45 @@ type Props = {
   onSpin: (spin: boolean) => void;
 };
 
-const Toolbar: FC<Props> = ({}) => {
-  // const editor = useFlowEditor();
+const Toolbar: FC<Props> = ({ lang }) => {
+  const [spinning, setSpinning] = useState(false);
 
-  // const addProcessNode = (id: any) => {
-  //   onSpin(true);
-  //   getProcessDetail(id).then(async (result) => {
-  //     console.log(result);
-  //     editor.addNode({
-  //       id: `${id}`,
-  //       type: 'ResizableNode',
-  //       position: { x: 200, y: 100 },
-  //       data: {
-  //         title: getLangText(result?.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name?.baseName ?? {}, lang),
-  //         handles: {
-  //           source: 'a1-source',
-  //           target: 'a1-target',
-  //         },
-  //         titleLang: result?.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name?.baseName ?? {}
-  //       },
-  //     });
+  const initData = useGraphStore((state) => state.initData);
+  const addNodes = useGraphStore((state) => state.addNodes);
 
-  //     console.log(editor.getFlattenNodes());
-  //     console.log(editor.getFlattenEdges());
-  //     onSpin(false);
-  //   });
-  // };
+  const addProcessNode = (id: any) => {
+    setSpinning(true);
+    getProcessDetail(id).then(async (result: any) => {
+      addNodes([
+        {
+          ...node,
+          id: id,
+          label: getLangText(result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name?.baseName, lang),
+          data: {
+            label: result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name?.baseName,
+            generalComment: result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.['common:generalComment'],
+          }
+        },
+      ]);
+      setSpinning(false);
+    });
+  }
+
+  useGraphEvent('node:mouseenter', (evt) => {
+    console.log('node:mouseenter', evt);
+  });
+
+  useEffect(() => {
+    initData({
+      nodes: [],
+      edges: [],
+    })
+  }, [])
 
   return (
     <Space direction="vertical">
-      {/* <Add buttonType={'icon'} lang={''} onData={addProcessNode} /> */}
+      <Add buttonType={'icon'} lang={lang} onData={addProcessNode} />
+      <Spin spinning={spinning} fullscreen />
     </Space>
   );
 };
