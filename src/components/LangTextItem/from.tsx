@@ -1,13 +1,13 @@
 import { langOptions } from '@/services/general/data';
 import { CloseOutlined } from '@ant-design/icons';
 import { Button, Col, Form, Input, Row, Select } from 'antd';
-import { FC } from 'react';
+import { FC, ReactNode } from 'react';
 
 const { TextArea } = Input;
 
 type Props = {
   name: any;
-  label: string;
+  label: ReactNode | string;
 };
 
 const LangTextItemFrom: FC<Props> = ({ name, label }) => {
@@ -44,7 +44,7 @@ const LangTextItemFrom: FC<Props> = ({ name, label }) => {
               </Row>
             ))}
             <Button type="dashed" onClick={() => subOpt.add()} block>
-              + Add {label} Item
+              + 添加 {label} 项目  
             </Button>
           </div>
         )}

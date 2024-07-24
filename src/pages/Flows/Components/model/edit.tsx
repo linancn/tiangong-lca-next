@@ -1,10 +1,11 @@
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import type { ActionType } from '@ant-design/pro-table';
-import { Background, Grid, XFlow, XFlowGraph } from '@antv/xflow';
+import { Background, Control, Grid, Snapline, Transform, XFlow, XFlowGraph } from '@antv/xflow';
 import { Button, Drawer, Layout, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
+import Toolbar from './toolbar';
 
 type Props = {
   id: string;
@@ -12,24 +13,16 @@ type Props = {
   lang: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
 };
-const ModelFlowEdit: FC<Props> = ({ buttonType }) => {
-  // const formRefEdit = useRef<ProFormInstance>();
+const ModelFlowEdit: FC<Props> = ({ buttonType, lang }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
-  // const [fromData, setFromData] = useState<any>({});
-  // const [initData, setInitData] = useState<any>({});
-  // const [spinning, setSpinning] = useState(false);
 
   const { Sider, Content } = Layout;
-
-  // const onSpin = (spin: boolean) => {
-  //   setSpinning(spin);
-  // };
-
   const onEdit = () => {
     setDrawerVisible(true);
   };
 
   const siderStyle: React.CSSProperties = {
+    paddingTop: 8,
     textAlign: 'center',
     backgroundColor: '#f0f0f0',
   };
@@ -56,7 +49,6 @@ const ModelFlowEdit: FC<Props> = ({ buttonType }) => {
           <FormattedMessage id="pages.button.edit" defaultMessage="Edit" />
         </Button>
       )}
-
       <Drawer
         title={
           <FormattedMessage id="pages.flow.model.drawer.title.edit" defaultMessage="Edit Model" />
@@ -74,12 +66,11 @@ const ModelFlowEdit: FC<Props> = ({ buttonType }) => {
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
       >
-        {/* <Spin spinning={spinning}> */}
         <XFlow>
           <Layout style={layoutStyle}>
             <Layout>
               <Content>
-                <XFlowGraph zoomable minScale={0.5} />
+                <XFlowGraph zoomable pannable minScale={0.5} />
                 <Background color="#f5f5f5" />
                 <Grid
                   type="dot"
@@ -88,15 +79,21 @@ const ModelFlowEdit: FC<Props> = ({ buttonType }) => {
                     thickness: 1,
                   }}
                 />
+                <Snapline />
+                <Transform resizing rotating />
               </Content>
             </Layout>
             <Sider width="50px" style={siderStyle}>
-              <Button shape="circle" icon={<FormOutlined />} onClick={onEdit} />
+              <Toolbar id={''} lang={lang} onSpin={() => { }} />
             </Sider>
+            <div style={{ position: 'absolute', right: 80, bottom: 30 }}>
+              <Control
+                items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin']}
+                direction={'horizontal'}
+              />
+            </div>
           </Layout>
         </XFlow>
-        {/* </Spin> */}
-        {/* <Spin spinning={spinning} fullscreen /> */}
       </Drawer>
     </>
   );

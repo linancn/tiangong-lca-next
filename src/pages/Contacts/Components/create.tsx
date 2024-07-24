@@ -53,19 +53,19 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
     contactInformation: (
       <>
         <Space direction="vertical" style={{ width: '100%' }}>
-          <Card size="small" title={'Short Name'}>
+          <Card size="small" title={<FormattedMessage id="pages.contact.shortName" defaultMessage="Short Name" />}>
             <LangTextItemFrom
               name={['contactInformation', 'dataSetInformation', 'common:shortName']}
-              label="Short Name"
+              label={<FormattedMessage id="pages.contact.shortName" defaultMessage="Short Name" />}
             />
           </Card>
-          <Card size="small" title={'Name'}>
+          <Card size="small" title={<FormattedMessage id="pages.contact.name" defaultMessage="Name" />}>
             <LangTextItemFrom
               name={['contactInformation', 'dataSetInformation', 'common:name']}
-              label="Name"
+              label={<FormattedMessage id="pages.contact.name" defaultMessage="Name" />}
             />
           </Card>
-          <Card size="small" title={'Classification'}>
+          <Card size="small" title={<FormattedMessage id="pages.contact.classification" defaultMessage="Classification" />}>
             <LevelTextItemFrom
               name={[
                 'contactInformation',
@@ -79,44 +79,44 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
               onData={handletFromData}
             />
           </Card>
-          <Card size="small" title={'Contact Address'}>
+          <Card size="small" title={<FormattedMessage id="pages.contact.contactAddress" defaultMessage="Contact Address" />}>
             <LangTextItemFrom
               name={['contactInformation', 'dataSetInformation', 'contactAddress']}
-              label="Contact Address"
+              label={<FormattedMessage id="pages.contact.contactAddress" defaultMessage="Contact Address" />}
             />
           </Card>
           <Form.Item
-            label="Telephone"
+            label={<FormattedMessage id="pages.contact.telephone" defaultMessage="Telephone" />}
             name={['contactInformation', 'dataSetInformation', 'telephone']}
           >
             <Input />
           </Form.Item>
-          <Form.Item label="Telefax" name={['contactInformation', 'dataSetInformation', 'telefax']}>
+          <Form.Item label={<FormattedMessage id="pages.contact.telefax" defaultMessage="Telefax" />} name={['contactInformation', 'dataSetInformation', 'telefax']}>
             <Input />
           </Form.Item>
-          <Form.Item label="Email" name={['contactInformation', 'dataSetInformation', 'email']}>
+          <Form.Item label={<FormattedMessage id="pages.contact.email" defaultMessage="Email" />} name={['contactInformation', 'dataSetInformation', 'email']}>
             <Input />
           </Form.Item>
           <Form.Item
-            label="WWWAddress"
+            label={<FormattedMessage id="pages.contact.WWWAddress" defaultMessage="WWWAddress" />}
             name={['contactInformation', 'dataSetInformation', 'WWWAddress']}
           >
             <Input />
           </Form.Item>
-          <Card size="small" title={'Central Contact Point'}>
+          <Card size="small" title={<FormattedMessage id="pages.contact.centralContactPoint" defaultMessage="Central Contact Point" />}>
             <LangTextItemFrom
               name={['contactInformation', 'dataSetInformation', 'centralContactPoint']}
-              label="Central Contact Point"
+              label={<FormattedMessage id="pages.contact.centralContactPoint" defaultMessage="Central Contact Point" />}
             />
           </Card>
-          <Card size="small" title={'Contact Description Or Comment'}>
+          <Card size="small" title={<FormattedMessage id="pages.contact.contactDescriptionOrComment" defaultMessage="Contact Description Or Comment" />}>
             <LangTextItemFrom
               name={['contactInformation', 'dataSetInformation', 'contactDescriptionOrComment']}
-              label="Contact Description Or Comment"
+              label={<FormattedMessage id="pages.contact.contactDescriptionOrComment" defaultMessage="Contact Description Or Comment" />}
             />
           </Card>
           <ContactSelectFrom
-            label="Reference To Contact"
+            label={<FormattedMessage id="pages.contact.referenceToContact" defaultMessage="Reference To Contact" />}
             name={['contactInformation', 'dataSetInformation', 'referenceToContact']}
             lang={lang}
             formRef={formRefCreate}
@@ -128,25 +128,25 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
     administrativeInformation: (
       <>
         <Space direction="vertical" style={{ width: '100%' }}>
-          <Card size="small" title={'Data Entry By'}>
+          <Card size="small" title={<FormattedMessage id="pages.contact.dataEntryBy" defaultMessage="Data Entry By" />}>
             <Form.Item
-              label="Time Stamp"
+              label={<FormattedMessage id="pages.contact.timeStamp" defaultMessage="Time Stamp" />}
               name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
             >
               <Input />
             </Form.Item>
             <br />
             <SourceSelectFrom
-              label="Reference To Data Set Format"
+              label={<FormattedMessage id="pages.contact.referenceToDataSetFormat" defaultMessage="Reference To Data Set Format" />}
               name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
               lang={lang}
               formRef={formRefCreate}
               onData={handletFromData}
             />
           </Card>
-          <Card size="small" title={'Publication And Ownership'}>
+          <Card size="small" title={<FormattedMessage id="pages.contact.publicationAndOwnership" defaultMessage="Publication And Ownership" />}>
             <Form.Item
-              label="Data Set Version"
+              label={<FormattedMessage id="pages.contact.dataSetVersion" defaultMessage="Data Set Version" />}
               name={[
                 'administrativeInformation',
                 'publicationAndOwnership',
@@ -156,7 +156,7 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
               <Input />
             </Form.Item>
             <ContactSelectFrom
-              label="Reference To Preceding Data Set Version"
+              label={<FormattedMessage id="pages.contact.referenceToPrecedingDataSetVersion" defaultMessage="Reference To Preceding Data Set Version" />}
               name={[
                 'administrativeInformation',
                 'publicationAndOwnership',
@@ -167,7 +167,7 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
               onData={handletFromData}
             />
             <Form.Item
-              label="Permanent Data Set URI"
+              label={<FormattedMessage id="pages.contact.permanentDataSetURI" defaultMessage="Permanent Data Set URI" />}
               name={[
                 'administrativeInformation',
                 'publicationAndOwnership',
@@ -257,7 +257,7 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
             if (result.data) {
               message.success(
                 <FormattedMessage
-                  id="options.createsuccess"
+                  id="pages.button.create.success"
                   defaultMessage="Created Successfully!"
                 />,
               );
