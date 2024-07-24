@@ -13,7 +13,7 @@ type Props = {
   lang: string;
   buttonType: string;
 };
-const FlowModel: FC<Props> = ({ buttonType }) => {
+const FlowModel: FC<Props> = ({ buttonType, lang }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   // const [spinning, setSpinning] = useState(false);
 
@@ -50,53 +50,15 @@ const FlowModel: FC<Props> = ({ buttonType }) => {
       render: (_, row) => {
         return [
           <Space size={'small'} key={0}>
-            <ModelFlowEdit id={row.id} buttonType={'icon'} lang={''} actionRef={actionRef} />
+            <ModelFlowEdit id={row.id} buttonType={'icon'} lang={lang} actionRef={actionRef} />
           </Space>,
         ];
-        //   if (dataSource === 'my') {
-        //     return [
-        //       <Space size={'small'} key={0}>
-        //         <FlowModel
-        //           buttonType={'icon'}
-        //           flowId={row.id}
-        //           lang={lang}
-        //         />
-        //         <FlowsView
-        //           buttonType={'icon'}
-        //           id={row.id}
-        //           lang={lang}
-        //         />
-        //         <FlowsEdit
-        //           id={row.id}
-        //           lang={lang}
-        //           buttonType={'icon'}
-        //           actionRef={actionRef}
-        //         />
-        //         <FlowsDelete
-        //           id={row.id}
-        //           buttonType={'icon'}
-        //           actionRef={actionRef}
-        //           setViewDrawerVisible={() => { }}
-        //         />
-        //       </Space>,
-        //     ];
-        //   }
-        //   return [
-        //     <Space size={'small'} key={0}>
-        //       <FlowsView
-        //         buttonType={'icon'}
-        //         id={row.id}
-        //         lang={lang}
-        //       />
-        //     </Space>,
-        //   ];
       },
     },
   ];
 
   const onView = () => {
     setDrawerVisible(true);
-    // setSpinning(true);
   };
 
   return (
