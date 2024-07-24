@@ -1,6 +1,6 @@
 import ProcessView from '@/pages/Processes/Components/view';
 import { ListPagination } from '@/services/general/data';
-import { getProcessTable } from '@/services/processes/api';
+import { getProcessTableAll } from '@/services/processes/api';
 import { ProcessTable } from '@/services/processes/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
@@ -127,7 +127,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
             },
             sort,
           ) => {
-            return getProcessTable(params, sort, lang, 'tg');
+            return getProcessTableAll(params, sort, lang, 'tg');
           }}
           columns={processColumns}
           rowSelection={{
@@ -156,7 +156,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
           },
           sort,
         ) => {
-          return getProcessTable(params, sort, lang, 'my');
+          return getProcessTableAll(params, sort, lang, 'my');
         }}
         columns={processColumns}
         rowSelection={{

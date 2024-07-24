@@ -2,10 +2,10 @@ import { PageContainer } from '@ant-design/pro-components';
 import { Button, Card, theme } from 'antd';
 import React from 'react';
 import {
-  flow_hybrid_search,
   hybrid_search,
   jsonSelectTest,
-  returnUserEdgeFunction,
+  pgroonga_search,
+  returnUserEdgeFunction
 } from '../services/demo/api';
 
 const Demo: React.FC = () => {
@@ -41,7 +41,7 @@ const Demo: React.FC = () => {
               gap: 16,
             }}
           >
-            <Button onClick={() => flow_hybrid_search('废钢', {})}>flow_hybrid_search</Button>
+            <Button onClick={() => pgroonga_search()}>pgroonga_search</Button>
             <Button onClick={() => hybrid_search()}>hybrid_search</Button>
 
             <Button onClick={() => returnUserEdgeFunction()}>returnUserEdgeFunction</Button>

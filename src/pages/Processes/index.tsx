@@ -1,20 +1,25 @@
 import { ListPagination } from '@/services/general/data';
 import { getLang } from '@/services/general/util';
-import { getProcessTable } from '@/services/processes/api';
+import { getProcessTableAll, getProcessTablePgroongaSearch } from '@/services/processes/api';
 import { ProcessTable } from '@/services/processes/data';
 import { PageContainer } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
-import { Space, Tooltip } from 'antd';
+import { Card, Input, Space, Tooltip } from 'antd';
+import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 import ProcessCreate from './Components/create';
 import ProcessDelete from './Components/delete';
 import ProcessEdit from './Components/edit';
 import ProcessView from './Components/view';
 
+const { Search } = Input;
+
 const TableList: FC = () => {
+  const [keyWord, setKeyWord] = useState<any>('');
+
   const location = useLocation();
   let dataSource = '';
   if (location.pathname.includes('/mydata')) {
@@ -22,8 +27,10 @@ const TableList: FC = () => {
   } else if (location.pathname.includes('/tgdata')) {
     dataSource = 'tg';
   }
-  const { locale } = useIntl();
-  const lang = getLang(locale);
+
+  const intl = useIntl();
+
+  const lang = getLang(intl.locale);
   const actionRef = useRef<ActionType>();
   const processColumns: ProColumns<ProcessTable>[] = [
     {
@@ -36,6 +43,7 @@ const TableList: FC = () => {
       title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name" />,
       dataIndex: 'baseName',
       sorter: false,
+      search: false,
       render: (_, row) => [
         <Tooltip key={0} placement="topLeft" title={row.generalComment ?? '-'}>
           {row.baseName}
@@ -66,7 +74,7 @@ const TableList: FC = () => {
       title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At" />,
       dataIndex: 'createdAt',
       valueType: 'dateTime',
-      sorter: true,
+      sorter: false,
       search: false,
     },
     {
@@ -83,13 +91,13 @@ const TableList: FC = () => {
                 lang={lang}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
+                setViewDrawerVisible={() => { }}
               />
               <ProcessDelete
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
+                setViewDrawerVisible={() => { }}
               />
             </Space>,
           ];
@@ -102,13 +110,26 @@ const TableList: FC = () => {
       },
     },
   ];
+
+  const onSearch: SearchProps['onSearch'] = async (value) => {
+    await setKeyWord(value);
+    actionRef.current?.setPageInfo?.({ current: 1 });
+    actionRef.current?.reload();
+  };
+
   return (
     <PageContainer>
+      <Card>
+        <Search
+          size={'large'}
+          placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+          onSearch={onSearch}
+          enterButton
+        />
+      </Card>
       <ProTable<ProcessTable, ListPagination>
         actionRef={actionRef}
-        search={{
-          defaultCollapsed: false,
-        }}
+        search={false}
         pagination={{
           showSizeChanger: false,
           pageSize: 10,
@@ -126,7 +147,10 @@ const TableList: FC = () => {
           },
           sort,
         ) => {
-          return getProcessTable(params, sort, lang, dataSource);
+          if (keyWord.length > 0) {
+            return getProcessTablePgroongaSearch(params, lang, dataSource, keyWord, {});
+          }
+          return getProcessTableAll(params, sort, lang, dataSource);
         }}
         columns={processColumns}
       />
