@@ -45,7 +45,7 @@ const ContactSelectDescription: FC<Props> = ({ title, data, lang }) => {
         </Descriptions.Item>
       </Descriptions>
       <Divider orientationMargin="0" orientation="left" plain>
-        Short Description
+      <FormattedMessage id="pages.contact.shortDescription" defaultMessage="Short Description" />
       </Divider>
       <LangTextItemDescription data={data?.['common:shortDescription']} />
     </Card>

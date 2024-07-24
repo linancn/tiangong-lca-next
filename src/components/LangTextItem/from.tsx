@@ -44,7 +44,7 @@ const LangTextItemFrom: FC<Props> = ({ name, label }) => {
               </Row>
             ))}
             <Button type="dashed" onClick={() => subOpt.add()} block>
-              + Add {label} Item
+              + 添加 {label} 项目  
             </Button>
           </div>
         )}
