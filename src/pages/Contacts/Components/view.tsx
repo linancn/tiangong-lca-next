@@ -133,15 +133,15 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
     ),
     administrativeInformation: (
       <>
-        <Card size="small" title={'Data Entry By'}>
+        <Card size="small" title={<FormattedMessage id="pages.contact.dataEntryBy" defaultMessage="Data Entry By" />}>
           <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item key={0} label="Time Stamp" labelStyle={{ width: '120px' }}>
+            <Descriptions.Item key={0} label={<FormattedMessage id="pages.contact.timeStamp" defaultMessage="Time Stamp" />} labelStyle={{ width: '120px' }}>
               {initData.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-'}
             </Descriptions.Item>
           </Descriptions>
           <br />
           <SourceSelectDescription
-            title={'Reference To Data Set Format'}
+            title={<FormattedMessage id="pages.contact.referenceToDataSetFormat" defaultMessage="Reference To Data Set Format" />}
             data={
               initData.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']
             }
@@ -149,9 +149,9 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
           />
         </Card>
         <br />
-        <Card size="small" title={'Publication And Ownership'}>
+        <Card size="small" title={<FormattedMessage id="pages.contact.publicationAndOwnership" defaultMessage="Publication And Ownership" />}>
           <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item key={0} label="Data Set Version" labelStyle={{ width: '160px' }}>
+            <Descriptions.Item key={0} label={<FormattedMessage id="pages.contact.dataSetVersion" defaultMessage="Data Set Version" />} labelStyle={{ width: '160px' }}>
               {initData.administrativeInformation?.publicationAndOwnership?.[
                 'common:dataSetVersion'
               ] ?? '-'}
@@ -165,13 +165,13 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
               ]
             }
             lang={lang}
-            title={'Reference To Preceding Data Set Version'}
+            title={<FormattedMessage id="pages.contact.referenceToPrecedingDataSetVersion" defaultMessage="Reference To Preceding Data Set Version" />}
           ></ContractDescription>
           <br />
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item
               key={0}
-              label="Permanent Data Set URI"
+              label={<FormattedMessage id="pages.contact.permanentDataSetURI" defaultMessage="Permanent Data Set URI" />}
               labelStyle={{ width: '220px' }}
             >
               {initData.administrativeInformation?.publicationAndOwnership?.[
