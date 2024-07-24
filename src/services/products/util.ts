@@ -1,7 +1,4 @@
-import {
-  getLangJson,
-  removeEmptyObjects
-} from '../general/util';
+import { getLangJson, removeEmptyObjects } from '../general/util';
 
 export function genProductJsonOrdered(id: string, data: any) {
   return removeEmptyObjects({
@@ -9,9 +6,7 @@ export function genProductJsonOrdered(id: string, data: any) {
       productInformation: {
         dataSetInformation: {
           'common:UUID': id,
-          name: getLangJson(
-            data?.productInformation?.dataSetInformation?.name,
-          ),
+          name: getLangJson(data?.productInformation?.dataSetInformation?.name),
           'common:generalComment': getLangJson(
             data?.productInformation?.dataSetInformation?.['common:generalComment'],
           ),
@@ -22,6 +17,5 @@ export function genProductJsonOrdered(id: string, data: any) {
         edges: data?.model?.edges ?? [],
       },
     },
-  },);
+  });
 }
-

@@ -177,7 +177,10 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
   return (
     <>
       {buttonType === 'icon' ? (
-        <Tooltip title={<FormattedMessage id="pages.button.add" defaultMessage="Add" />} placement="left"  >
+        <Tooltip
+          title={<FormattedMessage id="pages.button.add" defaultMessage="Add" />}
+          placement="left"
+        >
           <Button shape="circle" icon={<PlusOutlined />} size="small" onClick={onSelect} />
         </Tooltip>
       ) : (

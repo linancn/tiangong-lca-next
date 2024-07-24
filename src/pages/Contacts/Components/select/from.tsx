@@ -58,7 +58,10 @@ const ContactSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) =>
   return (
     <Card size="small" title={label}>
       <Space direction="horizontal">
-        <Form.Item label={<FormattedMessage id="pages.contact.refObjectId" defaultMessage="Ref Object Id" />} name={[...name, '@refObjectId']}>
+        <Form.Item
+          label={<FormattedMessage id="pages.contact.refObjectId" defaultMessage="Ref Object Id" />}
+          name={[...name, '@refObjectId']}
+        >
           <Input disabled={true} style={{ width: '350px', color: '#000' }} />
         </Form.Item>
         <Space direction="horizontal" style={{ marginTop: '6px' }}>
@@ -76,17 +79,26 @@ const ContactSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) =>
           )}
         </Space>
       </Space>
-      <Form.Item label={<FormattedMessage id="pages.contact.type" defaultMessage="Type" />} name={[...name, '@type']}>
+      <Form.Item
+        label={<FormattedMessage id="pages.contact.type" defaultMessage="Type" />}
+        name={[...name, '@type']}
+      >
         <Input disabled={true} style={{ color: '#000' }} />
       </Form.Item>
-      <Form.Item label={<FormattedMessage id="pages.contact.uri" defaultMessage="URI" />}  name={[...name, '@uri']}>
+      <Form.Item
+        label={<FormattedMessage id="pages.contact.uri" defaultMessage="URI" />}
+        name={[...name, '@uri']}
+      >
         <Input disabled={true} style={{ color: '#000' }} />
       </Form.Item>
-      <Form.Item label={<FormattedMessage id="pages.contact.version" defaultMessage="Version" />} name={[...name, '@version']}>
+      <Form.Item
+        label={<FormattedMessage id="pages.contact.version" defaultMessage="Version" />}
+        name={[...name, '@version']}
+      >
         <Input disabled={true} style={{ color: '#000' }} />
       </Form.Item>
       <Divider orientationMargin="0" orientation="left" plain>
-      <FormattedMessage id="pages.contact.shortDescription" defaultMessage="Short Description" /> 
+        <FormattedMessage id="pages.contact.shortDescription" defaultMessage="Short Description" />
       </Divider>
       <Form.Item>
         <Form.List name={[...name, 'common:shortDescription']}>

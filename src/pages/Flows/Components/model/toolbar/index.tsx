@@ -27,7 +27,7 @@ const Toolbar: FC<Props> = ({ id, lang }) => {
 
   const updateInfoData = (data: any) => {
     setInfoData(data);
-  }
+  };
 
   const addProcessNode = (id: any) => {
     setSpinning(true);
@@ -36,17 +36,26 @@ const Toolbar: FC<Props> = ({ id, lang }) => {
         {
           ...node,
           id: v4(),
-          label: getLangText(result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name?.baseName, lang),
+          label: getLangText(
+            result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name
+              ?.baseName,
+            lang,
+          ),
           data: {
             id: id,
-            label: result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name?.baseName,
-            generalComment: result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.['common:generalComment'],
-          }
+            label:
+              result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name
+                ?.baseName,
+            generalComment:
+              result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.[
+                'common:generalComment'
+              ],
+          },
         },
       ]);
       setSpinning(false);
     });
-  }
+  };
 
   const saveData = async () => {
     setSpinning(true);
@@ -60,10 +69,7 @@ const Toolbar: FC<Props> = ({ id, lang }) => {
     const result = await createProduct(id, newData);
     if (result.data) {
       message.success(
-        <FormattedMessage
-          id="pages.flows.createsuccess"
-          defaultMessage="Created Successfully!"
-        />,
+        <FormattedMessage id="pages.flows.createsuccess" defaultMessage="Created Successfully!" />,
       );
       setSpinning(false);
     } else {
@@ -80,14 +86,17 @@ const Toolbar: FC<Props> = ({ id, lang }) => {
     initData({
       nodes: [],
       edges: [],
-    })
-  }, [])
+    });
+  }, []);
 
   return (
     <Space direction="vertical" size={'middle'}>
       <ModelToolbarInfo data={infoData} onData={updateInfoData} />
       <ModelToolbarAdd buttonType={'icon'} lang={lang} onData={addProcessNode} />
-      <Tooltip title={<FormattedMessage id="pages.button.save" defaultMessage="Save"></FormattedMessage>} placement="left" >
+      <Tooltip
+        title={<FormattedMessage id="pages.button.save" defaultMessage="Save"></FormattedMessage>}
+        placement="left"
+      >
         <Button shape="circle" size="small" icon={<SaveOutlined />} onClick={saveData} />
       </Tooltip>
       <Spin spinning={spinning} fullscreen />

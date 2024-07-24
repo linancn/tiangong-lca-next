@@ -171,11 +171,25 @@ export async function getProcessTablePgroongaSearch(
           return {
             key: i.id,
             id: i.id,
-            baseName: getLangText(i.json?.processDataSet?.processInformation?.dataSetInformation?.name?.baseName ?? {}, lang),
-            generalComment: getLangText(i.json?.processDataSet?.processInformation?.dataSetInformation?.['common:generalComment'] ?? {}, lang),
-            classification: classificationToString(i.json?.processDataSet?.processInformation?.dataSetInformation?.classificationInformation?.["common:classification"]?.['common:class'] ?? {}),
-            referenceYear: i.json?.processDataSet?.processInformation?.time?.['common:referenceYear'] ?? '-',
-            location: i.json?.processDataSet?.processInformation?.geography?.locationOfOperationSupplyOrProduction?.['@location'] ?? '-',
+            baseName: getLangText(
+              i.json?.processDataSet?.processInformation?.dataSetInformation?.name?.baseName ?? {},
+              lang,
+            ),
+            generalComment: getLangText(
+              i.json?.processDataSet?.processInformation?.dataSetInformation?.[
+                'common:generalComment'
+              ] ?? {},
+              lang,
+            ),
+            classification: classificationToString(
+              i.json?.processDataSet?.processInformation?.dataSetInformation
+                ?.classificationInformation?.['common:classification']?.['common:class'] ?? {},
+            ),
+            referenceYear:
+              i.json?.processDataSet?.processInformation?.time?.['common:referenceYear'] ?? '-',
+            location:
+              i.json?.processDataSet?.processInformation?.geography
+                ?.locationOfOperationSupplyOrProduction?.['@location'] ?? '-',
             createdAt: new Date(i.created_at),
           };
         } catch (e) {

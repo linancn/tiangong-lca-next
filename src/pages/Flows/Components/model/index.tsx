@@ -34,7 +34,9 @@ const FlowModel: FC<Props> = ({ flowId, buttonType, lang, dataSource }) => {
       sorter: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.generalComment" defaultMessage="General Comment" />,
+      title: (
+        <FormattedMessage id="pages.table.title.generalComment" defaultMessage="General Comment" />
+      ),
       dataIndex: 'generalComment',
       sorter: false,
       search: false,
@@ -104,18 +106,18 @@ const FlowModel: FC<Props> = ({ flowId, buttonType, lang, dataSource }) => {
           }}
           toolBarRender={() => {
             if (dataSource === 'my') {
-                return [<FlowModelCreate key={0} lang={lang} actionRef={actionRef} id={flowId} />];
+              return [<FlowModelCreate key={0} lang={lang} actionRef={actionRef} id={flowId} />];
             }
             return [];
           }}
           request={async (
-              params: {
-                  pageSize: number;
-                  current: number;
-              },
-              sort,
+            params: {
+              pageSize: number;
+              current: number;
+            },
+            sort,
           ) => {
-              return getProductTable(params, sort, flowId, lang, dataSource);
+            return getProductTable(params, sort, flowId, lang, dataSource);
           }}
           columns={flowsColumns}
         />

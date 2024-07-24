@@ -5,7 +5,7 @@ import {
   hybrid_search,
   jsonSelectTest,
   pgroonga_search,
-  returnUserEdgeFunction
+  returnUserEdgeFunction,
 } from '../services/demo/api';
 
 const Demo: React.FC = () => {
