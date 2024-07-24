@@ -1,19 +1,22 @@
 import { FlowModelTable } from '@/services/flows/data';
 import { ListPagination } from '@/services/general/data';
+import { getProductTable } from '@/services/products/api';
 import { CloseOutlined, PartitionOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Drawer, Space, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import ModelFlowEdit from './edit';
+import FlowModelCreate from './create';
+import FlowModelEdit from './edit';
 
 type Props = {
   flowId: string;
   lang: string;
   buttonType: string;
+  dataSource: string;
 };
-const FlowModel: FC<Props> = ({ buttonType, lang }) => {
+const FlowModel: FC<Props> = ({ flowId, buttonType, lang, dataSource }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   // const [spinning, setSpinning] = useState(false);
 
@@ -31,8 +34,8 @@ const FlowModel: FC<Props> = ({ buttonType, lang }) => {
       sorter: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.description" defaultMessage="Description" />,
-      dataIndex: 'description',
+      title: <FormattedMessage id="pages.table.title.generalComment" defaultMessage="General Comment" />,
+      dataIndex: 'generalComment',
       sorter: false,
       search: false,
     },
@@ -50,7 +53,7 @@ const FlowModel: FC<Props> = ({ buttonType, lang }) => {
       render: (_, row) => {
         return [
           <Space size={'small'} key={0}>
-            <ModelFlowEdit id={row.id} buttonType={'icon'} lang={lang} actionRef={actionRef} />
+            <FlowModelEdit id={row.id} buttonType={'icon'} lang={lang} actionRef={actionRef} />
           </Space>,
         ];
       },
@@ -100,35 +103,21 @@ const FlowModel: FC<Props> = ({ buttonType, lang }) => {
             pageSize: 10,
           }}
           toolBarRender={() => {
-            // if (dataSource === 'my') {
-            //     return [<FlowsCreate key={0} lang={lang} actionRef={actionRef} />];
-            // }
+            if (dataSource === 'my') {
+                return [<FlowModelCreate key={0} lang={lang} actionRef={actionRef} id={flowId} />];
+            }
             return [];
           }}
-          // request={async (
-          //     params: {
-          //         pageSize: number;
-          //         current: number;
-          //     },
-          //     sort,
-          // ) => {
-          //     return getFlowTable(params, sort, lang, dataSource);
-          // }}
+          request={async (
+              params: {
+                  pageSize: number;
+                  current: number;
+              },
+              sort,
+          ) => {
+              return getProductTable(params, sort, flowId, lang, dataSource);
+          }}
           columns={flowsColumns}
-          dataSource={[
-            {
-              id: '1',
-              name: 'Model 1',
-              description: 'Model 1 Description',
-              created_at: new Date(),
-            },
-            {
-              id: '2',
-              name: 'Model 2',
-              description: 'Model 2 Description',
-              created_at: new Date(),
-            },
-          ]}
         />
       </Drawer>
     </>

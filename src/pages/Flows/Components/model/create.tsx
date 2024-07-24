@@ -1,4 +1,4 @@
-import { CloseOutlined, FormOutlined } from '@ant-design/icons';
+import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ActionType } from '@ant-design/pro-table';
 import { Background, Control, Grid, Snapline, Transform, XFlow, XFlowGraph } from '@antv/xflow';
 import { Button, Drawer, Layout, Tooltip } from 'antd';
@@ -9,17 +9,13 @@ import Toolbar from './toolbar';
 
 type Props = {
   id: string;
-  buttonType: string;
   lang: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
 };
-const FlowModelEdit: FC<Props> = ({ buttonType, lang }) => {
+const FlowModelCreate: FC<Props> = ({ id, lang }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
 
   const { Sider, Content } = Layout;
-  const onEdit = () => {
-    setDrawerVisible(true);
-  };
 
   const siderStyle: React.CSSProperties = {
     paddingTop: 8,
@@ -40,15 +36,16 @@ const FlowModelEdit: FC<Props> = ({ buttonType, lang }) => {
 
   return (
     <>
-      {buttonType === 'icon' ? (
-        <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
-          <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
-        </Tooltip>
-      ) : (
-        <Button onClick={onEdit}>
-          <FormattedMessage id="pages.button.edit" defaultMessage="Edit" />
-        </Button>
-      )}
+      <Tooltip title={<FormattedMessage id="pages.button.create" defaultMessage="Create" />}>
+        <Button
+          size={'middle'}
+          type="text"
+          icon={<PlusOutlined />}
+          onClick={() => {
+            setDrawerVisible(true);
+          }}
+        />
+      </Tooltip>
       <Drawer
         title={
           <FormattedMessage id="pages.flow.model.drawer.title.edit" defaultMessage="Edit Model" />
@@ -84,7 +81,7 @@ const FlowModelEdit: FC<Props> = ({ buttonType, lang }) => {
               </Content>
             </Layout>
             <Sider width="50px" style={siderStyle}>
-              <Toolbar id={''} lang={lang} onSpin={() => { }} />
+              <Toolbar id={id} lang={lang} onSpin={() => { }} />
             </Sider>
             <div style={{ position: 'absolute', right: 80, bottom: 30 }}>
               <Control
@@ -99,4 +96,4 @@ const FlowModelEdit: FC<Props> = ({ buttonType, lang }) => {
   );
 };
 
-export default FlowModelEdit;
+export default FlowModelCreate;
