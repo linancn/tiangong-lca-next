@@ -114,16 +114,51 @@ const UnitCreate: FC<Props> = ({ onData }) => {
             <Form.Item name={'@dataSetInternalID'} hidden>
               <Input />
             </Form.Item>
-            <Form.Item label="Name" name={'name'}>
+            <Form.Item
+              label={<FormattedMessage id="pages.unitgroup.creat.name" defaultMessage="Name" />}
+              name={'name'}
+            >
               <Input />
             </Form.Item>
-            <Card size="small" title={'General Comment'}>
-              <LangTextItemFrom name={'generalComment'} label={'General Comment'} />
+            <Card
+              size="small"
+              title={
+                <FormattedMessage
+                  id="pages.unitgroup.creat.generalComment"
+                  defaultMessage="General Comment"
+                />
+              }
+            >
+              <LangTextItemFrom
+                name={'generalComment'}
+                label={
+                  <FormattedMessage
+                    id="pages.unitgroup.creat.generalComment"
+                    defaultMessage="General Comment"
+                  />
+                }
+              />
             </Card>
-            <Form.Item label="Mean Value" name={'meanValue'}>
+            <Form.Item
+              label={
+                <FormattedMessage
+                  id="pages.unitgroup.creat.meanValue"
+                  defaultMessage="Mean Value"
+                />
+              }
+              name={'meanValue'}
+            >
               <Input />
             </Form.Item>
-            <Form.Item label="Quantitative Reference" name={'quantitativeReference'}>
+            <Form.Item
+              label={
+                <FormattedMessage
+                  id="pages.unitgroup.creat.quantitativeReference"
+                  defaultMessage="Quantitative Reference"
+                />
+              }
+              name={'quantitativeReference'}
+            >
               <Switch></Switch>
             </Form.Item>
           </Space>
