@@ -1,5 +1,5 @@
 import { ListPagination } from '@/services/general/data';
-import { getSourceTable } from '@/services/sources/api';
+import { getSourceTableAll } from '@/services/sources/api';
 import { SourceTable } from '@/services/sources/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, DatabaseOutlined } from '@ant-design/icons';
@@ -152,7 +152,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
           },
           sort,
         ) => {
-          return getSourceTable(params, sort, lang, 'my');
+          return getSourceTableAll(params, sort, lang, 'my');
         }}
         columns={sourceColumns}
         rowSelection={{
@@ -180,7 +180,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
           },
           sort,
         ) => {
-          return getSourceTable(params, sort, lang, 'tg');
+          return getSourceTableAll(params, sort, lang, 'tg');
         }}
         columns={sourceColumns}
         rowSelection={{

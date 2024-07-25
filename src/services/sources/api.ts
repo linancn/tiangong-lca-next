@@ -43,7 +43,7 @@ export async function deleteSource(id: string) {
   return result;
 }
 
-export async function getSourceTable(
+export async function getSourceTableAll(
   params: {
     current?: number;
     pageSize?: number;
@@ -132,57 +132,76 @@ export async function getSourceTable(
   });
 }
 
-// export async function getSourceDetail(id: string) {
-//   const result = await supabase.from('sources').select('json, created_at').eq('id', id);
-//   if (result.data && result.data.length > 0) {
-//     const data = result.data[0];
-//     return Promise.resolve({
-//       data: {
-//         id: id,
-//         'common:shortName': getLangList(
-//           data?.json?.sourceDataSet?.sourceInformation?.dataSetInformation?.['common:shortName'],
-//         ),
-//         'common:class': classificationToJson(
-//           data?.json?.sourceDataSet?.sourceInformation?.dataSetInformation
-//             ?.classificationInformation?.['common:classification']?.['common:class'],
-//         ),
-//         sourceCitation: data?.json?.sourceDataSet?.sourceInformation?.dataSetInformation?.sourceCitation,
-//         publicationType: data?.json?.sourceDataSet?.sourceInformation?.dataSetInformation?.publicationType,
-//         'dataEntryBy:common:timeStamp':
-//           data?.json?.sourceDataSet?.administrativeInformation?.dataEntryBy?.[
-//             'common:timeStamp'
-//           ],
-//         'dataEntryBy:common:@type':
-//           data?.json?.sourceDataSet?.administrativeInformation?.dataEntryBy?.[
-//             'common:referenceToDataSetFormat'
-//           ]?.['@type'],
-//         'dataEntryBy:common:@refObjectId':
-//           data?.json?.sourceDataSet?.administrativeInformation?.dataEntryBy?.[
-//             'common:referenceToDataSetFormat'
-//           ]?.['@refObjectId'],
-//         'dataEntryBy:common:@uri':
-//           data?.json?.sourceDataSet?.administrativeInformation?.dataEntryBy?.[
-//             'common:referenceToDataSetFormat'
-//           ]?.['@uri'],
-//         'dataEntryBy:common:shortDescription': getLangList(
-//           data?.json?.sourceDataSet?.administrativeInformation?.dataEntryBy?.[
-//             'common:referenceToDataSetFormat'
-//           ]?.['common:shortDescription'],
-//         ),
-//         'publicationAndOwnership:common:dataSetVersion':
-//           data?.json?.sourceDataSet?.administrativeInformation?.publicationAndOwnership?.[
-//             'common:dataSetVersion'
-//           ],
-//         createdAt: data?.created_at,
-//       },
-//       success: true,
-//     });
-//   }
-//   return Promise.resolve({
-//     data: {},
-//     success: true,
-//   });
-// }
+export async function getSourceTablePgroongaSearch(
+  params: {
+    current?: number;
+    pageSize?: number;
+  },
+  // sort: Record<string, SortOrder>,
+  lang: string,
+  dataSource: string,
+  queryText: string,
+  filterCondition: any,
+) {
+  let result: any = {};
+  const session = await supabase.auth.getSession();
+  if (session.data.session) {
+    result = await supabase.rpc('pgroonga_search_sources', {
+      query_text: queryText,
+      filter_condition: filterCondition,
+      page_size: params.pageSize ?? 10,
+      page_current: params.current ?? 1,
+      data_source: dataSource,
+      this_user_id: session.data.session.user?.id,
+    });
+  }
+  if (result.error) {
+    console.log('error', result.error);
+  }
+  if (result.data) {
+    if (result.data.length === 0) {
+      return Promise.resolve({
+        data: [],
+        success: true,
+      });
+    }
+    const totalCount = result.data[0].total_count;
+    return Promise.resolve({
+      data: result.data.map((i: any) => {
+        try {
+          return {
+            key: i.id,
+            id: i.id,
+            shortName: getLangText(
+              i.json?.sourceDataSet?.sourceInformation?.dataSetInformation?.['common:shortName'] ?? {},
+              lang,
+            ),
+            classification: classificationToString(
+              i.json?.sourceDataSet?.sourceInformation?.dataSetInformation
+                ?.classificationInformation?.['common:classification']?.['common:class'] ?? {},
+            ),
+            sourceCitation:
+              i.json?.sourceDataSet?.sourceInformation?.dataSetInformation?.sourceCitation ?? '-',
+            publicationType:
+              i.json?.sourceDataSet?.sourceInformation?.dataSetInformation
+                ?.publicationType ?? '-',
+            created_at: new Date(i.created_at),
+          };
+        } catch (e) {
+          console.error(e);
+          return {
+            id: i.id,
+          };
+        }
+      }),
+      page: params.current ?? 1,
+      success: true,
+      total: totalCount ?? 0,
+    });
+  }
+
+  return result;
+}
 
 export async function getSourceDetail(id: string) {
   const result = await supabase.from('sources').select('json, created_at').eq('id', id);
