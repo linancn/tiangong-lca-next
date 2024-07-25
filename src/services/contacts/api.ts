@@ -186,7 +186,7 @@ export async function getContactTablePgroongaSearch(
               ]?.['common:class'] ?? {},
             ),
             email: i.json?.contactDataSet?.contactInformation?.dataSetInformation?.email ?? '-',
-            created_at: new Date(i.created_at),
+            createdAt: new Date(i.created_at),
           };
         } catch (e) {
           console.error(e);

@@ -1,5 +1,5 @@
 import { ListPagination } from '@/services/general/data';
-import { getUnitGroupTable } from '@/services/unitgroups/api';
+import { getUnitGroupTableAll } from '@/services/unitgroups/api';
 import { UnitGroupTable } from '@/services/unitgroups/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, DatabaseOutlined } from '@ant-design/icons';
@@ -153,7 +153,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
           },
           sort,
         ) => {
-          return getUnitGroupTable(params, sort, lang, 'tg');
+          return getUnitGroupTableAll(params, sort, lang, 'tg');
         }}
         columns={unitGroupColumns}
         rowSelection={{
@@ -184,7 +184,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
           },
           sort,
         ) => {
-          return getUnitGroupTable(params, sort, lang, 'my');
+          return getUnitGroupTableAll(params, sort, lang, 'my');
         }}
         columns={unitGroupColumns}
         rowSelection={{

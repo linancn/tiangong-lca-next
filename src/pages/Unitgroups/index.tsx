@@ -1,20 +1,25 @@
 import { ListPagination } from '@/services/general/data';
 import { getLang } from '@/services/general/util';
-import { getUnitGroupTable } from '@/services/unitgroups/api';
+import { getUnitGroupTableAll, getUnitGroupTablePgroongaSearch } from '@/services/unitgroups/api';
 import { UnitGroupTable } from '@/services/unitgroups/data';
 import { PageContainer } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
-import { Space } from 'antd';
+import { Card, Input, Space } from 'antd';
+import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 import UnitGroupCreate from './Components/create';
 import UnitGroupDelete from './Components/delete';
 import UnitGroupEdit from './Components/edit';
 import UnitGroupView from './Components/view';
 
+const { Search } = Input;
+
 const TableList: FC = () => {
+  const [keyWord, setKeyWord] = useState<any>('');
+
   const location = useLocation();
   let dataSource = '';
   if (location.pathname.includes('/mydata')) {
@@ -22,8 +27,10 @@ const TableList: FC = () => {
   } else if (location.pathname.includes('/tgdata')) {
     dataSource = 'tg';
   }
-  const { locale } = useIntl();
-  const lang = getLang(locale);
+
+  const intl = useIntl();
+
+  const lang = getLang(intl.locale);
   const actionRef = useRef<ActionType>();
   const unitGroupColumns: ProColumns<UnitGroupTable>[] = [
     {
@@ -79,13 +86,13 @@ const TableList: FC = () => {
                 buttonType={'icon'}
                 lang={lang}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
+                setViewDrawerVisible={() => { }}
               ></UnitGroupEdit>
               <UnitGroupDelete
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
+                setViewDrawerVisible={() => { }}
               ></UnitGroupDelete>
             </Space>,
           ];
@@ -98,13 +105,25 @@ const TableList: FC = () => {
       },
     },
   ];
+  const onSearch: SearchProps['onSearch'] = async (value) => {
+    await setKeyWord(value);
+    actionRef.current?.setPageInfo?.({ current: 1 });
+    actionRef.current?.reload();
+  };
+
   return (
     <PageContainer>
+      <Card>
+        <Search
+          size={'large'}
+          placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+          onSearch={onSearch}
+          enterButton
+        />
+      </Card>
       <ProTable<UnitGroupTable, ListPagination>
         actionRef={actionRef}
-        search={{
-          defaultCollapsed: false,
-        }}
+        search={false}
         pagination={{
           showSizeChanger: false,
           pageSize: 10,
@@ -122,7 +141,10 @@ const TableList: FC = () => {
           },
           sort,
         ) => {
-          return getUnitGroupTable(params, sort, lang, dataSource);
+          if (keyWord.length > 0) {
+            return getUnitGroupTablePgroongaSearch(params, lang, dataSource, keyWord, {});
+          }
+          return getUnitGroupTableAll(params, sort, lang, dataSource);
         }}
         columns={unitGroupColumns}
       ></ProTable>
