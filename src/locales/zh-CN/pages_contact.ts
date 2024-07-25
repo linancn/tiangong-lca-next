@@ -26,7 +26,7 @@ export default {
   'pages.contact.shortDescription': '简介',
   //联系人信息
   'pages.contact.dataEntryBy': '数据输入方式',
-  'pages.contact.timeStamp': '时间戳',
+  'pages.contact.timeStamp': '时间点',
   'pages.contact.referenceToDataSetFormat': '参考数据集格式',
   'pages.contact.publicationAndOwnership': '出版和所有权',
   'pages.contact.dataSetVersion': '数据集版本',

@@ -55,7 +55,7 @@ const SourceDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisib
             onCancel={handleCancel}
           >
             <FormattedMessage
-              id="pages.button.deleteMessage"
+              id="pages.button.deleteMessage.Are you sure you want to delete this data"
               defaultMessage="Are you sure you want to delete this data?"
             />
           </Modal>
