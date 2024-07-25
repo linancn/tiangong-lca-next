@@ -1,4 +1,4 @@
-import { getContactTable } from '@/services/contacts/api';
+import { getContactTableAll } from '@/services/contacts/api';
 import { ContactTable } from '@/services/contacts/data';
 import { ListPagination } from '@/services/general/data';
 import styles from '@/style/custom.less';
@@ -158,7 +158,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
           },
           sort,
         ) => {
-          return getContactTable(params, sort, lang, 'tg');
+          return getContactTableAll(params, sort, lang, 'tg');
         }}
         columns={contactColumns}
         rowSelection={{
@@ -186,7 +186,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
           },
           sort,
         ) => {
-          return getContactTable(params, sort, lang, 'my');
+          return getContactTableAll(params, sort, lang, 'my');
         }}
         toolBarRender={() => {
           return [<ContactCreate lang={lang} key={0} actionRef={myActionRefSelect} />];
