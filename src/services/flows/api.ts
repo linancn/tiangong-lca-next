@@ -202,8 +202,82 @@ export async function getFlowTablePgroongaSearch(
       total: totalCount ?? 0,
     });
   }
+  return Promise.resolve({
+    data: [],
+    success: false,
+  });
+}
 
-  return result;
+export async function flow_hybrid_search(
+  params: {
+    current?: number;
+    pageSize?: number;
+  },
+  // sort: Record<string, SortOrder>,
+  lang: string,
+  dataSource: string,
+  query: string,
+  filter: any,
+) {
+  let result: any = {};
+  const session = await supabase.auth.getSession();
+  if (session.data.session) {
+    result = await supabase.functions.invoke('flow_hybrid_search', {
+      headers: {
+        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+      },
+      body: { query: query, filter: filter },
+      region: FunctionRegion.UsEast1,
+    });
+  }
+  if (result.error) {
+    console.log('error', result.error);
+  }
+  if (result.data) {
+    if (result.data.length === 0) {
+      return Promise.resolve({
+        data: [],
+        success: true,
+      });
+    }
+    return Promise.resolve({
+      data: result.data.map((i: any) => {
+        try {
+          return {
+            key: i.id,
+            id: i.id,
+            baseName: getLangText(
+              i.json?.flowDataSet?.flowInformation?.dataSetInformation?.name?.baseName,
+              lang,
+            ),
+            classification: classificationToString(
+              i.json?.flowDataSet?.flowInformation?.dataSetInformation?.classificationInformation?.[
+                'common:classification'
+              ]?.['common:class'],
+            ),
+            generalComment: getLangText(
+              i.json?.flowDataSet?.flowInformation?.dataSetInformation?.['common:generalComment'],
+              lang,
+            ),
+            dataType: i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet ?? '-',
+            CASNumber: i.json?.flowDataSet?.flowInformation?.dataSetInformation?.CASNumber ?? '-',
+          };
+        } catch (e) {
+          console.error(e);
+          return {
+            id: i.id,
+          };
+        }
+      }),
+      page: 1,
+      success: true,
+      total: result.data.length,
+    });
+  }
+  return Promise.resolve({
+    data: [],
+    success: false,
+  });
 }
 
 export async function getFlowDetail(id: string) {
@@ -223,37 +297,4 @@ export async function getFlowDetail(id: string) {
     data: {},
     success: true,
   });
-}
-
-export async function flow_hybrid_search(query: string, filter: any, lang: string) {
-  const session = await supabase.auth.getSession();
-  const { data } = await supabase.functions.invoke('flow_hybrid_search', {
-    headers: {
-      Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
-    },
-    body: { query: query, filter: filter },
-    region: FunctionRegion.UsEast1,
-  });
-  const result = data?.map((i: any) => {
-    return {
-      key: i.id,
-      id: i.id,
-      baseName: getLangText(
-        i.json?.flowDataSet?.flowInformation?.dataSetInformation?.name?.baseName,
-        lang,
-      ),
-      classification: classificationToString(
-        i.json?.flowDataSet?.flowInformation?.dataSetInformation?.classificationInformation?.[
-          'common:classification'
-        ]?.['common:class'],
-      ),
-      generalComment: getLangText(
-        i.json?.flowDataSet?.flowInformation?.dataSetInformation?.['common:generalComment'],
-        lang,
-      ),
-      dataType: i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet ?? '-',
-      CASNumber: i.json?.flowDataSet?.flowInformation?.dataSetInformation?.CASNumber ?? '-',
-    };
-  });
-  return result;
 }

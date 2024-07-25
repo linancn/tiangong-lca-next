@@ -63,7 +63,7 @@ const TableList: FC = () => {
         <FormattedMessage id="pages.source.publicationType" defaultMessage="Publication Type" />
       ),
       dataIndex: 'publicationType',
-      sorter: true,
+      sorter: false,
       search: false,
     },
     {
@@ -87,13 +87,13 @@ const TableList: FC = () => {
                 lang={lang}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => { }}
+                setViewDrawerVisible={() => {}}
               />
               <SourceDelete
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => { }}
+                setViewDrawerVisible={() => {}}
               />
             </Space>,
           ];

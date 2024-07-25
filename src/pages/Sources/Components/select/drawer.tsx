@@ -1,14 +1,15 @@
 import { ListPagination } from '@/services/general/data';
-import { getSourceTableAll } from '@/services/sources/api';
+import { getSourceTableAll, getSourceTablePgroongaSearch } from '@/services/sources/api';
 import { SourceTable } from '@/services/sources/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, DatabaseOutlined } from '@ant-design/icons';
 import { ProTable } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
-import { Button, Card, Drawer, Space, Tooltip } from 'antd';
+import { Button, Card, Drawer, Input, Space, Tooltip } from 'antd';
+import { SearchProps } from 'antd/es/input/Search';
 import type { FC, Key } from 'react';
 import { useEffect, useRef, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 import SourceCreate from '../create';
 import { default as SourceView } from '../view';
 
@@ -18,12 +19,19 @@ type Props = {
   onData: (rowKey: any) => void;
 };
 
+const { Search } = Input;
+
 const SourceSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
+  const [tgKeyWord, setTgKeyWord] = useState<any>('');
+  const [myKeyWord, setMyKeyWord] = useState<any>('');
+
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
-  const [activeTabKey, setActiveTabKey] = useState<string>('my');
+  const [activeTabKey, setActiveTabKey] = useState<string>('tg');
   const tgActionRefSelect = useRef<ActionType>();
   const myActionRefSelect = useRef<ActionType>();
+
+  const intl = useIntl();
 
   const onSelect = () => {
     setDrawerVisible(true);
@@ -36,11 +44,33 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
   const onTabChange = async (key: string) => {
     await setActiveTabKey(key);
     if (key === 'tg') {
+      await tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
       tgActionRefSelect.current?.reload();
     }
     if (key === 'my') {
+      myActionRefSelect.current?.setPageInfo?.({ current: 1 });
       myActionRefSelect.current?.reload();
     }
+  };
+
+  const onTgSearch: SearchProps['onSearch'] = async (value) => {
+    await setTgKeyWord(value);
+    tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    tgActionRefSelect.current?.reload();
+  };
+
+  const onMySearch: SearchProps['onSearch'] = async (value) => {
+    await setMyKeyWord(value);
+    myActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    myActionRefSelect.current?.reload();
+  };
+
+  const handleTgKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTgKeyWord(e.target.value);
+  };
+
+  const handleMyKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMyKeyWord(e.target.value);
   };
 
   const sourceColumns: ProColumns<SourceTable>[] = [
@@ -75,7 +105,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At" />,
       dataIndex: 'createdAt',
       valueType: 'dateTime',
-      sorter: true,
+      sorter: false,
       search: false,
     },
     {
@@ -133,63 +163,91 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
 
   const databaseList: Record<string, React.ReactNode> = {
     my: (
-      <ProTable<SourceTable, ListPagination>
-        actionRef={myActionRefSelect}
-        search={{
-          defaultCollapsed: false,
-        }}
-        pagination={{
-          showSizeChanger: false,
-          pageSize: 10,
-        }}
-        toolBarRender={() => {
-          return [<SourceCreate lang={lang} key={0} actionRef={myActionRefSelect} />];
-        }}
-        request={async (
-          params: {
-            pageSize: number;
-            current: number;
-          },
-          sort,
-        ) => {
-          return getSourceTableAll(params, sort, lang, 'my');
-        }}
-        columns={sourceColumns}
-        rowSelection={{
-          type: 'radio',
-          alwaysShowAlert: true,
-          selectedRowKeys,
-          onChange: onSelectChange,
-        }}
-      />
+      <>
+        <Card>
+          <Search
+            name={'my'}
+            size={'large'}
+            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+            value={myKeyWord}
+            onChange={handleMyKeyWordChange}
+            onSearch={onMySearch}
+            enterButton
+          />
+        </Card>
+        <ProTable<SourceTable, ListPagination>
+          actionRef={myActionRefSelect}
+          search={false}
+          pagination={{
+            showSizeChanger: false,
+            pageSize: 10,
+          }}
+          toolBarRender={() => {
+            return [<SourceCreate lang={lang} key={0} actionRef={myActionRefSelect} />];
+          }}
+          request={async (
+            params: {
+              pageSize: number;
+              current: number;
+            },
+            sort,
+          ) => {
+            if (myKeyWord.length > 0) {
+              return getSourceTablePgroongaSearch(params, lang, 'my', myKeyWord, {});
+            }
+            return getSourceTableAll(params, sort, lang, 'my');
+          }}
+          columns={sourceColumns}
+          rowSelection={{
+            type: 'radio',
+            alwaysShowAlert: true,
+            selectedRowKeys,
+            onChange: onSelectChange,
+          }}
+        />
+      </>
     ),
     tg: (
-      <ProTable<SourceTable, ListPagination>
-        actionRef={tgActionRefSelect}
-        search={{
-          defaultCollapsed: false,
-        }}
-        pagination={{
-          showSizeChanger: false,
-          pageSize: 10,
-        }}
-        request={async (
-          params: {
-            pageSize: number;
-            current: number;
-          },
-          sort,
-        ) => {
-          return getSourceTableAll(params, sort, lang, 'tg');
-        }}
-        columns={sourceColumns}
-        rowSelection={{
-          type: 'radio',
-          alwaysShowAlert: true,
-          selectedRowKeys,
-          onChange: onSelectChange,
-        }}
-      />
+      <>
+        <Card>
+          <Search
+            name={'tg'}
+            size={'large'}
+            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+            value={tgKeyWord}
+            onChange={handleTgKeyWordChange}
+            onSearch={onTgSearch}
+            enterButton
+          />
+        </Card>
+        <ProTable<SourceTable, ListPagination>
+          actionRef={tgActionRefSelect}
+          search={false}
+          pagination={{
+            showSizeChanger: false,
+            pageSize: 10,
+          }}
+          request={async (
+            params: {
+              pageSize: number;
+              current: number;
+            },
+            sort,
+          ) => {
+            if (tgKeyWord.length > 0) {
+              return getSourceTablePgroongaSearch(params, lang, 'tg', tgKeyWord, {});
+            }
+            return getSourceTableAll(params, sort, lang, 'tg');
+          }}
+          columns={sourceColumns}
+          rowSelection={{
+            type: 'radio',
+            alwaysShowAlert: true,
+            selectedRowKeys,
+            onChange: onSelectChange,
+          }}
+        />
+      </>
     ),
   };
 

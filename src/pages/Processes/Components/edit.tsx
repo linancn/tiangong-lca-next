@@ -95,7 +95,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
         />
       ),
       dataIndex: 'exchangeDirection',
-      sorter: true,
+      sorter: false,
       search: false,
     },
     {
@@ -294,7 +294,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
               'referenceToTechnologyFlowDiagrammOrPicture',
             ]}
             label="Reference To Technology Flow Diagramm Or Picture"
-            lang="en"
+            lang={lang}
             formRef={formRefEdit}
             onData={handletFromData}
           />

@@ -1,4 +1,8 @@
-import { flow_hybrid_search, getFlowTableAll } from '@/services/flows/api';
+import {
+  flow_hybrid_search,
+  getFlowTableAll,
+  getFlowTablePgroongaSearch,
+} from '@/services/flows/api';
 import { FlowTable } from '@/services/flows/data';
 import { ListPagination } from '@/services/general/data';
 import styles from '@/style/custom.less';
@@ -21,18 +25,21 @@ type Props = {
   onData: (rowKey: any) => void;
 };
 
+const { Search } = Input;
+
 const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
+  const [tgKeyWord, setTgKeyWord] = useState<any>('');
+  const [myKeyWord, setMyKeyWord] = useState<any>('');
+
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [activeTabKey, setActiveTabKey] = useState<string>('tg');
-  const [dataSource, setDataSource] = useState<any>([]);
-  const [tableLoading, setTableLoading] = useState<boolean>(false);
+  // const [dataSource, setDataSource] = useState<any>([]);
+  // const [tableLoading, setTableLoading] = useState<boolean>(false);
   const tgActionRefSelect = useRef<ActionType>();
   const myActionRefSelect = useRef<ActionType>();
 
   const intl = useIntl();
-
-  const { Search } = Input;
 
   const onSelect = () => {
     setDrawerVisible(true);
@@ -45,11 +52,39 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
   const onTabChange = async (key: string) => {
     await setActiveTabKey(key);
     if (key === 'tg') {
+      await tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
       tgActionRefSelect.current?.reload();
     }
     if (key === 'my') {
+      myActionRefSelect.current?.setPageInfo?.({ current: 1 });
       myActionRefSelect.current?.reload();
     }
+  };
+
+  const onTgSearch: SearchProps['onSearch'] = async (value) => {
+    await setTgKeyWord(value);
+    tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    tgActionRefSelect.current?.reload();
+  };
+
+  // const onTgSearch: SearchProps['onSearch'] = async (value) => {
+  //   setTableLoading(true);
+  //   setDataSource(await flow_hybrid_search(value, {}, lang));
+  //   setTableLoading(false);
+  // };
+
+  const onMySearch: SearchProps['onSearch'] = async (value) => {
+    await setMyKeyWord(value);
+    myActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    myActionRefSelect.current?.reload();
+  };
+
+  const handleTgKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTgKeyWord(e.target.value);
+  };
+
+  const handleMyKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMyKeyWord(e.target.value);
   };
 
   const FlowsColumns: ProColumns<FlowTable>[] = [
@@ -139,41 +174,41 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
     { key: 'my', tab: <FormattedMessage id="pages.tab.title.mydata" defaultMessage="My Data" /> },
   ];
 
-  const onSearch: SearchProps['onSearch'] = async (value) => {
-    setTableLoading(true);
-    setDataSource(await flow_hybrid_search(value, {}, lang));
-    setTableLoading(false);
-  };
-
   const databaseList: Record<string, React.ReactNode> = {
     tg: (
       <>
         <Card>
           <Search
+            name={'tg'}
             size={'large'}
             placeholder={intl.formatMessage({ id: 'pages.search.placeholder' })}
-            onSearch={onSearch}
+            value={tgKeyWord}
+            onChange={handleTgKeyWordChange}
+            onSearch={onTgSearch}
             enterButton
           />
         </Card>
         <ProTable<FlowTable, ListPagination>
           actionRef={tgActionRefSelect}
-          loading={tableLoading}
+          // loading={tableLoading}
           search={false}
           pagination={{
             showSizeChanger: false,
-            pageSize: 10000,
+            pageSize: 10,
           }}
-          dataSource={dataSource}
-          // request={async (
-          //   params: {
-          //     pageSize: number;
-          //     current: number;
-          //   },
-          //   sort,
-          // ) => {
-          //   return getFlowTable(params, sort, lang, 'tg');
-          // }}
+          // dataSource={dataSource}
+          request={async (
+            params: {
+              pageSize: number;
+              current: number;
+            },
+            sort,
+          ) => {
+            if (tgKeyWord.length > 0) {
+              return flow_hybrid_search(params, lang, 'tg', tgKeyWord, {});
+            }
+            return getFlowTableAll(params, sort, lang, 'tg');
+          }}
           columns={FlowsColumns}
           rowSelection={{
             type: 'radio',
@@ -185,35 +220,49 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       </>
     ),
     my: (
-      <ProTable<FlowTable, ListPagination>
-        actionRef={myActionRefSelect}
-        search={{
-          defaultCollapsed: false,
-        }}
-        toolBarRender={() => {
-          return [<FlowsCreate key={0} lang={lang} actionRef={myActionRefSelect} />];
-        }}
-        pagination={{
-          showSizeChanger: false,
-          pageSize: 10,
-        }}
-        request={async (
-          params: {
-            pageSize: number;
-            current: number;
-          },
-          sort,
-        ) => {
-          return getFlowTableAll(params, sort, lang, 'my');
-        }}
-        columns={FlowsColumns}
-        rowSelection={{
-          type: 'radio',
-          alwaysShowAlert: true,
-          selectedRowKeys,
-          onChange: onSelectChange,
-        }}
-      />
+      <>
+        <Card>
+          <Search
+            name={'my'}
+            size={'large'}
+            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+            value={myKeyWord}
+            onChange={handleMyKeyWordChange}
+            onSearch={onMySearch}
+            enterButton
+          />
+        </Card>
+        <ProTable<FlowTable, ListPagination>
+          actionRef={myActionRefSelect}
+          search={false}
+          pagination={{
+            showSizeChanger: false,
+            pageSize: 10,
+          }}
+          request={async (
+            params: {
+              pageSize: number;
+              current: number;
+            },
+            sort,
+          ) => {
+            if (myKeyWord.length > 0) {
+              return getFlowTablePgroongaSearch(params, lang, 'my', myKeyWord, {});
+            }
+            return getFlowTableAll(params, sort, lang, 'my');
+          }}
+          columns={FlowsColumns}
+          toolBarRender={() => {
+            return [<FlowsCreate key={0} lang={lang} actionRef={myActionRefSelect} />];
+          }}
+          rowSelection={{
+            type: 'radio',
+            alwaysShowAlert: true,
+            selectedRowKeys,
+            onChange: onSelectChange,
+          }}
+        />
+      </>
     ),
   };
 

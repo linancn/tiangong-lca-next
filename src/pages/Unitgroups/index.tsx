@@ -67,7 +67,7 @@ const TableList: FC = () => {
       ),
       dataIndex: 'createdAt',
       valueType: 'dateTime',
-      sorter: true,
+      sorter: false,
       search: false,
     },
     {
@@ -86,13 +86,13 @@ const TableList: FC = () => {
                 buttonType={'icon'}
                 lang={lang}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => { }}
+                setViewDrawerVisible={() => {}}
               ></UnitGroupEdit>
               <UnitGroupDelete
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => { }}
+                setViewDrawerVisible={() => {}}
               ></UnitGroupDelete>
             </Space>,
           ];

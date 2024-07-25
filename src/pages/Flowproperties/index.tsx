@@ -1,4 +1,7 @@
-import { getFlowpropertyTableAll, getFlowpropertyTablePgroongaSearch } from '@/services/flowproperties/api';
+import {
+  getFlowpropertyTableAll,
+  getFlowpropertyTablePgroongaSearch,
+} from '@/services/flowproperties/api';
 import { FlowpropertyTable } from '@/services/flowproperties/data';
 import { ListPagination } from '@/services/general/data';
 import { getLang } from '@/services/general/util';
@@ -72,7 +75,7 @@ const TableList: FC = () => {
       title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At" />,
       dataIndex: 'created_at',
       valueType: 'dateTime',
-      sorter: true,
+      sorter: false,
       search: false,
     },
     {
@@ -94,7 +97,7 @@ const TableList: FC = () => {
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => { }}
+                setViewDrawerVisible={() => {}}
               />
             </Space>,
           ];

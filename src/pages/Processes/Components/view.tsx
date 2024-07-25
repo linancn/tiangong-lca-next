@@ -66,7 +66,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
         />
       ),
       dataIndex: 'exchangeDirection',
-      sorter: true,
+      sorter: false,
       search: false,
     },
     {

@@ -173,7 +173,9 @@ export async function getContactTablePgroongaSearch(
             key: i.id,
             id: i.id,
             shortName: getLangText(
-              i.json?.contactDataSet?.contactInformation?.dataSetInformation?.['common:shortName'] ?? {},
+              i.json?.contactDataSet?.contactInformation?.dataSetInformation?.[
+                'common:shortName'
+              ] ?? {},
               lang,
             ),
             name: getLangText(
@@ -181,9 +183,8 @@ export async function getContactTablePgroongaSearch(
               lang,
             ),
             classification: classificationToString(
-              i.json?.contactDataSet?.contactInformation?.dataSetInformation?.classificationInformation?.[
-              'common:classification'
-              ]?.['common:class'] ?? {},
+              i.json?.contactDataSet?.contactInformation?.dataSetInformation
+                ?.classificationInformation?.['common:classification']?.['common:class'] ?? {},
             ),
             email: i.json?.contactDataSet?.contactInformation?.dataSetInformation?.email ?? '-',
             createdAt: new Date(i.created_at),
@@ -200,7 +201,6 @@ export async function getContactTablePgroongaSearch(
       total: totalCount ?? 0,
     });
   }
-
   return result;
 }
 
