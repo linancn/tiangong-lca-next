@@ -165,22 +165,46 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
   ];
 
   const tabList = [
-    { key: 'unitGroupInformation', tab: 'UnitGroup Information' },
-    { key: 'modellingAndValidation', tab: 'Modelling And Validation' },
-    { key: 'administrativeInformation', tab: 'Administrative Information' },
-    { key: 'units', tab: 'Units' },
+    { key: 'unitGroupInformation',
+       tab: (
+        <FormattedMessage
+          id="pages.unitgroup.creat.unitGroupInformation"
+          defaultMessage="UnitGroup Information"
+        />
+      ),},
+    { key: 'modellingAndValidation',
+       tab:  (
+        <FormattedMessage
+          id="pages.unitgroup.creat.modellingAndValidation"
+          defaultMessage="Modelling And Validation"
+        />
+      ),  },
+    { key: 'administrativeInformation',
+       tab: (
+        <FormattedMessage
+          id="pages.unitgroup.creat.administrativeInformation"
+          defaultMessage="Administrative Information"
+        />
+      ),   },
+    { key: 'units',
+       tab: (
+        <FormattedMessage
+          id="pages.unitgroup.creat.units"
+          defaultMessage="Units"
+        />
+      ),  },
   ];
 
   const contentList: Record<string, React.ReactNode> = {
     unitGroupInformation: (
       <Space direction="vertical" style={{ width: '100%' }}>
-        <Card size="small" title={'Name'}>
+        <Card size="small" title={<FormattedMessage id="pages.unitgroup.creat.unitGroupInformation.name" defaultMessage="Name" />}>
           <LangTextItemFrom
             name={['unitGroupInformation', 'dataSetInformation', 'common:name']}
-            label="Name"
+            label={<FormattedMessage id="pages.unitgroup.creat.unitGroupInformation.name" defaultMessage="Name" />}
           />
         </Card>
-        <Card size="small" title={'Classification'}>
+        <Card size="small" title={<FormattedMessage id="pages.unitgroup.creat.unitGroupInformation.classification" defaultMessage="Classification" />}>
           <LevelTextItemFrom
             name={[
               'unitGroupInformation',
@@ -205,13 +229,13 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
             'compliance',
             'common:referenceToComplianceSystem',
           ]}
-          label={'Reference To Compliance System'}
+          label={<FormattedMessage id="pages.unitgroup.creat.modellingAndValidation.referenceToComplianceSystem" defaultMessage="Reference To Compliance System" />}
           lang={lang}
           formRef={formRefCreate}
           onData={handletFromData}
         />
         <Form.Item
-          label="Approval Of Overall Compliance"
+          label={<FormattedMessage id="pages.unitgroup.creat.modellingAndValidation.approvalOfOverallCompliance" defaultMessage="Approval Of Overall Compliance" />}
           name={[
             'modellingAndValidation',
             'complianceDeclarations',
@@ -226,7 +250,7 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
     administrativeInformation: (
       <Space direction="vertical" style={{ width: '100%' }}>
         <Form.Item
-          label="TimeStamp"
+          label={<FormattedMessage id="pages.unitgroup.creat.administrativeInformation.timeStamp" defaultMessage="TimeStamp" />}
           name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
         >
           <Input />
@@ -234,13 +258,13 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
         </Form.Item>
         <SourceSelectFrom
           name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
-          label={'Reference To DataSet Format'}
+          label={<FormattedMessage id="pages.unitgroup.creat.administrativeInformation.referenceToDataSetFormat" defaultMessage="Reference To DataSet Format" />}
           lang={lang}
           formRef={formRefCreate}
           onData={handletFromData}
         />
         <Form.Item
-          label="DataSet Version"
+          label={<FormattedMessage id="pages.unitgroup.creat.administrativeInformation.dataSetVersion" defaultMessage="DataSet Version" />}
           name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
         >
           <Input />

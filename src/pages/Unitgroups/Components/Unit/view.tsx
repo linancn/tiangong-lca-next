@@ -60,24 +60,24 @@ const UnitView: FC<Props> = ({ id, data, buttonType }) => {
       >
         {/* <Spin spinning={spinning}> */}
         <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item key={0} label="Name" labelStyle={{ width: '100px' }}>
+          <Descriptions.Item key={0} label={<FormattedMessage id="pages.unitgroup.name" defaultMessage="Name" />} labelStyle={{ width: '100px' }}>
             {viewData.name ?? '-'}
           </Descriptions.Item>
         </Descriptions>
         <br />
         <Divider orientationMargin="0" orientation="left" plain>
-          General Comment
+        <FormattedMessage id="pages.unitgroup.generalComment" defaultMessage="General Comment" />
         </Divider>
         <LangTextItemDescription data={viewData.generalComment} />
         <br />
         <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item key={0} label="Mean Value" labelStyle={{ width: '180px' }}>
+          <Descriptions.Item key={0} label={<FormattedMessage id="pages.unitgroup.meanValue" defaultMessage="Mean Value" />} labelStyle={{ width: '180px' }}>
             {viewData.meanValue ?? '-'}
           </Descriptions.Item>
         </Descriptions>
         <br />
         <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item key={0} label="Quantitative Reference" labelStyle={{ width: '180px' }}>
+          <Descriptions.Item key={0} label={<FormattedMessage id="pages.unitgroup.quantitativeReference" defaultMessage="Quantitative Reference" />} labelStyle={{ width: '180px' }}>
             {viewData.quantitativeReference ? (
               <CheckCircleTwoTone twoToneColor="#52c41a" />
             ) : (

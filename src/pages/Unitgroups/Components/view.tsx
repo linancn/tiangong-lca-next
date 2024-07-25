@@ -149,28 +149,52 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
   ];
 
   const tabList = [
-    { key: 'unitGroupInformation', tab: 'UnitGroup Information' },
-    { key: 'modellingAndValidation', tab: 'Modelling And Validation' },
-    { key: 'administrativeInformation', tab: 'Administrative Information' },
-    { key: 'units', tab: 'Units' },
+    { key: 'unitGroupInformation',
+       tab: (
+      <FormattedMessage
+        id="pages.unitgroup.unitGroupInformation"
+        defaultMessage="UnitGroup Information"
+      />
+    ),},
+    { key: 'modellingAndValidation',
+       tab: (
+        <FormattedMessage
+          id="pages.unitgroup.modellingAndValidation"
+          defaultMessage="Modelling And Validation"
+        />
+      ), },
+    { key: 'administrativeInformation',
+       tab: (
+        <FormattedMessage
+          id="pages.unitgroup.administrativeInformation"
+          defaultMessage="Administrative Information"
+        />
+      ), },
+    { key: 'units',
+       tab: (
+        <FormattedMessage
+          id="pages.unitgroup.units"
+          defaultMessage="Units"
+        />
+      ), },
   ];
 
   const contentList: Record<string, React.ReactNode> = {
     unitGroupInformation: (
       <>
         <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item key={0} label="ID" labelStyle={{ width: '100px' }}>
+          <Descriptions.Item key={0} label={<FormattedMessage id="pages.unitgroup.id" defaultMessage="ID" />}labelStyle={{ width: '100px' }}>
             {initData.unitGroupInformation?.dataSetInformation?.['common:UUID'] ?? '-'}
           </Descriptions.Item>
         </Descriptions>
         <Divider orientationMargin="0" orientation="left" plain>
-          Name
+        <FormattedMessage id="pages.unitgroup.name" defaultMessage="name" />
         </Divider>
         <LangTextItemDescription
           data={initData.unitGroupInformation?.dataSetInformation?.['common:name'] ?? {}}
         />
         <Divider orientationMargin="0" orientation="left" plain>
-          Classification
+        <FormattedMessage id="pages.unitgroup.classification" defaultMessage="Classification" /> 
         </Divider>
         <LevelTextItemDescription
           data={
@@ -184,7 +208,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
     modellingAndValidation: (
       <>
         <SourceSelectDescription
-          title="Reference To Compliance System"
+          title={<FormattedMessage id="pages.unitgroup.referenceToComplianceSystem" defaultMessage="Reference To Compliance System" />}
           data={
             initData.modellingAndValidation?.complianceDeclarations?.compliance?.[
               'common:referenceToComplianceSystem'
@@ -196,7 +220,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
             key={0}
-            label="Approval Of Overall Compliance"
+            label={<FormattedMessage id="pages.unitgroup.approvalOfOverallCompliance" defaultMessage="Approval Of Overall Compliance" />}
             labelStyle={{ width: '240px' }}
           >
             {initData.modellingAndValidation?.complianceDeclarations?.compliance?.[
@@ -209,13 +233,13 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
     administrativeInformation: (
       <>
         <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item key={0} label="TimeStamp" labelStyle={{ width: '140px' }}>
+          <Descriptions.Item key={0} label={<FormattedMessage id="pages.unitgroup.timeStamp" defaultMessage="TimeStamp" />} labelStyle={{ width: '140px' }}>
             {initData.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-'}
           </Descriptions.Item>
         </Descriptions>
         <br />
         <SourceSelectDescription
-          title="Reference To DataSet Format"
+          title={<FormattedMessage id="pages.unitgroup.referenceToDataSetFormat" defaultMessage="Reference To DataSet Format" />}
           data={
             initData.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat'] ??
             {}
@@ -224,7 +248,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
         />
         <br />
         <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item key={0} label="DataSet Version" labelStyle={{ width: '140px' }}>
+          <Descriptions.Item key={0} label={<FormattedMessage id="pages.unitgroup.dataSetVersion" defaultMessage="DataSet Version" />} labelStyle={{ width: '140px' }}>
             {initData.administrativeInformation?.publicationAndOwnership?.[
               'common:dataSetVersion'
             ] ?? '-'}
