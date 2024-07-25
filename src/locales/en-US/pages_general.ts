@@ -1,6 +1,8 @@
 export default {
   'pages.table.title.index': 'Index',
   'pages.table.title.name': 'Name',
+  'pages.table.title.description': 'Description',
+  'pages.table.title.generalComment': 'General Comment',
   'pages.table.title.classification': 'Classification',
   'pages.table.title.createdAt': 'Created At',
   'pages.table.title.option': 'Option',
@@ -18,11 +20,14 @@ export default {
   'page.button.export': 'Export',
   'pages.button.clear': 'Clear',
   'pages.button.model': 'Model',
-  'pages.button.add': 'Add',
+  'pages.button.add': 'Add Node',
+  'pages.button.info': 'Basic Information',
+  'pages.button.save': 'Save Data',
 
   'pages.tab.title.mydata': 'My Data',
   'pages.tab.title.tgdata': 'TianGong Data',
 
+  'pages.search.keyWord': 'Full-text search: Enter one or more keywords.',
   'pages.search.placeholder':
     'AI Search: Describe the data you need in one sentence or a few key words.',
 };

@@ -73,7 +73,7 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <FlowModel buttonType={'icon'} flowId={row.id} lang={lang} />
+              <FlowModel buttonType={'icon'} flowId={row.id} lang={lang} dataSource={dataSource} />
               <FlowsView buttonType={'icon'} id={row.id} lang={lang} />
               <FlowsEdit id={row.id} lang={lang} buttonType={'icon'} actionRef={actionRef} />
               <FlowsDelete

@@ -2,6 +2,8 @@ export default {
   'pages.table.title.index': '序号',
   'pages.table.title.name': '名称',
   'pages.table.title.classification': '分类',
+  'pages.table.title.description': '描述',
+  'pages.table.title.generalComment': '说明',
   'pages.table.title.createdAt': '创建时间',
   'pages.table.title.option': '操作',
 
@@ -18,10 +20,13 @@ export default {
   'pages.button.export': '导出',
   'pages.button.clear': '清空',
   'pages.button.model': '模型',
-  'pages.button.add': '添加',
+  'pages.button.add': '添加节点',
+  'pages.button.info': '基础信息',
+  'pages.button.save': '提交保存',
 
   'pages.tab.title.mydata': '我的数据',
   'pages.tab.title.tgdata': '天工数据',
 
+  'pages.search.keyWord': '全文检索：请输入一个或多个关键词。',
   'pages.search.placeholder': '智能查询：用一句话或几个关键词描述您所需要的数据。',
 };

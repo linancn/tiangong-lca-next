@@ -11,6 +11,16 @@ export async function hybrid_search() {
   return data;
 }
 
+export async function pgroonga_search() {
+  const { data } = await supabase.rpc('pgroonga_search_processes', {
+    filter_condition: {},
+    query_text: '废钢',
+    pageSize: 10,
+    pageCurrent: 1,
+  });
+  return data;
+}
+
 export async function returnUserEdgeFunction() {
   const session = await supabase.auth.getSession();
   const { data } = await supabase.functions.invoke('return_user', {
