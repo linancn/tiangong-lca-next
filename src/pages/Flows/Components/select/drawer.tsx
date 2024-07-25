@@ -1,4 +1,4 @@
-import { flow_hybrid_search, getFlowTable } from '@/services/flows/api';
+import { flow_hybrid_search, getFlowTableAll } from '@/services/flows/api';
 import { FlowTable } from '@/services/flows/data';
 import { ListPagination } from '@/services/general/data';
 import styles from '@/style/custom.less';
@@ -204,7 +204,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
           },
           sort,
         ) => {
-          return getFlowTable(params, sort, lang, 'my');
+          return getFlowTableAll(params, sort, lang, 'my');
         }}
         columns={FlowsColumns}
         rowSelection={{
