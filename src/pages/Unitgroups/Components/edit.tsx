@@ -74,34 +74,37 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
   };
 
   const tabList = [
-    { key: 'unitGroupInformation',
-       tab: (
+    {
+      key: 'unitGroupInformation',
+      tab: (
         <FormattedMessage
           id="pages.unitgroup.edit.unitGroupInformation"
           defaultMessage="UnitGroup Information"
         />
-      ), },
-    { key: 'modellingAndValidation',
-       tab:  (
+      ),
+    },
+    {
+      key: 'modellingAndValidation',
+      tab: (
         <FormattedMessage
           id="pages.unitgroup.edit.modellingAndValidation"
           defaultMessage="Modelling And Validation"
         />
-      ),  },
-    { key: 'administrativeInformation',
-       tab: (
+      ),
+    },
+    {
+      key: 'administrativeInformation',
+      tab: (
         <FormattedMessage
           id="pages.unitgroup.edit.administrativeInformation"
           defaultMessage="Administrative Information"
         />
-      ),   },
-    { key: 'units',
-       tab:(
-        <FormattedMessage
-          id="pages.unitgroup.edit.units"
-          defaultMessage="Units"
-        />
-      ),    },
+      ),
+    },
+    {
+      key: 'units',
+      tab: <FormattedMessage id="pages.unitgroup.edit.units" defaultMessage="Units" />,
+    },
   ];
 
   const unitColumns: ProColumns<UnitTable>[] = [
@@ -196,13 +199,34 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
   const contentList: Record<string, React.ReactNode> = {
     unitGroupInformation: (
       <Space direction="vertical" style={{ width: '100%' }}>
-        <Card size="small" title={<FormattedMessage id="pages.unitgroup.edit.unitGroupInformation.name" defaultMessage="Name" />}>
+        <Card
+          size="small"
+          title={
+            <FormattedMessage
+              id="pages.unitgroup.edit.unitGroupInformation.name"
+              defaultMessage="Name"
+            />
+          }
+        >
           <LangTextItemFrom
             name={['unitGroupInformation', 'dataSetInformation', 'common:name']}
-            label={<FormattedMessage id="pages.unitgroup.edit.unitGroupInformation.name" defaultMessage="Name" />}
+            label={
+              <FormattedMessage
+                id="pages.unitgroup.edit.unitGroupInformation.name"
+                defaultMessage="Name"
+              />
+            }
           ></LangTextItemFrom>
         </Card>
-        <Card size="small" title={<FormattedMessage id="pages.unitgroup.edit.unitGroupInformation.classification" defaultMessage="Classification" />}>
+        <Card
+          size="small"
+          title={
+            <FormattedMessage
+              id="pages.unitgroup.edit.unitGroupInformation.classification"
+              defaultMessage="Classification"
+            />
+          }
+        >
           <LevelTextItemFrom
             name={[
               'unitGroupInformation',
@@ -217,7 +241,7 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
           />
         </Card>
         <Form.Item
-          label="ID"//这是翻译哪一个
+          label="ID" //这是翻译哪一个
           name={['unitGroupInformation', 'dataSetInformation', 'common:UUID']}
           hidden
         >
@@ -234,13 +258,23 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
             'compliance',
             'common:referenceToComplianceSystem',
           ]}
-          label={<FormattedMessage id="pages.unitgroup.edit.modellingAndValidation.referenceToComplianceSystem" defaultMessage="Reference To Compliance System" />}
+          label={
+            <FormattedMessage
+              id="pages.unitgroup.edit.modellingAndValidation.referenceToComplianceSystem"
+              defaultMessage="Reference To Compliance System"
+            />
+          }
           lang={lang}
           formRef={formRefEdit}
           onData={handletFromData}
         />
         <Form.Item
-          label={<FormattedMessage id="pages.unitgroup.edit.modellingAndValidation.approvalOfOverallCompliance" defaultMessage="Approval Of Overall Compliance" />}
+          label={
+            <FormattedMessage
+              id="pages.unitgroup.edit.modellingAndValidation.approvalOfOverallCompliance"
+              defaultMessage="Approval Of Overall Compliance"
+            />
+          }
           name={[
             'modellingAndValidation',
             'complianceDeclarations',
@@ -255,7 +289,12 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
     administrativeInformation: (
       <Space direction="vertical" style={{ width: '100%' }}>
         <Form.Item
-          label={<FormattedMessage id="pages.unitgroup.edit.administrativeInformation.timeStamp" defaultMessage="TimeStamp" />}
+          label={
+            <FormattedMessage
+              id="pages.unitgroup.edit.administrativeInformation.timeStamp"
+              defaultMessage="TimeStamp"
+            />
+          }
           name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
         >
           {/* <DatePicker showTime></DatePicker> */}
@@ -263,13 +302,23 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
         </Form.Item>
         <SourceSelectFrom
           name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
-          label={<FormattedMessage id="pages.unitgroup.edit.administrativeInformation.referenceToDataSetFormat" defaultMessage="Reference To DataSet Format" />}
+          label={
+            <FormattedMessage
+              id="pages.unitgroup.edit.administrativeInformation.referenceToDataSetFormat"
+              defaultMessage="Reference To DataSet Format"
+            />
+          }
           lang={lang}
           formRef={formRefEdit}
           onData={handletFromData}
         />
         <Form.Item
-          label={<FormattedMessage id="pages.unitgroup.edit.administrativeInformation.dataSetVersion" defaultMessage="DataSet Version" />}
+          label={
+            <FormattedMessage
+              id="pages.unitgroup.edit.administrativeInformation.dataSetVersion"
+              defaultMessage="DataSet Version"
+            />
+          }
           name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
         >
           <Input />

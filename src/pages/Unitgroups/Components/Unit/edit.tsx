@@ -132,16 +132,48 @@ const UnitEdit: FC<Props> = ({ id, data, buttonType, actionRef, setViewDrawerVis
             <Form.Item name={'@dataSetInternalID'} hidden>
               <Input />
             </Form.Item>
-            <Form.Item label={<FormattedMessage id="pages.unitgroup.edit.name" defaultMessage="Name" />} name={'name'}>
+            <Form.Item
+              label={<FormattedMessage id="pages.unitgroup.edit.name" defaultMessage="Name" />}
+              name={'name'}
+            >
               <Input />
             </Form.Item>
-            <Card size="small" title={<FormattedMessage id="pages.unitgroup.edit.generalComment" defaultMessage="General Comment" />}>
-              <LangTextItemFrom name={'generalComment'} label={<FormattedMessage id="pages.unitgroup.edit.generalComment" defaultMessage="General Comment" />} />
+            <Card
+              size="small"
+              title={
+                <FormattedMessage
+                  id="pages.unitgroup.edit.generalComment"
+                  defaultMessage="General Comment"
+                />
+              }
+            >
+              <LangTextItemFrom
+                name={'generalComment'}
+                label={
+                  <FormattedMessage
+                    id="pages.unitgroup.edit.generalComment"
+                    defaultMessage="General Comment"
+                  />
+                }
+              />
             </Card>
-            <Form.Item label={<FormattedMessage id="pages.unitgroup.edit.meanValue" defaultMessage="Mean Value" />} name={'meanValue'}>
+            <Form.Item
+              label={
+                <FormattedMessage id="pages.unitgroup.edit.meanValue" defaultMessage="Mean Value" />
+              }
+              name={'meanValue'}
+            >
               <Input />
             </Form.Item>
-            <Form.Item label={<FormattedMessage id="pages.unitgroup.edit.quantitativeReference" defaultMessage="Quantitative Reference" />} name={'quantitativeReference'}>
+            <Form.Item
+              label={
+                <FormattedMessage
+                  id="pages.unitgroup.edit.quantitativeReference"
+                  defaultMessage="Quantitative Reference"
+                />
+              }
+              name={'quantitativeReference'}
+            >
               <Switch></Switch>
             </Form.Item>
           </Space>
