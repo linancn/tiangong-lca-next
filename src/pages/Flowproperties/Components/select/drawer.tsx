@@ -1,4 +1,4 @@
-import { getFlowpropertyTable } from '@/services/flowproperties/api';
+import { getFlowpropertyTableAll } from '@/services/flowproperties/api';
 import { FlowpropertyTable } from '@/services/flowproperties/data';
 import { ListPagination } from '@/services/general/data';
 import styles from '@/style/custom.less';
@@ -148,7 +148,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
           },
           sort,
         ) => {
-          return getFlowpropertyTable(params, sort, lang, 'tg');
+          return getFlowpropertyTableAll(params, sort, lang, 'tg');
         }}
         columns={FlowpropertyColumns}
         rowSelection={{
@@ -179,7 +179,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
           },
           sort,
         ) => {
-          return getFlowpropertyTable(params, sort, lang, 'my');
+          return getFlowpropertyTableAll(params, sort, lang, 'my');
         }}
         columns={FlowpropertyColumns}
         rowSelection={{

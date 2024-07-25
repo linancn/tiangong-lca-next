@@ -1,20 +1,25 @@
-import { getFlowpropertyTable } from '@/services/flowproperties/api';
+import { getFlowpropertyTableAll, getFlowpropertyTablePgroongaSearch } from '@/services/flowproperties/api';
 import { FlowpropertyTable } from '@/services/flowproperties/data';
 import { ListPagination } from '@/services/general/data';
 import { getLang } from '@/services/general/util';
 import { PageContainer } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
-import { Space, Tooltip } from 'antd';
+import { Card, Input, Space, Tooltip } from 'antd';
+import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 import FlowpropertiesCreate from './Components/create';
 import FlowpropertiesDelete from './Components/delete';
 import FlowpropertiesEdit from './Components/edit';
 import FlowpropertyView from './Components/view';
 
+const { Search } = Input;
+
 const TableList: FC = () => {
+  const [keyWord, setKeyWord] = useState<any>('');
+
   const location = useLocation();
   let dataSource = '';
   if (location.pathname.includes('/mydata')) {
@@ -22,8 +27,10 @@ const TableList: FC = () => {
   } else if (location.pathname.includes('/tgdata')) {
     dataSource = 'tg';
   }
-  const { locale } = useIntl();
-  const lang = getLang(locale);
+
+  const intl = useIntl();
+
+  const lang = getLang(intl.locale);
   const actionRef = useRef<ActionType>();
   const flowpropertiesColumns: ProColumns<FlowpropertyTable>[] = [
     {
@@ -87,7 +94,7 @@ const TableList: FC = () => {
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
+                setViewDrawerVisible={() => { }}
               />
             </Space>,
           ];
@@ -100,13 +107,26 @@ const TableList: FC = () => {
       },
     },
   ];
+
+  const onSearch: SearchProps['onSearch'] = async (value) => {
+    await setKeyWord(value);
+    actionRef.current?.setPageInfo?.({ current: 1 });
+    actionRef.current?.reload();
+  };
+
   return (
     <PageContainer>
+      <Card>
+        <Search
+          size={'large'}
+          placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+          onSearch={onSearch}
+          enterButton
+        />
+      </Card>
       <ProTable<FlowpropertyTable, ListPagination>
         actionRef={actionRef}
-        search={{
-          defaultCollapsed: false,
-        }}
+        search={false}
         pagination={{
           showSizeChanger: false,
           pageSize: 10,
@@ -124,7 +144,10 @@ const TableList: FC = () => {
           },
           sort,
         ) => {
-          return getFlowpropertyTable(params, sort, lang, dataSource);
+          if (keyWord.length > 0) {
+            return getFlowpropertyTablePgroongaSearch(params, lang, dataSource, keyWord, {});
+          }
+          return getFlowpropertyTableAll(params, sort, lang, dataSource);
         }}
         columns={flowpropertiesColumns}
       />
