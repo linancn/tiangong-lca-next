@@ -24,8 +24,24 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
   const [initData, setInitData] = useState<any>({});
 
   const tabList = [
-    { key: 'sourceInformation', tab: 'Source Information' },
-    { key: 'administrativeInformation', tab: 'Administrative Information' },
+    {
+      key: 'sourceInformation',
+      tab: (
+        <FormattedMessage
+          id="pages.source.view.sourceInformation"
+          defaultMessage="Source Information"
+        />
+      ),
+    },
+    {
+      key: 'administrativeInformation',
+      tab: (
+        <FormattedMessage
+          id="pages.source.view.administrativeInformation"
+          defaultMessage="Administrative Information"
+        />
+      ),
+    },
   ];
 
   const onTabChange = (key: string) => {
@@ -36,19 +52,31 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
     sourceInformation: (
       <>
         <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item key={0} label="ID" labelStyle={{ width: '100px' }}>
+          <Descriptions.Item
+            key={0}
+            label={
+              <FormattedMessage id="pages.source.view.sourceInformation.id" defaultMessage="ID" />
+            }
+            labelStyle={{ width: '100px' }}
+          >
             {initData.sourceInformation?.dataSetInformation?.['common:UUID'] ?? '-'}
           </Descriptions.Item>
         </Descriptions>
 
         <Divider orientationMargin="0" orientation="left" plain>
-          Short Name
+          <FormattedMessage
+            id="pages.source.view.sourceInformation.shortName"
+            defaultMessage="Short Name"
+          />
         </Divider>
         <LangTextItemDescription
           data={initData.sourceInformation?.dataSetInformation?.['common:shortName']}
         />
         <Divider orientationMargin="0" orientation="left" plain>
-          Classification
+          <FormattedMessage
+            id="pages.source.view.sourceInformation.classification"
+            defaultMessage="Classification"
+          />
         </Divider>
         <LevelTextItemDescription
           data={
@@ -59,19 +87,40 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
         />
         <br />
         <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item key={0} label="Source Citation" labelStyle={{ width: '180px' }}>
+          <Descriptions.Item
+            key={0}
+            label={
+              <FormattedMessage
+                id="pages.source.view.sourceInformation.sourceCitation"
+                defaultMessage="Source Citation"
+              />
+            }
+            labelStyle={{ width: '180px' }}
+          >
             {initData.sourceInformation?.dataSetInformation?.sourceCitation ?? '-'}
           </Descriptions.Item>
         </Descriptions>
         <br />
         <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item key={0} label="Publication Type" labelStyle={{ width: '180px' }}>
+          <Descriptions.Item
+            key={0}
+            label={
+              <FormattedMessage
+                id="pages.source.view.sourceInformation.publicationType"
+                defaultMessage="Publication Type"
+              />
+            }
+            labelStyle={{ width: '180px' }}
+          >
             {initData.sourceInformation?.dataSetInformation?.publicationType ?? '-'}
           </Descriptions.Item>
         </Descriptions>
         <br />
         <Divider orientationMargin="0" orientation="left" plain>
-          Source Description Or Comment
+          <FormattedMessage
+            id="pages.source.view.sourceInformation.sourceDescriptionOrComment"
+            defaultMessage="Source Description Or Comment"
+          />
         </Divider>
         <LangTextItemDescription
           data={initData.sourceInformation?.dataSetInformation?.sourceDescriptionOrComment}
@@ -80,7 +129,12 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
             key={0}
-            label="Reference To Digital File"
+            label={
+              <FormattedMessage
+                id="pages.source.view.sourceInformation.referenceToDigitalFile"
+                defaultMessage="Reference To Digital File"
+              />
+            }
             labelStyle={{ width: '220px' }}
           >
             {initData.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri'] ??
@@ -89,7 +143,12 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
         </Descriptions>
         <br />
         <ContactSelectDescription
-          title={'Reference To Contact'}
+          title={
+            <FormattedMessage
+              id="pages.source.view.sourceInformation.referenceToContact"
+              defaultMessage="Reference To Contact"
+            />
+          }
           lang={lang}
           data={initData.sourceInformation?.dataSetInformation?.referenceToContact}
         />
@@ -97,11 +156,24 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
     ),
     administrativeInformation: (
       <>
-        <Card size="small" title={'Data Entry By'}>
+        <Card
+          size="small"
+          title={
+            <FormattedMessage
+              id="pages.source.view.administrativeInformation.dataEntryBy"
+              defaultMessage="Data Entry By"
+            />
+          }
+        >
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item
               key={0}
-              label="Data Entry By: Time Stamp"
+              label={
+                <FormattedMessage
+                  id="pages.source.view.administrativeInformation.dataEntryBy:TimeStamp"
+                  defaultMessage="Data Entry By: Time Stamp"
+                />
+              }
               labelStyle={{ width: '220px' }}
             >
               {initData.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-'}
@@ -109,7 +181,12 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
           </Descriptions>
           <br />
           <SourceSelectDescription
-            title={'Reference To Data Set Format'}
+            title={
+              <FormattedMessage
+                id="pages.source.view.administrativeInformation.referenceToDataSetFormat"
+                defaultMessage="Reference To Data Set Format"
+              />
+            }
             lang={lang}
             data={
               initData.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']
@@ -117,9 +194,26 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
           />
         </Card>
         <br />
-        <Card size="small" title={'Publication And Ownership'}>
+        <Card
+          size="small"
+          title={
+            <FormattedMessage
+              id="pages.source.view.administrativeInformation.publicationAndOwnership"
+              defaultMessage="Publication And Ownership"
+            />
+          }
+        >
           <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item key={0} label="Data Set Version" labelStyle={{ width: '200px' }}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id="pages.source.view.administrativeInformation.dataSetVersion"
+                  defaultMessage="Data Set Version"
+                />
+              }
+              labelStyle={{ width: '200px' }}
+            >
               {initData.administrativeInformation?.publicationAndOwnership?.[
                 'common:dataSetVersion'
               ] ?? '-'}
@@ -129,7 +223,12 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item
               key={0}
-              label="Permanent Data Set URI"
+              label={
+                <FormattedMessage
+                  id="pages.source.view.administrativeInformation.permanentDataSetURI"
+                  defaultMessage="Permanent Data Set URI"
+                />
+              }
               labelStyle={{ width: '200px' }}
             >
               {initData.administrativeInformation?.publicationAndOwnership?.[
