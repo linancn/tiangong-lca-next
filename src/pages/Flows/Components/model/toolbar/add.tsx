@@ -83,7 +83,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
       title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At" />,
       dataIndex: 'createdAt',
       valueType: 'dateTime',
-      sorter: true,
+      sorter: false,
       search: false,
     },
     {

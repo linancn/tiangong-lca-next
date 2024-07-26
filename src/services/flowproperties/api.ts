@@ -49,7 +49,7 @@ export async function deleteFlowproperties(id: string) {
   return result;
 }
 
-export async function getFlowpropertyTable(
+export async function getFlowpropertyTableAll(
   params: {
     current?: number;
     pageSize?: number;
@@ -136,6 +136,85 @@ export async function getFlowpropertyTable(
     data: [],
     success: false,
   });
+}
+
+export async function getFlowpropertyTablePgroongaSearch(
+  params: {
+    current?: number;
+    pageSize?: number;
+  },
+  // sort: Record<string, SortOrder>,
+  lang: string,
+  dataSource: string,
+  queryText: string,
+  filterCondition: any,
+) {
+  let result: any = {};
+  const session = await supabase.auth.getSession();
+  if (session.data.session) {
+    result = await supabase.rpc('pgroonga_search_flowproperties', {
+      query_text: queryText,
+      filter_condition: filterCondition,
+      page_size: params.pageSize ?? 10,
+      page_current: params.current ?? 1,
+      data_source: dataSource,
+      this_user_id: session.data.session.user?.id,
+    });
+  }
+  if (result.error) {
+    console.log('error', result.error);
+  }
+  if (result.data) {
+    if (result.data.length === 0) {
+      return Promise.resolve({
+        data: [],
+        success: true,
+      });
+    }
+    const totalCount = result.data[0].total_count;
+    return Promise.resolve({
+      data: result.data.map((i: any) => {
+        try {
+          return {
+            key: i.id,
+            id: i.id,
+            name: getLangText(
+              i.json?.flowPropertyDataSet?.flowPropertiesInformation?.dataSetInformation?.[
+                'common:name'
+              ] ?? {},
+              lang,
+            ),
+            classification: classificationToString(
+              i.json?.flowPropertyDataSet?.flowPropertiesInformation?.dataSetInformation
+                ?.classificationInformation?.['common:classification']?.['common:class'] ?? {},
+            ),
+            generalComment: getLangText(
+              i.json?.flowPropertyDataSet?.flowPropertiesInformation?.dataSetInformation?.[
+                'common:generalComment'
+              ] ?? {},
+              lang,
+            ),
+            referenceToReferenceUnitGroup: getLangText(
+              i.json?.flowPropertyDataSet?.flowPropertiesInformation?.quantitativeReference
+                ?.referenceToReferenceUnitGroup?.['common:shortDescription'] ?? {},
+              lang,
+            ),
+            created_at: new Date(i.created_at),
+          };
+        } catch (e) {
+          console.error(e);
+          return {
+            id: i.id,
+          };
+        }
+      }),
+      page: params.current ?? 1,
+      success: true,
+      total: totalCount ?? 0,
+    });
+  }
+
+  return result;
 }
 
 export async function getFlowpropertyDetail(id: string) {

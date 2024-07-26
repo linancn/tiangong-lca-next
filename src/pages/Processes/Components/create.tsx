@@ -89,7 +89,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
         />
       ),
       dataIndex: 'exchangeDirection',
-      sorter: true,
+      sorter: false,
       search: false,
     },
     {

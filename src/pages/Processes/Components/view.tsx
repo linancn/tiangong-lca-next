@@ -36,10 +36,37 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
   const actionRefExchangeTable = useRef<ActionType>();
 
   const tabList = [
-    { key: 'processInformation', tab: 'Process Information' },
-    { key: 'modellingAndValidation', tab: 'Modelling And Validation' },
-    { key: 'administrativeInformation', tab: 'Administrative Information' },
-    { key: 'exchanges', tab: 'Exchanges' },
+    {
+      key: 'processInformation',
+      tab: (
+        <FormattedMessage
+          id="pages.process.view.processInformation"
+          defaultMessage="Process Information"
+        />
+      ),
+    },
+    {
+      key: 'modellingAndValidation',
+      tab: (
+        <FormattedMessage
+          id="pages.process.view.modellingAndValidation"
+          defaultMessage="Modelling And Validation"
+        />
+      ),
+    },
+    {
+      key: 'administrativeInformation',
+      tab: (
+        <FormattedMessage
+          id="pages.process.view.administrativeInformation"
+          defaultMessage="Administrative Information"
+        />
+      ),
+    },
+    {
+      key: 'exchanges',
+      tab: <FormattedMessage id="pages.process.view.exchanges" defaultMessage="Exchanges" />,
+    },
   ];
 
   const onTabChange = (key: string) => {
@@ -66,7 +93,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
         />
       ),
       dataIndex: 'exchangeDirection',
-      sorter: true,
+      sorter: false,
       search: false,
     },
     {
@@ -183,27 +210,44 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
     processInformation: (
       <>
         <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item key={0} label="ID" labelStyle={{ width: '100px' }}>
+          <Descriptions.Item
+            key={0}
+            label={
+              <FormattedMessage id="pages.process.view.processInformation.id" defaultMessage="ID" />
+            }
+            labelStyle={{ width: '100px' }}
+          >
             {initData.processInformation?.dataSetInformation?.['common:UUID'] ?? '-'}
           </Descriptions.Item>
         </Descriptions>
 
         <Divider orientationMargin="0" orientation="left" plain>
-          Base Name
+          {
+            <FormattedMessage
+              id="pages.process.view.processInformation.baseName"
+              defaultMessage="Base Name"
+            />
+          }
         </Divider>
         <LangTextItemDescription
           data={initData.processInformation?.dataSetInformation?.name?.baseName}
         />
 
         <Divider orientationMargin="0" orientation="left" plain>
-          General Comment
+          <FormattedMessage
+            id="pages.process.view.processInformation.generalComment"
+            defaultMessage="General Comment"
+          />
         </Divider>
         <LangTextItemDescription
           data={initData.processInformation?.dataSetInformation?.['common:generalComment']}
         />
 
         <Divider orientationMargin="0" orientation="left" plain>
-          Classification
+          <FormattedMessage
+            id="pages.process.view.processInformation.classification"
+            defaultMessage="Classification"
+          />
         </Divider>
         <LevelTextItemDescription
           data={
@@ -237,30 +281,70 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
           />
         </Card>
         <br /> */}
-        <Card size="small" title={'Time'}>
+        <Card
+          size="small"
+          title={
+            <FormattedMessage
+              id="pages.process.view.processInformation.time"
+              defaultMessage="Time"
+            />
+          }
+        >
           <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item key={0} label="Reference Year" labelStyle={{ width: '140px' }}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id="pages.process.view.processInformation.referenceYear"
+                  defaultMessage="Reference Year"
+                />
+              }
+              labelStyle={{ width: '140px' }}
+            >
               {initData.processInformation?.time?.['common:referenceYear'] ?? '-'}
             </Descriptions.Item>
           </Descriptions>
           <Divider orientationMargin="0" orientation="left" plain>
-            Time Representativeness Description
+            <FormattedMessage
+              id="pages.process.view.processInformation.timeRepresentativenessDescription"
+              defaultMessage="Time Representativeness Description"
+            />
           </Divider>
           <LangTextItemDescription
             data={initData.processInformation?.time?.['common:timeRepresentativenessDescription']}
           />
         </Card>
         <br />
-        <Card size="small" title={'Geography: Location Of Operation Supply Or Production'}>
+        <Card
+          size="small"
+          title={
+            <FormattedMessage
+              id="pages.process.view.processInformation.Geography:locationOfOperationSupplyOrProduction"
+              defaultMessage="Geography: Location Of Operation Supply Or Production"
+            />
+          }
+        >
           <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item key={0} label="Location" labelStyle={{ width: '100px' }}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id="pages.process.view.processInformation.location"
+                  defaultMessage="Location"
+                />
+              }
+              labelStyle={{ width: '100px' }}
+            >
               {initData.processInformation?.geography?.locationOfOperationSupplyOrProduction?.[
                 '@location'
               ] ?? '-'}
             </Descriptions.Item>
           </Descriptions>
           <Divider orientationMargin="0" orientation="left" plain>
-            Description Of Restrictions
+            <FormattedMessage
+              id="pages.process.view.processInformation.descriptionOfRestrictions"
+              defaultMessage="Description Of Restrictions"
+            />
           </Divider>
           <LangTextItemDescription
             data={
@@ -270,9 +354,20 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
           />
         </Card>
         <br />
-        <Card size="small" title={'Technology'}>
+        <Card
+          size="small"
+          title={
+            <FormattedMessage
+              id="pages.process.view.processInformation.technology"
+              defaultMessage="Technology"
+            />
+          }
+        >
           <Divider orientationMargin="0" orientation="left" plain>
-            Technology Description And Included Processes
+            <FormattedMessage
+              id="pages.process.view.processInformation.technologyDescriptionAndIncludedProcesses"
+              defaultMessage="Technology Description And Included Processes"
+            />
           </Divider>
           <LangTextItemDescription
             data={
@@ -280,14 +375,22 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
             }
           />
           <Divider orientationMargin="0" orientation="left" plain>
-            Technological Applicability
+            <FormattedMessage
+              id="pages.process.view.processInformation.technologicalApplicability"
+              defaultMessage="Technological Applicability"
+            />
           </Divider>
           <LangTextItemDescription
             data={initData.processInformation?.technology?.technologicalApplicability}
           />
           <br />
           <SourceSelectDescription
-            title={'Reference To Technology Flow Diagramm Or Picture'}
+            title={
+              <FormattedMessage
+                id="pages.process.view.processInformation.referenceToTechnologyFlowDiagrammOrPicture"
+                defaultMessage="Reference To Technology Flow Diagramm Or Picture"
+              />
+            }
             data={
               initData.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture ??
               {}
@@ -296,7 +399,10 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
           />
         </Card>
         <Divider orientationMargin="0" orientation="left" plain>
-          Mathematical Relations: Model Description
+          <FormattedMessage
+            id="pages.process.view.processInformation.mathematicalRelations:ModelDescription"
+            defaultMessage="Mathematical Relations: Model Description"
+          />
         </Divider>
         <LangTextItemDescription
           data={initData.processInformation?.mathematicalRelations?.modelDescription}
@@ -305,20 +411,49 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
     ),
     modellingAndValidation: (
       <>
-        <Card size="small" title={'LCI Method And Allocation'}>
+        <Card
+          size="small"
+          title={
+            <FormattedMessage
+              id="pages.process.view.modellingAndValidation.lCIMethodAndAllocation"
+              defaultMessage="LCI Method And Allocation"
+            />
+          }
+        >
           <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item key={0} label="Type Of Data Set" labelStyle={{ width: '220px' }}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id="pages.process.view.modellingAndValidation.typeOfDataSet"
+                  defaultMessage="Type Of Data Set"
+                />
+              }
+              labelStyle={{ width: '220px' }}
+            >
               {initData.modellingAndValidation?.LCIMethodAndAllocation?.typeOfDataSet ?? '-'}
             </Descriptions.Item>
           </Descriptions>
           <br />
           <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item key={0} label="LCI Method Principle" labelStyle={{ width: '220px' }}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id="pages.process.view.modellingAndValidation.lCIMethodPrinciple"
+                  defaultMessage="LCI Method Principle"
+                />
+              }
+              labelStyle={{ width: '220px' }}
+            >
               {initData.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodPrinciple ?? '-'}
             </Descriptions.Item>
           </Descriptions>
           <Divider orientationMargin="0" orientation="left" plain>
-            Deviations From LCI Method Principle
+            <FormattedMessage
+              id="pages.process.view.modellingAndValidation.deviationsFromLCIMethodPrinciple"
+              defaultMessage="Deviations From LCI Method Principle"
+            />
           </Divider>
           <LangTextItemDescription
             data={
@@ -330,7 +465,12 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item
               key={0}
-              label="LCI Method Approaches"
+              label={
+                <FormattedMessage
+                  id="pages.process.view.modellingAndValidation.lCIMethodApproaches"
+                  defaultMessage="LCI Method Approaches"
+                />
+              }
               labelStyle={{ width: '220px' }}
             >
               {initData.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodApproaches ?? '-'}
@@ -338,7 +478,10 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
           </Descriptions>
 
           <Divider orientationMargin="0" orientation="left" plain>
-            Deviations From LCI Method Approaches
+            <FormattedMessage
+              id="pages.process.view.modellingAndValidation.deviationsFromLCIMethodApproaches"
+              defaultMessage="Deviations From LCI Method Approaches"
+            />
           </Divider>
           <LangTextItemDescription
             data={
@@ -347,7 +490,10 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
             }
           />
           <Divider orientationMargin="0" orientation="left" plain>
-            Deviations From Modelling Constants
+            <FormattedMessage
+              id="pages.process.view.modellingAndValidation.deviationsFromModellingConstants"
+              defaultMessage="Deviations From Modelling Constants"
+            />
           </Divider>
           <LangTextItemDescription
             data={
@@ -357,9 +503,20 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
           />
         </Card>
         <br />
-        <Card size="small" title={'Data Sources Treatment And Representativeness'}>
+        <Card
+          size="small"
+          title={
+            <FormattedMessage
+              id="pages.process.view.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness"
+              defaultMessage="Data Sources Treatment And Representativeness"
+            />
+          }
+        >
           <Divider orientationMargin="0" orientation="left" plain>
-            Deviations From Cut Off And Completeness Principles
+            <FormattedMessage
+              id="pages.process.view.modellingAndValidation.deviationsFromCutOffAndCompletenessPrinciples"
+              defaultMessage="Deviations From Cut Off And Completeness Principles"
+            />
           </Divider>
           <LangTextItemDescription
             data={
@@ -368,7 +525,10 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
             }
           />
           <Divider orientationMargin="0" orientation="left" plain>
-            Data Selection And Combination Principles
+            <FormattedMessage
+              id="pages.process.view.modellingAndValidation.dataSelectionAndCombinationPrinciples"
+              defaultMessage="Data Selection And Combination Principles"
+            />
           </Divider>
           <LangTextItemDescription
             data={
@@ -377,7 +537,10 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
             }
           />
           <Divider orientationMargin="0" orientation="left" plain>
-            Deviations From Selection And Combination Principles
+            <FormattedMessage
+              id="pages.process.view.modellingAndValidation.deviationsFromSelectionAndCombinationPrinciples"
+              defaultMessage="Deviations From Selection And Combination Principles"
+            />
           </Divider>
           <LangTextItemDescription
             data={
@@ -386,7 +549,10 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
             }
           />
           <Divider orientationMargin="0" orientation="left" plain>
-            Data Treatment And Extrapolations Principles
+            <FormattedMessage
+              id="pages.process.view.modellingAndValidation.dataTreatmentAndExtrapolationsPrinciples"
+              defaultMessage="Data Treatment And Extrapolations Principles"
+            />
           </Divider>
           <LangTextItemDescription
             data={
@@ -395,7 +561,10 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
             }
           />
           <Divider orientationMargin="0" orientation="left" plain>
-            Deviations From Treatment And Extrapolation Principles
+            <FormattedMessage
+              id="pages.process.view.modellingAndValidation.deviationsFromTreatmentAndExtrapolationPrinciples"
+              defaultMessage="Deviations From Treatment And Extrapolation Principles"
+            />
           </Divider>
           <LangTextItemDescription
             data={
@@ -405,7 +574,12 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
           />
           <br />
           <SourceSelectDescription
-            title={'Reference To Data Source'}
+            title={
+              <FormattedMessage
+                id="pages.process.view.modellingAndValidation.referenceToDataSource"
+                defaultMessage="Reference To Data Source"
+              />
+            }
             data={
               initData.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
                 ?.referenceToDataSource ?? {}
@@ -414,7 +588,10 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
           />
 
           <Divider orientationMargin="0" orientation="left" plain>
-            Use Advice For DataSet
+            <FormattedMessage
+              id="pages.process.view.modellingAndValidation.useAdviceForDataSet"
+              defaultMessage="Use Advice For DataSet"
+            />
           </Divider>
           <LangTextItemDescription
             data={
@@ -425,28 +602,56 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
         </Card>
         <br />
         <Divider orientationMargin="0" orientation="left" plain>
-          Completeness Other Problem Field
+          <FormattedMessage
+            id="pages.process.view.modellingAndValidation.completenessOtherProblemField"
+            defaultMessage="Completeness Other Problem Field"
+          />
         </Divider>
         <LangTextItemDescription
           data={initData.modellingAndValidation?.completeness?.completenessOtherProblemField}
         />
         <br />
-        <Card size="small" title={'Validation: Review'}>
+        <Card
+          size="small"
+          title={
+            <FormattedMessage
+              id="pages.process.view.modellingAndValidation.validation:Review"
+              defaultMessage="Validation: Review"
+            />
+          }
+        >
           <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item key={0} label="Type" labelStyle={{ width: '100px' }}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id="pages.process.view.modellingAndValidation.type"
+                  defaultMessage="Type"
+                />
+              }
+              labelStyle={{ width: '100px' }}
+            >
               {initData.modellingAndValidation?.validation?.review?.['@type'] ?? '-'}
             </Descriptions.Item>
           </Descriptions>
           <br />
           <Divider orientationMargin="0" orientation="left" plain>
-            Review Details
+            <FormattedMessage
+              id="pages.process.view.modellingAndValidation.reviewDetails"
+              defaultMessage="Review Details"
+            />
           </Divider>
           <LangTextItemDescription
             data={initData.modellingAndValidation?.validation?.review?.['common:reviewDetails']}
           />
           <br />
           <ContactSelectDescription
-            title={'Reference To Name Of Reviewer And Institution'}
+            title={
+              <FormattedMessage
+                id="pages.process.view.modellingAndValidation.referenceToNameOfReviewerAndInstitution"
+                defaultMessage="Reference To Name Of Reviewer And Institution"
+              />
+            }
             lang={lang}
             data={
               initData.modellingAndValidation?.validation?.review?.[
@@ -460,7 +665,12 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
     administrativeInformation: (
       <>
         <ContactSelectDescription
-          title={'Data Generator: Rreference To Person Or Entity Generating The Data Set'}
+          title={
+            <FormattedMessage
+              id="pages.process.view.administrativeInformation.dataGenerator:RreferenceToPersonOrEntityGeneratingTheDataSet"
+              defaultMessage="Data Generator: Rreference To Person Or Entity Generating The Data Set"
+            />
+          }
           lang={lang}
           data={
             initData.administrativeInformation?.dataGenerator?.[
@@ -472,18 +682,36 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
             key={0}
-            label="Data Entry By: Time Stamp"
+            label={
+              <FormattedMessage
+                id="pages.process.view.administrativeInformation.dataEntryBy:TimeStamp"
+                defaultMessage="Data Entry By: Time Stamp"
+              />
+            }
             labelStyle={{ width: '220px' }}
           >
             {initData.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-'}
           </Descriptions.Item>
         </Descriptions>
         <br />
-        <Card size="small" title={'Publication And Ownership'}>
+        <Card
+          size="small"
+          title={
+            <FormattedMessage
+              id="pages.process.view.administrativeInformation.publicationAndOwnership"
+              defaultMessage="Publication And Ownership"
+            />
+          }
+        >
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item
               key={0}
-              label="Date Of Last Revision"
+              label={
+                <FormattedMessage
+                  id="pages.process.view.administrativeInformation.dateOfLastRevision"
+                  defaultMessage="Date Of Last Revision"
+                />
+              }
               labelStyle={{ width: '180px' }}
             >
               {initData.administrativeInformation?.publicationAndOwnership?.[
@@ -493,7 +721,16 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
           </Descriptions>
           <br />
           <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item key={0} label="Data Set Version" labelStyle={{ width: '180px' }}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id="pages.process.view.administrativeInformation.dataSetVersion"
+                  defaultMessage="Data Set Version"
+                />
+              }
+              labelStyle={{ width: '180px' }}
+            >
               {initData.administrativeInformation?.publicationAndOwnership?.[
                 'common:dataSetVersion'
               ] ?? '-'}
@@ -503,7 +740,12 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item
               key={0}
-              label="Permanent Data Set URI"
+              label={
+                <FormattedMessage
+                  id="pages.process.view.administrativeInformation.permanentDataSetURI"
+                  defaultMessage="Permanent Data Set URI"
+                />
+              }
               labelStyle={{ width: '200px' }}
             >
               {initData.administrativeInformation?.publicationAndOwnership?.[
@@ -513,7 +755,12 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
           </Descriptions>
           <br />
           <ContactSelectDescription
-            title={'Reference To Ownership Of Data Set'}
+            title={
+              <FormattedMessage
+                id="pages.process.view.administrativeInformation.referenceToOwnershipOfDataSet"
+                defaultMessage="Reference To Ownership Of Data Set"
+              />
+            }
             lang={lang}
             data={
               initData.administrativeInformation?.publicationAndOwnership?.[
@@ -523,14 +770,32 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
           />
           <br />
           <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item key={0} label="Copyright" labelStyle={{ width: '180px' }}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id="pages.process.view.administrativeInformation.copyright"
+                  defaultMessage="Copyright"
+                />
+              }
+              labelStyle={{ width: '180px' }}
+            >
               {initData.administrativeInformation?.publicationAndOwnership?.['common:copyright'] ??
                 '-'}
             </Descriptions.Item>
           </Descriptions>
           <br />
           <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item key={0} label="License Type" labelStyle={{ width: '180px' }}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id="pages.process.view.administrativeInformation.licenseType"
+                  defaultMessage="License Type"
+                />
+              }
+              labelStyle={{ width: '180px' }}
+            >
               {initData.administrativeInformation?.publicationAndOwnership?.[
                 'common:licenseType'
               ] ?? '-'}
