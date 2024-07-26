@@ -66,7 +66,7 @@ const ProcessExchangeDelete: FC<Props> = ({
               onCancel={handleCancel}
             >
               <FormattedMessage
-                id="pages.button.deleteMessage"
+                id="pages.button.deleteMessage.areyousureyouwanttodeletethisdata"
                 defaultMessage="Are you sure you want to delete this data?"
               />
             </Modal>
@@ -83,7 +83,7 @@ const ProcessExchangeDelete: FC<Props> = ({
               onCancel={handleCancel}
             >
               <FormattedMessage
-                id="pages.button.deleteMessage"
+                id="pages.button.deleteMessage.areyousureyouwanttodeletethisdata"
                 defaultMessage="Are you sure you want to delete this data?"
               />
             </Modal>

@@ -104,7 +104,7 @@ const ProcessExchangeCreate: FC<Props> = ({ lang, onData }) => {
           }}
         >
           <Space direction="vertical" style={{ width: '100%' }}>
-            <Form.Item label="Exchange Direction" name={'exchangeDirection'}>
+            <Form.Item label={<FormattedMessage id="pages.process.view.exchange.exchangeDirection" defaultMessage="Exchange Direction" />} name={'exchangeDirection'}>
               <Select
                 // placeholder="Select a direction"
                 optionFilterProp="direction"
@@ -116,33 +116,33 @@ const ProcessExchangeCreate: FC<Props> = ({ lang, onData }) => {
             </Form.Item>
             <FlowsSelectFrom
               name={['referenceToFlowDataSet']}
-              label="Reference To Flow Data Set"
+              label={<FormattedMessage id="pages.process.view.exchange.referenceToFlowDataSet" defaultMessage="Reference To Flow Data Set" />}
               lang={lang}
               formRef={formRefCreate}
               onData={handletFromData}
             />
-            <Form.Item label="Mean Amount" name={'meanAmount'}>
+            <Form.Item label={<FormattedMessage id="pages.process.view.exchange.meanAmount" defaultMessage="Mean Amount" />} name={'meanAmount'}>
               <Input />
             </Form.Item>
-            <Form.Item label="Resulting Amount" name={'resultingAmount'}>
+            <Form.Item label={<FormattedMessage id="pages.process.view.exchange.resultingAmount" defaultMessage="Resulting Amount" />} name={'resultingAmount'}>
               <Input />
             </Form.Item>
-            <Form.Item label="Data Derivation Type Status" name={'dataDerivationTypeStatus'}>
+            <Form.Item label={<FormattedMessage id="pages.process.view.exchange.dataDerivationTypeStatus" defaultMessage="Data Derivation Type Status" />} name={'dataDerivationTypeStatus'}>
               <Input />
             </Form.Item>
             <Divider orientationMargin="0" orientation="left" plain>
-              General Comment
+            <FormattedMessage id="pages.process.view.exchange.generalComment" defaultMessage="General Comment" /> 
             </Divider>
             <LangTextItemFrom name="generalComment" label="General Comment" />
 
-            <Card size="small" title={'Quantitative Reference'}>
-              <Form.Item label="Reference To Reference Flow" name={'quantitativeReference'}>
+            <Card size="small" title={<FormattedMessage id="pages.process.view.exchange.quantitativeReference" defaultMessage="Quantitative Reference" />}>
+              <Form.Item label={<FormattedMessage id="pages.process.view.exchange.referenceToReferenceFlow" defaultMessage="Reference To Reference Flow" />} name={'quantitativeReference'}>
                 <Switch />
               </Form.Item>
               {functionalUnitOrOther ? (
                 <>
                   <Divider orientationMargin="0" orientation="left" plain>
-                    Functional Unit Or Other
+                  <FormattedMessage id="pages.process.view.exchange.functionalUnitOrOther" defaultMessage="Functional Unit Or Other" />
                   </Divider>
                   <LangTextItemFrom name="functionalUnitOrOther" label="Functional Unit Or Other" />
                 </>
