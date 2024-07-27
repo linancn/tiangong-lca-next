@@ -1,8 +1,9 @@
 import { getLangText } from '@/services/general/util';
 import { getProcessDetail } from '@/services/processes/api';
-import { createProduct } from '@/services/products/api';
+import { createProduct, getProductDetail, updateProduct } from '@/services/products/api';
+import { genProductInfoFromData, genProductModelFromData } from '@/services/products/util';
 import { SaveOutlined } from '@ant-design/icons';
-import { useGraphEvent, useGraphStore } from '@antv/xflow';
+import { useGraphStore } from '@antv/xflow';
 import { Button, message, Space, Spin, Tooltip } from 'antd';
 import { FC, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -13,14 +14,16 @@ import ModelToolbarInfo from './info';
 
 type Props = {
   id: string;
+  flowId: string;
   lang: string;
+  option: string;
   onSpin: (spin: boolean) => void;
 };
 
-const Toolbar: FC<Props> = ({ id, lang }) => {
+const Toolbar: FC<Props> = ({ id, flowId, lang, option }) => {
   const [spinning, setSpinning] = useState(false);
   const [infoData, setInfoData] = useState<any>({});
-  const initData = useGraphStore((state) => state.initData);
+  const modelData = useGraphStore((state) => state.initData);
   const addNodes = useGraphStore((state) => state.addNodes);
   const nodes = useGraphStore((state) => state.nodes);
   const edges = useGraphStore((state) => state.edges);
@@ -48,7 +51,7 @@ const Toolbar: FC<Props> = ({ id, lang }) => {
                 ?.baseName,
             generalComment:
               result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.[
-                'common:generalComment'
+              'common:generalComment'
               ],
           },
         },
@@ -66,27 +69,49 @@ const Toolbar: FC<Props> = ({ id, lang }) => {
         edges: edges ?? [],
       },
     };
-    const result = await createProduct(id, newData);
-    if (result.data) {
+    let result: any = {};
+    if (option === 'edit') {
+      result = await updateProduct({ ...newData, id: id });
+      if (result.data) {
+      }
       message.success(
-        <FormattedMessage id="pages.flows.createsuccess" defaultMessage="Created Successfully!" />,
+        <FormattedMessage id="pages.flows.savesuccess" defaultMessage="Save Successfully!" />,
       );
       setSpinning(false);
-    } else {
-      message.error(result.error.message);
+    }
+    else {
+      result = await createProduct(flowId, newData);
+      if (result.data) {
+        message.success(
+          <FormattedMessage id="pages.flows.createsuccess" defaultMessage="Created Successfully!" />,
+        );
+        setSpinning(false);
+      } else {
+        message.error(result.error.message);
+      }
     }
     return true;
   };
 
-  useGraphEvent('node:mouseenter', (evt) => {
-    console.log('node:mouseenter', evt);
-  });
+  // useGraphEvent('node:mouseenter', (evt) => {
+  //   console.log('node:mouseenter', evt);
+  // });
 
   useEffect(() => {
-    initData({
-      nodes: [],
-      edges: [],
-    });
+    if (option === 'edit') {
+      getProductDetail(id).then(async (result: any) => {
+        setInfoData({ ...genProductInfoFromData(result.data?.json?.productDataSet ?? {}) });
+        const model = genProductModelFromData(result.data?.json?.productDataSet ?? {}, lang);
+        modelData({
+          nodes: model.nodes ?? [],
+          edges: model.edges ?? [],
+        });
+      });
+    }
+    else {
+      setInfoData({});
+      modelData({ nodes: [], edges: [], });
+    }
   }, []);
 
   return (

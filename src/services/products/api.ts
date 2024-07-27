@@ -6,12 +6,8 @@ import { genProductJsonOrdered } from './util';
 // import { genFlowJsonOrdered } from './util';
 
 export async function createProduct(flowId: string, data: any) {
-  console.log('data', data);
   const newID = v4();
   const newData = genProductJsonOrdered(newID, data);
-  console.log('newData', newData);
-  console.log('flowId', flowId);
-  console.log('newID', newID);
   const result = await supabase
     .from('products')
     .insert([{ id: newID, flow_id: flowId, json_ordered: newData }])
@@ -19,23 +15,23 @@ export async function createProduct(flowId: string, data: any) {
   return result;
 }
 
-// export async function updateProduct(data: any) {
-//   const result = await supabase.from('flows').select('id, json').eq('id', data.id);
-//   if (result.data && result.data.length === 1) {
-//     const oldData = result.data[0].json;
-//     const newData = genFlowJsonOrdered(data.id, data, oldData);
-//     const updateResult = await supabase
-//       .from('flows')
-//       .update({ json_ordered: newData })
-//       .eq('id', data.id)
-//       .select();
-//     return updateResult;
-//   }
-//   return null;
-// }
+export async function updateProduct(data: any) {
+  // const result = await supabase.from('products').select('id, json').eq('id', data.id);
+  // if (result.data && result.data.length === 1) {
+    // const oldData = result.data[0].json;
+    const newData = genProductJsonOrdered(data.id, data);
+    const updateResult = await supabase
+      .from('products')
+      .update({ json_ordered: newData })
+      .eq('id', data.id)
+      .select();
+    return updateResult;
+  // }
+  // return null;
+}
 
 export async function deleteProduct(id: string) {
-  const result = await supabase.from('flows').delete().eq('id', id);
+  const result = await supabase.from('products').delete().eq('id', id);
   return result;
 }
 
@@ -54,8 +50,8 @@ export async function getProductTable(
 
   const selectStr = `
     id,
-    json_ordered->productDataSet->productInformation->dataSetInformation->name,
-    json_ordered->productDataSet->productInformation->dataSetInformation->"common:generalComment",
+    json->productDataSet->productInformation->dataSetInformation->name,
+    json->productDataSet->productInformation->dataSetInformation->"common:generalComment",
     created_at
   `;
 
@@ -127,7 +123,7 @@ export async function getProductTable(
 }
 
 export async function getProductDetail(id: string) {
-  const result = await supabase.from('flows').select('json, created_at').eq('id', id);
+  const result = await supabase.from('products').select('json, created_at').eq('id', id);
   if (result.data && result.data.length > 0) {
     const data = result.data[0];
     return Promise.resolve({
