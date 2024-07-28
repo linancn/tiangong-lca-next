@@ -239,7 +239,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
         <Card size="small" title={'Geography: Location Of Operation Supply Or Production'}>
           <Form.Item
             label="Location"
-            name={['processInformation', 'locationOfOperationSupplyOrProduction', '@location']}
+            name={['processInformation','geography', 'locationOfOperationSupplyOrProduction', '@location']}
           >
             <Input />
           </Form.Item>
@@ -249,6 +249,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
           <LangTextItemFrom
             name={[
               'processInformation',
+              'geography',
               'locationOfOperationSupplyOrProduction',
               'descriptionOfRestrictions',
             ]}

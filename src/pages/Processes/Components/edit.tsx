@@ -178,14 +178,14 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
               buttonType={'icon'}
               actionRef={actionRefExchangeTable}
               onData={handletExchangeData}
-              setViewDrawerVisible={() => {}}
+              setViewDrawerVisible={() => { }}
             />
             <ProcessExchangeDelete
               id={row.dataSetInternalID}
               data={exchangeDataSource}
               buttonType={'icon'}
               actionRef={actionRef}
-              setViewDrawerVisible={() => {}}
+              setViewDrawerVisible={() => { }}
               onData={handletExchangeData}
             />
           </Space>,
@@ -254,7 +254,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
         <Card size="small" title={'Geography: Location Of Operation Supply Or Production'}>
           <Form.Item
             label="Location"
-            name={['processInformation', 'locationOfOperationSupplyOrProduction', '@location']}
+            name={['processInformation', 'geography', 'locationOfOperationSupplyOrProduction', '@location']}
           >
             <Input />
           </Form.Item>
@@ -264,6 +264,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
           <LangTextItemFrom
             name={[
               'processInformation',
+              'geography',
               'locationOfOperationSupplyOrProduction',
               'descriptionOfRestrictions',
             ]}
