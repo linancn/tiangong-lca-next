@@ -86,12 +86,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
     //   search: false,
     // },
     {
-      title: (
-        <FormattedMessage
-          id="processExchange.exchangeDirection"
-          defaultMessage="Exchange Direction"
-        />
-      ),
+      title: <FormattedMessage id="S" defaultMessage="Exchange Direction" />,
       dataIndex: 'exchangeDirection',
       sorter: false,
       search: false,

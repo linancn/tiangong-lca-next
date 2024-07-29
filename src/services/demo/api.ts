@@ -67,3 +67,12 @@ export async function jsonSelectTest() {
   console.log('error', error);
   return data;
 }
+
+export async function storage() {
+  // const { data, error } = await supabase.storage
+  //   .from('external_docs')
+  //   .getPublicUrl('A1uGb6xfkotXG0xg0krcTTYInUh.png');
+  // console.log('data', data);
+  // console.log('error', error);
+  // return data;
+}

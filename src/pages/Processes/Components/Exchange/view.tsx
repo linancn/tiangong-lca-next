@@ -91,25 +91,57 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, dataSource, buttonType
       >
         {/* <Spin spinning={spinning}> */}
         <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item key={0} label="Exchange Direction" labelStyle={{ width: '220px' }}>
+          <Descriptions.Item
+            key={0}
+            label={
+              <FormattedMessage
+                id="pages.process.view.exchange.exchangeDirection"
+                defaultMessage="Exchange Direction"
+              />
+            }
+            labelStyle={{ width: '220px' }}
+          >
             {viewData.exchangeDirection ?? '-'}
           </Descriptions.Item>
         </Descriptions>
         <br />
         <FlowsSelectDescription
-          title="Reference To Flow Data Set"
+          title={
+            <FormattedMessage
+              id="pages.process.view.exchange.referenceToFlowDataSet"
+              defaultMessage="Reference To Flow Data Set"
+            />
+          }
           data={viewData.referenceToFlowDataSet ?? {}}
           lang={lang}
         />
         <br />
         <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item key={0} label="Mean Amount" labelStyle={{ width: '220px' }}>
+          <Descriptions.Item
+            key={0}
+            label={
+              <FormattedMessage
+                id="pages.process.view.exchange.meanAmount"
+                defaultMessage="Mean Amount"
+              />
+            }
+            labelStyle={{ width: '220px' }}
+          >
             {viewData.meanAmount ?? '-'}
           </Descriptions.Item>
         </Descriptions>
         <br />
         <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item key={0} label="Resulting Amount" labelStyle={{ width: '220px' }}>
+          <Descriptions.Item
+            key={0}
+            label={
+              <FormattedMessage
+                id="pages.process.view.exchange.resultingAmount"
+                defaultMessage="Resulting Amount"
+              />
+            }
+            labelStyle={{ width: '220px' }}
+          >
             {viewData.resultingAmount ?? '-'}
           </Descriptions.Item>
         </Descriptions>
@@ -117,7 +149,12 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, dataSource, buttonType
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
             key={0}
-            label="Data Derivation Type Status"
+            label={
+              <FormattedMessage
+                id="pages.process.view.exchange.dataDerivationTypeStatus"
+                defaultMessage="Data Derivation Type Status"
+              />
+            }
             labelStyle={{ width: '220px' }}
           >
             {viewData.dataDerivationTypeStatus ?? '-'}
@@ -125,15 +162,31 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, dataSource, buttonType
         </Descriptions>
 
         <Divider orientationMargin="0" orientation="left" plain>
-          General Comment
+          <FormattedMessage
+            id="pages.process.view.exchange.generalComment"
+            defaultMessage="General Comment"
+          />
         </Divider>
         <LangTextItemDescription data={viewData.generalComment} />
         <br />
-        <Card size="small" title={'Quantitative Reference'}>
+        <Card
+          size="small"
+          title={
+            <FormattedMessage
+              id="pages.process.view.exchange.quantitativeReference"
+              defaultMessage="Quantitative Reference"
+            />
+          }
+        >
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item
               key={0}
-              label="Reference To Reference Flow"
+              label={
+                <FormattedMessage
+                  id="pages.process.view.exchange.referenceToReferenceFlow"
+                  defaultMessage="Reference To Reference Flow"
+                />
+              }
               labelStyle={{ width: '220px' }}
             >
               {viewData.quantitativeReference ? (
@@ -144,7 +197,10 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, dataSource, buttonType
             </Descriptions.Item>
           </Descriptions>
           <Divider orientationMargin="0" orientation="left" plain>
-            Functional Unit Or Other
+            <FormattedMessage
+              id="pages.process.view.exchange.functionalUnitOrOther"
+              defaultMessage="Functional Unit Or Other"
+            />
           </Divider>
           <LangTextItemDescription data={viewData.functionalUnitOrOther} />
         </Card>

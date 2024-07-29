@@ -54,7 +54,7 @@ const FlowsDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
               onCancel={handleCancel}
             >
               <FormattedMessage
-                id="pages.flows.deleteMessage"
+                id="pages.flows.deleteMessage.areyousureyouwanttodeletethisdata"
                 defaultMessage="Are you sure you want to delete this data?"
               />
             </Modal>

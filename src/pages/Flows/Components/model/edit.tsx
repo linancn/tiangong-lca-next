@@ -9,11 +9,12 @@ import Toolbar from './toolbar';
 
 type Props = {
   id: string;
+  flowId: string;
   buttonType: string;
   lang: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
 };
-const FlowModelEdit: FC<Props> = ({ buttonType, lang }) => {
+const FlowModelEdit: FC<Props> = ({ id, flowId, buttonType, lang }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
 
   const { Sider, Content } = Layout;
@@ -84,7 +85,7 @@ const FlowModelEdit: FC<Props> = ({ buttonType, lang }) => {
               </Content>
             </Layout>
             <Sider width="50px" style={siderStyle}>
-              <Toolbar id={''} lang={lang} onSpin={() => {}} />
+              <Toolbar id={id} flowId={flowId} lang={lang} onSpin={() => {}} option={'edit'} />
             </Sider>
             <div style={{ position: 'absolute', right: 80, bottom: 30 }}>
               <Control

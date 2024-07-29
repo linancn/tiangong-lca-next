@@ -1,3 +1,4 @@
+import { deleteProduct } from '@/services/products/api';
 import { DeleteOutlined } from '@ant-design/icons';
 import type { ActionType } from '@ant-design/pro-table';
 import { Button, message, Modal, Tooltip } from 'antd';
@@ -7,21 +8,11 @@ import { FormattedMessage } from 'umi';
 
 type Props = {
   id: string;
-  data: any;
   buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  onData: (data: any) => void;
 };
-
-const ProcessExchangeDelete: FC<Props> = ({
-  id,
-  data,
-  buttonType,
-  actionRef,
-  setViewDrawerVisible,
-  onData,
-}) => {
+const FlowModelDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisible }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const showModal = useCallback(() => {
@@ -29,24 +20,21 @@ const ProcessExchangeDelete: FC<Props> = ({
   }, []);
 
   const handleOk = useCallback(() => {
-    const filteredData = data.filter((item: any) => item['@dataSetInternalID'] !== id);
-    onData(
-      filteredData.map((item: any, index: number) => {
-        return {
-          ...item,
-          '@dataSetInternalID': index.toString(),
-        };
-      }),
-    );
-    message.success(
-      <FormattedMessage
-        id="pages.button.deletesuccess"
-        defaultMessage="Selected data has been deleted."
-      />,
-    );
-    setViewDrawerVisible(false);
-    setIsModalVisible(false);
-    actionRef.current?.reload();
+    deleteProduct(id).then(async (result: any) => {
+      if (result.status === 204) {
+        message.success(
+          <FormattedMessage
+            id="pages.flows.deletesuccess"
+            defaultMessage="Selected flow has been deleted."
+          />,
+        );
+        setViewDrawerVisible(false);
+        setIsModalVisible(false);
+        actionRef.current?.reload();
+      } else {
+        message.error(result.error.message ?? 'Error');
+      }
+    });
   }, [actionRef, id, setViewDrawerVisible]);
 
   const handleCancel = useCallback(() => {
@@ -66,7 +54,7 @@ const ProcessExchangeDelete: FC<Props> = ({
               onCancel={handleCancel}
             >
               <FormattedMessage
-                id="pages.button.deleteMessage.areyousureyouwanttodeletethisdata"
+                id="pages.flows.deleteMessage"
                 defaultMessage="Are you sure you want to delete this data?"
               />
             </Modal>
@@ -83,7 +71,7 @@ const ProcessExchangeDelete: FC<Props> = ({
               onCancel={handleCancel}
             >
               <FormattedMessage
-                id="pages.button.deleteMessage.areyousureyouwanttodeletethisdata"
+                id="pages.flows.deleteMessage"
                 defaultMessage="Are you sure you want to delete this data?"
               />
             </Modal>
@@ -94,4 +82,4 @@ const ProcessExchangeDelete: FC<Props> = ({
   );
 };
 
-export default ProcessExchangeDelete;
+export default FlowModelDelete;

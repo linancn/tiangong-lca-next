@@ -1,15 +1,16 @@
 import ProcessView from '@/pages/Processes/Components/view';
 import { ListPagination } from '@/services/general/data';
-import { getProcessTableAll } from '@/services/processes/api';
+import { getProcessTableAll, getProcessTablePgroongaSearch } from '@/services/processes/api';
 import { ProcessTable } from '@/services/processes/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { ProTable } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
-import { Button, Card, Drawer, Space, Tooltip } from 'antd';
+import { Button, Card, Drawer, Input, Space, Tooltip } from 'antd';
+import { SearchProps } from 'antd/es/input/Search';
 import type { FC, Key } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 
 type Props = {
   buttonType: string;
@@ -17,12 +18,19 @@ type Props = {
   onData: (rowKey: any) => void;
 };
 
+const { Search } = Input;
+
 const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
+  const [tgKeyWord, setTgKeyWord] = useState<any>('');
+  const [myKeyWord, setMyKeyWord] = useState<any>('');
+
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [activeTabKey, setActiveTabKey] = useState<string>('tg');
   const tgActionRefSelect = useRef<ActionType>();
   const myActionRefSelect = useRef<ActionType>();
+
+  const intl = useIntl();
 
   const onSelect = () => {
     setDrawerVisible(true);
@@ -35,11 +43,33 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
   const onTabChange = async (key: string) => {
     await setActiveTabKey(key);
     if (key === 'tg') {
+      await tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
       tgActionRefSelect.current?.reload();
     }
     if (key === 'my') {
+      myActionRefSelect.current?.setPageInfo?.({ current: 1 });
       myActionRefSelect.current?.reload();
     }
+  };
+
+  const onTgSearch: SearchProps['onSearch'] = async (value) => {
+    await setTgKeyWord(value);
+    tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    tgActionRefSelect.current?.reload();
+  };
+
+  const onMySearch: SearchProps['onSearch'] = async (value) => {
+    await setMyKeyWord(value);
+    myActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    myActionRefSelect.current?.reload();
+  };
+
+  const handleTgKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTgKeyWord(e.target.value);
+  };
+
+  const handleMyKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMyKeyWord(e.target.value);
   };
 
   const processColumns: ProColumns<ProcessTable>[] = [
@@ -53,6 +83,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
       title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name" />,
       dataIndex: 'baseName',
       sorter: false,
+      search: false,
       render: (_, row) => [
         <Tooltip key={0} placement="topLeft" title={row.generalComment ?? '-'}>
           {row.baseName}
@@ -111,11 +142,20 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
   const databaseList: Record<string, React.ReactNode> = {
     tg: (
       <>
+        <Card>
+          <Search
+            name={'tg'}
+            size={'large'}
+            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+            value={tgKeyWord}
+            onChange={handleTgKeyWordChange}
+            onSearch={onTgSearch}
+            enterButton
+          />
+        </Card>
         <ProTable<ProcessTable, ListPagination>
           actionRef={tgActionRefSelect}
-          search={{
-            defaultCollapsed: false,
-          }}
+          search={false}
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
@@ -127,6 +167,9 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
             },
             sort,
           ) => {
+            if (tgKeyWord.length > 0) {
+              return getProcessTablePgroongaSearch(params, lang, 'tg', tgKeyWord, {});
+            }
             return getProcessTableAll(params, sort, lang, 'tg');
           }}
           columns={processColumns}
@@ -140,32 +183,46 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
       </>
     ),
     my: (
-      <ProTable<ProcessTable, ListPagination>
-        actionRef={myActionRefSelect}
-        search={{
-          defaultCollapsed: false,
-        }}
-        pagination={{
-          showSizeChanger: false,
-          pageSize: 10,
-        }}
-        request={async (
-          params: {
-            pageSize: number;
-            current: number;
-          },
-          sort,
-        ) => {
-          return getProcessTableAll(params, sort, lang, 'my');
-        }}
-        columns={processColumns}
-        rowSelection={{
-          type: 'radio',
-          alwaysShowAlert: true,
-          selectedRowKeys,
-          onChange: onSelectChange,
-        }}
-      />
+      <>
+        <Card>
+          <Search
+            name={'my'}
+            size={'large'}
+            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+            value={myKeyWord}
+            onChange={handleMyKeyWordChange}
+            onSearch={onMySearch}
+            enterButton
+          />
+        </Card>
+        <ProTable<ProcessTable, ListPagination>
+          actionRef={myActionRefSelect}
+          search={false}
+          pagination={{
+            showSizeChanger: false,
+            pageSize: 10,
+          }}
+          request={async (
+            params: {
+              pageSize: number;
+              current: number;
+            },
+            sort,
+          ) => {
+            if (myKeyWord.length > 0) {
+              return getProcessTablePgroongaSearch(params, lang, 'my', myKeyWord, {});
+            }
+            return getProcessTableAll(params, sort, lang, 'my');
+          }}
+          columns={processColumns}
+          rowSelection={{
+            type: 'radio',
+            alwaysShowAlert: true,
+            selectedRowKeys,
+            onChange: onSelectChange,
+          }}
+        />
+      </>
     ),
   };
 
@@ -191,7 +248,10 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
 
       <Drawer
         title={
-          <FormattedMessage id="pages.process.drawer.title.add" defaultMessage="Add Process" />
+          <FormattedMessage
+            id="pages.process.drawer.title.addProcess"
+            defaultMessage="Add Process"
+          />
         }
         width="90%"
         closable={false}

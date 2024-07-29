@@ -54,7 +54,7 @@ const ProcessDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisi
               onCancel={handleCancel}
             >
               <FormattedMessage
-                id="pages.button.deleteMessage"
+                id="pages.button.deleteMessage.areyousureyouwanttodeletethisdata"
                 defaultMessage="Are you sure you want to delete this data?"
               />
             </Modal>

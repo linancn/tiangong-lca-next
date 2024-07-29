@@ -29,35 +29,77 @@ const FlowpropertyView: FC<Props> = ({ id, buttonType, lang }) => {
   };
 
   const tabList = [
-    { key: 'flowPropertiesInformation', tab: 'Flow Properties Information' },
-    { key: 'modellingAndValidation', tab: 'Modelling And Validation' },
-    { key: 'administrativeInformation', tab: 'Administrative Information' },
+    {
+      key: 'flowPropertiesInformation',
+      tab: (
+        <FormattedMessage
+          id="pages.FlowProperties.view.flowPropertiesInformation"
+          defaultMessage="Flow Properties Information"
+        />
+      ),
+    },
+    {
+      key: 'modellingAndValidation',
+      tab: (
+        <FormattedMessage
+          id="pages.FlowProperties.view.modellingAndValidation"
+          defaultMessage="Modelling And Validation"
+        />
+      ),
+    },
+    {
+      key: 'administrativeInformation',
+      tab: (
+        <FormattedMessage
+          id="pages.FlowProperties.view.administrativeInformation"
+          defaultMessage="Administrative Information"
+        />
+      ),
+    },
   ];
 
   const contentList: Record<string, React.ReactNode> = {
     flowPropertiesInformation: (
       <>
         <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item key={0} label="ID" labelStyle={{ width: '100px' }}>
+          <Descriptions.Item
+            key={0}
+            label={
+              <FormattedMessage
+                id="pages.FlowProperties.view.flowPropertiesInformation.id"
+                defaultMessage="ID"
+              />
+            }
+            labelStyle={{ width: '100px' }}
+          >
             {initData?.flowPropertiesInformation?.dataSetInformation?.['common:UUID'] ?? '-'}
           </Descriptions.Item>
         </Descriptions>
         <Divider orientationMargin="0" orientation="left" plain>
-          Name
+          <FormattedMessage
+            id="pages.FlowProperties.view.flowPropertiesInformation.name"
+            defaultMessage="Name"
+          />
         </Divider>
         <LangTextItemDescription
           data={initData?.flowPropertiesInformation?.dataSetInformation?.['common:name']}
         />
 
         <Divider orientationMargin="0" orientation="left" plain>
-          General Comment
+          <FormattedMessage
+            id="pages.FlowProperties.view.flowPropertiesInformation.generalComment"
+            defaultMessage="General Comment"
+          />
         </Divider>
         <LangTextItemDescription
           data={initData?.flowPropertiesInformation?.dataSetInformation?.['common:generalComment']}
         />
 
         <Divider orientationMargin="0" orientation="left" plain>
-          Classification
+          <FormattedMessage
+            id="pages.FlowProperties.view.flowPropertiesInformation.classification"
+            defaultMessage="Classification"
+          />
         </Divider>
         <LevelTextItemDescription
           data={
@@ -69,7 +111,12 @@ const FlowpropertyView: FC<Props> = ({ id, buttonType, lang }) => {
         <br />
         <UnitGroupDescription
           lang={lang}
-          title={'Quantitative Reference: Reference To Reference Unit Group'}
+          title={
+            <FormattedMessage
+              id="pages.FlowProperties.view.flowPropertiesInformation.quantitativeReference:ReferenceToReferenceUnitGroup"
+              defaultMessage="Quantitative Reference: Reference To Reference Unit Group"
+            />
+          }
           data={
             initData.flowPropertiesInformation?.quantitativeReference?.referenceToReferenceUnitGroup
           }
@@ -84,14 +131,24 @@ const FlowpropertyView: FC<Props> = ({ id, buttonType, lang }) => {
               'common:referenceToComplianceSystem'
             ]
           }
-          title={'Reference To Compliance System'}
+          title={
+            <FormattedMessage
+              id="pages.FlowProperties.view.modellingAndValidation.referenceToComplianceSystem"
+              defaultMessage="Reference To Compliance System"
+            />
+          }
           lang={lang}
         />
 
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
             key={0}
-            label="Approval Of Overall Compliance"
+            label={
+              <FormattedMessage
+                id="pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance"
+                defaultMessage="Approval Of Overall Compliance"
+              />
+            }
             labelStyle={{ width: '220px' }}
           >
             {initData?.modellingAndValidation?.complianceDeclarations?.compliance?.[
@@ -103,9 +160,26 @@ const FlowpropertyView: FC<Props> = ({ id, buttonType, lang }) => {
     ),
     administrativeInformation: (
       <>
-        <Card size="small" title={'Data Entry By'}>
+        <Card
+          size="small"
+          title={
+            <FormattedMessage
+              id="pages.FlowProperties.view.modellingAndValidation.dataEntryBy"
+              defaultMessage="Data Entry By"
+            />
+          }
+        >
           <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item key={0} label="Time Stamp" labelStyle={{ width: '100px' }}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id="pages.FlowProperties.view.modellingAndValidation.timeStamp"
+                  defaultMessage="Time Stamp"
+                />
+              }
+              labelStyle={{ width: '100px' }}
+            >
               {initData?.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-'}
             </Descriptions.Item>
           </Descriptions>
@@ -114,14 +188,36 @@ const FlowpropertyView: FC<Props> = ({ id, buttonType, lang }) => {
             data={
               initData?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']
             }
-            title={'Reference To Data Set Format'}
+            title={
+              <FormattedMessage
+                id="pages.FlowProperties.view.modellingAndValidation.referenceToDataSetFormat"
+                defaultMessage="Reference To Data Set Format"
+              />
+            }
             lang={lang}
           />
         </Card>
         <br />
-        <Card size="small" title={'Publication And Ownership'}>
+        <Card
+          size="small"
+          title={
+            <FormattedMessage
+              id="pages.FlowProperties.view.modellingAndValidation.publicationAndOwnership"
+              defaultMessage="Publication And Ownership"
+            />
+          }
+        >
           <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item key={0} label="Data Set Version" labelStyle={{ width: '100px' }}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id="pages.FlowProperties.view.modellingAndValidation.dataSetVersion"
+                  defaultMessage="Data Set Version"
+                />
+              }
+              labelStyle={{ width: '100px' }}
+            >
               {initData?.administrativeInformation?.publicationAndOwnership?.[
                 'common:dataSetVersion'
               ] ?? '-'}
@@ -135,13 +231,23 @@ const FlowpropertyView: FC<Props> = ({ id, buttonType, lang }) => {
               ]
             }
             lang={lang}
-            title={'Reference To Preceding Data Set Version'}
+            title={
+              <FormattedMessage
+                id="pages.FlowProperties.view.administrativeInformation.referenceToPrecedingDataSetVersion"
+                defaultMessage="Reference To Preceding Data Set Version"
+              />
+            }
           />
           <br />
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item
               key={0}
-              label="Permanent Data Set URI"
+              label={
+                <FormattedMessage
+                  id="pages.FlowProperties.view.administrativeInformation.permanentDataSetURI"
+                  defaultMessage="Permanent Data Set URI"
+                />
+              }
               labelStyle={{ width: '100px' }}
             >
               {initData?.administrativeInformation?.publicationAndOwnership?.[
