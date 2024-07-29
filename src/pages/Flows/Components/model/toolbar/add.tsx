@@ -191,7 +191,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
 
       <Drawer
         title={
-          <FormattedMessage id="pages.process.drawer.title.add" defaultMessage="Add Process" />
+          <FormattedMessage id="pages.process.drawer.title.addProcess" defaultMessage="Add Process" />
         }
         width="90%"
         closable={false}

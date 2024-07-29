@@ -173,7 +173,8 @@ export async function getSourceTablePgroongaSearch(
             key: i.id,
             id: i.id,
             shortName: getLangText(
-              i.json?.sourceDataSet?.sourceInformation?.dataSetInformation?.['common:shortName'] ?? {},
+              i.json?.sourceDataSet?.sourceInformation?.dataSetInformation?.['common:shortName'] ??
+                {},
               lang,
             ),
             classification: classificationToString(
@@ -183,8 +184,7 @@ export async function getSourceTablePgroongaSearch(
             sourceCitation:
               i.json?.sourceDataSet?.sourceInformation?.dataSetInformation?.sourceCitation ?? '-',
             publicationType:
-              i.json?.sourceDataSet?.sourceInformation?.dataSetInformation
-                ?.publicationType ?? '-',
+              i.json?.sourceDataSet?.sourceInformation?.dataSetInformation?.publicationType ?? '-',
             created_at: new Date(i.created_at),
           };
         } catch (e) {

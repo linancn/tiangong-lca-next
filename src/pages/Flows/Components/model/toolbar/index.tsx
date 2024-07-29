@@ -69,7 +69,7 @@ const Toolbar: FC<Props> = ({ id, lang }) => {
     const result = await createProduct(id, newData);
     if (result.data) {
       message.success(
-        <FormattedMessage id="pages.flows.createsuccess" defaultMessage="Created Successfully!" />,
+        <FormattedMessage id="pages.flows.createdSuccessfully!" defaultMessage="Created Successfully!" />,
       );
       setSpinning(false);
     } else {

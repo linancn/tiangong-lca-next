@@ -179,20 +179,26 @@ export async function getFlowpropertyTablePgroongaSearch(
             key: i.id,
             id: i.id,
             name: getLangText(
-              i.json?.flowPropertyDataSet?.flowPropertiesInformation?.dataSetInformation?.['common:name'] ?? {},
+              i.json?.flowPropertyDataSet?.flowPropertiesInformation?.dataSetInformation?.[
+                'common:name'
+              ] ?? {},
               lang,
             ),
             classification: classificationToString(
-              i.json?.flowPropertyDataSet?.flowPropertiesInformation?.dataSetInformation?.classificationInformation?.[
-              'common:classification'
-              ]?.['common:class'] ?? {},
+              i.json?.flowPropertyDataSet?.flowPropertiesInformation?.dataSetInformation
+                ?.classificationInformation?.['common:classification']?.['common:class'] ?? {},
             ),
             generalComment: getLangText(
-              i.json?.flowPropertyDataSet?.flowPropertiesInformation?.dataSetInformation?.['common:generalComment'] ??
-              {},
+              i.json?.flowPropertyDataSet?.flowPropertiesInformation?.dataSetInformation?.[
+                'common:generalComment'
+              ] ?? {},
               lang,
             ),
-            referenceToReferenceUnitGroup: getLangText(i.json?.flowPropertyDataSet?.flowPropertiesInformation?.quantitativeReference?.referenceToReferenceUnitGroup?.['common:shortDescription'] ?? {}, lang),
+            referenceToReferenceUnitGroup: getLangText(
+              i.json?.flowPropertyDataSet?.flowPropertiesInformation?.quantitativeReference
+                ?.referenceToReferenceUnitGroup?.['common:shortDescription'] ?? {},
+              lang,
+            ),
             created_at: new Date(i.created_at),
           };
         } catch (e) {

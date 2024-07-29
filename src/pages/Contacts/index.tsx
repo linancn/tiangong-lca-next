@@ -83,20 +83,20 @@ const TableList: FC = () => {
                 id={row.id}
                 lang={lang}
                 buttonType="icon"
-              // actionRef={actionRef}
+                // actionRef={actionRef}
               />
               <ContactEdit
                 id={row.id}
                 lang={lang}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => { }}
+                setViewDrawerVisible={() => {}}
               />
               <ContactDelete
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => { }}
+                setViewDrawerVisible={() => {}}
               />
             </Space>,
           ];
@@ -107,7 +107,7 @@ const TableList: FC = () => {
               id={row.id}
               lang={lang}
               buttonType="icon"
-            // actionRef={actionRef}
+              // actionRef={actionRef}
             />
           </Space>,
         ];

@@ -175,15 +175,17 @@ export async function getUnitGroupTablePgroongaSearch(
             key: i.id,
             id: i.id,
             name: getLangText(
-              i.json?.unitGroupDataSet?.unitGroupInformation?.dataSetInformation?.['common:name'] ?? {},
+              i.json?.unitGroupDataSet?.unitGroupInformation?.dataSetInformation?.['common:name'] ??
+                {},
               lang,
             ),
             classification: classificationToString(
-              i.json?.unitGroupDataSet?.unitGroupInformation?.dataSetInformation?.classificationInformation?.[
-              'common:classification'
-              ]?.['common:class'] ?? {},
+              i.json?.unitGroupDataSet?.unitGroupInformation?.dataSetInformation
+                ?.classificationInformation?.['common:classification']?.['common:class'] ?? {},
             ),
-            email: i.json?.unitGroupDataSet?.unitGroupInformation?.quantitativeReference?.referenceToReferenceUnit ?? '-',
+            email:
+              i.json?.unitGroupDataSet?.unitGroupInformation?.quantitativeReference
+                ?.referenceToReferenceUnit ?? '-',
             createdAt: new Date(i.created_at),
           };
         } catch (e) {

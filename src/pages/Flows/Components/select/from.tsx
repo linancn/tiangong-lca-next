@@ -66,14 +66,23 @@ const FlowsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => {
           )}
         </Space>
       </Space>
-      <Form.Item label={<FormattedMessage id="pages.process.view.exchange.type" defaultMessage="Type" />} name={[...name, '@type']}>
+      <Form.Item
+        label={<FormattedMessage id="pages.process.view.exchange.type" defaultMessage="Type" />}
+        name={[...name, '@type']}
+      >
         <Input disabled={true} style={{ color: '#000' }} />
       </Form.Item>
-      <Form.Item label={<FormattedMessage id="pages.process.view.exchange.uri" defaultMessage="URI" />} name={[...name, '@uri']}>
+      <Form.Item
+        label={<FormattedMessage id="pages.process.view.exchange.uri" defaultMessage="URI" />}
+        name={[...name, '@uri']}
+      >
         <Input disabled={true} style={{ color: '#000' }} />
       </Form.Item>
       <Divider orientationMargin="0" orientation="left" plain>
-      <FormattedMessage id="pages.process.view.exchange.shortDescription" defaultMessage="Short Description" />
+        <FormattedMessage
+          id="pages.process.view.exchange.shortDescription"
+          defaultMessage="Short Description"
+        />
       </Divider>
       <Form.Item>
         <Form.List name={[...name, 'common:shortDescription']}>

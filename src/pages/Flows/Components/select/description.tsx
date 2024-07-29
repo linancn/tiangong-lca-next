@@ -46,7 +46,11 @@ const FlowsSelectDescription: FC<Props> = ({ title, data, lang }) => {
       </Descriptions>
       <br />
       <Descriptions bordered size={'small'} column={1}>
-        <Descriptions.Item key={0} label={<FormattedMessage id="pages.process.view.exchange.uri" defaultMessage="URI" />}labelStyle={{ width: '120px' }}>
+        <Descriptions.Item
+          key={0}
+          label={<FormattedMessage id="pages.process.view.exchange.uri" defaultMessage="URI" />}
+          labelStyle={{ width: '120px' }}
+        >
           {data?.['@uri'] ?? '-'}
         </Descriptions.Item>
       </Descriptions>
@@ -57,7 +61,10 @@ const FlowsSelectDescription: FC<Props> = ({ title, data, lang }) => {
         </Descriptions.Item>
       </Descriptions> */}
       <Divider orientationMargin="0" orientation="left" plain>
-      <FormattedMessage id="pages.process.view.exchange.shortDescription" defaultMessage="Short Description" />
+        <FormattedMessage
+          id="pages.process.view.exchange.shortDescription"
+          defaultMessage="Short Description"
+        />
       </Divider>
       <LangTextItemDescription data={data?.['common:shortDescription']} />
     </Card>
