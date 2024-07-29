@@ -6,6 +6,7 @@ import {
   jsonSelectTest,
   pgroonga_search,
   returnUserEdgeFunction,
+  storage,
 } from '../services/demo/api';
 
 const Demo: React.FC = () => {
@@ -46,6 +47,7 @@ const Demo: React.FC = () => {
 
             <Button onClick={() => returnUserEdgeFunction()}>returnUserEdgeFunction</Button>
             <Button onClick={() => jsonSelectTest()}>jsonSelectTest</Button>
+            <Button onClick={() => storage()}>storage</Button>
           </div>
         </div>
       </Card>

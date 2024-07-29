@@ -51,7 +51,7 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, option }) => {
                 ?.baseName,
             generalComment:
               result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.[
-              'common:generalComment'
+                'common:generalComment'
               ],
           },
         },
@@ -78,12 +78,14 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, option }) => {
         <FormattedMessage id="pages.flows.savesuccess" defaultMessage="Save Successfully!" />,
       );
       setSpinning(false);
-    }
-    else {
+    } else {
       result = await createProduct(flowId, newData);
       if (result.data) {
         message.success(
-          <FormattedMessage id="pages.flows.createsuccess" defaultMessage="Created Successfully!" />,
+          <FormattedMessage
+            id="pages.flows.createsuccess"
+            defaultMessage="Created Successfully!"
+          />,
         );
         setSpinning(false);
       } else {
@@ -107,10 +109,9 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, option }) => {
           edges: model.edges ?? [],
         });
       });
-    }
-    else {
+    } else {
       setInfoData({});
-      modelData({ nodes: [], edges: [], });
+      modelData({ nodes: [], edges: [] });
     }
   }, []);
 

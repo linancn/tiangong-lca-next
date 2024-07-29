@@ -85,7 +85,7 @@ const FlowModelEdit: FC<Props> = ({ id, flowId, buttonType, lang }) => {
               </Content>
             </Layout>
             <Sider width="50px" style={siderStyle}>
-              <Toolbar id={id} flowId={flowId} lang={lang} onSpin={() => { }} option={'edit'} />
+              <Toolbar id={id} flowId={flowId} lang={lang} onSpin={() => {}} option={'edit'} />
             </Sider>
             <div style={{ position: 'absolute', right: 80, bottom: 30 }}>
               <Control

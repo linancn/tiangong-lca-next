@@ -21,31 +21,28 @@ export function genProductJsonOrdered(id: string, data: any) {
 }
 
 export function genProductInfoFromData(data: any) {
-  return ({
+  return {
     productInformation: {
       dataSetInformation: {
         'common:UUID': data?.productInformation?.dataSetInformation?.['common:UUID'],
-        name: getLangList(
-          data?.productInformation?.dataSetInformation?.name,
-        ),
+        name: getLangList(data?.productInformation?.dataSetInformation?.name),
         'common:generalComment': getLangList(
-          data?.productInformation?.dataSetInformation?.[
-          'common:generalComment'
-          ],
+          data?.productInformation?.dataSetInformation?.['common:generalComment'],
         ),
       },
     },
-  });
+  };
 }
 
 export function genProductModelFromData(data: any, lang: string) {
-  return ({
-    nodes: data?.model?.nodes?.map((node: any) => {
-      return {
-        ...node,
-        label: getLangText(node?.data?.label, lang),
-      }
-    }) ?? [],
+  return {
+    nodes:
+      data?.model?.nodes?.map((node: any) => {
+        return {
+          ...node,
+          label: getLangText(node?.data?.label, lang),
+        };
+      }) ?? [],
     edges: data?.model?.edges ?? [],
-  });
+  };
 }

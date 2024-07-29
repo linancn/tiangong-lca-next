@@ -334,7 +334,12 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
                 defaultMessage="Location"
               />
             }
-            name={['processInformation','geography', 'locationOfOperationSupplyOrProduction', '@location']}
+            name={[
+              'processInformation',
+              'geography',
+              'locationOfOperationSupplyOrProduction',
+              '@location',
+            ]}
           >
             <Input />
           </Form.Item>

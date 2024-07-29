@@ -56,12 +56,18 @@ const FlowModel: FC<Props> = ({ flowId, buttonType, lang, dataSource }) => {
       render: (_, row) => {
         return [
           <Space size={'small'} key={0}>
-            <FlowModelEdit id={row.id} flowId={flowId} buttonType={'icon'} lang={lang} actionRef={actionRef} />
+            <FlowModelEdit
+              id={row.id}
+              flowId={flowId}
+              buttonType={'icon'}
+              lang={lang}
+              actionRef={actionRef}
+            />
             <FlowModelDelete
               id={row.id}
               buttonType={'icon'}
               actionRef={actionRef}
-              setViewDrawerVisible={() => { }}
+              setViewDrawerVisible={() => {}}
             />
           </Space>,
         ];

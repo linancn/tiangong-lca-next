@@ -178,14 +178,14 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
               buttonType={'icon'}
               actionRef={actionRefExchangeTable}
               onData={handletExchangeData}
-              setViewDrawerVisible={() => { }}
+              setViewDrawerVisible={() => {}}
             />
             <ProcessExchangeDelete
               id={row.dataSetInternalID}
               data={exchangeDataSource}
               buttonType={'icon'}
               actionRef={actionRef}
-              setViewDrawerVisible={() => { }}
+              setViewDrawerVisible={() => {}}
               onData={handletExchangeData}
             />
           </Space>,
@@ -349,7 +349,12 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
                 defaultMessage="Location"
               />
             }
-            name={['processInformation', 'geography', 'locationOfOperationSupplyOrProduction', '@location']}
+            name={[
+              'processInformation',
+              'geography',
+              'locationOfOperationSupplyOrProduction',
+              '@location',
+            ]}
           >
             <Input />
           </Form.Item>

@@ -18,14 +18,14 @@ export async function createProduct(flowId: string, data: any) {
 export async function updateProduct(data: any) {
   // const result = await supabase.from('products').select('id, json').eq('id', data.id);
   // if (result.data && result.data.length === 1) {
-    // const oldData = result.data[0].json;
-    const newData = genProductJsonOrdered(data.id, data);
-    const updateResult = await supabase
-      .from('products')
-      .update({ json_ordered: newData })
-      .eq('id', data.id)
-      .select();
-    return updateResult;
+  // const oldData = result.data[0].json;
+  const newData = genProductJsonOrdered(data.id, data);
+  const updateResult = await supabase
+    .from('products')
+    .update({ json_ordered: newData })
+    .eq('id', data.id)
+    .select();
+  return updateResult;
   // }
   // return null;
 }
