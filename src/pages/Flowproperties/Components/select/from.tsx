@@ -41,7 +41,7 @@ const FlowpropertiesSelectFrom: FC<Props> = ({ name, label, lang, formRef, onDat
   return (
     <Card size="small" title={label}>
       <Space direction="horizontal">
-        <Form.Item label="Ref Object Id" name={[...name, '@refObjectId']}>
+        <Form.Item label={<FormattedMessage id="pages.flow.view.flowProperties.refObjectId" defaultMessage="Ref Object Id" />} name={[...name, '@refObjectId']}>
           <Input disabled={true} style={{ width: '350px', color: '#000' }} />
         </Form.Item>
         <Space direction="horizontal" style={{ marginTop: '6px' }}>
@@ -63,17 +63,17 @@ const FlowpropertiesSelectFrom: FC<Props> = ({ name, label, lang, formRef, onDat
           )}
         </Space>
       </Space>
-      <Form.Item label="Type" name={[...name, '@type']}>
+      <Form.Item label={<FormattedMessage id="pages.flow.view.flowProperties.type" defaultMessage="Type" />} name={[...name, '@type']}>
         <Input disabled={true} style={{ color: '#000' }} />
       </Form.Item>
-      <Form.Item label="URI" name={[...name, '@uri']}>
+      <Form.Item label={<FormattedMessage id="pages.flow.view.flowProperties.uri" defaultMessage="URI" />} name={[...name, '@uri']}>
         <Input disabled={true} style={{ color: '#000' }} />
       </Form.Item>
       {/* <Form.Item label="Version" name={[...name, '@version']}>
         <Input disabled={true} />
       </Form.Item> */}
       <Divider orientationMargin="0" orientation="left" plain>
-        Short Description
+      <FormattedMessage id="pages.flow.view.flowProperties.shortDescription" defaultMessage="Short Description" /> 
       </Divider>
       {/* <LangTextItemFrom
         name={[...name, 'common:shortDescription']}

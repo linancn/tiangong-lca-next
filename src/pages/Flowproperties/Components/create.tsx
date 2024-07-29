@@ -57,23 +57,41 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
   };
 
   const tabList = [
-    { key: 'flowPropertiesInformation', tab: 'Flow Properties Information' },
-    { key: 'modellingAndValidation', tab: 'Modelling And Validation' },
-    { key: 'administrativeInformation', tab: 'Administrative Information' },
+    { key: 'flowPropertiesInformation',
+       tab: (
+        <FormattedMessage
+          id="pages.FlowProperties.view.flowPropertiesInformation"
+          defaultMessage="Flow Properties Information"
+        />
+      ), },
+    { key: 'modellingAndValidation',
+       tab: (
+        <FormattedMessage
+          id="pages.FlowProperties.view.modellingAndValidation"
+          defaultMessage="Modelling And Validation"
+        />
+      ), },
+    { key: 'administrativeInformation',
+       tab: (
+        <FormattedMessage
+          id="pages.FlowProperties.view.administrativeInformation"
+          defaultMessage="Administrative Information"
+        />
+      ), },
   ];
 
   const contentList: Record<string, React.ReactNode> = {
     flowPropertiesInformation: (
       <Space direction="vertical" style={{ width: '100%' }}>
-        <Card size="small" title={'Data Set Information'}>
-          <Card size="small" title={'Name'}>
+        <Card size="small" title={<FormattedMessage id="pages.FlowProperties.view.flowPropertiesInformation.dataSetInformation" defaultMessage="Data Set Information" />}>
+          <Card size="small" title={<FormattedMessage id="pages.FlowProperties.view.flowPropertiesInformation.name" defaultMessage="Name" />}>
             <LangTextItemFrom
               name={['flowPropertiesInformation', 'dataSetInformation', 'common:name']}
-              label="Name"
+              label={<FormattedMessage id="pages.FlowProperties.view.flowPropertiesInformation.name" defaultMessage="Name" />}
             />
           </Card>
           <br />
-          <Card size="small" title={'Classification'}>
+          <Card size="small" title={<FormattedMessage id="pages.FlowProperties.view.flowPropertiesInformation.classification" defaultMessage="Classification" />}>
             <LevelTextItemFrom
               dataType={'FlowProperty'}
               formRef={formRefCreate}
@@ -88,22 +106,22 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
             />
           </Card>
           <br />
-          <Card size="small" title={'General Comment'}>
+          <Card size="small" title={<FormattedMessage id="pages.FlowProperties.view.flowPropertiesInformation.generalComment" defaultMessage="General Comment" />}>
             <LangTextItemFrom
               name={['flowPropertiesInformation', 'dataSetInformation', 'common:generalComment']}
-              label="General Comment"
+              label={<FormattedMessage id="pages.FlowProperties.view.flowPropertiesInformation.generalComment" defaultMessage="General Comment" />}
             />
           </Card>
         </Card>
         <br />
-        <Card size="small" title={'Quantitative Reference'}>
+        <Card size="small" title={<FormattedMessage id="pages.FlowProperties.view.flowPropertiesInformation.quantitativeReference" defaultMessage="Quantitative Reference" />}>
           <UnitGroupSelectFrom
             name={[
               'flowPropertiesInformation',
               'quantitativeReference',
               'referenceToReferenceUnitGroup',
             ]}
-            label="Reference To Reference Unit Group"
+            label={<FormattedMessage id="pages.FlowProperties.view.flowPropertiesInformation.referenceToReferenceUnitGroup" defaultMessage="Reference To Reference Unit Group" />}
             lang={lang}
             formRef={formRefCreate}
             onData={handletFromData}
@@ -121,12 +139,12 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
             'common:referenceToComplianceSystem',
           ]}
           lang={lang}
-          label="Reference To Compliance System"
+          label={<FormattedMessage id="pages.FlowProperties.view.modellingAndValidation.referenceToComplianceSystem" defaultMessage="Reference To Compliance System" />}
           formRef={formRefCreate}
           onData={handletFromData}
         />
         <Form.Item
-          label="Approval Of Overall Compliance"
+          label={<FormattedMessage id="pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance" defaultMessage="Approval Of Overall Compliance" />}
           name={[
             'modellingAndValidation',
             'complianceDeclarations',
@@ -140,9 +158,9 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
     ),
     administrativeInformation: (
       <Space direction="vertical" style={{ width: '100%' }}>
-        <Card size="small" title={'Data Entry By'}>
+        <Card size="small" title={<FormattedMessage id="pages.FlowProperties.view.modellingAndValidation.dataEntryBy" defaultMessage="Data Entry By" />}>
           <Form.Item
-            label="Time Stamp"
+            label={<FormattedMessage id="pages.FlowProperties.view.modellingAndValidation.timeStamp" defaultMessage="Time Stamp" />}
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
           >
             <Input />
@@ -150,15 +168,15 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
           <SourceSelectFrom
             name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
             lang={lang}
-            label="Reference To Compliance System"
+            label={<FormattedMessage id="pages.FlowProperties.view.modellingAndValidation.referenceToComplianceSystem" defaultMessage="Reference To Compliance System" />}
             formRef={formRefCreate}
             onData={handletFromData}
           />
         </Card>
 
-        <Card size="small" title={'Publication And Ownership'}>
+        <Card size="small" title={<FormattedMessage id="pages.FlowProperties.view.modellingAndValidation.publicationAndOwnership" defaultMessage="Publication And Ownership" />}>
           <Form.Item
-            label="Data Set Version"
+            label={<FormattedMessage id="pages.FlowProperties.view.modellingAndValidation.dataSetVersion" defaultMessage="Data Set Version" />}
             name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
           >
             <Input />
@@ -170,12 +188,12 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
               'common:referenceToPrecedingDataSetVersion',
             ]}
             lang={lang}
-            label={'Reference To Preceding Data Set Version'}
+            label={<FormattedMessage id="pages.FlowProperties.view.administrativeInformation.referenceToPrecedingDataSetVersion" defaultMessage="Reference To Preceding Data Set Version" />}
             formRef={formRefCreate}
             onData={handletFromData}
           />
           <Form.Item
-            label="Permanent Data Set URI"
+            label={<FormattedMessage id="pages.FlowProperties.view.administrativeInformation.permanentDataSetURI" defaultMessage="Permanent Data Set URI" />}
             name={[
               'administrativeInformation',
               'publicationAndOwnership',
