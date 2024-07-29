@@ -201,7 +201,6 @@ export async function getContactTablePgroongaSearch(
       total: totalCount ?? 0,
     });
   }
-
   return result;
 }
 

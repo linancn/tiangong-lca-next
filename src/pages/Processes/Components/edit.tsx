@@ -95,7 +95,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
         />
       ),
       dataIndex: 'exchangeDirection',
-      sorter: true,
+      sorter: false,
       search: false,
     },
     {
@@ -178,14 +178,14 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
               buttonType={'icon'}
               actionRef={actionRefExchangeTable}
               onData={handletExchangeData}
-              setViewDrawerVisible={() => {}}
+              setViewDrawerVisible={() => { }}
             />
             <ProcessExchangeDelete
               id={row.dataSetInternalID}
               data={exchangeDataSource}
               buttonType={'icon'}
               actionRef={actionRef}
-              setViewDrawerVisible={() => {}}
+              setViewDrawerVisible={() => { }}
               onData={handletExchangeData}
             />
           </Space>,
@@ -349,7 +349,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
                 defaultMessage="Location"
               />
             }
-            name={['processInformation', 'locationOfOperationSupplyOrProduction', '@location']}
+            name={['processInformation', 'geography', 'locationOfOperationSupplyOrProduction', '@location']}
           >
             <Input />
           </Form.Item>
@@ -362,6 +362,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
           <LangTextItemFrom
             name={[
               'processInformation',
+              'geography',
               'locationOfOperationSupplyOrProduction',
               'descriptionOfRestrictions',
             ]}
@@ -426,7 +427,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
                 defaultMessage="Reference To Technology Flow Diagramm Or Picture"
               />
             }
-            lang="en"
+            lang={lang}
             formRef={formRefEdit}
             onData={handletFromData}
           />

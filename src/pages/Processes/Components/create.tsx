@@ -89,7 +89,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
         />
       ),
       dataIndex: 'exchangeDirection',
-      sorter: true,
+      sorter: false,
       search: false,
     },
     {
@@ -334,7 +334,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
                 defaultMessage="Location"
               />
             }
-            name={['processInformation', 'locationOfOperationSupplyOrProduction', '@location']}
+            name={['processInformation','geography', 'locationOfOperationSupplyOrProduction', '@location']}
           >
             <Input />
           </Form.Item>
@@ -347,6 +347,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
           <LangTextItemFrom
             name={[
               'processInformation',
+              'geography',
               'locationOfOperationSupplyOrProduction',
               'descriptionOfRestrictions',
             ]}

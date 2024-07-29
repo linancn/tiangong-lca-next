@@ -63,7 +63,7 @@ const TableList: FC = () => {
         <FormattedMessage id="pages.source.publicationType" defaultMessage="Publication Type" />
       ),
       dataIndex: 'publicationType',
-      sorter: true,
+      sorter: false,
       search: false,
     },
     {

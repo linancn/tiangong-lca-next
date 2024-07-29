@@ -36,7 +36,7 @@ export default {
   'pages.process.view.processInformation.referenceToTechnologyFlowDiagrammOrPicture':
     '技术流程图或图片的引用',
   'pages.process.view.processInformation.mathematicalRelations:ModelDescription':
-    '数学关系：模型描述', //
+    '数学关系：模型描述', 
   'pages.process.view.processInformation.modelDescription': '模型描述',
   'pages.process.view.modellingAndValidation': '建模和验证',
   'pages.process.view.modellingAndValidation.lCIMethodAndAllocation': 'LCI方法和分配',
@@ -92,6 +92,7 @@ export default {
   'processExchange.resultingAmount': '结果数量',
   'processExchange.meanAmount': '平均数量',
   'processExchange.quantitativeReference': '定量参考',
+
   'processExchange.generalComment': '总评',
   'processExchange.dataDerivationTypeStatus': '获取方式',
   'pages.process.view.exchanges.exchange': '交换',
@@ -112,4 +113,5 @@ export default {
   'pages.process.view.exchange.referenceToReferenceFlow': '引用到引用的流程',
   'pages.process.view.exchange.functionalUnitOrOther': '功能单位或其他',
   'pages.process.view.exchange.selectadirection': '请选择方向',
+  'processExchange.dataDerivationTypeStatus': '获取方式',
 };

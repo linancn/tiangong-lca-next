@@ -67,7 +67,7 @@ const TableList: FC = () => {
       ),
       dataIndex: 'createdAt',
       valueType: 'dateTime',
-      sorter: true,
+      sorter: false,
       search: false,
     },
     {

@@ -1,14 +1,15 @@
 import { ListPagination } from '@/services/general/data';
-import { getUnitGroupTableAll } from '@/services/unitgroups/api';
+import { getUnitGroupTableAll, getUnitGroupTablePgroongaSearch } from '@/services/unitgroups/api';
 import { UnitGroupTable } from '@/services/unitgroups/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, DatabaseOutlined } from '@ant-design/icons';
 import { ProTable } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
-import { Button, Card, Drawer, Space, Tooltip } from 'antd';
+import { Button, Card, Drawer, Input, Space, Tooltip } from 'antd';
+import { SearchProps } from 'antd/es/input/Search';
 import type { FC, Key } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 import UnitGroupCreate from '../create';
 import UnitGroupView from '../view';
 
@@ -18,12 +19,19 @@ type Props = {
   onData: (rowKey: any) => void;
 };
 
+const { Search } = Input;
+
 const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
+  const [tgKeyWord, setTgKeyWord] = useState<any>('');
+  const [myKeyWord, setMyKeyWord] = useState<any>('');
+
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [activeTabKey, setActiveTabKey] = useState<string>('tg');
   const tgActionRefSelect = useRef<ActionType>();
   const myActionRefSelect = useRef<ActionType>();
+
+  const intl = useIntl();
 
   const onSelect = () => {
     setDrawerVisible(true);
@@ -36,11 +44,33 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
   const onTabChange = async (key: string) => {
     await setActiveTabKey(key);
     if (key === 'tg') {
+      await tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
       tgActionRefSelect.current?.reload();
     }
     if (key === 'my') {
+      myActionRefSelect.current?.setPageInfo?.({ current: 1 });
       myActionRefSelect.current?.reload();
     }
+  };
+
+  const onTgSearch: SearchProps['onSearch'] = async (value) => {
+    await setTgKeyWord(value);
+    tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    tgActionRefSelect.current?.reload();
+  };
+
+  const onMySearch: SearchProps['onSearch'] = async (value) => {
+    await setMyKeyWord(value);
+    myActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    myActionRefSelect.current?.reload();
+  };
+
+  const handleTgKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTgKeyWord(e.target.value);
+  };
+
+  const handleMyKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMyKeyWord(e.target.value);
   };
 
   const unitGroupColumns: ProColumns<UnitGroupTable>[] = [
@@ -57,6 +87,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       ),
       dataIndex: 'name',
       sorter: false,
+      search: false,
     },
     {
       title: (
@@ -84,7 +115,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       ),
       dataIndex: 'createdAt',
       valueType: 'dateTime',
-      sorter: true,
+      sorter: false,
       search: false,
     },
     {
@@ -137,63 +168,95 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
 
   const databaseList: Record<string, React.ReactNode> = {
     tg: (
-      <ProTable<UnitGroupTable, ListPagination>
-        actionRef={tgActionRefSelect}
-        search={{
-          defaultCollapsed: false,
-        }}
-        pagination={{
-          showSizeChanger: false,
-          pageSize: 10,
-        }}
-        request={async (
-          params: {
-            pageSize: number;
-            current: number;
-          },
-          sort,
-        ) => {
-          return getUnitGroupTableAll(params, sort, lang, 'tg');
-        }}
-        columns={unitGroupColumns}
-        rowSelection={{
-          type: 'radio',
-          alwaysShowAlert: true,
-          selectedRowKeys,
-          onChange: onSelectChange,
-        }}
-      />
+      <>
+        <Card>
+          <Search
+            name={'my'}
+            size={'large'}
+            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+            value={myKeyWord}
+            onChange={handleMyKeyWordChange}
+            onSearch={onMySearch}
+            enterButton
+          />
+        </Card>
+        <ProTable<UnitGroupTable, ListPagination>
+          actionRef={tgActionRefSelect}
+          search={{
+            defaultCollapsed: false,
+          }}
+          pagination={{
+            showSizeChanger: false,
+            pageSize: 10,
+          }}
+          request={async (
+            params: {
+              pageSize: number;
+              current: number;
+            },
+            sort,
+          ) => {
+            if (tgKeyWord.length > 0) {
+              return getUnitGroupTablePgroongaSearch(params, lang, 'tg', tgKeyWord, {});
+            }
+            return getUnitGroupTableAll(params, sort, lang, 'tg');
+          }}
+          columns={unitGroupColumns}
+          rowSelection={{
+            type: 'radio',
+            alwaysShowAlert: true,
+            selectedRowKeys,
+            onChange: onSelectChange,
+          }}
+        />
+      </>
     ),
     my: (
-      <ProTable<UnitGroupTable, ListPagination>
-        actionRef={myActionRefSelect}
-        search={{
-          defaultCollapsed: false,
-        }}
-        toolBarRender={() => {
-          return [<UnitGroupCreate key={0} lang={lang} actionRef={myActionRefSelect} />];
-        }}
-        pagination={{
-          showSizeChanger: false,
-          pageSize: 10,
-        }}
-        request={async (
-          params: {
-            pageSize: number;
-            current: number;
-          },
-          sort,
-        ) => {
-          return getUnitGroupTableAll(params, sort, lang, 'my');
-        }}
-        columns={unitGroupColumns}
-        rowSelection={{
-          type: 'radio',
-          alwaysShowAlert: true,
-          selectedRowKeys,
-          onChange: onSelectChange,
-        }}
-      />
+      <>
+        <Card>
+          <Search
+            name={'tg'}
+            size={'large'}
+            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+            value={tgKeyWord}
+            onChange={handleTgKeyWordChange}
+            onSearch={onTgSearch}
+            enterButton
+          />
+        </Card>
+        <ProTable<UnitGroupTable, ListPagination>
+          actionRef={myActionRefSelect}
+          search={{
+            defaultCollapsed: false,
+          }}
+          toolBarRender={() => {
+            return [<UnitGroupCreate key={0} lang={lang} actionRef={myActionRefSelect} />];
+          }}
+          pagination={{
+            showSizeChanger: false,
+            pageSize: 10,
+          }}
+          request={async (
+            params: {
+              pageSize: number;
+              current: number;
+            },
+            sort,
+          ) => {
+            if (tgKeyWord.length > 0) {
+              return getUnitGroupTablePgroongaSearch(params, lang, 'my', myKeyWord, {});
+            }
+            return getUnitGroupTableAll(params, sort, lang, 'my');
+          }}
+          columns={unitGroupColumns}
+          rowSelection={{
+            type: 'radio',
+            alwaysShowAlert: true,
+            selectedRowKeys,
+            onChange: onSelectChange,
+          }}
+        />
+      </>
     ),
   };
 
