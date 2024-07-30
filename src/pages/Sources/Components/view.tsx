@@ -1,3 +1,4 @@
+import ImageGallery from '@/components/ImageViewer/gallery';
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
@@ -137,8 +138,18 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
             }
             labelStyle={{ width: '220px' }}
           >
-            {initData.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri'] ??
-              '-'}
+            {(initData.sourceInformation?.dataSetInformation?.classificationInformation?.[
+              'common:classification'
+            ]?.['common:class']?.['@level_0'] ?? '') === 'Image' ? (
+              <ImageGallery
+                data={
+                  initData.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri']
+                }
+              />
+            ) : (
+              initData.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri'] ??
+              '-'
+            )}
           </Descriptions.Item>
         </Descriptions>
         <br />

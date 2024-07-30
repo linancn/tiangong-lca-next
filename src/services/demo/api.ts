@@ -69,10 +69,24 @@ export async function jsonSelectTest() {
 }
 
 export async function storage() {
-  // const { data, error } = await supabase.storage
+  const session = await supabase.auth.getSession();
+
+  // const result = await supabase.storage
   //   .from('external_docs')
   //   .getPublicUrl('A1uGb6xfkotXG0xg0krcTTYInUh.png');
-  // console.log('data', data);
-  // console.log('error', error);
-  // return data;
+
+  const aa =
+    'https://qgzvkongdjqiiamzbbts.supabase.co/storage/v1/object/authenticated/external_docs/A1uGb6xfkotXG0xg0krcTTYInUh.png';
+
+  const response = await fetch(aa, {
+    headers: {
+      Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+    },
+  });
+
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  console.log('url', url);
+
+  return url;
 }

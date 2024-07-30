@@ -1,5 +1,5 @@
 import { PageContainer } from '@ant-design/pro-components';
-import { Button, Card, theme } from 'antd';
+import { Button, Card, Image, theme } from 'antd';
 import React from 'react';
 import {
   hybrid_search,
@@ -11,6 +11,8 @@ import {
 
 const Demo: React.FC = () => {
   const { token } = theme.useToken();
+  const [imageUrl, setImageUrl] = React.useState<string>('');
+
   return (
     <PageContainer>
       <Card
@@ -42,12 +44,13 @@ const Demo: React.FC = () => {
               gap: 16,
             }}
           >
+            <Image width={100} src={imageUrl} />
             <Button onClick={() => pgroonga_search()}>pgroonga_search</Button>
             <Button onClick={() => hybrid_search()}>hybrid_search</Button>
 
             <Button onClick={() => returnUserEdgeFunction()}>returnUserEdgeFunction</Button>
             <Button onClick={() => jsonSelectTest()}>jsonSelectTest</Button>
-            <Button onClick={() => storage()}>storage</Button>
+            <Button onClick={async () => setImageUrl(await storage())}>storage</Button>
           </div>
         </div>
       </Card>

@@ -1,3 +1,5 @@
+import { supabase } from '../supabase';
+
 export function removeEmptyObjects(obj: any) {
   Object.keys(obj).forEach((key) => {
     if (obj[key] && typeof obj[key] === 'object') {
@@ -150,4 +152,32 @@ export function classificationToList(classifications: any) {
     }
   }
   return removeEmptyObjects(common_class);
+}
+
+export async function getImageUrls(filePaths: string) {
+  const session = await supabase.auth.getSession();
+  if (!session) {
+    throw new Error('No session');
+  }
+
+  const fileList = filePaths.split(',');
+
+  const urls = await Promise.all(
+    fileList.map(async (file: string) => {
+      const fileUrl = `https://qgzvkongdjqiiamzbbts.supabase.co/storage/v1/object/authenticated${file.replace(
+        '..',
+        '',
+      )}`;
+      const response = await fetch(fileUrl, {
+        headers: {
+          Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+        },
+      });
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      return blobUrl;
+    }),
+  );
+
+  return urls;
 }
