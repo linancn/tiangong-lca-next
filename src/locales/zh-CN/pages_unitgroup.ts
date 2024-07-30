@@ -5,7 +5,7 @@ export default {
   'pages.unitgroup.drawer.title.delete': '删除单位组',
 
   'pages.unitgroup.unit.generalComment': '概述',
-  'pages.unitgroup.unit.quantitativeReference': '度量参考',
+  'pages.unitgroup.unit.quantitativeReference': '量值参考',
   'pages.unitgroup.unit.meanValue': '平均值',
   'pages.unitgroup.unit.selected': '是否基准单位',
   'pages.unitgroup.unit.drawer.title.create': '创建单位',
@@ -24,7 +24,7 @@ export default {
   'pages.unitgroup.name': '名称',
   'pages.unitgroup.classification': '分类',
   'pages.unitgroup.meanValue': '平均值',
-  'pages.unitgroup.quantitativeReference': '度量参考',
+  'pages.unitgroup.quantitativeReference': '量值参考',
   'pages.unitgroup.referenceToComplianceSystem': '合规性系统的引用', //
   'pages.unitgroup.approvalOfOverallCompliance': '整体合规性批准',
   'pages.unitgroup.timeStamp': '时间戳',
@@ -48,7 +48,7 @@ export default {
   'pages.unitgroup.creat.name': '名称',
   'pages.unitgroup.creat.generalComment': '概述',
   'pages.unitgroup.creat.meanValue': '平均值',
-  'pages.unitgroup.creat.quantitativeReference': '度量参考',
+  'pages.unitgroup.creat.quantitativeReference': '量值参考',
   //
   //unit 编辑edit
   'pages.unitgroup.edit.unitGroupInformation': '单位组信息',
@@ -67,7 +67,7 @@ export default {
   'pages.unitgroup.edit.name': '名称',
   'pages.unitgroup.edit.generalComment': '概述',
   'pages.unitgroup.edit.meanValue': '平均值',
-  'pages.unitgroup.edit.quantitativeReference': '度量参考',
+  'pages.unitgroup.edit.quantitativeReference': '量值参考',
   //
   //unit 删除
   //'pages.unitgroup.delete.title':'确认删除',
