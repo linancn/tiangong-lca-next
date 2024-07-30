@@ -3,7 +3,7 @@ export default {
   'pages.table.title.name': '名称',
   'pages.table.title.classification': '分类',
   'pages.table.title.description': '描述',
-  'pages.table.title.generalComment': '说明',
+  'pages.table.title.generalComment': '概述',
   'pages.table.title.createdAt': '创建时间',
   'pages.table.title.option': '操作',
 
