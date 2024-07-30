@@ -11,7 +11,7 @@ export default {
   'pages.contact.level1': '类别1',
   'pages.contact.level2': '类别2',
   'pages.contact.level3': '类别3',
-  'pages.contact.centralContactPoints': 'centralContactPoints',
+  'pages.contact.centralContactPoints': '中心联络人',
   'pages.contact.telephone': '电话',
   'pages.contact.telefax': '传真',
   'pages.contact.WWWAddress': '网站',
@@ -21,16 +21,16 @@ export default {
   'pages.contact.type': '类型',
   'pages.contact.uri': '统一资源标识符',
   'pages.contact.version': '版本',
-  'pages.contact.placeholder': '请选择 Reference To Contact', //未改
+  'pages.contact.placeholder': '请选择联系方式参考', //未改
   'pages.contact.contactAddress': '联系人地址',
   'pages.contact.shortDescription': '简介',
   //联系人信息
   'pages.contact.dataEntryBy': '数据输入方式',
-  'pages.contact.timeStamp': '时间点',
+  'pages.contact.timeStamp': '时间戳',
   'pages.contact.referenceToDataSetFormat': '参考数据集格式',
   'pages.contact.publicationAndOwnership': '出版和所有权',
   'pages.contact.dataSetVersion': '数据集版本',
-  'pages.contact.referenceToPrecedingDataSetVersion': '参考前一数据集版本', //翻译不确定
+  'pages.contact.referenceToPrecedingDataSetVersion': '上一版本数据集引用', //翻译不确定
   'pages.contact.permanentDataSetURI': '永久数据集URI',
   //管理信息
 

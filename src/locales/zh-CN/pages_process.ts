@@ -1,5 +1,5 @@
 export default {
-  'pages.process.referenceYear': '年份',
+  'pages.process.referenceYear': '参考年份',
   'pages.process.location': '地点',
 
   'pages.process.drawer.title.create': '创建单元过程',
@@ -10,7 +10,7 @@ export default {
   'pages.process.exchange.resultingAmount': '结果数量',
   'processExchange.referenceToFlowDataSet': '参考数据集',
   'pages.process.exchange.meanAmount': '平均数量',
-  'pages.process.exchange.quantitativeReference': '定量参考',
+  'pages.process.exchange.quantitativeReference': '量值参考',
   'pages.process.exchange.dataDerivationTypeStatus': '获取方式',
 
   'pages.process.exchange.drawer.title.create': '创建交换',
@@ -20,7 +20,7 @@ export default {
   'pages.process.view.processInformation': '过程信息',
   'pages.process.view.processInformation.id': '身份信息',
   'pages.process.view.processInformation.baseName': '基本名称',
-  'pages.process.view.processInformation.generalComment': '总评',
+  'pages.process.view.processInformation.generalComment': '概述',
   'pages.process.view.processInformation.classification': '分类',
   'pages.process.view.processInformation.time': '时间',
   'pages.process.view.processInformation.referenceYear': '参考年份',
@@ -91,9 +91,9 @@ export default {
   'processExchange.exchangeDirection': '交换方向',
   'processExchange.resultingAmount': '结果数量',
   'processExchange.meanAmount': '平均数量',
-  'processExchange.quantitativeReference': '定量参考',
+  'processExchange.quantitativeReference': '量值参考',
 
-  'processExchange.generalComment': '总评',
+  'processExchange.generalComment': '概述',
   'pages.process.view.exchanges.exchange': '交换',
   //delete
   'pages.button.deleteMessage.areyousureyouwanttodeletethisdata': '您确定要删除此数据吗？',
@@ -107,8 +107,8 @@ export default {
   'pages.process.view.exchange.meanAmount': '平均数量',
   'pages.process.view.exchange.resultingAmount': '结果数量',
   'pages.process.view.exchange.dataDerivationTypeStatus': '获取方式',
-  'pages.process.view.exchange.generalComment': '总评',
-  'pages.process.view.exchange.quantitativeReference': '定量参考',
+  'pages.process.view.exchange.generalComment': '概述',
+  'pages.process.view.exchange.quantitativeReference': '量值参考',
   'pages.process.view.exchange.referenceToReferenceFlow': '引用到引用的流程',
   'pages.process.view.exchange.functionalUnitOrOther': '功能单位或其他',
   'pages.process.view.exchange.selectadirection': '请选择方向',
