@@ -82,7 +82,7 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
         <LevelTextItemDescription
           data={
             initData.sourceInformation?.dataSetInformation?.classificationInformation?.[
-              'common:classification'
+            'common:classification'
             ]?.['common:class']
           }
         />
@@ -127,31 +127,28 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
           data={initData.sourceInformation?.dataSetInformation?.sourceDescriptionOrComment}
         />
         <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id="pages.source.view.sourceInformation.referenceToDigitalFile"
-                defaultMessage="Reference To Digital File"
-              />
-            }
-            labelStyle={{ width: '220px' }}
-          >
-            {(initData.sourceInformation?.dataSetInformation?.classificationInformation?.[
-              'common:classification'
-            ]?.['common:class']?.['@level_0'] ?? '') === 'Image' ? (
-              <ImageGallery
-                data={
-                  initData.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri']
-                }
-              />
-            ) : (
-              initData.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri'] ??
-              '-'
-            )}
-          </Descriptions.Item>
-        </Descriptions>
+        <Card
+          size="small"
+          title={
+            <FormattedMessage
+              id="pages.source.edit.sourceInformation.referenceToDigitalFile"
+              defaultMessage="Reference To Digital File"
+            />
+          }
+        >
+          {(initData.sourceInformation?.dataSetInformation?.classificationInformation?.[
+            'common:classification'
+          ]?.['common:class']?.['@level_0'] ?? '') === 'Images' ? (
+            <ImageGallery
+              data={
+                initData.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri']
+              }
+            />
+          ) : (
+            initData.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri'] ??
+            '-'
+          )}
+        </Card>
         <br />
         <ContactSelectDescription
           title={

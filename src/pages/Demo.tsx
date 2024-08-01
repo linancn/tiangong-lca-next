@@ -1,3 +1,4 @@
+import { removeFile } from '@/services/general/util';
 import { PageContainer } from '@ant-design/pro-components';
 import { Button, Card, Image, theme } from 'antd';
 import React from 'react';
@@ -51,6 +52,7 @@ const Demo: React.FC = () => {
             <Button onClick={() => returnUserEdgeFunction()}>returnUserEdgeFunction</Button>
             <Button onClick={() => jsonSelectTest()}>jsonSelectTest</Button>
             <Button onClick={async () => setImageUrl(await storage())}>storage</Button>
+            <Button onClick={async () => removeFile(['b81d4445-3c9f-44cb-ab02-fa52478eeea2.png'])} >storage.remove</Button>
           </div>
         </div>
       </Card>

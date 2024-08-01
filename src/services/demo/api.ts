@@ -76,13 +76,15 @@ export async function storage() {
   //   .getPublicUrl('A1uGb6xfkotXG0xg0krcTTYInUh.png');
 
   const aa =
-    'https://qgzvkongdjqiiamzbbts.supabase.co/storage/v1/object/authenticated/external_docs/A1uGb6xfkotXG0xg0krcTTYInUh.png';
+    'https://qgzvkongdjqiiamzbbts.supabase.co/storage/v1/object/authenticated/external_docs/b81d4445-3c9f-44cb-ab02-fa52478eeea2.png';
 
   const response = await fetch(aa, {
     headers: {
       Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
     },
   });
+
+console.log('response', response);
 
   const blob = await response.blob();
   const url = URL.createObjectURL(blob);
