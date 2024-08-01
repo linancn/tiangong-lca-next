@@ -1,7 +1,10 @@
+import { UploadButton } from '@/components/ImageViewer/upload';
 import LangTextItemFrom from '@/components/LangTextItem/from';
 import LevelTextItemFrom from '@/components/LevelTextItem/from';
 import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
+import { FileType, getBase64, removeFile, uploadFile } from '@/services/general/util';
 import { createSource } from '@/services/sources/api';
+import { supabaseStorageBucket } from '@/services/supabase/key';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-form';
@@ -13,25 +16,46 @@ import {
   Collapse,
   Drawer,
   Form,
+  Image,
   Input,
   Space,
   Tooltip,
   Typography,
+  Upload,
+  UploadFile,
   message,
 } from 'antd';
+import path from 'path';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
+import { v4 } from 'uuid';
 import SourceSelectFrom from './select/from';
+
 type Props = {
   actionRef: React.MutableRefObject<ActionType | undefined>;
   lang: string;
 };
+
 const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
   const [fromData, setFromData] = useState<any>({});
   const [activeTabKey, setActiveTabKey] = useState<string>('sourceInformation');
+  const [fileList0, setFileList0] = useState<any[]>([]);
+  const [fileList, setFileList] = useState<any[]>([]);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState('');
+  const [loadFiles, setLoadFiles] = useState<any[]>([]);
+
+  const handlePreview = async (file: UploadFile) => {
+    if (!file.url && !file.preview) {
+      file.preview = await getBase64(file.originFileObj as FileType);
+    }
+
+    setPreviewImage(file.url || (file.preview as string));
+    setPreviewOpen(true);
+  };
 
   const handletFromData = () => {
     setFromData({
@@ -150,7 +174,43 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
           />
         </Card>
         <br />
-        <Form.Item
+        <Card
+          size="small"
+          title={
+            <FormattedMessage
+              id="pages.source.edit.sourceInformation.referenceToDigitalFile"
+              defaultMessage="Reference To Digital File"
+            />
+          }
+        >
+          <Upload
+            name="avatar"
+            listType="picture-card"
+            fileList={fileList}
+            onPreview={handlePreview}
+            beforeUpload={(file) => {
+              setLoadFiles([...loadFiles, file]);
+              return false;
+            }}
+            onChange={({ fileList: newFileList }) => {
+              setFileList(newFileList);
+            }}
+          >
+            <UploadButton />
+          </Upload>
+          {previewImage && (
+            <Image
+              wrapperStyle={{ display: 'none' }}
+              preview={{
+                visible: previewOpen,
+                onVisibleChange: (visible) => setPreviewOpen(visible),
+                afterOpenChange: (visible) => !visible && setPreviewImage(''),
+              }}
+              src={previewImage}
+            />
+          )}
+        </Card>
+        {/* <Form.Item
           label={
             <FormattedMessage
               id="pages.source.create.sourceInformation.referenceToDigitalFile"
@@ -160,7 +220,7 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
           name={['sourceInformation', 'dataSetInformation', 'referenceToDigitalFile', '@uri']}
         >
           <Input />
-        </Form.Item>
+        </Form.Item> */}
         <br />
         <ContactSelectFrom
           name={['sourceInformation', 'dataSetInformation', 'referenceToContact']}
@@ -261,19 +321,84 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
     actionRef.current?.reload();
   }, [actionRef]);
 
+  const onSubmit = async () => {
+    if (fileList0.length > 0) {
+      const nonExistentFiles = fileList0.filter(file0 => !fileList.some(file => file.uid === file0.uid));
+      if (nonExistentFiles.length > 0) {
+        const { error } = await removeFile(nonExistentFiles.map(file => file.uid.replace(`../${supabaseStorageBucket}/`, '')));
+        if (error) {
+          message.error(error.message);
+        }
+      }
+    }
+
+    let filePaths = '';
+    let fileListWithUUID = [];
+    if (fileList.length > 0) {
+      fileListWithUUID = fileList.map((file) => {
+        const isInFileList0 = fileList0.some(file0 => file0.uid === file.uid);
+        if (isInFileList0) {
+          filePaths = filePaths + `${file.uid},`;
+          return file;
+        }
+        else {
+          const fileExtension = path.extname(file.name);
+          const newUid = `../${supabaseStorageBucket}/${v4()}${fileExtension}`;
+          filePaths = filePaths + `${newUid},`;
+          return { ...file, newUid: newUid };
+        }
+      });
+    }
+
+    filePaths = filePaths.slice(0, -1);
+
+    const result = await createSource({
+      ...fromData,
+      sourceInformation: {
+        ...fromData.sourceInformation,
+        dataSetInformation: {
+          ...fromData.sourceInformation.dataSetInformation,
+          referenceToDigitalFile: {
+            '@uri': filePaths,
+          },
+        },
+      },
+    });
+
+    if (result?.data) {
+      if (fileListWithUUID.length > 0) {
+        fileListWithUUID.forEach(async (file) => {
+          if (file.newUid) {
+            const thisFile = loadFiles.find(f => f.uid === file.uid);
+            await uploadFile(file.newUid.replace(`../${supabaseStorageBucket}/`, ''), thisFile);
+          }
+        });
+      }
+      message.success(
+        <FormattedMessage
+          id="options.createsuccess"
+          defaultMessage="Created Successfully!"
+        />,
+      );
+      setFromData({});
+      formRefCreate.current?.resetFields();
+      formRefCreate.current?.setFieldsValue({});
+      setDrawerVisible(false);
+      reload();
+    } else {
+      message.error(result.error.message);
+    }
+    return true;
+  }
+
   useEffect(() => {
-    if (drawerVisible === false) return;
+    if (!drawerVisible) return;
     setFromData({});
     formRefCreate.current?.resetFields();
     formRefCreate.current?.setFieldsValue({});
+    setFileList0([]);
+    setFileList([]);
   }, [drawerVisible]);
-
-  // useEffect(() => {
-  //     setFromData({
-  //         ...fromData,
-  //         [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
-  //     });
-  // }, [formRefCreate.current?.getFieldsValue()]);
 
   return (
     <>
@@ -331,25 +456,7 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
               return [];
             },
           }}
-          onFinish={async () => {
-            const result = await createSource({ ...fromData });
-            if (result.data) {
-              message.success(
-                <FormattedMessage
-                  id="options.createsuccess"
-                  defaultMessage="Created Successfully!"
-                />,
-              );
-              setFromData({});
-              formRefCreate.current?.resetFields();
-              formRefCreate.current?.setFieldsValue({});
-              setDrawerVisible(false);
-              reload();
-            } else {
-              message.error(result.error.message);
-            }
-            return true;
-          }}
+          onFinish={onSubmit}
         >
           <Card
             style={{ width: '100%' }}

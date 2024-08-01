@@ -1,3 +1,4 @@
+import { UploadButton } from '@/components/ImageViewer/upload';
 import LangTextItemFrom from '@/components/LangTextItem/from';
 import LevelTextItemFrom from '@/components/LevelTextItem/from';
 import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
@@ -6,7 +7,7 @@ import { getSourceDetail, updateSource } from '@/services/sources/api';
 import { genSourceFromData } from '@/services/sources/util';
 import { supabaseStorageBucket } from '@/services/supabase/key';
 import styles from '@/style/custom.less';
-import { CloseOutlined, FormOutlined, LoadingOutlined, PlusOutlined } from '@ant-design/icons';
+import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ProForm } from '@ant-design/pro-components';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import type { ActionType } from '@ant-design/pro-table';
@@ -53,13 +54,6 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerV
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const [loadFiles, setLoadFiles] = useState<any[]>([]);
-
-  const uploadButton = (
-    <button style={{ border: 0, background: 'none' }} type="button">
-      {false ? <LoadingOutlined /> : <PlusOutlined />}
-      <div style={{ marginTop: 8 }}>Upload</div>
-    </button>
-  );
 
   const handlePreview = async (file: UploadFile) => {
     if (!file.url && !file.preview) {
@@ -213,7 +207,7 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerV
               setFileList(newFileList);
             }}
           >
-            {uploadButton}
+            <UploadButton />
           </Upload>
           {previewImage && (
             <Image
