@@ -1,3 +1,4 @@
+import FileGallery from '@/components/FileViewer/gallery';
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
@@ -126,21 +127,19 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
           data={initData.sourceInformation?.dataSetInformation?.sourceDescriptionOrComment}
         />
         <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id="pages.source.view.sourceInformation.referenceToDigitalFile"
-                defaultMessage="Reference To Digital File"
-              />
-            }
-            labelStyle={{ width: '220px' }}
-          >
-            {initData.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri'] ??
-              '-'}
-          </Descriptions.Item>
-        </Descriptions>
+        <Card
+          size="small"
+          title={
+            <FormattedMessage
+              id="pages.source.edit.sourceInformation.referenceToDigitalFile"
+              defaultMessage="Reference To Digital File"
+            />
+          }
+        >
+          <FileGallery
+            data={initData.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri']}
+          />
+        </Card>
         <br />
         <ContactSelectDescription
           title={

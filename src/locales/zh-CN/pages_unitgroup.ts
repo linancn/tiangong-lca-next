@@ -75,7 +75,7 @@ export default {
   //
   //table 表头
   'pages.table.title.name': '名称',
-  'pages.table.title.index': '序号',//与其它文件保持一致
+  'pages.table.title.index': '序号', //与其它文件保持一致
   'pages.table.title.option': '操作',
   //'pages.table.title.generalComment':'一般性评论',
   //'pages.table.title.meanValue':'平均值',

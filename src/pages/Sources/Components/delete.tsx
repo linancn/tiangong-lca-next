@@ -1,4 +1,7 @@
-import { deleteSource } from '@/services/sources/api';
+import { deleteSource, getSourceDetail } from '@/services/sources/api';
+import { genSourceFromData } from '@/services/sources/util';
+import { supabaseStorageBucket } from '@/services/supabase/key';
+import { getFileUrls, removeFile } from '@/services/supabase/storage';
 import { DeleteOutlined } from '@ant-design/icons';
 import type { ActionType } from '@ant-design/pro-table';
 import { Button, message, Modal, Tooltip } from 'antd';
@@ -19,7 +22,7 @@ const SourceDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisib
     setIsModalVisible(true);
   }, []);
 
-  const handleOk = useCallback(() => {
+  const deleteData = () => {
     deleteSource(id).then(async (result: any) => {
       if (result.status === 204) {
         message.success(
@@ -33,6 +36,27 @@ const SourceDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisib
         actionRef.current?.reload();
       } else {
         message.error(result.error.message ?? 'Error');
+      }
+    });
+  };
+
+  const handleOk = useCallback(async () => {
+    await getSourceDetail(id).then(async (result: any) => {
+      const dataSet = genSourceFromData(result.data?.json?.sourceDataSet ?? {});
+      const initFile = await getFileUrls(
+        dataSet.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri'],
+      );
+      if (initFile.length > 0) {
+        const { error } = await removeFile(
+          initFile.map((file) => file.uid.replace(`../${supabaseStorageBucket}/`, '')),
+        );
+        if (error) {
+          message.error(error.message);
+          return;
+        }
+        deleteData();
+      } else {
+        deleteData();
       }
     });
   }, [actionRef, id, setViewDrawerVisible]);

@@ -1,8 +1,18 @@
+import { UploadButton } from '@/components/FileViewer/upload';
 import LangTextItemFrom from '@/components/LangTextItem/from';
 import LevelTextItemFrom from '@/components/LevelTextItem/from';
 import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
 import { getSourceDetail, updateSource } from '@/services/sources/api';
 import { genSourceFromData } from '@/services/sources/util';
+import { supabaseStorageBucket } from '@/services/supabase/key';
+import {
+  FileType,
+  getBase64,
+  getFileUrls,
+  isImage,
+  removeFile,
+  uploadFile,
+} from '@/services/supabase/storage';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ProForm } from '@ant-design/pro-components';
@@ -14,16 +24,21 @@ import {
   Collapse,
   Drawer,
   Form,
+  Image,
   Input,
+  message,
   Space,
   Spin,
   Tooltip,
   Typography,
-  message,
+  Upload,
+  UploadFile,
 } from 'antd';
+import path from 'path';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
+import { v4 } from 'uuid';
 import SourceSelectFrom from './select/from';
 
 type Props = {
@@ -33,6 +48,7 @@ type Props = {
   actionRef: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
 };
+
 const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerVisible }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
@@ -40,6 +56,23 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerV
   const [fromData, setFromData] = useState<any>({});
   const [initData, setInitData] = useState<any>({});
   const [spinning, setSpinning] = useState(false);
+  const [fileList0, setFileList0] = useState<any[]>([]);
+  const [fileList, setFileList] = useState<any[]>([]);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState('');
+  const [loadFiles, setLoadFiles] = useState<any[]>([]);
+
+  const handlePreview = async (file: UploadFile) => {
+    if (isImage(file)) {
+      if (!file.url && !file.preview) {
+        file.preview = await getBase64(file.originFileObj as FileType);
+      }
+      setPreviewImage(file.url || (file.preview as string));
+      setPreviewOpen(true);
+    } else {
+      window.open(file.url || (file.preview as string), '_blank');
+    }
+  };
 
   const handletFromData = () => {
     setFromData({
@@ -73,7 +106,7 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerV
     },
   ];
 
-  const sourceList: Record<string, React.ReactNode> = {
+  const contentList: Record<string, React.ReactNode> = {
     sourceInformation: (
       <Space direction="vertical" style={{ width: '100%' }}>
         <Card
@@ -162,7 +195,43 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerV
           />
         </Card>
         <br />
-        <Form.Item
+        <Card
+          size="small"
+          title={
+            <FormattedMessage
+              id="pages.source.edit.sourceInformation.referenceToDigitalFile"
+              defaultMessage="Reference To Digital File"
+            />
+          }
+        >
+          <Upload
+            name="avatar"
+            listType="picture-card"
+            fileList={fileList}
+            onPreview={handlePreview}
+            beforeUpload={(file) => {
+              setLoadFiles([...loadFiles, file]);
+              return false;
+            }}
+            onChange={({ fileList: newFileList }) => {
+              setFileList(newFileList);
+            }}
+          >
+            <UploadButton />
+          </Upload>
+          {previewImage && (
+            <Image
+              wrapperStyle={{ display: 'none' }}
+              preview={{
+                visible: previewOpen,
+                onVisibleChange: (visible) => setPreviewOpen(visible),
+                afterOpenChange: (visible) => !visible && setPreviewImage(''),
+              }}
+              src={previewImage}
+            />
+          )}
+        </Card>
+        {/* <Form.Item
           label={
             <FormattedMessage
               id="pages.source.edit.sourceInformation.referenceToDigitalFile"
@@ -171,8 +240,8 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerV
           }
           name={['sourceInformation', 'dataSetInformation', 'referenceToDigitalFile', '@uri']}
         >
-          <Input />
-        </Form.Item>
+          <Input disabled={false} />
+        </Form.Item> */}
         <br />
         <ContactSelectFrom
           name={['sourceInformation', 'dataSetInformation', 'referenceToContact']}
@@ -285,17 +354,92 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerV
     });
   };
 
+  const onSubmit = async () => {
+    if (fileList0.length > 0) {
+      const nonExistentFiles = fileList0.filter(
+        (file0) => !fileList.some((file) => file.uid === file0.uid),
+      );
+      if (nonExistentFiles.length > 0) {
+        const { error } = await removeFile(
+          nonExistentFiles.map((file) => file.uid.replace(`../${supabaseStorageBucket}/`, '')),
+        );
+        if (error) {
+          message.error(error.message);
+        }
+      }
+    }
+
+    let filePaths = '';
+    let fileListWithUUID = [];
+    if (fileList.length > 0) {
+      fileListWithUUID = fileList.map((file) => {
+        const isInFileList0 = fileList0.some((file0) => file0.uid === file.uid);
+        if (isInFileList0) {
+          filePaths = filePaths + `${file.uid},`;
+          return file;
+        } else {
+          const fileExtension = path.extname(file.name);
+          const newUid = `../${supabaseStorageBucket}/${v4()}${fileExtension}`;
+          filePaths = filePaths + `${newUid},`;
+          return { ...file, newUid: newUid };
+        }
+      });
+    }
+
+    filePaths = filePaths.slice(0, -1);
+
+    const result = await updateSource({
+      ...fromData,
+      sourceInformation: {
+        ...fromData.sourceInformation,
+        dataSetInformation: {
+          ...fromData.sourceInformation.dataSetInformation,
+          referenceToDigitalFile: {
+            '@uri': filePaths,
+          },
+        },
+      },
+    });
+
+    if (result?.data) {
+      if (fileListWithUUID.length > 0) {
+        fileListWithUUID.forEach(async (file) => {
+          if (file.newUid) {
+            const thisFile = loadFiles.find((f) => f.uid === file.uid);
+            await uploadFile(file.newUid.replace(`../${supabaseStorageBucket}/`, ''), thisFile);
+          }
+        });
+      }
+      message.success(
+        <FormattedMessage id="options.savesuccess" defaultMessage="Saved Successfully!" />,
+      );
+      formRefEdit.current?.resetFields();
+      setDrawerVisible(false);
+      reload();
+    } else {
+      message.error(result?.error?.message);
+    }
+
+    return true;
+  };
+
   useEffect(() => {
-    if (drawerVisible) return;
+    if (!drawerVisible) return;
     setSpinning(true);
     getSourceDetail(id).then(async (result: any) => {
-      setInitData({ ...genSourceFromData(result.data?.json?.sourceDataSet ?? {}), id: id });
-      setFromData({ ...genSourceFromData(result.data?.json?.sourceDataSet ?? {}), id: id });
+      const dataSet = genSourceFromData(result.data?.json?.sourceDataSet ?? {});
+      setInitData({ ...dataSet, id: id });
+      setFromData({ ...dataSet, id: id });
       formRefEdit.current?.resetFields();
       formRefEdit.current?.setFieldsValue({
-        ...genSourceFromData(result.data?.json?.sourceDataSet ?? {}),
+        ...dataSet,
         id: id,
       });
+      const initFile = await getFileUrls(
+        dataSet.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri'],
+      );
+      await setFileList0(initFile);
+      await setFileList(initFile);
       setSpinning(false);
     });
   }, [drawerVisible]);
@@ -354,23 +498,7 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerV
                 return [];
               },
             }}
-            onFinish={async () => {
-              const result = await updateSource({ ...fromData });
-              if (result?.data) {
-                message.success(
-                  <FormattedMessage
-                    id="options.createsuccess"
-                    defaultMessage="Created Successfully!"
-                  />,
-                );
-                formRefEdit.current?.resetFields();
-                setDrawerVisible(false);
-                reload();
-              } else {
-                message.error(result?.error?.message);
-              }
-              return true;
-            }}
+            onFinish={onSubmit}
           >
             <Card
               style={{ width: '100%' }}
@@ -380,7 +508,7 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerV
               activeTabKey={activeTabKey}
               onTabChange={onTabChange}
             >
-              {sourceList[activeTabKey]}
+              {contentList[activeTabKey]}
             </Card>
           </ProForm>
           <Collapse
