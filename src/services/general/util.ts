@@ -1,17 +1,3 @@
-import { GetProp, UploadProps } from 'antd';
-import { supabase } from '../supabase';
-import { supabaseStorageBucket, supabaseUrl } from '../supabase/key';
-
-export type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0];
-
-export const getBase64 = (file: FileType): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = (error) => reject(error);
-  });
-
 export function removeEmptyObjects(obj: any) {
   Object.keys(obj).forEach((key) => {
     if (obj[key] && typeof obj[key] === 'object') {
@@ -164,49 +150,4 @@ export function classificationToList(classifications: any) {
     }
   }
   return removeEmptyObjects(common_class);
-}
-
-export async function getFileUrls(filePaths: string) {
-  const session = await supabase.auth.getSession();
-  if (!session) {
-    throw new Error('No session');
-  }
-
-  if (!filePaths) {
-    return [];
-  }
-
-  const fileList = filePaths.split(',');
-
-  const urls = await Promise.all(
-    fileList.map(async (file: string, index: number) => {
-      const fileUrl = `${supabaseUrl}/storage/v1/object/authenticated${file.replace('..', '')}`;
-      try {
-        const response = await fetch(fileUrl, {
-          headers: {
-            Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
-          },
-        });
-        if (!response.ok) {
-          return { uid: file, status: 'error', name: `${index}` };
-        }
-        const blob = await response.blob();
-        const blobUrl = URL.createObjectURL(blob);
-        return { uid: file, status: 'done', name: `${index}`, url: blobUrl };
-      } catch (e) {
-        return { uid: file, status: 'error', name: `${index}` };
-      }
-    }),
-  );
-  return urls;
-}
-
-export async function uploadFile(name: string, file: any) {
-  const result = await supabase.storage.from(supabaseStorageBucket).upload(name, file);
-  return result;
-}
-
-export async function removeFile(files: string[]) {
-  const result = await supabase.storage.from(supabaseStorageBucket).remove(files);
-  return result;
 }

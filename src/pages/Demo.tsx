@@ -1,4 +1,4 @@
-import { removeFile } from '@/services/general/util';
+import { removeFile } from '@/services/supabase/storage';
 import { PageContainer } from '@ant-design/pro-components';
 import { Button, Card, Image, theme } from 'antd';
 import React from 'react';

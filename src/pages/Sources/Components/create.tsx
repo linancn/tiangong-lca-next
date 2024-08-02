@@ -1,10 +1,10 @@
-import { UploadButton } from '@/components/ImageViewer/upload';
+import { UploadButton } from '@/components/FileViewer/upload';
 import LangTextItemFrom from '@/components/LangTextItem/from';
 import LevelTextItemFrom from '@/components/LevelTextItem/from';
 import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
-import { FileType, getBase64, removeFile, uploadFile } from '@/services/general/util';
 import { createSource } from '@/services/sources/api';
 import { supabaseStorageBucket } from '@/services/supabase/key';
+import { FileType, getBase64, removeFile, uploadFile } from '@/services/supabase/storage';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-form';

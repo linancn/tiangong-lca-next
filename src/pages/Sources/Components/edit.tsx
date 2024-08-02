@@ -1,11 +1,18 @@
-import { UploadButton } from '@/components/ImageViewer/upload';
+import { UploadButton } from '@/components/FileViewer/upload';
 import LangTextItemFrom from '@/components/LangTextItem/from';
 import LevelTextItemFrom from '@/components/LevelTextItem/from';
 import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
-import { FileType, getBase64, getFileUrls, removeFile, uploadFile } from '@/services/general/util';
 import { getSourceDetail, updateSource } from '@/services/sources/api';
 import { genSourceFromData } from '@/services/sources/util';
 import { supabaseStorageBucket } from '@/services/supabase/key';
+import {
+  FileType,
+  getBase64,
+  getFileUrls,
+  isImage,
+  removeFile,
+  uploadFile,
+} from '@/services/supabase/storage';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ProForm } from '@ant-design/pro-components';
@@ -56,12 +63,15 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerV
   const [loadFiles, setLoadFiles] = useState<any[]>([]);
 
   const handlePreview = async (file: UploadFile) => {
-    if (!file.url && !file.preview) {
-      file.preview = await getBase64(file.originFileObj as FileType);
+    if (isImage(file)) {
+      if (!file.url && !file.preview) {
+        file.preview = await getBase64(file.originFileObj as FileType);
+      }
+      setPreviewImage(file.url || (file.preview as string));
+      setPreviewOpen(true);
+    } else {
+      window.open(file.url || (file.preview as string), '_blank');
     }
-
-    setPreviewImage(file.url || (file.preview as string));
-    setPreviewOpen(true);
   };
 
   const handletFromData = () => {

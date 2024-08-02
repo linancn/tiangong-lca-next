@@ -1,7 +1,7 @@
-import { getFileUrls, removeFile } from '@/services/general/util';
 import { deleteSource, getSourceDetail } from '@/services/sources/api';
 import { genSourceFromData } from '@/services/sources/util';
 import { supabaseStorageBucket } from '@/services/supabase/key';
+import { getFileUrls, removeFile } from '@/services/supabase/storage';
 import { DeleteOutlined } from '@ant-design/icons';
 import type { ActionType } from '@ant-design/pro-table';
 import { Button, message, Modal, Tooltip } from 'antd';

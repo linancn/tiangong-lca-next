@@ -1,4 +1,4 @@
-import ImageGallery from '@/components/ImageViewer/gallery';
+import FileGallery from '@/components/FileViewer/gallery';
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
@@ -136,17 +136,9 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
             />
           }
         >
-          {(initData.sourceInformation?.dataSetInformation?.classificationInformation?.[
-            'common:classification'
-          ]?.['common:class']?.['@level_0'] ?? '') === 'Images' ? (
-            <ImageGallery
-              data={
-                initData.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri']
-              }
-            />
-          ) : (
-            initData.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri'] ?? '-'
-          )}
+          <FileGallery
+            data={initData.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri']}
+          />
         </Card>
         <br />
         <ContactSelectDescription
