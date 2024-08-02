@@ -49,7 +49,7 @@ const UnitEdit: FC<Props> = ({ id, data, buttonType, actionRef, setViewDrawerVis
   };
 
   useEffect(() => {
-    if (drawerVisible) return;
+    if (!drawerVisible) return;
     onReset();
   }, [drawerVisible]);
 

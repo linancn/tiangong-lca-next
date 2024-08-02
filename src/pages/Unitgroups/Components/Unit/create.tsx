@@ -28,7 +28,7 @@ const UnitCreate: FC<Props> = ({ onData }) => {
   const [fromData, setFromData] = useState<any>({});
 
   useEffect(() => {
-    if (drawerVisible) return;
+    if (!drawerVisible) return;
     formRefCreate.current?.resetFields();
     formRefCreate.current?.setFieldsValue({});
     setFromData({});

@@ -67,7 +67,7 @@ const ProcessExchangeEdit: FC<Props> = ({
   };
 
   useEffect(() => {
-    if (drawerVisible) return;
+    if (!drawerVisible) return;
     onReset();
   }, [drawerVisible]);
 
