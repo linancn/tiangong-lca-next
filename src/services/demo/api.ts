@@ -84,7 +84,7 @@ export async function storage() {
     },
   });
 
-console.log('response', response);
+  console.log('response', response);
 
   const blob = await response.blob();
   const url = URL.createObjectURL(blob);

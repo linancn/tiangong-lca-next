@@ -82,7 +82,7 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
         <LevelTextItemDescription
           data={
             initData.sourceInformation?.dataSetInformation?.classificationInformation?.[
-            'common:classification'
+              'common:classification'
             ]?.['common:class']
           }
         />
@@ -145,8 +145,7 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
               }
             />
           ) : (
-            initData.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri'] ??
-            '-'
+            initData.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri'] ?? '-'
           )}
         </Card>
         <br />

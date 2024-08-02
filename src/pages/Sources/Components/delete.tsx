@@ -38,21 +38,24 @@ const SourceDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisib
         message.error(result.error.message ?? 'Error');
       }
     });
-  }
+  };
 
   const handleOk = useCallback(async () => {
     await getSourceDetail(id).then(async (result: any) => {
       const dataSet = genSourceFromData(result.data?.json?.sourceDataSet ?? {});
-      const initFile = await getFileUrls(dataSet.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri'])
+      const initFile = await getFileUrls(
+        dataSet.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri'],
+      );
       if (initFile.length > 0) {
-        const { error } = await removeFile(initFile.map(file => file.uid.replace(`../${supabaseStorageBucket}/`, '')));
+        const { error } = await removeFile(
+          initFile.map((file) => file.uid.replace(`../${supabaseStorageBucket}/`, '')),
+        );
         if (error) {
           message.error(error.message);
           return;
         }
         deleteData();
-      }
-      else {
+      } else {
         deleteData();
       }
     });

@@ -323,9 +323,13 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
 
   const onSubmit = async () => {
     if (fileList0.length > 0) {
-      const nonExistentFiles = fileList0.filter(file0 => !fileList.some(file => file.uid === file0.uid));
+      const nonExistentFiles = fileList0.filter(
+        (file0) => !fileList.some((file) => file.uid === file0.uid),
+      );
       if (nonExistentFiles.length > 0) {
-        const { error } = await removeFile(nonExistentFiles.map(file => file.uid.replace(`../${supabaseStorageBucket}/`, '')));
+        const { error } = await removeFile(
+          nonExistentFiles.map((file) => file.uid.replace(`../${supabaseStorageBucket}/`, '')),
+        );
         if (error) {
           message.error(error.message);
         }
@@ -336,12 +340,11 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
     let fileListWithUUID = [];
     if (fileList.length > 0) {
       fileListWithUUID = fileList.map((file) => {
-        const isInFileList0 = fileList0.some(file0 => file0.uid === file.uid);
+        const isInFileList0 = fileList0.some((file0) => file0.uid === file.uid);
         if (isInFileList0) {
           filePaths = filePaths + `${file.uid},`;
           return file;
-        }
-        else {
+        } else {
           const fileExtension = path.extname(file.name);
           const newUid = `../${supabaseStorageBucket}/${v4()}${fileExtension}`;
           filePaths = filePaths + `${newUid},`;
@@ -369,16 +372,13 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
       if (fileListWithUUID.length > 0) {
         fileListWithUUID.forEach(async (file) => {
           if (file.newUid) {
-            const thisFile = loadFiles.find(f => f.uid === file.uid);
+            const thisFile = loadFiles.find((f) => f.uid === file.uid);
             await uploadFile(file.newUid.replace(`../${supabaseStorageBucket}/`, ''), thisFile);
           }
         });
       }
       message.success(
-        <FormattedMessage
-          id="options.createsuccess"
-          defaultMessage="Created Successfully!"
-        />,
+        <FormattedMessage id="options.createsuccess" defaultMessage="Created Successfully!" />,
       );
       setFromData({});
       formRefCreate.current?.resetFields();
@@ -389,7 +389,7 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
       message.error(result.error.message);
     }
     return true;
-  }
+  };
 
   useEffect(() => {
     if (!drawerVisible) return;

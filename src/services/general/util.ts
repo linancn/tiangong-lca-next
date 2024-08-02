@@ -180,10 +180,7 @@ export async function getFileUrls(filePaths: string) {
 
   const urls = await Promise.all(
     fileList.map(async (file: string, index: number) => {
-      const fileUrl = `${supabaseUrl}/storage/v1/object/authenticated${file.replace(
-        '..',
-        '',
-      )}`;
+      const fileUrl = `${supabaseUrl}/storage/v1/object/authenticated${file.replace('..', '')}`;
       try {
         const response = await fetch(fileUrl, {
           headers: {
@@ -213,4 +210,3 @@ export async function removeFile(files: string[]) {
   const result = await supabase.storage.from(supabaseStorageBucket).remove(files);
   return result;
 }
-

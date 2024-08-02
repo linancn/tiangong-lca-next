@@ -25,7 +25,7 @@ import {
   Tooltip,
   Typography,
   Upload,
-  UploadFile
+  UploadFile,
 } from 'antd';
 import path from 'path';
 import type { FC } from 'react';
@@ -346,9 +346,13 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerV
 
   const onSubmit = async () => {
     if (fileList0.length > 0) {
-      const nonExistentFiles = fileList0.filter(file0 => !fileList.some(file => file.uid === file0.uid));
+      const nonExistentFiles = fileList0.filter(
+        (file0) => !fileList.some((file) => file.uid === file0.uid),
+      );
       if (nonExistentFiles.length > 0) {
-        const { error } = await removeFile(nonExistentFiles.map(file => file.uid.replace(`../${supabaseStorageBucket}/`, '')));
+        const { error } = await removeFile(
+          nonExistentFiles.map((file) => file.uid.replace(`../${supabaseStorageBucket}/`, '')),
+        );
         if (error) {
           message.error(error.message);
         }
@@ -359,12 +363,11 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerV
     let fileListWithUUID = [];
     if (fileList.length > 0) {
       fileListWithUUID = fileList.map((file) => {
-        const isInFileList0 = fileList0.some(file0 => file0.uid === file.uid);
+        const isInFileList0 = fileList0.some((file0) => file0.uid === file.uid);
         if (isInFileList0) {
           filePaths = filePaths + `${file.uid},`;
           return file;
-        }
-        else {
+        } else {
           const fileExtension = path.extname(file.name);
           const newUid = `../${supabaseStorageBucket}/${v4()}${fileExtension}`;
           filePaths = filePaths + `${newUid},`;
@@ -392,16 +395,13 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerV
       if (fileListWithUUID.length > 0) {
         fileListWithUUID.forEach(async (file) => {
           if (file.newUid) {
-            const thisFile = loadFiles.find(f => f.uid === file.uid);
+            const thisFile = loadFiles.find((f) => f.uid === file.uid);
             await uploadFile(file.newUid.replace(`../${supabaseStorageBucket}/`, ''), thisFile);
           }
         });
       }
       message.success(
-        <FormattedMessage
-          id="options.savesuccess"
-          defaultMessage="Saved Successfully!"
-        />,
+        <FormattedMessage id="options.savesuccess" defaultMessage="Saved Successfully!" />,
       );
       formRefEdit.current?.resetFields();
       setDrawerVisible(false);
@@ -411,7 +411,7 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerV
     }
 
     return true;
-  }
+  };
 
   useEffect(() => {
     if (!drawerVisible) return;
@@ -425,7 +425,9 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerV
         ...dataSet,
         id: id,
       });
-      const initFile = await getFileUrls(dataSet.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri'])
+      const initFile = await getFileUrls(
+        dataSet.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri'],
+      );
       await setFileList0(initFile);
       await setFileList(initFile);
       setSpinning(false);

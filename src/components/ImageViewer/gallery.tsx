@@ -32,8 +32,7 @@ const ImageGallery: FC<Props> = ({ data }) => {
         {imageUrls.map((imageUrl, index) => {
           if (imageUrl.url) {
             return <Image height={150} key={index} src={imageUrl.url} />;
-          }
-          else {
+          } else {
             return <Image width={150} height={150} key={index} src={imageUrl.url ?? 'error'} />;
           }
         })}
