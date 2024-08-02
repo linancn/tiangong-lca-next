@@ -2,9 +2,10 @@ import FileGallery from '@/components/FileViewer/gallery';
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
+import { isValidURL } from '@/services/general/util';
 import { getSourceDetail } from '@/services/sources/api';
 import { genSourceFromData } from '@/services/sources/util';
-import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
+import { CloseOutlined, LinkOutlined, ProfileOutlined } from '@ant-design/icons';
 import { Button, Card, Descriptions, Divider, Drawer, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
@@ -98,7 +99,22 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
             }
             labelStyle={{ width: '180px' }}
           >
-            {initData.sourceInformation?.dataSetInformation?.sourceCitation ?? '-'}
+            {isValidURL(initData.sourceInformation?.dataSetInformation?.sourceCitation) ? (
+              <Tooltip
+                placement="topLeft"
+                title={initData.sourceInformation?.dataSetInformation?.sourceCitation}
+              >
+                <Button
+                  type="link"
+                  target="blank"
+                  href={initData.sourceInformation?.dataSetInformation?.sourceCitation}
+                >
+                  <LinkOutlined />
+                </Button>
+              </Tooltip>
+            ) : (
+              initData.sourceInformation?.dataSetInformation?.sourceCitation ?? '-'
+            )}
           </Descriptions.Item>
         </Descriptions>
         <br />
