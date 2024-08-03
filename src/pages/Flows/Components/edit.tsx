@@ -3,7 +3,7 @@ import LevelTextItemFrom from '@/components/LevelTextItem/from';
 import FlowpropertiesSelect from '@/pages/Flowproperties/Components/select/from';
 import SourceSelectFrom from '@/pages/Sources/Components/select/from';
 import { getFlowDetail, updateFlows } from '@/services/flows/api';
-import { typeOfDataSetOptions } from '@/services/flows/data';
+import { complianceOptions, flowTypeOptions } from '@/services/flows/data';
 import { genFlowFromData } from '@/services/flows/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
@@ -215,9 +215,7 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
           }
           name={['modellingAndValidation', 'LCIMethod', 'typeOfDataSet']}
         >
-          <Select
-            options={typeOfDataSetOptions}
-          />
+          <Select options={flowTypeOptions} />
         </Form.Item>
         {/* </Card> */}
         <Card
@@ -261,7 +259,7 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
               'common:approvalOfOverallCompliance',
             ]}
           >
-            <Input />
+            <Select options={complianceOptions} />
           </Form.Item>
         </Card>
       </Space>

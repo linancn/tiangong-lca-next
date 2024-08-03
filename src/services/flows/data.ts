@@ -15,7 +15,7 @@ export type FlowModelTable = {
   created_at: Date;
 };
 
-export const typeOfDataSetOptions = [
+export const flowTypeOptions = [
   {
     value: 'Elementary flow',
     label: 'Elementary flow',
@@ -31,5 +31,20 @@ export const typeOfDataSetOptions = [
   {
     value: 'Other flow',
     label: 'Other flow',
+  },
+];
+
+export const complianceOptions = [
+  {
+    value: 'Fully compliant',
+    label: 'Fully compliant',
+  },
+  {
+    value: 'Not compliant',
+    label: 'Not compliant',
+  },
+  {
+    value: 'Not defined',
+    label: 'Not defined',
   },
 ];
