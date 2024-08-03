@@ -85,7 +85,7 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
     },
   ];
 
-  const sourceList: Record<string, React.ReactNode> = {
+  const contentList: Record<string, React.ReactNode> = {
     sourceInformation: (
       <Space direction="vertical" style={{ width: '100%' }}>
         <Card
@@ -292,7 +292,22 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
           >
             <Input />
           </Form.Item>
-
+          <ContactSelectFrom
+            label={
+              <FormattedMessage
+                id="pages.contact.referenceToOwnershipOfDataSet"
+                defaultMessage="Reference To Contact"
+              />
+            }
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:referenceToOwnershipOfDataSet',
+            ]}
+            lang={lang}
+            formRef={formRefCreate}
+            onData={handletFromData}
+          />
           <Form.Item
             label={
               <FormattedMessage
@@ -466,7 +481,7 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
             activeTabKey={activeTabKey}
             onTabChange={onTabChange}
           >
-            {sourceList[activeTabKey]}
+            {contentList[activeTabKey]}
           </Card>
         </ProForm>
         <Collapse

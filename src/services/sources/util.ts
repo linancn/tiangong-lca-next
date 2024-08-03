@@ -80,6 +80,25 @@ export function genSourceJsonOrdered(id: string, data: any, oldData: any) {
           'common:dataSetVersion':
             data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'] ??
             {},
+          'common:referenceToOwnershipOfDataSet': {
+            '@refObjectId':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]?.['@refObjectId'] ?? {},
+            '@type':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]?.['@type'] ?? {},
+            '@uri':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]?.['@uri'] ?? {},
+            'common:shortDescription': getLangJson(
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]?.['common:shortDescription'],
+            ),
+          },
           'common:permanentDataSetURI':
             data?.administrativeInformation?.publicationAndOwnership?.[
               'common:permanentDataSetURI'
@@ -155,6 +174,25 @@ export function genSourceFromData(data: any) {
       publicationAndOwnership: {
         'common:dataSetVersion':
           data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'],
+        'common:referenceToOwnershipOfDataSet': {
+          '@refObjectId':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToOwnershipOfDataSet'
+            ]?.['@refObjectId'],
+          '@type':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToOwnershipOfDataSet'
+            ]?.['@type'],
+          '@uri':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToOwnershipOfDataSet'
+            ]?.['@uri'],
+          'common:shortDescription': getLangList(
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToOwnershipOfDataSet'
+            ]?.['common:shortDescription'],
+          ),
+        },
         'common:permanentDataSetURI':
           data?.administrativeInformation?.publicationAndOwnership?.['common:permanentDataSetURI'],
       },

@@ -50,7 +50,7 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
     setActiveTabKey(key);
   };
 
-  const sourceList: Record<string, React.ReactNode> = {
+  const contentList: Record<string, React.ReactNode> = {
     sourceInformation: (
       <>
         <Descriptions bordered size={'small'} column={1}>
@@ -235,6 +235,21 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
             </Descriptions.Item>
           </Descriptions>
           <br />
+          <ContactSelectDescription
+            data={
+              initData.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]
+            }
+            lang={lang}
+            title={
+              <FormattedMessage
+                id="pages.contact.referenceToOwnershipOfDataSet"
+                defaultMessage="Reference To Ownership Of DataSet"
+              />
+            }
+          ></ContactSelectDescription>
+          <br />
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item
               key={0}
@@ -324,7 +339,7 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
             activeTabKey={activeTabKey}
             onTabChange={onTabChange}
           >
-            {sourceList[activeTabKey]}
+            {contentList[activeTabKey]}
           </Card>
         </Spin>
       </Drawer>
