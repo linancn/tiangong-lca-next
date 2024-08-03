@@ -3,6 +3,7 @@ import LevelTextItemFrom from '@/components/LevelTextItem/from';
 import FlowpropertiesSelect from '@/pages/Flowproperties/Components/select/from';
 import SourceSelectFrom from '@/pages/Sources/Components/select/from';
 import { createFlows } from '@/services/flows/api';
+import { typeOfDataSetOptions } from '@/services/flows/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-form';
@@ -15,10 +16,11 @@ import {
   Drawer,
   Form,
   Input,
+  message,
+  Select,
   Space,
   Tooltip,
   Typography,
-  message,
 } from 'antd';
 import type { FC } from 'react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -211,7 +213,9 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
           }
           name={['modellingAndValidation', 'LCIMethod', 'typeOfDataSet']}
         >
-          <Input />
+          <Select
+            options={typeOfDataSetOptions}
+          />
         </Form.Item>
         {/* </Card> */}
         <br />
