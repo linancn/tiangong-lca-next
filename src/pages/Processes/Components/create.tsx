@@ -6,7 +6,15 @@ import SourceSelectFrom from '@/pages/Sources/Components/select/from';
 import { ListPagination } from '@/services/general/data';
 import { getLangText } from '@/services/general/util';
 import { createProcess } from '@/services/processes/api';
-import { copyrightOptions, LCIMethodApproachOptions, LCIMethodPrincipleOptions, licenseTypeOptions, ProcessExchangeTable, processTypeOptions, reviewTypeOptions } from '@/services/processes/data';
+import {
+  copyrightOptions,
+  LCIMethodApproachOptions,
+  LCIMethodPrincipleOptions,
+  licenseTypeOptions,
+  ProcessExchangeTable,
+  processTypeOptions,
+  reviewTypeOptions,
+} from '@/services/processes/data';
 import styles from '@/style/custom.less';
 import {
   CheckCircleTwoTone,

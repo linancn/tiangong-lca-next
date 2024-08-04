@@ -5,7 +5,15 @@ import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
 import SourceSelectFrom from '@/pages/Sources/Components/select/from';
 import { ListPagination } from '@/services/general/data';
 import { getProcessDetail, updateProcess } from '@/services/processes/api';
-import { copyrightOptions, LCIMethodApproachOptions, LCIMethodPrincipleOptions, licenseTypeOptions, ProcessExchangeTable, processTypeOptions, reviewTypeOptions } from '@/services/processes/data';
+import {
+  copyrightOptions,
+  LCIMethodApproachOptions,
+  LCIMethodPrincipleOptions,
+  licenseTypeOptions,
+  ProcessExchangeTable,
+  processTypeOptions,
+  reviewTypeOptions,
+} from '@/services/processes/data';
 import { genProcessExchangeTableData, genProcessFromData } from '@/services/processes/util';
 import styles from '@/style/custom.less';
 import {

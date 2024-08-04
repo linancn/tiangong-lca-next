@@ -131,7 +131,10 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, option }) => {
       <ModelToolbarAdd buttonType={'icon'} lang={lang} onData={addProcessNode} />
       <Tooltip
         title={
-          <FormattedMessage id="pages.button.model.process" defaultMessage="Process Infomation"></FormattedMessage>
+          <FormattedMessage
+            id="pages.button.model.process"
+            defaultMessage="Process Infomation"
+          ></FormattedMessage>
         }
         placement="left"
       >
@@ -139,7 +142,10 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, option }) => {
       </Tooltip>
       <Tooltip
         title={
-          <FormattedMessage id="pages.button.model.exchange" defaultMessage="Exchange Relation"></FormattedMessage>
+          <FormattedMessage
+            id="pages.button.model.exchange"
+            defaultMessage="Exchange Relation"
+          ></FormattedMessage>
         }
         placement="left"
       >
@@ -147,7 +153,10 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, option }) => {
       </Tooltip>
       <Tooltip
         title={
-          <FormattedMessage id="pages.button.model.design" defaultMessage="Design Appearance"></FormattedMessage>
+          <FormattedMessage
+            id="pages.button.model.design"
+            defaultMessage="Design Appearance"
+          ></FormattedMessage>
         }
         placement="left"
       >
@@ -155,7 +164,10 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, option }) => {
       </Tooltip>
       <Tooltip
         title={
-          <FormattedMessage id="pages.button.model.delete" defaultMessage="Delete Element"></FormattedMessage>
+          <FormattedMessage
+            id="pages.button.model.delete"
+            defaultMessage="Delete Element"
+          ></FormattedMessage>
         }
         placement="left"
       >
@@ -164,7 +176,12 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, option }) => {
       <br />
 
       <Tooltip
-        title={<FormattedMessage id="pages.button.model.save" defaultMessage="Save Data"></FormattedMessage>}
+        title={
+          <FormattedMessage
+            id="pages.button.model.save"
+            defaultMessage="Save Data"
+          ></FormattedMessage>
+        }
         placement="left"
       >
         <Button shape="circle" size="small" icon={<SaveOutlined />} onClick={saveData} />

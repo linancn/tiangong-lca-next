@@ -186,7 +186,7 @@ const Welcome: React.FC = () => {
           {`
             #comp-kq5dfsen svg [data-color="1"] {fill: #16163F;}
             #comp-kq5dfsen svg [data-color="2"] {fill: #DDBBFF;}
-            #comp-kq5dfsen svg [data-color="3"] {fill: #9E3FFD;}
+            #comp-kq5dfsen svg [data-color="3"] {fill: #5C246A;}
           `}
         </style>
       </defs>
@@ -206,7 +206,7 @@ const Welcome: React.FC = () => {
           data-color="2"
         ></path>
         <path
-          fill="#9E3FFD"
+          fill="#5C246A"
           clipRule="evenodd"
           fillRule="evenodd"
           d="M116.5 68.75c0 24.853-20.147 45-45 45s-45-20.147-45-45 20.147-45 45-45 45 20.147 45 45z"
@@ -234,7 +234,7 @@ const Welcome: React.FC = () => {
           {`
           #comp-kq9ag33l svg [data-color="1"] {fill: #16163F;}
           #comp-kq9ag33l svg [data-color="2"] {fill: #DDBBFF;}
-          #comp-kq9ag33l svg [data-color="3"] {fill: #9E3FFD;}
+          #comp-kq9ag33l svg [data-color="3"] {fill: #5C246A;}
         `}
         </style>
       </defs>
@@ -255,7 +255,7 @@ const Welcome: React.FC = () => {
         ></path>
         <path
           d="M62.556 144.076L162.971 43.492a9.604 9.604 0 0 1 13.583-.011l.011.011.627.628a9.606 9.606 0 0 1 0 13.572L76.777 158.276a9.604 9.604 0 0 1-13.583.011l-.011-.011-.627-.628a9.604 9.604 0 0 1 0-13.572z"
-          fill="#9E3FFD"
+          fill="#5C246A"
           clipRule="evenodd"
           fillRule="evenodd"
           data-color="3"
@@ -282,7 +282,7 @@ const Welcome: React.FC = () => {
           {`
           #comp-kq5dfsf71 svg [data-color="1"] {fill: #16163F;}
           #comp-kq5dfsf71 svg [data-color="2"] {fill: #DDBBFF;}
-          #comp-kq5dfsf71 svg [data-color="3"] {fill: #9E3FFD;}
+          #comp-kq5dfsf71 svg [data-color="3"] {fill: #5C246A;}
         `}
         </style>
       </defs>
@@ -302,7 +302,7 @@ const Welcome: React.FC = () => {
           data-color="2"
         ></path>
         <path
-          fill="#9E3FFD"
+          fill="#5C246A"
           clipRule="evenodd"
           fillRule="evenodd"
           d="M92.749 26v65.767H26.982V26h65.767z"
