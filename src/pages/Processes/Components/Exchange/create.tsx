@@ -37,7 +37,7 @@ const ProcessExchangeCreate: FC<Props> = ({ lang, onData }) => {
   };
 
   useEffect(() => {
-    if (drawerVisible) return;
+    if (!drawerVisible) return;
     formRefCreate.current?.resetFields();
     formRefCreate.current?.setFieldsValue({});
     setFromData({});

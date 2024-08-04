@@ -313,6 +313,22 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerV
           >
             <Input />
           </Form.Item>
+          <ContactSelectFrom
+            label={
+              <FormattedMessage
+                id="pages.contact.referenceToOwnershipOfDataSet"
+                defaultMessage="Reference To Contact"
+              />
+            }
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:referenceToOwnershipOfDataSet',
+            ]}
+            lang={lang}
+            formRef={formRefEdit}
+            onData={handletFromData}
+          />
 
           <Form.Item
             label={

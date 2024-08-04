@@ -281,7 +281,7 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
   }, [actionRef]);
 
   useEffect(() => {
-    if (drawerVisible) return;
+    if (!drawerVisible) return;
     formRefCreate.current?.resetFields();
     formRefCreate.current?.setFieldsValue({});
     setFromData({});

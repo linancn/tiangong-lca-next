@@ -2,8 +2,14 @@ import { getLangText } from '@/services/general/util';
 import { getProcessDetail } from '@/services/processes/api';
 import { createProduct, getProductDetail, updateProduct } from '@/services/products/api';
 import { genProductInfoFromData, genProductModelFromData } from '@/services/products/util';
-import { SaveOutlined } from '@ant-design/icons';
-import { useGraphStore } from '@antv/xflow';
+import {
+  ArrowRightOutlined,
+  DeleteOutlined,
+  FormatPainterOutlined,
+  ProfileOutlined,
+  SaveOutlined,
+} from '@ant-design/icons';
+import { useGraphEvent, useGraphStore } from '@antv/xflow';
 import { Button, message, Space, Spin, Tooltip } from 'antd';
 import { FC, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -95,9 +101,13 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, option }) => {
     return true;
   };
 
-  // useGraphEvent('node:mouseenter', (evt) => {
-  //   console.log('node:mouseenter', evt);
-  // });
+  useGraphEvent('node:dblclick', (evt) => {
+    console.log('node:dblclick', evt);
+  });
+
+  useGraphEvent('edge:dblclick', (evt) => {
+    console.log('edge:dblclick', evt);
+  });
 
   useEffect(() => {
     if (option === 'edit') {
@@ -120,7 +130,41 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, option }) => {
       <ModelToolbarInfo data={infoData} onData={updateInfoData} />
       <ModelToolbarAdd buttonType={'icon'} lang={lang} onData={addProcessNode} />
       <Tooltip
-        title={<FormattedMessage id="pages.button.save" defaultMessage="Save"></FormattedMessage>}
+        title={
+          <FormattedMessage id="pages.button.model.process" defaultMessage="Process Infomation"></FormattedMessage>
+        }
+        placement="left"
+      >
+        <Button shape="circle" size="small" icon={<ProfileOutlined />} />
+      </Tooltip>
+      <Tooltip
+        title={
+          <FormattedMessage id="pages.button.model.exchange" defaultMessage="Exchange Relation"></FormattedMessage>
+        }
+        placement="left"
+      >
+        <Button shape="circle" size="small" icon={<ArrowRightOutlined />} />
+      </Tooltip>
+      <Tooltip
+        title={
+          <FormattedMessage id="pages.button.model.design" defaultMessage="Design Appearance"></FormattedMessage>
+        }
+        placement="left"
+      >
+        <Button shape="circle" size="small" icon={<FormatPainterOutlined />} />
+      </Tooltip>
+      <Tooltip
+        title={
+          <FormattedMessage id="pages.button.model.delete" defaultMessage="Delete Element"></FormattedMessage>
+        }
+        placement="left"
+      >
+        <Button shape="circle" size="small" icon={<DeleteOutlined />} />
+      </Tooltip>
+      <br />
+
+      <Tooltip
+        title={<FormattedMessage id="pages.button.model.save" defaultMessage="Save Data"></FormattedMessage>}
         placement="left"
       >
         <Button shape="circle" size="small" icon={<SaveOutlined />} onClick={saveData} />

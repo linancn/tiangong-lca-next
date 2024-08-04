@@ -26,7 +26,7 @@ const ModelToolbarInfo: FC<Props> = ({ data, onData }) => {
   return (
     <>
       <Tooltip
-        title={<FormattedMessage id="pages.button.info" defaultMessage="Base Infomation" />}
+        title={<FormattedMessage id="pages.button.model.info" defaultMessage="Base Infomation" />}
         placement="left"
       >
         <Button

@@ -318,7 +318,7 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
   };
 
   useEffect(() => {
-    if (drawerVisible) return;
+    if (!drawerVisible) return;
     onReset();
   }, [drawerVisible]);
 
