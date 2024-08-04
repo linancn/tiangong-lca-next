@@ -6,7 +6,7 @@ import SourceSelectFrom from '@/pages/Sources/Components/select/from';
 import { ListPagination } from '@/services/general/data';
 import { getLangText } from '@/services/general/util';
 import { createProcess } from '@/services/processes/api';
-import { ProcessExchangeTable } from '@/services/processes/data';
+import { copyrightOptions, LCIMethodApproachOptions, LCIMethodPrincipleOptions, licenseTypeOptions, ProcessExchangeTable, processTypeOptions, reviewTypeOptions } from '@/services/processes/data';
 import styles from '@/style/custom.less';
 import {
   CheckCircleTwoTone,
@@ -26,10 +26,11 @@ import {
   Drawer,
   Form,
   Input,
+  message,
+  Select,
   Space,
   Tooltip,
   Typography,
-  message,
 } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -463,7 +464,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             }
             name={['modellingAndValidation', 'LCIMethodAndAllocation', 'typeOfDataSet']}
           >
-            <Input />
+            <Select options={processTypeOptions} />
           </Form.Item>
           <Form.Item
             label={
@@ -474,7 +475,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             }
             name={['modellingAndValidation', 'LCIMethodAndAllocation', 'LCIMethodPrinciple']}
           >
-            <Input />
+            <Select options={LCIMethodPrincipleOptions} />
           </Form.Item>
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
@@ -504,7 +505,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             }
             name={['modellingAndValidation', 'LCIMethodAndAllocation', 'LCIMethodApproaches']}
           >
-            <Input />
+            <Select options={LCIMethodApproachOptions} />
           </Form.Item>
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
@@ -721,7 +722,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             }
             name={['modellingAndValidation', 'validation', 'review', '@type']}
           >
-            <Input />
+            <Select options={reviewTypeOptions} />
           </Form.Item>
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
@@ -869,7 +870,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:copyright']}
           >
-            <Input />
+            <Select options={copyrightOptions} />
           </Form.Item>
 
           <Form.Item
@@ -881,7 +882,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:licenseType']}
           >
-            <Input />
+            <Select options={licenseTypeOptions} />
           </Form.Item>
         </Card>
       </Space>

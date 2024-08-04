@@ -5,7 +5,7 @@ import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
 import SourceSelectFrom from '@/pages/Sources/Components/select/from';
 import { ListPagination } from '@/services/general/data';
 import { getProcessDetail, updateProcess } from '@/services/processes/api';
-import { ProcessExchangeTable } from '@/services/processes/data';
+import { copyrightOptions, LCIMethodApproachOptions, LCIMethodPrincipleOptions, licenseTypeOptions, ProcessExchangeTable, processTypeOptions, reviewTypeOptions } from '@/services/processes/data';
 import { genProcessExchangeTableData, genProcessFromData } from '@/services/processes/util';
 import styles from '@/style/custom.less';
 import {
@@ -25,11 +25,12 @@ import {
   Drawer,
   Form,
   Input,
+  message,
+  Select,
   Space,
   Spin,
   Tooltip,
   Typography,
-  message,
 } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -479,7 +480,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
             }
             name={['modellingAndValidation', 'LCIMethodAndAllocation', 'typeOfDataSet']}
           >
-            <Input />
+            <Select options={processTypeOptions} />
           </Form.Item>
           <Form.Item
             label={
@@ -490,7 +491,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
             }
             name={['modellingAndValidation', 'LCIMethodAndAllocation', 'LCIMethodPrinciple']}
           >
-            <Input />
+            <Select options={LCIMethodPrincipleOptions} />
           </Form.Item>
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
@@ -514,13 +515,13 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
           <Form.Item
             label={
               <FormattedMessage
-                id="pages.process.view.modellingAndValidation.lCIMethodPrinciple"
-                defaultMessage="LCI Method Principle"
+                id="pages.process.view.modellingAndValidation.lCIMethodApproaches"
+                defaultMessage="LCI Method Approaches"
               />
             }
             name={['modellingAndValidation', 'LCIMethodAndAllocation', 'LCIMethodApproaches']}
           >
-            <Input />
+            <Select options={LCIMethodApproachOptions} />
           </Form.Item>
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
@@ -735,9 +736,9 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
                 defaultMessage="Type"
               />
             }
-            name={['validation', 'review', '@type']}
+            name={['modellingAndValidation', 'validation', 'review', '@type']}
           >
-            <Input />
+            <Select options={reviewTypeOptions} />
           </Form.Item>
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
@@ -885,7 +886,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:copyright']}
           >
-            <Input />
+            <Select options={copyrightOptions} />
           </Form.Item>
 
           <Form.Item
@@ -897,7 +898,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:licenseType']}
           >
-            <Input />
+            <Select options={licenseTypeOptions} />
           </Form.Item>
         </Card>
       </Space>
