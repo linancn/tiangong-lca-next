@@ -235,14 +235,14 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
     <>
       {buttonType === 'icon' ? (
         <Tooltip
-          title={<FormattedMessage id="pages.button.add" defaultMessage="Add" />}
+          title={<FormattedMessage id="pages.button.model.add" defaultMessage="Add Node" />}
           placement="left"
         >
           <Button shape="circle" icon={<PlusOutlined />} size="small" onClick={onSelect} />
         </Tooltip>
       ) : (
         <Button onClick={onSelect}>
-          <FormattedMessage id="pages.button.add" defaultMessage="Add" />
+          <FormattedMessage id="pages.button.model.add" defaultMessage="Add Node" />
         </Button>
       )}
 
