@@ -3,6 +3,7 @@ import LangTextItemFrom from '@/components/LangTextItem/from';
 import LevelTextItemFrom from '@/components/LevelTextItem/from';
 import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
 import { getSourceDetail, updateSource } from '@/services/sources/api';
+import { publicationTypeOptions } from '@/services/sources/data';
 import { genSourceFromData } from '@/services/sources/util';
 import { supabaseStorageBucket } from '@/services/supabase/key';
 import {
@@ -27,6 +28,7 @@ import {
   Image,
   Input,
   message,
+  Select,
   Space,
   Spin,
   Tooltip,
@@ -172,7 +174,7 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerV
           }
           name={['sourceInformation', 'dataSetInformation', 'publicationType']}
         >
-          <Input />
+          <Select options={publicationTypeOptions} />
         </Form.Item>
         <br />
         <Card
