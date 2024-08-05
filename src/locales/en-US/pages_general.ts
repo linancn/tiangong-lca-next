@@ -31,6 +31,7 @@ export default {
   'pages.tab.title.mydata': 'My Data',
   'pages.tab.title.tgdata': 'TianGong Data',
 
+  'pages.search.openAI': 'AI Recommendation',
   'pages.search.keyWord': 'Full-text search: Enter one or more keywords.',
   'pages.search.placeholder':
     'AI Search: Describe the data you need in one sentence or a few key words.',

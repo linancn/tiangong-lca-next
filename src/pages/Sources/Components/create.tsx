@@ -3,6 +3,7 @@ import LangTextItemFrom from '@/components/LangTextItem/from';
 import LevelTextItemFrom from '@/components/LevelTextItem/from';
 import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
 import { createSource } from '@/services/sources/api';
+import { publicationTypeOptions } from '@/services/sources/data';
 import { supabaseStorageBucket } from '@/services/supabase/key';
 import { FileType, getBase64, removeFile, uploadFile } from '@/services/supabase/storage';
 import styles from '@/style/custom.less';
@@ -18,6 +19,7 @@ import {
   Form,
   Image,
   Input,
+  Select,
   Space,
   Tooltip,
   Typography,
@@ -151,7 +153,7 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
           }
           name={['sourceInformation', 'dataSetInformation', 'publicationType']}
         >
-          <Input />
+          <Select options={publicationTypeOptions} />
         </Form.Item>
         <br />
         <Card

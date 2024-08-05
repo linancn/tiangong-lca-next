@@ -9,7 +9,7 @@ import styles from '@/style/custom.less';
 import { CloseOutlined, DatabaseOutlined } from '@ant-design/icons';
 import { ProTable } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
-import { Button, Card, Drawer, Input, Space, Tooltip } from 'antd';
+import { Button, Card, Checkbox, Col, Drawer, Input, Row, Space, Tooltip } from 'antd';
 import type { SearchProps } from 'antd/es/input/Search';
 import type { FC, Key } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
@@ -34,6 +34,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [activeTabKey, setActiveTabKey] = useState<string>('tg');
+  const [openAI, setOpenAI] = useState<boolean>(false);
   // const [dataSource, setDataSource] = useState<any>([]);
   // const [tableLoading, setTableLoading] = useState<boolean>(false);
   const tgActionRefSelect = useRef<ActionType>();
@@ -157,7 +158,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={myActionRefSelect}
-                setViewDrawerVisible={() => {}}
+                setViewDrawerVisible={() => { }}
               />
             </Space>,
           ];
@@ -178,15 +179,27 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
     tg: (
       <>
         <Card>
-          <Search
-            name={'tg'}
-            size={'large'}
-            placeholder={intl.formatMessage({ id: 'pages.search.placeholder' })}
-            value={tgKeyWord}
-            onChange={handleTgKeyWordChange}
-            onSearch={onTgSearch}
-            enterButton
-          />
+          <Row align={'middle'}>
+            <Col flex="auto" style={{ marginRight: '10px' }}>
+              <Search
+                name={'tg'}
+                size={'large'}
+                placeholder={ openAI ? intl.formatMessage({ id: 'pages.search.placeholder' }) : intl.formatMessage({ id: 'pages.search.keyWord' })}
+                value={tgKeyWord}
+                onChange={handleTgKeyWordChange}
+                onSearch={onTgSearch}
+                enterButton
+              />
+            </Col>
+            <Col flex="100px">
+              <Checkbox onChange={(e) => { setOpenAI(e.target.checked) }}>
+                <FormattedMessage
+                  id="pages.search.openAI"
+                  defaultMessage="AI Search"
+                />
+              </Checkbox>
+            </Col>
+          </Row>
         </Card>
         <ProTable<FlowTable, ListPagination>
           actionRef={tgActionRefSelect}
@@ -205,7 +218,10 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
             sort,
           ) => {
             if (tgKeyWord.length > 0) {
-              return flow_hybrid_search(params, lang, 'tg', tgKeyWord, {});
+              if (openAI) {
+                return flow_hybrid_search(params, lang, 'tg', tgKeyWord, {});
+              }
+              return getFlowTablePgroongaSearch(params, lang, 'tg', tgKeyWord, {});
             }
             return getFlowTableAll(params, sort, lang, 'tg');
           }}
