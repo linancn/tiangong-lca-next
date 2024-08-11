@@ -41,7 +41,7 @@ const ModelToolbarInfo: FC<Props> = ({ data, onData }) => {
       <Drawer
         title={
           <FormattedMessage
-            id="pages.unitgroup.unit.drawer.title.info"
+            id="pages.flow.model.drawer.title.info"
             defaultMessage="Model Base Infomation"
           ></FormattedMessage>
         }
@@ -103,16 +103,42 @@ const ModelToolbarInfo: FC<Props> = ({ data, onData }) => {
             <Form.Item name={['productInformation', 'dataSetInformation', 'common:UUID']} hidden>
               <Input />
             </Form.Item>
-            <Card size="small" title={'Name'}>
+            <Card
+              size="small"
+              title={
+                <FormattedMessage
+                  id="pages.product.productInformation.name"
+                  defaultMessage="Name"
+                />
+              }
+            >
               <LangTextItemFrom
                 name={['productInformation', 'dataSetInformation', 'name']}
-                label={'Name'}
+                label={
+                  <FormattedMessage
+                    id="pages.product.productInformation.name"
+                    defaultMessage="Name"
+                  />
+                }
               />
             </Card>
-            <Card size="small" title={'General Comment'}>
+            <Card
+              size="small"
+              title={
+                <FormattedMessage
+                  id="pages.product.productInformation.generalComment"
+                  defaultMessage="General Comment"
+                />
+              }
+            >
               <LangTextItemFrom
                 name={['productInformation', 'dataSetInformation', 'common:generalComment']}
-                label={'General Comment'}
+                label={
+                  <FormattedMessage
+                    id="pages.product.productInformation.generalComment"
+                    defaultMessage="General Comment"
+                  />
+                }
               />
             </Card>
           </Space>

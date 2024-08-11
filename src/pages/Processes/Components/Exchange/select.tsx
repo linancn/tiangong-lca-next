@@ -207,13 +207,13 @@ const ExchangeSelect: FC<Props> = ({
         title={
           optionType === 'create' ? (
             <FormattedMessage
-              id="pages.source.drawer.title.create.edge.exchange"
-              defaultMessage="Create Edge Exchange"
+              id="pages.flow.model.drawer.title.edge.exchange.create"
+              defaultMessage="Create Exchange Relation"
             />
           ) : (
             <FormattedMessage
-              id="pages.source.drawer.title.edit.edge.exchange"
-              defaultMessage="Edit  Edge Exchange"
+              id="pages.flow.model.drawer.title.edge.exchange.edit"
+              defaultMessage="Edit Exchange Relation"
             />
           )
         }
@@ -255,7 +255,15 @@ const ExchangeSelect: FC<Props> = ({
       >
         <Row gutter={16}>
           <Col span={12}>
-            <Card title="Source Process Output Flow" bordered={false}>
+            <Card
+              title={
+                <FormattedMessage
+                  id="pages.flow.model.sourceOutputFlowName"
+                  defaultMessage="Source Process Output Flow"
+                />
+              }
+              bordered={false}
+            >
               <ProTable<ProcessExchangeTable, ListPagination>
                 actionRef={actionRefSelectSource}
                 loading={loadingSource}
@@ -277,7 +285,15 @@ const ExchangeSelect: FC<Props> = ({
             </Card>
           </Col>
           <Col span={12}>
-            <Card title="Target Process Input Flow" bordered={false}>
+            <Card
+              title={
+                <FormattedMessage
+                  id="pages.flow.model.targetInputFlowName"
+                  defaultMessage="Target Process Input Flow"
+                />
+              }
+              bordered={false}
+            >
               <ProTable<ProcessExchangeTable, ListPagination>
                 actionRef={actionRefSelectTarget}
                 loading={loadingTarget}

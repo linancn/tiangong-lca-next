@@ -81,7 +81,10 @@ const EdgeExchangeView: FC<Props> = ({
       </Tooltip>
       <Drawer
         title={
-          <FormattedMessage id="pages.contact.drawer.title.view" defaultMessage="View Exchange" />
+          <FormattedMessage
+            id="pages.flow.model.drawer.title.edge.exchange.view"
+            defaultMessage="View Exchange Relation"
+          />
         }
         width="90%"
         closable={false}
@@ -99,7 +102,15 @@ const EdgeExchangeView: FC<Props> = ({
       >
         <Row gutter={16}>
           <Col span={12}>
-            <Card title="Source Process Output Flow" bordered={false}>
+            <Card
+              title={
+                <FormattedMessage
+                  id="pages.flow.model.sourceOutputFlowName"
+                  defaultMessage="Source Process Output Flow"
+                />
+              }
+              bordered={false}
+            >
               <Spin spinning={spinningSource}>
                 <Descriptions bordered size={'small'} column={1}>
                   <Descriptions.Item
@@ -219,7 +230,15 @@ const EdgeExchangeView: FC<Props> = ({
             </Card>
           </Col>
           <Col span={12}>
-            <Card title="Target Process Input Flow" bordered={false}>
+            <Card
+              title={
+                <FormattedMessage
+                  id="pages.flow.model.targetInputFlowName"
+                  defaultMessage="Target Process Input Flow"
+                />
+              }
+              bordered={false}
+            >
               <Spin spinning={spinningTarget}>
                 <Descriptions bordered size={'small'} column={1}>
                   <Descriptions.Item
