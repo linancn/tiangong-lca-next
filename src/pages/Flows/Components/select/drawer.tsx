@@ -158,7 +158,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={myActionRefSelect}
-                setViewDrawerVisible={() => { }}
+                setViewDrawerVisible={() => {}}
               />
             </Space>,
           ];
@@ -184,7 +184,11 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
               <Search
                 name={'tg'}
                 size={'large'}
-                placeholder={ openAI ? intl.formatMessage({ id: 'pages.search.placeholder' }) : intl.formatMessage({ id: 'pages.search.keyWord' })}
+                placeholder={
+                  openAI
+                    ? intl.formatMessage({ id: 'pages.search.placeholder' })
+                    : intl.formatMessage({ id: 'pages.search.keyWord' })
+                }
                 value={tgKeyWord}
                 onChange={handleTgKeyWordChange}
                 onSearch={onTgSearch}
@@ -192,11 +196,12 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
               />
             </Col>
             <Col flex="100px">
-              <Checkbox onChange={(e) => { setOpenAI(e.target.checked) }}>
-                <FormattedMessage
-                  id="pages.search.openAI"
-                  defaultMessage="AI Search"
-                />
+              <Checkbox
+                onChange={(e) => {
+                  setOpenAI(e.target.checked);
+                }}
+              >
+                <FormattedMessage id="pages.search.openAI" defaultMessage="AI Search" />
               </Checkbox>
             </Col>
           </Row>

@@ -178,7 +178,6 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
               lang={lang}
               dataSource={'my'}
               buttonType={'icon'}
-              actionRef={actionRefExchangeTable}
             />
             <ProcessExchangeEdit
               id={row.dataSetInternalID}

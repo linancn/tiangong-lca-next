@@ -2,13 +2,21 @@ export default {
   'pages.flow.CASNumber': 'CAS号',
   'pages.flow.dataType': '类型',
   'pages.flow.generalComment': '说明',
+  'pages.flow.model.sourceOutputFlowName': '源输出流名称',
+  'pages.flow.model.targetInputFlowName': '目标输入流名称',
 
   'pages.flow.drawer.title.view': '查看流',
   'pages.flow.drawer.title.select': '选择流',
   'pages.flow.drawer.title.edit': '编辑流',
   'pages.flow.model.drawer.title.list': '模型列表',
   'pages.flow.model.drawer.title.edit': '编辑模型',
-  //
+  'pages.flow.model.drawer.title.view': '查看模型',
+  'pages.flow.model.drawer.title.info': '模型基本信息',
+  'pages.flow.model.drawer.title.edge.exchange.list': '交换关系列表',
+  'pages.flow.model.drawer.title.edge.exchange.edit': '编辑交换关系',
+  'pages.flow.model.drawer.title.edge.exchange.view': '查看交换关系',
+  'pages.flow.model.drawer.title.edge.exchange.create': '创建交换关系',
+
   'pages.flow.view.flowInformation': '流信息',
   'pages.flow.view.modellingAndValidation': '建模和验证',
   'pages.flow.view.administrativeInformation': '管理信息',

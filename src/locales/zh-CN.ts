@@ -7,6 +7,7 @@ import pages_flow from './zh-CN/pages_flow';
 import pages_flowproperty from './zh-CN/pages_flowproperty';
 import pages_general from './zh-CN/pages_general';
 import pages_process from './zh-CN/pages_process';
+import pages_product from './zh-CN/pages_product';
 import pages_source from './zh-CN/pages_source';
 import pages_unitgroup from './zh-CN/pages_unitgroup';
 import pwa from './zh-CN/pwa';
@@ -35,4 +36,5 @@ export default {
   ...pages_flowproperty,
   ...pages_flow,
   ...pages_source,
+  ...pages_product,
 };

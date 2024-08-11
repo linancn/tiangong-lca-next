@@ -558,20 +558,23 @@ export function genProcessFromData(data: any) {
 
 export function genProcessExchangeTableData(data: any, lang: string) {
   if (data) {
-    return data.map((item: any) => {
+    return data?.map((item: any) => {
       return removeEmptyObjects({
-        dataSetInternalID: item['@dataSetInternalID'],
-        exchangeDirection: item.exchangeDirection ?? '-',
+        // key: `${item?.['@dataSetInternalID'] ?? '-'},${item?.referenceToFlowDataSet?.['@refObjectId'] ?? '-'}`,
+        key: item?.['@dataSetInternalID'] ?? '-',
+        dataSetInternalID: item?.['@dataSetInternalID'] ?? '-',
+        exchangeDirection: item?.exchangeDirection ?? '-',
+        referenceToFlowDataSetId: item?.referenceToFlowDataSet?.['@refObjectId'] ?? '-',
         referenceToFlowDataSet: getLangText(
-          item.referenceToFlowDataSet?.['common:shortDescription'],
+          item?.referenceToFlowDataSet?.['common:shortDescription'],
           lang,
         ),
-        meanAmount: item.meanAmount ?? '-',
-        resultingAmount: item.resultingAmount ?? '-',
-        dataDerivationTypeStatus: item.dataDerivationTypeStatus ?? '-',
-        generalComment: getLangText(item.generalComment, lang),
-        quantitativeReference: item.quantitativeReference ?? false,
-        functionalUnitOrOther: getLangText(item.functionalUnitOrOther, lang),
+        meanAmount: item?.meanAmount ?? '-',
+        resultingAmount: item?.resultingAmount ?? '-',
+        dataDerivationTypeStatus: item?.dataDerivationTypeStatus ?? '-',
+        generalComment: getLangText(item?.generalComment, lang),
+        quantitativeReference: item?.quantitativeReference ?? false,
+        functionalUnitOrOther: getLangText(item?.functionalUnitOrOther, lang),
       });
     });
   }

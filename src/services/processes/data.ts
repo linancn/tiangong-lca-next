@@ -10,6 +10,7 @@ export type ProcessTable = {
 };
 
 export type ProcessExchangeTable = {
+  key: string;
   dataSetInternalID: string;
   exchangeDirection: string;
   referenceToFlowDataSet: string;

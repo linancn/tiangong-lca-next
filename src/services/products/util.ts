@@ -1,3 +1,4 @@
+import { v4 } from 'uuid';
 import { getLangJson, getLangList, getLangText, removeEmptyObjects } from '../general/util';
 
 export function genProductJsonOrdered(id: string, data: any) {
@@ -45,4 +46,25 @@ export function genProductModelFromData(data: any, lang: string) {
       }) ?? [],
     edges: data?.model?.edges ?? [],
   };
+}
+
+export function genEdgeExchangeTableData(data: any, lang: string) {
+  if (data) {
+    return data.map((item: any) => {
+      return removeEmptyObjects({
+        id: item.id ?? v4(),
+        sourceProcessId: item.sourceProcessId ?? '-',
+        sourceOutputFlowInternalID: item.sourceOutputFlowInternalID ?? '-',
+        sourceOutputFlowId: item.sourceOutputFlowId ?? '-',
+        sourceOutputFlowName: getLangText(item.sourceOutputFlowName, lang),
+        sourceOutputFlowGeneralComment: getLangText(item.sourceOutputFlowGeneralComment, lang),
+        targetProcessId: item.targetProcessId ?? '-',
+        targetInputFlowInternalID: item.targetInputFlowInternalID ?? '-',
+        targetInputFlowId: item.targetOutputFlowId ?? '-',
+        targetInputFlowName: getLangText(item.targetInputFlowName, lang),
+        targetInputFlowGeneralComment: getLangText(item.targetInputFlowGeneralComment, lang),
+      });
+    });
+  }
+  return [];
 }

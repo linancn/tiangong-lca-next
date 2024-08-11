@@ -7,6 +7,7 @@ import pages_flow from './en-US/pages_flow';
 import pages_flowproperty from './en-US/pages_flowproperty';
 import pages_general from './en-US/pages_general';
 import pages_process from './en-US/pages_process';
+import pages_product from './en-US/pages_product';
 import pages_source from './en-US/pages_source';
 import pages_unitgroup from './en-US/pages_unitgroup';
 import pwa from './en-US/pwa';
@@ -35,4 +36,5 @@ export default {
   ...pages_flowproperty,
   ...pages_flow,
   ...pages_source,
+  ...pages_product,
 };

@@ -85,7 +85,13 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <ProcessView id={row.id} dataSource={dataSource} lang={lang} />
+              <ProcessView
+                id={row.id}
+                dataSource={dataSource}
+                buttonType={'icon'}
+                lang={lang}
+                disabled={false}
+              />
               <ProcessEdit
                 id={row.id}
                 lang={lang}
@@ -104,7 +110,13 @@ const TableList: FC = () => {
         }
         return [
           <Space size={'small'} key={0}>
-            <ProcessView id={row.id} dataSource={dataSource} lang={lang} />
+            <ProcessView
+              id={row.id}
+              dataSource={dataSource}
+              buttonType={'icon'}
+              lang={lang}
+              disabled={false}
+            />
           </Space>,
         ];
       },

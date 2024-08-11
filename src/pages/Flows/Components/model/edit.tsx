@@ -1,9 +1,9 @@
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import type { ActionType } from '@ant-design/pro-table';
-import { Background, Control, Grid, Snapline, Transform, XFlow, XFlowGraph } from '@antv/xflow';
+import { Background, Control, Grid, Transform, XFlow, XFlowGraph } from '@antv/xflow';
 import { Button, Drawer, Layout, Tooltip } from 'antd';
 import type { FC } from 'react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import Toolbar from './toolbar';
 
@@ -14,10 +14,12 @@ type Props = {
   lang: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
 };
-const FlowModelEdit: FC<Props> = ({ id, flowId, buttonType, lang }) => {
+const FlowModelEdit: FC<Props> = ({ id, flowId, buttonType, lang, actionRef }) => {
+  const [isSave, setIsSave] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
 
   const { Sider, Content } = Layout;
+
   const onEdit = () => {
     setDrawerVisible(true);
   };
@@ -38,6 +40,18 @@ const FlowModelEdit: FC<Props> = ({ id, flowId, buttonType, lang }) => {
     minHeight: 'calc(100%)',
     maxHeight: 'calc(100%)',
   };
+
+  const reload = useCallback(() => {
+    actionRef.current?.reload();
+  }, [actionRef]);
+
+  // useEffect(() => {
+  //   register({
+  //     shape: 'my-rect',
+  //     effect: ['data'],
+  //     component: NodeComponent,
+  //   });
+  // }, []);
 
   return (
     <>
@@ -60,18 +74,36 @@ const FlowModelEdit: FC<Props> = ({ id, flowId, buttonType, lang }) => {
           <Button
             icon={<CloseOutlined />}
             style={{ border: 0 }}
-            onClick={() => setDrawerVisible(false)}
+            onClick={() => {
+              if (isSave) reload();
+              setDrawerVisible(false);
+            }}
           />
         }
         maskClosable={true}
         open={drawerVisible}
-        onClose={() => setDrawerVisible(false)}
+        onClose={() => {
+          if (isSave) reload();
+          setDrawerVisible(false);
+        }}
       >
         <XFlow>
           <Layout style={layoutStyle}>
             <Layout>
               <Content>
-                <XFlowGraph zoomable pannable minScale={0.5} />
+                <XFlowGraph
+                  zoomable
+                  pannable
+                  minScale={0.5}
+                  connectionOptions={{
+                    snap: true,
+                    allowBlank: false,
+                    allowLoop: false,
+                    allowMulti: false,
+                    allowNode: false,
+                    allowEdge: false,
+                  }}
+                />
                 <Background color="#f5f5f5" />
                 <Grid
                   type="dot"
@@ -80,12 +112,19 @@ const FlowModelEdit: FC<Props> = ({ id, flowId, buttonType, lang }) => {
                     thickness: 1,
                   }}
                 />
-                <Snapline />
                 <Transform resizing rotating />
               </Content>
             </Layout>
             <Sider width="50px" style={siderStyle}>
-              <Toolbar id={id} flowId={flowId} lang={lang} onSpin={() => {}} option={'edit'} />
+              <Toolbar
+                id={id}
+                flowId={flowId}
+                lang={lang}
+                drawerVisible={drawerVisible}
+                isSave={isSave}
+                setIsSave={setIsSave}
+                readonly={false}
+              />
             </Sider>
             <div style={{ position: 'absolute', right: 80, bottom: 30 }}>
               <Control
