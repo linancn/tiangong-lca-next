@@ -195,7 +195,7 @@ const ExchangeSelect: FC<Props> = ({
         )
       ) : buttonType === 'icon' ? (
         <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
-          <Button type="text" icon={<EditOutlined />} size={'middle'} onClick={onSelect} />
+          <Button shape="circle" icon={<EditOutlined />} size={'small'} onClick={onSelect} />
         </Tooltip>
       ) : (
         <Button onClick={onSelect}>

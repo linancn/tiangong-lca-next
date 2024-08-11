@@ -3,7 +3,7 @@ import { getLangText } from '@/services/general/util';
 import { getProcessDetail } from '@/services/processes/api';
 import { createProduct, getProductDetail, updateProduct } from '@/services/products/api';
 import { genProductInfoFromData, genProductModelFromData } from '@/services/products/util';
-import { DeleteOutlined, FormatPainterOutlined, SaveOutlined } from '@ant-design/icons';
+import { DeleteOutlined, SaveOutlined } from '@ant-design/icons';
 import { useGraphStore } from '@antv/xflow';
 import { Button, message, Space, Spin, Tooltip } from 'antd';
 import { FC, useCallback, useEffect, useState } from 'react';
@@ -123,7 +123,7 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly,
       },
     };
     let result: any = {};
-    if (id === '') {
+    if (id !== '') {
       result = await updateProduct({ ...newData, id: id });
       if (result.data) {
       }
@@ -266,7 +266,7 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly,
       {!readonly && (
         <>
           <ModelToolbarAdd buttonType={'icon'} lang={lang} onData={addProcessNode} />
-          <Tooltip
+          {/* <Tooltip
             title={
               <FormattedMessage
                 id="pages.button.model.design"
@@ -284,7 +284,7 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly,
                 edges.filter((edge) => edge.selected).length === 0
               }
             />
-          </Tooltip>
+          </Tooltip> */}
 
           <Tooltip
             title={
