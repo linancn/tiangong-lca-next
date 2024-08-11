@@ -22,10 +22,12 @@ import ProcessExchangeView from './Exchange/view';
 type Props = {
   id: string;
   lang: string;
+  buttonType: string;
   dataSource: string;
+  disabled: boolean;
   // actionRef: React.MutableRefObject<ActionType | undefined>;
 };
-const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
+const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   // const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [activeTabKey, setActiveTabKey] = useState<string>('processInformation');
@@ -247,7 +249,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
         <LevelTextItemDescription
           data={
             initData.processInformation?.dataSetInformation?.classificationInformation?.[
-              'common:classification'
+            'common:classification'
             ]?.['common:class']
           }
         />
@@ -650,7 +652,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
             lang={lang}
             data={
               initData.modellingAndValidation?.validation?.review?.[
-                'common:referenceToNameOfReviewerAndInstitution'
+              'common:referenceToNameOfReviewerAndInstitution'
               ]
             }
           />
@@ -669,7 +671,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
           lang={lang}
           data={
             initData.administrativeInformation?.dataGenerator?.[
-              'common:referenceToPersonOrEntityGeneratingTheDataSet'
+            'common:referenceToPersonOrEntityGeneratingTheDataSet'
             ]
           }
         />
@@ -759,7 +761,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
             lang={lang}
             data={
               initData.administrativeInformation?.publicationAndOwnership?.[
-                'common:referenceToOwnershipOfDataSet'
+              'common:referenceToOwnershipOfDataSet'
               ]
             }
           />
@@ -849,9 +851,29 @@ const ProcessView: FC<Props> = ({ id, dataSource, lang }) => {
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="pages.button.view" defaultMessage="View" />}>
-        <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
-      </Tooltip>
+      {buttonType === 'toolIcon' ? (
+        <Tooltip
+          title={
+            <FormattedMessage
+              id="pages.button.model.process"
+              defaultMessage="Process Infomation"
+            ></FormattedMessage>
+          }
+          placement="left"
+        >
+          <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} disabled={disabled} />
+        </Tooltip>
+      ) : (
+        buttonType === 'icon' ? (
+          <Tooltip title={<FormattedMessage id="pages.button.view" defaultMessage="View" />}>
+            <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
+          </Tooltip>
+        ) : (
+          <Button onClick={onView}>
+            <FormattedMessage id="pages.button.view" defaultMessage="View" />
+          </Button>
+        ))}
+
       <Drawer
         title={
           <FormattedMessage id="pages.process.drawer.title.view" defaultMessage="View Process" />

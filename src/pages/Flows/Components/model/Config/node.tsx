@@ -1,9 +1,23 @@
+import { Node } from '@antv/x6';
+import { Card } from 'antd';
+
+export const NodeComponentCard = ({ node }: { node: Node }) => {
+  const { title, content, width } = node.getData()
+  return (
+    <div className="react-node">
+      <Card size="small" title={title} style={{ width: width }}>
+        <p>{content}</p>
+      </Card>
+    </div>
+  )
+}
+
 export const node = {
   id: '',
   shape: 'rect',
   x: 200,
   y: 100,
-  width: 150,
+  width: 300,
   height: 40,
   attrs: {
     body: {
@@ -14,7 +28,6 @@ export const node = {
       ry: 6,
     },
   },
-  label: '',
   data: {
     label: [],
     generalComment: [],

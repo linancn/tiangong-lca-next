@@ -124,7 +124,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
       render: (_, row) => {
         return [
           <Space size={'small'} key={0}>
-            <ProcessView id={row.id} dataSource={'tg'} lang={lang} />
+            <ProcessView id={row.id} dataSource={'tg'} buttonType={'icon'} lang={lang} disabled={false} />
           </Space>,
         ];
       },

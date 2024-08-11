@@ -3,7 +3,7 @@ import type { ActionType } from '@ant-design/pro-table';
 import { Background, Control, Grid, Snapline, Transform, XFlow, XFlowGraph } from '@antv/xflow';
 import { Button, Drawer, Layout, Tooltip } from 'antd';
 import type { FC } from 'react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import Toolbar from './toolbar';
 
@@ -12,8 +12,9 @@ type Props = {
   lang: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
 };
-const FlowModelCreate: FC<Props> = ({ id, lang }) => {
+const FlowModelCreate: FC<Props> = ({ id, lang, actionRef }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
+  const [isSave, setIsSave] = useState(false);
 
   const { Sider, Content } = Layout;
 
@@ -33,6 +34,10 @@ const FlowModelCreate: FC<Props> = ({ id, lang }) => {
     minHeight: 'calc(100%)',
     maxHeight: 'calc(100%)',
   };
+
+  const reload = useCallback(() => {
+    actionRef.current?.reload();
+  }, [actionRef]);
 
   return (
     <>
@@ -56,12 +61,20 @@ const FlowModelCreate: FC<Props> = ({ id, lang }) => {
           <Button
             icon={<CloseOutlined />}
             style={{ border: 0 }}
-            onClick={() => setDrawerVisible(false)}
+            onClick={() => {
+              if (isSave)
+                reload();
+              setDrawerVisible(false);
+            }}
           />
         }
         maskClosable={true}
         open={drawerVisible}
-        onClose={() => setDrawerVisible(false)}
+        onClose={() => {
+          if (isSave)
+            reload();
+          setDrawerVisible(false)
+        }}
       >
         <XFlow>
           <Layout style={layoutStyle}>
@@ -81,7 +94,7 @@ const FlowModelCreate: FC<Props> = ({ id, lang }) => {
               </Content>
             </Layout>
             <Sider width="50px" style={siderStyle}>
-              <Toolbar id={''} flowId={id} lang={lang} onSpin={() => {}} option={''} />
+              <Toolbar id={''} flowId={id} lang={lang} option={''} drawerVisible={drawerVisible} isSave={isSave} setIsSave={setIsSave} />
             </Sider>
             <div style={{ position: 'absolute', right: 80, bottom: 30 }}>
               <Control
