@@ -12,6 +12,7 @@ import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 
 type Props = {
+    id: string;
     buttonType: string;
     lang: string;
     sourceProcessId: string;
@@ -22,7 +23,7 @@ type Props = {
     onData: (data: any) => void;
 };
 
-const ExchangeSelect: FC<Props> = ({ buttonType, lang, sourceProcessId, targetProcessId, sourceRowKeys, targetRowKeys, optionType, onData }) => {
+const ExchangeSelect: FC<Props> = ({ id, buttonType, lang, sourceProcessId, targetProcessId, sourceRowKeys, targetRowKeys, optionType, onData }) => {
     const [drawerVisible, setDrawerVisible] = useState(false);
     const [selectedSourceRowKeys, setSelectedSourceRowKeys] = useState<Key[]>([]);
     const [selectedTargetRowKeys, setSelectedTargetRowKeys] = useState<Key[]>([]);
@@ -205,7 +206,7 @@ const ExchangeSelect: FC<Props> = ({ buttonType, lang, sourceProcessId, targetPr
                                 const selectedSource = exchangeDataSource.find((item) => item['@dataSetInternalID'] === selectedSourceRowKeys[0]);
                                 const selectedTarget
                                     = exchangeDataTarget.find((item) => item['@dataSetInternalID'] === selectedTargetRowKeys[0]);
-                                onData({ selectedSource: selectedSource, selectedTarget: selectedTarget });
+                                onData({ id: id, selectedSource: selectedSource, selectedTarget: selectedTarget });
                                 setDrawerVisible(false);
                             }}
                             type="primary"

@@ -59,7 +59,10 @@ const EdgeExhange: FC<Props> = ({ lang, disabled, edge, nodes, onData }) => {
             targetInputFlowName: data?.selectedTarget?.referenceToFlowDataSet?.['common:shortDescription'],
             targetInputFlowGeneralComment: data?.selectedTarget?.generalComment,
         }
-        setDataSource([...dataSource, newData]);
+        const updatedDataSource = dataSource.map(item =>
+            item.id === newData.id ? newData : item
+        );
+        setDataSource(updatedDataSource);
     }
 
     const edgeExhangeColumns: ProColumns<EdgeExchangeTable>[] = [
@@ -103,7 +106,7 @@ const EdgeExhange: FC<Props> = ({ lang, disabled, edge, nodes, onData }) => {
             render: (_, row) => {
                 return [
                     <Space size={'small'} key={0}>
-                        <ExchangeSelect lang={lang} buttonType={'icon'} sourceProcessId={sourceNode?.data?.id} targetProcessId={targetNode?.data?.id} onData={onEditData} sourceRowKeys={[row.sourceOutputFlowInternalID]} targetRowKeys={[row.targetInputFlowInternalID]} optionType={'edit'} />
+                        <ExchangeSelect id={row.id} lang={lang} buttonType={'icon'} sourceProcessId={sourceNode?.data?.id} targetProcessId={targetNode?.data?.id} onData={onEditData} sourceRowKeys={[row.sourceOutputFlowInternalID]} targetRowKeys={[row.targetInputFlowInternalID]} optionType={'edit'} />
                         {/* <FlowModelDelete
                       id={row.id}
                       buttonType={'icon'}
@@ -187,7 +190,7 @@ const EdgeExhange: FC<Props> = ({ lang, disabled, edge, nodes, onData }) => {
                         pageSize: 10,
                     }}
                     toolBarRender={() => {
-                        return [<ExchangeSelect key={0} lang={lang} buttonType={'icon'} sourceProcessId={sourceNode?.data?.id} targetProcessId={targetNode?.data?.id} onData={onCreateData} sourceRowKeys={[]} targetRowKeys={[]} optionType={'create'} />];
+                        return [<ExchangeSelect key={0} id={''} lang={lang} buttonType={'icon'} sourceProcessId={sourceNode?.data?.id} targetProcessId={targetNode?.data?.id} onData={onCreateData} sourceRowKeys={[]} targetRowKeys={[]} optionType={'create'} />];
                     }}
                     dataSource={genEdgeExchangeTableData(dataSource, lang)}
                     columns={edgeExhangeColumns}
