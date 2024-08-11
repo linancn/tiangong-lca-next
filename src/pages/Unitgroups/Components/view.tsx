@@ -291,9 +291,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
     units: (
       <>
         <ProTable<UnitTable, ListPagination>
-          search={{
-            defaultCollapsed: false,
-          }}
+          search={false}
           pagination={{
             showSizeChanger: false,
             pageSize: 10000,

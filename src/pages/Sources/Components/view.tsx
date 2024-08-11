@@ -227,7 +227,7 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
                   defaultMessage="Data Set Version"
                 />
               }
-              labelStyle={{ width: '200px' }}
+              labelStyle={{ width: '160px' }}
             >
               {initData.administrativeInformation?.publicationAndOwnership?.[
                 'common:dataSetVersion'
