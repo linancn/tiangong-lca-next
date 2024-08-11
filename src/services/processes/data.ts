@@ -1,4 +1,3 @@
-
 export type ProcessTable = {
   id: string;
   lang: string;

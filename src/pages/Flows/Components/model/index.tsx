@@ -10,6 +10,7 @@ import { FormattedMessage } from 'umi';
 import FlowModelCreate from './create';
 import FlowModelDelete from './delete';
 import FlowModelEdit from './edit';
+import FlowModelView from './view';
 
 type Props = {
   flowId: string;
@@ -56,6 +57,7 @@ const FlowModel: FC<Props> = ({ flowId, buttonType, lang, dataSource }) => {
       render: (_, row) => {
         return [
           <Space size={'small'} key={0}>
+            <FlowModelView id={row.id} flowId={flowId} buttonType={'icon'} lang={lang} />
             <FlowModelEdit
               id={row.id}
               flowId={flowId}

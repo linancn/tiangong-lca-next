@@ -1,22 +1,25 @@
-import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
-import type { ActionType } from '@ant-design/pro-table';
-import { Background, Control, Grid, Snapline, Transform, XFlow, XFlowGraph } from '@antv/xflow';
+import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
+import { Background, Control, Grid, XFlow, XFlowGraph } from '@antv/xflow';
 import { Button, Drawer, Layout, Tooltip } from 'antd';
 import type { FC } from 'react';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import Toolbar from './toolbar';
 
 type Props = {
   id: string;
+  flowId: string;
+  buttonType: string;
   lang: string;
-  actionRef: React.MutableRefObject<ActionType | undefined>;
 };
-const FlowModelCreate: FC<Props> = ({ id, lang, actionRef }) => {
+const FlowModelView: FC<Props> = ({ id, flowId, buttonType, lang }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [isSave, setIsSave] = useState(false);
 
   const { Sider, Content } = Layout;
+
+  const onView = () => {
+    setDrawerVisible(true);
+  };
 
   const siderStyle: React.CSSProperties = {
     paddingTop: 8,
@@ -35,25 +38,20 @@ const FlowModelCreate: FC<Props> = ({ id, lang, actionRef }) => {
     maxHeight: 'calc(100%)',
   };
 
-  const reload = useCallback(() => {
-    actionRef.current?.reload();
-  }, [actionRef]);
-
   return (
     <>
-      <Tooltip title={<FormattedMessage id="pages.button.create" defaultMessage="Create" />}>
-        <Button
-          size={'middle'}
-          type="text"
-          icon={<PlusOutlined />}
-          onClick={() => {
-            setDrawerVisible(true);
-          }}
-        />
-      </Tooltip>
+      {buttonType === 'icon' ? (
+        <Tooltip title={<FormattedMessage id="pages.button.view" defaultMessage="View" />}>
+          <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
+        </Tooltip>
+      ) : (
+        <Button onClick={onView}>
+          <FormattedMessage id="pages.button.view" defaultMessage="View" />
+        </Button>
+      )}
       <Drawer
         title={
-          <FormattedMessage id="pages.flow.model.drawer.title.edit" defaultMessage="Edit Model" />
+          <FormattedMessage id="pages.flow.model.drawer.title.view" defaultMessage="View Model" />
         }
         width="100%"
         closable={false}
@@ -62,7 +60,6 @@ const FlowModelCreate: FC<Props> = ({ id, lang, actionRef }) => {
             icon={<CloseOutlined />}
             style={{ border: 0 }}
             onClick={() => {
-              if (isSave) reload();
               setDrawerVisible(false);
             }}
           />
@@ -70,7 +67,6 @@ const FlowModelCreate: FC<Props> = ({ id, lang, actionRef }) => {
         maskClosable={true}
         open={drawerVisible}
         onClose={() => {
-          if (isSave) reload();
           setDrawerVisible(false);
         }}
       >
@@ -78,7 +74,7 @@ const FlowModelCreate: FC<Props> = ({ id, lang, actionRef }) => {
           <Layout style={layoutStyle}>
             <Layout>
               <Content>
-                <XFlowGraph zoomable pannable minScale={0.5} />
+                <XFlowGraph zoomable pannable minScale={0.5} readonly={true} />
                 <Background color="#f5f5f5" />
                 <Grid
                   type="dot"
@@ -87,19 +83,17 @@ const FlowModelCreate: FC<Props> = ({ id, lang, actionRef }) => {
                     thickness: 1,
                   }}
                 />
-                <Snapline />
-                <Transform resizing rotating />
               </Content>
             </Layout>
             <Sider width="50px" style={siderStyle}>
               <Toolbar
-                id={''}
-                flowId={id}
+                id={id}
+                flowId={flowId}
                 lang={lang}
                 drawerVisible={drawerVisible}
-                isSave={isSave}
-                setIsSave={setIsSave}
-                readonly={false}
+                isSave={true}
+                setIsSave={() => {}}
+                readonly={true}
               />
             </Sider>
             <div style={{ position: 'absolute', right: 80, bottom: 30 }}>
@@ -115,4 +109,4 @@ const FlowModelCreate: FC<Props> = ({ id, lang, actionRef }) => {
   );
 };
 
-export default FlowModelCreate;
+export default FlowModelView;

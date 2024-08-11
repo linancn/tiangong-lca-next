@@ -249,7 +249,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
         <LevelTextItemDescription
           data={
             initData.processInformation?.dataSetInformation?.classificationInformation?.[
-            'common:classification'
+              'common:classification'
             ]?.['common:class']
           }
         />
@@ -652,7 +652,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
             lang={lang}
             data={
               initData.modellingAndValidation?.validation?.review?.[
-              'common:referenceToNameOfReviewerAndInstitution'
+                'common:referenceToNameOfReviewerAndInstitution'
               ]
             }
           />
@@ -671,7 +671,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
           lang={lang}
           data={
             initData.administrativeInformation?.dataGenerator?.[
-            'common:referenceToPersonOrEntityGeneratingTheDataSet'
+              'common:referenceToPersonOrEntityGeneratingTheDataSet'
             ]
           }
         />
@@ -761,7 +761,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
             lang={lang}
             data={
               initData.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToOwnershipOfDataSet'
+                'common:referenceToOwnershipOfDataSet'
               ]
             }
           />
@@ -804,9 +804,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
     exchanges: (
       <ProTable<ProcessExchangeTable, ListPagination>
         actionRef={actionRefExchangeTable}
-        search={{
-          defaultCollapsed: false,
-        }}
+        search={false}
         pagination={{
           showSizeChanger: false,
           pageSize: 10,
@@ -861,18 +859,23 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
           }
           placement="left"
         >
-          <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} disabled={disabled} />
+          <Button
+            shape="circle"
+            icon={<ProfileOutlined />}
+            size="small"
+            onClick={onView}
+            disabled={disabled}
+          />
+        </Tooltip>
+      ) : buttonType === 'icon' ? (
+        <Tooltip title={<FormattedMessage id="pages.button.view" defaultMessage="View" />}>
+          <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
         </Tooltip>
       ) : (
-        buttonType === 'icon' ? (
-          <Tooltip title={<FormattedMessage id="pages.button.view" defaultMessage="View" />}>
-            <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
-          </Tooltip>
-        ) : (
-          <Button onClick={onView}>
-            <FormattedMessage id="pages.button.view" defaultMessage="View" />
-          </Button>
-        ))}
+        <Button onClick={onView}>
+          <FormattedMessage id="pages.button.view" defaultMessage="View" />
+        </Button>
+      )}
 
       <Drawer
         title={

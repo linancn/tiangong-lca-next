@@ -3,11 +3,7 @@ import { getLangText } from '@/services/general/util';
 import { getProcessDetail } from '@/services/processes/api';
 import { createProduct, getProductDetail, updateProduct } from '@/services/products/api';
 import { genProductInfoFromData, genProductModelFromData } from '@/services/products/util';
-import {
-  DeleteOutlined,
-  FormatPainterOutlined,
-  SaveOutlined
-} from '@ant-design/icons';
+import { DeleteOutlined, FormatPainterOutlined, SaveOutlined } from '@ant-design/icons';
 import { useGraphStore } from '@antv/xflow';
 import { Button, message, Space, Spin, Tooltip } from 'antd';
 import { FC, useCallback, useEffect, useState } from 'react';
@@ -22,13 +18,13 @@ type Props = {
   id: string;
   flowId: string;
   lang: string;
-  option: string;
   drawerVisible: boolean;
   isSave: boolean;
+  readonly: boolean;
   setIsSave: (isSave: boolean) => void;
 };
 
-const Toolbar: FC<Props> = ({ id, flowId, lang, option, drawerVisible, isSave, setIsSave }) => {
+const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly, setIsSave }) => {
   const [spinning, setSpinning] = useState(false);
   const [infoData, setInfoData] = useState<any>({});
   const modelData = useGraphStore((state) => state.initData);
@@ -55,11 +51,10 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, option, drawerVisible, isSave, s
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { x, y, ...newTarget } = newEdge.target as any;
       updateEdge(id, { ...newEdge, target: newTarget });
-    }
-    else {
+    } else {
       updateEdge(id, { ...newEdge });
     }
-  }
+  };
 
   const addProcessNode = (id: any) => {
     setSpinning(true);
@@ -80,7 +75,7 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, option, drawerVisible, isSave, s
                 ?.baseName,
             generalComment:
               result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.[
-              'common:generalComment'
+                'common:generalComment'
               ],
           },
         },
@@ -93,23 +88,25 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, option, drawerVisible, isSave, s
     const selectedNodes = nodes.filter((node) => node.selected);
     if (selectedNodes.length > 0) {
       selectedNodes.forEach(async (node) => {
-        const selectedEdges = edges.filter((edge) => (edge.source as any)?.cell === node.id || (edge.target as any)?.cell === node.id);
+        const selectedEdges = edges.filter(
+          (edge) =>
+            (edge.source as any)?.cell === node.id || (edge.target as any)?.cell === node.id,
+        );
         await removeEdges(selectedEdges.map((e) => e.id ?? ''));
         await removeNodes([node.id ?? '']);
       });
-    }
-    else {
+    } else {
       const selectedEdges = edges.filter((edge) => edge.selected);
       if (selectedEdges.length > 0) {
         removeEdges(selectedEdges.map((e) => e.id ?? ''));
       }
     }
-  }
+  };
 
   const saveData = async () => {
     setSpinning(true);
 
-    const newEdges = edges.map(edge => {
+    const newEdges = edges.map((edge) => {
       if (edge.target) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { x, y, ...targetRest } = edge.target as any;
@@ -126,7 +123,7 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, option, drawerVisible, isSave, s
       },
     };
     let result: any = {};
-    if (option === 'edit') {
+    if (id === '') {
       result = await updateProduct({ ...newData, id: id });
       if (result.data) {
       }
@@ -172,21 +169,72 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, option, drawerVisible, isSave, s
     if (!drawerVisible) return;
     setIsSave(false);
     setSpinning(true);
-    if (option === 'edit') {
+    if (id !== '') {
       getProductDetail(id).then(async (result: any) => {
         setInfoData({ ...genProductInfoFromData(result.data?.json?.productDataSet ?? {}) });
         const model = genProductModelFromData(result.data?.json?.productDataSet ?? {}, lang);
-        const newEdges = model?.edges?.map((edge: any) => {
-          if (edge.target) {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { x, y, ...targetRest } = edge.target as any;
-            return { ...edge, target: targetRest };
-          }
-          return edge;
-        }) ?? [];
+        let initNodes = model?.nodes ?? [];
+        if (readonly) {
+          initNodes = initNodes.map((node: any) => {
+            return {
+              ...node,
+              ports: {
+                ...node?.ports,
+                groups: {
+                  ...node?.ports?.groups,
+                  group1: {
+                    ...node.ports?.groups?.group1,
+                    attrs: {
+                      circle: {
+                        strokeWidth: 0,
+                        r: 0,
+                      },
+                    },
+                  },
+                  group2: {
+                    ...node.ports?.groups?.group2,
+                    attrs: {
+                      circle: {
+                        strokeWidth: 0,
+                        r: 0,
+                      },
+                    },
+                  },
+                  group3: {
+                    ...node.ports?.groups?.group3,
+                    attrs: {
+                      circle: {
+                        strokeWidth: 0,
+                        r: 0,
+                      },
+                    },
+                  },
+                  group4: {
+                    ...node.ports?.groups?.group4,
+                    attrs: {
+                      circle: {
+                        strokeWidth: 0,
+                        r: 0,
+                      },
+                    },
+                  },
+                },
+              },
+            };
+          });
+        }
+        const initEdges =
+          model?.edges?.map((edge: any) => {
+            if (edge.target) {
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              const { x, y, ...targetRest } = edge.target as any;
+              return { ...edge, target: targetRest };
+            }
+            return edge;
+          }) ?? [];
         modelData({
-          nodes: model.nodes ?? [],
-          edges: newEdges ?? [],
+          nodes: initNodes,
+          edges: initEdges,
         });
         setSpinning(false);
       });
@@ -200,44 +248,79 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, option, drawerVisible, isSave, s
   return (
     <Space direction="vertical" size={'middle'}>
       <ModelToolbarInfo data={infoData} onData={updateInfoData} />
-      <ModelToolbarAdd buttonType={'icon'} lang={lang} onData={addProcessNode} />
-      <ProcessView id={nodes.filter((node) => node.selected)?.[0]?.data?.id ?? ''} dataSource={'tg'} buttonType={'toolIcon'} lang={lang} disabled={nodes.filter((node) => node.selected).length === 0} />
-      <EdgeExhange lang={lang} disabled={edges.filter((edge) => edge.selected).length === 0} edge={edges.filter((edge) => edge.selected)?.[0]} nodes={nodes} onData={updateEdgeData} />
-      <Tooltip
-        title={
-          <FormattedMessage
-            id="pages.button.model.design"
-            defaultMessage="Design Appearance"
-          ></FormattedMessage>
-        }
-        placement="left"
-      >
-        <Button shape="circle" size="small" icon={<FormatPainterOutlined />} disabled={(nodes.filter((node) => node.selected).length === 0 && edges.filter((edge) => edge.selected).length === 0)} />
-      </Tooltip>
-      <Tooltip
-        title={
-          <FormattedMessage
-            id="pages.button.model.delete"
-            defaultMessage="Delete Element"
-          ></FormattedMessage>
-        }
-        placement="left"
-      >
-        <Button shape="circle" size="small" icon={<DeleteOutlined />} disabled={(nodes.filter((node) => node.selected).length === 0 && edges.filter((edge) => edge.selected).length === 0)} onClick={deleteCell} />
-      </Tooltip>
-      <br />
+      <ProcessView
+        id={nodes.filter((node) => node.selected)?.[0]?.data?.id ?? ''}
+        dataSource={'tg'}
+        buttonType={'toolIcon'}
+        lang={lang}
+        disabled={nodes.filter((node) => node.selected).length === 0}
+      />
+      <EdgeExhange
+        lang={lang}
+        disabled={edges.filter((edge) => edge.selected).length === 0}
+        edge={edges.filter((edge) => edge.selected)?.[0]}
+        nodes={nodes}
+        onData={updateEdgeData}
+        readonly={readonly}
+      />
+      {!readonly && (
+        <>
+          <ModelToolbarAdd buttonType={'icon'} lang={lang} onData={addProcessNode} />
+          <Tooltip
+            title={
+              <FormattedMessage
+                id="pages.button.model.design"
+                defaultMessage="Design Appearance"
+              ></FormattedMessage>
+            }
+            placement="left"
+          >
+            <Button
+              shape="circle"
+              size="small"
+              icon={<FormatPainterOutlined />}
+              disabled={
+                nodes.filter((node) => node.selected).length === 0 &&
+                edges.filter((edge) => edge.selected).length === 0
+              }
+            />
+          </Tooltip>
 
-      <Tooltip
-        title={
-          <FormattedMessage
-            id="pages.button.model.save"
-            defaultMessage="Save Data"
-          ></FormattedMessage>
-        }
-        placement="left"
-      >
-        <Button shape="circle" size="small" icon={<SaveOutlined />} onClick={saveData} />
-      </Tooltip>
+          <Tooltip
+            title={
+              <FormattedMessage
+                id="pages.button.model.delete"
+                defaultMessage="Delete Element"
+              ></FormattedMessage>
+            }
+            placement="left"
+          >
+            <Button
+              shape="circle"
+              size="small"
+              icon={<DeleteOutlined />}
+              disabled={
+                nodes.filter((node) => node.selected).length === 0 &&
+                edges.filter((edge) => edge.selected).length === 0
+              }
+              onClick={deleteCell}
+            />
+          </Tooltip>
+          <br />
+
+          <Tooltip
+            title={
+              <FormattedMessage
+                id="pages.button.model.save"
+                defaultMessage="Save Data"
+              ></FormattedMessage>
+            }
+            placement="left"
+          >
+            <Button shape="circle" size="small" icon={<SaveOutlined />} onClick={saveData} />
+          </Tooltip>
+        </>
+      )}
       <Spin spinning={spinning} fullscreen />
     </Space>
   );

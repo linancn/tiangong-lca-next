@@ -5,7 +5,6 @@ export type ProductTable = {
   created_at: Date;
 };
 
-
 export type EdgeExchangeTable = {
   id: string;
   sourceProcessId: string;

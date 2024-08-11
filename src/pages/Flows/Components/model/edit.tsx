@@ -75,26 +75,26 @@ const FlowModelEdit: FC<Props> = ({ id, flowId, buttonType, lang, actionRef }) =
             icon={<CloseOutlined />}
             style={{ border: 0 }}
             onClick={() => {
-              if (isSave)
-                reload();
-              setDrawerVisible(false)
+              if (isSave) reload();
+              setDrawerVisible(false);
             }}
           />
         }
         maskClosable={true}
         open={drawerVisible}
         onClose={() => {
-          if (isSave)
-            reload();
+          if (isSave) reload();
           setDrawerVisible(false);
-        }
-        }
+        }}
       >
         <XFlow>
           <Layout style={layoutStyle}>
             <Layout>
               <Content>
-                <XFlowGraph zoomable pannable minScale={0.5}
+                <XFlowGraph
+                  zoomable
+                  pannable
+                  minScale={0.5}
                   connectionOptions={{
                     snap: true,
                     allowBlank: false,
@@ -116,7 +116,15 @@ const FlowModelEdit: FC<Props> = ({ id, flowId, buttonType, lang, actionRef }) =
               </Content>
             </Layout>
             <Sider width="50px" style={siderStyle}>
-              <Toolbar id={id} flowId={flowId} lang={lang} option={'edit'} drawerVisible={drawerVisible} isSave={isSave} setIsSave={setIsSave} />
+              <Toolbar
+                id={id}
+                flowId={flowId}
+                lang={lang}
+                drawerVisible={drawerVisible}
+                isSave={isSave}
+                setIsSave={setIsSave}
+                readonly={false}
+              />
             </Sider>
             <div style={{ position: 'absolute', right: 80, bottom: 30 }}>
               <Control

@@ -56,25 +56,13 @@ export function genEdgeExchangeTableData(data: any, lang: string) {
         sourceProcessId: item.sourceProcessId ?? '-',
         sourceOutputFlowInternalID: item.sourceOutputFlowInternalID ?? '-',
         sourceOutputFlowId: item.sourceOutputFlowId ?? '-',
-        sourceOutputFlowName: getLangText(
-          item.sourceOutputFlowName,
-          lang,
-        ),
-        sourceOutputFlowGeneralComment: getLangText(
-          item.sourceOutputFlowGeneralComment,
-          lang,
-        ),
+        sourceOutputFlowName: getLangText(item.sourceOutputFlowName, lang),
+        sourceOutputFlowGeneralComment: getLangText(item.sourceOutputFlowGeneralComment, lang),
         targetProcessId: item.targetProcessId ?? '-',
         targetInputFlowInternalID: item.targetInputFlowInternalID ?? '-',
         targetInputFlowId: item.targetOutputFlowId ?? '-',
-        targetInputFlowName: getLangText(
-          item.targetInputFlowName,
-          lang,
-        ),
-        targetInputFlowGeneralComment: getLangText(
-          item.targetInputFlowGeneralComment,
-          lang,
-        ),
+        targetInputFlowName: getLangText(item.targetInputFlowName, lang),
+        targetInputFlowGeneralComment: getLangText(item.targetInputFlowGeneralComment, lang),
       });
     });
   }
