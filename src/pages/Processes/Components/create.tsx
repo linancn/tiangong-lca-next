@@ -165,7 +165,6 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
               lang={lang}
               dataSource={'my'}
               buttonType={'icon'}
-              actionRef={actionRefExchangeTable}
             />
             <ProcessExchangeEdit
               id={row.dataSetInternalID}
