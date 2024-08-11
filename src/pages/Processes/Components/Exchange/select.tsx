@@ -10,6 +10,7 @@ import { Button, Card, Col, Drawer, Row, Space, Tooltip } from 'antd';
 import type { FC, Key } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
+import ProcessExchangeView from './view';
 
 type Props = {
   id: string;
@@ -89,41 +90,47 @@ const ExchangeSelect: FC<Props> = ({
         );
       },
     },
+  ];
+
+  const processExchangeColumnsSource: ProColumns<ProcessExchangeTable>[] = [
     {
       title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
       dataIndex: 'option',
       search: false,
-      // render: (_, row) => {
-      //     return [
-      //         <Space size={'small'} key={0}>
-      //             <ProcessExchangeView
-      //                 id={row.dataSetInternalID}
-      //                 data={exchangeDataSource}
-      //                 lang={lang}
-      //                 dataSource={'my'}
-      //                 buttonType={'icon'}
-      //                 actionRef={actionRefExchangeTable}
-      //             />
-      //             <ProcessExchangeEdit
-      //                 id={row.dataSetInternalID}
-      //                 data={exchangeDataSource}
-      //                 lang={lang}
-      //                 buttonType={'icon'}
-      //                 actionRef={actionRefExchangeTable}
-      //                 onData={handletExchangeData}
-      //                 setViewDrawerVisible={() => { }}
-      //             />
-      //             <ProcessExchangeDelete
-      //                 id={row.dataSetInternalID}
-      //                 data={exchangeDataSource}
-      //                 buttonType={'icon'}
-      //                 actionRef={actionRef}
-      //                 setViewDrawerVisible={() => { }}
-      //                 onData={handletExchangeData}
-      //             />
-      //         </Space>,
-      //     ];
-      // },
+      render: (_, row) => {
+        return [
+          <Space size={'small'} key={0}>
+            <ProcessExchangeView
+              id={row.dataSetInternalID}
+              data={exchangeDataSource}
+              lang={lang}
+              dataSource={'my'}
+              buttonType={'icon'}
+            />
+          </Space>,
+        ];
+      },
+    },
+  ];
+
+  const processExchangeColumnsTarget: ProColumns<ProcessExchangeTable>[] = [
+    {
+      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
+      dataIndex: 'option',
+      search: false,
+      render: (_, row) => {
+        return [
+          <Space size={'small'} key={0}>
+            <ProcessExchangeView
+              id={row.dataSetInternalID}
+              data={exchangeDataTarget}
+              lang={lang}
+              dataSource={'my'}
+              buttonType={'icon'}
+            />
+          </Space>,
+        ];
+      },
     },
   ];
 
@@ -274,7 +281,7 @@ const ExchangeSelect: FC<Props> = ({
                 }}
                 toolBarRender={false}
                 dataSource={exchangeDataSourceTable}
-                columns={processExchangeColumns}
+                columns={[...processExchangeColumns, ...processExchangeColumnsSource]}
                 rowSelection={{
                   type: 'radio',
                   alwaysShowAlert: true,
@@ -304,7 +311,7 @@ const ExchangeSelect: FC<Props> = ({
                 }}
                 toolBarRender={false}
                 dataSource={exchangeDataTargetTable}
-                columns={processExchangeColumns}
+                columns={[...processExchangeColumns, ...processExchangeColumnsTarget]}
                 rowSelection={{
                   type: 'radio',
                   alwaysShowAlert: true,

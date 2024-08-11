@@ -7,7 +7,6 @@ import {
   CloseOutlined,
   ProfileOutlined,
 } from '@ant-design/icons';
-import { ActionType } from '@ant-design/pro-components';
 import { Button, Card, Descriptions, Divider, Drawer, Space, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
@@ -19,7 +18,7 @@ type Props = {
   lang: string;
   dataSource: string;
   buttonType: string;
-  actionRef: React.MutableRefObject<ActionType | undefined>;
+  // actionRef: React.MutableRefObject<ActionType | undefined>;
 };
 const ProcessExchangeView: FC<Props> = ({ id, data, lang, dataSource, buttonType }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -69,7 +68,10 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, dataSource, buttonType
       </Tooltip>
       <Drawer
         title={
-          <FormattedMessage id="pages.contact.drawer.title.view" defaultMessage="View Exchange" />
+          <FormattedMessage
+            id="pages.process.exchange.drawer.title.view"
+            defaultMessage="View Exchange"
+          />
         }
         width="90%"
         closable={false}

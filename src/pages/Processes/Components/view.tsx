@@ -169,7 +169,6 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
                 dataSource={'my'}
                 buttonType={'icon'}
                 lang={lang}
-                actionRef={actionRefExchangeTable}
               />
               {/* <ProcessEdit
                 id={row.id}
@@ -195,7 +194,6 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
               lang={lang}
               dataSource={'tg'}
               buttonType={'icon'}
-              actionRef={actionRefExchangeTable}
             />
           </Space>,
         ];
