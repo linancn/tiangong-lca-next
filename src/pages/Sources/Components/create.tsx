@@ -2,6 +2,7 @@ import { UploadButton } from '@/components/FileViewer/upload';
 import LangTextItemFrom from '@/components/LangTextItem/from';
 import LevelTextItemFrom from '@/components/LevelTextItem/from';
 import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
+import { formatDateTime } from '@/services/general/util';
 import { createSource } from '@/services/sources/api';
 import { publicationTypeOptions } from '@/services/sources/data';
 import { supabaseStorageBucket } from '@/services/supabase/key';
@@ -43,6 +44,7 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
   const [fromData, setFromData] = useState<any>({});
+  const [initData, setInitData] = useState<any>({});
   const [activeTabKey, setActiveTabKey] = useState<string>('sourceInformation');
   const [fileList0, setFileList0] = useState<any[]>([]);
   const [fileList, setFileList] = useState<any[]>([]);
@@ -258,7 +260,7 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
           >
-            <Input />
+            <Input disabled={true} style={{ color: '#000' }} />
           </Form.Item>
           <SourceSelectFrom
             name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
@@ -410,9 +412,18 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
 
   useEffect(() => {
     if (!drawerVisible) return;
-    setFromData({});
+    const currentDateTime = formatDateTime(new Date());
+    const newData = {
+      administrativeInformation: {
+        dataEntryBy: {
+          'common:timeStamp': currentDateTime,
+        },
+      },
+    };
+    setInitData(newData);
     formRefCreate.current?.resetFields();
-    formRefCreate.current?.setFieldsValue({});
+    formRefCreate.current?.setFieldsValue(newData);
+    setFromData(newData);
     setFileList0([]);
     setFileList([]);
   }, [drawerVisible]);
@@ -465,6 +476,7 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
       >
         <ProForm
           formRef={formRefCreate}
+          initialValues={initData}
           onValuesChange={(_, allValues) => {
             setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
           }}

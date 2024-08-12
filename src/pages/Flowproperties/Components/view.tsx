@@ -139,7 +139,7 @@ const FlowpropertyView: FC<Props> = ({ id, buttonType, lang }) => {
           }
           lang={lang}
         />
-
+        <br />
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
             key={0}
@@ -149,7 +149,7 @@ const FlowpropertyView: FC<Props> = ({ id, buttonType, lang }) => {
                 defaultMessage="Approval Of Overall Compliance"
               />
             }
-            labelStyle={{ width: '220px' }}
+            labelStyle={{ width: '240px' }}
           >
             {initData?.modellingAndValidation?.complianceDeclarations?.compliance?.[
               'common:approvalOfOverallCompliance'
@@ -178,7 +178,7 @@ const FlowpropertyView: FC<Props> = ({ id, buttonType, lang }) => {
                   defaultMessage="Time Stamp"
                 />
               }
-              labelStyle={{ width: '100px' }}
+              labelStyle={{ width: '140px' }}
             >
               {initData?.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-'}
             </Descriptions.Item>
@@ -216,7 +216,7 @@ const FlowpropertyView: FC<Props> = ({ id, buttonType, lang }) => {
                   defaultMessage="Data Set Version"
                 />
               }
-              labelStyle={{ width: '100px' }}
+              labelStyle={{ width: '140px' }}
             >
               {initData?.administrativeInformation?.publicationAndOwnership?.[
                 'common:dataSetVersion'
@@ -248,7 +248,7 @@ const FlowpropertyView: FC<Props> = ({ id, buttonType, lang }) => {
                   defaultMessage="Permanent Data Set URI"
                 />
               }
-              labelStyle={{ width: '100px' }}
+              labelStyle={{ width: '200px' }}
             >
               {initData?.administrativeInformation?.publicationAndOwnership?.[
                 'common:permanentDataSetURI'

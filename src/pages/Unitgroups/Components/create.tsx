@@ -2,6 +2,7 @@ import LangTextItemFrom from '@/components/LangTextItem/from';
 import LevelTextItemFrom from '@/components/LevelTextItem/from';
 import SourceSelectFrom from '@/pages/Sources/Components/select/from';
 import { ListPagination } from '@/services/general/data';
+import { formatDateTime } from '@/services/general/util';
 import { createUnitGroup } from '@/services/unitgroups/api';
 import { UnitTable } from '@/services/unitgroups/data';
 import { genUnitTableData } from '@/services/unitgroups/util';
@@ -45,6 +46,7 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
   const formRefCreate = useRef<ProFormInstance>();
   const [activeTabKey, setActiveTabKey] = useState<string>('unitGroupInformation');
   const [fromData, setFromData] = useState<any>({});
+  const [initData, setInitData] = useState<any>({});
   const [unitDataSource, setUnitDataSource] = useState<any>([]);
 
   const actionRefUnitTable = useRef<ActionType>();
@@ -287,13 +289,12 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
           label={
             <FormattedMessage
               id="pages.unitgroup.creat.administrativeInformation.timeStamp"
-              defaultMessage="TimeStamp"
+              defaultMessage="Time Stamp"
             />
           }
           name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
         >
-          <Input />
-          {/* <DatePicker showTime></DatePicker> */}
+          <Input disabled={true} style={{ color: '#000' }} />
         </Form.Item>
         <SourceSelectFrom
           name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
@@ -341,8 +342,18 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
 
   useEffect(() => {
     if (drawerVisible === false) return;
+    const currentDateTime = formatDateTime(new Date());
+    const newData = {
+      administrativeInformation: {
+        dataEntryBy: {
+          'common:timeStamp': currentDateTime,
+        },
+      },
+    };
+    setInitData(newData);
     formRefCreate.current?.resetFields();
-    formRefCreate.current?.setFieldsValue({});
+    formRefCreate.current?.setFieldsValue(newData);
+    setFromData(newData);
     setUnitDataSource([]);
   }, [drawerVisible]);
 
@@ -419,6 +430,7 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
       >
         <ProForm
           formRef={formRefCreate}
+          initialValues={initData}
           onValuesChange={(_, allValues) => {
             setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
           }}

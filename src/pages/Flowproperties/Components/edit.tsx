@@ -241,7 +241,7 @@ const FlowpropertiesEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
           >
-            <Input />
+            <Input disabled={true} style={{ color: '#000' }} />
           </Form.Item>
           <SourceSelectFrom
             name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}

@@ -101,7 +101,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, dataSource, buttonType
                 defaultMessage="Exchange Direction"
               />
             }
-            labelStyle={{ width: '220px' }}
+            labelStyle={{ width: '180px' }}
           >
             {viewData.exchangeDirection ?? '-'}
           </Descriptions.Item>

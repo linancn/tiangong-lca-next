@@ -3,6 +3,7 @@ import LevelTextItemFrom from '@/components/LevelTextItem/from';
 import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
 import SourceSelectFrom from '@/pages/Sources/Components/select/from';
 import { createContact } from '@/services/contacts/api';
+import { formatDateTime } from '@/services/general/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-form';
@@ -30,6 +31,7 @@ type Props = {
 const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [fromData, setFromData] = useState<any>({});
+  const [initData, setInitData] = useState<any>({});
   const formRefCreate = useRef<ProFormInstance>();
   const [activeTabKey, setActiveTabKey] = useState<string>('contactInformation');
 
@@ -199,7 +201,7 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
               label={<FormattedMessage id="pages.contact.timeStamp" defaultMessage="Time Stamp" />}
               name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
             >
-              <Input />
+              <Input disabled={true} style={{ color: '#000' }} />
             </Form.Item>
             <br />
             <SourceSelectFrom
@@ -282,9 +284,18 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
 
   useEffect(() => {
     if (!drawerVisible) return;
+    const currentDateTime = formatDateTime(new Date());
+    const newData = {
+      administrativeInformation: {
+        dataEntryBy: {
+          'common:timeStamp': currentDateTime,
+        },
+      },
+    };
+    setInitData(newData);
     formRefCreate.current?.resetFields();
-    formRefCreate.current?.setFieldsValue({});
-    setFromData({});
+    formRefCreate.current?.setFieldsValue(newData);
+    setFromData(newData);
   }, [drawerVisible]);
 
   useEffect(() => {
@@ -338,6 +349,7 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
       >
         <ProForm
           formRef={formRefCreate}
+          initialValues={initData}
           onValuesChange={(_, allValues) => {
             setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
           }}

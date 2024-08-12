@@ -4,6 +4,7 @@ import FlowpropertiesSelect from '@/pages/Flowproperties/Components/select/from'
 import SourceSelectFrom from '@/pages/Sources/Components/select/from';
 import { createFlows } from '@/services/flows/api';
 import { complianceOptions, flowTypeOptions } from '@/services/flows/data';
+import { formatDateTime } from '@/services/general/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-form';
@@ -34,6 +35,7 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
   const [activeTabKey, setActiveTabKey] = useState<string>('flowInformation');
+  const [initData, setInitData] = useState<any>({});
   const [fromData, setFromData] = useState<any>({});
 
   const reload = useCallback(() => {
@@ -283,7 +285,7 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
           >
-            <Input />
+            <Input disabled={true} style={{ color: '#000' }} />
           </Form.Item>
           <SourceSelectFrom
             lang={lang}
@@ -375,9 +377,18 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
 
   useEffect(() => {
     if (drawerVisible === false) return;
-    setFromData({});
+    const currentDateTime = formatDateTime(new Date());
+    const newData = {
+      administrativeInformation: {
+        dataEntryBy: {
+          'common:timeStamp': currentDateTime,
+        },
+      },
+    };
+    setInitData(newData);
     formRefCreate.current?.resetFields();
-    formRefCreate.current?.setFieldsValue({});
+    formRefCreate.current?.setFieldsValue(newData);
+    setFromData(newData);
   }, [drawerVisible]);
 
   return (
@@ -420,6 +431,7 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
       >
         <ProForm
           formRef={formRefCreate}
+          initialValues={initData}
           submitter={{
             render: () => {
               return [];

@@ -226,7 +226,7 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
               label={<FormattedMessage id="pages.contact.timeStamp" defaultMessage="Time Stamp" />}
               name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
             >
-              <Input />
+              <Input disabled={true} style={{ color: '#000' }} />
             </Form.Item>
             <br />
             <SourceSelectFrom

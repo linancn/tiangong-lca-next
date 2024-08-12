@@ -134,28 +134,32 @@ const EdgeExhange: FC<Props> = ({ lang, disabled, edge, nodes, readonly, onData 
             {readonly ? (
               <></>
             ) : (
-              <ExchangeSelect
-                id={row.id}
-                lang={lang}
-                buttonType={'icon'}
-                sourceProcessId={sourceNode?.data?.id}
-                targetProcessId={targetNode?.data?.id}
-                onData={onEditData}
-                sourceRowKeys={[row.sourceOutputFlowInternalID]}
-                targetRowKeys={[row.targetInputFlowInternalID]}
-                optionType={'edit'}
-              />
+              <>
+                <ExchangeSelect
+                  id={row.id}
+                  lang={lang}
+                  buttonType={'icon'}
+                  sourceProcessId={sourceNode?.data?.id}
+                  targetProcessId={targetNode?.data?.id}
+                  onData={onEditData}
+                  sourceRowKeys={[row.sourceOutputFlowInternalID]}
+                  targetRowKeys={[row.targetInputFlowInternalID]}
+                  optionType={'edit'}
+                />
+                <Tooltip
+                  title={<FormattedMessage id="pages.button.delete" defaultMessage="Delete" />}
+                >
+                  <Button
+                    shape="circle"
+                    icon={<DeleteOutlined />}
+                    size="small"
+                    onClick={() => {
+                      onDeleteData(row.id);
+                    }}
+                  />
+                </Tooltip>
+              </>
             )}
-            <Tooltip title={<FormattedMessage id="pages.button.delete" defaultMessage="Delete" />}>
-              <Button
-                shape="circle"
-                icon={<DeleteOutlined />}
-                size="small"
-                onClick={() => {
-                  onDeleteData(row.id);
-                }}
-              />
-            </Tooltip>
           </Space>,
         ];
       },

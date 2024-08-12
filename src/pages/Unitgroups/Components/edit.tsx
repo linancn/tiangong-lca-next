@@ -292,13 +292,12 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
           label={
             <FormattedMessage
               id="pages.unitgroup.edit.administrativeInformation.timeStamp"
-              defaultMessage="TimeStamp"
+              defaultMessage="Time Stamp"
             />
           }
           name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
         >
-          {/* <DatePicker showTime></DatePicker> */}
-          <Input />
+          <Input disabled={true} style={{ color: '#000' }} />
         </Form.Item>
         <SourceSelectFrom
           name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}

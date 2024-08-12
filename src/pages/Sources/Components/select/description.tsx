@@ -13,13 +13,13 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
   return (
     <Card size="small" title={title}>
       <Space direction="horizontal">
-        <Descriptions bordered size={'small'} column={1} style={{ width: '470px' }}>
+        <Descriptions bordered size={'small'} column={1} style={{ width: '450px' }}>
           <Descriptions.Item
             key={0}
             label={
               <FormattedMessage id="pages.contact.refObjectId" defaultMessage="Ref Object Id" />
             }
-            labelStyle={{ width: '120px' }}
+            labelStyle={{ width: '140px' }}
           >
             {data?.['@refObjectId'] ?? '-'}
           </Descriptions.Item>
@@ -34,7 +34,7 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
         <Descriptions.Item
           key={0}
           label={<FormattedMessage id="pages.contact.type" defaultMessage="Type" />}
-          labelStyle={{ width: '120px' }}
+          labelStyle={{ width: '140px' }}
         >
           {data?.['@type'] ?? '-'}
         </Descriptions.Item>
@@ -44,7 +44,7 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
         <Descriptions.Item
           key={0}
           label={<FormattedMessage id="pages.contact.uri" defaultMessage="URI" />}
-          labelStyle={{ width: '120px' }}
+          labelStyle={{ width: '140px' }}
         >
           {data?.['@uri'] ?? '-'}
         </Descriptions.Item>
