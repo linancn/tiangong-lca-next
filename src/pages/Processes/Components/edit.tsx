@@ -809,9 +809,9 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
               defaultMessage="Data Entry By: Time Stamp"
             />
           }
-          name={['dataEntryBy', 'common:timeStamp']}
+          name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
         >
-          <Input />
+          <Input disabled={true} style={{ color: '#000' }} />
         </Form.Item>
 
         <Card
@@ -996,13 +996,13 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
     });
   }, [exchangeDataSource]);
 
-  useEffect(() => {
-    if (activeTabKey === 'exchanges') return;
-    setFromData({
-      ...fromData,
-      [activeTabKey]: formRefEdit.current?.getFieldsValue()?.[activeTabKey] ?? {},
-    });
-  }, [formRefEdit.current?.getFieldsValue()]);
+  // useEffect(() => {
+  //   if (activeTabKey === 'exchanges') return;
+  //   setFromData({
+  //     ...fromData,
+  //     [activeTabKey]: formRefEdit.current?.getFieldsValue()?.[activeTabKey] ?? {},
+  //   });
+  // }, [formRefEdit.current?.getFieldsValue()]);
 
   return (
     <>

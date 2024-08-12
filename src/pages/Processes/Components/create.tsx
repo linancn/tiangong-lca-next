@@ -4,7 +4,7 @@ import YearInput from '@/components/YearInput';
 import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
 import SourceSelectFrom from '@/pages/Sources/Components/select/from';
 import { ListPagination } from '@/services/general/data';
-import { getLangText } from '@/services/general/util';
+import { formatDateTime, getLangText } from '@/services/general/util';
 import { createProcess } from '@/services/processes/api';
 import {
   copyrightOptions,
@@ -57,6 +57,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
   const formRefCreate = useRef<ProFormInstance>();
   const [activeTabKey, setActiveTabKey] = useState<string>('processInformation');
   const [fromData, setFromData] = useState<any>({});
+  const [initData, setInitData] = useState<any>({});
   const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
 
   const actionRefExchangeTable = useRef<ActionType>();
@@ -793,9 +794,9 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
               defaultMessage="Data Entry By: Time Stamp"
             />
           }
-          name={['dataEntryBy', 'common:timeStamp']}
+          name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
         >
-          <Input />
+          <Input disabled={true} style={{ color: '#000' }} />
         </Form.Item>
 
         <Card
@@ -919,8 +920,19 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
 
   useEffect(() => {
     if (drawerVisible === false) return;
+
+    const currentDateTime = formatDateTime(new Date());
+    const newData = {
+      administrativeInformation: {
+        dataEntryBy: {
+          'common:timeStamp': currentDateTime,
+        },
+      },
+    };
+    setInitData(newData);
     formRefCreate.current?.resetFields();
-    formRefCreate.current?.setFieldsValue({});
+    formRefCreate.current?.setFieldsValue(newData);
+    setFromData(newData);
     setExchangeDataSource([]);
   }, [drawerVisible]);
 
@@ -981,6 +993,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
       >
         <ProForm
           formRef={formRefCreate}
+          initialValues={initData}
           onValuesChange={(_, allValues) => {
             setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
           }}

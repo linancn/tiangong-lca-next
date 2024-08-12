@@ -33,6 +33,7 @@ import { FormattedMessage } from 'umi';
 // import UnitgroupsFrom from '@/pages/Unitgroups/Components/Unit/edit';
 import SourceSelectFrom from '@/pages/Sources/Components/select/from';
 import UnitGroupSelectFrom from '@/pages/Unitgroups/Components/select/from';
+import { formatDateTime } from '@/services/general/util';
 import FlowpropertiesSelectFrom from './select/from';
 
 type Props = {
@@ -43,6 +44,7 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
   const [activeTabKey, setActiveTabKey] = useState<string>('flowPropertiesInformation');
+  const [initData, setInitData] = useState<any>({});
   const [fromData, setFromData] = useState<any>({});
 
   const reload = useCallback(() => {
@@ -247,7 +249,7 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
           >
-            <Input />
+            <Input disabled={true} style={{ color: '#000' }} />
           </Form.Item>
           <SourceSelectFrom
             name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
@@ -325,9 +327,18 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
 
   useEffect(() => {
     if (drawerVisible === false) return;
-    setFromData({});
+    const currentDateTime = formatDateTime(new Date());
+    const newData = {
+      administrativeInformation: {
+        dataEntryBy: {
+          'common:timeStamp': currentDateTime,
+        },
+      },
+    };
+    setInitData(newData);
     formRefCreate.current?.resetFields();
-    formRefCreate.current?.setFieldsValue({});
+    formRefCreate.current?.setFieldsValue(newData);
+    setFromData(newData);
   }, [drawerVisible]);
 
   return (
@@ -375,6 +386,7 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
       >
         <ProForm
           formRef={formRefCreate}
+          initialValues={initData}
           onValuesChange={(_, allValues) => {
             setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
           }}
