@@ -35,6 +35,17 @@ export async function login(body: API.LoginParams, options?: { [key: string]: an
   return { status: 'ok', type: body.type, currentAuthority: data.user.role };
 }
 
+export async function sendMagicLink(body: API.LoginParams, options?: { [key: string]: any }) {
+  const { data, error } = await supabase.auth.signInWithOtp({
+    email: body.email ?? '',
+  });
+
+  if (error) {
+    return { status: 'error', message: error.message, type: body.type, currentAuthority: 'guest' };
+  }
+  return { status: 'ok', type: body.type, currentAuthority: 'guest' };
+}
+
 /** 此处后端没有提供注释 GET /api/notices */
 export async function getNotices(options?: { [key: string]: any }) {
   return request<API.NoticeIconList>('/api/notices', {
