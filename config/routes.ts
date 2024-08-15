@@ -94,6 +94,27 @@ export default [
     ],
   },
   {
+    path: '/account',
+    name: 'account',
+    icon: 'UserOutlined',
+    routes: [
+      {
+        path: '/account',
+        redirect: '/account/profile',
+      },
+      {
+        name: 'profile',
+        path: '/account/profile',
+        // component: './Profile',
+      },
+      {
+        name: 'password',
+        path: '/account/password',
+        // component: './Password',
+      },
+    ],
+  },
+  {
     path: '/demo',
     menu: false,
     name: 'Demo',
