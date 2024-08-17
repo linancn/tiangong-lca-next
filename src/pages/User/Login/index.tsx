@@ -45,7 +45,7 @@ const useStyles = createStyles(({ token }) => {
     },
     'ant-btn-lg': {
       display: 'none',
-    }
+    },
   };
 });
 
@@ -116,28 +116,30 @@ const Login: React.FC = () => {
         if (msg.status === 'ok') {
           const defaultLoginSuccessMessage = intl.formatMessage({
             id: 'pages.login.email.success',
-            defaultMessage: 'The email was sent successfully, please login from the magic link in the email!',
+            defaultMessage:
+              'The email was sent successfully, please login from the magic link in the email!',
           });
           message.success(defaultLoginSuccessMessage);
           setSendMailMessage(
             <FormattedMessage
-              id='pages.login.email.success'
-              defaultMessage='The email was sent successfully, please login from the magic link in the email!'
-            />
+              id="pages.login.email.success"
+              defaultMessage="The email was sent successfully, please login from the magic link in the email!"
+            />,
           );
           return;
         }
         setSendMailMessage(
           <FormattedMessage
-            id='pages.login.email.failure'
-            defaultMessage='The email was not sent successfully, please try again!'
-          />
+            id="pages.login.email.failure"
+            defaultMessage="The email was not sent successfully, please try again!"
+          />,
         );
         return;
-      }
-      else if (type === 'password') {
+      } else if (type === 'password') {
         // 登录
+        setLoading(true);
         const msg = await login({ ...values, type });
+        setLoading(false);
         if (msg.status === 'ok') {
           const defaultLoginSuccessMessage = intl.formatMessage({
             id: 'pages.login.success',
@@ -318,24 +320,16 @@ const Login: React.FC = () => {
             <Form.Item>
               <Button block type="primary" htmlType="submit" size="large" loading={loading}>
                 {type === 'password' && (
-                  <FormattedMessage
-                    id="pages.login.submit"
-                    defaultMessage="Login"
-                  />)}
+                  <FormattedMessage id="pages.login.submit" defaultMessage="Login" />
+                )}
                 {type === 'email' && (
-                  <FormattedMessage
-                    id="pages.login.email.submit"
-                    defaultMessage="Login"
-                  />)}
+                  <FormattedMessage id="pages.login.email.submit" defaultMessage="Login" />
+                )}
               </Button>
             </Form.Item>
-            <Form.Item>
-              {sendMailMessage}
-            </Form.Item>
+            <Form.Item>{sendMailMessage}</Form.Item>
           </Form>
-
         </div>
-
       </div>
       <Footer />
     </div>

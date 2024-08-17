@@ -73,4 +73,12 @@ export default {
   'pages.searchTable.tenThousand': '万',
   'pages.searchTable.batchDeletion': '批量删除',
   'pages.searchTable.batchApproval': '批量审批',
+
+  'pages.account.profile.role': '角色',
+  'pages.account.profile.email': '邮箱',
+  'pages.account.password.current': '当前密码',
+  'pages.account.password.new1': '新密码',
+  'pages.account.password.new2': '确认密码',
+  'pages.account.password.changed.success': '密码修改成功！',
+  'pages.account.password.setted.success': '密码设置成功！',
 };

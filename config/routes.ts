@@ -105,12 +105,12 @@ export default [
       {
         name: 'profile',
         path: '/account/profile',
-        // component: './Profile',
+        component: './Account/profile',
       },
       {
-        name: 'password',
-        path: '/account/password',
-        // component: './Password',
+        name: 'passwordChange',
+        path: '/account/password_change',
+        component: './Account/password_change',
       },
     ],
   },
@@ -129,6 +129,11 @@ export default [
         name: 'login',
         path: '/user/login',
         component: './User/Login',
+      },
+      {
+        name: 'passwordSet',
+        path: '/user/password_set',
+        component: './User/password_set',
       },
     ],
   },
