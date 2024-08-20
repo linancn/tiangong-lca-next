@@ -1,11 +1,10 @@
 import { Footer } from '@/components';
 import { currentUser, setPassword } from '@/services/ant-design-pro/api';
 import { validatePasswordStrength } from '@/services/general/util';
-import { ProFormInstance } from '@ant-design/pro-components';
 import { FormattedMessage, history } from '@umijs/max';
 import { Button, Form, Input, message, Space, Spin } from 'antd';
 import { createStyles } from 'antd-style';
-import { useEffect, useRef, useState, type FC } from 'react';
+import { useEffect, useState, type FC } from 'react';
 import { Helmet, SelectLang, useIntl } from 'umi';
 import Settings from '../../../config/defaultSettings';
 
@@ -60,8 +59,7 @@ const Lang = () => {
 
 const PasswordSet: FC = () => {
   const { styles } = useStyles();
-  const formRefEdit = useRef<ProFormInstance>();
-  const [initData, setInitData] = useState<API.CurrentUser>({});
+  const [initData, setInitData] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [sendMailMessage, setSendMailMessage] = useState<any>(<></>);
   const intl = useIntl();
@@ -89,10 +87,14 @@ const PasswordSet: FC = () => {
         return;
       }
       setSendMailMessage(
-        <FormattedMessage
-          id="pages.login.password.set.failure"
-          defaultMessage="The password was not setted successfully, please try again!"
-        />,
+        <>
+          <FormattedMessage
+            id="pages.login.password.set.failure"
+            defaultMessage="The password was not setted successfully, please try again!"
+          />
+          <br />
+          <br />({msg.message})
+        </>,
       );
       return;
     } catch (error) {
@@ -107,7 +109,20 @@ const PasswordSet: FC = () => {
   useEffect(() => {
     setSpinning(true);
     currentUser().then((res) => {
-      setInitData(res ?? {});
+      if (!res?.userid) {
+        history.push('/user/login');
+        return;
+      }
+      setInitData([
+        {
+          name: ['userid'],
+          value: res?.userid ?? '',
+        },
+        {
+          name: ['email'],
+          value: res?.email ?? '',
+        },
+      ]);
       setSpinning(false);
     });
   }, []);
@@ -145,17 +160,17 @@ const PasswordSet: FC = () => {
             <Form
               name="password_set"
               layout={'vertical'}
-              initialValues={initData}
+              fields={initData}
               style={{ width: 360 }}
               onFinish={async (values) => {
                 await handleSubmit(values as API.LoginParams);
               }}
             >
               <Space direction="vertical" style={{ width: '100%' }}>
-                <Form.Item name={'userid'} hidden>
-                  <Input />
+                <Form.Item hidden name={'userid'}>
+                  <Input disabled={true} />
                 </Form.Item>
-                <Form.Item hidden name={'email'}>
+                <Form.Item name={'email'}>
                   <Input disabled={true} style={{ color: '#000' }} />
                 </Form.Item>
 
@@ -194,16 +209,16 @@ const PasswordSet: FC = () => {
                       required: true,
                       message: 'Please input the new password again!',
                     },
-                    {
-                      validator: (_, value) => {
-                        if (!value || formRefEdit.current?.getFieldValue('new1') === value) {
+                    ({ getFieldValue }) => ({
+                      validator(_, value) {
+                        if (!value || getFieldValue('new1') === value) {
                           return Promise.resolve();
                         }
                         return Promise.reject(
-                          new Error('The two passwords that you entered do not match!'),
+                          new Error('The new password that you entered do not match!'),
                         );
                       },
-                    },
+                    }),
                   ]}
                   hasFeedback
                 >

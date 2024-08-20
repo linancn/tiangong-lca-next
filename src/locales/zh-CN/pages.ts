@@ -12,6 +12,8 @@ export default {
   'pages.login.email.placeholder': '邮箱',
   'pages.login.email.required': '邮箱是必填项！',
   'pages.login.email.failure': '邮件发送失败，请重试！',
+  'pages.login.email.verify': '发送验证邮件',
+  'pages.login.password.forgot.success': '邮件发送成功！请通过邮件链接重置密码。',
   'pages.login.username.placeholder': '用户名',
   'pages.login.username.required': '用户名是必填项！',
   'pages.login.password.placeholder': '密码',

@@ -8,6 +8,41 @@ import { useEffect, useRef, useState, type FC } from 'react';
 const PasswordChange: FC = () => {
   const [spinning, setSpinning] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
+  // const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  // const [countdown, setCountdown] = useState(60);
+
+  // const handleClick = () => {
+  //   setIsButtonDisabled(true);
+  //   reauthenticate().then((res) => {
+  //     if (res.status === 'ok') {
+  //       message.success(
+  //         <FormattedMessage
+  //           id="pages.account.password.email.code.success"
+  //           defaultMessage="The email code sended successfully!"
+  //         />,
+  //       );
+  //     } else {
+  //       message.error(res.message);
+  //     }
+  //   });
+  // }
+
+  // useEffect(() => {
+  //   let timer: number | NodeJS.Timeout | undefined;
+  //   if (isButtonDisabled) {
+  //     timer = setInterval(() => {
+  //       setCountdown((prevCountdown) => {
+  //         if (prevCountdown <= 1) {
+  //           clearInterval(timer);
+  //           setIsButtonDisabled(false);
+  //           return 60;
+  //         }
+  //         return prevCountdown - 1;
+  //       });
+  //     }, 1000);
+  //   }
+  //   return () => clearInterval(timer);
+  // }, [isButtonDisabled]);
 
   useEffect(() => {
     setSpinning(true);
@@ -34,7 +69,7 @@ const PasswordChange: FC = () => {
                 message.success(
                   <FormattedMessage
                     id="pages.account.password.changed.success"
-                    defaultMessage="'Password changed successfully!'"
+                    defaultMessage="Password changed successfully!"
                   />,
                 );
               } else {
@@ -47,6 +82,43 @@ const PasswordChange: FC = () => {
             <Form.Item name={'userid'} hidden>
               <Input />
             </Form.Item>
+            {/* <Space direction="horizontal">
+              <Form.Item name={'email'}
+                label={
+                  <FormattedMessage
+                    id="pages.account.profile.email"
+                    defaultMessage="Email"
+                  />}
+              >
+                <Input disabled={true} style={{ width: '300px', color: '#000' }} />
+              </Form.Item>
+              <Button
+                style={{ marginTop: '6px' }}
+                onClick={handleClick}
+                disabled={isButtonDisabled}
+              >
+                {isButtonDisabled ? `Get Email Code (${countdown} s)` : 'Get Email Code'}
+              </Button>
+            </Space>
+            <Form.Item
+              name="code"
+              label={
+                <FormattedMessage
+                  id="pages.account.password.code"
+                  defaultMessage="Email Code"
+                />
+              }
+              rules={[
+                {
+                  required: true,
+                  message: 'Please input your email code!',
+                },
+              ]}
+              hasFeedback
+            >
+              <Input />
+            </Form.Item> */}
+
             <Form.Item hidden name={'email'}>
               <Input disabled={true} style={{ color: '#000' }} />
             </Form.Item>

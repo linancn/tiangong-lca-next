@@ -3,7 +3,7 @@ import { login, sendMagicLink } from '@/services/ant-design-pro/api';
 import { LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons';
 import { ProFormText } from '@ant-design/pro-components';
 import { FormattedMessage } from '@umijs/max';
-import { Alert, Button, Form, message, Tabs } from 'antd';
+import { Alert, Button, Flex, Form, message, Tabs } from 'antd';
 import { createStyles } from 'antd-style';
 import React, { useState } from 'react';
 import { flushSync } from 'react-dom';
@@ -92,6 +92,7 @@ const Login: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [sendMailMessage, setSendMailMessage] = useState<any>(<></>);
   const { initialState, setInitialState } = useModel('@@initialState');
+  const [sendComplete, setSendComplete] = useState(false);
   const { styles } = useStyles();
   const intl = useIntl();
 
@@ -114,6 +115,7 @@ const Login: React.FC = () => {
         const msg = await sendMagicLink({ ...values, type });
         setLoading(false);
         if (msg.status === 'ok') {
+          setSendComplete(true);
           const defaultLoginSuccessMessage = intl.formatMessage({
             id: 'pages.login.email.success',
             defaultMessage:
@@ -279,6 +281,24 @@ const Login: React.FC = () => {
                     },
                   ]}
                 />
+                <Form.Item>
+                  <Flex justify="space-between" align="center">
+                    {/* <Form.Item name="remember" valuePropName="checked" noStyle>
+                      <Checkbox>Remember me</Checkbox>
+                    </Form.Item> */}
+                    <a href="/user/password_forgot">
+                      <FormattedMessage
+                        id="pages.login.forgotPassword"
+                        defaultMessage="Forgot password"
+                      />
+                    </a>
+                  </Flex>
+                </Form.Item>
+                <Form.Item>
+                  <Button block type="primary" htmlType="submit" size="large" loading={loading}>
+                    <FormattedMessage id="pages.login.submit" defaultMessage="Login" />
+                  </Button>
+                </Form.Item>
               </>
             )}
 
@@ -304,6 +324,15 @@ const Login: React.FC = () => {
                   })}
                   rules={[
                     {
+                      type: 'email',
+                      message: (
+                        <FormattedMessage
+                          id="pages.login.email.wrong-format"
+                          defaultMessage="The email format is incorrect!"
+                        />
+                      ),
+                    },
+                    {
                       required: true,
                       message: (
                         <FormattedMessage
@@ -313,21 +342,26 @@ const Login: React.FC = () => {
                       ),
                     },
                   ]}
+                  disabled={sendComplete}
                 />
+                <Form.Item>
+                  <Button
+                    block
+                    type="primary"
+                    htmlType="submit"
+                    size="large"
+                    loading={loading}
+                    disabled={sendComplete}
+                  >
+                    <FormattedMessage
+                      id="pages.login.email.submit"
+                      defaultMessage="Send Login Email"
+                    />
+                  </Button>
+                </Form.Item>
+                <Form.Item>{sendMailMessage}</Form.Item>
               </>
             )}
-
-            <Form.Item>
-              <Button block type="primary" htmlType="submit" size="large" loading={loading}>
-                {type === 'password' && (
-                  <FormattedMessage id="pages.login.submit" defaultMessage="Login" />
-                )}
-                {type === 'email' && (
-                  <FormattedMessage id="pages.login.email.submit" defaultMessage="Login" />
-                )}
-              </Button>
-            </Form.Item>
-            <Form.Item>{sendMailMessage}</Form.Item>
           </Form>
         </div>
       </div>

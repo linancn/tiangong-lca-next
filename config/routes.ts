@@ -115,6 +115,17 @@ export default [
     ],
   },
   {
+    path: '/password',
+    layout: false,
+    routes: [
+      {
+        name: 'passwordSet',
+        path: '/password/set',
+        component: './Account/password_set',
+      },
+    ],
+  },
+  {
     path: '/demo',
     menu: false,
     name: 'Demo',
@@ -131,9 +142,9 @@ export default [
         component: './User/Login',
       },
       {
-        name: 'passwordSet',
-        path: '/user/password_set',
-        component: './User/password_set',
+        name: 'passwordForget',
+        path: '/user/password_forgot',
+        component: './User/password_forgot',
       },
     ],
   },

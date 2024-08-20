@@ -6,7 +6,7 @@ import { request } from '@umijs/max';
 /** 获取当前的用户 GET /api/currentUser */
 export async function currentUser(options?: { [key: string]: any }) {
   const { data } = await supabase.auth.getUser();
-  if (data === null) {
+  if (data?.user === null) {
     return null;
   }
   const user: API.CurrentUser = {
@@ -47,11 +47,27 @@ export async function sendMagicLink(body: API.LoginParams, options?: { [key: str
   return { status: 'ok', type: body.type, currentAuthority: 'guest' };
 }
 
+export async function reauthenticate(options?: { [key: string]: any }) {
+  const { data, error } = await supabase.auth.reauthenticate();
+
+  if (error) {
+    return { status: 'error', message: error.message, currentAuthority: 'guest' };
+  }
+  return { status: 'ok', currentAuthority: data?.user?.role ?? 'guest' };
+}
+
 export async function changePassword(body: any, options?: { [key: string]: any }) {
-  let { data } = await supabase.auth.signInWithPassword({
+  const { data } = await supabase.auth.signInWithPassword({
     email: body.email ?? '',
     password: body.current ?? '',
   });
+
+  // const { data } = await supabase.auth.verifyOtp({
+  //   email: body.email ?? '',
+  //   token: body.code ?? '',
+  //   type: 'email',
+  // });
+
   if (data.user !== null) {
     const { error } = await supabase.auth.updateUser({
       email: body.email ?? '',
@@ -77,11 +93,27 @@ export async function changePassword(body: any, options?: { [key: string]: any }
   }
 }
 
+export async function forgotPasswordSendEmail(
+  body: API.LoginParams,
+  options?: { [key: string]: any },
+) {
+  const { error } = await supabase.auth.resetPasswordForEmail(body.email ?? '', {
+    redirectTo: 'https://lca.tiangong.world/password/set',
+  });
+
+  if (error) {
+    return { status: 'error', message: error.message, type: body.type, currentAuthority: 'guest' };
+  }
+  return { status: 'ok', type: body.type, currentAuthority: 'guest' };
+}
+
 export async function setPassword(body: any, options?: { [key: string]: any }) {
+  console.log(body);
   const { data, error } = await supabase.auth.updateUser({
     email: body.email ?? '',
     password: body.new1 ?? '',
   });
+  console.log(data, error);
   if (error) {
     return { status: 'error', message: error.message, type: body.type, currentAuthority: 'guest' };
   } else {
