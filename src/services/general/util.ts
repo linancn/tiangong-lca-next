@@ -182,3 +182,25 @@ export function formatDateTime(date: any): string {
   const offsetMinutes = pad(Math.abs(timezoneOffset) % 60);
   return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${sign}${offsetHours}:${offsetMinutes}`;
 }
+
+export function validatePasswordStrength(_: any, value: string) {
+  if (!value) {
+    return Promise.reject(new Error(''));
+  }
+  if (value.length < 8) {
+    return Promise.reject(new Error('Password must be at least 8 characters long!'));
+  }
+  if (!/[A-Z]/.test(value)) {
+    return Promise.reject(new Error('Password must contain at least one uppercase letter!'));
+  }
+  if (!/[a-z]/.test(value)) {
+    return Promise.reject(new Error('Password must contain at least one lowercase letter!'));
+  }
+  if (!/[0-9]/.test(value)) {
+    return Promise.reject(new Error('Password must contain at least one number!'));
+  }
+  if (!/[!@#$%^&*]/.test(value)) {
+    return Promise.reject(new Error('Password must contain at least one special character!'));
+  }
+  return Promise.resolve();
+}

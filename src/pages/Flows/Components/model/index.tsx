@@ -1,16 +1,19 @@
 import { FlowModelTable } from '@/services/flows/data';
 import { ListPagination } from '@/services/general/data';
-import { getProductTable } from '@/services/products/api';
+import { getProductTableAll, getProductTablePgroongaSearch } from '@/services/products/api';
 import { CloseOutlined, PartitionOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Button, Drawer, Space, Tooltip } from 'antd';
+import { Button, Card, Drawer, Input, Space, Tooltip } from 'antd';
+import { SearchProps } from 'antd/es/input';
 import type { FC } from 'react';
 import { useRef, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 import FlowModelCreate from './create';
 import FlowModelDelete from './delete';
 import FlowModelEdit from './edit';
 import FlowModelView from './view';
+
+const { Search } = Input;
 
 type Props = {
   flowId: string;
@@ -19,8 +22,11 @@ type Props = {
   dataSource: string;
 };
 const FlowModel: FC<Props> = ({ flowId, buttonType, lang, dataSource }) => {
+  const [keyWord, setKeyWord] = useState<any>('');
   const [drawerVisible, setDrawerVisible] = useState(false);
   // const [spinning, setSpinning] = useState(false);
+
+  const intl = useIntl();
 
   const actionRef = useRef<ActionType>();
   const flowsColumns: ProColumns<FlowModelTable>[] = [
@@ -69,7 +75,7 @@ const FlowModel: FC<Props> = ({ flowId, buttonType, lang, dataSource }) => {
               id={row.id}
               buttonType={'icon'}
               actionRef={actionRef}
-              setViewDrawerVisible={() => {}}
+              setViewDrawerVisible={() => { }}
             />
           </Space>,
         ];
@@ -79,6 +85,12 @@ const FlowModel: FC<Props> = ({ flowId, buttonType, lang, dataSource }) => {
 
   const onView = () => {
     setDrawerVisible(true);
+  };
+
+  const onSearch: SearchProps['onSearch'] = async (value) => {
+    await setKeyWord(value);
+    actionRef.current?.setPageInfo?.({ current: 1 });
+    actionRef.current?.reload();
   };
 
   return (
@@ -110,11 +122,17 @@ const FlowModel: FC<Props> = ({ flowId, buttonType, lang, dataSource }) => {
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
       >
+        <Card>
+          <Search
+            size={'large'}
+            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+            onSearch={onSearch}
+            enterButton
+          />
+        </Card>
         <ProTable<FlowModelTable, ListPagination>
           actionRef={actionRef}
-          search={{
-            defaultCollapsed: false,
-          }}
+          search={false}
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
@@ -132,7 +150,10 @@ const FlowModel: FC<Props> = ({ flowId, buttonType, lang, dataSource }) => {
             },
             sort,
           ) => {
-            return getProductTable(params, sort, flowId, lang, dataSource);
+            if (keyWord.length > 0) {
+              return getProductTablePgroongaSearch(params, flowId, lang, dataSource, keyWord, {});
+            }
+            return getProductTableAll(params, sort, flowId, lang, dataSource);
           }}
           columns={flowsColumns}
         />

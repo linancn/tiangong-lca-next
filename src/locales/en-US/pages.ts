@@ -8,10 +8,14 @@ export default {
   'pages.login.emailLogin.errorMessage': 'Wrong email address or email address is not registered',
   'pages.login.failure': 'Login failed, please try again!',
   'pages.login.success': 'Login successful!',
-  'pages.login.email.success': 'The email was sent successfully, please login from the magic link in the email!',
+  'pages.login.email.success':
+    'The email was sent successfully, please login from the magic link in the email!',
   'pages.login.email.placeholder': 'Email',
   'pages.login.email.required': 'Please input your email!',
   'pages.login.email.failure': 'The email was not sent successfully, please try again!',
+  'pages.login.email.verify': 'Send Verify Email',
+  'pages.login.password.forgot.success':
+    'The email was setted successfully! Please follow the email link to reset your password.',
   'pages.login.username.placeholder': 'Username',
   'pages.login.username.required': 'Please input your username!',
   'pages.login.password.placeholder': 'Password',
@@ -75,4 +79,12 @@ export default {
   'pages.searchTable.tenThousand': '0000',
   'pages.searchTable.batchDeletion': 'batch deletion',
   'pages.searchTable.batchApproval': 'batch approval',
+
+  'pages.account.profile.role': 'Role',
+  'pages.account.profile.email': 'Email',
+  'pages.account.password.current': 'Current Password',
+  'pages.account.password.new1': 'New Password',
+  'pages.account.password.new2': 'Confirm Password',
+  'pages.account.password.changed.success': 'Password changed successfully!',
+  'pages.account.password.setted.success': 'Password setted successfully!',
 };

@@ -12,6 +12,8 @@ export default {
   'pages.login.email.placeholder': '邮箱',
   'pages.login.email.required': '邮箱是必填项！',
   'pages.login.email.failure': '邮件发送失败，请重试！',
+  'pages.login.email.verify': '发送验证邮件',
+  'pages.login.password.forgot.success': '邮件发送成功！请通过邮件链接重置密码。',
   'pages.login.username.placeholder': '用户名',
   'pages.login.username.required': '用户名是必填项！',
   'pages.login.password.placeholder': '密码',
@@ -73,4 +75,12 @@ export default {
   'pages.searchTable.tenThousand': '万',
   'pages.searchTable.batchDeletion': '批量删除',
   'pages.searchTable.batchApproval': '批量审批',
+
+  'pages.account.profile.role': '角色',
+  'pages.account.profile.email': '邮箱',
+  'pages.account.password.current': '当前密码',
+  'pages.account.password.new1': '新密码',
+  'pages.account.password.new2': '确认密码',
+  'pages.account.password.changed.success': '密码修改成功！',
+  'pages.account.password.setted.success': '密码设置成功！',
 };

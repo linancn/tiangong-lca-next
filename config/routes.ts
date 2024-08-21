@@ -105,12 +105,23 @@ export default [
       {
         name: 'profile',
         path: '/account/profile',
-        // component: './Profile',
+        component: './Account/profile',
       },
       {
-        name: 'password',
-        path: '/account/password',
-        // component: './Password',
+        name: 'passwordChange',
+        path: '/account/password_change',
+        component: './Account/password_change',
+      },
+    ],
+  },
+  {
+    path: '/password',
+    layout: false,
+    routes: [
+      {
+        name: 'passwordSet',
+        path: '/password/set',
+        component: './Account/password_set',
       },
     ],
   },
@@ -129,6 +140,11 @@ export default [
         name: 'login',
         path: '/user/login',
         component: './User/Login',
+      },
+      {
+        name: 'passwordForget',
+        path: '/user/password_forgot',
+        component: './User/password_forgot',
       },
     ],
   },

@@ -94,6 +94,7 @@ const TableList: FC = () => {
         }
         return [
           <Space size={'small'} key={0}>
+            <FlowModel buttonType={'icon'} flowId={row.id} lang={lang} dataSource={dataSource} />
             <FlowsView buttonType={'icon'} id={row.id} lang={lang} />
           </Space>,
         ];
