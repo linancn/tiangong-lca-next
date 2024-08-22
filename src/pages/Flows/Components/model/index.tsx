@@ -61,22 +61,29 @@ const FlowModel: FC<Props> = ({ flowId, buttonType, lang, dataSource }) => {
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
+        if (dataSource === 'my') {
+          return [
+            <Space size={'small'} key={0}>
+              <FlowModelView id={row.id} flowId={flowId} buttonType={'icon'} lang={lang} />
+              <FlowModelEdit
+                id={row.id}
+                flowId={flowId}
+                buttonType={'icon'}
+                lang={lang}
+                actionRef={actionRef}
+              />
+              <FlowModelDelete
+                id={row.id}
+                buttonType={'icon'}
+                actionRef={actionRef}
+                setViewDrawerVisible={() => { }}
+              />
+            </Space>,
+          ];
+        }
         return [
           <Space size={'small'} key={0}>
             <FlowModelView id={row.id} flowId={flowId} buttonType={'icon'} lang={lang} />
-            <FlowModelEdit
-              id={row.id}
-              flowId={flowId}
-              buttonType={'icon'}
-              lang={lang}
-              actionRef={actionRef}
-            />
-            <FlowModelDelete
-              id={row.id}
-              buttonType={'icon'}
-              actionRef={actionRef}
-              setViewDrawerVisible={() => { }}
-            />
           </Space>,
         ];
       },

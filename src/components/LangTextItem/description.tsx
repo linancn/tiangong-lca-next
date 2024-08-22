@@ -7,7 +7,7 @@ type Props = {
 };
 
 const LangTextItemDescription: FC<Props> = ({ data }) => {
-  if (!data) {
+  if (!data || getLangList(data).length === 0) {
     return (
       <Descriptions bordered size={'small'} column={1}>
         <Descriptions.Item key={0} labelStyle={{ display: 'none' }}>

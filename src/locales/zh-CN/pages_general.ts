@@ -9,6 +9,7 @@ export default {
 
   'pages.button.view': '查看',
   'pages.button.edit': '编辑',
+  'pages.button.refresh': '刷新',
   'pages.button.delete': '删除',
   'pages.button.delete.confirm': '确认要删除这条数据吗?',
   'pages.button.delete.success': '删除成功!',
