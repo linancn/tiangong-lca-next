@@ -1,4 +1,6 @@
 import ProcessView from '@/pages/Processes/Components/view';
+import { getFlowDetail } from '@/services/flows/api';
+import { genFlowFromData } from '@/services/flows/util';
 import { getLangText } from '@/services/general/util';
 import { getProcessDetail } from '@/services/processes/api';
 import { createProduct, getProductDetail, updateProduct } from '@/services/products/api';
@@ -11,8 +13,9 @@ import { FormattedMessage } from 'umi';
 import { v4 } from 'uuid';
 import { node } from '../Config/node';
 import ModelToolbarAdd from './add';
+import ModelToolbarEditInfo from './eidtInfo';
 import EdgeExhange from './Exchange';
-import ModelToolbarInfo from './info';
+import ModelToolbarViewInfo from './viewInfo';
 
 type Props = {
   id: string;
@@ -171,7 +174,19 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly,
     setSpinning(true);
     if (id !== '') {
       getProductDetail(id).then(async (result: any) => {
-        setInfoData({ ...genProductInfoFromData(result.data?.json?.productDataSet ?? {}) });
+        const fromData = genProductInfoFromData(result.data?.json?.productDataSet ?? {});
+        setInfoData({
+          productInformation: {
+            dataSetInformation: {
+              ...fromData?.productInformation?.dataSetInformation,
+              'common:UUID': id,
+            },
+            referenceToFlowDataSet: {
+              ...fromData?.productInformation?.referenceToFlowDataSet,
+              '@refObjectId': flowId,
+            },
+          },
+        });
         const model = genProductModelFromData(result.data?.json?.productDataSet ?? {}, lang);
         let initNodes = model?.nodes ?? [];
         if (readonly) {
@@ -239,15 +254,32 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly,
         setSpinning(false);
       });
     } else {
-      setInfoData({});
-      modelData({ nodes: [], edges: [] });
-      setSpinning(false);
+      getFlowDetail(flowId).then(async (result: any) => {
+        const flow = genFlowFromData(result.data?.json?.flowDataSet ?? {});
+        setInfoData({
+          productInformation: {
+            referenceToFlowDataSet: {
+              // '@refObjectId': flow?.flowInformation?.dataSetInformation?.['common:UUID'],
+              '@refObjectId': flowId,
+              'common:name': flow?.flowInformation?.dataSetInformation?.name?.baseName,
+              'common:shortDescription':
+                flow?.flowInformation?.dataSetInformation?.['common:generalComment'],
+            },
+          },
+        });
+        modelData({ nodes: [], edges: [] });
+        setSpinning(false);
+      });
     }
   }, [drawerVisible]);
 
   return (
     <Space direction="vertical" size={'middle'}>
-      <ModelToolbarInfo data={infoData} onData={updateInfoData} />
+      {readonly ? (
+        <ModelToolbarViewInfo data={infoData} />
+      ) : (
+        <ModelToolbarEditInfo data={infoData} onData={updateInfoData} flowId={flowId} lang={lang} />
+      )}
       <ProcessView
         id={nodes.filter((node) => node.selected)?.[0]?.data?.id ?? ''}
         dataSource={'tg'}

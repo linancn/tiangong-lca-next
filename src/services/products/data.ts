@@ -2,6 +2,9 @@ export type ProductTable = {
   id: string;
   name: string;
   generalComment: string;
+  flowId: string;
+  flowName: string;
+  flowGeneralComment: string;
   created_at: Date;
 };
 
