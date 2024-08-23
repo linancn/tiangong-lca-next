@@ -1,5 +1,5 @@
 export default {
-  'pages.source.publicationType': '出版方式',
+  'pages.source.publicationType': '出版类型',
 
   'pages.source.drawer.title.create': '创建数据源',
   'pages.source.drawer.title.view': '查看数据源',
@@ -20,7 +20,7 @@ export default {
   'pages.source.view.administrativeInformation': '管理信息',
   'pages.source.view.administrativeInformation.dataEntryBy': '数据输入方式',
   'pages.source.view.administrativeInformation.dataEntryBy:TimeStamp': '数据输入方式: 时间点',
-  'pages.source.view.administrativeInformation.referenceToDataSetFormat': '参考数据集格式',
+  'pages.source.view.administrativeInformation.referenceToDataSetFormat': '数据集格式引用',
   'pages.source.view.administrativeInformation.publicationAndOwnership': '出版和所有权',
   'pages.source.view.administrativeInformation.dataSetVersion': '数据集版本',
   'pages.source.view.administrativeInformation.permanentDataSetURI': '永久数据集URI',
@@ -36,7 +36,7 @@ export default {
   'pages.source.edit.administrativeInformation': '管理信息',
   'pages.source.edit.administrativeInformation.dataEntryBy': '数据输入方式',
   'pages.source.edit.administrativeInformation.timeStamp': ' 时间戳',
-  'pages.source.edit.administrativeInformation.referenceToDataSetFormat': '参考数据集格式',
+  'pages.source.edit.administrativeInformation.referenceToDataSetFormat': '数据集格式引用',
   'pages.source.edit.administrativeInformation.publicationAndOwnership': '出版和所有权',
   'pages.source.edit.administrativeInformation.dataSetVersion': '数据集版本',
   'pages.source.edit.administrativeInformation.permanentDataSetURI': '永久数据集URI',

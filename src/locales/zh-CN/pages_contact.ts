@@ -16,7 +16,7 @@ export default {
   'pages.contact.telefax': '传真',
   'pages.contact.WWWAddress': '网站',
   'pages.contact.contactdescriptionOrComment': '联系人描述或备注',
-  'pages.contact.referenceToContact': '联系方式参考',
+  'pages.contact.referenceToContact': '联系人引用',
   'pages.contact.refObjectId': '引用对象标识符',
   'pages.contact.type': '类型',
   'pages.contact.uri': '统一资源标识符',
@@ -30,7 +30,7 @@ export default {
   'pages.contact.referenceToDataSetFormat': '参考数据集格式',
   'pages.contact.publicationAndOwnership': '出版和所有权',
   'pages.contact.dataSetVersion': '数据集版本',
-  'pages.contact.referenceToPrecedingDataSetVersion': '上一版本数据集引用', //翻译不确定
+  'pages.contact.referenceToPrecedingDataSetVersion': '上一版本数据集参考', //翻译不确定
   'pages.contact.permanentDataSetURI': '永久数据集URI',
   //管理信息
 
