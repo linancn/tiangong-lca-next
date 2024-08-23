@@ -78,7 +78,7 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly,
                 ?.baseName,
             generalComment:
               result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.[
-              'common:generalComment'
+                'common:generalComment'
               ],
           },
         },
@@ -174,7 +174,7 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly,
     setSpinning(true);
     if (id !== '') {
       getProductDetail(id).then(async (result: any) => {
-        const fromData = genProductInfoFromData(result.data?.json?.productDataSet ?? {})
+        const fromData = genProductInfoFromData(result.data?.json?.productDataSet ?? {});
         setInfoData({
           productInformation: {
             dataSetInformation: {
@@ -184,10 +184,9 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly,
             referenceToFlowDataSet: {
               ...fromData?.productInformation?.referenceToFlowDataSet,
               '@refObjectId': flowId,
-            }
-          }
-        }
-        );
+            },
+          },
+        });
         const model = genProductModelFromData(result.data?.json?.productDataSet ?? {}, lang);
         let initNodes = model?.nodes ?? [];
         if (readonly) {
@@ -257,18 +256,17 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly,
     } else {
       getFlowDetail(flowId).then(async (result: any) => {
         const flow = genFlowFromData(result.data?.json?.flowDataSet ?? {});
-        setInfoData(
-          {
-            productInformation: {
-              referenceToFlowDataSet: {
-                // '@refObjectId': flow?.flowInformation?.dataSetInformation?.['common:UUID'],
-                '@refObjectId': flowId,
-                'common:name': flow?.flowInformation?.dataSetInformation?.name?.baseName,
-                'common:shortDescription': flow?.flowInformation?.dataSetInformation?.['common:generalComment'],
-              },
+        setInfoData({
+          productInformation: {
+            referenceToFlowDataSet: {
+              // '@refObjectId': flow?.flowInformation?.dataSetInformation?.['common:UUID'],
+              '@refObjectId': flowId,
+              'common:name': flow?.flowInformation?.dataSetInformation?.name?.baseName,
+              'common:shortDescription':
+                flow?.flowInformation?.dataSetInformation?.['common:generalComment'],
             },
-          }
-        );
+          },
+        });
         modelData({ nodes: [], edges: [] });
         setSpinning(false);
       });

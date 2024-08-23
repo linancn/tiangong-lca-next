@@ -41,6 +41,86 @@ export async function getProductTablePgroongaSearch(
     pageSize?: number;
   },
   // sort: Record<string, SortOrder>,
+  lang: string,
+  dataSource: string,
+  queryText: string,
+  filterCondition: any,
+) {
+  let result: any = {};
+  const session = await supabase.auth.getSession();
+  if (session.data.session) {
+    result = await supabase.rpc('pgroonga_search_products', {
+      query_text: queryText,
+      filter_condition: filterCondition,
+      page_size: params.pageSize ?? 10,
+      page_current: params.current ?? 1,
+      data_source: dataSource,
+      this_user_id: session.data.session.user?.id,
+    });
+  }
+  if (result.error) {
+    console.log('error', result.error);
+  }
+  if (result.data) {
+    if (result.data.length === 0) {
+      return Promise.resolve({
+        data: [],
+        success: true,
+      });
+    }
+    const totalCount = result.data[0].total_count;
+
+    return Promise.resolve({
+      data: result.data.map((i: any) => {
+        try {
+          return {
+            key: i.id,
+            id: i.id,
+            name: getLangText(
+              i.json?.productDataSet?.productInformation?.dataSetInformation?.name ?? {},
+              lang,
+            ),
+            generalComment: getLangText(
+              i.json?.productDataSet?.productInformation?.dataSetInformation?.[
+                'common:generalComment'
+              ] ?? {},
+              lang,
+            ),
+            flowId: i.json?.flow_id,
+            flowName: getLangText(
+              i.json?.productDataSet?.productInformation?.referenceToFlowDataSet?.['common:name'],
+              lang,
+            ),
+            flowGeneralComment: getLangText(
+              i.json?.productDataSet?.productInformation?.referenceToFlowDataSet?.[
+                'common:generalComment'
+              ],
+              lang,
+            ),
+            createdAt: new Date(i.created_at),
+          };
+        } catch (e) {
+          console.error(e);
+          return {
+            id: i.id,
+          };
+        }
+      }),
+      page: params.current ?? 1,
+      success: true,
+      total: totalCount ?? 0,
+    });
+  }
+
+  return result;
+}
+
+export async function getFlowProductTablePgroongaSearch(
+  params: {
+    current?: number;
+    pageSize?: number;
+  },
+  // sort: Record<string, SortOrder>,
   flowId: string,
   lang: string,
   dataSource: string,
@@ -84,8 +164,19 @@ export async function getProductTablePgroongaSearch(
             ),
             generalComment: getLangText(
               i.json?.productDataSet?.productInformation?.dataSetInformation?.[
-              'common:generalComment'
+                'common:generalComment'
               ] ?? {},
+              lang,
+            ),
+            flowId: flowId,
+            flowName: getLangText(
+              i.json?.productDataSet?.productInformation?.referenceToFlowDataSet?.['common:name'],
+              lang,
+            ),
+            flowGeneralComment: getLangText(
+              i.json?.productDataSet?.productInformation?.referenceToFlowDataSet?.[
+                'common:generalComment'
+              ],
               lang,
             ),
             createdAt: new Date(i.created_at),
@@ -112,6 +203,97 @@ export async function getProductTableAll(
     pageSize?: number;
   },
   sort: Record<string, SortOrder>,
+  lang: string,
+  dataSource: string,
+) {
+  const sortBy = Object.keys(sort)[0] ?? 'created_at';
+  const orderBy = sort[sortBy] ?? 'descend';
+
+  const selectStr = `
+    id,
+    flow_id,
+    json->productDataSet->productInformation->dataSetInformation,
+    json->productDataSet->productInformation->referenceToFlowDataSet,
+    created_at
+  `;
+
+  let result: any = {};
+  if (dataSource === 'tg') {
+    result = await supabase
+      .from('products')
+      .select(selectStr, { count: 'exact' })
+      .eq('state_code', 100)
+      .order(sortBy, { ascending: orderBy === 'ascend' })
+      .range(
+        ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
+        (params.current ?? 1) * (params.pageSize ?? 10) - 1,
+      );
+  } else if (dataSource === 'my') {
+    const session = await supabase.auth.getSession();
+    if (session.data.session) {
+      result = await supabase
+        .from('products')
+        .select(selectStr, { count: 'exact' })
+        .eq('user_id', session.data.session.user?.id)
+        .order(sortBy, { ascending: orderBy === 'ascend' })
+        .range(
+          ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
+          (params.current ?? 1) * (params.pageSize ?? 10) - 1,
+        );
+    }
+  }
+
+  if (result.error) {
+    console.log('error', result.error);
+  }
+
+  if (result.data) {
+    if (result.data.length === 0) {
+      return Promise.resolve({
+        data: [],
+        success: true,
+      });
+    }
+    return Promise.resolve({
+      data: result.data.map((i: any) => {
+        try {
+          return {
+            key: i.id,
+            id: i.id,
+            name: getLangText(i?.dataSetInformation?.name, lang),
+            generalComment: getLangText(i?.dataSetInformation?.['common:generalComment'], lang),
+            flowId: i?.flow_id,
+            flowName: getLangText(i?.referenceToFlowDataSet?.['common:name'], lang),
+            flowGeneralComment: getLangText(
+              i?.referenceToFlowDataSet?.['common:generalComment'],
+              lang,
+            ),
+            createdAt: new Date(i.created_at),
+          };
+        } catch (e) {
+          console.error(e);
+          return {
+            id: i.id,
+          };
+        }
+      }),
+      page: params.current ?? 1,
+      success: true,
+      total: result.count ?? 0,
+    });
+  }
+  return Promise.resolve({
+    data: [],
+    success: false,
+  });
+}
+
+export async function getFlowProductTableAll(
+  params: {
+    current?: number;
+    pageSize?: number;
+  },
+  sort: Record<string, SortOrder>,
   flowId: string,
   lang: string,
   dataSource: string,
@@ -121,8 +303,8 @@ export async function getProductTableAll(
 
   const selectStr = `
     id,
-    json->productDataSet->productInformation->dataSetInformation->name,
-    json->productDataSet->productInformation->dataSetInformation->"common:generalComment",
+    json->productDataSet->productInformation->dataSetInformation,
+    json->productDataSet->productInformation->referenceToFlowDataSet,
     created_at
   `;
 
@@ -171,9 +353,15 @@ export async function getProductTableAll(
           return {
             key: i.id,
             id: i.id,
-            name: getLangText(i.name, lang),
-            generalComment: getLangText(i['common:generalComment'], lang),
-            created_at: new Date(i.created_at),
+            name: getLangText(i?.dataSetInformation?.name, lang),
+            generalComment: getLangText(i?.dataSetInformation?.['common:generalComment'], lang),
+            flowId: flowId,
+            flowName: getLangText(i?.referenceToFlowDataSet?.['common:name'], lang),
+            flowGeneralComment: getLangText(
+              i?.referenceToFlowDataSet?.['common:generalComment'],
+              lang,
+            ),
+            createdAt: new Date(i.created_at),
           };
         } catch (e) {
           console.error(e);

@@ -53,21 +53,18 @@ const ModelToolbarViewInfo: FC<Props> = ({ data }) => {
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
             key={0}
-            label={<FormattedMessage id="pages.product.productInformation.id" defaultMessage="ID" />}
+            label={
+              <FormattedMessage id="pages.product.productInformation.id" defaultMessage="ID" />
+            }
             labelStyle={{ width: '100px' }}
           >
             {data?.productInformation?.dataSetInformation?.['common:UUID'] ?? '-'}
           </Descriptions.Item>
         </Descriptions>
         <Divider orientationMargin="0" orientation="left" plain>
-          <FormattedMessage
-            id="pages.product.productInformation.name"
-            defaultMessage="Name"
-          />
+          <FormattedMessage id="pages.product.productInformation.name" defaultMessage="Name" />
         </Divider>
-        <LangTextItemDescription
-          data={data?.productInformation?.dataSetInformation?.['name']}
-        />
+        <LangTextItemDescription data={data?.productInformation?.dataSetInformation?.['name']} />
         <Divider orientationMargin="0" orientation="left" plain>
           <FormattedMessage
             id="pages.product.productInformation.generalComment"
@@ -78,7 +75,12 @@ const ModelToolbarViewInfo: FC<Props> = ({ data }) => {
           data={data?.productInformation?.dataSetInformation?.['common:generalComment']}
         />
         <br />
-        <Card size="small" title={<FormattedMessage id="pages.product.belongToFlow" defaultMessage="Belong to The Flow" />}>
+        <Card
+          size="small"
+          title={
+            <FormattedMessage id="pages.product.belongToFlow" defaultMessage="Belong to The Flow" />
+          }
+        >
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item
               key={0}
@@ -89,10 +91,7 @@ const ModelToolbarViewInfo: FC<Props> = ({ data }) => {
             </Descriptions.Item>
           </Descriptions>
           <Divider orientationMargin="0" orientation="left" plain>
-            <FormattedMessage
-              id="pages.product.belongToFlow.name"
-              defaultMessage="Name"
-            />
+            <FormattedMessage id="pages.product.belongToFlow.name" defaultMessage="Name" />
           </Divider>
           <LangTextItemDescription
             data={data?.productInformation?.referenceToFlowDataSet?.['common:name']}
@@ -106,7 +105,6 @@ const ModelToolbarViewInfo: FC<Props> = ({ data }) => {
           <LangTextItemDescription
             data={data?.productInformation?.referenceToFlowDataSet?.['common:generalComment']}
           />
-
         </Card>
       </Drawer>
     </>

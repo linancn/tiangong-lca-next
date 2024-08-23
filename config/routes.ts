@@ -23,7 +23,7 @@ export default [
       {
         name: 'products',
         path: '/mydata/products',
-        // component: './Products',
+        component: './Products',
       },
       {
         name: 'processes',
@@ -69,7 +69,7 @@ export default [
       {
         name: 'products',
         path: '/tgdata/products',
-        // component: './Products',
+        component: './Products',
       },
       {
         name: 'processes',

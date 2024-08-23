@@ -5,7 +5,21 @@ import styles from '@/style/custom.less';
 import { CloseOutlined, InfoOutlined } from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import ProForm from '@ant-design/pro-form';
-import { Button, Card, Col, Collapse, Divider, Drawer, Form, Input, Row, Space, Spin, Tooltip, Typography } from 'antd';
+import {
+  Button,
+  Card,
+  Col,
+  Collapse,
+  Divider,
+  Drawer,
+  Form,
+  Input,
+  Row,
+  Space,
+  Spin,
+  Tooltip,
+  Typography,
+} from 'antd';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -29,8 +43,14 @@ const ModelToolbarEditInfo: FC<Props> = ({ flowId, lang, data, onData }) => {
     setRefleshSpinning(true);
     getFlowDetail(flowId).then(async (result: any) => {
       const flow = genFlowFromData(result.data?.json?.flowDataSet ?? {});
-      formRefCreate.current?.setFieldValue(['productInformation', 'referenceToFlowDataSet', 'common:name'], flow?.flowInformation?.dataSetInformation?.name?.baseName);
-      formRefCreate.current?.setFieldValue(['productInformation', 'referenceToFlowDataSet', 'common:generalComment'], flow?.flowInformation?.dataSetInformation?.['common:generalComment']);
+      formRefCreate.current?.setFieldValue(
+        ['productInformation', 'referenceToFlowDataSet', 'common:name'],
+        flow?.flowInformation?.dataSetInformation?.name?.baseName,
+      );
+      formRefCreate.current?.setFieldValue(
+        ['productInformation', 'referenceToFlowDataSet', 'common:generalComment'],
+        flow?.flowInformation?.dataSetInformation?.['common:generalComment'],
+      );
       setFromData({
         ...fromData,
         productInformation: {
@@ -38,13 +58,14 @@ const ModelToolbarEditInfo: FC<Props> = ({ flowId, lang, data, onData }) => {
           referenceToFlowDataSet: {
             ...fromData.productInformation.referenceToFlowDataSet,
             'common:name': flow?.flowInformation?.dataSetInformation?.name?.baseName,
-            'common:generalComment': flow?.flowInformation?.dataSetInformation?.['common:generalComment'],
-          }
-        }
+            'common:generalComment':
+              flow?.flowInformation?.dataSetInformation?.['common:generalComment'],
+          },
+        },
       });
       setRefleshSpinning(false);
     });
-  }
+  };
 
   useEffect(() => {
     if (!drawerVisible) return;
@@ -172,11 +193,14 @@ const ModelToolbarEditInfo: FC<Props> = ({ flowId, lang, data, onData }) => {
               />
             </Card>
             <Spin spinning={refleshSpinning}>
-              <Card size="small" title={
-                <FormattedMessage
-                  id="pages.product.belongToFlow"
-                  defaultMessage="Belong to The Flow"
-                />}
+              <Card
+                size="small"
+                title={
+                  <FormattedMessage
+                    id="pages.product.belongToFlow"
+                    defaultMessage="Belong to The Flow"
+                  />
+                }
               >
                 <Space direction="horizontal">
                   <Form.Item
@@ -191,23 +215,19 @@ const ModelToolbarEditInfo: FC<Props> = ({ flowId, lang, data, onData }) => {
                     <Input disabled={true} style={{ width: '350px', color: '#000' }} />
                   </Form.Item>
                   <Space direction="horizontal" style={{ marginTop: '6px' }}>
-                    {
-                      flowId &&
+                    {flowId && (
                       <>
                         <FlowsView lang={lang} id={flowId} buttonType="text" />
                         <Button onClick={refleshFlowInfo}>
                           <FormattedMessage id="pages.button.refresh" defaultMessage="Refresh" />
                         </Button>
                       </>
-                    }
+                    )}
                   </Space>
                 </Space>
 
                 <Divider orientationMargin="0" orientation="left" plain>
-                  <FormattedMessage
-                    id="pages.product.belongToFlow.name"
-                    defaultMessage="Name"
-                  />
+                  <FormattedMessage id="pages.product.belongToFlow.name" defaultMessage="Name" />
                 </Divider>
                 <Form.Item>
                   <Form.List name={['productInformation', 'referenceToFlowDataSet', 'common:name']}>
@@ -244,7 +264,9 @@ const ModelToolbarEditInfo: FC<Props> = ({ flowId, lang, data, onData }) => {
                   />
                 </Divider>
                 <Form.Item>
-                  <Form.List name={['productInformation', 'referenceToFlowDataSet', 'common:generalComment']}>
+                  <Form.List
+                    name={['productInformation', 'referenceToFlowDataSet', 'common:generalComment']}
+                  >
                     {(subFields) => (
                       <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
                         {subFields.map((subField) => (

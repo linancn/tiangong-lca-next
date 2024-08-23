@@ -1,6 +1,6 @@
-import { FlowModelTable } from '@/services/flows/data';
 import { ListPagination } from '@/services/general/data';
-import { getProductTableAll, getProductTablePgroongaSearch } from '@/services/products/api';
+import { getFlowProductTableAll, getFlowProductTablePgroongaSearch } from '@/services/products/api';
+import { ProductTable } from '@/services/products/data';
 import { CloseOutlined, PartitionOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Drawer, Input, Space, Tooltip } from 'antd';
@@ -29,7 +29,7 @@ const FlowModel: FC<Props> = ({ flowId, buttonType, lang, dataSource }) => {
   const intl = useIntl();
 
   const actionRef = useRef<ActionType>();
-  const flowsColumns: ProColumns<FlowModelTable>[] = [
+  const columns: ProColumns<ProductTable>[] = [
     {
       title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
       dataIndex: 'index',
@@ -40,18 +40,31 @@ const FlowModel: FC<Props> = ({ flowId, buttonType, lang, dataSource }) => {
       title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name" />,
       dataIndex: 'name',
       sorter: false,
+      search: false,
+      render: (_, row) => [
+        <Tooltip key={0} placement="topLeft" title={row.generalComment ?? '-'}>
+          {row.name}
+        </Tooltip>,
+      ],
     },
     {
       title: (
-        <FormattedMessage id="pages.table.title.generalComment" defaultMessage="General Comment" />
+        <FormattedMessage id="pages.product.belongToFlow" defaultMessage="Belong to The Flow" />
       ),
-      dataIndex: 'generalComment',
+      dataIndex: 'flowName',
       sorter: false,
       search: false,
+      render: (_, row) => [
+        <Space key={0}>
+          <Tooltip placement="topLeft" title={row.flowGeneralComment ?? '-'}>
+            {row.flowName}
+          </Tooltip>
+        </Space>,
+      ],
     },
     {
       title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At" />,
-      dataIndex: 'created_at',
+      dataIndex: 'createdAt',
       valueType: 'dateTime',
       sorter: false,
       search: false,
@@ -76,7 +89,7 @@ const FlowModel: FC<Props> = ({ flowId, buttonType, lang, dataSource }) => {
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => { }}
+                setViewDrawerVisible={() => {}}
               />
             </Space>,
           ];
@@ -137,7 +150,7 @@ const FlowModel: FC<Props> = ({ flowId, buttonType, lang, dataSource }) => {
             enterButton
           />
         </Card>
-        <ProTable<FlowModelTable, ListPagination>
+        <ProTable<ProductTable, ListPagination>
           actionRef={actionRef}
           search={false}
           pagination={{
@@ -158,11 +171,18 @@ const FlowModel: FC<Props> = ({ flowId, buttonType, lang, dataSource }) => {
             sort,
           ) => {
             if (keyWord.length > 0) {
-              return getProductTablePgroongaSearch(params, flowId, lang, dataSource, keyWord, {});
+              return getFlowProductTablePgroongaSearch(
+                params,
+                flowId,
+                lang,
+                dataSource,
+                keyWord,
+                {},
+              );
             }
-            return getProductTableAll(params, sort, flowId, lang, dataSource);
+            return getFlowProductTableAll(params, sort, flowId, lang, dataSource);
           }}
-          columns={flowsColumns}
+          columns={columns}
         />
       </Drawer>
     </>

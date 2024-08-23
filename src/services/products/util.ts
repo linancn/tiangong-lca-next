@@ -14,9 +14,13 @@ export function genProductJsonOrdered(id: string, data: any) {
         },
         referenceToFlowDataSet: {
           '@refObjectId': data?.productInformation?.referenceToFlowDataSet?.['@refObjectId'],
-          'common:name': getLangJson(data?.productInformation?.referenceToFlowDataSet?.['common:name']),
-          'common:generalComment': getLangJson(data?.productInformation?.referenceToFlowDataSet?.['common:generalComment']),
-        }
+          'common:name': getLangJson(
+            data?.productInformation?.referenceToFlowDataSet?.['common:name'],
+          ),
+          'common:generalComment': getLangJson(
+            data?.productInformation?.referenceToFlowDataSet?.['common:generalComment'],
+          ),
+        },
       },
       model: {
         nodes: data?.model?.nodes ?? [],
@@ -38,9 +42,13 @@ export function genProductInfoFromData(data: any) {
       },
       referenceToFlowDataSet: {
         '@refObjectId': data?.productInformation?.referenceToFlowDataSet?.['@refObjectId'],
-        'common:name': getLangList(data?.productInformation?.referenceToFlowDataSet?.['common:name']),
-        'common:generalComment': getLangList(data?.productInformation?.referenceToFlowDataSet?.['common:generalComment']),
-      }
+        'common:name': getLangList(
+          data?.productInformation?.referenceToFlowDataSet?.['common:name'],
+        ),
+        'common:generalComment': getLangList(
+          data?.productInformation?.referenceToFlowDataSet?.['common:generalComment'],
+        ),
+      },
     },
   };
 }
