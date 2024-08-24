@@ -310,9 +310,6 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
     setDrawerVisible(true);
     setSpinning(true);
     getUnitGroupDetail(id).then(async (result: any) => {
-      console.log('genUnitGroupFromData', {
-        ...genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {}),
-      });
       setInitData({ ...genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {}) });
       setUnitDataSource([
         ...(genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {})?.units?.unit ?? []),

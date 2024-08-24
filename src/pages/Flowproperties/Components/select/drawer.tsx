@@ -1,3 +1,4 @@
+import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import {
   getFlowpropertyTableAll,
   getFlowpropertyTablePgroongaSearch,
@@ -107,13 +108,21 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
     {
       title: (
         <FormattedMessage
-          id="pages.flowproperties.referenceToReferenceUnitGroup"
+          id="pages.flowproperty.referenceToReferenceUnitGroup"
           defaultMessage="Reference Unit Group"
         />
       ),
-      dataIndex: 'referenceToReferenceUnitGroup',
+      dataIndex: 'refUnitGroup',
       sorter: false,
       search: false,
+      render: (_, row) => {
+        return [
+          <>
+            {row.refUnitGroup} (
+            <ReferenceUnit unitGroupId={row.refUnitGroupId} lang={lang} />)
+          </>,
+        ];
+      },
     },
     {
       title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At" />,

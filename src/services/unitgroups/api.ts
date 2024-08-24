@@ -1,7 +1,7 @@
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
 import { v4 } from 'uuid';
-import { classificationToString, getLangText } from '../general/util';
+import { classificationToString, getLangText, jsonToList } from '../general/util';
 import { genUnitGroupJsonOrdered } from './util';
 
 const table_name = 'unitgroups';
@@ -63,6 +63,7 @@ export async function getUnitGroupTableAll(
         json->unitGroupDataSet->unitGroupInformation->dataSetInformation->"common:name",
         json->unitGroupDataSet->unitGroupInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
         json->unitGroupDataSet->unitGroupInformation->quantitativeReference->referenceToReferenceUnit,
+        json->unitGroupDataSet->units->unit,
         created_at
     `;
 
@@ -107,13 +108,18 @@ export async function getUnitGroupTableAll(
     return Promise.resolve({
       data: result.data.map((i: any) => {
         try {
+          const unitList = jsonToList(i?.unit);
+          const refUnit = unitList.find(
+            (item) => item?.['@dataSetInternalID'] === i?.referenceToReferenceUnit,
+          );
           return {
             key: i.id,
             id: i.id,
-            lang: lang,
             name: getLangText(i['common:name'], lang),
             classification: classificationToString(i['common:class']),
-            referenceToReferenceUnit: i.referenceToReferenceUnit ?? '-',
+            refUnitId: i?.referenceToReferenceUnit ?? '-',
+            refUnitName: refUnit?.name ?? '-',
+            refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
             createdAt: new Date(i.created_at),
           };
         } catch (e) {
@@ -171,6 +177,11 @@ export async function getUnitGroupTablePgroongaSearch(
     return Promise.resolve({
       data: result.data.map((i: any) => {
         try {
+          const refUnitId =
+            i.json?.unitGroupDataSet?.unitGroupInformation?.quantitativeReference
+              ?.referenceToReferenceUnit ?? '-';
+          const unitList = jsonToList(i.json?.unitGroupDataSet?.units?.unit);
+          const refUnit = unitList.find((item) => item?.['@dataSetInternalID'] === refUnitId);
           return {
             key: i.id,
             id: i.id,
@@ -183,9 +194,9 @@ export async function getUnitGroupTablePgroongaSearch(
               i.json?.unitGroupDataSet?.unitGroupInformation?.dataSetInformation
                 ?.classificationInformation?.['common:classification']?.['common:class'] ?? {},
             ),
-            email:
-              i.json?.unitGroupDataSet?.unitGroupInformation?.quantitativeReference
-                ?.referenceToReferenceUnit ?? '-',
+            refUnitId: refUnitId,
+            refUnitName: refUnit?.name ?? '-',
+            refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
             createdAt: new Date(i.created_at),
           };
         } catch (e) {
@@ -219,5 +230,53 @@ export async function getUnitGroupDetail(id: string) {
   return Promise.resolve({
     data: {},
     success: true,
+  });
+}
+
+export async function getReferenceUnit(unitGroupId: string, lang: string) {
+  if (unitGroupId) {
+    const selectStr = `
+        id,
+        json->unitGroupDataSet->unitGroupInformation->dataSetInformation->"common:name",
+        json->unitGroupDataSet->unitGroupInformation->quantitativeReference->referenceToReferenceUnit,
+        json->unitGroupDataSet->units->unit
+    `;
+
+    const result = await supabase.from(table_name).select(selectStr).eq('id', unitGroupId);
+
+    if (result.error) {
+      console.log('error', result.error);
+    }
+
+    if (result.data) {
+      if (result.data.length === 0) {
+        return Promise.resolve({
+          data: {},
+          success: true,
+        });
+      }
+
+      const data = result.data[0];
+
+      const unitList = jsonToList(data?.unit);
+      const refUnit = unitList.find(
+        (item) => item?.['@dataSetInternalID'] === data?.referenceToReferenceUnit,
+      );
+
+      return Promise.resolve({
+        data: {
+          id: data.id,
+          name: getLangText(data['common:name'], lang),
+          refUnitId: data?.referenceToReferenceUnit ?? '-',
+          refUnitName: refUnit?.name ?? '-',
+          refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
+        },
+        success: true,
+      });
+    }
+  }
+  return Promise.resolve({
+    data: {},
+    success: false,
   });
 }

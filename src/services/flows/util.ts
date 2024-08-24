@@ -117,8 +117,8 @@ export function genFlowJsonOrdered(id: string, data: any, oldData: any) {
         flowProperty: {
           '@dataSetInternalID': data?.flowProperties?.flowProperty?.['@dataSetInternalID'],
           referenceToFlowPropertyDataSet: {
-            '@refObjectId': '0',
-            // "@refObjectId": data?.flowProperties?.flowProperty?.referenceToFlowPropertyDataSet?.["@refObjectId"],
+            '@refObjectId':
+              data?.flowProperties?.flowProperty?.referenceToFlowPropertyDataSet?.['@refObjectId'],
             '@type': data?.flowProperties?.flowProperty?.referenceToFlowPropertyDataSet?.['@type'],
             '@uri': data?.flowProperties?.flowProperty?.referenceToFlowPropertyDataSet?.['@uri'],
             'common:shortDescription': getLangJson(

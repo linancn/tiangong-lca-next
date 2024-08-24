@@ -66,6 +66,7 @@ export async function getFlowpropertyTableAll(
     json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->"common:name",
     json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
     json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->"common:generalComment",
+    json->flowPropertyDataSet->flowPropertiesInformation->quantitativeReference->referenceToReferenceUnitGroup->"@refObjectId",
     json->flowPropertyDataSet->flowPropertiesInformation->quantitativeReference->referenceToReferenceUnitGroup->"common:shortDescription",
     created_at
   `;
@@ -117,7 +118,8 @@ export async function getFlowpropertyTableAll(
             name: getLangText(i['common:name'], lang),
             classification: classificationToString(i['common:class']),
             generalComment: getLangText(i['common:generalComment'], lang),
-            referenceToReferenceUnitGroup: getLangText(i['common:shortDescription'], lang),
+            refUnitGroupId: i?.['@refObjectId'] ?? '-',
+            refUnitGroup: getLangText(i['common:shortDescription'], lang),
             created_at: new Date(i.created_at),
           };
         } catch (e) {
@@ -194,7 +196,10 @@ export async function getFlowpropertyTablePgroongaSearch(
               ] ?? {},
               lang,
             ),
-            referenceToReferenceUnitGroup: getLangText(
+            refUnitGroupId:
+              i.json?.flowPropertyDataSet?.flowPropertiesInformation?.quantitativeReference
+                ?.referenceToReferenceUnitGroup?.['@refObjectId'] ?? '-',
+            refUnitGroup: getLangText(
               i.json?.flowPropertyDataSet?.flowPropertiesInformation?.quantitativeReference
                 ?.referenceToReferenceUnitGroup?.['common:shortDescription'] ?? {},
               lang,
