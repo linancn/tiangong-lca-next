@@ -233,7 +233,7 @@ export async function getUnitGroupDetail(id: string) {
   });
 }
 
-export async function getReferenceUnit(unitGroupId: string, lang: string) {
+export async function getReferenceUnit(unitGroupId: string) {
   if (unitGroupId) {
     const selectStr = `
         id,
@@ -266,10 +266,10 @@ export async function getReferenceUnit(unitGroupId: string, lang: string) {
       return Promise.resolve({
         data: {
           id: data.id,
-          name: getLangText(data['common:name'], lang),
+          name: data['common:name'],
           refUnitId: data?.referenceToReferenceUnit ?? '-',
           refUnitName: refUnit?.name ?? '-',
-          refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
+          refUnitGeneralComment: refUnit?.generalComment,
         },
         success: true,
       });

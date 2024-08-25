@@ -1,6 +1,7 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
+import { getReferenceUnit } from '@/services/unitgroups/api';
 import { Card, Descriptions, Divider, Space } from 'antd';
-import { FC, ReactNode } from 'react';
+import { FC, ReactNode, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import UnitGroupView from '../view';
 type Props = {
@@ -10,7 +11,15 @@ type Props = {
 };
 
 const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
-  // const actionRef = React.useRef<ActionType | undefined>(undefined);
+  const [refUnit, setRefUnit] = useState<any>({});
+
+  useEffect(() => {
+    if (data?.['@refObjectId']) {
+      getReferenceUnit(data?.['@refObjectId']).then((res) => {
+        setRefUnit(res.data);
+      });
+    }
+  }, [data]);
 
   return (
     <Card size="small" title={title}>
@@ -77,6 +86,31 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
         />
       </Divider>
       <LangTextItemDescription data={data?.['common:shortDescription']} />
+      <br />
+      <Card
+        size="small"
+        title={
+          <FormattedMessage
+            id="pages.unitgroup.unit.quantitativeReference"
+            defaultMessage="Quantitative Reference"
+          />
+        }
+      >
+        <Descriptions bordered size={'small'} column={1}>
+          <Descriptions.Item
+            key={0}
+            label={<FormattedMessage id="pages.unitgroup.name" defaultMessage="Name" />}
+            labelStyle={{ width: '100px' }}
+          >
+            {refUnit.refUnitName ?? '-'}
+          </Descriptions.Item>
+        </Descriptions>
+        <br />
+        <Divider orientationMargin="0" orientation="left" plain>
+          <FormattedMessage id="pages.unitgroup.generalComment" defaultMessage="General Comment" />
+        </Divider>
+        <LangTextItemDescription data={refUnit.refUnitGeneralComment} />
+      </Card>
     </Card>
   );
 };

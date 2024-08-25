@@ -14,8 +14,6 @@ export default {
   'pages.FlowProperties.view.flowPropertiesInformation.name': '名称',
   'pages.FlowProperties.view.flowPropertiesInformation.generalComment': '概述',
   'pages.FlowProperties.view.flowPropertiesInformation.classification': '分类',
-  'pages.FlowProperties.view.flowPropertiesInformation.quantitativeReference:ReferenceToReferenceUnitGroup':
-    '量值参考：参考单位组引用',
   'pages.FlowProperties.view.modellingAndValidation.referenceToComplianceSystem': '合规系统引用',
   'pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance': '整体合规性批准',
   'pages.FlowProperties.view.modellingAndValidation.dataEntryBy': '数据输入方式',

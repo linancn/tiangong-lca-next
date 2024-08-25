@@ -1,3 +1,4 @@
+import { getLangText } from '@/services/general/util';
 import { getReferenceUnit } from '@/services/unitgroups/api';
 import { Tooltip } from 'antd';
 import { useEffect, useState, type FC } from 'react';
@@ -10,13 +11,13 @@ const ReferenceUnit: FC<Props> = ({ unitGroupId, lang }) => {
   const [refUnit, setRefUnit] = useState<any>({});
 
   useEffect(() => {
-    getReferenceUnit(unitGroupId, lang).then((res) => {
+    getReferenceUnit(unitGroupId).then((res) => {
       setRefUnit(res.data);
     });
-  }, []);
+  }, [unitGroupId]);
 
   return (
-    <Tooltip placement="topLeft" title={refUnit.refUnitGeneralComment}>
+    <Tooltip placement="topLeft" title={getLangText(refUnit.refUnitGeneralComment, lang)}>
       {refUnit.refUnitName}
     </Tooltip>
   );
