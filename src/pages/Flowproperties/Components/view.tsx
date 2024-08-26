@@ -113,8 +113,8 @@ const FlowpropertyView: FC<Props> = ({ id, buttonType, lang }) => {
           lang={lang}
           title={
             <FormattedMessage
-              id="pages.FlowProperties.view.flowPropertiesInformation.quantitativeReference:ReferenceToReferenceUnitGroup"
-              defaultMessage="Quantitative Reference: Reference To Reference Unit Group"
+              id="pages.FlowProperties.view.flowPropertiesInformation.referenceToReferenceUnitGroup"
+              defaultMessage="Reference To Reference Unit Group"
             />
           }
           data={

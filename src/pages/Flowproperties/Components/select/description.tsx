@@ -1,4 +1,5 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
+import UnitGroupDescriptionMini from '@/pages/Unitgroups/Components/select/descriptionMini';
 import { Card, Descriptions, Divider, Space } from 'antd';
 import { FC, ReactNode } from 'react';
 import { FormattedMessage } from 'umi';
@@ -55,7 +56,6 @@ const FlowpropertiesSelectDescription: FC<Props> = ({ title, data, lang }) => {
           {data?.['@uri'] ?? '-'}
         </Descriptions.Item>
       </Descriptions>
-      <br />
       {/* <Descriptions bordered size={'small'} column={1}>
         <Descriptions.Item key={0} label="Version" labelStyle={{ width: '120px' }}>
           {data?.['@version'] ?? '-'}
@@ -68,6 +68,9 @@ const FlowpropertiesSelectDescription: FC<Props> = ({ title, data, lang }) => {
         />
       </Divider>
       <LangTextItemDescription data={data?.['common:shortDescription']} />
+      <br />
+
+      <UnitGroupDescriptionMini id={data?.['@refObjectId']} idType={'flowproperty'} />
     </Card>
   );
 };

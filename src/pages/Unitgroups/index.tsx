@@ -5,7 +5,7 @@ import { UnitGroupTable } from '@/services/unitgroups/data';
 import { PageContainer } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
-import { Card, Input, Space } from 'antd';
+import { Card, Input, Space, Tooltip } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { useRef, useState } from 'react';
@@ -46,6 +46,22 @@ const TableList: FC = () => {
       ),
       dataIndex: 'name',
       sorter: false,
+    },
+    {
+      title: (
+        <FormattedMessage
+          id="pages.unitgroup.unit.quantitativeReference"
+          defaultMessage="Quantitative Reference"
+        />
+      ),
+      dataIndex: 'refUnitName',
+      sorter: false,
+      search: false,
+      render: (_, row) => [
+        <Tooltip key={0} placement="topLeft" title={row.refUnitGeneralComment}>
+          {row.refUnitName}
+        </Tooltip>,
+      ],
     },
     {
       title: (

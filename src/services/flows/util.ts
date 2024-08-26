@@ -45,8 +45,8 @@ export function genFlowJsonOrdered(id: string, data: any, oldData: any) {
           },
         },
         quantitativeReference: {
-          referenceToReferenceFlowProperty: '0',
-          // referenceToReferenceFlowProperty: data?.flowInformation?.quantitativeReference?.referenceToReferenceFlowProperty
+          referenceToReferenceFlowProperty:
+            data?.flowInformation?.quantitativeReference?.referenceToReferenceFlowProperty,
         },
       },
       modellingAndValidation: {
@@ -117,8 +117,8 @@ export function genFlowJsonOrdered(id: string, data: any, oldData: any) {
         flowProperty: {
           '@dataSetInternalID': data?.flowProperties?.flowProperty?.['@dataSetInternalID'],
           referenceToFlowPropertyDataSet: {
-            '@refObjectId': '0',
-            // "@refObjectId": data?.flowProperties?.flowProperty?.referenceToFlowPropertyDataSet?.["@refObjectId"],
+            '@refObjectId':
+              data?.flowProperties?.flowProperty?.referenceToFlowPropertyDataSet?.['@refObjectId'],
             '@type': data?.flowProperties?.flowProperty?.referenceToFlowPropertyDataSet?.['@type'],
             '@uri': data?.flowProperties?.flowProperty?.referenceToFlowPropertyDataSet?.['@uri'],
             'common:shortDescription': getLangJson(
@@ -164,8 +164,8 @@ export function genFlowFromData(data: any) {
         },
       },
       quantitativeReference: {
-        referenceToReferenceFlowProperty: '0',
-        // referenceToReferenceFlowProperty: data?.flowInformation?.quantitativeReference?.referenceToReferenceFlowProperty
+        referenceToReferenceFlowProperty:
+          data?.flowInformation?.quantitativeReference?.referenceToReferenceFlowProperty,
       },
     },
     modellingAndValidation: {
@@ -204,8 +204,10 @@ export function genFlowFromData(data: any) {
       dataEntryBy: {
         'common:timeStamp': data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'],
         'common:referenceToDataSetFormat': {
-          '@refObjectId': '0',
-          // "@refObjectId": data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.["@refObjectId"],
+          '@refObjectId':
+            data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
+              '@refObjectId'
+            ],
           '@type':
             data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
               '@type'

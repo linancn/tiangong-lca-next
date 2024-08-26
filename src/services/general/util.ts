@@ -204,3 +204,14 @@ export function validatePasswordStrength(_: any, value: string) {
   }
   return Promise.resolve();
 }
+
+export function jsonToList(json: any) {
+  if (json) {
+    if (Array.isArray(json)) {
+      return json;
+    } else {
+      return [json];
+    }
+  }
+  return [];
+}

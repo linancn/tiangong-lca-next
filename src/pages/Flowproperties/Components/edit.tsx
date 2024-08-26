@@ -174,8 +174,8 @@ const FlowpropertiesEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
           ]}
           label={
             <FormattedMessage
-              id="pages.FlowProperties.view.quantitativeReference:ReferenceToReferenceUnitGroup"
-              defaultMessage="Quantitative Reference: Reference To Reference Unit Group"
+              id="pages.FlowProperties.view.flowPropertiesInformation.referenceToReferenceUnitGroup"
+              defaultMessage="Reference To Reference Unit Group"
             />
           }
           lang={lang}

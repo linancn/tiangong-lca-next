@@ -66,6 +66,7 @@ export async function getFlowpropertyTableAll(
     json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->"common:name",
     json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
     json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->"common:generalComment",
+    json->flowPropertyDataSet->flowPropertiesInformation->quantitativeReference->referenceToReferenceUnitGroup->"@refObjectId",
     json->flowPropertyDataSet->flowPropertiesInformation->quantitativeReference->referenceToReferenceUnitGroup->"common:shortDescription",
     created_at
   `;
@@ -117,7 +118,8 @@ export async function getFlowpropertyTableAll(
             name: getLangText(i['common:name'], lang),
             classification: classificationToString(i['common:class']),
             generalComment: getLangText(i['common:generalComment'], lang),
-            referenceToReferenceUnitGroup: getLangText(i['common:shortDescription'], lang),
+            refUnitGroupId: i?.['@refObjectId'] ?? '-',
+            refUnitGroup: getLangText(i['common:shortDescription'], lang),
             created_at: new Date(i.created_at),
           };
         } catch (e) {
@@ -194,7 +196,10 @@ export async function getFlowpropertyTablePgroongaSearch(
               ] ?? {},
               lang,
             ),
-            referenceToReferenceUnitGroup: getLangText(
+            refUnitGroupId:
+              i.json?.flowPropertyDataSet?.flowPropertiesInformation?.quantitativeReference
+                ?.referenceToReferenceUnitGroup?.['@refObjectId'] ?? '-',
+            refUnitGroup: getLangText(
               i.json?.flowPropertyDataSet?.flowPropertiesInformation?.quantitativeReference
                 ?.referenceToReferenceUnitGroup?.['common:shortDescription'] ?? {},
               lang,
@@ -233,5 +238,47 @@ export async function getFlowpropertyDetail(id: string) {
   return Promise.resolve({
     data: {},
     success: true,
+  });
+}
+
+export async function getReferenceUnitGroup(id: string) {
+  if (id) {
+    const selectStr = `
+        id,
+        json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->"common:name",
+        json->flowPropertyDataSet->flowPropertiesInformation->quantitativeReference->referenceToReferenceUnitGroup
+    `;
+
+    const result = await supabase.from('flowproperties').select(selectStr).eq('id', id);
+
+    if (result.error) {
+      console.log('error', result.error);
+    }
+
+    if (result.data) {
+      if (result.data.length === 0) {
+        return Promise.resolve({
+          data: {},
+          success: true,
+        });
+      }
+
+      const data: any = result.data[0];
+
+      return Promise.resolve({
+        data: {
+          id: data.id,
+          name: data?.['common:name'] ?? '-',
+          refUnitGroupId: data?.referenceToReferenceUnitGroup?.['@refObjectId'] ?? '-',
+          refUnitGroupShortDescription:
+            data?.referenceToReferenceUnitGroup?.['common:shortDescription'] ?? {},
+        },
+        success: true,
+      });
+    }
+  }
+  return Promise.resolve({
+    data: {},
+    success: false,
   });
 }

@@ -107,16 +107,16 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       ],
     },
     {
-      title: (
-        <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />
-      ),
-      dataIndex: 'classification',
+      title: <FormattedMessage id="pages.flow.flowType" defaultMessage="Flow Type" />,
+      dataIndex: 'flowType',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.flow.dataType" defaultMessage="Data Type" />,
-      dataIndex: 'dataType',
+      title: (
+        <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />
+      ),
+      dataIndex: 'classification',
       sorter: false,
       search: false,
     },

@@ -89,6 +89,24 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       sorter: false,
       search: false,
     },
+
+    {
+      title: (
+        <FormattedMessage
+          id="pages.unitgroup.unit.quantitativeReference"
+          defaultMessage="Quantitative Reference"
+        />
+      ),
+      dataIndex: 'refUnitName',
+      sorter: false,
+      search: false,
+      render: (_, row) => [
+        <Tooltip key={0} placement="topLeft" title={row.refUnitGeneralComment}>
+          {row.refUnitName}
+        </Tooltip>,
+      ],
+    },
+
     {
       title: (
         <FormattedMessage
@@ -167,7 +185,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
   ];
 
   const databaseList: Record<string, React.ReactNode> = {
-    tg: (
+    my: (
       <>
         <Card>
           <Search
@@ -181,9 +199,52 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
           />
         </Card>
         <ProTable<UnitGroupTable, ListPagination>
+          actionRef={myActionRefSelect}
+          search={false}
+          pagination={{
+            showSizeChanger: false,
+            pageSize: 10,
+          }}
+          request={async (
+            params: {
+              pageSize: number;
+              current: number;
+            },
+            sort,
+          ) => {
+            if (myKeyWord.length > 0) {
+              return getUnitGroupTablePgroongaSearch(params, lang, 'my', myKeyWord, {});
+            }
+            return getUnitGroupTableAll(params, sort, lang, 'my');
+          }}
+          columns={unitGroupColumns}
+          rowSelection={{
+            type: 'radio',
+            alwaysShowAlert: true,
+            selectedRowKeys,
+            onChange: onSelectChange,
+          }}
+        />
+      </>
+    ),
+    tg: (
+      <>
+        <Card>
+          <Search
+            name={'tg'}
+            size={'large'}
+            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+            value={tgKeyWord}
+            onChange={handleTgKeyWordChange}
+            onSearch={onTgSearch}
+            enterButton
+          />
+        </Card>
+        <ProTable<UnitGroupTable, ListPagination>
           actionRef={tgActionRefSelect}
-          search={{
-            defaultCollapsed: false,
+          search={false}
+          toolBarRender={() => {
+            return [<UnitGroupCreate key={0} lang={lang} actionRef={tgActionRefSelect} />];
           }}
           pagination={{
             showSizeChanger: false,
@@ -200,53 +261,6 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
               return getUnitGroupTablePgroongaSearch(params, lang, 'tg', tgKeyWord, {});
             }
             return getUnitGroupTableAll(params, sort, lang, 'tg');
-          }}
-          columns={unitGroupColumns}
-          rowSelection={{
-            type: 'radio',
-            alwaysShowAlert: true,
-            selectedRowKeys,
-            onChange: onSelectChange,
-          }}
-        />
-      </>
-    ),
-    my: (
-      <>
-        <Card>
-          <Search
-            name={'tg'}
-            size={'large'}
-            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
-            value={tgKeyWord}
-            onChange={handleTgKeyWordChange}
-            onSearch={onTgSearch}
-            enterButton
-          />
-        </Card>
-        <ProTable<UnitGroupTable, ListPagination>
-          actionRef={myActionRefSelect}
-          search={{
-            defaultCollapsed: false,
-          }}
-          toolBarRender={() => {
-            return [<UnitGroupCreate key={0} lang={lang} actionRef={myActionRefSelect} />];
-          }}
-          pagination={{
-            showSizeChanger: false,
-            pageSize: 10,
-          }}
-          request={async (
-            params: {
-              pageSize: number;
-              current: number;
-            },
-            sort,
-          ) => {
-            if (tgKeyWord.length > 0) {
-              return getUnitGroupTablePgroongaSearch(params, lang, 'my', myKeyWord, {});
-            }
-            return getUnitGroupTableAll(params, sort, lang, 'my');
           }}
           columns={unitGroupColumns}
           rowSelection={{

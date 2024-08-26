@@ -3,7 +3,9 @@ export type UnitGroupTable = {
   lang: string;
   name: string;
   classification: string;
-  referenceToReferenceUnit: string;
+  refUnitId: string;
+  refUnitName: string;
+  refUnitGeneralComment: string;
   createdAt: Date;
 };
 

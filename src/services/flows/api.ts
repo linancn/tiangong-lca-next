@@ -2,7 +2,7 @@ import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/lib/table/interface';
 import { v4 } from 'uuid';
-import { classificationToString, getLangText } from '../general/util';
+import { classificationToString, getLangText, jsonToList } from '../general/util';
 import { genFlowJsonOrdered } from './util';
 
 export async function createFlows(data: any) {
@@ -63,6 +63,8 @@ export async function getFlowTableAll(
     json->flowDataSet->flowInformation->dataSetInformation->classificationInformation->"common:elementaryFlowCategorization"->"common:category",
     json->flowDataSet->flowInformation->dataSetInformation->"common:generalComment",
     json->flowDataSet->flowInformation->dataSetInformation->CASNumber,
+    json->flowDataSet->modellingAndValidation->LCIMethod->typeOfDataSet,
+    json->flowDataSet->flowProperties->flowProperty->referenceToFlowPropertyDataSet,
     created_at
   `;
 
@@ -110,9 +112,11 @@ export async function getFlowTableAll(
             key: i.id,
             id: i.id,
             baseName: getLangText(i.baseName, lang),
+            flowType: i.typeOfDataSet ?? '-',
             classification: classificationToString(i['common:category']),
             generalComment: getLangText(i['common:generalComment'], lang),
             CASNumber: i.CASNumber ?? '-',
+            refFlowPropertyId: i.referenceToFlowPropertyDataSet?.['@refObjectId'] ?? '-',
             created_at: new Date(i.created_at),
           };
         } catch (e) {
@@ -296,5 +300,53 @@ export async function getFlowDetail(id: string) {
   return Promise.resolve({
     data: {},
     success: true,
+  });
+}
+
+export async function getReferenceProperty(id: string) {
+  if (id) {
+    const selectStr = `
+        id,
+        json->flowDataSet->flowInformation->dataSetInformation->name,
+        json->flowDataSet->flowInformation->quantitativeReference->referenceToReferenceFlowProperty,
+        json->flowDataSet->flowProperties->flowProperty
+    `;
+
+    const result = await supabase.from('flows').select(selectStr).eq('id', id);
+
+    if (result.error) {
+      console.log('error', result.error);
+    }
+
+    if (result.data) {
+      if (result.data.length === 0) {
+        return Promise.resolve({
+          data: {},
+          success: true,
+        });
+      }
+
+      const data = result.data[0];
+
+      const dataList = jsonToList(data?.flowProperty);
+      const refData = dataList.find(
+        (item) => item?.['@dataSetInternalID'] === data?.referenceToReferenceFlowProperty,
+      );
+
+      return Promise.resolve({
+        data: {
+          id: data.id,
+          name: data?.name ?? '-',
+          refFlowPropertytId: refData?.referenceToFlowPropertyDataSet?.['@refObjectId'] ?? '-',
+          refFlowPropertyShortDescription:
+            refData?.referenceToFlowPropertyDataSet?.['shortDescription'] ?? {},
+        },
+        success: true,
+      });
+    }
+  }
+  return Promise.resolve({
+    data: {},
+    success: false,
   });
 }

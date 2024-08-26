@@ -13,6 +13,7 @@ import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
+import ReferenceUnit from '../Unitgroups/Components/Unit/reference';
 import FlowpropertiesCreate from './Components/create';
 import FlowpropertiesDelete from './Components/delete';
 import FlowpropertiesEdit from './Components/edit';
@@ -67,9 +68,12 @@ const TableList: FC = () => {
           defaultMessage="Reference Unit Group"
         />
       ),
-      dataIndex: 'referenceToReferenceUnitGroup',
+      dataIndex: 'refUnitGroup',
       sorter: false,
       search: false,
+      render: (_, row) => {
+        return [<ReferenceUnit key={0} id={row.refUnitGroupId} idType={'unitgroup'} lang={lang} />];
+      },
     },
     {
       title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At" />,

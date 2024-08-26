@@ -3,6 +3,7 @@ export type FlowpropertyTable = {
   name: string;
   classification: string;
   generalComment: string;
-  referenceToReferenceUnitGroup: string;
+  refUnitGroupId: string;
+  refUnitGroup: string;
   created_at: Date;
 };
