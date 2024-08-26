@@ -355,6 +355,7 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
           name={['flowProperties', 'flowProperty', 'referenceToFlowPropertyDataSet']}
           lang={lang}
           formRef={formRefEdit}
+          drawerVisible={drawerVisible}
           onData={handletFromData}
         />
         <br />

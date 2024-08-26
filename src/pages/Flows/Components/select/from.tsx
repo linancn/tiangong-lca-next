@@ -14,10 +14,11 @@ type Props = {
   label: ReactNode | string;
   lang: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
+  drawerVisible: boolean;
   onData: () => void;
 };
 
-const FlowsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => {
+const FlowsSelectFrom: FC<Props> = ({ name, label, lang, formRef, drawerVisible, onData }) => {
   const [id, setId] = useState<string | undefined>(undefined);
 
   const handletFlowsData = (rowKey: any) => {
@@ -35,10 +36,12 @@ const FlowsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => {
   };
 
   useEffect(() => {
-    if (formRef.current?.getFieldValue([...name, '@refObjectId'])) {
-      setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
+    if (drawerVisible) {
+      if (formRef.current?.getFieldValue([...name, '@refObjectId'])) {
+        setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
+      }
     }
-  });
+  }, [drawerVisible]);
 
   return (
     <Card size="small" title={label}>
@@ -116,7 +119,13 @@ const FlowsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => {
         </Form.List>
       </Form.Item>
 
-      <UnitGroupFromMini id={id} idType={'flow'} name={name} formRef={formRef} />
+      <UnitGroupFromMini
+        id={id}
+        idType={'flow'}
+        name={name}
+        formRef={formRef}
+        drawerVisible={drawerVisible}
+      />
     </Card>
   );
 };

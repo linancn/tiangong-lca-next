@@ -176,6 +176,7 @@ const ProcessExchangeEdit: FC<Props> = ({
               }
               lang={lang}
               formRef={formRefEdit}
+              drawerVisible={drawerVisible}
               onData={handletFromData}
             />
             <Form.Item
