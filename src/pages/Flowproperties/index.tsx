@@ -72,12 +72,7 @@ const TableList: FC = () => {
       sorter: false,
       search: false,
       render: (_, row) => {
-        return [
-          <>
-            {row.refUnitGroup} (
-            <ReferenceUnit unitGroupId={row.refUnitGroupId} lang={lang} />)
-          </>,
-        ];
+        return [<ReferenceUnit key={0} id={row.refUnitGroupId} idType={'unitgroup'} lang={lang} />];
       },
     },
     {

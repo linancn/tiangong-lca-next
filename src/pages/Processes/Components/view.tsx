@@ -2,6 +2,7 @@ import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
+import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import { ListPagination } from '@/services/general/data';
 import { getProcessDetail } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
@@ -123,6 +124,24 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
       sorter: false,
       search: false,
     },
+
+    {
+      title: (
+        <FormattedMessage
+          id="pages.flowproperty.referenceToReferenceUnitGroup"
+          defaultMessage="Reference Unit Group"
+        />
+      ),
+      dataIndex: 'refUnitGroup',
+      sorter: false,
+      search: false,
+      render: (_, row) => {
+        return [
+          <ReferenceUnit key={0} id={row.referenceToFlowDataSetId} idType={'flow'} lang={lang} />,
+        ];
+      },
+    },
+
     {
       title: (
         <FormattedMessage

@@ -3,6 +3,7 @@ import LevelTextItemFrom from '@/components/LevelTextItem/from';
 import YearInput from '@/components/YearInput';
 import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
 import SourceSelectFrom from '@/pages/Sources/Components/select/from';
+import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import { ListPagination } from '@/services/general/data';
 import { getProcessDetail, updateProcess } from '@/services/processes/api';
 import {
@@ -137,6 +138,24 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
       sorter: false,
       search: false,
     },
+
+    {
+      title: (
+        <FormattedMessage
+          id="pages.flowproperty.referenceToReferenceUnitGroup"
+          defaultMessage="Reference Unit Group"
+        />
+      ),
+      dataIndex: 'refUnitGroup',
+      sorter: false,
+      search: false,
+      render: (_, row) => {
+        return [
+          <ReferenceUnit key={0} id={row.referenceToFlowDataSetId} idType={'flow'} lang={lang} />,
+        ];
+      },
+    },
+
     {
       title: (
         <FormattedMessage

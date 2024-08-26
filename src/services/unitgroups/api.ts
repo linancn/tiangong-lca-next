@@ -233,8 +233,8 @@ export async function getUnitGroupDetail(id: string) {
   });
 }
 
-export async function getReferenceUnit(unitGroupId: string) {
-  if (unitGroupId) {
+export async function getReferenceUnit(id: string) {
+  if (id) {
     const selectStr = `
         id,
         json->unitGroupDataSet->unitGroupInformation->dataSetInformation->"common:name",
@@ -242,7 +242,7 @@ export async function getReferenceUnit(unitGroupId: string) {
         json->unitGroupDataSet->units->unit
     `;
 
-    const result = await supabase.from(table_name).select(selectStr).eq('id', unitGroupId);
+    const result = await supabase.from(table_name).select(selectStr).eq('id', id);
 
     if (result.error) {
       console.log('error', result.error);
@@ -258,8 +258,8 @@ export async function getReferenceUnit(unitGroupId: string) {
 
       const data = result.data[0];
 
-      const unitList = jsonToList(data?.unit);
-      const refUnit = unitList.find(
+      const dataList = jsonToList(data?.unit);
+      const refData = dataList.find(
         (item) => item?.['@dataSetInternalID'] === data?.referenceToReferenceUnit,
       );
 
@@ -268,8 +268,8 @@ export async function getReferenceUnit(unitGroupId: string) {
           id: data.id,
           name: data['common:name'],
           refUnitId: data?.referenceToReferenceUnit ?? '-',
-          refUnitName: refUnit?.name ?? '-',
-          refUnitGeneralComment: refUnit?.generalComment,
+          refUnitName: refData?.name ?? '-',
+          refUnitGeneralComment: refData?.generalComment,
         },
         success: true,
       });

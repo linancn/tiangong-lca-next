@@ -13,6 +13,7 @@ export type ProcessExchangeTable = {
   key: string;
   dataSetInternalID: string;
   exchangeDirection: string;
+  referenceToFlowDataSetId: string;
   referenceToFlowDataSet: string;
   meanAmount: string;
   resultingAmount: string;

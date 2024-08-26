@@ -5,6 +5,7 @@ export type FlowTable = {
   flowType: string;
   generalComment: string;
   CASNumber: string;
+  refFlowPropertyId: string;
   created_at: Date;
 };
 

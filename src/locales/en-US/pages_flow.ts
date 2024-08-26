@@ -1,6 +1,6 @@
 export default {
   'pages.flow.CASNumber': 'CAS Number',
-  'pages.flow.dataType': 'Data Type',
+  'pages.flow.flowType': 'Flow Type',
   'pages.flow.generalComment': 'General Comment',
 
   'pages.flow.drawer.title.view': 'View Flow',

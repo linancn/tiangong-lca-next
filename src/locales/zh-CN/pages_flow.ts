@@ -1,6 +1,6 @@
 export default {
   'pages.flow.CASNumber': 'CAS号',
-  'pages.flow.dataType': '类型',
+  'pages.flow.flowType': '类型',
   'pages.flow.generalComment': '说明',
   'pages.flow.model.sourceOutputFlowName': '源输出流名称',
   'pages.flow.model.targetInputFlowName': '目标输入流名称',

@@ -51,6 +51,12 @@ const TableList: FC = () => {
       ],
     },
     {
+      title: <FormattedMessage id="pages.flow.flowType" defaultMessage="Flow Type" />,
+      dataIndex: 'flowType',
+      sorter: false,
+      search: false,
+    },
+    {
       title: (
         <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />
       ),
@@ -72,6 +78,22 @@ const TableList: FC = () => {
       sorter: false,
       search: false,
     },
+    // {
+    //   title: (
+    //     <FormattedMessage
+    //       id="pages.flowproperty.referenceToReferenceUnitGroup"
+    //       defaultMessage="Reference Unit Group"
+    //     />
+    //   ),
+    //   dataIndex: 'refUnitGroup',
+    //   sorter: false,
+    //   search: false,
+    //   render: (_, row) => {
+    //     return [
+    //         <ReferenceUnit key={0} id={row.refFlowPropertyId} idType={'flowproperty'} lang={lang} />,
+    //     ];
+    //   },
+    // },
     {
       title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
       dataIndex: 'option',
