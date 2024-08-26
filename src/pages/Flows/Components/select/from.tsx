@@ -1,3 +1,4 @@
+import UnitGroupFromMini from '@/pages/Unitgroups/Components/select/fromMini';
 import { getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData } from '@/services/flows/util';
 import { ProFormInstance } from '@ant-design/pro-components';
@@ -34,7 +35,9 @@ const FlowsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => {
   };
 
   useEffect(() => {
-    setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
+    if (formRef.current?.getFieldValue([...name, '@refObjectId'])) {
+      setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
+    }
   });
 
   return (
@@ -112,6 +115,8 @@ const FlowsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => {
           )}
         </Form.List>
       </Form.Item>
+
+      <UnitGroupFromMini id={id} idType={'flow'} name={name} formRef={formRef} />
     </Card>
   );
 };

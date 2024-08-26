@@ -48,8 +48,8 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData })
   };
 
   useEffect(() => {
-    setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
     if (formRef.current?.getFieldValue([...name, '@refObjectId'])) {
+      setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
       getReferenceUnit(formRef.current?.getFieldValue([...name, '@refObjectId'])).then(
         (res: any) => {
           formRef.current?.setFieldValue([...name, 'refUnit'], {
@@ -85,7 +85,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData })
                 onData();
               }}
             >
-              Clear
+              <FormattedMessage id="pages.button.clear" defaultMessage="Clear" />
             </Button>
           )}
         </Space>
