@@ -44,8 +44,9 @@ const SourceDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisib
     await getSourceDetail(id).then(async (result: any) => {
       const dataSet = genSourceFromData(result.data?.json?.sourceDataSet ?? {});
       const initFile = await getFileUrls(
-        dataSet.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri'],
+        dataSet.sourceInformation?.dataSetInformation?.referenceToDigitalFile,
       );
+
       if (initFile.length > 0) {
         const { error } = await removeFile(
           initFile.map((file) => file.uid.replace(`../${supabaseStorageBucket}/`, '')),

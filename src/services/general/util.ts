@@ -215,3 +215,18 @@ export function jsonToList(json: any) {
   }
   return [];
 }
+
+export function listToJson(list: any) {
+  if (list) {
+    if (Array.isArray(list)) {
+      if (list.length === 1) {
+        return list[0];
+      } else if (list.length > 1) {
+        return list;
+      }
+    } else {
+      return list;
+    }
+  }
+  return {};
+}

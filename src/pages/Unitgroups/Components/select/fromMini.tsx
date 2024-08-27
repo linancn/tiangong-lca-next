@@ -14,13 +14,14 @@ type Props = {
   idType: string;
   name: any;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
+  drawerVisible: boolean;
 };
 
-const UnitGroupFromMini: FC<Props> = ({ id, idType, name, formRef }) => {
+const UnitGroupFromMini: FC<Props> = ({ id, idType, name, formRef, drawerVisible }) => {
   const [spinning, setSpinning] = useState<boolean>(false);
 
   useEffect(() => {
-    if (id) {
+    if (id && drawerVisible) {
       if (idType === 'flow') {
         setSpinning(true);
         getReferenceProperty(id).then((res1: any) => {
@@ -29,9 +30,12 @@ const UnitGroupFromMini: FC<Props> = ({ id, idType, name, formRef }) => {
               shortDescription: jsonToList(res2.data?.refUnitGroupShortDescription),
             });
             getReferenceUnit(res2.data?.refUnitGroupId).then((res3: any) => {
-              formRef.current?.setFieldValue([...name, 'refUnitGroup', 'refUnit'], {
-                name: res3.data?.refUnitName ?? '',
-                generalComment: jsonToList(res3.data?.refUnitGeneralComment),
+              formRef.current?.setFieldValue([...name, 'refUnitGroup'], {
+                shortDescription: jsonToList(res2.data?.refUnitGroupShortDescription),
+                refUnit: {
+                  name: res3.data?.refUnitName ?? '',
+                  generalComment: jsonToList(res3.data?.refUnitGeneralComment),
+                },
               });
               setSpinning(false);
             });
@@ -40,20 +44,20 @@ const UnitGroupFromMini: FC<Props> = ({ id, idType, name, formRef }) => {
       } else if (idType === 'flowproperty') {
         setSpinning(true);
         getReferenceUnitGroup(id).then((res1: any) => {
-          formRef.current?.setFieldValue([...name, 'refUnitGroup'], {
-            shortDescription: jsonToList(res1.data?.refUnitGroupShortDescription),
-          });
           getReferenceUnit(res1.data?.refUnitGroupId).then((res2: any) => {
-            formRef.current?.setFieldValue([...name, 'refUnitGroup', 'refUnit'], {
-              name: res2.data?.refUnitName ?? '',
-              generalComment: jsonToList(res2.data?.refUnitGeneralComment),
+            formRef.current?.setFieldValue([...name, 'refUnitGroup'], {
+              shortDescription: jsonToList(res1.data?.refUnitGroupShortDescription),
+              refUnit: {
+                name: res2.data?.refUnitName ?? '',
+                generalComment: jsonToList(res2.data?.refUnitGeneralComment),
+              },
             });
             setSpinning(false);
           });
         });
       }
     }
-  }, [id]);
+  }, [id, drawerVisible]);
 
   return (
     <Spin spinning={spinning}>

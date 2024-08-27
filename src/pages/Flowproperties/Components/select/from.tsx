@@ -15,10 +15,18 @@ type Props = {
   label: ReactNode | string;
   lang: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
+  drawerVisible: boolean;
   onData: () => void;
 };
 
-const FlowpropertiesSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => {
+const FlowpropertiesSelectFrom: FC<Props> = ({
+  name,
+  label,
+  lang,
+  formRef,
+  drawerVisible,
+  onData,
+}) => {
   const [id, setId] = useState<string | undefined>(undefined);
 
   const handletFlowpropertyData = (rowKey: any) => {
@@ -128,7 +136,13 @@ const FlowpropertiesSelectFrom: FC<Props> = ({ name, label, lang, formRef, onDat
         </Form.List>
       </Form.Item>
 
-      <UnitGroupFromMini id={id} idType={'flowproperty'} name={name} formRef={formRef} />
+      <UnitGroupFromMini
+        id={id}
+        idType={'flowproperty'}
+        name={name}
+        formRef={formRef}
+        drawerVisible={drawerVisible}
+      />
     </Card>
   );
 };

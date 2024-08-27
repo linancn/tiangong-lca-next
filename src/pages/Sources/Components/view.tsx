@@ -153,7 +153,7 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
           }
         >
           <FileGallery
-            data={initData.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri']}
+            data={initData.sourceInformation?.dataSetInformation?.referenceToDigitalFile}
           />
         </Card>
         <br />

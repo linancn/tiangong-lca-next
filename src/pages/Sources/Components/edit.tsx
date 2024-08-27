@@ -387,24 +387,22 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerV
       }
     }
 
-    let filePaths = '';
+    let filePaths: any[] = [];
     let fileListWithUUID = [];
     if (fileList.length > 0) {
       fileListWithUUID = fileList.map((file) => {
         const isInFileList0 = fileList0.some((file0) => file0.uid === file.uid);
         if (isInFileList0) {
-          filePaths = filePaths + `${file.uid},`;
+          filePaths.push({ '@uri': file.url });
           return file;
         } else {
           const fileExtension = path.extname(file.name);
           const newUid = `../${supabaseStorageBucket}/${v4()}${fileExtension}`;
-          filePaths = filePaths + `${newUid},`;
+          filePaths.push({ '@uri': newUid });
           return { ...file, newUid: newUid };
         }
       });
     }
-
-    filePaths = filePaths.slice(0, -1);
 
     const result = await updateSource({
       ...fromData,
@@ -412,9 +410,7 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerV
         ...fromData.sourceInformation,
         dataSetInformation: {
           ...fromData.sourceInformation.dataSetInformation,
-          referenceToDigitalFile: {
-            '@uri': filePaths,
-          },
+          referenceToDigitalFile: filePaths,
         },
       },
     });
@@ -454,7 +450,7 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerV
         id: id,
       });
       const initFile = await getFileUrls(
-        dataSet.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri'],
+        dataSet.sourceInformation?.dataSetInformation?.referenceToDigitalFile,
       );
       await setFileList0(initFile);
       await setFileList(initFile);
