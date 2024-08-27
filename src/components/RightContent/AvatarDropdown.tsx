@@ -7,6 +7,7 @@ import { stringify } from 'querystring';
 import type { MenuInfo } from 'rc-menu/lib/interface';
 import React, { useCallback } from 'react';
 import { flushSync } from 'react-dom';
+import { FormattedMessage } from 'umi';
 import HeaderDropdown from '../HeaderDropdown';
 
 export type GlobalHeaderRightProps = {
@@ -38,7 +39,7 @@ const useStyles = createStyles(({ token }) => {
   };
 });
 
-export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu, children }) => {
+export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) => {
   /**
    * 退出登录，并且将当前的 url 保存
    */
@@ -100,27 +101,23 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu, childre
   }
 
   const menuItems = [
-    ...(menu
-      ? [
-          {
-            key: 'center',
-            icon: <UserOutlined />,
-            label: '个人中心',
-          },
-          {
-            key: 'settings',
-            icon: <SettingOutlined />,
-            label: '个人设置',
-          },
-          {
-            type: 'divider' as const,
-          },
-        ]
-      : []),
+    {
+      key: 'profile',
+      icon: <UserOutlined />,
+      label: <FormattedMessage id="menu.account.profile" defaultMessage="Account Profile" />,
+    },
+    {
+      key: 'password_change',
+      icon: <SettingOutlined />,
+      label: <FormattedMessage id="menu.account.passwordChange" defaultMessage="Change Password" />,
+    },
+    {
+      type: 'divider' as const,
+    },
     {
       key: 'logout',
       icon: <LogoutOutlined />,
-      label: '退出登录',
+      label: <FormattedMessage id="menu.account.logout" defaultMessage="Logout" />,
     },
   ];
 

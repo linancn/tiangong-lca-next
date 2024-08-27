@@ -106,6 +106,7 @@ export default [
   {
     path: '/account',
     name: 'account',
+    menu: false,
     icon: 'UserOutlined',
     routes: [
       {

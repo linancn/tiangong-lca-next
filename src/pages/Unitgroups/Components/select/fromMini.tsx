@@ -26,9 +26,6 @@ const UnitGroupFromMini: FC<Props> = ({ id, idType, name, formRef, drawerVisible
         setSpinning(true);
         getReferenceProperty(id).then((res1: any) => {
           getReferenceUnitGroup(res1.data?.refFlowPropertytId).then((res2: any) => {
-            formRef.current?.setFieldValue([...name, 'refUnitGroup'], {
-              shortDescription: jsonToList(res2.data?.refUnitGroupShortDescription),
-            });
             getReferenceUnit(res2.data?.refUnitGroupId).then((res3: any) => {
               formRef.current?.setFieldValue([...name, 'refUnitGroup'], {
                 shortDescription: jsonToList(res2.data?.refUnitGroupShortDescription),

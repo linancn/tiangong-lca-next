@@ -53,7 +53,9 @@ const PasswordChange: FC = () => {
   }, []);
 
   return (
-    <PageContainer>
+    <PageContainer
+      title={<FormattedMessage id="menu.account.passwordChange" defaultMessage="Change Password" />}
+    >
       <Spin spinning={spinning}>
         <ProForm
           formRef={formRefEdit}

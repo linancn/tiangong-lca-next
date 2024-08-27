@@ -17,7 +17,9 @@ const Profile: FC = () => {
   }, []);
 
   return (
-    <PageContainer>
+    <PageContainer
+      title={<FormattedMessage id="menu.account.profile" defaultMessage="Account Profile" />}
+    >
       <Spin spinning={spinning}>
         <ProForm
           formRef={formRefEdit}

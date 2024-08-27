@@ -41,7 +41,7 @@ const FlowsSelectFrom: FC<Props> = ({ name, label, lang, formRef, drawerVisible,
         setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
       }
     }
-  }, [drawerVisible]);
+  });
 
   return (
     <Card size="small" title={label}>
