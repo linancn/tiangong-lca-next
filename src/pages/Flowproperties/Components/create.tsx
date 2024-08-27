@@ -298,6 +298,7 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
                 defaultMessage="Reference To Preceding Data Set Version"
               />
             }
+            drawerVisible={drawerVisible}
             formRef={formRefCreate}
             onData={handletFromData}
           />

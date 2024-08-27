@@ -290,6 +290,7 @@ const FlowpropertiesEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
                 defaultMessage="Reference To Preceding Data Set Version"
               />
             }
+            drawerVisible={drawerVisible}
             formRef={formRefEdit}
             onData={handletFromData}
           />

@@ -355,6 +355,7 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
           }
           name={['flowProperties', 'flowProperty', 'referenceToFlowPropertyDataSet']}
           lang={lang}
+          drawerVisible={drawerVisible}
           formRef={formRefCreate}
           onData={handletFromData}
         />

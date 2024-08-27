@@ -131,6 +131,7 @@ const ProcessExchangeCreate: FC<Props> = ({ lang, onData }) => {
                 />
               }
               lang={lang}
+              drawerVisible={drawerVisible}
               formRef={formRefCreate}
               onData={handletFromData}
             />
