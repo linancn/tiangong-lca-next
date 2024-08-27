@@ -3,7 +3,7 @@ import { Image, Space, Spin } from 'antd';
 import React, { FC } from 'react';
 
 type Props = {
-  data: string;
+  data: any;
 };
 
 const FileGallery: FC<Props> = ({ data }) => {

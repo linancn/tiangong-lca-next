@@ -19,42 +19,43 @@ export const isImage = (file: UploadFile) => {
   return imageExtensions.includes(path.extname(file.name));
 };
 
-export async function getFileUrls(filePaths: string) {
+export async function getFileUrls(fileList: any) {
   const session = await supabase.auth.getSession();
   if (!session) {
     throw new Error('No session');
   }
 
-  if (!filePaths) {
+  if (!fileList) {
     return [];
   }
 
-  const fileList = filePaths.split(',');
-
   const urls = await Promise.all(
-    fileList.map(async (file: string, index: number) => {
-      const fileUrl = `${supabaseUrl}/storage/v1/object/authenticated${file.replace('..', '')}`;
-      try {
-        const response = await fetch(fileUrl, {
-          headers: {
-            Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
-          },
-        });
-        if (!response.ok) {
-          return { uid: file, status: 'error', name: `${index}` };
+    fileList.map(async (fileJson: any, index: number) => {
+      const file = fileJson?.['@uri'];
+      if (file) {
+        const fileUrl = `${supabaseUrl}/storage/v1/object/authenticated${file.replace('..', '')}`;
+        try {
+          const response = await fetch(fileUrl, {
+            headers: {
+              Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+            },
+          });
+          if (!response.ok) {
+            return { uid: file, status: 'error', name: `${index}` };
+          }
+          const blob = await response.blob();
+          const blobUrl = URL.createObjectURL(blob);
+          const thumbUrl = imageExtensions.includes(path.extname(file)) ? blobUrl : '/file.png';
+          return {
+            uid: file,
+            status: 'done',
+            name: `${index}${path.extname(file)}`,
+            thumbUrl: thumbUrl,
+            url: blobUrl,
+          };
+        } catch (e) {
+          return { uid: file, status: 'error', name: `${index}${path.extname(file)}` };
         }
-        const blob = await response.blob();
-        const blobUrl = URL.createObjectURL(blob);
-        const thumbUrl = imageExtensions.includes(path.extname(file)) ? blobUrl : '/file.png';
-        return {
-          uid: file,
-          status: 'done',
-          name: `${index}${path.extname(file)}`,
-          thumbUrl: thumbUrl,
-          url: blobUrl,
-        };
-      } catch (e) {
-        return { uid: file, status: 'error', name: `${index}${path.extname(file)}` };
       }
     }),
   );

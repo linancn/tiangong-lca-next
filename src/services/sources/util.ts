@@ -3,6 +3,8 @@ import {
   classificationToList,
   getLangJson,
   getLangList,
+  jsonToList,
+  listToJson,
   removeEmptyObjects,
 } from '../general/util';
 
@@ -34,9 +36,9 @@ export function genSourceJsonOrdered(id: string, data: any, oldData: any) {
           sourceDescriptionOrComment: getLangJson(
             data?.sourceInformation?.dataSetInformation?.sourceDescriptionOrComment,
           ),
-          referenceToDigitalFile: {
-            '@uri': data?.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri'],
-          },
+          referenceToDigitalFile: listToJson(
+            data?.sourceInformation?.dataSetInformation?.referenceToDigitalFile,
+          ),
           referenceToContact: {
             '@refObjectId':
               data?.sourceInformation?.dataSetInformation?.referenceToContact?.['@refObjectId'],
@@ -131,9 +133,9 @@ export function genSourceFromData(data: any) {
         sourceDescriptionOrComment: getLangList(
           data?.sourceInformation?.dataSetInformation?.sourceDescriptionOrComment,
         ),
-        referenceToDigitalFile: {
-          '@uri': data?.sourceInformation?.dataSetInformation?.referenceToDigitalFile?.['@uri'],
-        },
+        referenceToDigitalFile: jsonToList(
+          data?.sourceInformation?.dataSetInformation?.referenceToDigitalFile,
+        ),
         referenceToContact: {
           '@refObjectId':
             data?.sourceInformation?.dataSetInformation?.referenceToContact?.['@refObjectId'],
