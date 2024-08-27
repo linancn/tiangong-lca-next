@@ -1,5 +1,5 @@
 import { outLogin } from '@/services/ant-design-pro/api';
-import { LogoutOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
+import { LockOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { history, useModel } from '@umijs/max';
 import { Spin } from 'antd';
 import { createStyles } from 'antd-style';
@@ -108,7 +108,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
     },
     {
       key: 'password_change',
-      icon: <SettingOutlined />,
+      icon: <LockOutlined />,
       label: <FormattedMessage id="menu.account.passwordChange" defaultMessage="Change Password" />,
     },
     {
