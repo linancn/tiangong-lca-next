@@ -206,6 +206,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
               'common:classification'
             ]?.['common:class'] ?? {}
           }
+          categoryType={'UnitGroup'}
         />
       </>
     ),

@@ -107,6 +107,7 @@ const FlowpropertyView: FC<Props> = ({ id, buttonType, lang }) => {
               'common:classification'
             ]?.['common:class']
           }
+          categoryType={'FlowProperty'}
         />
         <br />
         <UnitGroupDescription

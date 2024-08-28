@@ -99,6 +99,7 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
               'common:elementaryFlowCategorization'
             ]?.['common:category']
           }
+          categoryType={'Flow'}
         />
         <br />
         <Descriptions bordered size={'small'} column={1}>

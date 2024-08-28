@@ -81,6 +81,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
               'common:classification'
             ]?.['common:class']
           }
+          categoryType={'Contact'}
         />
         <br />
         <Divider orientationMargin="0" orientation="left" plain>
