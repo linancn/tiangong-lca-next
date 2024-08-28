@@ -269,6 +269,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
               'common:classification'
             ]?.['common:class']
           }
+          categoryType={'Process'}
         />
         <br />
         {/* <Card size="small" title={'Quantitative Reference'}>

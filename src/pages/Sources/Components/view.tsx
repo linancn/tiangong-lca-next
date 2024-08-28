@@ -86,6 +86,7 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
               'common:classification'
             ]?.['common:class']
           }
+          categoryType={'Source'}
         />
         <br />
         <Descriptions bordered size={'small'} column={1}>
