@@ -100,6 +100,7 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
             ]?.['common:category']
           }
           categoryType={'Flow'}
+          flowType={initData?.modellingAndValidation?.LCIMethod?.typeOfDataSet}
         />
         <br />
         <Descriptions bordered size={'small'} column={1}>

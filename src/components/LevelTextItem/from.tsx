@@ -1,4 +1,4 @@
-import { getILCDClassification } from '@/services/ilcd/api';
+import { getILCDClassificationZH } from '@/services/ilcd/api';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Form, Select, Space } from 'antd';
 import { FC, useEffect, useState } from 'react';
@@ -19,7 +19,12 @@ const LevelTextItemFrom: FC<Props> = ({ name, dataType, formRef, onData }) => {
     const filteredData = l0.filter((l: any) => l.value === value);
     setL1(
       filteredData[0]?.children?.map((l: any) => ({
-        label: l['@name'],
+        label: (
+          <Space size={'large'}>
+            <Space>en:{l?.['@name'] ?? '-'}</Space>
+            <Space>zh:{l?.['@nameZH'] ?? '-'}</Space>
+          </Space>
+        ),
         value: l['@name'],
         children: l.category ?? [],
       })) ?? [],
@@ -34,7 +39,12 @@ const LevelTextItemFrom: FC<Props> = ({ name, dataType, formRef, onData }) => {
     const filteredData = l1.filter((l: any) => l.value === value);
     setL2(
       filteredData[0]?.children?.map((l: any) => ({
-        label: l['@name'],
+        label: (
+          <Space size={'large'}>
+            <Space>en:{l?.['@name'] ?? '-'}</Space>
+            <Space>zh:{l?.['@nameZH'] ?? '-'}</Space>
+          </Space>
+        ),
         value: l['@name'],
         children: l.category ?? [],
       })) ?? [],
@@ -45,16 +55,53 @@ const LevelTextItemFrom: FC<Props> = ({ name, dataType, formRef, onData }) => {
 
   useEffect(() => {
     const fetchClassification = async (dt: string) => {
-      const result = await getILCDClassification(dt);
-      setL0(
+      const result = await getILCDClassificationZH(dt);
+      const category0 =
         result.data?.category?.map((l: any) => ({
-          label: l['@name'],
+          label: (
+            <Space size={'large'}>
+              <Space>en:{l?.['@name'] ?? '-'}</Space>
+              <Space>zh:{l?.['@nameZH'] ?? '-'}</Space>
+            </Space>
+          ),
           value: l['@name'],
           children: l.category ?? [],
-        })) ?? [],
+        })) ?? [];
+      setL0(category0);
+
+      const filteredData1 = category0?.find(
+        (l: any) => l.value === formRef.current?.getFieldValue([...name, '@level_0']),
       );
-      setL1([]);
-      setL2([]);
+
+      const category1 =
+        filteredData1?.children?.map((l: any) => ({
+          label: (
+            <Space size={'large'}>
+              <Space>en:{l?.['@name'] ?? '-'}</Space>
+              <Space>zh:{l?.['@nameZH'] ?? '-'}</Space>
+            </Space>
+          ),
+          value: l['@name'],
+          children: l.category ?? [],
+        })) ?? [];
+      setL1(category1);
+
+      const filteredData2 = category1.find(
+        (l: any) => l.value === formRef.current?.getFieldValue([...name, '@level_1']),
+      );
+
+      const category2 =
+        filteredData2?.children?.map((l: any) => ({
+          label: (
+            <Space size={'large'}>
+              <Space>en:{l?.['@name'] ?? '-'}</Space>
+              <Space>zh:{l?.['@nameZH'] ?? '-'}</Space>
+            </Space>
+          ),
+          value: l['@name'],
+          children: l.category ?? [],
+        })) ?? [];
+      setL2(category2);
     };
 
     fetchClassification(dataType);

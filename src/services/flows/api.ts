@@ -3,7 +3,7 @@ import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/lib/table/interface';
 import { v4 } from 'uuid';
 import { classificationToString, getLangText, jsonToList } from '../general/util';
-import { getILCDClassificationZh } from '../ilcd/api';
+import { getILCDFlowCategorizationAllZH } from '../ilcd/api';
 import { genFlowJsonOrdered } from './util';
 
 export async function createFlows(data: any) {
@@ -110,14 +110,21 @@ export async function getFlowTableAll(
     let data: any[] = [];
 
     if (lang === 'zh') {
-      await getILCDClassificationZh('Flow').then((res) => {
+      await getILCDFlowCategorizationAllZH().then((res) => {
         data = result.data.map((i: any) => {
           try {
+            let thisCategory: any[] = [];
+            if (i.typeOfDataSet === 'Elementary flow') {
+              thisCategory = res?.data?.categoryElementaryFlow;
+            } else {
+              thisCategory = res?.data?.category;
+            }
+
             let classificationZH: any[] = [];
             const classifications = jsonToList(i['common:category']);
             const filterList0 = classifications.find((i: any) => i?.['@level'].toString() === '0');
             if (filterList0) {
-              const filterList0_zh = res?.data?.category?.find(
+              const filterList0_zh = thisCategory?.find(
                 (i: any) => i?.['@name'].toString() === filterList0?.['#text'],
               );
               classificationZH = [
