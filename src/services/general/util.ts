@@ -94,21 +94,32 @@ export function classificationToJson(classifications: any) {
   if (Array.isArray(classifications)) {
     const filterList0 = classifications.filter((i) => i['@level'].toString() === '0');
     if (filterList0.length > 0) {
-      classificationJson = { '@level_0': filterList0[0]['#text'] ?? '-' };
+      classificationJson = {
+        '@level_0': filterList0[0]?.['#text'],
+        '@catId_0': filterList0[0]?.['@catId'],
+      };
       const filterList1 = classifications.filter((i) => i['@level'].toString() === '1');
       if (filterList1.length > 0) {
-        classificationJson = { ...classificationJson, '@level_1': filterList1[0]['#text'] ?? '-' };
+        classificationJson = {
+          ...classificationJson,
+          '@level_1': filterList1[0]?.['#text'],
+          '@catId_1': filterList1[0]?.['@catId'],
+        };
         const filterList2 = classifications.filter((i) => i['@level'].toString() === '2');
         if (filterList2.length > 0) {
           classificationJson = {
             ...classificationJson,
-            '@level_2': filterList2[0]['#text'] ?? {},
+            '@level_2': filterList2[0]?.['#text'],
+            '@catId_2': filterList2[0]?.['@catId'],
           };
         }
       }
     }
   } else {
-    classificationJson = { '@level_0': classifications?.['#text'] ?? {} };
+    classificationJson = {
+      '@level_0': classifications?.['#text'],
+      '@catId_0': classifications?.['@catId'],
+    };
   }
   return removeEmptyObjects(classificationJson);
 }
@@ -118,16 +129,19 @@ export function classificationToList(classifications: any) {
   if ((classifications?.['@level_0'] ?? '').trim() !== '') {
     common_class = {
       '@level': '0',
+      '@catId': classifications?.['@catId_0'],
       '#text': classifications['@level_0'],
     };
     if ((classifications?.['@level_1'] ?? '').trim() !== '') {
       common_class = [
         {
           '@level': '0',
+          '@catId': classifications?.['@catId_0'],
           '#text': classifications['@level_0'],
         },
         {
           '@level': '1',
+          '@catId': classifications?.['@catId_1'],
           '#text': classifications['@level_1'],
         },
       ];
@@ -135,14 +149,17 @@ export function classificationToList(classifications: any) {
         common_class = [
           {
             '@level': '0',
+            '@catId': classifications?.['@catId_0'],
             '#text': classifications['@level_0'],
           },
           {
             '@level': '1',
+            '@catId': classifications?.['@catId_1'],
             '#text': classifications['@level_1'],
           },
           {
             '@level': '2',
+            '@catId': classifications?.['@catId_2'],
             '#text': classifications['@level_2'],
           },
         ];

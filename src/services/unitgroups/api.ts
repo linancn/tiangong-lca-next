@@ -2,7 +2,7 @@ import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
 import { v4 } from 'uuid';
 import { classificationToString, getLangText, jsonToList } from '../general/util';
-import { getILCDClassificationZh } from '../ilcd/api';
+import { getILCDClassificationZH } from '../ilcd/api';
 import { genUnitGroupJsonOrdered } from './util';
 
 const table_name = 'unitgroups';
@@ -108,7 +108,7 @@ export async function getUnitGroupTableAll(
 
     let data: any[] = [];
     if (lang === 'zh') {
-      await getILCDClassificationZh('UnitGroup').then((res) => {
+      await getILCDClassificationZH('UnitGroup').then((res) => {
         data = result.data.map((i: any) => {
           try {
             const unitList = jsonToList(i?.unit);

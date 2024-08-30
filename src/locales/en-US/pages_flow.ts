@@ -8,4 +8,6 @@ export default {
   'pages.flow.drawer.title.edit': 'Edit Flow',
   'pages.flow.model.drawer.title.list': 'Model List',
   'pages.flow.model.drawer.title.edit': 'Edit Model',
+  'pages.flow.view.flowInformation.typeAndClassificationOfDataSet':
+    'Type and Classification of Data Set',
 };

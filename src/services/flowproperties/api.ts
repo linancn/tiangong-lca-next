@@ -8,7 +8,7 @@ import {
   getLangText,
   jsonToList,
 } from '../general/util';
-import { getILCDClassificationZh } from '../ilcd/api';
+import { getILCDClassificationZH } from '../ilcd/api';
 import { genFlowpropertyJsonOrdered } from './util';
 
 export async function createFlowproperties(data: any) {
@@ -114,7 +114,7 @@ export async function getFlowpropertyTableAll(
     let data: any[] = [];
 
     if (lang === 'zh') {
-      await getILCDClassificationZh('FlowProperty').then((res) => {
+      await getILCDClassificationZH('FlowProperty').then((res) => {
         data = result.data.map((i: any) => {
           try {
             let classificationZH: any[] = [];

@@ -36,6 +36,7 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
   const formRefCreate = useRef<ProFormInstance>();
   const [activeTabKey, setActiveTabKey] = useState<string>('flowInformation');
   const [initData, setInitData] = useState<any>({});
+  const [flowType, setFlowType] = useState<string>();
   const [fromData, setFromData] = useState<any>({});
 
   const reload = useCallback(() => {
@@ -132,23 +133,66 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
           size="small"
           title={
             <FormattedMessage
-              id="pages.flow.view.flowInformation.classification"
-              defaultMessage="Classification"
+              id="pages.flow.view.flowInformation.typeAndClassificationOfDataSet"
+              defaultMessage="Type and Classification of Data Set"
             />
           }
         >
-          <LevelTextItemFrom
-            dataType="Flow"
-            formRef={formRefCreate}
-            onData={handletFromData}
-            name={[
-              'flowInformation',
-              'dataSetInformation',
-              'classificationInformation',
-              'common:elementaryFlowCategorization',
-              'common:category',
-            ]}
-          />
+          <Form.Item
+            label={
+              <FormattedMessage
+                id="pages.flow.view.modellingAndValidation.typeOfDataSet"
+                defaultMessage="Type Of Data Set"
+              />
+            }
+            name={['flowInformation', 'LCIMethod', 'typeOfDataSet']}
+          >
+            <Select
+              options={flowTypeOptions}
+              onChange={(value) => {
+                if (flowType === 'Elementary flow' || value === 'Elementary flow') {
+                  const nameList = [
+                    'flowInformation',
+                    'dataSetInformation',
+                    'classificationInformation',
+                    'common:elementaryFlowCategorization',
+                    'common:category',
+                  ];
+                  formRefCreate.current?.setFieldValue([...nameList, '@level_0'], null);
+                  formRefCreate.current?.setFieldValue([...nameList, '@level_1'], null);
+                  formRefCreate.current?.setFieldValue([...nameList, '@level_2'], null);
+                  formRefCreate.current?.setFieldValue([...nameList, '@catId_0'], null);
+                  formRefCreate.current?.setFieldValue([...nameList, '@catId_1'], null);
+                  formRefCreate.current?.setFieldValue([...nameList, '@catId_2'], null);
+                }
+                setFlowType(value);
+              }}
+            />
+          </Form.Item>
+
+          <Card
+            size="small"
+            title={
+              <FormattedMessage
+                id="pages.flow.view.flowInformation.classification"
+                defaultMessage="Classification"
+              />
+            }
+          >
+            <LevelTextItemFrom
+              dataType={'Flow'}
+              flowType={flowType}
+              formRef={formRefCreate}
+              onData={handletFromData}
+              name={[
+                'flowInformation',
+                'dataSetInformation',
+                'classificationInformation',
+                'common:elementaryFlowCategorization',
+                'common:category',
+              ]}
+            />
+          </Card>
         </Card>
         <br />
         <Form.Item
@@ -205,21 +249,21 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
     ),
     modellingAndValidation: (
       <Space direction="vertical" style={{ width: '100%' }}>
-        {/* <Card size="small" title={'LCI Method'}> */}
-        <Form.Item
-          label={
-            <FormattedMessage
-              id="pages.flow.view.modellingAndValidation.lCIMethod:TypeOfDataSet"
-              defaultMessage="LCI Method: Type Of Data Set"
-            />
-          }
-          name={['modellingAndValidation', 'LCIMethod', 'typeOfDataSet']}
-        >
-          <Select options={flowTypeOptions} />
-        </Form.Item>
-        {/* </Card> */}
-        <br />
-        <Card
+        {/* <Card size="small" title={'LCI Method'}>
+          <Form.Item
+            label={
+              <FormattedMessage
+                id="pages.flow.view.modellingAndValidation.lCIMethod:TypeOfDataSet"
+                defaultMessage="LCI Method: Type Of Data Set"
+              />
+            }
+            name={['modellingAndValidation', 'LCIMethod', 'typeOfDataSet']}
+          >
+            <Select options={flowTypeOptions} />
+          </Form.Item>
+        </Card>
+        <br /> */}
+        {/* <Card
           size="small"
           title={
             <FormattedMessage
@@ -227,42 +271,42 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
               defaultMessage="Compliance Declarations"
             />
           }
+        > */}
+        <SourceSelectFrom
+          lang={lang}
+          formRef={formRefCreate}
+          label={
+            <FormattedMessage
+              id="pages.flow.view.modellingAndValidation.referenceToComplianceSystem"
+              defaultMessage="Reference To Compliance System"
+            />
+          }
+          name={[
+            'modellingAndValidation',
+            'complianceDeclarations',
+            'compliance',
+            'common:referenceToComplianceSystem',
+          ]}
+          onData={handletFromData}
+        />
+        <br />
+        <Form.Item
+          label={
+            <FormattedMessage
+              id="pages.flow.view.modellingAndValidation.approvalOfOverallCompliance"
+              defaultMessage="Approval Of Overall Compliance"
+            />
+          }
+          name={[
+            'modellingAndValidation',
+            'complianceDeclarations',
+            'compliance',
+            'common:approvalOfOverallCompliance',
+          ]}
         >
-          <SourceSelectFrom
-            lang={lang}
-            formRef={formRefCreate}
-            label={
-              <FormattedMessage
-                id="pages.flow.view.modellingAndValidation.referenceToComplianceSystem"
-                defaultMessage="Reference To Compliance System"
-              />
-            }
-            name={[
-              'modellingAndValidation',
-              'complianceDeclarations',
-              'compliance',
-              'common:referenceToComplianceSystem',
-            ]}
-            onData={handletFromData}
-          />
-          <br />
-          <Form.Item
-            label={
-              <FormattedMessage
-                id="pages.flow.view.modellingAndValidation.approvalOfOverallCompliance"
-                defaultMessage="Approval Of Overall Compliance"
-              />
-            }
-            name={[
-              'modellingAndValidation',
-              'complianceDeclarations',
-              'compliance',
-              'common:approvalOfOverallCompliance',
-            ]}
-          >
-            <Select options={complianceOptions} />
-          </Form.Item>
-        </Card>
+          <Select options={complianceOptions} />
+        </Form.Item>
+        {/* </Card> */}
       </Space>
     ),
     administrativeInformation: (

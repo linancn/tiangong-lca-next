@@ -2,7 +2,7 @@ import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/es/table/interface';
 import { v4 } from 'uuid';
 import { classificationToString, getLangText, jsonToList } from '../general/util';
-import { getILCDClassificationZh } from '../ilcd/api';
+import { getILCDClassificationZH } from '../ilcd/api';
 import { genProcessJsonOrdered } from './util';
 
 export async function createProcess(data: any) {
@@ -102,7 +102,7 @@ export async function getProcessTableAll(
 
     let data: any[] = [];
     if (lang === 'zh') {
-      await getILCDClassificationZh('Flow').then((res) => {
+      await getILCDClassificationZH('Process').then((res) => {
         data = result.data.map((i: any) => {
           try {
             let classificationZH: any[] = [];

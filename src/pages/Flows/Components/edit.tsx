@@ -40,6 +40,7 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
   const [activeTabKey, setActiveTabKey] = useState<string>('flowInformation');
   const [fromData, setFromData] = useState<any>({});
   const [initData, setInitData] = useState<any>({});
+  const [flowType, setFlowType] = useState<string>();
   const [spinning, setSpinning] = useState(false);
 
   const onTabChange = (key: string) => {
@@ -132,23 +133,66 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
           size="small"
           title={
             <FormattedMessage
-              id="pages.flow.view.flowInformation.classification"
-              defaultMessage="Classification"
+              id="pages.flow.view.flowInformation.typeAndClassificationOfDataSet"
+              defaultMessage="Type and Classification of Data Set"
             />
           }
         >
-          <LevelTextItemFrom
-            dataType="Flow"
-            formRef={formRefEdit}
-            onData={handletFromData}
-            name={[
-              'flowInformation',
-              'dataSetInformation',
-              'classificationInformation',
-              'common:elementaryFlowCategorization',
-              'common:category',
-            ]}
-          />
+          <Form.Item
+            label={
+              <FormattedMessage
+                id="pages.flow.view.modellingAndValidation.typeOfDataSet"
+                defaultMessage="Type Of Data Set"
+              />
+            }
+            name={['flowInformation', 'LCIMethod', 'typeOfDataSet']}
+          >
+            <Select
+              options={flowTypeOptions}
+              onChange={(value) => {
+                if (flowType === 'Elementary flow' || value === 'Elementary flow') {
+                  const nameList = [
+                    'flowInformation',
+                    'dataSetInformation',
+                    'classificationInformation',
+                    'common:elementaryFlowCategorization',
+                    'common:category',
+                  ];
+                  formRefEdit.current?.setFieldValue([...nameList, '@level_0'], null);
+                  formRefEdit.current?.setFieldValue([...nameList, '@level_1'], null);
+                  formRefEdit.current?.setFieldValue([...nameList, '@level_2'], null);
+                  formRefEdit.current?.setFieldValue([...nameList, '@catId_0'], null);
+                  formRefEdit.current?.setFieldValue([...nameList, '@catId_1'], null);
+                  formRefEdit.current?.setFieldValue([...nameList, '@catId_2'], null);
+                }
+                setFlowType(value);
+              }}
+            />
+          </Form.Item>
+
+          <Card
+            size="small"
+            title={
+              <FormattedMessage
+                id="pages.flow.view.flowInformation.classification"
+                defaultMessage="Classification"
+              />
+            }
+          >
+            <LevelTextItemFrom
+              dataType={'Flow'}
+              flowType={flowType}
+              formRef={formRefEdit}
+              onData={handletFromData}
+              name={[
+                'flowInformation',
+                'dataSetInformation',
+                'classificationInformation',
+                'common:elementaryFlowCategorization',
+                'common:category',
+              ]}
+            />
+          </Card>
         </Card>
         <br />
         <Form.Item
@@ -205,20 +249,20 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
     ),
     modellingAndValidation: (
       <Space direction="vertical" style={{ width: '100%' }}>
-        {/* <Card size="small" title={'LCI Method'}> */}
-        <Form.Item
-          label={
-            <FormattedMessage
-              id="pages.flow.view.modellingAndValidation.lCIMethod:TypeOfDataSet"
-              defaultMessage="LCI Method: Type Of Data Set"
-            />
-          }
-          name={['modellingAndValidation', 'LCIMethod', 'typeOfDataSet']}
-        >
-          <Select options={flowTypeOptions} />
-        </Form.Item>
-        {/* </Card> */}
-        <Card
+        {/* <Card size="small" title={'LCI Method'}>
+          <Form.Item
+            label={
+              <FormattedMessage
+                id="pages.flow.view.modellingAndValidation.lCIMethod:TypeOfDataSet"
+                defaultMessage="LCI Method: Type Of Data Set"
+              />
+            }
+            name={['modellingAndValidation', 'LCIMethod', 'typeOfDataSet']}
+          >
+            <Select options={flowTypeOptions} />
+          </Form.Item>
+        </Card> */}
+        {/* <Card
           size="small"
           title={
             <FormattedMessage
@@ -226,42 +270,42 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
               defaultMessage="Compliance Declarations"
             />
           }
+        > */}
+        <SourceSelectFrom
+          lang={lang}
+          formRef={formRefEdit}
+          label={
+            <FormattedMessage
+              id="pages.flow.view.modellingAndValidation.referenceToComplianceSystem"
+              defaultMessage="Reference To Compliance System"
+            />
+          }
+          name={[
+            'modellingAndValidation',
+            'complianceDeclarations',
+            'compliance',
+            'common:referenceToComplianceSystem',
+          ]}
+          onData={handletFromData}
+        />
+        <br />
+        <Form.Item
+          label={
+            <FormattedMessage
+              id="pages.flow.view.modellingAndValidation.approvalOfOverallCompliance"
+              defaultMessage="Approval Of Overall Compliance"
+            />
+          }
+          name={[
+            'modellingAndValidation',
+            'complianceDeclarations',
+            'compliance',
+            'common:approvalOfOverallCompliance',
+          ]}
         >
-          <SourceSelectFrom
-            lang={lang}
-            formRef={formRefEdit}
-            label={
-              <FormattedMessage
-                id="pages.flow.view.modellingAndValidation.referenceToComplianceSystem"
-                defaultMessage="Reference To Compliance System"
-              />
-            }
-            name={[
-              'modellingAndValidation',
-              'complianceDeclarations',
-              'compliance',
-              'common:referenceToComplianceSystem',
-            ]}
-            onData={handletFromData}
-          />
-          <br />
-          <Form.Item
-            label={
-              <FormattedMessage
-                id="pages.flow.view.modellingAndValidation.approvalOfOverallCompliance"
-                defaultMessage="Approval Of Overall Compliance"
-              />
-            }
-            name={[
-              'modellingAndValidation',
-              'complianceDeclarations',
-              'compliance',
-              'common:approvalOfOverallCompliance',
-            ]}
-          >
-            <Select options={complianceOptions} />
-          </Form.Item>
-        </Card>
+          <Select options={complianceOptions} />
+        </Form.Item>
+        {/* </Card> */}
       </Space>
     ),
     administrativeInformation: (
@@ -395,11 +439,12 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
     if (drawerVisible === false) return;
     setSpinning(true);
     getFlowDetail(id).then(async (result: any) => {
-      setInitData({ ...genFlowFromData(result.data?.json?.flowDataSet ?? {}), id: id });
-      setFromData({ ...genFlowFromData(result.data?.json?.flowDataSet ?? {}), id: id });
+      const fromData0 = await genFlowFromData(result.data?.json?.flowDataSet ?? {});
+      setInitData({ ...fromData0, id: id });
+      setFlowType(fromData0?.flowInformation?.LCIMethod?.typeOfDataSet);
       formRefEdit.current?.resetFields();
       formRefEdit.current?.setFieldsValue({
-        ...genFlowFromData(result.data?.json?.flowDataSet ?? {}),
+        ...fromData0,
         id: id,
       });
       setSpinning(false);

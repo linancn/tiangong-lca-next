@@ -86,21 +86,46 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
         <LangTextItemDescription
           data={initData?.flowInformation?.dataSetInformation?.['common:synonyms']}
         />
-
-        <Divider orientationMargin="0" orientation="left" plain>
-          <FormattedMessage
-            id="pages.flow.view.flowInformation.classification"
-            defaultMessage="Classification"
-          />
-        </Divider>
-        <LevelTextItemDescription
-          data={
-            initData?.flowInformation?.dataSetInformation?.classificationInformation?.[
-              'common:elementaryFlowCategorization'
-            ]?.['common:category']
+        <br />
+        <Card
+          size="small"
+          title={
+            <FormattedMessage
+              id="pages.flow.view.flowInformation.typeAndClassificationOfDataSet"
+              defaultMessage="Type and Classification of Data Set"
+            />
           }
-          categoryType={'Flow'}
-        />
+        >
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id="pages.flow.view.modellingAndValidation.typeOfDataSet"
+                  defaultMessage="Type Of Data Set"
+                />
+              }
+              labelStyle={{ width: '160px' }}
+            >
+              {initData?.flowInformation?.LCIMethod?.typeOfDataSet ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
+          <Divider orientationMargin="0" orientation="left" plain>
+            <FormattedMessage
+              id="pages.flow.view.flowInformation.classification"
+              defaultMessage="Classification"
+            />
+          </Divider>
+          <LevelTextItemDescription
+            data={
+              initData?.flowInformation?.dataSetInformation?.classificationInformation?.[
+                'common:elementaryFlowCategorization'
+              ]?.['common:category']
+            }
+            categoryType={'Flow'}
+            flowType={initData?.flowInformation?.LCIMethod?.typeOfDataSet}
+          />
+        </Card>
         <br />
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
@@ -155,7 +180,7 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
     ),
     modellingAndValidation: (
       <>
-        <Descriptions bordered size={'small'} column={1}>
+        {/* <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
             key={0}
             label={
@@ -169,8 +194,8 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
             {initData?.modellingAndValidation?.LCIMethod?.typeOfDataSet ?? '-'}
           </Descriptions.Item>
         </Descriptions>
-        <br />
-        <Card
+        <br /> */}
+        {/* <Card
           size="small"
           title={
             <FormattedMessage
@@ -178,40 +203,40 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
               defaultMessage="Compliance Declarations"
             />
           }
-        >
-          <SourceSelectDescription
-            data={
-              initData?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                'common:referenceToComplianceSystem'
-              ]
-            }
-            title={
+        > */}
+        <SourceSelectDescription
+          data={
+            initData?.modellingAndValidation?.complianceDeclarations?.compliance?.[
+              'common:referenceToComplianceSystem'
+            ]
+          }
+          title={
+            <FormattedMessage
+              id="pages.flow.view.modellingAndValidation.referenceToComplianceSystem"
+              defaultMessage="Reference To Compliance System"
+            />
+          }
+          lang={lang}
+        />
+        <br />
+        <Descriptions bordered size={'small'} column={1}>
+          <Descriptions.Item
+            key={0}
+            label={
               <FormattedMessage
-                id="pages.flow.view.modellingAndValidation.referenceToComplianceSystem"
-                defaultMessage="Reference To Compliance System"
+                id="pages.flow.view.modellingAndValidation.approvalOfOverallCompliance"
+                defaultMessage="Approval Of Overall Compliance"
               />
             }
-            lang={lang}
-          />
-          <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id="pages.flow.view.modellingAndValidation.approvalOfOverallCompliance"
-                  defaultMessage="Approval Of Overall Compliance"
-                />
-              }
-              labelStyle={{ width: '240px' }}
-            >
-              {initData?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                'common:approvalOfOverallCompliance'
-              ] ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
-          <br />
-        </Card>
+            labelStyle={{ width: '240px' }}
+          >
+            {initData?.modellingAndValidation?.complianceDeclarations?.compliance?.[
+              'common:approvalOfOverallCompliance'
+            ] ?? '-'}
+          </Descriptions.Item>
+        </Descriptions>
+        {/* <br />
+        </Card> */}
       </>
     ),
     administrativeInformation: (

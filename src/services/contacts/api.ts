@@ -2,7 +2,7 @@ import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
 import { v4 } from 'uuid';
 import { classificationToString, getLangText, jsonToList } from '../general/util';
-import { getILCDClassificationZh } from '../ilcd/api';
+import { getILCDClassificationZH } from '../ilcd/api';
 import { genContactJsonOrdered } from './util';
 
 export async function createContact(data: any) {
@@ -105,7 +105,7 @@ export async function getContactTableAll(
 
     let data: any[] = [];
     if (lang === 'zh') {
-      await getILCDClassificationZh('Contact').then((res) => {
+      await getILCDClassificationZH('Contact').then((res) => {
         data = result.data.map((i: any) => {
           try {
             let classificationZH: any[] = [];
