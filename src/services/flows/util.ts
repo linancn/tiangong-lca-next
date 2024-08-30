@@ -51,7 +51,7 @@ export function genFlowJsonOrdered(id: string, data: any, oldData: any) {
       },
       modellingAndValidation: {
         LCIMethod: {
-          typeOfDataSet: data?.modellingAndValidation?.LCIMethod?.typeOfDataSet,
+          typeOfDataSet: data?.flowInformation?.LCIMethod?.typeOfDataSet,
         },
         complianceDeclarations: {
           compliance: {
@@ -167,11 +167,11 @@ export function genFlowFromData(data: any) {
         referenceToReferenceFlowProperty:
           data?.flowInformation?.quantitativeReference?.referenceToReferenceFlowProperty,
       },
-    },
-    modellingAndValidation: {
       LCIMethod: {
         typeOfDataSet: data?.modellingAndValidation?.LCIMethod?.typeOfDataSet,
       },
+    },
+    modellingAndValidation: {
       complianceDeclarations: {
         compliance: {
           'common:referenceToComplianceSystem': {
