@@ -1,7 +1,12 @@
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
 import { v4 } from 'uuid';
-import { classificationToString, getLangText, jsonToList } from '../general/util';
+import {
+  classificationToString,
+  genClassificationZH,
+  getLangText,
+  jsonToList,
+} from '../general/util';
 import { getILCDClassificationZH } from '../ilcd/api';
 import { genSourceJsonOrdered } from './util';
 
@@ -108,50 +113,8 @@ export async function getSourceTableAll(
       await getILCDClassificationZH('Source').then((res) => {
         data = result.data.map((i: any) => {
           try {
-            let classificationZH: any[] = [];
             const classifications = jsonToList(i['common:class']);
-            const filterList0 = classifications.find((i: any) => i?.['@level'].toString() === '0');
-            if (filterList0) {
-              const filterList0_zh = res?.data?.category?.find(
-                (i: any) => i?.['@name'].toString() === filterList0?.['#text'],
-              );
-              classificationZH = [
-                {
-                  '@level': '0',
-                  '#text': filterList0_zh?.['@nameZH'] ?? filterList0?.['#text'],
-                },
-              ];
-              const filterList1 = classifications.find(
-                (i: any) => i?.['@level'].toString() === '1',
-              );
-              if (filterList1) {
-                const filterList1_zh = filterList0_zh?.category?.find(
-                  (i: any) => i?.['@name'].toString() === filterList1?.['#text'],
-                );
-                classificationZH = [
-                  ...classificationZH,
-                  {
-                    '@level': '1',
-                    '#text': filterList1_zh?.['@nameZH'] ?? filterList1?.['#text'],
-                  },
-                ];
-                const filterList2 = classifications.find(
-                  (i: any) => i?.['@level'].toString() === '2',
-                );
-                if (filterList2) {
-                  const filterList2_zh = filterList1_zh?.category?.find(
-                    (i: any) => i?.['@name'].toString() === filterList2?.['#text'],
-                  );
-                  classificationZH = [
-                    ...classificationZH,
-                    {
-                      '@level': '2',
-                      '#text': filterList2_zh?.['@nameZH'] ?? filterList2?.['#text'],
-                    },
-                  ];
-                }
-              }
-            }
+            const classificationZH = genClassificationZH(classifications, res?.data?.category);
             return {
               key: i.id,
               id: i.id,
@@ -175,11 +138,11 @@ export async function getSourceTableAll(
           return {
             key: i.id,
             id: i.id,
-            shortName: getLangText(i['common:shortName'], lang),
-            classification: classificationToString(i['common:class']),
-            sourceCitation: i.sourceCitation ?? '-',
-            publicationType: i.publicationType ?? '-',
-            created_at: new Date(i.created_at),
+            shortName: getLangText(i?.['common:shortName'], lang),
+            classification: classificationToString(i?.['common:class']),
+            sourceCitation: i?.sourceCitation ?? '-',
+            publicationType: i?.publicationType ?? '-',
+            created_at: new Date(i?.created_at),
           };
         } catch (e) {
           console.error(e);
@@ -236,27 +199,51 @@ export async function getSourceTablePgroongaSearch(
         success: true,
       });
     }
+
     const totalCount = result.data[0].total_count;
-    return Promise.resolve({
-      data: result.data.map((i: any) => {
+
+    let data: any[] = [];
+    if (lang === 'zh') {
+      await getILCDClassificationZH('Source').then((res) => {
+        data = result.data.map((i: any) => {
+          try {
+            const dataInfo = i.json?.sourceDataSet?.sourceInformation?.dataSetInformation;
+            const classifications = jsonToList(
+              dataInfo?.classificationInformation?.['common:classification']?.['common:class'],
+            );
+            const classificationZH = genClassificationZH(classifications, res?.data?.category);
+
+            return {
+              key: i.id,
+              id: i.id,
+              shortName: getLangText(dataInfo?.['common:shortName'], lang),
+              classification: classificationToString(classificationZH),
+              sourceCitation: dataInfo?.sourceCitation ?? '-',
+              publicationType: dataInfo?.publicationType ?? '-',
+              created_at: new Date(i?.created_at),
+            };
+          } catch (e) {
+            console.error(e);
+            return {
+              id: i.id,
+            };
+          }
+        });
+      });
+    } else {
+      data = result.data.map((i: any) => {
+        const dataInfo = i.json?.sourceDataSet?.sourceInformation?.dataSetInformation;
         try {
           return {
             key: i.id,
             id: i.id,
-            shortName: getLangText(
-              i.json?.sourceDataSet?.sourceInformation?.dataSetInformation?.['common:shortName'] ??
-                {},
-              lang,
-            ),
+            shortName: getLangText(dataInfo?.['common:shortName'], lang),
             classification: classificationToString(
-              i.json?.sourceDataSet?.sourceInformation?.dataSetInformation
-                ?.classificationInformation?.['common:classification']?.['common:class'] ?? {},
+              dataInfo?.classificationInformation?.['common:classification']?.['common:class'],
             ),
-            sourceCitation:
-              i.json?.sourceDataSet?.sourceInformation?.dataSetInformation?.sourceCitation ?? '-',
-            publicationType:
-              i.json?.sourceDataSet?.sourceInformation?.dataSetInformation?.publicationType ?? '-',
-            created_at: new Date(i.created_at),
+            sourceCitation: dataInfo?.sourceCitation ?? '-',
+            publicationType: dataInfo?.publicationType ?? '-',
+            created_at: new Date(dataInfo?.created_at),
           };
         } catch (e) {
           console.error(e);
@@ -264,7 +251,11 @@ export async function getSourceTablePgroongaSearch(
             id: i.id,
           };
         }
-      }),
+      });
+    }
+
+    return Promise.resolve({
+      data: data,
       page: params.current ?? 1,
       success: true,
       total: totalCount ?? 0,

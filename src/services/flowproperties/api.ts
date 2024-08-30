@@ -4,6 +4,7 @@ import { v4 } from 'uuid';
 import {
   // classificationToJson,
   classificationToString,
+  genClassificationZH,
   // getLangList,
   getLangText,
   jsonToList,
@@ -117,59 +118,18 @@ export async function getFlowpropertyTableAll(
       await getILCDClassificationZH('FlowProperty').then((res) => {
         data = result.data.map((i: any) => {
           try {
-            let classificationZH: any[] = [];
-            const classifications = jsonToList(i['common:class']);
-            const filterList0 = classifications.find((i: any) => i?.['@level'].toString() === '0');
-            if (filterList0) {
-              const filterList0_zh = res?.data?.category?.find(
-                (i: any) => i?.['@name'].toString() === filterList0?.['#text'],
-              );
-              classificationZH = [
-                {
-                  '@level': '0',
-                  '#text': filterList0_zh?.['@nameZH'] ?? filterList0?.['#text'],
-                },
-              ];
-              const filterList1 = classifications.find(
-                (i: any) => i?.['@level'].toString() === '1',
-              );
-              if (filterList1) {
-                const filterList1_zh = filterList0_zh?.category?.find(
-                  (i: any) => i?.['@name'].toString() === filterList1?.['#text'],
-                );
-                classificationZH = [
-                  ...classificationZH,
-                  {
-                    '@level': '1',
-                    '#text': filterList1_zh?.['@nameZH'] ?? filterList1?.['#text'],
-                  },
-                ];
-                const filterList2 = classifications.find(
-                  (i: any) => i?.['@level'].toString() === '2',
-                );
-                if (filterList2) {
-                  const filterList2_zh = filterList1_zh?.category?.find(
-                    (i: any) => i?.['@name'].toString() === filterList2?.['#text'],
-                  );
-                  classificationZH = [
-                    ...classificationZH,
-                    {
-                      '@level': '2',
-                      '#text': filterList2_zh?.['@nameZH'] ?? filterList2?.['#text'],
-                    },
-                  ];
-                }
-              }
-            }
+            const classifications = jsonToList(i?.['common:class']);
+            const classificationZH = genClassificationZH(classifications, res?.data?.category);
+
             return {
               key: i.id,
               id: i.id,
-              name: getLangText(i['common:name'], lang),
+              name: getLangText(i?.['common:name'], lang),
               classification: classificationToString(classificationZH),
-              generalComment: getLangText(i['common:generalComment'], lang),
+              generalComment: getLangText(i?.['common:generalComment'], lang),
               refUnitGroupId: i?.['@refObjectId'] ?? '-',
-              refUnitGroup: getLangText(i['common:shortDescription'], lang),
-              created_at: new Date(i.created_at),
+              refUnitGroup: getLangText(i?.['common:shortDescription'], lang),
+              created_at: new Date(i?.created_at),
             };
           } catch (e) {
             console.error(e);
@@ -185,12 +145,12 @@ export async function getFlowpropertyTableAll(
           return {
             key: i.id,
             id: i.id,
-            name: getLangText(i['common:name'], lang),
-            classification: classificationToString(i['common:class']),
-            generalComment: getLangText(i['common:generalComment'], lang),
+            name: getLangText(i?.['common:name'], lang),
+            classification: classificationToString(i?.['common:class']),
+            generalComment: getLangText(i?.['common:generalComment'], lang),
             refUnitGroupId: i?.['@refObjectId'] ?? '-',
-            refUnitGroup: getLangText(i['common:shortDescription'], lang),
-            created_at: new Date(i.created_at),
+            refUnitGroup: getLangText(i?.['common:shortDescription'], lang),
+            created_at: new Date(i?.created_at),
           };
         } catch (e) {
           console.error(e);
@@ -248,37 +208,76 @@ export async function getFlowpropertyTablePgroongaSearch(
       });
     }
     const totalCount = result.data[0].total_count;
-    return Promise.resolve({
-      data: result.data.map((i: any) => {
+
+    let data: any[] = [];
+
+    if (lang === 'zh') {
+      await getILCDClassificationZH('FlowProperty').then((res) => {
+        data = result.data.map((i: any) => {
+          try {
+            const dataInfo = i.json?.flowPropertyDataSet?.flowPropertiesInformation;
+            const classifications = jsonToList(
+              dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
+                'common:class'
+              ],
+            );
+            const classificationZH = genClassificationZH(classifications, res?.data?.category);
+
+            return {
+              key: i.id,
+              id: i.id,
+              name: getLangText(dataInfo?.dataSetInformation?.['common:name'] ?? {}, lang),
+              classification: classificationToString(classificationZH),
+              generalComment: getLangText(
+                dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
+                lang,
+              ),
+              refUnitGroupId:
+                dataInfo?.quantitativeReference?.referenceToReferenceUnitGroup?.['@refObjectId'] ??
+                '-',
+              refUnitGroup: getLangText(
+                dataInfo?.quantitativeReference?.referenceToReferenceUnitGroup?.[
+                  'common:shortDescription'
+                ] ?? {},
+                lang,
+              ),
+              created_at: new Date(i?.created_at),
+            };
+          } catch (e) {
+            console.error(e);
+            return {
+              id: i.id,
+            };
+          }
+        });
+      });
+    } else {
+      data = result.data.map((i: any) => {
         try {
+          const dataInfo = i.json?.flowPropertyDataSet?.flowPropertiesInformation;
           return {
             key: i.id,
             id: i.id,
-            name: getLangText(
-              i.json?.flowPropertyDataSet?.flowPropertiesInformation?.dataSetInformation?.[
-                'common:name'
-              ] ?? {},
-              lang,
-            ),
+            name: getLangText(dataInfo?.dataSetInformation?.['common:name'] ?? {}, lang),
             classification: classificationToString(
-              i.json?.flowPropertyDataSet?.flowPropertiesInformation?.dataSetInformation
-                ?.classificationInformation?.['common:classification']?.['common:class'] ?? {},
+              dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
+                'common:class'
+              ],
             ),
             generalComment: getLangText(
-              i.json?.flowPropertyDataSet?.flowPropertiesInformation?.dataSetInformation?.[
-                'common:generalComment'
-              ] ?? {},
+              dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
               lang,
             ),
             refUnitGroupId:
-              i.json?.flowPropertyDataSet?.flowPropertiesInformation?.quantitativeReference
-                ?.referenceToReferenceUnitGroup?.['@refObjectId'] ?? '-',
+              dataInfo?.quantitativeReference?.referenceToReferenceUnitGroup?.['@refObjectId'] ??
+              '-',
             refUnitGroup: getLangText(
-              i.json?.flowPropertyDataSet?.flowPropertiesInformation?.quantitativeReference
-                ?.referenceToReferenceUnitGroup?.['common:shortDescription'] ?? {},
+              dataInfo?.quantitativeReference?.referenceToReferenceUnitGroup?.[
+                'common:shortDescription'
+              ] ?? {},
               lang,
             ),
-            created_at: new Date(i.created_at),
+            created_at: new Date(i?.created_at),
           };
         } catch (e) {
           console.error(e);
@@ -286,7 +285,11 @@ export async function getFlowpropertyTablePgroongaSearch(
             id: i.id,
           };
         }
-      }),
+      });
+    }
+
+    return Promise.resolve({
+      data: data,
       page: params.current ?? 1,
       success: true,
       total: totalCount ?? 0,
