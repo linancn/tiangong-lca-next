@@ -26,13 +26,14 @@ const LevelTextItemFrom: FC<Props> = ({ name, dataType, flowType, formRef, onDat
     setCategoryData2([]);
     setL1(
       filteredData0?.category?.map((l: any) => ({
+        id: l?.['@id'],
         label: (
           <Space size={'large'}>
             <Space>en:{l?.['@name'] ?? '-'}</Space>
             <Space>zh:{l?.['@nameZH'] ?? '-'}</Space>
           </Space>
         ),
-        value: l['@name'],
+        value: l?.['@name'],
       })) ?? [],
     );
     setL2([]);
@@ -49,13 +50,14 @@ const LevelTextItemFrom: FC<Props> = ({ name, dataType, flowType, formRef, onDat
     setCategoryData2(filteredData1?.category);
     setL2(
       filteredData1?.category?.map((l: any) => ({
+        id: l?.['@id'],
         label: (
           <Space size={'large'}>
             <Space>en:{l?.['@name'] ?? '-'}</Space>
             <Space>zh:{l?.['@nameZH'] ?? '-'}</Space>
           </Space>
         ),
-        value: l['@name'],
+        value: l?.['@name'],
       })) ?? [],
     );
     await formRef.current?.setFieldValue([...name, '@level_2'], null);
@@ -65,7 +67,8 @@ const LevelTextItemFrom: FC<Props> = ({ name, dataType, flowType, formRef, onDat
 
   const handleL2Change = async (value: string) => {
     const filteredData2 = categoryData2.find((l: any) => l?.['@name'] === value);
-    formRef.current?.setFieldValue([...name, '@catId_2'], filteredData2?.['@id'] ?? null);
+    await formRef.current?.setFieldValue([...name, '@catId_2'], filteredData2?.['@id'] ?? null);
+    onData();
   };
 
   useEffect(() => {
@@ -79,23 +82,26 @@ const LevelTextItemFrom: FC<Props> = ({ name, dataType, flowType, formRef, onDat
       setCategoryData0(result?.data?.category);
       const category0 =
         result.data?.category?.map((l: any) => ({
+          id: l?.['@id'],
           label: (
             <Space size={'large'}>
               <Space>en:{l?.['@name'] ?? '-'}</Space>
               <Space>zh:{l?.['@nameZH'] ?? '-'}</Space>
             </Space>
           ),
-          value: l['@name'],
+          value: l?.['@name'],
           children: l.category ?? [],
         })) ?? [];
       setL0(category0);
 
       const filteredData1 = category0?.find(
-        (l: any) => l.value === formRef.current?.getFieldValue([...name, '@level_0']),
+        (l: any) => l?.value === formRef.current?.getFieldValue([...name, '@level_0']),
       );
+      formRef.current?.setFieldValue([...name, '@catId_0'], filteredData1?.id ?? null);
       setCategoryData1(filteredData1?.children);
       const category1 =
         filteredData1?.children?.map((l: any) => ({
+          id: l?.['@id'],
           label: (
             <Space size={'large'}>
               <Space>en:{l?.['@name'] ?? '-'}</Space>
@@ -110,9 +116,11 @@ const LevelTextItemFrom: FC<Props> = ({ name, dataType, flowType, formRef, onDat
       const filteredData2 = category1.find(
         (l: any) => l.value === formRef.current?.getFieldValue([...name, '@level_1']),
       );
+      formRef.current?.setFieldValue([...name, '@catId_1'], filteredData2?.id ?? null);
       setCategoryData2(filteredData2?.children);
       const category2 =
         filteredData2?.children?.map((l: any) => ({
+          id: l?.['@id'],
           label: (
             <Space size={'large'}>
               <Space>en:{l?.['@name'] ?? '-'}</Space>
@@ -123,6 +131,12 @@ const LevelTextItemFrom: FC<Props> = ({ name, dataType, flowType, formRef, onDat
           children: l.category ?? [],
         })) ?? [];
       setL2(category2);
+
+      const filteredData3 = category2.find(
+        (l: any) => l.value === formRef.current?.getFieldValue([...name, '@level_2']),
+      );
+      formRef.current?.setFieldValue([...name, '@catId_2'], filteredData3?.id ?? null);
+      onData();
     };
 
     fetchClassification(dataType, flowType);

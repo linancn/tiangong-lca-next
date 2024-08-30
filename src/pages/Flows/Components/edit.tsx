@@ -262,7 +262,7 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
             <Select options={flowTypeOptions} />
           </Form.Item>
         </Card> */}
-        <Card
+        {/* <Card
           size="small"
           title={
             <FormattedMessage
@@ -270,42 +270,42 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
               defaultMessage="Compliance Declarations"
             />
           }
+        > */}
+        <SourceSelectFrom
+          lang={lang}
+          formRef={formRefEdit}
+          label={
+            <FormattedMessage
+              id="pages.flow.view.modellingAndValidation.referenceToComplianceSystem"
+              defaultMessage="Reference To Compliance System"
+            />
+          }
+          name={[
+            'modellingAndValidation',
+            'complianceDeclarations',
+            'compliance',
+            'common:referenceToComplianceSystem',
+          ]}
+          onData={handletFromData}
+        />
+        <br />
+        <Form.Item
+          label={
+            <FormattedMessage
+              id="pages.flow.view.modellingAndValidation.approvalOfOverallCompliance"
+              defaultMessage="Approval Of Overall Compliance"
+            />
+          }
+          name={[
+            'modellingAndValidation',
+            'complianceDeclarations',
+            'compliance',
+            'common:approvalOfOverallCompliance',
+          ]}
         >
-          <SourceSelectFrom
-            lang={lang}
-            formRef={formRefEdit}
-            label={
-              <FormattedMessage
-                id="pages.flow.view.modellingAndValidation.referenceToComplianceSystem"
-                defaultMessage="Reference To Compliance System"
-              />
-            }
-            name={[
-              'modellingAndValidation',
-              'complianceDeclarations',
-              'compliance',
-              'common:referenceToComplianceSystem',
-            ]}
-            onData={handletFromData}
-          />
-          <br />
-          <Form.Item
-            label={
-              <FormattedMessage
-                id="pages.flow.view.modellingAndValidation.approvalOfOverallCompliance"
-                defaultMessage="Approval Of Overall Compliance"
-              />
-            }
-            name={[
-              'modellingAndValidation',
-              'complianceDeclarations',
-              'compliance',
-              'common:approvalOfOverallCompliance',
-            ]}
-          >
-            <Select options={complianceOptions} />
-          </Form.Item>
-        </Card>
+          <Select options={complianceOptions} />
+        </Form.Item>
+        {/* </Card> */}
       </Space>
     ),
     administrativeInformation: (
