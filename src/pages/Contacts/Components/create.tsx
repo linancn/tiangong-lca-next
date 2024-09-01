@@ -238,6 +238,16 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
                 'publicationAndOwnership',
                 'common:dataSetVersion',
               ]}
+              rules={[
+                { required: true, message: 'Please input the Data Set Version!' },
+                {
+                  validator: async (_, value) => {
+                    if (!/^\d{2}\.\d{2}\.\d{3}$/.test(value)) {
+                      return Promise.reject(new Error('The format must be XX.XX.XXX, where X is a digit!'));
+                    }
+                  }
+                }
+              ]}
             >
               <Input />
             </Form.Item>
@@ -289,6 +299,9 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
       administrativeInformation: {
         dataEntryBy: {
           'common:timeStamp': currentDateTime,
+        },
+        publicationAndOwnership: {
+          'common:dataSetVersion': '01.00.000',
         },
       },
     };
