@@ -299,8 +299,8 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
           <ContactSelectFrom
             label={
               <FormattedMessage
-                id="pages.contact.referenceToOwnershipOfDataSet"
-                defaultMessage="Reference To Contact"
+                id="pages.source.create.administrativeInformation.referenceToOwnershipOfDataSet"
+                defaultMessage="Owner of data set"
               />
             }
             name={[

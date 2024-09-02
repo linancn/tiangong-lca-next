@@ -245,8 +245,8 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
             lang={lang}
             title={
               <FormattedMessage
-                id="pages.contact.referenceToOwnershipOfDataSet"
-                defaultMessage="Reference To Ownership Of DataSet"
+                id="pages.source.view.administrativeInformation.referenceToOwnershipOfDataSet"
+                defaultMessage="Owner of data set"
               />
             }
           ></ContactSelectDescription>

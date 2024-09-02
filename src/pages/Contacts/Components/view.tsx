@@ -133,7 +133,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
         <br />
         <Divider orientationMargin="0" orientation="left" plain>
           <FormattedMessage
-            id="pages.contact.centralContactPoints"
+            id="pages.contact.centralContactPoint"
             defaultMessage="Central Contact Point"
           />
         </Divider>
@@ -143,7 +143,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
         <br />
         <Divider orientationMargin="0" orientation="left" plain>
           <FormattedMessage
-            id="pages.contact.contactdescriptionOrComment"
+            id="pages.contact.contactDescriptionOrComment"
             defaultMessage="Contact description Or Comment"
           />
         </Divider>

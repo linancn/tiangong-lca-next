@@ -318,8 +318,8 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerV
           <ContactSelectFrom
             label={
               <FormattedMessage
-                id="pages.contact.referenceToOwnershipOfDataSet"
-                defaultMessage="Reference To Contact"
+                id="pages.source.edit.administrativeInformation.referenceToOwnershipOfDataSet"
+                defaultMessage="Owner of data set"
               />
             }
             name={[
