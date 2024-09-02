@@ -29,6 +29,8 @@ export default {
   'pages.button.model.exchange': 'Exchange Relation',
   'pages.button.model.delete': 'Delete Element',
   'pages.button.model.design': 'Design Appearance',
+  'pages.button.item.add': 'Add',
+  'pages.button.item.label': 'Item',
 
   'pages.tab.title.mydata': 'My Data',
   'pages.tab.title.tgdata': 'TianGong Data',

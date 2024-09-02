@@ -29,6 +29,8 @@ export default {
   'pages.button.model.exchange': '交换关系',
   'pages.button.model.delete': '删除元素',
   'pages.button.model.design': '外观设计',
+  'pages.button.item.add': '添加',
+  'pages.button.item.label': '项目',
 
   'pages.tab.title.mydata': '我的数据',
   'pages.tab.title.tgdata': '天工数据',

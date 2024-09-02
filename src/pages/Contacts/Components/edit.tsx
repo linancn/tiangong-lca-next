@@ -42,10 +42,11 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
   }, [setViewDrawerVisible]);
 
   const handletFromData = () => {
-    setFromData({
-      ...fromData,
-      [activeTabKey]: formRefEdit.current?.getFieldsValue()?.[activeTabKey] ?? {},
-    });
+    if (fromData?.id)
+      setFromData({
+        ...fromData,
+        [activeTabKey]: formRefEdit.current?.getFieldsValue()?.[activeTabKey] ?? {},
+      });
   };
 
   const onTabChange = (key: string) => {
@@ -62,6 +63,7 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
         ...contactFromData,
         id: id,
       });
+      console.log('contactFromData', contactFromData);
       setFromData({ ...contactFromData, id: id });
       setSpinning(false);
     });
