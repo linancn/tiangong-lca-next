@@ -24,6 +24,8 @@ export default {
   'pages.source.view.administrativeInformation.publicationAndOwnership': '出版和所有权',
   'pages.source.view.administrativeInformation.dataSetVersion': '数据集版本',
   'pages.source.view.administrativeInformation.permanentDataSetURI': '永久数据集URI',
+  'pages.source.view.administrativeInformation.referenceToOwnershipOfDataSet': '数据集所有权的引用',
+
   //source.edit 编辑
   'pages.source.edit.sourceInformation': '数据源信息',
   'pages.source.edit.sourceInformation.shortName': '简称',
@@ -40,6 +42,7 @@ export default {
   'pages.source.edit.administrativeInformation.publicationAndOwnership': '出版和所有权',
   'pages.source.edit.administrativeInformation.dataSetVersion': '数据集版本',
   'pages.source.edit.administrativeInformation.permanentDataSetURI': '永久数据集URI',
+  'pages.source.edit.administrativeInformation.referenceToOwnershipOfDataSet': '数据集所有权的引用',
   //source.delete 删除
   'pages.button.deleteMessage.Are you sure you want to delete this data': '您确认要删除此数据吗？',
   //source.create 创建
@@ -58,4 +61,5 @@ export default {
   'pages.source.create.administrativeInformation.publicationAndOwnership': '出版和所有权',
   'pages.source.create.administrativeInformation.dataSetVersion': '数据集版本',
   'pages.source.create.administrativeInformation.permanentDataSetURI': '永久数据集URI',
+  'pages.source.create.administrativeInformation.referenceToOwnershipOfDataSet': '数据集所有权的引用',
 };
