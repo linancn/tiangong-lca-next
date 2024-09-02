@@ -61,5 +61,6 @@ export default {
   'pages.source.create.administrativeInformation.publicationAndOwnership': '出版和所有权',
   'pages.source.create.administrativeInformation.dataSetVersion': '数据集版本',
   'pages.source.create.administrativeInformation.permanentDataSetURI': '永久数据集URI',
-  'pages.source.create.administrativeInformation.referenceToOwnershipOfDataSet': '数据集所有权的引用',
+  'pages.source.create.administrativeInformation.referenceToOwnershipOfDataSet':
+    '数据集所有权的引用',
 };

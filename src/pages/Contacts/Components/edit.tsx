@@ -156,7 +156,12 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
               activeTabKey={activeTabKey}
               onTabChange={onTabChange}
             >
-              <ContactFrom lang={lang} activeTabKey={activeTabKey} formRef={formRefEdit} onData={handletFromData} />
+              <ContactFrom
+                lang={lang}
+                activeTabKey={activeTabKey}
+                formRef={formRefEdit}
+                onData={handletFromData}
+              />
             </Card>
             <Form.Item name="id" hidden>
               <Input />

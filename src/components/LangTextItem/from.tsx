@@ -45,7 +45,8 @@ const LangTextItemFrom: FC<Props> = ({ name, label }) => {
               </Row>
             ))}
             <Button type="dashed" onClick={() => subOpt.add()} block>
-              + <FormattedMessage id="pages.button.item.add" defaultMessage="Add" /> {label} <FormattedMessage id="pages.button.item.label" defaultMessage="Item" />
+              + <FormattedMessage id="pages.button.item.add" defaultMessage="Add" /> {label}{' '}
+              <FormattedMessage id="pages.button.item.label" defaultMessage="Item" />
             </Button>
           </div>
         )}
