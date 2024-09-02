@@ -2,6 +2,7 @@ import { langOptions } from '@/services/general/data';
 import { CloseOutlined } from '@ant-design/icons';
 import { Button, Col, Form, Input, Row, Select } from 'antd';
 import { FC, ReactNode } from 'react';
+import { FormattedMessage } from 'umi';
 
 const { TextArea } = Input;
 
@@ -44,7 +45,7 @@ const LangTextItemFrom: FC<Props> = ({ name, label }) => {
               </Row>
             ))}
             <Button type="dashed" onClick={() => subOpt.add()} block>
-              + 添加 {label} 项目
+              + <FormattedMessage id="pages.button.item.add" defaultMessage="Add" /> {label} <FormattedMessage id="pages.button.item.label" defaultMessage="Item" />
             </Button>
           </div>
         )}

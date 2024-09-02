@@ -18,6 +18,7 @@ import {
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
+import { v4 } from 'uuid';
 import { ContactFrom, tabList } from './from';
 type Props = {
   lang: string;
@@ -31,10 +32,11 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
   const [activeTabKey, setActiveTabKey] = useState<string>('contactInformation');
 
   const handletFromData = () => {
-    setFromData({
-      ...fromData,
-      [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
-    });
+    if (fromData?.id)
+      setFromData({
+        ...fromData,
+        [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
+      });
   };
 
   const onTabChange = (key: string) => {
@@ -58,18 +60,19 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
         },
       },
     };
-    setInitData(newData);
+    const newId = v4();
+    setInitData({ ...newData, id: newId });
     formRefCreate.current?.resetFields();
     formRefCreate.current?.setFieldsValue(newData);
-    setFromData(newData);
+    setFromData({ ...newData, id: newId });
   }, [drawerVisible]);
 
-  useEffect(() => {
-    setFromData({
-      ...fromData,
-      [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
-    });
-  }, [formRefCreate.current?.getFieldsValue()]);
+  // useEffect(() => {
+  //   setFromData({
+  //     ...fromData,
+  //     [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
+  //   });
+  // }, [formRefCreate.current?.getFieldsValue()]);
 
   return (
     <>
