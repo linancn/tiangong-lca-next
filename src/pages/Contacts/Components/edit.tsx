@@ -7,7 +7,6 @@ import type { ProFormInstance } from '@ant-design/pro-form';
 import type { ActionType } from '@ant-design/pro-table';
 import {
   Button,
-  Card,
   Collapse,
   Drawer,
   Form,
@@ -16,12 +15,12 @@ import {
   Spin,
   Tooltip,
   Typography,
-  message,
+  message
 } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import { ContactFrom, tabList } from './from';
+import { ContactFrom } from './from';
 type Props = {
   id: string;
   buttonType: string;
@@ -148,21 +147,13 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
               return true;
             }}
           >
-            <Card
-              style={{ width: '100%' }}
-              // title="Card title"
-              // extra={<a href="#">More</a>}
-              tabList={tabList}
+            <ContactFrom
+              lang={lang}
               activeTabKey={activeTabKey}
+              formRef={formRefEdit}
+              onData={handletFromData}
               onTabChange={onTabChange}
-            >
-              <ContactFrom
-                lang={lang}
-                activeTabKey={activeTabKey}
-                formRef={formRefEdit}
-                onData={handletFromData}
-              />
-            </Card>
+            />
             <Form.Item name="id" hidden>
               <Input />
             </Form.Item>

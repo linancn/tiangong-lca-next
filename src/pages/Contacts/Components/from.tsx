@@ -33,9 +33,10 @@ type Props = {
   activeTabKey: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;
+  onTabChange: (key: string) => void;
 };
 
-export const ContactFrom: FC<Props> = ({ lang, activeTabKey, formRef, onData }) => {
+export const ContactFrom: FC<Props> = ({ lang, activeTabKey, formRef, onData, onTabChange }) => {
   const tabContent: { [key: string]: JSX.Element } = {
     contactInformation: (
       <>
@@ -275,5 +276,12 @@ export const ContactFrom: FC<Props> = ({ lang, activeTabKey, formRef, onData }) 
     ),
   };
 
-  return <>{tabContent[activeTabKey]}</>;
+  return <Card
+    style={{ width: '100%' }}
+    tabList={tabList}
+    activeTabKey={activeTabKey}
+    onTabChange={onTabChange}
+  >
+    {tabContent[activeTabKey]}
+  </Card>;
 };
