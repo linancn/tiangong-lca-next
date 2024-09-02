@@ -2,7 +2,12 @@ import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/lib/table/interface';
 import { v4 } from 'uuid';
-import { classificationToString, getLangText, jsonToList } from '../general/util';
+import {
+  classificationToString,
+  genClassificationZH,
+  getLangText,
+  jsonToList,
+} from '../general/util';
 import { getILCDFlowCategorizationAllZH } from '../ilcd/api';
 import { genFlowJsonOrdered } from './util';
 
@@ -114,66 +119,25 @@ export async function getFlowTableAll(
         data = result.data.map((i: any) => {
           try {
             let thisCategory: any[] = [];
-            if (i.typeOfDataSet === 'Elementary flow') {
+            if (i?.typeOfDataSet === 'Elementary flow') {
               thisCategory = res?.data?.categoryElementaryFlow;
             } else {
               thisCategory = res?.data?.category;
             }
 
-            let classificationZH: any[] = [];
-            const classifications = jsonToList(i['common:category']);
-            const filterList0 = classifications.find((i: any) => i?.['@level'].toString() === '0');
-            if (filterList0) {
-              const filterList0_zh = thisCategory?.find(
-                (i: any) => i?.['@name'].toString() === filterList0?.['#text'],
-              );
-              classificationZH = [
-                {
-                  '@level': '0',
-                  '#text': filterList0_zh?.['@nameZH'] ?? filterList0?.['#text'],
-                },
-              ];
-              const filterList1 = classifications.find(
-                (i: any) => i?.['@level'].toString() === '1',
-              );
-              if (filterList1) {
-                const filterList1_zh = filterList0_zh?.category?.find(
-                  (i: any) => i?.['@name'].toString() === filterList1?.['#text'],
-                );
-                classificationZH = [
-                  ...classificationZH,
-                  {
-                    '@level': '1',
-                    '#text': filterList1_zh?.['@nameZH'] ?? filterList1?.['#text'],
-                  },
-                ];
-                const filterList2 = classifications.find(
-                  (i: any) => i?.['@level'].toString() === '2',
-                );
-                if (filterList2) {
-                  const filterList2_zh = filterList1_zh?.category?.find(
-                    (i: any) => i?.['@name'].toString() === filterList2?.['#text'],
-                  );
-                  classificationZH = [
-                    ...classificationZH,
-                    {
-                      '@level': '2',
-                      '#text': filterList2_zh?.['@nameZH'] ?? filterList2?.['#text'],
-                    },
-                  ];
-                }
-              }
-            }
+            const classifications = jsonToList(i?.['common:category']);
+            const classificationZH = genClassificationZH(classifications, thisCategory);
+
             return {
               key: i.id,
               id: i.id,
-              baseName: getLangText(i.baseName, lang),
-              flowType: i.typeOfDataSet ?? '-',
+              baseName: getLangText(i?.baseName, lang),
+              flowType: i?.typeOfDataSet ?? '-',
               classification: classificationToString(classificationZH),
-              generalComment: getLangText(i['common:generalComment'], lang),
-              CASNumber: i.CASNumber ?? '-',
-              refFlowPropertyId: i.referenceToFlowPropertyDataSet?.['@refObjectId'] ?? '-',
-              created_at: new Date(i.created_at),
+              generalComment: getLangText(i?.['common:generalComment'], lang),
+              CASNumber: i?.CASNumber ?? '-',
+              refFlowPropertyId: i?.referenceToFlowPropertyDataSet?.['@refObjectId'] ?? '-',
+              created_at: new Date(i?.created_at),
             };
           } catch (e) {
             console.error(e);
@@ -253,28 +217,65 @@ export async function getFlowTablePgroongaSearch(
       });
     }
     const totalCount = result.data[0].total_count;
-    return Promise.resolve({
-      data: result.data.map((i: any) => {
+
+    let data: any[] = [];
+
+    if (lang === 'zh') {
+      await getILCDFlowCategorizationAllZH().then((res) => {
+        data = result.data.map((i: any) => {
+          try {
+            const dataInfo = i.json?.flowDataSet?.flowInformation?.dataSetInformation;
+
+            let thisCategory: any[] = [];
+            if (
+              i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet ===
+              'Elementary flow'
+            ) {
+              thisCategory = res?.data?.categoryElementaryFlow;
+            } else {
+              thisCategory = res?.data?.category;
+            }
+
+            const classifications = jsonToList(
+              dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[
+                'common:category'
+              ],
+            );
+            const classificationZH = genClassificationZH(classifications, thisCategory);
+
+            return {
+              key: i.id,
+              id: i.id,
+              baseName: getLangText(dataInfo?.name?.baseName ?? {}, lang),
+              generalComment: getLangText(dataInfo?.['common:generalComment'] ?? {}, lang),
+              classification: classificationToString(classificationZH),
+              CASNumber: dataInfo?.CASNumber ?? '-',
+              created_at: new Date(i?.created_at),
+            };
+          } catch (e) {
+            console.error(e);
+            return {
+              id: i.id,
+            };
+          }
+        });
+      });
+    } else {
+      data = result.data.map((i: any) => {
         try {
+          const dataInfo = i.json?.flowDataSet?.flowInformation?.dataSetInformation;
           return {
             key: i.id,
             id: i.id,
-            baseName: getLangText(
-              i.json?.flowDataSet?.flowInformation?.dataSetInformation?.name?.baseName ?? {},
-              lang,
-            ),
-            generalComment: getLangText(
-              i.json?.flowDataSet?.flowInformation?.dataSetInformation?.['common:generalComment'] ??
-                {},
-              lang,
-            ),
+            baseName: getLangText(dataInfo?.name?.baseName ?? {}, lang),
+            generalComment: getLangText(dataInfo?.['common:generalComment'] ?? {}, lang),
             classification: classificationToString(
-              i.json?.flowDataSet?.flowInformation?.dataSetInformation?.classificationInformation?.[
-                'common:elementaryFlowCategorization'
-              ]?.['common:category'] ?? {},
+              dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[
+                'common:category'
+              ],
             ),
-            CASNumber: i.json?.flowDataSet?.flowInformation?.dataSetInformation?.CASNumber ?? '-',
-            created_at: new Date(i.created_at),
+            CASNumber: dataInfo?.CASNumber ?? '-',
+            created_at: new Date(i?.created_at),
           };
         } catch (e) {
           console.error(e);
@@ -282,7 +283,11 @@ export async function getFlowTablePgroongaSearch(
             id: i.id,
           };
         }
-      }),
+      });
+    }
+
+    return Promise.resolve({
+      data: data,
       page: params.current ?? 1,
       success: true,
       total: totalCount ?? 0,

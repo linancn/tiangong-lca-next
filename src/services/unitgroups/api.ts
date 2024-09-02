@@ -1,7 +1,12 @@
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
 import { v4 } from 'uuid';
-import { classificationToString, getLangText, jsonToList } from '../general/util';
+import {
+  classificationToString,
+  genClassificationZH,
+  getLangText,
+  jsonToList,
+} from '../general/util';
 import { getILCDClassificationZH } from '../ilcd/api';
 import { genUnitGroupJsonOrdered } from './util';
 
@@ -116,59 +121,18 @@ export async function getUnitGroupTableAll(
               (item) => item?.['@dataSetInternalID'] === i?.referenceToReferenceUnit,
             );
 
-            let classificationZH: any[] = [];
-            const classifications = jsonToList(i['common:class']);
-            const filterList0 = classifications.find((i: any) => i?.['@level'].toString() === '0');
-            if (filterList0) {
-              const filterList0_zh = res?.data?.category?.find(
-                (i: any) => i?.['@name'].toString() === filterList0?.['#text'],
-              );
-              classificationZH = [
-                {
-                  '@level': '0',
-                  '#text': filterList0_zh?.['@nameZH'] ?? filterList0?.['#text'],
-                },
-              ];
-              const filterList1 = classifications.find(
-                (i: any) => i?.['@level'].toString() === '1',
-              );
-              if (filterList1) {
-                const filterList1_zh = filterList0_zh?.category?.find(
-                  (i: any) => i?.['@name'].toString() === filterList1?.['#text'],
-                );
-                classificationZH = [
-                  ...classificationZH,
-                  {
-                    '@level': '1',
-                    '#text': filterList1_zh?.['@nameZH'] ?? filterList1?.['#text'],
-                  },
-                ];
-                const filterList2 = classifications.find(
-                  (i: any) => i?.['@level'].toString() === '2',
-                );
-                if (filterList2) {
-                  const filterList2_zh = filterList1_zh?.category?.find(
-                    (i: any) => i?.['@name'].toString() === filterList2?.['#text'],
-                  );
-                  classificationZH = [
-                    ...classificationZH,
-                    {
-                      '@level': '2',
-                      '#text': filterList2_zh?.['@nameZH'] ?? filterList2?.['#text'],
-                    },
-                  ];
-                }
-              }
-            }
+            const classifications = jsonToList(i?.['common:class']);
+            const classificationZH = genClassificationZH(classifications, res?.data?.category);
+
             return {
               key: i.id,
               id: i.id,
-              name: getLangText(i['common:name'], lang),
+              name: getLangText(i?.['common:name'], lang),
               classification: classificationToString(classificationZH),
               refUnitId: i?.referenceToReferenceUnit ?? '-',
               refUnitName: refUnit?.name ?? '-',
               refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
-              createdAt: new Date(i.created_at),
+              createdAt: new Date(i?.created_at),
             };
           } catch (e) {
             console.error(e);
@@ -188,12 +152,12 @@ export async function getUnitGroupTableAll(
           return {
             key: i.id,
             id: i.id,
-            name: getLangText(i['common:name'], lang),
-            classification: classificationToString(i['common:class']),
+            name: getLangText(i?.['common:name'], lang),
+            classification: classificationToString(i?.['common:class']),
             refUnitId: i?.referenceToReferenceUnit ?? '-',
             refUnitName: refUnit?.name ?? '-',
             refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
-            createdAt: new Date(i.created_at),
+            createdAt: new Date(i?.created_at),
           };
         } catch (e) {
           console.error(e);
@@ -251,30 +215,65 @@ export async function getUnitGroupTablePgroongaSearch(
       });
     }
     const totalCount = result.data[0].total_count;
-    return Promise.resolve({
-      data: result.data.map((i: any) => {
+
+    let data: any[] = [];
+    if (lang === 'zh') {
+      await getILCDClassificationZH('UnitGroup').then((res) => {
+        data = result.data.map((i: any) => {
+          try {
+            const dataInfo = i.json?.unitGroupDataSet?.unitGroupInformation;
+            const refUnitId = dataInfo?.quantitativeReference?.referenceToReferenceUnit ?? '-';
+            const unitList = jsonToList(i.json?.unitGroupDataSet?.units?.unit);
+            const refUnit = unitList.find((item) => item?.['@dataSetInternalID'] === refUnitId);
+
+            const classifications = jsonToList(
+              dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
+                'common:class'
+              ],
+            );
+
+            const classificationZH = genClassificationZH(classifications, res?.data?.category);
+
+            return {
+              key: i.id,
+              id: i.id,
+              name: getLangText(dataInfo?.dataSetInformation?.['common:name'] ?? {}, lang),
+              classification: classificationToString(classificationZH),
+              refUnitId: refUnitId,
+              refUnitName: refUnit?.name ?? '-',
+              refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
+              createdAt: new Date(i?.created_at),
+            };
+          } catch (e) {
+            console.error(e);
+            return {
+              id: i.id,
+            };
+          }
+        });
+      });
+    } else {
+      data = result.data.map((i: any) => {
         try {
-          const refUnitId =
-            i.json?.unitGroupDataSet?.unitGroupInformation?.quantitativeReference
-              ?.referenceToReferenceUnit ?? '-';
+          const dataInfo = i.json?.unitGroupDataSet?.unitGroupInformation;
+
+          const refUnitId = dataInfo?.quantitativeReference?.referenceToReferenceUnit ?? '-';
           const unitList = jsonToList(i.json?.unitGroupDataSet?.units?.unit);
           const refUnit = unitList.find((item) => item?.['@dataSetInternalID'] === refUnitId);
+
           return {
             key: i.id,
             id: i.id,
-            name: getLangText(
-              i.json?.unitGroupDataSet?.unitGroupInformation?.dataSetInformation?.['common:name'] ??
-                {},
-              lang,
-            ),
+            name: getLangText(dataInfo?.dataSetInformation?.['common:name'] ?? {}, lang),
             classification: classificationToString(
-              i.json?.unitGroupDataSet?.unitGroupInformation?.dataSetInformation
-                ?.classificationInformation?.['common:classification']?.['common:class'] ?? {},
+              dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
+                'common:class'
+              ],
             ),
             refUnitId: refUnitId,
             refUnitName: refUnit?.name ?? '-',
             refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
-            createdAt: new Date(i.created_at),
+            createdAt: new Date(i?.created_at),
           };
         } catch (e) {
           console.error(e);
@@ -282,7 +281,11 @@ export async function getUnitGroupTablePgroongaSearch(
             id: i.id,
           };
         }
-      }),
+      });
+    }
+
+    return Promise.resolve({
+      data: data,
       page: params.current ?? 1,
       success: true,
       total: totalCount ?? 0,

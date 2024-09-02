@@ -169,6 +169,47 @@ export function classificationToList(classifications: any) {
   return removeEmptyObjects(common_class);
 }
 
+export function genClassificationZH(classifications: any, categoryData: any) {
+  let classificationZH: any[] = [];
+  const filterList0 = classifications.find((i: any) => i?.['@level'] === '0');
+  if (filterList0) {
+    const filterList0_zh = categoryData?.find((i: any) => i?.['@name'] === filterList0?.['#text']);
+    classificationZH = [
+      {
+        '@level': '0',
+        '#text': filterList0_zh?.['@nameZH'] ?? filterList0?.['#text'],
+      },
+    ];
+    const filterList1 = classifications.find((ii: any) => ii?.['@level'] === '1');
+    if (filterList1) {
+      const filterList1_zh = filterList0_zh?.category?.find(
+        (ii: any) => ii?.['@name'] === filterList1?.['#text'],
+      );
+      classificationZH = [
+        ...classificationZH,
+        {
+          '@level': '1',
+          '#text': filterList1_zh?.['@nameZH'] ?? filterList1?.['#text'],
+        },
+      ];
+      const filterList2 = classifications.find((ii: any) => ii?.['@level'] === '2');
+      if (filterList2) {
+        const filterList2_zh = filterList1_zh?.category?.find(
+          (ii: any) => ii?.['@name'] === filterList2?.['#text'],
+        );
+        classificationZH = [
+          ...classificationZH,
+          {
+            '@level': '2',
+            '#text': filterList2_zh?.['@nameZH'] ?? filterList2?.['#text'],
+          },
+        ];
+      }
+    }
+  }
+  return classificationZH;
+}
+
 export function isValidURL(url: string): boolean {
   if (!url || url === '') {
     return false;
