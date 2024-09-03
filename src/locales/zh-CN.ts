@@ -13,6 +13,7 @@ import pages_unitgroup from './zh-CN/pages_unitgroup';
 import pwa from './zh-CN/pwa';
 import settingDrawer from './zh-CN/settingDrawer';
 import settings from './zh-CN/settings';
+import validator from './zh-CN/validator';
 
 export default {
   'navBar.lang': '语言',
@@ -37,4 +38,5 @@ export default {
   ...pages_flow,
   ...pages_source,
   ...pages_product,
+  ...validator,
 };
