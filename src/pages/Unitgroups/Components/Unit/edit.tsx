@@ -1,4 +1,4 @@
-import LangTextItemFrom from '@/components/LangTextItem/from';
+import LangTextItemForm from '@/components/LangTextItem/form';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
@@ -147,7 +147,7 @@ const UnitEdit: FC<Props> = ({ id, data, buttonType, actionRef, setViewDrawerVis
                 />
               }
             >
-              <LangTextItemFrom
+              <LangTextItemForm
                 name={'generalComment'}
                 label={
                   <FormattedMessage

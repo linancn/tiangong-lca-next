@@ -1,12 +1,12 @@
-import UnitGroupFromMini from '@/pages/Unitgroups/Components/select/fromMini';
-import { getFlowDetail } from '@/services/flows/api';
-import { genFlowFromData } from '@/services/flows/util';
+import { getContactDetail } from '@/services/contacts/api';
+import { genContactFromData } from '@/services/contacts/util';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Divider, Form, Input, Row, Space } from 'antd';
 import React, { FC, ReactNode, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import FlowsView from '../view';
-import FlowsSelectDrawer from './drawer';
+import ContactView from '../view';
+import ContactSelectDrawer from './drawer';
+
 const { TextArea } = Input;
 
 type Props = {
@@ -14,52 +14,59 @@ type Props = {
   label: ReactNode | string;
   lang: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
-  drawerVisible: boolean;
   onData: () => void;
 };
 
-const FlowsSelectFrom: FC<Props> = ({ name, label, lang, formRef, drawerVisible, onData }) => {
+const ContactSelectForm: FC<Props> = ({ name, label, lang, formRef, onData }) => {
   const [id, setId] = useState<string | undefined>(undefined);
 
-  const handletFlowsData = (rowKey: any) => {
-    getFlowDetail(rowKey).then(async (result: any) => {
-      const selectedData = genFlowFromData(result.data?.json?.flowDataSet ?? {});
+  const handletContactData = (rowKey: any) => {
+    getContactDetail(rowKey).then(async (result: any) => {
+      const selectedData = genContactFromData(result.data?.json?.contactDataSet ?? {});
       await formRef.current?.setFieldValue(name, {
         '@refObjectId': `${rowKey}`,
-        '@type': 'flow data set',
-        '@uri': `../flows/${rowKey}.xml`,
+        '@type': 'contact data set',
+        '@uri': `../contacts/${rowKey}.xml`,
         'common:shortDescription':
-          selectedData?.flowInformation?.dataSetInformation?.name?.baseName ?? [],
+          selectedData?.contactInformation?.dataSetInformation?.['common:shortName']?.map(
+            (item: any) => {
+              return {
+                ...item,
+                '#text': `${item['#text']}, ${
+                  selectedData?.contactInformation?.dataSetInformation?.email ?? ''
+                }`,
+              };
+            },
+          ) ?? [],
+        '@version':
+          result.data.json?.contactDataSet?.administrativeInformation?.publicationAndOwnership?.[
+            'common:dataSetVersion'
+          ],
       });
       onData();
     });
   };
 
+  // const actionRef = React.useRef<ActionType | undefined>(undefined);
+
+  // const id = formRef.current?.getFieldValue([...name, '@refObjectId']);
+
   useEffect(() => {
-    if (drawerVisible) {
-      if (formRef.current?.getFieldValue([...name, '@refObjectId'])) {
-        setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
-      }
-    }
+    setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
   });
 
   return (
     <Card size="small" title={label}>
       <Space direction="horizontal">
         <Form.Item
-          label={
-            <FormattedMessage
-              id="pages.process.view.exchange.refObjectId"
-              defaultMessage="Ref Object Id"
-            />
-          }
+          label={<FormattedMessage id="pages.contact.refObjectId" defaultMessage="Ref Object Id" />}
           name={[...name, '@refObjectId']}
         >
           <Input disabled={true} style={{ width: '350px', color: '#000' }} />
         </Form.Item>
         <Space direction="horizontal" style={{ marginTop: '6px' }}>
-          <FlowsSelectDrawer buttonType="text" lang={lang} onData={handletFlowsData} />
-          {id && <FlowsView lang={lang} id={id} buttonType="text" />}
+          <ContactSelectDrawer buttonType="text" lang={lang} onData={handletContactData} />
+          {id && <ContactView lang={lang} id={id} buttonType="text" />}
           {id && (
             <Button
               onClick={() => {
@@ -73,22 +80,25 @@ const FlowsSelectFrom: FC<Props> = ({ name, label, lang, formRef, drawerVisible,
         </Space>
       </Space>
       <Form.Item
-        label={<FormattedMessage id="pages.process.view.exchange.type" defaultMessage="Type" />}
+        label={<FormattedMessage id="pages.contact.type" defaultMessage="Type" />}
         name={[...name, '@type']}
       >
         <Input disabled={true} style={{ color: '#000' }} />
       </Form.Item>
       <Form.Item
-        label={<FormattedMessage id="pages.process.view.exchange.uri" defaultMessage="URI" />}
+        label={<FormattedMessage id="pages.contact.uri" defaultMessage="URI" />}
         name={[...name, '@uri']}
       >
         <Input disabled={true} style={{ color: '#000' }} />
       </Form.Item>
+      <Form.Item
+        label={<FormattedMessage id="pages.contact.version" defaultMessage="Version" />}
+        name={[...name, '@version']}
+      >
+        <Input disabled={true} style={{ color: '#000' }} />
+      </Form.Item>
       <Divider orientationMargin="0" orientation="left" plain>
-        <FormattedMessage
-          id="pages.process.view.exchange.shortDescription"
-          defaultMessage="Short Description"
-        />
+        <FormattedMessage id="pages.contact.shortDescription" defaultMessage="Short Description" />
       </Divider>
       <Form.Item>
         <Form.List name={[...name, 'common:shortDescription']}>
@@ -118,16 +128,8 @@ const FlowsSelectFrom: FC<Props> = ({ name, label, lang, formRef, drawerVisible,
           )}
         </Form.List>
       </Form.Item>
-
-      <UnitGroupFromMini
-        id={id}
-        idType={'flow'}
-        name={name}
-        formRef={formRef}
-        drawerVisible={drawerVisible}
-      />
     </Card>
   );
 };
 
-export default FlowsSelectFrom;
+export default ContactSelectForm;

@@ -225,7 +225,8 @@ export function genFlowFromData(data: any) {
       },
       publicationAndOwnership: {
         'common:dataSetVersion':
-          data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'],
+          data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'] ??
+          '01.00.000',
         'common:permanentDataSetURI':
           data?.administrativeInformation?.publicationAndOwnership?.['common:permanentDataSetURI'],
       },

@@ -1,39 +1,19 @@
-import { UploadButton } from '@/components/FileViewer/upload';
-import LangTextItemFrom from '@/components/LangTextItem/from';
-import LevelTextItemFrom from '@/components/LevelTextItem/from';
-import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
 import { formatDateTime } from '@/services/general/util';
 import { createSource } from '@/services/sources/api';
-import { publicationTypeOptions } from '@/services/sources/data';
 import { supabaseStorageBucket } from '@/services/supabase/key';
-import { FileType, getBase64, removeFile, uploadFile } from '@/services/supabase/storage';
+import { removeFile, uploadFile } from '@/services/supabase/storage';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import ProForm from '@ant-design/pro-form';
 import type { ActionType } from '@ant-design/pro-table';
-import {
-  Button,
-  Card,
-  Collapse,
-  Drawer,
-  Form,
-  Image,
-  Input,
-  Select,
-  Space,
-  Tooltip,
-  Typography,
-  Upload,
-  UploadFile,
-  message,
-} from 'antd';
+import { Button, Collapse, Drawer, Space, Tooltip, Typography, message } from 'antd';
 import path from 'path';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { v4 } from 'uuid';
-import SourceSelectFrom from './select/from';
+import { SourceForm } from './form';
 
 type Props = {
   actionRef: React.MutableRefObject<ActionType | undefined>;
@@ -48,288 +28,14 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
   const [activeTabKey, setActiveTabKey] = useState<string>('sourceInformation');
   const [fileList0, setFileList0] = useState<any[]>([]);
   const [fileList, setFileList] = useState<any[]>([]);
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewImage, setPreviewImage] = useState('');
   const [loadFiles, setLoadFiles] = useState<any[]>([]);
 
-  const handlePreview = async (file: UploadFile) => {
-    if (!file.url && !file.preview) {
-      file.preview = await getBase64(file.originFileObj as FileType);
-    }
-
-    setPreviewImage(file.url || (file.preview as string));
-    setPreviewOpen(true);
-  };
-
   const handletFromData = () => {
-    setFromData({
-      ...fromData,
-      [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
-    });
-  };
-
-  const tabList = [
-    {
-      key: 'sourceInformation',
-      tab: (
-        <FormattedMessage
-          id="pages.source.create.sourceInformation"
-          defaultMessage="Source Information"
-        />
-      ),
-    },
-    {
-      key: 'administrativeInformation',
-      tab: (
-        <FormattedMessage
-          id="pages.source.create.administrativeInformation"
-          defaultMessage="Administrative Information"
-        />
-      ),
-    },
-  ];
-
-  const contentList: Record<string, React.ReactNode> = {
-    sourceInformation: (
-      <Space direction="vertical" style={{ width: '100%' }}>
-        <Card
-          size="small"
-          title={
-            <FormattedMessage
-              id="pages.source.create.sourceInformation.shortName"
-              defaultMessage="Short Name"
-            />
-          }
-        >
-          <LangTextItemFrom
-            name={['sourceInformation', 'dataSetInformation', 'common:shortName']}
-            label={
-              <FormattedMessage
-                id="pages.source.create.sourceInformation.shortName"
-                defaultMessage="Short Name"
-              />
-            }
-          />
-        </Card>
-        <br />
-        <Card
-          size="small"
-          title={
-            <FormattedMessage
-              id="pages.source.create.sourceInformation.classification"
-              defaultMessage="Classification"
-            />
-          }
-        >
-          <LevelTextItemFrom
-            name={[
-              'sourceInformation',
-              'dataSetInformation',
-              'classificationInformation',
-              'common:classification',
-              'common:class',
-            ]}
-            dataType={'Source'}
-            formRef={formRefCreate}
-            onData={handletFromData}
-          />
-        </Card>
-        <br />
-        <Form.Item
-          label={
-            <FormattedMessage
-              id="pages.source.create.sourceInformation.sourceCitation"
-              defaultMessage="Source Citation"
-            />
-          }
-          name={['sourceInformation', 'dataSetInformation', 'sourceCitation']}
-        >
-          <Input />
-        </Form.Item>
-        <Form.Item
-          label={
-            <FormattedMessage
-              id="pages.source.create.sourceInformation.publicationType"
-              defaultMessage="Publication Type"
-            />
-          }
-          name={['sourceInformation', 'dataSetInformation', 'publicationType']}
-        >
-          <Select options={publicationTypeOptions} />
-        </Form.Item>
-        <br />
-        <Card
-          size="small"
-          title={
-            <FormattedMessage
-              id="pages.source.create.sourceInformation.sourceDescriptionOrComment"
-              defaultMessage="Source Description Or Comment"
-            />
-          }
-        >
-          <LangTextItemFrom
-            name={['sourceInformation', 'dataSetInformation', 'sourceDescriptionOrComment']}
-            label={
-              <FormattedMessage
-                id="pages.source.create.sourceInformation.sourceDescriptionOrComment"
-                defaultMessage="Source Description Or Comment"
-              />
-            }
-          />
-        </Card>
-        <br />
-        <Card
-          size="small"
-          title={
-            <FormattedMessage
-              id="pages.source.edit.sourceInformation.referenceToDigitalFile"
-              defaultMessage="Reference To Digital File"
-            />
-          }
-        >
-          <Upload
-            name="avatar"
-            listType="picture-card"
-            fileList={fileList}
-            onPreview={handlePreview}
-            beforeUpload={(file) => {
-              setLoadFiles([...loadFiles, file]);
-              return false;
-            }}
-            onChange={({ fileList: newFileList }) => {
-              setFileList(newFileList);
-            }}
-          >
-            <UploadButton />
-          </Upload>
-          {previewImage && (
-            <Image
-              wrapperStyle={{ display: 'none' }}
-              preview={{
-                visible: previewOpen,
-                onVisibleChange: (visible) => setPreviewOpen(visible),
-                afterOpenChange: (visible) => !visible && setPreviewImage(''),
-              }}
-              src={previewImage}
-            />
-          )}
-        </Card>
-        {/* <Form.Item
-          label={
-            <FormattedMessage
-              id="pages.source.create.sourceInformation.referenceToDigitalFile"
-              defaultMessage="Reference To Digital File"
-            />
-          }
-          name={['sourceInformation', 'dataSetInformation', 'referenceToDigitalFile', '@uri']}
-        >
-          <Input />
-        </Form.Item> */}
-        <br />
-        <ContactSelectFrom
-          name={['sourceInformation', 'dataSetInformation', 'referenceToContact']}
-          label={
-            <FormattedMessage
-              id="pages.source.create.sourceInformation.referenceToContact"
-              defaultMessage="Reference To Contact"
-            />
-          }
-          lang={lang}
-          formRef={formRefCreate}
-          onData={handletFromData}
-        />
-      </Space>
-    ),
-    administrativeInformation: (
-      <Space direction="vertical" style={{ width: '100%' }}>
-        <Card
-          size="small"
-          title={
-            <FormattedMessage
-              id="pages.source.create.administrativeInformation.dataEntryBy"
-              defaultMessage="Data Entry By"
-            />
-          }
-        >
-          <Form.Item
-            label={
-              <FormattedMessage
-                id="pages.source.create.administrativeInformation.timeStamp"
-                defaultMessage="Time Stamp"
-              />
-            }
-            name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
-          >
-            <Input disabled={true} style={{ color: '#000' }} />
-          </Form.Item>
-          <SourceSelectFrom
-            name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
-            label={
-              <FormattedMessage
-                id="pages.source.create.administrativeInformation.referenceToDataSetFormat"
-                defaultMessage="Reference To Data Set Format"
-              />
-            }
-            lang={lang}
-            formRef={formRefCreate}
-            onData={handletFromData}
-          />
-        </Card>
-        <br />
-        <Card
-          size="small"
-          title={
-            <FormattedMessage
-              id="pages.source.create.administrativeInformation.publicationAndOwnership"
-              defaultMessage="Publication And Ownership"
-            />
-          }
-        >
-          <Form.Item
-            label={
-              <FormattedMessage
-                id="pages.source.create.administrativeInformation.dataSetVersion"
-                defaultMessage="DataSet Version"
-              />
-            }
-            name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
-          >
-            <Input />
-          </Form.Item>
-          <ContactSelectFrom
-            label={
-              <FormattedMessage
-                id="pages.source.create.administrativeInformation.referenceToOwnershipOfDataSet"
-                defaultMessage="Owner of data set"
-              />
-            }
-            name={[
-              'administrativeInformation',
-              'publicationAndOwnership',
-              'common:referenceToOwnershipOfDataSet',
-            ]}
-            lang={lang}
-            formRef={formRefCreate}
-            onData={handletFromData}
-          />
-          <Form.Item
-            label={
-              <FormattedMessage
-                id="pages.source.create.administrativeInformation.permanentDataSetURI"
-                defaultMessage="Permanent Data Set URI"
-              />
-            }
-            name={[
-              'administrativeInformation',
-              'publicationAndOwnership',
-              'common:permanentDataSetURI',
-            ]}
-          >
-            <Input />
-          </Form.Item>
-        </Card>
-      </Space>
-    ),
+    if (fromData?.id)
+      setFromData({
+        ...fromData,
+        [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
+      });
   };
 
   const onTabChange = (key: string) => {
@@ -416,10 +122,11 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
         },
       },
     };
-    setInitData(newData);
+    const newId = v4();
+    setInitData({ ...newData, id: newId });
     formRefCreate.current?.resetFields();
     formRefCreate.current?.setFieldsValue(newData);
-    setFromData(newData);
+    setFromData({ ...newData, id: newId });
     setFileList0([]);
     setFileList([]);
   }, [drawerVisible]);
@@ -483,16 +190,17 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
           }}
           onFinish={onSubmit}
         >
-          <Card
-            style={{ width: '100%' }}
-            // title="Card title"
-            // extra={<a href="#">More</a>}
-            tabList={tabList}
+          <SourceForm
+            lang={lang}
             activeTabKey={activeTabKey}
+            formRef={formRefCreate}
+            onData={handletFromData}
             onTabChange={onTabChange}
-          >
-            {contentList[activeTabKey]}
-          </Card>
+            loadFiles={loadFiles}
+            setLoadFiles={setLoadFiles}
+            fileList={fileList}
+            setFileList={setFileList}
+          />
         </ProForm>
         <Collapse
           items={[

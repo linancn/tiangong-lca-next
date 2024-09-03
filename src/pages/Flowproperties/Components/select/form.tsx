@@ -1,12 +1,13 @@
-import { getSourceDetail } from '@/services/sources/api';
-import { genSourceFromData } from '@/services/sources/util';
+import UnitGroupFromMini from '@/pages/Unitgroups/Components/select/formMini';
+import { getFlowpropertyDetail } from '@/services/flowproperties/api';
+import { genFlowpropertyFromData } from '@/services/flowproperties/util';
 import { ProFormInstance } from '@ant-design/pro-components';
-import { FormattedMessage } from '@umijs/max';
 import { Button, Card, Col, Divider, Form, Input, Row, Space } from 'antd';
 import React, { FC, ReactNode, useEffect, useState } from 'react';
-import SourceView from '../view';
-import SourceSelectDrawer from './drawer';
-
+import { FormattedMessage } from 'umi';
+import FlowpropertyView from '../view';
+import FlowpropertiesSelectDrawer from './drawer';
+// import LangTextItemForm from '@/components/LangTextItem/form';
 const { TextArea } = Input;
 
 type Props = {
@@ -14,44 +15,61 @@ type Props = {
   label: ReactNode | string;
   lang: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
+  drawerVisible: boolean;
   onData: () => void;
 };
 
-const SourceSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => {
+const FlowpropertiesSelectForm: FC<Props> = ({
+  name,
+  label,
+  lang,
+  formRef,
+  drawerVisible,
+  onData,
+}) => {
   const [id, setId] = useState<string | undefined>(undefined);
 
-  const handletSourceData = (rowKey: any) => {
-    getSourceDetail(rowKey).then(async (result: any) => {
-      const selectedData = genSourceFromData(result.data?.json?.sourceDataSet ?? {});
+  const handletFlowpropertyData = (rowKey: any) => {
+    getFlowpropertyDetail(rowKey).then(async (result: any) => {
+      const selectedData = genFlowpropertyFromData(result.data?.json?.flowPropertyDataSet ?? {});
       await formRef.current?.setFieldValue(name, {
         '@refObjectId': `${rowKey}`,
-        '@type': 'source data set',
-        '@uri': `../sources/${rowKey}.xml`,
+        '@type': 'flow property data set',
+        '@uri': `../flowproperties/${rowKey}.xml`,
         'common:shortDescription':
-          selectedData?.sourceInformation?.dataSetInformation?.['common:shortName'] ?? [],
+          selectedData?.flowPropertiesInformation?.dataSetInformation?.['common:name'] ?? [],
       });
       onData();
     });
   };
 
-  // const id = formRef.current?.getFieldValue([...name, '@refObjectId']);
-
   useEffect(() => {
-    setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
+    if (formRef.current?.getFieldValue([...name, '@refObjectId'])) {
+      setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
+    }
   });
 
   return (
     <Card size="small" title={label}>
       <Space direction="horizontal">
         <Form.Item
-          label={<FormattedMessage id="pages.contact.refObjectId" defaultMessage="Ref Object Id" />}
+          label={
+            <FormattedMessage
+              id="pages.flow.view.flowProperties.refObjectId"
+              defaultMessage="Ref Object Id"
+            />
+          }
           name={[...name, '@refObjectId']}
         >
           <Input disabled={true} style={{ width: '350px', color: '#000' }} />
         </Form.Item>
         <Space direction="horizontal" style={{ marginTop: '6px' }}>
-          <SourceSelectDrawer buttonType="text" lang={lang} onData={handletSourceData} />
-          {id && <SourceView lang={lang} id={id} buttonType="text" />}
+          <FlowpropertiesSelectDrawer
+            buttonType="text"
+            lang={lang}
+            onData={handletFlowpropertyData}
+          />
+          {id && <FlowpropertyView lang={lang} id={id} buttonType="text" />}
           {id && (
             <Button
               onClick={() => {
@@ -65,20 +83,30 @@ const SourceSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => 
         </Space>
       </Space>
       <Form.Item
-        label={<FormattedMessage id="pages.contact.type" defaultMessage="Type" />}
+        label={<FormattedMessage id="pages.flow.view.flowProperties.type" defaultMessage="Type" />}
         name={[...name, '@type']}
       >
         <Input disabled={true} style={{ color: '#000' }} />
       </Form.Item>
       <Form.Item
-        label={<FormattedMessage id="pages.contact.uri" defaultMessage="URI" />}
+        label={<FormattedMessage id="pages.flow.view.flowProperties.uri" defaultMessage="URI" />}
         name={[...name, '@uri']}
       >
         <Input disabled={true} style={{ color: '#000' }} />
       </Form.Item>
+      {/* <Form.Item label="Version" name={[...name, '@version']}>
+        <Input disabled={true} />
+      </Form.Item> */}
       <Divider orientationMargin="0" orientation="left" plain>
-        <FormattedMessage id="pages.contact.shortDescription" defaultMessage="Short Description" />
+        <FormattedMessage
+          id="pages.flow.view.flowProperties.shortDescription"
+          defaultMessage="Short Description"
+        />
       </Divider>
+      {/* <LangTextItemForm
+        name={[...name, 'common:shortDescription']}
+        label="Short Description"
+      /> */}
       <Form.Item>
         <Form.List name={[...name, 'common:shortDescription']}>
           {(subFields) => (
@@ -107,8 +135,16 @@ const SourceSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => 
           )}
         </Form.List>
       </Form.Item>
+
+      <UnitGroupFromMini
+        id={id}
+        idType={'flowproperty'}
+        name={name}
+        formRef={formRef}
+        drawerVisible={drawerVisible}
+      />
     </Card>
   );
 };
 
-export default SourceSelectFrom;
+export default FlowpropertiesSelectForm;
