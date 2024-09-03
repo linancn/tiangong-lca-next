@@ -225,16 +225,22 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
               ]}
               rules={[
                 {
-                  required: true, message: <FormattedMessage
-                    id="validator.dataSetVersion.empty"
-                    defaultMessage="Please input the Data Set Version!"
-                  />
+                  required: true,
+                  message: (
+                    <FormattedMessage
+                      id="validator.dataSetVersion.empty"
+                      defaultMessage="Please input the Data Set Version!"
+                    />
+                  ),
                 },
                 {
-                  pattern: /^\d{2}\.\d{2}\.\d{3}$/, message: <FormattedMessage
-                    id="validator.dataSetVersion.pattern"
-                    defaultMessage="Version format must be XX.XX.XXX, where X is a digit!"
-                  />
+                  pattern: /^\d{2}\.\d{2}\.\d{3}$/,
+                  message: (
+                    <FormattedMessage
+                      id="validator.dataSetVersion.pattern"
+                      defaultMessage="Version format must be XX.XX.XXX, where X is a digit!"
+                    />
+                  ),
                 },
               ]}
             >

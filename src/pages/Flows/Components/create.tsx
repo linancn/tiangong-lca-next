@@ -216,12 +216,12 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
             },
             {
               pattern: /^\d{2,7}-\d{2}-\d$/,
-              message:
+              message: (
                 <FormattedMessage
                   id="validator.CASNumber.pattern"
                   defaultMessage="CAS Number format must be XX-XX-X or XXXXXXX-XX-X, where X is a digit!"
                 />
-              ,
+              ),
             },
           ]}
         >

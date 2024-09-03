@@ -29,8 +29,22 @@ const LangTextItemFrom: FC<Props> = ({ name, label }) => {
                   </Form.Item>
                 </Col>
                 <Col flex="auto" style={{ marginRight: '10px' }}>
-                  <Form.Item noStyle name={[subField.name, '#text']}
-                    rules={[{ required: true, max: 500, message: <FormattedMessage id="validator.StringMultiLang.length500" defaultMessage="Length cannot exceed 500 characters!" /> }]}>
+                  <Form.Item
+                    noStyle
+                    name={[subField.name, '#text']}
+                    rules={[
+                      {
+                        required: true,
+                        max: 500,
+                        message: (
+                          <FormattedMessage
+                            id="validator.StringMultiLang.length500"
+                            defaultMessage="Length cannot exceed 500 characters!"
+                          />
+                        ),
+                      },
+                    ]}
+                  >
                     <TextArea placeholder="text" rows={1} />
                   </Form.Item>
                 </Col>
