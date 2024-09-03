@@ -1,6 +1,5 @@
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/es/table/interface';
-import { v4 } from 'uuid';
 import {
   classificationToString,
   genClassificationZH,
@@ -11,7 +10,7 @@ import { getILCDClassificationZH } from '../ilcd/api';
 import { genProcessJsonOrdered } from './util';
 
 export async function createProcess(data: any) {
-  const newID = v4();
+  // const newID = v4();
   const oldData = {
     processDataSet: {
       '@xmlns:common': 'http://lca.jrc.it/ILCD/Common',
@@ -22,10 +21,10 @@ export async function createProcess(data: any) {
       '@xsi:schemaLocation': 'http://lca.jrc.it/ILCD/Process ../../schemas/ILCD_ProcessDataSet.xsd',
     },
   };
-  const newData = genProcessJsonOrdered(newID, data, oldData);
+  const newData = genProcessJsonOrdered(data.id, data, oldData);
   const result = await supabase
     .from('processes')
-    .insert([{ id: newID, json_ordered: newData }])
+    .insert([{ id: data.id, json_ordered: newData }])
     .select();
   return result;
 }

@@ -7,7 +7,7 @@ import React, { FC, ReactNode, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import UnitgroupsView from '../view';
 import UnitgroupsSelectDrawer from './drawer';
-// import LangTextItemFrom from '@/components/LangTextItem/from';
+// import LangTextItemForm from '@/components/LangTextItem/form';
 const { TextArea } = Input;
 
 type Props = {

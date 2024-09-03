@@ -11,7 +11,7 @@ type Props = {
   onData: () => void;
 };
 
-const LevelTextItemFrom: FC<Props> = ({ name, dataType, flowType, formRef, onData }) => {
+const LevelTextItemForm: FC<Props> = ({ name, dataType, flowType, formRef, onData }) => {
   const [categoryData0, setCategoryData0] = useState<any>([]);
   const [categoryData1, setCategoryData1] = useState<any>([]);
   const [categoryData2, setCategoryData2] = useState<any>([]);
@@ -175,4 +175,4 @@ const LevelTextItemFrom: FC<Props> = ({ name, dataType, flowType, formRef, onDat
   );
 };
 
-export default LevelTextItemFrom;
+export default LevelTextItemForm;

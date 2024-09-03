@@ -6,7 +6,7 @@ import { ProFormInstance } from '@ant-design/pro-components';
 import { Card, Col, Divider, Form, Input, Row, Spin } from 'antd';
 import React, { FC, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
-// import LangTextItemFrom from '@/components/LangTextItem/from';
+// import LangTextItemForm from '@/components/LangTextItem/form';
 const { TextArea } = Input;
 
 type Props = {

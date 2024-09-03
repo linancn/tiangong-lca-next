@@ -1,4 +1,4 @@
-import LangTextItemFrom from '@/components/LangTextItem/from';
+import LangTextItemForm from '@/components/LangTextItem/form';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-form';
@@ -129,7 +129,7 @@ const UnitCreate: FC<Props> = ({ onData }) => {
                 />
               }
             >
-              <LangTextItemFrom
+              <LangTextItemForm
                 name={'generalComment'}
                 label={
                   <FormattedMessage

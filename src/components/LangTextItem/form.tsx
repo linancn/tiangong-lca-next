@@ -11,7 +11,7 @@ type Props = {
   label: ReactNode | string;
 };
 
-const LangTextItemFrom: FC<Props> = ({ name, label }) => {
+const LangTextItemForm: FC<Props> = ({ name, label }) => {
   return (
     <Form.Item>
       <Form.List name={name}>
@@ -70,4 +70,4 @@ const LangTextItemFrom: FC<Props> = ({ name, label }) => {
   );
 };
 
-export default LangTextItemFrom;
+export default LangTextItemForm;

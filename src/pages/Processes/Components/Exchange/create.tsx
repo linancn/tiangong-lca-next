@@ -1,5 +1,5 @@
-import LangTextItemFrom from '@/components/LangTextItem/from';
-import FlowsSelectFrom from '@/pages/Flows/Components/select/from';
+import LangTextItemForm from '@/components/LangTextItem/form';
+import FlowsSelectForm from '@/pages/Flows/Components/select/form';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-form';
@@ -122,7 +122,7 @@ const ProcessExchangeCreate: FC<Props> = ({ lang, onData }) => {
                 ]}
               />
             </Form.Item>
-            <FlowsSelectFrom
+            <FlowsSelectForm
               name={['referenceToFlowDataSet']}
               label={
                 <FormattedMessage
@@ -174,7 +174,7 @@ const ProcessExchangeCreate: FC<Props> = ({ lang, onData }) => {
                 defaultMessage="General Comment"
               />
             </Divider>
-            <LangTextItemFrom name="generalComment" label="General Comment" />
+            <LangTextItemForm name="generalComment" label="General Comment" />
 
             <Card
               size="small"
@@ -204,7 +204,7 @@ const ProcessExchangeCreate: FC<Props> = ({ lang, onData }) => {
                       defaultMessage="Functional Unit Or Other"
                     />
                   </Divider>
-                  <LangTextItemFrom name="functionalUnitOrOther" label="Functional Unit Or Other" />
+                  <LangTextItemForm name="functionalUnitOrOther" label="Functional Unit Or Other" />
                 </>
               ) : (
                 <></>

@@ -1,5 +1,3 @@
-import LangTextItemFrom from '@/components/LangTextItem/from';
-import LevelTextItemFrom from '@/components/LevelTextItem/from';
 import { createFlowproperties } from '@/services/flowproperties/api';
 // import { langOptions } from '@/services/general/data';
 import styles from '@/style/custom.less';
@@ -9,12 +7,9 @@ import ProForm from '@ant-design/pro-form';
 import type { ActionType } from '@ant-design/pro-table';
 import {
   Button,
-  Card,
   Collapse,
   // DatePicker,
   Drawer,
-  Form,
-  Input,
   // Select,
   Space,
   Tooltip,
@@ -31,10 +26,9 @@ import React, {
 } from 'react';
 import { FormattedMessage } from 'umi';
 // import UnitgroupsFrom from '@/pages/Unitgroups/Components/Unit/edit';
-import SourceSelectFrom from '@/pages/Sources/Components/select/from';
-import UnitGroupSelectFrom from '@/pages/Unitgroups/Components/select/from';
 import { formatDateTime } from '@/services/general/util';
-import FlowpropertiesSelectFrom from './select/from';
+import { v4 } from 'uuid';
+import { FlowpropertyForm } from './form';
 
 type Props = {
   actionRef: React.MutableRefObject<ActionType | undefined>;
@@ -52,274 +46,11 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
   }, [actionRef]);
 
   const handletFromData = () => {
-    setFromData({
-      ...fromData,
-      [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
-    });
-  };
-
-  const tabList = [
-    {
-      key: 'flowPropertiesInformation',
-      tab: (
-        <FormattedMessage
-          id="pages.FlowProperties.view.flowPropertiesInformation"
-          defaultMessage="Flow Properties Information"
-        />
-      ),
-    },
-    {
-      key: 'modellingAndValidation',
-      tab: (
-        <FormattedMessage
-          id="pages.FlowProperties.view.modellingAndValidation"
-          defaultMessage="Modelling And Validation"
-        />
-      ),
-    },
-    {
-      key: 'administrativeInformation',
-      tab: (
-        <FormattedMessage
-          id="pages.FlowProperties.view.administrativeInformation"
-          defaultMessage="Administrative Information"
-        />
-      ),
-    },
-  ];
-
-  const contentList: Record<string, React.ReactNode> = {
-    flowPropertiesInformation: (
-      <Space direction="vertical" style={{ width: '100%' }}>
-        <Card
-          size="small"
-          title={
-            <FormattedMessage
-              id="pages.FlowProperties.view.flowPropertiesInformation.dataSetInformation"
-              defaultMessage="Data Set Information"
-            />
-          }
-        >
-          <Card
-            size="small"
-            title={
-              <FormattedMessage
-                id="pages.FlowProperties.view.flowPropertiesInformation.name"
-                defaultMessage="Name"
-              />
-            }
-          >
-            <LangTextItemFrom
-              name={['flowPropertiesInformation', 'dataSetInformation', 'common:name']}
-              label={
-                <FormattedMessage
-                  id="pages.FlowProperties.view.flowPropertiesInformation.name"
-                  defaultMessage="Name"
-                />
-              }
-            />
-          </Card>
-          <br />
-          <Card
-            size="small"
-            title={
-              <FormattedMessage
-                id="pages.FlowProperties.view.flowPropertiesInformation.classification"
-                defaultMessage="Classification"
-              />
-            }
-          >
-            <LevelTextItemFrom
-              dataType={'FlowProperty'}
-              formRef={formRefCreate}
-              onData={handletFromData}
-              name={[
-                'flowPropertiesInformation',
-                'dataSetInformation',
-                'classificationInformation',
-                'common:classification',
-                'common:class',
-              ]}
-            />
-          </Card>
-          <br />
-          <Card
-            size="small"
-            title={
-              <FormattedMessage
-                id="pages.FlowProperties.view.flowPropertiesInformation.generalComment"
-                defaultMessage="General Comment"
-              />
-            }
-          >
-            <LangTextItemFrom
-              name={['flowPropertiesInformation', 'dataSetInformation', 'common:generalComment']}
-              label={
-                <FormattedMessage
-                  id="pages.FlowProperties.view.flowPropertiesInformation.generalComment"
-                  defaultMessage="General Comment"
-                />
-              }
-            />
-          </Card>
-        </Card>
-        <br />
-        <Card
-          size="small"
-          title={
-            <FormattedMessage
-              id="pages.FlowProperties.view.flowPropertiesInformation.quantitativeReference"
-              defaultMessage="Quantitative Reference"
-            />
-          }
-        >
-          <UnitGroupSelectFrom
-            name={[
-              'flowPropertiesInformation',
-              'quantitativeReference',
-              'referenceToReferenceUnitGroup',
-            ]}
-            label={
-              <FormattedMessage
-                id="pages.FlowProperties.view.flowPropertiesInformation.referenceToReferenceUnitGroup"
-                defaultMessage="Reference To Reference Unit Group"
-              />
-            }
-            lang={lang}
-            formRef={formRefCreate}
-            onData={handletFromData}
-          />
-        </Card>
-      </Space>
-    ),
-    modellingAndValidation: (
-      <Space direction="vertical" style={{ width: '100%' }}>
-        <SourceSelectFrom
-          name={[
-            'modellingAndValidation',
-            'complianceDeclarations',
-            'compliance',
-            'common:referenceToComplianceSystem',
-          ]}
-          lang={lang}
-          label={
-            <FormattedMessage
-              id="pages.FlowProperties.view.modellingAndValidation.referenceToComplianceSystem"
-              defaultMessage="Reference To Compliance System"
-            />
-          }
-          formRef={formRefCreate}
-          onData={handletFromData}
-        />
-        <Form.Item
-          label={
-            <FormattedMessage
-              id="pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance"
-              defaultMessage="Approval Of Overall Compliance"
-            />
-          }
-          name={[
-            'modellingAndValidation',
-            'complianceDeclarations',
-            'compliance',
-            'common:approvalOfOverallCompliance',
-          ]}
-        >
-          <Input />
-        </Form.Item>
-      </Space>
-    ),
-    administrativeInformation: (
-      <Space direction="vertical" style={{ width: '100%' }}>
-        <Card
-          size="small"
-          title={
-            <FormattedMessage
-              id="pages.FlowProperties.view.modellingAndValidation.dataEntryBy"
-              defaultMessage="Data Entry By"
-            />
-          }
-        >
-          <Form.Item
-            label={
-              <FormattedMessage
-                id="pages.FlowProperties.view.modellingAndValidation.timeStamp"
-                defaultMessage="Time Stamp"
-              />
-            }
-            name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
-          >
-            <Input disabled={true} style={{ color: '#000' }} />
-          </Form.Item>
-          <SourceSelectFrom
-            name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
-            lang={lang}
-            label={
-              <FormattedMessage
-                id="pages.FlowProperties.view.modellingAndValidation.referenceToComplianceSystem"
-                defaultMessage="Reference To Compliance System"
-              />
-            }
-            formRef={formRefCreate}
-            onData={handletFromData}
-          />
-        </Card>
-
-        <Card
-          size="small"
-          title={
-            <FormattedMessage
-              id="pages.FlowProperties.view.modellingAndValidation.publicationAndOwnership"
-              defaultMessage="Publication And Ownership"
-            />
-          }
-        >
-          <Form.Item
-            label={
-              <FormattedMessage
-                id="pages.FlowProperties.view.modellingAndValidation.dataSetVersion"
-                defaultMessage="Data Set Version"
-              />
-            }
-            name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
-          >
-            <Input />
-          </Form.Item>
-          <FlowpropertiesSelectFrom
-            name={[
-              'administrativeInformation',
-              'publicationAndOwnership',
-              'common:referenceToPrecedingDataSetVersion',
-            ]}
-            lang={lang}
-            label={
-              <FormattedMessage
-                id="pages.FlowProperties.view.administrativeInformation.referenceToPrecedingDataSetVersion"
-                defaultMessage="Reference To Preceding Data Set Version"
-              />
-            }
-            drawerVisible={drawerVisible}
-            formRef={formRefCreate}
-            onData={handletFromData}
-          />
-          <Form.Item
-            label={
-              <FormattedMessage
-                id="pages.FlowProperties.view.administrativeInformation.permanentDataSetURI"
-                defaultMessage="Permanent Data Set URI"
-              />
-            }
-            name={[
-              'administrativeInformation',
-              'publicationAndOwnership',
-              'common:permanentDataSetURI',
-            ]}
-          >
-            <Input />
-          </Form.Item>
-        </Card>
-      </Space>
-    ),
+    if (fromData?.id)
+      setFromData({
+        ...fromData,
+        [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
+      });
   };
 
   const onTabChange = (key: string) => {
@@ -334,12 +65,16 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
         dataEntryBy: {
           'common:timeStamp': currentDateTime,
         },
+        publicationAndOwnership: {
+          'common:dataSetVersion': '01.00.000',
+        },
       },
     };
-    setInitData(newData);
+    const newId = v4();
+    setInitData({ ...newData, id: newId });
     formRefCreate.current?.resetFields();
     formRefCreate.current?.setFieldsValue(newData);
-    setFromData(newData);
+    setFromData({ ...newData, id: newId });
   }, [drawerVisible]);
 
   return (
@@ -416,14 +151,14 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
             return true;
           }}
         >
-          <Card
-            style={{ width: '100%' }}
-            tabList={tabList}
+          <FlowpropertyForm
+            lang={lang}
             activeTabKey={activeTabKey}
+            drawerVisible={drawerVisible}
+            formRef={formRefCreate}
+            onData={handletFromData}
             onTabChange={onTabChange}
-          >
-            {contentList[activeTabKey]}
-          </Card>
+          />
         </ProForm>
         <Collapse
           items={[

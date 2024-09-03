@@ -1,6 +1,5 @@
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
-import { v4 } from 'uuid';
 import {
   // classificationToJson,
   classificationToString,
@@ -13,7 +12,7 @@ import { getILCDClassificationZH } from '../ilcd/api';
 import { genFlowpropertyJsonOrdered } from './util';
 
 export async function createFlowproperties(data: any) {
-  const newID = v4();
+  // const newID = v4();
   const oldData = {
     flowPropertyDataSet: {
       '@xmlns:common': 'http://lca.jrc.it/ILCD/Common',
@@ -24,10 +23,10 @@ export async function createFlowproperties(data: any) {
         'http://lca.jrc.it/ILCD/FlowProperty ../../schemas/ILCD_FlowPropertyDataSet.xsd',
     },
   };
-  const newData = genFlowpropertyJsonOrdered(newID, data, oldData);
+  const newData = genFlowpropertyJsonOrdered(data.id, data, oldData);
   const result = await supabase
     .from('flowproperties')
-    .insert([{ id: newID, json_ordered: newData }])
+    .insert([{ id: data.id, json_ordered: newData }])
     .select();
   return result;
 }

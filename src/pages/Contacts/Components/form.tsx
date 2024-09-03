@@ -1,7 +1,7 @@
-import LangTextItemFrom from '@/components/LangTextItem/from';
-import LevelTextItemFrom from '@/components/LevelTextItem/from';
-import ContactSelectFrom from '@/pages/Contacts/Components/select/from';
-import SourceSelectFrom from '@/pages/Sources/Components/select/from';
+import LangTextItemForm from '@/components/LangTextItem/form';
+import LevelTextItemForm from '@/components/LevelTextItem/form';
+import ContactSelectForm from '@/pages/Contacts/Components/select/form';
+import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Card, Form, Input, Space } from 'antd';
 import { FC } from 'react';
@@ -44,7 +44,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             size="small"
             title={<FormattedMessage id="pages.contact.shortName" defaultMessage="Short Name" />}
           >
-            <LangTextItemFrom
+            <LangTextItemForm
               name={['contactInformation', 'dataSetInformation', 'common:shortName']}
               label={<FormattedMessage id="pages.contact.shortName" defaultMessage="Short Name" />}
             />
@@ -53,7 +53,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             size="small"
             title={<FormattedMessage id="pages.contact.name" defaultMessage="Name" />}
           >
-            <LangTextItemFrom
+            <LangTextItemForm
               name={['contactInformation', 'dataSetInformation', 'common:name']}
               label={<FormattedMessage id="pages.contact.name" defaultMessage="Name" />}
             />
@@ -64,7 +64,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
               <FormattedMessage id="pages.contact.classification" defaultMessage="Classification" />
             }
           >
-            <LevelTextItemFrom
+            <LevelTextItemForm
               name={[
                 'contactInformation',
                 'dataSetInformation',
@@ -86,7 +86,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
               />
             }
           >
-            <LangTextItemFrom
+            <LangTextItemForm
               name={['contactInformation', 'dataSetInformation', 'contactAddress']}
               label={
                 <FormattedMessage
@@ -129,7 +129,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
               />
             }
           >
-            <LangTextItemFrom
+            <LangTextItemForm
               name={['contactInformation', 'dataSetInformation', 'centralContactPoint']}
               label={
                 <FormattedMessage
@@ -148,7 +148,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
               />
             }
           >
-            <LangTextItemFrom
+            <LangTextItemForm
               name={['contactInformation', 'dataSetInformation', 'contactDescriptionOrComment']}
               label={
                 <FormattedMessage
@@ -158,7 +158,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
               }
             />
           </Card>
-          <ContactSelectFrom
+          <ContactSelectForm
             label={
               <FormattedMessage
                 id="pages.contact.referenceToContact"
@@ -189,7 +189,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
               <Input disabled={true} style={{ color: '#000' }} />
             </Form.Item>
             <br />
-            <SourceSelectFrom
+            <SourceSelectForm
               label={
                 <FormattedMessage
                   id="pages.contact.referenceToDataSetFormat"
@@ -246,7 +246,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             >
               <Input />
             </Form.Item>
-            <ContactSelectFrom
+            <ContactSelectForm
               label={
                 <FormattedMessage
                   id="pages.contact.referenceToPrecedingDataSetVersion"

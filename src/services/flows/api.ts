@@ -1,7 +1,6 @@
 import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/lib/table/interface';
-import { v4 } from 'uuid';
 import {
   classificationToString,
   genClassificationZH,
@@ -12,7 +11,7 @@ import { getILCDFlowCategorizationAllZH } from '../ilcd/api';
 import { genFlowJsonOrdered } from './util';
 
 export async function createFlows(data: any) {
-  const newID = v4();
+  // const newID = v4();
   const oldData = {
     flowDataSet: {
       '@xmlns': 'http://lca.jrc.it/ILCD/Flow',
@@ -23,10 +22,10 @@ export async function createFlows(data: any) {
       '@xsi:schemaLocation': 'http://lca.jrc.it/ILCD/Flow ../../schemas/ILCD_FlowDataSet.xsd',
     },
   };
-  const newData = genFlowJsonOrdered(newID, data, oldData);
+  const newData = genFlowJsonOrdered(data.id, data, oldData);
   const result = await supabase
     .from('flows')
-    .insert([{ id: newID, json_ordered: newData }])
+    .insert([{ id: data.id, json_ordered: newData }])
     .select();
   return result;
 }

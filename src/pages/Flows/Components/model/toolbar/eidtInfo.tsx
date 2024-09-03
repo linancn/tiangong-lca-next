@@ -1,4 +1,4 @@
-import LangTextItemFrom from '@/components/LangTextItem/from';
+import LangTextItemForm from '@/components/LangTextItem/form';
 import { getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData } from '@/services/flows/util';
 import styles from '@/style/custom.less';
@@ -163,7 +163,7 @@ const ModelToolbarEditInfo: FC<Props> = ({ flowId, lang, data, onData }) => {
                 />
               }
             >
-              <LangTextItemFrom
+              <LangTextItemForm
                 name={['productInformation', 'dataSetInformation', 'name']}
                 label={
                   <FormattedMessage
@@ -182,7 +182,7 @@ const ModelToolbarEditInfo: FC<Props> = ({ flowId, lang, data, onData }) => {
                 />
               }
             >
-              <LangTextItemFrom
+              <LangTextItemForm
                 name={['productInformation', 'dataSetInformation', 'common:generalComment']}
                 label={
                   <FormattedMessage

@@ -1,41 +1,16 @@
-import LangTextItemFrom from '@/components/LangTextItem/from';
-import LevelTextItemFrom from '@/components/LevelTextItem/from';
-import SourceSelectFrom from '@/pages/Sources/Components/select/from';
-import { ListPagination } from '@/services/general/data';
 import { getUnitGroupDetail, updateUnitGroup } from '@/services/unitgroups/api';
 import { UnitTable } from '@/services/unitgroups/data';
-import { genUnitGroupFromData, genUnitTableData } from '@/services/unitgroups/util';
+import { genUnitGroupFromData } from '@/services/unitgroups/util';
 import styles from '@/style/custom.less';
-import {
-  CheckCircleTwoTone,
-  CloseCircleOutlined,
-  CloseOutlined,
-  FormOutlined,
-} from '@ant-design/icons';
+import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ProForm } from '@ant-design/pro-components';
 import type { ProFormInstance } from '@ant-design/pro-form';
-import type { ActionType, ProColumns } from '@ant-design/pro-table';
-import ProTable from '@ant-design/pro-table';
-import {
-  Button,
-  Card,
-  Collapse,
-  Drawer,
-  Form,
-  Input,
-  Space,
-  Spin,
-  Tooltip,
-  Typography,
-  message,
-} from 'antd';
+import type { ActionType } from '@ant-design/pro-table';
+import { Button, Collapse, Drawer, Space, Spin, Tooltip, Typography, message } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import UnitCreate from './Unit/create';
-import UnitDelete from './Unit/delete';
-import UnitEdit from './Unit/edit';
-import UnitView from './Unit/view';
+import { UnitGroupForm } from './form';
 
 type Props = {
   id: string;
@@ -50,297 +25,27 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
   const [activeTabKey, setActiveTabKey] = useState<string>('unitGroupInformation');
   const [initData, setInitData] = useState<any>({});
   const [fromData, setFromData] = useState<any>({});
-  const [unitDataSource, setUnitDataSource] = useState<readonly UnitTable[]>([]);
+  const [unitDataSource, setUnitDataSource] = useState<UnitTable[]>([]);
   const [spinning, setSpinning] = useState(false);
 
-  const actionRefUnitTable = useRef<ActionType>();
-
   const handletFromData = () => {
-    setFromData({
-      ...fromData,
-      [activeTabKey]: formRefEdit.current?.getFieldsValue()?.[activeTabKey] ?? {},
-    });
+    if (fromData?.id)
+      setFromData({
+        ...fromData,
+        [activeTabKey]: formRefEdit.current?.getFieldsValue()?.[activeTabKey] ?? {},
+      });
   };
 
   const handletUnitDataCreate = (data: any) => {
-    setUnitDataSource([
-      ...unitDataSource,
-      { ...data, '@dataSetInternalID': unitDataSource.length.toString() },
-    ]);
+    if (fromData?.id)
+      setUnitDataSource([
+        ...unitDataSource,
+        { ...data, '@dataSetInternalID': unitDataSource.length.toString() },
+      ]);
   };
 
   const handletUnitData = (data: any) => {
-    setUnitDataSource([...data]);
-  };
-
-  const tabList = [
-    {
-      key: 'unitGroupInformation',
-      tab: (
-        <FormattedMessage
-          id="pages.unitgroup.edit.unitGroupInformation"
-          defaultMessage="UnitGroup Information"
-        />
-      ),
-    },
-    {
-      key: 'modellingAndValidation',
-      tab: (
-        <FormattedMessage
-          id="pages.unitgroup.edit.modellingAndValidation"
-          defaultMessage="Modelling And Validation"
-        />
-      ),
-    },
-    {
-      key: 'administrativeInformation',
-      tab: (
-        <FormattedMessage
-          id="pages.unitgroup.edit.administrativeInformation"
-          defaultMessage="Administrative Information"
-        />
-      ),
-    },
-    {
-      key: 'units',
-      tab: <FormattedMessage id="pages.unitgroup.edit.units" defaultMessage="Units" />,
-    },
-  ];
-
-  const unitColumns: ProColumns<UnitTable>[] = [
-    {
-      title: (
-        <FormattedMessage id="pages.table.title.index" defaultMessage="Index"></FormattedMessage>
-      ),
-      valueType: 'index',
-      search: false,
-    },
-    // {
-    //     title: <FormattedMessage id="pages.unitgroup.unit.dataSetInternalID" defaultMessage="DataSet Internal ID"></FormattedMessage>,
-    //     dataIndex: 'dataSetInternalID',
-    //     search: false,
-    // },
-    {
-      title: (
-        <FormattedMessage id="pages.table.title.name" defaultMessage="Name"></FormattedMessage>
-      ),
-      dataIndex: 'name',
-      search: false,
-    },
-    {
-      title: (
-        <FormattedMessage
-          id="pages.unitgroup.unit.generalComment"
-          defaultMessage="General Comment"
-        ></FormattedMessage>
-      ),
-      dataIndex: 'generalComment',
-      search: false,
-    },
-    {
-      title: (
-        <FormattedMessage
-          id="pages.unitgroup.unit.meanValue"
-          defaultMessage="Mean Value"
-        ></FormattedMessage>
-      ),
-      dataIndex: 'meanValue',
-      search: false,
-    },
-    {
-      title: (
-        <FormattedMessage
-          id="pages.unitgroup.unit.quantitativeReference"
-          defaultMessage="Quantitative Reference"
-        />
-      ),
-      dataIndex: 'quantitativeReference',
-      sorter: false,
-      search: false,
-      render: (_, row) => {
-        if (row.quantitativeReference) {
-          return <CheckCircleTwoTone twoToneColor="#52c41a" />;
-        }
-        return <CloseCircleOutlined />;
-      },
-    },
-    {
-      title: (
-        <FormattedMessage id="pages.table.title.option" defaultMessage="Option"></FormattedMessage>
-      ),
-      valueType: 'option',
-      search: false,
-      render: (_, row) => {
-        return [
-          <Space size={'small'} key={0}>
-            <UnitView id={row.dataSetInternalID} data={unitDataSource} buttonType={'icon'} />
-            <UnitEdit
-              id={row.dataSetInternalID}
-              data={unitDataSource}
-              buttonType={'icon'}
-              actionRef={actionRefUnitTable}
-              onData={handletUnitData}
-              setViewDrawerVisible={() => {}}
-            />
-            <UnitDelete
-              id={row.dataSetInternalID}
-              data={unitDataSource}
-              buttonType={'icon'}
-              actionRef={actionRefUnitTable}
-              setViewDrawerVisible={() => {}}
-              onData={handletUnitData}
-            />
-          </Space>,
-        ];
-      },
-    },
-  ];
-
-  const contentList: Record<string, React.ReactNode> = {
-    unitGroupInformation: (
-      <Space direction="vertical" style={{ width: '100%' }}>
-        <Card
-          size="small"
-          title={
-            <FormattedMessage
-              id="pages.unitgroup.edit.unitGroupInformation.name"
-              defaultMessage="Name"
-            />
-          }
-        >
-          <LangTextItemFrom
-            name={['unitGroupInformation', 'dataSetInformation', 'common:name']}
-            label={
-              <FormattedMessage
-                id="pages.unitgroup.edit.unitGroupInformation.name"
-                defaultMessage="Name"
-              />
-            }
-          ></LangTextItemFrom>
-        </Card>
-        <Card
-          size="small"
-          title={
-            <FormattedMessage
-              id="pages.unitgroup.edit.unitGroupInformation.classification"
-              defaultMessage="Classification"
-            />
-          }
-        >
-          <LevelTextItemFrom
-            name={[
-              'unitGroupInformation',
-              'dataSetInformation',
-              'classificationInformation',
-              'common:classification',
-              'common:class',
-            ]}
-            dataType={'UnitGroup'}
-            formRef={formRefEdit}
-            onData={handletFromData}
-          />
-        </Card>
-        <Form.Item
-          label="ID" //这是翻译哪一个
-          name={['unitGroupInformation', 'dataSetInformation', 'common:UUID']}
-          hidden
-        >
-          <Input></Input>
-        </Form.Item>
-      </Space>
-    ),
-    modellingAndValidation: (
-      <Space direction="vertical" style={{ width: '100%' }}>
-        <SourceSelectFrom
-          name={[
-            'modellingAndValidation',
-            'complianceDeclarations',
-            'compliance',
-            'common:referenceToComplianceSystem',
-          ]}
-          label={
-            <FormattedMessage
-              id="pages.unitgroup.edit.modellingAndValidation.referenceToComplianceSystem"
-              defaultMessage="Reference To Compliance System"
-            />
-          }
-          lang={lang}
-          formRef={formRefEdit}
-          onData={handletFromData}
-        />
-        <Form.Item
-          label={
-            <FormattedMessage
-              id="pages.unitgroup.edit.modellingAndValidation.approvalOfOverallCompliance"
-              defaultMessage="Approval Of Overall Compliance"
-            />
-          }
-          name={[
-            'modellingAndValidation',
-            'complianceDeclarations',
-            'compliance',
-            'common:approvalOfOverallCompliance',
-          ]}
-        >
-          <Input></Input>
-        </Form.Item>
-      </Space>
-    ),
-    administrativeInformation: (
-      <Space direction="vertical" style={{ width: '100%' }}>
-        <Form.Item
-          label={
-            <FormattedMessage
-              id="pages.unitgroup.edit.administrativeInformation.timeStamp"
-              defaultMessage="Time Stamp"
-            />
-          }
-          name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
-        >
-          <Input disabled={true} style={{ color: '#000' }} />
-        </Form.Item>
-        <SourceSelectFrom
-          name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
-          label={
-            <FormattedMessage
-              id="pages.unitgroup.edit.administrativeInformation.referenceToDataSetFormat"
-              defaultMessage="Reference To DataSet Format"
-            />
-          }
-          lang={lang}
-          formRef={formRefEdit}
-          onData={handletFromData}
-        />
-        <Form.Item
-          label={
-            <FormattedMessage
-              id="pages.unitgroup.edit.administrativeInformation.dataSetVersion"
-              defaultMessage="DataSet Version"
-            />
-          }
-          name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
-        >
-          <Input />
-        </Form.Item>
-      </Space>
-    ),
-    units: (
-      <ProTable<UnitTable, ListPagination>
-        actionRef={actionRefUnitTable}
-        search={{
-          defaultCollapsed: false,
-        }}
-        pagination={{
-          showSizeChanger: false,
-          pageSize: 10,
-        }}
-        toolBarRender={() => {
-          return [<UnitCreate key={0} onData={handletUnitDataCreate}></UnitCreate>];
-        }}
-        dataSource={genUnitTableData(unitDataSource, lang)}
-        columns={unitColumns}
-      ></ProTable>
-    ),
+    if (fromData?.id) setUnitDataSource([...data]);
   };
 
   const onTabChange = (key: string) => {
@@ -352,16 +57,6 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
   }, [setViewDrawerVisible]);
 
   const onReset = () => {
-    setSpinning(true);
-    formRefEdit.current?.resetFields();
-    getUnitGroupDetail(id).then(async (result: any) => {
-      setUnitDataSource(result.data?.json?.unitGroupDataSet?.units?.unit ?? []);
-      setSpinning(false);
-    });
-  };
-
-  useEffect(() => {
-    if (!drawerVisible) return;
     setSpinning(true);
     getUnitGroupDetail(id).then(async (result: any) => {
       setInitData({ ...genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {}), id: id });
@@ -379,6 +74,11 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
       });
       setSpinning(false);
     });
+  };
+
+  useEffect(() => {
+    if (!drawerVisible) return;
+    onReset();
   }, [drawerVisible]);
 
   useEffect(() => {
@@ -389,14 +89,6 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
       },
     });
   }, [unitDataSource]);
-
-  // useEffect(() => {
-  //     if (activeTabKey === 'units') return;
-  //     setFromData({
-  //         ...fromData,
-  //         [activeTabKey]: formRefEdit.current?.getFieldsValue()?.[activeTabKey] ?? {},
-  //     });
-  // }, [formRefEdit.current?.getFieldsValue()]);
 
   return (
     <>
@@ -489,14 +181,16 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
               return true;
             }}
           >
-            <Card
-              style={{ width: '100%' }}
-              tabList={tabList}
+            <UnitGroupForm
+              lang={lang}
               activeTabKey={activeTabKey}
+              formRef={formRefEdit}
+              onData={handletFromData}
+              onUnitData={handletUnitData}
+              onUnitDataCreate={handletUnitDataCreate}
               onTabChange={onTabChange}
-            >
-              {contentList[activeTabKey]}
-            </Card>
+              unitDataSource={unitDataSource}
+            />
           </ProForm>
           <Collapse
             items={[
