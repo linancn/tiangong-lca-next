@@ -10,7 +10,7 @@ import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { v4 } from 'uuid';
-import { ContactFrom } from './from';
+import { ContactForm } from './form';
 type Props = {
   lang: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
@@ -129,12 +129,13 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
             return true;
           }}
         >
-          <ContactFrom
+          <ContactForm
             lang={lang}
             activeTabKey={activeTabKey}
             formRef={formRefCreate}
             onData={handletFromData}
-            onTabChange={onTabChange} />
+            onTabChange={onTabChange}
+          />
         </ProForm>
         <Collapse
           items={[
