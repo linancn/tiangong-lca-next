@@ -203,6 +203,27 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
             />
           }
           name={['flowInformation', 'dataSetInformation', 'CASNumber']}
+          rules={[
+            {
+              required: true,
+              warningOnly: true,
+              message: (
+                <FormattedMessage
+                  id="validator.CASNumber.empty"
+                  defaultMessage="Should only be given for (virtually) pure substances, but NOT also for the main constituent of a material or product etc!"
+                />
+              ),
+            },
+            {
+              pattern: /^\d{2,7}-\d{2}-\d$/,
+              message:
+                <FormattedMessage
+                  id="validator.CASNumber.pattern"
+                  defaultMessage="CAS Number format must be XX-XX-X or XXXXXXX-XX-X, where X is a digit!"
+                />
+              ,
+            },
+          ]}
         >
           <Input />
         </Form.Item>

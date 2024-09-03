@@ -224,15 +224,17 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
                 'common:dataSetVersion',
               ]}
               rules={[
-                { required: true, message: 'Please input the Data Set Version!' },
                 {
-                  validator: async (_, value) => {
-                    if (!/^\d{2}\.\d{2}\.\d{3}$/.test(value)) {
-                      return Promise.reject(
-                        new Error('The format must be XX.XX.XXX, where X is a digit!'),
-                      );
-                    }
-                  },
+                  required: true, message: <FormattedMessage
+                    id="validator.dataSetVersion.empty"
+                    defaultMessage="Please input the Data Set Version!"
+                  />
+                },
+                {
+                  pattern: /^\d{2}\.\d{2}\.\d{3}$/, message: <FormattedMessage
+                    id="validator.dataSetVersion.pattern"
+                    defaultMessage="Version format must be XX.XX.XXX, where X is a digit!"
+                  />
                 },
               ]}
             >
