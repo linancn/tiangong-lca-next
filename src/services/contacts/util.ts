@@ -116,7 +116,7 @@ export function genContactFromData(data: any) {
   return removeEmptyObjects({
     contactInformation: {
       dataSetInformation: {
-        'common:UUID': data?.contactInformation?.dataSetInformation?.['common:UUID'] ?? '-',
+        'common:UUID': data?.contactInformation?.dataSetInformation?.['common:UUID'],
         'common:shortName': getLangList(
           data?.contactInformation?.dataSetInformation?.['common:shortName'],
         ),

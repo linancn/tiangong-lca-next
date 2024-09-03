@@ -5,12 +5,12 @@ import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import ProForm from '@ant-design/pro-form';
 import type { ActionType } from '@ant-design/pro-table';
-import { Button, Card, Collapse, Drawer, Space, Tooltip, Typography, message } from 'antd';
+import { Button, Collapse, Drawer, Space, Tooltip, Typography, message } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { v4 } from 'uuid';
-import { ContactFrom, tabList } from './from';
+import { ContactForm } from './form';
 type Props = {
   lang: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
@@ -57,13 +57,6 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
     formRefCreate.current?.setFieldsValue(newData);
     setFromData({ ...newData, id: newId });
   }, [drawerVisible]);
-
-  // useEffect(() => {
-  //   setFromData({
-  //     ...fromData,
-  //     [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
-  //   });
-  // }, [formRefCreate.current?.getFieldsValue()]);
 
   return (
     <>
@@ -136,21 +129,13 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
             return true;
           }}
         >
-          <Card
-            style={{ width: '100%' }}
-            // title="Card title"
-            // extra={<a href="#">More</a>}
-            tabList={tabList}
+          <ContactForm
+            lang={lang}
             activeTabKey={activeTabKey}
+            formRef={formRefCreate}
+            onData={handletFromData}
             onTabChange={onTabChange}
-          >
-            <ContactFrom
-              lang={lang}
-              activeTabKey={activeTabKey}
-              formRef={formRefCreate}
-              onData={handletFromData}
-            />
-          </Card>
+          />
         </ProForm>
         <Collapse
           items={[

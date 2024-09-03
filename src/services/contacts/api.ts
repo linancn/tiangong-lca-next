@@ -1,6 +1,5 @@
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
-import { v4 } from 'uuid';
 import {
   classificationToString,
   genClassificationZH,
@@ -11,7 +10,7 @@ import { getILCDClassificationZH } from '../ilcd/api';
 import { genContactJsonOrdered } from './util';
 
 export async function createContact(data: any) {
-  const newID = v4();
+  // const newID = v4();
   const oldData = {
     contactDataSet: {
       '@xmlns:common': 'http://lca.jrc.it/ILCD/Common',
@@ -21,10 +20,10 @@ export async function createContact(data: any) {
       '@xsi:schemaLocation': 'http://lca.jrc.it/ILCD/Contact ../../schemas/ILCD_ContactDataSet.xsd',
     },
   };
-  const newData = genContactJsonOrdered(newID, data, oldData);
+  const newData = genContactJsonOrdered(data.id, data, oldData);
   const result = await supabase
     .from('contacts')
-    .insert([{ id: newID, json_ordered: newData }])
+    .insert([{ id: data.id, json_ordered: newData }])
     .select();
   return result;
 }

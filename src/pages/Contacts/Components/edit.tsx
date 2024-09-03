@@ -5,23 +5,11 @@ import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ProForm } from '@ant-design/pro-components';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import type { ActionType } from '@ant-design/pro-table';
-import {
-  Button,
-  Card,
-  Collapse,
-  Drawer,
-  Form,
-  Input,
-  Space,
-  Spin,
-  Tooltip,
-  Typography,
-  message,
-} from 'antd';
+import { Button, Collapse, Drawer, Space, Spin, Tooltip, Typography, message } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import { ContactFrom, tabList } from './from';
+import { ContactForm } from './form';
 type Props = {
   id: string;
   buttonType: string;
@@ -63,7 +51,6 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
         ...contactFromData,
         id: id,
       });
-      console.log('contactFromData', contactFromData);
       setFromData({ ...contactFromData, id: id });
       setSpinning(false);
     });
@@ -148,24 +135,13 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
               return true;
             }}
           >
-            <Card
-              style={{ width: '100%' }}
-              // title="Card title"
-              // extra={<a href="#">More</a>}
-              tabList={tabList}
+            <ContactForm
+              lang={lang}
               activeTabKey={activeTabKey}
+              formRef={formRefEdit}
+              onData={handletFromData}
               onTabChange={onTabChange}
-            >
-              <ContactFrom
-                lang={lang}
-                activeTabKey={activeTabKey}
-                formRef={formRefEdit}
-                onData={handletFromData}
-              />
-            </Card>
-            <Form.Item name="id" hidden>
-              <Input />
-            </Form.Item>
+            />
           </ProForm>
           <Collapse
             items={[

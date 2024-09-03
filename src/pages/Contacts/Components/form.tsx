@@ -7,35 +7,35 @@ import { Card, Form, Input, Space } from 'antd';
 import { FC } from 'react';
 import { FormattedMessage } from 'umi';
 
-export const tabList = [
-  {
-    key: 'contactInformation',
-    tab: (
-      <FormattedMessage
-        id="pages.contact.contactInformation"
-        defaultMessage="Contact Information"
-      />
-    ),
-  },
-  {
-    key: 'administrativeInformation',
-    tab: (
-      <FormattedMessage
-        id="pages.contact.administrativeInformation"
-        defaultMessage="Administrative Information"
-      />
-    ),
-  },
-];
-
 type Props = {
   lang: string;
   activeTabKey: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;
+  onTabChange: (key: string) => void;
 };
 
-export const ContactFrom: FC<Props> = ({ lang, activeTabKey, formRef, onData }) => {
+export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, onTabChange }) => {
+  const tabList = [
+    {
+      key: 'contactInformation',
+      tab: (
+        <FormattedMessage
+          id="pages.contact.contactInformation"
+          defaultMessage="Contact Information"
+        />
+      ),
+    },
+    {
+      key: 'administrativeInformation',
+      tab: (
+        <FormattedMessage
+          id="pages.contact.administrativeInformation"
+          defaultMessage="Administrative Information"
+        />
+      ),
+    },
+  ];
   const tabContent: { [key: string]: JSX.Element } = {
     contactInformation: (
       <>
@@ -275,5 +275,19 @@ export const ContactFrom: FC<Props> = ({ lang, activeTabKey, formRef, onData }) 
     ),
   };
 
-  return <>{tabContent[activeTabKey]}</>;
+  return (
+    <>
+      <Card
+        style={{ width: '100%' }}
+        tabList={tabList}
+        activeTabKey={activeTabKey}
+        onTabChange={onTabChange}
+      >
+        {tabContent[activeTabKey]}
+      </Card>
+      <Form.Item name="id" hidden>
+        <Input />
+      </Form.Item>
+    </>
+  );
 };
