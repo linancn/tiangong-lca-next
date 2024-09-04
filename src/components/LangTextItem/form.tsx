@@ -12,6 +12,31 @@ type Props = {
 };
 
 const LangTextItemForm: FC<Props> = ({ name, label }) => {
+  const isShortName = JSON.stringify(name).includes('common:shortName');
+  const rules = isShortName
+    ? [
+        {
+          required: true,
+          warningOnly: true,
+          message: (
+            <FormattedMessage
+              id="validator.StringMultiLang.empty"
+              defaultMessage="It is recommended to fill in to ensure data completeness and accuracy!"
+            />
+          ),
+        },
+        {
+          max: 500,
+          message: (
+            <FormattedMessage
+              id="validator.StringMultiLang.length500"
+              defaultMessage="Length cannot exceed 500 characters!"
+            />
+          ),
+        },
+      ]
+    : [];
+
   return (
     <Form.Item>
       <Form.List name={name}>
@@ -29,22 +54,7 @@ const LangTextItemForm: FC<Props> = ({ name, label }) => {
                   </Form.Item>
                 </Col>
                 <Col flex="auto" style={{ marginRight: '10px' }}>
-                  <Form.Item
-                    noStyle
-                    name={[subField.name, '#text']}
-                    rules={[
-                      {
-                        required: true,
-                        max: 500,
-                        message: (
-                          <FormattedMessage
-                            id="validator.StringMultiLang.length500"
-                            defaultMessage="Length cannot exceed 500 characters!"
-                          />
-                        ),
-                      },
-                    ]}
-                  >
+                  <Form.Item noStyle name={[subField.name, '#text']} rules={rules}>
                     <TextArea placeholder="text" rows={1} />
                   </Form.Item>
                 </Col>
