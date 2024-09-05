@@ -78,7 +78,7 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly,
                 ?.baseName,
             generalComment:
               result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.[
-              'common:generalComment'
+                'common:generalComment'
               ],
           },
         },

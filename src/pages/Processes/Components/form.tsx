@@ -1,5 +1,6 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
+import LocationTextItemForm from '@/components/LocationTextItem/form';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
@@ -337,7 +338,7 @@ export const ProcessForm: FC<Props> = ({
             />
           }
         >
-          <Form.Item
+          <LocationTextItemForm
             label={
               <FormattedMessage
                 id="pages.process.view.processInformation.location"
@@ -350,9 +351,9 @@ export const ProcessForm: FC<Props> = ({
               'locationOfOperationSupplyOrProduction',
               '@location',
             ]}
-          >
-            <Input />
-          </Form.Item>
+            lang={lang}
+            onData={onData}
+          />
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
               id="pages.process.view.processInformation.descriptionOfRestrictions"
