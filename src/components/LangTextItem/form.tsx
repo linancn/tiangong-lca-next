@@ -9,9 +9,10 @@ const { TextArea } = Input;
 type Props = {
   name: any;
   label: ReactNode | string;
+  rules?: any[];
 };
 
-const LangTextItemForm: FC<Props> = ({ name, label }) => {
+const LangTextItemForm: FC<Props> = ({ name, label, rules }) => {
   return (
     <Form.Item>
       <Form.List name={name}>
@@ -32,7 +33,7 @@ const LangTextItemForm: FC<Props> = ({ name, label }) => {
                   <Form.Item
                     noStyle
                     name={[subField.name, '#text']}
-                    rules={[
+                    rules={rules ?? [
                       {
                         required: true,
                         max: 500,
