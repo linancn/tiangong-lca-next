@@ -12,7 +12,7 @@ import { FC, useCallback, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { v4 } from 'uuid';
 import { node } from '../Config/node';
-import ModelToolbarAddThroughFlow from './addThroughFlow';
+import ModelToolbarAdd from './add';
 import ModelToolbarEditInfo from './eidtInfo';
 import EdgeExhange from './Exchange';
 import ModelToolbarViewInfo from './viewInfo';
@@ -78,7 +78,7 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly,
                 ?.baseName,
             generalComment:
               result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.[
-                'common:generalComment'
+              'common:generalComment'
               ],
           },
         },
@@ -297,7 +297,7 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly,
       />
       {!readonly && (
         <>
-          <ModelToolbarAddThroughFlow buttonType={'icon'} lang={lang} onData={addProcessNode} />
+          <ModelToolbarAdd buttonType={'icon'} lang={lang} onData={addProcessNode} />
           {/* <Tooltip
             title={
               <FormattedMessage

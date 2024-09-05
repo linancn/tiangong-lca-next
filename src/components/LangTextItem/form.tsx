@@ -9,34 +9,10 @@ const { TextArea } = Input;
 type Props = {
   name: any;
   label: ReactNode | string;
+  rules?: any[];
 };
 
-const LangTextItemForm: FC<Props> = ({ name, label }) => {
-  const isShortName = JSON.stringify(name).includes('common:shortName');
-  const rules = isShortName
-    ? [
-        {
-          required: true,
-          warningOnly: true,
-          message: (
-            <FormattedMessage
-              id="validator.StringMultiLang.empty"
-              defaultMessage="It is recommended to fill in to ensure data completeness and accuracy!"
-            />
-          ),
-        },
-        {
-          max: 500,
-          message: (
-            <FormattedMessage
-              id="validator.StringMultiLang.length500"
-              defaultMessage="Length cannot exceed 500 characters!"
-            />
-          ),
-        },
-      ]
-    : [];
-
+const LangTextItemForm: FC<Props> = ({ name, label, rules }) => {
   return (
     <Form.Item>
       <Form.List name={name}>
