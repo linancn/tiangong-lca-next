@@ -92,3 +92,8 @@ export async function storage() {
 
   return url;
 }
+
+export async function getILCDLocation(id: string) {
+  const result = await supabase.rpc('ilcd_location_get', { id });
+  console.log(result);
+}

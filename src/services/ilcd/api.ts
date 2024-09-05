@@ -124,3 +124,27 @@ export async function getILCDFlowCategorizationAllZH() {
     success: true,
   });
 }
+
+export async function getILCDLocationByValue(lang: string, get_value: string) {
+  let file_name = 'ILCDLocations';
+  if (lang === 'zh') {
+    file_name = 'ILCDLocations_zh';
+  }
+  const result = await supabase.rpc('ilcd_location_get', {
+    this_file_name: file_name,
+    get_value: get_value,
+  });
+  console.log('getILCDLocationByValue', result);
+  if (result.data?.['#text']) {
+    return Promise.resolve({
+      data: get_value + ' (' + result.data['#text'] + ')',
+      success: true,
+    });
+  }
+  else {
+    return Promise.resolve({
+      data: get_value,
+      success: true,
+    });
+  }
+}
