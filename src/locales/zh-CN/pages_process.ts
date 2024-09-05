@@ -52,7 +52,7 @@ export default {
   'pages.process.view.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness':
     '数据来源处理与代表性',
   'pages.process.view.modellingAndValidation.deviationsFromCutOffAndCompletenessPrinciples':
-    '与截止和完整性原则的偏差',
+    '与数据截断和完整性原则的偏差',
   'pages.process.view.modellingAndValidation.dataSelectionAndCombinationPrinciples':
     '数据选择和组合原理',
   'pages.process.view.modellingAndValidation.deviationsFromSelectionAndCombinationPrinciples':
@@ -60,7 +60,7 @@ export default {
   'pages.process.view.modellingAndValidation.dataTreatmentAndExtrapolationsPrinciples':
     '数据处理和推断原理',
   'pages.process.view.modellingAndValidation.deviationsFromTreatmentAndExtrapolationPrinciples':
-    '与处理和外推原则的偏差',
+    '与数据处理和推断原理的偏差',
   'pages.process.view.modellingAndValidation.referenceToDataSource': '数据来源引用',
   'pages.process.view.modellingAndValidation.useAdviceForDataSet': '数据集使用建议',
   'pages.process.view.modellingAndValidation.completenessOtherProblemField': '完整性：其他问题领域',
