@@ -47,6 +47,27 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             <LangTextItemForm
               name={['contactInformation', 'dataSetInformation', 'common:shortName']}
               label={<FormattedMessage id="pages.contact.shortName" defaultMessage="Short Name" />}
+              rules={[
+                {
+                  required: true,
+                  warningOnly: true,
+                  message: (
+                    <FormattedMessage
+                      id="validator.StringMultiLang.empty"
+                      defaultMessage="It is recommended to fill in to ensure data completeness and accuracy!"
+                    />
+                  ),
+                },
+                {
+                  max: 500,
+                  message: (
+                    <FormattedMessage
+                      id="validator.StringMultiLang.length500"
+                      defaultMessage="Length cannot exceed 500 characters!"
+                    />
+                  ),
+                },
+              ]}
             />
           </Card>
           <Card
@@ -56,6 +77,27 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             <LangTextItemForm
               name={['contactInformation', 'dataSetInformation', 'common:name']}
               label={<FormattedMessage id="pages.contact.name" defaultMessage="Name" />}
+              rules={[
+                {
+                  required: true,
+                  warningOnly: true,
+                  message: (
+                    <FormattedMessage
+                      id="validator.StringMultiLang.empty"
+                      defaultMessage="It is recommended to fill in to ensure data completeness and accuracy!"
+                    />
+                  ),
+                },
+                {
+                  max: 500,
+                  message: (
+                    <FormattedMessage
+                      id="validator.StringMultiLang.length500"
+                      defaultMessage="Length cannot exceed 500 characters!"
+                    />
+                  ),
+                },
+              ]}
             />
           </Card>
           <Card
@@ -94,6 +136,27 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
                   defaultMessage="Contact Address"
                 />
               }
+              rules={[
+                {
+                  required: true,
+                  warningOnly: true,
+                  message: (
+                    <FormattedMessage
+                      id="validator.STMultiLang.empty"
+                      defaultMessage="It is recommended to fill in to ensure data completeness and accuracy!"
+                    />
+                  ),
+                },
+                {
+                  max: 1000,
+                  message: (
+                    <FormattedMessage
+                      id="validator.STMultiLang.length1000"
+                      defaultMessage="Length cannot exceed 1000 characters!"
+                    />
+                  ),
+                },
+              ]}
             />
           </Card>
           <Form.Item
@@ -111,12 +174,64 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
           <Form.Item
             label={<FormattedMessage id="pages.contact.email" defaultMessage="Email" />}
             name={['contactInformation', 'dataSetInformation', 'email']}
+            rules={[
+              {
+                type: 'email',
+                message: (
+                  <FormattedMessage
+                    id="validator.pages.contact.email.pattern"
+                    defaultMessage="The input is not valid E-mail!"
+                  />
+                ),
+              },
+              {
+                required: true,
+                warningOnly: true,
+                message: (
+                  <FormattedMessage
+                    id="validator.pages.contact.email.empty"
+                    defaultMessage="Email is optional!"
+                  />
+                ),
+              },
+            ]}
           >
             <Input />
           </Form.Item>
           <Form.Item
             label={<FormattedMessage id="pages.contact.WWWAddress" defaultMessage="WWWAddress" />}
             name={['contactInformation', 'dataSetInformation', 'WWWAddress']}
+            rules={[
+              {
+                required: true,
+                warningOnly: true,
+                message: (
+                  <FormattedMessage
+                    id="validator.pages.contact.WWWAddress.empty"
+                    defaultMessage="WWWAddress is optional!"
+                  />
+                ),
+              },
+              {
+                type: 'url',
+                warningOnly: true,
+                message: (
+                  <FormattedMessage
+                    id="validator.pages.contact.WWWAddress.invalid"
+                    defaultMessage="Please enter a valid WWWAddress!"
+                  />
+                ),
+              },
+              {
+                max: 1000,
+                message: (
+                  <FormattedMessage
+                    id="validator.STMultiLang.length1000"
+                    defaultMessage="Length cannot exceed 1000 characters!"
+                  />
+                ),
+              },
+            ]}
           >
             <Input />
           </Form.Item>
@@ -137,6 +252,27 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
                   defaultMessage="Central Contact Point"
                 />
               }
+              rules={[
+                {
+                  required: true,
+                  warningOnly: true,
+                  message: (
+                    <FormattedMessage
+                      id="validator.STMultiLang.empty"
+                      defaultMessage="It is recommended to fill in to ensure data completeness and accuracy!"
+                    />
+                  ),
+                },
+                {
+                  max: 1000,
+                  message: (
+                    <FormattedMessage
+                      id="validator.STMultiLang.length1000"
+                      defaultMessage="Length cannot exceed 1000 characters!"
+                    />
+                  ),
+                },
+              ]}
             />
           </Card>
           <Card
@@ -156,6 +292,27 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
                   defaultMessage="Contact Description Or Comment"
                 />
               }
+              rules={[
+                {
+                  required: true,
+                  warningOnly: true,
+                  message: (
+                    <FormattedMessage
+                      id="validator.STMultiLang.empty"
+                      defaultMessage="It is recommended to fill in to ensure data completeness and accuracy!"
+                    />
+                  ),
+                },
+                {
+                  max: 1000,
+                  message: (
+                    <FormattedMessage
+                      id="validator.STMultiLang.length1000"
+                      defaultMessage="Length cannot exceed 1000 characters!"
+                    />
+                  ),
+                },
+              ]}
             />
           </Card>
           <ContactSelectForm

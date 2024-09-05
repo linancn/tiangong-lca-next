@@ -8,7 +8,7 @@ type Props = {
   labelStyle: any;
 };
 
-const LocationTextItemDescription: FC<Props> = ({ lang, data, label,labelStyle }) => {
+const LocationTextItemDescription: FC<Props> = ({ lang, data, label, labelStyle }) => {
   const [spinning, setSpinning] = useState<boolean>(false);
   const [dataDes, setDataDes] = useState<string>('');
   useEffect(() => {
@@ -24,11 +24,7 @@ const LocationTextItemDescription: FC<Props> = ({ lang, data, label,labelStyle }
   return (
     <Spin spinning={spinning}>
       <Descriptions bordered size={'small'} column={1}>
-        <Descriptions.Item
-          key={0}
-          label={label}
-          labelStyle={labelStyle}
-        >
+        <Descriptions.Item key={0} label={label} labelStyle={labelStyle}>
           {dataDes}
         </Descriptions.Item>
       </Descriptions>
