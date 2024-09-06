@@ -267,7 +267,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
         <LevelTextItemDescription
           data={
             initData.processInformation?.dataSetInformation?.classificationInformation?.[
-            'common:classification'
+              'common:classification'
             ]?.['common:class']
           }
           categoryType={'Process'}
@@ -340,12 +340,21 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
             />
           }
         >
-          <LocationTextItemDescription lang={lang} data={initData.processInformation?.geography?.locationOfOperationSupplyOrProduction?.[
-            '@location'
-          ] ?? '-'} label={<FormattedMessage
-            id="pages.process.view.processInformation.location"
-            defaultMessage="Location"
-          />} labelStyle={{ width: '100px' }} />
+          <LocationTextItemDescription
+            lang={lang}
+            data={
+              initData.processInformation?.geography?.locationOfOperationSupplyOrProduction?.[
+                '@location'
+              ] ?? '-'
+            }
+            label={
+              <FormattedMessage
+                id="pages.process.view.processInformation.location"
+                defaultMessage="Location"
+              />
+            }
+            labelStyle={{ width: '100px' }}
+          />
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
               id="pages.process.view.processInformation.descriptionOfRestrictions"
@@ -661,7 +670,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
             lang={lang}
             data={
               initData.modellingAndValidation?.validation?.review?.[
-              'common:referenceToNameOfReviewerAndInstitution'
+                'common:referenceToNameOfReviewerAndInstitution'
               ]
             }
           />
@@ -680,7 +689,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
           lang={lang}
           data={
             initData.administrativeInformation?.dataGenerator?.[
-            'common:referenceToPersonOrEntityGeneratingTheDataSet'
+              'common:referenceToPersonOrEntityGeneratingTheDataSet'
             ]
           }
         />
@@ -770,7 +779,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
             lang={lang}
             data={
               initData.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToOwnershipOfDataSet'
+                'common:referenceToOwnershipOfDataSet'
               ]
             }
           />
