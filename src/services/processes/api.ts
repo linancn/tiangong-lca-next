@@ -121,7 +121,7 @@ export async function getProcessTableAll(
             const thisLocation = locationData.find((l) => l['@value'] === i['@location']);
             let location = i['@location'];
             if (thisLocation?.['#text']) {
-              location = i['@location'] + ' (' + thisLocation['#text'] + ')';
+              location = thisLocation['#text'];
             }
 
             return {
@@ -149,7 +149,7 @@ export async function getProcessTableAll(
           const thisLocation = locationData.find((l) => l['@value'] === i['@location']);
           let location = i['@location'];
           if (thisLocation?.['#text']) {
-            location = i['@location'] + ' (' + thisLocation['#text'] + ')';
+            location = thisLocation['#text'];
           }
           return {
             key: i.id,
@@ -219,12 +219,37 @@ export async function getProcessTablePgroongaSearch(
     }
     const totalCount = result.data[0].total_count;
 
+    const locations: string[] = Array.from(
+      new Set(
+        result.data.map(
+          (i: any) =>
+            i.json?.processDataSet?.processInformation?.geography
+              ?.locationOfOperationSupplyOrProduction?.['@location'],
+        ),
+      ),
+    );
+    let locationData: any[] = [];
+    await getILCDLocationByValues(lang, locations).then((res) => {
+      locationData = res.data;
+    });
+
     let data: any[] = [];
     if (lang === 'zh') {
       await getILCDClassificationZH('Process').then((res) => {
         data = result.data.map((i: any) => {
           try {
             const dataInfo = i.json?.processDataSet?.processInformation;
+
+            const thisLocation = locationData.find(
+              (l) =>
+                l['@value'] ===
+                dataInfo?.geography?.locationOfOperationSupplyOrProduction?.['@location'],
+            );
+            let location = i['@location'];
+            if (thisLocation?.['#text']) {
+              location = thisLocation['#text'];
+            }
+
             const classifications = jsonToList(
               dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
                 'common:class'
@@ -242,8 +267,7 @@ export async function getProcessTablePgroongaSearch(
               ),
               classification: classificationToString(classificationZH),
               referenceYear: dataInfo?.time?.['common:referenceYear'] ?? '-',
-              location:
-                dataInfo?.geography?.locationOfOperationSupplyOrProduction?.['@location'] ?? '-',
+              location: location ?? '-',
               createdAt: new Date(i?.created_at),
             };
           } catch (e) {
@@ -258,6 +282,17 @@ export async function getProcessTablePgroongaSearch(
       data = result.data.map((i: any) => {
         try {
           const dataInfo = i.json?.processDataSet?.processInformation;
+
+          const thisLocation = locationData.find(
+            (l) =>
+              l['@value'] ===
+              dataInfo?.geography?.locationOfOperationSupplyOrProduction?.['@location'],
+          );
+          let location = dataInfo?.geography?.locationOfOperationSupplyOrProduction?.['@location'];
+          if (thisLocation?.['#text']) {
+            location = thisLocation['#text'];
+          }
+
           return {
             key: i.id,
             id: i.id,
@@ -272,8 +307,7 @@ export async function getProcessTablePgroongaSearch(
               ],
             ),
             referenceYear: dataInfo?.time?.['common:referenceYear'] ?? '-',
-            location:
-              dataInfo?.geography?.locationOfOperationSupplyOrProduction?.['@location'] ?? '-',
+            location: location ?? '-',
             createdAt: new Date(i?.created_at),
           };
         } catch (e) {

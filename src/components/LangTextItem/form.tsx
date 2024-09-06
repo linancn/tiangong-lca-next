@@ -48,7 +48,6 @@ const LangTextItemForm: FC<Props> = ({ name, label, rules }) => {
                       ]
                     }
                   >
-
                     <TextArea placeholder="text" rows={1} />
                   </Form.Item>
                 </Col>
