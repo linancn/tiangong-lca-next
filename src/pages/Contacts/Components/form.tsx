@@ -1,5 +1,11 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
+import {
+  STMultiLanglength1000,
+  String,
+  StringMultiLanglength500,
+  dataSetVersion,
+} from '@/components/Validator/index';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { ProFormInstance } from '@ant-design/pro-components';
@@ -47,6 +53,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             <LangTextItemForm
               name={['contactInformation', 'dataSetInformation', 'common:shortName']}
               label={<FormattedMessage id="pages.contact.shortName" defaultMessage="Short Name" />}
+              rules={StringMultiLanglength500}
             />
           </Card>
           <Card
@@ -56,6 +63,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             <LangTextItemForm
               name={['contactInformation', 'dataSetInformation', 'common:name']}
               label={<FormattedMessage id="pages.contact.name" defaultMessage="Name" />}
+              rules={StringMultiLanglength500}
             />
           </Card>
           <Card
@@ -94,29 +102,57 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
                   defaultMessage="Contact Address"
                 />
               }
+              rules={STMultiLanglength1000}
             />
           </Card>
           <Form.Item
             label={<FormattedMessage id="pages.contact.telephone" defaultMessage="Telephone" />}
             name={['contactInformation', 'dataSetInformation', 'telephone']}
+            rules={String}
           >
             <Input />
           </Form.Item>
           <Form.Item
             label={<FormattedMessage id="pages.contact.telefax" defaultMessage="Telefax" />}
             name={['contactInformation', 'dataSetInformation', 'telefax']}
+            rules={String}
           >
             <Input />
           </Form.Item>
           <Form.Item
             label={<FormattedMessage id="pages.contact.email" defaultMessage="Email" />}
             name={['contactInformation', 'dataSetInformation', 'email']}
+            rules={[
+              ...String,
+              {
+                type: 'email',
+                message: (
+                  <FormattedMessage
+                    id="validator.pages.contact.email.pattern"
+                    defaultMessage="The input is not valid E-mail!"
+                  />
+                ),
+              },
+            ]}
           >
             <Input />
           </Form.Item>
           <Form.Item
             label={<FormattedMessage id="pages.contact.WWWAddress" defaultMessage="WWWAddress" />}
             name={['contactInformation', 'dataSetInformation', 'WWWAddress']}
+            rules={[
+              ...STMultiLanglength1000,
+              {
+                type: 'url',
+                warningOnly: true,
+                message: (
+                  <FormattedMessage
+                    id="validator.pages.contact.WWWAddress.invalid"
+                    defaultMessage="Please enter a valid WWWAddress!"
+                  />
+                ),
+              },
+            ]}
           >
             <Input />
           </Form.Item>
@@ -137,6 +173,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
                   defaultMessage="Central Contact Point"
                 />
               }
+              rules={STMultiLanglength1000}
             />
           </Card>
           <Card
@@ -156,6 +193,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
                   defaultMessage="Contact Description Or Comment"
                 />
               }
+              rules={STMultiLanglength1000}
             />
           </Card>
           <ContactSelectForm
@@ -223,26 +261,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
                 'publicationAndOwnership',
                 'common:dataSetVersion',
               ]}
-              rules={[
-                {
-                  required: true,
-                  message: (
-                    <FormattedMessage
-                      id="validator.dataSetVersion.empty"
-                      defaultMessage="Please input the Data Set Version!"
-                    />
-                  ),
-                },
-                {
-                  pattern: /^\d{2}\.\d{2}\.\d{3}$/,
-                  message: (
-                    <FormattedMessage
-                      id="validator.dataSetVersion.pattern"
-                      defaultMessage="Version format must be XX.XX.XXX, where X is a digit!"
-                    />
-                  ),
-                },
-              ]}
+              rules={dataSetVersion}
             >
               <Input />
             </Form.Item>

@@ -48,10 +48,10 @@ const LangTextItemForm: FC<Props> = ({ name, label, rules }) => {
                       ]
                     }
                   >
+
                     <TextArea placeholder="text" rows={1} />
                   </Form.Item>
                 </Col>
-
                 <Col flex="20px">
                   <CloseOutlined
                     style={{ marginTop: '10px' }}
