@@ -6,9 +6,10 @@ type Props = {
   label: any;
   lang: string;
   onData: () => void;
+  rules?: any[];
 };
 
-const LocationTextItemForm: FC<Props> = ({ name, label, lang, onData }) => {
+const LocationTextItemForm: FC<Props> = ({ name, label, lang, onData, rules }) => {
   const [locationData, setLocationData] = useState<any>([]);
 
   const handleLChange = async () => {
@@ -31,7 +32,7 @@ const LocationTextItemForm: FC<Props> = ({ name, label, lang, onData }) => {
 
   return (
     <Space direction="vertical" style={{ width: '100%' }}>
-      <Form.Item label={label} name={name}>
+      <Form.Item label={label} name={name} rules={rules}>
         <Select
           showSearch
           defaultValue={null}

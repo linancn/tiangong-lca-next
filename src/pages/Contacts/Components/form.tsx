@@ -1,10 +1,13 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
 import {
-  STMultiLanglength1000,
-  String,
-  StringMultiLanglength500,
+  StringMultiLang_r,
+  STMultiLang_r,
+  STMultiLang_o,
   dataSetVersion,
+  String_o,
+  // emailvalidation,
+  // WWWAddress,
 } from '@/components/Validator/index';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
@@ -53,7 +56,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             <LangTextItemForm
               name={['contactInformation', 'dataSetInformation', 'common:shortName']}
               label={<FormattedMessage id="pages.contact.shortName" defaultMessage="Short Name" />}
-              rules={StringMultiLanglength500}
+              rules={StringMultiLang_r}
             />
           </Card>
           <Card
@@ -63,7 +66,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             <LangTextItemForm
               name={['contactInformation', 'dataSetInformation', 'common:name']}
               label={<FormattedMessage id="pages.contact.name" defaultMessage="Name" />}
-              rules={StringMultiLanglength500}
+              rules={StringMultiLang_r}
             />
           </Card>
           <Card
@@ -102,20 +105,20 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
                   defaultMessage="Contact Address"
                 />
               }
-              rules={STMultiLanglength1000}
+              rules={STMultiLang_o}
             />
           </Card>
           <Form.Item
             label={<FormattedMessage id="pages.contact.telephone" defaultMessage="Telephone" />}
             name={['contactInformation', 'dataSetInformation', 'telephone']}
-            rules={String}
+            rules={String_o}
           >
             <Input />
           </Form.Item>
           <Form.Item
             label={<FormattedMessage id="pages.contact.telefax" defaultMessage="Telefax" />}
             name={['contactInformation', 'dataSetInformation', 'telefax']}
-            rules={String}
+            rules={String_o}
           >
             <Input />
           </Form.Item>
@@ -123,7 +126,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             label={<FormattedMessage id="pages.contact.email" defaultMessage="Email" />}
             name={['contactInformation', 'dataSetInformation', 'email']}
             rules={[
-              ...String,
+              ...String_o,
               {
                 type: 'email',
                 message: (
@@ -141,7 +144,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             label={<FormattedMessage id="pages.contact.WWWAddress" defaultMessage="WWWAddress" />}
             name={['contactInformation', 'dataSetInformation', 'WWWAddress']}
             rules={[
-              ...STMultiLanglength1000,
+              ...STMultiLang_r,
               {
                 type: 'url',
                 warningOnly: true,
@@ -173,7 +176,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
                   defaultMessage="Central Contact Point"
                 />
               }
-              rules={STMultiLanglength1000}
+              rules={STMultiLang_r}
             />
           </Card>
           <Card
@@ -193,7 +196,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
                   defaultMessage="Contact Description Or Comment"
                 />
               }
-              rules={STMultiLanglength1000}
+              rules={STMultiLang_o}
             />
           </Card>
           <ContactSelectForm
