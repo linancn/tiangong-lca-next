@@ -125,6 +125,42 @@ export async function getILCDFlowCategorizationAllZH() {
   });
 }
 
+export async function getILCDLocationAll(lang: string) {
+  let file_name = 'ILCDLocations';
+  if (lang === 'zh') {
+    file_name = 'ILCDLocations_zh';
+  }
+  const result = await supabase
+    .from('ilcd')
+    .select(
+      `
+      file_name,
+      json_ordered->ILCDLocations->location
+      `,
+    )
+    .eq('file_name', file_name);
+  return Promise.resolve({
+    data: result.data ?? [],
+    success: true,
+  });
+}
+
+export async function getILCDLocationByValues(lang: string, get_values: string[]) {
+  let file_name = 'ILCDLocations';
+  if (lang === 'zh') {
+    file_name = 'ILCDLocations_zh';
+  }
+  const result = await supabase.rpc('ilcd_location_get', {
+    this_file_name: file_name,
+    get_values: get_values,
+  });
+
+  return Promise.resolve({
+    data: result.data,
+    success: true,
+  });
+}
+
 export async function getILCDLocationByValue(lang: string, get_value: string) {
   let file_name = 'ILCDLocations';
   if (lang === 'zh') {
@@ -132,12 +168,12 @@ export async function getILCDLocationByValue(lang: string, get_value: string) {
   }
   const result = await supabase.rpc('ilcd_location_get', {
     this_file_name: file_name,
-    get_value: get_value,
+    get_values: [get_value],
   });
-  console.log('getILCDLocationByValue', result);
-  if (result.data?.['#text']) {
+
+  if (result.data?.[0]?.['#text']) {
     return Promise.resolve({
-      data: get_value + ' (' + result.data['#text'] + ')',
+      data: get_value + ' (' + result.data?.[0]?.['#text'] + ')',
       success: true,
     });
   } else {

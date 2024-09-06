@@ -6,7 +6,7 @@ import {
   getLangText,
   jsonToList,
 } from '../general/util';
-import { getILCDClassificationZH } from '../ilcd/api';
+import { getILCDClassificationZH, getILCDLocationByValues } from '../ilcd/api';
 import { genProcessJsonOrdered } from './util';
 
 export async function createProcess(data: any) {
@@ -104,6 +104,12 @@ export async function getProcessTableAll(
       });
     }
 
+    const locations: string[] = Array.from(new Set(result.data.map((i: any) => i['@location'])));
+    let locationData: any[] = [];
+    await getILCDLocationByValues(lang, locations).then((res) => {
+      locationData = res.data;
+    });
+
     let data: any[] = [];
     if (lang === 'zh') {
       await getILCDClassificationZH('Process').then((res) => {
@@ -111,6 +117,12 @@ export async function getProcessTableAll(
           try {
             const classifications = jsonToList(i['common:class']);
             const classificationZH = genClassificationZH(classifications, res?.data?.category);
+
+            const thisLocation = locationData.find((l) => l['@value'] === i['@location']);
+            let location = i['@location'];
+            if (thisLocation?.['#text']) {
+              location = i['@location'] + ' (' + thisLocation['#text'] + ')';
+            }
 
             return {
               key: i.id,
@@ -120,7 +132,7 @@ export async function getProcessTableAll(
               generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
               classification: classificationToString(classificationZH ?? {}),
               referenceYear: i['common:referenceYear'] ?? '-',
-              location: i['@location'] ?? '-',
+              location: location ?? '-',
               createdAt: new Date(i.created_at),
             };
           } catch (e) {
@@ -134,6 +146,11 @@ export async function getProcessTableAll(
     } else {
       data = result.data.map((i: any) => {
         try {
+          const thisLocation = locationData.find((l) => l['@value'] === i['@location']);
+          let location = i['@location'];
+          if (thisLocation?.['#text']) {
+            location = i['@location'] + ' (' + thisLocation['#text'] + ')';
+          }
           return {
             key: i.id,
             id: i.id,
@@ -142,7 +159,7 @@ export async function getProcessTableAll(
             generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
             classification: classificationToString(i['common:class'] ?? {}),
             referenceYear: i['common:referenceYear'] ?? '-',
-            location: i['@location'] ?? '-',
+            location: location,
             createdAt: new Date(i.created_at),
           };
         } catch (e) {
