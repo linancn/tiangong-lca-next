@@ -2,6 +2,9 @@ import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import {
+  StringMultiLang_r,
+} from '@/components/Validator/index';
+import {
   Card,
   Form,
   Input,
@@ -90,6 +93,7 @@ export const FlowpropertyForm: FC<Props> = ({
                   defaultMessage="Name"
                 />
               }
+              rules={StringMultiLang_r}
             />
           </Card>
           <br />

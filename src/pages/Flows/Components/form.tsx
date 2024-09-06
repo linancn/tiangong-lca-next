@@ -4,6 +4,10 @@ import FlowpropertiesSelect from '@/pages/Flowproperties/Components/select/form'
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { complianceOptions, flowTypeOptions } from '@/services/flows/data';
 import type { ProFormInstance } from '@ant-design/pro-form';
+import {
+  StringMultiLang_r,
+  CASNumber,
+} from '@/components/Validator/index';
 import { Card, Form, Input, Select, Space } from 'antd';
 import type { FC } from 'react';
 import React, { useState } from 'react';
@@ -78,6 +82,7 @@ export const FlowForm: FC<Props> = ({
                 defaultMessage="Base Name"
               />
             }
+            rules={StringMultiLang_r}
           />
         </Card>
         <br />
@@ -177,27 +182,7 @@ export const FlowForm: FC<Props> = ({
             />
           }
           name={['flowInformation', 'dataSetInformation', 'CASNumber']}
-          rules={[
-            {
-              required: true,
-              warningOnly: true,
-              message: (
-                <FormattedMessage
-                  id="validator.CASNumber.empty"
-                  defaultMessage="Should only be given for (virtually) pure substances, but NOT also for the main constituent of a material or product etc!"
-                />
-              ),
-            },
-            {
-              pattern: /^\d{2,7}-\d{2}-\d$/,
-              message: (
-                <FormattedMessage
-                  id="validator.CASNumber.pattern"
-                  defaultMessage="CAS Number format must be XX-XX-X or XXXXXXX-XX-X, where X is a digit!"
-                />
-              ),
-            },
-          ]}
+          rules={CASNumber}
         >
           <Input />
         </Form.Item>
