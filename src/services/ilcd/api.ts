@@ -140,8 +140,7 @@ export async function getILCDLocationByValue(lang: string, get_value: string) {
       data: get_value + ' (' + result.data['#text'] + ')',
       success: true,
     });
-  }
-  else {
+  } else {
     return Promise.resolve({
       data: get_value,
       success: true,

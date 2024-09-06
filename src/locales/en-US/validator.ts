@@ -13,6 +13,7 @@ export default {
     'Version format must be X-X-X, where the first part is 2-7 digits, the second part is 2 digits, and the third part is 1 digit!',
   'validator.pages.contact.email.pattern': 'The input is not valid E-mail!',
   'validator.pages.contact.WWWAddress.invalid': 'Please enter a valid WWWAddress!',
-  'validator.String.empty':'It is recommended to fill in to ensure data completeness and accuracy!',
-  'validator.String.length1to500':'Length cannot be less than 1 or exceed 500 characters!',
+  'validator.String.empty':
+    'It is recommended to fill in to ensure data completeness and accuracy!',
+  'validator.String.length1to500': 'Length cannot be less than 1 or exceed 500 characters!',
 };

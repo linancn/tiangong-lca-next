@@ -1,12 +1,17 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
+import {
+  STMultiLanglength1000,
+  String,
+  StringMultiLanglength500,
+  dataSetVersion,
+} from '@/components/Validator/index';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Card, Form, Input, Space } from 'antd';
 import { FC } from 'react';
 import { FormattedMessage } from 'umi';
-import { StringMultiLanglength500, STMultiLanglength1000, String, dataSetVersion } from '@/components/Validator/index';
 
 type Props = {
   lang: string;
@@ -137,15 +142,15 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             name={['contactInformation', 'dataSetInformation', 'WWWAddress']}
             rules={[
               ...STMultiLanglength1000,
-              { 
-                type: 'url', 
+              {
+                type: 'url',
                 warningOnly: true,
                 message: (
                   <FormattedMessage
-                    id='validator.pages.contact.WWWAddress.invalid'
-                    defaultMessage="Please enter a valid WWWAddress!" 
+                    id="validator.pages.contact.WWWAddress.invalid"
+                    defaultMessage="Please enter a valid WWWAddress!"
                   />
-                )
+                ),
               },
             ]}
           >
