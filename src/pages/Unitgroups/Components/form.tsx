@@ -13,6 +13,10 @@ import UnitCreate from './Unit/create';
 import UnitDelete from './Unit/delete';
 import UnitEdit from './Unit/edit';
 import UnitView from './Unit/view';
+import {
+  StringMultiLang_r,
+  dataSetVersion,
+} from '@/components/Validator/index';
 
 type Props = {
   lang: string;
@@ -177,6 +181,7 @@ export const UnitGroupForm: FC<Props> = ({
                 defaultMessage="Name"
               />
             }
+            rules={StringMultiLang_r}
           ></LangTextItemForm>
         </Card>
         <Card
@@ -280,6 +285,7 @@ export const UnitGroupForm: FC<Props> = ({
             />
           }
           name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
+          rules={dataSetVersion}
         >
           <Input />
         </Form.Item>

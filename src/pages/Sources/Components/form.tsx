@@ -6,6 +6,11 @@ import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { publicationTypeOptions } from '@/services/sources/data';
 import { FileType, getBase64, isImage } from '@/services/supabase/storage';
 import { ProFormInstance } from '@ant-design/pro-components';
+import {
+  StringMultiLang_r,
+  STMultiLang_r,
+  dataSetVersion,
+} from '@/components/Validator/index';
 import { Card, Form, Image, Input, Select, Space, Upload, UploadFile } from 'antd';
 import { RcFile } from 'antd/es/upload';
 import { FC, useState } from 'react';
@@ -89,6 +94,7 @@ export const SourceForm: FC<Props> = ({
                 defaultMessage="Short Name"
               />
             }
+            rules={StringMultiLang_r}
           />
         </Card>
         <br />
@@ -123,6 +129,7 @@ export const SourceForm: FC<Props> = ({
             />
           }
           name={['sourceInformation', 'dataSetInformation', 'sourceCitation']}
+          rules={STMultiLang_r}
         >
           <Input />
         </Form.Item>
@@ -273,6 +280,7 @@ export const SourceForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
+            rules={dataSetVersion}
           >
             <Input />
           </Form.Item>

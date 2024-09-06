@@ -14,6 +14,11 @@ import {
   processTypeOptions,
   reviewTypeOptions,
 } from '@/services/processes/data';
+import {
+  StringMultiLang_r,
+  StringMultiLang_o,
+  NullableString,
+} from '@/components/Validator/index';
 import { genProcessExchangeTableData } from '@/services/processes/util';
 import { CheckCircleTwoTone, CloseCircleOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
@@ -236,6 +241,7 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage="Base Name"
               />
             }
+            rules={StringMultiLang_r}
           />
         </Card>
 
@@ -279,6 +285,7 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage="General Comment"
               />
             }
+            rules={StringMultiLang_o}
           />
         </Card>
 
@@ -353,6 +360,7 @@ export const ProcessForm: FC<Props> = ({
             ]}
             lang={lang}
             onData={onData}
+            rules={	NullableString}
           />
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
