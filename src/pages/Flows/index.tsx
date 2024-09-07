@@ -14,6 +14,7 @@ import FlowsCreate from './Components/create';
 import FlowsDelete from './Components/delete';
 import FlowsEdit from './Components/edit';
 import FlowModel from './Components/model';
+import { flowTypeOptions } from './Components/optiondata';
 import FlowsView from './Components/view';
 
 const { Search } = Input;
@@ -44,6 +45,7 @@ const TableList: FC = () => {
       title: <FormattedMessage id="pages.table.title.name" defaultMessage="Base Name" />,
       dataIndex: 'baseName',
       sorter: false,
+      search: false,
       render: (_, row) => [
         <Tooltip key={0} placement="topLeft" title={row.generalComment}>
           {row.baseName}
@@ -55,6 +57,13 @@ const TableList: FC = () => {
       dataIndex: 'flowType',
       sorter: false,
       search: false,
+      render: (_, row) => {
+        const flowType = flowTypeOptions.find((i) => i.value === row.flowType);
+        if (flowType) {
+          return flowType.label;
+        }
+        return row.flowType;
+      },
     },
     {
       title: (

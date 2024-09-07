@@ -9,6 +9,7 @@ import { Button, Card, Descriptions, Divider, Drawer, Spin, Tooltip } from 'antd
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
+import { flowTypeOptions } from './optiondata';
 
 type Props = {
   id: string;
@@ -107,7 +108,11 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
               }
               labelStyle={{ width: '160px' }}
             >
-              {initData?.flowInformation?.LCIMethod?.typeOfDataSet ?? '-'}
+              {flowTypeOptions.find(
+                (i) => i.value === initData?.flowInformation?.LCIMethod?.typeOfDataSet,
+              )?.label ??
+                initData?.flowInformation?.LCIMethod?.typeOfDataSet ??
+                '-'}
             </Descriptions.Item>
           </Descriptions>
           <Divider orientationMargin="0" orientation="left" plain>
