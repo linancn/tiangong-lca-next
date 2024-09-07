@@ -16,25 +16,6 @@ export type FlowModelTable = {
   created_at: Date;
 };
 
-export const flowTypeOptions = [
-  {
-    value: 'Elementary flow',
-    label: 'Elementary flow',
-  },
-  {
-    value: 'Product flow',
-    label: 'Product flow',
-  },
-  {
-    value: 'Waste flow',
-    label: 'Waste flow',
-  },
-  {
-    value: 'Other flow',
-    label: 'Other flow',
-  },
-];
-
 export const complianceOptions = [
   {
     value: 'Fully compliant',

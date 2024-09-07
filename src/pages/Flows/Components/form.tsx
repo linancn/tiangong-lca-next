@@ -1,17 +1,15 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
+import { CASNumber, StringMultiLang_r } from '@/components/Validator/index';
 import FlowpropertiesSelect from '@/pages/Flowproperties/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
-import { complianceOptions, flowTypeOptions } from '@/services/flows/data';
+import { complianceOptions } from '@/services/flows/data';
 import type { ProFormInstance } from '@ant-design/pro-form';
-import {
-  StringMultiLang_r,
-  CASNumber,
-} from '@/components/Validator/index';
 import { Card, Form, Input, Select, Space } from 'antd';
 import type { FC } from 'react';
 import React, { useState } from 'react';
 import { FormattedMessage } from 'umi';
+import { flowTypeOptions } from './optiondata';
 
 type Props = {
   lang: string;
