@@ -247,6 +247,7 @@ export async function getFlowTablePgroongaSearch(
               id: i.id,
               baseName: getLangText(dataInfo?.name?.baseName ?? {}, lang),
               generalComment: getLangText(dataInfo?.['common:generalComment'] ?? {}, lang),
+              flowType: i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet ?? '-',
               classification: classificationToString(classificationZH),
               CASNumber: dataInfo?.CASNumber ?? '-',
               created_at: new Date(i?.created_at),
@@ -273,6 +274,7 @@ export async function getFlowTablePgroongaSearch(
                 'common:category'
               ],
             ),
+            flowType: i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet ?? '-',
             CASNumber: dataInfo?.CASNumber ?? '-',
             created_at: new Date(i?.created_at),
           };
