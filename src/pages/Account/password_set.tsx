@@ -2,7 +2,7 @@ import { Footer } from '@/components';
 import { currentUser, setPassword } from '@/services/ant-design-pro/api';
 import { validatePasswordStrength } from '@/services/general/util';
 import { FormattedMessage, history } from '@umijs/max';
-import { Button, Form, Input, message, Space, Spin } from 'antd';
+import { Button, Form, Input, Space, Spin, message } from 'antd';
 import { createStyles } from 'antd-style';
 import { useEffect, useState, type FC } from 'react';
 import { Helmet, SelectLang, useIntl } from 'umi';

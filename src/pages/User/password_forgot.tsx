@@ -3,7 +3,7 @@ import { currentUser, forgotPasswordSendEmail } from '@/services/ant-design-pro/
 import { MailOutlined } from '@ant-design/icons';
 import { ProFormText } from '@ant-design/pro-components';
 import { FormattedMessage } from '@umijs/max';
-import { Button, Form, message, Space, Spin } from 'antd';
+import { Button, Form, Space, Spin, message } from 'antd';
 import { createStyles } from 'antd-style';
 import { useEffect, useState, type FC } from 'react';
 import { Helmet, SelectLang, useIntl } from 'umi';

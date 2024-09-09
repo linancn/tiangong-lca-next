@@ -88,7 +88,6 @@ export const STMultiLang_o = [
   },
 ];
 
-
 export const String_m = [
   {
     required: true,
@@ -161,7 +160,6 @@ export const String_o = [
   },
 ];
 
-
 export const dataSetVersion = [
   {
     required: true,
@@ -183,7 +181,6 @@ export const dataSetVersion = [
   },
 ];
 
-
 // export const emailvalidation = [
 //   ...String_o,
 //   {
@@ -196,7 +193,6 @@ export const dataSetVersion = [
 //     ),
 //   },
 // ];
-
 
 // export const WWWAddress = [
 //   ...STMultiLang_r,
@@ -211,7 +207,6 @@ export const dataSetVersion = [
 //     ),
 //   },
 // ];
-
 
 export const CASNumber = [
   {
@@ -233,8 +228,7 @@ export const CASNumber = [
       />
     ),
   },
-]
-
+];
 
 export const NullableString = [
   {

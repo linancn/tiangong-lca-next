@@ -1,0 +1,56 @@
+{
+  "appId": "world.tiangong.lca",
+  "productName": "TianGongLCA",
+  "copyright": "Nan LI",
+  "directories": {
+    "app": ".",
+    "output": "dist-package",
+    "buildResources": "build-res"
+  },
+  "files": ["package.json", "dist/**/*", "dist-electron/**/*", "node_modules"],
+  "dmg": {
+    "background": null,
+    "backgroundColor": "#ffffff",
+    "window": {
+      "width": "400",
+      "height": "300"
+    },
+    "contents": [
+      {
+        "x": 100,
+        "y": 100
+      },
+      {
+        "x": 300,
+        "y": 100,
+        "type": "link",
+        "path": "/Applications"
+      }
+    ]
+  },
+  "mac": {
+    "target": "dmg",
+    "category": "public.app-category.utilities",
+    "icon": "./icons/icon.icns"
+  },
+  "win": {
+    "target": "nsis",
+    "icon": "./icons/icon.ico"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowElevation": true,
+    "allowToChangeInstallationDirectory": true,
+    "installerIcon": "./icons/icon.ico",
+    "uninstallerIcon": "./icons/icon.ico",
+    "installerHeaderIcon": "./icons/icon.ico",
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "TianGongLCA"
+  },
+  "linux": {
+    "target": ["deb", "rpm"],
+    "category": "Science",
+    "icon": "./icons"
+  }
+}

@@ -7,14 +7,14 @@ import { createProduct, getProductDetail, updateProduct } from '@/services/produ
 import { genProductInfoFromData, genProductModelFromData } from '@/services/products/util';
 import { DeleteOutlined, SaveOutlined } from '@ant-design/icons';
 import { useGraphStore } from '@antv/xflow';
-import { Button, message, Space, Spin, Tooltip } from 'antd';
+import { Button, Space, Spin, Tooltip, message } from 'antd';
 import { FC, useCallback, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { v4 } from 'uuid';
 import { node } from '../Config/node';
+import EdgeExhange from './Exchange';
 import ModelToolbarAdd from './add';
 import ModelToolbarEditInfo from './eidtInfo';
-import EdgeExhange from './Exchange';
 import ModelToolbarViewInfo from './viewInfo';
 
 type Props = {

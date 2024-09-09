@@ -1,13 +1,11 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
 import {
-  StringMultiLang_r,
-  STMultiLang_r,
   STMultiLang_o,
-  dataSetVersion,
+  STMultiLang_r,
+  StringMultiLang_r,
   String_o,
-  // emailvalidation,
-  // WWWAddress,
+  dataSetVersion,
 } from '@/components/Validator/index';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';

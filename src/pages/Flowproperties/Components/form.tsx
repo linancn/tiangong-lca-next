@@ -1,9 +1,7 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
+import { StringMultiLang_r } from '@/components/Validator/index';
 import type { ProFormInstance } from '@ant-design/pro-form';
-import {
-  StringMultiLang_r,
-} from '@/components/Validator/index';
 import {
   Card,
   Form,
