@@ -1,6 +1,6 @@
 {
   "appId": "world.tiangong.lca",
-  "productName": "TianGongLCA",
+  "productName": "TianGong LCA",
   "copyright": "Nan LI",
   "directories": {
     "app": ".",
@@ -46,7 +46,7 @@
     "installerHeaderIcon": "./icons/icon.ico",
     "createDesktopShortcut": true,
     "createStartMenuShortcut": true,
-    "shortcutName": "TianGongLCA"
+    "shortcutName": "TianGong LCA"
   },
   "linux": {
     "target": ["deb", "rpm"],
