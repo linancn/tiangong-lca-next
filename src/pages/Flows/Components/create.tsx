@@ -5,7 +5,7 @@ import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import ProForm from '@ant-design/pro-form';
 import type { ActionType } from '@ant-design/pro-table';
-import { Button, Collapse, Drawer, message, Space, Tooltip, Typography } from 'antd';
+import { Button, Collapse, Drawer, Space, Tooltip, Typography, message } from 'antd';
 import type { FC } from 'react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';

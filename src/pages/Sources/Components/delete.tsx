@@ -4,7 +4,7 @@ import { supabaseStorageBucket } from '@/services/supabase/key';
 import { getFileUrls, removeFile } from '@/services/supabase/storage';
 import { DeleteOutlined } from '@ant-design/icons';
 import type { ActionType } from '@ant-design/pro-table';
-import { Button, message, Modal, Tooltip } from 'antd';
+import { Button, Modal, Tooltip, message } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useState } from 'react';
 import { FormattedMessage } from 'umi';

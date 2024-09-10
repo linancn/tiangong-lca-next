@@ -1,7 +1,7 @@
+import defaultSettings from './defaultSettings';
 // https://umijs.org/config/
 import { defineConfig } from '@umijs/max';
 import { join } from 'path';
-import defaultSettings from './defaultSettings';
 import proxy from './proxy';
 import routes from './routes';
 
@@ -123,10 +123,10 @@ export default defineConfig({
    * @name <head> 中额外的 script
    * @description 配置 <head> 中额外的 script
    */
-  headScripts: [
-    // 解决首次加载时白屏的问题
-    { src: '/scripts/loading.js', async: true },
-  ],
+  headScripts:
+    process.env.NODE_ENV === 'production'
+      ? [{ src: './scripts/loading.js', async: true }]
+      : [{ src: '/scripts/loading.js', async: true }],
   //================ pro 插件配置 =================
   presets: ['umi-presets-pro'],
   /**
@@ -153,4 +153,6 @@ export default defineConfig({
   },
   esbuildMinifyIIFE: true,
   requestRecord: {},
+  publicPath: process.env.NODE_ENV === 'production' ? './' : '/',
+  history: { type: 'hash' },
 });

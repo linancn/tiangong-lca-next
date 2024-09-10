@@ -7,7 +7,7 @@ import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ProForm } from '@ant-design/pro-components';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import type { ActionType } from '@ant-design/pro-table';
-import { Button, Collapse, Drawer, message, Space, Spin, Tooltip, Typography } from 'antd';
+import { Button, Collapse, Drawer, Space, Spin, Tooltip, Typography, message } from 'antd';
 import path from 'path';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';

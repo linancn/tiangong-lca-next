@@ -8,6 +8,8 @@ _roadhog-api-doc
 
 # production
 /dist
+/dist-electron
+/dist-package
 
 # misc
 .DS_Store

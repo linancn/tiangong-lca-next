@@ -3,11 +3,11 @@ import { login, sendMagicLink } from '@/services/ant-design-pro/api';
 import { LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons';
 import { ProFormText } from '@ant-design/pro-components';
 import { FormattedMessage } from '@umijs/max';
-import { Alert, Button, Flex, Form, message, Tabs } from 'antd';
+import { Alert, Button, Flex, Form, Tabs, message } from 'antd';
 import { createStyles } from 'antd-style';
 import React, { useState } from 'react';
 import { flushSync } from 'react-dom';
-import { Helmet, history, SelectLang, useIntl, useModel } from 'umi';
+import { Helmet, SelectLang, history, useIntl, useModel } from 'umi';
 import Settings from '../../../../config/defaultSettings';
 
 const useStyles = createStyles(({ token }) => {

@@ -2,7 +2,7 @@ import { changePassword, currentUser } from '@/services/ant-design-pro/api';
 import { validatePasswordStrength } from '@/services/general/util';
 import { PageContainer, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { FormattedMessage } from '@umijs/max';
-import { Form, Input, message, Space, Spin } from 'antd';
+import { Form, Input, Space, Spin, message } from 'antd';
 import { useEffect, useRef, useState, type FC } from 'react';
 
 const PasswordChange: FC = () => {

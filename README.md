@@ -46,6 +46,16 @@ npm run lint:fix
 npm test
 ```
 
+### Publish
+```bash
+#list existing tags
+git tag
+#creat a new tag
+git tag v0.0.1
+#push this tag to origin
+git push origin v0.0.1
+```
+
 ## You can now run the Next.js local development server
 
 🚀 **Use VSCode Launch Program configuration to Debug!** 🚀

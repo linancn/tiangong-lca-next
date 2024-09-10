@@ -4,5 +4,7 @@
 .history
 public
 dist
+dist-electron
+dist-package
 .umi
 mock
