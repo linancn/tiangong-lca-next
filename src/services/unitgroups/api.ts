@@ -227,7 +227,7 @@ export async function getUnitGroupTablePgroongaSearch(
 
             const classifications = jsonToList(
               dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-              'common:class'
+                'common:class'
               ],
             );
 
@@ -266,7 +266,7 @@ export async function getUnitGroupTablePgroongaSearch(
             name: getLangText(dataInfo?.dataSetInformation?.['common:name'] ?? {}, lang),
             classification: classificationToString(
               dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-              'common:class'
+                'common:class'
               ],
             ),
             refUnitId: refUnitId,

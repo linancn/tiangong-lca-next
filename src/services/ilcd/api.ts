@@ -2,7 +2,11 @@ import { supabase } from '@/services/supabase';
 import { categoryTypeOptions } from './data';
 import { genClassZH } from './util';
 
-export async function getILCDClassification(categoryType: string, lang: string, getValues: string[]) {
+export async function getILCDClassification(
+  categoryType: string,
+  lang: string,
+  getValues: string[],
+) {
   try {
     const thisCategoryType = categoryTypeOptions.find((i) => i.en === categoryType);
 

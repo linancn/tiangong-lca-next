@@ -217,7 +217,7 @@ export async function getFlowpropertyTablePgroongaSearch(
             const dataInfo = i.json?.flowPropertyDataSet?.flowPropertiesInformation;
             const classifications = jsonToList(
               dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-              'common:class'
+                'common:class'
               ],
             );
             const classificationZH = genClassificationZH(classifications, res?.data?.category);
@@ -236,7 +236,7 @@ export async function getFlowpropertyTablePgroongaSearch(
                 '-',
               refUnitGroup: getLangText(
                 dataInfo?.quantitativeReference?.referenceToReferenceUnitGroup?.[
-                'common:shortDescription'
+                  'common:shortDescription'
                 ] ?? {},
                 lang,
               ),
@@ -260,7 +260,7 @@ export async function getFlowpropertyTablePgroongaSearch(
             name: getLangText(dataInfo?.dataSetInformation?.['common:name'] ?? {}, lang),
             classification: classificationToString(
               dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-              'common:class'
+                'common:class'
               ],
             ),
             generalComment: getLangText(
@@ -272,7 +272,7 @@ export async function getFlowpropertyTablePgroongaSearch(
               '-',
             refUnitGroup: getLangText(
               dataInfo?.quantitativeReference?.referenceToReferenceUnitGroup?.[
-              'common:shortDescription'
+                'common:shortDescription'
               ] ?? {},
               lang,
             ),
