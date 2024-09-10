@@ -8,7 +8,7 @@ import {
   getLangText,
   jsonToList,
 } from '../general/util';
-import { getILCDClassificationZH } from '../ilcd/api';
+import { getILCDClassification } from '../ilcd/api';
 import { genFlowpropertyJsonOrdered } from './util';
 
 export async function createFlowproperties(data: any) {
@@ -114,7 +114,7 @@ export async function getFlowpropertyTableAll(
     let data: any[] = [];
 
     if (lang === 'zh') {
-      await getILCDClassificationZH('FlowProperty').then((res) => {
+      await getILCDClassification('FlowProperty', lang, ['all']).then((res) => {
         data = result.data.map((i: any) => {
           try {
             const classifications = jsonToList(i?.['common:class']);
@@ -211,13 +211,13 @@ export async function getFlowpropertyTablePgroongaSearch(
     let data: any[] = [];
 
     if (lang === 'zh') {
-      await getILCDClassificationZH('FlowProperty').then((res) => {
+      await getILCDClassification('FlowProperty', lang, ['all']).then((res) => {
         data = result.data.map((i: any) => {
           try {
             const dataInfo = i.json?.flowPropertyDataSet?.flowPropertiesInformation;
             const classifications = jsonToList(
               dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-                'common:class'
+              'common:class'
               ],
             );
             const classificationZH = genClassificationZH(classifications, res?.data?.category);
@@ -236,7 +236,7 @@ export async function getFlowpropertyTablePgroongaSearch(
                 '-',
               refUnitGroup: getLangText(
                 dataInfo?.quantitativeReference?.referenceToReferenceUnitGroup?.[
-                  'common:shortDescription'
+                'common:shortDescription'
                 ] ?? {},
                 lang,
               ),
@@ -260,7 +260,7 @@ export async function getFlowpropertyTablePgroongaSearch(
             name: getLangText(dataInfo?.dataSetInformation?.['common:name'] ?? {}, lang),
             classification: classificationToString(
               dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-                'common:class'
+              'common:class'
               ],
             ),
             generalComment: getLangText(
@@ -272,7 +272,7 @@ export async function getFlowpropertyTablePgroongaSearch(
               '-',
             refUnitGroup: getLangText(
               dataInfo?.quantitativeReference?.referenceToReferenceUnitGroup?.[
-                'common:shortDescription'
+              'common:shortDescription'
               ] ?? {},
               lang,
             ),

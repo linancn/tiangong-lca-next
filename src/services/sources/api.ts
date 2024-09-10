@@ -6,7 +6,7 @@ import {
   getLangText,
   jsonToList,
 } from '../general/util';
-import { getILCDClassificationZH } from '../ilcd/api';
+import { getILCDClassification } from '../ilcd/api';
 import { genSourceJsonOrdered } from './util';
 
 export async function createSource(data: any) {
@@ -109,7 +109,7 @@ export async function getSourceTableAll(
 
     let data: any[] = [];
     if (lang === 'zh') {
-      await getILCDClassificationZH('Source').then((res) => {
+      await getILCDClassification('Source', lang, ['all']).then((res) => {
         data = result.data.map((i: any) => {
           try {
             const classifications = jsonToList(i['common:class']);
@@ -203,7 +203,7 @@ export async function getSourceTablePgroongaSearch(
 
     let data: any[] = [];
     if (lang === 'zh') {
-      await getILCDClassificationZH('Source').then((res) => {
+      await getILCDClassification('Source', lang, ['all']).then((res) => {
         data = result.data.map((i: any) => {
           try {
             const dataInfo = i.json?.sourceDataSet?.sourceInformation?.dataSetInformation;

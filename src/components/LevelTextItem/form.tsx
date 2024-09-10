@@ -1,4 +1,4 @@
-import { getILCDClassificationZH, getILCDFlowCategorizationZH } from '@/services/ilcd/api';
+import { getILCDClassification, getILCDFlowCategorization } from '@/services/ilcd/api';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Form, Input, Select, Space } from 'antd';
 import { FC, useEffect, useState } from 'react';
@@ -65,10 +65,13 @@ const LevelTextItemForm: FC<Props> = ({ name, lang, dataType, flowType, formRef,
   useEffect(() => {
     const fetchClassification = async (dt: string, ft: string | undefined) => {
       let result: any = {};
-      if (dt === 'Flow' && ft && ft === 'Elementary flow') {
-        result = await getILCDFlowCategorizationZH();
+      if (dt === 'Flow' && !ft) {
+        return;
+      }
+      if (dt === 'Flow' && ft === 'Elementary flow') {
+        result = await getILCDFlowCategorization(lang);
       } else {
-        result = await getILCDClassificationZH(dt);
+        result = await getILCDClassification(dt, lang, ['all']);
       }
       setCategoryData0(result?.data?.category);
       const category0 =

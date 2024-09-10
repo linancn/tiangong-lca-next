@@ -6,7 +6,7 @@ import {
   getLangText,
   jsonToList,
 } from '../general/util';
-import { getILCDClassificationZH } from '../ilcd/api';
+import { getILCDClassification } from '../ilcd/api';
 import { genUnitGroupJsonOrdered } from './util';
 
 const table_name = 'unitgroups';
@@ -112,7 +112,7 @@ export async function getUnitGroupTableAll(
 
     let data: any[] = [];
     if (lang === 'zh') {
-      await getILCDClassificationZH('UnitGroup').then((res) => {
+      await getILCDClassification('UnitGroup', lang, ['all']).then((res) => {
         data = result.data.map((i: any) => {
           try {
             const unitList = jsonToList(i?.unit);
@@ -217,7 +217,7 @@ export async function getUnitGroupTablePgroongaSearch(
 
     let data: any[] = [];
     if (lang === 'zh') {
-      await getILCDClassificationZH('UnitGroup').then((res) => {
+      await getILCDClassification('UnitGroup', lang, ['all']).then((res) => {
         data = result.data.map((i: any) => {
           try {
             const dataInfo = i.json?.unitGroupDataSet?.unitGroupInformation;
@@ -227,7 +227,7 @@ export async function getUnitGroupTablePgroongaSearch(
 
             const classifications = jsonToList(
               dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-                'common:class'
+              'common:class'
               ],
             );
 
@@ -266,7 +266,7 @@ export async function getUnitGroupTablePgroongaSearch(
             name: getLangText(dataInfo?.dataSetInformation?.['common:name'] ?? {}, lang),
             classification: classificationToString(
               dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-                'common:class'
+              'common:class'
               ],
             ),
             refUnitId: refUnitId,

@@ -6,7 +6,7 @@ import {
   getLangText,
   jsonToList,
 } from '../general/util';
-import { getILCDClassificationZH, getILCDLocationByValues } from '../ilcd/api';
+import { getILCDClassification, getILCDLocationByValues } from '../ilcd/api';
 import { genProcessJsonOrdered } from './util';
 
 export async function createProcess(data: any) {
@@ -112,7 +112,7 @@ export async function getProcessTableAll(
 
     let data: any[] = [];
     if (lang === 'zh') {
-      await getILCDClassificationZH('Process').then((res) => {
+      await getILCDClassification('Process', lang, ['all']).then((res) => {
         data = result.data.map((i: any) => {
           try {
             const classifications = jsonToList(i['common:class']);
@@ -235,7 +235,7 @@ export async function getProcessTablePgroongaSearch(
 
     let data: any[] = [];
     if (lang === 'zh') {
-      await getILCDClassificationZH('Process').then((res) => {
+      await getILCDClassification('Process', lang, ['all']).then((res) => {
         data = result.data.map((i: any) => {
           try {
             const dataInfo = i.json?.processDataSet?.processInformation;
@@ -252,7 +252,7 @@ export async function getProcessTablePgroongaSearch(
 
             const classifications = jsonToList(
               dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-                'common:class'
+              'common:class'
               ],
             );
             const classificationZH = genClassificationZH(classifications, res?.data?.category);
@@ -303,7 +303,7 @@ export async function getProcessTablePgroongaSearch(
             ),
             classification: classificationToString(
               dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-                'common:class'
+              'common:class'
               ],
             ),
             referenceYear: dataInfo?.time?.['common:referenceYear'] ?? '-',

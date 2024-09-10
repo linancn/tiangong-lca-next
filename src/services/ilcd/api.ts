@@ -14,10 +14,11 @@ export async function getILCDClassification(categoryType: string, lang: string, 
 
     let resultZH = null;
     if (lang === 'zh') {
+      const getIds = result?.data?.map((i: any) => i['@id']);
       resultZH = await supabase.rpc('ilcd_classification_get', {
         this_file_name: 'ILCDClassification_zh',
         category_type: thisCategoryType?.zh,
-        get_values: getValues,
+        get_values: getIds,
       });
     }
 
@@ -36,102 +37,38 @@ export async function getILCDClassification(categoryType: string, lang: string, 
   }
 }
 
-export async function getILCDClassificationZH(datatype: string) {
+export async function getILCDFlowCategorization(lang: string) {
   try {
-    const thisDataType = categoryTypeOptions.find((i) => i.en === datatype);
-
-    const result = await supabase
-      .from('ilcd_classification')
-      .select('category')
-      .eq('datatype', datatype);
-
-    const resultZH = await supabase
-      .from('ilcd_classification')
-      .select('category')
-      .eq('datatype', thisDataType?.zh);
-
-    const data = result?.data?.[0];
-    const dataZH = resultZH?.data?.[0];
-
-    const newDatas = genClassZH(data?.category, dataZH?.category);
-
-    return Promise.resolve({
-      data: { category: newDatas },
-      success: true,
-    });
-  } catch (e) {
-    console.error(e);
-    return Promise.resolve({
-      data: null,
-      success: false,
-    });
-  }
-}
-
-export async function getILCDClassificationByValues(
-  lang: string,
-  category_type: string,
-  get_values: string[],
-) {
-  let file_name = 'ILCDClassification';
-  if (lang === 'zh') {
-    file_name = 'ILCDClassification_zh';
-  }
-  const result = await supabase.rpc('ilcd_classification_get', {
-    this_file_name: file_name,
-    category_type: category_type,
-    get_values: get_values,
-  });
-
-  return Promise.resolve({
-    data: result.data,
-    success: true,
-  });
-}
-
-export async function getILCDFlowCategorization() {
-  const result = await supabase
-    .from('ilcd')
-    .select(
-      `
+    let result = null;
+    if (lang === 'zh') {
+      result = await supabase
+        .from('ilcd')
+        .select(
+          `
         file_name,
         json->CategorySystem->categories->category
         `,
-    )
-    .eq('file_name', 'ILCDFlowCategorization');
-
-  if (result.data && result.data.length > 0) {
-    const data = result.data[0];
-    return Promise.resolve({
-      data: {
-        category: data.category,
-      },
-      success: true,
-    });
-  }
-  return Promise.resolve({
-    data: null,
-    success: true,
-  });
-}
-
-export async function getILCDFlowCategorizationZH() {
-  try {
-    const result = await supabase
-      .from('ilcd')
-      .select(
-        `
+        )
+        .or('file_name.eq.ILCDFlowCategorization,file_name.eq.ILCDFlowCategorization_zh');
+    } else {
+      result = await supabase
+        .from('ilcd')
+        .select(
+          `
         file_name,
         json->CategorySystem->categories->category
         `,
-      )
-      .or('file_name.eq.ILCDFlowCategorization,file_name.eq.ILCDFlowCategorization_zh');
+        )
+        .eq('file_name', 'ILCDFlowCategorization');
+    }
 
     const data = result?.data?.find((i) => i.file_name === 'ILCDFlowCategorization');
     const dataZH = result?.data?.find((i) => i.file_name === 'ILCDFlowCategorization_zh');
 
     const newDatas = genClassZH(data?.category, dataZH?.category);
 
+    console.log('newDatas', newDatas);
+
     return Promise.resolve({
       data: { category: newDatas },
       success: true,
@@ -145,9 +82,9 @@ export async function getILCDFlowCategorizationZH() {
   }
 }
 
-export async function getILCDFlowCategorizationAllZH() {
-  const result = await getILCDClassificationZH('Flow');
-  const resultElementaryFlow = await getILCDFlowCategorizationZH();
+export async function getILCDFlowCategorizationAll(lang: string) {
+  const result = await getILCDClassification('Flow', lang, ['all']);
+  const resultElementaryFlow = await getILCDFlowCategorization(lang);
 
   const newDatas = {
     category: result.data?.category,

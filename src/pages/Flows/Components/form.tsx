@@ -7,7 +7,7 @@ import { complianceOptions } from '@/services/flows/data';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import { Card, Form, Input, Select, Space } from 'antd';
 import type { FC } from 'react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { flowTypeOptions } from './optiondata';
 
@@ -403,6 +403,11 @@ export const FlowForm: FC<Props> = ({
       </Space>
     ),
   };
+
+  useEffect(() => {
+    if (!drawerVisible) return;
+    setThisFlowType(flowType);
+  }, [flowType]);
 
   return (
     <Card

@@ -1,4 +1,4 @@
-import { getILCDClassificationZH, getILCDFlowCategorizationZH } from '@/services/ilcd/api';
+import { getILCDClassification, getILCDFlowCategorization } from '@/services/ilcd/api';
 import { Descriptions, Spin } from 'antd';
 import { FC, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -16,7 +16,7 @@ const LevelTextItemDescription: FC<Props> = ({ data, lang, categoryType, flowTyp
     if (data) {
       setSpinning(true);
       if (categoryType === 'Flow' && flowType === 'Elementary flow') {
-        getILCDFlowCategorizationZH().then((res) => {
+        getILCDFlowCategorization(lang).then((res) => {
           const level0 = res.data?.category?.find(
             (i: any) => i?.['@name'].toString() === data?.['@level_0'],
           );
@@ -47,7 +47,7 @@ const LevelTextItemDescription: FC<Props> = ({ data, lang, categoryType, flowTyp
           setSpinning(false);
         });
       } else {
-        getILCDClassificationZH(categoryType).then((res) => {
+        getILCDClassification(categoryType, lang, [data?.['@level_0']]).then((res) => {
           const level0 = res.data?.category?.find(
             (i: any) => i?.['@name'].toString() === data?.['@level_0'],
           );
