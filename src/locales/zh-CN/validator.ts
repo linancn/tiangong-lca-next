@@ -6,7 +6,7 @@ export default {
   'validator.STMultiLang.pattern': '长度不能超过1000个字符！',
   'validator.String.pattern': '长度不能小于1或超过500个字符！',
   'validator.NullableString.pattern': '长度不能超过500个字符，可以为空！',
-  
+
   'validator.dataSetVersion.empty': '请输入数据集版本！',
   'validator.dataSetVersion.pattern': '版本格式必须为 XX.XX.XXX，其中 X 为数字！',
 

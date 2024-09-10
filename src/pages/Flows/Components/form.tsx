@@ -23,9 +23,10 @@ type Props = {
 export const FlowForm: FC<Props> = ({
   lang,
   activeTabKey,
-  flowType,
   drawerVisible,
   formRef,
+  onData,
+  flowType,
   onTabChange,
 }) => {
   const [thisFlowType, setThisFlowType] = useState<string | undefined>(flowType);
@@ -156,11 +157,10 @@ export const FlowForm: FC<Props> = ({
           >
             <LevelTextItemForm
               dataType={'Flow'}
+              lang={lang}
               flowType={thisFlowType}
               formRef={formRef}
-              onData={() => {
-                // onData();
-              }}
+              onData={onData}
               name={[
                 'flowInformation',
                 'dataSetInformation',

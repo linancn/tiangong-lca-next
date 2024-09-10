@@ -1,16 +1,12 @@
 import { UploadButton } from '@/components/FileViewer/upload';
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
+import { STMultiLang_r, StringMultiLang_r, dataSetVersion } from '@/components/Validator/index';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { publicationTypeOptions } from '@/services/sources/data';
 import { FileType, getBase64, isImage } from '@/services/supabase/storage';
 import { ProFormInstance } from '@ant-design/pro-components';
-import {
-  StringMultiLang_r,
-  STMultiLang_r,
-  dataSetVersion,
-} from '@/components/Validator/index';
 import { Card, Form, Image, Input, Select, Space, Upload, UploadFile } from 'antd';
 import { RcFile } from 'antd/es/upload';
 import { FC, useState } from 'react';
@@ -115,6 +111,7 @@ export const SourceForm: FC<Props> = ({
               'common:classification',
               'common:class',
             ]}
+            lang={lang}
             dataType={'Source'}
             formRef={formRef}
             onData={onData}

@@ -2,24 +2,38 @@ import { supabase } from '@/services/supabase';
 import { categoryTypeOptions } from './data';
 import { genClassZH } from './util';
 
-export async function getILCDClassification(datatype: string) {
-  const result = await supabase
-    .from('ilcd_classification')
-    .select('category')
-    .eq('datatype', datatype);
-  if (result.data && result.data.length > 0) {
-    const data = result.data[0];
+export async function getILCDClassification(categoryType: string, lang: string, getValues: string[]) {
+  try {
+    const thisCategoryType = categoryTypeOptions.find((i) => i.en === categoryType);
+
+    const result = await supabase.rpc('ilcd_classification_get', {
+      this_file_name: 'ILCDClassification',
+      category_type: categoryType,
+      get_values: getValues,
+    });
+
+    let resultZH = null;
+    if (lang === 'zh') {
+      resultZH = await supabase.rpc('ilcd_classification_get', {
+        this_file_name: 'ILCDClassification_zh',
+        category_type: thisCategoryType?.zh,
+        get_values: getValues,
+      });
+    }
+
+    const newDatas = genClassZH(result?.data, resultZH?.data);
+
     return Promise.resolve({
-      data: {
-        category: data.category,
-      },
+      data: { category: newDatas },
       success: true,
     });
+  } catch (e) {
+    console.error(e);
+    return Promise.resolve({
+      data: null,
+      success: false,
+    });
   }
-  return Promise.resolve({
-    data: null,
-    success: true,
-  });
 }
 
 export async function getILCDClassificationZH(datatype: string) {
@@ -52,6 +66,27 @@ export async function getILCDClassificationZH(datatype: string) {
       success: false,
     });
   }
+}
+
+export async function getILCDClassificationByValues(
+  lang: string,
+  category_type: string,
+  get_values: string[],
+) {
+  let file_name = 'ILCDClassification';
+  if (lang === 'zh') {
+    file_name = 'ILCDClassification_zh';
+  }
+  const result = await supabase.rpc('ilcd_classification_get', {
+    this_file_name: file_name,
+    category_type: category_type,
+    get_values: get_values,
+  });
+
+  return Promise.resolve({
+    data: result.data,
+    success: true,
+  });
 }
 
 export async function getILCDFlowCategorization() {

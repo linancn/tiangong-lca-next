@@ -5,13 +5,14 @@ import { FC, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 type Props = {
   name: any;
+  lang: string;
   dataType: string;
   flowType?: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;
 };
 
-const LevelTextItemForm: FC<Props> = ({ name, dataType, flowType, formRef, onData }) => {
+const LevelTextItemForm: FC<Props> = ({ name, lang, dataType, flowType, formRef, onData }) => {
   const [categoryData0, setCategoryData0] = useState<any>([]);
   const [categoryData1, setCategoryData1] = useState<any>([]);
   const [categoryData2, setCategoryData2] = useState<any>([]);
@@ -27,12 +28,7 @@ const LevelTextItemForm: FC<Props> = ({ name, dataType, flowType, formRef, onDat
     setL1(
       filteredData0?.category?.map((l: any) => ({
         id: l?.['@id'],
-        label: (
-          <Space size={'large'}>
-            <Space>en:{l?.['@name'] ?? '-'}</Space>
-            <Space>zh:{l?.['@nameZH'] ?? '-'}</Space>
-          </Space>
-        ),
+        label: (lang === 'zh' ? l?.['@nameZH'] : l?.['@name']) ?? '-',
         value: l?.['@name'],
       })) ?? [],
     );
@@ -51,12 +47,7 @@ const LevelTextItemForm: FC<Props> = ({ name, dataType, flowType, formRef, onDat
     setL2(
       filteredData1?.category?.map((l: any) => ({
         id: l?.['@id'],
-        label: (
-          <Space size={'large'}>
-            <Space>en:{l?.['@name'] ?? '-'}</Space>
-            <Space>zh:{l?.['@nameZH'] ?? '-'}</Space>
-          </Space>
-        ),
+        label: (lang === 'zh' ? l?.['@nameZH'] : l?.['@name']) ?? '-',
         value: l?.['@name'],
       })) ?? [],
     );
@@ -83,12 +74,7 @@ const LevelTextItemForm: FC<Props> = ({ name, dataType, flowType, formRef, onDat
       const category0 =
         result.data?.category?.map((l: any) => ({
           id: l?.['@id'],
-          label: (
-            <Space size={'large'}>
-              <Space>en:{l?.['@name'] ?? '-'}</Space>
-              <Space>zh:{l?.['@nameZH'] ?? '-'}</Space>
-            </Space>
-          ),
+          label: (lang === 'zh' ? l?.['@nameZH'] : l?.['@name']) ?? '-',
           value: l?.['@name'],
           children: l.category ?? [],
         })) ?? [];
@@ -102,12 +88,7 @@ const LevelTextItemForm: FC<Props> = ({ name, dataType, flowType, formRef, onDat
       const category1 =
         filteredData1?.children?.map((l: any) => ({
           id: l?.['@id'],
-          label: (
-            <Space size={'large'}>
-              <Space>en:{l?.['@name'] ?? '-'}</Space>
-              <Space>zh:{l?.['@nameZH'] ?? '-'}</Space>
-            </Space>
-          ),
+          label: (lang === 'zh' ? l?.['@nameZH'] : l?.['@name']) ?? '-',
           value: l['@name'],
           children: l.category ?? [],
         })) ?? [];
@@ -121,12 +102,13 @@ const LevelTextItemForm: FC<Props> = ({ name, dataType, flowType, formRef, onDat
       const category2 =
         filteredData2?.children?.map((l: any) => ({
           id: l?.['@id'],
-          label: (
-            <Space size={'large'}>
-              <Space>en:{l?.['@name'] ?? '-'}</Space>
-              <Space>zh:{l?.['@nameZH'] ?? '-'}</Space>
-            </Space>
-          ),
+          label: (lang === 'zh' ? l?.['@nameZH'] : l?.['@name']) ?? '-',
+          // label: (
+          //   <Space size={'large'}>
+          //     <Space>en:{l?.['@name'] ?? '-'}</Space>
+          //     <Space>zh:{l?.['@nameZH'] ?? '-'}</Space>
+          //   </Space>
+          // ),
           value: l['@name'],
           children: l.category ?? [],
         })) ?? [];

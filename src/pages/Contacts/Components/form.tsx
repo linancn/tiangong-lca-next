@@ -1,13 +1,11 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
 import {
-  StringMultiLang_r,
-  STMultiLang_r,
-  STMultiLang_o,
   dataSetVersion,
+  STMultiLang_o,
+  STMultiLang_r,
   String_o,
-  // emailvalidation,
-  // WWWAddress,
+  StringMultiLang_r,
 } from '@/components/Validator/index';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
@@ -83,6 +81,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
                 'common:classification',
                 'common:class',
               ]}
+              lang={lang}
               dataType={'Contact'}
               formRef={formRef}
               onData={onData}

@@ -1,5 +1,6 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
+import { StringMultiLang_r, dataSetVersion } from '@/components/Validator/index';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { ListPagination } from '@/services/general/data';
 import { UnitTable } from '@/services/unitgroups/data';
@@ -13,10 +14,6 @@ import UnitCreate from './Unit/create';
 import UnitDelete from './Unit/delete';
 import UnitEdit from './Unit/edit';
 import UnitView from './Unit/view';
-import {
-  StringMultiLang_r,
-  dataSetVersion,
-} from '@/components/Validator/index';
 
 type Props = {
   lang: string;
@@ -201,6 +198,7 @@ export const UnitGroupForm: FC<Props> = ({
               'common:classification',
               'common:class',
             ]}
+            lang={lang}
             dataType={'UnitGroup'}
             formRef={formRef}
             onData={onData}

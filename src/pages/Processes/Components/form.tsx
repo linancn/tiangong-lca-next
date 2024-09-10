@@ -1,6 +1,7 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
 import LocationTextItemForm from '@/components/LocationTextItem/form';
+import { NullableString, StringMultiLang_o, StringMultiLang_r } from '@/components/Validator/index';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
@@ -14,11 +15,6 @@ import {
   processTypeOptions,
   reviewTypeOptions,
 } from '@/services/processes/data';
-import {
-  StringMultiLang_r,
-  StringMultiLang_o,
-  NullableString,
-} from '@/components/Validator/index';
 import { genProcessExchangeTableData } from '@/services/processes/util';
 import { CheckCircleTwoTone, CloseCircleOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
@@ -262,6 +258,7 @@ export const ProcessForm: FC<Props> = ({
               'common:classification',
               'common:class',
             ]}
+            lang={lang}
             dataType={'Process'}
             formRef={formRef}
             onData={onData}
@@ -360,7 +357,7 @@ export const ProcessForm: FC<Props> = ({
             ]}
             lang={lang}
             onData={onData}
-            rules={	NullableString}
+            rules={NullableString}
           />
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage

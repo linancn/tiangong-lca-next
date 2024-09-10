@@ -6,7 +6,7 @@ import {
   getLangText,
   jsonToList,
 } from '../general/util';
-import { getILCDClassificationZH } from '../ilcd/api';
+import { getILCDClassification } from '../ilcd/api';
 import { genContactJsonOrdered } from './util';
 
 export async function createContact(data: any) {
@@ -108,40 +108,25 @@ export async function getContactTableAll(
     }
 
     let data: any[] = [];
-    if (lang === 'zh') {
-      await getILCDClassificationZH('Contact').then((res) => {
-        data = result.data.map((i: any) => {
-          try {
-            const classifications = jsonToList(i?.['common:class']);
-            const classificationZH = genClassificationZH(classifications, res?.data?.category);
-            return {
-              key: i.id,
-              id: i.id,
-              shortName: getLangText(i?.['common:shortName'], lang),
-              name: getLangText(i?.['common:name'], lang),
-              classification: classificationToString(classificationZH),
-              email: i?.email ?? '-',
-              createdAt: new Date(i?.created_at),
-            };
-          } catch (e) {
-            console.error(e);
-            return {
-              id: i.id,
-            };
-          }
-        });
-      });
-    } else {
+
+    // const categories: string[] = Array.from(new Set(result.data.map((i: any) => {
+    //   const l0 = jsonToList(i?.['common:class'])?.find((j: any) => j?.['@level'] === '0');
+    //   return l0?.['#text'] ?? '';
+    // })));
+
+    await getILCDClassification('Contact', lang, ['all']).then((res) => {
       data = result.data.map((i: any) => {
         try {
+          const classifications = jsonToList(i?.['common:class']);
+          const classificationZH = genClassificationZH(classifications, res?.data?.category);
           return {
             key: i.id,
             id: i.id,
-            shortName: getLangText(i['common:shortName'], lang),
-            name: getLangText(i['common:name'], lang),
-            classification: classificationToString(jsonToList(i['common:class'])),
-            email: i.email ?? '-',
-            createdAt: new Date(i.created_at),
+            shortName: getLangText(i?.['common:shortName'], lang),
+            name: getLangText(i?.['common:name'], lang),
+            classification: classificationToString(classificationZH),
+            email: i?.email ?? '-',
+            createdAt: new Date(i?.created_at),
           };
         } catch (e) {
           console.error(e);
@@ -150,7 +135,7 @@ export async function getContactTableAll(
           };
         }
       });
-    }
+    });
 
     return Promise.resolve({
       data: data,
@@ -202,46 +187,20 @@ export async function getContactTablePgroongaSearch(
     const totalCount = result.data[0].total_count;
 
     let data: any[] = [];
-    if (lang === 'zh') {
-      await getILCDClassificationZH('Contact').then((res) => {
-        data = result.data.map((i: any) => {
-          try {
-            const dataInfo = i.json?.contactDataSet?.contactInformation?.dataSetInformation;
-            const classifications = jsonToList(
-              dataInfo?.classificationInformation?.['common:classification']?.['common:class'],
-            );
-            const classificationZH = genClassificationZH(classifications, res?.data?.category);
-            return {
-              key: i.id,
-              id: i.id,
-              shortName: getLangText(dataInfo?.['common:shortName'], lang),
-              name: getLangText(dataInfo?.['common:name'], lang),
-              classification: classificationToString(classificationZH),
-              email: dataInfo?.email ?? '-',
-              createdAt: new Date(i?.created_at),
-            };
-          } catch (e) {
-            console.error(e);
-            return {
-              id: i.id,
-            };
-          }
-        });
-      });
-    } else {
+    await getILCDClassification('Contact', lang, ['all']).then((res) => {
       data = result.data.map((i: any) => {
         try {
           const dataInfo = i.json?.contactDataSet?.contactInformation?.dataSetInformation;
+          const classifications = jsonToList(
+            dataInfo?.classificationInformation?.['common:classification']?.['common:class'],
+          );
+          const classificationZH = genClassificationZH(classifications, res?.data?.category);
           return {
             key: i.id,
             id: i.id,
             shortName: getLangText(dataInfo?.['common:shortName'], lang),
             name: getLangText(dataInfo?.['common:name'], lang),
-            classification: classificationToString(
-              jsonToList(
-                dataInfo?.classificationInformation?.['common:classification']?.['common:class'],
-              ),
-            ),
+            classification: classificationToString(classificationZH),
             email: dataInfo?.email ?? '-',
             createdAt: new Date(i?.created_at),
           };
@@ -252,7 +211,7 @@ export async function getContactTablePgroongaSearch(
           };
         }
       });
-    }
+    });
 
     return Promise.resolve({
       data: data,
