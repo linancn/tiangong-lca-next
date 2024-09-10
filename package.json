@@ -1,9 +1,11 @@
 {
   "name": "tiangong-lca-next",
-  "version": "6.0.0",
+  "version": "0.0.1",
   "private": true,
   "description": "An out-of-box UI solution for enterprise applications",
   "homepage": "./",
+  "license": "MIT",
+  "author": "TianGong LCA <linanenv@gmail.com> (https://lca.tiangong.earth/)",
   "main": "dist-electron/main.js",
   "scripts": {
     "analyze": "cross-env ANALYZE=1 max build",

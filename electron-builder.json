@@ -7,7 +7,12 @@
     "output": "dist-package",
     "buildResources": "build-res"
   },
-  "files": ["package.json", "dist/**/*", "dist-electron/**/*", "node_modules"],
+  "files": [
+    "package.json",
+    "dist/**/*",
+    "dist-electron/**/*",
+    "!node_modules"
+  ],
   "dmg": {
     "background": null,
     "backgroundColor": "#ffffff",
@@ -49,7 +54,10 @@
     "shortcutName": "TianGong LCA"
   },
   "linux": {
-    "target": ["deb", "rpm"],
+    "target": [
+      "deb",
+      "rpm"
+    ],
     "category": "Science",
     "icon": "./icons"
   }
