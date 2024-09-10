@@ -30,13 +30,11 @@ jobs:
           # (No need to define this secret in the repo settings)
           github_token: ${{ secrets.github_token }}
 
-          build_script_name: dist
-
           # If the commit is tagged with a version (e.g. "v1.0.0"),
           # release the app after building
           release: ${{ startsWith(github.ref, 'refs/tags/v') }}
 
           # script run before eletron-builder
-          build_script_name: compile
+          build_script_name: dist
 
           max_attempts: 3
