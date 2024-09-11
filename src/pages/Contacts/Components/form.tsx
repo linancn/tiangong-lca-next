@@ -81,6 +81,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
                 'common:classification',
                 'common:class',
               ]}
+              lang={lang}
               dataType={'Contact'}
               formRef={formRef}
               onData={onData}

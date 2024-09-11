@@ -7,7 +7,7 @@ import { complianceOptions } from '@/services/flows/data';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import { Card, Form, Input, Select, Space } from 'antd';
 import type { FC } from 'react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { flowTypeOptions } from './optiondata';
 
@@ -23,9 +23,10 @@ type Props = {
 export const FlowForm: FC<Props> = ({
   lang,
   activeTabKey,
-  flowType,
   drawerVisible,
   formRef,
+  onData,
+  flowType,
   onTabChange,
 }) => {
   const [thisFlowType, setThisFlowType] = useState<string | undefined>(flowType);
@@ -156,11 +157,10 @@ export const FlowForm: FC<Props> = ({
           >
             <LevelTextItemForm
               dataType={'Flow'}
+              lang={lang}
               flowType={thisFlowType}
               formRef={formRef}
-              onData={() => {
-                // onData();
-              }}
+              onData={onData}
               name={[
                 'flowInformation',
                 'dataSetInformation',
@@ -265,9 +265,7 @@ export const FlowForm: FC<Props> = ({
             'compliance',
             'common:referenceToComplianceSystem',
           ]}
-          onData={() => {
-            // onData();
-          }}
+          onData={onData}
         />
         <br />
         <Form.Item
@@ -321,9 +319,7 @@ export const FlowForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
-            onData={() => {
-              // onData();
-            }}
+            onData={onData}
           />
         </Card>
 
@@ -383,9 +379,7 @@ export const FlowForm: FC<Props> = ({
           lang={lang}
           drawerVisible={drawerVisible}
           formRef={formRef}
-          onData={() => {
-            // onData();
-          }}
+          onData={onData}
         />
         <br />
         <Form.Item
@@ -403,6 +397,11 @@ export const FlowForm: FC<Props> = ({
       </Space>
     ),
   };
+
+  useEffect(() => {
+    if (!drawerVisible) return;
+    setThisFlowType(flowType);
+  }, [flowType]);
 
   return (
     <Card

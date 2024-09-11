@@ -115,6 +115,7 @@ export const FlowpropertyForm: FC<Props> = ({
                 'common:classification',
                 'common:class',
               ]}
+              lang={lang}
             />
           </Card>
           <br />

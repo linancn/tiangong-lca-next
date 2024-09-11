@@ -1,21 +1,22 @@
-import { getILCDClassificationZH, getILCDFlowCategorizationZH } from '@/services/ilcd/api';
-import { Descriptions, Space, Spin } from 'antd';
+import { getILCDClassification, getILCDFlowCategorization } from '@/services/ilcd/api';
+import { Descriptions, Spin } from 'antd';
 import { FC, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 type Props = {
   data: any;
+  lang: string;
   categoryType: string;
   flowType?: string;
 };
 
-const LevelTextItemDescription: FC<Props> = ({ data, categoryType, flowType }) => {
+const LevelTextItemDescription: FC<Props> = ({ data, lang, categoryType, flowType }) => {
   const [spinning, setSpinning] = useState<boolean>(false);
   const [dataZH, setDataZH] = useState<any>({});
   useEffect(() => {
     if (data) {
       setSpinning(true);
       if (categoryType === 'Flow' && flowType === 'Elementary flow') {
-        getILCDFlowCategorizationZH().then((res) => {
+        getILCDFlowCategorization(lang, [data?.['@level_0']]).then((res) => {
           const level0 = res.data?.category?.find(
             (i: any) => i?.['@name'].toString() === data?.['@level_0'],
           );
@@ -46,7 +47,7 @@ const LevelTextItemDescription: FC<Props> = ({ data, categoryType, flowType }) =
           setSpinning(false);
         });
       } else {
-        getILCDClassificationZH(categoryType).then((res) => {
+        getILCDClassification(categoryType, lang, [data?.['@level_0']]).then((res) => {
           const level0 = res.data?.category?.find(
             (i: any) => i?.['@name'].toString() === data?.['@level_0'],
           );
@@ -88,30 +89,25 @@ const LevelTextItemDescription: FC<Props> = ({ data, categoryType, flowType }) =
           label={<FormattedMessage id="pages.contact.level1" defaultMessage="Level 1" />}
           labelStyle={{ width: '100px' }}
         >
-          <Space size={'large'}>
+          {lang === 'zh' ? dataZH?.['@level_0'] ?? '-' : data?.['@level_0'] ?? '-'}
+          {/* <Space size={'large'}>
             <Space>en:{data?.['@level_0'] ?? '-'}</Space>
             <Space>zh:{dataZH?.['@level_0'] ?? '-'}</Space>
-          </Space>
+          </Space> */}
         </Descriptions.Item>
         <Descriptions.Item
           key={0}
           label={<FormattedMessage id="pages.contact.level2" defaultMessage="Level 2" />}
           labelStyle={{ width: '100px' }}
         >
-          <Space size={'large'}>
-            <Space>en:{data?.['@level_1'] ?? '-'}</Space>
-            <Space>zh:{dataZH?.['@level_1'] ?? '-'}</Space>
-          </Space>
+          {lang === 'zh' ? dataZH?.['@level_1'] ?? '-' : data?.['@level_1'] ?? '-'}
         </Descriptions.Item>
         <Descriptions.Item
           key={0}
           label={<FormattedMessage id="pages.contact.level3" defaultMessage="Level 3" />}
           labelStyle={{ width: '100px' }}
         >
-          <Space size={'large'}>
-            <Space>en:{data?.['@level_2'] ?? '-'}</Space>
-            <Space>zh:{dataZH?.['@level_2'] ?? '-'}</Space>
-          </Space>
+          {lang === 'zh' ? dataZH?.['@level_2'] ?? '-' : data?.['@level_2'] ?? '-'}
         </Descriptions.Item>
       </Descriptions>
     </Spin>

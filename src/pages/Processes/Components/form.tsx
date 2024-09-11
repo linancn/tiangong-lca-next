@@ -258,6 +258,7 @@ export const ProcessForm: FC<Props> = ({
               'common:classification',
               'common:class',
             ]}
+            lang={lang}
             dataType={'Process'}
             formRef={formRef}
             onData={onData}

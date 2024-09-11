@@ -47,6 +47,7 @@ npm test
 ```
 
 ### Publish
+
 ```bash
 #list existing tags
 git tag

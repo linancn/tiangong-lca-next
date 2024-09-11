@@ -2,44 +2,31 @@ import { supabase } from '@/services/supabase';
 import { categoryTypeOptions } from './data';
 import { genClassZH } from './util';
 
-export async function getILCDClassification(datatype: string) {
-  const result = await supabase
-    .from('ilcd_classification')
-    .select('category')
-    .eq('datatype', datatype);
-  if (result.data && result.data.length > 0) {
-    const data = result.data[0];
-    return Promise.resolve({
-      data: {
-        category: data.category,
-      },
-      success: true,
-    });
-  }
-  return Promise.resolve({
-    data: null,
-    success: true,
-  });
-}
-
-export async function getILCDClassificationZH(datatype: string) {
+export async function getILCDClassification(
+  categoryType: string,
+  lang: string,
+  getValues: string[],
+) {
   try {
-    const thisDataType = categoryTypeOptions.find((i) => i.en === datatype);
+    const thisCategoryType = categoryTypeOptions.find((i) => i.en === categoryType);
 
-    const result = await supabase
-      .from('ilcd_classification')
-      .select('category')
-      .eq('datatype', datatype);
+    const result = await supabase.rpc('ilcd_classification_get', {
+      this_file_name: 'ILCDClassification',
+      category_type: categoryType,
+      get_values: getValues,
+    });
 
-    const resultZH = await supabase
-      .from('ilcd_classification')
-      .select('category')
-      .eq('datatype', thisDataType?.zh);
+    let resultZH = null;
+    if (lang === 'zh') {
+      const getIds = result?.data?.map((i: any) => i['@id']);
+      resultZH = await supabase.rpc('ilcd_classification_get', {
+        this_file_name: 'ILCDClassification_zh',
+        category_type: thisCategoryType?.zh,
+        get_values: getIds,
+      });
+    }
 
-    const data = result?.data?.[0];
-    const dataZH = resultZH?.data?.[0];
-
-    const newDatas = genClassZH(data?.category, dataZH?.category);
+    const newDatas = genClassZH(result?.data, resultZH?.data);
 
     return Promise.resolve({
       data: { category: newDatas },
@@ -54,48 +41,22 @@ export async function getILCDClassificationZH(datatype: string) {
   }
 }
 
-export async function getILCDFlowCategorization() {
-  const result = await supabase
-    .from('ilcd')
-    .select(
-      `
-        file_name,
-        json->CategorySystem->categories->category
-        `,
-    )
-    .eq('file_name', 'ILCDFlowCategorization');
-
-  if (result.data && result.data.length > 0) {
-    const data = result.data[0];
-    return Promise.resolve({
-      data: {
-        category: data.category,
-      },
-      success: true,
-    });
-  }
-  return Promise.resolve({
-    data: null,
-    success: true,
-  });
-}
-
-export async function getILCDFlowCategorizationZH() {
+export async function getILCDFlowCategorization(lang: string, getValues: string[]) {
   try {
-    const result = await supabase
-      .from('ilcd')
-      .select(
-        `
-        file_name,
-        json->CategorySystem->categories->category
-        `,
-      )
-      .or('file_name.eq.ILCDFlowCategorization,file_name.eq.ILCDFlowCategorization_zh');
+    const result = await supabase.rpc('ilcd_flow_categorization_get', {
+      this_file_name: 'ILCDFlowCategorization',
+      get_values: getValues,
+    });
 
-    const data = result?.data?.find((i) => i.file_name === 'ILCDFlowCategorization');
-    const dataZH = result?.data?.find((i) => i.file_name === 'ILCDFlowCategorization_zh');
-
-    const newDatas = genClassZH(data?.category, dataZH?.category);
+    let resultZH = null;
+    if (lang === 'zh') {
+      const getIds = result?.data?.map((i: any) => i['@id']);
+      resultZH = await supabase.rpc('ilcd_flow_categorization_get', {
+        this_file_name: 'ILCDFlowCategorization_zh',
+        get_values: getIds,
+      });
+    }
+    const newDatas = genClassZH(result?.data, resultZH?.data);
 
     return Promise.resolve({
       data: { category: newDatas },
@@ -110,9 +71,9 @@ export async function getILCDFlowCategorizationZH() {
   }
 }
 
-export async function getILCDFlowCategorizationAllZH() {
-  const result = await getILCDClassificationZH('Flow');
-  const resultElementaryFlow = await getILCDFlowCategorizationZH();
+export async function getILCDFlowCategorizationAll(lang: string) {
+  const result = await getILCDClassification('Flow', lang, ['all']);
+  const resultElementaryFlow = await getILCDFlowCategorization(lang, ['all']);
 
   const newDatas = {
     category: result.data?.category,

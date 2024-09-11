@@ -7,7 +7,7 @@ import {
   getLangText,
   jsonToList,
 } from '../general/util';
-import { getILCDFlowCategorizationAllZH } from '../ilcd/api';
+import { getILCDFlowCategorizationAll } from '../ilcd/api';
 import { genFlowJsonOrdered } from './util';
 
 export async function createFlows(data: any) {
@@ -114,7 +114,7 @@ export async function getFlowTableAll(
     let data: any[] = [];
 
     if (lang === 'zh') {
-      await getILCDFlowCategorizationAllZH().then((res) => {
+      await getILCDFlowCategorizationAll(lang).then((res) => {
         data = result.data.map((i: any) => {
           try {
             let thisCategory: any[] = [];
@@ -220,7 +220,7 @@ export async function getFlowTablePgroongaSearch(
     let data: any[] = [];
 
     if (lang === 'zh') {
-      await getILCDFlowCategorizationAllZH().then((res) => {
+      await getILCDFlowCategorizationAll(lang).then((res) => {
         data = result.data.map((i: any) => {
           try {
             const dataInfo = i.json?.flowDataSet?.flowInformation?.dataSetInformation;

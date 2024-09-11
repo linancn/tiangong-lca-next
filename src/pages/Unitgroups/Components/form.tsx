@@ -198,6 +198,7 @@ export const UnitGroupForm: FC<Props> = ({
               'common:classification',
               'common:class',
             ]}
+            lang={lang}
             dataType={'UnitGroup'}
             formRef={formRef}
             onData={onData}
