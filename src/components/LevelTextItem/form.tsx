@@ -69,7 +69,7 @@ const LevelTextItemForm: FC<Props> = ({ name, lang, dataType, flowType, formRef,
         return;
       }
       if (dt === 'Flow' && ft === 'Elementary flow') {
-        result = await getILCDFlowCategorization(lang);
+        result = await getILCDFlowCategorization(lang, ['all']);
       } else {
         result = await getILCDClassification(dt, lang, ['all']);
       }

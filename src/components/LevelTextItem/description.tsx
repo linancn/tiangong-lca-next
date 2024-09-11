@@ -16,7 +16,7 @@ const LevelTextItemDescription: FC<Props> = ({ data, lang, categoryType, flowTyp
     if (data) {
       setSpinning(true);
       if (categoryType === 'Flow' && flowType === 'Elementary flow') {
-        getILCDFlowCategorization(lang).then((res) => {
+        getILCDFlowCategorization(lang, [data?.['@level_0']]).then((res) => {
           const level0 = res.data?.category?.find(
             (i: any) => i?.['@name'].toString() === data?.['@level_0'],
           );
