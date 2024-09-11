@@ -286,7 +286,7 @@ const Login: React.FC = () => {
                     {/* <Form.Item name="remember" valuePropName="checked" noStyle>
                       <Checkbox>Remember me</Checkbox>
                     </Form.Item> */}
-                    <a href="/user/password_forgot">
+                    <a href="/#/user/password_forgot">
                       <FormattedMessage
                         id="pages.login.forgotPassword"
                         defaultMessage="Forgot password"
