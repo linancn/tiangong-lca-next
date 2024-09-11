@@ -1,7 +1,7 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
 import LocationTextItemForm from '@/components/LocationTextItem/form';
-import { NullableString, StringMultiLang_o, StringMultiLang_r } from '@/components/Validator/index';
+import { NullableString, StringMultiLang_o, StringMultiLang_r, dataSetVersion } from '@/components/Validator/index';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
@@ -840,6 +840,7 @@ export const ProcessForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
+            rules={dataSetVersion}
           >
             <Input />
           </Form.Item>
