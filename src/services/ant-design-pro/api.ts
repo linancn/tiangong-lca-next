@@ -98,7 +98,7 @@ export async function forgotPasswordSendEmail(
   options?: { [key: string]: any },
 ) {
   const { error } = await supabase.auth.resetPasswordForEmail(body.email ?? '', {
-    redirectTo: 'https://lca.tiangong.world/#/password/set',
+    redirectTo: 'https://lca.tiangong.earth/#/password/set',
   });
 
   if (error) {
