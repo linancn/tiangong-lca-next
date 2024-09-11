@@ -265,9 +265,7 @@ export const FlowForm: FC<Props> = ({
             'compliance',
             'common:referenceToComplianceSystem',
           ]}
-          onData={() => {
-            // onData();
-          }}
+          onData={onData}
         />
         <br />
         <Form.Item
@@ -321,9 +319,7 @@ export const FlowForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
-            onData={() => {
-              // onData();
-            }}
+            onData={onData}
           />
         </Card>
 
@@ -383,9 +379,7 @@ export const FlowForm: FC<Props> = ({
           lang={lang}
           drawerVisible={drawerVisible}
           formRef={formRef}
-          onData={() => {
-            // onData();
-          }}
+          onData={onData}
         />
         <br />
         <Form.Item
