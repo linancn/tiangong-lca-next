@@ -1,6 +1,6 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
-import { StringMultiLang_r } from '@/components/Validator/index';
+import { StringMultiLang_r, dataSetVersion } from '@/components/Validator/index';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import {
   Card,
@@ -248,6 +248,7 @@ export const FlowpropertyForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
+            rules={dataSetVersion}
           >
             <Input />
           </Form.Item>

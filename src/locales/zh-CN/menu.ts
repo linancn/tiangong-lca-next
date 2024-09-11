@@ -54,7 +54,7 @@ export default {
   'menu.editor.koni': '拓扑编辑器',
   'menu.mydata': '我的数据',
   'menu.mydata.products': '产品模型',
-  'menu.mydata.processes': '单元过程',
+  'menu.mydata.processes': '过程',
   'menu.mydata.flows': '流',
   'menu.mydata.flowproperties': '流属性',
   'menu.mydata.unitgroups': '单位',
