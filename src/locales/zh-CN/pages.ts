@@ -76,6 +76,7 @@ export default {
   'pages.searchTable.batchDeletion': '批量删除',
   'pages.searchTable.batchApproval': '批量审批',
 
+  'pages.account.profile.name': '姓名',
   'pages.account.profile.role': '角色',
   'pages.account.profile.email': '邮箱',
   'pages.account.password.current': '当前密码',

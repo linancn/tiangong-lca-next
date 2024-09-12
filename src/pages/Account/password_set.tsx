@@ -62,6 +62,7 @@ const PasswordSet: FC = () => {
   const [initData, setInitData] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [sendMailMessage, setSendMailMessage] = useState<any>(<></>);
+
   const intl = useIntl();
 
   const [spinning, setSpinning] = useState(false);
@@ -107,25 +108,31 @@ const PasswordSet: FC = () => {
   };
 
   useEffect(() => {
+    if (spinning) {
+      currentUser().then((res) => {
+        if (!res?.userid) {
+          history.push('/#/user/login');
+          return;
+        }
+        setInitData([
+          {
+            name: ['userid'],
+            value: res?.userid ?? '',
+          },
+          {
+            name: ['email'],
+            value: res?.email ?? '',
+          },
+        ]);
+        setSpinning(false);
+      });
+    }
+  }, [spinning]);
+
+  useEffect(() => {
     setSpinning(true);
-    currentUser().then((res) => {
-      if (!res?.userid) {
-        history.push('/user/login');
-        return;
-      }
-      setInitData([
-        {
-          name: ['userid'],
-          value: res?.userid ?? '',
-        },
-        {
-          name: ['email'],
-          value: res?.email ?? '',
-        },
-      ]);
-      setSpinning(false);
-    });
   }, []);
+
 
   return (
     <div className={styles.container}>

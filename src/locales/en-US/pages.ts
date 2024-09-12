@@ -80,6 +80,7 @@ export default {
   'pages.searchTable.batchDeletion': 'batch deletion',
   'pages.searchTable.batchApproval': 'batch approval',
 
+  'pages.account.profile.name': 'Name',
   'pages.account.profile.role': 'Role',
   'pages.account.profile.email': 'Email',
   'pages.account.password.current': 'Current Password',

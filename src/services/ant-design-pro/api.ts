@@ -10,7 +10,7 @@ export async function currentUser(options?: { [key: string]: any }) {
     return null;
   }
   const user: API.CurrentUser = {
-    name: data?.user?.email,
+    name: data?.user?.user_metadata?.display_name ?? data?.user?.email,
     userid: data?.user?.id,
     email: data?.user?.email,
     role: data?.user?.role,
@@ -108,12 +108,25 @@ export async function forgotPasswordSendEmail(
 }
 
 export async function setPassword(body: any, options?: { [key: string]: any }) {
-  console.log(body);
   const { data, error } = await supabase.auth.updateUser({
     email: body.email ?? '',
     password: body.new1 ?? '',
   });
-  console.log(data, error);
+
+  if (error) {
+    return { status: 'error', message: error.message, type: body.type, currentAuthority: 'guest' };
+  } else {
+    return { status: 'ok', type: body.type, currentAuthority: data.user.role };
+  }
+}
+
+export async function setProfile(body: any, options?: { [key: string]: any }) {
+  const { data, error } = await supabase.auth.updateUser({
+    data: {
+      display_name: body.name ?? '',
+    },
+  });
+
   if (error) {
     return { status: 'error', message: error.message, type: body.type, currentAuthority: 'guest' };
   } else {
