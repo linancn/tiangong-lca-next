@@ -1,4 +1,5 @@
 import { FormattedMessage } from 'umi';
+import { Rule } from 'antd/lib/form';
 
 export const StringMultiLang_r = [
   {
@@ -24,8 +25,6 @@ export const StringMultiLang_r = [
 
 export const StringMultiLang_o = [
   {
-    required: true,
-    warningOnly: true,
     message: (
       <FormattedMessage
         id="validator.optional.empty"
@@ -68,8 +67,6 @@ export const STMultiLang_r = [
 
 export const STMultiLang_o = [
   {
-    required: true,
-    warningOnly: true,
     message: (
       <FormattedMessage
         id="validator.optional.empty"
@@ -138,8 +135,6 @@ export const String_r = [
 
 export const String_o = [
   {
-    required: true,
-    warningOnly: true,
     message: (
       <FormattedMessage
         id="validator.optional.empty"
@@ -181,32 +176,41 @@ export const dataSetVersion = [
   },
 ];
 
-// export const emailvalidation = [
-//   ...String_o,
-//   {
-//     type: 'email',
-//     message: (
-//       <FormattedMessage
-//         id="validator.pages.contact.email.pattern"
-//         defaultMessage="The input is not valid E-mail!"
-//       />
-//     ),
-//   },
-// ];
+export const emailvalidation: Rule[] = [
+  // ...String_o,
+  {
+    type: 'email',
+    message: (
+      <FormattedMessage
+        id="validator.pages.contact.email.pattern"
+        defaultMessage="The input is not valid E-mail!"
+      />
+    ),
+  },
+];
 
-// export const WWWAddress = [
-//   ...STMultiLang_r,
-//   {
-//     type: 'url',
-//     warningOnly: true,
-//     message: (
-//       <FormattedMessage
-//         id="validator.pages.contact.WWWAddress.invalid"
-//         defaultMessage="Please enter a valid WWWAddress!"
-//       />
-//     ),
-//   },
-// ];
+export const WWWAddress: Rule[] = [
+  // ...STMultiLang_r,
+  {
+    required: true,
+    warningOnly: true,
+    message: (
+      <FormattedMessage
+        id="validator.recommended.empty"
+        defaultMessage="Recommended to fill in to enhance data detail and usability!"
+      />
+    ),
+  },
+  {
+    type: 'url',
+    message: (
+      <FormattedMessage
+        id="validator.pages.contact.WWWAddress.invalid"
+        defaultMessage="Please enter a valid WWWAddress!"
+      />
+    ),
+  },
+];
 
 export const CASNumber = [
   {
