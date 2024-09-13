@@ -168,6 +168,28 @@ export const String_o = [
   },
 ];
 
+export const ST_r = [
+  {
+    required: true,
+    warningOnly: true,
+    message: (
+      <FormattedMessage
+        id="validator.recommended.empty"
+        defaultMessage="Recommended to fill in to enhance data detail and usability!"
+      />
+    ),
+  },
+  {
+    max: 1000,
+    message: (
+      <FormattedMessage
+        id="validator.STMultiLang.pattern"
+        defaultMessage="Length cannot exceed 1000 characters!"
+      />
+    ),
+  },
+];
+
 export const dataSetVersion = [
   {
     required: true,
@@ -265,6 +287,28 @@ export const NullableString = [
       <FormattedMessage
         id="validator.NullableString.pattern"
         defaultMessage="Length cannot exceed 500 characters characters and may be empty!"
+      />
+    ),
+  },
+];
+
+export const Yearvalidation_r = [
+  {
+    required: true,
+    warningOnly: true,
+    message: (
+      <FormattedMessage
+        id="validator.Year.empty"
+        defaultMessage="Recommended to fill in to enhance data detail and usability!"
+      />
+    ),
+  },
+  {
+    pattern: /^[0-9]{4}$/,
+    message: (
+      <FormattedMessage
+        id="validator.Year.pattern"
+        defaultMessage="Please enter a valid year (e.g., 2023)"
       />
     ),
   },
