@@ -1,7 +1,7 @@
 import { UploadButton } from '@/components/FileViewer/upload';
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
-import { STMultiLang_r, StringMultiLang_r, dataSetVersion } from '@/components/Validator/index';
+import { StringMultiLang_r, dataSetVersion, ST_r } from '@/components/Validator/index';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { publicationTypeOptions } from '@/services/sources/data';
@@ -126,7 +126,7 @@ export const SourceForm: FC<Props> = ({
             />
           }
           name={['sourceInformation', 'dataSetInformation', 'sourceCitation']}
-          rules={STMultiLang_r}
+          rules={ST_r}
         >
           <Input />
         </Form.Item>

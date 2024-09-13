@@ -6,6 +6,8 @@ import {
   StringMultiLang_r,
   String_o,
   dataSetVersion,
+  emailvalidation,
+  WWWAddress,
 } from '@/components/Validator/index';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
@@ -124,37 +126,14 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
           <Form.Item
             label={<FormattedMessage id="pages.contact.email" defaultMessage="Email" />}
             name={['contactInformation', 'dataSetInformation', 'email']}
-            rules={[
-              ...String_o,
-              {
-                type: 'email',
-                message: (
-                  <FormattedMessage
-                    id="validator.pages.contact.email.pattern"
-                    defaultMessage="The input is not valid E-mail!"
-                  />
-                ),
-              },
-            ]}
+            rules={emailvalidation}
           >
             <Input />
           </Form.Item>
           <Form.Item
             label={<FormattedMessage id="pages.contact.WWWAddress" defaultMessage="WWWAddress" />}
             name={['contactInformation', 'dataSetInformation', 'WWWAddress']}
-            rules={[
-              ...STMultiLang_r,
-              {
-                type: 'url',
-                warningOnly: true,
-                message: (
-                  <FormattedMessage
-                    id="validator.pages.contact.WWWAddress.invalid"
-                    defaultMessage="Please enter a valid WWWAddress!"
-                  />
-                ),
-              },
-            ]}
+            rules={WWWAddress}
           >
             <Input />
           </Form.Item>

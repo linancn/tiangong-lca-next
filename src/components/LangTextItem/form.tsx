@@ -34,18 +34,7 @@ const LangTextItemForm: FC<Props> = ({ name, label, rules }) => {
                     noStyle
                     name={[subField.name, '#text']}
                     rules={
-                      rules ?? [
-                        {
-                          required: true,
-                          max: 500,
-                          message: (
-                            <FormattedMessage
-                              id="validator.StringMultiLang.length500"
-                              defaultMessage="Length cannot exceed 500 characters!"
-                            />
-                          ),
-                        },
-                      ]
+                      rules ?? []
                     }
                   >
                     <TextArea placeholder="text" rows={1} />

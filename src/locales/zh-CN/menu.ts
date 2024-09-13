@@ -62,7 +62,7 @@ export default {
   'menu.mydata.contacts': '联系人',
   'menu.tgdata': '天工数据',
   'menu.tgdata.products': '产品模型',
-  'menu.tgdata.processes': '单元过程',
+  'menu.tgdata.processes': '过程',
   'menu.tgdata.flows': '流',
   'menu.tgdata.flowproperties': '流属性',
   'menu.tgdata.unitgroups': '单位',
