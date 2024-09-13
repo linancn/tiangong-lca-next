@@ -44,7 +44,7 @@ export default {
   'pages.flow.view.administrativeInformation.publicationAndOwnership': '出版与所有权',
   'pages.flow.view.administrativeInformation.dataSetVersion': '数据集版本',
   'pages.flow.view.administrativeInformation.permanentDataSetURI': '永久数据集URI',
-  'pages.flow.view.flowProperties.referenceToDataSetFormat': '数据集格式的引用',
+  'pages.flow.view.flowProperties.referenceToFlowPropertyDataSet': '流属性数据集引用',
   'pages.flow.view.flowProperties.refObjectId': '引用对象身份',
   'pages.flow.view.flowProperties.type': '类型',
   'pages.flow.view.flowProperties.uri': '统一资源标识符',

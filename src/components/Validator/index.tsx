@@ -85,6 +85,19 @@ export const STMultiLang_o = [
   },
 ];
 
+export const FTMultiLang_r = [
+  {
+    required: true,
+    warningOnly: true,
+    message: (
+      <FormattedMessage
+        id="validator.recommended.empty"
+        defaultMessage="Recommended to fill in to enhance data detail and usability!"
+      />
+    ),
+  },
+];
+
 export const String_m = [
   {
     required: true,
