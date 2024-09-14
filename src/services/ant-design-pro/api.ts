@@ -50,6 +50,8 @@ export async function sendMagicLink(body: API.LoginParams, options?: { [key: str
 export async function reauthenticate(options?: { [key: string]: any }) {
   const { data, error } = await supabase.auth.reauthenticate();
 
+  console.log(data, error);
+
   if (error) {
     return { status: 'error', message: error.message, currentAuthority: 'guest' };
   }

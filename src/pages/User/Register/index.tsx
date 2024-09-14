@@ -1,12 +1,12 @@
 import { Footer } from '@/components';
-import { currentUser, setPassword } from '@/services/ant-design-pro/api';
+import { reauthenticate, setPassword } from '@/services/ant-design-pro/api';
 import { validatePasswordStrength } from '@/services/general/util';
 import { FormattedMessage, history } from '@umijs/max';
 import { Button, Form, Input, Space, Spin, message } from 'antd';
 import { createStyles } from 'antd-style';
 import { useEffect, useState, type FC } from 'react';
 import { Helmet, SelectLang, useIntl } from 'umi';
-import Settings from '../../../config/defaultSettings';
+import Settings from '../../../../config/defaultSettings';
 
 const useStyles = createStyles(({ token }) => {
   return {
@@ -57,15 +57,55 @@ const Lang = () => {
   );
 };
 
-const PasswordSet: FC = () => {
+const Register: FC = () => {
   const { styles } = useStyles();
   const [initData, setInitData] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [sendMailMessage, setSendMailMessage] = useState<any>(<></>);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const [countdown, setCountdown] = useState(60);
 
   const intl = useIntl();
 
+  const { TextArea } = Input;
+
   const [spinning, setSpinning] = useState(false);
+
+
+
+  const handleClick = () => {
+    setIsButtonDisabled(true);
+    reauthenticate().then((res) => {
+      console.log(res);
+      if (res.status === 'ok') {
+        message.success(
+          <FormattedMessage
+            id="pages.account.password.email.code.success"
+            defaultMessage="The email code sended successfully!"
+          />,
+        );
+      } else {
+        message.error(res.message);
+      }
+    });
+  }
+
+  useEffect(() => {
+    let timer: number | NodeJS.Timeout | undefined;
+    if (isButtonDisabled) {
+      timer = setInterval(() => {
+        setCountdown((prevCountdown) => {
+          if (prevCountdown <= 1) {
+            clearInterval(timer);
+            setIsButtonDisabled(false);
+            return 60;
+          }
+          return prevCountdown - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [isButtonDisabled]);
 
   const handleSubmit = async (values: API.LoginParams) => {
     try {
@@ -108,29 +148,11 @@ const PasswordSet: FC = () => {
   };
 
   useEffect(() => {
-    if (spinning) {
-      currentUser().then((res) => {
-        if (!res?.userid) {
-          // history.push('/#/user/login');
-          return;
-        }
-        setInitData([
-          {
-            name: ['userid'],
-            value: res?.userid ?? '',
-          },
-          {
-            name: ['email'],
-            value: res?.email ?? '',
-          },
-        ]);
-        setSpinning(false);
-      });
-    }
+
   }, [spinning]);
 
   useEffect(() => {
-    setSpinning(true);
+
   }, []);
 
 
@@ -177,16 +199,62 @@ const PasswordSet: FC = () => {
                 <Form.Item hidden name={'userid'}>
                   <Input disabled={true} />
                 </Form.Item>
-                <Form.Item name={'email'}>
-                  <Input disabled={true} style={{ color: '#000' }} />
+                <Space direction="horizontal">
+                  <Form.Item name={'email'}
+                    label={
+                      <FormattedMessage
+                        id="pages.account.profile.email"
+                        defaultMessage="Email"
+                      />}
+                    rules={[
+                      { type: 'email', },
+                      { required: true, }
+                    ]}
+                  >
+                    <Input style={{ width: '360px' }} />
+                  </Form.Item>
+                  <Button
+                    style={{ marginTop: '6px' }}
+                    onClick={handleClick}
+                    disabled={isButtonDisabled}
+                  >
+                    {isButtonDisabled ?
+                      <><FormattedMessage
+                        id="pages.account.register.getEmailCode"
+                        defaultMessage="Email"
+                      />(${countdown} s)</>
+                      :
+                      <FormattedMessage
+                        id="pages.account.register.getEmailCode"
+                        defaultMessage="Email"
+                      />
+                    }
+                  </Button>
+                </Space>
+                <Form.Item
+                  name="code"
+                  label={
+                    <FormattedMessage
+                      id="pages.account.register.emailCode"
+                      defaultMessage="Email Code"
+                    />
+                  }
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Please input your email code!',
+                    },
+                  ]}
+                  hasFeedback
+                >
+                  <Input />
                 </Form.Item>
-
                 <Form.Item
                   name="new1"
                   label={
                     <FormattedMessage
-                      id="pages.account.password.new1"
-                      defaultMessage="New Password"
+                      id="pages.account.password"
+                      defaultMessage="Password"
                     />
                   }
                   rules={[
@@ -231,6 +299,18 @@ const PasswordSet: FC = () => {
                 >
                   <Input.Password />
                 </Form.Item>
+                <Form.Item
+                  label={<FormattedMessage id="pages.account.profile.name" defaultMessage="Name" />}
+                  name={'name'}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  label={<FormattedMessage id="pages.account.register.reason" defaultMessage="Reason for Registration" />}
+                  name={'reason'}
+                >
+                  <TextArea rows={5} />
+                </Form.Item>
                 <Form.Item>
                   <Button block type="primary" htmlType="submit" size="large" loading={loading}>
                     <FormattedMessage id="pages.button.submit" defaultMessage="Submit" />
@@ -247,4 +327,4 @@ const PasswordSet: FC = () => {
   );
 };
 
-export default PasswordSet;
+export default Register;
