@@ -27,10 +27,10 @@ export default {
   //联系人信息
   'pages.contact.dataEntryBy': '数据输入方式',
   'pages.contact.timeStamp': '时间戳',
-  'pages.contact.referenceToDataSetFormat': '参考数据集格式',
+  'pages.contact.referenceToDataSetFormat': '数据集格式引用',
   'pages.contact.publicationAndOwnership': '出版和所有权',
   'pages.contact.dataSetVersion': '数据集版本',
-  'pages.contact.referenceToPrecedingDataSetVersion': '上一版本数据集参考', //翻译不确定
+  'pages.contact.referenceToPrecedingDataSetVersion': '上一版本数据集引用', 
   'pages.contact.permanentDataSetURI': '永久数据集URI',
   //管理信息
 

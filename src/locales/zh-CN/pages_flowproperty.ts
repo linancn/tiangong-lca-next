@@ -26,7 +26,7 @@ export default {
   'pages.FlowProperties.view.flowPropertiesInformation.uri': '统一资源标识符',
   'pages.FlowProperties.view.flowPropertiesInformation.shortDescription': '简述',
   'pages.FlowProperties.view.administrativeInformation.referenceToPrecedingDataSetVersion':
-    '上一版本数据集引用', //和contact.ts中的翻译保持一致
+    '上一版本数据集引用',
   'pages.FlowProperties.view.administrativeInformation.permanentDataSetURI': '永久数据集URI',
   'pages.FlowProperties.view.quantitativeReference:ReferenceToReferenceUnitGroup':
     '量值参考：参考单位组引用',
