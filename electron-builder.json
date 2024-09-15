@@ -30,11 +30,13 @@
   },
   "mac": {
     "target": "dmg",
+    "arch": ["x64", "arm64"],
     "category": "public.app-category.utilities",
     "icon": "./icons/icon.icns"
   },
   "win": {
     "target": "nsis",
+    "arch": ["x64", "arm64"],
     "icon": "./icons/icon.ico"
   },
   "nsis": {
@@ -50,6 +52,7 @@
   },
   "linux": {
     "target": ["deb", "rpm"],
+    "arch": ["x64", "arm64"],
     "category": "Science",
     "icon": "./icons"
   }
