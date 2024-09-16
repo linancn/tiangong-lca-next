@@ -30,7 +30,7 @@ export default {
   'pages.contact.referenceToDataSetFormat': '数据集格式引用',
   'pages.contact.publicationAndOwnership': '出版和所有权',
   'pages.contact.dataSetVersion': '数据集版本',
-  'pages.contact.referenceToPrecedingDataSetVersion': '上一版本数据集引用', 
+  'pages.contact.referenceToPrecedingDataSetVersion': '上一版本数据集引用',
   'pages.contact.permanentDataSetURI': '永久数据集URI',
   //管理信息
 

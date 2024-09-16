@@ -1,6 +1,6 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
-import { CASNumber, StringMultiLang_r, dataSetVersion} from '@/components/Validator/index';
+import { CASNumber, StringMultiLang_r, dataSetVersion } from '@/components/Validator/index';
 import FlowpropertiesSelect from '@/pages/Flowproperties/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { complianceOptions } from '@/services/flows/data';

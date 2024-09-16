@@ -115,7 +115,7 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
                 </Button>
               </Tooltip>
             ) : (
-              initData.sourceInformation?.dataSetInformation?.sourceCitation ?? '-'
+              (initData.sourceInformation?.dataSetInformation?.sourceCitation ?? '-')
             )}
           </Descriptions.Item>
         </Descriptions>

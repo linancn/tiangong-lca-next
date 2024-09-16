@@ -1,13 +1,14 @@
 import { AvatarDropdown, AvatarName, Footer, Question, SelectLang } from '@/components';
 import { Link, history } from '@umijs/max';
 
-import { currentUser as queryCurrentUser } from '@/services/ant-design-pro/api';
-import { LinkOutlined } from '@ant-design/icons';
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
-import { SettingDrawer } from '@ant-design/pro-components';
+import { LinkOutlined } from '@ant-design/icons';
 import type { RunTimeLayoutConfig } from '@umijs/max';
+import { SettingDrawer } from '@ant-design/pro-components';
 import defaultSettings from '../config/defaultSettings';
 import { errorConfig } from './requestErrorConfig';
+import { currentUser as queryCurrentUser } from '@/services/ant-design-pro/api';
+import styles from '@/style/custom.less';
 
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
@@ -122,6 +123,20 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
             />
           )}
         </>
+      );
+    },
+    menuItemRender: (menuItemProps, defaultDom) => {
+      if (menuItemProps.isUrl || !menuItemProps.path) {
+        return defaultDom;
+      }
+      return (
+        <Link to={menuItemProps.path}>
+          {menuItemProps.pro_layout_parentKeys &&
+            menuItemProps.pro_layout_parentKeys.length > 0 && (
+              <span className={styles.menu_icon_margin}>{menuItemProps.icon}</span>
+            )}
+          <span>{menuItemProps.name}</span>
+        </Link>
       );
     },
     ...initialState?.settings,

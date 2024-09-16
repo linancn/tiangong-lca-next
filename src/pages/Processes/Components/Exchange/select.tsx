@@ -81,7 +81,7 @@ const ExchangeSelect: FC<Props> = ({
             <Tooltip key={0} placement="topLeft" title={row?.generalComment ?? '-'}>
               {row?.referenceToFlowDataSet ?? '-'}
             </Tooltip>
-            {row?.quantitativeReference ?? false ? (
+            {(row?.quantitativeReference ?? false) ? (
               <CheckCircleTwoTone twoToneColor="#52c41a" />
             ) : (
               ''
