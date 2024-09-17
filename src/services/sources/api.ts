@@ -64,8 +64,8 @@ export async function getSourceTableAll(
     id,
     json->sourceDataSet->sourceInformation->dataSetInformation->"common:shortName",
     json->sourceDataSet->sourceInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
-    json->sourceDataSet->sourceInformation->dataSetInformation->sourceCitation,
-    json->sourceDataSet->sourceInformation->dataSetInformation->publicationType,
+    json->sourceDataSet->sourceInformation->dataSetInformation->>sourceCitation,
+    json->sourceDataSet->sourceInformation->dataSetInformation->>publicationType,
     created_at
   `;
 

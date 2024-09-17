@@ -65,7 +65,7 @@ export async function getContactTableAll(
     json->contactDataSet->contactInformation->dataSetInformation->"common:shortName",
     json->contactDataSet->contactInformation->dataSetInformation->"common:name",
     json->contactDataSet->contactInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
-    json->contactDataSet->contactInformation->dataSetInformation->email,
+    json->contactDataSet->contactInformation->dataSetInformation->>email,
     created_at
   `;
 

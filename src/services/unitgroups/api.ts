@@ -67,7 +67,7 @@ export async function getUnitGroupTableAll(
         id,
         json->unitGroupDataSet->unitGroupInformation->dataSetInformation->"common:name",
         json->unitGroupDataSet->unitGroupInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
-        json->unitGroupDataSet->unitGroupInformation->quantitativeReference->referenceToReferenceUnit,
+        json->unitGroupDataSet->unitGroupInformation->quantitativeReference->>referenceToReferenceUnit,
         json->unitGroupDataSet->units->unit,
         created_at
     `;
