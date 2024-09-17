@@ -113,4 +113,16 @@ export default {
   'pages.process.view.exchange.functionalUnitOrOther': '功能单位或其他',
   'pages.process.view.exchange.selectadirection': '请选择方向',
   'processExchange.dataDerivationTypeStatus': '获取方式',
+
+  'pages.process.view.modellingAndValidation.typeOfDataSet.unitProcessSingleOperation':'单元过程，单一操作',
+  'pages.process.view.modellingAndValidation.typeOfDataSet.unitProcessesBlackBox':'单元过程，黑箱',
+  'pages.process.view.modellingAndValidation.typeOfDataSet.LCIResult':'LCI结果',
+  'pages.process.view.modellingAndValidation.typeOfDataSet.partlyTerminatedSystem':'部分终止系统',
+  'pages.process.view.modellingAndValidation.typeOfDataSet.avoidedProductSystem':'避免产品系统',
+
+  'pages.process.view.modellingAndValidation.LCIMethodPrinciple.attributional':'归因',
+  'pages.process.view.modellingAndValidation.LCIMethodPrinciple.consequential':'归果',
+  'pages.process.view.modellingAndValidation.LCIMethodPrinciple.consequentialWithAttributionalComponents':'具有归因成分的后果 ',
+  'pages.process.view.modellingAndValidation.LCIMethodPrinciple.notApplicable':'不适用',
+  'pages.process.view.modellingAndValidation.LCIMethodPrinciple.other':'其他',
 };

@@ -32,6 +32,7 @@ import ProcessExchangeCreate from './Exchange/create';
 import ProcessExchangeDelete from './Exchange/delete';
 import ProcessExchangeEdit from './Exchange/edit';
 import ProcessExchangeView from './Exchange/view';
+import { processtypeOfDataSetOptions, LCIMethodPrincipleOptions_1 } from './optiondata';
 
 type Props = {
   lang: string;
@@ -482,7 +483,7 @@ export const ProcessForm: FC<Props> = ({
             }
             name={['modellingAndValidation', 'LCIMethodAndAllocation', 'typeOfDataSet']}
           >
-            <Select options={processTypeOptions} />
+            <Select options={processtypeOfDataSetOptions} />
           </Form.Item>
           <Form.Item
             label={
@@ -493,7 +494,7 @@ export const ProcessForm: FC<Props> = ({
             }
             name={['modellingAndValidation', 'LCIMethodAndAllocation', 'LCIMethodPrinciple']}
           >
-            <Select options={LCIMethodPrincipleOptions} />
+            <Select options={LCIMethodPrincipleOptions_1} />
           </Form.Item>
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage

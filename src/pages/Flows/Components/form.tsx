@@ -282,7 +282,7 @@ export const FlowForm: FC<Props> = ({
         <Form.Item
           label={
             <FormattedMessage
-              id="pages.flow.view.flowInformation.cASNumber"
+              id="pages.flow.view.flowInformation.CASNumber"
               defaultMessage="CAS Number"
             />
           }
