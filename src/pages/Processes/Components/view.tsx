@@ -14,10 +14,10 @@ import {
   CloseOutlined,
   ProfileOutlined,
 } from '@ant-design/icons';
-import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
+import { ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import ProcessExchangeView from './Exchange/view';
 
@@ -36,8 +36,6 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
   const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<any>({});
-
-  const actionRefExchangeTable = useRef<ActionType>();
 
   const tabList = [
     {
@@ -90,7 +88,10 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
     //   search: false,
     // },
     {
-      title: <FormattedMessage id="S" defaultMessage="Exchange Direction" />,
+      title: <FormattedMessage
+        id="pages.process.exchange.exchangeDirection"
+        defaultMessage="Direction"
+      />,
       dataIndex: 'exchangeDirection',
       sorter: false,
       search: false,
@@ -267,7 +268,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
         <LevelTextItemDescription
           data={
             initData.processInformation?.dataSetInformation?.classificationInformation?.[
-              'common:classification'
+            'common:classification'
             ]?.['common:class']
           }
           lang={lang}
@@ -345,7 +346,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
             lang={lang}
             data={
               initData.processInformation?.geography?.locationOfOperationSupplyOrProduction?.[
-                '@location'
+              '@location'
               ] ?? '-'
             }
             label={
@@ -671,7 +672,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
             lang={lang}
             data={
               initData.modellingAndValidation?.validation?.review?.[
-                'common:referenceToNameOfReviewerAndInstitution'
+              'common:referenceToNameOfReviewerAndInstitution'
               ]
             }
           />
@@ -690,7 +691,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
           lang={lang}
           data={
             initData.administrativeInformation?.dataGenerator?.[
-              'common:referenceToPersonOrEntityGeneratingTheDataSet'
+            'common:referenceToPersonOrEntityGeneratingTheDataSet'
             ]
           }
         />
@@ -780,7 +781,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
             lang={lang}
             data={
               initData.administrativeInformation?.publicationAndOwnership?.[
-                'common:referenceToOwnershipOfDataSet'
+              'common:referenceToOwnershipOfDataSet'
               ]
             }
           />
@@ -822,7 +823,6 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
     ),
     exchanges: (
       <ProTable<ProcessExchangeTable, ListPagination>
-        actionRef={actionRefExchangeTable}
         search={false}
         pagination={{
           showSizeChanger: false,
@@ -835,6 +835,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
   };
 
   const onView = () => {
+    console.log('onView');
     setDrawerVisible(true);
     setSpinning(true);
     getProcessDetail(id).then(async (result: any) => {

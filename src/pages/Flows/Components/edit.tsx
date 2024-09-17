@@ -25,6 +25,7 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
   const [initData, setInitData] = useState<any>({});
   const [flowType, setFlowType] = useState<string>();
   const [spinning, setSpinning] = useState(false);
+  const [propertyDataSource, setPropertyDataSource] = useState<any>([]);
 
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
@@ -38,6 +39,28 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
       });
   };
 
+  const handletPropertyData = (data: any) => {
+    if (fromData?.id)
+      setPropertyDataSource([...data]);
+  };
+
+  const handletPropertyDataCreate = (data: any) => {
+    if (fromData?.id)
+      setPropertyDataSource([
+        ...propertyDataSource,
+        { ...data, '@dataSetInternalID': propertyDataSource.length.toString() },
+      ]);
+  };
+
+  useEffect(() => {
+    setFromData({
+      ...fromData,
+      flowProperties: {
+        flowProperty: [...propertyDataSource],
+      },
+    });
+  }, [propertyDataSource]);
+
   const onEdit = () => {
     setDrawerVisible(true);
   };
@@ -47,6 +70,7 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
     getFlowDetail(id).then(async (result: any) => {
       const fromData0 = await genFlowFromData(result.data?.json?.flowDataSet ?? {});
       setInitData({ ...fromData0, id: id });
+      setPropertyDataSource(fromData0?.flowProperties?.flowProperty ?? []);
       setFromData({ ...fromData0, id: id });
       setFlowType(fromData0?.flowInformation?.LCIMethod?.typeOfDataSet);
       formRefEdit.current?.resetFields();
@@ -142,6 +166,9 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
               onData={handletFromData}
               flowType={flowType}
               onTabChange={onTabChange}
+              propertyDataSource={propertyDataSource}
+              onPropertyData={handletPropertyData}
+              onPropertyDataCreate={handletPropertyDataCreate}
             />
           </ProForm>
           <Collapse
@@ -152,6 +179,17 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
                 children: (
                   <Typography>
                     <pre>{JSON.stringify(fromData, null, 2)}</pre>
+                    <pre>
+                      {JSON.stringify(
+                        {
+                          flowProperties: {
+                            flowProperty: [...propertyDataSource],
+                          },
+                        },
+                        null,
+                        2,
+                      )}
+                    </pre>
                   </Typography>
                 ),
               },

@@ -1,15 +1,23 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
-import { CASNumber, StringMultiLang_r, dataSetVersion } from '@/components/Validator/index';
-import FlowpropertiesSelect from '@/pages/Flowproperties/Components/select/form';
+import { CASNumber, dataSetVersion, StringMultiLang_r } from '@/components/Validator/index';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
-import { complianceOptions } from '@/services/flows/data';
+import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
+import { complianceOptions, FlowpropertyTabTable } from '@/services/flows/data';
+import { genFlowPropertyTabTableData } from '@/services/flows/util';
+import { ListPagination } from '@/services/general/data';
+import { CheckCircleTwoTone, CloseCircleOutlined } from '@ant-design/icons';
+import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import { Card, Form, Input, Select, Space } from 'antd';
 import type { FC } from 'react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { flowTypeOptions } from './optiondata';
+import PropertyCreate from './Property/create';
+import PropertyDelete from './Property/delete';
+import PropertyEdit from './Property/edit';
+import PropertyView from './Property/view';
 
 type Props = {
   lang: string;
@@ -18,6 +26,9 @@ type Props = {
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;
   flowType: string | undefined;
+  propertyDataSource: FlowpropertyTabTable[];
+  onPropertyData: (data: any) => void;
+  onPropertyDataCreate: (data: any) => void;
   onTabChange: (key: string) => void;
 };
 export const FlowForm: FC<Props> = ({
@@ -27,9 +38,14 @@ export const FlowForm: FC<Props> = ({
   formRef,
   onData,
   flowType,
+  propertyDataSource,
+  onPropertyData,
+  onPropertyDataCreate,
   onTabChange,
 }) => {
   const [thisFlowType, setThisFlowType] = useState<string | undefined>(flowType);
+  const actionRefPropertyTable = useRef<ActionType>();
+
   const tabList = [
     {
       key: 'flowInformation',
@@ -60,6 +76,97 @@ export const FlowForm: FC<Props> = ({
       tab: <FormattedMessage id="pages.flow.view.flowProperty" defaultMessage="Flow Property" />,
     },
   ];
+
+  const propertyColumns: ProColumns<FlowpropertyTabTable>[] = [
+    {
+      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
+      dataIndex: 'index',
+      valueType: 'index',
+      search: false,
+    },
+    {
+      title: <FormattedMessage id="pages.flow.flowProperties.referenceToFlowDataSet" defaultMessage="Reference" />,
+      dataIndex: 'referenceToFlowPropertyDataSet',
+      sorter: false,
+      search: false,
+    },
+    {
+      title: (
+        <FormattedMessage id="pages.flow.view.flowProperties.meanValue" defaultMessage="Mean Value" />
+      ),
+      dataIndex: 'meanValue',
+      sorter: false,
+      search: false,
+    },
+    {
+      title: (
+        <FormattedMessage
+          id="pages.flowproperty.referenceToReferenceUnitGroup"
+          defaultMessage="Reference Unit Group"
+        />
+      ),
+      dataIndex: 'refUnitGroup',
+      sorter: false,
+      search: false,
+      render: (_, row) => {
+        return [
+          <ReferenceUnit key={0} id={row.referenceToFlowPropertyDataSetId} idType={'flowproperty'} lang={lang} />,
+        ];
+      },
+    },
+    {
+      title: (
+        <FormattedMessage
+          id="pages.process.exchange.quantitativeReference"
+          defaultMessage="Quantitative Reference"
+        />
+      ),
+      dataIndex: 'quantitativeReference',
+      sorter: false,
+      search: false,
+      render: (_, row) => {
+        if (row.quantitativeReference) {
+          return <CheckCircleTwoTone twoToneColor="#52c41a" />;
+        }
+        return <CloseCircleOutlined />;
+      },
+    },
+    {
+      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
+      dataIndex: 'option',
+      search: false,
+      render: (_, row) => {
+        return [
+          <Space size={'small'} key={0}>
+            <PropertyView
+              id={row.dataSetInternalID}
+              data={propertyDataSource}
+              lang={lang}
+              buttonType={'icon'}
+            />
+            <PropertyEdit
+              id={row.dataSetInternalID}
+              data={propertyDataSource}
+              lang={lang}
+              buttonType={'icon'}
+              actionRef={actionRefPropertyTable}
+              onData={onPropertyData}
+              setViewDrawerVisible={() => { }}
+            />
+            <PropertyDelete
+              id={row.dataSetInternalID}
+              data={propertyDataSource}
+              buttonType={'icon'}
+              actionRef={actionRefPropertyTable}
+              setViewDrawerVisible={() => { }}
+              onData={onPropertyData}
+            />
+          </Space>,
+        ];
+      },
+    },
+  ];
+
   const tabContent: { [key: string]: JSX.Element } = {
     flowInformation: (
       <Space direction="vertical" style={{ width: '100%' }}>
@@ -363,39 +470,53 @@ export const FlowForm: FC<Props> = ({
       </Space>
     ),
     flowProperties: (
-      <Space direction="vertical" style={{ width: '100%' }}>
-        {/* <Card size="small" title={'Flow Property'}> */}
-        {/* <Form.Item label="Data Set Internal ID" name={['flowProperties', 'flowProperty', '@dataSetInternalID']}>
-                    <Input />
-                </Form.Item>
-                <br /> */}
-        <FlowpropertiesSelect
-          label={
-            <FormattedMessage
-              id="pages.flow.view.flowProperties.referenceToDataSetFormat"
-              defaultMessage="Reference To Data Set Format"
-            />
-          }
-          name={['flowProperties', 'flowProperty', 'referenceToFlowPropertyDataSet']}
-          lang={lang}
-          drawerVisible={drawerVisible}
-          formRef={formRef}
-          onData={onData}
-        />
-        <br />
-        <Form.Item
-          label={
-            <FormattedMessage
-              id="pages.flow.view.flowProperties.meanValue"
-              defaultMessage="Mean Value"
-            />
-          }
-          name={['flowProperties', 'flowProperty', 'meanValue']}
-        >
-          <Input />
-        </Form.Item>
-        {/* </Card> */}
-      </Space>
+      <ProTable<FlowpropertyTabTable, ListPagination>
+        actionRef={actionRefPropertyTable}
+        search={false}
+        pagination={{
+          showSizeChanger: false,
+          pageSize: 10,
+        }}
+        toolBarRender={() => {
+          return [<PropertyCreate key={0} lang={lang} onData={onPropertyDataCreate} />];
+        }}
+        dataSource={genFlowPropertyTabTableData(propertyDataSource, lang)}
+        columns={propertyColumns}
+      />
+
+      // <Space direction="vertical" style={{ width: '100%' }}>
+      //   {/* <Card size="small" title={'Flow Property'}> */}
+      //   {/* <Form.Item label="Data Set Internal ID" name={['flowProperties', 'flowProperty', '@dataSetInternalID']}>
+      //               <Input />
+      //           </Form.Item>
+      //           <br /> */}
+      //   <FlowpropertiesSelect
+      //     label={
+      //       <FormattedMessage
+      //         id="pages.flow.view.flowProperties.referenceToDataSetFormat"
+      //         defaultMessage="Reference To Data Set Format"
+      //       />
+      //     }
+      //     name={['flowProperties', 'flowProperty', 'referenceToFlowPropertyDataSet']}
+      //     lang={lang}
+      //     drawerVisible={drawerVisible}
+      //     formRef={formRef}
+      //     onData={onData}
+      //   />
+      //   <br />
+      //   <Form.Item
+      //     label={
+      //       <FormattedMessage
+      //         id="pages.flow.view.flowProperties.meanValue"
+      //         defaultMessage="Mean Value"
+      //       />
+      //     }
+      //     name={['flowProperties', 'flowProperty', 'meanValue']}
+      //   >
+      //     <Input />
+      //   </Form.Item>
+      //   {/* </Card> */}
+      // </Space>
     ),
   };
 

@@ -10,4 +10,6 @@ export default {
   'pages.flow.model.drawer.title.edit': 'Edit Model',
   'pages.flow.view.flowInformation.typeAndClassificationOfDataSet':
     'Type and Classification of Data Set',
+
+    'pages.flow.flowProperties.referenceToFlowDataSet': 'Reference',
 };

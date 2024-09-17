@@ -1,7 +1,7 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
 import LocationTextItemForm from '@/components/LocationTextItem/form';
-import { NullableString, StringMultiLang_o, StringMultiLang_r, dataSetVersion } from '@/components/Validator/index';
+import { dataSetVersion, NullableString, StringMultiLang_o, StringMultiLang_r } from '@/components/Validator/index';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
@@ -106,7 +106,12 @@ export const ProcessForm: FC<Props> = ({
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name" />,
+      title: (
+        <FormattedMessage
+          id="processExchange.referenceToFlowDataSet"
+          defaultMessage="Reference To Flow DataSet"
+        />
+      ),
       dataIndex: 'referenceToFlowDataSet',
       sorter: false,
       search: false,
@@ -202,14 +207,14 @@ export const ProcessForm: FC<Props> = ({
               buttonType={'icon'}
               actionRef={actionRefExchangeTable}
               onData={onExchangeData}
-              setViewDrawerVisible={() => {}}
+              setViewDrawerVisible={() => { }}
             />
             <ProcessExchangeDelete
               id={row.dataSetInternalID}
               data={exchangeDataSource}
               buttonType={'icon'}
               actionRef={actionRefExchangeTable}
-              setViewDrawerVisible={() => {}}
+              setViewDrawerVisible={() => { }}
               onData={onExchangeData}
             />
           </Space>,
@@ -907,9 +912,7 @@ export const ProcessForm: FC<Props> = ({
     exchanges: (
       <ProTable<ProcessExchangeTable, ListPagination>
         actionRef={actionRefExchangeTable}
-        search={{
-          defaultCollapsed: false,
-        }}
+        search={false}
         pagination={{
           showSizeChanger: false,
           pageSize: 10,

@@ -53,4 +53,6 @@ export default {
   'pages.flows.deleteMessage.areyousureyouwanttodeletethisdata': '您确定要删除此数据吗？',
   'pages.flows.createdSuccessfully!': '创建成功',
   'pages.process.drawer.title.addProcess': '添加流程',
+
+  'pages.flow.flowProperties.referenceToFlowDataSet': '参考数据集',
 };

@@ -11,7 +11,7 @@ export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
   let quantitativeReference = {};
   const exchange =
     data?.exchanges?.exchange?.map((item: any) => {
-      if (item.quantitativeReference) {
+      if (item?.quantitativeReference) {
         quantitativeReference = {
           '@type': 'Reference flow(s)',
           referenceToReferenceFlow: item['@dataSetInternalID'],
@@ -271,6 +271,15 @@ export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
 }
 
 export function genProcessFromData(data: any) {
+  const exchange = data?.exchanges?.exchange ?? [];
+  let exchangeList = [];
+  if (!Array.isArray(exchange)) {
+    exchangeList = [exchange];
+  }
+  else {
+    exchangeList = exchange;
+  }
+
   return removeEmptyObjects({
     processInformation: {
       dataSetInformation: {
@@ -507,7 +516,7 @@ export function genProcessFromData(data: any) {
       },
     },
     exchanges: {
-      exchange: data?.exchanges?.exchange?.map((item: any) => {
+      exchange: exchangeList?.map((item: any) => {
         if (
           item['@dataSetInternalID'] ===
           (data?.processInformation?.quantitativeReference?.referenceToReferenceFlow ?? '')
@@ -558,7 +567,14 @@ export function genProcessFromData(data: any) {
 
 export function genProcessExchangeTableData(data: any, lang: string) {
   if (data) {
-    return data?.map((item: any) => {
+    let dataList = [];
+    if (!Array.isArray(data)) {
+      dataList = [data];
+    }
+    else {
+      dataList = data;
+    }
+    return dataList?.map((item: any) => {
       return removeEmptyObjects({
         // key: `${item?.['@dataSetInternalID'] ?? '-'},${item?.referenceToFlowDataSet?.['@refObjectId'] ?? '-'}`,
         key: item?.['@dataSetInternalID'] ?? '-',
@@ -578,5 +594,5 @@ export function genProcessExchangeTableData(data: any, lang: string) {
       });
     });
   }
-  return {};
+  return [];
 }
