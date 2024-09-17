@@ -67,8 +67,8 @@ export async function getFlowTableAll(
     json->flowDataSet->flowInformation->dataSetInformation->name->baseName,
     json->flowDataSet->flowInformation->dataSetInformation->classificationInformation->"common:elementaryFlowCategorization"->"common:category",
     json->flowDataSet->flowInformation->dataSetInformation->"common:synonyms",
-    json->flowDataSet->flowInformation->dataSetInformation->CASNumber,
-    json->flowDataSet->modellingAndValidation->LCIMethod->typeOfDataSet,
+    json->flowDataSet->flowInformation->dataSetInformation->>CASNumber,
+    json->flowDataSet->modellingAndValidation->LCIMethod->>typeOfDataSet,
     json->flowDataSet->flowProperties->flowProperty->referenceToFlowPropertyDataSet,
     created_at
   `;
