@@ -68,7 +68,7 @@ export async function getFlowpropertyTableAll(
     json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->"common:name",
     json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
     json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->"common:generalComment",
-    json->flowPropertyDataSet->flowPropertiesInformation->quantitativeReference->referenceToReferenceUnitGroup->"@refObjectId",
+    json->flowPropertyDataSet->flowPropertiesInformation->quantitativeReference->referenceToReferenceUnitGroup->>"@refObjectId",
     json->flowPropertyDataSet->flowPropertiesInformation->quantitativeReference->referenceToReferenceUnitGroup->"common:shortDescription",
     created_at
   `;

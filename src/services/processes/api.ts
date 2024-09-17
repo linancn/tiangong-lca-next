@@ -61,8 +61,8 @@ export async function getProcessTableAll(
     json->processDataSet->processInformation->dataSetInformation->name->baseName,
     json->processDataSet->processInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
     json->processDataSet->processInformation->dataSetInformation->"common:generalComment",
-    json->processDataSet->processInformation->time->"common:referenceYear",
-    json->processDataSet->processInformation->geography->locationOfOperationSupplyOrProduction->"@location",
+    json->processDataSet->processInformation->time->>"common:referenceYear",
+    json->processDataSet->processInformation->geography->locationOfOperationSupplyOrProduction->>"@location",
     created_at
   `;
 
