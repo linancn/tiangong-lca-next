@@ -44,7 +44,7 @@ export const SourceForm: FC<Props> = ({
       if (!file.url && !file.preview) {
         file.preview = await getBase64(file.originFileObj as FileType);
       }
-      setPreviewImage(file.url || (file.preview as string));
+      setPreviewImage(file.thumbUrl || (file.preview as string));
       setPreviewOpen(true);
     } else {
       window.open(file.url || (file.preview as string), '_blank');
@@ -182,6 +182,7 @@ export const SourceForm: FC<Props> = ({
               return false;
             }}
             onChange={({ fileList: newFileList }) => {
+              console.log(fileList);
               setFileList(newFileList);
             }}
           >

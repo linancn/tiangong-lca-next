@@ -72,7 +72,7 @@ const FileGallery: FC<Props> = ({ data }) => {
                     }}
                   >
                     <FileTwoTone style={{ fontSize: '32px' }} />
-                    <div style={{ marginTop: '8px', fontSize: '14px' }}>{fileUrl.ext}</div>
+                    <div style={{ marginTop: '8px', fontSize: '14px' }}>{fileUrl.name}</div>
                   </Card>
                 </a>
               );
