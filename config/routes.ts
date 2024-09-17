@@ -167,6 +167,11 @@ export default [
         component: './User/Login',
       },
       {
+        name: 'register',
+        path: '/user/register',
+        component: './User/Register',
+      },
+      {
         name: 'passwordForget',
         path: '/user/password_forgot',
         component: './User/password_forgot',

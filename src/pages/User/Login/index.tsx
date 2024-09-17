@@ -292,6 +292,12 @@ const Login: React.FC = () => {
                         defaultMessage="Forgot password"
                       />
                     </a>
+                    {/* <a href="/#/user/register">
+                      <FormattedMessage
+                        id="pages.login.registerAccount"
+                        defaultMessage="Register Account"
+                      />
+                    </a> */}
                   </Flex>
                 </Form.Item>
                 <Form.Item>

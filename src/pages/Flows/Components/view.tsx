@@ -1,15 +1,19 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
-import FlowpropertiesDescription from '@/pages/Flowproperties/Components/select/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
+import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import { getFlowDetail } from '@/services/flows/api';
-import { genFlowFromData } from '@/services/flows/util';
-import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
-import { Button, Card, Descriptions, Divider, Drawer, Spin, Tooltip } from 'antd';
+import { FlowpropertyTabTable } from '@/services/flows/data';
+import { genFlowFromData, genFlowPropertyTabTableData } from '@/services/flows/util';
+import { ListPagination } from '@/services/general/data';
+import { CheckCircleTwoTone, CloseCircleOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
+import { ProColumns, ProTable } from '@ant-design/pro-components';
+import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { flowTypeOptions } from './optiondata';
+import PropertyView from './Property/view';
 
 type Props = {
   id: string;
@@ -21,6 +25,7 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
   const [activeTabKey, setActiveTabKey] = useState<string>('flowInformation');
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<any>({});
+  const [propertyDataSource, setPropertyDataSource] = useState<any>([]);
 
   const tabList = [
     {
@@ -52,10 +57,100 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
       tab: <FormattedMessage id="pages.flow.view.flowProperty" defaultMessage="Flow Property" />,
     },
   ];
+
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
   };
 
+  const propertyColumns: ProColumns<FlowpropertyTabTable>[] = [
+    {
+      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
+      dataIndex: 'index',
+      valueType: 'index',
+      search: false,
+    },
+    {
+      title: <FormattedMessage id="pages.flow.flowProperties.referenceToFlowDataSet" defaultMessage="Reference" />,
+      dataIndex: 'referenceToFlowPropertyDataSet',
+      sorter: false,
+      search: false,
+    },
+    {
+      title: (
+        <FormattedMessage id="pages.flow.view.flowProperties.meanValue" defaultMessage="Mean Value" />
+      ),
+      dataIndex: 'meanValue',
+      sorter: false,
+      search: false,
+    },
+    {
+      title: (
+        <FormattedMessage
+          id="pages.flowproperty.referenceToReferenceUnitGroup"
+          defaultMessage="Reference Unit Group"
+        />
+      ),
+      dataIndex: 'refUnitGroup',
+      sorter: false,
+      search: false,
+      render: (_, row) => {
+        return [
+          <ReferenceUnit key={0} id={row.referenceToFlowPropertyDataSetId} idType={'flowproperty'} lang={lang} />,
+        ];
+      },
+    },
+    {
+      title: (
+        <FormattedMessage
+          id="pages.process.exchange.quantitativeReference"
+          defaultMessage="Quantitative Reference"
+        />
+      ),
+      dataIndex: 'quantitativeReference',
+      sorter: false,
+      search: false,
+      render: (_, row) => {
+        if (row.quantitativeReference) {
+          return <CheckCircleTwoTone twoToneColor="#52c41a" />;
+        }
+        return <CloseCircleOutlined />;
+      },
+    },
+    {
+      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
+      dataIndex: 'option',
+      search: false,
+      render: (_, row) => {
+        return [
+          <Space size={'small'} key={0}>
+             <PropertyView
+              id={row.dataSetInternalID}
+              data={propertyDataSource}
+              lang={lang}
+              buttonType={'icon'}
+            />
+            {/*<ProcessExchangeEdit
+              id={row.dataSetInternalID}
+              data={exchangeDataSource}
+              lang={lang}
+              buttonType={'icon'}
+              actionRef={actionRefExchangeTable}
+              onData={onExchangeData}
+              setViewDrawerVisible={() => { }}
+            />
+            <ProcessExchangeDelete
+              id={row.dataSetInternalID}
+              data={exchangeDataSource}
+              buttonType={'icon'}
+              actionRef={actionRefExchangeTable}
+              setViewDrawerVisible={() => { }}
+              onData={onPropertyData}
+            /> */}
+          </Space>,
+        ];
+      },
+    },
+  ];
   const contentList: Record<string, React.ReactNode> = {
     flowInformation: (
       <>
@@ -124,7 +219,7 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
           <LevelTextItemDescription
             data={
               initData?.flowInformation?.dataSetInformation?.classificationInformation?.[
-                'common:elementaryFlowCategorization'
+              'common:elementaryFlowCategorization'
               ]?.['common:category']
             }
             lang={lang}
@@ -213,7 +308,7 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
         <SourceSelectDescription
           data={
             initData?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-              'common:referenceToComplianceSystem'
+            'common:referenceToComplianceSystem'
             ]
           }
           title={
@@ -331,47 +426,26 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
       </>
     ),
     flowProperties: (
-      <>
-        {/* <Descriptions bordered size={'small'} column={1}>
-                    <Descriptions.Item key={0} label="Data Set Internal ID" labelStyle={{ width: '200px' }}>
-                        {initData?.flowProperties?.flowProperty?.["@dataSetInternalID"] ?? '-'}
-                    </Descriptions.Item>
-                </Descriptions>
-                <br /> */}
-        <FlowpropertiesDescription
-          data={initData?.flowProperties?.flowProperty?.['referenceToFlowPropertyDataSet']}
-          lang={lang}
-          title={
-            <FormattedMessage
-              id="pages.flow.view.flowProperties.referenceToDataSetFormat"
-              defaultMessage="Reference To Data Set Format"
-            />
-          }
-        />
-        <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id="pages.flow.view.flowProperties.meanValue"
-                defaultMessage="Mean Value"
-              />
-            }
-            labelStyle={{ width: '150px' }}
-          >
-            {initData?.flowProperties?.flowProperty?.['meanValue'] ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
-      </>
+      <ProTable<FlowpropertyTabTable, ListPagination>
+        search={false}
+        pagination={{
+          showSizeChanger: false,
+          pageSize: 10,
+        }}
+        columns={propertyColumns}
+        dataSource={genFlowPropertyTabTableData(propertyDataSource, lang)}
+      />
     ),
   };
+
 
   const onView = () => {
     setDrawerVisible(true);
     setSpinning(true);
     getFlowDetail(id).then(async (result: any) => {
-      setInitData({ ...genFlowFromData(result.data?.json?.flowDataSet ?? {}), id: id });
+      const fromData = genFlowFromData(result.data?.json?.flowDataSet ?? {});
+      setInitData({ ...fromData, id: id });
+      setPropertyDataSource(fromData?.flowProperties?.flowProperty ?? []);
       setSpinning(false);
     });
   };

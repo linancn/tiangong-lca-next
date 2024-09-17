@@ -22,6 +22,7 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
   const [activeTabKey, setActiveTabKey] = useState<string>('flowInformation');
   const [initData, setInitData] = useState<any>({});
   const [fromData, setFromData] = useState<any>({});
+  const [propertyDataSource, setPropertyDataSource] = useState<any>([]);
 
   const reload = useCallback(() => {
     actionRef.current?.reload();
@@ -39,6 +40,28 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
       });
   };
 
+  const handletPropertyData = (data: any) => {
+    if (fromData?.id)
+      setPropertyDataSource([...data]);
+  };
+
+  const handletPropertyDataCreate = (data: any) => {
+    if (fromData?.id)
+      setPropertyDataSource([
+        ...propertyDataSource,
+        { ...data, '@dataSetInternalID': propertyDataSource.length.toString() },
+      ]);
+  };
+
+  useEffect(() => {
+    setFromData({
+      ...fromData,
+      flowProperties: {
+        flowProperty: [...propertyDataSource],
+      },
+    });
+  }, [propertyDataSource]);
+
   useEffect(() => {
     if (!drawerVisible) return;
     const currentDateTime = formatDateTime(new Date());
@@ -54,6 +77,7 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
     };
     const newId = v4();
     setInitData({ ...newData, id: newId });
+    setPropertyDataSource([]);
     formRefCreate.current?.resetFields();
     formRefCreate.current?.setFieldsValue(newData);
     setFromData({ ...newData, id: newId });
@@ -136,6 +160,9 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
             onData={handletFromData}
             flowType={undefined}
             onTabChange={onTabChange}
+            propertyDataSource={propertyDataSource}
+            onPropertyData={handletPropertyData}
+            onPropertyDataCreate={handletPropertyDataCreate}
           />
         </ProForm>
         <Collapse

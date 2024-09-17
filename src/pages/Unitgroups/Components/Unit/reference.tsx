@@ -29,7 +29,7 @@ const ReferenceUnit: FC<Props> = ({ id, idType, lang }) => {
       } else if (idType === 'flowproperty') {
         setSpinning(true);
         getReferenceUnitGroup(id).then((res1: any) => {
-          getReferenceUnit(res1.data?.['@refObjectId']).then((res2) => {
+          getReferenceUnit(res1.data?.refUnitGroupId).then((res2) => {
             setRefUnit(res2.data);
             setSpinning(false);
           });

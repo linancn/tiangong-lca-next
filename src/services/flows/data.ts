@@ -16,6 +16,15 @@ export type FlowModelTable = {
   created_at: Date;
 };
 
+export type FlowpropertyTabTable = {
+  id: string;
+  dataSetInternalID: string;
+  meanValue: string;
+  referenceToFlowPropertyDataSetId: string;
+  referenceToFlowPropertyDataSet: string;
+  quantitativeReference: boolean;
+};
+
 export const complianceOptions = [
   {
     value: 'Fully compliant',
