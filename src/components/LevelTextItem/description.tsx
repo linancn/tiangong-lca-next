@@ -89,7 +89,7 @@ const LevelTextItemDescription: FC<Props> = ({ data, lang, categoryType, flowTyp
           label={<FormattedMessage id="pages.contact.level1" defaultMessage="Level 1" />}
           labelStyle={{ width: '100px' }}
         >
-          {lang === 'zh' ? dataZH?.['@level_0'] ?? '-' : data?.['@level_0'] ?? '-'}
+          {lang === 'zh' ? (dataZH?.['@level_0'] ?? '-') : (data?.['@level_0'] ?? '-')}
           {/* <Space size={'large'}>
             <Space>en:{data?.['@level_0'] ?? '-'}</Space>
             <Space>zh:{dataZH?.['@level_0'] ?? '-'}</Space>
@@ -100,14 +100,14 @@ const LevelTextItemDescription: FC<Props> = ({ data, lang, categoryType, flowTyp
           label={<FormattedMessage id="pages.contact.level2" defaultMessage="Level 2" />}
           labelStyle={{ width: '100px' }}
         >
-          {lang === 'zh' ? dataZH?.['@level_1'] ?? '-' : data?.['@level_1'] ?? '-'}
+          {lang === 'zh' ? (dataZH?.['@level_1'] ?? '-') : (data?.['@level_1'] ?? '-')}
         </Descriptions.Item>
         <Descriptions.Item
           key={0}
           label={<FormattedMessage id="pages.contact.level3" defaultMessage="Level 3" />}
           labelStyle={{ width: '100px' }}
         >
-          {lang === 'zh' ? dataZH?.['@level_2'] ?? '-' : data?.['@level_2'] ?? '-'}
+          {lang === 'zh' ? (dataZH?.['@level_2'] ?? '-') : (data?.['@level_2'] ?? '-')}
         </Descriptions.Item>
       </Descriptions>
     </Spin>

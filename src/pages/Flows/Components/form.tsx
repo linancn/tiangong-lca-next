@@ -483,40 +483,6 @@ export const FlowForm: FC<Props> = ({
         dataSource={genFlowPropertyTabTableData(propertyDataSource, lang)}
         columns={propertyColumns}
       />
-
-      // <Space direction="vertical" style={{ width: '100%' }}>
-      //   {/* <Card size="small" title={'Flow Property'}> */}
-      //   {/* <Form.Item label="Data Set Internal ID" name={['flowProperties', 'flowProperty', '@dataSetInternalID']}>
-      //               <Input />
-      //           </Form.Item>
-      //           <br /> */}
-      //   <FlowpropertiesSelect
-      //     label={
-      //       <FormattedMessage
-      //         id="pages.flow.view.flowProperties.referenceToDataSetFormat"
-      //         defaultMessage="Reference To Data Set Format"
-      //       />
-      //     }
-      //     name={['flowProperties', 'flowProperty', 'referenceToFlowPropertyDataSet']}
-      //     lang={lang}
-      //     drawerVisible={drawerVisible}
-      //     formRef={formRef}
-      //     onData={onData}
-      //   />
-      //   <br />
-      //   <Form.Item
-      //     label={
-      //       <FormattedMessage
-      //         id="pages.flow.view.flowProperties.meanValue"
-      //         defaultMessage="Mean Value"
-      //       />
-      //     }
-      //     name={['flowProperties', 'flowProperty', 'meanValue']}
-      //   >
-      //     <Input />
-      //   </Form.Item>
-      //   {/* </Card> */}
-      // </Space>
     ),
   };
 

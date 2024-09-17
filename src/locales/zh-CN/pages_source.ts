@@ -57,7 +57,7 @@ export default {
   'pages.source.create.administrativeInformation': '管理信息',
   'pages.source.create.administrativeInformation.dataEntryBy': '数据输入方式',
   'pages.source.create.administrativeInformation.timeStamp': '时间戳',
-  'pages.source.create.administrativeInformation.referenceToDataSetFormat': '参考数据集格式',
+  'pages.source.create.administrativeInformation.referenceToDataSetFormat': '数据集格式引用',
   'pages.source.create.administrativeInformation.publicationAndOwnership': '出版和所有权',
   'pages.source.create.administrativeInformation.dataSetVersion': '数据集版本',
   'pages.source.create.administrativeInformation.permanentDataSetURI': '永久数据集URI',

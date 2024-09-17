@@ -1,6 +1,8 @@
-import { getFileUrls, isImage } from '@/services/supabase/storage';
-import { Image, Space, Spin } from 'antd';
+import { Card, Image, Space, Spin } from 'antd';
 import React, { FC } from 'react';
+import { getFileUrls, isImage } from '@/services/supabase/storage';
+
+import { FileTwoTone } from '@ant-design/icons';
 
 type Props = {
   data: any;
@@ -14,7 +16,7 @@ const FileGallery: FC<Props> = ({ data }) => {
     const fetchData = async () => {
       if (data) {
         const urls = await getFileUrls(data);
-        await setFileUrls(urls);
+        setFileUrls(urls);
         setSpinning(false);
       }
     };
@@ -33,19 +35,45 @@ const FileGallery: FC<Props> = ({ data }) => {
           if (fileUrl.url) {
             if (isImage(fileUrl)) {
               return (
-                <Image
-                  height={150}
-                  key={index}
-                  src={fileUrl.thumbUrl}
-                  preview={{
-                    src: fileUrl.url,
+                <Card
+                  style={{
+                    width: 100,
+                    height: 100,
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    padding: 0,
                   }}
-                />
+                  styles={{ body: { padding: 10 } }}
+                  key={index}
+                >
+                  <Image
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                    }}
+                    src={fileUrl.url}
+                    preview={{
+                      src: fileUrl.url,
+                    }}
+                  />
+                </Card>
               );
             } else {
               return (
-                <a key={index} href={fileUrl.url} target="blank">
-                  <img height={150} src={fileUrl.thumbUrl}></img>
+                <a href={fileUrl.url} target="blank" title="Open file" key={index}>
+                  <Card
+                    style={{
+                      width: 100,
+                      height: 100,
+                      textAlign: 'center',
+                      padding: 0,
+                    }}
+                  >
+                    <FileTwoTone style={{ fontSize: '32px' }} />
+                    <div style={{ marginTop: '8px', fontSize: '14px' }}>{fileUrl.name}</div>
+                  </Card>
                 </a>
               );
             }

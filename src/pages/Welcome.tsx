@@ -347,7 +347,12 @@ const Welcome: React.FC = () => {
           <Col span={8}>
             <Card
               hoverable
-              style={{ width: '100%', backgroundColor: 'transparent', border: 'none' }}
+              style={{
+                width: '100%',
+                backgroundColor: 'transparent',
+                border: 'none',
+                paddingTop: '24px',
+              }}
               cover={<SVG1 />}
             >
               <Meta
@@ -359,7 +364,12 @@ const Welcome: React.FC = () => {
           <Col span={8}>
             <Card
               hoverable
-              style={{ width: '100%', backgroundColor: 'transparent', border: 'none' }}
+              style={{
+                width: '100%',
+                backgroundColor: 'transparent',
+                border: 'none',
+                paddingTop: '24px',
+              }}
               cover={<SVG2 />}
             >
               <Meta
@@ -371,7 +381,12 @@ const Welcome: React.FC = () => {
           <Col span={8}>
             <Card
               hoverable
-              style={{ width: '100%', backgroundColor: 'transparent', border: 'none' }}
+              style={{
+                width: '100%',
+                backgroundColor: 'transparent',
+                border: 'none',
+                paddingTop: '24px',
+              }}
               cover={<SVG3 />}
             >
               <Meta

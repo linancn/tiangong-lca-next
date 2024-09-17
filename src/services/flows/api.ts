@@ -66,9 +66,9 @@ export async function getFlowTableAll(
     id,
     json->flowDataSet->flowInformation->dataSetInformation->name->baseName,
     json->flowDataSet->flowInformation->dataSetInformation->classificationInformation->"common:elementaryFlowCategorization"->"common:category",
-    json->flowDataSet->flowInformation->dataSetInformation->"common:generalComment",
-    json->flowDataSet->flowInformation->dataSetInformation->CASNumber,
-    json->flowDataSet->modellingAndValidation->LCIMethod->typeOfDataSet,
+    json->flowDataSet->flowInformation->dataSetInformation->"common:synonyms",
+    json->flowDataSet->flowInformation->dataSetInformation->>CASNumber,
+    json->flowDataSet->modellingAndValidation->LCIMethod->>typeOfDataSet,
     json->flowDataSet->flowProperties->flowProperty->referenceToFlowPropertyDataSet,
     created_at
   `;
@@ -133,7 +133,7 @@ export async function getFlowTableAll(
               baseName: getLangText(i?.baseName, lang),
               flowType: i?.typeOfDataSet ?? '-',
               classification: classificationToString(classificationZH),
-              generalComment: getLangText(i?.['common:generalComment'], lang),
+              synonyms: getLangText(i?.['common:synonyms'], lang),
               CASNumber: i?.CASNumber ?? '-',
               refFlowPropertyId: i?.referenceToFlowPropertyDataSet?.['@refObjectId'] ?? '-',
               created_at: new Date(i?.created_at),
@@ -155,7 +155,7 @@ export async function getFlowTableAll(
             baseName: getLangText(i.baseName, lang),
             flowType: i.typeOfDataSet ?? '-',
             classification: classificationToString(i['common:category']),
-            generalComment: getLangText(i['common:generalComment'], lang),
+            synonyms: getLangText(i['common:synonyms'], lang),
             CASNumber: i.CASNumber ?? '-',
             refFlowPropertyId: i.referenceToFlowPropertyDataSet?.['@refObjectId'] ?? '-',
             created_at: new Date(i.created_at),
@@ -246,7 +246,7 @@ export async function getFlowTablePgroongaSearch(
               key: i.id,
               id: i.id,
               baseName: getLangText(dataInfo?.name?.baseName ?? {}, lang),
-              generalComment: getLangText(dataInfo?.['common:generalComment'] ?? {}, lang),
+              synonyms: getLangText(dataInfo?.['common:synonyms'] ?? {}, lang),
               flowType:
                 i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet ?? '-',
               classification: classificationToString(classificationZH),
@@ -269,7 +269,7 @@ export async function getFlowTablePgroongaSearch(
             key: i.id,
             id: i.id,
             baseName: getLangText(dataInfo?.name?.baseName ?? {}, lang),
-            generalComment: getLangText(dataInfo?.['common:generalComment'] ?? {}, lang),
+            synonyms: getLangText(dataInfo?.['common:synonyms'] ?? {}, lang),
             classification: classificationToString(
               dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[
                 'common:category'
@@ -348,8 +348,8 @@ export async function flow_hybrid_search(
                 'common:classification'
               ]?.['common:class'],
             ),
-            generalComment: getLangText(
-              i.json?.flowDataSet?.flowInformation?.dataSetInformation?.['common:generalComment'],
+            synonyms: getLangText(
+              i.json?.flowDataSet?.flowInformation?.dataSetInformation?.['common:synonyms'],
               lang,
             ),
             dataType: i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet ?? '-',

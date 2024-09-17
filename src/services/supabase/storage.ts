@@ -1,7 +1,8 @@
 import { GetProp, UploadFile, UploadProps } from 'antd';
+import { supabaseStorageBucket, supabaseUrl } from '../supabase/key';
+
 import path from 'path';
 import { supabase } from '../supabase';
-import { supabaseStorageBucket, supabaseUrl } from '../supabase/key';
 
 const imageExtensions = ['.jpeg', '.jpg', '.png', '.gif', '.bmp', '.webp'];
 
@@ -45,7 +46,7 @@ export async function getFileUrls(fileList: any) {
           }
           const blob = await response.blob();
           const blobUrl = URL.createObjectURL(blob);
-          const thumbUrl = imageExtensions.includes(path.extname(file)) ? blobUrl : '/file.png';
+          const thumbUrl = imageExtensions.includes(path.extname(file)) ? blobUrl : '.';
           return {
             uid: file,
             status: 'done',

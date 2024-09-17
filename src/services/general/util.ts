@@ -73,10 +73,10 @@ export function classificationToString(classifications: any) {
         classificationStr = filterList0[0]['#text'] ?? '-';
         const filterList1 = classifications.filter((i) => i['@level'].toString() === '1');
         if (filterList1.length > 0) {
-          classificationStr = classificationStr + ' > ' + filterList1[0]['#text'] ?? '-';
+          classificationStr = classificationStr + ' > ' + (filterList1[0]['#text'] ?? '-');
           const filterList2 = classifications.filter((i) => i['@level'].toString() === '2');
           if (filterList2.length > 0) {
-            classificationStr = classificationStr + ' > ' + filterList2[0]['#text'] ?? '-';
+            classificationStr = classificationStr + ' > ' + (filterList2[0]['#text'] ?? '-');
           }
         }
       }

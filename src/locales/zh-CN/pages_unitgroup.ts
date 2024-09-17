@@ -37,7 +37,7 @@ export default {
   'pages.unitgroup.creat.unitGroupInformation.name': '名称',
   'pages.unitgroup.creat.unitGroupInformation.classification': '分类',
   'pages.unitgroup.creat.modellingAndValidation': '建模与验证',
-  'pages.unitgroup.creat.modellingAndValidation.referenceToComplianceSystem': '合规性系统的引用',
+  'pages.unitgroup.creat.modellingAndValidation.referenceToComplianceSystem': '合规系统的引用',
   'pages.unitgroup.creat.modellingAndValidation.approvalOfOverallCompliance': '整体合规性批准',
   'pages.unitgroup.creat.administrativeInformation': '管理信息',
   'pages.unitgroup.creat.administrativeInformation.timeStamp': '时间戳',
@@ -55,11 +55,11 @@ export default {
   'pages.unitgroup.edit.unitGroupInformation.name': '名称',
   'pages.unitgroup.edit.unitGroupInformation.classification': '分类', //已翻译
   'pages.unitgroup.edit.modellingAndValidation': '建模与验证', //
-  'pages.unitgroup.edit.modellingAndValidation.referenceToComplianceSystem': '合规性系统的引用', //已翻译
+  'pages.unitgroup.edit.modellingAndValidation.referenceToComplianceSystem': '合规系统的引用', //已翻译
   'pages.unitgroup.edit.modellingAndValidation.approvalOfOverallCompliance': '整体合规性批准', //已翻译
   'pages.unitgroup.edit.administrativeInformation': '管理信息',
   'pages.unitgroup.edit.administrativeInformation.timeStamp': '时间戳',
-  'pages.unitgroup.edit.administrativeInformation.referenceToDataSetFormat': '参考数据集格式',
+  'pages.unitgroup.edit.administrativeInformation.referenceToDataSetFormat': '数据集格式引用',
   'pages.unitgroup.edit.administrativeInformation.dataSetVersion': '数据集版本',
   //
   'pages.unitgroup.edit.units': '单位',

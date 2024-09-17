@@ -222,8 +222,8 @@ export const FlowpropertyForm: FC<Props> = ({
             lang={lang}
             label={
               <FormattedMessage
-                id="pages.FlowProperties.view.modellingAndValidation.referenceToComplianceSystem"
-                defaultMessage="Reference To Compliance System"
+                id="pages.FlowProperties.view.modellingAndValidation.referenceToDataSetFormat"
+                defaultMessage="Reference To Data Set Format"
               />
             }
             formRef={formRef}

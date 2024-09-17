@@ -1,16 +1,17 @@
-import { UploadButton } from '@/components/FileViewer/upload';
+import { Card, Form, Image, Input, Select, Space, Upload, UploadFile } from 'antd';
+import { FC, useState } from 'react';
+import { FileType, getBase64, isImage } from '@/services/supabase/storage';
+import { ST_r, StringMultiLang_r, dataSetVersion } from '@/components/Validator/index';
+
+import ContactSelectForm from '@/pages/Contacts/Components/select/form';
+import { FormattedMessage } from 'umi';
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
-import { STMultiLang_r, StringMultiLang_r, dataSetVersion } from '@/components/Validator/index';
-import ContactSelectForm from '@/pages/Contacts/Components/select/form';
-import SourceSelectForm from '@/pages/Sources/Components/select/form';
-import { publicationTypeOptions } from '@/services/sources/data';
-import { FileType, getBase64, isImage } from '@/services/supabase/storage';
 import { ProFormInstance } from '@ant-design/pro-components';
-import { Card, Form, Image, Input, Select, Space, Upload, UploadFile } from 'antd';
 import { RcFile } from 'antd/es/upload';
-import { FC, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import SourceSelectForm from '@/pages/Sources/Components/select/form';
+import { UploadButton } from '@/components/FileViewer/upload';
+import { publicationTypeOptions } from '@/services/sources/data';
 
 type Props = {
   lang: string;
@@ -43,7 +44,7 @@ export const SourceForm: FC<Props> = ({
       if (!file.url && !file.preview) {
         file.preview = await getBase64(file.originFileObj as FileType);
       }
-      setPreviewImage(file.url || (file.preview as string));
+      setPreviewImage(file.thumbUrl || (file.preview as string));
       setPreviewOpen(true);
     } else {
       window.open(file.url || (file.preview as string), '_blank');
@@ -126,7 +127,7 @@ export const SourceForm: FC<Props> = ({
             />
           }
           name={['sourceInformation', 'dataSetInformation', 'sourceCitation']}
-          rules={STMultiLang_r}
+          rules={ST_r}
         >
           <Input />
         </Form.Item>
@@ -181,6 +182,7 @@ export const SourceForm: FC<Props> = ({
               return false;
             }}
             onChange={({ fileList: newFileList }) => {
+              console.log(fileList);
               setFileList(newFileList);
             }}
           >

@@ -39,12 +39,12 @@ export default {
   'pages.flow.view.modellingAndValidation.referenceToComplianceSystem': '合规系统引用',
   'pages.flow.view.modellingAndValidation.approvalOfOverallCompliance': '整体合规性批准',
   'pages.flow.view.administrativeInformation.dataEntryBy': '数据输入方式',
-  'pages.flow.view.administrativeInformation.timeStamp': '时间点',
+  'pages.flow.view.administrativeInformation.timeStamp': '时间戳',
   'pages.flow.view.administrativeInformation.referenceToDataSetFormat': '数据集格式引用',
   'pages.flow.view.administrativeInformation.publicationAndOwnership': '出版与所有权',
   'pages.flow.view.administrativeInformation.dataSetVersion': '数据集版本',
   'pages.flow.view.administrativeInformation.permanentDataSetURI': '永久数据集URI',
-  'pages.flow.view.flowProperties.referenceToDataSetFormat': '数据集格式的引用',
+  'pages.flow.view.flowProperties.referenceToFlowPropertyDataSet': '流属性数据集引用',
   'pages.flow.view.flowProperties.refObjectId': '引用对象身份',
   'pages.flow.view.flowProperties.type': '类型',
   'pages.flow.view.flowProperties.uri': '统一资源标识符',
@@ -52,7 +52,6 @@ export default {
   'pages.flow.view.flowProperties.meanValue': '平均值',
   'pages.flows.deleteMessage.areyousureyouwanttodeletethisdata': '您确定要删除此数据吗？',
   'pages.flows.createdSuccessfully!': '创建成功',
-  'pages.process.drawer.title.addProcess': '添加流程',
-
   'pages.flow.flowProperties.referenceToFlowDataSet': '参考数据集',
+  'pages.process.drawer.title.addProcess': '添加过程',
 };

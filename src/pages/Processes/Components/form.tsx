@@ -1,7 +1,13 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
 import LocationTextItemForm from '@/components/LocationTextItem/form';
-import { dataSetVersion, NullableString, StringMultiLang_o, StringMultiLang_r } from '@/components/Validator/index';
+import {
+  dataSetVersion,
+  FTMultiLang_r,
+  NullableString,
+  StringMultiLang_r,
+  Yearvalidation_r,
+} from '@/components/Validator/index';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
@@ -287,7 +293,6 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage="General Comment"
               />
             }
-            rules={StringMultiLang_o}
           />
         </Card>
 
@@ -308,16 +313,7 @@ export const ProcessForm: FC<Props> = ({
               />
             }
             name={['processInformation', 'time', 'common:referenceYear']}
-            rules={[
-              {
-                required: true,
-                message: 'Please enter a year',
-              },
-              {
-                pattern: /^[0-9]{4}$/,
-                message: 'Please enter a valid year (e.g., 2023)',
-              },
-            ]}
+            rules={Yearvalidation_r}
           >
             <Input />
           </Form.Item>
@@ -335,6 +331,7 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage="Time Representativeness Description"
               />
             }
+            rules={FTMultiLang_r}
           />
         </Card>
 
@@ -516,6 +513,7 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage="Deviations From LCI Method Principle"
               />
             }
+            rules={FTMultiLang_r}
           />
           <Form.Item
             label={
@@ -546,6 +544,7 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage="Deviations From LCI Method Approaches"
               />
             }
+            rules={FTMultiLang_r}
           />
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
@@ -565,6 +564,7 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage="Deviations From Modelling Constants"
               />
             }
+            rules={FTMultiLang_r}
           />
         </Card>
 
@@ -595,6 +595,7 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage="Deviations From Cut Off And Completeness Principles"
               />
             }
+            rules={FTMultiLang_r}
           />
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
@@ -614,6 +615,7 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage="Data Selection And Combination Principles"
               />
             }
+            rules={FTMultiLang_r}
           />
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
@@ -633,6 +635,7 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage="Deviations From Selection And Combination Principles"
               />
             }
+            rules={FTMultiLang_r}
           />
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
@@ -652,6 +655,7 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage="Data Treatment And Extrapolations Principles"
               />
             }
+            rules={FTMultiLang_r}
           />
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
@@ -671,6 +675,7 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage="Deviations From Treatment And Extrapolation Principles"
               />
             }
+            rules={FTMultiLang_r}
           />
 
           <SourceSelectForm
@@ -708,6 +713,7 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage="Use Advice For DataSet"
               />
             }
+            rules={FTMultiLang_r}
           />
         </Card>
         <Divider orientationMargin="0" orientation="left" plain>
@@ -759,6 +765,7 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage="Review Details"
               />
             }
+            rules={FTMultiLang_r}
           />
 
           <ContactSelectForm
