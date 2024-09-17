@@ -1,9 +1,9 @@
 export type FlowTable = {
   id: string;
   baseName: string;
+  synonyms: string;
   classification: string;
   flowType: string;
-  generalComment: string;
   CASNumber: string;
   refFlowPropertyId: string;
   created_at: Date;

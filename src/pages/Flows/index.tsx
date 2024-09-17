@@ -47,7 +47,7 @@ const TableList: FC = () => {
       sorter: false,
       search: false,
       render: (_, row) => [
-        <Tooltip key={0} placement="topLeft" title={row.generalComment}>
+        <Tooltip key={0} placement="topLeft" title={row.synonyms}>
           {row.baseName}
         </Tooltip>,
       ],
