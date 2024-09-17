@@ -135,9 +135,12 @@ const PropertyEdit: FC<Props> = ({
               <Input />
             </Form.Item>
             <FlowpropertiesSelectForm
-              label={<FormattedMessage
-                id="pages.flow.view.flowProperties.referenceToDataSetFormat"
-                defaultMessage="Reference To Data Set Format" />}
+              label={
+                <FormattedMessage
+                  id="pages.flow.view.flowProperties.referenceToFlowPropertyDataSet"
+                  defaultMessage="Reference To Flow Property DataSet"
+                />
+              }
               name={['referenceToFlowPropertyDataSet']}
               lang={lang}
               drawerVisible={drawerVisible}
