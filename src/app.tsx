@@ -9,6 +9,11 @@ import { SettingDrawer } from '@ant-design/pro-components';
 import type { RunTimeLayoutConfig } from '@umijs/max';
 import defaultSettings from '../config/defaultSettings';
 import { errorConfig } from './requestErrorConfig';
+import {
+  disable as darkreaderDisable,
+  enable as darkreaderEnable,
+  setFetchMethod as setFetch,
+} from '@umijs/ssr-darkreader';
 
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
@@ -53,14 +58,45 @@ export async function getInitialState(): Promise<{
 
 // ProLayout 支持的api https://procomponents.ant.design/components/layout
 export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) => {
+  const updateTheme = async (dark: boolean) => {
+    if (typeof window === 'undefined') return;
+    if (typeof window.MutationObserver === 'undefined') return;
+
+    if (dark) {
+      const defaultTheme = {
+        brightness: 100,
+        contrast: 90,
+        sepia: 10,
+      };
+
+      const defaultFixes = {
+        invert: [],
+        css: '',
+        ignoreInlineStyle: ['.react-switch-handle'],
+        ignoreImageAnalysis: [],
+        disableStyleSheetsProxy: true,
+      };
+      if (window.MutationObserver && window.fetch) {
+        setFetch(window.fetch);
+        darkreaderEnable(defaultTheme, defaultFixes);
+      }
+    } else {
+      if (window.MutationObserver) darkreaderDisable();
+    }
+  };
+
   const handleClickFunction = () => {
-    setInitialState((prevState: any) => ({
-      ...prevState,
-      isDarkMode: !prevState.isDarkMode,
-    }));
+    setInitialState((prevState: any) => {
+      const newState = {
+        ...prevState,
+        isDarkMode: !prevState.isDarkMode,
+      };
+      updateTheme(newState.isDarkMode);
+      return newState;
+    });
   };
   return {
-    actionsRender: () => [<DarkMode handleClick={handleClickFunction} isDarkMode={initialState?.isDarkMode} />, <SelectLang key="SelectLang" />, <Question key="doc" />],
+    actionsRender: () => [<DarkMode key="DarkMode" handleClick={handleClickFunction} isDarkMode={initialState?.isDarkMode} />, <SelectLang key="SelectLang" />, <Question key="doc" />],
     avatarProps: {
       src: initialState?.currentUser?.avatar,
       title: <AvatarName />,

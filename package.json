@@ -57,6 +57,7 @@
     "@antv/xflow": "^2.1.13",
     "@supabase/supabase-js": "^2.45.4",
     "@umijs/route-utils": "^4.0.1",
+    "@umijs/ssr-darkreader": "^4.9.45",
     "antd": "^5.20.6",
     "antd-style": "^3.6.3",
     "classnames": "^2.5.1",
