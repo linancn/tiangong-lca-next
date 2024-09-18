@@ -80,4 +80,8 @@ export default {
   //'pages.table.title.generalComment':'一般性评论',
   //'pages.table.title.meanValue':'平均值',
   //'pages.table.title.quantitativeReference':'度量参考',在哪个文件？
+
+  'pages.unitgroup.view.modellingAndValidation.approvalOfOverallCompliance.fullyCompliant':'完全符合',
+  'pages.unitgroup.view.modellingAndValidation.approvalOfOverallCompliance.notCompliant':'不符合',
+  'pages.unitgroup.view.modellingAndValidation.approvalOfOverallCompliance.notDefined':'未定义',
 };
