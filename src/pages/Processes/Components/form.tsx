@@ -32,7 +32,7 @@ import ProcessExchangeCreate from './Exchange/create';
 import ProcessExchangeDelete from './Exchange/delete';
 import ProcessExchangeEdit from './Exchange/edit';
 import ProcessExchangeView from './Exchange/view';
-import { processtypeOfDataSetOptions, LCIMethodPrincipleOptions_1 } from './optiondata';
+import { processtypeOfDataSetOptions, LCIMethodPrincipleOptions_1, LCIMethodApproachOptions_1, reviewTypeOptions_1, licenseTypeOptions_1, copyrightOptions_1 } from './optiondata';
 
 type Props = {
   lang: string;
@@ -525,7 +525,7 @@ export const ProcessForm: FC<Props> = ({
             }
             name={['modellingAndValidation', 'LCIMethodAndAllocation', 'LCIMethodApproaches']}
           >
-            <Select options={LCIMethodApproachOptions} />
+            <Select options={LCIMethodApproachOptions_1} />
           </Form.Item>
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
@@ -750,7 +750,7 @@ export const ProcessForm: FC<Props> = ({
             }
             name={['modellingAndValidation', 'validation', 'review', '@type']}
           >
-            <Select options={reviewTypeOptions} />
+            <Select options={reviewTypeOptions_1} />
           </Form.Item>
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
@@ -900,7 +900,7 @@ export const ProcessForm: FC<Props> = ({
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:copyright']}
           >
-            <Select options={copyrightOptions} />
+            <Select options={copyrightOptions_1} />
           </Form.Item>
 
           <Form.Item
@@ -912,7 +912,7 @@ export const ProcessForm: FC<Props> = ({
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:licenseType']}
           >
-            <Select options={licenseTypeOptions} />
+            <Select options={licenseTypeOptions_1} />
           </Form.Item>
         </Card>
       </Space>
