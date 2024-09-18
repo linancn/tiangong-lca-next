@@ -157,8 +157,8 @@ export default {
   'pages.process.view.modellingAndValidation.Validation.Review.independentReviewPanel':'独立审查小组',
   'pages.process.view.modellingAndValidation.Validation.Review.notReviewed':'未审查',
 
-  'pages.process.view.administrativeInformation.copyright.true':'是',
-  'pages.process.view.administrativeInformation.copyright.false':'否',
+  'pages.process.view.administrativeInformation.copyright.yes':'是',
+  'pages.process.view.administrativeInformation.copyright.no':'否',
 
   'pages.process.view.administrativeInformation.licenseType.freeOfChargeForAllUsersAndUses':'对所有用户和适用类型免费',
   'pages.process.view.administrativeInformation.licenseType.freeOfChargeForSomeUserTypesOrUseTypes':'对特定用户类型或使用类型免费',
