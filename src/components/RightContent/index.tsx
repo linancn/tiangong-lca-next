@@ -1,7 +1,8 @@
-import { QuestionCircleOutlined } from '@ant-design/icons';
+import { QuestionCircleOutlined, MoonOutlined, SunOutlined } from '@ant-design/icons';
 import { SelectLang as UmiSelectLang } from '@umijs/max';
+import { ConfigProvider, theme } from 'antd';
 
-export type SiderTheme = 'light' | 'dark';
+const { defaultAlgorithm, darkAlgorithm } = theme;
 
 export const SelectLang = () => {
   return (
@@ -28,3 +29,16 @@ export const Question = () => {
     </div>
   );
 };
+
+interface DarkModeProps {
+  handleClick: any;
+  isDarkMode?: boolean;
+}
+
+export const DarkMode: React.FC<DarkModeProps> = ({ handleClick, isDarkMode }) => {
+  return (
+    <ConfigProvider theme={{ algorithm: isDarkMode ? darkAlgorithm : defaultAlgorithm }}>
+      {isDarkMode ? <SunOutlined onClick={handleClick} /> : <MoonOutlined onClick={handleClick} />}
+    </ConfigProvider>
+  );
+}
