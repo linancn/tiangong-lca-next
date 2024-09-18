@@ -1,22 +1,49 @@
 import { AvatarDropdown, AvatarName, DarkMode, Footer, Question, SelectLang } from '@/components';
 import { Link, history } from '@umijs/max';
-
-import { currentUser as queryCurrentUser } from '@/services/ant-design-pro/api';
-import styles from '@/style/custom.less';
-import { LinkOutlined } from '@ant-design/icons';
-import type { Settings as LayoutSettings } from '@ant-design/pro-components';
-import { SettingDrawer } from '@ant-design/pro-components';
-import type { RunTimeLayoutConfig } from '@umijs/max';
-import defaultSettings from '../config/defaultSettings';
-import { errorConfig } from './requestErrorConfig';
 import {
   disable as darkreaderDisable,
   enable as darkreaderEnable,
   setFetchMethod as setFetch,
 } from '@umijs/ssr-darkreader';
 
+import type { Settings as LayoutSettings } from '@ant-design/pro-components';
+import { LinkOutlined } from '@ant-design/icons';
+import type { RunTimeLayoutConfig } from '@umijs/max';
+import { SettingDrawer } from '@ant-design/pro-components';
+import defaultSettings from '../config/defaultSettings';
+import { errorConfig } from './requestErrorConfig';
+import { currentUser as queryCurrentUser } from '@/services/ant-design-pro/api';
+import styles from '@/style/custom.less';
+
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
+
+const updateTheme = async (dark: boolean) => {
+  if (typeof window === 'undefined') return;
+  if (typeof window.MutationObserver === 'undefined') return;
+
+  if (dark) {
+    const defaultTheme = {
+      brightness: 100,
+      contrast: 90,
+      sepia: 10,
+    };
+
+    const defaultFixes = {
+      invert: [],
+      css: '',
+      ignoreInlineStyle: ['.react-switch-handle'],
+      ignoreImageAnalysis: [],
+      disableStyleSheetsProxy: true,
+    };
+    if (window.MutationObserver && window.fetch) {
+      setFetch(window.fetch);
+      darkreaderEnable(defaultTheme, defaultFixes);
+    }
+  } else {
+    if (window.MutationObserver) darkreaderDisable();
+  }
+};
 
 /**
  * @see  https://umijs.org/zh-CN/plugins/plugin-initial-state
@@ -40,6 +67,9 @@ export async function getInitialState(): Promise<{
     return null;
   };
 
+  const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
+  updateTheme(isDarkMode);
+
   // 如果不是登录页面，执行
   const { location } = history;
   if (location.pathname !== loginPath) {
@@ -48,55 +78,39 @@ export async function getInitialState(): Promise<{
       fetchUserInfo,
       currentUser,
       settings: defaultSettings as Partial<LayoutSettings>,
+      isDarkMode,
     };
   }
   return {
     fetchUserInfo,
     settings: defaultSettings as Partial<LayoutSettings>,
+    isDarkMode,
   };
 }
 
 // ProLayout 支持的api https://procomponents.ant.design/components/layout
 export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) => {
-  const updateTheme = async (dark: boolean) => {
-    if (typeof window === 'undefined') return;
-    if (typeof window.MutationObserver === 'undefined') return;
-
-    if (dark) {
-      const defaultTheme = {
-        brightness: 100,
-        contrast: 90,
-        sepia: 10,
-      };
-
-      const defaultFixes = {
-        invert: [],
-        css: '',
-        ignoreInlineStyle: ['.react-switch-handle'],
-        ignoreImageAnalysis: [],
-        disableStyleSheetsProxy: true,
-      };
-      if (window.MutationObserver && window.fetch) {
-        setFetch(window.fetch);
-        darkreaderEnable(defaultTheme, defaultFixes);
-      }
-    } else {
-      if (window.MutationObserver) darkreaderDisable();
-    }
-  };
-
   const handleClickFunction = () => {
     setInitialState((prevState: any) => {
       const newState = {
         ...prevState,
         isDarkMode: !prevState.isDarkMode,
       };
+      localStorage.setItem('isDarkMode', newState.isDarkMode.toString());
       updateTheme(newState.isDarkMode);
       return newState;
     });
   };
   return {
-    actionsRender: () => [<DarkMode key="DarkMode" handleClick={handleClickFunction} isDarkMode={initialState?.isDarkMode} />, <SelectLang key="SelectLang" />, <Question key="doc" />],
+    actionsRender: () => [
+      <DarkMode
+        key="DarkMode"
+        handleClick={handleClickFunction}
+        isDarkMode={initialState?.isDarkMode}
+      />,
+      <SelectLang key="SelectLang" />,
+      <Question key="doc" />,
+    ],
     avatarProps: {
       src: initialState?.currentUser?.avatar,
       title: <AvatarName />,
@@ -137,11 +151,11 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     ],
     links: isDev
       ? [
-        <Link key="openapi" to="/umi/plugin/openapi" target="_blank">
-          <LinkOutlined />
-          <span>OpenAPI 文档</span>
-        </Link>,
-      ]
+          <Link key="openapi" to="/umi/plugin/openapi" target="_blank">
+            <LinkOutlined />
+            <span>OpenAPI 文档</span>
+          </Link>,
+        ]
       : [],
     menuHeaderRender: undefined,
     // 自定义 403 页面

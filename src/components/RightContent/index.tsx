@@ -41,4 +41,4 @@ export const DarkMode: React.FC<DarkModeProps> = ({ handleClick, isDarkMode }) =
       {isDarkMode ? <SunFilled onClick={handleClick} /> : <MoonOutlined onClick={handleClick} />}
     </ConfigProvider>
   );
-}
+};
