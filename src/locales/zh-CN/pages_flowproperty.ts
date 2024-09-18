@@ -39,4 +39,8 @@ export default {
   'pages.FlowProperties.view.flowPropertiesInformation.quantitativeReference': '量值参考',
   'pages.FlowProperties.view.flowPropertiesInformation.referenceToReferenceUnitGroup':
     '参考单位组引用',
+
+  'pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance.fullyCompliant':'完全符合',
+  'pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance.notCompliant':'不符合',
+  'pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance.notDefined':'未定义',
 };

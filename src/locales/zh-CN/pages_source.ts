@@ -63,4 +63,15 @@ export default {
   'pages.source.create.administrativeInformation.permanentDataSetURI': '永久数据集URI',
   'pages.source.create.administrativeInformation.referenceToOwnershipOfDataSet':
     '数据集所有权的引用',
+
+  'pages.unitgroup.view.sourceInformation.publicationType.undefined': '未定义',
+  'pages.unitgroup.view.sourceInformation.publicationType.articleInPeriodical': '期刊文章',
+  'pages.unitgroup.view.sourceInformation.publicationType.chapterInAnthology': '文集章节',
+  'pages.unitgroup.view.sourceInformation.publicationType.monograph': '专著',
+  'pages.unitgroup.view.sourceInformation.publicationType.directMeasurement': '直接测量',
+  'pages.unitgroup.view.sourceInformation.publicationType.oralCommunication': '口头交流',
+  'pages.unitgroup.view.sourceInformation.publicationType.personalWrittenCommunication': '个人书面交流',
+  'pages.unitgroup.view.sourceInformation.publicationType.questionnaire': '问卷调查',
+  'pages.unitgroup.view.sourceInformation.publicationType.softwareOrDatabase': '软件或数据库',
+  'pages.unitgroup.view.sourceInformation.publicationType.otherUnpublishedAndGreyLiterature': '其他未发表和灰色文献',
 };

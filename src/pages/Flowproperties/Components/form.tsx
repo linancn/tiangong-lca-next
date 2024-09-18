@@ -6,7 +6,7 @@ import {
   Card,
   Form,
   Input,
-  // Select,
+  Select,
   Space,
 } from 'antd';
 import type { FC } from 'react';
@@ -15,6 +15,7 @@ import { FormattedMessage } from 'umi';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import UnitGroupSelectFrom from '@/pages/Unitgroups/Components/select/form';
 import FlowpropertiesSelectForm from './select/form';
+import { complianceOptions } from './optiondata';
 
 type Props = {
   lang: string;
@@ -191,7 +192,7 @@ export const FlowpropertyForm: FC<Props> = ({
             'common:approvalOfOverallCompliance',
           ]}
         >
-          <Input />
+          <Select options={complianceOptions} />
         </Form.Item>
       </Space>
     ),

@@ -11,7 +11,7 @@ import { ProFormInstance } from '@ant-design/pro-components';
 import { RcFile } from 'antd/es/upload';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { UploadButton } from '@/components/FileViewer/upload';
-import { publicationTypeOptions } from '@/services/sources/data';
+import { publicationTypeOptions } from './optiondata';
 
 type Props = {
   lang: string;
