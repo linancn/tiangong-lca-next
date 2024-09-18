@@ -48,7 +48,7 @@ export const processtypeOfDataSetOptions = [
   },
 ];
 
-export const LCIMethodPrincipleOptions_1 = [
+export const LCIMethodPrincipleOptions = [
   {
     value: 'Attributional',
     label: (
@@ -96,7 +96,7 @@ export const LCIMethodPrincipleOptions_1 = [
   },
 ];
 
-export const LCIMethodApproachOptions_1 = [
+export const LCIMethodApproachOptions = [
   {
     value: 'Allocation - market value',
     label: (
@@ -306,7 +306,7 @@ export const LCIMethodApproachOptions_1 = [
   },
 ];
 
-export const reviewTypeOptions_1 = [
+export const reviewTypeOptions = [
   {
     value: 'Dependent internal review',
     label: (
@@ -363,7 +363,7 @@ export const reviewTypeOptions_1 = [
   },
 ];
 
-export const copyrightOptions_1 = [
+export const copyrightOptions = [
   {
     value: 'True',
     label: (
@@ -384,7 +384,7 @@ export const copyrightOptions_1 = [
   },
 ];
 
-export const licenseTypeOptions_1 = [
+export const licenseTypeOptions = [
   {
     value: 'Free of charge for all users and uses',
     label: (

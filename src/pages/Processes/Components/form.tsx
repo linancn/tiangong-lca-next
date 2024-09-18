@@ -13,13 +13,7 @@ import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import { ListPagination } from '@/services/general/data';
 import {
-  copyrightOptions,
-  LCIMethodApproachOptions,
-  LCIMethodPrincipleOptions,
-  licenseTypeOptions,
   ProcessExchangeTable,
-  processTypeOptions,
-  reviewTypeOptions,
 } from '@/services/processes/data';
 import { genProcessExchangeTableData } from '@/services/processes/util';
 import { CheckCircleTwoTone, CloseCircleOutlined } from '@ant-design/icons';
@@ -32,7 +26,7 @@ import ProcessExchangeCreate from './Exchange/create';
 import ProcessExchangeDelete from './Exchange/delete';
 import ProcessExchangeEdit from './Exchange/edit';
 import ProcessExchangeView from './Exchange/view';
-import { processtypeOfDataSetOptions, LCIMethodPrincipleOptions_1, LCIMethodApproachOptions_1, reviewTypeOptions_1, licenseTypeOptions_1, copyrightOptions_1 } from './optiondata';
+import { processtypeOfDataSetOptions, LCIMethodPrincipleOptions, LCIMethodApproachOptions, reviewTypeOptions, licenseTypeOptions, copyrightOptions } from './optiondata';
 
 type Props = {
   lang: string;
@@ -494,7 +488,7 @@ export const ProcessForm: FC<Props> = ({
             }
             name={['modellingAndValidation', 'LCIMethodAndAllocation', 'LCIMethodPrinciple']}
           >
-            <Select options={LCIMethodPrincipleOptions_1} />
+            <Select options={LCIMethodPrincipleOptions} />
           </Form.Item>
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
@@ -525,7 +519,7 @@ export const ProcessForm: FC<Props> = ({
             }
             name={['modellingAndValidation', 'LCIMethodAndAllocation', 'LCIMethodApproaches']}
           >
-            <Select options={LCIMethodApproachOptions_1} />
+            <Select options={LCIMethodApproachOptions} />
           </Form.Item>
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
@@ -750,7 +744,7 @@ export const ProcessForm: FC<Props> = ({
             }
             name={['modellingAndValidation', 'validation', 'review', '@type']}
           >
-            <Select options={reviewTypeOptions_1} />
+            <Select options={reviewTypeOptions} />
           </Form.Item>
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
@@ -900,7 +894,7 @@ export const ProcessForm: FC<Props> = ({
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:copyright']}
           >
-            <Select options={copyrightOptions_1} />
+            <Select options={copyrightOptions} />
           </Form.Item>
 
           <Form.Item
@@ -912,7 +906,7 @@ export const ProcessForm: FC<Props> = ({
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:licenseType']}
           >
-            <Select options={licenseTypeOptions_1} />
+            <Select options={licenseTypeOptions} />
           </Form.Item>
         </Card>
       </Space>
