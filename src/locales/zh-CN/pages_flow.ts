@@ -54,4 +54,8 @@ export default {
   'pages.flows.createdSuccessfully!': '创建成功',
   'pages.flow.flowProperties.referenceToFlowDataSet': '参考数据集',
   'pages.process.drawer.title.addProcess': '添加过程',
+
+  'pages.flow.view.modellingAndValidation.approvalOfOverallCompliance.fullyCompliant': '完全符合',
+  'pages.flow.view.modellingAndValidation.approvalOfOverallCompliance.notCompliant': '不符合',
+  'pages.flow.view.modellingAndValidation.approvalOfOverallCompliance.notDefined': '未定义',
 };

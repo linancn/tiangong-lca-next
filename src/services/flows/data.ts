@@ -24,18 +24,3 @@ export type FlowpropertyTabTable = {
   referenceToFlowPropertyDataSet: string;
   quantitativeReference: boolean;
 };
-
-export const complianceOptions = [
-  {
-    value: 'Fully compliant',
-    label: 'Fully compliant',
-  },
-  {
-    value: 'Not compliant',
-    label: 'Not compliant',
-  },
-  {
-    value: 'Not defined',
-    label: 'Not defined',
-  },
-];

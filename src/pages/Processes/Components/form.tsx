@@ -13,13 +13,7 @@ import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import { ListPagination } from '@/services/general/data';
 import {
-  copyrightOptions,
-  LCIMethodApproachOptions,
-  LCIMethodPrincipleOptions,
-  licenseTypeOptions,
   ProcessExchangeTable,
-  processTypeOptions,
-  reviewTypeOptions,
 } from '@/services/processes/data';
 import { genProcessExchangeTableData } from '@/services/processes/util';
 import { CheckCircleTwoTone, CloseCircleOutlined } from '@ant-design/icons';
@@ -32,6 +26,7 @@ import ProcessExchangeCreate from './Exchange/create';
 import ProcessExchangeDelete from './Exchange/delete';
 import ProcessExchangeEdit from './Exchange/edit';
 import ProcessExchangeView from './Exchange/view';
+import { processtypeOfDataSetOptions, LCIMethodPrincipleOptions, LCIMethodApproachOptions, reviewTypeOptions, licenseTypeOptions, copyrightOptions } from './optiondata';
 
 type Props = {
   lang: string;
@@ -482,7 +477,7 @@ export const ProcessForm: FC<Props> = ({
             }
             name={['modellingAndValidation', 'LCIMethodAndAllocation', 'typeOfDataSet']}
           >
-            <Select options={processTypeOptions} />
+            <Select options={processtypeOfDataSetOptions} />
           </Form.Item>
           <Form.Item
             label={

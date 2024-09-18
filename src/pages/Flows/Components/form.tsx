@@ -3,7 +3,7 @@ import LevelTextItemForm from '@/components/LevelTextItem/form';
 import { CASNumber, dataSetVersion, StringMultiLang_r } from '@/components/Validator/index';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
-import { complianceOptions, FlowpropertyTabTable } from '@/services/flows/data';
+import { FlowpropertyTabTable } from '@/services/flows/data';
 import { genFlowPropertyTabTableData } from '@/services/flows/util';
 import { ListPagination } from '@/services/general/data';
 import { CheckCircleTwoTone, CloseCircleOutlined } from '@ant-design/icons';
@@ -13,7 +13,7 @@ import { Card, Form, Input, Select, Space } from 'antd';
 import type { FC } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import { flowTypeOptions } from './optiondata';
+import { flowTypeOptions, complianceOptions } from './optiondata';
 import PropertyCreate from './Property/create';
 import PropertyDelete from './Property/delete';
 import PropertyEdit from './Property/edit';
@@ -282,7 +282,7 @@ export const FlowForm: FC<Props> = ({
         <Form.Item
           label={
             <FormattedMessage
-              id="pages.flow.view.flowInformation.cASNumber"
+              id="pages.flow.view.flowInformation.CASNumber"
               defaultMessage="CAS Number"
             />
           }
