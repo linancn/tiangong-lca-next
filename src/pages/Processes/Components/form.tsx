@@ -334,7 +334,7 @@ export const ProcessForm: FC<Props> = ({
           size="small"
           title={
             <FormattedMessage
-              id="pages.process.view.Geography:locationOfOperationSupplyOrProduction"
+              id="pages.process.view.processInformation.Geography:locationOfOperationSupplyOrProduction"
               defaultMessage="Geography: Location Of Operation Supply Or Production"
             />
           }
