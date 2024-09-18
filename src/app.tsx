@@ -1,10 +1,5 @@
 import { AvatarDropdown, AvatarName, DarkMode, Footer, Question, SelectLang } from '@/components';
 import { Link, history } from '@umijs/max';
-import {
-  disable as darkreaderDisable,
-  enable as darkreaderEnable,
-  setFetchMethod as setFetch,
-} from '@umijs/ssr-darkreader';
 
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
 import { LinkOutlined } from '@ant-design/icons';
@@ -17,33 +12,6 @@ import styles from '@/style/custom.less';
 
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
-
-const updateTheme = async (dark: boolean) => {
-  if (typeof window === 'undefined') return;
-  if (typeof window.MutationObserver === 'undefined') return;
-
-  if (dark) {
-    const defaultTheme = {
-      brightness: 100,
-      contrast: 90,
-      sepia: 10,
-    };
-
-    const defaultFixes = {
-      invert: [],
-      css: '',
-      ignoreInlineStyle: ['.react-switch-handle'],
-      ignoreImageAnalysis: [],
-      disableStyleSheetsProxy: true,
-    };
-    if (window.MutationObserver && window.fetch) {
-      setFetch(window.fetch);
-      darkreaderEnable(defaultTheme, defaultFixes);
-    }
-  } else {
-    if (window.MutationObserver) darkreaderDisable();
-  }
-};
 
 /**
  * @see  https://umijs.org/zh-CN/plugins/plugin-initial-state
@@ -68,7 +36,10 @@ export async function getInitialState(): Promise<{
   };
 
   const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
-  updateTheme(isDarkMode);
+  const updatedSettings = {
+    ...defaultSettings,
+    navTheme: isDarkMode ? 'realDark' : defaultSettings.navTheme,
+  };
 
   // 如果不是登录页面，执行
   const { location } = history;
@@ -77,13 +48,13 @@ export async function getInitialState(): Promise<{
     return {
       fetchUserInfo,
       currentUser,
-      settings: defaultSettings as Partial<LayoutSettings>,
+      settings: updatedSettings as Partial<LayoutSettings>,
       isDarkMode,
     };
   }
   return {
     fetchUserInfo,
-    settings: defaultSettings as Partial<LayoutSettings>,
+    settings: updatedSettings as Partial<LayoutSettings>,
     isDarkMode,
   };
 }
@@ -97,8 +68,12 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
         isDarkMode: !prevState.isDarkMode,
       };
       localStorage.setItem('isDarkMode', newState.isDarkMode.toString());
-      updateTheme(newState.isDarkMode);
-      return newState;
+      const updatedSettings = {
+        ...newState.settings,
+        navTheme: newState.isDarkMode ? 'realDark' : 'light',
+      };
+
+      return { ...newState, settings: updatedSettings };
     });
   };
   return {
@@ -151,11 +126,11 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     ],
     links: isDev
       ? [
-          <Link key="openapi" to="/umi/plugin/openapi" target="_blank">
-            <LinkOutlined />
-            <span>OpenAPI 文档</span>
-          </Link>,
-        ]
+        <Link key="openapi" to="/umi/plugin/openapi" target="_blank">
+          <LinkOutlined />
+          <span>OpenAPI 文档</span>
+        </Link>,
+      ]
       : [],
     menuHeaderRender: undefined,
     // 自定义 403 页面
