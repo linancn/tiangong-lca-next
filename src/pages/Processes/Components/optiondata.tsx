@@ -365,20 +365,20 @@ export const reviewTypeOptions = [
 
 export const copyrightOptions = [
   {
-    value: 'True',
+    value: 'Yes',
     label: (
       <FormattedMessage
-        id="pages.process.view.administrativeInformation.copyright.true"
-        defaultMessage="True"              
+        id="pages.process.view.administrativeInformation.copyright.yes"
+        defaultMessage="Yes"              
       />
     ),
   },
   {
-    value: 'False',
+    value: 'No',
     label: (
       <FormattedMessage
-        id="pages.process.view.administrativeInformation.copyright.false"
-        defaultMessage="False"
+        id="pages.process.view.administrativeInformation.copyright.no"
+        defaultMessage="No"
       />
     ),
   },
