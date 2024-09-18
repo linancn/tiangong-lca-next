@@ -108,7 +108,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.contact.email" defaultMessage="Email" />,
+      title: <FormattedMessage id="pages.contact.email" defaultMessage="E-mail" />,
       dataIndex: 'email',
       sorter: false,
       search: false,

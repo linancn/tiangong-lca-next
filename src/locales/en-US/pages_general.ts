@@ -17,7 +17,7 @@ export default {
   'pages.button.delete.success': 'Deleted Successfully!',
   'pages.button.cancel': 'Cancel',
   'pages.button.submit': 'Submit',
-  'page.button.select': 'Select',
+  'pages.button.select': 'Select',
   'page.button.export': 'Export',
   'pages.button.clear': 'Clear',
   'pages.button.model': 'Model',

@@ -59,7 +59,7 @@ const TableList: FC = () => {
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.contact.email" defaultMessage="Email" />,
+      title: <FormattedMessage id="pages.contact.email" defaultMessage="E-mail" />,
       dataIndex: 'email',
       sorter: false,
       search: false,

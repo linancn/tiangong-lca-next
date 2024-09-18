@@ -31,7 +31,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
       tab: (
         <FormattedMessage
           id="pages.contact.contactInformation"
-          defaultMessage="Contact Information"
+          defaultMessage="Contact information"
         />
       ),
     },
@@ -40,7 +40,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
       tab: (
         <FormattedMessage
           id="pages.contact.administrativeInformation"
-          defaultMessage="Administrative Information"
+          defaultMessage="Administrative information"
         />
       ),
     },
@@ -51,21 +51,21 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
         <Space direction="vertical" style={{ width: '100%' }}>
           <Card
             size="small"
-            title={<FormattedMessage id="pages.contact.shortName" defaultMessage="Short Name" />}
+            title={<FormattedMessage id="pages.contact.shortName" defaultMessage="Short name for contact" />}
           >
             <LangTextItemForm
               name={['contactInformation', 'dataSetInformation', 'common:shortName']}
-              label={<FormattedMessage id="pages.contact.shortName" defaultMessage="Short Name" />}
+              label={<FormattedMessage id="pages.contact.shortName" defaultMessage="Short name for contact" />}
               rules={StringMultiLang_r}
             />
           </Card>
           <Card
             size="small"
-            title={<FormattedMessage id="pages.contact.name" defaultMessage="Name" />}
+            title={<FormattedMessage id="pages.contact.name" defaultMessage="Name of contact" />}
           >
             <LangTextItemForm
               name={['contactInformation', 'dataSetInformation', 'common:name']}
-              label={<FormattedMessage id="pages.contact.name" defaultMessage="Name" />}
+              label={<FormattedMessage id="pages.contact.name" defaultMessage="Name of contact" />}
               rules={StringMultiLang_r}
             />
           </Card>
@@ -94,7 +94,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             title={
               <FormattedMessage
                 id="pages.contact.contactAddress"
-                defaultMessage="Contact Address"
+                defaultMessage="Contact address"
               />
             }
           >
@@ -103,7 +103,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
               label={
                 <FormattedMessage
                   id="pages.contact.contactAddress"
-                  defaultMessage="Contact Address"
+                  defaultMessage="Contact address"
                 />
               }
               rules={STMultiLang_o}
@@ -124,14 +124,14 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             <Input />
           </Form.Item>
           <Form.Item
-            label={<FormattedMessage id="pages.contact.email" defaultMessage="Email" />}
+            label={<FormattedMessage id="pages.contact.email" defaultMessage="E-mail" />}
             name={['contactInformation', 'dataSetInformation', 'email']}
             rules={emailvalidation}
           >
             <Input />
           </Form.Item>
           <Form.Item
-            label={<FormattedMessage id="pages.contact.WWWAddress" defaultMessage="WWWAddress" />}
+            label={<FormattedMessage id="pages.contact.WWWAddress" defaultMessage="WWW-Address" />}
             name={['contactInformation', 'dataSetInformation', 'WWWAddress']}
             rules={WWWAddress}
           >
@@ -142,7 +142,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             title={
               <FormattedMessage
                 id="pages.contact.centralContactPoint"
-                defaultMessage="Central Contact Point"
+                defaultMessage="Central contact point"
               />
             }
           >
@@ -151,7 +151,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
               label={
                 <FormattedMessage
                   id="pages.contact.centralContactPoint"
-                  defaultMessage="Central Contact Point"
+                  defaultMessage="Central contact point"
                 />
               }
               rules={STMultiLang_r}
@@ -162,7 +162,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             title={
               <FormattedMessage
                 id="pages.contact.contactDescriptionOrComment"
-                defaultMessage="Contact Description Or Comment"
+                defaultMessage="Contact description or comment"
               />
             }
           >
@@ -171,7 +171,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
               label={
                 <FormattedMessage
                   id="pages.contact.contactDescriptionOrComment"
-                  defaultMessage="Contact Description Or Comment"
+                  defaultMessage="Contact description or comment"
                 />
               }
               rules={STMultiLang_o}
@@ -181,7 +181,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             label={
               <FormattedMessage
                 id="pages.contact.referenceToContact"
-                defaultMessage="Reference To Contact"
+                defaultMessage="Belongs to:"
               />
             }
             name={['contactInformation', 'dataSetInformation', 'referenceToContact']}
@@ -198,11 +198,11 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
           <Card
             size="small"
             title={
-              <FormattedMessage id="pages.contact.dataEntryBy" defaultMessage="Data Entry By" />
+              <FormattedMessage id="pages.contact.dataEntryBy" defaultMessage="Data entry by" />
             }
           >
             <Form.Item
-              label={<FormattedMessage id="pages.contact.timeStamp" defaultMessage="Time Stamp" />}
+              label={<FormattedMessage id="pages.contact.timeStamp" defaultMessage="Time stamp (last saved)" />}
               name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
             >
               <Input disabled={true} style={{ color: '#000' }} />
@@ -212,7 +212,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
               label={
                 <FormattedMessage
                   id="pages.contact.referenceToDataSetFormat"
-                  defaultMessage="Reference To Data Set Format"
+                  defaultMessage="Data set format(s)"
                 />
               }
               name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
@@ -226,7 +226,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             title={
               <FormattedMessage
                 id="pages.contact.publicationAndOwnership"
-                defaultMessage="Publication And Ownership"
+                defaultMessage="Publication and ownership"
               />
             }
           >
@@ -234,7 +234,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
               label={
                 <FormattedMessage
                   id="pages.contact.dataSetVersion"
-                  defaultMessage="Data Set Version"
+                  defaultMessage="Data set version"
                 />
               }
               name={[
@@ -250,7 +250,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
               label={
                 <FormattedMessage
                   id="pages.contact.referenceToPrecedingDataSetVersion"
-                  defaultMessage="Reference To Preceding Data Set Version"
+                  defaultMessage="Preceding data set version"
                 />
               }
               name={[
@@ -266,7 +266,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
               label={
                 <FormattedMessage
                   id="pages.contact.permanentDataSetURI"
-                  defaultMessage="Permanent Data Set URI"
+                  defaultMessage="Permanent data set URI"
                 />
               }
               name={[
