@@ -68,7 +68,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData })
           label={
             <FormattedMessage
               id="pages.FlowProperties.view.refObjectId"
-              defaultMessage="Ref Object Id"
+              defaultMessage="Ref object id"
             />
           }
           name={[...name, '@refObjectId']}
@@ -105,7 +105,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData })
       <Divider orientationMargin="0" orientation="left" plain>
         <FormattedMessage
           id="pages.FlowProperties.view.shortDescription"
-          defaultMessage="Short Description"
+          defaultMessage="Short description"
         />
       </Divider>
       <Form.Item>
@@ -141,12 +141,12 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData })
         title={
           <FormattedMessage
             id="pages.unitgroup.unit.quantitativeReference"
-            defaultMessage="Quantitative Reference"
+            defaultMessage="Quantitative reference"
           />
         }
       >
         <Form.Item
-          label={<FormattedMessage id="pages.unitgroup.edit.name" defaultMessage="Name" />}
+          label={<FormattedMessage id="pages.unitgroup.edit.name" defaultMessage="Name of unit" />}
           name={[...name, 'refUnit', 'name']}
         >
           <Input disabled={true} style={{ color: '#000' }} />
@@ -154,7 +154,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData })
         <Divider orientationMargin="0" orientation="left" plain>
           <FormattedMessage
             id="pages.unitgroup.edit.generalComment"
-            defaultMessage="General Comment"
+            defaultMessage="Comment"
           />
         </Divider>
         <Form.Item>

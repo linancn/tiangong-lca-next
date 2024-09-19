@@ -168,7 +168,7 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
                 message.success(
                   <FormattedMessage
                     id="options.createsuccess"
-                    defaultMessage="Created Successfully!"
+                    defaultMessage="Created successfully!"
                   ></FormattedMessage>,
                 );
                 setDrawerVisible(false);

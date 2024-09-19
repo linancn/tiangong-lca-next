@@ -63,7 +63,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
       title: (
         <FormattedMessage
           id="pages.unitgroup.unit.generalComment"
-          defaultMessage="General Comment"
+          defaultMessage="Comment"
         ></FormattedMessage>
       ),
       dataIndex: 'generalComment',
@@ -73,7 +73,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
       title: (
         <FormattedMessage
           id="pages.unitgroup.unit.meanValue"
-          defaultMessage="Mean Value"
+          defaultMessage="Mean value (of unit)"
         ></FormattedMessage>
       ),
       dataIndex: 'meanValue',
@@ -83,7 +83,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
       title: (
         <FormattedMessage
           id="pages.unitgroup.unit.quantitativeReference"
-          defaultMessage="Quantitative Reference"
+          defaultMessage="Quantitative reference"
         />
       ),
       dataIndex: 'quantitativeReference',
@@ -154,7 +154,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
       tab: (
         <FormattedMessage
           id="pages.unitgroup.unitGroupInformation"
-          defaultMessage="UnitGroup Information"
+          defaultMessage="Unit group information"
         />
       ),
     },
@@ -163,7 +163,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
       tab: (
         <FormattedMessage
           id="pages.unitgroup.modellingAndValidation"
-          defaultMessage="Modelling And Validation"
+          defaultMessage="Modelling and validation"
         />
       ),
     },
@@ -172,7 +172,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
       tab: (
         <FormattedMessage
           id="pages.unitgroup.administrativeInformation"
-          defaultMessage="Administrative Information"
+          defaultMessage="Administrative information"
         />
       ),
     },
@@ -192,7 +192,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
           </Descriptions.Item>
         </Descriptions>
         <Divider orientationMargin="0" orientation="left" plain>
-          <FormattedMessage id="pages.unitgroup.name" defaultMessage="name" />
+          <FormattedMessage id="pages.unitgroup.name" defaultMessage="Name of unit group" />
         </Divider>
         <LangTextItemDescription
           data={initData.unitGroupInformation?.dataSetInformation?.['common:name'] ?? {}}
@@ -217,7 +217,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
           title={
             <FormattedMessage
               id="pages.unitgroup.referenceToComplianceSystem"
-              defaultMessage="Reference To Compliance System"
+              defaultMessage="Compliance system name"
             />
           }
           data={
@@ -234,7 +234,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
             label={
               <FormattedMessage
                 id="pages.unitgroup.approvalOfOverallCompliance"
-                defaultMessage="Approval Of Overall Compliance"
+                defaultMessage="Approval of overall compliance"
               />
             }
             labelStyle={{ width: '240px' }}
@@ -251,7 +251,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
             key={0}
-            label={<FormattedMessage id="pages.unitgroup.timeStamp" defaultMessage="TimeStamp" />}
+            label={<FormattedMessage id="pages.unitgroup.timeStamp" defaultMessage="Time stamp (last saved)" />}
             labelStyle={{ width: '140px' }}
           >
             {initData.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-'}
@@ -262,7 +262,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
           title={
             <FormattedMessage
               id="pages.unitgroup.referenceToDataSetFormat"
-              defaultMessage="Reference To DataSet Format"
+              defaultMessage="Data set format(s)"
             />
           }
           data={
@@ -278,7 +278,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
             label={
               <FormattedMessage
                 id="pages.unitgroup.dataSetVersion"
-                defaultMessage="DataSet Version"
+                defaultMessage="Data set version"
               />
             }
             labelStyle={{ width: '140px' }}
@@ -358,7 +358,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
         title={
           <FormattedMessage
             id="pages.unitgroup.drawer.title.view"
-            defaultMessage="View Unit Group"
+            defaultMessage="View Unit group"
           ></FormattedMessage>
         }
         width="90%"

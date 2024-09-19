@@ -150,7 +150,7 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
               message.success(
                 <FormattedMessage
                   id="options.createsuccess"
-                  defaultMessage="Created Successfully!"
+                  defaultMessage="Created successfully!"
                 ></FormattedMessage>,
               );
               formRefCreate.current?.resetFields();

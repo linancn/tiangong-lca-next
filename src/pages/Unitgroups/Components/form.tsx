@@ -44,7 +44,7 @@ export const UnitGroupForm: FC<Props> = ({
       tab: (
         <FormattedMessage
           id="pages.unitgroup.edit.unitGroupInformation"
-          defaultMessage="UnitGroup Information"
+          defaultMessage="Unit group information"
         />
       ),
     },
@@ -53,7 +53,7 @@ export const UnitGroupForm: FC<Props> = ({
       tab: (
         <FormattedMessage
           id="pages.unitgroup.edit.modellingAndValidation"
-          defaultMessage="Modelling And Validation"
+          defaultMessage="Modelling and validation"
         />
       ),
     },
@@ -62,7 +62,7 @@ export const UnitGroupForm: FC<Props> = ({
       tab: (
         <FormattedMessage
           id="pages.unitgroup.edit.administrativeInformation"
-          defaultMessage="Administrative Information"
+          defaultMessage="Administrative information"
         />
       ),
     },
@@ -95,7 +95,7 @@ export const UnitGroupForm: FC<Props> = ({
       title: (
         <FormattedMessage
           id="pages.unitgroup.unit.generalComment"
-          defaultMessage="General Comment"
+          defaultMessage="Comment"
         ></FormattedMessage>
       ),
       dataIndex: 'generalComment',
@@ -105,7 +105,7 @@ export const UnitGroupForm: FC<Props> = ({
       title: (
         <FormattedMessage
           id="pages.unitgroup.unit.meanValue"
-          defaultMessage="Mean Value"
+          defaultMessage="Mean value (of unit)"
         ></FormattedMessage>
       ),
       dataIndex: 'meanValue',
@@ -115,7 +115,7 @@ export const UnitGroupForm: FC<Props> = ({
       title: (
         <FormattedMessage
           id="pages.unitgroup.unit.quantitativeReference"
-          defaultMessage="Quantitative Reference"
+          defaultMessage="Quantitative reference"
         />
       ),
       dataIndex: 'quantitativeReference',
@@ -167,7 +167,7 @@ export const UnitGroupForm: FC<Props> = ({
           title={
             <FormattedMessage
               id="pages.unitgroup.edit.unitGroupInformation.name"
-              defaultMessage="Name"
+              defaultMessage="Name of unit group"
             />
           }
         >
@@ -176,7 +176,7 @@ export const UnitGroupForm: FC<Props> = ({
             label={
               <FormattedMessage
                 id="pages.unitgroup.edit.unitGroupInformation.name"
-                defaultMessage="Name"
+                defaultMessage="Name of unit group"
               />
             }
             rules={StringMultiLang_r}
@@ -226,7 +226,7 @@ export const UnitGroupForm: FC<Props> = ({
           label={
             <FormattedMessage
               id="pages.unitgroup.edit.modellingAndValidation.referenceToComplianceSystem"
-              defaultMessage="Reference To Compliance System"
+              defaultMessage="Compliance system name"
             />
           }
           lang={lang}
@@ -237,7 +237,7 @@ export const UnitGroupForm: FC<Props> = ({
           label={
             <FormattedMessage
               id="pages.unitgroup.edit.modellingAndValidation.approvalOfOverallCompliance"
-              defaultMessage="Approval Of Overall Compliance"
+              defaultMessage="Approval of overall compliance"
             />
           }
           name={[
@@ -257,7 +257,7 @@ export const UnitGroupForm: FC<Props> = ({
           label={
             <FormattedMessage
               id="pages.unitgroup.edit.administrativeInformation.timeStamp"
-              defaultMessage="Time Stamp"
+              defaultMessage="Time stamp (last saved)"
             />
           }
           name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
@@ -269,7 +269,7 @@ export const UnitGroupForm: FC<Props> = ({
           label={
             <FormattedMessage
               id="pages.unitgroup.edit.administrativeInformation.referenceToDataSetFormat"
-              defaultMessage="Reference To DataSet Format"
+              defaultMessage="Data set format(s)"
             />
           }
           lang={lang}
@@ -280,7 +280,7 @@ export const UnitGroupForm: FC<Props> = ({
           label={
             <FormattedMessage
               id="pages.unitgroup.edit.administrativeInformation.dataSetVersion"
-              defaultMessage="DataSet Version"
+              defaultMessage="Data set version"
             />
           }
           name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}

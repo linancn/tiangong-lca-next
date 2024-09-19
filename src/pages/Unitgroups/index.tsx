@@ -51,7 +51,7 @@ const TableList: FC = () => {
       title: (
         <FormattedMessage
           id="pages.unitgroup.unit.quantitativeReference"
-          defaultMessage="Quantitative Reference"
+          defaultMessage="Quantitative reference"
         />
       ),
       dataIndex: 'refUnitName',

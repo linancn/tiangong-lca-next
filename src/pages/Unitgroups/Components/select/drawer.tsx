@@ -94,7 +94,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       title: (
         <FormattedMessage
           id="pages.unitgroup.unit.quantitativeReference"
-          defaultMessage="Quantitative Reference"
+          defaultMessage="Quantitative reference"
         />
       ),
       dataIndex: 'refUnitName',
@@ -287,7 +287,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
         </Tooltip>
       ) : (
         <Button onClick={onSelect}>
-          <FormattedMessage id="pages.button.select" defaultMessage="select" />
+          <FormattedMessage id="pages.button.select" defaultMessage="Select" />
         </Button>
       )}
 
@@ -295,7 +295,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
         title={
           <FormattedMessage
             id="pages.unitgroup.drawer.title.select"
-            defaultMessage="Selete UnitGroup"
+            defaultMessage="Selete Unit group"
           />
         }
         width="90%"
