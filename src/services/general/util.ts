@@ -81,7 +81,7 @@ export function classificationToString(classifications: any) {
         }
       }
     } else {
-      classificationStr = classifications['#text'] ?? '-';
+      classificationStr = classifications?.['#text'] ?? '-';
     }
   } catch (e) {
     console.log(e);

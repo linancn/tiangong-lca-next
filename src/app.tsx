@@ -1,4 +1,4 @@
-import { AvatarDropdown, AvatarName, Footer, Question, SelectLang } from '@/components';
+import { AvatarDropdown, AvatarName, DarkMode, Footer, Question, SelectLang } from '@/components';
 import { Link, history } from '@umijs/max';
 
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
@@ -20,6 +20,7 @@ export async function getInitialState(): Promise<{
   settings?: Partial<LayoutSettings>;
   currentUser?: API.CurrentUser | null;
   loading?: boolean;
+  isDarkMode?: boolean;
   fetchUserInfo?: () => Promise<API.CurrentUser | null>;
 }> {
   const fetchUserInfo = async (): Promise<API.CurrentUser | null> => {
@@ -34,6 +35,12 @@ export async function getInitialState(): Promise<{
     return null;
   };
 
+  const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
+  const updatedSettings = {
+    ...defaultSettings,
+    navTheme: isDarkMode ? 'realDark' : defaultSettings.navTheme,
+  };
+
   // 如果不是登录页面，执行
   const { location } = history;
   if (location.pathname !== loginPath) {
@@ -41,19 +48,44 @@ export async function getInitialState(): Promise<{
     return {
       fetchUserInfo,
       currentUser,
-      settings: defaultSettings as Partial<LayoutSettings>,
+      settings: updatedSettings as Partial<LayoutSettings>,
+      isDarkMode,
     };
   }
   return {
     fetchUserInfo,
-    settings: defaultSettings as Partial<LayoutSettings>,
+    settings: updatedSettings as Partial<LayoutSettings>,
+    isDarkMode,
   };
 }
 
 // ProLayout 支持的api https://procomponents.ant.design/components/layout
 export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) => {
+  const handleClickFunction = () => {
+    setInitialState((prevState: any) => {
+      const newState = {
+        ...prevState,
+        isDarkMode: !prevState.isDarkMode,
+      };
+      localStorage.setItem('isDarkMode', newState.isDarkMode.toString());
+      const updatedSettings = {
+        ...newState.settings,
+        navTheme: newState.isDarkMode ? 'realDark' : 'light',
+      };
+
+      return { ...newState, settings: updatedSettings };
+    });
+  };
   return {
-    actionsRender: () => [<Question key="doc" />, <SelectLang key="SelectLang" />],
+    actionsRender: () => [
+      <DarkMode
+        key="DarkMode"
+        handleClick={handleClickFunction}
+        isDarkMode={initialState?.isDarkMode}
+      />,
+      <SelectLang key="SelectLang" />,
+      <Question key="doc" />,
+    ],
     avatarProps: {
       src: initialState?.currentUser?.avatar,
       title: <AvatarName />,
@@ -94,11 +126,11 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     ],
     links: isDev
       ? [
-          <Link key="openapi" to="/umi/plugin/openapi" target="_blank">
-            <LinkOutlined />
-            <span>OpenAPI 文档</span>
-          </Link>,
-        ]
+        <Link key="openapi" to="/umi/plugin/openapi" target="_blank">
+          <LinkOutlined />
+          <span>OpenAPI 文档</span>
+        </Link>,
+      ]
       : [],
     menuHeaderRender: undefined,
     // 自定义 403 页面
