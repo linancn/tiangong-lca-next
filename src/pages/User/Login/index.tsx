@@ -4,15 +4,15 @@ import { LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons';
 import {
   LoginForm,
   ProConfigProvider,
-  ProFormText,
   ProFormCheckbox,
+  ProFormText,
   ProLayout,
 } from '@ant-design/pro-components';
 import { FormattedMessage } from '@umijs/max';
-import { Alert, Button, message, Tabs, ConfigProvider, theme, App } from 'antd';
+import { Alert, App, Button, ConfigProvider, message, Tabs, theme } from 'antd';
 import React, { useState } from 'react';
 import { flushSync } from 'react-dom';
-import { Helmet, SelectLang, history, useIntl, useModel } from 'umi';
+import { Helmet, history, SelectLang, useIntl, useModel } from 'umi';
 import Settings from '../../../../config/defaultSettings';
 
 const LoginMessage: React.FC<{
@@ -37,6 +37,7 @@ const Login: React.FC = () => {
   const [sendComplete, setSendComplete] = useState(false);
   const intl = useIntl();
   const [messageApi, contextHolder] = message.useMessage();
+  const formRefLogin = React.useRef<any>();
 
   const fetchUserInfo = async () => {
     const userInfo = await initialState?.fetchUserInfo?.();
@@ -144,6 +145,7 @@ const Login: React.FC = () => {
               marginTop: '80px',
             }}>
               <LoginForm
+                formRef={formRefLogin}
                 logo={isDarkMode ? 'logo_dark.svg' : Settings.logo}
                 title={Settings.title}
                 subTitle=""
@@ -314,8 +316,9 @@ const Login: React.FC = () => {
                         loading={loading}
                         disabled={sendComplete}
                         onClick={() => {
-                          const form = document.getElementsByTagName('form')[0];
-                          form.dispatchEvent(new Event('submit', { cancelable: true }));
+                          setType('email');
+                          if (formRefLogin?.current)
+                            handleSubmit(formRefLogin.current?.getFieldsValue());
                         }}
                       >
                         <FormattedMessage
