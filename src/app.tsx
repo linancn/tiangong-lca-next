@@ -39,6 +39,7 @@ export async function getInitialState(): Promise<{
   const updatedSettings = {
     ...defaultSettings,
     navTheme: isDarkMode ? 'realDark' : defaultSettings.navTheme,
+    colorPrimary: isDarkMode ? '#c586c0' : defaultSettings.colorPrimary,
   };
 
   // 如果不是登录页面，执行
@@ -71,6 +72,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       const updatedSettings = {
         ...newState.settings,
         navTheme: newState.isDarkMode ? 'realDark' : 'light',
+        colorPrimary: newState.isDarkMode ? '#c586c0' : '#5C246A',
       };
 
       return { ...newState, settings: updatedSettings };

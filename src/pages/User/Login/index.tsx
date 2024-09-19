@@ -115,7 +115,7 @@ const Login: React.FC = () => {
       <ConfigProvider
         theme={{
           token: {
-            colorPrimary: Settings.colorPrimary,
+            colorPrimary: isDarkMode ? '#c586c0' : Settings.colorPrimary,
           },
           algorithm:
             isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
