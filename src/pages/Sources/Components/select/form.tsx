@@ -44,7 +44,7 @@ const SourceSelectForm: FC<Props> = ({ name, label, lang, formRef, onData }) => 
     <Card size="small" title={label}>
       <Space direction="horizontal">
         <Form.Item
-          label={<FormattedMessage id="pages.contact.refObjectId" defaultMessage="Ref Object Id" />}
+          label={<FormattedMessage id="pages.contact.refObjectId" defaultMessage="Ref object id" />}
           name={[...name, '@refObjectId']}
         >
           <Input disabled={true} style={{ width: '350px', color: '#000' }} />
@@ -77,7 +77,7 @@ const SourceSelectForm: FC<Props> = ({ name, label, lang, formRef, onData }) => 
         <Input disabled={true} style={{ color: '#000' }} />
       </Form.Item>
       <Divider orientationMargin="0" orientation="left" plain>
-        <FormattedMessage id="pages.contact.shortDescription" defaultMessage="Short Description" />
+        <FormattedMessage id="pages.contact.shortDescription" defaultMessage="Short description" />
       </Divider>
       <Form.Item>
         <Form.List name={[...name, 'common:shortDescription']}>

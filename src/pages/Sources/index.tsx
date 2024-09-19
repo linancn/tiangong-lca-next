@@ -60,14 +60,14 @@ const TableList: FC = () => {
     },
     {
       title: (
-        <FormattedMessage id="pages.source.publicationType" defaultMessage="Publication Type" />
+        <FormattedMessage id="pages.source.publicationType" defaultMessage="Publication type" />
       ),
       dataIndex: 'publicationType',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At" />,
+      title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created at" />,
       dataIndex: 'created_at',
       valueType: 'dateTime',
       sorter: false,

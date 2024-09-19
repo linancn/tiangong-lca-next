@@ -57,7 +57,7 @@ export const SourceForm: FC<Props> = ({
       tab: (
         <FormattedMessage
           id="pages.source.edit.sourceInformation"
-          defaultMessage="Source Information"
+          defaultMessage="Source information"
         />
       ),
     },
@@ -66,7 +66,7 @@ export const SourceForm: FC<Props> = ({
       tab: (
         <FormattedMessage
           id="pages.source.edit.administrativeInformation"
-          defaultMessage="Administrative Information"
+          defaultMessage="Administrative information"
         />
       ),
     },
@@ -79,7 +79,7 @@ export const SourceForm: FC<Props> = ({
           title={
             <FormattedMessage
               id="pages.source.edit.sourceInformation.shortName"
-              defaultMessage="Short Name"
+              defaultMessage="Short name of source"
             />
           }
         >
@@ -88,7 +88,7 @@ export const SourceForm: FC<Props> = ({
             label={
               <FormattedMessage
                 id="pages.source.edit.sourceInformation.shortName"
-                defaultMessage="Short Name"
+                defaultMessage="Short name of source"
               />
             }
             rules={StringMultiLang_r}
@@ -123,7 +123,7 @@ export const SourceForm: FC<Props> = ({
           label={
             <FormattedMessage
               id="pages.source.edit.sourceInformation.sourceCitation"
-              defaultMessage="Source Citation"
+              defaultMessage="Source citation"
             />
           }
           name={['sourceInformation', 'dataSetInformation', 'sourceCitation']}
@@ -135,7 +135,7 @@ export const SourceForm: FC<Props> = ({
           label={
             <FormattedMessage
               id="pages.source.edit.sourceInformation.publicationType"
-              defaultMessage="Publication Type"
+              defaultMessage="Publication type"
             />
           }
           name={['sourceInformation', 'dataSetInformation', 'publicationType']}
@@ -148,7 +148,7 @@ export const SourceForm: FC<Props> = ({
           title={
             <FormattedMessage
               id="pages.source.edit.sourceInformation.sourceDescriptionOrComment"
-              defaultMessage="Source Description Or Comment"
+              defaultMessage="Source description or comment"
             />
           }
         >
@@ -157,7 +157,7 @@ export const SourceForm: FC<Props> = ({
             label={
               <FormattedMessage
                 id="pages.source.edit.sourceInformation.sourceDescriptionOrComment"
-                defaultMessage="Source Description Or Comment"
+                defaultMessage="Source description or comment"
               />
             }
           />
@@ -168,7 +168,7 @@ export const SourceForm: FC<Props> = ({
           title={
             <FormattedMessage
               id="pages.source.edit.sourceInformation.referenceToDigitalFile"
-              defaultMessage="Reference To Digital File"
+              defaultMessage="Link to digital file"
             />
           }
         >
@@ -217,7 +217,7 @@ export const SourceForm: FC<Props> = ({
           label={
             <FormattedMessage
               id="pages.source.edit.sourceInformation.referenceToContact"
-              defaultMessage="Reference To Contact"
+              defaultMessage="Belongs to:"
             />
           }
           lang={lang}
@@ -233,7 +233,7 @@ export const SourceForm: FC<Props> = ({
           title={
             <FormattedMessage
               id="pages.source.edit.administrativeInformation.dataEntryBy"
-              defaultMessage="Data Entry By"
+              defaultMessage="Data entry by"
             />
           }
         >
@@ -253,7 +253,7 @@ export const SourceForm: FC<Props> = ({
             label={
               <FormattedMessage
                 id="pages.source.edit.administrativeInformation.referenceToDataSetFormat"
-                defaultMessage="Reference To Data Set Format"
+                defaultMessage="Data set format(s)"
               />
             }
             lang={lang}
@@ -267,7 +267,7 @@ export const SourceForm: FC<Props> = ({
           title={
             <FormattedMessage
               id="pages.source.edit.administrativeInformation.publicationAndOwnership"
-              defaultMessage="Publication And Ownership"
+              defaultMessage="Publication and ownership"
             />
           }
         >
@@ -275,7 +275,7 @@ export const SourceForm: FC<Props> = ({
             label={
               <FormattedMessage
                 id="pages.source.edit.administrativeInformation.dataSetVersion"
-                defaultMessage="DataSet Version"
+                defaultMessage="Data set version"
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
@@ -304,7 +304,7 @@ export const SourceForm: FC<Props> = ({
             label={
               <FormattedMessage
                 id="pages.source.edit.administrativeInformation.permanentDataSetURI"
-                defaultMessage="Permanent Data Set URI"
+                defaultMessage="Permanent data set URI"
               />
             }
             name={[

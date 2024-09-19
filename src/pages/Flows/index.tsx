@@ -81,7 +81,7 @@ const TableList: FC = () => {
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At" />,
+      title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created at" />,
       dataIndex: 'created_at',
       valueType: 'dateTime',
       sorter: false,
