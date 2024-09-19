@@ -13,12 +13,18 @@ const Welcome: React.FC = () => {
   const lang = getLang(locale);
 
   const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
+  const [color1, setColor1] = useState('#16163F');
+  const [color2, setColor2] = useState('#e7e7eb');
   const [color3, setColor3] = useState('#5C246A');
 
   useEffect(() => {
     if (isDarkMode) {
-      setColor3('#c586c0');
+      setColor1('#e9e9c0');
+      setColor2('#ddbbff');
+      setColor3('#9e3ffd');
     } else {
+      setColor1('#16163F');
+      setColor2('#aba1ab');
       setColor3('#5C246A');
     }
   }, [isDarkMode]);
@@ -195,22 +201,22 @@ const Welcome: React.FC = () => {
       <defs>
         <style>
           {`
-            #comp-kq5dfsen svg [data-color="1"] {fill: #16163F;}
-            #comp-kq5dfsen svg [data-color="2"] {fill: #DDBBFF;}
+            #comp-kq5dfsen svg [data-color="1"] {fill: ${color1};}
+            #comp-kq5dfsen svg [data-color="2"] {fill: ${color2};}
             #comp-kq5dfsen svg [data-color="3"] {fill: ${color3};}
           `}
         </style>
       </defs>
       <g>
         <path
-          fill="#16163F"
+          fill={color1}
           clipRule="evenodd"
           fillRule="evenodd"
           d="M42 170.25a6 6 0 1 1-12 0 6 6 0 0 1 12 0z"
           data-color="1"
         ></path>
         <path
-          fill="#E7E7EB"
+          fill={color2}
           clipRule="evenodd"
           fillRule="evenodd"
           d="M173.5 103.75c0 31.48-25.52 57-57 57s-57-25.52-57-57 25.52-57 57-57 57 25.52 57 57z"
@@ -244,8 +250,8 @@ const Welcome: React.FC = () => {
         <defs>
           <style>
             {`
-          #comp-kq9ag33l svg [data-color="1"] {fill: #16163F;}
-          #comp-kq9ag33l svg [data-color="2"] {fill: #DDBBFF;}
+          #comp-kq9ag33l svg [data-color="1"] {fill: ${color1};}
+          #comp-kq9ag33l svg [data-color="2"] {fill: ${color2};}
           #comp-kq9ag33l svg [data-color="3"] {fill: ${color3};}
         `}
           </style>
@@ -255,12 +261,12 @@ const Welcome: React.FC = () => {
             clipRule="evenodd"
             fillRule="evenodd"
             d="M60.163 40.369a5.763 5.763 0 1 1-11.526 0 5.763 5.763 0 0 1 11.526 0z"
-            fill="#000000"
+            fill={color1}
             data-color="1"
           ></path>
           <path
             d="M37.029 103.69l40.464 40.531a9.606 9.606 0 0 1 0 13.572l-.627.628a9.604 9.604 0 0 1-13.583.011l-.011-.011-40.465-40.531a9.606 9.606 0 0 1 0-13.572l.627-.628a9.604 9.604 0 0 1 13.583-.011c.005.003.008.007.012.011z"
-            fill="#E7E7EB"
+            fill={color2}
             clipRule="evenodd"
             fillRule="evenodd"
             data-color="2"
@@ -294,22 +300,22 @@ const Welcome: React.FC = () => {
         <defs>
           <style>
             {`
-          #comp-kq5dfsf71 svg [data-color="1"] {fill: #16163F;}
-          #comp-kq5dfsf71 svg [data-color="2"] {fill: #DDBBFF;}
+          #comp-kq5dfsf71 svg [data-color="1"] {fill: ${color1};}
+          #comp-kq5dfsf71 svg [data-color="2"] {fill: ${color2};}
           #comp-kq5dfsf71 svg [data-color="3"] {fill: ${color3};}
         `}
           </style>
         </defs>
         <g>
           <path
-            fill="#16163F"
+            fill={color1}
             clipRule="evenodd"
             fillRule="evenodd"
             d="M173.019 168.11a5.89 5.89 0 1 1-11.78 0 5.89 5.89 0 0 1 11.78 0z"
             data-color="1"
           ></path>
           <path
-            fill="#E7E7EB"
+            fill={color2}
             clipRule="evenodd"
             fillRule="evenodd"
             d="M153.608 59.374v93.252H60.356V59.374h93.252z"

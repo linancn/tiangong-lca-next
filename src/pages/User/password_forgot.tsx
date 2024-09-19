@@ -70,7 +70,7 @@ const PasswordForgot: React.FC = () => {
       <ConfigProvider
         theme={{
           token: {
-            colorPrimary: isDarkMode ? '#c586c0' : Settings.colorPrimary,
+            colorPrimary: isDarkMode ? '#9e3ffd' : Settings.colorPrimary,
           },
           algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
         }}
