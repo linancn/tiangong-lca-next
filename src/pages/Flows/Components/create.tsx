@@ -138,7 +138,7 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
               message.success(
                 <FormattedMessage
                   id="pages.flows.createsuccess"
-                  defaultMessage="Created Successfully!"
+                  defaultMessage="Created successfully!"
                 />,
               );
               formRefCreate.current?.resetFields();

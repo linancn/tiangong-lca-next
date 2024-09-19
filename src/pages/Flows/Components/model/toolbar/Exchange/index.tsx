@@ -85,7 +85,7 @@ const EdgeExhange: FC<Props> = ({ lang, disabled, edge, nodes, readonly, onData 
       title: (
         <FormattedMessage
           id="pages.flow.model.sourceOutputFlowName"
-          defaultMessage="Source Output Flow Name"
+          defaultMessage="Source output flow name"
         />
       ),
       dataIndex: 'sourceOutputFlowName',
@@ -102,7 +102,7 @@ const EdgeExhange: FC<Props> = ({ lang, disabled, edge, nodes, readonly, onData 
       title: (
         <FormattedMessage
           id="pages.flow.model.targetInputFlowName"
-          defaultMessage="Target Input Flow Name"
+          defaultMessage="Target input flow name"
         />
       ),
       dataIndex: 'targetInputFlowName',
@@ -185,7 +185,7 @@ const EdgeExhange: FC<Props> = ({ lang, disabled, edge, nodes, readonly, onData 
         title={
           <FormattedMessage
             id="pages.button.model.exchange"
-            defaultMessage="Exchange Relation"
+            defaultMessage="Exchange relation"
           ></FormattedMessage>
         }
         placement="left"
@@ -203,7 +203,7 @@ const EdgeExhange: FC<Props> = ({ lang, disabled, edge, nodes, readonly, onData 
         title={
           <FormattedMessage
             id="pages.flow.model.drawer.title.edge.exchange.list"
-            defaultMessage="Exchange Relation List"
+            defaultMessage="Exchange relation list"
           />
         }
         width="90%"

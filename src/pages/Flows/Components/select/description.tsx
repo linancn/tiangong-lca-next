@@ -20,7 +20,7 @@ const FlowsSelectDescription: FC<Props> = ({ title, data, lang }) => {
             label={
               <FormattedMessage
                 id="pages.process.view.exchange.refObjectId"
-                defaultMessage="Ref Object Id"
+                defaultMessage="Ref object id"
               />
             }
             labelStyle={{ width: '140px' }}
@@ -62,7 +62,7 @@ const FlowsSelectDescription: FC<Props> = ({ title, data, lang }) => {
       <Divider orientationMargin="0" orientation="left" plain>
         <FormattedMessage
           id="pages.process.view.exchange.shortDescription"
-          defaultMessage="Short Description"
+          defaultMessage="Short description"
         />
       </Divider>
       <LangTextItemDescription data={data?.['common:shortDescription']} />

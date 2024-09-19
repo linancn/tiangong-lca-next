@@ -143,7 +143,7 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
                 message.success(
                   <FormattedMessage
                     id="pages.flows.editsuccess"
-                    defaultMessage="Edit Successfully!"
+                    defaultMessage="Edit successfully!"
                   />,
                 );
                 setDrawerVisible(false);

@@ -102,7 +102,7 @@ const PropertyCreate: FC<Props> = ({ lang, onData }) => {
             <FlowpropertiesSelectForm
               label={<FormattedMessage
                 id="pages.flow.view.flowProperties.referenceToDataSetFormat"
-                defaultMessage="Reference To Data Set Format" />}
+                defaultMessage="Data set format(s)" />}
               name={['referenceToFlowPropertyDataSet']}
               lang={lang}
               drawerVisible={drawerVisible}
@@ -114,7 +114,7 @@ const PropertyCreate: FC<Props> = ({ lang, onData }) => {
               label={
                 <FormattedMessage
                   id="pages.flow.view.flowProperties.meanValue"
-                  defaultMessage="Mean Value"
+                  defaultMessage="Mean value (of flow property)"
                 />
               }
               name={['meanValue']}
@@ -125,7 +125,7 @@ const PropertyCreate: FC<Props> = ({ lang, onData }) => {
               label={
                 <FormattedMessage
                   id="pages.process.view.exchange.quantitativeReference"
-                  defaultMessage="Quantitative Reference"
+                  defaultMessage="Quantitative reference"
                 />
               }
               name={['quantitativeReference']}

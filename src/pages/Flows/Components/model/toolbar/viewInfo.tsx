@@ -13,7 +13,7 @@ const ModelToolbarViewInfo: FC<Props> = ({ data }) => {
   return (
     <>
       <Tooltip
-        title={<FormattedMessage id="pages.button.model.info" defaultMessage="Base Infomation" />}
+        title={<FormattedMessage id="pages.button.model.info" defaultMessage="Base infomation" />}
         placement="left"
       >
         <Button
@@ -29,7 +29,7 @@ const ModelToolbarViewInfo: FC<Props> = ({ data }) => {
         title={
           <FormattedMessage
             id="pages.flow.model.drawer.title.info"
-            defaultMessage="Model Base Infomation"
+            defaultMessage="Model base infomation"
           ></FormattedMessage>
         }
         width="90%"
@@ -68,7 +68,7 @@ const ModelToolbarViewInfo: FC<Props> = ({ data }) => {
         <Divider orientationMargin="0" orientation="left" plain>
           <FormattedMessage
             id="pages.product.productInformation.generalComment"
-            defaultMessage="General Comment"
+            defaultMessage="General comment"
           />
         </Divider>
         <LangTextItemDescription
@@ -78,7 +78,7 @@ const ModelToolbarViewInfo: FC<Props> = ({ data }) => {
         <Card
           size="small"
           title={
-            <FormattedMessage id="pages.product.belongToFlow" defaultMessage="Belong to The Flow" />
+            <FormattedMessage id="pages.product.belongToFlow" defaultMessage="Belong to the flow" />
           }
         >
           <Descriptions bordered size={'small'} column={1}>
@@ -99,7 +99,7 @@ const ModelToolbarViewInfo: FC<Props> = ({ data }) => {
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
               id="pages.product.belongToFlow.generalComment"
-              defaultMessage="General Comment"
+              defaultMessage="General comment"
             />
           </Divider>
           <LangTextItemDescription

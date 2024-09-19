@@ -50,7 +50,7 @@ const FlowsSelectForm: FC<Props> = ({ name, label, lang, formRef, drawerVisible,
           label={
             <FormattedMessage
               id="pages.process.view.exchange.refObjectId"
-              defaultMessage="Ref Object Id"
+              defaultMessage="Ref object id"
             />
           }
           name={[...name, '@refObjectId']}
@@ -87,7 +87,7 @@ const FlowsSelectForm: FC<Props> = ({ name, label, lang, formRef, drawerVisible,
       <Divider orientationMargin="0" orientation="left" plain>
         <FormattedMessage
           id="pages.process.view.exchange.shortDescription"
-          defaultMessage="Short Description"
+          defaultMessage="Short description"
         />
       </Divider>
       <Form.Item>

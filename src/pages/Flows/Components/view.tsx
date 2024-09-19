@@ -31,7 +31,7 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
     {
       key: 'flowInformation',
       tab: (
-        <FormattedMessage id="pages.flow.view.flowInformation" defaultMessage="Flow Information" />
+        <FormattedMessage id="pages.flow.view.flowInformation" defaultMessage="Flow information" />
       ),
     },
     {
@@ -39,7 +39,7 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
       tab: (
         <FormattedMessage
           id="pages.flow.view.modellingAndValidation"
-          defaultMessage="Modelling And Validation"
+          defaultMessage="Modelling and validation"
         />
       ),
     },
@@ -48,13 +48,13 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
       tab: (
         <FormattedMessage
           id="pages.flow.view.administrativeInformation"
-          defaultMessage="Administrative Information"
+          defaultMessage="Administrative information"
         />
       ),
     },
     {
       key: 'flowProperties',
-      tab: <FormattedMessage id="pages.flow.view.flowProperty" defaultMessage="Flow Property" />,
+      tab: <FormattedMessage id="pages.flow.view.flowProperty" defaultMessage="Flow property" />,
     },
   ];
 
@@ -70,14 +70,14 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.flow.flowProperties.referenceToFlowDataSet" defaultMessage="Reference" />,
+      title: <FormattedMessage id="pages.flow.view.flowProperties.referenceToFlowPropertyDataSet" defaultMessage="Flow property" />,
       dataIndex: 'referenceToFlowPropertyDataSet',
       sorter: false,
       search: false,
     },
     {
       title: (
-        <FormattedMessage id="pages.flow.view.flowProperties.meanValue" defaultMessage="Mean Value" />
+        <FormattedMessage id="pages.flow.view.flowProperties.meanValue" defaultMessage="Mean value (of flow property)" />
       ),
       dataIndex: 'meanValue',
       sorter: false,
@@ -87,7 +87,7 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
       title: (
         <FormattedMessage
           id="pages.flowproperty.referenceToReferenceUnitGroup"
-          defaultMessage="Reference Unit Group"
+          defaultMessage="Reference unit"
         />
       ),
       dataIndex: 'refUnitGroup',
@@ -103,7 +103,7 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
       title: (
         <FormattedMessage
           id="pages.process.exchange.quantitativeReference"
-          defaultMessage="Quantitative Reference"
+          defaultMessage="Quantitative reference"
         />
       ),
       dataIndex: 'quantitativeReference',
@@ -166,7 +166,7 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
         <Divider orientationMargin="0" orientation="left" plain>
           <FormattedMessage
             id="pages.flow.view.flowInformation.baseName"
-            defaultMessage="Base Name"
+            defaultMessage="Base name"
           />
         </Divider>
         <LangTextItemDescription
@@ -187,8 +187,8 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
           size="small"
           title={
             <FormattedMessage
-              id="pages.flow.view.flowInformation.typeAndClassificationOfDataSet"
-              defaultMessage="Type and Classification of Data Set"
+              id="pages.flow.view.flowInformation.classificationInformation"
+              defaultMessage="Category and classification information"
             />
           }
         >
@@ -198,7 +198,7 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
               label={
                 <FormattedMessage
                   id="pages.flow.view.modellingAndValidation.typeOfDataSet"
-                  defaultMessage="Type Of Data Set"
+                  defaultMessage="Type of flow"
                 />
               }
               labelStyle={{ width: '160px' }}
@@ -233,7 +233,7 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
             key={0}
             label={
               <FormattedMessage
-                id="pages.flow.view.flowInformation.cASNumber"
+                id="pages.flow.view.flowInformation.CASNumber"
                 defaultMessage="CAS Number"
               />
             }
@@ -246,7 +246,7 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
         <Divider orientationMargin="0" orientation="left" plain>
           <FormattedMessage
             id="pages.flow.view.flowInformation.generalComment"
-            defaultMessage="General Comment"
+            defaultMessage="General comment on data set"
           />
         </Divider>
         <LangTextItemDescription
@@ -258,7 +258,7 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
             key={0}
             label={
               <FormattedMessage
-                id="pages.flow.view.flowInformation.eCNumber"
+                id="pages.flow.view.flowInformation.ECNumber"
                 defaultMessage="EC Number"
               />
             }
@@ -314,7 +314,7 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
           title={
             <FormattedMessage
               id="pages.flow.view.modellingAndValidation.referenceToComplianceSystem"
-              defaultMessage="Reference To Compliance System"
+              defaultMessage="Compliance system name"
             />
           }
           lang={lang}
@@ -326,7 +326,7 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
             label={
               <FormattedMessage
                 id="pages.flow.view.modellingAndValidation.approvalOfOverallCompliance"
-                defaultMessage="Approval Of Overall Compliance"
+                defaultMessage="Approval of overall compliance"
               />
             }
             labelStyle={{ width: '240px' }}
@@ -347,7 +347,7 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
           title={
             <FormattedMessage
               id="pages.flow.view.administrativeInformation.dataEntryBy"
-              defaultMessage="Data Entry By"
+              defaultMessage="Data entry by"
             />
           }
         >
@@ -357,7 +357,7 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
               label={
                 <FormattedMessage
                   id="pages.flow.view.administrativeInformation.timeStamp"
-                  defaultMessage="Time Stamp"
+                  defaultMessage="Time stamp (last saved)"
                 />
               }
               labelStyle={{ width: '150px' }}
@@ -373,7 +373,7 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
             title={
               <FormattedMessage
                 id="pages.flow.view.administrativeInformation.referenceToDataSetFormat"
-                defaultMessage="Reference To Data Set Format"
+                defaultMessage="Data set format(s)"
               />
             }
             lang={lang}
@@ -385,7 +385,7 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
           title={
             <FormattedMessage
               id="pages.flow.view.administrativeInformation.publicationAndOwnership"
-              defaultMessage="Publication And Ownership"
+              defaultMessage="Publication and ownership"
             />
           }
         >
@@ -395,7 +395,7 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
               label={
                 <FormattedMessage
                   id="pages.flow.view.administrativeInformation.dataSetVersion"
-                  defaultMessage="Data Set Version"
+                  defaultMessage="Data set version"
                 />
               }
               labelStyle={{ width: '160px' }}
@@ -412,7 +412,7 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
               label={
                 <FormattedMessage
                   id="pages.flow.view.administrativeInformation.permanentDataSetURI"
-                  defaultMessage="Permanent Data Set URI"
+                  defaultMessage="Permanent data set URI"
                 />
               }
               labelStyle={{ width: '200px' }}

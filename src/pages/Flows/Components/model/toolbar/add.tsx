@@ -99,7 +99,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.process.referenceYear" defaultMessage="Reference Year" />,
+      title: <FormattedMessage id="pages.process.referenceYear" defaultMessage="Reference year" />,
       dataIndex: 'referenceYear',
       sorter: false,
       search: false,
@@ -241,14 +241,14 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
     <>
       {buttonType === 'icon' ? (
         <Tooltip
-          title={<FormattedMessage id="pages.button.model.add" defaultMessage="Add Node" />}
+          title={<FormattedMessage id="pages.button.model.add" defaultMessage="Add node" />}
           placement="left"
         >
           <Button shape="circle" icon={<PlusOutlined />} size="small" onClick={onSelect} />
         </Tooltip>
       ) : (
         <Button onClick={onSelect}>
-          <FormattedMessage id="pages.button.model.add" defaultMessage="Add Node" />
+          <FormattedMessage id="pages.button.model.add" defaultMessage="Add node" />
         </Button>
       )}
 
@@ -256,7 +256,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
         title={
           <FormattedMessage
             id="pages.process.drawer.title.addProcess"
-            defaultMessage="Add Process"
+            defaultMessage="Add process"
           />
         }
         width="90%"
