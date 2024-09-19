@@ -25,7 +25,7 @@ export default {
   'pages.contact.WWWAddress': '网址',
   'pages.contact.centralContactPoint': '中心联络人',
   'pages.contact.contactDescriptionOrComment': '联系人描述或备注',
-  'pages.contact.referenceToContact': '从属关系',
+  'pages.contact.referenceToContact': '属于：',
   'pages.contact.refObjectId': '引用对象标识符',
   'pages.contact.type': '类型',
   'pages.contact.uri': '统一资源标识符',
@@ -34,13 +34,11 @@ export default {
 
   //联系人信息
   'pages.contact.dataEntryBy': '数据输入方式',
-  'pages.contact.timeStamp': '时间戳（上次保存） ',
+  'pages.contact.timeStamp': '时间戳（最后保存）',
   'pages.contact.referenceToDataSetFormat': '数据集格式',
   'pages.contact.publicationAndOwnership': '出版和所有权',
   'pages.contact.dataSetVersion': '数据集版本',
   'pages.contact.referenceToPrecedingDataSetVersion': '数据集前一版本',
   'pages.contact.permanentDataSetURI': '永久数据集统一资源标识符',
   //管理信息
-
-
 };

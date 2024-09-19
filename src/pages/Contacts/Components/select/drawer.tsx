@@ -114,7 +114,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At" />,
+      title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created at" />,
       dataIndex: 'createdAt',
       valueType: 'dateTime',
       sorter: false,

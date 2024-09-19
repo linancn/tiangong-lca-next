@@ -25,7 +25,7 @@ const ContactDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisi
         message.success(
           <FormattedMessage
             id="pages.button.delete.success"
-            defaultMessage="Deleted Successfully!"
+            defaultMessage="Deleted successfully!"
           />,
         );
         setViewDrawerVisible(false);

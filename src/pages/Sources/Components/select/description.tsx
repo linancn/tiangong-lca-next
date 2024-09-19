@@ -17,7 +17,7 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
           <Descriptions.Item
             key={0}
             label={
-              <FormattedMessage id="pages.contact.refObjectId" defaultMessage="Ref Object Id" />
+              <FormattedMessage id="pages.contact.refObjectId" defaultMessage="Ref object id" />
             }
             labelStyle={{ width: '140px' }}
           >
@@ -56,7 +56,7 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
         </Descriptions.Item>
       </Descriptions> */}
       <Divider orientationMargin="0" orientation="left" plain>
-        <FormattedMessage id="pages.contact.shortDescription" defaultMessage="Short Description" />
+        <FormattedMessage id="pages.contact.shortDescription" defaultMessage="Short description" />
       </Divider>
       <LangTextItemDescription data={data?.['common:shortDescription']} />
     </Card>

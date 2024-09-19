@@ -5,7 +5,7 @@ export const publicationTypeOptions = [
     value: 'Undefined',
     label: (
       <FormattedMessage
-        id="pages.unitgroup.view.sourceInformation.publicationType.undefined"
+        id="pages.source.view.sourceInformation.publicationType.undefined"
         defaultMessage="Undefined"
       />
     ),
@@ -14,7 +14,7 @@ export const publicationTypeOptions = [
     value: 'Article in periodical',
     label: (
       <FormattedMessage
-        id="pages.unitgroup.view.sourceInformation.publicationType.articleInPeriodical"
+        id="pages.source.view.sourceInformation.publicationType.articleInPeriodical"
         defaultMessage="Article in periodical"
       />
     ),
@@ -23,7 +23,7 @@ export const publicationTypeOptions = [
     value: 'Chapter in anthology',
     label: (
       <FormattedMessage
-        id="pages.unitgroup.view.sourceInformation.publicationType.chapterInAnthology"
+        id="pages.source.view.sourceInformation.publicationType.chapterInAnthology"
         defaultMessage="Chapter in anthology"
       />
     ),
@@ -32,7 +32,7 @@ export const publicationTypeOptions = [
     value: 'Monograph',
     label: (
       <FormattedMessage
-        id="pages.unitgroup.view.sourceInformation.publicationType.monograph"
+        id="pages.source.view.sourceInformation.publicationType.monograph"
         defaultMessage="Monograph"
       />
     ),
@@ -41,7 +41,7 @@ export const publicationTypeOptions = [
     value: 'Direct measurement',
     label: (
       <FormattedMessage
-        id="pages.unitgroup.view.sourceInformation.publicationType.directMeasurement"
+        id="pages.source.view.sourceInformation.publicationType.directMeasurement"
         defaultMessage="Direct measurement"
       />
     ),
@@ -50,7 +50,7 @@ export const publicationTypeOptions = [
     value: 'Oral communication',
     label: (
       <FormattedMessage
-        id="pages.unitgroup.view.sourceInformation.publicationType.oralCommunication"
+        id="pages.source.view.sourceInformation.publicationType.oralCommunication"
         defaultMessage="Oral communication"
       />
     ),
@@ -59,7 +59,7 @@ export const publicationTypeOptions = [
     value: 'Personal written communication',
     label: (
       <FormattedMessage
-        id="pages.unitgroup.view.sourceInformation.publicationType.personalWrittenCommunication"
+        id="pages.source.view.sourceInformation.publicationType.personalWrittenCommunication"
         defaultMessage="Personal written communication"
       />
     ),
@@ -68,7 +68,7 @@ export const publicationTypeOptions = [
     value: 'Questionnaire',
     label: (
       <FormattedMessage
-        id="pages.unitgroup.view.sourceInformation.publicationType.questionnaire"
+        id="pages.source.view.sourceInformation.publicationType.questionnaire"
         defaultMessage="Questionnaire"
       />
     ),
@@ -77,7 +77,7 @@ export const publicationTypeOptions = [
     value: 'Software or database',
     label: (
       <FormattedMessage
-        id="pages.unitgroup.view.sourceInformation.publicationType.softwareOrDatabase"
+        id="pages.source.view.sourceInformation.publicationType.softwareOrDatabase"
         defaultMessage="Software or database"
       />
     ),
@@ -86,7 +86,7 @@ export const publicationTypeOptions = [
     value: 'Other unpublished and grey literature',
     label: (
       <FormattedMessage
-        id="pages.unitgroup.view.sourceInformation.publicationType.otherUnpublishedAndGreyLiterature"
+        id="pages.source.view.sourceInformation.publicationType.otherUnpublishedAndGreyLiterature"
         defaultMessage="Other unpublished and grey literature"
       />
     ),

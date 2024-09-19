@@ -63,7 +63,7 @@ const FlowModel: FC<Props> = ({ flowId, buttonType, lang, dataSource }) => {
       ],
     },
     {
-      title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At" />,
+      title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created at" />,
       dataIndex: 'createdAt',
       valueType: 'dateTime',
       sorter: false,
