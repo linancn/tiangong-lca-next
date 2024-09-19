@@ -1,100 +1,43 @@
 import { Footer } from '@/components';
 import { login, sendMagicLink } from '@/services/ant-design-pro/api';
 import { LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons';
-import { ProFormText } from '@ant-design/pro-components';
+import {
+  LoginForm,
+  ProConfigProvider,
+  ProFormText,
+  ProFormCheckbox,
+  ProLayout,
+} from '@ant-design/pro-components';
 import { FormattedMessage } from '@umijs/max';
-import { Alert, Button, Flex, Form, Tabs, message } from 'antd';
-import { createStyles } from 'antd-style';
+import { Alert, Button, message, Tabs, ConfigProvider, theme, App } from 'antd';
 import React, { useState } from 'react';
 import { flushSync } from 'react-dom';
 import { Helmet, SelectLang, history, useIntl, useModel } from 'umi';
 import Settings from '../../../../config/defaultSettings';
 
-const useStyles = createStyles(({ token }) => {
-  return {
-    action: {
-      marginLeft: '8px',
-      color: 'rgba(0, 0, 0, 0.2)',
-      fontSize: '24px',
-      verticalAlign: 'middle',
-      cursor: 'pointer',
-      transition: 'color 0.3s',
-      '&:hover': {
-        color: token.colorPrimaryActive,
-      },
-    },
-    lang: {
-      width: 42,
-      height: 42,
-      lineHeight: '42px',
-      position: 'fixed',
-      right: 16,
-      borderRadius: token.borderRadius,
-      ':hover': {
-        backgroundColor: token.colorBgTextHover,
-      },
-    },
-    container: {
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100vh',
-      overflow: 'auto',
-      backgroundImage:
-        "url('https://mdn.alipayobjects.com/yuyan_qk0oxh/afts/img/V-_oS6r-i7wAAAAAAAAAAAAAFl94AQBr')",
-      backgroundSize: '100% 100%',
-    },
-    'ant-btn-lg': {
-      display: 'none',
-    },
-  };
-});
-
-// const ActionIcons = () => {
-//   const { styles } = useStyles();
-
-//   return (
-//     <>
-//       <AlipayCircleOutlined key="AlipayCircleOutlined" className={styles.action} />
-//       <TaobaoCircleOutlined key="TaobaoCircleOutlined" className={styles.action} />
-//       <WeiboCircleOutlined key="WeiboCircleOutlined" className={styles.action} />
-//     </>
-//   );
-// };
-
-const Lang = () => {
-  const { styles } = useStyles();
-
-  return (
-    <div className={styles.lang} data-lang>
-      {SelectLang && <SelectLang />}
-    </div>
-  );
-};
-
 const LoginMessage: React.FC<{
   content: string;
-}> = ({ content }) => {
-  return (
-    <Alert
-      style={{
-        marginBottom: 24,
-      }}
-      message={content}
-      type="error"
-      showIcon
-    />
-  );
-};
+}> = ({ content }) => (
+  <Alert
+    style={{
+      marginBottom: 24,
+    }}
+    message={content}
+    type="error"
+    showIcon
+  />
+);
 
 const Login: React.FC = () => {
+  const { token } = theme.useToken();
   const [userLoginState, setUserLoginState] = useState<API.LoginResult>({});
   const [type, setType] = useState<string>('password');
   const [loading, setLoading] = useState<boolean>(false);
   const [sendMailMessage, setSendMailMessage] = useState<any>(<></>);
   const { initialState, setInitialState } = useModel('@@initialState');
   const [sendComplete, setSendComplete] = useState(false);
-  const { styles } = useStyles();
   const intl = useIntl();
+  const [messageApi, contextHolder] = message.useMessage();
 
   const fetchUserInfo = async () => {
     const userInfo = await initialState?.fetchUserInfo?.();
@@ -121,7 +64,7 @@ const Login: React.FC = () => {
             defaultMessage:
               'The email was sent successfully, please login from the magic link in the email!',
           });
-          message.success(defaultLoginSuccessMessage);
+          messageApi.success(defaultLoginSuccessMessage);
           setSendMailMessage(
             <FormattedMessage
               id="pages.login.email.success"
@@ -147,13 +90,12 @@ const Login: React.FC = () => {
             id: 'pages.login.success',
             defaultMessage: 'Login successful!',
           });
-          message.success(defaultLoginSuccessMessage);
+          messageApi.success(defaultLoginSuccessMessage);
           await fetchUserInfo();
           const urlParams = new URL(window.location.href).searchParams;
           history.push(urlParams.get('redirect') || '/');
           return;
         }
-        console.log(msg);
         // 如果失败去设置用户错误信息
         setUserLoginState(msg);
       }
@@ -162,217 +104,237 @@ const Login: React.FC = () => {
         id: 'pages.login.failure',
         defaultMessage: 'Login failed, please try again!',
       });
-      message.error(defaultLoginFailureMessage);
+      messageApi.error(defaultLoginFailureMessage);
     }
   };
 
   const { status, type: loginType } = userLoginState;
+  const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
 
   return (
-    <div className={styles.container}>
-      <Helmet>
-        <title>
-          {intl.formatMessage({
-            id: 'menu.login',
-            defaultMessage: 'Login Page',
-          })}
-          - {Settings.title}
-        </title>
-      </Helmet>
-      <Lang />
-      <div
-        style={{
-          flex: '1',
-          padding: '32px 0',
+    <App>
+      <ConfigProvider
+        theme={{
+          token: {
+            colorPrimary: Settings.colorPrimary,
+          },
+          algorithm:
+            isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'center', margin: '50px 0' }}>
-          <img
-            src={Settings.logo}
-            style={{
-              height: '44px',
-              marginRight: '16px',
-            }}
-          />
-          <h1>{Settings.title}</h1>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <Form
-            name="login"
-            initialValues={{ remember: true }}
-            style={{ width: 360 }}
-            onFinish={async (values) => {
-              await handleSubmit(values as API.LoginParams);
-            }}
-          >
-            <Tabs
-              activeKey={type}
-              onChange={setType}
-              centered
-              items={[
-                {
-                  key: 'password',
-                  label: intl.formatMessage({
-                    id: 'pages.login.passwordLogin.tab',
-                    defaultMessage: 'Password Login',
-                  }),
-                },
-                {
-                  key: 'email',
-                  label: intl.formatMessage({
-                    id: 'pages.login.emailLogin.tab',
-                    defaultMessage: 'Email Login',
-                  }),
-                },
-              ]}
-            />
-
-            {status === 'error' && loginType === 'password' && (
-              <LoginMessage
-                content={intl.formatMessage({
-                  id: 'pages.login.passwordLogin.errorMessage',
-                  defaultMessage: 'Incorrect username/password',
-                })}
+        {contextHolder}
+        <ProConfigProvider hashed={false}>
+          <ProLayout menuRender={false} menuHeaderRender={false} headerRender={false} fixedHeader={false} fixSiderbar={false}>
+            <div style={{
+              marginTop: '80px',
+            }}>
+              <Helmet>
+                <title>
+                  {intl.formatMessage({
+                    id: 'menu.login',
+                    defaultMessage: 'Login Page',
+                  })}
+                  - {Settings.title}
+                </title>
+              </Helmet>
+              <SelectLang
+                style={{
+                  position: 'absolute',
+                  right: 16,
+                  top: 16,
+                }}
               />
-            )}
-            {type === 'password' && (
-              <>
-                <ProFormText
-                  name="username"
-                  fieldProps={{
-                    size: 'large',
-                    prefix: <UserOutlined />,
-                  }}
-                  placeholder={intl.formatMessage({
-                    id: 'pages.login.username.placeholder',
-                    defaultMessage: 'User Name',
-                  })}
-                  rules={[
+              <LoginForm
+                logo={Settings.logo}
+                title={Settings.title}
+                subTitle=""
+                initialValues={{ autoLogin: true }}
+                onFinish={async (values) => {
+                  if (type === 'password') {
+                    await handleSubmit(values as API.LoginParams);
+                  }
+                }}
+                submitter={type === 'password' ? {
+                  submitButtonProps: {
+                    loading: loading,
+                  },
+                } : false}
+              >
+                <Tabs
+                  activeKey={type}
+                  onChange={setType}
+                  centered
+                  items={[
                     {
-                      required: true,
-                      message: (
-                        <FormattedMessage
-                          id="pages.login.username.required"
-                          defaultMessage="Please input your username!"
-                        />
-                      ),
+                      key: 'password',
+                      label: intl.formatMessage({
+                        id: 'pages.login.passwordLogin.tab',
+                        defaultMessage: 'Password Login',
+                      }),
+                    },
+                    {
+                      key: 'email',
+                      label: intl.formatMessage({
+                        id: 'pages.login.emailLogin.tab',
+                        defaultMessage: 'Email Login',
+                      }),
                     },
                   ]}
                 />
-                <ProFormText.Password
-                  name="password"
-                  fieldProps={{
-                    size: 'large',
-                    prefix: <LockOutlined />,
-                  }}
-                  placeholder={intl.formatMessage({
-                    id: 'pages.login.password.placeholder',
-                    defaultMessage: 'Password',
-                  })}
-                  rules={[
-                    {
-                      required: true,
-                      message: (
-                        <FormattedMessage
-                          id="pages.login.password.required"
-                          defaultMessage="Please input your password!"
-                        />
-                      ),
-                    },
-                  ]}
-                />
-                <Form.Item>
-                  <Flex justify="space-between" align="center">
-                    {/* <Form.Item name="remember" valuePropName="checked" noStyle>
-                      <Checkbox>Remember me</Checkbox>
-                    </Form.Item> */}
-                    <a href="/#/user/password_forgot">
-                      <FormattedMessage
-                        id="pages.login.forgotPassword"
-                        defaultMessage="Forgot password"
-                      />
-                    </a>
-                    {/* <a href="/#/user/register">
-                      <FormattedMessage
-                        id="pages.login.registerAccount"
-                        defaultMessage="Register Account"
-                      />
-                    </a> */}
-                  </Flex>
-                </Form.Item>
-                <Form.Item>
-                  <Button block type="primary" htmlType="submit" size="large" loading={loading}>
-                    <FormattedMessage id="pages.login.submit" defaultMessage="Login" />
-                  </Button>
-                </Form.Item>
-              </>
-            )}
-
-            {status === 'error' && loginType === 'email' && (
-              <LoginMessage
-                content={intl.formatMessage({
-                  id: 'pages.login.emailLogin.errorMessage',
-                  defaultMessage: 'Wrong email address or email address is not registered',
-                })}
-              />
-            )}
-            {type === 'email' && (
-              <>
-                <ProFormText
-                  name="email"
-                  fieldProps={{
-                    size: 'large',
-                    prefix: <MailOutlined />,
-                  }}
-                  placeholder={intl.formatMessage({
-                    id: 'pages.login.email.placeholder',
-                    defaultMessage: 'Email',
-                  })}
-                  rules={[
-                    {
-                      type: 'email',
-                      message: (
-                        <FormattedMessage
-                          id="pages.login.email.wrong-format"
-                          defaultMessage="The email format is incorrect!"
-                        />
-                      ),
-                    },
-                    {
-                      required: true,
-                      message: (
-                        <FormattedMessage
-                          id="pages.login.email.required"
-                          defaultMessage="Please input your email!"
-                        />
-                      ),
-                    },
-                  ]}
-                  disabled={sendComplete}
-                />
-                <Form.Item>
-                  <Button
-                    block
-                    type="primary"
-                    htmlType="submit"
-                    size="large"
-                    loading={loading}
-                    disabled={sendComplete}
-                  >
-                    <FormattedMessage
-                      id="pages.login.email.submit"
-                      defaultMessage="Send Login Email"
+                {status === 'error' && loginType === 'password' && (
+                  <LoginMessage
+                    content={intl.formatMessage({
+                      id: 'pages.login.passwordLogin.errorMessage',
+                      defaultMessage: 'Incorrect username/password',
+                    })}
+                  />
+                )}
+                {type === 'password' && (
+                  <>
+                    <ProFormText
+                      name="username"
+                      fieldProps={{
+                        size: 'large',
+                        prefix: <UserOutlined />,
+                      }}
+                      placeholder={intl.formatMessage({
+                        id: 'pages.login.username.placeholder',
+                        defaultMessage: 'User Name',
+                      })}
+                      rules={[
+                        {
+                          required: true,
+                          message: (
+                            <FormattedMessage
+                              id="pages.login.username.required"
+                              defaultMessage="Please input your username!"
+                            />
+                          ),
+                        },
+                      ]}
                     />
-                  </Button>
-                </Form.Item>
-                <Form.Item>{sendMailMessage}</Form.Item>
-              </>
-            )}
-          </Form>
-        </div>
-      </div>
-      <Footer />
-    </div>
+                    <ProFormText.Password
+                      name="password"
+                      fieldProps={{
+                        size: 'large',
+                        prefix: <LockOutlined />,
+                      }}
+                      placeholder={intl.formatMessage({
+                        id: 'pages.login.password.placeholder',
+                        defaultMessage: 'Password',
+                      })}
+                      rules={[
+                        {
+                          required: true,
+                          message: (
+                            <FormattedMessage
+                              id="pages.login.password.required"
+                              defaultMessage="Please input your password!"
+                            />
+                          ),
+                        },
+                      ]}
+                    />
+                    <div
+                      style={{
+                        marginBottom: 24,
+                      }}
+                    >
+                      <ProFormCheckbox noStyle name="autoLogin">
+                        <FormattedMessage
+                          id="pages.login.rememberMe"
+                          defaultMessage="Remember me"
+                        />
+                      </ProFormCheckbox>
+                      <a
+                        style={{
+                          float: 'right',
+                        }}
+                        href="/#/user/password_forgot"
+                      >
+                        <FormattedMessage
+                          id="pages.login.forgotPassword"
+                          defaultMessage="Forgot password"
+                        />
+                      </a>
+                    </div>
+                  </>
+                )}
+                {status === 'error' && loginType === 'email' && (
+                  <LoginMessage
+                    content={intl.formatMessage({
+                      id: 'pages.login.emailLogin.errorMessage',
+                      defaultMessage:
+                        'Wrong email address or email address is not registered',
+                    })}
+                  />
+                )}
+                {type === 'email' && (
+                  <>
+                    <ProFormText
+                      name="email"
+                      fieldProps={{
+                        size: 'large',
+                        prefix: <MailOutlined />,
+                      }}
+                      placeholder={intl.formatMessage({
+                        id: 'pages.login.email.placeholder',
+                        defaultMessage: 'Email',
+                      })}
+                      rules={[
+                        {
+                          type: 'email',
+                          message: (
+                            <FormattedMessage
+                              id="pages.login.email.wrong-format"
+                              defaultMessage="The email format is incorrect!"
+                            />
+                          ),
+                        },
+                        {
+                          required: true,
+                          message: (
+                            <FormattedMessage
+                              id="pages.login.email.required"
+                              defaultMessage="Please input your email!"
+                            />
+                          ),
+                        },
+                      ]}
+                      disabled={sendComplete}
+                    />
+                    <div
+                      style={{
+                        marginBottom: 24,
+                      }}
+                    >
+                      <Button
+                        block
+                        type="primary"
+                        size="large"
+                        loading={loading}
+                        disabled={sendComplete}
+                        onClick={() => {
+                          const form = document.getElementsByTagName('form')[0];
+                          form.dispatchEvent(new Event('submit', { cancelable: true }));
+                        }}
+                      >
+                        <FormattedMessage
+                          id="pages.login.email.submit"
+                          defaultMessage="Send Login Email"
+                        />
+                      </Button>
+                      {sendMailMessage}
+                    </div>
+                  </>
+                )}
+              </LoginForm>
+              <Footer />
+            </div>
+          </ProLayout>
+        </ProConfigProvider>
+      </ConfigProvider>
+    </App>
   );
 };
 
