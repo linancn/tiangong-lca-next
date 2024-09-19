@@ -144,7 +144,7 @@ const Login: React.FC = () => {
               marginTop: '80px',
             }}>
               <LoginForm
-                logo={Settings.logo}
+                logo={isDarkMode ? 'logo_dark.svg' : Settings.logo}
                 title={Settings.title}
                 subTitle=""
                 initialValues={{ autoLogin: true }}

@@ -37,7 +37,7 @@ const Welcome: React.FC = () => {
       },
       {
         '@xml:lang': 'en',
-        '#text': 'Welcome to use TianGong Database',
+        '#text': 'Welcome to TianGong Database',
       },
     ],
     meta1: {

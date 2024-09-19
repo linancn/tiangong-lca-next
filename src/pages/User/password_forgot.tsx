@@ -97,7 +97,7 @@ const PasswordForgot: React.FC = () => {
               <Spin spinning={spinning}>
                 <LoginForm
                   layout="vertical"
-                  logo={Settings.logo}
+                  logo={isDarkMode ? 'logo_dark.svg' : Settings.logo}
                   title={Settings.title}
                   subTitle=""
                   initialValues={initData}
