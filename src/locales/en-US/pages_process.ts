@@ -18,8 +18,10 @@ export default {
 
   //process.view/view 
   'pages.process.view.processInformation': 'Process information',
+  'pages.process.view.processInformation.id': 'ID',
   'pages.process.view.processInformation.baseName': 'Base name',
   'pages.process.view.processInformation.generalComment': 'General comment',
+  'pages.process.view.exchange.quantitativeReference': 'Quantitative reference',  
   'pages.process.view.processInformation.classification': 'Classification',
   'pages.process.view.processInformation.time': 'Time',
   'pages.process.view.processInformation.referenceYear': 'Reference year',

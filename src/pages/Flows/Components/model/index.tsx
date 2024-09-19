@@ -49,7 +49,7 @@ const FlowModel: FC<Props> = ({ flowId, buttonType, lang, dataSource }) => {
     },
     {
       title: (
-        <FormattedMessage id="pages.product.belongToFlow" defaultMessage="Belong to The Flow" />
+        <FormattedMessage id="pages.product.belongToFlow" defaultMessage="Belong to the flow" />
       ),
       dataIndex: 'flowName',
       sorter: false,
@@ -127,7 +127,7 @@ const FlowModel: FC<Props> = ({ flowId, buttonType, lang, dataSource }) => {
 
       <Drawer
         title={
-          <FormattedMessage id="pages.flow.model.drawer.title.list" defaultMessage="Model List" />
+          <FormattedMessage id="pages.flow.model.drawer.title.list" defaultMessage="Model list" />
         }
         width="90%"
         closable={false}

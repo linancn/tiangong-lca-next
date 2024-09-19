@@ -93,7 +93,7 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Base Name" />,
+      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Base name" />,
       dataIndex: 'baseName',
       sorter: false,
       search: false,
@@ -104,7 +104,7 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
       ],
     },
     {
-      title: <FormattedMessage id="pages.flow.flowType" defaultMessage="Flow Type" />,
+      title: <FormattedMessage id="pages.flow.flowType" defaultMessage="Flow type" />,
       dataIndex: 'flowType',
       sorter: false,
       search: false,
@@ -263,20 +263,20 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
     <>
       {buttonType === 'icon' ? (
         <Tooltip
-          title={<FormattedMessage id="pages.button.model.add" defaultMessage="Add Node" />}
+          title={<FormattedMessage id="pages.button.model.add" defaultMessage="Add node" />}
           placement="left"
         >
           <Button shape="circle" icon={<PlusOutlined />} size="small" onClick={onSelect} />
         </Tooltip>
       ) : (
         <Button onClick={onSelect}>
-          <FormattedMessage id="pages.button.model.add" defaultMessage="Add Node" />
+          <FormattedMessage id="pages.button.model.add" defaultMessage="Add node" />
         </Button>
       )}
 
       <Drawer
         title={
-          <FormattedMessage id="pages.flow.drawer.title.select" defaultMessage="Selete Flow" />
+          <FormattedMessage id="pages.flow.drawer.title.select" defaultMessage="Selete flow" />
         }
         width="90%"
         closable={false}

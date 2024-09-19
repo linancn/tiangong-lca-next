@@ -138,7 +138,7 @@ const PropertyEdit: FC<Props> = ({
               label={
                 <FormattedMessage
                   id="pages.flow.view.flowProperties.referenceToFlowPropertyDataSet"
-                  defaultMessage="Reference To Flow Property DataSet"
+                  defaultMessage="Flow property"
                 />
               }
               name={['referenceToFlowPropertyDataSet']}
@@ -152,7 +152,7 @@ const PropertyEdit: FC<Props> = ({
               label={
                 <FormattedMessage
                   id="pages.flow.view.flowProperties.meanValue"
-                  defaultMessage="Mean Value"
+                  defaultMessage="Mean value (of flow property)"
                 />
               }
               name={['meanValue']}
@@ -163,7 +163,7 @@ const PropertyEdit: FC<Props> = ({
               label={
                 <FormattedMessage
                   id="pages.process.view.exchange.quantitativeReference"
-                  defaultMessage="Quantitative Reference"
+                  defaultMessage="Quantitative reference"
                 />
               }
               name={['quantitativeReference']}

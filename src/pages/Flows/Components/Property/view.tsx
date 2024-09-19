@@ -64,8 +64,8 @@ const PropertyView: FC<Props> = ({ id, data, lang, buttonType }) => {
           lang={lang}
           title={
             <FormattedMessage
-              id="pages.flow.view.flowProperties.referenceToDataSetFormat"
-              defaultMessage="Reference To Data Set Format"
+              id="pages.flow.view.flowProperties.referenceToFlowPropertyDataSet"
+              defaultMessage="Flow property"
             />
           }
         />
@@ -76,7 +76,7 @@ const PropertyView: FC<Props> = ({ id, data, lang, buttonType }) => {
             label={
               <FormattedMessage
                 id="pages.flow.view.flowProperties.meanValue"
-                defaultMessage="Mean Value"
+                defaultMessage="Mean value (of flow property)"
               />
             }
             labelStyle={{ width: '150px' }}
@@ -91,7 +91,7 @@ const PropertyView: FC<Props> = ({ id, data, lang, buttonType }) => {
             label={
               <FormattedMessage
                 id="pages.process.view.exchange.quantitativeReference"
-                defaultMessage="Quantitative Reference"
+                defaultMessage="Quantitative reference"
               />
             }
             labelStyle={{ width: '220px' }}

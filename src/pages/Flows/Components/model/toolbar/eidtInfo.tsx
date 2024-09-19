@@ -77,7 +77,7 @@ const ModelToolbarEditInfo: FC<Props> = ({ flowId, lang, data, onData }) => {
   return (
     <>
       <Tooltip
-        title={<FormattedMessage id="pages.button.model.info" defaultMessage="Base Infomation" />}
+        title={<FormattedMessage id="pages.button.model.info" defaultMessage="Base infomation" />}
         placement="left"
       >
         <Button
@@ -93,7 +93,7 @@ const ModelToolbarEditInfo: FC<Props> = ({ flowId, lang, data, onData }) => {
         title={
           <FormattedMessage
             id="pages.flow.model.drawer.title.info"
-            defaultMessage="Model Base Infomation"
+            defaultMessage="Model base infomation"
           ></FormattedMessage>
         }
         width="90%"
@@ -178,7 +178,7 @@ const ModelToolbarEditInfo: FC<Props> = ({ flowId, lang, data, onData }) => {
               title={
                 <FormattedMessage
                   id="pages.product.productInformation.generalComment"
-                  defaultMessage="General Comment"
+                  defaultMessage="General comment"
                 />
               }
             >
@@ -187,7 +187,7 @@ const ModelToolbarEditInfo: FC<Props> = ({ flowId, lang, data, onData }) => {
                 label={
                   <FormattedMessage
                     id="pages.product.productInformation.generalComment"
-                    defaultMessage="General Comment"
+                    defaultMessage="General comment"
                   />
                 }
               />
@@ -198,7 +198,7 @@ const ModelToolbarEditInfo: FC<Props> = ({ flowId, lang, data, onData }) => {
                 title={
                   <FormattedMessage
                     id="pages.product.belongToFlow"
-                    defaultMessage="Belong to The Flow"
+                    defaultMessage="Belong to the flow"
                   />
                 }
               >
@@ -207,7 +207,7 @@ const ModelToolbarEditInfo: FC<Props> = ({ flowId, lang, data, onData }) => {
                     label={
                       <FormattedMessage
                         id="pages.product.belongToFlow.id"
-                        defaultMessage="Ref Object Id"
+                        defaultMessage="Ref object id"
                       />
                     }
                     name={['productInformation', 'referenceToFlowDataSet', '@refObjectId']}
@@ -260,7 +260,7 @@ const ModelToolbarEditInfo: FC<Props> = ({ flowId, lang, data, onData }) => {
                 <Divider orientationMargin="0" orientation="left" plain>
                   <FormattedMessage
                     id="pages.product.belongToFlow.generalComment"
-                    defaultMessage="General Comment"
+                    defaultMessage="General comment"
                   />
                 </Divider>
                 <Form.Item>

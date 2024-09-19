@@ -131,7 +131,7 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly,
       if (result.data) {
       }
       message.success(
-        <FormattedMessage id="pages.flows.savesuccess" defaultMessage="Save Successfully!" />,
+        <FormattedMessage id="pages.flows.savesuccess" defaultMessage="Save successfully!" />,
       );
       saveCallback();
       setSpinning(false);
@@ -141,7 +141,7 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly,
         message.success(
           <FormattedMessage
             id="pages.flows.createsuccess"
-            defaultMessage="Created Successfully!"
+            defaultMessage="Created successfully!"
           />,
         );
         saveCallback();
@@ -322,7 +322,7 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly,
             title={
               <FormattedMessage
                 id="pages.button.model.delete"
-                defaultMessage="Delete Element"
+                defaultMessage="Delete element"
               ></FormattedMessage>
             }
             placement="left"
@@ -344,7 +344,7 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly,
             title={
               <FormattedMessage
                 id="pages.button.model.save"
-                defaultMessage="Save Data"
+                defaultMessage="Save data"
               ></FormattedMessage>
             }
             placement="left"

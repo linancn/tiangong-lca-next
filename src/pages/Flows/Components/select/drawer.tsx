@@ -96,7 +96,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Base Name" />,
+      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Base name" />,
       dataIndex: 'baseName',
       sorter: false,
       search: false,
@@ -107,7 +107,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       ],
     },
     {
-      title: <FormattedMessage id="pages.flow.flowType" defaultMessage="Flow Type" />,
+      title: <FormattedMessage id="pages.flow.flowType" defaultMessage="Flow type" />,
       dataIndex: 'flowType',
       sorter: false,
       search: false,

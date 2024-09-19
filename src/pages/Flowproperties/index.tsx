@@ -65,7 +65,7 @@ const TableList: FC = () => {
       title: (
         <FormattedMessage
           id="pages.flowproperty.referenceToReferenceUnitGroup"
-          defaultMessage="Reference Unit Group"
+          defaultMessage="Reference unit"
         />
       ),
       dataIndex: 'refUnitGroup',
