@@ -29,7 +29,6 @@ const LoginMessage: React.FC<{
 );
 
 const Login: React.FC = () => {
-  const { token } = theme.useToken();
   const [userLoginState, setUserLoginState] = useState<API.LoginResult>({});
   const [type, setType] = useState<string>('password');
   const [loading, setLoading] = useState<boolean>(false);
@@ -125,25 +124,25 @@ const Login: React.FC = () => {
         {contextHolder}
         <ProConfigProvider hashed={false}>
           <ProLayout menuRender={false} menuHeaderRender={false} headerRender={false} fixedHeader={false} fixSiderbar={false}>
+            <Helmet>
+              <title>
+                {intl.formatMessage({
+                  id: 'menu.login',
+                  defaultMessage: 'Login Page',
+                })}
+                - {Settings.title}
+              </title>
+            </Helmet>
+            <SelectLang
+              style={{
+                position: 'absolute',
+                right: 16,
+                top: 16,
+              }}
+            />
             <div style={{
               marginTop: '80px',
             }}>
-              <Helmet>
-                <title>
-                  {intl.formatMessage({
-                    id: 'menu.login',
-                    defaultMessage: 'Login Page',
-                  })}
-                  - {Settings.title}
-                </title>
-              </Helmet>
-              <SelectLang
-                style={{
-                  position: 'absolute',
-                  right: 16,
-                  top: 16,
-                }}
-              />
               <LoginForm
                 logo={Settings.logo}
                 title={Settings.title}
@@ -329,8 +328,8 @@ const Login: React.FC = () => {
                   </>
                 )}
               </LoginForm>
-              <Footer />
             </div>
+            <Footer />
           </ProLayout>
         </ProConfigProvider>
       </ConfigProvider>
