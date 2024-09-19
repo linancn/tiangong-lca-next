@@ -63,14 +63,14 @@ const UnitGroupFromMini: FC<Props> = ({ id, idType, name, formRef, drawerVisible
         title={
           <FormattedMessage
             id="pages.flowproperty.referenceToReferenceUnitGroup"
-            defaultMessage="Reference Unit Group"
+            defaultMessage="Reference unit"
           />
         }
       >
         <Divider orientationMargin="0" orientation="left" plain>
           <FormattedMessage
             id="pages.unitgroup.edit.generalComment"
-            defaultMessage="General Comment"
+            defaultMessage="Comment"
           />
         </Divider>
         <Form.Item>
@@ -106,12 +106,12 @@ const UnitGroupFromMini: FC<Props> = ({ id, idType, name, formRef, drawerVisible
           title={
             <FormattedMessage
               id="pages.unitgroup.unit.quantitativeReference"
-              defaultMessage="Quantitative Reference"
+              defaultMessage="Quantitative reference"
             />
           }
         >
           <Form.Item
-            label={<FormattedMessage id="pages.unitgroup.edit.name" defaultMessage="Name" />}
+            label={<FormattedMessage id="pages.unitgroup.edit.name" defaultMessage="Name of unit" />}
             name={[...name, 'refUnitGroup', 'refUnit', 'name']}
           >
             <Input disabled={true} style={{ color: '#000' }} />
@@ -119,7 +119,7 @@ const UnitGroupFromMini: FC<Props> = ({ id, idType, name, formRef, drawerVisible
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
               id="pages.unitgroup.edit.generalComment"
-              defaultMessage="General Comment"
+              defaultMessage="Comment"
             />
           </Divider>
           <Form.Item>

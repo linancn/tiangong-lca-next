@@ -48,14 +48,14 @@ const UnitGroupDescriptionMini: FC<Props> = ({ id, idType }) => {
         title={
           <FormattedMessage
             id="pages.flowproperty.referenceToReferenceUnitGroup"
-            defaultMessage="Reference Unit Group"
+            defaultMessage="Reference unit"
           />
         }
       >
         <Divider orientationMargin="0" orientation="left" plain>
           <FormattedMessage
             id="pages.FlowProperties.view.flowPropertiesInformation.shortDescription"
-            defaultMessage="Short Description"
+            defaultMessage="Short description"//有问题
           />
         </Divider>
         <LangTextItemDescription data={refUnitGroup.refUnitGroupShortDescription} />
@@ -65,14 +65,14 @@ const UnitGroupDescriptionMini: FC<Props> = ({ id, idType }) => {
           title={
             <FormattedMessage
               id="pages.unitgroup.unit.quantitativeReference"
-              defaultMessage="Quantitative Reference"
+              defaultMessage="Quantitative reference"
             />
           }
         >
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item
               key={0}
-              label={<FormattedMessage id="pages.unitgroup.name" defaultMessage="Name" />}
+              label={<FormattedMessage id="pages.unitgroup.name" defaultMessage="Name of unit group" />}
               labelStyle={{ width: '100px' }}
             >
               {refUnit.refUnitName ?? '-'}
@@ -81,7 +81,7 @@ const UnitGroupDescriptionMini: FC<Props> = ({ id, idType }) => {
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
               id="pages.unitgroup.generalComment"
-              defaultMessage="General Comment"
+              defaultMessage="General comment"
             />
           </Divider>
           <LangTextItemDescription data={refUnit.refUnitGeneralComment} />

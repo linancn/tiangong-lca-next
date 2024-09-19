@@ -62,7 +62,7 @@ const UnitView: FC<Props> = ({ id, data, buttonType }) => {
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
             key={0}
-            label={<FormattedMessage id="pages.unitgroup.name" defaultMessage="Name" />}
+            label={<FormattedMessage id="pages.unitgroup.name" defaultMessage="Name of unit group" />}
             labelStyle={{ width: '100px' }}
           >
             {viewData.name ?? '-'}
@@ -70,14 +70,14 @@ const UnitView: FC<Props> = ({ id, data, buttonType }) => {
         </Descriptions>
         <br />
         <Divider orientationMargin="0" orientation="left" plain>
-          <FormattedMessage id="pages.unitgroup.generalComment" defaultMessage="General Comment" />
+          <FormattedMessage id="pages.unitgroup.generalComment" defaultMessage="General comment" />
         </Divider>
         <LangTextItemDescription data={viewData.generalComment} />
         <br />
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
             key={0}
-            label={<FormattedMessage id="pages.unitgroup.meanValue" defaultMessage="Mean Value" />}
+            label={<FormattedMessage id="pages.unitgroup.meanValue" defaultMessage="Mean value (of unit)" />}
             labelStyle={{ width: '180px' }}
           >
             {viewData.meanValue ?? '-'}
@@ -90,7 +90,7 @@ const UnitView: FC<Props> = ({ id, data, buttonType }) => {
             label={
               <FormattedMessage
                 id="pages.unitgroup.quantitativeReference"
-                defaultMessage="Quantitative Reference"
+                defaultMessage="Quantitative reference"
               />
             }
             labelStyle={{ width: '180px' }}

@@ -30,7 +30,7 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
             label={
               <FormattedMessage
                 id="pages.FlowProperties.view.flowPropertiesInformation.refObjectId"
-                defaultMessage="Ref Object Id"
+                defaultMessage="Ref object id"
               />
             }
             labelStyle={{ width: '140px' }}
@@ -82,7 +82,7 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
       <Divider orientationMargin="0" orientation="left" plain>
         <FormattedMessage
           id="pages.FlowProperties.view.flowPropertiesInformation.shortDescription"
-          defaultMessage="Short Description"
+          defaultMessage="Short description"
         />
       </Divider>
       <LangTextItemDescription data={data?.['common:shortDescription']} />
@@ -92,14 +92,14 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
         title={
           <FormattedMessage
             id="pages.unitgroup.unit.quantitativeReference"
-            defaultMessage="Quantitative Reference"
+            defaultMessage="Quantitative reference"
           />
         }
       >
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
             key={0}
-            label={<FormattedMessage id="pages.unitgroup.name" defaultMessage="Name" />}
+            label={<FormattedMessage id="pages.unitgroup.name" defaultMessage="Name of unit group" />}
             labelStyle={{ width: '100px' }}
           >
             {refUnit.refUnitName ?? '-'}
@@ -107,7 +107,7 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
         </Descriptions>
         <br />
         <Divider orientationMargin="0" orientation="left" plain>
-          <FormattedMessage id="pages.unitgroup.generalComment" defaultMessage="General Comment" />
+          <FormattedMessage id="pages.unitgroup.generalComment" defaultMessage="General comment" />
         </Divider>
         <LangTextItemDescription data={refUnit.refUnitGeneralComment} />
       </Card>

@@ -115,7 +115,7 @@ const UnitCreate: FC<Props> = ({ onData }) => {
               <Input />
             </Form.Item>
             <Form.Item
-              label={<FormattedMessage id="pages.unitgroup.creat.name" defaultMessage="Name" />}
+              label={<FormattedMessage id="pages.unitgroup.creat.name" defaultMessage="Name of unit" />}
               name={'name'}
             >
               <Input />
@@ -125,7 +125,7 @@ const UnitCreate: FC<Props> = ({ onData }) => {
               title={
                 <FormattedMessage
                   id="pages.unitgroup.creat.generalComment"
-                  defaultMessage="General Comment"
+                  defaultMessage="Comment"
                 />
               }
             >
@@ -134,7 +134,7 @@ const UnitCreate: FC<Props> = ({ onData }) => {
                 label={
                   <FormattedMessage
                     id="pages.unitgroup.creat.generalComment"
-                    defaultMessage="General Comment"
+                    defaultMessage="Comment"
                   />
                 }
               />
@@ -143,7 +143,7 @@ const UnitCreate: FC<Props> = ({ onData }) => {
               label={
                 <FormattedMessage
                   id="pages.unitgroup.creat.meanValue"
-                  defaultMessage="Mean Value"
+                  defaultMessage="Mean value (of unit)"
                 />
               }
               name={'meanValue'}
@@ -154,7 +154,7 @@ const UnitCreate: FC<Props> = ({ onData }) => {
               label={
                 <FormattedMessage
                   id="pages.unitgroup.creat.quantitativeReference"
-                  defaultMessage="Quantitative Reference"
+                  defaultMessage="Quantitative reference"
                 />
               }
               name={'quantitativeReference'}
