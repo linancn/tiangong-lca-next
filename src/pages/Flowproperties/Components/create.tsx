@@ -93,7 +93,7 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
         title={
           <FormattedMessage
             id="pages.flowproperty.drawer.title.create"
-            defaultMessage="Create Flow Property"
+            defaultMessage="Create Flow property"
           />
         }
         width="90%"
@@ -137,7 +137,7 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
               message.success(
                 <FormattedMessage
                   id="pages.flowproperties.createsuccess"
-                  defaultMessage="Created Successfully!"
+                  defaultMessage="Created successfully!"
                 />,
               );
               formRefCreate.current?.resetFields();

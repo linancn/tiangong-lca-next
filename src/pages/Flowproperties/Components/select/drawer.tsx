@@ -109,7 +109,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
       title: (
         <FormattedMessage
           id="pages.flowproperty.referenceToReferenceUnitGroup"
-          defaultMessage="Reference Unit Group"
+          defaultMessage="Reference unit"
         />
       ),
       dataIndex: 'refUnitGroup',
@@ -279,7 +279,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
         title={
           <FormattedMessage
             id="pages.flowproperty.drawer.title.select"
-            defaultMessage="Selete Flow Property"
+            defaultMessage="Selete Flow property"
           />
         }
         width="90%"

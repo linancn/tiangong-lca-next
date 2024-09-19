@@ -56,7 +56,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
           label={
             <FormattedMessage
               id="pages.flow.view.flowProperties.refObjectId"
-              defaultMessage="Ref Object Id"
+              defaultMessage="Ref object id"
             />
           }
           name={[...name, '@refObjectId']}
@@ -100,7 +100,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
       <Divider orientationMargin="0" orientation="left" plain>
         <FormattedMessage
           id="pages.flow.view.flowProperties.shortDescription"
-          defaultMessage="Short Description"
+          defaultMessage="Short description"
         />
       </Divider>
       {/* <LangTextItemForm

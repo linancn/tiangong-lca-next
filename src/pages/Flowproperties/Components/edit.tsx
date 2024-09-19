@@ -141,7 +141,7 @@ const FlowpropertiesEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
                 message.success(
                   <FormattedMessage
                     id="pages.flowproperties.editsuccess"
-                    defaultMessage="Edit flowproperties Successfully!"
+                    defaultMessage="Edit flowproperties successfully!"
                   />,
                 );
                 setDrawerVisible(false);

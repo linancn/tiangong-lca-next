@@ -21,7 +21,7 @@ const FlowpropertiesSelectDescription: FC<Props> = ({ title, data, lang }) => {
             label={
               <FormattedMessage
                 id="pages.flow.view.flowProperties.refObjectId"
-                defaultMessage="Ref Object Id"
+                defaultMessage="Ref object id"
               />
             }
             labelStyle={{ width: '140px' }}
@@ -64,7 +64,7 @@ const FlowpropertiesSelectDescription: FC<Props> = ({ title, data, lang }) => {
       <Divider orientationMargin="0" orientation="left" plain>
         <FormattedMessage
           id="pages.flow.view.flowProperties.shortDescription"
-          defaultMessage="Short Description"
+          defaultMessage="Short description"
         />
       </Divider>
       <LangTextItemDescription data={data?.['common:shortDescription']} />
