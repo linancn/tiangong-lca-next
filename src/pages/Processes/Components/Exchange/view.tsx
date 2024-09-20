@@ -57,7 +57,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, dataSource, buttonType
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="pages.button.view" defaultMessage="View Exchange" />}>
+      <Tooltip title={<FormattedMessage id="pages.button.view" defaultMessage="View exchange" />}>
         {buttonType === 'icon' ? (
           <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
         ) : (
@@ -70,7 +70,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, dataSource, buttonType
         title={
           <FormattedMessage
             id="pages.process.exchange.drawer.title.view"
-            defaultMessage="View Exchange"
+            defaultMessage="View exchange"
           />
         }
         width="90%"
@@ -98,7 +98,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, dataSource, buttonType
             label={
               <FormattedMessage
                 id="pages.process.view.exchange.exchangeDirection"
-                defaultMessage="Exchange Direction"
+                defaultMessage="Exchange direction"
               />
             }
             labelStyle={{ width: '180px' }}
@@ -111,7 +111,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, dataSource, buttonType
           title={
             <FormattedMessage
               id="pages.process.view.exchange.referenceToFlowDataSet"
-              defaultMessage="Reference To Flow Data Set"
+              defaultMessage="Flow"
             />
           }
           data={viewData.referenceToFlowDataSet ?? {}}
@@ -124,7 +124,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, dataSource, buttonType
             label={
               <FormattedMessage
                 id="pages.process.view.exchange.meanAmount"
-                defaultMessage="Mean Amount"
+                defaultMessage="Mean amount"
               />
             }
             labelStyle={{ width: '220px' }}
@@ -139,7 +139,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, dataSource, buttonType
             label={
               <FormattedMessage
                 id="pages.process.view.exchange.resultingAmount"
-                defaultMessage="Resulting Amount"
+                defaultMessage="Resulting amount"
               />
             }
             labelStyle={{ width: '220px' }}
@@ -154,7 +154,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, dataSource, buttonType
             label={
               <FormattedMessage
                 id="pages.process.view.exchange.dataDerivationTypeStatus"
-                defaultMessage="Data Derivation Type Status"
+                defaultMessage="'Data derivation type / status"
               />
             }
             labelStyle={{ width: '220px' }}
@@ -166,7 +166,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, dataSource, buttonType
         <Divider orientationMargin="0" orientation="left" plain>
           <FormattedMessage
             id="pages.process.view.exchange.generalComment"
-            defaultMessage="General Comment"
+            defaultMessage="Comment"
           />
         </Divider>
         <LangTextItemDescription data={viewData.generalComment} />
@@ -176,7 +176,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, dataSource, buttonType
           title={
             <FormattedMessage
               id="pages.process.view.exchange.quantitativeReference"
-              defaultMessage="Quantitative Reference"
+              defaultMessage="Quantitative reference"
             />
           }
         >
@@ -186,7 +186,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, dataSource, buttonType
               label={
                 <FormattedMessage
                   id="pages.process.view.exchange.referenceToReferenceFlow"
-                  defaultMessage="Reference To Reference Flow"
+                  defaultMessage="Reference flow(s)"
                 />
               }
               labelStyle={{ width: '220px' }}
@@ -201,7 +201,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, dataSource, buttonType
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
               id="pages.process.view.exchange.functionalUnitOrOther"
-              defaultMessage="Functional Unit Or Other"
+              defaultMessage="Functional unit, Production period, or Other parameter"
             />
           </Divider>
           <LangTextItemDescription data={viewData.functionalUnitOrOther} />

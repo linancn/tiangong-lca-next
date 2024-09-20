@@ -59,7 +59,7 @@ const ProcessExchangeCreate: FC<Props> = ({ lang, onData }) => {
         title={
           <FormattedMessage
             id="pages.process.exchange.drawer.title.create"
-            defaultMessage="Create Exchange"
+            defaultMessage="Create exchange"
           />
         }
         width="90%"
@@ -108,7 +108,7 @@ const ProcessExchangeCreate: FC<Props> = ({ lang, onData }) => {
               label={
                 <FormattedMessage
                   id="pages.process.view.exchange.exchangeDirection"
-                  defaultMessage="Exchange Direction"
+                  defaultMessage="Exchange direction"
                 />
               }
               name={'exchangeDirection'}
@@ -127,7 +127,7 @@ const ProcessExchangeCreate: FC<Props> = ({ lang, onData }) => {
               label={
                 <FormattedMessage
                   id="pages.process.view.exchange.referenceToFlowDataSet"
-                  defaultMessage="Reference To Flow Data Set"
+                  defaultMessage="Flow"
                 />
               }
               lang={lang}
@@ -139,7 +139,7 @@ const ProcessExchangeCreate: FC<Props> = ({ lang, onData }) => {
               label={
                 <FormattedMessage
                   id="pages.process.view.exchange.meanAmount"
-                  defaultMessage="Mean Amount"
+                  defaultMessage="Mean amount"
                 />
               }
               name={'meanAmount'}
@@ -150,7 +150,7 @@ const ProcessExchangeCreate: FC<Props> = ({ lang, onData }) => {
               label={
                 <FormattedMessage
                   id="pages.process.view.exchange.resultingAmount"
-                  defaultMessage="Resulting Amount"
+                  defaultMessage="Resulting amount"
                 />
               }
               name={'resultingAmount'}
@@ -161,7 +161,7 @@ const ProcessExchangeCreate: FC<Props> = ({ lang, onData }) => {
               label={
                 <FormattedMessage
                   id="pages.process.view.exchange.dataDerivationTypeStatus"
-                  defaultMessage="Data Derivation Type Status"
+                  defaultMessage="Data derivation type / status"
                 />
               }
               name={'dataDerivationTypeStatus'}
@@ -171,7 +171,7 @@ const ProcessExchangeCreate: FC<Props> = ({ lang, onData }) => {
             <Divider orientationMargin="0" orientation="left" plain>
               <FormattedMessage
                 id="pages.process.view.exchange.generalComment"
-                defaultMessage="General Comment"
+                defaultMessage="Comment"
               />
             </Divider>
             <LangTextItemForm name="generalComment" label="General Comment" />
@@ -181,7 +181,7 @@ const ProcessExchangeCreate: FC<Props> = ({ lang, onData }) => {
               title={
                 <FormattedMessage
                   id="pages.process.view.exchange.quantitativeReference"
-                  defaultMessage="Quantitative Reference"
+                  defaultMessage="Quantitative reference"
                 />
               }
             >
@@ -189,7 +189,7 @@ const ProcessExchangeCreate: FC<Props> = ({ lang, onData }) => {
                 label={
                   <FormattedMessage
                     id="pages.process.view.exchange.referenceToReferenceFlow"
-                    defaultMessage="Reference To Reference Flow"
+                    defaultMessage="Reference flow(s)"
                   />
                 }
                 name={'quantitativeReference'}
@@ -201,7 +201,7 @@ const ProcessExchangeCreate: FC<Props> = ({ lang, onData }) => {
                   <Divider orientationMargin="0" orientation="left" plain>
                     <FormattedMessage
                       id="pages.process.view.exchange.functionalUnitOrOther"
-                      defaultMessage="Functional Unit Or Other"
+                      defaultMessage="Functional unit, Production period, or Other parameter"
                     />
                   </Divider>
                   <LangTextItemForm name="functionalUnitOrOther" label="Functional Unit Or Other" />

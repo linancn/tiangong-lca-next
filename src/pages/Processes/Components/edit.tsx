@@ -110,7 +110,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
       </Tooltip>
       <Drawer
         title={
-          <FormattedMessage id="pages.process.drawer.title.edit" defaultMessage="Edit Process" />
+          <FormattedMessage id="pages.process.drawer.title.edit" defaultMessage="Edit process" />
         }
         width="90%"
         closable={false}
@@ -163,7 +163,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
                 message.success(
                   <FormattedMessage
                     id="options.createsuccess"
-                    defaultMessage="Created Successfully!"
+                    defaultMessage="Created successfully!"
                   />,
                 );
                 setSpinning(false);

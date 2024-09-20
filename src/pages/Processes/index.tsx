@@ -59,7 +59,7 @@ const TableList: FC = () => {
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.process.referenceYear" defaultMessage="Reference Year" />,
+      title: <FormattedMessage id="pages.process.referenceYear" defaultMessage="Reference year" />,
       dataIndex: 'referenceYear',
       sorter: false,
       search: false,
