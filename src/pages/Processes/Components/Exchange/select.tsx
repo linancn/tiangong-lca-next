@@ -215,12 +215,12 @@ const ExchangeSelect: FC<Props> = ({
           optionType === 'create' ? (
             <FormattedMessage
               id="pages.flow.model.drawer.title.edge.exchange.create"
-              defaultMessage="Create Exchange Relation"
+              defaultMessage="Create exchange relation"
             />
           ) : (
             <FormattedMessage
               id="pages.flow.model.drawer.title.edge.exchange.edit"
-              defaultMessage="Edit Exchange Relation"
+              defaultMessage="Edit exchange relation"
             />
           )
         }
@@ -266,7 +266,7 @@ const ExchangeSelect: FC<Props> = ({
               title={
                 <FormattedMessage
                   id="pages.flow.model.sourceOutputFlowName"
-                  defaultMessage="Source Process Output Flow"
+                  defaultMessage="Source process output flow"
                 />
               }
               bordered={false}
@@ -296,7 +296,7 @@ const ExchangeSelect: FC<Props> = ({
               title={
                 <FormattedMessage
                   id="pages.flow.model.targetInputFlowName"
-                  defaultMessage="Target Process Input Flow"
+                  defaultMessage="Target process input flow"
                 />
               }
               bordered={false}

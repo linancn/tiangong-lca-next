@@ -86,7 +86,7 @@ const ProcessExchangeEdit: FC<Props> = ({
         title={
           <FormattedMessage
             id="pages.process.exchange.drawer.title.edit"
-            defaultMessage="Edit Exchange"
+            defaultMessage="Edit exchange"
           />
         }
         width="90%"
@@ -147,7 +147,7 @@ const ProcessExchangeEdit: FC<Props> = ({
               label={
                 <FormattedMessage
                   id="pages.process.view.exchange.exchangeDirection"
-                  defaultMessage="Exchange Direction"
+                  defaultMessage="Exchange direction"
                 />
               }
               name={'exchangeDirection'}
@@ -171,7 +171,7 @@ const ProcessExchangeEdit: FC<Props> = ({
               label={
                 <FormattedMessage
                   id="pages.process.view.exchange.referenceToFlowDataSet"
-                  defaultMessage="Reference To Flow Data Set"
+                  defaultMessage="Flow"
                 />
               }
               lang={lang}
@@ -183,7 +183,7 @@ const ProcessExchangeEdit: FC<Props> = ({
               label={
                 <FormattedMessage
                   id="pages.process.view.exchange.meanAmount"
-                  defaultMessage="Mean Amount"
+                  defaultMessage="Mean amount"
                 />
               }
               name={'meanAmount'}
@@ -194,7 +194,7 @@ const ProcessExchangeEdit: FC<Props> = ({
               label={
                 <FormattedMessage
                   id="pages.process.view.exchange.resultingAmount"
-                  defaultMessage="Resulting Amount"
+                  defaultMessage="Resulting amount"
                 />
               }
               name={'resultingAmount'}
@@ -205,7 +205,7 @@ const ProcessExchangeEdit: FC<Props> = ({
               label={
                 <FormattedMessage
                   id="pages.process.view.exchange.dataDerivationTypeStatus"
-                  defaultMessage="Data Derivation Type Status"
+                  defaultMessage="Data derivation type / status"
                 />
               }
               name={'dataDerivationTypeStatus'}
@@ -215,7 +215,7 @@ const ProcessExchangeEdit: FC<Props> = ({
             <Divider orientationMargin="0" orientation="left" plain>
               <FormattedMessage
                 id="pages.process.view.exchange.generalComment"
-                defaultMessage="General Comment"
+                defaultMessage="Comment"
               />
             </Divider>
             <LangTextItemForm name="generalComment" label="General Comment" />
@@ -225,7 +225,7 @@ const ProcessExchangeEdit: FC<Props> = ({
               title={
                 <FormattedMessage
                   id="pages.process.view.exchange.quantitativeReference"
-                  defaultMessage="Quantitative Reference"
+                  defaultMessage="Quantitative reference"
                 />
               }
             >
@@ -233,7 +233,7 @@ const ProcessExchangeEdit: FC<Props> = ({
                 label={
                   <FormattedMessage
                     id="pages.process.view.exchange.referenceToReferenceFlow"
-                    defaultMessage="Reference To Reference Flow"
+                    defaultMessage="Reference flow(s)"
                   />
                 }
                 name={'quantitativeReference'}
@@ -245,7 +245,7 @@ const ProcessExchangeEdit: FC<Props> = ({
                   <Divider orientationMargin="0" orientation="left" plain>
                     <FormattedMessage
                       id="pages.process.view.exchange.functionalUnitOrOther"
-                      defaultMessage="Functional Unit Or Other"
+                      defaultMessage="Functional unit, Production period, or Other parameter"
                     />
                   </Divider>
                   <LangTextItemForm name="functionalUnitOrOther" label="Functional Unit Or Other" />

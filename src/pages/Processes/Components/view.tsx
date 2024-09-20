@@ -43,7 +43,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
       tab: (
         <FormattedMessage
           id="pages.process.view.processInformation"
-          defaultMessage="Process Information"
+          defaultMessage="Process information"
         />
       ),
     },
@@ -52,7 +52,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
       tab: (
         <FormattedMessage
           id="pages.process.view.modellingAndValidation"
-          defaultMessage="Modelling And Validation"
+          defaultMessage="Modelling and validation"
         />
       ),
     },
@@ -61,7 +61,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
       tab: (
         <FormattedMessage
           id="pages.process.view.administrativeInformation"
-          defaultMessage="Administrative Information"
+          defaultMessage="Administrative information"
         />
       ),
     },
@@ -100,7 +100,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
       title: (
         <FormattedMessage
           id="processExchange.referenceToFlowDataSet"
-          defaultMessage="Reference To Flow DataSet"
+          defaultMessage="Flow"
         />
       ),
       dataIndex: 'referenceToFlowDataSet',
@@ -113,14 +113,14 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
       ],
     },
     {
-      title: <FormattedMessage id="processExchange.meanAmount" defaultMessage="Mean Amount" />,
+      title: <FormattedMessage id="processExchange.meanAmount" defaultMessage="Mean amount" />,
       dataIndex: 'meanAmount',
       sorter: false,
       search: false,
     },
     {
       title: (
-        <FormattedMessage id="processExchange.resultingAmount" defaultMessage="Resulting Amount" />
+        <FormattedMessage id="processExchange.resultingAmount" defaultMessage="Resulting amount" />
       ),
       dataIndex: 'resultingAmount',
       sorter: false,
@@ -131,7 +131,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
       title: (
         <FormattedMessage
           id="pages.flowproperty.referenceToReferenceUnitGroup"
-          defaultMessage="Reference Unit Group"
+          defaultMessage="Reference unit"
         />
       ),
       dataIndex: 'refUnitGroup',
@@ -148,7 +148,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
       title: (
         <FormattedMessage
           id="processExchange.dataDerivationTypeStatus"
-          defaultMessage="Data Derivation Type Status"
+          defaultMessage="Data derivation type / status"
         />
       ),
       dataIndex: 'dataDerivationTypeStatus',
@@ -159,7 +159,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
       title: (
         <FormattedMessage
           id="processExchange.quantitativeReference"
-          defaultMessage="Quantitative Reference"
+          defaultMessage="Quantitative reference"
         />
       ),
       dataIndex: 'quantitativeReference',
@@ -241,7 +241,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
           {
             <FormattedMessage
               id="pages.process.view.processInformation.baseName"
-              defaultMessage="Base Name"
+              defaultMessage="Base name"
             />
           }
         </Divider>
@@ -252,7 +252,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
         <Divider orientationMargin="0" orientation="left" plain>
           <FormattedMessage
             id="pages.process.view.processInformation.generalComment"
-            defaultMessage="General Comment"
+            defaultMessage="General comment on data set"
           />
         </Divider>
         <LangTextItemDescription
@@ -304,7 +304,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
           title={
             <FormattedMessage
               id="pages.process.view.processInformation.time"
-              defaultMessage="Time"
+              defaultMessage="Time representativeness"
             />
           }
         >
@@ -314,7 +314,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
               label={
                 <FormattedMessage
                   id="pages.process.view.processInformation.referenceYear"
-                  defaultMessage="Reference Year"
+                  defaultMessage="Reference year"
                 />
               }
               labelStyle={{ width: '140px' }}
@@ -325,7 +325,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
               id="pages.process.view.processInformation.timeRepresentativenessDescription"
-              defaultMessage="Time Representativeness Description"
+              defaultMessage="Time representativeness description"
             />
           </Divider>
           <LangTextItemDescription
@@ -337,8 +337,8 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
           size="small"
           title={
             <FormattedMessage
-              id="pages.process.view.processInformation.Geography:locationOfOperationSupplyOrProduction"
-              defaultMessage="Geography: Location Of Operation Supply Or Production"
+              id="pages.process.view.processInformation.locationOfOperationSupplyOrProduction"
+              defaultMessage="Location"
             />
           }
         >
@@ -360,7 +360,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
               id="pages.process.view.processInformation.descriptionOfRestrictions"
-              defaultMessage="Description Of Restrictions"
+              defaultMessage="Geographical representativeness description"
             />
           </Divider>
           <LangTextItemDescription
@@ -376,14 +376,14 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
           title={
             <FormattedMessage
               id="pages.process.view.processInformation.technology"
-              defaultMessage="Technology"
+              defaultMessage="Technological representativeness"
             />
           }
         >
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
               id="pages.process.view.processInformation.technologyDescriptionAndIncludedProcesses"
-              defaultMessage="Technology Description And Included Processes"
+              defaultMessage="Technology description including background system"
             />
           </Divider>
           <LangTextItemDescription
@@ -394,7 +394,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
               id="pages.process.view.processInformation.technologicalApplicability"
-              defaultMessage="Technological Applicability"
+              defaultMessage="Technical purpose of product or process"
             />
           </Divider>
           <LangTextItemDescription
@@ -405,7 +405,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
             title={
               <FormattedMessage
                 id="pages.process.view.processInformation.referenceToTechnologyFlowDiagrammOrPicture"
-                defaultMessage="Reference To Technology Flow Diagramm Or Picture"
+                defaultMessage="Flow diagramm(s) or picture(s)"
               />
             }
             data={
@@ -417,8 +417,8 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
         </Card>
         <Divider orientationMargin="0" orientation="left" plain>
           <FormattedMessage
-            id="pages.process.view.processInformation.mathematicalRelations:ModelDescription"
-            defaultMessage="Mathematical Relations: Model Description"
+            id="pages.process.view.processInformation.modelDescription"
+            defaultMessage="Model description"
           />
         </Divider>
         <LangTextItemDescription
@@ -433,7 +433,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
           title={
             <FormattedMessage
               id="pages.process.view.modellingAndValidation.lCIMethodAndAllocation"
-              defaultMessage="LCI Method And Allocation"
+              defaultMessage="LCI method and allocation"
             />
           }
         >
@@ -443,7 +443,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
               label={
                 <FormattedMessage
                   id="pages.process.view.modellingAndValidation.typeOfDataSet"
-                  defaultMessage="Type Of Data Set"
+                  defaultMessage="Type of data set"
                 />
               }
               labelStyle={{ width: '220px' }}
@@ -458,7 +458,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
               label={
                 <FormattedMessage
                   id="pages.process.view.modellingAndValidation.lCIMethodPrinciple"
-                  defaultMessage="LCI Method Principle"
+                  defaultMessage="LCI method principle"
                 />
               }
               labelStyle={{ width: '220px' }}
@@ -469,7 +469,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
               id="pages.process.view.modellingAndValidation.deviationsFromLCIMethodPrinciple"
-              defaultMessage="Deviations From LCI Method Principle"
+              defaultMessage="Deviation from LCI method principle / explanations"
             />
           </Divider>
           <LangTextItemDescription
@@ -485,7 +485,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
               label={
                 <FormattedMessage
                   id="pages.process.view.modellingAndValidation.lCIMethodApproaches"
-                  defaultMessage="LCI Method Approaches"
+                  defaultMessage="LCI method approaches"
                 />
               }
               labelStyle={{ width: '220px' }}
@@ -497,7 +497,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
               id="pages.process.view.modellingAndValidation.deviationsFromLCIMethodApproaches"
-              defaultMessage="Deviations From LCI Method Approaches"
+              defaultMessage="Deviations from LCI method approaches / explanations"
             />
           </Divider>
           <LangTextItemDescription
@@ -509,7 +509,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
               id="pages.process.view.modellingAndValidation.deviationsFromModellingConstants"
-              defaultMessage="Deviations From Modelling Constants"
+              defaultMessage="Deviation from modelling constants / explanations"
             />
           </Divider>
           <LangTextItemDescription
@@ -525,14 +525,14 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
           title={
             <FormattedMessage
               id="pages.process.view.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness"
-              defaultMessage="Data Sources Treatment And Representativeness"
+              defaultMessage="Data sources, treatment, and representativeness"
             />
           }
         >
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
               id="pages.process.view.modellingAndValidation.deviationsFromCutOffAndCompletenessPrinciples"
-              defaultMessage="Deviations From Cut Off And Completeness Principles"
+              defaultMessage="Deviation from data cut-off and completeness principles / explanations"
             />
           </Divider>
           <LangTextItemDescription
@@ -544,7 +544,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
               id="pages.process.view.modellingAndValidation.dataSelectionAndCombinationPrinciples"
-              defaultMessage="Data Selection And Combination Principles"
+              defaultMessage="Data selection and combination principles"
             />
           </Divider>
           <LangTextItemDescription
@@ -556,7 +556,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
               id="pages.process.view.modellingAndValidation.deviationsFromSelectionAndCombinationPrinciples"
-              defaultMessage="Deviations From Selection And Combination Principles"
+              defaultMessage="Deviation from data selection and combination principles / explanations"
             />
           </Divider>
           <LangTextItemDescription
@@ -568,7 +568,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
               id="pages.process.view.modellingAndValidation.dataTreatmentAndExtrapolationsPrinciples"
-              defaultMessage="Data Treatment And Extrapolations Principles"
+              defaultMessage="Data treatment and extrapolations principles"
             />
           </Divider>
           <LangTextItemDescription
@@ -580,7 +580,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
               id="pages.process.view.modellingAndValidation.deviationsFromTreatmentAndExtrapolationPrinciples"
-              defaultMessage="Deviations From Treatment And Extrapolation Principles"
+              defaultMessage="Deviation from data treatment and extrapolations principles / explanations"
             />
           </Divider>
           <LangTextItemDescription
@@ -594,7 +594,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
             title={
               <FormattedMessage
                 id="pages.process.view.modellingAndValidation.referenceToDataSource"
-                defaultMessage="Reference To Data Source"
+                defaultMessage="Data source(s) used for this data set"
               />
             }
             data={
@@ -607,7 +607,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
               id="pages.process.view.modellingAndValidation.useAdviceForDataSet"
-              defaultMessage="Use Advice For DataSet"
+              defaultMessage="Use advice for data set"
             />
           </Divider>
           <LangTextItemDescription
@@ -621,7 +621,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
         <Divider orientationMargin="0" orientation="left" plain>
           <FormattedMessage
             id="pages.process.view.modellingAndValidation.completenessOtherProblemField"
-            defaultMessage="Completeness Other Problem Field"
+            defaultMessage="Completeness other problem field(s)"
           />
         </Divider>
         <LangTextItemDescription
@@ -632,8 +632,8 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
           size="small"
           title={
             <FormattedMessage
-              id="pages.process.view.modellingAndValidation.validation:Review"
-              defaultMessage="Validation: Review"
+              id="pages.process.view.modellingAndValidation.Review"
+              defaultMessage="Review"
             />
           }
         >
@@ -643,7 +643,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
               label={
                 <FormattedMessage
                   id="pages.process.view.modellingAndValidation.type"
-                  defaultMessage="Type"
+                  defaultMessage="Type of review"
                 />
               }
               labelStyle={{ width: '100px' }}
@@ -655,7 +655,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
               id="pages.process.view.modellingAndValidation.reviewDetails"
-              defaultMessage="Review Details"
+              defaultMessage="Review details"
             />
           </Divider>
           <LangTextItemDescription
@@ -666,7 +666,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
             title={
               <FormattedMessage
                 id="pages.process.view.modellingAndValidation.referenceToNameOfReviewerAndInstitution"
-                defaultMessage="Reference To Name Of Reviewer And Institution"
+                defaultMessage="Reviewer name and institution"
               />
             }
             lang={lang}
@@ -701,8 +701,8 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
             key={0}
             label={
               <FormattedMessage
-                id="pages.process.view.administrativeInformation.dataEntryBy:TimeStamp"
-                defaultMessage="Data Entry By: Time Stamp"
+                id="pages.process.view.administrativeInformation.TimeStamp"
+                defaultMessage="Time stamp (last saved)"
               />
             }
             labelStyle={{ width: '220px' }}
@@ -716,7 +716,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
           title={
             <FormattedMessage
               id="pages.process.view.administrativeInformation.publicationAndOwnership"
-              defaultMessage="Publication And Ownership"
+              defaultMessage="Publication and ownership"
             />
           }
         >
@@ -726,7 +726,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
               label={
                 <FormattedMessage
                   id="pages.process.view.administrativeInformation.dateOfLastRevision"
-                  defaultMessage="Date Of Last Revision"
+                  defaultMessage="Date of last revision"
                 />
               }
               labelStyle={{ width: '180px' }}
@@ -743,7 +743,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
               label={
                 <FormattedMessage
                   id="pages.process.view.administrativeInformation.dataSetVersion"
-                  defaultMessage="Data Set Version"
+                  defaultMessage="Data set version"
                 />
               }
               labelStyle={{ width: '180px' }}
@@ -760,7 +760,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
               label={
                 <FormattedMessage
                   id="pages.process.view.administrativeInformation.permanentDataSetURI"
-                  defaultMessage="Permanent Data Set URI"
+                  defaultMessage="Permanent data set URI"
                 />
               }
               labelStyle={{ width: '200px' }}
@@ -775,7 +775,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
             title={
               <FormattedMessage
                 id="pages.process.view.administrativeInformation.referenceToOwnershipOfDataSet"
-                defaultMessage="Reference To Ownership Of Data Set"
+                defaultMessage="Owner of data set"
               />
             }
             lang={lang}
@@ -792,7 +792,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
               label={
                 <FormattedMessage
                   id="pages.process.view.administrativeInformation.copyright"
-                  defaultMessage="Copyright"
+                  defaultMessage="Copyright?"
                 />
               }
               labelStyle={{ width: '180px' }}
@@ -808,7 +808,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
               label={
                 <FormattedMessage
                   id="pages.process.view.administrativeInformation.licenseType"
-                  defaultMessage="License Type"
+                  defaultMessage="License type"
                 />
               }
               labelStyle={{ width: '180px' }}
@@ -874,7 +874,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
           title={
             <FormattedMessage
               id="pages.button.model.process"
-              defaultMessage="Process Infomation"
+              defaultMessage="Process infomation"
             ></FormattedMessage>
           }
           placement="left"
@@ -899,7 +899,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
 
       <Drawer
         title={
-          <FormattedMessage id="pages.process.drawer.title.view" defaultMessage="View Process" />
+          <FormattedMessage id="pages.process.drawer.title.view" defaultMessage="View process" />
         }
         width="90%"
         closable={false}

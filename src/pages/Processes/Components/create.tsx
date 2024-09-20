@@ -91,7 +91,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
         title={
           <FormattedMessage
             id="pages.process.drawer.title.create"
-            defaultMessage="Create Process"
+            defaultMessage="Create process"
           />
         }
         width="90%"
@@ -135,7 +135,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
               message.success(
                 <FormattedMessage
                   id="options.createsuccess"
-                  defaultMessage="Created Successfully!"
+                  defaultMessage="Created successfully!"
                 />,
               );
               formRefCreate.current?.resetFields();
