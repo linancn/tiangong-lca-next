@@ -52,8 +52,8 @@
     "not ie <= 10"
   ],
   "dependencies": {
-    "@ant-design/icons": "^5.4.0",
-    "@ant-design/pro-components": "^2.7.18",
+    "@ant-design/icons": "^5.5.1",
+    "@ant-design/pro-components": "^2.7.19",
     "@antv/xflow": "^2.1.13",
     "@supabase/supabase-js": "^2.45.4",
     "@umijs/route-utils": "^4.0.1",

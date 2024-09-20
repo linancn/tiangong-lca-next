@@ -1,9 +1,10 @@
-import { getLang, getLangText } from '@/services/general/util';
-import { PageContainer } from '@ant-design/pro-components';
 import { Card, Col, Divider, Row, Statistic, StatisticProps, theme } from 'antd';
-import Meta from 'antd/es/card/Meta';
 import React, { useEffect, useState } from 'react';
+import { getLang, getLangText } from '@/services/general/util';
+
 import CountUp from 'react-countup';
+import Meta from 'antd/es/card/Meta';
+import { PageContainer } from '@ant-design/pro-components';
 import { useIntl } from 'umi';
 
 const Welcome: React.FC = () => {
@@ -85,7 +86,7 @@ const Welcome: React.FC = () => {
           '@xml:lang': 'zh',
           '#text': (
             <>
-              天工数据库基于透明和可靠的价值观构建，确保每一条数据来源清晰且经过仔细验证，基于可信的数据支撑准确的评估。
+              天工数据库基于透明和可靠的价值观构建，确保每一条数据来源清晰且经过仔细验证，基于可信数据支撑准确的评估。
             </>
           ),
         },
