@@ -68,4 +68,6 @@ export default {
   'menu.tgdata.unitgroups': '单位组',
   'menu.tgdata.sources': '来源',
   'menu.tgdata.contacts': '联系人',
+
+  'menu.password_forgot': '忘记密码',
 };

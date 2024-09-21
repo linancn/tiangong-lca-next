@@ -21,6 +21,7 @@ export default {
   'pages.unitgroup.modellingAndValidation': 'Modelling and validation',
   'pages.unitgroup.administrativeInformation': 'Administrative information', 
   'pages.unitgroup.units': 'Units',
+  'pages.unitgroup.id': 'ID',
   'pages.unitgroup.generalComment': 'General comment',
   'pages.unitgroup.name': 'Name of unit group',
   'pages.unitgroup.classification': 'Classification',

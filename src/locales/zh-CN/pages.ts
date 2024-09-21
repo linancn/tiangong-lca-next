@@ -88,4 +88,6 @@ export default {
   'pages.account.password.new2': '确认密码',
   'pages.account.password.changed.success': '密码修改成功！',
   'pages.account.password.setted.success': '密码设置成功！',
+
+  'pages.login.passwordForgot.tab': '账户',
 };

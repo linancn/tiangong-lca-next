@@ -5,4 +5,6 @@ export default {
   'pages.product.belongToFlow.id': 'ID',
   'pages.product.belongToFlow.name': 'Name',
   'pages.product.belongToFlow.generalComment': 'General comment',
+
+  'pages.product.productInformation.id': 'ID',
 };

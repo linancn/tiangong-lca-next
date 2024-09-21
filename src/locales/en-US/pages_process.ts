@@ -75,8 +75,8 @@ export default {
   'pages.process.view.modellingAndValidation.referenceToNameOfReviewerAndInstitution':
     'Reviewer name and institution',
 
-  // 'pages.process.view.administrativeInformation.dataGenerator:RreferenceToPersonOrEntityGeneratingTheDataSet':
-    // '数据生成者：生成数据集的人员或实体的引用',//未改
+  'pages.process.view.administrativeInformation.RreferenceToPersonOrEntityGeneratingTheDataSet':
+    'Data set generator / modeller',
   'pages.process.view.administrativeInformation.TimeStamp': 'Time stamp (last saved)',
   'pages.process.view.administrativeInformation.publicationAndOwnership': 'Publication and ownership',
   'pages.process.view.administrativeInformation.dateOfLastRevision': 'Date of last revision',
@@ -109,6 +109,7 @@ export default {
   'pages.process.view.exchange.resultingAmount': 'Resulting amount',
   'pages.process.view.exchange.dataDerivationTypeStatus': 'Data derivation type / status',
   'pages.process.view.exchange.generalComment': 'Comment',
+  'pages.process.view.exchange.quantitativeReference': 'Quantitative reference',
   'pages.process.view.exchange.referenceToReferenceFlow': 'Reference flow(s)',
   'pages.process.view.exchange.functionalUnitOrOther': 'Functional unit, Production period, or Other parameter',
   'pages.process.view.exchange.selectadirection': 'Selecta direction',

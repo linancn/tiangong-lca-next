@@ -71,8 +71,8 @@ export default {
     '审查员姓名及机构',
 
   'pages.process.view.administrativeInformation': '管理信息',
-  'pages.process.view.administrativeInformation.dataGenerator:RreferenceToPersonOrEntityGeneratingTheDataSet':
-    '数据生成者：生成数据集的人员或实体的引用',
+  'pages.process.view.administrativeInformation.RreferenceToPersonOrEntityGeneratingTheDataSet':
+    '数据集生成者/建模者',
   'pages.process.view.administrativeInformation.TimeStamp': '时间戳（最后保存）',
   'pages.process.view.administrativeInformation.publicationAndOwnership': '出版和所有权',
   'pages.process.view.administrativeInformation.dateOfLastRevision': '最后修订日期',
