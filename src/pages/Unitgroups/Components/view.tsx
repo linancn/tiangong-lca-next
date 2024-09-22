@@ -18,6 +18,7 @@ import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import UnitView from './Unit/view';
+import { complianceOptions } from './optiondata';
 
 type Props = {
   id: string;
@@ -26,6 +27,12 @@ type Props = {
   lang: string;
   buttonType: string;
 };
+
+const getComplianceLabel = (value: string) => {
+  const option = complianceOptions.find((opt) => opt.value === value);
+  return option ? option.label : '-';
+};
+
 const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   // const [footerButtons, setFooterButtons] = useState<JSX.Element>();
@@ -239,9 +246,9 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
             }
             labelStyle={{ width: '240px' }}
           >
-            {initData.modellingAndValidation?.complianceDeclarations?.compliance?.[
-              'common:approvalOfOverallCompliance'
-            ] ?? '-'}
+            {getComplianceLabel(initData.modellingAndValidation?.complianceDeclarations?.compliance?.[
+                'common:approvalOfOverallCompliance'
+              ] ?? '-')}
           </Descriptions.Item>
         </Descriptions>
       </>

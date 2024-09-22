@@ -12,7 +12,7 @@ import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } fro
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
-import { flowTypeOptions } from './optiondata';
+import { flowTypeOptions, complianceOptions } from './optiondata';
 import PropertyView from './Property/view';
 
 type Props = {
@@ -20,6 +20,12 @@ type Props = {
   lang: string;
   buttonType: string;
 };
+
+const getComplianceLabel = (value: string) => {
+  const option = complianceOptions.find((opt) => opt.value === value);
+  return option ? option.label : '-';
+};
+
 const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('flowInformation');
@@ -331,9 +337,9 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
             }
             labelStyle={{ width: '240px' }}
           >
-            {initData?.modellingAndValidation?.complianceDeclarations?.compliance?.[
+            {getComplianceLabel(initData?.modellingAndValidation?.complianceDeclarations?.compliance?.[
               'common:approvalOfOverallCompliance'
-            ] ?? '-'}
+            ] ?? '-')}
           </Descriptions.Item>
         </Descriptions>
         {/* <br />
