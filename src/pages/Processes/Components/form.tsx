@@ -523,7 +523,7 @@ export const ProcessForm: FC<Props> = ({
           </Form.Item>
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
-              id="pages.process.view.modellingAndValidation.DeviationsFromLCIMethodApproaches"
+              id="pages.process.view.modellingAndValidation.deviationsFromLCIMethodApproaches"
               defaultMessage="Deviations from LCI method approaches / explanations"
             />
           </Divider>
@@ -535,7 +535,7 @@ export const ProcessForm: FC<Props> = ({
             ]}
             label={
               <FormattedMessage
-                id="pages.process.view.modellingAndValidation.DeviationsFromLCIMethodApproaches"
+                id="pages.process.view.modellingAndValidation.deviationsFromLCIMethodApproaches"
                 defaultMessage="Deviations from LCI method approaches / explanations"
               />
             }
@@ -793,8 +793,8 @@ export const ProcessForm: FC<Props> = ({
           ]}
           label={
             <FormattedMessage
-              id="pages.process.view.administrativeInformation.dataGenerator:RreferenceToPersonOrEntityGeneratingTheDataSet"
-              defaultMessage="Data Generator: Rreference To Person Or Entity Generating The Data Set"
+              id="pages.process.view.administrativeInformation.RreferenceToPersonOrEntityGeneratingTheDataSet"
+              defaultMessage="Data set generator / modeller"
             />
           }
           lang={lang}

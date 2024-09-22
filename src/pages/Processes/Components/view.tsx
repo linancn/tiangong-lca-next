@@ -684,8 +684,8 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
         <ContactSelectDescription
           title={
             <FormattedMessage
-              id="pages.process.view.administrativeInformation.dataGenerator:RreferenceToPersonOrEntityGeneratingTheDataSet"
-              defaultMessage="Data Generator: Rreference To Person Or Entity Generating The Data Set"
+              id="pages.process.view.administrativeInformation.RreferenceToPersonOrEntityGeneratingTheDataSet"
+              defaultMessage="Data set generator / modeller"
             />
           }
           lang={lang}

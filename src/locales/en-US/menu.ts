@@ -68,4 +68,6 @@ export default {
   'menu.tgdata.unitgroups': 'Unit Groups',
   'menu.tgdata.sources': 'Sources',
   'menu.tgdata.contacts': 'Contacts',
+
+  'menu.password_forgot': 'Forgot Password',
 };
