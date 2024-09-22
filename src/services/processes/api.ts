@@ -1,5 +1,3 @@
-import { supabase } from '@/services/supabase';
-import { SortOrder } from 'antd/es/table/interface';
 import {
   classificationToString,
   genClassificationZH,
@@ -7,7 +5,10 @@ import {
   jsonToList,
 } from '../general/util';
 import { getILCDClassification, getILCDLocationByValues } from '../ilcd/api';
+
+import { SortOrder } from 'antd/es/table/interface';
 import { genProcessJsonOrdered } from './util';
+import { supabase } from '@/services/supabase';
 
 export async function createProcess(data: any) {
   // const newID = v4();
@@ -53,7 +54,7 @@ export async function getProcessTableAll(
   lang: string,
   dataSource: string,
 ) {
-  const sortBy = Object.keys(sort)[0] ?? 'created_at';
+  const sortBy = Object.keys(sort)[0] ?? 'modified_at';
   const orderBy = sort[sortBy] ?? 'descend';
 
   const selectStr = `
@@ -63,7 +64,7 @@ export async function getProcessTableAll(
     json->processDataSet->processInformation->dataSetInformation->"common:generalComment",
     json->processDataSet->processInformation->time->>"common:referenceYear",
     json->processDataSet->processInformation->geography->locationOfOperationSupplyOrProduction->>"@location",
-    created_at
+    modified_at
   `;
 
   let result: any = {};
@@ -133,7 +134,7 @@ export async function getProcessTableAll(
               classification: classificationToString(classificationZH ?? {}),
               referenceYear: i['common:referenceYear'] ?? '-',
               location: location ?? '-',
-              createdAt: new Date(i.created_at),
+              modifiedAt: new Date(i.modified_at),
             };
           } catch (e) {
             console.error(e);
@@ -160,7 +161,7 @@ export async function getProcessTableAll(
             classification: classificationToString(i['common:class'] ?? {}),
             referenceYear: i['common:referenceYear'] ?? '-',
             location: location,
-            createdAt: new Date(i.created_at),
+            modifiedAt: new Date(i.modified_at),
           };
         } catch (e) {
           console.error(e);
@@ -268,7 +269,7 @@ export async function getProcessTablePgroongaSearch(
               classification: classificationToString(classificationZH),
               referenceYear: dataInfo?.time?.['common:referenceYear'] ?? '-',
               location: location ?? '-',
-              createdAt: new Date(i?.created_at),
+              modifiedAt: new Date(i?.modified_at),
             };
           } catch (e) {
             console.error(e);
@@ -308,7 +309,7 @@ export async function getProcessTablePgroongaSearch(
             ),
             referenceYear: dataInfo?.time?.['common:referenceYear'] ?? '-',
             location: location ?? '-',
-            createdAt: new Date(i?.created_at),
+            modifiedAt: new Date(i?.modified_at),
           };
         } catch (e) {
           console.error(e);
@@ -331,13 +332,13 @@ export async function getProcessTablePgroongaSearch(
 }
 
 export async function getProcessDetail(id: string) {
-  const result = await supabase.from('processes').select('json, created_at').eq('id', id);
+  const result = await supabase.from('processes').select('json, modified_at').eq('id', id);
   if (result.data && result.data.length > 0) {
     const data = result.data[0];
     return Promise.resolve({
       data: {
         json: data.json,
-        createdAt: data?.created_at,
+        modifiedAt: data?.modified_at,
       },
       success: true,
     });

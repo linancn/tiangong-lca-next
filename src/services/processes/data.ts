@@ -6,7 +6,7 @@ export type ProcessTable = {
   classification: string;
   referenceYear: string;
   location: string;
-  createdAt: Date;
+  modifiedAt: Date;
 };
 
 export type ProcessExchangeTable = {
