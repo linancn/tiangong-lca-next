@@ -1,13 +1,14 @@
-import { supabase } from '@/services/supabase';
-import { SortOrder } from 'antd/lib/table/interface';
 import {
   classificationToString,
   genClassificationZH,
   getLangText,
   jsonToList,
 } from '../general/util';
-import { getILCDClassification } from '../ilcd/api';
+
+import { SortOrder } from 'antd/lib/table/interface';
 import { genContactJsonOrdered } from './util';
+import { getILCDClassification } from '../ilcd/api';
+import { supabase } from '@/services/supabase';
 
 export async function createContact(data: any) {
   // const newID = v4();
@@ -57,7 +58,7 @@ export async function getContactTableAll(
   lang: string,
   dataSource: string,
 ) {
-  const sortBy = Object.keys(sort)[0] ?? 'created_at';
+  const sortBy = Object.keys(sort)[0] ?? 'modified_at';
   const orderBy = sort[sortBy] ?? 'descend';
 
   const selectStr = `
@@ -66,7 +67,7 @@ export async function getContactTableAll(
     json->contactDataSet->contactInformation->dataSetInformation->"common:name",
     json->contactDataSet->contactInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
     json->contactDataSet->contactInformation->dataSetInformation->>email,
-    created_at
+    modified_at
   `;
 
   let result: any = {};
@@ -126,7 +127,7 @@ export async function getContactTableAll(
             name: getLangText(i?.['common:name'], lang),
             classification: classificationToString(classificationZH),
             email: i?.email ?? '-',
-            createdAt: new Date(i?.created_at),
+            modifiedAt: new Date(i?.modified_at),
           };
         } catch (e) {
           console.error(e);
@@ -202,7 +203,7 @@ export async function getContactTablePgroongaSearch(
             name: getLangText(dataInfo?.['common:name'], lang),
             classification: classificationToString(classificationZH),
             email: dataInfo?.email ?? '-',
-            createdAt: new Date(i?.created_at),
+            modifiedAt: new Date(i?.modified_at),
           };
         } catch (e) {
           console.error(e);
@@ -224,13 +225,13 @@ export async function getContactTablePgroongaSearch(
 }
 
 export async function getContactDetail(id: string) {
-  const result = await supabase.from('contacts').select('json, created_at').eq('id', id);
+  const result = await supabase.from('contacts').select('json, modified_at').eq('id', id);
   if (result.data && result.data.length > 0) {
     const data = result.data[0];
     return Promise.resolve({
       data: {
         json: data.json,
-        createdAt: data?.created_at,
+        modifiedAt: data?.modified_at,
       },
       success: true,
     });
