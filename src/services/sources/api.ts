@@ -1,13 +1,14 @@
-import { supabase } from '@/services/supabase';
-import { SortOrder } from 'antd/lib/table/interface';
 import {
   classificationToString,
   genClassificationZH,
   getLangText,
   jsonToList,
 } from '../general/util';
-import { getILCDClassification } from '../ilcd/api';
+
+import { SortOrder } from 'antd/lib/table/interface';
 import { genSourceJsonOrdered } from './util';
+import { getILCDClassification } from '../ilcd/api';
+import { supabase } from '@/services/supabase';
 
 export async function createSource(data: any) {
   // const newID = v4();/
@@ -57,7 +58,7 @@ export async function getSourceTableAll(
   lang: string,
   dataSource: string,
 ) {
-  const sortBy = Object.keys(sort)[0] ?? 'created_at';
+  const sortBy = Object.keys(sort)[0] ?? 'modified_at';
   const orderBy = sort[sortBy] ?? 'descend';
 
   const selectStr = `
@@ -66,7 +67,7 @@ export async function getSourceTableAll(
     json->sourceDataSet->sourceInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
     json->sourceDataSet->sourceInformation->dataSetInformation->>sourceCitation,
     json->sourceDataSet->sourceInformation->dataSetInformation->>publicationType,
-    created_at
+    modified_at
   `;
 
   let result: any = {};
@@ -121,7 +122,7 @@ export async function getSourceTableAll(
               classification: classificationToString(classificationZH),
               sourceCitation: i.sourceCitation ?? '-',
               publicationType: i.publicationType ?? '-',
-              created_at: new Date(i.created_at),
+              modifiedAt: new Date(i.modified_at),
             };
           } catch (e) {
             console.error(e);
@@ -141,7 +142,7 @@ export async function getSourceTableAll(
             classification: classificationToString(i?.['common:class']),
             sourceCitation: i?.sourceCitation ?? '-',
             publicationType: i?.publicationType ?? '-',
-            created_at: new Date(i?.created_at),
+            modifiedAt: new Date(i?.modified_at),
           };
         } catch (e) {
           console.error(e);
@@ -219,7 +220,7 @@ export async function getSourceTablePgroongaSearch(
               classification: classificationToString(classificationZH),
               sourceCitation: dataInfo?.sourceCitation ?? '-',
               publicationType: dataInfo?.publicationType ?? '-',
-              created_at: new Date(i?.created_at),
+              modifiedAt: new Date(i?.modified_at),
             };
           } catch (e) {
             console.error(e);
@@ -242,7 +243,7 @@ export async function getSourceTablePgroongaSearch(
             ),
             sourceCitation: dataInfo?.sourceCitation ?? '-',
             publicationType: dataInfo?.publicationType ?? '-',
-            created_at: new Date(dataInfo?.created_at),
+            modifiedAt: new Date(dataInfo?.modified_at),
           };
         } catch (e) {
           console.error(e);
@@ -265,13 +266,13 @@ export async function getSourceTablePgroongaSearch(
 }
 
 export async function getSourceDetail(id: string) {
-  const result = await supabase.from('sources').select('json, created_at').eq('id', id);
+  const result = await supabase.from('sources').select('json, modified_at').eq('id', id);
   if (result.data && result.data.length > 0) {
     const data = result.data[0];
     return Promise.resolve({
       data: {
         json: data.json,
-        createdAt: data?.created_at,
+        modifiedAt: data?.modified_at,
       },
       success: true,
     });

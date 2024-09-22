@@ -6,5 +6,5 @@ export type SourceTable = {
   classification: string;
   sourceCitation: string;
   publicationType: string;
-  created_at: Date;
+  modifiedAt: Date;
 };
