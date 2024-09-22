@@ -5,6 +5,7 @@ export default {
   'pages.table.title.description': '描述',
   'pages.table.title.generalComment': '概述',
   'pages.table.title.createdAt': '创建时间',
+  'pages.table.title.updatedAt': '更新时间',
   'pages.table.title.option': '操作',
 
   'pages.button.view': '查看',

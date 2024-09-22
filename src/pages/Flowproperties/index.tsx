@@ -1,23 +1,24 @@
+import type { ActionType, ProColumns } from '@ant-design/pro-table';
+import { Card, Input, Space, Tooltip } from 'antd';
+import { FormattedMessage, useIntl, useLocation } from 'umi';
 import {
   getFlowpropertyTableAll,
   getFlowpropertyTablePgroongaSearch,
 } from '@/services/flowproperties/api';
-import { FlowpropertyTable } from '@/services/flowproperties/data';
-import { ListPagination } from '@/services/general/data';
-import { getLang } from '@/services/general/util';
-import { PageContainer } from '@ant-design/pro-components';
-import type { ActionType, ProColumns } from '@ant-design/pro-table';
-import ProTable from '@ant-design/pro-table';
-import { Card, Input, Space, Tooltip } from 'antd';
-import { SearchProps } from 'antd/es/input/Search';
-import type { FC } from 'react';
 import { useRef, useState } from 'react';
-import { FormattedMessage, useIntl, useLocation } from 'umi';
-import ReferenceUnit from '../Unitgroups/Components/Unit/reference';
+
+import type { FC } from 'react';
 import FlowpropertiesCreate from './Components/create';
 import FlowpropertiesDelete from './Components/delete';
 import FlowpropertiesEdit from './Components/edit';
+import { FlowpropertyTable } from '@/services/flowproperties/data';
 import FlowpropertyView from './Components/view';
+import { ListPagination } from '@/services/general/data';
+import { PageContainer } from '@ant-design/pro-components';
+import ProTable from '@ant-design/pro-table';
+import ReferenceUnit from '../Unitgroups/Components/Unit/reference';
+import { SearchProps } from 'antd/es/input/Search';
+import { getLang } from '@/services/general/util';
 
 const { Search } = Input;
 
@@ -76,8 +77,8 @@ const TableList: FC = () => {
       },
     },
     {
-      title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created at" />,
-      dataIndex: 'created_at',
+      title: <FormattedMessage id="pages.table.title.updatedAt" defaultMessage="Updated at" />,
+      dataIndex: 'modifiedAt',
       valueType: 'dateTime',
       sorter: false,
       search: false,

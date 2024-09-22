@@ -5,5 +5,5 @@ export type FlowpropertyTable = {
   generalComment: string;
   refUnitGroupId: string;
   refUnitGroup: string;
-  created_at: Date;
+  modifiedAt: Date;
 };

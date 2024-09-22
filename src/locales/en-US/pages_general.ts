@@ -5,6 +5,7 @@ export default {
   'pages.table.title.generalComment': 'General comment',
   'pages.table.title.classification': 'Classification',
   'pages.table.title.createdAt': 'Created at',
+  'pages.table.title.updatedAt': 'Updated at',
   'pages.table.title.option': 'Option',
 
   'pages.button.create': 'Create',

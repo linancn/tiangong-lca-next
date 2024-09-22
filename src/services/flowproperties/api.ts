@@ -1,15 +1,14 @@
-import { supabase } from '@/services/supabase';
-import { SortOrder } from 'antd/lib/table/interface';
 import {
-  // classificationToJson,
   classificationToString,
   genClassificationZH,
-  // getLangList,
   getLangText,
   jsonToList,
 } from '../general/util';
-import { getILCDClassification } from '../ilcd/api';
+
+import { SortOrder } from 'antd/lib/table/interface';
 import { genFlowpropertyJsonOrdered } from './util';
+import { getILCDClassification } from '../ilcd/api';
+import { supabase } from '@/services/supabase';
 
 export async function createFlowproperties(data: any) {
   // const newID = v4();
@@ -60,7 +59,7 @@ export async function getFlowpropertyTableAll(
   lang: string,
   dataSource: string,
 ) {
-  const sortBy = Object.keys(sort)[0] ?? 'created_at';
+  const sortBy = Object.keys(sort)[0] ?? 'modified_at';
   const orderBy = sort[sortBy] ?? 'descend';
 
   const selectStr = `
@@ -70,7 +69,7 @@ export async function getFlowpropertyTableAll(
     json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->"common:generalComment",
     json->flowPropertyDataSet->flowPropertiesInformation->quantitativeReference->referenceToReferenceUnitGroup->>"@refObjectId",
     json->flowPropertyDataSet->flowPropertiesInformation->quantitativeReference->referenceToReferenceUnitGroup->"common:shortDescription",
-    created_at
+    modified_at
   `;
 
   let result: any = {};
@@ -128,7 +127,7 @@ export async function getFlowpropertyTableAll(
               generalComment: getLangText(i?.['common:generalComment'], lang),
               refUnitGroupId: i?.['@refObjectId'] ?? '-',
               refUnitGroup: getLangText(i?.['common:shortDescription'], lang),
-              created_at: new Date(i?.created_at),
+              modifiedAt: new Date(i?.modified_at),
             };
           } catch (e) {
             console.error(e);
@@ -149,7 +148,7 @@ export async function getFlowpropertyTableAll(
             generalComment: getLangText(i?.['common:generalComment'], lang),
             refUnitGroupId: i?.['@refObjectId'] ?? '-',
             refUnitGroup: getLangText(i?.['common:shortDescription'], lang),
-            created_at: new Date(i?.created_at),
+            modifiedAt: new Date(i?.modified_at),
           };
         } catch (e) {
           console.error(e);
@@ -240,7 +239,7 @@ export async function getFlowpropertyTablePgroongaSearch(
                 ] ?? {},
                 lang,
               ),
-              created_at: new Date(i?.created_at),
+              modifiedAt: new Date(i?.modified_at),
             };
           } catch (e) {
             console.error(e);
@@ -276,7 +275,7 @@ export async function getFlowpropertyTablePgroongaSearch(
               ] ?? {},
               lang,
             ),
-            created_at: new Date(i?.created_at),
+            modifiedAt: new Date(i?.modified_at),
           };
         } catch (e) {
           console.error(e);
@@ -299,14 +298,14 @@ export async function getFlowpropertyTablePgroongaSearch(
 }
 
 export async function getFlowpropertyDetail(id: string) {
-  const result = await supabase.from('flowproperties').select('json, created_at').eq('id', id);
+  const result = await supabase.from('flowproperties').select('json, modified_at').eq('id', id);
   if (result.data && result.data.length > 0) {
     const data = result.data[0];
     return Promise.resolve({
       data: {
         id: id,
         json: data.json,
-        createdAt: data?.created_at,
+        modifiedAt: data?.modified_at,
       },
       success: true,
     });
