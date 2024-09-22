@@ -1,21 +1,22 @@
-import { getFlowTableAll, getFlowTablePgroongaSearch } from '@/services/flows/api';
-import { FlowTable } from '@/services/flows/data';
-import { ListPagination } from '@/services/general/data';
-import { getLang } from '@/services/general/util';
-import { PageContainer } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
-import ProTable from '@ant-design/pro-table';
 import { Card, Input, Space, Tooltip } from 'antd';
-import { SearchProps } from 'antd/es/input/Search';
-import type { FC } from 'react';
-import { useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
+import { getFlowTableAll, getFlowTablePgroongaSearch } from '@/services/flows/api';
+import { useRef, useState } from 'react';
+
+import type { FC } from 'react';
+import FlowModel from './Components/model';
+import { FlowTable } from '@/services/flows/data';
 import FlowsCreate from './Components/create';
 import FlowsDelete from './Components/delete';
 import FlowsEdit from './Components/edit';
-import FlowModel from './Components/model';
-import { flowTypeOptions } from './Components/optiondata';
 import FlowsView from './Components/view';
+import { ListPagination } from '@/services/general/data';
+import { PageContainer } from '@ant-design/pro-components';
+import ProTable from '@ant-design/pro-table';
+import { SearchProps } from 'antd/es/input/Search';
+import { flowTypeOptions } from './Components/optiondata';
+import { getLang } from '@/services/general/util';
 
 const { Search } = Input;
 
@@ -81,8 +82,8 @@ const TableList: FC = () => {
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created at" />,
-      dataIndex: 'created_at',
+      title: <FormattedMessage id="pages.table.title.updatedAt" defaultMessage="Updated at" />,
+      dataIndex: 'modifiedAt',
       valueType: 'dateTime',
       sorter: false,
       search: false,

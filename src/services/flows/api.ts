@@ -1,14 +1,15 @@
-import { supabase } from '@/services/supabase';
-import { FunctionRegion } from '@supabase/supabase-js';
-import { SortOrder } from 'antd/lib/table/interface';
 import {
   classificationToString,
   genClassificationZH,
   getLangText,
   jsonToList,
 } from '../general/util';
-import { getILCDFlowCategorizationAll } from '../ilcd/api';
+
+import { FunctionRegion } from '@supabase/supabase-js';
+import { SortOrder } from 'antd/lib/table/interface';
 import { genFlowJsonOrdered } from './util';
+import { getILCDFlowCategorizationAll } from '../ilcd/api';
+import { supabase } from '@/services/supabase';
 
 export async function createFlows(data: any) {
   // const newID = v4();
@@ -59,7 +60,7 @@ export async function getFlowTableAll(
   lang: string,
   dataSource: string,
 ) {
-  const sortBy = Object.keys(sort)[0] ?? 'created_at';
+  const sortBy = Object.keys(sort)[0] ?? 'modified_at';
   const orderBy = sort[sortBy] ?? 'descend';
 
   const selectStr = `
@@ -70,7 +71,7 @@ export async function getFlowTableAll(
     json->flowDataSet->flowInformation->dataSetInformation->>CASNumber,
     json->flowDataSet->modellingAndValidation->LCIMethod->>typeOfDataSet,
     json->flowDataSet->flowProperties->flowProperty->referenceToFlowPropertyDataSet,
-    created_at
+    modified_at
   `;
 
   let result: any = {};
@@ -136,7 +137,7 @@ export async function getFlowTableAll(
               synonyms: getLangText(i?.['common:synonyms'], lang),
               CASNumber: i?.CASNumber ?? '-',
               refFlowPropertyId: i?.referenceToFlowPropertyDataSet?.['@refObjectId'] ?? '-',
-              created_at: new Date(i?.created_at),
+              modifiedAt: new Date(i?.modified_at),
             };
           } catch (e) {
             console.error(e);
@@ -158,7 +159,7 @@ export async function getFlowTableAll(
             synonyms: getLangText(i['common:synonyms'], lang),
             CASNumber: i.CASNumber ?? '-',
             refFlowPropertyId: i.referenceToFlowPropertyDataSet?.['@refObjectId'] ?? '-',
-            created_at: new Date(i.created_at),
+            modifiedAt: new Date(i.modified_at),
           };
         } catch (e) {
           console.error(e);
@@ -251,7 +252,7 @@ export async function getFlowTablePgroongaSearch(
                 i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet ?? '-',
               classification: classificationToString(classificationZH),
               CASNumber: dataInfo?.CASNumber ?? '-',
-              created_at: new Date(i?.created_at),
+              modifiedAt: new Date(i?.modified_at),
             };
           } catch (e) {
             console.error(e);
@@ -277,7 +278,7 @@ export async function getFlowTablePgroongaSearch(
             ),
             flowType: i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet ?? '-',
             CASNumber: dataInfo?.CASNumber ?? '-',
-            created_at: new Date(i?.created_at),
+            modifiedAt: new Date(i?.modified_at),
           };
         } catch (e) {
           console.error(e);
@@ -374,14 +375,14 @@ export async function flow_hybrid_search(
 }
 
 export async function getFlowDetail(id: string) {
-  const result = await supabase.from('flows').select('json, created_at').eq('id', id);
+  const result = await supabase.from('flows').select('json, modified_at').eq('id', id);
   if (result.data && result.data.length > 0) {
     const data = result.data[0];
     return Promise.resolve({
       data: {
         id: id,
         json: data.json,
-        createdAt: data?.created_at,
+        modifiedAt: data?.modified_at,
       },
       success: true,
     });

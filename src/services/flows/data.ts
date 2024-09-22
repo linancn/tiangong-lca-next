@@ -6,14 +6,14 @@ export type FlowTable = {
   flowType: string;
   CASNumber: string;
   refFlowPropertyId: string;
-  created_at: Date;
+  modifiedAt: Date;
 };
 
 export type FlowModelTable = {
   id: string;
   name: string;
   description: string;
-  created_at: Date;
+  modifiedAt: Date;
 };
 
 export type FlowpropertyTabTable = {
