@@ -10,6 +10,7 @@ import { Button, Card, Descriptions, Divider, Drawer, Spin, Tooltip } from 'antd
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
+import { publicationTypeOptions } from './optiondata';
 import SourceSelectDescription from './select/description';
 type Props = {
   id: string;
@@ -18,6 +19,12 @@ type Props = {
   // actionRef: React.MutableRefObject<ActionType | undefined>;
   lang: string;
 };
+
+const getPublicationTypeLabel = (value: string) => {
+  const option = publicationTypeOptions.find((opt) => opt.value === value);
+  return option ? option.label : '-';
+};
+
 const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
   const [activeTabKey, setActiveTabKey] = useState<string>('sourceInformation');
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -131,7 +138,7 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
             }
             labelStyle={{ width: '180px' }}
           >
-            {initData.sourceInformation?.dataSetInformation?.publicationType ?? '-'}
+            {getPublicationTypeLabel(initData.sourceInformation?.dataSetInformation?.publicationType)}
           </Descriptions.Item>
         </Descriptions>
         <br />
