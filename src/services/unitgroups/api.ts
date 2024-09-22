@@ -1,13 +1,14 @@
-import { supabase } from '@/services/supabase';
-import { SortOrder } from 'antd/lib/table/interface';
 import {
   classificationToString,
   genClassificationZH,
   getLangText,
   jsonToList,
 } from '../general/util';
-import { getILCDClassification } from '../ilcd/api';
+
+import { SortOrder } from 'antd/lib/table/interface';
 import { genUnitGroupJsonOrdered } from './util';
+import { getILCDClassification } from '../ilcd/api';
+import { supabase } from '@/services/supabase';
 
 const table_name = 'unitgroups';
 
@@ -60,7 +61,7 @@ export async function getUnitGroupTableAll(
   lang: string,
   dataSource: string,
 ) {
-  const sortBy = Object.keys(sort)[0] ?? 'created_at';
+  const sortBy = Object.keys(sort)[0] ?? 'modified_at';
   const orderBy = sort[sortBy] ?? 'descend';
 
   const selectStr = `
@@ -69,7 +70,7 @@ export async function getUnitGroupTableAll(
         json->unitGroupDataSet->unitGroupInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
         json->unitGroupDataSet->unitGroupInformation->quantitativeReference->>referenceToReferenceUnit,
         json->unitGroupDataSet->units->unit,
-        created_at
+        modified_at
     `;
 
   let result: any = {};
@@ -131,7 +132,7 @@ export async function getUnitGroupTableAll(
               refUnitId: i?.referenceToReferenceUnit ?? '-',
               refUnitName: refUnit?.name ?? '-',
               refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
-              createdAt: new Date(i?.created_at),
+              modifiedAt: new Date(i?.modified_at),
             };
           } catch (e) {
             console.error(e);
@@ -156,7 +157,7 @@ export async function getUnitGroupTableAll(
             refUnitId: i?.referenceToReferenceUnit ?? '-',
             refUnitName: refUnit?.name ?? '-',
             refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
-            createdAt: new Date(i?.created_at),
+            modifiedAt: new Date(i?.modified_at),
           };
         } catch (e) {
           console.error(e);
@@ -241,7 +242,7 @@ export async function getUnitGroupTablePgroongaSearch(
               refUnitId: refUnitId,
               refUnitName: refUnit?.name ?? '-',
               refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
-              createdAt: new Date(i?.created_at),
+              modifiedAt: new Date(i?.modified_at),
             };
           } catch (e) {
             console.error(e);
@@ -272,7 +273,7 @@ export async function getUnitGroupTablePgroongaSearch(
             refUnitId: refUnitId,
             refUnitName: refUnit?.name ?? '-',
             refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
-            createdAt: new Date(i?.created_at),
+            modifiedAt: new Date(i?.modified_at),
           };
         } catch (e) {
           console.error(e);
@@ -295,13 +296,13 @@ export async function getUnitGroupTablePgroongaSearch(
 }
 
 export async function getUnitGroupDetail(id: string) {
-  const result = await supabase.from(table_name).select('json, created_at').eq('id', id);
+  const result = await supabase.from(table_name).select('json, modified_at').eq('id', id);
   if (result.data && result.data.length > 0) {
     const data = result.data[0];
     return Promise.resolve({
       data: {
         json: data?.json,
-        createdAt: data?.created_at,
+        modifiedAt: data?.modified_at,
       },
       success: true,
     });

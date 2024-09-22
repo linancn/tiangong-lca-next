@@ -1,19 +1,20 @@
-import { ListPagination } from '@/services/general/data';
-import { getLang } from '@/services/general/util';
-import { getUnitGroupTableAll, getUnitGroupTablePgroongaSearch } from '@/services/unitgroups/api';
-import { UnitGroupTable } from '@/services/unitgroups/data';
-import { PageContainer } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
-import ProTable from '@ant-design/pro-table';
 import { Card, Input, Space, Tooltip } from 'antd';
-import { SearchProps } from 'antd/es/input/Search';
-import type { FC } from 'react';
-import { useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
+import { getUnitGroupTableAll, getUnitGroupTablePgroongaSearch } from '@/services/unitgroups/api';
+import { useRef, useState } from 'react';
+
+import type { FC } from 'react';
+import { ListPagination } from '@/services/general/data';
+import { PageContainer } from '@ant-design/pro-components';
+import ProTable from '@ant-design/pro-table';
+import { SearchProps } from 'antd/es/input/Search';
 import UnitGroupCreate from './Components/create';
 import UnitGroupDelete from './Components/delete';
 import UnitGroupEdit from './Components/edit';
+import { UnitGroupTable } from '@/services/unitgroups/data';
 import UnitGroupView from './Components/view';
+import { getLang } from '@/services/general/util';
 
 const { Search } = Input;
 
@@ -77,11 +78,11 @@ const TableList: FC = () => {
     {
       title: (
         <FormattedMessage
-          id="pages.table.title.createdAt"
-          defaultMessage="Created at"
+          id="pages.table.title.updatedAt"
+          defaultMessage="Updated at"
         ></FormattedMessage>
       ),
-      dataIndex: 'createdAt',
+      dataIndex: 'modifiedAt',
       valueType: 'dateTime',
       sorter: false,
       search: false,

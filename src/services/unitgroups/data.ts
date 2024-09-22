@@ -6,7 +6,7 @@ export type UnitGroupTable = {
   refUnitId: string;
   refUnitName: string;
   refUnitGeneralComment: string;
-  createdAt: Date;
+  modifiedAt: Date;
 };
 
 export type UnitTable = {
