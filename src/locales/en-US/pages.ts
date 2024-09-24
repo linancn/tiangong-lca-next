@@ -14,8 +14,10 @@ export default {
   'pages.login.email.required': 'Please input your email!',
   'pages.login.email.failure': 'The email was not sent successfully, please try again!',
   'pages.login.email.verify': 'Send Verify Email',
+  'pages.login.email.wrong-format': 'The email format is incorrect!',
   'pages.login.password.forgot.success':
     'The email was setted successfully! Please follow the email link to reset your password.',
+  'pages.login.password.back': 'Back to Login',
   'pages.login.username.placeholder': 'Username',
   'pages.login.username.required': 'Please input your username!',
   'pages.login.password.placeholder': 'Password',
