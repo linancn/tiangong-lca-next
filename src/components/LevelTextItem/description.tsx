@@ -1,3 +1,4 @@
+import { genClassStr } from '@/services/general/util';
 import { getILCDClassification } from '@/services/ilcd/api';
 import { Descriptions, Spin } from 'antd';
 import { FC, useEffect, useState } from 'react';
@@ -12,6 +13,7 @@ type Props = {
 const LevelTextItemDescription: FC<Props> = ({ data, lang, categoryType, flowType }) => {
   const [spinning, setSpinning] = useState<boolean>(false);
   const [calssStr, setClassStr] = useState<any>('');
+
   useEffect(() => {
     if (data && Array.isArray(data) && data.length > 0) {
       setSpinning(true);
@@ -48,25 +50,7 @@ const LevelTextItemDescription: FC<Props> = ({ data, lang, categoryType, flowTyp
         // });
       } else {
         getILCDClassification(categoryType, lang, [data[0]]).then((res) => {
-          const level0 = res.data?.find(
-            (i: any) => i?.value === data[0],
-          );
-          if (level0) {
-            setClassStr(level0?.label);
-
-            const level1 = level0?.children?.find(
-              (i: any) => i?.value === data?.[1],
-            );
-            if (level1) {
-              setClassStr(level0?.label + ' / ' + level1?.label);
-              const level2 = level1?.children?.find(
-                (i: any) => i?.value === data?.[2],
-              );
-              if (level2) {
-                setClassStr(level0?.label + ' / ' + level1?.label + ' / ' + level2?.label);
-              }
-            }
-          }
+          setClassStr(genClassStr(data, 0, res.data));
           setSpinning(false);
         });
       }

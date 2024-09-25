@@ -19,8 +19,8 @@ import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } fro
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
-import { processtypeOfDataSetOptions, LCIMethodPrincipleOptions, LCIMethodApproachOptions, reviewTypeOptions, copyrightOptions, licenseTypeOptions } from './optiondata';
 import ProcessExchangeView from './Exchange/view';
+import { copyrightOptions, LCIMethodApproachOptions, LCIMethodPrincipleOptions, licenseTypeOptions, processtypeOfDataSetOptions, reviewTypeOptions } from './optiondata';
 
 type Props = {
   id: string;
@@ -285,13 +285,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
         <LangTextItemDescription
           data={initData.processInformation?.dataSetInformation?.['common:generalComment']}
         />
-
-        <Divider orientationMargin="0" orientation="left" plain>
-          <FormattedMessage
-            id="pages.process.view.processInformation.classification"
-            defaultMessage="Classification"
-          />
-        </Divider>
+        <br />
         <LevelTextItemDescription
           data={
             initData.processInformation?.dataSetInformation?.classificationInformation?.[

@@ -4,6 +4,12 @@ export type ListPagination = {
   current: number;
 };
 
+export type Classification = {
+  value: string,
+  label: string,
+  children: Classification[],
+};
+
 export const langOptions = [
   {
     value: 'en',

@@ -1,4 +1,5 @@
 import { supabase } from '@/services/supabase';
+import { getISICClassification, getISICClassificationZH } from '../processes/classification/api';
 import { categoryTypeOptions } from './data';
 import { genClass, genClassZH } from './util';
 
@@ -10,21 +11,39 @@ export async function getILCDClassification(
   try {
     const thisCategoryType = categoryTypeOptions.find((i) => i.en === categoryType);
 
-    const result = await supabase.rpc('ilcd_classification_get', {
-      this_file_name: 'ILCDClassification',
-      category_type: categoryType,
-      get_values: getValues,
-    });
+    let result = null;
+
+    if (categoryType === 'Process') {
+      result = getISICClassification(getValues);
+    }
+    else {
+      result = await supabase.rpc('ilcd_classification_get', {
+        this_file_name: 'ILCDClassification',
+        category_type: categoryType,
+        get_values: getValues,
+      });
+    }
 
     let newDatas = null;
     let resultZH = null;
     if (lang === 'zh') {
-      const getIds = result?.data?.map((i: any) => i['@id']);
-      resultZH = await supabase.rpc('ilcd_classification_get', {
-        this_file_name: 'ILCDClassification_zh',
-        category_type: thisCategoryType?.zh,
-        get_values: getIds,
-      });
+      let getIds = [];
+      if (getValues.includes('all')) {
+        getIds = ['all'];
+      }
+      else {
+        getIds = result?.data?.map((i: any) => i['@id']);
+      }
+      if (categoryType === 'Process') {
+        resultZH = getISICClassificationZH(getIds);
+      }
+      else {
+        resultZH = await supabase.rpc('ilcd_classification_get', {
+          this_file_name: 'ILCDClassification_zh',
+          category_type: thisCategoryType?.zh,
+          get_values: getIds,
+        });
+      }
       newDatas = genClassZH(result?.data, resultZH?.data);
     } else {
       newDatas = genClass(result?.data);

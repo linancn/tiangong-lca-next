@@ -6,9 +6,9 @@ import {
 } from '../general/util';
 import { getILCDClassification, getILCDLocationByValues } from '../ilcd/api';
 
+import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/es/table/interface';
 import { genProcessJsonOrdered } from './util';
-import { supabase } from '@/services/supabase';
 
 export async function createProcess(data: any) {
   // const newID = v4();
@@ -117,7 +117,7 @@ export async function getProcessTableAll(
         data = result.data.map((i: any) => {
           try {
             const classifications = jsonToList(i['common:class']);
-            const classificationZH = genClassificationZH(classifications, res?.data?.category);
+            const classificationZH = genClassificationZH(classifications, res?.data);
 
             const thisLocation = locationData.find((l) => l['@value'] === i['@location']);
             let location = i['@location'];
@@ -256,7 +256,7 @@ export async function getProcessTablePgroongaSearch(
                 'common:class'
               ],
             );
-            const classificationZH = genClassificationZH(classifications, res?.data?.category);
+            const classificationZH = genClassificationZH(classifications, res?.data);
 
             return {
               key: i.id,

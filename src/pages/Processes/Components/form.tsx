@@ -26,7 +26,7 @@ import ProcessExchangeCreate from './Exchange/create';
 import ProcessExchangeDelete from './Exchange/delete';
 import ProcessExchangeEdit from './Exchange/edit';
 import ProcessExchangeView from './Exchange/view';
-import { processtypeOfDataSetOptions, LCIMethodPrincipleOptions, LCIMethodApproachOptions, reviewTypeOptions, licenseTypeOptions, copyrightOptions } from './optiondata';
+import { copyrightOptions, LCIMethodApproachOptions, LCIMethodPrincipleOptions, licenseTypeOptions, processtypeOfDataSetOptions, reviewTypeOptions } from './optiondata';
 
 type Props = {
   lang: string;
@@ -246,30 +246,19 @@ export const ProcessForm: FC<Props> = ({
             rules={StringMultiLang_r}
           />
         </Card>
-
-        <Card
-          size="small"
-          title={
-            <FormattedMessage
-              id="pages.process.view.processInformation.classification"
-              defaultMessage="Classification"
-            />
-          }
-        >
-          <LevelTextItemForm
-            name={[
-              'processInformation',
-              'dataSetInformation',
-              'classificationInformation',
-              'common:classification',
-              'common:class',
-            ]}
-            lang={lang}
-            dataType={'Process'}
-            formRef={formRef}
-            onData={onData}
-          />
-        </Card>
+        <br />
+        <LevelTextItemForm
+          name={[
+            'processInformation',
+            'dataSetInformation',
+            'classificationInformation',
+            'common:classification',
+            'common:class',
+          ]}
+          lang={lang}
+          dataType={'Process'}
+          onData={onData}
+        />
 
         <Card
           size="small"
