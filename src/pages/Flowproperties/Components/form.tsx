@@ -96,29 +96,18 @@ export const FlowpropertyForm: FC<Props> = ({
             />
           </Card>
           <br />
-          <Card
-            size="small"
-            title={
-              <FormattedMessage
-                id="pages.FlowProperties.view.flowPropertiesInformation.classification"
-                defaultMessage="Classification"
-              />
-            }
-          >
-            <LevelTextItemForm
-              dataType={'FlowProperty'}
-              onData={onData}
-              name={[
-                'flowPropertiesInformation',
-                'dataSetInformation',
-                'classificationInformation',
-                'common:classification',
-                'common:class',
-              ]}
-              lang={lang}
-            />
-          </Card>
-          <br />
+          <LevelTextItemForm
+            dataType={'FlowProperty'}
+            onData={onData}
+            name={[
+              'flowPropertiesInformation',
+              'dataSetInformation',
+              'classificationInformation',
+              'common:classification',
+              'common:class',
+            ]}
+            lang={lang}
+          />
           <Card
             size="small"
             title={

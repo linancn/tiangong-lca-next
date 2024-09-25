@@ -95,29 +95,18 @@ export const SourceForm: FC<Props> = ({
           />
         </Card>
         <br />
-        <Card
-          size="small"
-          title={
-            <FormattedMessage
-              id="pages.source.edit.sourceInformation.classification"
-              defaultMessage="Classification"
-            />
-          }
-        >
-          <LevelTextItemForm
-            name={[
-              'sourceInformation',
-              'dataSetInformation',
-              'classificationInformation',
-              'common:classification',
-              'common:class',
-            ]}
-            lang={lang}
-            dataType={'Source'}
-            onData={onData}
-          />
-        </Card>
-        <br />
+        <LevelTextItemForm
+          name={[
+            'sourceInformation',
+            'dataSetInformation',
+            'classificationInformation',
+            'common:classification',
+            'common:class',
+          ]}
+          lang={lang}
+          dataType={'Source'}
+          onData={onData}
+        />
         <Form.Item
           label={
             <FormattedMessage
