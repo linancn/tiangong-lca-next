@@ -1,15 +1,15 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
+import SourcesDescription from '@/pages/Sources/Components/select/description';
+import UnitGroupDescription from '@/pages/Unitgroups/Components/select/description';
 import { getFlowpropertyDetail } from '@/services/flowproperties/api';
+import { genFlowpropertyFromData } from '@/services/flowproperties/util';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { Button, Card, Descriptions, Divider, Drawer, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { complianceOptions } from './optiondata';
-import SourcesDescription from '@/pages/Sources/Components/select/description';
-import UnitGroupDescription from '@/pages/Unitgroups/Components/select/description';
-import { genFlowpropertyFromData } from '@/services/flowproperties/util';
 import FlowpropertiesSelectDescription from './select/description';
 
 type Props = {
@@ -101,16 +101,11 @@ const FlowpropertyView: FC<Props> = ({ id, buttonType, lang }) => {
           data={initData?.flowPropertiesInformation?.dataSetInformation?.['common:generalComment']}
         />
 
-        <Divider orientationMargin="0" orientation="left" plain>
-          <FormattedMessage
-            id="pages.FlowProperties.view.flowPropertiesInformation.classification"
-            defaultMessage="Classification"
-          />
-        </Divider>
+        <br />
         <LevelTextItemDescription
           data={
             initData.flowPropertiesInformation?.dataSetInformation?.classificationInformation?.[
-              'common:classification'
+            'common:classification'
             ]?.['common:class']
           }
           lang={lang}
@@ -136,7 +131,7 @@ const FlowpropertyView: FC<Props> = ({ id, buttonType, lang }) => {
         <SourcesDescription
           data={
             initData?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-              'common:referenceToComplianceSystem'
+            'common:referenceToComplianceSystem'
             ]
           }
           title={
@@ -235,7 +230,7 @@ const FlowpropertyView: FC<Props> = ({ id, buttonType, lang }) => {
           <FlowpropertiesSelectDescription
             data={
               initData?.administrativeInformation?.publicationAndOwnership?.[
-                'common:referenceToPrecedingDataSetVersion'
+              'common:referenceToPrecedingDataSetVersion'
               ]
             }
             lang={lang}

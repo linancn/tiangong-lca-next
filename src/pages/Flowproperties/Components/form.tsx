@@ -14,8 +14,8 @@ import { FormattedMessage } from 'umi';
 
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import UnitGroupSelectFrom from '@/pages/Unitgroups/Components/select/form';
-import FlowpropertiesSelectForm from './select/form';
 import { complianceOptions } from './optiondata';
+import FlowpropertiesSelectForm from './select/form';
 
 type Props = {
   lang: string;
@@ -107,7 +107,6 @@ export const FlowpropertyForm: FC<Props> = ({
           >
             <LevelTextItemForm
               dataType={'FlowProperty'}
-              formRef={formRef}
               onData={onData}
               name={[
                 'flowPropertiesInformation',

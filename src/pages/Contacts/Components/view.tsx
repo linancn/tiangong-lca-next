@@ -72,13 +72,11 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
         <LangTextItemDescription
           data={initData.contactInformation?.dataSetInformation?.['common:shortName']}
         />
-        <Divider orientationMargin="0" orientation="left" plain>
-          <FormattedMessage id="pages.contact.classification" defaultMessage="Classification" />
-        </Divider>
+       <br />
         <LevelTextItemDescription
           data={
             initData.contactInformation?.dataSetInformation?.classificationInformation?.[
-              'common:classification'
+            'common:classification'
             ]?.['common:class']
           }
           lang={lang}
@@ -223,7 +221,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
           <ContractDescription
             data={
               initData.administrativeInformation?.publicationAndOwnership?.[
-                'common:referenceToPrecedingDataSetVersion'
+              'common:referenceToPrecedingDataSetVersion'
               ]
             }
             lang={lang}

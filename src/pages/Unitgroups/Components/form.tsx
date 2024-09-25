@@ -7,7 +7,7 @@ import { UnitTable } from '@/services/unitgroups/data';
 import { genUnitTableData } from '@/services/unitgroups/util';
 import { CheckCircleTwoTone, CloseCircleOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
-import { Card, Form, Input, Space, Select } from 'antd';
+import { Card, Form, Input, Select, Space } from 'antd';
 import { FC, useRef } from 'react';
 import { FormattedMessage } from 'umi';
 import UnitCreate from './Unit/create';
@@ -201,7 +201,6 @@ export const UnitGroupForm: FC<Props> = ({
             ]}
             lang={lang}
             dataType={'UnitGroup'}
-            formRef={formRef}
             onData={onData}
           />
         </Card>

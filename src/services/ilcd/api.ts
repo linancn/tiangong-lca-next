@@ -1,6 +1,6 @@
 import { supabase } from '@/services/supabase';
 import { categoryTypeOptions } from './data';
-import { genClassZH } from './util';
+import { genClass, genClassZH } from './util';
 
 export async function getILCDClassification(
   categoryType: string,
@@ -16,6 +16,7 @@ export async function getILCDClassification(
       get_values: getValues,
     });
 
+    let newDatas = null;
     let resultZH = null;
     if (lang === 'zh') {
       const getIds = result?.data?.map((i: any) => i['@id']);
@@ -24,12 +25,13 @@ export async function getILCDClassification(
         category_type: thisCategoryType?.zh,
         get_values: getIds,
       });
+      newDatas = genClassZH(result?.data, resultZH?.data);
+    } else {
+      newDatas = genClass(result?.data);
     }
 
-    const newDatas = genClassZH(result?.data, resultZH?.data);
-
     return Promise.resolve({
-      data: { category: newDatas },
+      data: newDatas,
       success: true,
     });
   } catch (e) {

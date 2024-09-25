@@ -81,12 +81,7 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
         <LangTextItemDescription
           data={initData.sourceInformation?.dataSetInformation?.['common:shortName']}
         />
-        <Divider orientationMargin="0" orientation="left" plain>
-          <FormattedMessage
-            id="pages.source.view.sourceInformation.classification"
-            defaultMessage="Classification"
-          />
-        </Divider>
+        <br />
         <LevelTextItemDescription
           data={
             initData.sourceInformation?.dataSetInformation?.classificationInformation?.[

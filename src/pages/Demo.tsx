@@ -9,6 +9,7 @@ import {
   returnUserEdgeFunction,
   storage,
 } from '../services/demo/api';
+import CPCClassification_zh from '../services/flows/classification/CPCClassification_zh-CN.json';
 
 const Demo: React.FC = () => {
   const { token } = theme.useToken();
@@ -55,6 +56,7 @@ const Demo: React.FC = () => {
             <Button onClick={async () => removeFile(['b81d4445-3c9f-44cb-ab02-fa52478eeea2.png'])}>
               storage.remove
             </Button>
+            <Button onClick={() => console.log(CPCClassification_zh)}>CPCClassification_zh</Button>
           </div>
         </div>
       </Card>

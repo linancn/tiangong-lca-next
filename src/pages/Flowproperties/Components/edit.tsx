@@ -153,8 +153,8 @@ const FlowpropertiesEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
               }
               return true;
             }}
-            onValuesChange={async (changedValues, allValues) => {
-              setFromData({ ...fromData, [activeTabKey]: allValues });
+            onValuesChange={(_, allValues) => {
+              setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
             }}
           >
             <FlowpropertyForm

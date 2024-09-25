@@ -73,10 +73,10 @@ export function classificationToString(classifications: any) {
         classificationStr = filterList0[0]['#text'] ?? '-';
         const filterList1 = classifications.filter((i) => i['@level'].toString() === '1');
         if (filterList1.length > 0) {
-          classificationStr = classificationStr + ' > ' + (filterList1[0]['#text'] ?? '-');
+          classificationStr = classificationStr + ' / ' + (filterList1[0]['#text'] ?? '-');
           const filterList2 = classifications.filter((i) => i['@level'].toString() === '2');
           if (filterList2.length > 0) {
-            classificationStr = classificationStr + ' > ' + (filterList2[0]['#text'] ?? '-');
+            classificationStr = classificationStr + ' / ' + (filterList2[0]['#text'] ?? '-');
           }
         }
       }
@@ -87,6 +87,47 @@ export function classificationToString(classifications: any) {
     console.log(e);
   }
   return classificationStr;
+}
+
+export function classificationToStringList(classifications: any) {
+  let classificationStrList = [];
+  try {
+    if (Array.isArray(classifications)) {
+      for (let i = 0; i < classifications.length; i++) {
+        const filterList = classifications.find((c) => c['@level'] === i.toString());
+        if (filterList) {
+          classificationStrList.push(filterList?.['#text']);
+        }
+      }
+    } else {
+      classificationStrList = [classifications?.['#text']];
+    }
+  } catch (e) {
+    console.log(e);
+  }
+  return classificationStrList;
+}
+
+export function classificationToJsonList(classifications: any) {
+  let common_class = {};
+  if (classifications && Array.isArray(classifications) && classifications.length > 0) {
+    if (classifications.length === 1) {
+      common_class = {
+        '@level': '0',
+        '#text': classifications[0],
+      };
+    } else {
+      common_class = classifications.map((classification: any, index: number) => {
+        return {
+          '@level': index.toString(),
+          '#text': classification,
+        };
+      });
+    }
+  }
+  console.log('classifications', classifications);
+  console.log('classificationToJsonList', common_class);
+  return removeEmptyObjects(common_class);
 }
 
 export function classificationToJson(classifications: any) {
@@ -173,35 +214,35 @@ export function genClassificationZH(classifications: any, categoryData: any) {
   let classificationZH: any[] = [];
   const filterList0 = classifications.find((i: any) => i?.['@level'] === '0');
   if (filterList0) {
-    const filterList0_zh = categoryData?.find((i: any) => i?.['@name'] === filterList0?.['#text']);
+    const filterList0_zh = categoryData?.find((i: any) => i?.value === filterList0?.['#text']);
     classificationZH = [
       {
         '@level': '0',
-        '#text': filterList0_zh?.['@nameZH'] ?? filterList0?.['#text'],
+        '#text': filterList0_zh?.label ?? filterList0?.['#text'],
       },
     ];
     const filterList1 = classifications.find((ii: any) => ii?.['@level'] === '1');
     if (filterList1) {
-      const filterList1_zh = filterList0_zh?.category?.find(
-        (ii: any) => ii?.['@name'] === filterList1?.['#text'],
+      const filterList1_zh = filterList0_zh?.children?.find(
+        (ii: any) => ii?.value === filterList1?.['#text'],
       );
       classificationZH = [
         ...classificationZH,
         {
           '@level': '1',
-          '#text': filterList1_zh?.['@nameZH'] ?? filterList1?.['#text'],
+          '#text': filterList1_zh?.label ?? filterList1?.['#text'],
         },
       ];
       const filterList2 = classifications.find((ii: any) => ii?.['@level'] === '2');
       if (filterList2) {
-        const filterList2_zh = filterList1_zh?.category?.find(
-          (ii: any) => ii?.['@name'] === filterList2?.['#text'],
+        const filterList2_zh = filterList1_zh?.children?.find(
+          (ii: any) => ii?.value === filterList2?.['#text'],
         );
         classificationZH = [
           ...classificationZH,
           {
             '@level': '2',
-            '#text': filterList2_zh?.['@nameZH'] ?? filterList2?.['#text'],
+            '#text': filterList2_zh?.label ?? filterList2?.['#text'],
           },
         ];
       }
@@ -216,11 +257,11 @@ export function isValidURL(url: string): boolean {
   }
   const urlPattern = new RegExp(
     '^(https?:\\/\\/)?' +
-      '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|' +
-      '((\\d{1,3}\\.){3}\\d{1,3}))' +
-      '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' +
-      '(\\?[;&a-z\\d%_.~+=-]*)?' +
-      '(\\#[-a-z\\d_]*)?$',
+    '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|' +
+    '((\\d{1,3}\\.){3}\\d{1,3}))' +
+    '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' +
+    '(\\?[;&a-z\\d%_.~+=-]*)?' +
+    '(\\#[-a-z\\d_]*)?$',
     'i',
   );
   return !!urlPattern.test(url);
