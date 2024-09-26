@@ -169,8 +169,6 @@ export function classificationToJsonList(classifications: any) {
       });
     }
   }
-  console.log('classifications', classifications);
-  console.log('classificationToJsonList', common_class);
   return removeEmptyObjects(common_class);
 }
 

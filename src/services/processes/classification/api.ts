@@ -1,5 +1,5 @@
-import CPCClassification_en from './ISICClassification_en-US.json';
-import CPCClassification_zh from './ISICClassification_zh-CN.json';
+import ISICClassification_en from './ISICClassification_en-US.json';
+import ISICClassification_zh from './ISICClassification_zh-CN.json';
 
 export function getISICClassification(
     getValues: string[],
@@ -7,10 +7,10 @@ export function getISICClassification(
     try {
         let result = null;
         if (getValues.includes('all')) {
-            result = CPCClassification_en?.CategorySystem?.categories?.[0]?.category;
+            result = ISICClassification_en?.CategorySystem?.categories?.[0]?.category;
         }
         else {
-            result = CPCClassification_en?.CategorySystem?.categories?.[0]?.category?.filter((i: any) => getValues.includes(i['@name']));
+            result = ISICClassification_en?.CategorySystem?.categories?.[0]?.category?.filter((i: any) => getValues.includes(i['@name']));
         }
 
         return {
@@ -30,10 +30,10 @@ export function getISICClassificationZH(
     try {
         let result = null;
         if (getValues.includes('all')) {
-            result = CPCClassification_zh?.CategorySystem?.categories?.[0]?.category;
+            result = ISICClassification_zh?.CategorySystem?.categories?.[0]?.category;
         }
         else {
-            result = CPCClassification_zh?.CategorySystem?.categories?.[0]?.category?.filter((i: any) => getValues.includes(i['@id']));
+            result = ISICClassification_zh?.CategorySystem?.categories?.[0]?.category?.filter((i: any) => getValues.includes(i['@id']));
         }
 
         return {

@@ -12,7 +12,7 @@ import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } fro
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
-import { flowTypeOptions, complianceOptions } from './optiondata';
+import { complianceOptions, flowTypeOptions } from './optiondata';
 import PropertyView from './Property/view';
 
 type Props = {
@@ -129,7 +129,7 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
       render: (_, row) => {
         return [
           <Space size={'small'} key={0}>
-             <PropertyView
+            <PropertyView
               id={row.dataSetInternalID}
               data={propertyDataSource}
               lang={lang}
@@ -216,12 +216,7 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
                 '-'}
             </Descriptions.Item>
           </Descriptions>
-          <Divider orientationMargin="0" orientation="left" plain>
-            <FormattedMessage
-              id="pages.flow.view.flowInformation.classification"
-              defaultMessage="Classification"
-            />
-          </Divider>
+          <br />
           <LevelTextItemDescription
             data={
               initData?.flowInformation?.dataSetInformation?.classificationInformation?.[
