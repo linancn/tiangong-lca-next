@@ -252,6 +252,7 @@ export const FlowForm: FC<Props> = ({
             dataType={'Flow'}
             lang={lang}
             flowType={thisFlowType}
+            formRef={formRef}
             onData={onData}
             name={[
               'flowInformation',

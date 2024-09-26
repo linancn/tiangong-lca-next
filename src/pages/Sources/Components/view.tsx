@@ -86,7 +86,7 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
           data={
             initData.sourceInformation?.dataSetInformation?.classificationInformation?.[
               'common:classification'
-            ]?.['common:class']
+            ]?.['common:class']?.['value']
           }
           lang={lang}
           categoryType={'Source'}

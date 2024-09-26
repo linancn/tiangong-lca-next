@@ -106,7 +106,7 @@ const FlowpropertyView: FC<Props> = ({ id, buttonType, lang }) => {
           data={
             initData.flowPropertiesInformation?.dataSetInformation?.classificationInformation?.[
             'common:classification'
-            ]?.['common:class']
+            ]?.['common:class']?.['value']
           }
           lang={lang}
           categoryType={'FlowProperty'}

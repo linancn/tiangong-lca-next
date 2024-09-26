@@ -209,7 +209,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
           data={
             initData.unitGroupInformation?.dataSetInformation?.classificationInformation?.[
             'common:classification'
-            ]?.['common:class'] ?? {}
+            ]?.['common:class']?.['value']
           }
           lang={lang}
           categoryType={'UnitGroup'}

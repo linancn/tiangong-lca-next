@@ -79,6 +79,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             ]}
             lang={lang}
             dataType={'Contact'}
+            formRef={formRef}
             onData={onData}
           />
           <Card

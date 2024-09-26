@@ -33,6 +33,24 @@ export function genClassStr(data: string[], index: number, classification: Class
   return '';
 }
 
+export function genClassIdList(data: any[], index: number, classification: Classification[]): string[] {
+  const c = classification?.find((i) => i?.value === data?.[index]);
+  if (c) {
+    const newId = c?.id ?? '';
+    if (data.length > index + 1) {
+      return [newId, ...genClassIdList(data, index + 1, c?.children)];
+    }
+    return [newId];
+  }
+  else {
+    const newId = '';
+    if (data.length > index + 1) {
+      return [newId, ...genClassIdList(data, index + 1, [])];
+    }
+    return [newId];
+  }
+}
+
 export function genClassJsonZH(data: any[], index: number, classification: any[]): any {
   const d = data?.find((i) => i?.['@level'] === index.toString());
   const c = classification?.find((i) => i?.value === d?.['#text']);
@@ -134,37 +152,42 @@ export function classificationToString(classifications: any[]) {
 }
 
 export function classificationToStringList(classifications: any) {
-  let classificationStrList = [];
+  let idStrList = [];
+  let valueStrList = [];
   try {
     if (Array.isArray(classifications)) {
       for (let i = 0; i < classifications.length; i++) {
         const filterList = classifications.find((c) => c['@level'] === i.toString());
         if (filterList) {
-          classificationStrList.push(filterList?.['#text']);
+          idStrList.push(filterList?.['@catId']);
+          valueStrList.push(filterList?.['#text']);
         }
       }
     } else {
-      classificationStrList = [classifications?.['#text']];
+      idStrList = [classifications?.['@catId']];
+      valueStrList = [classifications?.['#text']];
     }
   } catch (e) {
     console.log(e);
   }
-  return classificationStrList;
+  return { id: idStrList, value: valueStrList };
 }
 
 export function classificationToJsonList(classifications: any) {
   let common_class = {};
-  if (classifications && Array.isArray(classifications) && classifications.length > 0) {
-    if (classifications.length === 1) {
+  if (classifications && classifications?.value && Array.isArray(classifications?.value) && classifications?.value.length > 0) {
+    if (classifications.value.length === 1) {
       common_class = {
         '@level': '0',
-        '#text': classifications[0],
+        '@catId': classifications?.id?.[0] ?? '',
+        '#text': classifications.value[0],
       };
     } else {
-      common_class = classifications.map((classification: any, index: number) => {
+      common_class = classifications?.value.map((value: any, index: number) => {
         return {
           '@level': index.toString(),
-          '#text': classification,
+          '@catId': classifications?.id?.[index] ?? '',
+          '#text': value,
         };
       });
     }

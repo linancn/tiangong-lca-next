@@ -103,6 +103,7 @@ export const SourceForm: FC<Props> = ({
             'common:classification',
             'common:class',
           ]}
+          formRef={formRef}
           lang={lang}
           dataType={'Source'}
           onData={onData}
