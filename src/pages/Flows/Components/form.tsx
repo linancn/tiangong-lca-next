@@ -13,7 +13,7 @@ import { Card, Form, Input, Select, Space } from 'antd';
 import type { FC } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import { flowTypeOptions, complianceOptions } from './optiondata';
+import { complianceOptions, flowTypeOptions } from './optiondata';
 import PropertyCreate from './Property/create';
 import PropertyDelete from './Property/delete';
 import PropertyEdit from './Property/edit';
@@ -233,7 +233,7 @@ export const FlowForm: FC<Props> = ({
             <Select
               options={flowTypeOptions}
               onChange={(value) => {
-                if (flowType === 'Elementary flow' || value === 'Elementary flow') {
+                if (thisFlowType === 'Elementary flow' || value === 'Elementary flow') {
                   const nameList = [
                     'flowInformation',
                     'dataSetInformation',
@@ -241,42 +241,26 @@ export const FlowForm: FC<Props> = ({
                     'common:elementaryFlowCategorization',
                     'common:category',
                   ];
-                  formRef.current?.setFieldValue([...nameList, '@level_0'], null);
-                  formRef.current?.setFieldValue([...nameList, '@level_1'], null);
-                  formRef.current?.setFieldValue([...nameList, '@level_2'], null);
-                  formRef.current?.setFieldValue([...nameList, '@catId_0'], null);
-                  formRef.current?.setFieldValue([...nameList, '@catId_1'], null);
-                  formRef.current?.setFieldValue([...nameList, '@catId_2'], null);
+                  formRef.current?.setFieldValue([...nameList], null);
                 }
                 setThisFlowType(value);
               }}
             />
           </Form.Item>
-
-          <Card
-            size="small"
-            title={
-              <FormattedMessage
-                id="pages.flow.view.flowInformation.classification"
-                defaultMessage="Classification"
-              />
-            }
-          >
-            <LevelTextItemForm
-              dataType={'Flow'}
-              lang={lang}
-              flowType={thisFlowType}
-              formRef={formRef}
-              onData={onData}
-              name={[
-                'flowInformation',
-                'dataSetInformation',
-                'classificationInformation',
-                'common:elementaryFlowCategorization',
-                'common:category',
-              ]}
-            />
-          </Card>
+          <br />
+          <LevelTextItemForm
+            dataType={'Flow'}
+            lang={lang}
+            flowType={thisFlowType}
+            onData={onData}
+            name={[
+              'flowInformation',
+              'dataSetInformation',
+              'classificationInformation',
+              'common:elementaryFlowCategorization',
+              'common:category',
+            ]}
+          />
         </Card>
         <br />
         <Form.Item

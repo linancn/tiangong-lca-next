@@ -1,5 +1,5 @@
 import { genClassStr } from '@/services/general/util';
-import { getILCDClassification } from '@/services/ilcd/api';
+import { getILCDClassification, getILCDFlowCategorization } from '@/services/ilcd/api';
 import { Descriptions, Spin } from 'antd';
 import { FC, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -18,36 +18,10 @@ const LevelTextItemDescription: FC<Props> = ({ data, lang, categoryType, flowTyp
     if (data && Array.isArray(data) && data.length > 0) {
       setSpinning(true);
       if (categoryType === 'Flow' && flowType === 'Elementary flow') {
-        // getILCDFlowCategorization(lang, [data?.['@level_0']]).then((res) => {
-        //   const level0 = res.data?.category?.find(
-        //     (i: any) => i?.['@name'].toString() === data?.['@level_0'],
-        //   );
-        //   if (level0) {
-        //     setDataZH({
-        //       '@level_0': level0?.['@nameZH'],
-        //     });
-        //     const level1 = level0?.category?.find(
-        //       (i: any) => i?.['@name'].toString() === data?.['@level_1'],
-        //     );
-        //     if (level1) {
-        //       setDataZH({
-        //         '@level_0': level0?.['@nameZH'],
-        //         '@level_1': level1?.['@nameZH'],
-        //       });
-        //       const level2 = level1?.category?.find(
-        //         (i: any) => i?.['@name'].toString() === data?.['@level_2'],
-        //       );
-        //       if (level2) {
-        //         setDataZH({
-        //           '@level_0': level0?.['@nameZH'],
-        //           '@level_1': level1?.['@nameZH'],
-        //           '@level_2': level2?.['@nameZH'],
-        //         });
-        //       }
-        //     }
-        //   }
-        //   setSpinning(false);
-        // });
+        getILCDFlowCategorization(lang, [data[0]]).then((res) => {
+          setClassStr(genClassStr(data, 0, res.data));
+          setSpinning(false);
+        });
       } else {
         getILCDClassification(categoryType, lang, [data[0]]).then((res) => {
           setClassStr(genClassStr(data, 0, res.data));

@@ -1,6 +1,6 @@
 import {
-  classificationToJson,
-  classificationToList,
+  classificationToJsonList,
+  classificationToStringList,
   getLangJson,
   getLangList,
   getLangText,
@@ -59,7 +59,7 @@ export function genFlowJsonOrdered(id: string, data: any, oldData: any) {
           ),
           classificationInformation: {
             'common:elementaryFlowCategorization': {
-              'common:category': classificationToList(
+              'common:category': classificationToJsonList(
                 data?.flowInformation?.dataSetInformation?.classificationInformation?.[
                 'common:elementaryFlowCategorization'
                 ]?.['common:category'],
@@ -170,7 +170,7 @@ export function genFlowFromData(data: any) {
         ),
         classificationInformation: {
           'common:elementaryFlowCategorization': {
-            'common:category': classificationToJson(
+            'common:category': classificationToStringList(
               data?.flowInformation?.dataSetInformation?.classificationInformation?.[
               'common:elementaryFlowCategorization'
               ]?.['common:category'],
