@@ -15,4 +15,8 @@ export default {
     ' 版本号格式必须为 X-X-X，其中第一部分为 2-7 位数字，第二部分为 2 位数字，第三部分为 1 位数字！',
 
   'validator.pages.contact.email.pattern': '输入的邮箱无效！',
+  'validator.pages.contact.WWWAddress.invalid': '请输入有效的网址！',
+
+  'validator.Year.empty': '建议填写，以增强数据详细性和可用性！',
+  'validator.Year.pattern': '请输入有效的年份（例如：2023）',
 };
