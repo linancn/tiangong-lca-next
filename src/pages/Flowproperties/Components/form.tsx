@@ -106,6 +106,7 @@ export const FlowpropertyForm: FC<Props> = ({
               'common:classification',
               'common:class',
             ]}
+            formRef={formRef}
             lang={lang}
           />
           <Card

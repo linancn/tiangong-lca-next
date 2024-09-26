@@ -290,7 +290,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
           data={
             initData.processInformation?.dataSetInformation?.classificationInformation?.[
             'common:classification'
-            ]?.['common:class']
+            ]?.['common:class']?.['value']
           }
           lang={lang}
           categoryType={'Process'}

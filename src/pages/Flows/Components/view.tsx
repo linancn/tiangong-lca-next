@@ -221,7 +221,7 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
             data={
               initData?.flowInformation?.dataSetInformation?.classificationInformation?.[
               'common:elementaryFlowCategorization'
-              ]?.['common:category']
+              ]?.['common:category']?.['value']
             }
             lang={lang}
             categoryType={'Flow'}

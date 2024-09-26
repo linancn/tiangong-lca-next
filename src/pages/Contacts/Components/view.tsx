@@ -72,12 +72,12 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
         <LangTextItemDescription
           data={initData.contactInformation?.dataSetInformation?.['common:shortName']}
         />
-       <br />
+        <br />
         <LevelTextItemDescription
           data={
             initData.contactInformation?.dataSetInformation?.classificationInformation?.[
             'common:classification'
-            ]?.['common:class']
+            ]?.['common:class']?.['value']
           }
           lang={lang}
           categoryType={'Contact'}
