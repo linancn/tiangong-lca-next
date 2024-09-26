@@ -5,10 +5,10 @@ import {
   jsonToList,
 } from '../general/util';
 
-import { SortOrder } from 'antd/lib/table/interface';
-import { genSourceJsonOrdered } from './util';
-import { getILCDClassification } from '../ilcd/api';
 import { supabase } from '@/services/supabase';
+import { SortOrder } from 'antd/lib/table/interface';
+import { getILCDClassification } from '../ilcd/api';
+import { genSourceJsonOrdered } from './util';
 
 export async function createSource(data: any) {
   // const newID = v4();/
@@ -114,7 +114,7 @@ export async function getSourceTableAll(
         data = result.data.map((i: any) => {
           try {
             const classifications = jsonToList(i['common:class']);
-            const classificationZH = genClassificationZH(classifications, res?.data?.category);
+            const classificationZH = genClassificationZH(classifications, res?.data);
             return {
               key: i.id,
               id: i.id,
@@ -211,7 +211,7 @@ export async function getSourceTablePgroongaSearch(
             const classifications = jsonToList(
               dataInfo?.classificationInformation?.['common:classification']?.['common:class'],
             );
-            const classificationZH = genClassificationZH(classifications, res?.data?.category);
+            const classificationZH = genClassificationZH(classifications, res?.data);
 
             return {
               key: i.id,

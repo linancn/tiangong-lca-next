@@ -1,11 +1,11 @@
 import {
-  classificationToJson,
-  classificationToList,
+  classificationToJsonList,
+  classificationToStringList,
   getLangJson,
   getLangList,
   jsonToList,
   listToJson,
-  removeEmptyObjects,
+  removeEmptyObjects
 } from '../general/util';
 
 export function genSourceJsonOrdered(id: string, data: any, oldData: any) {
@@ -24,7 +24,7 @@ export function genSourceJsonOrdered(id: string, data: any, oldData: any) {
           ),
           classificationInformation: {
             'common:classification': {
-              'common:class': classificationToList(
+              'common:class': classificationToJsonList(
                 data?.sourceInformation?.dataSetInformation?.classificationInformation?.[
                   'common:classification'
                 ]?.['common:class'],
@@ -121,7 +121,7 @@ export function genSourceFromData(data: any) {
         ),
         classificationInformation: {
           'common:classification': {
-            'common:class': classificationToJson(
+            'common:class': classificationToStringList(
               data?.sourceInformation?.dataSetInformation?.classificationInformation?.[
                 'common:classification'
               ]?.['common:class'],

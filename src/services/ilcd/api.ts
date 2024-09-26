@@ -1,6 +1,7 @@
 import { supabase } from '@/services/supabase';
+import { getISICClassification, getISICClassificationZH } from '../processes/classification/api';
 import { categoryTypeOptions } from './data';
-import { genClassZH } from './util';
+import { genClass, genClassZH } from './util';
 
 export async function getILCDClassification(
   categoryType: string,
@@ -10,26 +11,46 @@ export async function getILCDClassification(
   try {
     const thisCategoryType = categoryTypeOptions.find((i) => i.en === categoryType);
 
-    const result = await supabase.rpc('ilcd_classification_get', {
-      this_file_name: 'ILCDClassification',
-      category_type: categoryType,
-      get_values: getValues,
-    });
+    let result = null;
 
-    let resultZH = null;
-    if (lang === 'zh') {
-      const getIds = result?.data?.map((i: any) => i['@id']);
-      resultZH = await supabase.rpc('ilcd_classification_get', {
-        this_file_name: 'ILCDClassification_zh',
-        category_type: thisCategoryType?.zh,
-        get_values: getIds,
+    if (categoryType === 'Process') {
+      result = getISICClassification(getValues);
+    }
+    else {
+      result = await supabase.rpc('ilcd_classification_get', {
+        this_file_name: 'ILCDClassification',
+        category_type: categoryType,
+        get_values: getValues,
       });
     }
 
-    const newDatas = genClassZH(result?.data, resultZH?.data);
+    let newDatas = null;
+    let resultZH = null;
+    if (lang === 'zh') {
+      let getIds = [];
+      if (getValues.includes('all')) {
+        getIds = ['all'];
+      }
+      else {
+        getIds = result?.data?.map((i: any) => i['@id']);
+      }
+      if (categoryType === 'Process') {
+        resultZH = getISICClassificationZH(getIds);
+      }
+      else {
+        resultZH = await supabase.rpc('ilcd_classification_get', {
+          this_file_name: 'ILCDClassification_zh',
+          category_type: thisCategoryType?.zh,
+          get_values: getIds,
+        });
+      }
+      newDatas = genClassZH(result?.data, resultZH?.data);
+    } else {
+      newDatas = genClass(result?.data);
+    }
 
     return Promise.resolve({
-      data: { category: newDatas },
+      data: newDatas,
       success: true,
     });
   } catch (e) {

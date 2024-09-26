@@ -5,10 +5,10 @@ import {
   jsonToList,
 } from '../general/util';
 
-import { SortOrder } from 'antd/lib/table/interface';
-import { genUnitGroupJsonOrdered } from './util';
-import { getILCDClassification } from '../ilcd/api';
 import { supabase } from '@/services/supabase';
+import { SortOrder } from 'antd/lib/table/interface';
+import { getILCDClassification } from '../ilcd/api';
+import { genUnitGroupJsonOrdered } from './util';
 
 const table_name = 'unitgroups';
 
@@ -122,7 +122,7 @@ export async function getUnitGroupTableAll(
             );
 
             const classifications = jsonToList(i?.['common:class']);
-            const classificationZH = genClassificationZH(classifications, res?.data?.category);
+            const classificationZH = genClassificationZH(classifications, res?.data);
 
             return {
               key: i.id,
@@ -232,7 +232,7 @@ export async function getUnitGroupTablePgroongaSearch(
               ],
             );
 
-            const classificationZH = genClassificationZH(classifications, res?.data?.category);
+            const classificationZH = genClassificationZH(classifications, res?.data);
 
             return {
               key: i.id,

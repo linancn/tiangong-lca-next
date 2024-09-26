@@ -1,10 +1,10 @@
 import {
-  classificationToJson,
-  classificationToList,
+  classificationToJsonList,
+  classificationToStringList,
   formatDateTime,
   getLangJson,
   getLangList,
-  removeEmptyObjects,
+  removeEmptyObjects
 } from '../general/util';
 
 export function genContactJsonOrdered(id: string, data: any, oldData: any) {
@@ -24,7 +24,7 @@ export function genContactJsonOrdered(id: string, data: any, oldData: any) {
           'common:name': getLangJson(data?.contactInformation?.dataSetInformation?.['common:name']),
           classificationInformation: {
             'common:classification': {
-              'common:class': classificationToList(
+              'common:class': classificationToJsonList(
                 data?.contactInformation?.dataSetInformation?.classificationInformation?.[
                   'common:classification'
                 ]?.['common:class'],
@@ -123,7 +123,7 @@ export function genContactFromData(data: any) {
         'common:name': getLangList(data?.contactInformation?.dataSetInformation?.['common:name']),
         classificationInformation: {
           'common:classification': {
-            'common:class': classificationToJson(
+            'common:class': classificationToStringList(
               data?.contactInformation?.dataSetInformation?.classificationInformation?.[
                 'common:classification'
               ]?.['common:class'],

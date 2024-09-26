@@ -7,7 +7,7 @@ import { UnitTable } from '@/services/unitgroups/data';
 import { genUnitTableData } from '@/services/unitgroups/util';
 import { CheckCircleTwoTone, CloseCircleOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
-import { Card, Form, Input, Space, Select } from 'antd';
+import { Card, Form, Input, Select, Space } from 'antd';
 import { FC, useRef } from 'react';
 import { FormattedMessage } from 'umi';
 import UnitCreate from './Unit/create';
@@ -144,14 +144,14 @@ export const UnitGroupForm: FC<Props> = ({
               buttonType={'icon'}
               actionRef={actionRefUnitTable}
               onData={onUnitData}
-              setViewDrawerVisible={() => {}}
+              setViewDrawerVisible={() => { }}
             />
             <UnitDelete
               id={row.dataSetInternalID}
               data={unitDataSource}
               buttonType={'icon'}
               actionRef={actionRefUnitTable}
-              setViewDrawerVisible={() => {}}
+              setViewDrawerVisible={() => { }}
               onData={onUnitData}
             />
           </Space>,
@@ -182,31 +182,21 @@ export const UnitGroupForm: FC<Props> = ({
             rules={StringMultiLang_r}
           ></LangTextItemForm>
         </Card>
-        <Card
-          size="small"
-          title={
-            <FormattedMessage
-              id="pages.unitgroup.edit.unitGroupInformation.classification"
-              defaultMessage="Classification"
-            />
-          }
-        >
-          <LevelTextItemForm
-            name={[
-              'unitGroupInformation',
-              'dataSetInformation',
-              'classificationInformation',
-              'common:classification',
-              'common:class',
-            ]}
-            lang={lang}
-            dataType={'UnitGroup'}
-            formRef={formRef}
-            onData={onData}
-          />
-        </Card>
+        <br />
+        <LevelTextItemForm
+          name={[
+            'unitGroupInformation',
+            'dataSetInformation',
+            'classificationInformation',
+            'common:classification',
+            'common:class',
+          ]}
+          lang={lang}
+          dataType={'UnitGroup'}
+          onData={onData}
+        />
         <Form.Item
-          label="ID" //这是翻译哪一个
+          label="ID"
           name={['unitGroupInformation', 'dataSetInformation', 'common:UUID']}
           hidden
         >

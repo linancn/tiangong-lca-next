@@ -1,10 +1,10 @@
 import {
-  classificationToJson,
-  classificationToList,
+  classificationToJsonList,
+  classificationToStringList,
   getLangJson,
   getLangList,
   getLangText,
-  removeEmptyObjects,
+  removeEmptyObjects
 } from '../general/util';
 
 export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
@@ -43,7 +43,7 @@ export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
           },
           classificationInformation: {
             'common:classification': {
-              'common:class': classificationToList(
+              'common:class': classificationToJsonList(
                 data?.processInformation?.dataSetInformation?.classificationInformation?.[
                   'common:classification'
                 ]?.['common:class'],
@@ -289,7 +289,7 @@ export function genProcessFromData(data: any) {
         },
         classificationInformation: {
           'common:classification': {
-            'common:class': classificationToJson(
+            'common:class': classificationToStringList(
               data?.processInformation?.dataSetInformation?.classificationInformation?.[
                 'common:classification'
               ]?.['common:class'],

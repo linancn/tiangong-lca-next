@@ -1,10 +1,10 @@
 import {
-  classificationToJson,
-  classificationToList,
+  classificationToJsonList,
+  classificationToStringList,
   getLangJson,
   getLangList,
   getLangText,
-  removeEmptyObjects,
+  removeEmptyObjects
 } from '../general/util';
 
 export function genUnitGroupJsonOrdered(id: string, data: any, oldData: any) {
@@ -39,7 +39,7 @@ export function genUnitGroupJsonOrdered(id: string, data: any, oldData: any) {
           ),
           classificationInformation: {
             'common:classification': {
-              'common:class': classificationToList(
+              'common:class': classificationToJsonList(
                 data?.unitGroupInformation?.dataSetInformation?.classificationInformation?.[
                   'common:classification'
                 ]?.['common:class'],
@@ -136,7 +136,7 @@ export function genUnitGroupFromData(data: any) {
         'common:name': getLangList(data?.unitGroupInformation?.dataSetInformation?.['common:name']),
         classificationInformation: {
           'common:classification': {
-            'common:class': classificationToJson(
+            'common:class': classificationToStringList(
               data?.unitGroupInformation?.dataSetInformation?.classificationInformation?.[
                 'common:classification'
               ]?.['common:class'],

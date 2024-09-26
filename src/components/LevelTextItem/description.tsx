@@ -1,4 +1,5 @@
-import { getILCDClassification, getILCDFlowCategorization } from '@/services/ilcd/api';
+import { genClassStr } from '@/services/general/util';
+import { getILCDClassification } from '@/services/ilcd/api';
 import { Descriptions, Spin } from 'antd';
 import { FC, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -11,70 +12,45 @@ type Props = {
 
 const LevelTextItemDescription: FC<Props> = ({ data, lang, categoryType, flowType }) => {
   const [spinning, setSpinning] = useState<boolean>(false);
-  const [dataZH, setDataZH] = useState<any>({});
+  const [calssStr, setClassStr] = useState<any>('');
+
   useEffect(() => {
-    if (data) {
+    if (data && Array.isArray(data) && data.length > 0) {
       setSpinning(true);
       if (categoryType === 'Flow' && flowType === 'Elementary flow') {
-        getILCDFlowCategorization(lang, [data?.['@level_0']]).then((res) => {
-          const level0 = res.data?.category?.find(
-            (i: any) => i?.['@name'].toString() === data?.['@level_0'],
-          );
-          if (level0) {
-            setDataZH({
-              '@level_0': level0?.['@nameZH'],
-            });
-            const level1 = level0?.category?.find(
-              (i: any) => i?.['@name'].toString() === data?.['@level_1'],
-            );
-            if (level1) {
-              setDataZH({
-                '@level_0': level0?.['@nameZH'],
-                '@level_1': level1?.['@nameZH'],
-              });
-              const level2 = level1?.category?.find(
-                (i: any) => i?.['@name'].toString() === data?.['@level_2'],
-              );
-              if (level2) {
-                setDataZH({
-                  '@level_0': level0?.['@nameZH'],
-                  '@level_1': level1?.['@nameZH'],
-                  '@level_2': level2?.['@nameZH'],
-                });
-              }
-            }
-          }
-          setSpinning(false);
-        });
+        // getILCDFlowCategorization(lang, [data?.['@level_0']]).then((res) => {
+        //   const level0 = res.data?.category?.find(
+        //     (i: any) => i?.['@name'].toString() === data?.['@level_0'],
+        //   );
+        //   if (level0) {
+        //     setDataZH({
+        //       '@level_0': level0?.['@nameZH'],
+        //     });
+        //     const level1 = level0?.category?.find(
+        //       (i: any) => i?.['@name'].toString() === data?.['@level_1'],
+        //     );
+        //     if (level1) {
+        //       setDataZH({
+        //         '@level_0': level0?.['@nameZH'],
+        //         '@level_1': level1?.['@nameZH'],
+        //       });
+        //       const level2 = level1?.category?.find(
+        //         (i: any) => i?.['@name'].toString() === data?.['@level_2'],
+        //       );
+        //       if (level2) {
+        //         setDataZH({
+        //           '@level_0': level0?.['@nameZH'],
+        //           '@level_1': level1?.['@nameZH'],
+        //           '@level_2': level2?.['@nameZH'],
+        //         });
+        //       }
+        //     }
+        //   }
+        //   setSpinning(false);
+        // });
       } else {
-        getILCDClassification(categoryType, lang, [data?.['@level_0']]).then((res) => {
-          const level0 = res.data?.category?.find(
-            (i: any) => i?.['@name'].toString() === data?.['@level_0'],
-          );
-          if (level0) {
-            setDataZH({
-              '@level_0': level0?.['@nameZH'],
-            });
-            const level1 = level0?.category?.find(
-              (i: any) => i?.['@name'].toString() === data?.['@level_1'],
-            );
-            if (level1) {
-              setDataZH({
-                '@level_0': level0?.['@nameZH'],
-                '@level_1': level1?.['@nameZH'],
-              });
-              const level2 = level1?.category?.find(
-                (i: any) => i?.['@name'].toString() === data?.['@level_2'],
-              );
-              if (level2) {
-                setDataZH({
-                  '@level_0': level0?.['@nameZH'],
-                  '@level_1': level1?.['@nameZH'],
-                  '@level_2': level2?.['@nameZH'],
-                });
-              }
-            }
-          }
+        getILCDClassification(categoryType, lang, [data[0]]).then((res) => {
+          setClassStr(genClassStr(data, 0, res.data));
           setSpinning(false);
         });
       }
@@ -86,28 +62,10 @@ const LevelTextItemDescription: FC<Props> = ({ data, lang, categoryType, flowTyp
       <Descriptions bordered size={'small'} column={1}>
         <Descriptions.Item
           key={0}
-          label={<FormattedMessage id="pages.contact.level1" defaultMessage="Level 1" />}
+          label={<FormattedMessage id="pages.contact.classification" defaultMessage="Classification" />}
           labelStyle={{ width: '100px' }}
         >
-          {lang === 'zh' ? (dataZH?.['@level_0'] ?? '-') : (data?.['@level_0'] ?? '-')}
-          {/* <Space size={'large'}>
-            <Space>en:{data?.['@level_0'] ?? '-'}</Space>
-            <Space>zh:{dataZH?.['@level_0'] ?? '-'}</Space>
-          </Space> */}
-        </Descriptions.Item>
-        <Descriptions.Item
-          key={0}
-          label={<FormattedMessage id="pages.contact.level2" defaultMessage="Level 2" />}
-          labelStyle={{ width: '100px' }}
-        >
-          {lang === 'zh' ? (dataZH?.['@level_1'] ?? '-') : (data?.['@level_1'] ?? '-')}
-        </Descriptions.Item>
-        <Descriptions.Item
-          key={0}
-          label={<FormattedMessage id="pages.contact.level3" defaultMessage="Level 3" />}
-          labelStyle={{ width: '100px' }}
-        >
-          {lang === 'zh' ? (dataZH?.['@level_2'] ?? '-') : (data?.['@level_2'] ?? '-')}
+          {calssStr}
         </Descriptions.Item>
       </Descriptions>
     </Spin>

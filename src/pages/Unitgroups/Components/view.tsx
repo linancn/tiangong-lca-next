@@ -204,13 +204,11 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
         <LangTextItemDescription
           data={initData.unitGroupInformation?.dataSetInformation?.['common:name'] ?? {}}
         />
-        <Divider orientationMargin="0" orientation="left" plain>
-          <FormattedMessage id="pages.unitgroup.classification" defaultMessage="Classification" />
-        </Divider>
+        <br />
         <LevelTextItemDescription
           data={
             initData.unitGroupInformation?.dataSetInformation?.classificationInformation?.[
-              'common:classification'
+            'common:classification'
             ]?.['common:class'] ?? {}
           }
           lang={lang}
@@ -229,7 +227,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
           }
           data={
             initData.modellingAndValidation?.complianceDeclarations?.compliance?.[
-              'common:referenceToComplianceSystem'
+            'common:referenceToComplianceSystem'
             ] ?? {}
           }
           lang={lang}
@@ -247,8 +245,8 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
             labelStyle={{ width: '240px' }}
           >
             {getComplianceLabel(initData.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                'common:approvalOfOverallCompliance'
-              ] ?? '-')}
+              'common:approvalOfOverallCompliance'
+            ] ?? '-')}
           </Descriptions.Item>
         </Descriptions>
       </>

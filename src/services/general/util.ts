@@ -1,3 +1,5 @@
+import { Classification } from "./data";
+
 export function removeEmptyObjects(obj: any) {
   Object.keys(obj).forEach((key) => {
     if (obj[key] && typeof obj[key] === 'object') {
@@ -8,6 +10,54 @@ export function removeEmptyObjects(obj: any) {
     }
   });
   return obj;
+}
+
+export function genClassStr(data: string[], index: number, classification: Classification[]): string {
+  const c = classification?.find((i) => i?.value === data?.[index]);
+  if (c) {
+    if (data.length > index + 1) {
+      return c?.label + ' / ' + genClassStr(data, index + 1, c?.children);
+    } else {
+      return c?.label;
+    }
+  }
+  else {
+    if (data?.[index]) {
+      if (data.length > index + 1) {
+        return data?.[index] + ' / ' + genClassStr(data, index + 1, []);
+      } else {
+        return data?.[index];
+      }
+    }
+  }
+  return '';
+}
+
+export function genClassJsonZH(data: any[], index: number, classification: any[]): any {
+  const d = data?.find((i) => i?.['@level'] === index.toString());
+  const c = classification?.find((i) => i?.value === d?.['#text']);
+  if (c) {
+    const newC = {
+      '@level': index.toString(),
+      '#text': c?.label ?? c?.['#text'],
+    };
+    if (data.length > index + 1) {
+      return [newC, ...genClassJsonZH(data, index + 1, c?.children)];
+    }
+    return [newC];
+  }
+  else {
+    if (d) {
+      const newD = {
+        '@level': index.toString(),
+        '#text': d?.['#text'],
+      };
+      return [newD, ...genClassJsonZH(data, index + 1, [])];
+    }
+    else {
+      return [];
+    }
+  }
 }
 
 export function getLang(locale: string) {
@@ -64,29 +114,64 @@ export function getLangList(langTexts: any) {
   }
 }
 
-export function classificationToString(classifications: any) {
-  let classificationStr = '-';
+export function classificationToString(classifications: any[]) {
+  let classificationStr = '';
   try {
-    if (Array.isArray(classifications)) {
-      const filterList0 = classifications.filter((i) => i['@level'].toString() === '0');
-      if (filterList0.length > 0) {
-        classificationStr = filterList0[0]['#text'] ?? '-';
-        const filterList1 = classifications.filter((i) => i['@level'].toString() === '1');
-        if (filterList1.length > 0) {
-          classificationStr = classificationStr + ' > ' + (filterList1[0]['#text'] ?? '-');
-          const filterList2 = classifications.filter((i) => i['@level'].toString() === '2');
-          if (filterList2.length > 0) {
-            classificationStr = classificationStr + ' > ' + (filterList2[0]['#text'] ?? '-');
-          }
-        }
+    if (classifications.length > 0) {
+      for (let i = 0; i < classifications.length; i++) {
+        const filterList = classifications.find((c) => c['@level'] === i.toString());
+        classificationStr += filterList?.['#text'] + ' / ';
       }
-    } else {
-      classificationStr = classifications?.['#text'] ?? '-';
+      classificationStr = classificationStr.slice(0, -3);
+    }
+    else {
+      classificationStr = '-';
     }
   } catch (e) {
     console.log(e);
   }
   return classificationStr;
+}
+
+export function classificationToStringList(classifications: any) {
+  let classificationStrList = [];
+  try {
+    if (Array.isArray(classifications)) {
+      for (let i = 0; i < classifications.length; i++) {
+        const filterList = classifications.find((c) => c['@level'] === i.toString());
+        if (filterList) {
+          classificationStrList.push(filterList?.['#text']);
+        }
+      }
+    } else {
+      classificationStrList = [classifications?.['#text']];
+    }
+  } catch (e) {
+    console.log(e);
+  }
+  return classificationStrList;
+}
+
+export function classificationToJsonList(classifications: any) {
+  let common_class = {};
+  if (classifications && Array.isArray(classifications) && classifications.length > 0) {
+    if (classifications.length === 1) {
+      common_class = {
+        '@level': '0',
+        '#text': classifications[0],
+      };
+    } else {
+      common_class = classifications.map((classification: any, index: number) => {
+        return {
+          '@level': index.toString(),
+          '#text': classification,
+        };
+      });
+    }
+  }
+  console.log('classifications', classifications);
+  console.log('classificationToJsonList', common_class);
+  return removeEmptyObjects(common_class);
 }
 
 export function classificationToJson(classifications: any) {
@@ -169,45 +254,14 @@ export function classificationToList(classifications: any) {
   return removeEmptyObjects(common_class);
 }
 
-export function genClassificationZH(classifications: any, categoryData: any) {
-  let classificationZH: any[] = [];
-  const filterList0 = classifications.find((i: any) => i?.['@level'] === '0');
-  if (filterList0) {
-    const filterList0_zh = categoryData?.find((i: any) => i?.['@name'] === filterList0?.['#text']);
-    classificationZH = [
-      {
-        '@level': '0',
-        '#text': filterList0_zh?.['@nameZH'] ?? filterList0?.['#text'],
-      },
-    ];
-    const filterList1 = classifications.find((ii: any) => ii?.['@level'] === '1');
-    if (filterList1) {
-      const filterList1_zh = filterList0_zh?.category?.find(
-        (ii: any) => ii?.['@name'] === filterList1?.['#text'],
-      );
-      classificationZH = [
-        ...classificationZH,
-        {
-          '@level': '1',
-          '#text': filterList1_zh?.['@nameZH'] ?? filterList1?.['#text'],
-        },
-      ];
-      const filterList2 = classifications.find((ii: any) => ii?.['@level'] === '2');
-      if (filterList2) {
-        const filterList2_zh = filterList1_zh?.category?.find(
-          (ii: any) => ii?.['@name'] === filterList2?.['#text'],
-        );
-        classificationZH = [
-          ...classificationZH,
-          {
-            '@level': '2',
-            '#text': filterList2_zh?.['@nameZH'] ?? filterList2?.['#text'],
-          },
-        ];
-      }
-    }
+export function genClassificationZH(classifications: any[], categoryData: any[]) {
+  if (classifications.length > 0) {
+    const classificationsZH = genClassJsonZH(classifications, 0, categoryData);
+    return classificationsZH;
   }
-  return classificationZH;
+  else {
+    return [];
+  }
 }
 
 export function isValidURL(url: string): boolean {
@@ -216,11 +270,11 @@ export function isValidURL(url: string): boolean {
   }
   const urlPattern = new RegExp(
     '^(https?:\\/\\/)?' +
-      '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|' +
-      '((\\d{1,3}\\.){3}\\d{1,3}))' +
-      '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' +
-      '(\\?[;&a-z\\d%_.~+=-]*)?' +
-      '(\\#[-a-z\\d_]*)?$',
+    '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|' +
+    '((\\d{1,3}\\.){3}\\d{1,3}))' +
+    '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' +
+    '(\\?[;&a-z\\d%_.~+=-]*)?' +
+    '(\\#[-a-z\\d_]*)?$',
     'i',
   );
   return !!urlPattern.test(url);

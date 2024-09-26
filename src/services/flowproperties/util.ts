@@ -1,12 +1,13 @@
 import {
-  classificationToJson,
-  classificationToList,
+  classificationToJsonList,
+  classificationToStringList,
   getLangJson,
   getLangList,
-  removeEmptyObjects,
+  removeEmptyObjects
 } from '../general/util';
 
 export function genFlowpropertyJsonOrdered(id: string, data: any, oldData: any) {
+  console.log('genFlowpropertyJsonOrdered', data);
   return removeEmptyObjects({
     flowPropertyDataSet: {
       '@xmlns': oldData.flowPropertyDataSet?.['@xmlns'] ?? {},
@@ -22,7 +23,7 @@ export function genFlowpropertyJsonOrdered(id: string, data: any, oldData: any) 
           ),
           classificationInformation: {
             'common:classification': {
-              'common:class': classificationToList(
+              'common:class': classificationToJsonList(
                 data?.flowPropertiesInformation?.dataSetInformation?.classificationInformation?.[
                   'common:classification'
                 ]?.['common:class'],
@@ -145,7 +146,7 @@ export function genFlowpropertyFromData(data: any) {
         ),
         classificationInformation: {
           'common:classification': {
-            'common:class': classificationToJson(
+            'common:class': classificationToStringList(
               data?.flowPropertiesInformation?.dataSetInformation?.classificationInformation?.[
                 'common:classification'
               ]?.['common:class'],

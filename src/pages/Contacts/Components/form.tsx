@@ -5,9 +5,9 @@ import {
   STMultiLang_r,
   StringMultiLang_r,
   String_o,
+  WWWAddress,
   dataSetVersion,
   emailvalidation,
-  WWWAddress,
 } from '@/components/Validator/index';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
@@ -69,26 +69,18 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
               rules={StringMultiLang_r}
             />
           </Card>
-          <Card
-            size="small"
-            title={
-              <FormattedMessage id="pages.contact.classification" defaultMessage="Classification" />
-            }
-          >
-            <LevelTextItemForm
-              name={[
-                'contactInformation',
-                'dataSetInformation',
-                'classificationInformation',
-                'common:classification',
-                'common:class',
-              ]}
-              lang={lang}
-              dataType={'Contact'}
-              formRef={formRef}
-              onData={onData}
-            />
-          </Card>
+          <LevelTextItemForm
+            name={[
+              'contactInformation',
+              'dataSetInformation',
+              'classificationInformation',
+              'common:classification',
+              'common:class',
+            ]}
+            lang={lang}
+            dataType={'Contact'}
+            onData={onData}
+          />
           <Card
             size="small"
             title={
