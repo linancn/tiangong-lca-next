@@ -2460,7 +2460,7 @@
                                 "category": [
                                     {
                                         "@id": "581",
-                                        "@name": "Publishing of books, periodicals and other publishing activities",
+                                        "@name": "Publishing of books, newspapers, periodicals and other publishing activities",
                                         "category": [
                                             {
                                                 "@id": "5811",
@@ -2576,7 +2576,7 @@
                             }
                         ]
                     },
-                    {        
+                    {
                         "@id": "K",
                         "@name": "Telecommunications, computer programming, consultancy, computing infrastructure, and other information service activities",
                         "category": [
@@ -2596,13 +2596,13 @@
                                     },
                                     {
                                         "@id": "612",
-                                        "@name": "Telecommunication reselling activities and intermediation service activities for telecommunication",
+                                        "@name": "Telecommunication reselling activities and intermediation service activities for telecommunication",
                                         "category": [
                                             {
                                                 "@id": "6120",
-                                                "@name": "Telecommunication reselling activities and intermediation service activities for telecommunication"
+                                                "@name": "Telecommunication reselling activities and intermediation service activities for telecommunication"
                                             }
-                                    ]
+                                        ]
                                     },
                                     {
                                         "@id": "619",
@@ -3122,39 +3122,35 @@
                                 "category": [
                                     {
                                         "@id": "771",
-                                        "@name": "Renting and leasing of motor vehicles",
+                                        "@name": "Rental and leasing of motor vehicles",
                                         "category": [
                                             {
                                                 "@id": "7710",
-                                                "@name": "Renting and leasing of motor vehicles"
+                                                "@name": "Rental and leasing of motor vehicles"
                                             }
                                         ]
                                     },
                                     {
                                         "@id": "772",
-                                        "@name": "Renting and leasing of personal and household goods",
+                                        "@name": "Rental and leasing of personal and household goods",
                                         "category": [
                                             {
                                                 "@id": "7721",
-                                                "@name": "Renting and leasing of recreational and sports goods"
-                                            },
-                                            {
-                                                "@id": "7722",
-                                                "@name": "Renting of video tapes and disks"
+                                                "@name": "Rental and leasing of recreational and sports goods"
                                             },
                                             {
                                                 "@id": "7729",
-                                                "@name": "Renting and leasing of other personal and household goods"
+                                                "@name": "Rental and leasing of other personal and household goods"
                                             }
                                         ]
                                     },
                                     {
                                         "@id": "773",
-                                        "@name": "Renting and leasing of other machinery, equipment and tangible goods",
+                                        "@name": "Rental and leasing of other machinery, equipment and tangible goods",
                                         "category": [
                                             {
                                                 "@id": "7730",
-                                                "@name": "Renting and leasing of other machinery, equipment and tangible goods"
+                                                "@name": "Rental and leasing of other machinery, equipment and tangible goods"
                                             }
                                         ]
                                     },
@@ -3284,7 +3280,7 @@
                                             },
                                             {
                                                 "@id": "8129",
-                                                "@name": "Other cleaning activiaties"
+                                                "@name": "Other cleaning activities"
                                             }
                                         ]
                                     },
@@ -3574,11 +3570,11 @@
                                 "category": [
                                     {
                                         "@id": "871",
-                                        "@name": "Residential nursing care facilities",
+                                        "@name": "Residential nursing care activities",
                                         "category": [
                                             {
                                                 "@id": "8710",
-                                                "@name": "Residential nursing care facilities"
+                                                "@name": "Residential nursing care activities"
                                             }
                                         ]
                                     },
@@ -3903,7 +3899,8 @@
                                                 "@name": "Repair and maintenance of other personal and household goods"
                                             }
                                         ]
-                                    },                                    {
+                                    },
+                                    {
                                         "@id": "953",
                                         "@name": "Repair and maintenance of motor vehicles and motorcycles",
                                         "category": [
