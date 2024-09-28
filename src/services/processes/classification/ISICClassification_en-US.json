@@ -124,7 +124,7 @@
                                             },
                                             {
                                                 "@id": "0145",
-                                                "@name": "Raising of swine/pigs"
+                                                "@name": "Raising of swine and pigs"
                                             },
                                             {
                                                 "@id": "0146",
@@ -255,6 +255,16 @@
                                             {
                                                 "@id": "0322",
                                                 "@name": "Freshwater aquaculture"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "@id": "033",
+                                        "@name": "Support activities for fishing and aquaculture",
+                                        "category": [
+                                            {
+                                                "@id": "0330",
+                                                "@name": "Support activities for fishing and aquaculture"
                                             }
                                         ]
                                     }
@@ -511,6 +521,10 @@
                                                 "@name": "Manufacture of prepared meals and dishes"
                                             },
                                             {
+                                                "@id": "1076",
+                                                "@name": "Processing of coffee and tea"
+                                            },
+                                            {
                                                 "@id": "1079",
                                                 "@name": "Manufacture of other food products n.e.c."
                                             }
@@ -546,10 +560,14 @@
                                             },
                                             {
                                                 "@id": "1103",
-                                                "@name": "Manufacture of malt liquors and malt"
+                                                "@name": "Manufacture of beer"
                                             },
                                             {
                                                 "@id": "1104",
+                                                "@name": "Manufacture of malt"
+                                            },
+                                            {
+                                                "@id": "1105",
                                                 "@name": "Manufacture of soft drinks; production of mineral waters and other bottled waters"
                                             }
                                         ]
@@ -664,7 +682,7 @@
                                 "category": [
                                     {
                                         "@id": "151",
-                                        "@name": "Tanning and dressing of leather; manufacture of luggage, handbags, saddlery and harness; dressing and dyeing of fur",
+                                        "@name": "Tanning, dyeing, dressing of leather and fur; manufacture of luggage, handbags, saddlery and harness",
                                         "category": [
                                             {
                                                 "@id": "1511",
@@ -672,7 +690,7 @@
                                             },
                                             {
                                                 "@id": "1512",
-                                                "@name": "Manufacture of luggage, handbags and the like, saddlery and harness"
+                                                "@name": "Manufacture of luggage, handbags and the like, saddlery and harness of any material"
                                             }
                                         ]
                                     },
@@ -796,11 +814,11 @@
                                     },
                                     {
                                         "@id": "192",
-                                        "@name": "Manufacture of refined petroleum products",
+                                        "@name": "Manufacture of refined petroleum products; manufacture of fossil fuel products",
                                         "category": [
                                             {
                                                 "@id": "1920",
-                                                "@name": "Manufacture of refined petroleum products"
+                                                "@name": "Manufacture of refined petroleum products; manufacture of fossil fuel products"
                                             }
                                         ]
                                     }
@@ -880,7 +898,7 @@
                             },
                             {
                                 "@id": "22",
-                                "@name": "Manufacture of rubber and plastics products",
+                                "@name": "Manufacture of rubber and plastic products",
                                 "category": [
                                     {
                                         "@id": "221",
@@ -1063,8 +1081,12 @@
                                         "@name": "Manufacture of electronic components and boards",
                                         "category": [
                                             {
-                                                "@id": "2610",
-                                                "@name": "Manufacture of electronic components and boards"
+                                                "@id": "2611",
+                                                "@name": "Manufacture of solar cells, solar panels and photovoltaic inverters"
+                                            },
+                                            {
+                                                "@id": "2619",
+                                                "@name": "Manufacture of other electronic components and boards"
                                             }
                                         ]
                                     },
@@ -1188,11 +1210,11 @@
                                     },
                                     {
                                         "@id": "274",
-                                        "@name": "Manufacture of electric lighting equipment",
+                                        "@name": "Manufacture of lighting equipment",
                                         "category": [
                                             {
                                                 "@id": "2740",
-                                                "@name": "Manufacture of electric lighting equipment"
+                                                "@name": "Manufacture of lighting equipment"
                                             }
                                         ]
                                     },
@@ -1244,7 +1266,7 @@
                                             },
                                             {
                                                 "@id": "2815",
-                                                "@name": "Manufacture of ovens, furnaces and furnace burners"
+                                                "@name": "Manufacture of ovens, furnaces and permanent household heating equipment"
                                             },
                                             {
                                                 "@id": "2816",
@@ -1413,8 +1435,12 @@
                                         "@name": "Manufacture of furniture",
                                         "category": [
                                             {
-                                                "@id": "3100",
-                                                "@name": "Manufacture of furniture"
+                                                "@id": "3101",
+                                                "@name": "Manufacture of wooden furniture"
+                                            },
+                                            {
+                                                "@id": "3102",
+                                                "@name": "Manufacture of other furniture"
                                             }
                                         ]
                                     }
@@ -1492,35 +1518,35 @@
                             },
                             {
                                 "@id": "33",
-                                "@name": "Repair and installation of machinery and equipment",
+                                "@name": "Repair, maintenance and installation of machinery and equipment",
                                 "category": [
                                     {
                                         "@id": "331",
-                                        "@name": "Repair of fabricated metal products, machinery and equipment",
+                                        "@name": "Repair and maintenance of fabricated metal products, machinery and equipment",
                                         "category": [
                                             {
                                                 "@id": "3311",
-                                                "@name": "Repair of fabricated metal products"
+                                                "@name": "Repair and maintenance of fabricated metal products"
                                             },
                                             {
                                                 "@id": "3312",
-                                                "@name": "Repair of machinery"
+                                                "@name": "Repair and maintenance of machinery"
                                             },
                                             {
                                                 "@id": "3313",
-                                                "@name": "Repair of electronic and optical equipment"
+                                                "@name": "Repair and maintenance of electronic and optical equipment"
                                             },
                                             {
                                                 "@id": "3314",
-                                                "@name": "Repair of electrical equipment"
+                                                "@name": "Repair and maintenance of electrical equipment"
                                             },
                                             {
                                                 "@id": "3315",
-                                                "@name": "Repair of transport equipment, except motor vehicles"
+                                                "@name": "Repair and maintenance of transport equipment, except motor vehicles"
                                             },
                                             {
                                                 "@id": "3319",
-                                                "@name": "Repair of other equipment"
+                                                "@name": "Repair and maintenance of other equipment"
                                             }
                                         ]
                                     },
@@ -1548,11 +1574,19 @@
                                 "category": [
                                     {
                                         "@id": "351",
-                                        "@name": "Electric power generation, transmission and distribution",
+                                        "@name": "Electric power generation, transmission and distribution activities",
                                         "category": [
                                             {
-                                                "@id": "3510",
-                                                "@name": "Electric power generation, transmission and distribution"
+                                                "@id": "3511",
+                                                "@name": "Electric power generation activities from non-renewable sources"
+                                            },
+                                            {
+                                                "@id": "3512",
+                                                "@name": "Electric power generation activities from renewable sources"
+                                            },
+                                            {
+                                                "@id": "3513",
+                                                "@name": "Electric power transmission and distribution activities"
                                             }
                                         ]
                                     },
@@ -1573,6 +1607,16 @@
                                             {
                                                 "@id": "3530",
                                                 "@name": "Steam and air conditioning supply"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "@id": "354",
+                                        "@name": "Activities of brokers and agents for electric power and natural gas",
+                                        "category": [
+                                            {
+                                                "@id": "3540",
+                                                "@name": "Activities of brokers and agents for electric power and natural gas"
                                             }
                                         ]
                                     }
@@ -1618,11 +1662,11 @@
                             },
                             {
                                 "@id": "38",
-                                "@name": "Waste collection, treatment and disposal activities; materials recovery",
+                                "@name": "Waste collection, treatment and disposal, and recovery activities",
                                 "category": [
                                     {
                                         "@id": "381",
-                                        "@name": "Waste collection",
+                                        "@name": "Waste collection activities",
                                         "category": [
                                             {
                                                 "@id": "3811",
@@ -1650,11 +1694,11 @@
                                     },
                                     {
                                         "@id": "383",
-                                        "@name": "Materials recovery",
+                                        "@name": "Materials and other waste recovery",
                                         "category": [
                                             {
                                                 "@id": "3830",
-                                                "@name": "Materials recovery"
+                                                "@name": "Materials and other waste recovery"
                                             }
                                         ]
                                     }
@@ -1662,15 +1706,15 @@
                             },
                             {
                                 "@id": "39",
-                                "@name": "Remediation activities and other waste management services",
+                                "@name": "Remediation and other waste management service activities",
                                 "category": [
                                     {
                                         "@id": "390",
-                                        "@name": "Remediation activities and other waste management services",
+                                        "@name": "Remediation and other waste management service activities",
                                         "category": [
                                             {
                                                 "@id": "3900",
-                                                "@name": "Remediation activities and other waste management services"
+                                                "@name": "Remediation and other waste management service activities"
                                             }
                                         ]
                                     }
@@ -1684,15 +1728,15 @@
                         "category": [
                             {
                                 "@id": "41",
-                                "@name": "Construction of buildings",
+                                "@name": "Construction of residential and non-residential buildings",
                                 "category": [
                                     {
                                         "@id": "410",
-                                        "@name": "Construction of buildings",
+                                        "@name": "Construction of residential and non-residential buildings",
                                         "category": [
                                             {
                                                 "@id": "4100",
-                                                "@name": "Construction of buildings"
+                                                "@name": "Construction of residential and non-residential buildings"
                                             }
                                         ]
                                     }
@@ -1781,6 +1825,16 @@
                                         ]
                                     },
                                     {
+                                        "@id": "434",
+                                        "@name": "Intermediation service activities for specialized construction services",
+                                        "category": [
+                                            {
+                                                "@id": "4340",
+                                                "@name": "Intermediation service activities for specialized construction services"
+                                            }
+                                        ]
+                                    },
+                                    {
                                         "@id": "439",
                                         "@name": "Other specialized construction activities",
                                         "category": [
@@ -1796,57 +1850,11 @@
                     },
                     {
                         "@id": "G",
-                        "@name": "Wholesale and retail trade; repair of motor vehicles and motorcycles",
+                        "@name": "Wholesale and retail trade",
                         "category": [
                             {
-                                "@id": "45",
-                                "@name": "Wholesale and retail trade and repair of motor vehicles and motorcycles",
-                                "category": [
-                                    {
-                                        "@id": "451",
-                                        "@name": "Sale of motor vehicles",
-                                        "category": [
-                                            {
-                                                "@id": "4510",
-                                                "@name": "Sale of motor vehicles"
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "@id": "452",
-                                        "@name": "Maintenance and repair of motor vehicles",
-                                        "category": [
-                                            {
-                                                "@id": "4520",
-                                                "@name": "Maintenance and repair of motor vehicles"
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "@id": "453",
-                                        "@name": "Sale of motor vehicle parts and accessories",
-                                        "category": [
-                                            {
-                                                "@id": "4530",
-                                                "@name": "Sale of motor vehicle parts and accessories"
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "@id": "454",
-                                        "@name": "Sale, maintenance and repair of motorcycles and related parts and accessories",
-                                        "category": [
-                                            {
-                                                "@id": "4540",
-                                                "@name": "Sale, maintenance and repair of motorcycles and related parts and accessories"
-                                            }
-                                        ]
-                                    }
-                                ]
-                            },
-                            {
                                 "@id": "46",
-                                "@name": "Wholesale trade, except of motor vehicles and motorcycles",
+                                "@name": "Wholesale trade",
                                 "category": [
                                     {
                                         "@id": "461",
@@ -1887,6 +1895,10 @@
                                                 "@name": "Wholesale of textiles, clothing and footwear"
                                             },
                                             {
+                                                "@id": "4642",
+                                                "@name": "Wholesale of household, office and shop furniture, carpets and lighting equipment"
+                                            },
+                                            {
                                                 "@id": "4649",
                                                 "@name": "Wholesale of other household goods"
                                             }
@@ -1916,23 +1928,41 @@
                                     },
                                     {
                                         "@id": "466",
-                                        "@name": "Other specialized wholesale",
+                                        "@name": "Wholesale of motor vehicles, motorcycles and related parts and accessories",
                                         "category": [
                                             {
                                                 "@id": "4661",
-                                                "@name": "Wholesale of solid, liquid and gaseous fuels and related products"
+                                                "@name": "Wholesale of motor vehicles"
                                             },
                                             {
                                                 "@id": "4662",
-                                                "@name": "Wholesale of metals and metal ores"
+                                                "@name": "Wholesale of motor vehicle parts and accessories"
                                             },
                                             {
                                                 "@id": "4663",
+                                                "@name": "Wholesale of motorcycles, motorcycle parts and accessories"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "@id": "467",
+                                        "@name": "Other specialized wholesale",
+                                        "category": [
+                                            {
+                                                "@id": "4671",
+                                                "@name": "Wholesale of solid, liquid and gaseous fuels and related products"
+                                            },
+                                            {
+                                                "@id": "4672",
+                                                "@name": "Wholesale of metals and metal ores"
+                                            },
+                                            {
+                                                "@id": "4673",
                                                 "@name": "Wholesale of construction materials, hardware, plumbing and heating equipment and supplies"
                                             },
                                             {
-                                                "@id": "4669",
-                                                "@name": "Wholesale of waste and scrap and other products n.e.c."
+                                                "@id": "4679",
+                                                "@name": "Wholesale of chemicals, waste and scrap and other products n.e.c."
                                             }
                                         ]
                                     },
@@ -1950,123 +1980,119 @@
                             },
                             {
                                 "@id": "47",
-                                "@name": "Retail trade, except of motor vehicles and motorcycles",
+                                "@name": "Retail trade",
                                 "category": [
                                     {
                                         "@id": "471",
-                                        "@name": "Retail sale in non-specialized stores",
+                                        "@name": "Non-specialized retail sale",
                                         "category": [
                                             {
                                                 "@id": "4711",
-                                                "@name": "Retail sale in non-specialized stores with food, beverages or tobacco predominating"
+                                                "@name": "Non-specialized retail sale with food, beverages or tobacco predominating"
                                             },
                                             {
                                                 "@id": "4719",
-                                                "@name": "Other retail sale in non-specialized stores"
+                                                "@name": "Other non-specialized retail sale"
                                             }
                                         ]
                                     },
                                     {
                                         "@id": "472",
-                                        "@name": "Retail sale of food, beverages and tobacco in specialized stores",
+                                        "@name": "Retail sale of food, beverages and tobacco",
                                         "category": [
                                             {
                                                 "@id": "4721",
-                                                "@name": "Retail sale of food in specialized stores"
+                                                "@name": "Retail sale of food"
                                             },
                                             {
                                                 "@id": "4722",
-                                                "@name": "Retail sale of beverages in specialized stores"
+                                                "@name": "Retail sale of beverages"
                                             },
                                             {
                                                 "@id": "4723",
-                                                "@name": "Retail sale of tobacco products in specialized stores"
+                                                "@name": "Retail sale of tobacco products"
                                             }
                                         ]
                                     },
                                     {
                                         "@id": "473",
-                                        "@name": "Retail sale of automotive fuel in specialized stores",
+                                        "@name": "Retail sale of automotive fuel",
                                         "category": [
                                             {
                                                 "@id": "4730",
-                                                "@name": "Retail sale of automotive fuel in specialized stores"
+                                                "@name": "Retail sale of automotive fuel"
                                             }
                                         ]
                                     },
                                     {
                                         "@id": "474",
-                                        "@name": "Retail sale of information and communications equipment in specialized stores",
+                                        "@name": "Retail sale of information and communication equipment",
                                         "category": [
                                             {
-                                                "@id": "4741",
-                                                "@name": "Retail sale of computers, peripheral units, software and telecommunications equipment in specialized stores"
-                                            },
-                                            {
-                                                "@id": "4742",
-                                                "@name": "Retail sale of audio and video equipment in specialized stores"
+                                                "@id": "4740",
+                                                "@name": "Retail sale of information and communication equipment"
                                             }
                                         ]
                                     },
                                     {
                                         "@id": "475",
-                                        "@name": "Retail sale of other household equipment in specialized stores",
+                                        "@name": "Retail sale of other household equipment",
                                         "category": [
                                             {
                                                 "@id": "4751",
-                                                "@name": "Retail sale of textiles in specialized stores"
+                                                "@name": "Retail sale of textiles"
                                             },
                                             {
                                                 "@id": "4752",
-                                                "@name": "Retail sale of hardware, paints and glass in specialized stores"
+                                                "@name": "Retail sale of hardware, building materials, paints and glass"
                                             },
                                             {
                                                 "@id": "4753",
-                                                "@name": "Retail sale of carpets, rugs, wall and floor coverings in specialized stores"
+                                                "@name": "Retail sale of carpets, rugs, wall and floor coverings"
                                             },
                                             {
                                                 "@id": "4759",
-                                                "@name": "Retail sale of electrical household appliances, furniture, lighting equipment and other household articles in specialized stores"
+                                                "@name": "Retail sale of electrical household appliances, furniture, lighting equipment and other household articles"
                                             }
                                         ]
                                     },
                                     {
                                         "@id": "476",
-                                        "@name": "Retail sale of cultural and recreation goods in specialized stores",
+                                        "@name": "Retail sale of cultural and recreational goods",
                                         "category": [
                                             {
                                                 "@id": "4761",
-                                                "@name": "Retail sale of books, newspapers and stationary in specialized stores"
+                                                "@name": "Retail sale of books, newspapers, stationery and office supplies"
                                             },
                                             {
                                                 "@id": "4762",
-                                                "@name": "Retail sale of music and video recordings in specialized stores"
+                                                "@name": "Retail sale of sporting equipment"
                                             },
                                             {
                                                 "@id": "4763",
-                                                "@name": "Retail sale of sporting equipment in specialized stores"
+                                                "@name": "Retail sale of games and toys"
                                             },
                                             {
-                                                "@id": "4764",
-                                                "@name": "Retail sale of games and toys in specialized stores"
+                                                "@id": "4769",
+                                                "@name": "Retail sale of cultural and recreational goods n.e.c."
                                             }
                                         ]
                                     },
                                     {
                                         "@id": "477",
-                                        "@name": "Retail sale of other goods in specialized stores",
+                                        "@name": "Retail sale of other goods, except motor vehicles and motorcycles",
                                         "category": [
                                             {
                                                 "@id": "4771",
-                                                "@name": "Retail sale of clothing, footwear and leather articles in specialized stores"
+                                                "@name": "Retail sale of clothing, footwear and leather articles"
                                             },
                                             {
                                                 "@id": "4772",
-                                                "@name": "Retail sale of pharmaceutical and medical goods, cosmetic and toilet articles in specialized stores"
+                                                "@name": "Retail sale of pharmaceutical and medical goods, cosmetic and toilet articles"
                                             },
                                             {
                                                 "@id": "4773",
-                                                "@name": "Other retail sale of new goods in specialized stores"
+                                                "@name": "Retail sale of other new goods n.e.c."
                                             },
                                             {
                                                 "@id": "4774",
@@ -2076,33 +2102,29 @@
                                     },
                                     {
                                         "@id": "478",
-                                        "@name": "Retail sale via stalls and markets",
+                                        "@name": "Retail sale of motor vehicles, motorcycles and related parts and accessories",
                                         "category": [
                                             {
                                                 "@id": "4781",
-                                                "@name": "Retail sale via stalls and markets of food, beverages and tobacco products"
+                                                "@name": "Retail sale of motor vehicles"
                                             },
                                             {
                                                 "@id": "4782",
-                                                "@name": "Retail sale via stalls and markets of textiles, clothing and footwear"
+                                                "@name": "Retail sale of motor vehicle parts and accessories"
                                             },
                                             {
-                                                "@id": "4789",
-                                                "@name": "Retail sale via stalls and markets of other goods"
+                                                "@id": "4783",
+                                                "@name": "Retail sale of motorcycles, motorcycles parts and accessories"
                                             }
                                         ]
                                     },
                                     {
                                         "@id": "479",
-                                        "@name": "Retail trade not in stores, stalls or markets",
+                                        "@name": "Intermediation service activities for retail sale",
                                         "category": [
                                             {
-                                                "@id": "4791",
-                                                "@name": "Retail sale via mail order houses or via Internet"
-                                            },
-                                            {
-                                                "@id": "4799",
-                                                "@name": "Other retail sale not in stores, stalls or markets"
+                                                "@id": "4790",
+                                                "@name": "Intermediation service activities for retail sale"
                                             }
                                         ]
                                     }
@@ -2258,7 +2280,21 @@
                                             },
                                             {
                                                 "@id": "5229",
-                                                "@name": "Other transportation support activities"
+                                                "@name": "Other support activities for transportation"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "@id": "523",
+                                        "@name": "Intermediation service activities for transportation",
+                                        "category": [
+                                            {
+                                                "@id": "5231",
+                                                "@name": "Intermediation service activities for freight transportation"
+                                            },
+                                            {
+                                                "@id": "5232",
+                                                "@name": "Intermediation service activities for passenger transportation"
                                             }
                                         ]
                                     }
@@ -2287,6 +2323,16 @@
                                                 "@name": "Courier activities"
                                             }
                                         ]
+                                    },
+                                    {
+                                        "@id": "533",
+                                        "@name": "Intermediation service activities for postal and courier activities",
+                                        "category": [
+                                            {
+                                                "@id": "5330",
+                                                "@name": "Intermediation service activities for postal and courier activities"
+                                            }
+                                        ]
                                     }
                                 ]
                             }
@@ -2302,31 +2348,51 @@
                                 "category": [
                                     {
                                         "@id": "551",
-                                        "@name": "Short term accommodation activities",
+                                        "@name": "Hotels and similar accommodation activities",
                                         "category": [
                                             {
                                                 "@id": "5510",
-                                                "@name": "Short term accommodation activities"
+                                                "@name": "Hotels and similar accommodation activities"
                                             }
                                         ]
                                     },
                                     {
                                         "@id": "552",
-                                        "@name": "Camping grounds, recreational vehicle parks and trailer parks",
+                                        "@name": "Other short term accommodation activities",
                                         "category": [
                                             {
                                                 "@id": "5520",
+                                                "@name": "Other short term accommodation activities"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "@id": "553",
+                                        "@name": "Camping grounds, recreational vehicle parks and trailer parks",
+                                        "category": [
+                                            {
+                                                "@id": "5530",
                                                 "@name": "Camping grounds, recreational vehicle parks and trailer parks"
                                             }
                                         ]
                                     },
                                     {
+                                        "@id": "554",
+                                        "@name": "Intermediation service activities for accommodation",
+                                        "category": [
+                                            {
+                                                "@id": "5540",
+                                                "@name": "Intermediation service activities for accommodation"
+                                            }
+                                        ]
+                                    },
+                                    {
                                         "@id": "559",
-                                        "@name": "Other accommodation",
+                                        "@name": "Other accommodation n.e.c.",
                                         "category": [
                                             {
                                                 "@id": "5590",
-                                                "@name": "Other accommodation"
+                                                "@name": "Other accommodation n.e.c."
                                             }
                                         ]
                                     }
@@ -2352,7 +2418,7 @@
                                         "category": [
                                             {
                                                 "@id": "5621",
-                                                "@name": "Event catering"
+                                                "@name": "Event catering activities"
                                             },
                                             {
                                                 "@id": "5629",
@@ -2369,6 +2435,16 @@
                                                 "@name": "Beverage serving activities"
                                             }
                                         ]
+                                    },
+                                    {
+                                        "@id": "564",
+                                        "@name": "Intermediation service activities for food and beverage services activities",
+                                        "category": [
+                                            {
+                                                "@id": "5640",
+                                                "@name": "Intermediation service activities for food and beverage services activities"
+                                            }
+                                        ]
                                     }
                                 ]
                             }
@@ -2376,7 +2452,7 @@
                     },
                     {
                         "@id": "J",
-                        "@name": "Information and communication",
+                        "@name": "Publishing, broadcasting, and content production and distribution activities",
                         "category": [
                             {
                                 "@id": "58",
@@ -2388,15 +2464,15 @@
                                         "category": [
                                             {
                                                 "@id": "5811",
-                                                "@name": "Book publishing"
+                                                "@name": "Publishing of books"
                                             },
                                             {
                                                 "@id": "5812",
-                                                "@name": "Publishing of directories and mailing lists"
+                                                "@name": "Publishing of newspapers"
                                             },
                                             {
                                                 "@id": "5813",
-                                                "@name": "Publishing of newspapers, journals and periodicals"
+                                                "@name": "Publishing of journals and periodicals"
                                             },
                                             {
                                                 "@id": "5819",
@@ -2409,8 +2485,12 @@
                                         "@name": "Software publishing",
                                         "category": [
                                             {
-                                                "@id": "5820",
-                                                "@name": "Software publishing"
+                                                "@id": "5821",
+                                                "@name": "Publishing of video games"
+                                            },
+                                            {
+                                                "@id": "5829",
+                                                "@name": "Other software publishing"
                                             }
                                         ]
                                     }
@@ -2456,71 +2536,81 @@
                             },
                             {
                                 "@id": "60",
-                                "@name": "Programming and broadcasting activities",
+                                "@name": "Programming, broadcasting, news agency and other content distribution activities",
                                 "category": [
                                     {
                                         "@id": "601",
-                                        "@name": "Radio broadcasting",
+                                        "@name": "Radio broadcasting and audio distribution activities",
                                         "category": [
                                             {
                                                 "@id": "6010",
-                                                "@name": "Radio broadcasting"
+                                                "@name": "Radio broadcasting and audio distribution activities"
                                             }
                                         ]
                                     },
                                     {
                                         "@id": "602",
-                                        "@name": "Television programming and broadcasting activities",
+                                        "@name": "Television programming, broadcasting and video distribution activities",
                                         "category": [
                                             {
                                                 "@id": "6020",
-                                                "@name": "Television programming and broadcasting activities"
+                                                "@name": "Television programming, broadcasting and video distribution activities"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "@id": "603",
+                                        "@name": "News agency and other content distribution activities",
+                                        "category": [
+                                            {
+                                                "@id": "6031",
+                                                "@name": "News agency activities"
+                                            },
+                                            {
+                                                "@id": "6039",
+                                                "@name": "Social network sites and other content distribution activities"
                                             }
                                         ]
                                     }
                                 ]
-                            },
+                            }
+                        ]
+                    },
+                    {        
+                        "@id": "K",
+                        "@name": "Telecommunications, computer programming, consultancy, computing infrastructure, and other information service activities",
+                        "category": [
                             {
                                 "@id": "61",
                                 "@name": "Telecommunications",
                                 "category": [
                                     {
                                         "@id": "611",
-                                        "@name": "Wired telecommunications activities",
+                                        "@name": "Wired, wireless, and satellite telecommunication activities",
                                         "category": [
                                             {
                                                 "@id": "6110",
-                                                "@name": "Wired telecommunications activities"
+                                                "@name": "Wired, wireless, and satellite telecommunication activities"
                                             }
                                         ]
                                     },
                                     {
                                         "@id": "612",
-                                        "@name": "Wireless telecommunications activities",
+                                        "@name": "Telecommunication reselling activities and intermediation service activities for telecommunication",
                                         "category": [
                                             {
                                                 "@id": "6120",
-                                                "@name": "Wireless telecommunications activities"
+                                                "@name": "Telecommunication reselling activities and intermediation service activities for telecommunication"
                                             }
-                                        ]
-                                    },
-                                    {
-                                        "@id": "613",
-                                        "@name": "Satellite telecommunications activities",
-                                        "category": [
-                                            {
-                                                "@id": "6130",
-                                                "@name": "Satellite telecommunications activities"
-                                            }
-                                        ]
+                                    ]
                                     },
                                     {
                                         "@id": "619",
-                                        "@name": "Other telecommunications activities",
+                                        "@name": "Other telecommunication activities",
                                         "category": [
                                             {
                                                 "@id": "6190",
-                                                "@name": "Other telecommunications activities"
+                                                "@name": "Other telecommunication activities"
                                             }
                                         ]
                                     }
@@ -2531,19 +2621,35 @@
                                 "@name": "Computer programming, consultancy and related activities",
                                 "category": [
                                     {
-                                        "@id": "620",
-                                        "@name": "Computer programming, consultancy and related activities",
+                                        "@id": "621",
+                                        "@name": "Computer programming activities",
                                         "category": [
                                             {
-                                                "@id": "6201",
-                                                "@name": "Computer programming activities"
+                                                "@id": "6211",
+                                                "@name": "Development of video games, video game software, and video game software tools"
                                             },
                                             {
-                                                "@id": "6202",
+                                                "@id": "6219",
+                                                "@name": "Other computer programming activities"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "@id": "622",
+                                        "@name": "Computer consultancy and computer facilities management activities",
+                                        "category": [
+                                            {
+                                                "@id": "6220",
                                                 "@name": "Computer consultancy and computer facilities management activities"
-                                            },
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "@id": "629",
+                                        "@name": "Other information technology and computer service activities",
+                                        "category": [
                                             {
-                                                "@id": "6209",
+                                                "@id": "6290",
                                                 "@name": "Other information technology and computer service activities"
                                             }
                                         ]
@@ -2552,33 +2658,25 @@
                             },
                             {
                                 "@id": "63",
-                                "@name": "Information service activities",
+                                "@name": "Computing infrastructure, data processing, hosting, and other information service activities",
                                 "category": [
                                     {
                                         "@id": "631",
-                                        "@name": "Data processing, hosting and related activities; web portals",
+                                        "@name": "Computing infrastructure, data processing, hosting and related activities",
                                         "category": [
                                             {
-                                                "@id": "6311",
-                                                "@name": "Data processing, hosting and related activities"
-                                            },
-                                            {
-                                                "@id": "6312",
-                                                "@name": "Web portals"
+                                                "@id": "6310",
+                                                "@name": "Computing infrastructure, data processing, hosting and related activities"
                                             }
                                         ]
                                     },
                                     {
                                         "@id": "639",
-                                        "@name": "Other information service activities",
+                                        "@name": "Web search portals activities and other information service activities",
                                         "category": [
                                             {
-                                                "@id": "6391",
-                                                "@name": "News agency activities"
-                                            },
-                                            {
-                                                "@id": "6399",
-                                                "@name": "Other information service activities n.e.c."
+                                                "@id": "6390",
+                                                "@name": "Web search portals activities and other information service activities"
                                             }
                                         ]
                                     }
@@ -2587,7 +2685,7 @@
                         ]
                     },
                     {
-                        "@id": "K",
+                        "@id": "L",
                         "@name": "Financial and insurance activities",
                         "category": [
                             {
@@ -2610,21 +2708,33 @@
                                     },
                                     {
                                         "@id": "642",
-                                        "@name": "Activities of holding companies",
+                                        "@name": "Activities of holding companies and financing conduits",
                                         "category": [
                                             {
-                                                "@id": "6420",
+                                                "@id": "6421",
                                                 "@name": "Activities of holding companies"
+                                            },
+                                            {
+                                                "@id": "6422",
+                                                "@name": "Activities of financing conduits"
                                             }
                                         ]
                                     },
                                     {
                                         "@id": "643",
-                                        "@name": "Trusts, funds and similar financial entities",
+                                        "@name": "Activities of trusts, funds and similar financial entities",
                                         "category": [
                                             {
-                                                "@id": "6430",
-                                                "@name": "Trusts, funds and similar financial entities"
+                                                "@id": "6431",
+                                                "@name": "Activities of money market funds"
+                                            },
+                                            {
+                                                "@id": "6432",
+                                                "@name": "Activities of non-money market investments funds"
+                                            },
+                                            {
+                                                "@id": "6433",
+                                                "@name": "Activities of trust, estate and agency accounts"
                                             }
                                         ]
                                     },
@@ -2634,15 +2744,27 @@
                                         "category": [
                                             {
                                                 "@id": "6491",
-                                                "@name": "Financial leasing"
+                                                "@name": "Financial leasing activities"
                                             },
                                             {
                                                 "@id": "6492",
-                                                "@name": "Other credit granting"
+                                                "@name": "International trade financing activities"
+                                            },
+                                            {
+                                                "@id": "6493",
+                                                "@name": "Factoring activities"
+                                            },
+                                            {
+                                                "@id": "6494",
+                                                "@name": "Securitisation activities"
+                                            },
+                                            {
+                                                "@id": "6495",
+                                                "@name": "Other credit granting activities"
                                             },
                                             {
                                                 "@id": "6499",
-                                                "@name": "Other financial service activities, except insurance and pension funding activities, n.e.c."
+                                                "@name": "Other financial service activities n.e.c., except insurance and pension funding activities"
                                             }
                                         ]
                                     }
@@ -2694,7 +2816,7 @@
                                 "category": [
                                     {
                                         "@id": "661",
-                                        "@name": "Activities auxiliary to financial service activities, except insurance and pension funding",
+                                        "@name": "Activities auxiliary to financial services, except insurance and pension funding",
                                         "category": [
                                             {
                                                 "@id": "6611",
@@ -2706,7 +2828,7 @@
                                             },
                                             {
                                                 "@id": "6619",
-                                                "@name": "Other activities auxiliary to financial service activities"
+                                                "@name": "Other activities auxiliary to financial service activities, except insurance and pension funding"
                                             }
                                         ]
                                     },
@@ -2743,7 +2865,7 @@
                         ]
                     },
                     {
-                        "@id": "L",
+                        "@id": "M",
                         "@name": "Real estate activities",
                         "category": [
                             {
@@ -2765,8 +2887,12 @@
                                         "@name": "Real estate activities on a fee or contract basis",
                                         "category": [
                                             {
-                                                "@id": "6820",
-                                                "@name": "Real estate activities on a fee or contract basis"
+                                                "@id": "6821",
+                                                "@name": "Intermediation service activities for real estate"
+                                            },
+                                            {
+                                                "@id": "6829",
+                                                "@name": "Other real estate activities on a fee or contract basis"
                                             }
                                         ]
                                     }
@@ -2775,7 +2901,7 @@
                         ]
                     },
                     {
-                        "@id": "M",
+                        "@id": "N",
                         "@name": "Professional, scientific and technical activities",
                         "category": [
                             {
@@ -2820,11 +2946,11 @@
                                     },
                                     {
                                         "@id": "702",
-                                        "@name": "Management consultancy activities",
+                                        "@name": "Business and other management consultancy activities",
                                         "category": [
                                             {
                                                 "@id": "7020",
-                                                "@name": "Management consultancy activities"
+                                                "@name": "Business and other management consultancy activities"
                                             }
                                         ]
                                     }
@@ -2836,11 +2962,11 @@
                                 "category": [
                                     {
                                         "@id": "711",
-                                        "@name": "Architectural and engineering activities and related technical consultancy",
+                                        "@name": "Architectural and engineering, and related technical consultancy activities",
                                         "category": [
                                             {
                                                 "@id": "7110",
-                                                "@name": "Architectural and engineering activities and related technical consultancy"
+                                                "@name": "Architectural and engineering, and related technical consultancy activities"
                                             }
                                         ]
                                     },
@@ -2884,25 +3010,35 @@
                             },
                             {
                                 "@id": "73",
-                                "@name": "Advertising and market research",
+                                "@name": "Activities of advertising, market research and public relations",
                                 "category": [
                                     {
                                         "@id": "731",
-                                        "@name": "Advertising",
+                                        "@name": "Advertising activities",
                                         "category": [
                                             {
                                                 "@id": "7310",
-                                                "@name": "Advertising"
+                                                "@name": "Advertising activities"
                                             }
                                         ]
                                     },
                                     {
                                         "@id": "732",
-                                        "@name": "Market research and public opinion polling",
+                                        "@name": "Market research and public opinion polling activities",
                                         "category": [
                                             {
                                                 "@id": "7320",
-                                                "@name": "Market research and public opinion polling"
+                                                "@name": "Market research and public opinion polling activities"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "@id": "733",
+                                        "@name": "Public relations activities",
+                                        "category": [
+                                            {
+                                                "@id": "7330",
+                                                "@name": "Public relations activities"
                                             }
                                         ]
                                     }
@@ -2933,12 +3069,26 @@
                                         ]
                                     },
                                     {
+                                        "@id": "743",
+                                        "@name": "Translation and interpretation activities",
+                                        "category": [
+                                            {
+                                                "@id": "7430",
+                                                "@name": "Translation and interpretation activities"
+                                            }
+                                        ]
+                                    },
+                                    {
                                         "@id": "749",
                                         "@name": "Other professional, scientific and technical activities n.e.c.",
                                         "category": [
                                             {
-                                                "@id": "7490",
-                                                "@name": "Other professional, scientific and technical activities n.e.c."
+                                                "@id": "7491",
+                                                "@name": "Patent brokering and marketing service activities"
+                                            },
+                                            {
+                                                "@id": "7499",
+                                                "@name": "All other professional, scientific and technical activities n.e.c."
                                             }
                                         ]
                                     }
@@ -2963,7 +3113,7 @@
                         ]
                     },
                     {
-                        "@id": "N",
+                        "@id": "O",
                         "@name": "Administrative and support service activities",
                         "category": [
                             {
@@ -3017,6 +3167,20 @@
                                                 "@name": "Leasing of intellectual property and similar products, except copyrighted works"
                                             }
                                         ]
+                                    },
+                                    {
+                                        "@id": "775",
+                                        "@name": "Intermediation service activities for rental and leasing of tangible goods and non-financial intangible assets",
+                                        "category": [
+                                            {
+                                                "@id": "7751",
+                                                "@name": "Intermediation service activities for rental and leasing of cars, motorhomes and trailers"
+                                            },
+                                            {
+                                                "@id": "7752",
+                                                "@name": "Intermediation service activities for rental and leasing of other tangible goods and non-financial intangible assets"
+                                            }
+                                        ]
                                     }
                                 ]
                             },
@@ -3036,21 +3200,11 @@
                                     },
                                     {
                                         "@id": "782",
-                                        "@name": "Temporary employment agency activities",
+                                        "@name": "Temporary employment agency activities and other human resource provisions",
                                         "category": [
                                             {
                                                 "@id": "7820",
-                                                "@name": "Temporary employment agency activities"
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "@id": "783",
-                                        "@name": "Other human resources provision",
-                                        "category": [
-                                            {
-                                                "@id": "7830",
-                                                "@name": "Other human resources provision"
+                                                "@name": "Temporary employment agency activities and other human resource provisions"
                                             }
                                         ]
                                     }
@@ -3058,7 +3212,7 @@
                             },
                             {
                                 "@id": "79",
-                                "@name": "Travel agency, tour operator, reservation service and related activities",
+                                "@name": "Travel agency, tour operator, and other travel related activities",
                                 "category": [
                                     {
                                         "@id": "791",
@@ -3076,11 +3230,11 @@
                                     },
                                     {
                                         "@id": "799",
-                                        "@name": "Other reservation service and related activities",
+                                        "@name": "Other travel related activities",
                                         "category": [
                                             {
                                                 "@id": "7990",
-                                                "@name": "Other reservation service and related activities"
+                                                "@name": "Other travel related activities"
                                             }
                                         ]
                                     }
@@ -3088,35 +3242,19 @@
                             },
                             {
                                 "@id": "80",
-                                "@name": "Security and investigation activities",
+                                "@name": "Investigation and security activities",
                                 "category": [
                                     {
                                         "@id": "801",
-                                        "@name": "Private security activities",
+                                        "@name": "Investigation and security activities",
                                         "category": [
                                             {
-                                                "@id": "8010",
-                                                "@name": "Private security activities"
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "@id": "802",
-                                        "@name": "Security systems service activities",
-                                        "category": [
+                                                "@id": "8011",
+                                                "@name": "Investigation and private security activities"
+                                            },
                                             {
-                                                "@id": "8020",
-                                                "@name": "Security systems service activities"
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "@id": "803",
-                                        "@name": "Investigation activities",
-                                        "category": [
-                                            {
-                                                "@id": "8030",
-                                                "@name": "Investigation activities"
+                                                "@id": "8019",
+                                                "@name": "Security activities n.e.c."
                                             }
                                         ]
                                     }
@@ -3146,17 +3284,17 @@
                                             },
                                             {
                                                 "@id": "8129",
-                                                "@name": "Other building and industrial cleaning activities"
+                                                "@name": "Other cleaning activiaties"
                                             }
                                         ]
                                     },
                                     {
                                         "@id": "813",
-                                        "@name": "Landscape care and maintenance service activities",
+                                        "@name": "Landscape service activities",
                                         "category": [
                                             {
                                                 "@id": "8130",
-                                                "@name": "Landscape care and maintenance service activities"
+                                                "@name": "Landscape service activities"
                                             }
                                         ]
                                     }
@@ -3171,12 +3309,8 @@
                                         "@name": "Office administrative and support activities",
                                         "category": [
                                             {
-                                                "@id": "8211",
-                                                "@name": "Combined office administrative service activities"
-                                            },
-                                            {
-                                                "@id": "8219",
-                                                "@name": "Photocopying, document preparation and other specialized office support activities"
+                                                "@id": "8210",
+                                                "@name": "Office administrative and support activities"
                                             }
                                         ]
                                     },
@@ -3197,6 +3331,16 @@
                                             {
                                                 "@id": "8230",
                                                 "@name": "Organization of conventions and trade shows"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "@id": "824",
+                                        "@name": "Intermediation service activities for business support activities n.e.c., except financial intermediation",
+                                        "category": [
+                                            {
+                                                "@id": "8240",
+                                                "@name": "Intermediation service activities for business support activities n.e.c., except financial intermediation"
                                             }
                                         ]
                                     },
@@ -3223,7 +3367,7 @@
                         ]
                     },
                     {
-                        "@id": "O",
+                        "@id": "P",
                         "@name": "Public administration and defence; compulsory social security",
                         "category": [
                             {
@@ -3232,7 +3376,7 @@
                                 "category": [
                                     {
                                         "@id": "841",
-                                        "@name": "Administration of the State and the economic and social policy of the community",
+                                        "@name": "Administration of the State and the economic, social and environmental policies of the community",
                                         "category": [
                                             {
                                                 "@id": "8411",
@@ -3240,10 +3384,14 @@
                                             },
                                             {
                                                 "@id": "8412",
-                                                "@name": "Regulation of the activities of providing health care, education, cultural services and other social services, excluding social security"
+                                                "@name": "Regulation of the activities of providing health care, education, cultural services and other social services, excluding social security and environment"
                                             },
                                             {
                                                 "@id": "8413",
+                                                "@name": "Regulation of the activities of providing environmental services"
+                                            },
+                                            {
+                                                "@id": "8414",
                                                 "@name": "Regulation of and contribution to more efficient operation of businesses"
                                             }
                                         ]
@@ -3281,7 +3429,7 @@
                         ]
                     },
                     {
-                        "@id": "P",
+                        "@id": "Q",
                         "@name": "Education",
                         "category": [
                             {
@@ -3290,63 +3438,85 @@
                                 "category": [
                                     {
                                         "@id": "851",
-                                        "@name": "Pre-primary and primary education",
+                                        "@name": "Pre-primary education",
                                         "category": [
                                             {
                                                 "@id": "8510",
-                                                "@name": "Pre-primary and primary education"
+                                                "@name": "Pre-primary education"
                                             }
                                         ]
                                     },
                                     {
                                         "@id": "852",
-                                        "@name": "Secondary education",
+                                        "@name": "Primary education",
                                         "category": [
                                             {
-                                                "@id": "8521",
-                                                "@name": "General secondary education"
-                                            },
-                                            {
-                                                "@id": "8522",
-                                                "@name": "Technical and vocational secondary education"
+                                                "@id": "8520",
+                                                "@name": "Primary education"
                                             }
                                         ]
                                     },
                                     {
                                         "@id": "853",
-                                        "@name": "Higher education",
+                                        "@name": "Secondary and post-secondary non-tertiary education",
                                         "category": [
                                             {
-                                                "@id": "8530",
-                                                "@name": "Higher education"
+                                                "@id": "8531",
+                                                "@name": "General secondary education"
+                                            },
+                                            {
+                                                "@id": "8532",
+                                                "@name": "Vocational secondary education"
+                                            },
+                                            {
+                                                "@id": "8533",
+                                                "@name": "Post-secondary non-tertiary education"
                                             }
                                         ]
                                     },
                                     {
                                         "@id": "854",
-                                        "@name": "Other education",
+                                        "@name": "Tertiary education",
                                         "category": [
                                             {
-                                                "@id": "8541",
-                                                "@name": "Sports and recreation education"
-                                            },
-                                            {
-                                                "@id": "8542",
-                                                "@name": "Cultural education"
-                                            },
-                                            {
-                                                "@id": "8549",
-                                                "@name": "Other education n.e.c."
+                                                "@id": "8540",
+                                                "@name": "Tertiary education"
                                             }
                                         ]
                                     },
                                     {
                                         "@id": "855",
+                                        "@name": "Other education",
+                                        "category": [
+                                            {
+                                                "@id": "8551",
+                                                "@name": "Sports and recreation education"
+                                            },
+                                            {
+                                                "@id": "8552",
+                                                "@name": "Cultural education"
+                                            },
+                                            {
+                                                "@id": "8553",
+                                                "@name": "Driving school activities"
+                                            },
+                                            {
+                                                "@id": "8559",
+                                                "@name": "Other education n.e.c."
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "@id": "856",
                                         "@name": "Educational support activities",
                                         "category": [
                                             {
-                                                "@id": "8550",
-                                                "@name": "Educational support activities"
+                                                "@id": "8561",
+                                                "@name": "Intermediation service activities for courses and tutors"
+                                            },
+                                            {
+                                                "@id": "8569",
+                                                "@name": "Other educational support activities"
                                             }
                                         ]
                                     }
@@ -3355,7 +3525,7 @@
                         ]
                     },
                     {
-                        "@id": "Q",
+                        "@id": "R",
                         "@name": "Human health and social work activities",
                         "category": [
                             {
@@ -3387,8 +3557,12 @@
                                         "@name": "Other human health activities",
                                         "category": [
                                             {
-                                                "@id": "8690",
-                                                "@name": "Other human health activities"
+                                                "@id": "8691",
+                                                "@name": "Intermediation service activities for medical, dental, and other human health services"
+                                            },
+                                            {
+                                                "@id": "8699",
+                                                "@name": "Other human health activities n.e.c"
                                             }
                                         ]
                                     }
@@ -3410,21 +3584,21 @@
                                     },
                                     {
                                         "@id": "872",
-                                        "@name": "Residential care activities for mental retardation, mental health and substance abuse",
+                                        "@name": "Residential care activities for persons living with or having a diagnosis of a mental illness or substance abuse",
                                         "category": [
                                             {
                                                 "@id": "8720",
-                                                "@name": "Residential care activities for mental retardation, mental health and substance abuse"
+                                                "@name": "Residential care activities for persons living with or having a diagnosis of a mental illness or substance abuse"
                                             }
                                         ]
                                     },
                                     {
                                         "@id": "873",
-                                        "@name": "Residential care activities for the elderly and disabled",
+                                        "@name": "Residential care activities for older persons or persons with physical disabilities",
                                         "category": [
                                             {
                                                 "@id": "8730",
-                                                "@name": "Residential care activities for the elderly and disabled"
+                                                "@name": "Residential care activities for older persons or persons with physical disabilities"
                                             }
                                         ]
                                     },
@@ -3433,8 +3607,12 @@
                                         "@name": "Other residential care activities",
                                         "category": [
                                             {
-                                                "@id": "8790",
-                                                "@name": "Other residential care activities"
+                                                "@id": "8791",
+                                                "@name": "Intermediation service activities for residential care activities"
+                                            },
+                                            {
+                                                "@id": "8799",
+                                                "@name": "Other residential care activities n.e.c."
                                             }
                                         ]
                                     }
@@ -3446,11 +3624,11 @@
                                 "category": [
                                     {
                                         "@id": "881",
-                                        "@name": "Social work activities without accommodation for the elderly and disabled",
+                                        "@name": "Social work activities without accommodation for older persons or persons with disabilities",
                                         "category": [
                                             {
                                                 "@id": "8810",
-                                                "@name": "Social work activities without accommodation for the elderly and disabled"
+                                                "@name": "Social work activities without accommodation for older persons or persons with disabilities"
                                             }
                                         ]
                                     },
@@ -3469,20 +3647,52 @@
                         ]
                     },
                     {
-                        "@id": "R",
-                        "@name": "Arts, entertainment and recreation",
+                        "@id": "S",
+                        "@name": "Arts, sports and recreation",
                         "category": [
                             {
                                 "@id": "90",
-                                "@name": "Creative, arts and entertainment activities",
+                                "@name": "Arts creation and performing arts activities",
                                 "category": [
                                     {
-                                        "@id": "900",
-                                        "@name": "Creative, arts and entertainment activities",
+                                        "@id": "901",
+                                        "@name": "Arts creation activities",
                                         "category": [
                                             {
-                                                "@id": "9000",
-                                                "@name": "Creative, arts and entertainment activities"
+                                                "@id": "9011",
+                                                "@name": "Literary creation and musical composition activities"
+                                            },
+                                            {
+                                                "@id": "9012",
+                                                "@name": "Visual arts creation activities"
+                                            },
+                                            {
+                                                "@id": "9013",
+                                                "@name": "Other arts creation activities"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "@id": "902",
+                                        "@name": "Activities of performing arts",
+                                        "category": [
+                                            {
+                                                "@id": "9020",
+                                                "@name": "Activities of performing arts"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "@id": "903",
+                                        "@name": "Support activities to arts creation and performing arts",
+                                        "category": [
+                                            {
+                                                "@id": "9031",
+                                                "@name": "Operation of arts facilities and sites"
+                                            },
+                                            {
+                                                "@id": "9039",
+                                                "@name": "Other support activities to arts creation and performing arts"
                                             }
                                         ]
                                     }
@@ -3490,23 +3700,57 @@
                             },
                             {
                                 "@id": "91",
-                                "@name": "Libraries, archives, museums and other cultural activities",
+                                "@name": "Library, archives, museum and other cultural activities",
                                 "category": [
                                     {
-                                        "@id": "910",
-                                        "@name": "Libraries, archives, museums and other cultural activities",
+                                        "@id": "911",
+                                        "@name": "Library and archive activities",
                                         "category": [
                                             {
-                                                "@id": "9101",
-                                                "@name": "Library and archives activities"
+                                                "@id": "9111",
+                                                "@name": "Library activities"
                                             },
                                             {
-                                                "@id": "9102",
-                                                "@name": "Museums activities and operation of historical sites and buildings"
+                                                "@id": "9112",
+                                                "@name": "Archive activities"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "@id": "912",
+                                        "@name": "Museum, collection, historical site and monument activities",
+                                        "category": [
+                                            {
+                                                "@id": "9121",
+                                                "@name": "Museum and collection activities"
                                             },
                                             {
-                                                "@id": "9103",
-                                                "@name": "Botanical and zoological gardens and nature reserves activities"
+                                                "@id": "9122",
+                                                "@name": "Historical site and monument activities"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "@id": "913",
+                                        "@name": "Conservation, restoration and other support activities for cultural heritage",
+                                        "category": [
+                                            {
+                                                "@id": "9130",
+                                                "@name": "Conservation, restoration and other support activities for cultural heritage"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "@id": "914",
+                                        "@name": "Botanical and zoological garden and nature reserve activities",
+                                        "category": [
+                                            {
+                                                "@id": "9141",
+                                                "@name": "Botanical and zoological garden activities"
+                                            },
+                                            {
+                                                "@id": "9142",
+                                                "@name": "Nature reserve activities"
                                             }
                                         ]
                                     }
@@ -3552,7 +3796,7 @@
                                     },
                                     {
                                         "@id": "932",
-                                        "@name": "Other amusement and recreation activities",
+                                        "@name": "Amusement and recreation activities",
                                         "category": [
                                             {
                                                 "@id": "9321",
@@ -3560,7 +3804,7 @@
                                             },
                                             {
                                                 "@id": "9329",
-                                                "@name": "Other amusement and recreation activities n.e.c."
+                                                "@name": "Other amusement and recreation activities"
                                             }
                                         ]
                                     }
@@ -3569,7 +3813,7 @@
                         ]
                     },
                     {
-                        "@id": "S",
+                        "@id": "T",
                         "@name": "Other service activities",
                         "category": [
                             {
@@ -3622,45 +3866,64 @@
                             },
                             {
                                 "@id": "95",
-                                "@name": "Repair of computers and personal and household goods",
+                                "@name": "Repair and maintenance of computers, personal and household goods, and motor vehicles and motorcycles",
                                 "category": [
                                     {
                                         "@id": "951",
-                                        "@name": "Repair of computers and communication equipment",
+                                        "@name": "Repair and maintenance of computers and communication equipment",
                                         "category": [
                                             {
-                                                "@id": "9511",
-                                                "@name": "Repair of computers and peripheral equipment"
-                                            },
-                                            {
-                                                "@id": "9512",
-                                                "@name": "Repair of communication equipment"
+                                                "@id": "9510",
+                                                "@name": "Repair and maintenance of computers and communication equipment"
                                             }
                                         ]
                                     },
                                     {
                                         "@id": "952",
-                                        "@name": "Repair of personal and household goods",
+                                        "@name": "Repair and maintenance of personal and household goods",
                                         "category": [
                                             {
                                                 "@id": "9521",
-                                                "@name": "Repair of consumer electronics"
+                                                "@name": "Repair and maintenance of consumer electronics"
                                             },
                                             {
                                                 "@id": "9522",
-                                                "@name": "Repair of household appliances and home and garden equipment"
+                                                "@name": "Repair and maintenance of household appliances and home and garden equipment"
                                             },
                                             {
                                                 "@id": "9523",
-                                                "@name": "Repair of footwear and leather goods"
+                                                "@name": "Repair and maintenance of footwear and leather goods"
                                             },
                                             {
                                                 "@id": "9524",
-                                                "@name": "Repair of furniture and home furnishings"
+                                                "@name": "Repair and maintenance of furniture and home furnishings"
                                             },
                                             {
                                                 "@id": "9529",
-                                                "@name": "Repair of other personal and household goods"
+                                                "@name": "Repair and maintenance of other personal and household goods"
+                                            }
+                                        ]
+                                    },                                    {
+                                        "@id": "953",
+                                        "@name": "Repair and maintenance of motor vehicles and motorcycles",
+                                        "category": [
+                                            {
+                                                "@id": "9531",
+                                                "@name": "Repair and maintenance of motor vehicles"
+                                            },
+                                            {
+                                                "@id": "9532",
+                                                "@name": "Repair and maintenance of motorcycles"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "@id": "954",
+                                        "@name": "Intermediation service activities for repair and maintenance of computers, personal and household goods, and motor vehicles and motorcycles",
+                                        "category": [
+                                            {
+                                                "@id": "9540",
+                                                "@name": "Intermediation service activities for repair and maintenance of computers, personal and household goods, and motor vehicles and motorcycles"
                                             }
                                         ]
                                     }
@@ -3668,26 +3931,62 @@
                             },
                             {
                                 "@id": "96",
-                                "@name": "Other personal service activities",
+                                "@name": "Personal service activities",
                                 "category": [
                                     {
-                                        "@id": "960",
-                                        "@name": "Other personal service activities",
+                                        "@id": "961",
+                                        "@name": "Washing and cleaning of textile and fur products",
                                         "category": [
                                             {
-                                                "@id": "9601",
-                                                "@name": "Washing and (dry-) cleaning of textile and fur products"
+                                                "@id": "9610",
+                                                "@name": "Washing and cleaning of textile and fur products"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "@id": "962",
+                                        "@name": "Hairdressing, beauty treatment, day spa and similar activities",
+                                        "category": [
+                                            {
+                                                "@id": "9621",
+                                                "@name": "Hairdressing and barber activities"
                                             },
                                             {
-                                                "@id": "9602",
-                                                "@name": "Hairdressing and other beauty treatment"
+                                                "@id": "9622",
+                                                "@name": "Beauty care and other beauty treatment activities"
                                             },
                                             {
-                                                "@id": "9603",
+                                                "@id": "9623",
+                                                "@name": "Day spa, sauna and steam bath activities"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "@id": "963",
+                                        "@name": "Funeral and related activities",
+                                        "category": [
+                                            {
+                                                "@id": "9630",
                                                 "@name": "Funeral and related activities"
-                                            },
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "@id": "964",
+                                        "@name": "Intermediation service activities for personal services",
+                                        "category": [
                                             {
-                                                "@id": "9609",
+                                                "@id": "9640",
+                                                "@name": "Intermediation service activities for personal services"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "@id": "969",
+                                        "@name": "Other personal service activities n.e.c.",
+                                        "category": [
+                                            {
+                                                "@id": "9690",
                                                 "@name": "Other personal service activities n.e.c."
                                             }
                                         ]
@@ -3697,7 +3996,7 @@
                         ]
                     },
                     {
-                        "@id": "T",
+                        "@id": "U",
                         "@name": "Activities of households as employers; undifferentiated goods- and services-producing activities of households for own use",
                         "category": [
                             {
@@ -3745,7 +4044,7 @@
                         ]
                     },
                     {
-                        "@id": "U",
+                        "@id": "V",
                         "@name": "Activities of extraterritorial organizations and bodies",
                         "category": [
                             {
