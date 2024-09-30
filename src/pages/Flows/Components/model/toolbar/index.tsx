@@ -14,6 +14,7 @@ import { v4 } from 'uuid';
 import { node } from '../Config/node';
 import EdgeExhange from './Exchange';
 import ModelToolbarAdd from './add';
+import { Control } from './control';
 import ModelToolbarEditInfo from './eidtInfo';
 import ModelToolbarViewInfo from './viewInfo';
 
@@ -78,7 +79,7 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly,
                 ?.baseName,
             generalComment:
               result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.[
-                'common:generalComment'
+              'common:generalComment'
               ],
           },
         },
@@ -353,6 +354,9 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly,
           </Tooltip>
         </>
       )}
+        <Control
+          items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin']}
+        />
       <Spin spinning={spinning} fullscreen />
     </Space>
   );

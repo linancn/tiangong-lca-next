@@ -1,6 +1,6 @@
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
-import { Background, Control, Grid, XFlow, XFlowGraph } from '@antv/xflow';
-import { Button, Drawer, Layout, Tooltip } from 'antd';
+import { Grid, XFlow, XFlowGraph } from '@antv/xflow';
+import { Button, Drawer, Layout, theme, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -14,6 +14,7 @@ type Props = {
 };
 const FlowModelView: FC<Props> = ({ id, flowId, buttonType, lang }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
+  const { token } = theme.useToken();
 
   const { Sider, Content } = Layout;
 
@@ -24,7 +25,7 @@ const FlowModelView: FC<Props> = ({ id, flowId, buttonType, lang }) => {
   const siderStyle: React.CSSProperties = {
     paddingTop: 8,
     textAlign: 'center',
-    backgroundColor: '#f0f0f0',
+    backgroundColor: token.colorBgBase,
   };
 
   const layoutStyle = {
@@ -75,7 +76,7 @@ const FlowModelView: FC<Props> = ({ id, flowId, buttonType, lang }) => {
             <Layout>
               <Content>
                 <XFlowGraph zoomable pannable minScale={0.5} readonly={true} />
-                <Background color="#f5f5f5" />
+                {/* <Background color="#f5f5f5" /> */}
                 <Grid
                   type="dot"
                   options={{
@@ -96,12 +97,6 @@ const FlowModelView: FC<Props> = ({ id, flowId, buttonType, lang }) => {
                 readonly={true}
               />
             </Sider>
-            <div style={{ position: 'absolute', right: 80, bottom: 30 }}>
-              <Control
-                items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin']}
-                direction={'horizontal'}
-              />
-            </div>
           </Layout>
         </XFlow>
       </Drawer>

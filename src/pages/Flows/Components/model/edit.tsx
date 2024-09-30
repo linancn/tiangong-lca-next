@@ -1,7 +1,7 @@
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import type { ActionType } from '@ant-design/pro-table';
-import { Background, Control, Grid, Transform, XFlow, XFlowGraph } from '@antv/xflow';
-import { Button, Drawer, Layout, Tooltip } from 'antd';
+import { Grid, Transform, XFlow, XFlowGraph } from '@antv/xflow';
+import { Button, Drawer, Layout, theme, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -18,6 +18,8 @@ const FlowModelEdit: FC<Props> = ({ id, flowId, buttonType, lang, actionRef }) =
   const [isSave, setIsSave] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
 
+  const { token } = theme.useToken();
+
   const { Sider, Content } = Layout;
 
   const onEdit = () => {
@@ -27,7 +29,7 @@ const FlowModelEdit: FC<Props> = ({ id, flowId, buttonType, lang, actionRef }) =
   const siderStyle: React.CSSProperties = {
     paddingTop: 8,
     textAlign: 'center',
-    backgroundColor: '#f0f0f0',
+    backgroundColor: token.colorBgBase,
   };
 
   const layoutStyle = {
@@ -104,7 +106,6 @@ const FlowModelEdit: FC<Props> = ({ id, flowId, buttonType, lang, actionRef }) =
                     allowEdge: false,
                   }}
                 />
-                <Background color="#f5f5f5" />
                 <Grid
                   type="dot"
                   options={{
@@ -126,12 +127,6 @@ const FlowModelEdit: FC<Props> = ({ id, flowId, buttonType, lang, actionRef }) =
                 readonly={false}
               />
             </Sider>
-            <div style={{ position: 'absolute', right: 80, bottom: 30 }}>
-              <Control
-                items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin']}
-                direction={'horizontal'}
-              />
-            </div>
           </Layout>
         </XFlow>
       </Drawer>
