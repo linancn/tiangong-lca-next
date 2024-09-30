@@ -16,7 +16,7 @@ import {
   ProcessExchangeTable,
 } from '@/services/processes/data';
 import { genProcessExchangeTableData } from '@/services/processes/util';
-import { CheckCircleTwoTone, CloseCircleOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import { Card, Divider, Form, Input, Select, Space, Tooltip } from 'antd';
@@ -182,9 +182,9 @@ export const ProcessForm: FC<Props> = ({
       search: false,
       render: (_, row) => {
         if (row.quantitativeReference) {
-          return <CheckCircleTwoTone twoToneColor="#52c41a" />;
+          return <CheckCircleOutlined />;
         }
-        return <CloseCircleOutlined />;
+        // return <CloseCircleOutlined />;
       },
     },
     {
