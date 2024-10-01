@@ -139,7 +139,7 @@ export function getLangList(langTexts: any) {
 export function classificationToString(classifications: any[]) {
   let classificationStr = '';
   try {
-    if (classifications.length > 0) {
+    if (classifications && classifications.length > 0) {
       for (let i = 0; i < classifications.length; i++) {
         const filterList = classifications.find((c) => c['@level'] === i.toString());
         classificationStr += filterList?.['#text'] + ' / ';
