@@ -4,7 +4,7 @@ import {
   getLangJson,
   getLangList,
   getLangText,
-  removeEmptyObjects
+  removeEmptyObjects,
 } from '../general/util';
 
 export function genUnitGroupJsonOrdered(id: string, data: any, oldData: any) {

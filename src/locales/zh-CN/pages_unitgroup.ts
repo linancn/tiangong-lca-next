@@ -54,10 +54,10 @@ export default {
   //unit 编辑edit
   'pages.unitgroup.edit.unitGroupInformation': '单位组信息',
   'pages.unitgroup.edit.unitGroupInformation.name': '单位组名称',
-  'pages.unitgroup.edit.unitGroupInformation.classification': '分类', 
-  'pages.unitgroup.edit.modellingAndValidation': '建模与验证', 
-  'pages.unitgroup.edit.modellingAndValidation.referenceToComplianceSystem': '合规系统名称', 
-  'pages.unitgroup.edit.modellingAndValidation.approvalOfOverallCompliance': '整体合规性批准', 
+  'pages.unitgroup.edit.unitGroupInformation.classification': '分类',
+  'pages.unitgroup.edit.modellingAndValidation': '建模与验证',
+  'pages.unitgroup.edit.modellingAndValidation.referenceToComplianceSystem': '合规系统名称',
+  'pages.unitgroup.edit.modellingAndValidation.approvalOfOverallCompliance': '整体合规性批准',
   'pages.unitgroup.edit.administrativeInformation': '管理信息',
   'pages.unitgroup.edit.administrativeInformation.timeStamp': '时间戳（最后保存）',
   'pages.unitgroup.edit.administrativeInformation.referenceToDataSetFormat': '数据集格式',
@@ -82,7 +82,8 @@ export default {
   //'pages.table.title.meanValue':'平均值',
   //'pages.table.title.quantitativeReference':'度量参考',在哪个文件？
 
-  'pages.unitgroup.view.modellingAndValidation.approvalOfOverallCompliance.fullyCompliant':'完全符合',
-  'pages.unitgroup.view.modellingAndValidation.approvalOfOverallCompliance.notCompliant':'不符合',
-  'pages.unitgroup.view.modellingAndValidation.approvalOfOverallCompliance.notDefined':'未定义',
+  'pages.unitgroup.view.modellingAndValidation.approvalOfOverallCompliance.fullyCompliant':
+    '完全符合',
+  'pages.unitgroup.view.modellingAndValidation.approvalOfOverallCompliance.notCompliant': '不符合',
+  'pages.unitgroup.view.modellingAndValidation.approvalOfOverallCompliance.notDefined': '未定义',
 };

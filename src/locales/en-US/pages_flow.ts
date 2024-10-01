@@ -31,7 +31,8 @@ export default {
   'pages.flow.view.flowInformation.generalComment': 'General comment on data set',
   'pages.flow.view.flowInformation.id': 'ID',
   'pages.flow.view.flowInformation.synonyms': 'Synonyms',
-  'pages.flow.view.flowInformation.classificationInformation': 'Category and classification information',
+  'pages.flow.view.flowInformation.classificationInformation':
+    'Category and classification information',
   'pages.flow.view.flowInformation': 'Flow information',
   'pages.flow.view.flowProperties.meanValue': 'Mean value (of flow property)',
   'pages.flow.view.flowProperties.referenceToFlowPropertyDataSet': 'Flow property',
@@ -42,7 +43,8 @@ export default {
   'pages.flow.view.flowProperties.uri': 'URI',
   'pages.flow.view.flowProperties.generalComment': 'Comment',
   'pages.flow.view.flowProperty': 'Flow property',
-  'pages.flow.view.modellingAndValidation.approvalOfOverallCompliance': 'Approval of overall compliance',
+  'pages.flow.view.modellingAndValidation.approvalOfOverallCompliance':
+    'Approval of overall compliance',
   'pages.flow.view.modellingAndValidation.complianceDeclarations': 'Compliance declarations',
   'pages.flow.view.modellingAndValidation.typeOfDataSet': 'Type of flow',
   'pages.flow.view.modellingAndValidation.referenceToComplianceSystem': 'Compliance system name',
@@ -51,11 +53,14 @@ export default {
   'pages.flow.view.modellingAndValidation.typeOfDataSet.productFlow': 'Product flow',
   'pages.flow.view.modellingAndValidation.typeOfDataSet.wasteFlow': 'Waste flow',
   'pages.flow.view.modellingAndValidation': 'Modelling and validation',
-  'pages.flows.deleteMessage.areyousureyouwanttodeletethisdata': 'Are you sure you want to delete this data?',
+  'pages.flows.deleteMessage.areyousureyouwanttodeletethisdata':
+    'Are you sure you want to delete this data?',
   'pages.flows.createdSuccessfully!': 'Created successfully',
   'pages.process.drawer.title.addProcess': 'Add process',
 
-  'pages.flow.view.modellingAndValidation.approvalOfOverallCompliance.fullyCompliant': 'Fully compliant',
-  'pages.flow.view.modellingAndValidation.approvalOfOverallCompliance.notCompliant': 'Not compliant',
+  'pages.flow.view.modellingAndValidation.approvalOfOverallCompliance.fullyCompliant':
+    'Fully compliant',
+  'pages.flow.view.modellingAndValidation.approvalOfOverallCompliance.notCompliant':
+    'Not compliant',
   'pages.flow.view.modellingAndValidation.approvalOfOverallCompliance.notDefined': 'Not defined',
 };

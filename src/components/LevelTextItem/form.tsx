@@ -42,15 +42,14 @@ const LevelTextItemForm: FC<Props> = ({ name, lang, dataType, flowType, formRef,
   return (
     <>
       <Form.Item
-        label={<FormattedMessage id="pages.contact.classification" defaultMessage="Classification" />}
+        label={
+          <FormattedMessage id="pages.contact.classification" defaultMessage="Classification" />
+        }
         name={[...name, 'value']}
       >
         <Cascader style={{ width: '100%' }} options={selectOptions} onChange={onChange} />
       </Form.Item>
-      <Form.Item
-        name={[...name, 'id']}
-        hidden
-      >
+      <Form.Item name={[...name, 'id']} hidden>
         <Input />
       </Form.Item>
     </>

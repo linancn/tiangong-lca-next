@@ -36,7 +36,9 @@ const LevelTextItemDescription: FC<Props> = ({ data, lang, categoryType, flowTyp
       <Descriptions bordered size={'small'} column={1}>
         <Descriptions.Item
           key={0}
-          label={<FormattedMessage id="pages.contact.classification" defaultMessage="Classification" />}
+          label={
+            <FormattedMessage id="pages.contact.classification" defaultMessage="Classification" />
+          }
           labelStyle={{ width: '100px' }}
         >
           {calssStr}

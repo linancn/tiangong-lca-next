@@ -85,14 +85,22 @@ export const FlowForm: FC<Props> = ({
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.flow.view.flowProperties.referenceToFlowPropertyDataSet" defaultMessage="Flow property" />,
+      title: (
+        <FormattedMessage
+          id="pages.flow.view.flowProperties.referenceToFlowPropertyDataSet"
+          defaultMessage="Flow property"
+        />
+      ),
       dataIndex: 'referenceToFlowPropertyDataSet',
       sorter: false,
       search: false,
     },
     {
       title: (
-        <FormattedMessage id="pages.flow.view.flowProperties.meanValue" defaultMessage="Mean value (of flow property)" />
+        <FormattedMessage
+          id="pages.flow.view.flowProperties.meanValue"
+          defaultMessage="Mean value (of flow property)"
+        />
       ),
       dataIndex: 'meanValue',
       sorter: false,
@@ -110,7 +118,12 @@ export const FlowForm: FC<Props> = ({
       search: false,
       render: (_, row) => {
         return [
-          <ReferenceUnit key={0} id={row.referenceToFlowPropertyDataSetId} idType={'flowproperty'} lang={lang} />,
+          <ReferenceUnit
+            key={0}
+            id={row.referenceToFlowPropertyDataSetId}
+            idType={'flowproperty'}
+            lang={lang}
+          />,
         ];
       },
     },
@@ -151,14 +164,14 @@ export const FlowForm: FC<Props> = ({
               buttonType={'icon'}
               actionRef={actionRefPropertyTable}
               onData={onPropertyData}
-              setViewDrawerVisible={() => { }}
+              setViewDrawerVisible={() => {}}
             />
             <PropertyDelete
               id={row.dataSetInternalID}
               data={propertyDataSource}
               buttonType={'icon'}
               actionRef={actionRefPropertyTable}
-              setViewDrawerVisible={() => { }}
+              setViewDrawerVisible={() => {}}
               onData={onPropertyData}
             />
           </Space>,

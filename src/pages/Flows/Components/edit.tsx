@@ -40,8 +40,7 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
   };
 
   const handletPropertyData = (data: any) => {
-    if (fromData?.id)
-      setPropertyDataSource([...data]);
+    if (fromData?.id) setPropertyDataSource([...data]);
   };
 
   const handletPropertyDataCreate = (data: any) => {

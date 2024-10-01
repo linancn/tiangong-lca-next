@@ -6,7 +6,7 @@ export const processtypeOfDataSetOptions = [
     label: (
       <FormattedMessage
         id="pages.process.view.modellingAndValidation.typeOfDataSet.unitProcessSingleOperation"
-        defaultMessage="Unit process, single operation"              
+        defaultMessage="Unit process, single operation"
       />
     ),
   },
@@ -54,7 +54,7 @@ export const LCIMethodPrincipleOptions = [
     label: (
       <FormattedMessage
         id="pages.process.view.modellingAndValidation.LCIMethodPrinciple.attributional"
-        defaultMessage="Attributional"              
+        defaultMessage="Attributional"
       />
     ),
   },
@@ -102,7 +102,7 @@ export const LCIMethodApproachOptions = [
     label: (
       <FormattedMessage
         id="pages.process.view.modellingAndValidation.LCIMethodApproach.allocationMarketValue"
-        defaultMessage="Allocation - market value"              
+        defaultMessage="Allocation - market value"
       />
     ),
   },
@@ -312,7 +312,7 @@ export const reviewTypeOptions = [
     label: (
       <FormattedMessage
         id="pages.process.view.modellingAndValidation.Validation.Review.dependentInternalReview"
-        defaultMessage="Dependent internal review"              
+        defaultMessage="Dependent internal review"
       />
     ),
   },
@@ -369,7 +369,7 @@ export const copyrightOptions = [
     label: (
       <FormattedMessage
         id="pages.process.view.administrativeInformation.copyright.yes"
-        defaultMessage="Yes"              
+        defaultMessage="Yes"
       />
     ),
   },
@@ -390,7 +390,7 @@ export const licenseTypeOptions = [
     label: (
       <FormattedMessage
         id="pages.process.view.administrativeInformation.licenseType.freeOfChargeForAllUsersAndUses"
-        defaultMessage="Free of charge for all users and uses"              
+        defaultMessage="Free of charge for all users and uses"
       />
     ),
   },

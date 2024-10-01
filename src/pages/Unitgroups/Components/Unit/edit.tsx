@@ -133,7 +133,9 @@ const UnitEdit: FC<Props> = ({ id, data, buttonType, actionRef, setViewDrawerVis
               <Input />
             </Form.Item>
             <Form.Item
-              label={<FormattedMessage id="pages.unitgroup.edit.name" defaultMessage="Name of unit" />}
+              label={
+                <FormattedMessage id="pages.unitgroup.edit.name" defaultMessage="Name of unit" />
+              }
               name={'name'}
             >
               <Input />
@@ -159,7 +161,10 @@ const UnitEdit: FC<Props> = ({ id, data, buttonType, actionRef, setViewDrawerVis
             </Card>
             <Form.Item
               label={
-                <FormattedMessage id="pages.unitgroup.edit.meanValue" defaultMessage="Mean value (of unit)" />
+                <FormattedMessage
+                  id="pages.unitgroup.edit.meanValue"
+                  defaultMessage="Mean value (of unit)"
+                />
               }
               name={'meanValue'}
             >

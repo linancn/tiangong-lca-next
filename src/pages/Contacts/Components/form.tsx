@@ -51,11 +51,21 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
         <Space direction="vertical" style={{ width: '100%' }}>
           <Card
             size="small"
-            title={<FormattedMessage id="pages.contact.shortName" defaultMessage="Short name for contact" />}
+            title={
+              <FormattedMessage
+                id="pages.contact.shortName"
+                defaultMessage="Short name for contact"
+              />
+            }
           >
             <LangTextItemForm
               name={['contactInformation', 'dataSetInformation', 'common:shortName']}
-              label={<FormattedMessage id="pages.contact.shortName" defaultMessage="Short name for contact" />}
+              label={
+                <FormattedMessage
+                  id="pages.contact.shortName"
+                  defaultMessage="Short name for contact"
+                />
+              }
               rules={StringMultiLang_r}
             />
           </Card>
@@ -195,7 +205,12 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             }
           >
             <Form.Item
-              label={<FormattedMessage id="pages.contact.timeStamp" defaultMessage="Time stamp (last saved)" />}
+              label={
+                <FormattedMessage
+                  id="pages.contact.timeStamp"
+                  defaultMessage="Time stamp (last saved)"
+                />
+              }
               name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
             >
               <Input disabled={true} style={{ color: '#000' }} />

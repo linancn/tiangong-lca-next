@@ -27,9 +27,9 @@ export default {
   'pages.FlowProperties.view.flowPropertiesInformation.shortDescription': '简述',
   'pages.FlowProperties.view.administrativeInformation.referenceToPrecedingDataSetVersion':
     '数据集前一版本',
-  'pages.FlowProperties.view.administrativeInformation.permanentDataSetURI': '永久数据集统一资源标识符',
-  'pages.FlowProperties.view.flowPropertiesInformation.referenceToReferenceUnitGroup':
-  '参考单位',
+  'pages.FlowProperties.view.administrativeInformation.permanentDataSetURI':
+    '永久数据集统一资源标识符',
+  'pages.FlowProperties.view.flowPropertiesInformation.referenceToReferenceUnitGroup': '参考单位',
   'pages.FlowProperties.view.flowPropertiesInformation.dataSetInformation': '数据集信息',
   'pages.FlowProperties.view.refObjectId': '引用对象标识符',
   'pages.FlowProperties.view.type': '类型',
@@ -37,8 +37,11 @@ export default {
   'pages.FlowProperties.view.shortDescription': '简述',
   'pages.flowproperties.deleteMessage.areyousureyouwanttodeletethisdata?': '您确定要删除此数据吗？',
   'pages.FlowProperties.view.flowPropertiesInformation.quantitativeReference': '量值参考',
-  
-  'pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance.fullyCompliant':'完全符合',
-  'pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance.notCompliant':'不符合',
-  'pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance.notDefined':'未定义',
+
+  'pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance.fullyCompliant':
+    '完全符合',
+  'pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance.notCompliant':
+    '不符合',
+  'pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance.notDefined':
+    '未定义',
 };

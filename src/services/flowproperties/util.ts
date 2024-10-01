@@ -3,7 +3,7 @@ import {
   classificationToStringList,
   getLangJson,
   getLangList,
-  removeEmptyObjects
+  removeEmptyObjects,
 } from '../general/util';
 
 export function genFlowpropertyJsonOrdered(id: string, data: any, oldData: any) {

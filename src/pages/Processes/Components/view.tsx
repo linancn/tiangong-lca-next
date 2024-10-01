@@ -20,7 +20,14 @@ import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import ProcessExchangeView from './Exchange/view';
-import { copyrightOptions, LCIMethodApproachOptions, LCIMethodPrincipleOptions, licenseTypeOptions, processtypeOfDataSetOptions, reviewTypeOptions } from './optiondata';
+import {
+  copyrightOptions,
+  LCIMethodApproachOptions,
+  LCIMethodPrincipleOptions,
+  licenseTypeOptions,
+  processtypeOfDataSetOptions,
+  reviewTypeOptions,
+} from './optiondata';
 
 type Props = {
   id: string;
@@ -115,21 +122,18 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
     //   search: false,
     // },
     {
-      title: <FormattedMessage
-        id="pages.process.exchange.exchangeDirection"
-        defaultMessage="Direction"
-      />,
+      title: (
+        <FormattedMessage
+          id="pages.process.exchange.exchangeDirection"
+          defaultMessage="Direction"
+        />
+      ),
       dataIndex: 'exchangeDirection',
       sorter: false,
       search: false,
     },
     {
-      title: (
-        <FormattedMessage
-          id="processExchange.referenceToFlowDataSet"
-          defaultMessage="Flow"
-        />
-      ),
+      title: <FormattedMessage id="processExchange.referenceToFlowDataSet" defaultMessage="Flow" />,
       dataIndex: 'referenceToFlowDataSet',
       sorter: false,
       search: false,
@@ -289,7 +293,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
         <LevelTextItemDescription
           data={
             initData.processInformation?.dataSetInformation?.classificationInformation?.[
-            'common:classification'
+              'common:classification'
             ]?.['common:class']?.['value']
           }
           lang={lang}
@@ -367,7 +371,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
             lang={lang}
             data={
               initData.processInformation?.geography?.locationOfOperationSupplyOrProduction?.[
-              '@location'
+                '@location'
               ] ?? '-'
             }
             label={
@@ -469,7 +473,9 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
               }
               labelStyle={{ width: '220px' }}
             >
-              {getProcesstypeOfDataSetOptions(initData.modellingAndValidation?.LCIMethodAndAllocation?.typeOfDataSet ?? '-')}
+              {getProcesstypeOfDataSetOptions(
+                initData.modellingAndValidation?.LCIMethodAndAllocation?.typeOfDataSet ?? '-',
+              )}
             </Descriptions.Item>
           </Descriptions>
           <br />
@@ -484,7 +490,9 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
               }
               labelStyle={{ width: '220px' }}
             >
-              {getLCIMethodPrincipleOptions(initData.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodPrinciple ?? '-')}
+              {getLCIMethodPrincipleOptions(
+                initData.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodPrinciple ?? '-',
+              )}
             </Descriptions.Item>
           </Descriptions>
           <Divider orientationMargin="0" orientation="left" plain>
@@ -511,7 +519,9 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
               }
               labelStyle={{ width: '220px' }}
             >
-              {getLCIMethodApproachOptions(initData.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodApproaches ?? '-')}
+              {getLCIMethodApproachOptions(
+                initData.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodApproaches ?? '-',
+              )}
             </Descriptions.Item>
           </Descriptions>
 
@@ -669,7 +679,9 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
               }
               labelStyle={{ width: '100px' }}
             >
-              {getReviewTypeOptions(initData.modellingAndValidation?.validation?.review?.['@type'] ?? '-')}
+              {getReviewTypeOptions(
+                initData.modellingAndValidation?.validation?.review?.['@type'] ?? '-',
+              )}
             </Descriptions.Item>
           </Descriptions>
           <br />
@@ -693,7 +705,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
             lang={lang}
             data={
               initData.modellingAndValidation?.validation?.review?.[
-              'common:referenceToNameOfReviewerAndInstitution'
+                'common:referenceToNameOfReviewerAndInstitution'
               ]
             }
           />
@@ -712,7 +724,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
           lang={lang}
           data={
             initData.administrativeInformation?.dataGenerator?.[
-            'common:referenceToPersonOrEntityGeneratingTheDataSet'
+              'common:referenceToPersonOrEntityGeneratingTheDataSet'
             ]
           }
         />
@@ -802,7 +814,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
             lang={lang}
             data={
               initData.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToOwnershipOfDataSet'
+                'common:referenceToOwnershipOfDataSet'
               ]
             }
           />
@@ -818,8 +830,10 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
               }
               labelStyle={{ width: '180px' }}
             >
-              {getCopyrightOptions(initData.administrativeInformation?.publicationAndOwnership?.['common:copyright'] ??
-                '-')}
+              {getCopyrightOptions(
+                initData.administrativeInformation?.publicationAndOwnership?.['common:copyright'] ??
+                  '-',
+              )}
             </Descriptions.Item>
           </Descriptions>
           <br />
@@ -834,9 +848,11 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
               }
               labelStyle={{ width: '180px' }}
             >
-              {getLicenseTypeOptions(initData.administrativeInformation?.publicationAndOwnership?.[
-                'common:licenseType'
-              ] ?? '-')}
+              {getLicenseTypeOptions(
+                initData.administrativeInformation?.publicationAndOwnership?.[
+                  'common:licenseType'
+                ] ?? '-',
+              )}
             </Descriptions.Item>
           </Descriptions>
         </Card>

@@ -105,7 +105,7 @@ const FlowpropertyView: FC<Props> = ({ id, buttonType, lang }) => {
         <LevelTextItemDescription
           data={
             initData.flowPropertiesInformation?.dataSetInformation?.classificationInformation?.[
-            'common:classification'
+              'common:classification'
             ]?.['common:class']?.['value']
           }
           lang={lang}
@@ -131,7 +131,7 @@ const FlowpropertyView: FC<Props> = ({ id, buttonType, lang }) => {
         <SourcesDescription
           data={
             initData?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-            'common:referenceToComplianceSystem'
+              'common:referenceToComplianceSystem'
             ]
           }
           title={
@@ -154,9 +154,11 @@ const FlowpropertyView: FC<Props> = ({ id, buttonType, lang }) => {
             }
             labelStyle={{ width: '240px' }}
           >
-            {getComplianceLabel(initData?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-              'common:approvalOfOverallCompliance'
-            ] ?? '-')}
+            {getComplianceLabel(
+              initData?.modellingAndValidation?.complianceDeclarations?.compliance?.[
+                'common:approvalOfOverallCompliance'
+              ] ?? '-',
+            )}
           </Descriptions.Item>
         </Descriptions>
       </>
@@ -230,7 +232,7 @@ const FlowpropertyView: FC<Props> = ({ id, buttonType, lang }) => {
           <FlowpropertiesSelectDescription
             data={
               initData?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToPrecedingDataSetVersion'
+                'common:referenceToPrecedingDataSetVersion'
               ]
             }
             lang={lang}

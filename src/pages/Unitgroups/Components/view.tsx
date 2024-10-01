@@ -208,7 +208,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
         <LevelTextItemDescription
           data={
             initData.unitGroupInformation?.dataSetInformation?.classificationInformation?.[
-            'common:classification'
+              'common:classification'
             ]?.['common:class']?.['value']
           }
           lang={lang}
@@ -227,7 +227,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
           }
           data={
             initData.modellingAndValidation?.complianceDeclarations?.compliance?.[
-            'common:referenceToComplianceSystem'
+              'common:referenceToComplianceSystem'
             ] ?? {}
           }
           lang={lang}
@@ -244,9 +244,11 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
             }
             labelStyle={{ width: '240px' }}
           >
-            {getComplianceLabel(initData.modellingAndValidation?.complianceDeclarations?.compliance?.[
-              'common:approvalOfOverallCompliance'
-            ] ?? '-')}
+            {getComplianceLabel(
+              initData.modellingAndValidation?.complianceDeclarations?.compliance?.[
+                'common:approvalOfOverallCompliance'
+              ] ?? '-',
+            )}
           </Descriptions.Item>
         </Descriptions>
       </>
@@ -256,7 +258,12 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
             key={0}
-            label={<FormattedMessage id="pages.unitgroup.timeStamp" defaultMessage="Time stamp (last saved)" />}
+            label={
+              <FormattedMessage
+                id="pages.unitgroup.timeStamp"
+                defaultMessage="Time stamp (last saved)"
+              />
+            }
             labelStyle={{ width: '140px' }}
           >
             {initData.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-'}

@@ -5,7 +5,7 @@ import {
   getLangList,
   jsonToList,
   listToJson,
-  removeEmptyObjects
+  removeEmptyObjects,
 } from '../general/util';
 
 export function genSourceJsonOrdered(id: string, data: any, oldData: any) {

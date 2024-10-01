@@ -59,7 +59,7 @@ const Lang = () => {
 
 const Register: FC = () => {
   const { styles } = useStyles();
-  const [initData, setInitData] = useState<any[]>([]);
+  const [initData] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [sendMailMessage, setSendMailMessage] = useState<any>(<></>);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
@@ -69,9 +69,7 @@ const Register: FC = () => {
 
   const { TextArea } = Input;
 
-  const [spinning, setSpinning] = useState(false);
-
-
+  const [spinning] = useState(false);
 
   const handleClick = () => {
     setIsButtonDisabled(true);
@@ -88,7 +86,7 @@ const Register: FC = () => {
         message.error(res.message);
       }
     });
-  }
+  };
 
   useEffect(() => {
     let timer: number | NodeJS.Timeout | undefined;
@@ -147,14 +145,9 @@ const Register: FC = () => {
     }
   };
 
-  useEffect(() => {
+  useEffect(() => {}, [spinning]);
 
-  }, [spinning]);
-
-  useEffect(() => {
-
-  }, []);
-
+  useEffect(() => {}, []);
 
   return (
     <div className={styles.container}>
@@ -200,16 +193,12 @@ const Register: FC = () => {
                   <Input disabled={true} />
                 </Form.Item>
                 <Space direction="horizontal">
-                  <Form.Item name={'email'}
+                  <Form.Item
+                    name={'email'}
                     label={
-                      <FormattedMessage
-                        id="pages.account.profile.email"
-                        defaultMessage="Email"
-                      />}
-                    rules={[
-                      { type: 'email', },
-                      { required: true, }
-                    ]}
+                      <FormattedMessage id="pages.account.profile.email" defaultMessage="Email" />
+                    }
+                    rules={[{ type: 'email' }, { required: true }]}
                   >
                     <Input style={{ width: '360px' }} />
                   </Form.Item>
@@ -218,17 +207,20 @@ const Register: FC = () => {
                     onClick={handleClick}
                     disabled={isButtonDisabled}
                   >
-                    {isButtonDisabled ?
-                      <><FormattedMessage
-                        id="pages.account.register.getEmailCode"
-                        defaultMessage="Email"
-                      />(${countdown} s)</>
-                      :
+                    {isButtonDisabled ? (
+                      <>
+                        <FormattedMessage
+                          id="pages.account.register.getEmailCode"
+                          defaultMessage="Email"
+                        />
+                        (${countdown} s)
+                      </>
+                    ) : (
                       <FormattedMessage
                         id="pages.account.register.getEmailCode"
                         defaultMessage="Email"
                       />
-                    }
+                    )}
                   </Button>
                 </Space>
                 <Form.Item
@@ -251,12 +243,7 @@ const Register: FC = () => {
                 </Form.Item>
                 <Form.Item
                   name="new1"
-                  label={
-                    <FormattedMessage
-                      id="pages.account.password"
-                      defaultMessage="Password"
-                    />
-                  }
+                  label={<FormattedMessage id="pages.account.password" defaultMessage="Password" />}
                   rules={[
                     {
                       required: true,
@@ -306,7 +293,12 @@ const Register: FC = () => {
                   <Input />
                 </Form.Item>
                 <Form.Item
-                  label={<FormattedMessage id="pages.account.register.reason" defaultMessage="Reason for Registration" />}
+                  label={
+                    <FormattedMessage
+                      id="pages.account.register.reason"
+                      defaultMessage="Reason for Registration"
+                    />
+                  }
                   name={'reason'}
                 >
                   <TextArea rows={5} />

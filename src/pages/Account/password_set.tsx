@@ -133,7 +133,6 @@ const PasswordSet: FC = () => {
     setSpinning(true);
   }, []);
 
-
   return (
     <div className={styles.container}>
       <Helmet>

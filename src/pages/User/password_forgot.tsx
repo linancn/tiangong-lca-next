@@ -1,12 +1,7 @@
 import { Footer } from '@/components';
 import { currentUser, forgotPasswordSendEmail } from '@/services/ant-design-pro/api';
 import { MailOutlined, RollbackOutlined } from '@ant-design/icons';
-import {
-  LoginForm,
-  ProConfigProvider,
-  ProFormText,
-  ProLayout,
-} from '@ant-design/pro-components';
+import { LoginForm, ProConfigProvider, ProFormText, ProLayout } from '@ant-design/pro-components';
 import { FormattedMessage } from '@umijs/max';
 import { Spin, ConfigProvider, theme, App, Tabs, notification, Button } from 'antd';
 import React, { useEffect, useState } from 'react';
@@ -31,7 +26,8 @@ const PasswordForgot: React.FC = () => {
         notification.success({
           message: intl.formatMessage({
             id: 'pages.login.password.forgot.success',
-            defaultMessage: 'The email was sent successfully! Please follow the email link to reset your password.',
+            defaultMessage:
+              'The email was sent successfully! Please follow the email link to reset your password.',
           }),
           placement: 'top',
         });
@@ -168,10 +164,12 @@ const PasswordForgot: React.FC = () => {
                 {sendComplete && (
                   <div style={{ marginTop: 32, display: 'flex', justifyContent: 'center' }}>
                     <Link to="/">
-                      <Button type="primary" size='large' icon={<RollbackOutlined />}>{intl.formatMessage({
-                        id: 'pages.login.password.back',
-                        defaultMessage: 'Back to Login',
-                      })}</Button>
+                      <Button type="primary" size="large" icon={<RollbackOutlined />}>
+                        {intl.formatMessage({
+                          id: 'pages.login.password.back',
+                          defaultMessage: 'Back to Login',
+                        })}
+                      </Button>
                     </Link>
                   </div>
                 )}
@@ -180,8 +178,8 @@ const PasswordForgot: React.FC = () => {
             <Footer />
           </ProLayout>
         </ProConfigProvider>
-      </ConfigProvider >
-    </App >
+      </ConfigProvider>
+    </App>
   );
 };
 

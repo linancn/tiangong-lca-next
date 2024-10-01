@@ -115,7 +115,9 @@ const UnitCreate: FC<Props> = ({ onData }) => {
               <Input />
             </Form.Item>
             <Form.Item
-              label={<FormattedMessage id="pages.unitgroup.creat.name" defaultMessage="Name of unit" />}
+              label={
+                <FormattedMessage id="pages.unitgroup.creat.name" defaultMessage="Name of unit" />
+              }
               name={'name'}
             >
               <Input />

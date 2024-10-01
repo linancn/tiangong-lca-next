@@ -1,4 +1,4 @@
-import { Classification } from "./data";
+import { Classification } from './data';
 
 export function removeEmptyObjects(obj: any) {
   Object.keys(obj).forEach((key) => {
@@ -12,7 +12,11 @@ export function removeEmptyObjects(obj: any) {
   return obj;
 }
 
-export function genClassStr(data: string[], index: number, classification: Classification[]): string {
+export function genClassStr(
+  data: string[],
+  index: number,
+  classification: Classification[],
+): string {
   const c = classification?.find((i) => i?.value === data?.[index]);
   if (c) {
     if (data.length > index + 1) {
@@ -20,8 +24,7 @@ export function genClassStr(data: string[], index: number, classification: Class
     } else {
       return c?.label;
     }
-  }
-  else {
+  } else {
     if (data?.[index]) {
       if (data.length > index + 1) {
         return data?.[index] + ' / ' + genClassStr(data, index + 1, []);
@@ -33,7 +36,11 @@ export function genClassStr(data: string[], index: number, classification: Class
   return '';
 }
 
-export function genClassIdList(data: any[], index: number, classification: Classification[]): string[] {
+export function genClassIdList(
+  data: any[],
+  index: number,
+  classification: Classification[],
+): string[] {
   const c = classification?.find((i) => i?.value === data?.[index]);
   if (c) {
     const newId = c?.id ?? '';
@@ -41,8 +48,7 @@ export function genClassIdList(data: any[], index: number, classification: Class
       return [newId, ...genClassIdList(data, index + 1, c?.children)];
     }
     return [newId];
-  }
-  else {
+  } else {
     const newId = '';
     if (data.length > index + 1) {
       return [newId, ...genClassIdList(data, index + 1, [])];
@@ -63,16 +69,14 @@ export function genClassJsonZH(data: any[], index: number, classification: any[]
       return [newC, ...genClassJsonZH(data, index + 1, c?.children)];
     }
     return [newC];
-  }
-  else {
+  } else {
     if (d) {
       const newD = {
         '@level': index.toString(),
         '#text': d?.['#text'],
       };
       return [newD, ...genClassJsonZH(data, index + 1, [])];
-    }
-    else {
+    } else {
       return [];
     }
   }
@@ -141,8 +145,7 @@ export function classificationToString(classifications: any[]) {
         classificationStr += filterList?.['#text'] + ' / ';
       }
       classificationStr = classificationStr.slice(0, -3);
-    }
-    else {
+    } else {
       classificationStr = '-';
     }
   } catch (e) {
@@ -175,7 +178,12 @@ export function classificationToStringList(classifications: any) {
 
 export function classificationToJsonList(classifications: any) {
   let common_class = {};
-  if (classifications && classifications?.value && Array.isArray(classifications?.value) && classifications?.value.length > 0) {
+  if (
+    classifications &&
+    classifications?.value &&
+    Array.isArray(classifications?.value) &&
+    classifications?.value.length > 0
+  ) {
     if (classifications.value.length === 1) {
       common_class = {
         '@level': '0',
@@ -279,8 +287,7 @@ export function genClassificationZH(classifications: any[], categoryData: any[])
   if (classifications.length > 0) {
     const classificationsZH = genClassJsonZH(classifications, 0, categoryData);
     return classificationsZH;
-  }
-  else {
+  } else {
     return [];
   }
 }
@@ -291,11 +298,11 @@ export function isValidURL(url: string): boolean {
   }
   const urlPattern = new RegExp(
     '^(https?:\\/\\/)?' +
-    '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|' +
-    '((\\d{1,3}\\.){3}\\d{1,3}))' +
-    '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' +
-    '(\\?[;&a-z\\d%_.~+=-]*)?' +
-    '(\\#[-a-z\\d_]*)?$',
+      '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|' +
+      '((\\d{1,3}\\.){3}\\d{1,3}))' +
+      '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' +
+      '(\\?[;&a-z\\d%_.~+=-]*)?' +
+      '(\\#[-a-z\\d_]*)?$',
     'i',
   );
   return !!urlPattern.test(url);

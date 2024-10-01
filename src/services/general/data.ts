@@ -5,10 +5,10 @@ export type ListPagination = {
 };
 
 export type Classification = {
-  id: string,
-  value: string,
-  label: string,
-  children: Classification[],
+  id: string;
+  value: string;
+  label: string;
+  children: Classification[];
 };
 
 export const langOptions = [

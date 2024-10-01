@@ -16,11 +16,9 @@ export async function getILCDClassification(
 
     if (categoryType === 'Process') {
       result = getISICClassification(getValues);
-    }
-    else if (categoryType === 'Flow') {
+    } else if (categoryType === 'Flow') {
       result = getCPCClassification(getValues);
-    }
-    else {
+    } else {
       result = await supabase.rpc('ilcd_classification_get', {
         this_file_name: 'ILCDClassification',
         category_type: categoryType,
@@ -34,17 +32,14 @@ export async function getILCDClassification(
       let getIds = [];
       if (getValues.includes('all')) {
         getIds = ['all'];
-      }
-      else {
+      } else {
         getIds = result?.data?.map((i: any) => i['@id']);
       }
       if (categoryType === 'Process') {
         resultZH = getISICClassificationZH(getIds);
-      }
-      else if (categoryType === 'Flow') {
+      } else if (categoryType === 'Flow') {
         resultZH = getCPCClassificationZH(getIds);
-      }
-      else {
+      } else {
         resultZH = await supabase.rpc('ilcd_classification_get', {
           this_file_name: 'ILCDClassification_zh',
           category_type: thisCategoryType?.zh,

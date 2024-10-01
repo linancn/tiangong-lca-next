@@ -99,7 +99,9 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
             key={0}
-            label={<FormattedMessage id="pages.unitgroup.name" defaultMessage="Name of unit group" />}
+            label={
+              <FormattedMessage id="pages.unitgroup.name" defaultMessage="Name of unit group" />
+            }
             labelStyle={{ width: '100px' }}
           >
             {refUnit.refUnitName ?? '-'}

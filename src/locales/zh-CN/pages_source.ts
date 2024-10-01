@@ -68,8 +68,10 @@ export default {
   'pages.source.view.sourceInformation.publicationType.monograph': '专著',
   'pages.source.view.sourceInformation.publicationType.directMeasurement': '直接测量',
   'pages.source.view.sourceInformation.publicationType.oralCommunication': '口头交流',
-  'pages.source.view.sourceInformation.publicationType.personalWrittenCommunication': '个人书面交流',
+  'pages.source.view.sourceInformation.publicationType.personalWrittenCommunication':
+    '个人书面交流',
   'pages.source.view.sourceInformation.publicationType.questionnaire': '问卷调查',
   'pages.source.view.sourceInformation.publicationType.softwareOrDatabase': '软件或数据库',
-  'pages.source.view.sourceInformation.publicationType.otherUnpublishedAndGreyLiterature': '其他未发表和灰色文献',
+  'pages.source.view.sourceInformation.publicationType.otherUnpublishedAndGreyLiterature':
+    '其他未发表和灰色文献',
 };

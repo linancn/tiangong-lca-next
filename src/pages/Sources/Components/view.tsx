@@ -133,7 +133,9 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
             }
             labelStyle={{ width: '180px' }}
           >
-            {getPublicationTypeLabel(initData.sourceInformation?.dataSetInformation?.publicationType)}
+            {getPublicationTypeLabel(
+              initData.sourceInformation?.dataSetInformation?.publicationType,
+            )}
           </Descriptions.Item>
         </Descriptions>
         <br />
