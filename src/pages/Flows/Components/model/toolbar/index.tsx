@@ -324,14 +324,15 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly,
               <FormattedMessage
                 id="pages.button.model.delete"
                 defaultMessage="Delete element"
-              ></FormattedMessage>
+              />
             }
             placement="left"
           >
             <Button
-              shape="circle"
+              type="primary"
               size="small"
               icon={<DeleteOutlined />}
+              style={{ boxShadow: 'none' }}
               disabled={
                 nodes.filter((node) => node.selected).length === 0 &&
                 edges.filter((edge) => edge.selected).length === 0
@@ -346,11 +347,11 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly,
               <FormattedMessage
                 id="pages.button.model.save"
                 defaultMessage="Save data"
-              ></FormattedMessage>
+              />
             }
             placement="left"
           >
-            <Button shape="circle" size="small" icon={<SaveOutlined />} onClick={saveData} />
+            <Button type="primary" size="small" icon={<SaveOutlined />} style={{ boxShadow: 'none' }} onClick={saveData} />
           </Tooltip>
         </>
       )}

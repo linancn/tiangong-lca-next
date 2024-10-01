@@ -30,6 +30,10 @@ export default {
   'pages.button.model.exchange': '交换关系',
   'pages.button.model.delete': '删除元素',
   'pages.button.model.design': '外观设计',
+  'pages.button.model.zoomIn': '放大',
+  'pages.button.model.zoomOut': '缩小',
+  'pages.button.model.zoomTo': '缩放到',
+  'pages.button.model.zoomToFit': '适应窗口',
   'pages.button.item.add': '添加',
   'pages.button.item.label': '项目',
 

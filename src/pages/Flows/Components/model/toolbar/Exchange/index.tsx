@@ -186,14 +186,15 @@ const EdgeExhange: FC<Props> = ({ lang, disabled, edge, nodes, readonly, onData 
           <FormattedMessage
             id="pages.button.model.exchange"
             defaultMessage="Exchange relation"
-          ></FormattedMessage>
+          />
         }
         placement="left"
       >
         <Button
-          shape="circle"
+          type="primary"
           size="small"
           icon={<ArrowRightOutlined />}
+          style={{ boxShadow: 'none' }}
           disabled={disabled}
           onClick={onOpenDrawer}
         />

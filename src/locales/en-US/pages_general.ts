@@ -30,6 +30,10 @@ export default {
   'pages.button.model.exchange': 'Exchange relation',
   'pages.button.model.delete': 'Delete element',
   'pages.button.model.design': 'Design appearance',
+  'pages.button.model.zoomIn': 'Zoom In',
+  'pages.button.model.zoomOut': 'Zoom Out',
+  'pages.button.model.zoomTo': 'Zoom To',
+  'pages.button.model.zoomToFit': 'Zoom To Fit',
   'pages.button.item.add': 'Add',
   'pages.button.item.label': 'Item',
 

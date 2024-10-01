@@ -81,9 +81,10 @@ const ModelToolbarEditInfo: FC<Props> = ({ flowId, lang, data, onData }) => {
         placement="left"
       >
         <Button
-          shape="circle"
+          type="primary"
           size="small"
           icon={<InfoOutlined />}
+          style={{ boxShadow: 'none' }}
           onClick={() => {
             setDrawerVisible(true);
           }}

@@ -17,13 +17,13 @@ const ModelToolbarViewInfo: FC<Props> = ({ data }) => {
         placement="left"
       >
         <Button
-          shape="circle"
+          type="primary"
           size="small"
           icon={<InfoOutlined />}
           onClick={() => {
             setDrawerVisible(true);
           }}
-        ></Button>
+        />
       </Tooltip>
       <Drawer
         title={

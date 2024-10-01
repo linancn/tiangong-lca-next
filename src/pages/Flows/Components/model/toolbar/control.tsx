@@ -1,10 +1,11 @@
 /* eslint-disable react/button-has-type */
 import { Dice5, Minimize, Minus, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import 'tippy.js/dist/tippy.css';
+// import 'tippy.js/dist/tippy.css';
 
 import { useGraphEvent, useGraphInstance } from '@antv/xflow';
 import { Button, Space, Tooltip } from 'antd';
+import { FormattedMessage } from 'umi';
 // import './styles/index.less';
 
 export enum ControlEnum {
@@ -73,23 +74,38 @@ const Control = (props: ControlIProps) => {
 
     const ControlToolMap = {
         [ControlEnum.ZoomIn]: {
-            label: '放大',
+            label: <FormattedMessage
+                id="pages.button.model.zoomIn"
+                defaultMessage="Zoom In"
+            />,
             icon: <Plus size={20} />,
         },
         [ControlEnum.ZoomOut]: {
-            label: '缩小',
+            label: <FormattedMessage
+                id="pages.button.model.zoomOut"
+                defaultMessage="Zoom Out"
+            />,
             icon: <Minus size={20} />,
         },
         [ControlEnum.ZoomTo]: {
-            label: '缩放至',
+            label: <FormattedMessage
+                id="pages.button.model.zoomTo"
+                defaultMessage="Zoom To"
+            />,
             icon: <Plus size={20} />,
         },
         [ControlEnum.ZoomToFit]: {
-            label: '自适应窗口大小',
+            label: <FormattedMessage
+                id="pages.button.model.zoomToFit"
+                defaultMessage="Zoom To Fit"
+            />,
             icon: <Minimize />,
         },
         [ControlEnum.ZoomToOrigin]: {
-            label: '实际像素展示',
+            label: <FormattedMessage
+                id="pages.button.model.zoomToOrigin"
+                defaultMessage="Zoom To Origin"
+            />,
             icon: <Dice5 size={20} />,
         },
     };
