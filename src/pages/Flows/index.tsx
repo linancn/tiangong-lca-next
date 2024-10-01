@@ -58,6 +58,7 @@ const TableList: FC = () => {
       dataIndex: 'flowType',
       sorter: false,
       search: false,
+      filters: flowTypeOptions.map(option => ({ text: option.label, value: option.value })),
       render: (_, row) => {
         const flowType = flowTypeOptions.find((i) => i.value === row.flowType);
         if (flowType) {
@@ -169,11 +170,13 @@ const TableList: FC = () => {
             current: number;
           },
           sort,
+          filter,
         ) => {
+          const flowTypeFilter = filter?.flowType ? filter.flowType.join(',') : '';
           if (keyWord.length > 0) {
-            return getFlowTablePgroongaSearch(params, lang, dataSource, keyWord, {});
+            return getFlowTablePgroongaSearch(params, lang, dataSource, keyWord, { flowType: flowTypeFilter });
           }
-          return getFlowTableAll(params, sort, lang, dataSource);
+          return getFlowTableAll(params, sort, lang, dataSource, { flowType: flowTypeFilter });
         }}
         columns={flowsColumns}
       />
