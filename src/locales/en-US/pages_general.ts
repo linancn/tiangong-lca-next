@@ -28,6 +28,7 @@ export default {
   'pages.button.model.save': 'Save data',
   'pages.button.model.process': 'Process information',
   'pages.button.model.exchange': 'Exchange relation',
+  'pages.button.model.connection': 'Connection relation',
   'pages.button.model.delete': 'Delete element',
   'pages.button.model.design': 'Design appearance',
   'pages.button.model.zoomIn': 'Zoom In',

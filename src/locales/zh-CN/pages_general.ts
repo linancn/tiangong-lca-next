@@ -28,6 +28,7 @@ export default {
   'pages.button.model.save': '提交保存',
   'pages.button.model.process': '过程信息',
   'pages.button.model.exchange': '交换关系',
+  'pages.button.model.connection': '连接关系',
   'pages.button.model.delete': '删除元素',
   'pages.button.model.design': '外观设计',
   'pages.button.model.zoomIn': '放大',

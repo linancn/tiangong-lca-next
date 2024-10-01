@@ -184,8 +184,8 @@ const EdgeExhange: FC<Props> = ({ lang, disabled, edge, nodes, readonly, onData 
       <Tooltip
         title={
           <FormattedMessage
-            id="pages.button.model.exchange"
-            defaultMessage="Exchange relation"
+            id="pages.button.model.connection"
+            defaultMessage="Connection relation"
           />
         }
         placement="left"
