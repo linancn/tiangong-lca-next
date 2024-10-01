@@ -34,6 +34,7 @@ export default {
   'pages.button.model.zoomOut': '缩小',
   'pages.button.model.zoomTo': '缩放到',
   'pages.button.model.zoomToFit': '适应窗口',
+  'pages.button.model.zoomToOrigin': '原始大小',
   'pages.button.item.add': '添加',
   'pages.button.item.label': '项目',
 
