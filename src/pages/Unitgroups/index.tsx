@@ -122,14 +122,14 @@ const TableList: FC = () => {
       },
     },
   ];
-  const onSearch: SearchProps['onSearch'] = async (value) => {
-    await setKeyWord(value);
+  const onSearch: SearchProps['onSearch'] = (value) => {
+    setKeyWord(value);
     actionRef.current?.setPageInfo?.({ current: 1 });
     actionRef.current?.reload();
   };
 
   return (
-    <PageContainer>
+    <PageContainer header={{ title: false }}>
       <Card>
         <Search
           size={'large'}
@@ -139,8 +139,10 @@ const TableList: FC = () => {
         />
       </Card>
       <ProTable<UnitGroupTable, ListPagination>
+        headerTitle={<FormattedMessage id="menu.tgdata.unitgroups" defaultMessage="Unit Groups" />}
         actionRef={actionRef}
         search={false}
+        options={{ fullScreen: true }}
         pagination={{
           showSizeChanger: false,
           pageSize: 10,

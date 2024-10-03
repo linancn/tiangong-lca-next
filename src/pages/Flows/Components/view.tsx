@@ -6,7 +6,11 @@ import { getFlowDetail } from '@/services/flows/api';
 import { FlowpropertyTabTable } from '@/services/flows/data';
 import { genFlowFromData, genFlowPropertyTabTableData } from '@/services/flows/util';
 import { ListPagination } from '@/services/general/data';
-import { CheckCircleOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
+import {
+  CheckCircleOutlined,
+  CloseOutlined,
+  ProfileOutlined
+} from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
@@ -76,14 +80,22 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.flow.view.flowProperties.referenceToFlowPropertyDataSet" defaultMessage="Flow property" />,
+      title: (
+        <FormattedMessage
+          id="pages.flow.view.flowProperties.referenceToFlowPropertyDataSet"
+          defaultMessage="Flow property"
+        />
+      ),
       dataIndex: 'referenceToFlowPropertyDataSet',
       sorter: false,
       search: false,
     },
     {
       title: (
-        <FormattedMessage id="pages.flow.view.flowProperties.meanValue" defaultMessage="Mean value (of flow property)" />
+        <FormattedMessage
+          id="pages.flow.view.flowProperties.meanValue"
+          defaultMessage="Mean value (of flow property)"
+        />
       ),
       dataIndex: 'meanValue',
       sorter: false,
@@ -101,7 +113,12 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
       search: false,
       render: (_, row) => {
         return [
-          <ReferenceUnit key={0} id={row.referenceToFlowPropertyDataSetId} idType={'flowproperty'} lang={lang} />,
+          <ReferenceUnit
+            key={0}
+            id={row.referenceToFlowPropertyDataSetId}
+            idType={'flowproperty'}
+            lang={lang}
+          />,
         ];
       },
     },
@@ -220,7 +237,7 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
           <LevelTextItemDescription
             data={
               initData?.flowInformation?.dataSetInformation?.classificationInformation?.[
-              'common:elementaryFlowCategorization'
+                'common:elementaryFlowCategorization'
               ]?.['common:category']?.['value']
             }
             lang={lang}
@@ -309,7 +326,7 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
         <SourceSelectDescription
           data={
             initData?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-            'common:referenceToComplianceSystem'
+              'common:referenceToComplianceSystem'
             ]
           }
           title={
@@ -332,9 +349,11 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
             }
             labelStyle={{ width: '240px' }}
           >
-            {getComplianceLabel(initData?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-              'common:approvalOfOverallCompliance'
-            ] ?? '-')}
+            {getComplianceLabel(
+              initData?.modellingAndValidation?.complianceDeclarations?.compliance?.[
+                'common:approvalOfOverallCompliance'
+              ] ?? '-',
+            )}
           </Descriptions.Item>
         </Descriptions>
         {/* <br />
@@ -438,7 +457,6 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
       />
     ),
   };
-
 
   const onView = () => {
     setDrawerVisible(true);

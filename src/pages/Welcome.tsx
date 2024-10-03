@@ -187,51 +187,53 @@ const Welcome: React.FC = () => {
   };
 
   const SVG1: React.FC = () => {
-    return (<svg
-      preserveAspectRatio="xMidYMid meet"
-      data-bbox="26.5 23.75 147 152.5"
-      viewBox="26.5 23.75 147 152.5"
-      height="200"
-      width="200"
-      xmlns="http://www.w3.org/2000/svg"
-      data-type="color"
-      role="presentation"
-      aria-hidden="true"
-      aria-label=""
-    >
-      <defs>
-        <style>
-          {`
+    return (
+      <svg
+        preserveAspectRatio="xMidYMid meet"
+        data-bbox="26.5 23.75 147 152.5"
+        viewBox="26.5 23.75 147 152.5"
+        height="200"
+        width="200"
+        xmlns="http://www.w3.org/2000/svg"
+        data-type="color"
+        role="presentation"
+        aria-hidden="true"
+        aria-label=""
+      >
+        <defs>
+          <style>
+            {`
             #comp-kq5dfsen svg [data-color="1"] {fill: ${color1};}
             #comp-kq5dfsen svg [data-color="2"] {fill: ${color2};}
             #comp-kq5dfsen svg [data-color="3"] {fill: ${color3};}
           `}
-        </style>
-      </defs>
-      <g>
-        <path
-          fill={color1}
-          clipRule="evenodd"
-          fillRule="evenodd"
-          d="M42 170.25a6 6 0 1 1-12 0 6 6 0 0 1 12 0z"
-          data-color="1"
-        ></path>
-        <path
-          fill={color2}
-          clipRule="evenodd"
-          fillRule="evenodd"
-          d="M173.5 103.75c0 31.48-25.52 57-57 57s-57-25.52-57-57 25.52-57 57-57 57 25.52 57 57z"
-          data-color="2"
-        ></path>
-        <path
-          fill={color3}
-          clipRule="evenodd"
-          fillRule="evenodd"
-          d="M116.5 68.75c0 24.853-20.147 45-45 45s-45-20.147-45-45 20.147-45 45-45 45 20.147 45 45z"
-          data-color="3"
-        ></path>
-      </g>
-    </svg>)
+          </style>
+        </defs>
+        <g>
+          <path
+            fill={color1}
+            clipRule="evenodd"
+            fillRule="evenodd"
+            d="M42 170.25a6 6 0 1 1-12 0 6 6 0 0 1 12 0z"
+            data-color="1"
+          ></path>
+          <path
+            fill={color2}
+            clipRule="evenodd"
+            fillRule="evenodd"
+            d="M173.5 103.75c0 31.48-25.52 57-57 57s-57-25.52-57-57 25.52-57 57-57 57 25.52 57 57z"
+            data-color="2"
+          ></path>
+          <path
+            fill={color3}
+            clipRule="evenodd"
+            fillRule="evenodd"
+            d="M116.5 68.75c0 24.853-20.147 45-45 45s-45-20.147-45-45 20.147-45 45-45 45 20.147 45 45z"
+            data-color="3"
+          ></path>
+        </g>
+      </svg>
+    );
   };
 
   const SVG2: React.FC = () => {
@@ -282,7 +284,7 @@ const Welcome: React.FC = () => {
         </g>
       </svg>
     );
-  }
+  };
 
   const SVG3: React.FC = () => {
     return (
@@ -332,7 +334,7 @@ const Welcome: React.FC = () => {
         </g>
       </svg>
     );
-  }
+  };
 
   const formatter: StatisticProps['formatter'] = (value) => (
     <CountUp end={value as number} separator="," />

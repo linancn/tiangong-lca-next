@@ -3,7 +3,7 @@ import {
   CheckCircleTwoTone,
   CloseCircleOutlined,
   CloseOutlined,
-  ProfileOutlined
+  ProfileOutlined,
 } from '@ant-design/icons';
 import { Button, Descriptions, Drawer, Tooltip } from 'antd';
 import type { FC } from 'react';

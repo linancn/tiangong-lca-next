@@ -95,5 +95,5 @@ export default {
   'pages.account.password.changed.success': 'Password changed successfully!',
   'pages.account.password.setted.success': 'Password setted successfully!',
 
-  'pages.login.passwordForgot.tab':'Account',
+  'pages.login.passwordForgot.tab': 'Account',
 };

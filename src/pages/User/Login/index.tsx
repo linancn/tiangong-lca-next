@@ -118,13 +118,18 @@ const Login: React.FC = () => {
           token: {
             colorPrimary: isDarkMode ? '#9e3ffd' : Settings.colorPrimary,
           },
-          algorithm:
-            isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
+          algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
         }}
       >
         {contextHolder}
         <ProConfigProvider hashed={false}>
-          <ProLayout menuRender={false} menuHeaderRender={false} headerRender={false} fixedHeader={false} fixSiderbar={false}>
+          <ProLayout
+            menuRender={false}
+            menuHeaderRender={false}
+            headerRender={false}
+            fixedHeader={false}
+            fixSiderbar={false}
+          >
             <Helmet>
               <title>
                 {intl.formatMessage({
@@ -141,9 +146,11 @@ const Login: React.FC = () => {
                 top: 16,
               }}
             />
-            <div style={{
-              marginTop: '80px',
-            }}>
+            <div
+              style={{
+                marginTop: '80px',
+              }}
+            >
               <LoginForm
                 formRef={formRefLogin}
                 logo={isDarkMode ? 'logo_dark.svg' : Settings.logo}
@@ -155,11 +162,15 @@ const Login: React.FC = () => {
                     await handleSubmit(values as API.LoginParams);
                   }
                 }}
-                submitter={type === 'password' ? {
-                  submitButtonProps: {
-                    loading: loading,
-                  },
-                } : false}
+                submitter={
+                  type === 'password'
+                    ? {
+                        submitButtonProps: {
+                          loading: loading,
+                        },
+                      }
+                    : false
+                }
               >
                 <Tabs
                   activeKey={type}
@@ -265,8 +276,7 @@ const Login: React.FC = () => {
                   <LoginMessage
                     content={intl.formatMessage({
                       id: 'pages.login.emailLogin.errorMessage',
-                      defaultMessage:
-                        'Wrong email address or email address is not registered',
+                      defaultMessage: 'Wrong email address or email address is not registered',
                     })}
                   />
                 )}

@@ -12,9 +12,7 @@ import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import { ListPagination } from '@/services/general/data';
-import {
-  ProcessExchangeTable,
-} from '@/services/processes/data';
+import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData } from '@/services/processes/util';
 import { CheckCircleOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
@@ -26,7 +24,14 @@ import ProcessExchangeCreate from './Exchange/create';
 import ProcessExchangeDelete from './Exchange/delete';
 import ProcessExchangeEdit from './Exchange/edit';
 import ProcessExchangeView from './Exchange/view';
-import { copyrightOptions, LCIMethodApproachOptions, LCIMethodPrincipleOptions, licenseTypeOptions, processtypeOfDataSetOptions, reviewTypeOptions } from './optiondata';
+import {
+  copyrightOptions,
+  LCIMethodApproachOptions,
+  LCIMethodPrincipleOptions,
+  licenseTypeOptions,
+  processtypeOfDataSetOptions,
+  reviewTypeOptions,
+} from './optiondata';
 
 type Props = {
   lang: string;
@@ -107,12 +112,7 @@ export const ProcessForm: FC<Props> = ({
       search: false,
     },
     {
-      title: (
-        <FormattedMessage
-          id="processExchange.referenceToFlowDataSet"
-          defaultMessage="Flow"
-        />
-      ),
+      title: <FormattedMessage id="processExchange.referenceToFlowDataSet" defaultMessage="Flow" />,
       dataIndex: 'referenceToFlowDataSet',
       sorter: false,
       search: false,
@@ -208,14 +208,14 @@ export const ProcessForm: FC<Props> = ({
               buttonType={'icon'}
               actionRef={actionRefExchangeTable}
               onData={onExchangeData}
-              setViewDrawerVisible={() => { }}
+              setViewDrawerVisible={() => {}}
             />
             <ProcessExchangeDelete
               id={row.dataSetInternalID}
               data={exchangeDataSource}
               buttonType={'icon'}
               actionRef={actionRefExchangeTable}
-              setViewDrawerVisible={() => { }}
+              setViewDrawerVisible={() => {}}
               onData={onExchangeData}
             />
           </Space>,

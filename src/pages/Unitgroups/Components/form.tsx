@@ -144,14 +144,14 @@ export const UnitGroupForm: FC<Props> = ({
               buttonType={'icon'}
               actionRef={actionRefUnitTable}
               onData={onUnitData}
-              setViewDrawerVisible={() => { }}
+              setViewDrawerVisible={() => {}}
             />
             <UnitDelete
               id={row.dataSetInternalID}
               data={unitDataSource}
               buttonType={'icon'}
               actionRef={actionRefUnitTable}
-              setViewDrawerVisible={() => { }}
+              setViewDrawerVisible={() => {}}
               onData={onUnitData}
             />
           </Space>,

@@ -62,7 +62,9 @@ const UnitView: FC<Props> = ({ id, data, buttonType }) => {
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
             key={0}
-            label={<FormattedMessage id="pages.unitgroup.name" defaultMessage="Name of unit group" />}
+            label={
+              <FormattedMessage id="pages.unitgroup.name" defaultMessage="Name of unit group" />
+            }
             labelStyle={{ width: '100px' }}
           >
             {viewData.name ?? '-'}
@@ -77,7 +79,12 @@ const UnitView: FC<Props> = ({ id, data, buttonType }) => {
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
             key={0}
-            label={<FormattedMessage id="pages.unitgroup.meanValue" defaultMessage="Mean value (of unit)" />}
+            label={
+              <FormattedMessage
+                id="pages.unitgroup.meanValue"
+                defaultMessage="Mean value (of unit)"
+              />
+            }
             labelStyle={{ width: '180px' }}
           >
             {viewData.meanValue ?? '-'}

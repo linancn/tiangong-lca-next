@@ -76,7 +76,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
         <LevelTextItemDescription
           data={
             initData.contactInformation?.dataSetInformation?.classificationInformation?.[
-            'common:classification'
+              'common:classification'
             ]?.['common:class']?.['value']
           }
           lang={lang}
@@ -154,10 +154,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
           data={initData.contactInformation?.dataSetInformation?.referenceToContact}
           lang={lang}
           title={
-            <FormattedMessage
-              id="pages.contact.referenceToContact"
-              defaultMessage="Belongs to:"
-            />
+            <FormattedMessage id="pages.contact.referenceToContact" defaultMessage="Belongs to:" />
           } //这块需要改吗？
         ></ContractDescription>
       </>
@@ -171,7 +168,12 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item
               key={0}
-              label={<FormattedMessage id="pages.contact.timeStamp" defaultMessage="Time stamp (last saved)" />}
+              label={
+                <FormattedMessage
+                  id="pages.contact.timeStamp"
+                  defaultMessage="Time stamp (last saved)"
+                />
+              }
               labelStyle={{ width: '120px' }}
             >
               {initData.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-'}
@@ -221,7 +223,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
           <ContractDescription
             data={
               initData.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToPrecedingDataSetVersion'
+                'common:referenceToPrecedingDataSetVersion'
               ]
             }
             lang={lang}

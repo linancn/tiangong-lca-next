@@ -4,7 +4,7 @@ import {
   formatDateTime,
   getLangJson,
   getLangList,
-  removeEmptyObjects
+  removeEmptyObjects,
 } from '../general/util';
 
 export function genContactJsonOrdered(id: string, data: any, oldData: any) {

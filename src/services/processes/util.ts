@@ -4,7 +4,7 @@ import {
   getLangJson,
   getLangList,
   getLangText,
-  removeEmptyObjects
+  removeEmptyObjects,
 } from '../general/util';
 
 export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
@@ -275,8 +275,7 @@ export function genProcessFromData(data: any) {
   let exchangeList = [];
   if (!Array.isArray(exchange)) {
     exchangeList = [exchange];
-  }
-  else {
+  } else {
     exchangeList = exchange;
   }
 
@@ -570,8 +569,7 @@ export function genProcessExchangeTableData(data: any, lang: string) {
     let dataList = [];
     if (!Array.isArray(data)) {
       dataList = [data];
-    }
-    else {
+    } else {
       dataList = data;
     }
     return dataList?.map((item: any) => {

@@ -4,7 +4,7 @@ import {
   getLangJson,
   getLangList,
   getLangText,
-  removeEmptyObjects
+  removeEmptyObjects,
 } from '../general/util';
 
 export function genFlowJsonOrdered(id: string, data: any, oldData: any) {
@@ -61,7 +61,7 @@ export function genFlowJsonOrdered(id: string, data: any, oldData: any) {
             'common:elementaryFlowCategorization': {
               'common:category': classificationToJsonList(
                 data?.flowInformation?.dataSetInformation?.classificationInformation?.[
-                'common:elementaryFlowCategorization'
+                  'common:elementaryFlowCategorization'
                 ]?.['common:category'],
               ),
             },
@@ -86,25 +86,25 @@ export function genFlowJsonOrdered(id: string, data: any, oldData: any) {
             'common:referenceToComplianceSystem': {
               '@refObjectId':
                 data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                'common:referenceToComplianceSystem'
+                  'common:referenceToComplianceSystem'
                 ]?.['@refObjectId'],
               '@type':
                 data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                'common:referenceToComplianceSystem'
+                  'common:referenceToComplianceSystem'
                 ]?.['@type'],
               '@uri':
                 data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                'common:referenceToComplianceSystem'
+                  'common:referenceToComplianceSystem'
                 ]?.['@uri'],
               'common:shortDescription': getLangJson(
                 data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                'common:referenceToComplianceSystem'
+                  'common:referenceToComplianceSystem'
                 ]?.['common:shortDescription'],
               ),
             },
             'common:approvalOfOverallCompliance':
               data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-              'common:approvalOfOverallCompliance'
+                'common:approvalOfOverallCompliance'
               ],
           },
         },
@@ -115,19 +115,19 @@ export function genFlowJsonOrdered(id: string, data: any, oldData: any) {
           'common:referenceToDataSetFormat': {
             '@refObjectId':
               data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-              '@refObjectId'
+                '@refObjectId'
               ],
             '@type':
               data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-              '@type'
+                '@type'
               ],
             '@uri':
               data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-              '@uri'
+                '@uri'
               ],
             'common:shortDescription': getLangJson(
               data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-              'common:shortDescription'
+                'common:shortDescription'
               ],
             ),
           },
@@ -137,7 +137,7 @@ export function genFlowJsonOrdered(id: string, data: any, oldData: any) {
             data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'],
           'common:permanentDataSetURI':
             data?.administrativeInformation?.publicationAndOwnership?.[
-            'common:permanentDataSetURI'
+              'common:permanentDataSetURI'
             ],
         },
       },
@@ -153,8 +153,7 @@ export function genFlowFromData(data: any) {
   let flowPropertyList = [];
   if (!Array.isArray(flowProperty)) {
     flowPropertyList = [flowProperty];
-  }
-  else {
+  } else {
     flowPropertyList = flowProperty;
   }
 
@@ -172,7 +171,7 @@ export function genFlowFromData(data: any) {
           'common:elementaryFlowCategorization': {
             'common:category': classificationToStringList(
               data?.flowInformation?.dataSetInformation?.classificationInformation?.[
-              'common:elementaryFlowCategorization'
+                'common:elementaryFlowCategorization'
               ]?.['common:category'],
             ),
           },
@@ -200,25 +199,25 @@ export function genFlowFromData(data: any) {
           'common:referenceToComplianceSystem': {
             '@refObjectId':
               data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-              'common:referenceToComplianceSystem'
+                'common:referenceToComplianceSystem'
               ]?.['@refObjectId'],
             '@type':
               data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-              'common:referenceToComplianceSystem'
+                'common:referenceToComplianceSystem'
               ]?.['@type'],
             '@uri':
               data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-              'common:referenceToComplianceSystem'
+                'common:referenceToComplianceSystem'
               ]?.['@uri'],
             'common:shortDescription': getLangList(
               data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-              'common:referenceToComplianceSystem'
+                'common:referenceToComplianceSystem'
               ]?.['common:shortDescription'],
             ),
           },
           'common:approvalOfOverallCompliance':
             data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-            'common:approvalOfOverallCompliance'
+              'common:approvalOfOverallCompliance'
             ],
         },
       },
@@ -229,19 +228,19 @@ export function genFlowFromData(data: any) {
         'common:referenceToDataSetFormat': {
           '@refObjectId':
             data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-            '@refObjectId'
+              '@refObjectId'
             ],
           '@type':
             data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-            '@type'
+              '@type'
             ],
           '@uri':
             data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-            '@uri'
+              '@uri'
             ],
           'common:shortDescription': getLangList(
             data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-            'common:shortDescription'
+              'common:shortDescription'
             ],
           ),
         },
@@ -255,25 +254,25 @@ export function genFlowFromData(data: any) {
       },
     },
     flowProperties: {
-      flowProperty:
-        flowPropertyList?.map((item: any) => {
-          return {
-            '@dataSetInternalID': item?.['@dataSetInternalID'],
-            referenceToFlowPropertyDataSet: {
-              '@refObjectId':
-                item?.referenceToFlowPropertyDataSet?.['@refObjectId'],
-              '@type': item?.referenceToFlowPropertyDataSet?.['@type'],
-              '@uri': item?.referenceToFlowPropertyDataSet?.['@uri'],
-              'common:shortDescription': getLangList(
-                item?.referenceToFlowPropertyDataSet?.[
-                'common:shortDescription'
-                ],
-              ),
-            },
-            meanValue: item?.['meanValue'],
-            quantitativeReference: item?.['@dataSetInternalID'] === data?.flowInformation?.quantitativeReference?.referenceToReferenceFlowProperty ?? '' ? true : false,
-          }
-        }),
+      flowProperty: flowPropertyList?.map((item: any) => {
+        return {
+          '@dataSetInternalID': item?.['@dataSetInternalID'],
+          referenceToFlowPropertyDataSet: {
+            '@refObjectId': item?.referenceToFlowPropertyDataSet?.['@refObjectId'],
+            '@type': item?.referenceToFlowPropertyDataSet?.['@type'],
+            '@uri': item?.referenceToFlowPropertyDataSet?.['@uri'],
+            'common:shortDescription': getLangList(
+              item?.referenceToFlowPropertyDataSet?.['common:shortDescription'],
+            ),
+          },
+          meanValue: item?.['meanValue'],
+          quantitativeReference:
+            item?.['@dataSetInternalID'] ===
+            data?.flowInformation?.quantitativeReference?.referenceToReferenceFlowProperty
+              ? true
+              : false,
+        };
+      }),
     },
   });
 }
@@ -283,8 +282,7 @@ export function genFlowPropertyTabTableData(data: any, lang: string) {
     let dataList = [];
     if (!Array.isArray(data)) {
       dataList = [data];
-    }
-    else {
+    } else {
       if (data.length === 0) {
         return [];
       }
@@ -295,11 +293,10 @@ export function genFlowPropertyTabTableData(data: any, lang: string) {
       return removeEmptyObjects({
         key: item?.['@dataSetInternalID'] ?? '-',
         dataSetInternalID: item?.['@dataSetInternalID'] ?? '-',
-        referenceToFlowPropertyDataSetId: item?.referenceToFlowPropertyDataSet?.['@refObjectId'] ?? '-',
+        referenceToFlowPropertyDataSetId:
+          item?.referenceToFlowPropertyDataSet?.['@refObjectId'] ?? '-',
         referenceToFlowPropertyDataSet: getLangText(
-          item?.referenceToFlowPropertyDataSet?.[
-          'common:shortDescription'
-          ],
+          item?.referenceToFlowPropertyDataSet?.['common:shortDescription'],
           lang,
         ),
         meanValue: item?.['meanValue'],

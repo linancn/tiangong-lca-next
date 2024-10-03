@@ -3,17 +3,7 @@ import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import ProForm from '@ant-design/pro-form';
-import {
-  Button,
-  Collapse,
-  Drawer,
-  Form,
-  Input,
-  Space,
-  Switch,
-  Tooltip,
-  Typography
-} from 'antd';
+import { Button, Collapse, Drawer, Form, Input, Space, Switch, Tooltip, Typography } from 'antd';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -100,9 +90,12 @@ const PropertyCreate: FC<Props> = ({ lang, onData }) => {
         >
           <Space direction="vertical" style={{ width: '100%' }}>
             <FlowpropertiesSelectForm
-              label={<FormattedMessage
-                id="pages.flow.view.flowProperties.referenceToDataSetFormat"
-                defaultMessage="Data set format(s)" />}
+              label={
+                <FormattedMessage
+                  id="pages.flow.view.flowProperties.referenceToDataSetFormat"
+                  defaultMessage="Data set format(s)"
+                />
+              }
               name={['referenceToFlowPropertyDataSet']}
               lang={lang}
               drawerVisible={drawerVisible}

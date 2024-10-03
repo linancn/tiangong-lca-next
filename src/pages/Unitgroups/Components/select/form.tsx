@@ -153,10 +153,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData })
           <Input disabled={true} style={{ color: token.colorTextDescription }} />
         </Form.Item>
         <Divider orientationMargin="0" orientation="left" plain>
-          <FormattedMessage
-            id="pages.unitgroup.edit.generalComment"
-            defaultMessage="Comment"
-          />
+          <FormattedMessage id="pages.unitgroup.edit.generalComment" defaultMessage="Comment" />
         </Divider>
         <Form.Item>
           <Form.List name={[...name, 'refUnit', 'generalComment']}>

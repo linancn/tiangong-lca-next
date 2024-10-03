@@ -59,6 +59,9 @@ export async function getFlowTableAll(
   sort: Record<string, SortOrder>,
   lang: string,
   dataSource: string,
+  filters?: {
+    flowType?: string;
+  },
 ) {
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
   const orderBy = sort[sortBy] ?? 'descend';
@@ -76,7 +79,7 @@ export async function getFlowTableAll(
 
   let result: any = {};
   if (dataSource === 'tg') {
-    result = await supabase
+    let query = supabase
       .from('flows')
       .select(selectStr, { count: 'exact' })
       .eq('state_code', 100)
@@ -85,6 +88,21 @@ export async function getFlowTableAll(
         ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
         (params.current ?? 1) * (params.pageSize ?? 10) - 1,
       );
+    if (filters?.flowType) {
+      const flowTypes = filters.flowType.split(',').map((type) => type.trim());
+      if (flowTypes.length > 1) {
+        query = query.in(
+          'json->flowDataSet->modellingAndValidation->LCIMethod->>typeOfDataSet',
+          flowTypes,
+        );
+      } else {
+        query = query.eq(
+          'json->flowDataSet->modellingAndValidation->LCIMethod->>typeOfDataSet',
+          flowTypes[0],
+        );
+      }
+    }
+    result = await query;
   } else if (dataSource === 'my') {
     const session = await supabase.auth.getSession();
     if (session.data.session) {

@@ -2,13 +2,7 @@ import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
 import { StringMultiLang_r, dataSetVersion } from '@/components/Validator/index';
 import type { ProFormInstance } from '@ant-design/pro-form';
-import {
-  Card,
-  Form,
-  Input,
-  Select,
-  Space,
-} from 'antd';
+import { Card, Form, Input, Select, Space } from 'antd';
 import type { FC } from 'react';
 import { FormattedMessage } from 'umi';
 

@@ -69,10 +69,7 @@ const UnitGroupFromMini: FC<Props> = ({ id, idType, name, formRef, drawerVisible
         }
       >
         <Divider orientationMargin="0" orientation="left" plain>
-          <FormattedMessage
-            id="pages.unitgroup.edit.generalComment"
-            defaultMessage="Comment"
-          />
+          <FormattedMessage id="pages.unitgroup.edit.generalComment" defaultMessage="Comment" />
         </Divider>
         <Form.Item>
           <Form.List name={[...name, 'refUnitGroup', 'shortDescription']}>
@@ -112,16 +109,15 @@ const UnitGroupFromMini: FC<Props> = ({ id, idType, name, formRef, drawerVisible
           }
         >
           <Form.Item
-            label={<FormattedMessage id="pages.unitgroup.edit.name" defaultMessage="Name of unit" />}
+            label={
+              <FormattedMessage id="pages.unitgroup.edit.name" defaultMessage="Name of unit" />
+            }
             name={[...name, 'refUnitGroup', 'refUnit', 'name']}
           >
             <Input disabled={true} style={{ color: token.colorTextDescription }} />
           </Form.Item>
           <Divider orientationMargin="0" orientation="left" plain>
-            <FormattedMessage
-              id="pages.unitgroup.edit.generalComment"
-              defaultMessage="Comment"
-            />
+            <FormattedMessage id="pages.unitgroup.edit.generalComment" defaultMessage="Comment" />
           </Divider>
           <Form.Item>
             <Form.List name={[...name, 'refUnitGroup', 'refUnit', 'generalComment']}>
