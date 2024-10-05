@@ -52,9 +52,13 @@ export async function signUp(body: API.LoginParams, options?: { [key: string]: a
     email: body.email ?? '',
     password: body.confirmPassword ?? '',
   });
-
-  if (error) {
-    return { status: 'error', message: error.message, type: body.type, currentAuthority: 'guest' };
+  // console.log(body.type);
+  if (!data || error) {
+    return { status: 'error', type: body.type, currentAuthority: 'guest' };
+  }
+  if (data.user?.role === '') {
+    // console.log('user existed');
+    return { status: 'existed', type: body.type, currentAuthority: 'guest' };
   }
   return { status: 'ok', type: body.type, currentAuthority: 'guest' };
 }

@@ -14,8 +14,8 @@ import { login, signUp } from '@/services/ant-design-pro/api';
 import { Footer } from '@/components';
 import { FormattedMessage } from '@umijs/max';
 import Settings from '../../../../config/defaultSettings';
-import { flushSync } from 'react-dom';
 import { Typography } from 'antd';
+import { flushSync } from 'react-dom';
 
 const LoginMessage: React.FC<{
   content: string;
@@ -87,6 +87,21 @@ const Login: React.FC = () => {
           });
           return;
         }
+        if (msg.status === 'existed') {
+          setSendComplete(true);
+          const defaultSignUpExistedMessage = intl.formatMessage({
+            id: 'pages.login.signUp.existed',
+            defaultMessage:
+              'This email has already been registered. Try Login or Forgot Password?',
+          });
+          messageApi.open({
+            type: 'error',
+            content: defaultSignUpExistedMessage,
+            duration: 10,
+          });
+          return;
+        }
+        setUserLoginState(msg);
         return;
       } else if (type === 'login') {
         // 登录
@@ -355,8 +370,8 @@ const Login: React.FC = () => {
                             }
                             return 'poor';
                           };
-                          const status = getStatus();
-                          if (status === 'pass') {
+                          const pwdStatus = getStatus();
+                          if (pwdStatus === 'pass') {
                             return (
                               <div style={{ color: token.colorWarning }}>
                                 <FormattedMessage
@@ -366,7 +381,7 @@ const Login: React.FC = () => {
                               </div>
                             );
                           }
-                          if (status === 'ok') {
+                          if (pwdStatus === 'ok') {
                             return (
                               <div style={{ color: token.colorSuccess }}>
                                 <FormattedMessage
@@ -460,7 +475,7 @@ const Login: React.FC = () => {
                         values={{
                           termsOfService: termsOfServiceLink,
                           privacyPolicy: privacyPolicyLink,
-                        }} //注册即表示您同意我们的用户服务协议与隐私政策 By signing up, you agree to our Terms of Service and Privacy Policy.
+                        }}
                       />
                     </div>
                     <div
