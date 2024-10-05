@@ -66,6 +66,7 @@ declare namespace API {
     email?: string;
     username?: string;
     password?: string;
+    confirmPassword?: string;
     autoLogin?: boolean;
     type?: string;
   };

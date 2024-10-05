@@ -1,7 +1,7 @@
+import { request } from '@umijs/max';
 // @ts-ignore
 /* eslint-disable */
 import { supabase } from '@/services/supabase';
-import { request } from '@umijs/max';
 
 /** 获取当前的用户 GET /api/currentUser */
 export async function currentUser(options?: { [key: string]: any }) {
@@ -27,7 +27,7 @@ export async function outLogin(options?: { [key: string]: any }) {
 /** 登录接口 POST /api/login/account */
 export async function login(body: API.LoginParams, options?: { [key: string]: any }) {
   const { data, error } = await supabase.auth.signInWithPassword({
-    email: body.username ?? '',
+    email: body.email ?? '',
     password: body.password ?? '',
   });
   if (error) {
@@ -39,6 +39,18 @@ export async function login(body: API.LoginParams, options?: { [key: string]: an
 export async function sendMagicLink(body: API.LoginParams, options?: { [key: string]: any }) {
   const { data, error } = await supabase.auth.signInWithOtp({
     email: body.email ?? '',
+  });
+
+  if (error) {
+    return { status: 'error', message: error.message, type: body.type, currentAuthority: 'guest' };
+  }
+  return { status: 'ok', type: body.type, currentAuthority: 'guest' };
+}
+
+export async function signUp(body: API.LoginParams, options?: { [key: string]: any }) {
+  const { data, error } = await supabase.auth.signUp({
+    email: body.email ?? '',
+    password: body.confirmPassword ?? '',
   });
 
   if (error) {
