@@ -131,7 +131,7 @@ const PasswordForgot: React.FC = () => {
                   <ProFormText
                     name="email"
                     fieldProps={{
-                      size: 'large',
+                      size: 'middle',
                       prefix: <MailOutlined />,
                     }}
                     placeholder={intl.formatMessage({
