@@ -239,7 +239,7 @@ const PasswordSet: FC = () => {
                       size: 'middle',
                       prefix: <LockOutlined />,
                     }}
-                    dependencies={['password']}
+                    dependencies={['newPassword']}
                     hasFeedback
                     placeholder={intl.formatMessage({
                       id: 'pages.login.confirmNewPassword.placeholder',
