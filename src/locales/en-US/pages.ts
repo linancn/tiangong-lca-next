@@ -53,6 +53,13 @@ export default {
   'pages.login.subTitle': 'World\'s Largest Open & Free LCA Database',
   'pages.welcome.alertMessage': 'Faster and stronger heavy-duty components have been released.',
   'pages.welcome.link': 'Welcome',
+  'pages.login.passwordReset.title': 'Reset Password',
+  'pages.login.passwordReset.tab': 'Reset Password',
+  'pages.login.passwordReset.submit': 'Submit',
+  'pages.login.newPassword.placeholder': 'New Password',
+  'pages.login.confirmNewPassword.placeholder': 'Confirm New Password',
+  'pages.login.password.reset.success': 'Password reset successfully!',
+  'pages.login.password.reset.failure': 'Password reset failed, please try again.',
 
   'pages.searchTable.createForm.newRule': 'New Rule',
   'pages.searchTable.updateForm.ruleConfig': 'Rule configuration',
@@ -99,8 +106,6 @@ export default {
   'pages.account.register.reason': 'Reason for Registration',
   'pages.account.password.current': 'Current Password',
   'pages.account.password': 'Password',
-  'pages.account.password.new1': 'New Password',
-  'pages.account.password.new2': 'Confirm Password',
   'pages.account.password.changed.success': 'Password changed successfully!',
   'pages.account.password.setted.success': 'Password setted successfully!',
 

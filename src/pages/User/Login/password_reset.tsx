@@ -1,20 +1,21 @@
 import { Footer } from '@/components';
 import { currentUser, setPassword } from '@/services/ant-design-pro/api';
-import { validatePasswordStrength } from '@/services/general/util';
 import { FormattedMessage, history } from '@umijs/max';
-import { App, Button, ConfigProvider, Form, Input, Space, Spin, Tabs, message, theme } from 'antd';
+import { App, ConfigProvider, Spin, Tabs, message, theme } from 'antd';
 import { useEffect, useState, type FC } from 'react';
 import { Helmet, useIntl, SelectLang } from 'umi';
 import Settings from '../../../../config/defaultSettings';
-import { ProConfigProvider, ProLayout, LoginForm } from '@ant-design/pro-components';
+import { ProConfigProvider, ProLayout, LoginForm, ProFormText } from '@ant-design/pro-components';
+import { LockOutlined, MailOutlined } from '@ant-design/icons';
 
 
 const PasswordSet: FC = () => {
   const [initData, setInitData] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [sendMailMessage, setSendMailMessage] = useState<any>(<></>);
   const intl = useIntl();
   const [spinning, setSpinning] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
+  const { token } = theme.useToken();
   const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
 
   const handleSubmit = async (values: API.LoginParams) => {
@@ -23,37 +24,25 @@ const PasswordSet: FC = () => {
       const msg = await setPassword(values);
       setLoading(false);
       if (msg.status === 'ok') {
-        const defaultLoginSuccessMessage = intl.formatMessage({
-          id: 'pages.login.password.set.success',
-          defaultMessage: 'The password was setted successfully!',
+        const defaultResetSuccessMessage = intl.formatMessage({
+          id: 'pages.login.password.reset.success',
+          defaultMessage: 'Password reset successfully!',
         });
-        message.success(defaultLoginSuccessMessage);
-        setSendMailMessage(
-          <FormattedMessage
-            id="pages.login.password.set.success"
-            defaultMessage="The password was setted successfully!"
-          />,
-        );
+        messageApi.open({
+          type: 'success',
+          content: defaultResetSuccessMessage,
+          duration: 3,
+        });
         history.push('/');
         return;
       }
-      setSendMailMessage(
-        <>
-          <FormattedMessage
-            id="pages.login.password.set.failure"
-            defaultMessage="The password was not setted successfully, please try again!"
-          />
-          <br />
-          <br />({msg.message})
-        </>,
-      );
       return;
     } catch (error) {
-      const defaultLoginFailureMessage = intl.formatMessage({
-        id: 'pages.login.password.set.failure',
-        defaultMessage: 'The password was not setted successfully, please try again!',
+      const defaultResetFailureMessage = intl.formatMessage({
+        id: 'pages.login.password.reset.failure',
+        defaultMessage: 'Password reset failed, please try again.',
       });
-      message.error(defaultLoginFailureMessage);
+      messageApi.error(defaultResetFailureMessage);
     }
   };
 
@@ -92,6 +81,7 @@ const PasswordSet: FC = () => {
           algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
         }}
       >
+        {contextHolder}
         <ProConfigProvider hashed={false}>
           <ProLayout
             menuRender={false}
@@ -103,7 +93,7 @@ const PasswordSet: FC = () => {
             <Helmet>
               <title>
                 {intl.formatMessage({
-                  id: 'menu.password_reset',
+                  id: 'pages.login.passwordReset.title',
                   defaultMessage: 'Reset Password',
                 })}
                 - {Settings.title}
@@ -111,103 +101,175 @@ const PasswordSet: FC = () => {
             </Helmet>
             <SelectLang style={{ position: 'absolute', right: 16, top: 16 }} />
             <div style={{ marginTop: '80px' }}>
-            <Spin spinning={spinning}>
-              <LoginForm
-              layout="vertical"
-              logo={isDarkMode ? 'logo_dark.svg' : Settings.logo}
-              title={<FormattedMessage
-                id="pages.login.title"
-                defaultMessage="TianGong LCA"
-              />}
-              subTitle={<FormattedMessage
-                id="pages.login.subTitle"
-                defaultMessage="TianGong LCA"
-              />}
-                name="password_reset"
-                fields={initData}
-                onFinish={async (values) => {
-                  await handleSubmit(values as API.LoginParams);
-                }}
-              >
-                <Tabs
+              <Spin spinning={spinning}>
+                <LoginForm
+                  layout="vertical"
+                  logo={isDarkMode ? 'logo_dark.svg' : Settings.logo}
+                  title={<FormattedMessage
+                    id="pages.login.title"
+                    defaultMessage="TianGong LCA"
+                  />}
+                  subTitle={<FormattedMessage
+                    id="pages.login.subTitle"
+                    defaultMessage="TianGong LCA"
+                  />}
+                  name="password_reset"
+                  fields={initData}
+                  onFinish={async (values) => {
+                    await handleSubmit(values as API.LoginParams);
+                  }}
+                  submitter={{
+                    resetButtonProps: {
+                      style: { display: 'none' },
+                    },
+                    submitButtonProps: {
+                      loading: loading,
+                    },
+                    searchConfig: {
+                      submitText: intl.formatMessage({
+                        id: 'pages.login.passwordReset.submit',
+                        defaultMessage: 'Submit',
+                      }),
+                    },
+                  }}
+                >
+                  <Tabs
                     centered
                     items={[
                       {
                         key: 'email',
                         label: intl.formatMessage({
-                          id: 'pages.login.passwordForgot.tab',
-                          defaultMessage: 'Account',
+                          id: 'pages.login.passwordReset.tab',
+                          defaultMessage: 'Reset Password',
                         }),
                       },
                     ]}
                   />
-                <Space direction="vertical" style={{ width: '100%' }}>
-                  <Form.Item hidden name={'userid'}>
-                    <Input disabled={true} />
-                  </Form.Item>
-                  <Form.Item name={'email'}>
-                    <Input disabled={true} style={{ color: '#000' }} />
-                  </Form.Item>
-
-                  <Form.Item
-                    name="new1"
-                    label={
-                      <FormattedMessage
-                        id="pages.account.password.new1"
-                        defaultMessage="New Password"
-                      />
-                    }
+                  <ProFormText
+                    name="email"
+                    fieldProps={{
+                      size: 'middle',
+                      prefix: <MailOutlined />,
+                    }}
+                    placeholder={intl.formatMessage({
+                      id: 'pages.login.email.placeholder',
+                      defaultMessage: 'Email',
+                    })}
+                    disabled={true}
+                  />
+                  <ProFormText.Password
+                    name="newPassword"
+                    fieldProps={{
+                      size: 'middle',
+                      prefix: <LockOutlined />,
+                      strengthText: <FormattedMessage
+                        id="pages.login.password.strengthText"
+                        defaultMessage="Password must contain at least 8 characters, including lowercase and uppercase letters, digits, and symbols."
+                      />,
+                      statusRender: (value) => {
+                        const getStatus = () => {
+                          if (value && value.length > 12) {
+                            return 'ok';
+                          }
+                          if (value && value.length > 8) {
+                            return 'pass';
+                          }
+                          return 'poor';
+                        };
+                        const pwdStatus = getStatus();
+                        if (pwdStatus === 'pass') {
+                          return (
+                            <div style={{ color: token.colorWarning }}>
+                              <FormattedMessage
+                                id="pages.login.password.strengthMedium"
+                                defaultMessage="Medium"
+                              />
+                            </div>
+                          );
+                        }
+                        if (pwdStatus === 'ok') {
+                          return (
+                            <div style={{ color: token.colorSuccess }}>
+                              <FormattedMessage
+                                id="pages.login.password.strengthStrong"
+                                defaultMessage="Strong"
+                              />
+                            </div>
+                          );
+                        }
+                        return (
+                          <div style={{ color: token.colorError }}>
+                            <FormattedMessage
+                              id="pages.login.password.strengthWeak"
+                              defaultMessage="Weak"
+                            />
+                          </div>
+                        );
+                      },
+                    }}
+                    placeholder={intl.formatMessage({
+                      id: 'pages.login.newPassword.placeholder',
+                      defaultMessage: 'New password',
+                    })}
                     rules={[
                       {
                         required: true,
-                        message: 'Please input a new password!',
+                        message: (
+                          <FormattedMessage
+                            id="pages.login.password.required"
+                            defaultMessage="Please input your password!"
+                          />
+                        ),
                       },
                       {
-                        validator: validatePasswordStrength,
+                        pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/,
+                        message: (
+                          <FormattedMessage
+                            id="pages.login.password.validation"
+                            defaultMessage="Password is invalid!"
+                          />
+                        ),
                       },
                     ]}
                     hasFeedback
-                  >
-                    <Input.Password />
-                  </Form.Item>
-
-                  <Form.Item
-                    name="new2"
-                    label={
-                      <FormattedMessage
-                        id="pages.account.password.new2"
-                        defaultMessage="Confirm Password"
-                      />
-                    }
+                  />
+                  <ProFormText.Password
+                    name="confirmNewPassword"
+                    fieldProps={{
+                      size: 'middle',
+                      prefix: <LockOutlined />,
+                    }}
+                    dependencies={['password']}
+                    hasFeedback
+                    placeholder={intl.formatMessage({
+                      id: 'pages.login.confirmNewPassword.placeholder',
+                      defaultMessage: 'Confirm New Password',
+                    })}
                     rules={[
                       {
                         required: true,
-                        message: 'Please input the new password again!',
+                        message: (
+                          <FormattedMessage
+                            id="pages.login.confirmPassword.required"
+                            defaultMessage="Please confirm your password!"
+                          />
+                        ),
                       },
                       ({ getFieldValue }) => ({
                         validator(_, value) {
-                          if (!value || getFieldValue('new1') === value) {
+                          if (!value || getFieldValue('password') === value) {
                             return Promise.resolve();
                           }
-                          return Promise.reject(
-                            new Error('The new password that you entered do not match!'),
-                          );
+                          return Promise.reject(new Error(intl.formatMessage({
+                            id: 'pages.login.password.confirm.error',
+                            defaultMessage: 'The two passwords do not match!',
+                          })));
                         },
                       }),
                     ]}
-                    hasFeedback
-                  >
-                    <Input.Password />
-                  </Form.Item>
-                  <Form.Item>
-                    <Button block type="primary" htmlType="submit" size="large" loading={loading}>
-                      <FormattedMessage id="pages.button.submit" defaultMessage="Submit" />
-                    </Button>
-                  </Form.Item>
-                  <Form.Item>{sendMailMessage}</Form.Item>
-                </Space>
-              </LoginForm>
-            </Spin>
+                  />
+                </LoginForm>
+              </Spin>
             </div>
             <Footer />
           </ProLayout>

@@ -53,6 +53,13 @@ export default {
   'pages.login.subTitle': '全球最大的开放免费LCA数据库',
   'pages.welcome.alertMessage': '更快更强的重型组件，已经发布。',
   'pages.welcome.link': '欢迎使用',
+  'pages.login.passwordReset.title': '重置密码',
+  'pages.login.passwordReset.tab': '重置密码',
+  'pages.login.passwordReset.submit': '提交',
+  'pages.login.newPassword.placeholder': '新密码',
+  'pages.login.confirmNewPassword.placeholder': '确认新密码',
+  'pages.login.password.reset.success': '密码重置成功！',
+  'pages.login.password.reset.failure': '密码重置失败，请重试。',
 
   'pages.searchTable.createForm.newRule': '新建规则',
   'pages.searchTable.updateForm.ruleConfig': '规则配置',
@@ -99,8 +106,6 @@ export default {
   'pages.account.register.reason': '注册原因',
   'pages.account.password.current': '当前密码',
   'pages.account.password': '密码',
-  'pages.account.password.new1': '新密码',
-  'pages.account.password.new2': '确认密码',
   'pages.account.password.changed.success': '密码修改成功！',
   'pages.account.password.setted.success': '密码设置成功！',
 
