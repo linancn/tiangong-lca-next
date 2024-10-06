@@ -257,7 +257,7 @@ const PasswordSet: FC = () => {
                       },
                       ({ getFieldValue }) => ({
                         validator(_, value) {
-                          if (!value || getFieldValue('password') === value) {
+                          if (!value || getFieldValue('newPassword') === value) {
                             return Promise.resolve();
                           }
                           return Promise.reject(new Error(intl.formatMessage({
