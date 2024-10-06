@@ -183,7 +183,7 @@ const Login: React.FC = () => {
                 />}
                 subTitle={<FormattedMessage
                   id="pages.login.subTitle"
-                  defaultMessage="TianGong LCA"
+                  defaultMessage="World\'s Largest Open & Free LCA Database"
                 />}
                 initialValues={{ autoLogin: true }}
                 onFinish={async (values) => {
@@ -227,6 +227,14 @@ const Login: React.FC = () => {
                     content={intl.formatMessage({
                       id: 'pages.login.passwordLogin.errorMessage',
                       defaultMessage: 'Incorrect username/password',
+                    })}
+                  />
+                )}
+                {status === 'error' && loginType === 'register' && (
+                  <LoginMessage
+                    content={intl.formatMessage({
+                      id: 'pages.login.signUp.errorMessage',
+                      defaultMessage: 'Validation email failed to send.',
                     })}
                   />
                 )}
@@ -309,14 +317,6 @@ const Login: React.FC = () => {
                       </a>
                     </div>
                   </>
-                )}
-                {status === 'error' && loginType === 'register' && (
-                  <LoginMessage
-                    content={intl.formatMessage({
-                      id: 'pages.login.signUp.errorMessage',
-                      defaultMessage: 'Validation email failed to send.',
-                    })}
-                  />
                 )}
                 {type === 'register' && (
                   <>
