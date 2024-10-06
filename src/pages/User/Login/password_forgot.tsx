@@ -1,12 +1,13 @@
-import { Footer } from '@/components';
-import { currentUser, forgotPasswordSendEmail } from '@/services/ant-design-pro/api';
-import { MailOutlined, RollbackOutlined } from '@ant-design/icons';
+import { App, Button, ConfigProvider, Spin, Tabs, notification, theme } from 'antd';
+import { Helmet, Link, SelectLang, useIntl } from 'umi';
 import { LoginForm, ProConfigProvider, ProFormText, ProLayout } from '@ant-design/pro-components';
-import { FormattedMessage } from '@umijs/max';
-import { Spin, ConfigProvider, theme, App, Tabs, notification, Button } from 'antd';
+import { MailOutlined, RollbackOutlined } from '@ant-design/icons';
 import React, { useEffect, useState } from 'react';
-import { Helmet, SelectLang, useIntl, Link } from 'umi';
-import Settings from '../../../config/defaultSettings';
+import { currentUser, forgotPasswordSendEmail } from '@/services/ant-design-pro/api';
+
+import { Footer } from '@/components';
+import { FormattedMessage } from '@umijs/max';
+import Settings from '../../../../config/defaultSettings';
 
 const PasswordForgot: React.FC = () => {
   const [initData, setInitData] = useState<API.CurrentUser>({});
