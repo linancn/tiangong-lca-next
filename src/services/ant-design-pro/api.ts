@@ -64,8 +64,9 @@ export async function signUp(body: API.LoginParams, options?: { [key: string]: a
 }
 
 export async function signInWithOtp(body: any, options?: { [key: string]: any }) {
+  console.log(body);
   const { data, error } = await supabase.auth.verifyOtp({
-    token_hash: body.token ?? '',
+    token_hash: body.token_hash ?? '',
     type: body.type ?? 'recovery',
   });
   console.log(data, error);

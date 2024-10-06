@@ -21,8 +21,9 @@ const PasswordSet: FC = () => {
 
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
-  const tokenHash = searchParams.get('token');
+  const tokenHash = searchParams.get('access_token');
   const type = searchParams.get('type');
+  console.log(tokenHash, type);
 
 
   const handleSubmit = async (values: API.LoginParams) => {
@@ -56,7 +57,7 @@ const PasswordSet: FC = () => {
   useEffect(() => {
     if (spinning && tokenHash && type) {
       const body = {
-        token: tokenHash,
+        token_hash: tokenHash,
         type: type,
       };
 
