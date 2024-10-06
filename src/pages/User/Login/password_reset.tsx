@@ -20,9 +20,9 @@ const PasswordSet: FC = () => {
   const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
 
   const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
-  const tokenHash = searchParams.get('access_token');
-  const type = searchParams.get('type');
+  const hashParams = new URLSearchParams(location.hash.slice(1)); // 去掉 '#' 号
+  const tokenHash = hashParams.get('access_token');
+  const type = hashParams.get('type');
   console.log(tokenHash, type);
 
 
