@@ -63,6 +63,19 @@ export async function signUp(body: API.LoginParams, options?: { [key: string]: a
   return { status: 'ok', type: body.type, currentAuthority: 'guest' };
 }
 
+export async function signInWithOtp(body: any, options?: { [key: string]: any }) {
+  const { data, error } = await supabase.auth.verifyOtp({
+    token_hash: body.token ?? '',
+    type: body.type ?? 'recovery',
+  });
+  console.log(data, error);
+
+  if (error) {
+    return { status: 'error', message: error.message, type: body.type, currentAuthority: 'guest' };
+  }
+  return { status: 'ok', email: body.email, type: body.type, currentAuthority: data?.user?.role ?? 'guest' };
+}
+
 export async function reauthenticate(options?: { [key: string]: any }) {
   const { data, error } = await supabase.auth.reauthenticate();
 

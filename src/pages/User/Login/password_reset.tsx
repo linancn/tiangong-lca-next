@@ -1,5 +1,5 @@
 import { Footer } from '@/components';
-import { currentUser, setPassword } from '@/services/ant-design-pro/api';
+import { signInWithOtp, setPassword } from '@/services/ant-design-pro/api';
 import { FormattedMessage, history } from '@umijs/max';
 import { App, ConfigProvider, Spin, Tabs, message, theme } from 'antd';
 import { useEffect, useState, type FC } from 'react';
@@ -7,6 +7,7 @@ import { Helmet, useIntl, SelectLang } from 'umi';
 import Settings from '../../../../config/defaultSettings';
 import { ProConfigProvider, ProLayout, LoginForm, ProFormText } from '@ant-design/pro-components';
 import { LockOutlined, MailOutlined } from '@ant-design/icons';
+import { useLocation } from 'react-router-dom';
 
 
 const PasswordSet: FC = () => {
@@ -17,6 +18,12 @@ const PasswordSet: FC = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const { token } = theme.useToken();
   const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
+
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const tokenHash = searchParams.get('token');
+  const type = searchParams.get('type');
+
 
   const handleSubmit = async (values: API.LoginParams) => {
     try {
@@ -47,16 +54,18 @@ const PasswordSet: FC = () => {
   };
 
   useEffect(() => {
-    if (spinning) {
-      currentUser().then((res) => {
-        if (!res?.userid) {
+    if (spinning && tokenHash && type) {
+      const body = {
+        token: tokenHash,
+        type: type,
+      };
+
+      signInWithOtp(body).then((res) => {
+        if (res.status === 'error') {
+          setSpinning(false);
           return;
         }
         setInitData([
-          {
-            name: ['userid'],
-            value: res?.userid ?? '',
-          },
           {
             name: ['email'],
             value: res?.email ?? '',
@@ -65,7 +74,7 @@ const PasswordSet: FC = () => {
         setSpinning(false);
       });
     }
-  }, [spinning]);
+  }, [spinning, tokenHash, type]);
 
   useEffect(() => {
     setSpinning(true);
