@@ -63,10 +63,21 @@ export async function signUp(body: API.LoginParams, options?: { [key: string]: a
   return { status: 'ok', type: body.type, currentAuthority: 'guest' };
 }
 
+async function calculateHash(text: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(text);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+  return hashHex;
+}
+
 export async function signInWithOtp(body: any, options?: { [key: string]: any }) {
-  console.log(body);
+  const token_hash = await calculateHash(body.access_token);
+  console.log(body.access_token);
+  console.log(token_hash);
   const { data, error } = await supabase.auth.verifyOtp({
-    token_hash: body.token_hash ?? '',
+    token_hash: token_hash ?? '',
     type: body.type ?? 'recovery',
   });
   console.log(data, error);

@@ -21,10 +21,8 @@ const PasswordSet: FC = () => {
 
   const location = useLocation();
   const hashParams = new URLSearchParams(location.hash.slice(1)); // 去掉 '#' 号
-  const tokenHash = hashParams.get('access_token');
+  const access_token = hashParams.get('access_token');
   const type = hashParams.get('type');
-  console.log(tokenHash, type);
-
 
   const handleSubmit = async (values: API.LoginParams) => {
     try {
@@ -55,12 +53,11 @@ const PasswordSet: FC = () => {
   };
 
   useEffect(() => {
-    if (spinning && tokenHash && type) {
+    if (spinning && access_token && type) {
       const body = {
-        token_hash: tokenHash,
+        token_hash: access_token,
         type: type,
       };
-
       signInWithOtp(body).then((res) => {
         if (res.status === 'error') {
           setSpinning(false);
@@ -75,7 +72,7 @@ const PasswordSet: FC = () => {
         setSpinning(false);
       });
     }
-  }, [spinning, tokenHash, type]);
+  }, [spinning, access_token, type]);
 
   useEffect(() => {
     setSpinning(true);
