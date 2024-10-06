@@ -6,7 +6,7 @@ import { Button, Form, Input, Space, Spin, message } from 'antd';
 import { createStyles } from 'antd-style';
 import { useEffect, useState, type FC } from 'react';
 import { Helmet, SelectLang, useIntl } from 'umi';
-import Settings from '../../../config/defaultSettings';
+import Settings from '../../../../config/defaultSettings';
 
 const useStyles = createStyles(({ token }) => {
   return {

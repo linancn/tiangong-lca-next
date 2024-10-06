@@ -140,17 +140,6 @@ export default [
     ],
   },
   {
-    path: '/password',
-    layout: false,
-    routes: [
-      {
-        name: 'passwordSet',
-        path: '/password/set',
-        component: './Account/password_set',
-      },
-    ],
-  },
-  {
     path: '/demo',
     menu: false,
     name: 'Demo',
@@ -171,13 +160,17 @@ export default [
         path: '/user/login/password_forgot',
         component: './User/Login/password_forgot',
       },
+      {
+        name: 'passwordReset',
+        path: '/user/login/password_reset',
+        component: './User/Login/password_reset',
+      },
     ],
   },
   {
     path: '/welcome',
     menu: false,
     name: 'welcome',
-    icon: 'smile',
     component: './Welcome',
   },
   {
