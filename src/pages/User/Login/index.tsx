@@ -489,10 +489,9 @@ const Login: React.FC = () => {
                         size="large"
                         loading={loading}
                         disabled={sendComplete}
-                        onClick={() => {
-                          setType('register');
-                          if (formRefLogin?.current)
-                            handleSubmit(formRefLogin.current?.getFieldsValue());
+                        onClick={async () => {
+                          const values = await formRefLogin.current?.validateFields();
+                          await handleSubmit(values);
                         }}
                       >
                         <FormattedMessage
