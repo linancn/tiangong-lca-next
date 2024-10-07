@@ -1,5 +1,6 @@
 import { Footer } from '@/components';
-import { currentUser, setPassword } from '@/services/ant-design-pro/api';
+import { currentUser as queryCurrentUser, setPassword } from '@/services/ant-design-pro/api';
+
 import { FormattedMessage, history } from '@umijs/max';
 import { App, ConfigProvider, Spin, Tabs, message, theme } from 'antd';
 import { useEffect, useState, type FC } from 'react';
@@ -7,11 +8,8 @@ import { Helmet, useIntl, SelectLang } from 'umi';
 import Settings from '../../../../config/defaultSettings';
 import { ProConfigProvider, ProLayout, LoginForm, ProFormText } from '@ant-design/pro-components';
 import { LockOutlined, MailOutlined } from '@ant-design/icons';
-import { useLocation } from 'react-router-dom';
-
 
 const PasswordSet: FC = () => {
-  const [initData, setInitData] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const intl = useIntl();
   const [spinning, setSpinning] = useState(false);
@@ -19,8 +17,8 @@ const PasswordSet: FC = () => {
   const { token } = theme.useToken();
   const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
 
-  const location = useLocation();
-  const hashParams = new URLSearchParams(location.hash.slice(1));
+  const [currentUser, setCurrentUser] = useState<API.CurrentUser | null>(null);
+
 
   const handleSubmit = async (values: API.LoginParams) => {
     try {
@@ -50,30 +48,23 @@ const PasswordSet: FC = () => {
     }
   };
 
-  useEffect(() => {
-    if (spinning) {
-      currentUser().then((res) => {
-        if (!res?.userid) {
-          // history.push('/#/user/login');
-          return;
-        }
-        setInitData([
-          {
-            name: ['userid'],
-            value: res?.userid ?? '',
-          },
-          {
-            name: ['email'],
-            value: res?.email ?? '',
-          },
-        ]);
-        setSpinning(false);
+  const fetchUserInfo = async (): Promise<API.CurrentUser | null> => {
+    try {
+      setSpinning(true);
+      const user = await queryCurrentUser({
+        skipErrorHandler: true,
       });
+      setCurrentUser(user);
+      setSpinning(false);
+      return user;
+    } catch (error) {
+      history.push('/');
+      return null;
     }
-  }, [spinning]);
+  };
 
   useEffect(() => {
-    setSpinning(true);
+    fetchUserInfo();
   }, []);
 
   return (
@@ -119,7 +110,11 @@ const PasswordSet: FC = () => {
                     defaultMessage="TianGong LCA"
                   />}
                   name="password_reset"
-                  fields={initData}
+                  initialValues={
+                    {
+                      email: currentUser?.email,
+                    }
+                  }
                   onFinish={async (values) => {
                     await handleSubmit(values as API.LoginParams);
                   }}
