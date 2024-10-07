@@ -20,7 +20,7 @@ const PasswordSet: FC = () => {
   const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
 
   const location = useLocation();
-  const hashParams = new URLSearchParams(location.hash.slice(1)); // 去掉 '#' 号
+  const hashParams = new URLSearchParams(location.hash.slice(1));
   const accessToken = hashParams.get('access_token');
   const type = hashParams.get('type');
 
