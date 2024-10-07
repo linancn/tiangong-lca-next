@@ -308,7 +308,7 @@ const Login: React.FC = () => {
                         style={{
                           float: 'right',
                         }}
-                        href="/#/user/login/password_forgot"
+                        href="/user/login/password_forgot"
                       >
                         <FormattedMessage
                           id="pages.login.forgotPassword"

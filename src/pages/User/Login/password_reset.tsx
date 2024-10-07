@@ -8,7 +8,6 @@ import { Helmet, useIntl, SelectLang, useModel } from 'umi';
 import Settings from '../../../../config/defaultSettings';
 import { ProConfigProvider, ProLayout, LoginForm, ProFormText } from '@ant-design/pro-components';
 import { LockOutlined, MailOutlined } from '@ant-design/icons';
-import { flushSync } from 'react-dom';
 
 const PasswordSet: FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -21,28 +20,14 @@ const PasswordSet: FC = () => {
 
   const [currentUser, setCurrentUser] = useState<API.CurrentUser | null>(null);
 
-  // const fetchUserInfo = async () => {
-  //   setSpinning(true);
-  //   const userInfo = await initialState?.fetchUserInfo?.();
-  //   if (userInfo) {
-  //     setCurrentUser(userInfo);
-  //   }
-  //   console.log('Current user:', userInfo); // 添加日志
-  //   setSpinning(false);
-  // };
-
   const fetchUserInfo = async () => {
     setSpinning(true);
-    const userInfo = await initialState?.fetchUserInfo?.();
+    console.log('initialState:', initialState); // 添加日志
+    const userInfo = initialState?.currentUser;
     if (userInfo) {
-      flushSync(() => {
-        setInitialState((s) => ({
-          ...s,
-          currentUser: userInfo,
-        }));
-      });
+      setCurrentUser(userInfo);
     }
-    console.log('Current user:', userInfo); // 添加日志
+    console.log('userInfo:', userInfo); // 添加日志
     setSpinning(false);
   };
 
