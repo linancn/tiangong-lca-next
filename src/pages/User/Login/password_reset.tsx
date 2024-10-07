@@ -1,5 +1,5 @@
 import { Footer } from '@/components';
-import { signInWithOtp, setPassword } from '@/services/ant-design-pro/api';
+import { currentUser, setPassword } from '@/services/ant-design-pro/api';
 import { FormattedMessage, history } from '@umijs/max';
 import { App, ConfigProvider, Spin, Tabs, message, theme } from 'antd';
 import { useEffect, useState, type FC } from 'react';
@@ -21,8 +21,6 @@ const PasswordSet: FC = () => {
 
   const location = useLocation();
   const hashParams = new URLSearchParams(location.hash.slice(1));
-  const accessToken = hashParams.get('access_token');
-  const type = hashParams.get('type');
 
   const handleSubmit = async (values: API.LoginParams) => {
     try {
@@ -53,17 +51,17 @@ const PasswordSet: FC = () => {
   };
 
   useEffect(() => {
-    if (spinning && accessToken && type) {
-      const body = {
-        access_token: accessToken,
-        type: type,
-      };
-      signInWithOtp(body).then((res) => {
-        if (res.status === 'error') {
-          setSpinning(false);
+    if (spinning) {
+      currentUser().then((res) => {
+        if (!res?.userid) {
+          // history.push('/#/user/login');
           return;
         }
         setInitData([
+          {
+            name: ['userid'],
+            value: res?.userid ?? '',
+          },
           {
             name: ['email'],
             value: res?.email ?? '',
@@ -72,7 +70,7 @@ const PasswordSet: FC = () => {
         setSpinning(false);
       });
     }
-  }, [spinning, accessToken, type]);
+  }, [spinning]);
 
   useEffect(() => {
     setSpinning(true);

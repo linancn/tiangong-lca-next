@@ -1,4 +1,6 @@
-import { request } from '@umijs/max';
+// import jwt from 'jsonwebtoken';
+import { request } from '@umijs/max'
+// import { jwtDecode } from "jwt-decode";;
 // @ts-ignore
 /* eslint-disable */
 import { supabase } from '@/services/supabase';
@@ -63,41 +65,39 @@ export async function signUp(body: API.LoginParams, options?: { [key: string]: a
   return { status: 'ok', type: body.type, currentAuthority: 'guest' };
 }
 
-async function calculateHash(text: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(text);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
-  return hashHex;
-}
+// interface Payload {
+//   iss: string;
+//   sub: string;
+//   aud: string;
+//   exp: number;
+//   iat: number;
+//   email: string;
+//   [key: string]: any;
+// }
 
-export async function signInWithOtp(body: any, options?: { [key: string]: any }) {
-  const token_hash = await calculateHash(body.access_token);
-  console.log(body.access_token);
-  console.log(token_hash);
-  const { data, error } = await supabase.auth.verifyOtp({
-    token_hash: token_hash ?? '',
-    type: body.type ?? 'recovery',
-  });
-  console.log(data, error);
+// export async function signInWithOtp(body: any, options?: { [key: string]: any }) {
+//   const decoded = jwtDecode<{ email: string }>(body.access_token);
+//   const { data, error } = await supabase.auth.signInWithOtp({
+//     email: decoded?.email ?? '',
+//   });
+//   console.log(data, error);
 
-  if (error) {
-    return { status: 'error', message: error.message, type: body.type, currentAuthority: 'guest' };
-  }
-  return { status: 'ok', email: body.email, type: body.type, currentAuthority: data?.user?.role ?? 'guest' };
-}
+//   if (error) {
+//     return { status: 'error', message: error.message, type: body.type, currentAuthority: 'guest' };
+//   }
+//   return { status: 'ok', email: decoded?.email, type: body.type, currentAuthority: data?.user?.role ?? 'guest' };
+// }
 
-export async function reauthenticate(options?: { [key: string]: any }) {
-  const { data, error } = await supabase.auth.reauthenticate();
+// export async function reauthenticate(options?: { [key: string]: any }) {
+//   const { data, error } = await supabase.auth.reauthenticate();
 
-  console.log(data, error);
+//   console.log(data, error);
 
-  if (error) {
-    return { status: 'error', message: error.message, currentAuthority: 'guest' };
-  }
-  return { status: 'ok', currentAuthority: data?.user?.role ?? 'guest' };
-}
+//   if (error) {
+//     return { status: 'error', message: error.message, currentAuthority: 'guest' };
+//   }
+//   return { status: 'ok', currentAuthority: data?.user?.role ?? 'guest' };
+// }
 
 export async function changePassword(body: any, options?: { [key: string]: any }) {
   const { data } = await supabase.auth.signInWithPassword({
