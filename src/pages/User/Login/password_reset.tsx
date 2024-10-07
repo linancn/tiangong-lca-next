@@ -21,10 +21,12 @@ const PasswordSet: FC = () => {
   const [currentUser, setCurrentUser] = useState<API.CurrentUser | null>(null);
 
   const fetchUserInfo = async () => {
+    setSpinning(true);
     const userInfo = await initialState?.fetchUserInfo?.();
     if (userInfo) {
       setCurrentUser(userInfo);
     }
+    setSpinning(false);
   };
 
   const handleSubmit = async (values: API.LoginParams) => {
@@ -55,7 +57,6 @@ const PasswordSet: FC = () => {
     }
   };
 
-
   useEffect(() => {
     fetchUserInfo();
   }, []);
@@ -63,6 +64,7 @@ const PasswordSet: FC = () => {
   useEffect(() => {
     console.log('Current user:', currentUser); // 添加日志
   }, [currentUser]);
+
 
   return (
     <App>
