@@ -4,13 +4,14 @@ import { currentUser as queryCurrentUser, setPassword } from '@/services/ant-des
 import { FormattedMessage, history } from '@umijs/max';
 import { App, ConfigProvider, Spin, Tabs, message, theme } from 'antd';
 import { useEffect, useState, type FC } from 'react';
-import { Helmet, useIntl, SelectLang } from 'umi';
+import { Helmet, useIntl, SelectLang, useModel } from 'umi';
 import Settings from '../../../../config/defaultSettings';
 import { ProConfigProvider, ProLayout, LoginForm, ProFormText } from '@ant-design/pro-components';
 import { LockOutlined, MailOutlined } from '@ant-design/icons';
 
 const PasswordSet: FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
+  const { initialState, setInitialState } = useModel('@@initialState');
   const intl = useIntl();
   const [spinning, setSpinning] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
@@ -19,6 +20,12 @@ const PasswordSet: FC = () => {
 
   const [currentUser, setCurrentUser] = useState<API.CurrentUser | null>(null);
 
+  const fetchUserInfo = async () => {
+    const userInfo = await initialState?.fetchUserInfo?.();
+    if (userInfo) {
+      setCurrentUser(userInfo);
+    }
+  };
 
   const handleSubmit = async (values: API.LoginParams) => {
     try {
@@ -48,21 +55,6 @@ const PasswordSet: FC = () => {
     }
   };
 
-  const fetchUserInfo = async (): Promise<API.CurrentUser | null> => {
-    try {
-      setSpinning(true);
-      const user = await queryCurrentUser({
-        skipErrorHandler: true,
-      });
-      setCurrentUser(user);
-      console.log('Fetched user:', user);
-      setSpinning(false);
-      return user;
-    } catch (error) {
-      history.push('/');
-      return null;
-    }
-  };
 
   useEffect(() => {
     fetchUserInfo();
@@ -71,10 +63,6 @@ const PasswordSet: FC = () => {
   useEffect(() => {
     console.log('Current user:', currentUser); // 添加日志
   }, [currentUser]);
-
-  if (!currentUser) {
-    return <Spin spinning={true} />;
-  }
 
   return (
     <App>

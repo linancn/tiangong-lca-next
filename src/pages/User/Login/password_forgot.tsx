@@ -1,7 +1,7 @@
 import { App, Button, ConfigProvider, Spin, Tabs, notification, theme } from 'antd';
 import { Helmet, Link, SelectLang, useIntl } from 'umi';
 import { LoginForm, ProConfigProvider, ProFormText, ProLayout } from '@ant-design/pro-components';
-import { MailOutlined, RollbackOutlined } from '@ant-design/icons';
+import { MailOutlined } from '@ant-design/icons';
 import React, { useEffect, useState } from 'react';
 import { currentUser, forgotPasswordSendEmail } from '@/services/ant-design-pro/api';
 
@@ -171,7 +171,7 @@ const PasswordForgot: React.FC = () => {
                 {sendComplete && (
                   <div style={{ marginTop: 32, display: 'flex', justifyContent: 'center' }}>
                     <Link to="/">
-                      <Button type="primary" size="large" icon={<RollbackOutlined />}>
+                      <Button type="primary" size="large">
                         {intl.formatMessage({
                           id: 'pages.login.password.back',
                           defaultMessage: 'Back to Login',
