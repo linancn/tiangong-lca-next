@@ -72,6 +72,10 @@ const PasswordSet: FC = () => {
     console.log('Current user:', currentUser); // 添加日志
   }, [currentUser]);
 
+  if (!currentUser) {
+    return <Spin spinning={true} />;
+  }
+
   return (
     <App>
       <ConfigProvider
