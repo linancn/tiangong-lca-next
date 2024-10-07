@@ -1,5 +1,5 @@
 import { Footer } from '@/components';
-import { currentUser as queryCurrentUser, setPassword } from '@/services/ant-design-pro/api';
+import { setPassword } from '@/services/ant-design-pro/api';
 
 import { FormattedMessage, history } from '@umijs/max';
 import { App, ConfigProvider, Spin, Tabs, message, theme } from 'antd';
@@ -26,6 +26,7 @@ const PasswordSet: FC = () => {
     if (userInfo) {
       setCurrentUser(userInfo);
     }
+    console.log('Current user:', userInfo); // 添加日志
     setSpinning(false);
   };
 
