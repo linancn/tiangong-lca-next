@@ -1,6 +1,4 @@
-// import jwt from 'jsonwebtoken';
 import { request } from '@umijs/max'
-// import { jwtDecode } from "jwt-decode";;
 // @ts-ignore
 /* eslint-disable */
 import { supabase } from '@/services/supabase';
@@ -65,39 +63,16 @@ export async function signUp(body: API.LoginParams, options?: { [key: string]: a
   return { status: 'ok', type: body.type, currentAuthority: 'guest' };
 }
 
-// interface Payload {
-//   iss: string;
-//   sub: string;
-//   aud: string;
-//   exp: number;
-//   iat: number;
-//   email: string;
-//   [key: string]: any;
-// }
+export async function reauthenticate(options?: { [key: string]: any }) {
+  const { data, error } = await supabase.auth.reauthenticate();
 
-// export async function signInWithOtp(body: any, options?: { [key: string]: any }) {
-//   const decoded = jwtDecode<{ email: string }>(body.access_token);
-//   const { data, error } = await supabase.auth.signInWithOtp({
-//     email: decoded?.email ?? '',
-//   });
-//   console.log(data, error);
+  console.log(data, error);
 
-//   if (error) {
-//     return { status: 'error', message: error.message, type: body.type, currentAuthority: 'guest' };
-//   }
-//   return { status: 'ok', email: decoded?.email, type: body.type, currentAuthority: data?.user?.role ?? 'guest' };
-// }
-
-// export async function reauthenticate(options?: { [key: string]: any }) {
-//   const { data, error } = await supabase.auth.reauthenticate();
-
-//   console.log(data, error);
-
-//   if (error) {
-//     return { status: 'error', message: error.message, currentAuthority: 'guest' };
-//   }
-//   return { status: 'ok', currentAuthority: data?.user?.role ?? 'guest' };
-// }
+  if (error) {
+    return { status: 'error', message: error.message, currentAuthority: 'guest' };
+  }
+  return { status: 'ok', currentAuthority: data?.user?.role ?? 'guest' };
+}
 
 export async function changePassword(body: any, options?: { [key: string]: any }) {
   const { data } = await supabase.auth.signInWithPassword({
