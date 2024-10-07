@@ -1,35 +1,22 @@
 import { Footer } from '@/components';
-import { setPassword } from '@/services/ant-design-pro/api';
+import { currentUser, setPassword } from '@/services/ant-design-pro/api';
 
 import { FormattedMessage, history } from '@umijs/max';
 import { App, ConfigProvider, Spin, Tabs, message, theme } from 'antd';
 import { useEffect, useState, type FC } from 'react';
-import { Helmet, useIntl, SelectLang, useModel } from 'umi';
+import { Helmet, useIntl, SelectLang } from 'umi';
 import Settings from '../../../../config/defaultSettings';
 import { ProConfigProvider, ProLayout, LoginForm, ProFormText } from '@ant-design/pro-components';
 import { LockOutlined, MailOutlined } from '@ant-design/icons';
 
 const PasswordSet: FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
-  const { initialState, setInitialState } = useModel('@@initialState');
+  const [initData, setInitData] = useState<any[]>([]);
   const intl = useIntl();
   const [spinning, setSpinning] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   const { token } = theme.useToken();
   const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
-
-  const [currentUser, setCurrentUser] = useState<API.CurrentUser | null>(null);
-
-  const fetchUserInfo = async () => {
-    setSpinning(true);
-    console.log('initialState:', initialState); // 添加日志
-    const userInfo = initialState?.currentUser;
-    if (userInfo) {
-      setCurrentUser(userInfo);
-    }
-    console.log('userInfo:', userInfo); // 添加日志
-    setSpinning(false);
-  };
 
   const handleSubmit = async (values: API.LoginParams) => {
     try {
@@ -60,13 +47,26 @@ const PasswordSet: FC = () => {
   };
 
   useEffect(() => {
-    fetchUserInfo();
-  }, []);
+    if (spinning) {
+      currentUser().then((res) => {
+        if (!res?.userid) {
+          // history.push('/#/user/login');
+          return;
+        }
+        setInitData([
+          {
+            name: ['email'],
+            value: res?.email ?? '',
+          },
+        ]);
+        setSpinning(false);
+      });
+    }
+  }, [spinning]);
 
   useEffect(() => {
-    console.log('Current user:', currentUser); // 添加日志
-  }, [currentUser]);
-
+    setSpinning(true);
+  }, []);
 
   return (
     <App>
@@ -111,11 +111,7 @@ const PasswordSet: FC = () => {
                     defaultMessage="TianGong LCA"
                   />}
                   name="password_reset"
-                  initialValues={
-                    {
-                      email: currentUser?.email,
-                    }
-                  }
+                  fields={initData}
                   onFinish={async (values) => {
                     await handleSubmit(values as API.LoginParams);
                   }}
