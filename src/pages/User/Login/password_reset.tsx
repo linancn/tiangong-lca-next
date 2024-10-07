@@ -55,6 +55,7 @@ const PasswordSet: FC = () => {
         skipErrorHandler: true,
       });
       setCurrentUser(user);
+      console.log('Fetched user:', user);
       setSpinning(false);
       return user;
     } catch (error) {
@@ -66,6 +67,10 @@ const PasswordSet: FC = () => {
   useEffect(() => {
     fetchUserInfo();
   }, []);
+
+  useEffect(() => {
+    console.log('Current user:', currentUser); // 添加日志
+  }, [currentUser]);
 
   return (
     <App>
