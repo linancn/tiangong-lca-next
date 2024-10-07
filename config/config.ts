@@ -153,6 +153,7 @@ export default defineConfig({
   },
   esbuildMinifyIIFE: true,
   requestRecord: {},
-  publicPath: process.env.NODE_ENV === 'production' ? './' : '/',
+  // publicPath: process.env.NODE_ENV === 'production' ? './' : '/',
   // history: { type: 'hash' },
+  history: { type: 'browser' },
 });
