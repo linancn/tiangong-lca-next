@@ -33,14 +33,14 @@ const LoginMessage: React.FC<{
 const { Link } = Typography;
 
 const termsOfServiceLink = (
-  <Link href="/terms-of-service" target="_blank" rel="noopener noreferrer">
-    <FormattedMessage id="pages.login.termsOfService" defaultMessage="Terms of Service" />
+  <Link href="/terms_of_use.html" target="_blank" rel="noopener noreferrer">
+    <FormattedMessage id="pages.login.termsOfUse" defaultMessage="Terms of Use" />
   </Link>
 );
 
 const privacyPolicyLink = (
-  <Link href="/privacy-policy" target="_blank" rel="noopener noreferrer">
-    <FormattedMessage id="pages.login.privacyPolicy" defaultMessage="Privacy Policy" />
+  <Link href="/privacy_notice.html" target="_blank" rel="noopener noreferrer">
+    <FormattedMessage id="pages.login.privacyNotice" defaultMessage="Privacy Notice" />
   </Link>
 );
 
