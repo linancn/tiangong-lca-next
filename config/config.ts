@@ -123,10 +123,10 @@ export default defineConfig({
    * @name <head> 中额外的 script
    * @description 配置 <head> 中额外的 script
    */
-  headScripts:
-    process.env.NODE_ENV === 'production'
-      ? [{ src: './scripts/loading.js', async: true }]
-      : [{ src: '/scripts/loading.js', async: true }],
+  headScripts: [{ src: '/scripts/loading.js', async: true }],
+    // process.env.NODE_ENV === 'production'
+    //   ? [{ src: './scripts/loading.js', async: true }]
+    //   : [{ src: '/scripts/loading.js', async: true }],
   //================ pro 插件配置 =================
   presets: ['umi-presets-pro'],
   /**
@@ -154,6 +154,7 @@ export default defineConfig({
   esbuildMinifyIIFE: true,
   requestRecord: {},
   // publicPath: process.env.NODE_ENV === 'production' ? './' : '/',
+  publicPath: '/',
   // history: { type: 'hash' },
   // history: { type: 'memory' },
   history: { type: 'browser' },
