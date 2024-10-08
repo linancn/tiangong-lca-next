@@ -4,7 +4,7 @@ import type { ActionType } from '@ant-design/pro-table';
 import { Button, message, Modal, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 
 type Props = {
   id: string;
@@ -14,6 +14,7 @@ type Props = {
 };
 const FlowModelDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisible }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const intl = useIntl();
 
   const showModal = useCallback(() => {
     setIsModalVisible(true);
@@ -23,10 +24,10 @@ const FlowModelDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVi
     deleteProduct(id).then(async (result: any) => {
       if (result.status === 204) {
         message.success(
-          <FormattedMessage
-            id="pages.flows.deletesuccess"
-            defaultMessage="Selected flow has been deleted."
-          />,
+          intl.formatMessage({
+            id:'pages.button.delete.success',
+            defaultMessage:'Selected record has been deleted.',
+          }),
         );
         setViewDrawerVisible(false);
         setIsModalVisible(false);

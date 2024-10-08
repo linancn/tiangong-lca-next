@@ -52,7 +52,6 @@ export default {
   'pages.flow.view.modellingAndValidation.typeOfDataSet.wasteFlow': '废物流',
   'pages.flow.view.modellingAndValidation': '建模和验证',
   'pages.flows.deleteMessage.areyousureyouwanttodeletethisdata': '您确定要删除此数据吗？',
-  'pages.flows.createdSuccessfully!': '创建成功',
   'pages.process.drawer.title.addProcess': '添加过程',
 
   'pages.flow.view.modellingAndValidation.approvalOfOverallCompliance.fullyCompliant': '完全符合',

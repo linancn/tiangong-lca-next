@@ -8,7 +8,7 @@ import type { ActionType } from '@ant-design/pro-table';
 import { Button, Collapse, Drawer, Space, Tooltip, Typography, message } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
 import { ProcessForm } from './form';
 
@@ -23,6 +23,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
   const [fromData, setFromData] = useState<any>({});
   const [initData, setInitData] = useState<any>({});
   const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
+  const intl = useIntl();
 
   const handletFromData = () => {
     if (fromData?.id)
@@ -133,10 +134,10 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             const result = await createProcess({ ...fromData });
             if (result.data) {
               message.success(
-                <FormattedMessage
-                  id="options.createsuccess"
-                  defaultMessage="Created successfully!"
-                />,
+                intl.formatMessage({
+                  id:'pages.button.create.success',
+                  defaultMessage:'Created successfully!',
+                }),
               );
               formRefCreate.current?.resetFields();
               setDrawerVisible(false);

@@ -11,7 +11,7 @@ import { Button, Collapse, Drawer, Space, Tooltip, Typography, message } from 'a
 import path from 'path';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
 import { SourceForm } from './form';
 
@@ -29,6 +29,7 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
   const [fileList0, setFileList0] = useState<any[]>([]);
   const [fileList, setFileList] = useState<any[]>([]);
   const [loadFiles, setLoadFiles] = useState<any[]>([]);
+  const intl = useIntl();
 
   const handletFromData = () => {
     if (fromData?.id)
@@ -99,7 +100,10 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
         });
       }
       message.success(
-        <FormattedMessage id="options.createsuccess" defaultMessage="Created Successfully!" />,
+        intl.formatMessage({
+          id:'pages.button.create.success',
+          defaultMessage:'Created successfully!',
+        }),
       );
       setFromData({});
       formRefCreate.current?.resetFields();

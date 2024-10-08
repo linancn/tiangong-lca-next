@@ -8,7 +8,7 @@ import type { ActionType } from '@ant-design/pro-table';
 import { Button, Collapse, Drawer, Space, Tooltip, Typography, message } from 'antd';
 import type { FC } from 'react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
 import { FlowForm } from './form';
 
@@ -23,6 +23,7 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
   const [initData, setInitData] = useState<any>({});
   const [fromData, setFromData] = useState<any>({});
   const [propertyDataSource, setPropertyDataSource] = useState<any>([]);
+  const intl = useIntl();
 
   const reload = useCallback(() => {
     actionRef.current?.reload();
@@ -135,10 +136,10 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
             const result = await createFlows({ ...fromData });
             if (result.data) {
               message.success(
-                <FormattedMessage
-                  id="pages.flows.createsuccess"
-                  defaultMessage="Created successfully!"
-                />,
+                intl.formatMessage({
+                  id:'pages.button.create.success',
+                  defaultMessage:'Created successfully!',
+                }),
               );
               formRefCreate.current?.resetFields();
               setDrawerVisible(false);

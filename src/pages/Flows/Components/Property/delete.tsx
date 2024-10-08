@@ -3,7 +3,7 @@ import type { ActionType } from '@ant-design/pro-table';
 import { Button, message, Modal, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 
 type Props = {
   id: string;
@@ -23,6 +23,7 @@ const PropertyDelete: FC<Props> = ({
   onData,
 }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const intl = useIntl();
 
   const showModal = useCallback(() => {
     setIsModalVisible(true);
@@ -39,10 +40,10 @@ const PropertyDelete: FC<Props> = ({
       }),
     );
     message.success(
-      <FormattedMessage
-        id="pages.button.deletesuccess"
-        defaultMessage="Selected data has been deleted."
-      />,
+      intl.formatMessage({
+        id:'pages.button.delete.success',
+        defaultMessage:'Selected record has been deleted.',
+      }),
     );
     setViewDrawerVisible(false);
     setIsModalVisible(false);
