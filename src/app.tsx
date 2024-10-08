@@ -40,7 +40,7 @@ export async function getInitialState(): Promise<{
     ...defaultSettings,
     navTheme: isDarkMode ? 'realDark' : defaultSettings.navTheme,
     colorPrimary: isDarkMode ? '#9e3ffd' : defaultSettings.colorPrimary,
-    logo: isDarkMode ? 'logo_dark.svg' : defaultSettings.logo,
+    logo: isDarkMode ? '/logo_dark.svg' : defaultSettings.logo,
   };
 
   // 如果不是登录页面，执行
@@ -74,7 +74,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
         ...newState.settings,
         navTheme: newState.isDarkMode ? 'realDark' : 'light',
         colorPrimary: newState.isDarkMode ? '#9e3ffd' : '#5C246A',
-        logo: newState.isDarkMode ? 'logo_dark.svg' : defaultSettings.logo,
+        logo: newState.isDarkMode ? '/logo_dark.svg' : defaultSettings.logo,
       };
 
       return { ...newState, settings: updatedSettings };

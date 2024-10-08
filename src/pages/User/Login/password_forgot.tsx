@@ -94,7 +94,7 @@ const PasswordForgot: React.FC = () => {
               <Spin spinning={spinning}>
                 <LoginForm
                   layout="vertical"
-                  logo={isDarkMode ? 'logo_dark.svg' : Settings.logo}
+                  logo={isDarkMode ? '/logo_dark.svg' : Settings.logo}
                   title={<FormattedMessage
                     id="pages.login.title"
                     defaultMessage="TianGong LCA"

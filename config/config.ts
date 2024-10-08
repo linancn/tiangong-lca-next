@@ -155,5 +155,5 @@ export default defineConfig({
   requestRecord: {},
   // publicPath: process.env.NODE_ENV === 'production' ? './' : '/',
   // history: { type: 'hash' },
-  history: { type: 'browser' },
+  history: { type: 'memory' },
 });

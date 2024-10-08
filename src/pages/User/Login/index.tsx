@@ -176,7 +176,7 @@ const Login: React.FC = () => {
             >
               <LoginForm
                 formRef={formRefLogin}
-                logo={isDarkMode ? 'logo_dark.svg' : Settings.logo}
+                logo={isDarkMode ? '/logo_dark.svg' : Settings.logo}
                 title={<FormattedMessage
                   id="pages.login.title"
                   defaultMessage="TianGong LCA"
