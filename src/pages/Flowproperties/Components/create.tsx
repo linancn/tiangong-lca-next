@@ -24,7 +24,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 // import UnitgroupsFrom from '@/pages/Unitgroups/Components/Unit/edit';
 import { formatDateTime } from '@/services/general/util';
 import { v4 } from 'uuid';
@@ -40,6 +40,7 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
   const [activeTabKey, setActiveTabKey] = useState<string>('flowPropertiesInformation');
   const [initData, setInitData] = useState<any>({});
   const [fromData, setFromData] = useState<any>({});
+  const intl = useIntl();
 
   const reload = useCallback(() => {
     actionRef.current?.reload();
@@ -135,10 +136,10 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
             const result = await createFlowproperties({ ...fromData });
             if (result.data) {
               message.success(
-                <FormattedMessage
-                  id="pages.flowproperties.createsuccess"
-                  defaultMessage="Created successfully!"
-                />,
+                intl.formatMessage({
+                  id:'pages.button.create.success',
+                  defaultMessage:'Created successfully!',
+                }),
               );
               formRefCreate.current?.resetFields();
               setDrawerVisible(false);

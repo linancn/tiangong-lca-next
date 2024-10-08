@@ -7,7 +7,7 @@ import type { ActionType } from '@ant-design/pro-table';
 import { Button, Modal, Tooltip, message } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 
 type Props = {
   id: string;
@@ -17,6 +17,7 @@ type Props = {
 };
 const SourceDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisible }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const intl = useIntl();
 
   const showModal = useCallback(() => {
     setIsModalVisible(true);
@@ -26,10 +27,10 @@ const SourceDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisib
     deleteSource(id).then(async (result: any) => {
       if (result.status === 204) {
         message.success(
-          <FormattedMessage
-            id="pages.button.deletesuccess"
-            defaultMessage="Selected source has been deleted."
-          />,
+          intl.formatMessage({
+            id:'pages.button.delete.success',
+            defaultMessage:'Selected record has been deleted.',
+          }),
         );
         setViewDrawerVisible(false);
         setIsModalVisible(false);

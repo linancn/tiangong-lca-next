@@ -55,7 +55,6 @@ export default {
   'pages.flow.view.modellingAndValidation': 'Modelling and validation',
   'pages.flows.deleteMessage.areyousureyouwanttodeletethisdata':
     'Are you sure you want to delete this data?',
-  'pages.flows.createdSuccessfully!': 'Created successfully',
   'pages.process.drawer.title.addProcess': 'Add process',
 
   'pages.flow.view.modellingAndValidation.approvalOfOverallCompliance.fullyCompliant':
