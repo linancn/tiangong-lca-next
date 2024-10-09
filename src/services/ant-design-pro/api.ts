@@ -1,4 +1,4 @@
-import { request } from '@umijs/max'
+import { request } from '@umijs/max';
 // @ts-ignore
 /* eslint-disable */
 import { supabase } from '@/services/supabase';
@@ -80,12 +80,6 @@ export async function changePassword(body: any, options?: { [key: string]: any }
     password: body.current ?? '',
   });
 
-  // const { data } = await supabase.auth.verifyOtp({
-  //   email: body.email ?? '',
-  //   token: body.code ?? '',
-  //   type: 'email',
-  // });
-
   if (data.user !== null) {
     const { error } = await supabase.auth.updateUser({
       email: body.email ?? '',
@@ -107,6 +101,29 @@ export async function changePassword(body: any, options?: { [key: string]: any }
       message: 'Invalid current password',
       type: body.type,
       currentAuthority: 'guest',
+    };
+  }
+}
+
+export async function changeEmail(body: any, options?: { [key: string]: any }) {
+  if (body.email !== null) {
+    const { error } = await supabase.auth.updateUser({
+      email: body.confirmNewEmail ?? '',
+    });
+    if (error) {
+      return {
+        status: 'error',
+        message: error.message,
+        type: body.type,
+      };
+    } else {
+      return { status: 'ok', type: body.type };
+    }
+  } else {
+    return {
+      status: 'error',
+      message: 'An error occurred, please try again later!',
+      type: body.type,
     };
   }
 }

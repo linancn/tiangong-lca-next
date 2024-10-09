@@ -108,6 +108,10 @@ export default {
   'pages.account.password': '密码',
   'pages.account.password.changed.success': '密码修改成功！',
   'pages.account.password.setted.success': '密码设置成功！',
+  'pages.account.email.currentEmail': '当前邮箱',
+  'pages.account.email.newEmail': '新邮箱',
+  'pages.account.email.confirmNewEmail': '确认新邮箱',
+  'pages.account.email.changed.success': '验证邮件发送成功！请通过邮件链接更新电子邮箱。',
 
   'pages.login.passwordForgot.tab': '账户',
 };

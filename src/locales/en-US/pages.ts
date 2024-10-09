@@ -108,6 +108,10 @@ export default {
   'pages.account.password': 'Password',
   'pages.account.password.changed.success': 'Password changed successfully!',
   'pages.account.password.setted.success': 'Password setted successfully!',
+  'pages.account.email.currentEmail': 'Current Email',
+  'pages.account.email.newEmail': 'New Email',
+  'pages.account.email.confirmNewEmail': 'Confirm New Email',
+  'pages.account.email.changed.success': 'Verification email sent successfully! Please update your email via the email link.',
 
   'pages.login.passwordForgot.tab': 'Account',
 };

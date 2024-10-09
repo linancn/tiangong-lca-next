@@ -122,28 +122,13 @@ export default [
     name: 'account',
     menu: false,
     icon: 'UserOutlined',
-    routes: [
-      {
-        path: '/account',
-        redirect: '/account/profile',
-      },
-      {
-        name: 'profile',
-        path: '/account/profile',
-        component: './Account/profile',
-      },
-      {
-        name: 'passwordChange',
-        path: '/account/password_change',
-        component: './Account/password_change',
-      },
-    ],
+    component: './Account',
   },
   {
     path: '/demo',
-    menu: false,
     name: 'Demo',
-    icon: 'smile',
+    menu: false,
+    icon: 'Smile',
     component: './Demo',
   },
   {
