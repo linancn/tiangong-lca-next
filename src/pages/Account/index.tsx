@@ -5,7 +5,7 @@ import {
   changeEmail,
 } from '@/services/ant-design-pro/api';
 import { PageContainer, ProForm, ProFormInstance, ProFormText } from '@ant-design/pro-components';
-import { FormattedMessage, useIntl } from '@umijs/max';
+import { FormattedMessage, useIntl, useModel } from '@umijs/max';
 import { Flex, Form, Input, message, Spin, Tabs, theme } from 'antd';
 import { useEffect, useRef, useState, type FC } from 'react';
 import { LockOutlined, MailOutlined } from '@ant-design/icons';
@@ -17,6 +17,7 @@ const Profile: FC = () => {
   const [initData, setInitData] = useState<API.CurrentUser | null>(null);
   const intl = useIntl();
   const { token } = theme.useToken();
+  const { setInitialState } = useModel('@@initialState');
 
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
@@ -39,10 +40,17 @@ const Profile: FC = () => {
             if (msg.status === 'ok') {
               message.success(
                 intl.formatMessage({
-                  id:'pages.account.editsuccess',
-                  defaultMessage:'Edit Successfully!',
+                  id: 'pages.account.editsuccess',
+                  defaultMessage: 'Edit Successfully!',
                 }),
               );
+              setInitialState((s) => ({
+                ...s,
+                currentUser: {
+                  ...s?.currentUser,
+                  name: values.name,
+                },
+              }));
             } else {
               message.error(msg?.message);
             }
@@ -257,8 +265,8 @@ const Profile: FC = () => {
                     intl.formatMessage({
                       id: 'pages.account.passwordsDoNotMatch',
                       defaultMessage: 'The two passwords that you entered do not match!',
-                    })
-                  )
+                    }),
+                  ),
                 );
               },
             },
@@ -321,12 +329,7 @@ const Profile: FC = () => {
 
         <ProFormText
           name="newEmail"
-          label={
-            <FormattedMessage
-              id="pages.account.newEmail"
-              defaultMessage="New Email"
-            />
-          }
+          label={<FormattedMessage id="pages.account.newEmail" defaultMessage="New Email" />}
           fieldProps={{
             size: 'middle',
             prefix: <MailOutlined />,
@@ -386,8 +389,8 @@ const Profile: FC = () => {
                     intl.formatMessage({
                       id: 'pages.account.emailsDoNotMatch',
                       defaultMessage: 'The two email addresses that you entered do not match.',
-                    })
-                  )
+                    }),
+                  ),
                 );
               },
             },

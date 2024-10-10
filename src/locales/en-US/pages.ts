@@ -115,7 +115,7 @@ export default {
   'pages.account.email.confirmNewEmail': 'Confirm New Email',
   'pages.account.email.changed.success': 'Verification email sent successfully! Please update your email via the email link.',
   'pages.account.editsuccess': 'Edit Successfully!',
-  'pages.account.updateError': 'An error occurred while updating the profile.' ,
+  'pages.account.updateError': 'An error occurred while updating the profile.',
   'pages.account.newPassword.strengthText': 'Password must contain at least 8 characters, including lowercase and uppercase letters, digits, and symbols.',
   'pages.account.passwordForgot.title': 'Forgot Password',
   'pages.account.newPassword.strengthWeak': 'Strength: Weak',
