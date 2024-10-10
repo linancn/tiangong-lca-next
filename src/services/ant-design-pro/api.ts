@@ -83,7 +83,7 @@ export async function changePassword(body: any, options?: { [key: string]: any }
   if (data.user !== null) {
     const { error } = await supabase.auth.updateUser({
       email: body.email ?? '',
-      password: body.new1 ?? '',
+      password: body.newPassword?? '',
     });
     if (error) {
       return {
