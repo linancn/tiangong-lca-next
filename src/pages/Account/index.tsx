@@ -1,4 +1,9 @@
-import { currentUser, setProfile, changePassword, changeEmail } from '@/services/ant-design-pro/api';
+import {
+  currentUser,
+  setProfile,
+  changePassword,
+  changeEmail,
+} from '@/services/ant-design-pro/api';
 import { PageContainer, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { FormattedMessage } from '@umijs/max';
 import { Flex, Form, Input, message, Spin, Tabs } from 'antd';
@@ -21,9 +26,7 @@ const Profile: FC = () => {
         submitter={{
           resetButtonProps: false,
           render: (_, dom) => (
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              {dom}
-            </div>
+            <div style={{ display: 'flex', justifyContent: 'center' }}>{dom}</div>
           ),
         }}
         onFinish={async (values) => {
@@ -77,9 +80,7 @@ const Profile: FC = () => {
           render: (props, doms) => {
             return (
               <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <Flex gap='middle'>
-                  {doms}
-                </Flex>
+                <Flex gap="middle">{doms}</Flex>
               </div>
             );
           },
@@ -106,7 +107,6 @@ const Profile: FC = () => {
           }
         }}
       >
-
         <Form.Item name={'email'} initialValue={initData?.email} style={{ display: 'none' }}>
           <Input />
         </Form.Item>
@@ -133,7 +133,10 @@ const Profile: FC = () => {
         <Form.Item
           name="newPassword"
           label={
-            <FormattedMessage id="pages.account.password.newPassword" defaultMessage="New Password" />
+            <FormattedMessage
+              id="pages.account.password.newPassword"
+              defaultMessage="New Password"
+            />
           }
           rules={[
             {
@@ -186,9 +189,7 @@ const Profile: FC = () => {
           render: (props, doms) => {
             return (
               <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <Flex gap='middle'>
-                  {doms}
-                </Flex>
+                <Flex gap="middle">{doms}</Flex>
               </div>
             );
           },
@@ -215,25 +216,23 @@ const Profile: FC = () => {
           }
         }}
       >
-
-        <Form.Item name={'email'}
+        <Form.Item
+          name={'email'}
           label={
             <FormattedMessage
               id="pages.account.email.currentEmail"
               defaultMessage="Current Email"
             />
           }
-          initialValue={initData?.email}>
+          initialValue={initData?.email}
+        >
           <Input disabled={true} />
         </Form.Item>
 
         <Form.Item
           name="newEmail"
-          label={
-            <FormattedMessage id="pages.account.email.newEmail" defaultMessage="New Email" />
-          }
-          rules={[
-          ]}
+          label={<FormattedMessage id="pages.account.email.newEmail" defaultMessage="New Email" />}
+          rules={[]}
           hasFeedback
         >
           <Input />
@@ -271,7 +270,6 @@ const Profile: FC = () => {
     </Flex>
   );
 
-
   useEffect(() => {
     setSpinning(true);
     currentUser().then((res) => {
@@ -286,7 +284,10 @@ const Profile: FC = () => {
       title={<FormattedMessage id="menu.account.profile" defaultMessage="Account Profile" />}
     >
       <Spin spinning={spinning}>
-        <Tabs activeKey={activeTabKey} onChange={onTabChange} tabPosition="left"
+        <Tabs
+          activeKey={activeTabKey}
+          onChange={onTabChange}
+          tabPosition="left"
           items={[
             {
               key: 'baseInfo',
@@ -303,10 +304,10 @@ const Profile: FC = () => {
               label: '修改邮箱',
               children: renderChangeEmailForm(),
             },
-          ]}>
-        </Tabs>
+          ]}
+        ></Tabs>
       </Spin>
-    </PageContainer >
+    </PageContainer>
   );
 };
 

@@ -150,8 +150,8 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
             if (result.data) {
               message.success(
                 intl.formatMessage({
-                  id:'pages.button.create.success',
-                  defaultMessage:'Created successfully!',
+                  id: 'pages.button.create.success',
+                  defaultMessage: 'Created successfully!',
                 }),
               );
               formRefCreate.current?.resetFields();

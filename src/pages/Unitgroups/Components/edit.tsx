@@ -168,8 +168,8 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
               if (updateResult?.data) {
                 message.success(
                   intl.formatMessage({
-                    id:'pages.button.create.success',
-                    defaultMessage:'Created successfully!',
+                    id: 'pages.button.create.success',
+                    defaultMessage: 'Created successfully!',
                   }),
                 );
                 setDrawerVisible(false);

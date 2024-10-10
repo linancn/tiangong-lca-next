@@ -50,7 +50,7 @@ export default {
   'pages.login.termsOfUse': 'Terms of Use',
   'pages.login.privacyNotice': 'Privacy Notice',
   'pages.login.title': 'TianGong LCA',
-  'pages.login.subTitle': 'World\'s Largest Open & Free LCA Database',
+  'pages.login.subTitle': "World's Largest Open & Free LCA Database",
   'pages.welcome.alertMessage': 'Faster and stronger heavy-duty components have been released.',
   'pages.welcome.link': 'Welcome',
   'pages.login.passwordReset.title': 'Reset Password',

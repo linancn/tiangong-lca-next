@@ -41,8 +41,8 @@ const ProcessExchangeDelete: FC<Props> = ({
     );
     message.success(
       intl.formatMessage({
-        id:'pages.button.delete.success',
-        defaultMessage:'Selected record has been deleted.',
+        id: 'pages.button.delete.success',
+        defaultMessage: 'Selected record has been deleted.',
       }),
     );
     setViewDrawerVisible(false);

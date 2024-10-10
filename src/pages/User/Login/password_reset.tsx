@@ -102,14 +102,10 @@ const PasswordSet: FC = () => {
                 <LoginForm
                   layout="vertical"
                   logo={isDarkMode ? '/logo_dark.svg' : Settings.logo}
-                  title={<FormattedMessage
-                    id="pages.login.title"
-                    defaultMessage="TianGong LCA"
-                  />}
-                  subTitle={<FormattedMessage
-                    id="pages.login.subTitle"
-                    defaultMessage="TianGong LCA"
-                  />}
+                  title={<FormattedMessage id="pages.login.title" defaultMessage="TianGong LCA" />}
+                  subTitle={
+                    <FormattedMessage id="pages.login.subTitle" defaultMessage="TianGong LCA" />
+                  }
                   name="password_reset"
                   fields={initData}
                   onFinish={async (values) => {
@@ -159,10 +155,12 @@ const PasswordSet: FC = () => {
                     fieldProps={{
                       size: 'middle',
                       prefix: <LockOutlined />,
-                      strengthText: <FormattedMessage
-                        id="pages.login.password.strengthText"
-                        defaultMessage="Password must contain at least 8 characters, including lowercase and uppercase letters, digits, and symbols."
-                      />,
+                      strengthText: (
+                        <FormattedMessage
+                          id="pages.login.password.strengthText"
+                          defaultMessage="Password must contain at least 8 characters, including lowercase and uppercase letters, digits, and symbols."
+                        />
+                      ),
                       statusRender: (value) => {
                         const getStatus = () => {
                           if (value && value.length > 12) {
@@ -257,10 +255,14 @@ const PasswordSet: FC = () => {
                           if (!value || getFieldValue('newPassword') === value) {
                             return Promise.resolve();
                           }
-                          return Promise.reject(new Error(intl.formatMessage({
-                            id: 'pages.login.password.confirm.error',
-                            defaultMessage: 'The two passwords do not match!',
-                          })));
+                          return Promise.reject(
+                            new Error(
+                              intl.formatMessage({
+                                id: 'pages.login.password.confirm.error',
+                                defaultMessage: 'The two passwords do not match!',
+                              }),
+                            ),
+                          );
                         },
                       }),
                     ]}

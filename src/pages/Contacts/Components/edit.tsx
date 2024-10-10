@@ -122,8 +122,8 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
               if (updateResult?.data) {
                 message.success(
                   intl.formatMessage({
-                    id:'pages.button.create.success',
-                    defaultMessage:'Created successfully!',
+                    id: 'pages.button.create.success',
+                    defaultMessage: 'Created successfully!',
                   }),
                 );
                 setDrawerVisible(false);

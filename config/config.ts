@@ -124,9 +124,9 @@ export default defineConfig({
    * @description 配置 <head> 中额外的 script
    */
   headScripts: [{ src: '/scripts/loading.js', async: true }],
-    // process.env.NODE_ENV === 'production'
-    //   ? [{ src: './scripts/loading.js', async: true }]
-    //   : [{ src: '/scripts/loading.js', async: true }],
+  // process.env.NODE_ENV === 'production'
+  //   ? [{ src: './scripts/loading.js', async: true }]
+  //   : [{ src: '/scripts/loading.js', async: true }],
   //================ pro 插件配置 =================
   presets: ['umi-presets-pro'],
   /**

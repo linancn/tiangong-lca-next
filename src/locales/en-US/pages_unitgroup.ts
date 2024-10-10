@@ -39,10 +39,8 @@ export default {
   'pages.unitgroup.creat.unitGroupInformation.name': 'Name of unit group',
   'pages.unitgroup.creat.unitGroupInformation.classification': 'Classification',
   'pages.unitgroup.creat.modellingAndValidation': 'Modelling and validation',
-  'pages.unitgroup.creat.modellingAndValidation.referenceToComplianceSystem':
-    'Compliance system name',
-  'pages.unitgroup.creat.modellingAndValidation.approvalOfOverallCompliance':
-    'Approval of overall compliance',
+  'pages.unitgroup.creat.modellingAndValidation.referenceToComplianceSystem': 'Compliance system name',
+  'pages.unitgroup.creat.modellingAndValidation.approvalOfOverallCompliance': 'Approval of overall compliance',
   'pages.unitgroup.creat.administrativeInformation': 'Administrative information',
   'pages.unitgroup.creat.administrativeInformation.timeStamp': 'Time stamp (last saved)',
   'pages.unitgroup.creat.administrativeInformation.referenceToDataSetFormat': 'Data set format(s)',
@@ -59,10 +57,8 @@ export default {
   'pages.unitgroup.edit.unitGroupInformation.name': 'Name of unit group',
   'pages.unitgroup.edit.unitGroupInformation.classification': 'Classification',
   'pages.unitgroup.edit.modellingAndValidation': 'Modelling and validation',
-  'pages.unitgroup.edit.modellingAndValidation.referenceToComplianceSystem':
-    'Compliance system name',
-  'pages.unitgroup.edit.modellingAndValidation.approvalOfOverallCompliance':
-    'Approval of overall compliance',
+  'pages.unitgroup.edit.modellingAndValidation.referenceToComplianceSystem': 'Compliance system name',
+  'pages.unitgroup.edit.modellingAndValidation.approvalOfOverallCompliance': 'Approval of overall compliance',
   'pages.unitgroup.edit.administrativeInformation': 'Administrative information',
   'pages.unitgroup.edit.administrativeInformation.timeStamp': 'Time stamp (last saved)',
   'pages.unitgroup.edit.administrativeInformation.referenceToDataSetFormat': 'Data set format(s)',
@@ -86,10 +82,7 @@ export default {
   //'pages.table.title.meanValue':'平均值',
   //'pages.table.title.quantitativeReference':'度量参考',在哪个文件？
 
-  'pages.unitgroup.view.modellingAndValidation.approvalOfOverallCompliance.fullyCompliant':
-    'Fully compliant',
-  'pages.unitgroup.view.modellingAndValidation.approvalOfOverallCompliance.notCompliant':
-    'Not compliant',
-  'pages.unitgroup.view.modellingAndValidation.approvalOfOverallCompliance.notDefined':
-    'Not defined',
+  'pages.unitgroup.view.modellingAndValidation.approvalOfOverallCompliance.fullyCompliant': 'Fully compliant',
+  'pages.unitgroup.view.modellingAndValidation.approvalOfOverallCompliance.notCompliant': 'Not compliant',
+  'pages.unitgroup.view.modellingAndValidation.approvalOfOverallCompliance.notDefined': 'Not defined',
 };

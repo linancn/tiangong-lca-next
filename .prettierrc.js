@@ -6,6 +6,12 @@ module.exports = {
   endOfLine: 'lf',
   overrides: [
     {
+      files: 'src/locales/**/*.ts',
+      options: {
+        printWidth: Infinity,
+      },
+    },
+    {
       files: '.prettierrc',
       options: {
         parser: 'json',

@@ -39,6 +39,5 @@ export default {
 
   'pages.search.openAI': 'AI Recommendation',
   'pages.search.keyWord': 'Full-text search: Enter one or more keywords.',
-  'pages.search.placeholder':
-    'AI Search: Describe the data you need in one sentence or a few key words.',
+  'pages.search.placeholder': 'AI Search: Describe the data you need in one sentence or a few key words.',
 };

@@ -101,8 +101,8 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
       }
       message.success(
         intl.formatMessage({
-          id:'pages.button.create.success',
-          defaultMessage:'Created successfully!',
+          id: 'pages.button.create.success',
+          defaultMessage: 'Created successfully!',
         }),
       );
       setFromData({});

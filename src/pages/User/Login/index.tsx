@@ -91,8 +91,7 @@ const Login: React.FC = () => {
           setSendComplete(true);
           const defaultSignUpExistedMessage = intl.formatMessage({
             id: 'pages.login.signUp.existed',
-            defaultMessage:
-              'This email has already been registered. Try Login or Forgot Password?',
+            defaultMessage: 'This email has already been registered. Try Login or Forgot Password?',
           });
           messageApi.open({
             type: 'error',
@@ -177,14 +176,13 @@ const Login: React.FC = () => {
               <LoginForm
                 formRef={formRefLogin}
                 logo={isDarkMode ? '/logo_dark.svg' : Settings.logo}
-                title={<FormattedMessage
-                  id="pages.login.title"
-                  defaultMessage="TianGong LCA"
-                />}
-                subTitle={<FormattedMessage
-                  id="pages.login.subTitle"
-                  defaultMessage="World\'s Largest Open & Free LCA Database"
-                />}
+                title={<FormattedMessage id="pages.login.title" defaultMessage="TianGong LCA" />}
+                subTitle={
+                  <FormattedMessage
+                    id="pages.login.subTitle"
+                    defaultMessage="World\'s Largest Open & Free LCA Database"
+                  />
+                }
                 initialValues={{ autoLogin: true }}
                 onFinish={async (values) => {
                   if (type === 'login') {
@@ -194,10 +192,10 @@ const Login: React.FC = () => {
                 submitter={
                   type === 'login'
                     ? {
-                      submitButtonProps: {
-                        loading: loading,
-                      },
-                    }
+                        submitButtonProps: {
+                          loading: loading,
+                        },
+                      }
                     : false
                 }
               >
@@ -356,10 +354,12 @@ const Login: React.FC = () => {
                       fieldProps={{
                         size: 'middle',
                         prefix: <LockOutlined />,
-                        strengthText: <FormattedMessage
-                          id="pages.login.password.strengthText"
-                          defaultMessage="Password must contain at least 8 characters, including lowercase and uppercase letters, digits, and symbols."
-                        />,
+                        strengthText: (
+                          <FormattedMessage
+                            id="pages.login.password.strengthText"
+                            defaultMessage="Password must contain at least 8 characters, including lowercase and uppercase letters, digits, and symbols."
+                          />
+                        ),
                         statusRender: (value) => {
                           const getStatus = () => {
                             if (value && value.length > 12) {
@@ -454,10 +454,14 @@ const Login: React.FC = () => {
                             if (!value || getFieldValue('password') === value) {
                               return Promise.resolve();
                             }
-                            return Promise.reject(new Error(intl.formatMessage({
-                              id: 'pages.login.password.confirm.error',
-                              defaultMessage: 'The two passwords do not match!',
-                            })));
+                            return Promise.reject(
+                              new Error(
+                                intl.formatMessage({
+                                  id: 'pages.login.password.confirm.error',
+                                  defaultMessage: 'The two passwords do not match!',
+                                }),
+                              ),
+                            );
                           },
                         }),
                       ]}

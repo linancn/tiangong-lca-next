@@ -137,8 +137,8 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
             if (result.data) {
               message.success(
                 intl.formatMessage({
-                  id:'pages.button.create.success',
-                  defaultMessage:'Created successfully!',
+                  id: 'pages.button.create.success',
+                  defaultMessage: 'Created successfully!',
                 }),
               );
               formRefCreate.current?.resetFields();
