@@ -33,7 +33,7 @@ const Profile: FC = () => {
             if (msg.status === 'ok') {
               message.success(
                 <FormattedMessage
-                  id="pages.flows.editsuccess"
+                  id="pages.baseinfo.editsuccess"
                   defaultMessage="Edit Successfully!"
                 />,
               );
@@ -112,10 +112,10 @@ const Profile: FC = () => {
         </Form.Item>
 
         <Form.Item
-          name="current"
+          name="currentPassword"
           label={
             <FormattedMessage
-              id="pages.account.password.current"
+              id="pages.account.password.currentPassword"
               defaultMessage="Current Password"
             />
           }
@@ -131,14 +131,14 @@ const Profile: FC = () => {
         </Form.Item>
 
         <Form.Item
-          name="new1"
+          name="newPassword"
           label={
-            <FormattedMessage id="pages.account.password.new1" defaultMessage="New Password" />
+            <FormattedMessage id="pages.account.password.newPassword" defaultMessage="New Password" />
           }
           rules={[
             {
               required: true,
-              message: 'Please input the new password again!',
+              message: 'Please input the new password!',
             },
           ]}
           hasFeedback
@@ -147,11 +147,11 @@ const Profile: FC = () => {
         </Form.Item>
 
         <Form.Item
-          name="new2"
+          name="confirmNewPassword"
           label={
             <FormattedMessage
-              id="pages.account.password.new2"
-              defaultMessage="Confirm Password"
+              id="pages.account.password.confirmNewPassword"
+              defaultMessage="Confirm New Password"
             />
           }
           rules={[
@@ -161,7 +161,7 @@ const Profile: FC = () => {
             },
             {
               validator: (_, value) => {
-                if (!value || formRefEdit.current?.getFieldValue('new1') === value) {
+                if (!value || formRefEdit.current?.getFieldValue('newPassword') === value) {
                   return Promise.resolve();
                 }
                 return Promise.reject(
@@ -250,7 +250,7 @@ const Profile: FC = () => {
           rules={[
             {
               required: true,
-              message: 'Please input the new password again!',
+              message: 'Please input the new email again!',
             },
             {
               validator: (_, value) => {
