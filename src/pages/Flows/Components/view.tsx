@@ -7,10 +7,9 @@ import { FlowpropertyTabTable } from '@/services/flows/data';
 import { genFlowFromData, genFlowPropertyTabTableData } from '@/services/flows/util';
 import { ListPagination } from '@/services/general/data';
 import {
-  CheckCircleTwoTone,
-  CloseCircleOutlined,
+  CheckCircleOutlined,
   CloseOutlined,
-  ProfileOutlined,
+  ProfileOutlined
 } from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
@@ -135,9 +134,9 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
       search: false,
       render: (_, row) => {
         if (row.quantitativeReference) {
-          return <CheckCircleTwoTone twoToneColor="#52c41a" />;
+          return <CheckCircleOutlined />;
         }
-        return <CloseCircleOutlined />;
+        // return <CloseCircleOutlined />;
       },
     },
     {

@@ -1,3 +1,4 @@
+import FlowsView from '@/pages/Flows/Components/view';
 import {
   flow_hybrid_search,
   getFlowTableAll,
@@ -14,7 +15,6 @@ import type { SearchProps } from 'antd/es/input/Search';
 import type { FC, Key } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
-import FlowsView from '../../view';
 
 type Props = {
   buttonType: string;

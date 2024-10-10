@@ -8,11 +8,10 @@ import Toolbar from './toolbar';
 
 type Props = {
   id: string;
-  flowId: string;
   buttonType: string;
   lang: string;
 };
-const FlowModelView: FC<Props> = ({ id, flowId, buttonType, lang }) => {
+const LifeCycleModelView: FC<Props> = ({ id, buttonType, lang }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const { token } = theme.useToken();
 
@@ -76,7 +75,6 @@ const FlowModelView: FC<Props> = ({ id, flowId, buttonType, lang }) => {
             <Layout>
               <Content>
                 <XFlowGraph zoomable pannable minScale={0.5} readonly={true} />
-                {/* <Background color="#f5f5f5" /> */}
                 <Grid
                   type="dot"
                   options={{
@@ -89,11 +87,10 @@ const FlowModelView: FC<Props> = ({ id, flowId, buttonType, lang }) => {
             <Sider width="50px" style={siderStyle}>
               <Toolbar
                 id={id}
-                flowId={flowId}
                 lang={lang}
                 drawerVisible={drawerVisible}
                 isSave={true}
-                setIsSave={() => {}}
+                setIsSave={() => { }}
                 readonly={true}
               />
             </Sider>
@@ -104,4 +101,4 @@ const FlowModelView: FC<Props> = ({ id, flowId, buttonType, lang }) => {
   );
 };
 
-export default FlowModelView;
+export default LifeCycleModelView;

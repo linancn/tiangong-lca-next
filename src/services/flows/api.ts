@@ -5,11 +5,11 @@ import {
   jsonToList,
 } from '../general/util';
 
+import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/lib/table/interface';
-import { genFlowJsonOrdered } from './util';
 import { getILCDFlowCategorizationAll } from '../ilcd/api';
-import { supabase } from '@/services/supabase';
+import { genFlowJsonOrdered } from './util';
 
 export async function createFlows(data: any) {
   // const newID = v4();
@@ -78,45 +78,36 @@ export async function getFlowTableAll(
   `;
 
   let result: any = {};
-  if (dataSource === 'tg') {
-    let query = supabase
-      .from('flows')
-      .select(selectStr, { count: 'exact' })
-      .eq('state_code', 100)
-      .order(sortBy, { ascending: orderBy === 'ascend' })
-      .range(
-        ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-        (params.current ?? 1) * (params.pageSize ?? 10) - 1,
+  let query = supabase.from('flows')
+    .select(selectStr, { count: 'exact' })
+    .order(sortBy, { ascending: orderBy === 'ascend' })
+    .range(
+      ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
+      (params.current ?? 1) * (params.pageSize ?? 10) - 1,
+    );
+  if (filters?.flowType) {
+    const flowTypes = filters.flowType.split(',').map((type) => type.trim());
+    if (flowTypes.length > 1) {
+      query = query.in(
+        'json->flowDataSet->modellingAndValidation->LCIMethod->>typeOfDataSet',
+        flowTypes,
       );
-    if (filters?.flowType) {
-      const flowTypes = filters.flowType.split(',').map((type) => type.trim());
-      if (flowTypes.length > 1) {
-        query = query.in(
-          'json->flowDataSet->modellingAndValidation->LCIMethod->>typeOfDataSet',
-          flowTypes,
-        );
-      } else {
-        query = query.eq(
-          'json->flowDataSet->modellingAndValidation->LCIMethod->>typeOfDataSet',
-          flowTypes[0],
-        );
-      }
-    }
-    result = await query;
-  } else if (dataSource === 'my') {
-    const session = await supabase.auth.getSession();
-    if (session.data.session) {
-      result = await supabase
-        .from('flows')
-        .select(selectStr, { count: 'exact' })
-        .eq('user_id', session.data.session.user?.id)
-        .order(sortBy, { ascending: orderBy === 'ascend' })
-        .range(
-          ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-          (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-        );
+    } else {
+      query = query.eq(
+        'json->flowDataSet->modellingAndValidation->LCIMethod->>typeOfDataSet',
+        flowTypes[0],
+      );
     }
   }
+  if (dataSource === 'tg') {
+    query = query.eq('state_code', 100)
+
+  } else if (dataSource === 'my') {
+    const session = await supabase.auth.getSession();
+    query = query.eq('user_id', session?.data?.session?.user?.id);
+  }
+
+  result = await query;
 
   if (result.error) {
     console.log('error', result.error);
@@ -214,6 +205,7 @@ export async function getFlowTablePgroongaSearch(
 ) {
   let result: any = {};
   const session = await supabase.auth.getSession();
+
   if (session.data.session) {
     result = await supabase.rpc('pgroonga_search_flows', {
       query_text: queryText,
@@ -256,7 +248,7 @@ export async function getFlowTablePgroongaSearch(
 
             const classifications = jsonToList(
               dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-                'common:category'
+              'common:category'
               ],
             );
             const classificationZH = genClassificationZH(classifications, thisCategory);
@@ -291,7 +283,7 @@ export async function getFlowTablePgroongaSearch(
             synonyms: getLangText(dataInfo?.['common:synonyms'] ?? {}, lang),
             classification: classificationToString(
               dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-                'common:category'
+              'common:category'
               ],
             ),
             flowType: i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet ?? '-',
@@ -364,7 +356,7 @@ export async function flow_hybrid_search(
             ),
             classification: classificationToString(
               i.json?.flowDataSet?.flowInformation?.dataSetInformation?.classificationInformation?.[
-                'common:classification'
+              'common:classification'
               ]?.['common:class'],
             ),
             synonyms: getLangText(

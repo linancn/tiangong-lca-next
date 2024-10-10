@@ -2,7 +2,7 @@ import { jsonToList } from '@/services/general/util';
 import { getReferenceUnit, getUnitGroupDetail } from '@/services/unitgroups/api';
 import { genUnitGroupFromData } from '@/services/unitgroups/util';
 import { ProFormInstance } from '@ant-design/pro-components';
-import { Button, Card, Col, Divider, Form, Input, Row, Space } from 'antd';
+import { Button, Card, Col, Divider, Form, Input, Row, Space, theme } from 'antd';
 import React, { FC, ReactNode, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import UnitgroupsView from '../view';
@@ -20,6 +20,7 @@ type Props = {
 
 const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => {
   const [id, setId] = useState<string | undefined>(undefined);
+  const { token } = theme.useToken();
 
   const handletUnitgroupsData = (rowKey: any) => {
     getUnitGroupDetail(rowKey).then(async (result: any) => {
@@ -73,7 +74,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData })
           }
           name={[...name, '@refObjectId']}
         >
-          <Input disabled={true} style={{ width: '350px', color: '#000' }} />
+          <Input disabled={true} style={{ width: '350px', color: token.colorTextDescription }} />
         </Form.Item>
         <Space direction="horizontal" style={{ marginTop: '6px' }}>
           <UnitgroupsSelectDrawer buttonType="text" lang={lang} onData={handletUnitgroupsData} />
@@ -94,13 +95,13 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData })
         label={<FormattedMessage id="pages.FlowProperties.view.type" defaultMessage="Type" />}
         name={[...name, '@type']}
       >
-        <Input disabled={true} style={{ color: '#000' }} />
+        <Input disabled={true} style={{ color: token.colorTextDescription }} />
       </Form.Item>
       <Form.Item
         label={<FormattedMessage id="pages.FlowProperties.view.uri" defaultMessage="URI" />}
         name={[...name, '@uri']}
       >
-        <Input disabled={true} style={{ color: '#000' }} />
+        <Input disabled={true} style={{ color: token.colorTextDescription }} />
       </Form.Item>
       <Divider orientationMargin="0" orientation="left" plain>
         <FormattedMessage
@@ -116,7 +117,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData })
                 <Row key={subField.key}>
                   <Col flex="100px" style={{ marginRight: '10px' }}>
                     <Form.Item noStyle name={[subField.name, '@xml:lang']}>
-                      <Input disabled={true} style={{ width: '100px', color: '#000' }} />
+                      <Input disabled={true} style={{ width: '100px', color: token.colorTextDescription }} />
                     </Form.Item>
                   </Col>
                   <Col flex="auto" style={{ marginRight: '10px' }}>
@@ -125,7 +126,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData })
                         placeholder="text"
                         rows={1}
                         disabled={true}
-                        style={{ color: '#000' }}
+                        style={{ color: token.colorTextDescription }}
                       />
                     </Form.Item>
                   </Col>
@@ -149,7 +150,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData })
           label={<FormattedMessage id="pages.unitgroup.edit.name" defaultMessage="Name of unit" />}
           name={[...name, 'refUnit', 'name']}
         >
-          <Input disabled={true} style={{ color: '#000' }} />
+          <Input disabled={true} style={{ color: token.colorTextDescription }} />
         </Form.Item>
         <Divider orientationMargin="0" orientation="left" plain>
           <FormattedMessage id="pages.unitgroup.edit.generalComment" defaultMessage="Comment" />
@@ -162,7 +163,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData })
                   <Row key={subField.key}>
                     <Col flex="100px" style={{ marginRight: '10px' }}>
                       <Form.Item noStyle name={[subField.name, '@xml:lang']}>
-                        <Input disabled={true} style={{ width: '100px', color: '#000' }} />
+                        <Input disabled={true} style={{ width: '100px', color: token.colorTextDescription }} />
                       </Form.Item>
                     </Col>
                     <Col flex="auto" style={{ marginRight: '10px' }}>
@@ -171,7 +172,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData })
                           placeholder="text"
                           rows={1}
                           disabled={true}
-                          style={{ color: '#000' }}
+                          style={{ color: token.colorTextDescription }}
                         />
                       </Form.Item>
                     </Col>

@@ -1,7 +1,9 @@
 import { v4 } from 'uuid';
 import { getLangJson, getLangList, getLangText, removeEmptyObjects } from '../general/util';
+import { genLifeCycleModelJsonOrdered } from '../lifeCycleModels/util';
 
 export function genProductJsonOrdered(id: string, data: any) {
+  genLifeCycleModelJsonOrdered(id, data, null);
   return removeEmptyObjects({
     productDataSet: {
       productInformation: {

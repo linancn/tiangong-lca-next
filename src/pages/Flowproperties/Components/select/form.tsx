@@ -2,7 +2,7 @@ import UnitGroupFromMini from '@/pages/Unitgroups/Components/select/formMini';
 import { getFlowpropertyDetail } from '@/services/flowproperties/api';
 import { genFlowpropertyFromData } from '@/services/flowproperties/util';
 import { ProFormInstance } from '@ant-design/pro-components';
-import { Button, Card, Col, Divider, Form, Input, Row, Space } from 'antd';
+import { Button, Card, Col, Divider, Form, Input, Row, Space, theme } from 'antd';
 import React, { FC, ReactNode, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import FlowpropertyView from '../view';
@@ -28,6 +28,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
   onData,
 }) => {
   const [id, setId] = useState<string | undefined>(undefined);
+  const { token } = theme.useToken();
 
   const handletFlowpropertyData = (rowKey: any) => {
     getFlowpropertyDetail(rowKey).then(async (result: any) => {
@@ -61,7 +62,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
           }
           name={[...name, '@refObjectId']}
         >
-          <Input disabled={true} style={{ width: '350px', color: '#000' }} />
+          <Input disabled={true} style={{ width: '350px', color: token.colorTextDescription }} />
         </Form.Item>
         <Space direction="horizontal" style={{ marginTop: '6px' }}>
           <FlowpropertiesSelectDrawer
@@ -86,13 +87,13 @@ const FlowpropertiesSelectForm: FC<Props> = ({
         label={<FormattedMessage id="pages.flow.view.flowProperties.type" defaultMessage="Type" />}
         name={[...name, '@type']}
       >
-        <Input disabled={true} style={{ color: '#000' }} />
+        <Input disabled={true} style={{ color: token.colorTextDescription }} />
       </Form.Item>
       <Form.Item
         label={<FormattedMessage id="pages.flow.view.flowProperties.uri" defaultMessage="URI" />}
         name={[...name, '@uri']}
       >
-        <Input disabled={true} style={{ color: '#000' }} />
+        <Input disabled={true} style={{ color: token.colorTextDescription }} />
       </Form.Item>
       {/* <Form.Item label="Version" name={[...name, '@version']}>
         <Input disabled={true} />
@@ -115,7 +116,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
                 <Row key={subField.key}>
                   <Col flex="100px" style={{ marginRight: '10px' }}>
                     <Form.Item noStyle name={[subField.name, '@xml:lang']}>
-                      <Input disabled={true} style={{ width: '100px', color: '#000' }} />
+                      <Input disabled={true} style={{ width: '100px', color: token.colorTextDescription }} />
                     </Form.Item>
                   </Col>
                   <Col flex="auto" style={{ marginRight: '10px' }}>
@@ -124,7 +125,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
                         placeholder="text"
                         rows={1}
                         disabled={true}
-                        style={{ color: '#000' }}
+                        style={{ color: token.colorTextDescription }}
                       />
                     </Form.Item>
                   </Col>

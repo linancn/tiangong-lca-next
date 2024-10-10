@@ -3,7 +3,7 @@ import { getReferenceProperty } from '@/services/flows/api';
 import { jsonToList } from '@/services/general/util';
 import { getReferenceUnit } from '@/services/unitgroups/api';
 import { ProFormInstance } from '@ant-design/pro-components';
-import { Card, Col, Divider, Form, Input, Row, Spin } from 'antd';
+import { Card, Col, Divider, Form, Input, Row, Spin, theme } from 'antd';
 import React, { FC, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 // import LangTextItemForm from '@/components/LangTextItem/form';
@@ -19,6 +19,7 @@ type Props = {
 
 const UnitGroupFromMini: FC<Props> = ({ id, idType, name, formRef, drawerVisible }) => {
   const [spinning, setSpinning] = useState<boolean>(false);
+  const { token } = theme.useToken();
 
   useEffect(() => {
     if (id && drawerVisible) {
@@ -78,7 +79,7 @@ const UnitGroupFromMini: FC<Props> = ({ id, idType, name, formRef, drawerVisible
                   <Row key={subField.key}>
                     <Col flex="100px" style={{ marginRight: '10px' }}>
                       <Form.Item noStyle name={[subField.name, '@xml:lang']}>
-                        <Input disabled={true} style={{ width: '100px', color: '#000' }} />
+                        <Input disabled={true} style={{ width: '100px', color: token.colorTextDescription }} />
                       </Form.Item>
                     </Col>
                     <Col flex="auto" style={{ marginRight: '10px' }}>
@@ -87,7 +88,7 @@ const UnitGroupFromMini: FC<Props> = ({ id, idType, name, formRef, drawerVisible
                           placeholder="text"
                           rows={1}
                           disabled={true}
-                          style={{ color: '#000' }}
+                          style={{ color: token.colorTextDescription }}
                         />
                       </Form.Item>
                     </Col>
@@ -113,7 +114,7 @@ const UnitGroupFromMini: FC<Props> = ({ id, idType, name, formRef, drawerVisible
             }
             name={[...name, 'refUnitGroup', 'refUnit', 'name']}
           >
-            <Input disabled={true} style={{ color: '#000' }} />
+            <Input disabled={true} style={{ color: token.colorTextDescription }} />
           </Form.Item>
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage id="pages.unitgroup.edit.generalComment" defaultMessage="Comment" />
@@ -126,7 +127,7 @@ const UnitGroupFromMini: FC<Props> = ({ id, idType, name, formRef, drawerVisible
                     <Row key={subField.key}>
                       <Col flex="100px" style={{ marginRight: '10px' }}>
                         <Form.Item noStyle name={[subField.name, '@xml:lang']}>
-                          <Input disabled={true} style={{ width: '100px', color: '#000' }} />
+                          <Input disabled={true} style={{ width: '100px', color: token.colorTextDescription }} />
                         </Form.Item>
                       </Col>
                       <Col flex="auto" style={{ marginRight: '10px' }}>
@@ -135,7 +136,7 @@ const UnitGroupFromMini: FC<Props> = ({ id, idType, name, formRef, drawerVisible
                             placeholder="text"
                             rows={1}
                             disabled={true}
-                            style={{ color: '#000' }}
+                            style={{ color: token.colorTextDescription }}
                           />
                         </Form.Item>
                       </Col>

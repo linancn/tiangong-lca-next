@@ -6,10 +6,9 @@ import { getUnitGroupDetail } from '@/services/unitgroups/api';
 import { UnitTable } from '@/services/unitgroups/data';
 import { genUnitGroupFromData, genUnitTableData } from '@/services/unitgroups/util';
 import {
-  CheckCircleTwoTone,
-  CloseCircleOutlined,
+  CheckCircleOutlined,
   CloseOutlined,
-  ProfileOutlined,
+  ProfileOutlined
 } from '@ant-design/icons';
 import type { ProColumns } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
@@ -98,9 +97,9 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
       search: false,
       render: (_, row) => {
         if (row.quantitativeReference) {
-          return <CheckCircleTwoTone twoToneColor="#52c41a" />;
+          return <CheckCircleOutlined />;
         }
-        return <CloseCircleOutlined />;
+        // return <CloseCircleOutlined />;
       },
     },
     {

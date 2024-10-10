@@ -1,0 +1,524 @@
+{
+  "lifeCycleModelDataSet": {
+    "@xmlns": "http://eplca.jrc.ec.europa.eu/ILCD/LifeCycleModel/2017",
+    "@xmlns:acme": "http://acme.com/custom",
+    "@xmlns:common": "http://lca.jrc.it/ILCD/Common",
+    "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+    "@locations": "../ILCDLocations.xml",
+    "@version": "1.1",
+    "@xsi:schemaLocation": "http://eplca.jrc.ec.europa.eu/ILCD/LifeCycleModel/2017 ../../schemas/ILCD_LifeCycleModelDataSet.xsd",
+    "lifeCycleModelInformation": {
+      "dataSetInformation": {
+        "common:UUID": "10062015-184a-41b8-8fa6-49e999cbd101",
+        "name": {
+          "baseName": {
+            "@xml:lang": "en",
+            "#text": "eILCD example - LDPE injection moulding parts model"
+          },
+          "treatmentStandardsRoutes": {
+            "@xml:lang": "en"
+          },
+          "mixAndLocationTypes": {
+            "@xml:lang": "en",
+            "#text": "production mix, at plant"
+          },
+          "functionalUnitFlowProperties": {
+            "@xml:lang": "en",
+            "#text": "5 parts at 0.2 kg/part"
+          }
+        },
+        "classificationInformation": {
+          "common:classification": {
+            "common:class": [
+              {
+                "@level": "0",
+                "#text": "Systems"
+              },
+              {
+                "@level": "1",
+                "#text": "Unspecific parts"
+              }
+            ]
+          }
+        },
+        "referenceToResultingProcess": {
+          "@refObjectId": "a91683fe-3b0b-471c-a007-f9d8b4e29d5a",
+          "@type": "process data set",
+          "@uri": "../processes/a91683fe-3b0b-471c-a007-f9d8b4e29d5a.xml",
+          "@version": "01.00.000",
+          "common:shortDescription": {
+            "@xml:lang": "en",
+            "#text": "eILCD sample - LDPE injection moulded part - sample; ; production mix, at plant; 5 parts at 0.2 kg/part"
+          }
+        },
+        "common:generalComment": {
+          "@xml:lang": "en",
+          "#text": "For further documentation, such as on technology, time, and geography represented and others, please refer to the corresponding, resulting aggregated LCI results process data set of the same name that has been obtained from this model."
+        },
+        "referenceToExternalDocumentation": {
+          "@refObjectId": "f17e7a9d-7c7e-42cf-807e-c7282f661eeb",
+          "@type": "source data set",
+          "@uri": "../sources/f17e7a9d-7c7e-42cf-807e-c7282f661eeb.xml",
+          "common:shortDescription": {
+            "@xml:lang": "en",
+            "#text": "LDPE injection moulding parts model"
+          }
+        }
+      },
+      "quantitativeReference": {
+        "referenceToReferenceProcess": "2"
+      },
+      "technology": {
+        "groupDeclarations": {
+          "group": [
+            {
+              "@id": "0",
+              "groupName": {
+                "@xml:lang": "en",
+                "#text": "Material&energy product. stage"
+              }
+            },
+            {
+              "@id": "1",
+              "groupName": {
+                "@xml:lang": "en",
+                "#text": "external"
+              }
+            },
+            {
+              "@id": "2",
+              "groupName": {
+                "@xml:lang": "en",
+                "#text": "Transport stage"
+              }
+            },
+            {
+              "@id": "3",
+              "groupName": {
+                "@xml:lang": "en",
+                "#text": "Manufacturing stage"
+              }
+            },
+            {
+              "@id": "4",
+              "groupName": [
+                {
+                  "@xml:lang": "en",
+                  "#text": "internal"
+                },
+                {
+                  "@xml:lang": "de",
+                  "#text": "intern"
+                }
+              ]
+            }
+          ]
+        },
+        "processes": {
+          "processInstance": [
+            {
+              "@dataSetInternalID": "0",
+              "@multiplicationFactor": "1.02",
+              "referenceToProcess": {
+                "@refObjectId": "8ddfe862-e580-47ab-a248-b62c6f4323d4",
+                "@type": "process data set",
+                "@uri": "../processes/8ddfe862-e580-47ab-a248-b62c6f4323d4.xml",
+                "@version": "01.00.000",
+                "common:shortDescription": {
+                  "@xml:lang": "en",
+                  "#text": "DE: Polyethylene Linear Low Density Granulate (LLDPE/PE-LLD) - sample"
+                }
+              },
+              "groups": {
+                "memberOf": [
+                  {
+                    "@groupId": "0"
+                  },
+                  {
+                    "@groupId": "1"
+                  }
+                ]
+              },
+              "connections": {
+                "outputExchange": {
+                  "@dominant": "true",
+                  "@flowUUID": "76013e3e-e074-4452-b1da-7d47842345a8",
+                  "downstreamProcess": {
+                    "@flowUUID": "1d0243cc-b9f4-4c91-b3e6-cb69067b9e82",
+                    "@id": "1",
+                    "@location": "GLO"
+                  }
+                }
+              }
+            },
+            {
+              "@dataSetInternalID": "1",
+              "@multiplicationFactor": "1.02",
+              "referenceToProcess": {
+                "@refObjectId": "24b22ed7-6187-4bea-b8b1-eccbfc267cb9",
+                "@type": "process data set",
+                "@uri": "../processes/24b22ed7-6187-4bea-b8b1-eccbfc267cb9.xml",
+                "@version": "01.00.000",
+                "common:shortDescription": {
+                  "@xml:lang": "en",
+                  "#text": "GLO: Rail transport cargo - Electric - sample"
+                }
+              },
+              "groups": {
+                "memberOf": [
+                  {
+                    "@groupId": "2"
+                  },
+                  {
+                    "@groupId": "1"
+                  }
+                ]
+              },
+              "parameters": {
+                "parameter": [
+                  {
+                    "@name": "distance",
+                    "#text": "200"
+                  },
+                  {
+                    "@name": "utilisation",
+                    "#text": "0.6"
+                  }
+                ]
+              },
+              "connections": {
+                "outputExchange": {
+                  "@flowUUID": "885d2a57-b6ca-4188-b6ff-618435ada8e0",
+                  "downstreamProcess": {
+                    "@flowUUID": "dad7268b-41ef-46e0-9641-48e431bbf937",
+                    "@id": "2"
+                  }
+                }
+              }
+            },
+            {
+              "@dataSetInternalID": "2",
+              "@multiplicationFactor": "5",
+              "referenceToProcess": {
+                "@refObjectId": "ecf3ceb8-1907-482e-8550-efd5c1f970e9",
+                "@type": "process data set",
+                "@uri": "../processes/ecf3ceb8-1907-482e-8550-efd5c1f970e9.xml",
+                "@version": "01.00.000",
+                "common:shortDescription": {
+                  "@xml:lang": "en",
+                  "#text": "DE: Plastic injection moulding part (unspecific) - sample"
+                }
+              },
+              "scalingFactor": "5",
+              "groups": {
+                "memberOf": [
+                  {
+                    "@groupId": "3"
+                  },
+                  {
+                    "@groupId": "4"
+                  }
+                ]
+              },
+              "parameters": {
+                "parameter": {
+                  "@name": "weight",
+                  "#text": "0.2"
+                }
+              },
+              "connections": {
+                "outputExchange": [
+                  {
+                    "@flowUUID": "9f8f445c-e172-49f6-8881-bcf2a9824588",
+                    "downstreamProcess": {
+                      "@flowUUID": "8b675989-edc7-4f86-a0e1-ce4a675346df",
+                      "@id": "3"
+                    }
+                  },
+                  {
+                    "@flowUUID": "a1ff365a-b063-4993-9ddc-6c68dd45ff81",
+                    "downstreamProcess": {
+                      "@flowUUID": "a1ff365a-b063-4993-9ddc-6c68dd45ff81",
+                      "@id": "6"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "@dataSetInternalID": "3",
+              "@multiplicationFactor": "0.02",
+              "referenceToProcess": {
+                "@refObjectId": "23dd327f-d58e-42da-82ac-351c42df0127",
+                "@type": "process data set",
+                "@uri": "../processes/23dd327f-d58e-42da-82ac-351c42df0127.xml",
+                "@version": "01.00.000",
+                "common:shortDescription": {
+                  "@xml:lang": "en",
+                  "#text": "DE: Washing (plastic recycling) - sample"
+                }
+              },
+              "groups": {
+                "memberOf": [
+                  {
+                    "@groupId": "3"
+                  },
+                  {
+                    "@groupId": "4"
+                  }
+                ]
+              }
+            },
+            {
+              "@dataSetInternalID": "4",
+              "@multiplicationFactor": "0.004418114651221923",
+              "referenceToProcess": {
+                "@refObjectId": "e38740ed-4e9e-4f4c-ae17-251ca7442c58",
+                "@type": "process data set",
+                "@uri": "../processes/e38740ed-4e9e-4f4c-ae17-251ca7442c58.xml",
+                "@version": "01.00.000",
+                "common:shortDescription": {
+                  "@xml:lang": "en",
+                  "#text": "DE: Electricity grid mix - sample"
+                }
+              },
+              "groups": {
+                "memberOf": [
+                  {
+                    "@groupId": "0"
+                  },
+                  {
+                    "@groupId": "1"
+                  }
+                ]
+              },
+              "connections": {
+                "outputExchange": {
+                  "@flowUUID": "890a70b7-b677-4e2a-8a1b-7d017e0a10ae",
+                  "downstreamProcess": {
+                    "@dominant": "true",
+                    "@flowUUID": "598e8a3b-c1e5-49d2-8305-176bfd0af3c2",
+                    "@id": "1"
+                  }
+                }
+              }
+            },
+            {
+              "@dataSetInternalID": "5",
+              "@multiplicationFactor": "1.6675",
+              "referenceToProcess": {
+                "@refObjectId": "e38740ed-4e9e-4f4c-ae17-251ca7442c58",
+                "@type": "process data set",
+                "@uri": "../processes/e38740ed-4e9e-4f4c-ae17-251ca7442c58.xml",
+                "@version": "01.00.000",
+                "common:shortDescription": {
+                  "@xml:lang": "en",
+                  "#text": "DE: Electricity grid mix - sample"
+                }
+              },
+              "groups": {
+                "memberOf": [
+                  {
+                    "@groupId": "3"
+                  },
+                  {
+                    "@groupId": "4"
+                  }
+                ]
+              },
+              "connections": {
+                "outputExchange": {
+                  "@flowUUID": "890a70b7-b677-4e2a-8a1b-7d017e0a10ae",
+                  "downstreamProcess": [
+                    {
+                      "@dominant": "true",
+                      "@flowUUID": "890a70b7-b677-4e2a-8a1b-7d017e0a10ae",
+                      "@id": "2"
+                    },
+                    {
+                      "@flowUUID": "890a70b7-b677-4e2a-8a1b-7d017e0a10ae",
+                      "@id": "3"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "@dataSetInternalID": "6",
+              "@multiplicationFactor": "4.000000000000001E-6",
+              "referenceToProcess": {
+                "@refObjectId": "e642549a-ed92-4db7-a877-5b53e5acdd8c",
+                "@type": "process data set",
+                "@uri": "../processes/e642549a-ed92-4db7-a877-5b53e5acdd8c.xml",
+                "@version": "01.00.000",
+                "common:shortDescription": {
+                  "@xml:lang": "en",
+                  "#text": "End-of-life treatment of injection moulding machine"
+                }
+              },
+              "groups": {
+                "memberOf": [
+                  {
+                    "@groupId": "1"
+                  },
+                  {
+                    "@groupId": "3"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "referenceToDiagram": {
+          "@refObjectId": "2ac21e95-47e3-5718-b607-3a30cecc38aa",
+          "@type": "source data set",
+          "@uri": "../sources/2ac21e95-47e3-5718-b607-3a30cecc38aa.xml",
+          "@version": "01.00.000",
+          "common:shortDescription": {
+            "@xml:lang": "en",
+            "#text": "eILCD - sample life cycle model screenshot - PE-LLD injection moulding part"
+          }
+        }
+      }
+    },
+    "modellingAndValidation": {
+      "dataSourcesTreatmentEtc": {
+        "useAdviceForDataSet": {
+          "@xml:lang": "en",
+          "#text": "Purely illustrative example Life Cycle Inventory (LCI) model for testing the eILCD format namespace- not to be used for LCA studies."
+        }
+      },
+      "validation": {
+        "review": {
+          "common:referenceToNameOfReviewerAndInstitution": {
+            "@refObjectId": "119923fd-f852-41d2-736d-298a8f73456a",
+            "@type": "contact data set",
+            "@uri": "../contacts/119923fd-f852-41d2-736d-298a8f73456a.xml",
+            "@version": "00.00.000",
+            "common:shortDescription": {
+              "@xml:lang": "en",
+              "#text": "Magic Masterreviewer"
+            }
+          },
+          "common:referenceToCompleteReviewReport": {
+            "@refObjectId": "a34e6a13-917a-577d-bd0a-73765ae094aa",
+            "@type": "source data set",
+            "@uri": "../sources/a34e6a13-917a-577d-bd0a-73765ae094aa.xml",
+            "@version": "00.00.000",
+            "common:shortDescription": {
+              "@xml:lang": "en",
+              "#text": "Review LDPE parts - sample"
+            }
+          }
+        }
+      },
+      "complianceDeclarations": {
+        "compliance": {
+          "common:referenceToComplianceSystem": {
+            "@refObjectId": "66279383-8dc3-46c1-80d1-99866cc01e6a",
+            "@type": "source data set",
+            "@uri": "../sources/66279383-8dc3-46c1-80d1-99866cc01e6a.xml",
+            "@version": "00.00.000",
+            "common:shortDescription": {
+              "@xml:lang": "en",
+              "#text": "PEF/OEF implementation, mandatory data 2016-2020"
+            }
+          },
+          "common:approvalOfOverallCompliance": "Not compliant",
+          "common:nomenclatureCompliance": "Not compliant",
+          "common:methodologicalCompliance": "Not compliant",
+          "common:reviewCompliance": "Not compliant",
+          "common:documentationCompliance": "Not compliant",
+          "common:qualityCompliance": "Not compliant"
+        }
+      }
+    },
+    "administrativeInformation": {
+      "common:commissionerAndGoal": {
+        "common:referenceToCommissioner": {
+          "@refObjectId": "e0c82c5f-6b85-4d66-a84c-147d54abb889",
+          "@type": "contact data set",
+          "@uri": "../contacts/e0c82c5f-6b85-4d66-a84c-147d54abb889.xml",
+          "@version": "00.00.000",
+          "common:shortDescription": {
+            "@xml:lang": "en",
+            "#text": "European Commission, DG ENV A1"
+          }
+        },
+        "common:project": {
+          "@xml:lang": "en",
+          "#text": "Remodelling project. Contract number EN V.B. l/SER/2016/00xxvl"
+        },
+        "common:intendedApplications": {
+          "@xml:lang": "en",
+          "#text": "Purely illustrative example Life Cycle Inventory (LCI) model for testing the eILCD format namespace- not to be used for LCA studies."
+        }
+      },
+      "dataGenerator": {
+        "common:referenceToPersonOrEntityGeneratingTheDataSet": {
+          "@refObjectId": "01a117b0-9a1a-11da-b234-0800200aa162",
+          "@type": "contact data set",
+          "@uri": "../contacts/01a117b0-9a1a-11da-b234-0800200aa162.xml",
+          "@version": "01.00.000",
+          "common:shortDescription": {
+            "@xml:lang": "en",
+            "#text": "maki"
+          }
+        }
+      },
+      "dataEntryBy": {
+        "common:timeStamp": "2017-07-23T00:00:00.000",
+        "common:referenceToDataSetFormat": {
+          "@refObjectId": "a97a0155-0234-4b87-b4ce-a45da52f2a40",
+          "@type": "source data set",
+          "@uri": "../sources/a97a0155-0234-4b87-b4ce-a45da52f2a40.xml",
+          "@version": "03.00.000",
+          "common:shortDescription": {
+            "@xml:lang": "en",
+            "#text": "ILCD format 1.1"
+          }
+        },
+        "common:referenceToPersonOrEntityEnteringTheData": {
+          "@refObjectId": "01a117b0-9a1a-11da-b234-0800200aa162",
+          "@type": "contact data set",
+          "@uri": "../contacts/01a117b0-9a1a-11da-b234-0800200aa162.xml",
+          "@version": "01.00.000",
+          "common:shortDescription": {
+            "@xml:lang": "en",
+            "#text": "maki"
+          }
+        }
+      },
+      "publicationAndOwnership": {
+        "common:dataSetVersion": "01.00.000",
+        "common:permanentDataSetURI": "http://lcdn.maki-consulting.com/Node/showProcess.xhtml?uuid=10062015cc-184a-41b8-8fa6-49e999cbd101=default",
+        "common:referenceToOwnershipOfDataSet": {
+          "@refObjectId": "01a117b0-9a1a-11da-b234-0800200aa162",
+          "@type": "contact data set",
+          "@uri": "../contacts/01a117b0-9a1a-11da-b234-0800200aa162.xml",
+          "@version": "01.00.000",
+          "common:shortDescription": {
+            "@xml:lang": "en",
+            "#text": "maki life cycle data node"
+          }
+        },
+        "common:copyright": "true",
+        "common:referenceToEntitiesWithExclusiveAccess": {
+          "@refObjectId": "8b3e08f0-740a-43b1-aa8d-bec56c5daf6e",
+          "@type": "contact data set",
+          "@uri": "../contacts/8b3e08f0-740a-43b1-aa8d-bec56c5daf6e.xml",
+          "@version": "00.00.000",
+          "common:shortDescription": {
+            "@xml:lang": "en",
+            "#text": "FINAL USER"
+          }
+        },
+        "common:licenseType": "Free of charge for some user types or use types",
+        "common:accessRestrictions": {
+          "@xml:lang": "en",
+          "#text": "Non-commercial use for testing of implementation of eILCD import/export interfaces in LCA software"
+        }
+      }
+    }
+  }
+}

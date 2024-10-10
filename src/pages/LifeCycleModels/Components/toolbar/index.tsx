@@ -1,26 +1,23 @@
 import ProcessView from '@/pages/Processes/Components/view';
-import { getFlowDetail } from '@/services/flows/api';
-import { genFlowFromData } from '@/services/flows/util';
-import { getLangText } from '@/services/general/util';
+import { formatDateTime, getLangText } from '@/services/general/util';
+import { createLifeCycleModel, getLifeCycleModelDetail, updateLifeCycleModel } from '@/services/lifeCycleModels/api';
+import { genLifeCycleModelData, genLifeCycleModelInfoFromData } from '@/services/lifeCycleModels/util';
 import { getProcessDetail } from '@/services/processes/api';
-import { createProduct, getProductDetail, updateProduct } from '@/services/products/api';
-import { genProductInfoFromData, genProductModelFromData } from '@/services/products/util';
 import { DeleteOutlined, SaveOutlined } from '@ant-design/icons';
 import { useGraphStore } from '@antv/xflow';
 import { Button, Space, Spin, Tooltip, message } from 'antd';
 import { FC, useCallback, useEffect, useState } from 'react';
-import { FormattedMessage, useIntl } from 'umi';
+import { FormattedMessage } from 'umi';
 import { v4 } from 'uuid';
-import { node } from '../Config/node';
-import EdgeExhange from './Exchange';
 import ModelToolbarAdd from './add';
+import { node } from './config/node';
 import { Control } from './control';
-import ModelToolbarEditInfo from './eidtInfo';
+import ToolbarEditInfo from './eidtInfo';
+import EdgeExhange from './Exchange';
 import ModelToolbarViewInfo from './viewInfo';
 
 type Props = {
-  id: string;
-  flowId: string;
+  id: string | undefined;
   lang: string;
   drawerVisible: boolean;
   isSave: boolean;
@@ -28,7 +25,8 @@ type Props = {
   setIsSave: (isSave: boolean) => void;
 };
 
-const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly, setIsSave }) => {
+const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSave }) => {
+  const [thisId, setThisId] = useState(id);
   const [spinning, setSpinning] = useState(false);
   const [infoData, setInfoData] = useState<any>({});
   const modelData = useGraphStore((state) => state.initData);
@@ -36,7 +34,6 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly,
   const removeNodes = useGraphStore((state) => state.removeNodes);
   const removeEdges = useGraphStore((state) => state.removeEdges);
   const updateEdge = useGraphStore((state) => state.updateEdge);
-  const intl = useIntl();
 
   const nodes = useGraphStore((state) => state.nodes);
   const edges = useGraphStore((state) => state.edges);
@@ -47,6 +44,43 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly,
 
   const updateInfoData = (data: any) => {
     setInfoData(data);
+    // if (thisId) {
+    //   updateProduct({ ...data, id: thisId }).then((result: any) => {
+    //     if (result.data) {
+    //       message.success(
+    //         <FormattedMessage id="pages.flows.savesuccess" defaultMessage="Save successfully!" />,
+    //       );
+    //     } else {
+    //       message.error(result.error.message);
+    //     }
+    //   });
+    // }
+    // else {
+    //   const newId = v4();
+    //   setThisId(newId);
+    //   setInfoData({
+    //     ...data,
+    //     lifeCycleModelInformation: {
+    //       ...data.lifeCycleModelInformation,
+    //       dataSetInformation: {
+    //         ...data.lifeCycleModelInformation.dataSetInformation,
+    //         'common:UUID': newId,
+    //       },
+    //     },
+    //   });
+    //   createLifeCycleModel({ ...data, id: newId }).then((result: any) => {
+    //     if (result.data) {
+    //       message.success(
+    //         <FormattedMessage
+    //           id="pages.flows.createsuccess"
+    //           defaultMessage="Created successfully!"
+    //         />,
+    //       );
+    //     } else {
+    //       message.error(result.error.message);
+    //     }
+    //   });
+    // }
   };
 
   const updateEdgeData = (data: any) => {
@@ -122,36 +156,44 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly,
     });
 
     const newData = {
-      productInformation: infoData?.productInformation ?? {},
+      ...infoData ?? {},
       model: {
         nodes: nodes ?? [],
         edges: newEdges ?? [],
       },
     };
-    let result: any = {};
-    if (id !== '') {
-      result = await updateProduct({ ...newData, id: id });
-      if (result.data) {
-      }
-      message.success(
-        <FormattedMessage id="pages.flows.savesuccess" defaultMessage="Save successfully!" />,
-      );
-      saveCallback();
-      setSpinning(false);
-    } else {
-      result = await createProduct(flowId, newData);
-      if (result.data) {
-        message.success(
-          intl.formatMessage({
-            id: 'pages.button.create.success',
-            defaultMessage: 'Created successfully!',
-          }),
-        );
-        saveCallback();
+
+    if (thisId) {
+      updateLifeCycleModel({ ...newData, id: id }).then((result: any) => {
+        if (result.data) {
+          message.success(
+            <FormattedMessage id="pages.flows.savesuccess" defaultMessage="Save successfully!" />,
+          );
+          saveCallback();
+        }
+        else {
+          message.error(result.error.message);
+        }
         setSpinning(false);
-      } else {
-        message.error(result.error.message);
-      }
+      });
+    } else {
+      const newId = v4();
+      setThisId(newId);
+      createLifeCycleModel({ ...newData, id: newId }).then((result: any) => {
+        if (result.data) {
+          message.success(
+            <FormattedMessage
+              id="pages.flows.createsuccess"
+              defaultMessage="Created successfully!"
+            />,
+          );
+          saveCallback();
+
+        } else {
+          message.error(result.error.message);
+        }
+        setSpinning(false);
+      });
     }
     return true;
   };
@@ -173,24 +215,13 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly,
 
   useEffect(() => {
     if (!drawerVisible) return;
-    setIsSave(false);
-    setSpinning(true);
-    if (id !== '') {
-      getProductDetail(id).then(async (result: any) => {
-        const fromData = genProductInfoFromData(result.data?.json?.productDataSet ?? {});
-        setInfoData({
-          productInformation: {
-            dataSetInformation: {
-              ...fromData?.productInformation?.dataSetInformation,
-              'common:UUID': id,
-            },
-            referenceToFlowDataSet: {
-              ...fromData?.productInformation?.referenceToFlowDataSet,
-              '@refObjectId': flowId,
-            },
-          },
-        });
-        const model = genProductModelFromData(result.data?.json?.productDataSet ?? {}, lang);
+    if (id) {
+      setIsSave(false);
+      setSpinning(true);
+      getLifeCycleModelDetail(id).then(async (result: any) => {
+        const fromData = genLifeCycleModelInfoFromData(result.data?.json?.lifeCycleModelDataSet ?? {});
+        setInfoData(fromData);
+        const model = genLifeCycleModelData(result.data?.json_tg ?? {}, lang);
         let initNodes = model?.nodes ?? [];
         if (readonly) {
           initNodes = initNodes.map((node: any) => {
@@ -257,22 +288,18 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly,
         setSpinning(false);
       });
     } else {
-      getFlowDetail(flowId).then(async (result: any) => {
-        const flow = genFlowFromData(result.data?.json?.flowDataSet ?? {});
-        setInfoData({
-          productInformation: {
-            referenceToFlowDataSet: {
-              // '@refObjectId': flow?.flowInformation?.dataSetInformation?.['common:UUID'],
-              '@refObjectId': flowId,
-              'common:name': flow?.flowInformation?.dataSetInformation?.name?.baseName,
-              'common:shortDescription':
-                flow?.flowInformation?.dataSetInformation?.['common:generalComment'],
-            },
+      const currentDateTime = formatDateTime(new Date());
+      const newData = {
+        administrativeInformation: {
+          dataEntryBy: {
+            'common:timeStamp': currentDateTime,
           },
-        });
-        modelData({ nodes: [], edges: [] });
-        setSpinning(false);
-      });
+          publicationAndOwnership: {
+            'common:dataSetVersion': '01.00.000',
+          },
+        },
+      };
+      setInfoData(newData);
     }
   }, [drawerVisible]);
 
@@ -281,7 +308,7 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly,
       {readonly ? (
         <ModelToolbarViewInfo data={infoData} />
       ) : (
-        <ModelToolbarEditInfo data={infoData} onData={updateInfoData} flowId={flowId} lang={lang} />
+        <ToolbarEditInfo data={infoData} onData={updateInfoData} lang={lang} />
       )}
       <ProcessView
         id={nodes.filter((node) => node.selected)?.[0]?.data?.id ?? ''}

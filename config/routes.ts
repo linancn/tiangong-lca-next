@@ -21,7 +21,14 @@ export default [
         redirect: '/mydata/products',
       },
       {
+        name: 'models',
+        path: '/mydata/models',
+        icon: 'AppstoreAddOutlined',
+        component: './LifeCycleModels',
+      },
+      {
         name: 'products',
+        menu: false,
         path: '/mydata/products',
         icon: 'AppstoreAddOutlined',
         component: './Products',
@@ -74,10 +81,10 @@ export default [
         redirect: '/tgdata/products',
       },
       {
-        name: 'products',
+        name: 'models',
+        path: '/tgdata/models',
         icon: 'AppstoreAddOutlined',
-        path: '/tgdata/products',
-        component: './Products',
+        component: './LifeCycleModels',
       },
       {
         name: 'processes',
