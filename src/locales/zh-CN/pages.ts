@@ -133,8 +133,8 @@ export default {
   'pages.account.confirmNewEmail.required': '请再次输入新邮箱！',
   'pages.account.emailsDoNotMatch': '两次输入的邮箱不一致！',
   'pages.account.baseInfo': '基本信息',
-  'pages.account.updatePassword': '修改密码',
-  'pages.account.updateEmail': '修改邮箱',
+  'pages.account.changePassword': '修改密码',
+  'pages.account.changeEmail': '修改邮箱',
 
   'pages.login.passwordForgot.tab': '账户',
 };

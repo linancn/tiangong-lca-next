@@ -134,8 +134,8 @@ export default {
   'pages.account.confirmNewEmail.required': 'Please input the new email again!',
   'pages.account.emailsDoNotMatch': 'The two emails that you entered do not match!',
   'pages.account.baseInfo': 'Basic Information',
-  'pages.account.updatePassword': 'Update Password',
-  'pages.account.updateEmail': 'Update Email',
+  'pages.account.changePassword': 'Change Password',
+  'pages.account.changeEmail': 'Change Email',
 
   'pages.login.passwordForgot.tab': 'Account',
 };

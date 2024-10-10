@@ -430,16 +430,16 @@ const Profile: FC = () => {
             {
               key: 'changePassword',
               label: intl.formatMessage({
-                id: 'pages.account.updatePassword',
-                defaultMessage: 'Update Password',
+                id: 'pages.account.changePassword',
+                defaultMessage: 'Change Password',
               }),
               children: renderChangePasswordForm(),
             },
             {
               key: 'changeEmail',
               label: intl.formatMessage({
-                id: 'pages.account.updateEmail',
-                defaultMessage: 'Update Email',
+                id: 'pages.account.changeEmail',
+                defaultMessage: 'Change Email',
               }),
               children: renderChangeEmailForm(),
             },
