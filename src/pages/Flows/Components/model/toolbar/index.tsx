@@ -9,7 +9,7 @@ import { DeleteOutlined, SaveOutlined } from '@ant-design/icons';
 import { useGraphStore } from '@antv/xflow';
 import { Button, Space, Spin, Tooltip, message } from 'antd';
 import { FC, useCallback, useEffect, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
 import { node } from '../Config/node';
 import EdgeExhange from './Exchange';
@@ -36,6 +36,7 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly,
   const removeNodes = useGraphStore((state) => state.removeNodes);
   const removeEdges = useGraphStore((state) => state.removeEdges);
   const updateEdge = useGraphStore((state) => state.updateEdge);
+  const intl = useIntl();
 
   const nodes = useGraphStore((state) => state.nodes);
   const edges = useGraphStore((state) => state.edges);
@@ -141,10 +142,10 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly,
       result = await createProduct(flowId, newData);
       if (result.data) {
         message.success(
-          <FormattedMessage
-            id="pages.flows.createsuccess"
-            defaultMessage="Created successfully!"
-          />,
+          intl.formatMessage({
+            id: 'pages.button.create.success',
+            defaultMessage: 'Created successfully!',
+          }),
         );
         saveCallback();
         setSpinning(false);

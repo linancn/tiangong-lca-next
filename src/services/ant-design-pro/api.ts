@@ -1,7 +1,7 @@
+import { request } from '@umijs/max';
 // @ts-ignore
 /* eslint-disable */
 import { supabase } from '@/services/supabase';
-import { request } from '@umijs/max';
 
 /** 获取当前的用户 GET /api/currentUser */
 export async function currentUser(options?: { [key: string]: any }) {
@@ -27,7 +27,7 @@ export async function outLogin(options?: { [key: string]: any }) {
 /** 登录接口 POST /api/login/account */
 export async function login(body: API.LoginParams, options?: { [key: string]: any }) {
   const { data, error } = await supabase.auth.signInWithPassword({
-    email: body.username ?? '',
+    email: body.email ?? '',
     password: body.password ?? '',
   });
   if (error) {
@@ -43,6 +43,22 @@ export async function sendMagicLink(body: API.LoginParams, options?: { [key: str
 
   if (error) {
     return { status: 'error', message: error.message, type: body.type, currentAuthority: 'guest' };
+  }
+  return { status: 'ok', type: body.type, currentAuthority: 'guest' };
+}
+
+export async function signUp(body: API.LoginParams, options?: { [key: string]: any }) {
+  const { data, error } = await supabase.auth.signUp({
+    email: body.email ?? '',
+    password: body.confirmPassword ?? '',
+  });
+  // console.log(body.type);
+  if (!data || error) {
+    return { status: 'error', type: body.type, currentAuthority: 'guest' };
+  }
+  if (data.user?.role === '') {
+    // console.log('user existed');
+    return { status: 'existed', type: body.type, currentAuthority: 'guest' };
   }
   return { status: 'ok', type: body.type, currentAuthority: 'guest' };
 }
@@ -64,16 +80,10 @@ export async function changePassword(body: any, options?: { [key: string]: any }
     password: body.current ?? '',
   });
 
-  // const { data } = await supabase.auth.verifyOtp({
-  //   email: body.email ?? '',
-  //   token: body.code ?? '',
-  //   type: 'email',
-  // });
-
   if (data.user !== null) {
     const { error } = await supabase.auth.updateUser({
       email: body.email ?? '',
-      password: body.new1 ?? '',
+      password: body.confirmNewPassword ?? '',
     });
     if (error) {
       return {
@@ -95,12 +105,35 @@ export async function changePassword(body: any, options?: { [key: string]: any }
   }
 }
 
+export async function changeEmail(body: any, options?: { [key: string]: any }) {
+  if (body.email !== null) {
+    const { error } = await supabase.auth.updateUser({
+      email: body.confirmNewEmail ?? '',
+    });
+    if (error) {
+      return {
+        status: 'error',
+        message: error.message,
+        type: body.type,
+      };
+    } else {
+      return { status: 'ok', type: body.type };
+    }
+  } else {
+    return {
+      status: 'error',
+      message: 'An error occurred, please try again later!',
+      type: body.type,
+    };
+  }
+}
+
 export async function forgotPasswordSendEmail(
   body: API.LoginParams,
   options?: { [key: string]: any },
 ) {
   const { error } = await supabase.auth.resetPasswordForEmail(body.email ?? '', {
-    redirectTo: 'https://lca.tiangong.earth/#/password/set',
+    redirectTo: 'https://lca.tiangong.earth/user/login/password_reset',
   });
 
   if (error) {
@@ -112,7 +145,7 @@ export async function forgotPasswordSendEmail(
 export async function setPassword(body: any, options?: { [key: string]: any }) {
   const { data, error } = await supabase.auth.updateUser({
     email: body.email ?? '',
-    password: body.new1 ?? '',
+    password: body.confirmNewPassword ?? '',
   });
 
   if (error) {

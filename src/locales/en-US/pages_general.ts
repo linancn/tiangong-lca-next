@@ -9,13 +9,14 @@ export default {
   'pages.table.title.option': 'Option',
 
   'pages.button.create': 'Create',
+  'pages.button.create.success': 'Created successfully!',
   'pages.button.reset': 'Reset',
   'pages.button.view': 'View',
   'pages.button.edit': 'Edit',
   'pages.button.refresh': 'Refresh',
   'pages.button.delete': 'Delete',
   'pages.button.delete.confirm': 'Are you sure want to delete this data?',
-  'pages.button.delete.success': 'Deleted successfully!',
+  'pages.button.delete.success': 'Selected record has been deleted.',
   'pages.button.cancel': 'Cancel',
   'pages.button.submit': 'Submit',
   'pages.button.select': 'Select',
@@ -44,6 +45,5 @@ export default {
 
   'pages.search.openAI': 'AI Recommendation',
   'pages.search.keyWord': 'Full-text search: Enter one or more keywords.',
-  'pages.search.placeholder':
-    'AI Search: Describe the data you need in one sentence or a few key words.',
+  'pages.search.placeholder': 'AI Search: Describe the data you need in one sentence or a few key words.',
 };

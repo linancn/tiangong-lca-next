@@ -1,12 +1,13 @@
-import { Footer } from '@/components';
-import { currentUser, forgotPasswordSendEmail } from '@/services/ant-design-pro/api';
-import { MailOutlined, RollbackOutlined } from '@ant-design/icons';
+import { App, Button, ConfigProvider, Spin, Tabs, notification, theme } from 'antd';
+import { Helmet, Link, SelectLang, useIntl } from 'umi';
 import { LoginForm, ProConfigProvider, ProFormText, ProLayout } from '@ant-design/pro-components';
-import { FormattedMessage } from '@umijs/max';
-import { Spin, ConfigProvider, theme, App, Tabs, notification, Button } from 'antd';
+import { MailOutlined } from '@ant-design/icons';
 import React, { useEffect, useState } from 'react';
-import { Helmet, SelectLang, useIntl, Link } from 'umi';
-import Settings from '../../../config/defaultSettings';
+import { currentUser, forgotPasswordSendEmail } from '@/services/ant-design-pro/api';
+
+import { Footer } from '@/components';
+import { FormattedMessage } from '@umijs/max';
+import Settings from '../../../../config/defaultSettings';
 
 const PasswordForgot: React.FC = () => {
   const [initData, setInitData] = useState<API.CurrentUser>({});
@@ -93,9 +94,11 @@ const PasswordForgot: React.FC = () => {
               <Spin spinning={spinning}>
                 <LoginForm
                   layout="vertical"
-                  logo={isDarkMode ? 'logo_dark.svg' : Settings.logo}
-                  title={Settings.title}
-                  subTitle=""
+                  logo={isDarkMode ? '/logo_dark.svg' : Settings.logo}
+                  title={<FormattedMessage id="pages.login.title" defaultMessage="TianGong LCA" />}
+                  subTitle={
+                    <FormattedMessage id="pages.login.subTitle" defaultMessage="TianGong LCA" />
+                  }
                   initialValues={initData}
                   onFinish={async (values) => {
                     await handleSubmit(values as API.LoginParams);
@@ -131,7 +134,7 @@ const PasswordForgot: React.FC = () => {
                   <ProFormText
                     name="email"
                     fieldProps={{
-                      size: 'large',
+                      size: 'middle',
                       prefix: <MailOutlined />,
                     }}
                     placeholder={intl.formatMessage({
@@ -164,7 +167,7 @@ const PasswordForgot: React.FC = () => {
                 {sendComplete && (
                   <div style={{ marginTop: 32, display: 'flex', justifyContent: 'center' }}>
                     <Link to="/">
-                      <Button type="primary" size="large" icon={<RollbackOutlined />}>
+                      <Button type="primary" size="large">
                         {intl.formatMessage({
                           id: 'pages.login.password.back',
                           defaultMessage: 'Back to Login',

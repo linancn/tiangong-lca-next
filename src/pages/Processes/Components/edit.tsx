@@ -19,7 +19,7 @@ import {
 } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 import { ProcessForm } from './form';
 
 type Props = {
@@ -37,6 +37,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
   const [initData, setInitData] = useState<any>({});
   const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
   const [spinning, setSpinning] = useState(false);
+  const intl = useIntl();
 
   const handletFromData = () => {
     if (fromData?.id)
@@ -161,10 +162,10 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
               });
               if (updateResult?.data) {
                 message.success(
-                  <FormattedMessage
-                    id="options.createsuccess"
-                    defaultMessage="Created successfully!"
-                  />,
+                  intl.formatMessage({
+                    id: 'pages.button.create.success',
+                    defaultMessage: 'Created successfully!',
+                  }),
                 );
                 setSpinning(false);
                 setDrawerVisible(false);

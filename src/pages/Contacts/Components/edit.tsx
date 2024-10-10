@@ -8,7 +8,7 @@ import type { ActionType } from '@ant-design/pro-table';
 import { Button, Collapse, Drawer, Space, Spin, Tooltip, Typography, message } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 import { ContactForm } from './form';
 type Props = {
   id: string;
@@ -24,6 +24,7 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
   const [initData, setInitData] = useState<any>({});
   const [fromData, setFromData] = useState<any>({});
   const [activeTabKey, setActiveTabKey] = useState<string>('contactInformation');
+  const intl = useIntl();
 
   const onEdit = useCallback(() => {
     setDrawerVisible(true);
@@ -120,10 +121,10 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
               const updateResult = await updateContact({ ...fromData });
               if (updateResult?.data) {
                 message.success(
-                  <FormattedMessage
-                    id="options.createsuccess"
-                    defaultMessage="Created Successfully!"
-                  />,
+                  intl.formatMessage({
+                    id: 'pages.button.create.success',
+                    defaultMessage: 'Created successfully!',
+                  }),
                 );
                 setDrawerVisible(false);
                 setViewDrawerVisible(false);

@@ -18,17 +18,6 @@
           background-repeat: no-repeat;
           background-size: 100% auto;
         }
-
-        .loading-title {
-          font-size: 1.1rem;
-        }
-
-        .loading-sub-title {
-          margin-top: 20px;
-          font-size: 1rem;
-          color: #888;
-        }
-
         .page-loading-warp {
           display: flex;
           align-items: center;
@@ -43,7 +32,7 @@
           margin: 0;
           padding: 0;
           color: rgba(0, 0, 0, 0.65);
-          color: #1890ff;
+          color: #5C246A;
           font-size: 14px;
           font-variant: tabular-nums;
           line-height: 1.5;
@@ -80,7 +69,7 @@
           display: block;
           width: 9px;
           height: 9px;
-          background-color: #1890ff;
+          background-color: #5C246A;
           border-radius: 100%;
           -webkit-transform: scale(0.75);
           -ms-transform: scale(0.75);
@@ -189,12 +178,6 @@
               <i class="ant-spin-dot-item"></i>
             </span>
           </div>
-        </div>
-        <div class="loading-title">
-          正在加载资源
-        </div>
-        <div class="loading-sub-title">
-          初次加载资源可能需要较多时间 请耐心等待
         </div>
       </div>
     `;

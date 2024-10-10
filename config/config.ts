@@ -123,10 +123,10 @@ export default defineConfig({
    * @name <head> 中额外的 script
    * @description 配置 <head> 中额外的 script
    */
-  headScripts:
-    process.env.NODE_ENV === 'production'
-      ? [{ src: './scripts/loading.js', async: true }]
-      : [{ src: '/scripts/loading.js', async: true }],
+  headScripts: [{ src: '/scripts/loading.js', async: true }],
+  // process.env.NODE_ENV === 'production'
+  //   ? [{ src: './scripts/loading.js', async: true }]
+  //   : [{ src: '/scripts/loading.js', async: true }],
   //================ pro 插件配置 =================
   presets: ['umi-presets-pro'],
   /**
@@ -134,25 +134,28 @@ export default defineConfig({
    * @description 基于 openapi 的规范生成serve 和mock，能减少很多样板代码
    * @doc https://pro.ant.design/zh-cn/docs/openapi/
    */
-  openAPI: [
-    {
-      requestLibPath: "import { request } from '@umijs/max'",
-      // 或者使用在线的版本
-      // schemaPath: "https://gw.alipayobjects.com/os/antfincdn/M%24jrzTTYJN/oneapi.json"
-      schemaPath: join(__dirname, 'oneapi.json'),
-      mock: false,
-    },
-    {
-      requestLibPath: "import { request } from '@umijs/max'",
-      schemaPath: 'https://gw.alipayobjects.com/os/antfincdn/CA1dOm%2631B/openapi.json',
-      projectName: 'swagger',
-    },
-  ],
+  // openAPI: [
+  //   {
+  //     requestLibPath: "import { request } from '@umijs/max'",
+  //     // 或者使用在线的版本
+  //     // schemaPath: "https://gw.alipayobjects.com/os/antfincdn/M%24jrzTTYJN/oneapi.json"
+  //     schemaPath: join(__dirname, 'oneapi.json'),
+  //     mock: false,
+  //   },
+  //   {
+  //     requestLibPath: "import { request } from '@umijs/max'",
+  //     schemaPath: 'https://gw.alipayobjects.com/os/antfincdn/CA1dOm%2631B/openapi.json',
+  //     projectName: 'swagger',
+  //   },
+  // ],
   mfsu: {
     strategy: 'normal',
   },
   esbuildMinifyIIFE: true,
   requestRecord: {},
-  publicPath: process.env.NODE_ENV === 'production' ? './' : '/',
-  history: { type: 'hash' },
+  // publicPath: process.env.NODE_ENV === 'production' ? './' : '/',
+  publicPath: '/',
+  // history: { type: 'hash' },
+  // history: { type: 'memory' },
+  history: { type: 'browser' },
 });

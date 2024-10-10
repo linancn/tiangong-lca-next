@@ -8,7 +8,7 @@ import type { ActionType } from '@ant-design/pro-table';
 import { Button, Collapse, Drawer, Space, Tooltip, Typography, message } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
 import { ContactForm } from './form';
 type Props = {
@@ -21,6 +21,7 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
   const [initData, setInitData] = useState<any>({});
   const formRefCreate = useRef<ProFormInstance>();
   const [activeTabKey, setActiveTabKey] = useState<string>('contactInformation');
+  const intl = useIntl();
 
   const handletFromData = () => {
     if (fromData?.id)
@@ -115,10 +116,10 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
             const result = await createContact({ ...fromData });
             if (result.data) {
               message.success(
-                <FormattedMessage
-                  id="pages.button.create.success"
-                  defaultMessage="Created Successfully!"
-                />,
+                intl.formatMessage({
+                  id: 'pages.button.create.success',
+                  defaultMessage: 'Created successfully!',
+                }),
               );
               formRefCreate.current?.resetFields();
               setDrawerVisible(false);

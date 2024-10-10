@@ -1,14 +1,15 @@
-import { outLogin } from '@/services/ant-design-pro/api';
-import { LockOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
-import { history, useModel } from '@umijs/max';
-import { Spin } from 'antd';
-import { createStyles } from 'antd-style';
-import { stringify } from 'querystring';
-import type { MenuInfo } from 'rc-menu/lib/interface';
+import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import React, { useCallback } from 'react';
-import { flushSync } from 'react-dom';
+import { history, useModel } from '@umijs/max';
+
 import { FormattedMessage } from 'umi';
 import HeaderDropdown from '../HeaderDropdown';
+import type { MenuInfo } from 'rc-menu/lib/interface';
+import { Spin } from 'antd';
+import { createStyles } from 'antd-style';
+import { flushSync } from 'react-dom';
+import { outLogin } from '@/services/ant-design-pro/api';
+import { stringify } from 'querystring';
 
 export type GlobalHeaderRightProps = {
   menu?: boolean;
@@ -73,7 +74,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
         loginOut();
         return;
       }
-      history.push(`/account/${key}`);
+      history.push(`/account`);
     },
     [setInitialState],
   );
@@ -105,11 +106,6 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
       key: 'profile',
       icon: <UserOutlined />,
       label: <FormattedMessage id="menu.account.profile" defaultMessage="Account Profile" />,
-    },
-    {
-      key: 'password_change',
-      icon: <LockOutlined />,
-      label: <FormattedMessage id="menu.account.passwordChange" defaultMessage="Change Password" />,
     },
     {
       type: 'divider' as const,

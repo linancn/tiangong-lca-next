@@ -9,7 +9,7 @@ import type { ActionType } from '@ant-design/pro-table';
 import { Button, Collapse, Drawer, Space, Spin, Tooltip, Typography, message } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 import { UnitGroupForm } from './form';
 
 type Props = {
@@ -27,6 +27,7 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
   const [fromData, setFromData] = useState<any>({});
   const [unitDataSource, setUnitDataSource] = useState<UnitTable[]>([]);
   const [spinning, setSpinning] = useState(false);
+  const intl = useIntl();
 
   const handletFromData = () => {
     if (fromData?.id)
@@ -166,10 +167,10 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
               const updateResult = await updateUnitGroup({ ...fromData, id });
               if (updateResult?.data) {
                 message.success(
-                  <FormattedMessage
-                    id="options.createsuccess"
-                    defaultMessage="Created successfully!"
-                  ></FormattedMessage>,
+                  intl.formatMessage({
+                    id: 'pages.button.create.success',
+                    defaultMessage: 'Created successfully!',
+                  }),
                 );
                 setDrawerVisible(false);
                 setViewDrawerVisible(false);

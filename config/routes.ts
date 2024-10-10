@@ -129,39 +129,13 @@ export default [
     name: 'account',
     menu: false,
     icon: 'UserOutlined',
-    routes: [
-      {
-        path: '/account',
-        redirect: '/account/profile',
-      },
-      {
-        name: 'profile',
-        path: '/account/profile',
-        component: './Account/profile',
-      },
-      {
-        name: 'passwordChange',
-        path: '/account/password_change',
-        component: './Account/password_change',
-      },
-    ],
-  },
-  {
-    path: '/password',
-    layout: false,
-    routes: [
-      {
-        name: 'passwordSet',
-        path: '/password/set',
-        component: './Account/password_set',
-      },
-    ],
+    component: './Account',
   },
   {
     path: '/demo',
-    menu: false,
     name: 'Demo',
-    icon: 'smile',
+    menu: false,
+    icon: 'Smile',
     component: './Demo',
   },
   {
@@ -174,14 +148,14 @@ export default [
         component: './User/Login',
       },
       {
-        name: 'register',
-        path: '/user/register',
-        component: './User/Register',
+        name: 'passwordForget',
+        path: '/user/login/password_forgot',
+        component: './User/Login/password_forgot',
       },
       {
-        name: 'passwordForget',
-        path: '/user/password_forgot',
-        component: './User/password_forgot',
+        name: 'passwordReset',
+        path: '/user/login/password_reset',
+        component: './User/Login/password_reset',
       },
     ],
   },
@@ -189,7 +163,6 @@ export default [
     path: '/welcome',
     menu: false,
     name: 'welcome',
-    icon: 'smile',
     component: './Welcome',
   },
   {
