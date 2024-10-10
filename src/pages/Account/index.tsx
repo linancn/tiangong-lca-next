@@ -421,17 +421,26 @@ const Profile: FC = () => {
           items={[
             {
               key: 'baseInfo',
-              label: '基本信息',
+              label: intl.formatMessage({
+                id: 'pages.account.baseInfo',
+                defaultMessage: 'Basic Information',
+              }),
               children: renderBaseForm(),
             },
             {
               key: 'changePassword',
-              label: '修改密码',
+              label: intl.formatMessage({
+                id: 'pages.account.updatePassword',
+                defaultMessage: 'Update Password',
+              }),
               children: renderChangePasswordForm(),
             },
             {
               key: 'changeEmail',
-              label: '修改邮箱',
+              label: intl.formatMessage({
+                id: 'pages.account.updateEmail',
+                defaultMessage: 'Update Email',
+              }),
               children: renderChangeEmailForm(),
             },
           ]}
