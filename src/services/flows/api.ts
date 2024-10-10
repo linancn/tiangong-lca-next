@@ -205,14 +205,7 @@ export async function getFlowTablePgroongaSearch(
 ) {
   let result: any = {};
   const session = await supabase.auth.getSession();
-  console.log('session', {
-    query_text: queryText,
-    filter_condition: filterCondition,
-    page_size: params.pageSize ?? 10,
-    page_current: params.current ?? 1,
-    data_source: dataSource,
-    this_user_id: session?.data?.session?.user?.id,
-  });
+
   if (session.data.session) {
     result = await supabase.rpc('pgroonga_search_flows', {
       query_text: queryText,
