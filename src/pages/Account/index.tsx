@@ -1,14 +1,14 @@
 import {
+  changeEmail,
+  changePassword,
   currentUser,
   setProfile,
-  changePassword,
-  changeEmail,
 } from '@/services/ant-design-pro/api';
+import { LockOutlined, MailOutlined } from '@ant-design/icons';
 import { PageContainer, ProForm, ProFormInstance, ProFormText } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl, useModel } from '@umijs/max';
 import { Flex, Form, Input, message, Spin, Tabs, theme } from 'antd';
 import { useEffect, useRef, useState, type FC } from 'react';
-import { LockOutlined, MailOutlined } from '@ant-design/icons';
 
 const Profile: FC = () => {
   const [activeTabKey, setActiveTabKey] = useState('baseInfo');

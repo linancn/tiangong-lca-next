@@ -1,20 +1,20 @@
+import { getUnitGroupTableAll, getUnitGroupTablePgroongaSearch } from '@/services/unitgroups/api';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
 import { Card, Input, Space, Tooltip } from 'antd';
-import { FormattedMessage, useIntl, useLocation } from 'umi';
-import { getUnitGroupTableAll, getUnitGroupTablePgroongaSearch } from '@/services/unitgroups/api';
 import { useRef, useState } from 'react';
+import { FormattedMessage, useIntl, useLocation } from 'umi';
 
-import type { FC } from 'react';
 import { ListPagination } from '@/services/general/data';
+import { getLang } from '@/services/general/util';
+import { UnitGroupTable } from '@/services/unitgroups/data';
 import { PageContainer } from '@ant-design/pro-components';
 import ProTable from '@ant-design/pro-table';
 import { SearchProps } from 'antd/es/input/Search';
+import type { FC } from 'react';
 import UnitGroupCreate from './Components/create';
 import UnitGroupDelete from './Components/delete';
 import UnitGroupEdit from './Components/edit';
-import { UnitGroupTable } from '@/services/unitgroups/data';
 import UnitGroupView from './Components/view';
-import { getLang } from '@/services/general/util';
 
 const { Search } = Input;
 

@@ -1,5 +1,4 @@
-import { Alert, App, Button, ConfigProvider, Tabs, message, theme } from 'antd';
-import { Helmet, SelectLang, history, useIntl, useModel } from 'umi';
+import { login, signUp } from '@/services/ant-design-pro/api';
 import { LockOutlined, MailOutlined } from '@ant-design/icons';
 import {
   LoginForm,
@@ -8,14 +7,15 @@ import {
   ProFormText,
   ProLayout,
 } from '@ant-design/pro-components';
+import { Alert, App, Button, ConfigProvider, Tabs, message, theme } from 'antd';
 import React, { useState } from 'react';
-import { login, signUp } from '@/services/ant-design-pro/api';
+import { Helmet, SelectLang, history, useIntl, useModel } from 'umi';
 
 import { Footer } from '@/components';
 import { FormattedMessage } from '@umijs/max';
-import Settings from '../../../../config/defaultSettings';
 import { Typography } from 'antd';
 import { flushSync } from 'react-dom';
+import Settings from '../../../../config/defaultSettings';
 
 const LoginMessage: React.FC<{
   content: string;

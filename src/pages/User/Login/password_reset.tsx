@@ -1,13 +1,13 @@
 import { Footer } from '@/components';
 import { currentUser, setPassword } from '@/services/ant-design-pro/api';
 
+import { LockOutlined, MailOutlined } from '@ant-design/icons';
+import { LoginForm, ProConfigProvider, ProFormText, ProLayout } from '@ant-design/pro-components';
 import { FormattedMessage, history } from '@umijs/max';
 import { App, ConfigProvider, Spin, Tabs, message, theme } from 'antd';
 import { useEffect, useState, type FC } from 'react';
-import { Helmet, useIntl, SelectLang } from 'umi';
+import { Helmet, SelectLang, useIntl } from 'umi';
 import Settings from '../../../../config/defaultSettings';
-import { ProConfigProvider, ProLayout, LoginForm, ProFormText } from '@ant-design/pro-components';
-import { LockOutlined, MailOutlined } from '@ant-design/icons';
 
 const PasswordSet: FC = () => {
   const [loading, setLoading] = useState<boolean>(false);

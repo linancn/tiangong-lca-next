@@ -94,6 +94,7 @@
     "mockjs": "^1.1.0",
     "npm-check-updates": "^17.1.1",
     "prettier": "^3.3.3",
+    "prettier-plugin-organize-imports": "^4.1.0",
     "react-dev-inspector": "^2.0.1",
     "swagger-ui-dist": "^5.17.14",
     "ts-node": "^10.9.2",

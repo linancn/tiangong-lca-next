@@ -1,5 +1,5 @@
-import { FormattedMessage } from 'umi';
 import { Rule } from 'antd/lib/form';
+import { FormattedMessage } from 'umi';
 
 export const StringMultiLang_r = [
   {

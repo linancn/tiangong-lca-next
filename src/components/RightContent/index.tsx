@@ -1,4 +1,4 @@
-import { QuestionCircleOutlined, MoonOutlined, SunFilled } from '@ant-design/icons';
+import { MoonOutlined, QuestionCircleOutlined, SunFilled } from '@ant-design/icons';
 import { SelectLang as UmiSelectLang } from '@umijs/max';
 import { ConfigProvider, theme } from 'antd';
 

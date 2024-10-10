@@ -1,10 +1,10 @@
+import { getLang, getLangText } from '@/services/general/util';
 import { Card, Col, Divider, Row, Statistic, StatisticProps, theme } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { getLang, getLangText } from '@/services/general/util';
 
-import CountUp from 'react-countup';
-import Meta from 'antd/es/card/Meta';
 import { PageContainer } from '@ant-design/pro-components';
+import Meta from 'antd/es/card/Meta';
+import CountUp from 'react-countup';
 import { useIntl } from 'umi';
 
 const Welcome: React.FC = () => {

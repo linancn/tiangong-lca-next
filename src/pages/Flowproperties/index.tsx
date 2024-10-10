@@ -1,24 +1,24 @@
-import type { ActionType, ProColumns } from '@ant-design/pro-table';
-import { Card, Input, Space, Tooltip } from 'antd';
-import { FormattedMessage, useIntl, useLocation } from 'umi';
 import {
   getFlowpropertyTableAll,
   getFlowpropertyTablePgroongaSearch,
 } from '@/services/flowproperties/api';
+import type { ActionType, ProColumns } from '@ant-design/pro-table';
+import { Card, Input, Space, Tooltip } from 'antd';
 import { useRef, useState } from 'react';
+import { FormattedMessage, useIntl, useLocation } from 'umi';
 
+import { FlowpropertyTable } from '@/services/flowproperties/data';
+import { ListPagination } from '@/services/general/data';
+import { getLang } from '@/services/general/util';
+import { PageContainer } from '@ant-design/pro-components';
+import ProTable from '@ant-design/pro-table';
+import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
+import ReferenceUnit from '../Unitgroups/Components/Unit/reference';
 import FlowpropertiesCreate from './Components/create';
 import FlowpropertiesDelete from './Components/delete';
 import FlowpropertiesEdit from './Components/edit';
-import { FlowpropertyTable } from '@/services/flowproperties/data';
 import FlowpropertyView from './Components/view';
-import { ListPagination } from '@/services/general/data';
-import { PageContainer } from '@ant-design/pro-components';
-import ProTable from '@ant-design/pro-table';
-import ReferenceUnit from '../Unitgroups/Components/Unit/reference';
-import { SearchProps } from 'antd/es/input/Search';
-import { getLang } from '@/services/general/util';
 
 const { Search } = Input;
 

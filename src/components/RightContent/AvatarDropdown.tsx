@@ -1,15 +1,15 @@
 import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
-import React, { useCallback } from 'react';
 import { history, useModel } from '@umijs/max';
+import React, { useCallback } from 'react';
 
-import { FormattedMessage } from 'umi';
-import HeaderDropdown from '../HeaderDropdown';
-import type { MenuInfo } from 'rc-menu/lib/interface';
+import { outLogin } from '@/services/ant-design-pro/api';
 import { Spin } from 'antd';
 import { createStyles } from 'antd-style';
-import { flushSync } from 'react-dom';
-import { outLogin } from '@/services/ant-design-pro/api';
 import { stringify } from 'querystring';
+import type { MenuInfo } from 'rc-menu/lib/interface';
+import { flushSync } from 'react-dom';
+import { FormattedMessage } from 'umi';
+import HeaderDropdown from '../HeaderDropdown';
 
 export type GlobalHeaderRightProps = {
   menu?: boolean;

@@ -1,9 +1,9 @@
-import { App, Button, ConfigProvider, Spin, Tabs, notification, theme } from 'antd';
-import { Helmet, Link, SelectLang, useIntl } from 'umi';
-import { LoginForm, ProConfigProvider, ProFormText, ProLayout } from '@ant-design/pro-components';
-import { MailOutlined } from '@ant-design/icons';
-import React, { useEffect, useState } from 'react';
 import { currentUser, forgotPasswordSendEmail } from '@/services/ant-design-pro/api';
+import { MailOutlined } from '@ant-design/icons';
+import { LoginForm, ProConfigProvider, ProFormText, ProLayout } from '@ant-design/pro-components';
+import { App, Button, ConfigProvider, Spin, Tabs, notification, theme } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Helmet, Link, SelectLang, useIntl } from 'umi';
 
 import { Footer } from '@/components';
 import { FormattedMessage } from '@umijs/max';

@@ -1,6 +1,6 @@
+import { getFileUrls, isImage } from '@/services/supabase/storage';
 import { Card, Image, Space, Spin } from 'antd';
 import React, { FC } from 'react';
-import { getFileUrls, isImage } from '@/services/supabase/storage';
 
 import { FileTwoTone } from '@ant-design/icons';
 
