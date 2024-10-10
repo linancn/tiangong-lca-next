@@ -9,7 +9,7 @@ import {
   // Input,
   Space,
   Tooltip,
-  Typography
+  Typography,
 } from 'antd';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
@@ -154,9 +154,13 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData }) => {
             return true;
           }}
         >
-          <LifeCycleModelForm lang={lang} activeTabKey={activeTabKey} formRef={formRefCreate}
+          <LifeCycleModelForm
+            lang={lang}
+            activeTabKey={activeTabKey}
+            formRef={formRefCreate}
             onTabChange={onTabChange}
-            onData={handletFromData} />
+            onData={handletFromData}
+          />
         </ProForm>
         <Collapse
           items={[

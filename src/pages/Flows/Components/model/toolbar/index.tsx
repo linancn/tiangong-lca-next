@@ -75,14 +75,15 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly,
           ),
           data: {
             id: id,
-            version: result.data?.json?.processDataSet?.administrativeInformation?.publicationAndOwnership?.[
-              'common:dataSetVersion'
-            ],
+            version:
+              result.data?.json?.processDataSet?.administrativeInformation
+                ?.publicationAndOwnership?.['common:dataSetVersion'],
             label:
               result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name
                 ?.baseName,
             shortDescription:
-              result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name?.baseName,
+              result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name
+                ?.baseName,
           },
         },
       ]);
@@ -323,10 +324,7 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly,
 
           <Tooltip
             title={
-              <FormattedMessage
-                id="pages.button.model.delete"
-                defaultMessage="Delete element"
-              />
+              <FormattedMessage id="pages.button.model.delete" defaultMessage="Delete element" />
             }
             placement="left"
           >
@@ -345,21 +343,20 @@ const Toolbar: FC<Props> = ({ id, flowId, lang, drawerVisible, isSave, readonly,
           <br />
 
           <Tooltip
-            title={
-              <FormattedMessage
-                id="pages.button.model.save"
-                defaultMessage="Save data"
-              />
-            }
+            title={<FormattedMessage id="pages.button.model.save" defaultMessage="Save data" />}
             placement="left"
           >
-            <Button type="primary" size="small" icon={<SaveOutlined />} style={{ boxShadow: 'none' }} onClick={saveData} />
+            <Button
+              type="primary"
+              size="small"
+              icon={<SaveOutlined />}
+              style={{ boxShadow: 'none' }}
+              onClick={saveData}
+            />
           </Tooltip>
         </>
       )}
-      <Control
-        items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin']}
-      />
+      <Control items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin']} />
       <Spin spinning={spinning} fullscreen />
     </Space>
   );

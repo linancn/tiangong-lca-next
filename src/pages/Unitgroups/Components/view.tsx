@@ -5,11 +5,7 @@ import { ListPagination } from '@/services/general/data';
 import { getUnitGroupDetail } from '@/services/unitgroups/api';
 import { UnitTable } from '@/services/unitgroups/data';
 import { genUnitGroupFromData, genUnitTableData } from '@/services/unitgroups/util';
-import {
-  CheckCircleOutlined,
-  CloseOutlined,
-  ProfileOutlined
-} from '@ant-design/icons';
+import { CheckCircleOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import type { ProColumns } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import { Button, Card, Descriptions, Divider, Drawer, Spin, Tooltip } from 'antd';

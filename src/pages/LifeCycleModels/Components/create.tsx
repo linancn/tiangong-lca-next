@@ -59,7 +59,10 @@ const LifeCycleModelCreate: FC<Props> = ({ id, buttonType, lang, actionRef }) =>
       )}
       <Drawer
         title={
-          <FormattedMessage id="pages.lifeCycleModel.drawer.title.create" defaultMessage="Create Model" />
+          <FormattedMessage
+            id="pages.lifeCycleModel.drawer.title.create"
+            defaultMessage="Create Model"
+          />
         }
         width="100%"
         closable={false}

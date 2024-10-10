@@ -78,7 +78,8 @@ export async function getFlowTableAll(
   `;
 
   let result: any = {};
-  let query = supabase.from('flows')
+  let query = supabase
+    .from('flows')
     .select(selectStr, { count: 'exact' })
     .order(sortBy, { ascending: orderBy === 'ascend' })
     .range(
@@ -100,8 +101,7 @@ export async function getFlowTableAll(
     }
   }
   if (dataSource === 'tg') {
-    query = query.eq('state_code', 100)
-
+    query = query.eq('state_code', 100);
   } else if (dataSource === 'my') {
     const session = await supabase.auth.getSession();
     query = query.eq('user_id', session?.data?.session?.user?.id);
@@ -248,7 +248,7 @@ export async function getFlowTablePgroongaSearch(
 
             const classifications = jsonToList(
               dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-              'common:category'
+                'common:category'
               ],
             );
             const classificationZH = genClassificationZH(classifications, thisCategory);
@@ -283,7 +283,7 @@ export async function getFlowTablePgroongaSearch(
             synonyms: getLangText(dataInfo?.['common:synonyms'] ?? {}, lang),
             classification: classificationToString(
               dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-              'common:category'
+                'common:category'
               ],
             ),
             flowType: i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet ?? '-',
@@ -356,7 +356,7 @@ export async function flow_hybrid_search(
             ),
             classification: classificationToString(
               i.json?.flowDataSet?.flowInformation?.dataSetInformation?.classificationInformation?.[
-              'common:classification'
+                'common:classification'
               ]?.['common:class'],
             ),
             synonyms: getLangText(

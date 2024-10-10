@@ -90,7 +90,7 @@ const LifeCycleModelView: FC<Props> = ({ id, buttonType, lang }) => {
                 lang={lang}
                 drawerVisible={drawerVisible}
                 isSave={true}
-                setIsSave={() => { }}
+                setIsSave={() => {}}
                 readonly={true}
               />
             </Sider>

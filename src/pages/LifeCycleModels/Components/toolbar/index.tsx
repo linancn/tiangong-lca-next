@@ -1,7 +1,14 @@
 import ProcessView from '@/pages/Processes/Components/view';
 import { formatDateTime, getLangText } from '@/services/general/util';
-import { createLifeCycleModel, getLifeCycleModelDetail, updateLifeCycleModel } from '@/services/lifeCycleModels/api';
-import { genLifeCycleModelData, genLifeCycleModelInfoFromData } from '@/services/lifeCycleModels/util';
+import {
+  createLifeCycleModel,
+  getLifeCycleModelDetail,
+  updateLifeCycleModel,
+} from '@/services/lifeCycleModels/api';
+import {
+  genLifeCycleModelData,
+  genLifeCycleModelInfoFromData,
+} from '@/services/lifeCycleModels/util';
 import { getProcessDetail } from '@/services/processes/api';
 import { DeleteOutlined, SaveOutlined } from '@ant-design/icons';
 import { useGraphStore } from '@antv/xflow';
@@ -109,14 +116,15 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
           ),
           data: {
             id: id,
-            version: result.data?.json?.processDataSet?.administrativeInformation?.publicationAndOwnership?.[
-              'common:dataSetVersion'
-            ],
+            version:
+              result.data?.json?.processDataSet?.administrativeInformation
+                ?.publicationAndOwnership?.['common:dataSetVersion'],
             label:
               result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name
                 ?.baseName,
             shortDescription:
-              result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name?.baseName,
+              result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name
+                ?.baseName,
           },
         },
       ]);
@@ -156,7 +164,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
     });
 
     const newData = {
-      ...infoData ?? {},
+      ...(infoData ?? {}),
       model: {
         nodes: nodes ?? [],
         edges: newEdges ?? [],
@@ -170,8 +178,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
             <FormattedMessage id="pages.flows.savesuccess" defaultMessage="Save successfully!" />,
           );
           saveCallback();
-        }
-        else {
+        } else {
           message.error(result.error.message);
         }
         setSpinning(false);
@@ -188,7 +195,6 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
             />,
           );
           saveCallback();
-
         } else {
           message.error(result.error.message);
         }
@@ -219,7 +225,9 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
       setIsSave(false);
       setSpinning(true);
       getLifeCycleModelDetail(id).then(async (result: any) => {
-        const fromData = genLifeCycleModelInfoFromData(result.data?.json?.lifeCycleModelDataSet ?? {});
+        const fromData = genLifeCycleModelInfoFromData(
+          result.data?.json?.lifeCycleModelDataSet ?? {},
+        );
         setInfoData(fromData);
         const model = genLifeCycleModelData(result.data?.json_tg ?? {}, lang);
         let initNodes = model?.nodes ?? [];
@@ -350,10 +358,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
 
           <Tooltip
             title={
-              <FormattedMessage
-                id="pages.button.model.delete"
-                defaultMessage="Delete element"
-              />
+              <FormattedMessage id="pages.button.model.delete" defaultMessage="Delete element" />
             }
             placement="left"
           >
@@ -372,21 +377,20 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
           <br />
 
           <Tooltip
-            title={
-              <FormattedMessage
-                id="pages.button.model.save"
-                defaultMessage="Save data"
-              />
-            }
+            title={<FormattedMessage id="pages.button.model.save" defaultMessage="Save data" />}
             placement="left"
           >
-            <Button type="primary" size="small" icon={<SaveOutlined />} style={{ boxShadow: 'none' }} onClick={saveData} />
+            <Button
+              type="primary"
+              size="small"
+              icon={<SaveOutlined />}
+              style={{ boxShadow: 'none' }}
+              onClick={saveData}
+            />
           </Tooltip>
         </>
       )}
-      <Control
-        items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin']}
-      />
+      <Control items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin']} />
       <Spin spinning={spinning} fullscreen />
     </Space>
   );

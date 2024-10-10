@@ -1,4 +1,3 @@
-
 import { deleteLifeCycleModel } from '@/services/lifeCycleModels/api';
 import { DeleteOutlined } from '@ant-design/icons';
 import type { ActionType } from '@ant-design/pro-table';

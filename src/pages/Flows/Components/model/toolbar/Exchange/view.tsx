@@ -72,7 +72,13 @@ const EdgeExchangeView: FC<Props> = ({
     <>
       <Tooltip title={<FormattedMessage id="pages.button.view" defaultMessage="View exchange" />}>
         {buttonType === 'icon' ? (
-          <Button type="primary" icon={<ProfileOutlined />} size="small"  style={{ boxShadow: 'none' }} onClick={onView} />
+          <Button
+            type="primary"
+            icon={<ProfileOutlined />}
+            size="small"
+            style={{ boxShadow: 'none' }}
+            onClick={onView}
+          />
         ) : (
           <Button onClick={onView}>
             <FormattedMessage id="pages.button.view" defaultMessage="View" />

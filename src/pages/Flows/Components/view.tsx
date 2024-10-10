@@ -6,11 +6,7 @@ import { getFlowDetail } from '@/services/flows/api';
 import { FlowpropertyTabTable } from '@/services/flows/data';
 import { genFlowFromData, genFlowPropertyTabTableData } from '@/services/flows/util';
 import { ListPagination } from '@/services/general/data';
-import {
-  CheckCircleOutlined,
-  CloseOutlined,
-  ProfileOutlined
-} from '@ant-design/icons';
+import { CheckCircleOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';

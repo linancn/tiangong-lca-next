@@ -6,13 +6,14 @@ import { genLifeCycleModelJsonOrdered } from './util';
 export async function createLifeCycleModel(data: any) {
   const oldData = {
     lifeCycleModelDataSet: {
-      "@xmlns": "http://eplca.jrc.ec.europa.eu/ILCD/LifeCycleModel/2017",
-      "@xmlns:acme": "http://acme.com/custom",
-      "@xmlns:common": "http://lca.jrc.it/ILCD/Common",
-      "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
-      "@locations": "../ILCDLocations.xml",
-      "@version": "1.1",
-      "@xsi:schemaLocation": "http://eplca.jrc.ec.europa.eu/ILCD/LifeCycleModel/2017 ../../schemas/ILCD_LifeCycleModelDataSet.xsd",
+      '@xmlns': 'http://eplca.jrc.ec.europa.eu/ILCD/LifeCycleModel/2017',
+      '@xmlns:acme': 'http://acme.com/custom',
+      '@xmlns:common': 'http://lca.jrc.it/ILCD/Common',
+      '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
+      '@locations': '../ILCDLocations.xml',
+      '@version': '1.1',
+      '@xsi:schemaLocation':
+        'http://eplca.jrc.ec.europa.eu/ILCD/LifeCycleModel/2017 ../../schemas/ILCD_LifeCycleModelDataSet.xsd',
     },
   };
   const newData = genLifeCycleModelJsonOrdered(data.id, data, oldData);
@@ -74,8 +75,7 @@ export async function getLifeCycleModelTableAll(
       (params.current ?? 1) * (params.pageSize ?? 10) - 1,
     );
   if (dataSource === 'tg') {
-    query = query.eq('state_code', 100)
-
+    query = query.eq('state_code', 100);
   } else if (dataSource === 'my') {
     const session = await supabase.auth.getSession();
     query = query.eq('user_id', session?.data?.session?.user?.id);

@@ -88,7 +88,10 @@ const SourceSelectForm: FC<Props> = ({ name, label, lang, formRef, onData }) => 
                 <Row key={subField.key}>
                   <Col flex="100px" style={{ marginRight: '10px' }}>
                     <Form.Item noStyle name={[subField.name, '@xml:lang']}>
-                      <Input disabled={true} style={{ width: '100px', color: token.colorTextDescription }} />
+                      <Input
+                        disabled={true}
+                        style={{ width: '100px', color: token.colorTextDescription }}
+                      />
                     </Form.Item>
                   </Col>
                   <Col flex="auto" style={{ marginRight: '10px' }}>

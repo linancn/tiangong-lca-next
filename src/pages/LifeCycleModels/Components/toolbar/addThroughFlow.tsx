@@ -266,7 +266,13 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
           title={<FormattedMessage id="pages.button.model.add" defaultMessage="Add node" />}
           placement="left"
         >
-          <Button shape="circle" icon={<PlusOutlined />} size="small" style={{ boxShadow: 'none' }} onClick={onSelect} />
+          <Button
+            shape="circle"
+            icon={<PlusOutlined />}
+            size="small"
+            style={{ boxShadow: 'none' }}
+            onClick={onSelect}
+          />
         </Tooltip>
       ) : (
         <Button onClick={onSelect}>

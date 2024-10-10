@@ -24,12 +24,14 @@ export const LifeCycleModelForm: FC<Props> = ({
   onData,
   onTabChange,
 }) => {
-
   const tabList = [
     {
       key: 'lifeCycleModelInformation',
       tab: (
-        <FormattedMessage id="pages.lifeCycleModel.view.lifeCycleModelInformation" defaultMessage="Life Cycle Model Information" />
+        <FormattedMessage
+          id="pages.lifeCycleModel.view.lifeCycleModelInformation"
+          defaultMessage="Life Cycle Model Information"
+        />
       ),
     },
     {
@@ -58,10 +60,7 @@ export const LifeCycleModelForm: FC<Props> = ({
         <Card
           size="small"
           title={
-            <FormattedMessage
-              id="pages.lifeCycleModel.information.name"
-              defaultMessage="Name"
-            />
+            <FormattedMessage id="pages.lifeCycleModel.information.name" defaultMessage="Name" />
           }
         >
           <Card
@@ -95,7 +94,12 @@ export const LifeCycleModelForm: FC<Props> = ({
             }
           >
             <LangTextItemForm
-              name={['lifeCycleModelInformation', 'dataSetInformation', 'name', 'treatmentStandardsRoutes']}
+              name={[
+                'lifeCycleModelInformation',
+                'dataSetInformation',
+                'name',
+                'treatmentStandardsRoutes',
+              ]}
               label={
                 <FormattedMessage
                   id="pages.lifeCycleModel.information.treatmentStandardsRoutes"
@@ -116,7 +120,12 @@ export const LifeCycleModelForm: FC<Props> = ({
             }
           >
             <LangTextItemForm
-              name={['lifeCycleModelInformation', 'dataSetInformation', 'name', 'mixAndLocationTypes']}
+              name={[
+                'lifeCycleModelInformation',
+                'dataSetInformation',
+                'name',
+                'mixAndLocationTypes',
+              ]}
               label={
                 <FormattedMessage
                   id="pages.lifeCycleModel.information.mixAndLocationTypes"
@@ -137,7 +146,12 @@ export const LifeCycleModelForm: FC<Props> = ({
             }
           >
             <LangTextItemForm
-              name={['lifeCycleModelInformation', 'dataSetInformation', 'name', 'functionalUnitFlowProperties']}
+              name={[
+                'lifeCycleModelInformation',
+                'dataSetInformation',
+                'name',
+                'functionalUnitFlowProperties',
+              ]}
               label={
                 <FormattedMessage
                   id="pages.lifeCycleModel.information.functionalUnitFlowProperties"
@@ -295,77 +309,107 @@ export const LifeCycleModelForm: FC<Props> = ({
           onData={onData}
         />
         <br />
-          <Form.Item
-            label={
-              <FormattedMessage
-                id="pages.lifeCycleModel.modellingAndValidation.approvalOfOverallCompliance"
-                defaultMessage="Approval of Overall Compliance"
-              />
-            }
-            name={['modellingAndValidation', 'complianceDeclarations','compliance', 'common:approvalOfOverallCompliance']}
-          >
-            <Input />
-          </Form.Item>
-          <br />
-          <Form.Item
-            label={
-              <FormattedMessage
-                id="pages.lifeCycleModel.modellingAndValidation.nomenclatureCompliance"
-                defaultMessage="Nomenclature Compliance"
-              />
-            }
-            name={['modellingAndValidation', 'complianceDeclarations','compliance', 'common:nomenclatureCompliance']}
-          >
-            <Input />
-          </Form.Item>
-          <br />
-          <Form.Item
-            label={
-              <FormattedMessage
-                id="pages.lifeCycleModel.modellingAndValidation.methodologicalCompliance"
-                defaultMessage="Methodological Compliance"
-              />
-            }
-            name={['modellingAndValidation', 'complianceDeclarations','compliance', 'common:methodologicalCompliance']}
-          >
-            <Input />
-          </Form.Item>
-          <br />
-          <Form.Item
-            label={
-              <FormattedMessage
-                id="pages.lifeCycleModel.modellingAndValidation.reviewCompliance"
-                defaultMessage="Review Compliance"
-              />
-            }
-            name={['modellingAndValidation', 'complianceDeclarations','compliance', 'common:reviewCompliance']}
-          >
-            <Input />
-          </Form.Item>
-          <br />
-          <Form.Item
-            label={
-              <FormattedMessage
-                id="pages.lifeCycleModel.modellingAndValidation.documentationCompliance"
-                defaultMessage="Documentation Compliance"
-              />
-            }
-            name={['modellingAndValidation', 'complianceDeclarations','compliance', 'common:documentationCompliance']}
-          >
-            <Input />
-          </Form.Item>
-          <br />
-          <Form.Item
-            label={
-              <FormattedMessage
-                id="pages.lifeCycleModel.modellingAndValidation.qualityCompliance"
-                defaultMessage="Quality Compliance"
-              />
-            }
-            name={['modellingAndValidation', 'complianceDeclarations','compliance', 'common:qualityCompliance']}
-          >
-            <Input />
-          </Form.Item>
+        <Form.Item
+          label={
+            <FormattedMessage
+              id="pages.lifeCycleModel.modellingAndValidation.approvalOfOverallCompliance"
+              defaultMessage="Approval of Overall Compliance"
+            />
+          }
+          name={[
+            'modellingAndValidation',
+            'complianceDeclarations',
+            'compliance',
+            'common:approvalOfOverallCompliance',
+          ]}
+        >
+          <Input />
+        </Form.Item>
+        <br />
+        <Form.Item
+          label={
+            <FormattedMessage
+              id="pages.lifeCycleModel.modellingAndValidation.nomenclatureCompliance"
+              defaultMessage="Nomenclature Compliance"
+            />
+          }
+          name={[
+            'modellingAndValidation',
+            'complianceDeclarations',
+            'compliance',
+            'common:nomenclatureCompliance',
+          ]}
+        >
+          <Input />
+        </Form.Item>
+        <br />
+        <Form.Item
+          label={
+            <FormattedMessage
+              id="pages.lifeCycleModel.modellingAndValidation.methodologicalCompliance"
+              defaultMessage="Methodological Compliance"
+            />
+          }
+          name={[
+            'modellingAndValidation',
+            'complianceDeclarations',
+            'compliance',
+            'common:methodologicalCompliance',
+          ]}
+        >
+          <Input />
+        </Form.Item>
+        <br />
+        <Form.Item
+          label={
+            <FormattedMessage
+              id="pages.lifeCycleModel.modellingAndValidation.reviewCompliance"
+              defaultMessage="Review Compliance"
+            />
+          }
+          name={[
+            'modellingAndValidation',
+            'complianceDeclarations',
+            'compliance',
+            'common:reviewCompliance',
+          ]}
+        >
+          <Input />
+        </Form.Item>
+        <br />
+        <Form.Item
+          label={
+            <FormattedMessage
+              id="pages.lifeCycleModel.modellingAndValidation.documentationCompliance"
+              defaultMessage="Documentation Compliance"
+            />
+          }
+          name={[
+            'modellingAndValidation',
+            'complianceDeclarations',
+            'compliance',
+            'common:documentationCompliance',
+          ]}
+        >
+          <Input />
+        </Form.Item>
+        <br />
+        <Form.Item
+          label={
+            <FormattedMessage
+              id="pages.lifeCycleModel.modellingAndValidation.qualityCompliance"
+              defaultMessage="Quality Compliance"
+            />
+          }
+          name={[
+            'modellingAndValidation',
+            'complianceDeclarations',
+            'compliance',
+            'common:qualityCompliance',
+          ]}
+        >
+          <Input />
+        </Form.Item>
       </Space>
     ),
     administrativeInformation: (
@@ -426,7 +470,11 @@ export const LifeCycleModelForm: FC<Props> = ({
             }
           >
             <LangTextItemForm
-              name={['administrativeInformation', 'common:commissionerAndGoal', 'common:intendedApplications']}
+              name={[
+                'administrativeInformation',
+                'common:commissionerAndGoal',
+                'common:intendedApplications',
+              ]}
               label={
                 <FormattedMessage
                   id="pages.lifeCycleModel.administrativeInformation.intendedApplications"
@@ -607,7 +655,11 @@ export const LifeCycleModelForm: FC<Props> = ({
             }
           >
             <LangTextItemForm
-              name={['administrativeInformation', 'common:commissionerAndGoal', 'common:accessRestrictions']}
+              name={[
+                'administrativeInformation',
+                'common:commissionerAndGoal',
+                'common:accessRestrictions',
+              ]}
               label={
                 <FormattedMessage
                   id="pages.lifeCycleModel.administrativeInformation.accessRestrictions"

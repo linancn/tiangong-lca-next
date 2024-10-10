@@ -50,7 +50,9 @@ const TableList: FC = () => {
       ],
     },
     {
-      title: <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />,
+      title: (
+        <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />
+      ),
       dataIndex: 'classification',
       sorter: false,
       search: false,
@@ -76,11 +78,7 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <LifeCycleModelView
-                id={row.id}
-                lang={lang}
-                buttonType={'icon'}
-              />
+              <LifeCycleModelView id={row.id} lang={lang} buttonType={'icon'} />
               <LifeCycleModelEdit
                 id={row.id}
                 lang={lang}
@@ -91,23 +89,20 @@ const TableList: FC = () => {
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => { }}
+                setViewDrawerVisible={() => {}}
               />
             </Space>,
           ];
         }
-        return [
-          <Space size={'small'} key={0}>
-          </Space>,
-        ];
+        return [<Space size={'small'} key={0}></Space>];
       },
     },
   ];
 
   // const onSearch: SearchProps['onSearch'] = (value) => {
-    // setKeyWord(value);
-    // actionRef.current?.setPageInfo?.({ current: 1 });
-    // actionRef.current?.reload();
+  // setKeyWord(value);
+  // actionRef.current?.setPageInfo?.({ current: 1 });
+  // actionRef.current?.reload();
   // };
 
   return (
@@ -131,7 +126,15 @@ const TableList: FC = () => {
         }}
         toolBarRender={() => {
           if (dataSource === 'my') {
-            return [<LifeCycleModelCreate key={0} id={undefined} lang={lang} actionRef={actionRef} buttonType={'icon'} />];
+            return [
+              <LifeCycleModelCreate
+                key={0}
+                id={undefined}
+                lang={lang}
+                actionRef={actionRef}
+                buttonType={'icon'}
+              />,
+            ];
           }
           return [];
         }}
