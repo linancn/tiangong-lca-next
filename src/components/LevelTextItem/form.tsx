@@ -27,7 +27,6 @@ const LevelTextItemForm: FC<Props> = ({ name, lang, dataType, flowType, formRef,
         result = await getILCDClassification(dt, lang, ['all']);
       }
       setSelectOptions(result?.data);
-      // onData();
     };
 
     fetchClassification(dataType, flowType);

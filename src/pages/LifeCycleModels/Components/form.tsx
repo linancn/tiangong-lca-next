@@ -173,7 +173,7 @@ export const LifeCycleModelForm: FC<Props> = ({
           ]}
           formRef={formRef}
           lang={lang}
-          dataType={'Process'}
+          dataType={'LifeCycleModel'}
           onData={onData}
         />
         <br />

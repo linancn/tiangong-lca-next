@@ -2,8 +2,7 @@ import { getProcessDetail, updateProcess } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
-import { ProForm } from '@ant-design/pro-components';
-import type { ProFormInstance } from '@ant-design/pro-form';
+import { ProForm, ProFormInstance } from '@ant-design/pro-components';
 import type { ActionType } from '@ant-design/pro-table';
 import {
   Button,
@@ -40,11 +39,13 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
   const intl = useIntl();
 
   const handletFromData = () => {
-    if (fromData?.id)
+    if (fromData?.id) {
+      console.log('fromData', formRefEdit.current?.getFieldsValue()?.[activeTabKey]);
       setFromData({
         ...fromData,
         [activeTabKey]: formRefEdit.current?.getFieldsValue()?.[activeTabKey] ?? {},
       });
+    }
   };
 
   const handletExchangeDataCreate = (data: any) => {

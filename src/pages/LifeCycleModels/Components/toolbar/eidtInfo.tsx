@@ -1,6 +1,6 @@
 import styles from '@/style/custom.less';
 import { CloseOutlined, InfoOutlined } from '@ant-design/icons';
-import type { ProFormInstance } from '@ant-design/pro-form';
+import { ProFormInstance } from '@ant-design/pro-components';
 import ProForm from '@ant-design/pro-form';
 import {
   Button,
@@ -26,55 +26,31 @@ type Props = {
 const ToolbarEditInfo: FC<Props> = ({ lang, data, onData }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('lifeCycleModelInformation');
-  const formRefCreate = useRef<ProFormInstance>();
+  const formRefEdit = useRef<ProFormInstance>();
   const [fromData, setFromData] = useState<any>({});
-  // const [refleshSpinning, setRefleshSpinning] = useState(false);
-
-  // const refleshFlowInfo = () => {
-  //   setRefleshSpinning(true);
-  //   getFlowDetail(flowId).then(async (result: any) => {
-  //     const flow = genFlowFromData(result.data?.json?.flowDataSet ?? {});
-  //     formRefCreate.current?.setFieldValue(
-  //       ['productInformation', 'referenceToFlowDataSet', 'common:name'],
-  //       flow?.flowInformation?.dataSetInformation?.name?.baseName,
-  //     );
-  //     formRefCreate.current?.setFieldValue(
-  //       ['productInformation', 'referenceToFlowDataSet', 'common:generalComment'],
-  //       flow?.flowInformation?.dataSetInformation?.['common:generalComment'],
-  //     );
-  //     setFromData({
-  //       ...fromData,
-  //       productInformation: {
-  //         ...fromData.productInformation,
-  //         referenceToFlowDataSet: {
-  //           ...fromData.productInformation.referenceToFlowDataSet,
-  //           'common:name': flow?.flowInformation?.dataSetInformation?.name?.baseName,
-  //           'common:generalComment':
-  //             flow?.flowInformation?.dataSetInformation?.['common:generalComment'],
-  //         },
-  //       },
-  //     });
-  //     setRefleshSpinning(false);
-  //   });
-  // };
 
   const handletFromData = () => {
-    if (fromData?.id)
+    if (fromData?.id) {
       setFromData({
         ...fromData,
-        [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
+        [activeTabKey]: formRefEdit.current?.getFieldsValue()?.[activeTabKey] ?? {},
       });
+    }
   };
 
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
   };
 
+  const onReset = () => {
+    formRefEdit.current?.resetFields();
+    formRefEdit.current?.setFieldsValue(data);
+    setFromData(data);
+  };
+
   useEffect(() => {
     if (!drawerVisible) return;
-    formRefCreate.current?.resetFields();
-    formRefCreate.current?.setFieldsValue(data);
-    setFromData(data);
+    onReset();
   }, [drawerVisible]);
 
   return (
@@ -127,7 +103,7 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData }) => {
             </Button>
             <Button
               onClick={() => {
-                formRefCreate.current?.submit();
+                formRefEdit.current?.submit();
               }}
               type="primary"
             >
@@ -137,7 +113,7 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData }) => {
         }
       >
         <ProForm
-          formRef={formRefCreate}
+          formRef={formRefEdit}
           initialValues={data}
           onValuesChange={(_, allValues) => {
             setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
@@ -149,7 +125,7 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData }) => {
           }}
           onFinish={async () => {
             onData({ ...fromData });
-            formRefCreate.current?.resetFields();
+            formRefEdit.current?.resetFields();
             setDrawerVisible(false);
             return true;
           }}
@@ -157,7 +133,7 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData }) => {
           <LifeCycleModelForm
             lang={lang}
             activeTabKey={activeTabKey}
-            formRef={formRefCreate}
+            formRef={formRefEdit}
             onTabChange={onTabChange}
             onData={handletFromData}
           />
