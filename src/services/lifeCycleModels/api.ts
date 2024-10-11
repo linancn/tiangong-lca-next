@@ -1,6 +1,11 @@
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
-import { classificationToString, genClassificationZH, getLangText, jsonToList } from '../general/util';
+import {
+  classificationToString,
+  genClassificationZH,
+  getLangText,
+  jsonToList,
+} from '../general/util';
 import { getILCDClassification } from '../ilcd/api';
 import { genLifeCycleModelJsonOrdered } from './util';
 

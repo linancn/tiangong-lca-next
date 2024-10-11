@@ -87,7 +87,10 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             />
           </Divider>
           <LangTextItemDescription
-            data={data.lifeCycleModelInformation?.dataSetInformation?.name?.treatmentStandardsRoutes ?? '-'}
+            data={
+              data.lifeCycleModelInformation?.dataSetInformation?.name?.treatmentStandardsRoutes ??
+              '-'
+            }
           />
           <br />
           <Divider orientationMargin="0" orientation="left" plain>
@@ -97,7 +100,9 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             />
           </Divider>
           <LangTextItemDescription
-            data={data.lifeCycleModelInformation?.dataSetInformation?.name?.mixAndLocationTypes ?? '-'}
+            data={
+              data.lifeCycleModelInformation?.dataSetInformation?.name?.mixAndLocationTypes ?? '-'
+            }
           />
           <br />
           <Divider orientationMargin="0" orientation="left" plain>
@@ -107,14 +112,17 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             />
           </Divider>
           <LangTextItemDescription
-            data={data.lifeCycleModelInformation?.dataSetInformation?.name?.functionalUnitFlowProperties ?? '-'}
+            data={
+              data.lifeCycleModelInformation?.dataSetInformation?.name
+                ?.functionalUnitFlowProperties ?? '-'
+            }
           />
         </Card>
         <br />
         <LevelTextItemDescription
           data={
             data.lifeCycleModelInformation?.dataSetInformation?.classificationInformation?.[
-            'common:classification'
+              'common:classification'
             ]?.['common:class']?.['value']
           }
           lang={lang}
@@ -128,7 +136,9 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           />
         </Divider>
         <LangTextItemDescription
-          data={data.lifeCycleModelInformation?.dataSetInformation?.['common:generalComment'] ?? '-'}
+          data={
+            data.lifeCycleModelInformation?.dataSetInformation?.['common:generalComment'] ?? '-'
+          }
         />
         <br />
         <SourceSelectDescription
@@ -152,10 +162,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
               defaultMessage="Reference to Diagram"
             />
           }
-          data={
-            data.lifeCycleModelInformation?.dataSetInformation?.referenceToDiagram ??
-            {}
-          }
+          data={data.lifeCycleModelInformation?.dataSetInformation?.referenceToDiagram ?? {}}
           lang={lang}
         />
       </>
@@ -169,7 +176,10 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           />
         </Divider>
         <LangTextItemDescription
-          data={data.lifeCycleModelInformation?.modellingAndValidation?.dataSourcesTreatmentEtc?.useAdviceForDataSet ?? '-'}
+          data={
+            data.lifeCycleModelInformation?.modellingAndValidation?.dataSourcesTreatmentEtc
+              ?.useAdviceForDataSet ?? '-'
+          }
         />
         <br />
         <ContactSelectDescription
@@ -182,7 +192,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           lang={lang}
           data={
             data.modellingAndValidation?.validation?.review?.[
-            'common:referenceToNameOfReviewerAndInstitution'
+              'common:referenceToNameOfReviewerAndInstitution'
             ]
           }
         />
@@ -195,8 +205,9 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             />
           }
           data={
-            data.modellingAndValidation?.validation?.review?.['common:referenceToCompleteReviewReport'] ??
-            {}
+            data.modellingAndValidation?.validation?.review?.[
+              'common:referenceToCompleteReviewReport'
+            ] ?? {}
           }
           lang={lang}
         />
@@ -209,8 +220,9 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             />
           }
           data={
-            data.modellingAndValidation?.complianceDeclarations?.compliance?.['common:referenceToComplianceSystem'] ??
-            {}
+            data.modellingAndValidation?.complianceDeclarations?.compliance?.[
+              'common:referenceToComplianceSystem'
+            ] ?? {}
           }
           lang={lang}
         />
@@ -226,7 +238,9 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             }
             labelStyle={{ width: '180px' }}
           >
-            {data.modellingAndValidation?.complianceDeclarations?.compliance?.['common:approvalOfOverallCompliance'] ?? '-'}
+            {data.modellingAndValidation?.complianceDeclarations?.compliance?.[
+              'common:approvalOfOverallCompliance'
+            ] ?? '-'}
           </Descriptions.Item>
         </Descriptions>
         <br />
@@ -241,7 +255,9 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             }
             labelStyle={{ width: '180px' }}
           >
-            {data.modellingAndValidation?.complianceDeclarations?.compliance?.['common:nomenclatureCompliance'] ?? '-'}
+            {data.modellingAndValidation?.complianceDeclarations?.compliance?.[
+              'common:nomenclatureCompliance'
+            ] ?? '-'}
           </Descriptions.Item>
         </Descriptions>
         <br />
@@ -256,7 +272,9 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             }
             labelStyle={{ width: '180px' }}
           >
-            {data.modellingAndValidation?.complianceDeclarations?.compliance?.['common:methodologicalCompliance'] ?? '-'}
+            {data.modellingAndValidation?.complianceDeclarations?.compliance?.[
+              'common:methodologicalCompliance'
+            ] ?? '-'}
           </Descriptions.Item>
         </Descriptions>
         <br />
@@ -271,7 +289,9 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             }
             labelStyle={{ width: '180px' }}
           >
-            {data.modellingAndValidation?.complianceDeclarations?.compliance?.['common:reviewCompliance'] ?? '-'}
+            {data.modellingAndValidation?.complianceDeclarations?.compliance?.[
+              'common:reviewCompliance'
+            ] ?? '-'}
           </Descriptions.Item>
         </Descriptions>
         <br />
@@ -286,7 +306,9 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             }
             labelStyle={{ width: '180px' }}
           >
-            {data.modellingAndValidation?.complianceDeclarations?.compliance?.['common:documentationCompliance'] ?? '-'}
+            {data.modellingAndValidation?.complianceDeclarations?.compliance?.[
+              'common:documentationCompliance'
+            ] ?? '-'}
           </Descriptions.Item>
         </Descriptions>
         <br />
@@ -301,7 +323,9 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             }
             labelStyle={{ width: '180px' }}
           >
-            {data.modellingAndValidation?.complianceDeclarations?.compliance?.['common:qualityCompliance'] ?? '-'}
+            {data.modellingAndValidation?.complianceDeclarations?.compliance?.[
+              'common:qualityCompliance'
+            ] ?? '-'}
           </Descriptions.Item>
         </Descriptions>
       </>
@@ -327,7 +351,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             lang={lang}
             data={
               data.administrativeInformation?.['common:commissionerAndGoal']?.[
-              'common:referenceToCommissioner'
+                'common:referenceToCommissioner'
               ]
             }
           />
@@ -340,9 +364,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           </Divider>
           <LangTextItemDescription
             data={
-              data.administrativeInformation?.['common:commissionerAndGoal']?.[
-              'common:project'
-              ]
+              data.administrativeInformation?.['common:commissionerAndGoal']?.['common:project']
             }
           />
           <br />
@@ -355,7 +377,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           <LangTextItemDescription
             data={
               data.administrativeInformation?.['common:commissionerAndGoal']?.[
-              'common:intendedApplications'
+                'common:intendedApplications'
               ]
             }
           />
@@ -371,7 +393,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           lang={lang}
           data={
             data.administrativeInformation?.dataGenerator?.[
-            'common:referenceToPersonOrEntityGeneratingTheDataSet'
+              'common:referenceToPersonOrEntityGeneratingTheDataSet'
             ]
           }
         />
@@ -393,9 +415,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           </Divider>
           <LangTextItemDescription
             data={
-              data.administrativeInformation?.publicationAndOwnership?.[
-              'common:dataSetVersion'
-              ]
+              data.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion']
             }
           />
           <br />
@@ -408,7 +428,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           <LangTextItemDescription
             data={
               data.administrativeInformation?.publicationAndOwnership?.[
-              'common:permanentDataSetURI'
+                'common:permanentDataSetURI'
               ]
             }
           />
@@ -423,7 +443,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             lang={lang}
             data={
               data.administrativeInformation?.dataGenerator?.[
-              'common:referenceToEntitiesWithExclusiveAccess'
+                'common:referenceToEntitiesWithExclusiveAccess'
               ]
             }
           />
@@ -435,11 +455,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             />
           </Divider>
           <LangTextItemDescription
-            data={
-              data.administrativeInformation?.publicationAndOwnership?.[
-              'common:licenseType'
-              ]
-            }
+            data={data.administrativeInformation?.publicationAndOwnership?.['common:licenseType']}
           />
           <br />
           <Divider orientationMargin="0" orientation="left" plain>
@@ -451,7 +467,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           <LangTextItemDescription
             data={
               data.administrativeInformation?.['common:commissionerAndGoal']?.[
-              'common:accessRestrictions'
+                'common:accessRestrictions'
               ]
             }
           />
