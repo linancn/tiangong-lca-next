@@ -64,8 +64,8 @@ const TableList: FC = () => {
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.modifiedAt" defaultMessage="Modified At" />,
-      dataIndex: 'modifiedAt',
+      title: <FormattedMessage id="pages.table.title.updatedAt" defaultMessage="Updated at" />,
+      dataIndex: 'updatedAt',
       valueType: 'dateTime',
       sorter: false,
       search: false,
