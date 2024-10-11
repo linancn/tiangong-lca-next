@@ -21,7 +21,7 @@ import { node } from './config/node';
 import { Control } from './control';
 import ToolbarEditInfo from './eidtInfo';
 import EdgeExhange from './Exchange';
-import ModelToolbarViewInfo from './viewInfo';
+import ToolbarViewInfo from './viewInfo';
 
 type Props = {
   id: string | undefined;
@@ -314,7 +314,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
   return (
     <Space direction="vertical" size={'middle'}>
       {readonly ? (
-        <ModelToolbarViewInfo data={infoData} />
+        <ToolbarViewInfo lang={lang} data={infoData} />
       ) : (
         <ToolbarEditInfo data={infoData} onData={updateInfoData} lang={lang} />
       )}

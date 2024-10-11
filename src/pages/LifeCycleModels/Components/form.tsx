@@ -4,7 +4,7 @@ import { dataSetVersion, StringMultiLang_r } from '@/components/Validator/index'
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import { copyrightOptions } from '@/pages/Processes/Components/optiondata';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
-import type { ProFormInstance } from '@ant-design/pro-form';
+import { ProFormInstance } from '@ant-design/pro-components';
 import { Card, Form, Input, Select, Space } from 'antd';
 import type { FC } from 'react';
 import React from 'react';
@@ -173,7 +173,7 @@ export const LifeCycleModelForm: FC<Props> = ({
           ]}
           formRef={formRef}
           lang={lang}
-          dataType={''}
+          dataType={'Process'}
           onData={onData}
         />
         <br />
@@ -279,7 +279,7 @@ export const LifeCycleModelForm: FC<Props> = ({
           label={
             <FormattedMessage
               id="pages.lifeCycleModel.information.referenceToCompleteReviewReport"
-              defaultMessage="Reference to External Documentation"
+              defaultMessage="Reference to Complete Review Report"
             />
           }
           name={[

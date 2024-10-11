@@ -805,7 +805,6 @@ export function genLifeCycleModelInfoFromData(data: any) {
 }
 
 export function genLifeCycleModelData(data: any, lang: string) {
-  console.log(data);
   return {
     nodes:
       data?.xflow?.nodes?.map((node: any) => {
