@@ -57,4 +57,6 @@ export default {
   'pages.flow.view.modellingAndValidation.approvalOfOverallCompliance.fullyCompliant': '完全符合',
   'pages.flow.view.modellingAndValidation.approvalOfOverallCompliance.notCompliant': '不符合',
   'pages.flow.view.modellingAndValidation.approvalOfOverallCompliance.notDefined': '未定义',
+
+  'pages.flows.deleteMessage': '您确定要删除此数据吗？',
 };

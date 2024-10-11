@@ -30,7 +30,7 @@ export const LifeCycleModelForm: FC<Props> = ({
       tab: (
         <FormattedMessage
           id="pages.lifeCycleModel.view.lifeCycleModelInformation"
-          defaultMessage="Life Cycle Model Information"
+          defaultMessage="Life cycle model information"
         />
       ),
     },
@@ -39,7 +39,7 @@ export const LifeCycleModelForm: FC<Props> = ({
       tab: (
         <FormattedMessage
           id="pages.lifeCycleModel.view.modellingAndValidation"
-          defaultMessage="Modelling and Validation"
+          defaultMessage="Modelling and validation"
         />
       ),
     },
@@ -48,7 +48,7 @@ export const LifeCycleModelForm: FC<Props> = ({
       tab: (
         <FormattedMessage
           id="pages.lifeCycleModel.view.administrativeInformation"
-          defaultMessage="Administrative Information"
+          defaultMessage="Administrative information"
         />
       ),
     },
@@ -68,7 +68,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             title={
               <FormattedMessage
                 id="pages.lifeCycleModel.information.baseName"
-                defaultMessage="Base Name"
+                defaultMessage="Base name"
               />
             }
           >
@@ -77,7 +77,7 @@ export const LifeCycleModelForm: FC<Props> = ({
               label={
                 <FormattedMessage
                   id="pages.lifeCycleModel.information.baseName"
-                  defaultMessage="Base Name"
+                  defaultMessage="Base name"
                 />
               }
               rules={StringMultiLang_r}
@@ -89,7 +89,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             title={
               <FormattedMessage
                 id="pages.lifeCycleModel.information.treatmentStandardsRoutes"
-                defaultMessage="Treatment Standards Routes"
+                defaultMessage="Treatment, standards, routes"
               />
             }
           >
@@ -103,7 +103,7 @@ export const LifeCycleModelForm: FC<Props> = ({
               label={
                 <FormattedMessage
                   id="pages.lifeCycleModel.information.treatmentStandardsRoutes"
-                  defaultMessage="Treatment Standards Routes"
+                  defaultMessage="Treatment, standards, routes"
                 />
               }
               rules={StringMultiLang_r}
@@ -115,7 +115,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             title={
               <FormattedMessage
                 id="pages.lifeCycleModel.information.mixAndLocationTypes"
-                defaultMessage="Mix and Location Types"
+                defaultMessage="Mix and location types"
               />
             }
           >
@@ -129,7 +129,7 @@ export const LifeCycleModelForm: FC<Props> = ({
               label={
                 <FormattedMessage
                   id="pages.lifeCycleModel.information.mixAndLocationTypes"
-                  defaultMessage="Mix and Location Types"
+                  defaultMessage="Mix and location types"
                 />
               }
               rules={StringMultiLang_r}
@@ -141,7 +141,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             title={
               <FormattedMessage
                 id="pages.lifeCycleModel.information.functionalUnitFlowProperties"
-                defaultMessage="Functional Unit Flow Properties"
+                defaultMessage="Quantitative product or process properties"
               />
             }
           >
@@ -155,7 +155,7 @@ export const LifeCycleModelForm: FC<Props> = ({
               label={
                 <FormattedMessage
                   id="pages.lifeCycleModel.information.functionalUnitFlowProperties"
-                  defaultMessage="Functional Unit Flow Properties"
+                  defaultMessage="Quantitative product or process properties"
                 />
               }
               rules={StringMultiLang_r}
@@ -182,7 +182,7 @@ export const LifeCycleModelForm: FC<Props> = ({
           title={
             <FormattedMessage
               id="pages.lifeCycleModel.information.generalComment"
-              defaultMessage="General Comment"
+              defaultMessage="General comment"
             />
           }
         >
@@ -191,7 +191,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             label={
               <FormattedMessage
                 id="pages.lifeCycleModel.information.generalComment"
-                defaultMessage="General Comment"
+                defaultMessage="General comment"
               />
             }
           />
@@ -203,7 +203,7 @@ export const LifeCycleModelForm: FC<Props> = ({
           label={
             <FormattedMessage
               id="pages.lifeCycleModel.information.referenceToExternalDocumentation"
-              defaultMessage="Reference to External Documentation"
+              defaultMessage="Data set report, background info"
             />
           }
           name={[
@@ -220,7 +220,7 @@ export const LifeCycleModelForm: FC<Props> = ({
           label={
             <FormattedMessage
               id="pages.lifeCycleModel.information.technology.referenceToDiagram"
-              defaultMessage="Reference to Diagram"
+              defaultMessage="Life cycle model diagramm(s) or screenshot(s)"
             />
           }
           name={[
@@ -240,7 +240,7 @@ export const LifeCycleModelForm: FC<Props> = ({
           title={
             <FormattedMessage
               id="pages.lifeCycleModel.modellingAndValidation.useAdviceForDataSet"
-              defaultMessage="Use Advice For Data Set"
+              defaultMessage="Use advice for data set"
             />
           }
         >
@@ -249,7 +249,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             label={
               <FormattedMessage
                 id="pages.lifeCycleModel.modellingAndValidation.useAdviceForDataSet"
-                defaultMessage="Use Advice For Data Set"
+                defaultMessage="Use advice for data set"
               />
             }
           />
@@ -261,7 +261,7 @@ export const LifeCycleModelForm: FC<Props> = ({
           label={
             <FormattedMessage
               id="pages.lifeCycleModel.information.referenceToExternalDocumentation"
-              defaultMessage="Reference to External Documentation"
+              defaultMessage="Data set report, background info"
             />
           }
           name={[
@@ -279,7 +279,7 @@ export const LifeCycleModelForm: FC<Props> = ({
           label={
             <FormattedMessage
               id="pages.lifeCycleModel.information.referenceToCompleteReviewReport"
-              defaultMessage="Reference to External Documentation"
+              defaultMessage="Data set report, background info"
             />
           }
           name={[
@@ -297,7 +297,7 @@ export const LifeCycleModelForm: FC<Props> = ({
           label={
             <FormattedMessage
               id="pages.lifeCycleModel.modellingAndValidation.referenceToComplianceSystem"
-              defaultMessage="Reference to Compliance System"
+              defaultMessage="Compliance system name"
             />
           }
           name={[
@@ -313,7 +313,7 @@ export const LifeCycleModelForm: FC<Props> = ({
           label={
             <FormattedMessage
               id="pages.lifeCycleModel.modellingAndValidation.approvalOfOverallCompliance"
-              defaultMessage="Approval of Overall Compliance"
+              defaultMessage="Approval of overall compliance"
             />
           }
           name={[
@@ -330,7 +330,7 @@ export const LifeCycleModelForm: FC<Props> = ({
           label={
             <FormattedMessage
               id="pages.lifeCycleModel.modellingAndValidation.nomenclatureCompliance"
-              defaultMessage="Nomenclature Compliance"
+              defaultMessage="Nomenclature compliance"
             />
           }
           name={[
@@ -347,7 +347,7 @@ export const LifeCycleModelForm: FC<Props> = ({
           label={
             <FormattedMessage
               id="pages.lifeCycleModel.modellingAndValidation.methodologicalCompliance"
-              defaultMessage="Methodological Compliance"
+              defaultMessage="Methodological compliance"
             />
           }
           name={[
@@ -364,7 +364,7 @@ export const LifeCycleModelForm: FC<Props> = ({
           label={
             <FormattedMessage
               id="pages.lifeCycleModel.modellingAndValidation.reviewCompliance"
-              defaultMessage="Review Compliance"
+              defaultMessage="Review compliance"
             />
           }
           name={[
@@ -381,7 +381,7 @@ export const LifeCycleModelForm: FC<Props> = ({
           label={
             <FormattedMessage
               id="pages.lifeCycleModel.modellingAndValidation.documentationCompliance"
-              defaultMessage="Documentation Compliance"
+              defaultMessage="Documentation compliance"
             />
           }
           name={[
@@ -398,7 +398,7 @@ export const LifeCycleModelForm: FC<Props> = ({
           label={
             <FormattedMessage
               id="pages.lifeCycleModel.modellingAndValidation.qualityCompliance"
-              defaultMessage="Quality Compliance"
+              defaultMessage="Quality compliance"
             />
           }
           name={[
@@ -419,7 +419,7 @@ export const LifeCycleModelForm: FC<Props> = ({
           title={
             <FormattedMessage
               id="pages.lifeCycleModel.administrativeInformation.commissionerAndGoal"
-              defaultMessage="Commissioner and Goal"
+              defaultMessage="Commissioner and goal"
             />
           }
         >
@@ -429,7 +429,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             label={
               <FormattedMessage
                 id="pages.lifeCycleModel.administrativeInformation.referenceToCommissioner"
-                defaultMessage="Reference to Commissioner"
+                defaultMessage="Commissioner of data set"
               />
             }
             name={[
@@ -465,7 +465,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             title={
               <FormattedMessage
                 id="pages.lifeCycleModel.administrativeInformation.intendedApplications"
-                defaultMessage="Intended Applications"
+                defaultMessage="Intended applications"
               />
             }
           >
@@ -478,7 +478,7 @@ export const LifeCycleModelForm: FC<Props> = ({
               label={
                 <FormattedMessage
                   id="pages.lifeCycleModel.administrativeInformation.intendedApplications"
-                  defaultMessage="Intended Applications"
+                  defaultMessage="Intended applications"
                 />
               }
             />
@@ -491,7 +491,7 @@ export const LifeCycleModelForm: FC<Props> = ({
           label={
             <FormattedMessage
               id="pages.lifeCycleModel.administrativeInformation.referenceToPersonOrEntityGeneratingTheDataSet"
-              defaultMessage="Reference to Person Or Entity Generating the DataSet"
+              defaultMessage="Data set generator / modeller"
             />
           }
           name={[
@@ -540,7 +540,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             label={
               <FormattedMessage
                 id="pages.lifeCycleModel.administrativeInformation.referenceToPersonOrEntityEnteringTheData"
-                defaultMessage="Reference to Person or Entity Entering the Data"
+                defaultMessage="Data entry by:"
               />
             }
             name={[
@@ -557,7 +557,7 @@ export const LifeCycleModelForm: FC<Props> = ({
           title={
             <FormattedMessage
               id="pages.lifeCycleModel.administrativeInformation.publicationAndOwnership"
-              defaultMessage="Publication and Ownership"
+              defaultMessage="Publication and ownership"
             />
           }
         >
@@ -594,7 +594,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             label={
               <FormattedMessage
                 id="pages.lifeCycleModel.administrativeInformation.referenceToOwnershipOfDataSet"
-                defaultMessage="Reference to Ownership of Data Set"
+                defaultMessage="Owner of data set"
               />
             }
             name={[
@@ -622,7 +622,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             label={
               <FormattedMessage
                 id="pages.lifeCycleModel.administrativeInformation.referenceToEntitiesWithExclusiveAccess"
-                defaultMessage="Reference to Entities with Exclusive Access"
+                defaultMessage="Entities or persons with exclusive access to this data set"
               />
             }
             name={[
@@ -637,7 +637,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             label={
               <FormattedMessage
                 id="pages.lifeCycleModel.administrativeInformation.licenseType"
-                defaultMessage="License Type"
+                defaultMessage="License type"
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:licenseType']}
@@ -650,7 +650,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             title={
               <FormattedMessage
                 id="pages.lifeCycleModel.administrativeInformation.accessRestrictions"
-                defaultMessage="Access Restrictions"
+                defaultMessage="Access and use restrictions"
               />
             }
           >
@@ -663,7 +663,7 @@ export const LifeCycleModelForm: FC<Props> = ({
               label={
                 <FormattedMessage
                   id="pages.lifeCycleModel.administrativeInformation.accessRestrictions"
-                  defaultMessage="Access Restrictions"
+                  defaultMessage="Access and use restrictions"
                 />
               }
             />
