@@ -6,6 +6,7 @@ import pages_contact from './en-US/pages_contact';
 import pages_flow from './en-US/pages_flow';
 import pages_flowproperty from './en-US/pages_flowproperty';
 import pages_general from './en-US/pages_general';
+import pages_model from './en-US/pages_model';
 import pages_process from './en-US/pages_process';
 import pages_product from './en-US/pages_product';
 import pages_source from './en-US/pages_source';
@@ -31,6 +32,7 @@ export default {
   ...pwa,
   ...component,
   ...pages_general,
+  ...pages_model,
   ...pages_process,
   ...pages_contact,
   ...pages_unitgroup,

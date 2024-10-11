@@ -7,6 +7,7 @@ export default {
   'pages.table.title.createdAt': 'Created at',
   'pages.table.title.updatedAt': 'Updated at',
   'pages.table.title.option': 'Option',
+  'pages.table.title.version': 'Version',
 
   'pages.button.create': 'Create',
   'pages.button.create.success': 'Created successfully!',
@@ -46,4 +47,6 @@ export default {
   'pages.search.openAI': 'AI Recommendation',
   'pages.search.keyWord': 'Full-text search: Enter one or more keywords.',
   'pages.search.placeholder': 'AI Search: Describe the data you need in one sentence or a few key words.',
+
+  'pages.lifeCycleModel.drawer.title.create': 'Create Model',
 };

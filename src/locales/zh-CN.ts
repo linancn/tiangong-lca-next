@@ -6,6 +6,7 @@ import pages_contact from './zh-CN/pages_contact';
 import pages_flow from './zh-CN/pages_flow';
 import pages_flowproperty from './zh-CN/pages_flowproperty';
 import pages_general from './zh-CN/pages_general';
+import pages_model from './zh-CN/pages_model';
 import pages_process from './zh-CN/pages_process';
 import pages_product from './zh-CN/pages_product';
 import pages_source from './zh-CN/pages_source';
@@ -31,6 +32,7 @@ export default {
   ...pwa,
   ...component,
   ...pages_general,
+  ...pages_model,
   ...pages_process,
   ...pages_contact,
   ...pages_unitgroup,
