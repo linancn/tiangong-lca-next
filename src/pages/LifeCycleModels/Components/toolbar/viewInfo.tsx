@@ -175,8 +175,8 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
         <ContactSelectDescription
           title={
             <FormattedMessage
-              id="pages.lifeCycleModel.information.referenceToNameOfReviewerAndInstitution"
-              defaultMessage="Reference to Name of Reviewer and Institution"
+              id="pages.lifeCycleModel.information.referenceToCompleteReviewReport"
+              defaultMessage="Data set report, background info"
             />
           }
           lang={lang}
