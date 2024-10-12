@@ -74,7 +74,17 @@ const LifeCycleModelView: FC<Props> = ({ id, buttonType, lang }) => {
           <Layout style={layoutStyle}>
             <Layout>
               <Content>
-                <XFlowGraph zoomable pannable minScale={0.5} readonly={true} />
+                <XFlowGraph
+                  zoomable
+                  pannable
+                  minScale={0.5}
+                  readonly={true}
+                  connectionOptions={{
+                    router: {
+                      name: 'manhattan',
+                    },
+                  }}
+                />
                 <Grid
                   type="dot"
                   options={{

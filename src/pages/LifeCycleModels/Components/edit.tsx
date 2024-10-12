@@ -95,6 +95,9 @@ const LifeCycleModelEdit: FC<Props> = ({ id, buttonType, lang, actionRef }) => {
                     allowMulti: false,
                     allowNode: false,
                     allowEdge: false,
+                    router: {
+                      name: 'manhattan',
+                    },
                   }}
                 />
                 <Grid
