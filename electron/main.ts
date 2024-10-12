@@ -1,6 +1,6 @@
-import * as path from 'path';
 import { app, BrowserWindow, protocol } from 'electron';
 import * as fs from 'fs/promises';
+import * as path from 'path';
 
 let mainWindow: BrowserWindow | null;
 
@@ -42,7 +42,7 @@ const mimeTypes: { [key: string]: string } = {
   '.jpeg': 'image/jpeg',
   '.gif': 'image/gif',
   '.woff': 'font/woff',
-  '.woff2': 'font/woff2'
+  '.woff2': 'font/woff2',
 };
 
 async function getFileResponse(filePath: string, defaultPath: string): Promise<Response> {
