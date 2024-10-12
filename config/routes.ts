@@ -12,6 +12,59 @@
  */
 export default [
   {
+    path: '/tgdata',
+    name: 'tgdata',
+    icon: 'DatabaseOutlined',
+    routes: [
+      {
+        path: '/tgdata',
+        redirect: '/tgdata/products',
+      },
+      {
+        name: 'models',
+        path: '/tgdata/models',
+        icon: 'AppstoreAddOutlined',
+        component: './LifeCycleModels',
+      },
+      {
+        name: 'processes',
+        icon: 'ShareAltOutlined',
+        path: '/tgdata/processes',
+        component: './Processes',
+      },
+      {
+        name: 'flows',
+        icon: 'NodeExpandOutlined',
+        path: '/tgdata/flows',
+        component: './Flows',
+      },
+      {
+        name: 'flowproperties',
+        icon: 'ControlOutlined',
+        path: '/tgdata/flowproperties',
+        component: './Flowproperties',
+      },
+      {
+        name: 'unitgroups',
+        icon: 'RetweetOutlined',
+        path: '/tgdata/unitgroups',
+        component: './Unitgroups',
+      },
+      {
+        name: 'sources',
+        icon: 'PaperClipOutlined',
+        path: '/tgdata/sources',
+        component: './Sources',
+      },
+      {
+        name: 'contacts',
+        icon: 'TeamOutlined',
+        path: '/tgdata/contacts',
+        component: './Contacts',
+      },
+    ],
+  },
+  {
     path: '/mydata',
     name: 'mydata',
     icon: 'HomeOutlined',
@@ -67,59 +120,6 @@ export default [
         name: 'contacts',
         icon: 'TeamOutlined',
         path: '/mydata/contacts',
-        component: './Contacts',
-      },
-    ],
-  },
-  {
-    path: '/tgdata',
-    name: 'tgdata',
-    icon: 'DatabaseOutlined',
-    routes: [
-      {
-        path: '/tgdata',
-        redirect: '/tgdata/products',
-      },
-      {
-        name: 'models',
-        path: '/tgdata/models',
-        icon: 'AppstoreAddOutlined',
-        component: './LifeCycleModels',
-      },
-      {
-        name: 'processes',
-        icon: 'ShareAltOutlined',
-        path: '/tgdata/processes',
-        component: './Processes',
-      },
-      {
-        name: 'flows',
-        icon: 'NodeExpandOutlined',
-        path: '/tgdata/flows',
-        component: './Flows',
-      },
-      {
-        name: 'flowproperties',
-        icon: 'ControlOutlined',
-        path: '/tgdata/flowproperties',
-        component: './Flowproperties',
-      },
-      {
-        name: 'unitgroups',
-        icon: 'RetweetOutlined',
-        path: '/tgdata/unitgroups',
-        component: './Unitgroups',
-      },
-      {
-        name: 'sources',
-        icon: 'PaperClipOutlined',
-        path: '/tgdata/sources',
-        component: './Sources',
-      },
-      {
-        name: 'contacts',
-        icon: 'TeamOutlined',
-        path: '/tgdata/contacts',
         component: './Contacts',
       },
     ],
