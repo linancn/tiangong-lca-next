@@ -83,6 +83,9 @@ const LifeCycleModelView: FC<Props> = ({ id, buttonType, lang }) => {
                     router: {
                       name: 'manhattan',
                     },
+                    connector: {
+                      name: 'rounded',
+                    },
                   }}
                 />
                 <Grid
