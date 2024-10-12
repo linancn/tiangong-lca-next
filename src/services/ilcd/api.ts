@@ -14,7 +14,7 @@ export async function getILCDClassification(
 
     let result = null;
 
-    if (categoryType === 'Process') {
+    if (categoryType === 'Process' || categoryType === 'LifeCycleModel') {
       result = getISICClassification(getValues);
     } else if (categoryType === 'Flow') {
       result = getCPCClassification(getValues);
@@ -35,7 +35,7 @@ export async function getILCDClassification(
       } else {
         getIds = result?.data?.map((i: any) => i['@id']);
       }
-      if (categoryType === 'Process') {
+      if (categoryType === 'Process' || categoryType === 'LifeCycleModel') {
         resultZH = getISICClassificationZH(getIds);
       } else if (categoryType === 'Flow') {
         resultZH = getCPCClassificationZH(getIds);

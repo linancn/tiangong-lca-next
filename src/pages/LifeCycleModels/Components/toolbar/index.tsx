@@ -21,7 +21,7 @@ import { node } from './config/node';
 import { Control } from './control';
 import ToolbarEditInfo from './eidtInfo';
 import EdgeExhange from './Exchange';
-import ModelToolbarViewInfo from './viewInfo';
+import ToolbarViewInfo from './viewInfo';
 
 type Props = {
   id: string | undefined;
@@ -50,7 +50,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
   }, [isSave, setIsSave]);
 
   const updateInfoData = (data: any) => {
-    setInfoData(data);
+    setInfoData({ ...data, id: thisId });
     // if (thisId) {
     //   updateProduct({ ...data, id: thisId }).then((result: any) => {
     //     if (result.data) {
@@ -228,7 +228,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
         const fromData = genLifeCycleModelInfoFromData(
           result.data?.json?.lifeCycleModelDataSet ?? {},
         );
-        setInfoData(fromData);
+        setInfoData({ ...fromData, id: thisId });
         const model = genLifeCycleModelData(result.data?.json_tg ?? {}, lang);
         let initNodes = model?.nodes ?? [];
         if (readonly) {
@@ -307,14 +307,14 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
           },
         },
       };
-      setInfoData(newData);
+      setInfoData({ ...newData, id: thisId });
     }
   }, [drawerVisible]);
 
   return (
     <Space direction="vertical" size={'middle'}>
       {readonly ? (
-        <ModelToolbarViewInfo data={infoData} />
+        <ToolbarViewInfo lang={lang} data={infoData} />
       ) : (
         <ToolbarEditInfo data={infoData} onData={updateInfoData} lang={lang} />
       )}

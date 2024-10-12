@@ -77,7 +77,7 @@ export function genLifeCycleModelJsonOrdered(id: string, data: any, oldData: any
           classificationInformation: {
             'common:classification': {
               'common:class': classificationToJsonList(
-                data?.processInformation?.dataSetInformation?.classificationInformation?.[
+                data?.lifeCycleModelInformation?.dataSetInformation?.classificationInformation?.[
                   'common:classification'
                 ]?.['common:class'],
               ),
@@ -451,7 +451,7 @@ export function genLifeCycleModelInfoFromData(data: any) {
         classificationInformation: {
           'common:classification': {
             'common:class': classificationToStringList(
-              data?.processInformation?.dataSetInformation?.classificationInformation?.[
+              data?.lifeCycleModelInformation?.dataSetInformation?.classificationInformation?.[
                 'common:classification'
               ]?.['common:class'],
             ),
@@ -805,7 +805,6 @@ export function genLifeCycleModelInfoFromData(data: any) {
 }
 
 export function genLifeCycleModelData(data: any, lang: string) {
-  console.log(data);
   return {
     nodes:
       data?.xflow?.nodes?.map((node: any) => {

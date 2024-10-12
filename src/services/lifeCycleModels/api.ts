@@ -1,6 +1,12 @@
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
-import { classificationToString, getLangText } from '../general/util';
+import {
+  classificationToString,
+  genClassificationZH,
+  getLangText,
+  jsonToList,
+} from '../general/util';
+import { getILCDClassification } from '../ilcd/api';
 import { genLifeCycleModelJsonOrdered } from './util';
 
 export async function createLifeCycleModel(data: any) {
@@ -94,14 +100,41 @@ export async function getLifeCycleModelTableAll(
         success: true,
       });
     }
-    return Promise.resolve({
-      data: result.data.map((i: any) => {
+
+    let data: any[] = [];
+    if (lang === 'zh') {
+      await getILCDClassification('LifeCycleModel', lang, ['all']).then((res) => {
+        data = result.data.map((i: any) => {
+          try {
+            const classifications = jsonToList(i['common:class']);
+            const classificationZH = genClassificationZH(classifications, res?.data);
+
+            return {
+              key: i.id,
+              id: i.id,
+              baseName: getLangText(i?.baseName, lang),
+              generalComment: getLangText(i?.['common:generalComment'], lang),
+              classification: classificationToString(classificationZH ?? {}),
+              version: i?.version,
+              modifiedAt: new Date(i?.modified_at),
+            };
+          } catch (e) {
+            console.error(e);
+            return {
+              id: i.id,
+            };
+          }
+        });
+      });
+    } else {
+      data = result.data.map((i: any) => {
         try {
           return {
+            key: i.id,
             id: i.id,
             baseName: getLangText(i?.baseName, lang),
             generalComment: getLangText(i?.['common:generalComment'], lang),
-            classification: classificationToString(i?.['common:class']),
+            classification: classificationToString(i['common:class'] ?? {}),
             version: i?.version,
             modifiedAt: new Date(i?.modified_at),
           };
@@ -111,7 +144,11 @@ export async function getLifeCycleModelTableAll(
             id: i.id,
           };
         }
-      }),
+      });
+    }
+
+    return Promise.resolve({
+      data: data,
       page: params.current ?? 1,
       success: true,
       total: result.count ?? 0,
