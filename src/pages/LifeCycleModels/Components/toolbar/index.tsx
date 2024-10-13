@@ -46,6 +46,78 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
 
   const { token } = theme.useToken();
 
+  const nodeAttrs = {
+    body: {
+      stroke: token.colorBorder,
+      strokeWidth: 1,
+      fill: token.colorBgBase,
+      rx: 6,
+      ry: 6,
+    },
+    label: {
+      fill: token.colorTextBase,
+    },
+  };
+
+  const ports = {
+    groups: {
+      group1: {
+        position: 'top',
+        attrs: {
+          circle: {
+            stroke: token.colorPrimary,
+            fill: token.colorBgBase,
+            strokeWidth: 1,
+            r: 4,
+            magnet: true,
+          },
+        },
+      },
+      group2: {
+        position: 'right',
+        attrs: {
+          circle: {
+            stroke: token.colorPrimary,
+            fill: token.colorBgBase,
+            strokeWidth: 1,
+            r: 4,
+            magnet: true,
+          },
+        },
+      },
+      group3: {
+        position: 'bottom',
+        attrs: {
+          circle: {
+            stroke: token.colorPrimary,
+            fill: token.colorBgBase,
+            strokeWidth: 1,
+            r: 4,
+            magnet: true,
+          },
+        },
+      },
+      group4: {
+        position: 'left',
+        attrs: {
+          circle: {
+            stroke: token.colorPrimary,
+            fill: token.colorBgBase,
+            strokeWidth: 1,
+            r: 4,
+            magnet: true,
+          },
+        },
+      },
+    },
+    items: [
+      { id: 'group1', group: 'group1' },
+      { id: 'group2', group: 'group2' },
+      { id: 'group3', group: 'group3' },
+      { id: 'group4', group: 'group4' },
+    ],
+  };
+
   const node = {
     id: '',
     shape: 'rect',
@@ -53,80 +125,12 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
     y: 100,
     width: 300,
     height: 40,
-    attrs: {
-      body: {
-        stroke: token.colorBorder,
-        strokeWidth: 1,
-        fill: token.colorBgBase,
-        rx: 6,
-        ry: 6,
-      },
-      label: {
-        fill: token.colorTextBase,
-      },
-    },
+    attrs: nodeAttrs,
     data: {
       label: [],
       generalComment: [],
     },
-    ports: {
-      groups: {
-        group1: {
-          position: 'top',
-          attrs: {
-            circle: {
-              stroke: token.colorPrimary,
-              fill: token.colorBgBase,
-              strokeWidth: 1,
-              r: 4,
-              magnet: true,
-            },
-          },
-        },
-        group2: {
-          position: 'right',
-          attrs: {
-            circle: {
-              stroke: token.colorPrimary,
-              fill: token.colorBgBase,
-              strokeWidth: 1,
-              r: 4,
-              magnet: true,
-            },
-          },
-        },
-        group3: {
-          position: 'bottom',
-          attrs: {
-            circle: {
-              stroke: token.colorPrimary,
-              fill: token.colorBgBase,
-              strokeWidth: 1,
-              r: 4,
-              magnet: true,
-            },
-          },
-        },
-        group4: {
-          position: 'left',
-          attrs: {
-            circle: {
-              stroke: token.colorPrimary,
-              fill: token.colorBgBase,
-              strokeWidth: 1,
-              r: 4,
-              magnet: true,
-            },
-          },
-        },
-      },
-      items: [
-        { id: 'group1', group: 'group1' },
-        { id: 'group2', group: 'group2' },
-        { id: 'group3', group: 'group3' },
-        { id: 'group4', group: 'group4' },
-      ],
-    },
+    ports: ports,
   };
 
   const saveCallback = useCallback(() => {
@@ -288,7 +292,13 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
         );
         setInfoData({ ...fromData, id: thisId });
         const model = genLifeCycleModelData(result.data?.json_tg ?? {}, lang);
-        let initNodes = model?.nodes ?? [];
+        let initNodes = (model?.nodes ?? []).map((node: any) => {
+          return {
+            ...node,
+            attrs: nodeAttrs,
+            ports: ports,
+          }
+        });
         if (readonly) {
           initNodes = initNodes.map((node: any) => {
             return {
@@ -343,7 +353,15 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
             if (edge.target) {
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
               const { x, y, ...targetRest } = edge.target as any;
-              return { ...edge, target: targetRest };
+              return {
+                ...edge,
+                attrs: {
+                  line: {
+                    stroke: token.colorPrimary,
+                  },
+                },
+                target: targetRest
+              };
             }
             return edge;
           }) ?? [];
