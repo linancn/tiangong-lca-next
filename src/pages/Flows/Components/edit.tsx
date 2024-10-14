@@ -8,7 +8,7 @@ import type { ActionType } from '@ant-design/pro-table';
 import { Button, Collapse, Drawer, Space, Spin, Tooltip, Typography, message } from 'antd';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 import { FlowForm } from './form';
 
 type Props = {
@@ -26,6 +26,7 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
   const [flowType, setFlowType] = useState<string>();
   const [spinning, setSpinning] = useState(false);
   const [propertyDataSource, setPropertyDataSource] = useState<any>([]);
+  const intl = useIntl();
 
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
@@ -140,10 +141,10 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
               const updateResult = await updateFlows({ ...fromData, id });
               if (updateResult?.data) {
                 message.success(
-                  <FormattedMessage
-                    id="pages.flows.editsuccess"
-                    defaultMessage="Edit successfully!"
-                  />,
+                  intl.formatMessage({
+                    id:'pages.flows.editsuccess',
+                    defaultMessage:'Edit successfully!',
+                  }),
                 );
                 setDrawerVisible(false);
                 setActiveTabKey('flowInformation');

@@ -19,7 +19,7 @@ type Props = {
   id: string;
   lang: string;
   buttonType: string;
-  data: any;
+  data?: any;
 };
 
 const getComplianceLabel = (value: string) => {
