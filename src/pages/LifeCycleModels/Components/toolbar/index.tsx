@@ -11,13 +11,12 @@ import {
 } from '@/services/lifeCycleModels/util';
 import { getProcessDetail } from '@/services/processes/api';
 import { DeleteOutlined, SaveOutlined } from '@ant-design/icons';
-import { useGraphStore } from '@antv/xflow';
-import { Button, Space, Spin, Tooltip, message } from 'antd';
+import { useGraphEvent, useGraphStore } from '@antv/xflow';
+import { Button, Space, Spin, Tooltip, message, theme } from 'antd';
 import { FC, useCallback, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { v4 } from 'uuid';
 import ModelToolbarAdd from './add';
-import { node } from './config/node';
 import { Control } from './control';
 import ToolbarEditInfo from './eidtInfo';
 import EdgeExhange from './Exchange';
@@ -45,49 +44,101 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
   const nodes = useGraphStore((state) => state.nodes);
   const edges = useGraphStore((state) => state.edges);
 
+  const { token } = theme.useToken();
+
+  const nodeAttrs = {
+    body: {
+      stroke: token.colorBorder,
+      strokeWidth: 1,
+      fill: token.colorBgBase,
+      rx: 6,
+      ry: 6,
+    },
+    label: {
+      fill: token.colorTextBase,
+    },
+  };
+
+  const ports = {
+    groups: {
+      group1: {
+        position: 'top',
+        attrs: {
+          circle: {
+            stroke: token.colorPrimary,
+            fill: token.colorBgBase,
+            strokeWidth: 1,
+            r: 4,
+            magnet: true,
+          },
+        },
+      },
+      group2: {
+        position: 'right',
+        attrs: {
+          circle: {
+            stroke: token.colorPrimary,
+            fill: token.colorBgBase,
+            strokeWidth: 1,
+            r: 4,
+            magnet: true,
+          },
+        },
+      },
+      group3: {
+        position: 'bottom',
+        attrs: {
+          circle: {
+            stroke: token.colorPrimary,
+            fill: token.colorBgBase,
+            strokeWidth: 1,
+            r: 4,
+            magnet: true,
+          },
+        },
+      },
+      group4: {
+        position: 'left',
+        attrs: {
+          circle: {
+            stroke: token.colorPrimary,
+            fill: token.colorBgBase,
+            strokeWidth: 1,
+            r: 4,
+            magnet: true,
+          },
+        },
+      },
+    },
+    items: [
+      { id: 'group1', group: 'group1' },
+      { id: 'group2', group: 'group2' },
+      { id: 'group3', group: 'group3' },
+      { id: 'group4', group: 'group4' },
+    ],
+  };
+
+  const node = {
+    id: '',
+    shape: 'rect',
+    x: 200,
+    y: 100,
+    width: 300,
+    height: 40,
+    attrs: nodeAttrs,
+    data: {
+      label: [],
+      generalComment: [],
+    },
+    ports: ports,
+  };
+
   const saveCallback = useCallback(() => {
     setIsSave(true);
   }, [isSave, setIsSave]);
 
   const updateInfoData = (data: any) => {
     setInfoData({ ...data, id: thisId });
-    // if (thisId) {
-    //   updateProduct({ ...data, id: thisId }).then((result: any) => {
-    //     if (result.data) {
-    //       message.success(
-    //         <FormattedMessage id="pages.flows.savesuccess" defaultMessage="Save successfully!" />,
-    //       );
-    //     } else {
-    //       message.error(result.error.message);
-    //     }
-    //   });
-    // }
-    // else {
-    //   const newId = v4();
-    //   setThisId(newId);
-    //   setInfoData({
-    //     ...data,
-    //     lifeCycleModelInformation: {
-    //       ...data.lifeCycleModelInformation,
-    //       dataSetInformation: {
-    //         ...data.lifeCycleModelInformation.dataSetInformation,
-    //         'common:UUID': newId,
-    //       },
-    //     },
-    //   });
-    //   createLifeCycleModel({ ...data, id: newId }).then((result: any) => {
-    //     if (result.data) {
-    //       message.success(
-    //         <FormattedMessage
-    //           id="pages.flows.createsuccess"
-    //           defaultMessage="Created successfully!"
-    //         />,
-    //       );
-    //     } else {
-    //       message.error(result.error.message);
-    //     }
-    //   });
-    // }
   };
 
   const updateEdgeData = (data: any) => {
@@ -204,6 +255,17 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
     return true;
   };
 
+  useGraphEvent('edge:added', (evt) => {
+    const edge = evt.edge;
+    updateEdge(edge.id, {
+      attrs: {
+        line: {
+          stroke: token.colorPrimary,
+        },
+      },
+    });
+  });
+
   // useGraphEvent('cell:click', async (evt) => {
   //   console.log('cell:click', evt);
   //   console.log(nodes.filter((node) => node.selected)?.[0]?.data?.id);
@@ -230,7 +292,13 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
         );
         setInfoData({ ...fromData, id: thisId });
         const model = genLifeCycleModelData(result.data?.json_tg ?? {}, lang);
-        let initNodes = model?.nodes ?? [];
+        let initNodes = (model?.nodes ?? []).map((node: any) => {
+          return {
+            ...node,
+            attrs: nodeAttrs,
+            ports: ports,
+          }
+        });
         if (readonly) {
           initNodes = initNodes.map((node: any) => {
             return {
@@ -285,7 +353,15 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
             if (edge.target) {
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
               const { x, y, ...targetRest } = edge.target as any;
-              return { ...edge, target: targetRest };
+              return {
+                ...edge,
+                attrs: {
+                  line: {
+                    stroke: token.colorPrimary,
+                  },
+                },
+                target: targetRest
+              };
             }
             return edge;
           }) ?? [];

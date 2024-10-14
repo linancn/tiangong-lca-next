@@ -4,8 +4,8 @@ import { getProcessTableAll, getProcessTablePgroongaSearch } from '@/services/pr
 import { ProcessTable } from '@/services/processes/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
-import { ProTable } from '@ant-design/pro-components';
-import type { ActionType, ProColumns } from '@ant-design/pro-table';
+import { ProColumns, ProTable } from '@ant-design/pro-components';
+import type { ActionType } from '@ant-design/pro-table';
 import { Button, Card, Drawer, Input, Space, Tooltip } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC, Key } from 'react';
