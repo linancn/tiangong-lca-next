@@ -219,9 +219,7 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
             />
           </Divider>
           <LangTextItemDescription
-            data={
-              initData?.flowInformation?.dataSetInformation?.name?.mixAndLocationTypes ?? '-'
-            }
+            data={initData?.flowInformation?.dataSetInformation?.name?.mixAndLocationTypes ?? '-'}
           />
           <br />
           <Divider orientationMargin="0" orientation="left" plain>
@@ -231,12 +229,9 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
             />
           </Divider>
           <LangTextItemDescription
-            data={
-              initData?.flowInformation?.dataSetInformation?.name
-                ?.flowProperties ?? '-'
-            }
-        />
-      </Card>
+            data={initData?.flowInformation?.dataSetInformation?.name?.flowProperties ?? '-'}
+          />
+        </Card>
         <Divider orientationMargin="0" orientation="left" plain>
           <FormattedMessage
             id="pages.flow.view.flowInformation.synonyms"

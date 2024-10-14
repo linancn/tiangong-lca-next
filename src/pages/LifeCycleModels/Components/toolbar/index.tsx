@@ -242,8 +242,8 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
         if (result.data) {
           message.success(
             intl.formatMessage({
-              id:"pages.button.create.success",
-              defaultMessage:"Created successfully!",
+              id: 'pages.button.create.success',
+              defaultMessage: 'Created successfully!',
             }),
           );
           saveCallback();
@@ -298,7 +298,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
             ...node,
             attrs: nodeAttrs,
             ports: ports,
-          }
+          };
         });
         if (readonly) {
           initNodes = initNodes.map((node: any) => {
@@ -361,7 +361,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
                     stroke: token.colorPrimary,
                   },
                 },
-                target: targetRest
+                target: targetRest,
               };
             }
             return edge;

@@ -221,12 +221,7 @@ export const FlowForm: FC<Props> = ({
             }
           >
             <LangTextItemForm
-              name={[
-                'flowInformation',
-                'dataSetInformation',
-                'name',
-                'treatmentStandardsRoutes',
-              ]}
+              name={['flowInformation', 'dataSetInformation', 'name', 'treatmentStandardsRoutes']}
               label={
                 <FormattedMessage
                   id="pages.flow.view.flowInformation.treatmentStandardsRoutes"
@@ -247,12 +242,7 @@ export const FlowForm: FC<Props> = ({
             }
           >
             <LangTextItemForm
-              name={[
-                'flowInformation',
-                'dataSetInformation',
-                'name',
-                'mixAndLocationTypes',
-              ]}
+              name={['flowInformation', 'dataSetInformation', 'name', 'mixAndLocationTypes']}
               label={
                 <FormattedMessage
                   id="pages.flow.view.flowInformation.mixAndLocationTypes"
@@ -273,12 +263,7 @@ export const FlowForm: FC<Props> = ({
             }
           >
             <LangTextItemForm
-              name={[
-                'flowInformation',
-                'dataSetInformation',
-                'name',
-                'flowProperties',
-              ]}
+              name={['flowInformation', 'dataSetInformation', 'name', 'flowProperties']}
               label={
                 <FormattedMessage
                   id="pages.flow.view.flowInformation.flowProperties"
