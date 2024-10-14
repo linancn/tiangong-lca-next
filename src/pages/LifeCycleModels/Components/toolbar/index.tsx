@@ -14,7 +14,7 @@ import { DeleteOutlined, SaveOutlined } from '@ant-design/icons';
 import { useGraphEvent, useGraphStore } from '@antv/xflow';
 import { Button, Space, Spin, Tooltip, message, theme } from 'antd';
 import { FC, useCallback, useEffect, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
 import ModelToolbarAdd from './add';
 import { Control } from './control';
@@ -40,6 +40,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
   const removeNodes = useGraphStore((state) => state.removeNodes);
   const removeEdges = useGraphStore((state) => state.removeEdges);
   const updateEdge = useGraphStore((state) => state.updateEdge);
+  const intl = useIntl();
 
   const nodes = useGraphStore((state) => state.nodes);
   const edges = useGraphStore((state) => state.edges);
@@ -240,10 +241,10 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
       createLifeCycleModel({ ...newData, id: newId }).then((result: any) => {
         if (result.data) {
           message.success(
-            <FormattedMessage
-              id="pages.flows.createsuccess"
-              defaultMessage="Created successfully!"
-            />,
+            intl.formatMessage({
+              id:"pages.button.create.success",
+              defaultMessage:"Created successfully!",
+            }),
           );
           saveCallback();
         } else {
