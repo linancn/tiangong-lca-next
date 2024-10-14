@@ -71,7 +71,8 @@ export function genLifeCycleModelJsonOrdered(id: string, data: any, oldData: any
               data?.lifeCycleModelInformation?.dataSetInformation?.name?.mixAndLocationTypes,
             ),
             functionalUnitFlowProperties: getLangJson(
-              data?.lifeCycleModelInformation?.dataSetInformation?.name?.functionalUnitFlowProperties,
+              data?.lifeCycleModelInformation?.dataSetInformation?.name
+                ?.functionalUnitFlowProperties,
             ),
           },
           classificationInformation: {

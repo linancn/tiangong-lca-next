@@ -142,8 +142,8 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
               if (updateResult?.data) {
                 message.success(
                   intl.formatMessage({
-                    id:'pages.flows.editsuccess',
-                    defaultMessage:'Edit successfully!',
+                    id: 'pages.flows.editsuccess',
+                    defaultMessage: 'Edit successfully!',
                   }),
                 );
                 setDrawerVisible(false);
