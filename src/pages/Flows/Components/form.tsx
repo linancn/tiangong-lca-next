@@ -187,22 +187,92 @@ export const FlowForm: FC<Props> = ({
         <Card
           size="small"
           title={
-            <FormattedMessage
-              id="pages.flow.view.flowInformation.baseName"
-              defaultMessage="Base name"
-            />
+            <FormattedMessage id="pages.lifeCycleModel.information.name" defaultMessage="Name" />
           }
         >
-          <LangTextItemForm
-            name={['flowInformation', 'dataSetInformation', 'name', 'baseName']}
-            label={
+          <Card
+            size="small"
+            title={
               <FormattedMessage
                 id="pages.flow.view.flowInformation.baseName"
                 defaultMessage="Base name"
               />
             }
-            rules={StringMultiLang_r}
-          />
+          >
+            <LangTextItemForm
+              name={['flowInformation', 'dataSetInformation', 'name', 'baseName']}
+              label={
+                <FormattedMessage
+                  id="pages.flow.view.flowInformation.baseName"
+                  defaultMessage="Base name"
+                />
+              }
+              rules={StringMultiLang_r}
+            />
+          </Card>
+          <br />
+          <Card
+            size="small"
+            title={
+              <FormattedMessage
+                id="pages.flow.view.flowInformation.treatmentStandardsRoutes"
+                defaultMessage="Treatment, standards, routes"
+              />
+            }
+          >
+            <LangTextItemForm
+              name={['flowInformation', 'dataSetInformation', 'name', 'treatmentStandardsRoutes']}
+              label={
+                <FormattedMessage
+                  id="pages.flow.view.flowInformation.treatmentStandardsRoutes"
+                  defaultMessage="Treatment, standards, routes"
+                />
+              }
+              rules={StringMultiLang_r}
+            />
+          </Card>
+          <br />
+          <Card
+            size="small"
+            title={
+              <FormattedMessage
+                id="pages.flow.view.flowInformation.mixAndLocationTypes"
+                defaultMessage="Mix and location types"
+              />
+            }
+          >
+            <LangTextItemForm
+              name={['flowInformation', 'dataSetInformation', 'name', 'mixAndLocationTypes']}
+              label={
+                <FormattedMessage
+                  id="pages.flow.view.flowInformation.mixAndLocationTypes"
+                  defaultMessage="Mix and location types"
+                />
+              }
+              rules={StringMultiLang_r}
+            />
+          </Card>
+          <br />
+          <Card
+            size="small"
+            title={
+              <FormattedMessage
+                id="pages.flow.view.flowInformation.flowProperties"
+                defaultMessage="Quantitative product or process properties"
+              />
+            }
+          >
+            <LangTextItemForm
+              name={['flowInformation', 'dataSetInformation', 'name', 'flowProperties']}
+              label={
+                <FormattedMessage
+                  id="pages.flow.view.flowInformation.flowProperties"
+                  defaultMessage="Quantitative product or process properties"
+                />
+              }
+              rules={StringMultiLang_r}
+            />
+          </Card>
         </Card>
         <br />
         <Card

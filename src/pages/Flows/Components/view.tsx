@@ -19,6 +19,7 @@ type Props = {
   id: string;
   lang: string;
   buttonType: string;
+  data?: any;
 };
 
 const getComplianceLabel = (value: string) => {
@@ -182,16 +183,55 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
             {initData?.flowInformation?.dataSetInformation?.['common:UUID'] ?? '-'}
           </Descriptions.Item>
         </Descriptions>
-        <Divider orientationMargin="0" orientation="left" plain>
-          <FormattedMessage
-            id="pages.flow.view.flowInformation.baseName"
-            defaultMessage="Base name"
+        <br />
+        <Card
+          size="small"
+          title={
+            <FormattedMessage id="pages.flow.view.flowInformation.name" defaultMessage="Name" />
+          }
+        >
+          <Divider orientationMargin="0" orientation="left" plain>
+            <FormattedMessage
+              id="pages.flow.view.flowInformation.baseName"
+              defaultMessage="Base name"
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={initData?.flowInformation?.dataSetInformation?.['name']?.['baseName']}
           />
-        </Divider>
-        <LangTextItemDescription
-          data={initData?.flowInformation?.dataSetInformation?.['name']?.['baseName']}
-        />
-
+          <br />
+          <Divider orientationMargin="0" orientation="left" plain>
+            <FormattedMessage
+              id="pages.flow.view.flowInformation.treatmentStandardsRoutes"
+              defaultMessage="Treatment, standards, routes"
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={
+              initData?.flowInformation?.dataSetInformation?.name?.treatmentStandardsRoutes ?? '-'
+            }
+          />
+          <br />
+          <Divider orientationMargin="0" orientation="left" plain>
+            <FormattedMessage
+              id="pages.flow.view.flowInformation.mixAndLocationTypes"
+              defaultMessage="Mix and Location Types"
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={initData?.flowInformation?.dataSetInformation?.name?.mixAndLocationTypes ?? '-'}
+          />
+          <br />
+          <Divider orientationMargin="0" orientation="left" plain>
+            <FormattedMessage
+              id="pages.flow.view.flowInformation.flowProperties"
+              defaultMessage="Quantitative product or process properties"
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={initData?.flowInformation?.dataSetInformation?.name?.flowProperties ?? '-'}
+          />
+        </Card>
         <Divider orientationMargin="0" orientation="left" plain>
           <FormattedMessage
             id="pages.flow.view.flowInformation.synonyms"
