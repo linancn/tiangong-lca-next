@@ -14,7 +14,6 @@ import type { FC } from 'react';
 import FlowsCreate from './Components/create';
 import FlowsDelete from './Components/delete';
 import FlowsEdit from './Components/edit';
-import FlowModel from './Components/model';
 import { flowTypeOptions } from './Components/optiondata';
 import FlowsView from './Components/view';
 
@@ -89,22 +88,6 @@ const TableList: FC = () => {
       sorter: false,
       search: false,
     },
-    // {
-    //   title: (
-    //     <FormattedMessage
-    //       id="pages.flowproperty.referenceToReferenceUnitGroup"
-    //       defaultMessage="Reference Unit Group"
-    //     />
-    //   ),
-    //   dataIndex: 'refUnitGroup',
-    //   sorter: false,
-    //   search: false,
-    //   render: (_, row) => {
-    //     return [
-    //         <ReferenceUnit key={0} id={row.refFlowPropertyId} idType={'flowproperty'} lang={lang} />,
-    //     ];
-    //   },
-    // },
     {
       title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
       dataIndex: 'option',
@@ -113,7 +96,6 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              {/* <FlowModel buttonType={'icon'} flowId={row.id} lang={lang} dataSource={dataSource} /> */}
               <FlowsView buttonType={'icon'} id={row.id} lang={lang} />
               <FlowsEdit id={row.id} lang={lang} buttonType={'icon'} actionRef={actionRef} />
               <FlowsDelete
@@ -127,7 +109,6 @@ const TableList: FC = () => {
         }
         return [
           <Space size={'small'} key={0}>
-            <FlowModel buttonType={'icon'} flowId={row.id} lang={lang} dataSource={dataSource} />
             <FlowsView buttonType={'icon'} id={row.id} lang={lang} />
           </Space>,
         ];

@@ -18,7 +18,7 @@ export default [
     routes: [
       {
         path: '/tgdata',
-        redirect: '/tgdata/products',
+        redirect: '/tgdata/models',
       },
       {
         name: 'models',
@@ -71,20 +71,13 @@ export default [
     routes: [
       {
         path: '/mydata',
-        redirect: '/mydata/products',
+        redirect: '/mydata/models',
       },
       {
         name: 'models',
         path: '/mydata/models',
         icon: 'AppstoreAddOutlined',
         component: './LifeCycleModels',
-      },
-      {
-        name: 'products',
-        menu: false,
-        path: '/mydata/products',
-        icon: 'AppstoreAddOutlined',
-        component: './Products',
       },
       {
         name: 'processes',

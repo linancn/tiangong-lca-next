@@ -28,11 +28,11 @@ const EdgeExhange: FC<Props> = ({ lang, disabled, edge, onData }) => {
     onData({ ...edge, data: { ...edge?.data, connection: newData } });
   };
 
-  const onOpenDrawer = () => {
+  const onDrawerOpen = () => {
     setDrawerVisible(true);
   };
 
-  const onCloseDrawer = () => {
+  const onDrawerClose = () => {
     setDrawerVisible(false);
   };
 
@@ -53,7 +53,7 @@ const EdgeExhange: FC<Props> = ({ lang, disabled, edge, onData }) => {
           icon={<ArrowRightOutlined />}
           style={{ boxShadow: 'none' }}
           disabled={disabled}
-          onClick={onOpenDrawer}
+          onClick={onDrawerOpen}
         />
       </Tooltip>
       <EdgeExchangeSelect
@@ -73,22 +73,21 @@ const EdgeExhange: FC<Props> = ({ lang, disabled, edge, onData }) => {
             edge?.data?.connection?.outputExchange?.downstreamProcess?.['@flowUUID']
           )
         }
-        onCloseDrawer={onCloseDrawer}
+        onDrawerClose={onDrawerClose}
       />
       <EdgeExchangeView
         lang={lang}
+        id={edge?.id}
         sourceProcessId={edge?.data?.node?.sourceProcessId}
         targetProcessId={edge?.data?.node?.targetProcessId}
         sourceOutputFlowID={edge?.data?.connection?.outputExchange?.['@flowUUID']}
         targetInputFlowID={edge?.data?.connection?.outputExchange?.downstreamProcess?.['@flowUUID']}
-        drawerVisible={
-          drawerVisible &&
+        drawerVisible={drawerVisible &&
           edge &&
           edge?.data?.connection?.outputExchange?.['@flowUUID'] &&
-          edge?.data?.connection?.outputExchange?.downstreamProcess?.['@flowUUID']
-        }
-        onCloseDrawer={onCloseDrawer}
-      />
+          edge?.data?.connection?.outputExchange?.downstreamProcess?.['@flowUUID']}
+          onDrawerClose={onDrawerClose}
+        onData={onEditEdgeData} />
     </>
   );
 };

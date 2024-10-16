@@ -22,7 +22,7 @@ type Props = {
   optionType: string;
   drawerVisible: boolean;
   onData: (data: any) => void;
-  onCloseDrawer: () => void;
+  onDrawerClose: () => void;
 };
 
 const EdgeExchangeSelect: FC<Props> = ({
@@ -35,7 +35,7 @@ const EdgeExchangeSelect: FC<Props> = ({
   optionType,
   drawerVisible,
   onData,
-  onCloseDrawer,
+  onDrawerClose,
 }) => {
   const [selectedSourceRowKeys, setSelectedSourceRowKeys] = useState<Key[]>([]);
   const [selectedTargetRowKeys, setSelectedTargetRowKeys] = useState<Key[]>([]);
@@ -203,26 +203,26 @@ const EdgeExchangeSelect: FC<Props> = ({
         }
         width="90%"
         closable={false}
-        extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={onCloseDrawer} />}
+        extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={onDrawerClose} />}
         maskClosable={false}
         open={drawerVisible}
-        onClose={onCloseDrawer}
+        onClose={onDrawerClose}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
-            <Button onClick={onCloseDrawer}>
+            <Button onClick={onDrawerClose}>
               <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
             </Button>
             <Button
               disabled={selectedSourceRowKeys.length === 0 || selectedTargetRowKeys.length === 0}
               onClick={() => {
                 const selectedSource = exchangeDataSource.find(
-                  (item) => item['@dataSetInternalID'] === selectedSourceRowKeys[0],
+                  (item) => item?.referenceToFlowDataSet?.['@refObjectId'] === selectedSourceRowKeys[0],
                 );
                 const selectedTarget = exchangeDataTarget.find(
-                  (item) => item['@dataSetInternalID'] === selectedTargetRowKeys[0],
+                  (item) => item?.referenceToFlowDataSet?.['@refObjectId'] === selectedTargetRowKeys[0],
                 );
                 onData({ id: id, selectedSource: selectedSource, selectedTarget: selectedTarget });
-                onCloseDrawer();
+                onDrawerClose();
               }}
               type="primary"
             >

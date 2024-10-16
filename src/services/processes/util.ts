@@ -593,7 +593,7 @@ export function genProcessExchangeTableData(data: any, lang: string) {
     return dataList?.map((item: any) => {
       return removeEmptyObjects({
         // key: `${item?.['@dataSetInternalID'] ?? '-'},${item?.referenceToFlowDataSet?.['@refObjectId'] ?? '-'}`,
-        key: item?.['@dataSetInternalID'] ?? '-',
+        key: item?.referenceToFlowDataSet?.['@refObjectId'] ?? '-',
         dataSetInternalID: item?.['@dataSetInternalID'] ?? '-',
         exchangeDirection: item?.exchangeDirection ?? '-',
         referenceToFlowDataSetId: item?.referenceToFlowDataSet?.['@refObjectId'] ?? '-',
