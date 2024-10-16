@@ -258,7 +258,7 @@ export const FlowForm: FC<Props> = ({
             title={
               <FormattedMessage
                 id="pages.flow.view.flowInformation.flowProperties"
-                defaultMessage="Quantitative product or process properties"
+                defaultMessage="Quantitative flow properties"
               />
             }
           >
@@ -267,7 +267,7 @@ export const FlowForm: FC<Props> = ({
               label={
                 <FormattedMessage
                   id="pages.flow.view.flowInformation.flowProperties"
-                  defaultMessage="Quantitative product or process properties"
+                  defaultMessage="Quantitative flow properties"
                 />
               }
               rules={StringMultiLang_r}

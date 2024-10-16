@@ -224,25 +224,106 @@ export const ProcessForm: FC<Props> = ({
   const tabContent: { [key: string]: JSX.Element } = {
     processInformation: (
       <Space direction="vertical" style={{ width: '100%' }}>
+        {/* <Card size="small" title={'Data Set Information'}> */}
         <Card
           size="small"
           title={
-            <FormattedMessage
-              id="pages.process.view.processInformation.baseName"
-              defaultMessage="Base name"
-            />
+            <FormattedMessage id="pages.lifeCycleModel.information.name" defaultMessage="Name" />
           }
         >
-          <LangTextItemForm
-            name={['processInformation', 'dataSetInformation', 'name', 'baseName']}
-            label={
+          <Card
+            size="small"
+            title={
               <FormattedMessage
                 id="pages.process.view.processInformation.baseName"
                 defaultMessage="Base name"
               />
             }
-            rules={StringMultiLang_r}
-          />
+          >
+            <LangTextItemForm
+              name={['processInformation', 'dataSetInformation', 'name', 'baseName']}
+              label={
+                <FormattedMessage
+                  id="pages.process.view.processInformation.baseName"
+                  defaultMessage="Base name"
+                />
+              }
+              rules={StringMultiLang_r}
+            />
+          </Card>
+          <br />
+          <Card
+            size="small"
+            title={
+              <FormattedMessage
+                id="pages.process.view.processInformation.treatmentStandardsRoutes"
+                defaultMessage="Treatment, standards, routes"
+              />
+            }
+          >
+            <LangTextItemForm
+              name={[
+                'processInformation',
+                'dataSetInformation',
+                'name',
+                'treatmentStandardsRoutes',
+              ]}
+              label={
+                <FormattedMessage
+                  id="pages.process.view.processInformation.treatmentStandardsRoutes"
+                  defaultMessage="Treatment, standards, routes"
+                />
+              }
+              rules={StringMultiLang_r}
+            />
+          </Card>
+          <br />
+          <Card
+            size="small"
+            title={
+              <FormattedMessage
+                id="pages.process.view.processInformation.mixAndLocationTypes"
+                defaultMessage="Mix and location types"
+              />
+            }
+          >
+            <LangTextItemForm
+              name={['processInformation', 'dataSetInformation', 'name', 'mixAndLocationTypes']}
+              label={
+                <FormattedMessage
+                  id="pages.process.view.processInformation.mixAndLocationTypes"
+                  defaultMessage="Mix and location types"
+                />
+              }
+              rules={StringMultiLang_r}
+            />
+          </Card>
+          <br />
+          <Card
+            size="small"
+            title={
+              <FormattedMessage
+                id="pages.process.view.processInformation.functionalUnitFlowProperties"
+                defaultMessage="Quantitative product or process properties"
+              />
+            }
+          >
+            <LangTextItemForm
+              name={[
+                'processInformation',
+                'dataSetInformation',
+                'name',
+                'functionalUnitFlowProperties',
+              ]}
+              label={
+                <FormattedMessage
+                  id="pages.process.view.processInformation.functionalUnitFlowProperties"
+                  defaultMessage="Quantitative product or process properties"
+                />
+              }
+              rules={StringMultiLang_r}
+            />
+          </Card>
         </Card>
         <br />
         <LevelTextItemForm

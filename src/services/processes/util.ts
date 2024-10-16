@@ -40,6 +40,15 @@ export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
           'common:UUID': id,
           name: {
             baseName: getLangJson(data?.processInformation?.dataSetInformation?.name?.baseName),
+            treatmentStandardsRoutes: getLangJson(
+              data?.processInformation?.dataSetInformation?.name?.treatmentStandardsRoutes,
+            ),
+            mixAndLocationTypes: getLangJson(
+              data?.processInformation?.dataSetInformation?.name?.mixAndLocationTypes,
+            ),
+            functionalUnitFlowProperties: getLangJson(
+              data?.processInformation?.dataSetInformation?.name?.functionalUnitFlowProperties,
+            ),
           },
           classificationInformation: {
             'common:classification': {
@@ -285,6 +294,15 @@ export function genProcessFromData(data: any) {
         'common:UUID': data?.processInformation?.dataSetInformation?.['common:UUID'] ?? '-',
         name: {
           baseName: getLangList(data?.processInformation?.dataSetInformation?.name?.baseName),
+          treatmentStandardsRoutes: getLangList(
+            data?.processInformation?.dataSetInformation?.name?.treatmentStandardsRoutes,
+          ),
+          mixAndLocationTypes: getLangList(
+            data?.processInformation?.dataSetInformation?.name?.mixAndLocationTypes,
+          ),
+          functionalUnitFlowProperties: getLangList(
+            data?.processInformation?.dataSetInformation?.name?.functionalUnitFlowProperties,
+          ),
         },
         classificationInformation: {
           'common:classification': {

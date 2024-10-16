@@ -225,7 +225,7 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
               id="pages.flow.view.flowInformation.flowProperties"
-              defaultMessage="Quantitative product or process properties"
+              defaultMessage="Quantitative flow properties"
             />
           </Divider>
           <LangTextItemDescription

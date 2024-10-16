@@ -19,7 +19,11 @@ export default {
   //process.view/view
   'pages.process.view.processInformation': 'Process information',
   'pages.process.view.processInformation.id': 'ID',
+  'pages.process.view.processInformation.name': 'Name',
   'pages.process.view.processInformation.baseName': 'Base name',
+  'pages.process.view.processInformation.treatmentStandardsRoutes': 'Treatment, standards, routes',
+  'pages.process.view.processInformation.mixAndLocationTypes': 'Mix and location types',
+  'pages.process.view.processInformation.functionalUnitFlowProperties': 'Quantitative product or process properties',
   'pages.process.view.processInformation.generalComment': 'General comment on data set',
   'pages.process.view.processInformation.quantitativeReference': 'Quantitative reference',
   'pages.process.view.processInformation.classification': 'Classification',
