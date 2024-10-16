@@ -2,41 +2,53 @@ import LangTextItemDescription from '@/components/LangTextItem/description';
 import FlowsSelectDescription from '@/pages/Flows/Components/select/description';
 import { getProcessDetail } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
-import {
-  CheckCircleTwoTone,
-  CloseCircleOutlined,
-  CloseOutlined,
-  ProfileOutlined,
-} from '@ant-design/icons';
-import { Button, Card, Col, Descriptions, Divider, Drawer, Row, Spin, Tooltip } from 'antd';
+import styles from '@/style/custom.less';
+import { CheckCircleTwoTone, CloseCircleOutlined, CloseOutlined } from '@ant-design/icons';
+import { Button, Card, Col, Descriptions, Divider, Drawer, Row, Space, Spin } from 'antd';
 import type { FC } from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
+import EdgeExchangeSelect from './select';
 
 type Props = {
   lang: string;
-  buttonType: string;
+  id: string;
   sourceProcessId: string;
   targetProcessId: string;
-  sourceOutputFlowInternalID: string;
-  targetInputFlowInternalID: string;
+  sourceOutputFlowID: string;
+  targetInputFlowID: string;
+  drawerVisible: boolean;
+  onData: (data: any) => void;
+  onDrawerClose: () => void;
 };
 const EdgeExchangeView: FC<Props> = ({
   lang,
-  buttonType,
+  id,
   sourceProcessId,
   targetProcessId,
-  sourceOutputFlowInternalID,
-  targetInputFlowInternalID,
+  sourceOutputFlowID,
+  targetInputFlowID,
+  drawerVisible,
+  onDrawerClose,
+  onData,
 }) => {
-  const [drawerVisible, setDrawerVisible] = useState(false);
   const [exchangeDataSource, setExchangeDataSource] = useState<any>({});
   const [exchangeDataTarget, setExchangeDataTarget] = useState<any>({});
   const [spinningSource, setSpinningSource] = useState(false);
   const [spinningTarget, setSpinningTarget] = useState(false);
+  const [editDrawerVisible, setEditDrawerVisible] = useState(false);
 
-  const onView = () => {
-    setDrawerVisible(true);
+  const onEdit = () => {
+    setEditDrawerVisible(true);
+    onDrawerClose();
+  };
+
+  const onEditDrawerClose = () => {
+    setEditDrawerVisible(false);
+  }
+
+  useEffect(() => {
+    if (!drawerVisible) return;
     setSpinningSource(true);
     setSpinningTarget(true);
     getProcessDetail(sourceProcessId).then(async (result) => {
@@ -45,7 +57,7 @@ const EdgeExchangeView: FC<Props> = ({
       ).filter(
         (item: any) =>
           (item?.exchangeDirection).toLowerCase() === 'output' &&
-          item?.['@dataSetInternalID'] === sourceOutputFlowInternalID,
+          item?.referenceToFlowDataSet?.['@refObjectId'] === sourceOutputFlowID,
       );
       if (sourceDatas.length > 0) {
         setExchangeDataSource(sourceDatas[0]);
@@ -59,32 +71,17 @@ const EdgeExchangeView: FC<Props> = ({
       ).filter(
         (item: any) =>
           (item?.exchangeDirection).toLowerCase() === 'input' &&
-          item?.['@dataSetInternalID'] === targetInputFlowInternalID,
+          item?.referenceToFlowDataSet?.['@refObjectId'] === targetInputFlowID,
       );
       if (targetDatas.length > 0) {
         setExchangeDataTarget(targetDatas[0]);
       }
       setSpinningTarget(false);
     });
-  };
+  }, [drawerVisible]);
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="pages.button.view" defaultMessage="View exchange" />}>
-        {buttonType === 'icon' ? (
-          <Button
-            type="primary"
-            icon={<ProfileOutlined />}
-            size="small"
-            style={{ boxShadow: 'none' }}
-            onClick={onView}
-          />
-        ) : (
-          <Button onClick={onView}>
-            <FormattedMessage id="pages.button.view" defaultMessage="View" />
-          </Button>
-        )}
-      </Tooltip>
       <Drawer
         title={
           <FormattedMessage
@@ -94,17 +91,20 @@ const EdgeExchangeView: FC<Props> = ({
         }
         width="90%"
         closable={false}
-        extra={
-          <Button
-            icon={<CloseOutlined />}
-            style={{ border: 0 }}
-            onClick={() => setDrawerVisible(false)}
-          />
+        extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={onDrawerClose} />}
+        footer={
+          <Space size={'middle'} className={styles.footer_right}>
+            <Button onClick={onDrawerClose}>
+              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
+            </Button>
+            <Button type="primary" onClick={onEdit}>
+              <FormattedMessage id="pages.button.edit" defaultMessage="Edit" />
+            </Button>
+          </Space>
         }
-        footer={false}
         maskClosable={true}
         open={drawerVisible}
-        onClose={() => setDrawerVisible(false)}
+        onClose={onDrawerClose}
       >
         <Row gutter={16}>
           <Col span={12}>
@@ -367,6 +367,19 @@ const EdgeExchangeView: FC<Props> = ({
 
         {/* </Spin> */}
       </Drawer>
+
+      <EdgeExchangeSelect
+        id={id}
+        lang={lang}
+        sourceProcessId={sourceProcessId}
+        targetProcessId={targetProcessId}
+        onData={onData}
+        sourceRowKeys={[sourceOutputFlowID]}
+        targetRowKeys={[targetInputFlowID]}
+        optionType={'edit'}
+        drawerVisible={editDrawerVisible}
+        onDrawerClose={onEditDrawerClose}
+      />
     </>
   );
 };

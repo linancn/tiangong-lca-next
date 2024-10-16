@@ -1,41 +1,42 @@
+import ProcessExchangeView from '@/pages/Processes/Components/Exchange/view';
 import { ListPagination } from '@/services/general/data';
 import { getProcessDetail } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData, genProcessFromData } from '@/services/processes/util';
 import styles from '@/style/custom.less';
-import { CheckCircleTwoTone, CloseOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
+import { CheckCircleTwoTone, CloseOutlined } from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import type { ActionType } from '@ant-design/pro-table';
 import { Button, Card, Col, Drawer, Row, Space, Tooltip } from 'antd';
 import type { FC, Key } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import ProcessExchangeView from './view';
 
 type Props = {
   id: string;
-  buttonType: string;
   lang: string;
   sourceProcessId: string;
   targetProcessId: string;
   sourceRowKeys: Key[];
   targetRowKeys: Key[];
   optionType: string;
+  drawerVisible: boolean;
   onData: (data: any) => void;
+  onDrawerClose: () => void;
 };
 
-const ExchangeSelect: FC<Props> = ({
+const EdgeExchangeSelect: FC<Props> = ({
   id,
-  buttonType,
   lang,
   sourceProcessId,
   targetProcessId,
   sourceRowKeys,
   targetRowKeys,
   optionType,
+  drawerVisible,
   onData,
+  onDrawerClose,
 }) => {
-  const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedSourceRowKeys, setSelectedSourceRowKeys] = useState<Key[]>([]);
   const [selectedTargetRowKeys, setSelectedTargetRowKeys] = useState<Key[]>([]);
   const [exchangeDataSource, setExchangeDataSource] = useState<any[]>([]);
@@ -50,10 +51,6 @@ const ExchangeSelect: FC<Props> = ({
   const [loadingTarget, setLoadingTarget] = useState(false);
   const actionRefSelectSource = useRef<ActionType>();
   const actionRefSelectTarget = useRef<ActionType>();
-
-  const onSelect = () => {
-    setDrawerVisible(true);
-  };
 
   const onSelectSourceChange = (newSelectedRowKeys: React.Key[]) => {
     setSelectedSourceRowKeys(newSelectedRowKeys);
@@ -136,7 +133,6 @@ const ExchangeSelect: FC<Props> = ({
 
   useEffect(() => {
     if (!drawerVisible) return;
-    console.log('sourceRowKeys', sourceRowKeys);
     setSelectedSourceRowKeys(sourceRowKeys);
     setSelectedTargetRowKeys(targetRowKeys);
     setLoadingSource(true);
@@ -191,26 +187,6 @@ const ExchangeSelect: FC<Props> = ({
 
   return (
     <>
-      {optionType === 'create' ? (
-        buttonType === 'icon' ? (
-          <Tooltip title={<FormattedMessage id="pages.button.create" defaultMessage="Create" />}>
-            <Button type="text" icon={<PlusOutlined />} size={'middle'} onClick={onSelect} />
-          </Tooltip>
-        ) : (
-          <Button onClick={onSelect}>
-            <FormattedMessage id="pages.button.create" defaultMessage="Create" />
-          </Button>
-        )
-      ) : buttonType === 'icon' ? (
-        <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
-          <Button shape="circle" icon={<EditOutlined />} size={'small'} onClick={onSelect} />
-        </Tooltip>
-      ) : (
-        <Button onClick={onSelect}>
-          <FormattedMessage id="pages.button.edit" defaultMessage="Edit" />
-        </Button>
-      )}
-
       <Drawer
         title={
           optionType === 'create' ? (
@@ -227,32 +203,26 @@ const ExchangeSelect: FC<Props> = ({
         }
         width="90%"
         closable={false}
-        extra={
-          <Button
-            icon={<CloseOutlined />}
-            style={{ border: 0 }}
-            onClick={() => setDrawerVisible(false)}
-          />
-        }
+        extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={onDrawerClose} />}
         maskClosable={false}
         open={drawerVisible}
-        onClose={() => setDrawerVisible(false)}
+        onClose={onDrawerClose}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
-            <Button onClick={() => setDrawerVisible(false)}>
+            <Button onClick={onDrawerClose}>
               <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
             </Button>
             <Button
               disabled={selectedSourceRowKeys.length === 0 || selectedTargetRowKeys.length === 0}
               onClick={() => {
                 const selectedSource = exchangeDataSource.find(
-                  (item) => item['@dataSetInternalID'] === selectedSourceRowKeys[0],
+                  (item) => item?.referenceToFlowDataSet?.['@refObjectId'] === selectedSourceRowKeys[0],
                 );
                 const selectedTarget = exchangeDataTarget.find(
-                  (item) => item['@dataSetInternalID'] === selectedTargetRowKeys[0],
+                  (item) => item?.referenceToFlowDataSet?.['@refObjectId'] === selectedTargetRowKeys[0],
                 );
                 onData({ id: id, selectedSource: selectedSource, selectedTarget: selectedTarget });
-                setDrawerVisible(false);
+                onDrawerClose();
               }}
               type="primary"
             >
@@ -328,4 +298,4 @@ const ExchangeSelect: FC<Props> = ({
   );
 };
 
-export default ExchangeSelect;
+export default EdgeExchangeSelect;
