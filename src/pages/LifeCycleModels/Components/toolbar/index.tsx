@@ -19,7 +19,7 @@ import { v4 } from 'uuid';
 import ModelToolbarAdd from './add';
 import { Control } from './control';
 import ToolbarEditInfo from './eidtInfo';
-import EdgeExhange from './Exchange';
+import EdgeExhange from './Exchange/index';
 import ToolbarViewInfo from './viewInfo';
 
 type Props = {
@@ -266,6 +266,26 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
     });
   });
 
+  useGraphEvent('edge:connected', (evt) => {
+    const edge = evt.edge;
+    const sourceNodeID = edge.getSourceCellId();
+    const targetNodeID = edge.getTargetCellId();
+    const sourceNode = nodes.find((node) => node.id === sourceNodeID);
+    const targetNode = nodes.find((node) => node.id === targetNodeID);
+    const sourceProcessId = sourceNode?.data?.id;
+    const targetProcessId = targetNode?.data?.id;
+    updateEdge(edge.id, {
+      data: {
+        node: {
+          sourceNodeID: sourceNodeID,
+          targetNodeID: targetNodeID,
+          sourceProcessId: sourceProcessId,
+          targetProcessId: targetProcessId,
+        },
+      },
+    });
+  });
+
   // useGraphEvent('cell:click', async (evt) => {
   //   console.log('cell:click', evt);
   //   console.log(nodes.filter((node) => node.selected)?.[0]?.data?.id);
@@ -297,7 +317,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
             ...node,
             attrs: nodeAttrs,
             ports: ports,
-          }
+          };
         });
         if (readonly) {
           initNodes = initNodes.map((node: any) => {
@@ -360,7 +380,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
                     stroke: token.colorPrimary,
                   },
                 },
-                target: targetRest
+                target: targetRest,
               };
             }
             return edge;
@@ -405,7 +425,6 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
         lang={lang}
         disabled={edges.filter((edge) => edge.selected).length === 0}
         edge={edges.filter((edge) => edge.selected)?.[0]}
-        nodes={nodes}
         onData={updateEdgeData}
         readonly={readonly}
       />
