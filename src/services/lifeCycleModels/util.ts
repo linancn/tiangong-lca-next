@@ -65,13 +65,14 @@ export function genLifeCycleModelJsonOrdered(id: string, data: any, oldData: any
               data?.lifeCycleModelInformation?.dataSetInformation?.name?.baseName,
             ),
             treatmentStandardsRoutes: getLangJson(
-              data?.lifeCycleModelInformation?.dataSetInformation?.treatmentStandardsRoutes,
+              data?.lifeCycleModelInformation?.dataSetInformation?.name?.treatmentStandardsRoutes,
             ),
             mixAndLocationTypes: getLangJson(
-              data?.lifeCycleModelInformation?.dataSetInformation?.mixAndLocationTypes,
+              data?.lifeCycleModelInformation?.dataSetInformation?.name?.mixAndLocationTypes,
             ),
             functionalUnitFlowProperties: getLangJson(
-              data?.lifeCycleModelInformation?.dataSetInformation?.functionalUnitFlowProperties,
+              data?.lifeCycleModelInformation?.dataSetInformation?.name
+                ?.functionalUnitFlowProperties,
             ),
           },
           classificationInformation: {
@@ -439,13 +440,13 @@ export function genLifeCycleModelInfoFromData(data: any) {
             data?.lifeCycleModelInformation?.dataSetInformation?.name?.baseName,
           ),
           treatmentStandardsRoutes: getLangList(
-            data?.lifeCycleModelInformation?.dataSetInformation?.treatmentStandardsRoutes,
+            data?.lifeCycleModelInformation?.dataSetInformation?.name?.treatmentStandardsRoutes,
           ),
           mixAndLocationTypes: getLangList(
-            data?.lifeCycleModelInformation?.dataSetInformation?.mixAndLocationTypes,
+            data?.lifeCycleModelInformation?.dataSetInformation?.name?.mixAndLocationTypes,
           ),
           functionalUnitFlowProperties: getLangList(
-            data?.lifeCycleModelInformation?.dataSetInformation?.functionalUnitFlowProperties,
+            data?.lifeCycleModelInformation?.dataSetInformation?.name?.functionalUnitFlowProperties,
           ),
         },
         classificationInformation: {

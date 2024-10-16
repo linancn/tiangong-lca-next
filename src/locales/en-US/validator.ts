@@ -10,7 +10,7 @@ export default {
   'validator.dataSetVersion.pattern': 'Version format must be XX.XX.XXX, where X is a digit!',
 
   'validator.CASNumber.empty': 'Should only be given for (virtually) pure substances, but NOT also for the main constituent of a material or product etc!',
-  'validator.CASNumber.pattern': 'Version format must be X-X-X, where the first part is 2-7 digits, the second part is 2 digits, and the third part is 1 digit!',
+  'validator.CASNumber.pattern': 'CAS number must be X-X-X, where the first part is 2-7 digits, the second part is 2 digits, and the third part is 1 digit!',
 
   'validator.pages.contact.email.pattern': 'The input is not valid E-mail!',
 

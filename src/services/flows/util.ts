@@ -53,6 +53,15 @@ export function genFlowJsonOrdered(id: string, data: any, oldData: any) {
             baseName: getLangJson(
               data?.flowInformation?.dataSetInformation?.['name']?.['baseName'],
             ),
+            treatmentStandardsRoutes: getLangJson(
+              data?.flowInformation?.dataSetInformation?.name?.treatmentStandardsRoutes,
+            ),
+            mixAndLocationTypes: getLangJson(
+              data?.flowInformation?.dataSetInformation?.name?.mixAndLocationTypes,
+            ),
+            flowProperties: getLangJson(
+              data?.flowInformation?.dataSetInformation?.name?.flowProperties,
+            ),
           },
           'common:synonyms': getLangJson(
             data?.flowInformation?.dataSetInformation?.['common:synonyms'],
@@ -163,6 +172,15 @@ export function genFlowFromData(data: any) {
         'common:UUID': data?.flowInformation?.dataSetInformation?.['common:UUID'],
         name: {
           baseName: getLangList(data?.flowInformation?.dataSetInformation?.['name']?.['baseName']),
+          treatmentStandardsRoutes: getLangList(
+            data?.flowInformation?.dataSetInformation?.name?.treatmentStandardsRoutes,
+          ),
+          mixAndLocationTypes: getLangList(
+            data?.flowInformation?.dataSetInformation?.name?.mixAndLocationTypes,
+          ),
+          flowProperties: getLangList(
+            data?.flowInformation?.dataSetInformation?.name?.flowProperties,
+          ),
         },
         'common:synonyms': getLangList(
           data?.flowInformation?.dataSetInformation?.['common:synonyms'],

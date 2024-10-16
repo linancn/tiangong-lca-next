@@ -73,7 +73,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
               id="pages.lifeCycleModel.information.baseName"
-              defaultMessage="Base Name"
+              defaultMessage="Base name"
             />
           </Divider>
           <LangTextItemDescription
@@ -83,7 +83,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
               id="pages.lifeCycleModel.information.treatmentStandardsRoutes"
-              defaultMessage="Treatment Standards Routes"
+              defaultMessage="Treatment, standards, routes"
             />
           </Divider>
           <LangTextItemDescription
@@ -108,7 +108,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
               id="pages.lifeCycleModel.information.functionalUnitFlowProperties"
-              defaultMessage="Functional Unit Flow Properties"
+              defaultMessage="Quantitative product or process properties"
             />
           </Divider>
           <LangTextItemDescription
