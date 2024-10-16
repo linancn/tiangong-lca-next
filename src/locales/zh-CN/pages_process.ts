@@ -18,7 +18,11 @@ export default {
   //process.view/view 编辑和查看
   'pages.process.view.processInformation': '过程信息',
   'pages.process.view.processInformation.id': '身份信息',
+  'pages.process.view.processInformation.name': '名称',
   'pages.process.view.processInformation.baseName': '基本名称',
+  'pages.process.view.processInformation.treatmentStandardsRoutes': '处理、标准、路线',
+  'pages.process.view.processInformation.mixAndLocationTypes': '混合和位置类型',
+  'pages.process.view.processInformation.functionalUnitFlowProperties': '定量产品或过程属性',
   'pages.process.view.processInformation.generalComment': '数据集一般性说明',
   'pages.process.view.processInformation.classification': '分类',
   'pages.process.view.processInformation.time': '时间代表性',

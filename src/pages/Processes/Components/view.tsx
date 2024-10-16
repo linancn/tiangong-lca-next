@@ -268,17 +268,66 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
           </Descriptions.Item>
         </Descriptions>
 
-        <Divider orientationMargin="0" orientation="left" plain>
-          {
+        <br />
+        <Card
+          size="small"
+          title={
             <FormattedMessage
-              id="pages.process.view.processInformation.baseName"
-              defaultMessage="Base name"
+              id="pages.process.view.processInformation.name"
+              defaultMessage="Name"
             />
           }
-        </Divider>
-        <LangTextItemDescription
-          data={initData.processInformation?.dataSetInformation?.name?.baseName}
-        />
+        >
+          <Divider orientationMargin="0" orientation="left" plain>
+            {
+              <FormattedMessage
+                id="pages.process.view.processInformation.baseName"
+                defaultMessage="Base name"
+              />
+            }
+          </Divider>
+          <LangTextItemDescription
+            data={initData.processInformation?.dataSetInformation?.name?.baseName}
+          />
+          <br />
+          <Divider orientationMargin="0" orientation="left" plain>
+            <FormattedMessage
+              id="pages.process.view.processInformation.treatmentStandardsRoutes"
+              defaultMessage="Treatment, standards, routes"
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={
+              initData?.processInformation?.dataSetInformation?.name?.treatmentStandardsRoutes ??
+              '-'
+            }
+          />
+          <br />
+          <Divider orientationMargin="0" orientation="left" plain>
+            <FormattedMessage
+              id="pages.process.view.processInformation.mixAndLocationTypes"
+              defaultMessage="Mix and Location Types"
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={
+              initData?.processInformation?.dataSetInformation?.name?.mixAndLocationTypes ?? '-'
+            }
+          />
+          <br />
+          <Divider orientationMargin="0" orientation="left" plain>
+            <FormattedMessage
+              id="pages.process.view.processInformation.functionalUnitFlowProperties"
+              defaultMessage="Quantitative product or process properties"
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={
+              initData?.processInformation?.dataSetInformation?.name
+                ?.functionalUnitFlowProperties ?? '-'
+            }
+          />
+        </Card>
 
         <Divider orientationMargin="0" orientation="left" plain>
           <FormattedMessage
