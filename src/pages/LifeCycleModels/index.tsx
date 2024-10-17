@@ -2,9 +2,7 @@ import { ListPagination } from '@/services/general/data';
 import { getLang } from '@/services/general/util';
 import { getLifeCycleModelTableAll } from '@/services/lifeCycleModels/api';
 import { LifeCycleModelTable } from '@/services/lifeCycleModels/data';
-import { PageContainer } from '@ant-design/pro-components';
-import type { ActionType, ProColumns } from '@ant-design/pro-table';
-import ProTable from '@ant-design/pro-table';
+import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Card, Input, Space, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useRef } from 'react';
@@ -43,11 +41,31 @@ const TableList: FC = () => {
       dataIndex: 'baseName',
       sorter: false,
       search: false,
-      render: (_, row) => [
-        <Tooltip key={0} placement="topLeft" title={row.generalComment ?? '-'}>
-          {row.baseName}
-        </Tooltip>,
-      ],
+      render: (_, row) => {
+        let name = (
+          row.baseName +
+          '; ' +
+          row.treatmentStandardsRoutes +
+          '; ' +
+          row.mixAndLocationTypes +
+          '; ' +
+          row.functionalUnitFlowProperties +
+          '; '
+        )
+          .replace(/-; /g, '')
+          .replace(/-/g, '');
+        if (name.endsWith('; ')) {
+          name = name.slice(0, -2);
+        }
+        if (name.length === 0) {
+          name = '-';
+        }
+        return [
+          <Tooltip key={0} placement="topLeft" title={row.generalComment}>
+            {name}
+          </Tooltip>,
+        ];
+      },
     },
     {
       title: (

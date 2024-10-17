@@ -1,9 +1,8 @@
 import { getFlowpropertyDetail, updateFlowproperties } from '@/services/flowproperties/api';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
-import { ProForm } from '@ant-design/pro-components';
-import type { ProFormInstance } from '@ant-design/pro-form';
-import type { ActionType } from '@ant-design/pro-table';
+import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
+
 import {
   Button,
   Collapse,

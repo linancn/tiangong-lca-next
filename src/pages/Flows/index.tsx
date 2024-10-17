@@ -1,5 +1,4 @@
 import { getFlowTableAll, getFlowTablePgroongaSearch } from '@/services/flows/api';
-import type { ActionType, ProColumns } from '@ant-design/pro-table';
 import { Card, Input, Space, Tooltip } from 'antd';
 import { useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
@@ -7,8 +6,7 @@ import { FormattedMessage, useIntl, useLocation } from 'umi';
 import { FlowTable } from '@/services/flows/data';
 import { ListPagination } from '@/services/general/data';
 import { getLang } from '@/services/general/util';
-import { PageContainer } from '@ant-design/pro-components';
-import ProTable from '@ant-design/pro-table';
+import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import FlowsCreate from './Components/create';
@@ -42,15 +40,35 @@ const TableList: FC = () => {
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Base name" />,
+      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name" />,
       dataIndex: 'baseName',
       sorter: false,
       search: false,
-      render: (_, row) => [
-        <Tooltip key={0} placement="topLeft" title={row.synonyms}>
-          {row.baseName}
-        </Tooltip>,
-      ],
+      render: (_, row) => {
+        let name = (
+          row.baseName +
+          '; ' +
+          row.treatmentStandardsRoutes +
+          '; ' +
+          row.mixAndLocationTypes +
+          '; ' +
+          row.flowProperties +
+          '; '
+        )
+          .replace(/-; /g, '')
+          .replace(/-/g, '');
+        if (name.endsWith('; ')) {
+          name = name.slice(0, -2);
+        }
+        if (name.length === 0) {
+          name = '-';
+        }
+        return [
+          <Tooltip key={0} placement="topLeft" title={row.synonyms}>
+            {name}
+          </Tooltip>,
+        ];
+      },
     },
     {
       title: <FormattedMessage id="pages.flow.flowType" defaultMessage="Flow type" />,

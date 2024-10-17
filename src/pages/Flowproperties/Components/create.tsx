@@ -2,9 +2,7 @@ import { createFlowproperties } from '@/services/flowproperties/api';
 // import { langOptions } from '@/services/general/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
-import type { ProFormInstance } from '@ant-design/pro-form';
-import ProForm from '@ant-design/pro-form';
-import type { ActionType } from '@ant-design/pro-table';
+import { ActionType } from '@ant-design/pro-components';
 import {
   Button,
   Collapse,
@@ -27,6 +25,7 @@ import React, {
 import { FormattedMessage, useIntl } from 'umi';
 // import UnitgroupsFrom from '@/pages/Unitgroups/Components/Unit/edit';
 import { formatDateTime } from '@/services/general/util';
+import { ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { v4 } from 'uuid';
 import { FlowpropertyForm } from './form';
 

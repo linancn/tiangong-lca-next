@@ -1,7 +1,6 @@
 import styles from '@/style/custom.less';
 import { CloseOutlined, InfoOutlined } from '@ant-design/icons';
-import { ProFormInstance } from '@ant-design/pro-components';
-import ProForm from '@ant-design/pro-form';
+import { ProForm, ProFormInstance } from '@ant-design/pro-components';
 import {
   Button,
   Collapse,

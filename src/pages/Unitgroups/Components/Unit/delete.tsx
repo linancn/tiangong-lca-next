@@ -1,5 +1,5 @@
 import { DeleteOutlined } from '@ant-design/icons';
-import type { ActionType } from '@ant-design/pro-table';
+import { ActionType } from '@ant-design/pro-components';
 import { Button, message, Modal, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useState } from 'react';

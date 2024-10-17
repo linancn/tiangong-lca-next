@@ -1,9 +1,7 @@
 import FlowpropertiesSelectForm from '@/pages/Flowproperties/Components/select/form';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
-import { ActionType } from '@ant-design/pro-components';
-import type { ProFormInstance } from '@ant-design/pro-form';
-import ProForm from '@ant-design/pro-form';
+import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { Button, Collapse, Drawer, Form, Input, Space, Switch, Tooltip, Typography } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';

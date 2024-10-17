@@ -1,13 +1,13 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
 import { StringMultiLang_r, dataSetVersion } from '@/components/Validator/index';
-import type { ProFormInstance } from '@ant-design/pro-form';
 import { Card, Form, Input, Select, Space } from 'antd';
 import type { FC } from 'react';
 import { FormattedMessage } from 'umi';
 
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import UnitGroupSelectFrom from '@/pages/Unitgroups/Components/select/form';
+import { ProFormInstance } from '@ant-design/pro-components';
 import { complianceOptions } from './optiondata';
 import FlowpropertiesSelectForm from './select/form';
 

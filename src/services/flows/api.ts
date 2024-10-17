@@ -68,7 +68,7 @@ export async function getFlowTableAll(
 
   const selectStr = `
     id,
-    json->flowDataSet->flowInformation->dataSetInformation->name->baseName,
+    json->flowDataSet->flowInformation->dataSetInformation->name,
     json->flowDataSet->flowInformation->dataSetInformation->classificationInformation->"common:elementaryFlowCategorization"->"common:category",
     json->flowDataSet->flowInformation->dataSetInformation->"common:synonyms",
     json->flowDataSet->flowInformation->dataSetInformation->>CASNumber,
@@ -140,7 +140,10 @@ export async function getFlowTableAll(
             return {
               key: i.id,
               id: i.id,
-              baseName: getLangText(i?.baseName, lang),
+              baseName: getLangText(i?.name?.baseName, lang),
+              treatmentStandardsRoutes: getLangText(i?.name?.treatmentStandardsRoutes, lang),
+              mixAndLocationTypes: getLangText(i?.name?.mixAndLocationTypes, lang),
+              flowProperties: getLangText(i?.name?.flowProperties, lang),
               flowType: i?.typeOfDataSet ?? '-',
               classification: classificationToString(classificationZH),
               synonyms: getLangText(i?.['common:synonyms'], lang),
@@ -162,7 +165,10 @@ export async function getFlowTableAll(
           return {
             key: i.id,
             id: i.id,
-            baseName: getLangText(i.baseName, lang),
+            baseName: getLangText(i?.name?.baseName, lang),
+            treatmentStandardsRoutes: getLangText(i?.name?.treatmentStandardsRoutes, lang),
+            mixAndLocationTypes: getLangText(i?.name?.mixAndLocationTypes, lang),
+            flowProperties: getLangText(i?.name?.flowProperties, lang),
             flowType: i.typeOfDataSet ?? '-',
             classification: classificationToString(i['common:category']),
             synonyms: getLangText(i['common:synonyms'], lang),
@@ -257,6 +263,9 @@ export async function getFlowTablePgroongaSearch(
               key: i.id,
               id: i.id,
               baseName: getLangText(dataInfo?.name?.baseName ?? {}, lang),
+              treatmentStandardsRoutes: getLangText(dataInfo?.name?.treatmentStandardsRoutes, lang),
+              mixAndLocationTypes: getLangText(dataInfo?.name?.mixAndLocationTypes, lang),
+              flowProperties: getLangText(dataInfo?.name?.flowProperties, lang),
               synonyms: getLangText(dataInfo?.['common:synonyms'] ?? {}, lang),
               flowType:
                 i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet ?? '-',
@@ -280,6 +289,9 @@ export async function getFlowTablePgroongaSearch(
             key: i.id,
             id: i.id,
             baseName: getLangText(dataInfo?.name?.baseName ?? {}, lang),
+            treatmentStandardsRoutes: getLangText(dataInfo?.name?.treatmentStandardsRoutes, lang),
+              mixAndLocationTypes: getLangText(dataInfo?.name?.mixAndLocationTypes, lang),
+              flowProperties: getLangText(dataInfo?.name?.flowProperties, lang),
             synonyms: getLangText(dataInfo?.['common:synonyms'] ?? {}, lang),
             classification: classificationToString(
               dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[

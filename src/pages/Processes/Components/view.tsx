@@ -966,9 +966,10 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
           placement="left"
         >
           <Button
-            shape="circle"
-            icon={<ProfileOutlined />}
+            type="primary"
             size="small"
+            style={{ boxShadow: 'none' }}
+            icon={<ProfileOutlined />}
             onClick={onView}
             disabled={disabled}
           />
