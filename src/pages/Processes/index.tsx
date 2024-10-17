@@ -44,7 +44,6 @@ const TableList: FC = () => {
       sorter: false,
       search: false,
       render: (_, row) => {
-        console.log(row);
         let name = (
           row.baseName +
           '; ' +

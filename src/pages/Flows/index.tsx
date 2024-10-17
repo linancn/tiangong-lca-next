@@ -40,15 +40,35 @@ const TableList: FC = () => {
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Base name" />,
+      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name" />,
       dataIndex: 'baseName',
       sorter: false,
       search: false,
-      render: (_, row) => [
-        <Tooltip key={0} placement="topLeft" title={row.synonyms}>
-          {row.baseName}
-        </Tooltip>,
-      ],
+      render: (_, row) => {
+        let name = (
+          row.baseName +
+          '; ' +
+          row.treatmentStandardsRoutes +
+          '; ' +
+          row.mixAndLocationTypes +
+          '; ' +
+          row.flowProperties +
+          '; '
+        )
+          .replace(/-; /g, '')
+          .replace(/-/g, '');
+        if (name.endsWith('; ')) {
+          name = name.slice(0, -2);
+        }
+        if (name.length === 0) {
+          name = '-';
+        }
+        return [
+          <Tooltip key={0} placement="topLeft" title={row.synonyms}>
+            {name}
+          </Tooltip>,
+        ];
+      },
     },
     {
       title: <FormattedMessage id="pages.flow.flowType" defaultMessage="Flow type" />,
