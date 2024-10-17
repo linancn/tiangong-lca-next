@@ -1,8 +1,7 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
-import type { ProFormInstance } from '@ant-design/pro-form';
-import ProForm from '@ant-design/pro-form';
+import { ProForm, ProFormInstance } from '@ant-design/pro-components';
 import {
   Button,
   Card,
