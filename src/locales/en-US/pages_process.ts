@@ -156,4 +156,11 @@ export default {
   'pages.process.view.administrativeInformation.licenseType.freeOfChargeForMembersOnly': 'Free of charge for members only',
   'pages.process.view.administrativeInformation.licenseType.licenseFee': 'License fee',
   'pages.process.view.administrativeInformation.licenseType.other': 'Other',
+
+  'pages.process.view.exchanges.uncertaintyDistributionType.measured': 'Measured',
+  'pages.process.view.exchanges.uncertaintyDistributionType.calculated': 'Calculated',
+  'pages.process.view.exchanges.uncertaintyDistributionType.estimated': 'Estimated',
+  'pages.process.view.exchanges.uncertaintyDistributionType.unknownDerivation': 'Unknown derivation',
+  'pages.process.view.exchanges.uncertaintyDistributionType.missingImportant': 'Missing important',
+  'pages.process.view.exchanges.uncertaintyDistributionType.missingUnimportant': 'Missing unimportant',
 };

@@ -152,4 +152,11 @@ export default {
   'pages.process.view.administrativeInformation.licenseType.freeOfChargeForMembersOnly': '仅对会员免费',
   'pages.process.view.administrativeInformation.licenseType.licenseFee': '许可费',
   'pages.process.view.administrativeInformation.licenseType.other': '其他',
+
+  'pages.process.view.exchanges.uncertaintyDistributionType.measured': '测量',
+  'pages.process.view.exchanges.uncertaintyDistributionType.calculated': '计算',
+  'pages.process.view.exchanges.uncertaintyDistributionType.estimated': '估算',
+  'pages.process.view.exchanges.uncertaintyDistributionType.unknownDerivation': '推导方式未知',
+  'pages.process.view.exchanges.uncertaintyDistributionType.missingImportant': '缺失重要数据',
+  'pages.process.view.exchanges.uncertaintyDistributionType.missingUnimportant': '缺失不重要数据',  
 };
