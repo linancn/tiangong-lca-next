@@ -99,6 +99,7 @@ export default {
   'pages.searchTable.batchApproval': '批量审批',
 
   'pages.account.profile.name': '昵称',
+  'pages.account.profile.name.tooltip': '您希望被称呼的名字',
   'pages.account.profile.role': '角色',
   'pages.account.profile.role.authenticated': '已认证用户',
   'pages.account.profile.email': '邮箱',
