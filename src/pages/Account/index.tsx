@@ -4,7 +4,7 @@ import {
   currentUser,
   setProfile,
 } from '@/services/ant-design-pro/api';
-import { LockOutlined, MailOutlined } from '@ant-design/icons';
+import { LockOutlined, MailOutlined, IdcardOutlined } from '@ant-design/icons';
 import { PageContainer, ProForm, ProFormInstance, ProFormText } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl, useModel } from '@umijs/max';
 import { Flex, Form, Input, message, Spin, Tabs, theme } from 'antd';
@@ -83,7 +83,7 @@ const Profile: FC = () => {
           name={'name'}
           tooltip="The name you prefer to be called"
         >
-          <Input />
+          <Input prefix={<IdcardOutlined />} />
         </Form.Item>
       </ProForm>
     </Flex>
@@ -125,7 +125,7 @@ const Profile: FC = () => {
         }}
       >
         <Form.Item name={'email'} initialValue={initData?.email} style={{ display: 'none' }}>
-          <Input />
+          <Input/>
         </Form.Item>
 
         <Form.Item
@@ -149,7 +149,7 @@ const Profile: FC = () => {
           ]}
           hasFeedback
         >
-          <Input.Password />
+          <Input.Password prefix={<LockOutlined />} />
         </Form.Item>
 
         <ProFormText.Password
@@ -273,7 +273,13 @@ const Profile: FC = () => {
           ]}
           hasFeedback
         >
-          <Input.Password />
+          <Input.Password 
+            prefix={<LockOutlined />}
+            placeholder={intl.formatMessage({
+              id: 'pages.account.confirmNewPassword.placeholder',
+              defaultMessage: 'Confirm New Password',
+            })}
+          />
         </Form.Item>
       </ProForm>
     </Flex>
@@ -397,7 +403,13 @@ const Profile: FC = () => {
           ]}
           hasFeedback
         >
-          <Input />
+          <Input 
+            prefix={<MailOutlined />}
+            placeholder={intl.formatMessage({
+              id: 'pages.account.confirmNewEmail.placeholder',
+              defaultMessage: 'Confirm New Email',
+            })}
+          />
         </Form.Item>
       </ProForm>
     </Flex>

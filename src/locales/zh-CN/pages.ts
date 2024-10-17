@@ -135,6 +135,8 @@ export default {
   'pages.account.baseInfo': '基本信息',
   'pages.account.changePassword': '修改密码',
   'pages.account.changeEmail': '修改邮箱',
+  'pages.account.confirmNewPassword.placeholder': '确认新密码',
+  'pages.account.confirmNewEmail.placeholder': '确认新邮箱',
 
   'pages.login.passwordForgot.tab': '账户',
 };

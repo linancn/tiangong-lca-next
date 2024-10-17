@@ -136,6 +136,8 @@ export default {
   'pages.account.baseInfo': 'Basic Information',
   'pages.account.changePassword': 'Change Password',
   'pages.account.changeEmail': 'Change Email',
+  'pages.account.confirmNewPassword.placeholder': 'Confirm  New Password',
+  'pages.account.confirmNewEmail.placeholder': 'Confirm New Email',
 
   'pages.login.passwordForgot.tab': 'Account',
 };
