@@ -82,12 +82,15 @@ const EdgeExhange: FC<Props> = ({ lang, disabled, edge, onData }) => {
         targetProcessId={edge?.data?.node?.targetProcessId}
         sourceOutputFlowID={edge?.data?.connection?.outputExchange?.['@flowUUID']}
         targetInputFlowID={edge?.data?.connection?.outputExchange?.downstreamProcess?.['@flowUUID']}
-        drawerVisible={drawerVisible &&
+        drawerVisible={
+          drawerVisible &&
           edge &&
           edge?.data?.connection?.outputExchange?.['@flowUUID'] &&
-          edge?.data?.connection?.outputExchange?.downstreamProcess?.['@flowUUID']}
-          onDrawerClose={onDrawerClose}
-        onData={onEditEdgeData} />
+          edge?.data?.connection?.outputExchange?.downstreamProcess?.['@flowUUID']
+        }
+        onDrawerClose={onDrawerClose}
+        onData={onEditEdgeData}
+      />
     </>
   );
 };

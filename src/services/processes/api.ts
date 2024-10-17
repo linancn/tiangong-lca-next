@@ -59,7 +59,7 @@ export async function getProcessTableAll(
 
   const selectStr = `
     id,
-    json->processDataSet->processInformation->dataSetInformation->name->baseName,
+    json->processDataSet->processInformation->dataSetInformation->name,
     json->processDataSet->processInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
     json->processDataSet->processInformation->dataSetInformation->"common:generalComment",
     json->processDataSet->processInformation->time->>"common:referenceYear",
@@ -129,7 +129,13 @@ export async function getProcessTableAll(
               key: i.id,
               id: i.id,
               lang: lang,
-              baseName: getLangText(i['baseName'] ?? {}, lang),
+              baseName: getLangText(i.name?.baseName ?? {}, lang),
+              treatmentStandardsRoutes: getLangText(i.name?.treatmentStandardsRoutes ?? {}, lang),
+              mixAndLocationTypes: getLangText(i.name?.mixAndLocationTypes ?? {}, lang),
+              functionalUnitFlowProperties: getLangText(
+                i.name?.functionalUnitFlowProperties ?? {},
+                lang,
+              ),
               generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
               classification: classificationToString(classificationZH ?? {}),
               referenceYear: i['common:referenceYear'] ?? '-',
@@ -156,7 +162,13 @@ export async function getProcessTableAll(
             key: i.id,
             id: i.id,
             lang: lang,
-            baseName: getLangText(i['baseName'] ?? {}, lang),
+            baseName: getLangText(i.name?.baseName ?? {}, lang),
+            treatmentStandardsRoutes: getLangText(i.name?.treatmentStandardsRoutes ?? {}, lang),
+            mixAndLocationTypes: getLangText(i.name?.mixAndLocationTypes ?? {}, lang),
+            functionalUnitFlowProperties: getLangText(
+              i.name?.functionalUnitFlowProperties ?? {},
+              lang,
+            ),
             generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
             classification: classificationToString(i['common:class'] ?? {}),
             referenceYear: i['common:referenceYear'] ?? '-',
@@ -262,6 +274,18 @@ export async function getProcessTablePgroongaSearch(
               key: i.id,
               id: i.id,
               baseName: getLangText(dataInfo?.dataSetInformation?.name?.baseName ?? {}, lang),
+              treatmentStandardsRoutes: getLangText(
+                dataInfo?.dataSetInformation?.name?.treatmentStandardsRoutes ?? {},
+                lang,
+              ),
+              mixAndLocationTypes: getLangText(
+                dataInfo?.dataSetInformation?.name?.mixAndLocationTypes ?? {},
+                lang,
+              ),
+              functionalUnitFlowProperties: getLangText(
+                dataInfo?.dataSetInformation?.name?.functionalUnitFlowProperties ?? {},
+                lang,
+              ),
               generalComment: getLangText(
                 dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
                 lang,
@@ -298,6 +322,18 @@ export async function getProcessTablePgroongaSearch(
             key: i.id,
             id: i.id,
             baseName: getLangText(dataInfo?.dataSetInformation?.name?.baseName ?? {}, lang),
+            treatmentStandardsRoutes: getLangText(
+              dataInfo?.dataSetInformation?.name?.treatmentStandardsRoutes ?? {},
+              lang,
+            ),
+            mixAndLocationTypes: getLangText(
+              dataInfo?.dataSetInformation?.name?.mixAndLocationTypes ?? {},
+              lang,
+            ),
+            functionalUnitFlowProperties: getLangText(
+              dataInfo?.dataSetInformation?.name?.functionalUnitFlowProperties ?? {},
+              lang,
+            ),
             generalComment: getLangText(
               dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
               lang,

@@ -45,7 +45,7 @@ const EdgeExchangeView: FC<Props> = ({
 
   const onEditDrawerClose = () => {
     setEditDrawerVisible(false);
-  }
+  };
 
   useEffect(() => {
     if (!drawerVisible) return;

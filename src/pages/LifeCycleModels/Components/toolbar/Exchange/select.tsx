@@ -216,10 +216,12 @@ const EdgeExchangeSelect: FC<Props> = ({
               disabled={selectedSourceRowKeys.length === 0 || selectedTargetRowKeys.length === 0}
               onClick={() => {
                 const selectedSource = exchangeDataSource.find(
-                  (item) => item?.referenceToFlowDataSet?.['@refObjectId'] === selectedSourceRowKeys[0],
+                  (item) =>
+                    item?.referenceToFlowDataSet?.['@refObjectId'] === selectedSourceRowKeys[0],
                 );
                 const selectedTarget = exchangeDataTarget.find(
-                  (item) => item?.referenceToFlowDataSet?.['@refObjectId'] === selectedTargetRowKeys[0],
+                  (item) =>
+                    item?.referenceToFlowDataSet?.['@refObjectId'] === selectedTargetRowKeys[0],
                 );
                 onData({ id: id, selectedSource: selectedSource, selectedTarget: selectedTarget });
                 onDrawerClose();
