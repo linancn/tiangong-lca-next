@@ -4,7 +4,7 @@ import {
   currentUser,
   setProfile,
 } from '@/services/ant-design-pro/api';
-import { LockOutlined, MailOutlined, IdcardOutlined } from '@ant-design/icons';
+import { IdcardOutlined, LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons';
 import { PageContainer, ProForm, ProFormInstance, ProFormText } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl, useModel } from '@umijs/max';
 import { Flex, Form, Input, message, Spin, Tabs, theme } from 'antd';
@@ -70,20 +70,20 @@ const Profile: FC = () => {
           label={<FormattedMessage id="pages.account.profile.email" defaultMessage="Email" />}
           name={'email'}
         >
-          <Input disabled={true} />
+          <Input prefix={<MailOutlined />} disabled={true} />
         </Form.Item>
         <Form.Item
           label={<FormattedMessage id="pages.account.profile.role" defaultMessage="Role" />}
           name={'role'}
         >
-          <Input disabled={true} />
+          <Input prefix={<IdcardOutlined />} disabled={true} />
         </Form.Item>
         <Form.Item
           label={<FormattedMessage id="pages.account.profile.name" defaultMessage="Name" />}
           name={'name'}
           tooltip="The name you prefer to be called"
         >
-          <Input prefix={<IdcardOutlined />} />
+          <Input prefix={<UserOutlined />} />
         </Form.Item>
       </ProForm>
     </Flex>
@@ -125,7 +125,7 @@ const Profile: FC = () => {
         }}
       >
         <Form.Item name={'email'} initialValue={initData?.email} style={{ display: 'none' }}>
-          <Input/>
+          <Input />
         </Form.Item>
 
         <Form.Item
@@ -273,7 +273,7 @@ const Profile: FC = () => {
           ]}
           hasFeedback
         >
-          <Input.Password 
+          <Input.Password
             prefix={<LockOutlined />}
             placeholder={intl.formatMessage({
               id: 'pages.account.confirmNewPassword.placeholder',
@@ -330,7 +330,7 @@ const Profile: FC = () => {
           }
           initialValue={initData?.email}
         >
-          <Input disabled={true} />
+          <Input prefix={<MailOutlined />} disabled={true} />
         </Form.Item>
 
         <ProFormText
@@ -403,7 +403,7 @@ const Profile: FC = () => {
           ]}
           hasFeedback
         >
-          <Input 
+          <Input
             prefix={<MailOutlined />}
             placeholder={intl.formatMessage({
               id: 'pages.account.confirmNewEmail.placeholder',
