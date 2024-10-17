@@ -2,7 +2,7 @@ import { createFlowproperties } from '@/services/flowproperties/api';
 // import { langOptions } from '@/services/general/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
-import type { ActionType } from '@ant-design/pro-table';
+import { ActionType } from '@ant-design/pro-components';
 import {
   Button,
   Collapse,

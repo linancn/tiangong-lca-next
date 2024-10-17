@@ -1,5 +1,4 @@
 import { getFlowTableAll, getFlowTablePgroongaSearch } from '@/services/flows/api';
-import type { ActionType, ProColumns } from '@ant-design/pro-table';
 import { Card, Input, Space, Tooltip } from 'antd';
 import { useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
@@ -7,8 +6,7 @@ import { FormattedMessage, useIntl, useLocation } from 'umi';
 import { FlowTable } from '@/services/flows/data';
 import { ListPagination } from '@/services/general/data';
 import { getLang } from '@/services/general/util';
-import { PageContainer } from '@ant-design/pro-components';
-import ProTable from '@ant-design/pro-table';
+import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import FlowsCreate from './Components/create';

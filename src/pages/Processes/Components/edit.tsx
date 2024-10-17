@@ -2,8 +2,7 @@ import { getProcessDetail, updateProcess } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
-import { ProForm, ProFormInstance } from '@ant-design/pro-components';
-import type { ActionType } from '@ant-design/pro-table';
+import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import {
   Button,
   Collapse,

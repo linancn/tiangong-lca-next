@@ -1,16 +1,13 @@
 import { getContactTableAll, getContactTablePgroongaSearch } from '@/services/contacts/api';
-import type { ActionType, ProColumns } from '@ant-design/pro-table';
-import { Card, Input, Space, Tooltip } from 'antd';
-import { useRef, useState } from 'react';
-import { FormattedMessage, useIntl, useLocation } from 'umi';
-
 import { ContactTable } from '@/services/contacts/data';
 import { ListPagination } from '@/services/general/data';
 import { getLang } from '@/services/general/util';
-import { PageContainer } from '@ant-design/pro-components';
-import ProTable from '@ant-design/pro-table';
+import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
+import { Card, Input, Space, Tooltip } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
+import { useRef, useState } from 'react';
+import { FormattedMessage, useIntl, useLocation } from 'umi';
 import ContactCreate from './Components/create';
 import ContactDelete from './Components/delete';
 import ContactEdit from './Components/edit';
