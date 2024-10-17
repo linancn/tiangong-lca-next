@@ -100,6 +100,7 @@ export default {
 
   'pages.account.profile.name': 'Name',
   'pages.account.profile.role': 'Role',
+  'pages.account.profile.role.authenticated': 'Authenticated',
   'pages.account.profile.email': 'Email',
   'pages.account.register.emailCode': 'Email Code',
   'pages.account.register.getEmailCode': 'Get Email Code',
