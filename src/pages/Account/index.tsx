@@ -15,6 +15,7 @@ const Profile: FC = () => {
   const [spinning, setSpinning] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
   const [initData, setInitData] = useState<API.CurrentUser | null>(null);
+  const [roleValue, setRoleValue] = useState<string>('');
   const intl = useIntl();
   const { token } = theme.useToken();
   const { setInitialState } = useModel('@@initialState');
@@ -76,7 +77,7 @@ const Profile: FC = () => {
           label={<FormattedMessage id="pages.account.profile.role" defaultMessage="Role" />}
           name={'role'}
         >
-          <Input prefix={<IdcardOutlined />} disabled={true} />
+          <Input prefix={<IdcardOutlined />} value={roleValue} disabled={true} />
         </Form.Item>
         <Form.Item
           label={<FormattedMessage id="pages.account.profile.name" defaultMessage="Name" />}
@@ -419,10 +420,22 @@ const Profile: FC = () => {
     setSpinning(true);
     currentUser().then((res) => {
       setInitData(res);
-      formRefEdit.current?.setFieldsValue(res);
+      setRoleValue(
+        intl.formatMessage({
+          id: `pages.account.profile.role.${res?.role}`,
+          defaultMessage: res?.role,
+        }),
+      );
+      formRefEdit.current?.setFieldsValue({
+        ...res,
+        role: intl.formatMessage({
+          id: `pages.account.profile.role.${res?.role}`,
+          defaultMessage: res?.role,
+        }),
+      });
       setSpinning(false);
     });
-  }, []);
+  }, [intl]);
 
   return (
     <PageContainer
