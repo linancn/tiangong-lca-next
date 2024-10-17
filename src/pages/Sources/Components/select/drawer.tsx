@@ -3,8 +3,7 @@ import { getSourceTableAll, getSourceTablePgroongaSearch } from '@/services/sour
 import { SourceTable } from '@/services/sources/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, DatabaseOutlined } from '@ant-design/icons';
-import { ProTable } from '@ant-design/pro-components';
-import type { ActionType, ProColumns } from '@ant-design/pro-table';
+import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Drawer, Input, Space, Tooltip } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC, Key } from 'react';

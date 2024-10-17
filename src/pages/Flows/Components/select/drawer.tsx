@@ -7,8 +7,8 @@ import { FlowTable } from '@/services/flows/data';
 import { ListPagination } from '@/services/general/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, DatabaseOutlined } from '@ant-design/icons';
-import { ProTable } from '@ant-design/pro-components';
-import type { ActionType, ProColumns } from '@ant-design/pro-table';
+import { ProColumns, ProTable } from '@ant-design/pro-components';
+import type { ActionType } from '@ant-design/pro-table';
 import { Button, Card, Checkbox, Col, Drawer, Input, Row, Space, Tooltip } from 'antd';
 import type { SearchProps } from 'antd/es/input/Search';
 import type { FC, Key } from 'react';
@@ -17,6 +17,7 @@ import { FormattedMessage, useIntl } from 'umi';
 import FlowsCreate from '../create';
 import FlowsDelete from '../delete';
 import FlowsEdit from '../edit';
+import { flowTypeOptions } from '../optiondata';
 import FlowsView from '../view';
 
 type Props = {
@@ -111,6 +112,14 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       dataIndex: 'flowType',
       sorter: false,
       search: false,
+      filters: flowTypeOptions.map((option) => ({ text: option.label, value: option.value })),
+      render: (_, row) => {
+        const flowType = flowTypeOptions.find((i) => i.value === row.flowType);
+        if (flowType) {
+          return flowType.label;
+        }
+        return row.flowType;
+      },
     },
     {
       title: (
@@ -158,7 +167,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={myActionRefSelect}
-                setViewDrawerVisible={() => {}}
+                setViewDrawerVisible={() => { }}
               />
             </Space>,
           ];

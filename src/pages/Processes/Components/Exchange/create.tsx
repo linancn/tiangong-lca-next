@@ -2,7 +2,7 @@ import LangTextItemForm from '@/components/LangTextItem/form';
 import FlowsSelectForm from '@/pages/Flows/Components/select/form';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
-import type { ProFormInstance } from '@ant-design/pro-form';
+import { ProFormInstance } from '@ant-design/pro-components';
 import ProForm from '@ant-design/pro-form';
 import {
   Button,

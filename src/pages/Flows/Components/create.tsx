@@ -2,7 +2,7 @@ import { createFlows } from '@/services/flows/api';
 import { formatDateTime } from '@/services/general/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
-import type { ProFormInstance } from '@ant-design/pro-form';
+import { ProFormInstance } from '@ant-design/pro-components';
 import ProForm from '@ant-design/pro-form';
 import type { ActionType } from '@ant-design/pro-table';
 import { Button, Collapse, Drawer, Space, Tooltip, Typography, message } from 'antd';
