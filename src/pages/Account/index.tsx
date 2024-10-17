@@ -4,7 +4,7 @@ import {
   currentUser,
   setProfile,
 } from '@/services/ant-design-pro/api';
-import { LockOutlined, MailOutlined } from '@ant-design/icons';
+import { IdcardOutlined, LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons';
 import { PageContainer, ProForm, ProFormInstance, ProFormText } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl, useModel } from '@umijs/max';
 import { Flex, Form, Input, message, Spin, Tabs, theme } from 'antd';
@@ -15,6 +15,7 @@ const Profile: FC = () => {
   const [spinning, setSpinning] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
   const [initData, setInitData] = useState<API.CurrentUser | null>(null);
+  const [roleValue, setRoleValue] = useState<string>('');
   const intl = useIntl();
   const { token } = theme.useToken();
   const { setInitialState } = useModel('@@initialState');
@@ -70,20 +71,20 @@ const Profile: FC = () => {
           label={<FormattedMessage id="pages.account.profile.email" defaultMessage="Email" />}
           name={'email'}
         >
-          <Input disabled={true} />
+          <Input prefix={<MailOutlined />} disabled={true} />
         </Form.Item>
         <Form.Item
           label={<FormattedMessage id="pages.account.profile.role" defaultMessage="Role" />}
           name={'role'}
         >
-          <Input disabled={true} />
+          <Input prefix={<IdcardOutlined />} value={roleValue} disabled={true} />
         </Form.Item>
         <Form.Item
           label={<FormattedMessage id="pages.account.profile.name" defaultMessage="Name" />}
           name={'name'}
           tooltip="The name you prefer to be called"
         >
-          <Input />
+          <Input prefix={<UserOutlined />} />
         </Form.Item>
       </ProForm>
     </Flex>
@@ -149,7 +150,7 @@ const Profile: FC = () => {
           ]}
           hasFeedback
         >
-          <Input.Password />
+          <Input.Password prefix={<LockOutlined />} />
         </Form.Item>
 
         <ProFormText.Password
@@ -273,7 +274,13 @@ const Profile: FC = () => {
           ]}
           hasFeedback
         >
-          <Input.Password />
+          <Input.Password
+            prefix={<LockOutlined />}
+            placeholder={intl.formatMessage({
+              id: 'pages.account.confirmNewPassword.placeholder',
+              defaultMessage: 'Confirm New Password',
+            })}
+          />
         </Form.Item>
       </ProForm>
     </Flex>
@@ -324,7 +331,7 @@ const Profile: FC = () => {
           }
           initialValue={initData?.email}
         >
-          <Input disabled={true} />
+          <Input prefix={<MailOutlined />} disabled={true} />
         </Form.Item>
 
         <ProFormText
@@ -397,7 +404,13 @@ const Profile: FC = () => {
           ]}
           hasFeedback
         >
-          <Input />
+          <Input
+            prefix={<MailOutlined />}
+            placeholder={intl.formatMessage({
+              id: 'pages.account.confirmNewEmail.placeholder',
+              defaultMessage: 'Confirm New Email',
+            })}
+          />
         </Form.Item>
       </ProForm>
     </Flex>
@@ -407,10 +420,22 @@ const Profile: FC = () => {
     setSpinning(true);
     currentUser().then((res) => {
       setInitData(res);
-      formRefEdit.current?.setFieldsValue(res);
+      setRoleValue(
+        intl.formatMessage({
+          id: `pages.account.profile.role.${res?.role}`,
+          defaultMessage: res?.role,
+        }),
+      );
+      formRefEdit.current?.setFieldsValue({
+        ...res,
+        role: intl.formatMessage({
+          id: `pages.account.profile.role.${res?.role}`,
+          defaultMessage: res?.role,
+        }),
+      });
       setSpinning(false);
     });
-  }, []);
+  }, [intl]);
 
   return (
     <PageContainer

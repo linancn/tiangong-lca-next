@@ -100,6 +100,7 @@ export default {
 
   'pages.account.profile.name': '昵称',
   'pages.account.profile.role': '角色',
+  'pages.account.profile.role.authenticated': '已认证用户',
   'pages.account.profile.email': '邮箱',
   'pages.account.register.emailCode': '验证码',
   'pages.account.register.getEmailCode': '获取验证码',
@@ -135,6 +136,8 @@ export default {
   'pages.account.baseInfo': '基本信息',
   'pages.account.changePassword': '修改密码',
   'pages.account.changeEmail': '修改邮箱',
+  'pages.account.confirmNewPassword.placeholder': '确认新密码',
+  'pages.account.confirmNewEmail.placeholder': '确认新邮箱',
 
   'pages.login.passwordForgot.tab': '账户',
 };

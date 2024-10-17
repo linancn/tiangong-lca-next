@@ -100,6 +100,7 @@ export default {
 
   'pages.account.profile.name': 'Name',
   'pages.account.profile.role': 'Role',
+  'pages.account.profile.role.authenticated': 'Authenticated',
   'pages.account.profile.email': 'Email',
   'pages.account.register.emailCode': 'Email Code',
   'pages.account.register.getEmailCode': 'Get Email Code',
@@ -136,6 +137,8 @@ export default {
   'pages.account.baseInfo': 'Basic Information',
   'pages.account.changePassword': 'Change Password',
   'pages.account.changeEmail': 'Change Email',
+  'pages.account.confirmNewPassword.placeholder': 'Confirm  New Password',
+  'pages.account.confirmNewEmail.placeholder': 'Confirm New Email',
 
   'pages.login.passwordForgot.tab': 'Account',
 };
