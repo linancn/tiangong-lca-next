@@ -64,7 +64,7 @@ export async function getLifeCycleModelTableAll(
 
   const selectStr = `
     id,
-    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->name->baseName,
+    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->name,
     json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
     json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->"common:generalComment",
     version,
@@ -112,7 +112,13 @@ export async function getLifeCycleModelTableAll(
             return {
               key: i.id,
               id: i.id,
-              baseName: getLangText(i?.baseName, lang),
+              baseName: getLangText(i.name?.baseName ?? {}, lang),
+              treatmentStandardsRoutes: getLangText(i.name?.treatmentStandardsRoutes ?? {}, lang),
+              mixAndLocationTypes: getLangText(i.name?.mixAndLocationTypes ?? {}, lang),
+              functionalUnitFlowProperties: getLangText(
+                i.name?.functionalUnitFlowProperties ?? {},
+                lang,
+              ),
               generalComment: getLangText(i?.['common:generalComment'], lang),
               classification: classificationToString(classificationZH ?? {}),
               version: i?.version,
@@ -132,7 +138,13 @@ export async function getLifeCycleModelTableAll(
           return {
             key: i.id,
             id: i.id,
-            baseName: getLangText(i?.baseName, lang),
+            baseName: getLangText(i.name?.baseName ?? {}, lang),
+            treatmentStandardsRoutes: getLangText(i.name?.treatmentStandardsRoutes ?? {}, lang),
+            mixAndLocationTypes: getLangText(i.name?.mixAndLocationTypes ?? {}, lang),
+            functionalUnitFlowProperties: getLangText(
+              i.name?.functionalUnitFlowProperties ?? {},
+              lang,
+            ),
             generalComment: getLangText(i?.['common:generalComment'], lang),
             classification: classificationToString(i['common:class'] ?? {}),
             version: i?.version,
