@@ -20,6 +20,9 @@ import {
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
+import {
+  DataDerivationTypeStatusOptions,
+} from '../optiondata';
 
 type Props = {
   id: string;
@@ -208,7 +211,7 @@ const ProcessExchangeEdit: FC<Props> = ({
               }
               name={'dataDerivationTypeStatus'}
             >
-              <Input />
+              <Select options={DataDerivationTypeStatusOptions} />
             </Form.Item>
             <Divider orientationMargin="0" orientation="left" plain>
               <FormattedMessage
@@ -216,7 +219,10 @@ const ProcessExchangeEdit: FC<Props> = ({
                 defaultMessage="Comment"
               />
             </Divider>
-            <LangTextItemForm name="generalComment" label="General Comment" />
+            <LangTextItemForm
+              name="generalComment"
+              label={<FormattedMessage id="pages.process.view.exchange.generalComment" defaultMessage="Comment" />}
+            />
 
             <Card
               size="small"
@@ -246,7 +252,10 @@ const ProcessExchangeEdit: FC<Props> = ({
                       defaultMessage="Functional unit, Production period, or Other parameter"
                     />
                   </Divider>
-                  <LangTextItemForm name="functionalUnitOrOther" label="Functional Unit Or Other" />
+                  <LangTextItemForm
+                    name="functionalUnitOrOther" 
+                    label={<FormattedMessage id="pages.process.view.exchange.functionalUnitOrOther" defaultMessage="Functional unit, Production period, or Other parameter" />}
+                    />
                 </>
               ) : (
                 <></>

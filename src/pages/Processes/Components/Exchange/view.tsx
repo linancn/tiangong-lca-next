@@ -11,6 +11,9 @@ import { Button, Card, Descriptions, Divider, Drawer, Space, Tooltip } from 'ant
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
+import {
+  DataDerivationTypeStatusOptions,
+} from '../optiondata';
 
 type Props = {
   id: string;
@@ -20,6 +23,12 @@ type Props = {
   buttonType: string;
   // actionRef: React.MutableRefObject<ActionType | undefined>;
 };
+
+const getDataDerivationTypeStatusOptions = (value: string) => {
+  const option = DataDerivationTypeStatusOptions.find((opt) => opt.value === value);
+  return option ? option.label : '-';
+};
+
 const ProcessExchangeView: FC<Props> = ({ id, data, lang, dataSource, buttonType }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [footerButtons, setFooterButtons] = useState<JSX.Element>();
@@ -159,7 +168,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, dataSource, buttonType
             }
             labelStyle={{ width: '220px' }}
           >
-            {viewData.dataDerivationTypeStatus ?? '-'}
+            {getDataDerivationTypeStatusOptions(viewData.dataDerivationTypeStatus)}
           </Descriptions.Item>
         </Descriptions>
 

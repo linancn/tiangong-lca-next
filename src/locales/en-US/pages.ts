@@ -99,6 +99,7 @@ export default {
   'pages.searchTable.batchApproval': 'batch approval',
 
   'pages.account.profile.name': 'Name',
+  'pages.account.profile.name.tooltip': 'The name you prefer to be called',
   'pages.account.profile.role': 'Role',
   'pages.account.profile.role.authenticated': 'Authenticated',
   'pages.account.profile.email': 'Email',

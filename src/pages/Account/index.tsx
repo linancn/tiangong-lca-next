@@ -82,7 +82,7 @@ const Profile: FC = () => {
         <Form.Item
           label={<FormattedMessage id="pages.account.profile.name" defaultMessage="Name" />}
           name={'name'}
-          tooltip="The name you prefer to be called"
+          tooltip={<FormattedMessage id="pages.account.profile.name.tooltip" defaultMessage="The name you prefer to be called" />}
         >
           <Input prefix={<UserOutlined />} />
         </Form.Item>

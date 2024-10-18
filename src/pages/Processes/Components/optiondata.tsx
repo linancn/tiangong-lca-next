@@ -431,3 +431,60 @@ export const licenseTypeOptions = [
     ),
   },
 ];
+
+export const DataDerivationTypeStatusOptions = [
+  {
+    value: 'Measured',
+    label: (
+      <FormattedMessage
+        id="pages.process.view.exchanges.uncertaintyDistributionType.measured"
+        defaultMessage="Measured"
+      />
+    ),
+  },
+  {
+    value: 'Calculated',
+    label: (
+      <FormattedMessage
+        id="pages.process.view.exchanges.uncertaintyDistributionType.calculated"
+        defaultMessage="Calculated"
+      />
+    ),
+  },
+  {
+    value: 'Estimated',
+    label: (
+      <FormattedMessage
+        id="pages.process.view.exchanges.uncertaintyDistributionType.estimated"
+        defaultMessage="Estimated"
+      />
+    ),
+  },
+  {
+    value: 'Unknown derivation',
+    label: (
+      <FormattedMessage
+        id="pages.process.view.exchanges.uncertaintyDistributionType.unknownDerivation"
+        defaultMessage="Unknown derivation"
+      />
+    ),
+  },
+  {
+    value: 'Missing important',
+    label: (
+      <FormattedMessage
+        id="pages.process.view.exchanges.uncertaintyDistributionType.missingImportant"
+        defaultMessage="Missing important"
+      />
+    ),
+  },
+  {
+    value: 'Missing unimportant',
+    label: (
+      <FormattedMessage
+        id="pages.process.view.exchanges.uncertaintyDistributionType.missingUnimportant"
+        defaultMessage="Missing unimportant"
+      />
+    ),
+  },
+];
