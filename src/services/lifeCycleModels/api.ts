@@ -7,7 +7,20 @@ import {
   jsonToList,
 } from '../general/util';
 import { getILCDClassification } from '../ilcd/api';
-import { genLifeCycleModelJsonOrdered } from './util';
+import { createProcess, getProcessDetail, updateProcess } from '../processes/api';
+import { genLifeCycleModelJsonOrdered, genLifeCycleModelProcess } from './util';
+
+const updateLifeCycleModelProcess = async (data: any) => {
+  const newProcess = genLifeCycleModelProcess(data);
+  const process = await getProcessDetail(data.id);
+  if (process.data?.json) {
+    const update = await updateProcess(newProcess);
+    return update;
+  } else {
+    const create = await createProcess(newProcess);
+    return create;
+  }
+};
 
 export async function createLifeCycleModel(data: any) {
   const oldData = {
@@ -27,6 +40,7 @@ export async function createLifeCycleModel(data: any) {
     .from('lifecyclemodels')
     .insert([{ id: data.id, json_ordered: newData, json_tg: { xflow: data?.model } }])
     .select();
+  updateLifeCycleModelProcess(data);
   return result;
 }
 
@@ -40,6 +54,7 @@ export async function updateLifeCycleModel(data: any) {
       .update({ json_ordered: newData, json_tg: { xflow: data?.model } })
       .eq('id', data.id)
       .select();
+    updateLifeCycleModelProcess(data);
     return updateResult;
   }
   return null;

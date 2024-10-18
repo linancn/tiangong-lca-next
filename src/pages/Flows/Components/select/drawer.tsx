@@ -186,7 +186,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
                 id={row.id}
                 buttonType={'icon'}
                 actionRef={myActionRefSelect}
-                setViewDrawerVisible={() => { }}
+                setViewDrawerVisible={() => {}}
               />
             </Space>,
           ];
@@ -254,11 +254,15 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
             const flowTypeFilter = filter?.flowType ? filter.flowType.join(',') : '';
             if (tgKeyWord.length > 0) {
               if (openAI) {
-                return flow_hybrid_search(params, lang, 'tg', tgKeyWord, { flowType: flowTypeFilter, });
+                return flow_hybrid_search(params, lang, 'tg', tgKeyWord, {
+                  flowType: flowTypeFilter,
+                });
               }
-              return getFlowTablePgroongaSearch(params, lang, 'tg', tgKeyWord, { flowType: flowTypeFilter, });
+              return getFlowTablePgroongaSearch(params, lang, 'tg', tgKeyWord, {
+                flowType: flowTypeFilter,
+              });
             }
-            return getFlowTableAll(params, sort, lang, 'tg', { flowType: flowTypeFilter, });
+            return getFlowTableAll(params, sort, lang, 'tg', { flowType: flowTypeFilter });
           }}
           columns={FlowsColumns}
           rowSelection={{
@@ -300,9 +304,11 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
           ) => {
             const flowTypeFilter = filter?.flowType ? filter.flowType.join(',') : '';
             if (myKeyWord.length > 0) {
-              return getFlowTablePgroongaSearch(params, lang, 'my', myKeyWord, { flowType: flowTypeFilter, });
+              return getFlowTablePgroongaSearch(params, lang, 'my', myKeyWord, {
+                flowType: flowTypeFilter,
+              });
             }
-            return getFlowTableAll(params, sort, lang, 'my', { flowType: flowTypeFilter, });
+            return getFlowTableAll(params, sort, lang, 'my', { flowType: flowTypeFilter });
           }}
           columns={FlowsColumns}
           toolBarRender={() => {

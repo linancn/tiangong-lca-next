@@ -290,8 +290,8 @@ export async function getFlowTablePgroongaSearch(
             id: i.id,
             baseName: getLangText(dataInfo?.name?.baseName ?? {}, lang),
             treatmentStandardsRoutes: getLangText(dataInfo?.name?.treatmentStandardsRoutes, lang),
-              mixAndLocationTypes: getLangText(dataInfo?.name?.mixAndLocationTypes, lang),
-              flowProperties: getLangText(dataInfo?.name?.flowProperties, lang),
+            mixAndLocationTypes: getLangText(dataInfo?.name?.mixAndLocationTypes, lang),
+            flowProperties: getLangText(dataInfo?.name?.flowProperties, lang),
             synonyms: getLangText(dataInfo?.['common:synonyms'] ?? {}, lang),
             classification: classificationToString(
               dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[

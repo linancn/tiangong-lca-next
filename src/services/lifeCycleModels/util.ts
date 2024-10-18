@@ -818,6 +818,32 @@ export function genLifeCycleModelData(data: any, lang: string) {
   };
 }
 
+export function genLifeCycleModelProcess(data: any) {
+  return {
+    id: data.id,
+    processInformation: {
+      dataSetInformation: {
+        'common:UUID': data.id,
+        name: {
+          baseName: data?.lifeCycleModelInformation?.dataSetInformation?.name?.baseName,
+          treatmentStandardsRoutes:
+            data?.lifeCycleModelInformation?.dataSetInformation?.name?.treatmentStandardsRoutes,
+          mixAndLocationTypes:
+            data?.lifeCycleModelInformation?.dataSetInformation?.name?.mixAndLocationTypes,
+          functionalUnitFlowProperties:
+            data?.lifeCycleModelInformation?.dataSetInformation?.name?.functionalUnitFlowProperties,
+        },
+      },
+    },
+    administrativeInformation: {
+      publicationAndOwnership: {
+        'common:dataSetVersion':
+          data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'],
+      },
+    },
+  };
+}
+
 export function genEdgeExchangeTableData(data: any, lang: string) {
   if (data) {
     return data.map((item: any) => {
