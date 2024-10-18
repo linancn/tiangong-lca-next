@@ -94,8 +94,8 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
           row.functionalUnitFlowProperties +
           '; '
         )
-          .replace(/-; /g, '')
-          .replace(/-/g, '');
+          .replace(/-; /g, '');
+          
         if (name.endsWith('; ')) {
           name = name.slice(0, -2);
         }
