@@ -158,5 +158,5 @@ export default {
   'pages.process.view.exchanges.uncertaintyDistributionType.estimated': '估算',
   'pages.process.view.exchanges.uncertaintyDistributionType.unknownDerivation': '推导方式未知',
   'pages.process.view.exchanges.uncertaintyDistributionType.missingImportant': '缺失重要数据',
-  'pages.process.view.exchanges.uncertaintyDistributionType.missingUnimportant': '缺失不重要数据',  
+  'pages.process.view.exchanges.uncertaintyDistributionType.missingUnimportant': '缺失不重要数据',
 };

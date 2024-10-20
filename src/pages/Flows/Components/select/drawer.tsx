@@ -110,9 +110,8 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
           '; ' +
           row.flowProperties +
           '; '
-        )
-          .replace(/-; /g, '');
-          
+        ).replace(/-; /g, '');
+
         if (name.endsWith('; ')) {
           name = name.slice(0, -2);
         }
