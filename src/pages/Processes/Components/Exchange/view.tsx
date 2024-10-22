@@ -11,9 +11,7 @@ import { Button, Card, Descriptions, Divider, Drawer, Space, Tooltip } from 'ant
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
-import {
-  DataDerivationTypeStatusOptions,
-} from '../optiondata';
+import { DataDerivationTypeStatusOptions } from '../optiondata';
 
 type Props = {
   id: string;
