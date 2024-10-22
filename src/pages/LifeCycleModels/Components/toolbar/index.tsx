@@ -227,7 +227,10 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
       updateLifeCycleModel({ ...newData, id: id }).then((result: any) => {
         if (result.data) {
           message.success(
-            <FormattedMessage id="pages.flows.savesuccess" defaultMessage="Save successfully!" />,
+            intl.formatMessage({
+              id: 'pages.flows.savesuccess',
+              defaultMessage: 'Save successfully',
+            }),
           );
           saveCallback();
         } else {
