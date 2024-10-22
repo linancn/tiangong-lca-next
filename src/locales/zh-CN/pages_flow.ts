@@ -5,6 +5,7 @@ export default {
   'pages.flow.model.sourceOutputFlowName': '源输出流名称',
   'pages.flow.model.targetInputFlowName': '目标输入流名称',
   'pages.flows.editsuccess': '编辑成功！',
+  'pages.flows.savesuccess': '保存成功！',
 
   'pages.flow.drawer.title.view': '查看流',
   'pages.flow.drawer.title.select': '选择流',
