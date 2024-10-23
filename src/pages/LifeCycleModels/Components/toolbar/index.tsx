@@ -1,3 +1,4 @@
+import ProcessEdit from '@/pages/Processes/Components/edit';
 import ProcessView from '@/pages/Processes/Components/view';
 import { formatDateTime, getLangText } from '@/services/general/util';
 import {
@@ -484,6 +485,15 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
               onClick={saveData}
             />
           </Tooltip>
+          <br />
+
+          <ProcessEdit
+            id={id}
+            lang={lang}
+            buttonType={'tool'}
+            actionRef={undefined}
+            setViewDrawerVisible={() => {}}
+          />
         </>
       )}
       <Control items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin']} />

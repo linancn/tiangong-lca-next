@@ -260,6 +260,10 @@ export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
               data?.administrativeInformation?.publicationAndOwnership?.[
                 'common:referenceToOwnershipOfDataSet'
               ]?.['@uri'] ?? {},
+            '@version':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]?.['@version'] ?? {},
             'common:shortDescription': getLangJson(
               data?.administrativeInformation?.publicationAndOwnership?.[
                 'common:referenceToOwnershipOfDataSet'
@@ -520,6 +524,10 @@ export function genProcessFromData(data: any) {
             data?.administrativeInformation?.publicationAndOwnership?.[
               'common:referenceToOwnershipOfDataSet'
             ]?.['@uri'] ?? {},
+          '@version':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToOwnershipOfDataSet'
+            ]?.['@version'] ?? {},
           'common:shortDescription': getLangList(
             data?.administrativeInformation?.publicationAndOwnership?.[
               'common:referenceToOwnershipOfDataSet'

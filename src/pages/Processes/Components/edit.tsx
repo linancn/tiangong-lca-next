@@ -1,7 +1,7 @@
 import { getProcessDetail, updateProcess } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
 import styles from '@/style/custom.less';
-import { CloseOutlined, FormOutlined } from '@ant-design/icons';
+import { CloseOutlined, FormOutlined, ProductOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import {
   Button,
@@ -21,10 +21,10 @@ import { FormattedMessage, useIntl } from 'umi';
 import { ProcessForm } from './form';
 
 type Props = {
-  id: string;
+  id: string | undefined;
   lang: string;
   buttonType: string;
-  actionRef: React.MutableRefObject<ActionType | undefined>;
+  actionRef: React.MutableRefObject<ActionType | undefined> | undefined;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
 };
 const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawerVisible }) => {
@@ -100,15 +100,30 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
-        {buttonType === 'icon' ? (
-          <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
-        ) : (
-          <Button onClick={onEdit}>
-            <FormattedMessage id="pages.button.edit" defaultMessage="Edit" />
-          </Button>
-        )}
-      </Tooltip>
+      {buttonType === 'tool' ? (
+        <Tooltip
+          title={<FormattedMessage id="pages.button.model.result" defaultMessage="Model result" />}
+          placement="left"
+        >
+          <Button
+            type="primary"
+            icon={<ProductOutlined />}
+            size="small"
+            style={{ boxShadow: 'none' }}
+            onClick={onEdit}
+          />
+        </Tooltip>
+      ) : (
+        <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
+          {buttonType === 'icon' ? (
+            <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
+          ) : (
+            <Button onClick={onEdit}>
+              <FormattedMessage id="pages.button.edit" defaultMessage="Edit" />
+            </Button>
+          )}
+        </Tooltip>
+      )}
       <Drawer
         title={
           <FormattedMessage id="pages.process.drawer.title.edit" defaultMessage="Edit process" />
@@ -170,7 +185,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
                 setSpinning(false);
                 setDrawerVisible(false);
                 setViewDrawerVisible(false);
-                actionRef.current?.reload();
+                actionRef?.current?.reload();
               } else {
                 setSpinning(false);
                 message.error(updateResult?.error?.message);

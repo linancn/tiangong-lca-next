@@ -833,12 +833,75 @@ export function genLifeCycleModelProcess(data: any) {
           functionalUnitFlowProperties:
             data?.lifeCycleModelInformation?.dataSetInformation?.name?.functionalUnitFlowProperties,
         },
+        classificationInformation: {
+          'common:classification': {
+            'common:class':
+              data?.lifeCycleModelInformation?.dataSetInformation?.classificationInformation?.[
+                'common:classification'
+              ]?.['common:class'],
+          },
+        },
+        'common:generalComment':
+          data?.lifeCycleModelInformation?.dataSetInformation?.['common:generalComment'],
       },
     },
     administrativeInformation: {
+      dataEntryBy: {
+        'common:timeStamp': data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'],
+      },
+      dataGenerator: {
+        'common:referenceToPersonOrEntityGeneratingTheDataSet': {
+          '@refObjectId':
+            data?.administrativeInformation?.dataGenerator?.[
+              'common:referenceToPersonOrEntityGeneratingTheDataSet'
+            ]?.['@refObjectId'],
+          '@type':
+            data?.administrativeInformation?.dataGenerator?.[
+              'common:referenceToPersonOrEntityGeneratingTheDataSet'
+            ]?.['@type'],
+          '@uri':
+            data?.administrativeInformation?.dataGenerator?.[
+              'common:referenceToPersonOrEntityGeneratingTheDataSet'
+            ]?.['@uri'],
+          '@version':
+            data?.administrativeInformation?.dataGenerator?.[
+              'common:referenceToPersonOrEntityGeneratingTheDataSet'
+            ]?.['@version'],
+          'common:shortDescription':
+            data?.administrativeInformation?.dataGenerator?.[
+              'common:referenceToPersonOrEntityGeneratingTheDataSet'
+            ]?.['common:shortDescription'],
+        },
+      },
       publicationAndOwnership: {
         'common:dataSetVersion':
           data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'],
+        'common:referenceToOwnershipOfDataSet': {
+          '@refObjectId':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToOwnershipOfDataSet'
+            ]?.['@refObjectId'],
+          '@type':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToOwnershipOfDataSet'
+            ]?.['@type'],
+          '@uri':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToOwnershipOfDataSet'
+            ]?.['@uri'],
+          '@version':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToOwnershipOfDataSet'
+            ]?.['@version'],
+          'common:shortDescription':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToOwnershipOfDataSet'
+            ]?.['common:shortDescription'],
+        },
+        'common:copyright':
+          data?.administrativeInformation?.publicationAndOwnership?.['common:copyright'],
+        'common:licenseType':
+          data?.administrativeInformation?.publicationAndOwnership?.['common:licenseType'],
       },
     },
   };
