@@ -5,9 +5,11 @@ import {
   getLangJson,
   getLangList,
   getLangText,
+  jsonToList,
   listToJson,
   removeEmptyObjects,
 } from '../general/util';
+import { supabase } from '../supabase';
 
 export function genLifeCycleModelJsonOrdered(id: string, data: any, oldData: any) {
   const nodes = data?.model?.nodes?.map((n: any, index: number) => {
@@ -21,30 +23,32 @@ export function genLifeCycleModelJsonOrdered(id: string, data: any, oldData: any
     const sourceEdges = data?.model?.edges?.filter((e: any) => e?.source?.cell === n?.id);
     const outputExchange = sourceEdges.map((e: any) => {
       const targetNode = nodes?.find((n: any) => n?.id === e?.target?.cell);
-      return {
-        '@flowUUID': e?.data?.exchange?.[0]?.sourceOutputFlowId,
+
+      return removeEmptyObjects({
+        '@flowUUID': e?.data?.connection?.outputExchange?.['@flowUUID'],
         downstreamProcess: {
-          '@flowUUID': e?.data?.exchange?.[0]?.targetInputFlowId,
+          '@flowUUID': e?.data?.connection?.outputExchange?.downstreamProcess?.['@flowUUID'],
           '@id': targetNode?.['@dataSetInternalID'],
         },
-      };
+      });
     });
-    return {
-      '@dataSetInternalID': n?.['@dataSetInternalID'],
-      '@multiplicationFactor': n?.data?.multiplicationFactor,
+
+    return removeEmptyObjects({
+      '@dataSetInternalID': n?.['@dataSetInternalID'] ?? {},
+      '@multiplicationFactor': n?.data?.multiplicationFactor ?? {},
       referenceToProcess: {
-        '@refObjectId': n?.data?.id,
+        '@refObjectId': n?.data?.id ?? {},
         '@type': 'process data set',
         '@uri': '../processes/' + n?.data?.id + '.xml',
-        '@version': n?.data?.version,
-        'common:shortDescription': n?.data?.shortDescription,
+        '@version': n?.data?.version ?? {},
+        'common:shortDescription': n?.data?.shortDescription ?? {},
       },
       groups: {},
       parameters: {},
       connections: {
         outputExchange: listToJson(outputExchange),
       },
-    };
+    });
   });
 
   return removeEmptyObjects({
@@ -818,93 +822,255 @@ export function genLifeCycleModelData(data: any, lang: string) {
   };
 }
 
-export function genLifeCycleModelProcess(data: any) {
+const genProcessTree = (thisModelProcess: any, modelProcesses: any[], dbProcesses: any[]): any => {
+  const dbProcess = dbProcesses?.find(
+    (p: any) => p?.id === thisModelProcess?.referenceToProcess?.['@refObjectId'],
+  );
+  const upstreamProcess = modelProcesses.filter((p: any) =>
+    p?.connections?.outputExchange?.some(
+      (o: any) => o?.downstreamProcess?.['@id'] === thisModelProcess?.['@dataSetInternalID'],
+    ),
+  );
   return {
-    id: data.id,
-    processInformation: {
-      dataSetInformation: {
-        'common:UUID': data.id,
-        name: {
-          baseName: data?.lifeCycleModelInformation?.dataSetInformation?.name?.baseName,
-          treatmentStandardsRoutes:
-            data?.lifeCycleModelInformation?.dataSetInformation?.name?.treatmentStandardsRoutes,
-          mixAndLocationTypes:
-            data?.lifeCycleModelInformation?.dataSetInformation?.name?.mixAndLocationTypes,
-          functionalUnitFlowProperties:
-            data?.lifeCycleModelInformation?.dataSetInformation?.name?.functionalUnitFlowProperties,
+    dbProcess: dbProcess,
+    modelProcess: thisModelProcess,
+    upstreamProcesses:
+      upstreamProcess?.map((p: any) => {
+        const outputExchange = p?.connections?.outputExchange?.find(
+          (o: any) => o?.downstreamProcess?.['@id'] === thisModelProcess?.['@dataSetInternalID'],
+        );
+        return {
+          connection: {
+            thisFlowId: outputExchange?.downstreamProcess?.['@flowUUID'],
+            upstreamFlowId: outputExchange?.['@flowUUID'],
+          },
+          upstreamProcess: genProcessTree(p, modelProcesses, dbProcesses),
+        };
+      }) ?? [],
+  };
+};
+
+const genProcessExchange = (processTree: any, amount?: number, outputFlowId?: any) => {
+  let newExchange: any[] = [];
+  const exchange = processTree?.dbProcess?.json?.processDataSet?.exchanges?.exchange;
+  if (outputFlowId) {
+    const outputExchange = exchange?.find(
+      (e: any) =>
+        e?.exchangeDirection === 'Input' &&
+        e?.referenceToFlowDataSet?.['@refObjectId'] === outputFlowId,
+    );
+    const p = amount ?? 1 / outputExchange?.resultingAmount;
+    if (processTree?.upstreamProcesses?.length > 0) {
+      processTree?.upstreamProcesses?.forEach((u: any) => {
+        const inputExchange = exchange?.find(
+          (e: any) =>
+            e?.exchangeDirection === 'Input' &&
+            e?.referenceToFlowDataSet?.['@refObjectId'] === u?.connection?.thisFlowId,
+        );
+
+        exchange?.forEach((e: any) => {
+          if (
+            e?.['@dataSetInternalID'] !== inputExchange?.['@dataSetInternalID'] &&
+            e?.['@dataSetInternalID'] !== outputExchange?.['@dataSetInternalID']
+          ) {
+            newExchange.push({
+              ...e,
+              meanAmount: e?.resultingAmount * p,
+              resultingAmount: e?.resultingAmount * p,
+            });
+          }
+        });
+        if (u?.upstreamProcess?.upstreamProcesses?.length > 0) {
+          const uExchange = genProcessExchange(
+            u?.upstreamProcess,
+            p * inputExchange?.resultingAmount,
+            u?.connection?.upstreamFlowId,
+          );
+
+          uExchange?.forEach((e: any) => {
+            newExchange.push(e);
+          });
+        }
+      });
+    } else {
+      exchange?.forEach((e: any) => {
+        if (e?.['@dataSetInternalID'] !== outputExchange?.['@dataSetInternalID']) {
+          newExchange.push({
+            ...e,
+            meanAmount: e?.resultingAmount * p,
+            resultingAmount: e?.resultingAmount * p,
+          });
+        }
+      });
+    }
+  } else {
+    if (processTree?.upstreamProcesses?.length > 0) {
+      processTree?.upstreamProcesses?.forEach((u: any) => {
+        const inputExchange = exchange?.find(
+          (e: any) =>
+            e?.exchangeDirection === 'Input' &&
+            e?.referenceToFlowDataSet?.['@refObjectId'] === u?.connection?.thisFlowId,
+        );
+
+        exchange?.forEach((e: any) => {
+          if (e?.['@dataSetInternalID'] !== inputExchange?.['@dataSetInternalID']) {
+            newExchange.push(e);
+          }
+        });
+        if (u?.upstreamProcess?.upstreamProcesses?.length > 0) {
+          const uExchange = genProcessExchange(
+            u?.upstreamProcess,
+            amount ?? 1 * inputExchange?.resultingAmount,
+            u?.connection?.upstreamFlowId,
+          );
+
+          uExchange?.forEach((e: any) => {
+            newExchange.push(e);
+          });
+        }
+      });
+    } else {
+      exchange?.forEach((e: any) => {
+        newExchange.push(e);
+      });
+    }
+  }
+  return newExchange;
+};
+
+export async function genLifeCycleModelProcess(id: string, data: any, oldData: any) {
+  let processIds: any[] = [];
+  const processInstance =
+    data?.lifeCycleModelInformation?.technology?.processes?.processInstance?.map((p: any) => {
+      if (p?.referenceToProcess?.['@refObjectId']) {
+        processIds.push(p?.referenceToProcess?.['@refObjectId']);
+      }
+      return {
+        ...p,
+        connections: {
+          ...p?.connections,
+          outputExchange: jsonToList(p?.connections?.outputExchange),
         },
-        classificationInformation: {
-          'common:classification': {
-            'common:class':
-              data?.lifeCycleModelInformation?.dataSetInformation?.classificationInformation?.[
-                'common:classification'
-              ]?.['common:class'],
+      };
+    });
+
+  const processes =
+    (await supabase.from('processes').select('id, json').in('id', processIds))?.data ?? [];
+
+  let exchange: any = [];
+  if (Array.isArray(processInstance)) {
+    if (processInstance.length > 1) {
+      const parentProcess = processInstance.find(
+        (p: any) => p?.connections?.outputExchange?.length < 1,
+      );
+      if (parentProcess) {
+        const processTree = genProcessTree(parentProcess, processInstance, processes);
+
+        exchange = genProcessExchange(processTree);
+      }
+    }
+  }
+
+  const newData = removeEmptyObjects({
+    processDataSet: {
+      '@xmlns:common': oldData.processDataSet?.['@xmlns:common'] ?? {},
+      '@xmlns': oldData.processDataSet?.['@xmlns'] ?? {},
+      '@xmlns:xsi': oldData.processDataSet?.['@xmlns:xsi'] ?? {},
+      '@version': oldData.processDataSet['@version'] ?? {},
+      '@xsi:schemaLocation': oldData.processDataSet['@xsi:schemaLocation'] ?? {},
+
+      processInformation: {
+        dataSetInformation: {
+          'common:UUID': id,
+          name: {
+            baseName: data?.lifeCycleModelInformation?.dataSetInformation?.name?.baseName,
+            treatmentStandardsRoutes:
+              data?.lifeCycleModelInformation?.dataSetInformation?.name?.treatmentStandardsRoutes,
+            mixAndLocationTypes:
+              data?.lifeCycleModelInformation?.dataSetInformation?.name?.mixAndLocationTypes,
+            functionalUnitFlowProperties:
+              data?.lifeCycleModelInformation?.dataSetInformation?.name
+                ?.functionalUnitFlowProperties,
+          },
+          classificationInformation: {
+            'common:classification': {
+              'common:class':
+                data?.lifeCycleModelInformation?.dataSetInformation?.classificationInformation?.[
+                  'common:classification'
+                ]?.['common:class'],
+            },
+          },
+          'common:generalComment':
+            data?.lifeCycleModelInformation?.dataSetInformation?.['common:generalComment'],
+        },
+      },
+
+      administrativeInformation: {
+        dataEntryBy: {
+          'common:timeStamp': data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'],
+        },
+        dataGenerator: {
+          'common:referenceToPersonOrEntityGeneratingTheDataSet': {
+            '@refObjectId':
+              data?.administrativeInformation?.dataGenerator?.[
+                'common:referenceToPersonOrEntityGeneratingTheDataSet'
+              ]?.['@refObjectId'],
+            '@type':
+              data?.administrativeInformation?.dataGenerator?.[
+                'common:referenceToPersonOrEntityGeneratingTheDataSet'
+              ]?.['@type'],
+            '@uri':
+              data?.administrativeInformation?.dataGenerator?.[
+                'common:referenceToPersonOrEntityGeneratingTheDataSet'
+              ]?.['@uri'],
+            '@version':
+              data?.administrativeInformation?.dataGenerator?.[
+                'common:referenceToPersonOrEntityGeneratingTheDataSet'
+              ]?.['@version'],
+            'common:shortDescription':
+              data?.administrativeInformation?.dataGenerator?.[
+                'common:referenceToPersonOrEntityGeneratingTheDataSet'
+              ]?.['common:shortDescription'],
           },
         },
-        'common:generalComment':
-          data?.lifeCycleModelInformation?.dataSetInformation?.['common:generalComment'],
-      },
-    },
-    administrativeInformation: {
-      dataEntryBy: {
-        'common:timeStamp': data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'],
-      },
-      dataGenerator: {
-        'common:referenceToPersonOrEntityGeneratingTheDataSet': {
-          '@refObjectId':
-            data?.administrativeInformation?.dataGenerator?.[
-              'common:referenceToPersonOrEntityGeneratingTheDataSet'
-            ]?.['@refObjectId'],
-          '@type':
-            data?.administrativeInformation?.dataGenerator?.[
-              'common:referenceToPersonOrEntityGeneratingTheDataSet'
-            ]?.['@type'],
-          '@uri':
-            data?.administrativeInformation?.dataGenerator?.[
-              'common:referenceToPersonOrEntityGeneratingTheDataSet'
-            ]?.['@uri'],
-          '@version':
-            data?.administrativeInformation?.dataGenerator?.[
-              'common:referenceToPersonOrEntityGeneratingTheDataSet'
-            ]?.['@version'],
-          'common:shortDescription':
-            data?.administrativeInformation?.dataGenerator?.[
-              'common:referenceToPersonOrEntityGeneratingTheDataSet'
-            ]?.['common:shortDescription'],
+        publicationAndOwnership: {
+          'common:dataSetVersion':
+            data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'],
+          'common:referenceToOwnershipOfDataSet': {
+            '@refObjectId':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]?.['@refObjectId'],
+            '@type':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]?.['@type'],
+            '@uri':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]?.['@uri'],
+            '@version':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]?.['@version'],
+            'common:shortDescription':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]?.['common:shortDescription'],
+          },
+          'common:copyright':
+            data?.administrativeInformation?.publicationAndOwnership?.['common:copyright'],
+          'common:licenseType':
+            data?.administrativeInformation?.publicationAndOwnership?.['common:licenseType'],
         },
       },
-      publicationAndOwnership: {
-        'common:dataSetVersion':
-          data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'],
-        'common:referenceToOwnershipOfDataSet': {
-          '@refObjectId':
-            data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToOwnershipOfDataSet'
-            ]?.['@refObjectId'],
-          '@type':
-            data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToOwnershipOfDataSet'
-            ]?.['@type'],
-          '@uri':
-            data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToOwnershipOfDataSet'
-            ]?.['@uri'],
-          '@version':
-            data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToOwnershipOfDataSet'
-            ]?.['@version'],
-          'common:shortDescription':
-            data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToOwnershipOfDataSet'
-            ]?.['common:shortDescription'],
-        },
-        'common:copyright':
-          data?.administrativeInformation?.publicationAndOwnership?.['common:copyright'],
-        'common:licenseType':
-          data?.administrativeInformation?.publicationAndOwnership?.['common:licenseType'],
+      exchanges: {
+        exchange: [...exchange],
       },
     },
-  };
+  });
+
+  return newData;
 }
 
 export function genEdgeExchangeTableData(data: any, lang: string) {
