@@ -5,6 +5,7 @@ export default {
   'pages.flow.model.sourceOutputFlowName': 'Source process output flow',
   'pages.flow.model.targetInputFlowName': 'Target input flow name',
   'pages.flows.editsuccess': 'Edit successfully!',
+  'pages.flows.savesuccess': 'Save successfully!',
 
   'pages.flow.drawer.title.view': 'View Flow',
   'pages.flow.drawer.title.select': 'Select Flow',

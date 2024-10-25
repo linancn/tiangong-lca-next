@@ -80,11 +80,11 @@ const Profile: FC = () => {
           <Input prefix={<IdcardOutlined />} value={roleValue} disabled={true} />
         </Form.Item>
         <Form.Item
-          label={<FormattedMessage id="pages.account.profile.name" defaultMessage="Name" />}
+          label={<FormattedMessage id="pages.account.profile.nickName" defaultMessage="Nickname" />}
           name={'name'}
           tooltip={
             <FormattedMessage
-              id="pages.account.profile.name.tooltip"
+              id="pages.account.profile.nickName.tooltip"
               defaultMessage="The name you prefer to be called"
             />
           }
