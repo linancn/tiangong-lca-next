@@ -254,7 +254,7 @@ export async function getFlowTablePgroongaSearch(
 
             const classifications = jsonToList(
               dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-              'common:category'
+                'common:category'
               ],
             );
             const classificationZH = genClassificationZH(classifications, thisCategory);
@@ -295,7 +295,7 @@ export async function getFlowTablePgroongaSearch(
             synonyms: getLangText(dataInfo?.['common:synonyms'] ?? {}, lang),
             classification: classificationToString(
               dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-              'common:category'
+                'common:category'
               ],
             ),
             flowType: i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet ?? '-',
@@ -366,12 +366,22 @@ export async function flow_hybrid_search(
               i.json?.flowDataSet?.flowInformation?.dataSetInformation?.name?.baseName,
               lang,
             ),
-            treatmentStandardsRoutes: getLangText(i.json?.flowDataSet?.flowInformation?.dataSetInformation?.name?.treatmentStandardsRoutes, lang),
-            mixAndLocationTypes: getLangText(i.json?.flowDataSet?.flowInformation?.dataSetInformation?.name?.mixAndLocationTypes, lang),
-            flowProperties: getLangText(i.json?.flowDataSet?.flowInformation?.dataSetInformation?.name?.flowProperties, lang),
+            treatmentStandardsRoutes: getLangText(
+              i.json?.flowDataSet?.flowInformation?.dataSetInformation?.name
+                ?.treatmentStandardsRoutes,
+              lang,
+            ),
+            mixAndLocationTypes: getLangText(
+              i.json?.flowDataSet?.flowInformation?.dataSetInformation?.name?.mixAndLocationTypes,
+              lang,
+            ),
+            flowProperties: getLangText(
+              i.json?.flowDataSet?.flowInformation?.dataSetInformation?.name?.flowProperties,
+              lang,
+            ),
             classification: classificationToString(
               i.json?.flowDataSet?.flowInformation?.dataSetInformation?.classificationInformation?.[
-              'common:classification'
+                'common:classification'
               ]?.['common:class'],
             ),
             synonyms: getLangText(
