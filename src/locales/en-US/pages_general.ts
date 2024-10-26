@@ -28,6 +28,7 @@ export default {
   'pages.button.model.add': 'Add node',
   'pages.button.model.info': 'Basic information',
   'pages.button.model.save': 'Save data',
+  'pages.button.model.result': 'Model result',
   'pages.button.model.process': 'Process information',
   'pages.button.model.exchange': 'Exchange relation',
   'pages.button.model.connection': 'Connection relation',

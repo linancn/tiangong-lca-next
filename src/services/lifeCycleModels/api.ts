@@ -7,18 +7,37 @@ import {
   jsonToList,
 } from '../general/util';
 import { getILCDClassification } from '../ilcd/api';
-import { createProcess, getProcessDetail, updateProcess } from '../processes/api';
 import { genLifeCycleModelJsonOrdered, genLifeCycleModelProcess } from './util';
 
-const updateLifeCycleModelProcess = async (data: any) => {
-  const newProcess = genLifeCycleModelProcess(data);
-  const process = await getProcessDetail(data.id);
-  if (process.data?.json) {
-    const update = await updateProcess(newProcess);
-    return update;
+const updateLifeCycleModelProcess = async (id: string, data: any) => {
+  const result = await supabase.from('processes').select('id, json').eq('id', id);
+  if (result.data && result.data.length === 1) {
+    const oldData = result.data[0].json;
+    const newData = await genLifeCycleModelProcess(id, data?.lifeCycleModelDataSet, oldData);
+    const uResult = await supabase
+      .from('processes')
+      .update({ json_ordered: newData })
+      .eq('id', id)
+      .select();
+    return uResult;
   } else {
-    const create = await createProcess(newProcess);
-    return create;
+    const oldData = {
+      processDataSet: {
+        '@xmlns:common': 'http://lca.jrc.it/ILCD/Common',
+        '@xmlns': 'http://lca.jrc.it/ILCD/Process',
+        '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
+        '@version': '1.1',
+        '@locations': '../ILCDLocations.xml',
+        '@xsi:schemaLocation':
+          'http://lca.jrc.it/ILCD/Process ../../schemas/ILCD_ProcessDataSet.xsd',
+      },
+    };
+    const newData = await genLifeCycleModelProcess(id, data?.lifeCycleModelDataSet, oldData);
+    const cResult = await supabase
+      .from('processes')
+      .insert([{ id: id, json_ordered: newData }])
+      .select();
+    return cResult;
   }
 };
 
@@ -40,7 +59,7 @@ export async function createLifeCycleModel(data: any) {
     .from('lifecyclemodels')
     .insert([{ id: data.id, json_ordered: newData, json_tg: { xflow: data?.model } }])
     .select();
-  updateLifeCycleModelProcess(data);
+  updateLifeCycleModelProcess(data.id, newData);
   return result;
 }
 
@@ -54,7 +73,7 @@ export async function updateLifeCycleModel(data: any) {
       .update({ json_ordered: newData, json_tg: { xflow: data?.model } })
       .eq('id', data.id)
       .select();
-    updateLifeCycleModelProcess(data);
+    updateLifeCycleModelProcess(data.id, newData);
     return updateResult;
   }
   return null;

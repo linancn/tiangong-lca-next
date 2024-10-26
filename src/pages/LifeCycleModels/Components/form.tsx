@@ -5,7 +5,7 @@ import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import { copyrightOptions } from '@/pages/Processes/Components/optiondata';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { ProFormInstance } from '@ant-design/pro-components';
-import { Card, Form, Input, Select, Space } from 'antd';
+import { Card, Form, Input, Select, Space, theme } from 'antd';
 import type { FC } from 'react';
 import React from 'react';
 import { FormattedMessage } from 'umi';
@@ -24,6 +24,8 @@ export const LifeCycleModelForm: FC<Props> = ({
   onData,
   onTabChange,
 }) => {
+  const { token } = theme.useToken();
+
   const tabList = [
     {
       key: 'lifeCycleModelInformation',
@@ -519,7 +521,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
           >
-            <Input disabled={true} style={{ color: '#000' }} />
+            <Input disabled={true} style={{ color: token.colorTextDescription }} />
           </Form.Item>
           <SourceSelectForm
             lang={lang}

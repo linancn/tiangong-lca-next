@@ -28,6 +28,7 @@ export default {
   'pages.button.model.add': '添加节点',
   'pages.button.model.info': '基础信息',
   'pages.button.model.save': '提交保存',
+  'pages.button.model.result': '模型结果',
   'pages.button.model.process': '过程信息',
   'pages.button.model.exchange': '交换关系',
   'pages.button.model.connection': '连接关系',

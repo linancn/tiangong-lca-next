@@ -367,17 +367,19 @@ export async function getProcessTablePgroongaSearch(
   return result;
 }
 
-export async function getProcessDetail(id: string) {
-  const result = await supabase.from('processes').select('json, modified_at').eq('id', id);
-  if (result.data && result.data.length > 0) {
-    const data = result.data[0];
-    return Promise.resolve({
-      data: {
-        json: data.json,
-        modifiedAt: data?.modified_at,
-      },
-      success: true,
-    });
+export async function getProcessDetail(id: string | undefined) {
+  if (id) {
+    const result = await supabase.from('processes').select('json, modified_at').eq('id', id);
+    if (result.data && result.data.length > 0) {
+      const data = result.data[0];
+      return Promise.resolve({
+        data: {
+          json: data.json,
+          modifiedAt: data?.modified_at,
+        },
+        success: true,
+      });
+    }
   }
   return Promise.resolve({
     data: null,

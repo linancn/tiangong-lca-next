@@ -16,7 +16,7 @@ import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData } from '@/services/processes/util';
 import { CheckCircleOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
-import { Card, Divider, Form, Input, Select, Space, Tooltip } from 'antd';
+import { Card, Divider, Form, Input, Select, Space, theme, Tooltip } from 'antd';
 import { useRef, type FC } from 'react';
 import { FormattedMessage } from 'umi';
 import ProcessExchangeCreate from './Exchange/create';
@@ -54,6 +54,7 @@ export const ProcessForm: FC<Props> = ({
   exchangeDataSource,
 }) => {
   const actionRefExchangeTable = useRef<ActionType>();
+  const { token } = theme.useToken();
   const tabList = [
     {
       key: 'processInformation',
@@ -880,7 +881,7 @@ export const ProcessForm: FC<Props> = ({
           }
           name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
         >
-          <Input disabled={true} style={{ color: '#000' }} />
+          <Input disabled={true} style={{ color: token.colorTextDescription }} />
         </Form.Item>
 
         <Card
