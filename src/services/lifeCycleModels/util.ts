@@ -856,10 +856,10 @@ const genProcessExchange = (processTree: any, amount?: number, outputFlowId?: an
   if (outputFlowId) {
     const outputExchange = exchange?.find(
       (e: any) =>
-        e?.exchangeDirection === 'Input' &&
+        e?.exchangeDirection === 'Output' &&
         e?.referenceToFlowDataSet?.['@refObjectId'] === outputFlowId,
     );
-    const p = amount ?? 1 / outputExchange?.resultingAmount;
+    const p = (amount ?? 1) / outputExchange?.resultingAmount;
     if (processTree?.upstreamProcesses?.length > 0) {
       processTree?.upstreamProcesses?.forEach((u: any) => {
         const inputExchange = exchange?.find(
@@ -880,7 +880,7 @@ const genProcessExchange = (processTree: any, amount?: number, outputFlowId?: an
             });
           }
         });
-        if (u?.upstreamProcess?.upstreamProcesses?.length > 0) {
+        if (u?.upstreamProcess) {
           const uExchange = genProcessExchange(
             u?.upstreamProcess,
             p * inputExchange?.resultingAmount,
@@ -897,8 +897,8 @@ const genProcessExchange = (processTree: any, amount?: number, outputFlowId?: an
         if (e?.['@dataSetInternalID'] !== outputExchange?.['@dataSetInternalID']) {
           newExchange.push({
             ...e,
-            meanAmount: e?.resultingAmount * p,
-            resultingAmount: e?.resultingAmount * p,
+            meanAmount: Number(e?.resultingAmount) * p,
+            resultingAmount: Number(e?.resultingAmount) * p,
           });
         }
       });
@@ -914,10 +914,15 @@ const genProcessExchange = (processTree: any, amount?: number, outputFlowId?: an
 
         exchange?.forEach((e: any) => {
           if (e?.['@dataSetInternalID'] !== inputExchange?.['@dataSetInternalID']) {
-            newExchange.push(e);
+            newExchange.push({
+              ...e,
+              meanAmount: Number(e?.meanAmount),
+              resultingAmount: Number(e?.resultingAmount),
+            });
           }
         });
-        if (u?.upstreamProcess?.upstreamProcesses?.length > 0) {
+
+        if (u?.upstreamProcess) {
           const uExchange = genProcessExchange(
             u?.upstreamProcess,
             amount ?? 1 * inputExchange?.resultingAmount,
@@ -931,45 +936,72 @@ const genProcessExchange = (processTree: any, amount?: number, outputFlowId?: an
       });
     } else {
       exchange?.forEach((e: any) => {
-        newExchange.push(e);
+        newExchange.push({
+          ...e,
+          meanAmount: Number(e?.meanAmount),
+          resultingAmount: Number(e?.resultingAmount),
+        });
       });
     }
   }
   return newExchange;
 };
 
+const sumProcessExchange = (processExchange: any[]) => {
+  const sumData =
+    processExchange?.reduce((acc, curr) => {
+      const cId = curr?.exchangeDirection + '_' + curr?.referenceToFlowDataSet?.['@refObjectId'];
+      if (!acc[cId]) {
+        acc[cId] = { ...curr };
+      } else {
+        acc[cId].meanAmount += curr.meanAmount;
+        acc[cId].resultingAmount += curr.resultingAmount;
+      }
+      return acc;
+    }, []) ?? [];
+  const sumDataList = Object.values(sumData);
+  return sumDataList?.map((d: any, index: number) => {
+    return {
+      ...d,
+      meanAmount: d?.meanAmount.toString(),
+      resultingAmount: d?.resultingAmount.toString(),
+      '@dataSetInternalID': (index + 1).toString(),
+    };
+  });
+};
+
 export async function genLifeCycleModelProcess(id: string, data: any, oldData: any) {
   let processIds: any[] = [];
   const processInstance =
-    data?.lifeCycleModelInformation?.technology?.processes?.processInstance?.map((p: any) => {
-      if (p?.referenceToProcess?.['@refObjectId']) {
-        processIds.push(p?.referenceToProcess?.['@refObjectId']);
-      }
-      return {
-        ...p,
-        connections: {
-          ...p?.connections,
-          outputExchange: jsonToList(p?.connections?.outputExchange),
-        },
-      };
-    });
+    jsonToList(data?.lifeCycleModelInformation?.technology?.processes?.processInstance)?.map(
+      (p: any) => {
+        if (p?.referenceToProcess?.['@refObjectId']) {
+          processIds.push(p?.referenceToProcess?.['@refObjectId']);
+        }
+        return {
+          ...p,
+          connections: {
+            ...p?.connections,
+            outputExchange: jsonToList(p?.connections?.outputExchange),
+          },
+        };
+      },
+    ) ?? [];
 
   const processes =
     (await supabase.from('processes').select('id, json').in('id', processIds))?.data ?? [];
 
-  let exchange: any = [];
-  if (Array.isArray(processInstance)) {
-    if (processInstance.length > 1) {
-      const parentProcess = processInstance.find(
-        (p: any) => p?.connections?.outputExchange?.length < 1,
-      );
-      if (parentProcess) {
-        const processTree = genProcessTree(parentProcess, processInstance, processes);
+  let allExchange: any = [];
+  const parentProcess = processInstance.find(
+    (p: any) => p?.connections?.outputExchange?.length < 1,
+  );
+  if (parentProcess) {
+    const processTree = genProcessTree(parentProcess, processInstance, processes);
 
-        exchange = genProcessExchange(processTree);
-      }
-    }
+    allExchange = genProcessExchange(processTree);
   }
+
+  const exchange = sumProcessExchange(allExchange);
 
   const newData = removeEmptyObjects({
     processDataSet: {
