@@ -822,8 +822,12 @@ export function genLifeCycleModelData(data: any, lang: string) {
   };
 }
 
-const genProcessTree = (thisModelProcess: any, modelProcesses: any[], dbProcesses: any[]): any => {
-  const dbProcess = dbProcesses?.find(
+const genProcessTree = (
+  thisModelProcess: any,
+  modelProcesses: any[],
+  dbProcessExchanges: any[],
+): any => {
+  const dbPE = dbProcessExchanges?.find(
     (p: any) => p?.id === thisModelProcess?.referenceToProcess?.['@refObjectId'],
   );
   const upstreamProcess = modelProcesses.filter((p: any) =>
@@ -832,8 +836,8 @@ const genProcessTree = (thisModelProcess: any, modelProcesses: any[], dbProcesse
     ),
   );
   return {
-    dbProcess: dbProcess,
-    modelProcess: thisModelProcess,
+    // modelProcess: thisModelProcess,
+    dbProcessExchanges: dbPE,
     upstreamProcesses:
       upstreamProcess?.map((p: any) => {
         const outputExchange = p?.connections?.outputExchange?.find(
@@ -844,7 +848,7 @@ const genProcessTree = (thisModelProcess: any, modelProcesses: any[], dbProcesse
             thisFlowId: outputExchange?.downstreamProcess?.['@flowUUID'],
             upstreamFlowId: outputExchange?.['@flowUUID'],
           },
-          upstreamProcess: genProcessTree(p, modelProcesses, dbProcesses),
+          upstreamProcess: genProcessTree(p, modelProcesses, dbProcessExchanges),
         };
       }) ?? [],
   };
@@ -852,7 +856,7 @@ const genProcessTree = (thisModelProcess: any, modelProcesses: any[], dbProcesse
 
 const genProcessExchange = (processTree: any, amount?: number, outputFlowId?: any) => {
   let newExchange: any[] = [];
-  const exchange = processTree?.dbProcess?.json?.processDataSet?.exchanges?.exchange;
+  const exchange = processTree?.dbProcessExchanges.exchange;
   if (outputFlowId) {
     const outputExchange = exchange?.find(
       (e: any) =>
@@ -988,15 +992,25 @@ export async function genLifeCycleModelProcess(id: string, data: any, oldData: a
       },
     ) ?? [];
 
-  const processes =
-    (await supabase.from('processes').select('id, json').in('id', processIds))?.data ?? [];
+  const dbProcessExchanges =
+    (
+      await supabase
+        .from('processes')
+        .select(
+          `
+      id,
+      json->processDataSet->exchanges->exchange
+      `,
+        )
+        .in('id', processIds)
+    )?.data ?? [];
 
   let allExchange: any = [];
   const parentProcess = processInstance.find(
     (p: any) => p?.connections?.outputExchange?.length < 1,
   );
   if (parentProcess) {
-    const processTree = genProcessTree(parentProcess, processInstance, processes);
+    const processTree = genProcessTree(parentProcess, processInstance, dbProcessExchanges);
 
     allExchange = genProcessExchange(processTree);
   }
