@@ -856,19 +856,32 @@ const genProcessTree = (
 
 const genProcessExchange = (processTree: any, amount?: number, outputFlowId?: any) => {
   let newExchange: any[] = [];
-  const exchange = processTree?.dbProcessExchanges.exchange;
+
+  let adjustedAmount = amount;
+  if (adjustedAmount === undefined || adjustedAmount === null || isNaN(adjustedAmount)) {
+    adjustedAmount = 1;
+  }
+
+  const exchange = processTree?.dbProcessExchanges?.exchange;
   if (outputFlowId) {
     const outputExchange = exchange?.find(
       (e: any) =>
-        e?.exchangeDirection === 'Output' &&
+        e?.exchangeDirection.toUpperCase() === 'OUTPUT' &&
         e?.referenceToFlowDataSet?.['@refObjectId'] === outputFlowId,
     );
-    const p = (amount ?? 1) / outputExchange?.resultingAmount;
+
+    const resultingAmount = Number(outputExchange?.resultingAmount);
+    if (isNaN(resultingAmount) || resultingAmount === 0) {
+      return [];
+    }
+
+    const p = adjustedAmount / resultingAmount;
+
     if (processTree?.upstreamProcesses?.length > 0) {
       processTree?.upstreamProcesses?.forEach((u: any) => {
         const inputExchange = exchange?.find(
           (e: any) =>
-            e?.exchangeDirection === 'Input' &&
+            e?.exchangeDirection.toUpperCase() === 'INPUT' &&
             e?.referenceToFlowDataSet?.['@refObjectId'] === u?.connection?.thisFlowId,
         );
 
@@ -879,15 +892,15 @@ const genProcessExchange = (processTree: any, amount?: number, outputFlowId?: an
           ) {
             newExchange.push({
               ...e,
-              meanAmount: e?.resultingAmount * p,
-              resultingAmount: e?.resultingAmount * p,
+              meanAmount: Number(e?.resultingAmount) * p,
+              resultingAmount: Number(e?.resultingAmount) * p,
             });
           }
         });
         if (u?.upstreamProcess) {
           const uExchange = genProcessExchange(
             u?.upstreamProcess,
-            p * inputExchange?.resultingAmount,
+            p * Number(inputExchange?.resultingAmount),
             u?.connection?.upstreamFlowId,
           );
 
@@ -912,7 +925,7 @@ const genProcessExchange = (processTree: any, amount?: number, outputFlowId?: an
       processTree?.upstreamProcesses?.forEach((u: any) => {
         const inputExchange = exchange?.find(
           (e: any) =>
-            e?.exchangeDirection === 'Input' &&
+            e?.exchangeDirection.toUpperCase() === 'INPUT' &&
             e?.referenceToFlowDataSet?.['@refObjectId'] === u?.connection?.thisFlowId,
         );
 
@@ -929,7 +942,7 @@ const genProcessExchange = (processTree: any, amount?: number, outputFlowId?: an
         if (u?.upstreamProcess) {
           const uExchange = genProcessExchange(
             u?.upstreamProcess,
-            amount ?? 1 * inputExchange?.resultingAmount,
+            adjustedAmount * Number(inputExchange?.resultingAmount),
             u?.connection?.upstreamFlowId,
           );
 
@@ -954,7 +967,10 @@ const genProcessExchange = (processTree: any, amount?: number, outputFlowId?: an
 const sumProcessExchange = (processExchange: any[]) => {
   const sumData =
     processExchange?.reduce((acc, curr) => {
-      const cId = curr?.exchangeDirection + '_' + curr?.referenceToFlowDataSet?.['@refObjectId'];
+      const cId =
+        curr?.exchangeDirection.toUpperCase() +
+        '_' +
+        curr?.referenceToFlowDataSet?.['@refObjectId'];
       if (!acc[cId]) {
         acc[cId] = { ...curr };
       } else {
