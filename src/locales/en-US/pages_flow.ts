@@ -1,6 +1,7 @@
 export default {
   'pages.flow.CASNumber': 'CAS Number',
   'pages.flow.flowType': 'Flow type',
+  'pages.flow.locationOfSupply': 'Location of supply',
   'pages.flow.generalComment': 'General comment on data set',
   'pages.flow.model.sourceOutputFlowName': 'Source process output flow',
   'pages.flow.model.targetInputFlowName': 'Target input flow name',
@@ -39,6 +40,8 @@ export default {
   'pages.flow.view.flowInformation.synonyms': 'Synonyms',
   'pages.flow.view.flowInformation.classificationInformation': 'Category and classification information',
   'pages.flow.view.flowInformation': 'Flow information',
+  'pages.flow.view.flowInformation.locationOfSupply': 'Location of supply',
+  'pages.flow.view.flowInformation.geography': 'Geography',
   'pages.flow.view.flowProperties.meanValue': 'Mean value (of flow property)',
   'pages.flow.view.flowProperties.referenceToFlowPropertyDataSet': 'Flow property',
   'pages.flow.view.flowProperties.referenceToDataSetFormat': 'Data set format(s)',
