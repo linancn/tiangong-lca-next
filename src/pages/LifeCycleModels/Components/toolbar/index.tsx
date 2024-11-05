@@ -48,6 +48,49 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
 
   const { token } = theme.useToken();
 
+  const tools = [
+    {
+      name: 'button',
+      args: {
+        markup: [
+          {
+            tagName: 'circle',
+            selector: 'button',
+            attrs: {
+              r: 10,
+              'stroke-width': 0,
+              fill: token.colorBgBase,
+              cursor: 'pointer',
+            },
+          },
+          {
+            tagName: 'text',
+            textContent: '★',
+            selector: 'icon',
+            attrs: {
+              fill: token.colorPrimary,
+              'font-size': 22,
+              'text-anchor': 'middle',
+              'pointer-events': 'none',
+              y: '0.3em',
+            },
+          },
+          {
+            tagName: 'title',
+            textContent: intl.formatMessage({
+              id: 'pages.button.model.info',
+              defaultMessage: 'Base information',
+            }),
+          },
+        ],
+        offset: { x: 10, y: -12 },
+        onClick(view: any) {
+          console.log('button click', view);
+        },
+      },
+    },
+  ];
+
   const nodeAttrs = {
     body: {
       stroke: token.colorBorder,
@@ -128,6 +171,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
     width: 300,
     height: 40,
     attrs: nodeAttrs,
+    tools: tools,
     data: {
       label: [],
       generalComment: [],
