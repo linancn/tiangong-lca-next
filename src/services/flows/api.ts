@@ -8,7 +8,7 @@ import {
 import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/lib/table/interface';
-import { getILCDFlowCategorizationAll } from '../ilcd/api';
+import { getILCDFlowCategorizationAll, getILCDLocationByValues } from '../ilcd/api';
 import { genFlowJsonOrdered } from './util';
 
 export async function createFlows(data: any) {
@@ -20,6 +20,7 @@ export async function createFlows(data: any) {
       '@xmlns:ecn': 'http://eplca.jrc.ec.europa.eu/ILCD/Extensions/2018/ECNumber',
       '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
       '@version': '1.1',
+      '@locations': '../ILCDLocations.xml',
       '@xsi:schemaLocation': 'http://lca.jrc.it/ILCD/Flow ../../schemas/ILCD_FlowDataSet.xsd',
     },
   };
@@ -72,6 +73,7 @@ export async function getFlowTableAll(
     json->flowDataSet->flowInformation->dataSetInformation->classificationInformation->"common:elementaryFlowCategorization"->"common:category",
     json->flowDataSet->flowInformation->dataSetInformation->"common:synonyms",
     json->flowDataSet->flowInformation->dataSetInformation->>CASNumber,
+    json->flowDataSet->flowInformation->geography->>locationOfSupply,
     json->flowDataSet->modellingAndValidation->LCIMethod->>typeOfDataSet,
     json->flowDataSet->flowProperties->flowProperty->referenceToFlowPropertyDataSet,
     modified_at
@@ -121,6 +123,14 @@ export async function getFlowTableAll(
       });
     }
 
+    const locations: string[] = Array.from(
+      new Set(result.data.map((i: any) => i['locationOfSupply'])),
+    );
+    let locationData: any[] = [];
+    await getILCDLocationByValues(lang, locations).then((res) => {
+      locationData = res.data;
+    });
+
     let data: any[] = [];
 
     if (lang === 'zh') {
@@ -137,6 +147,12 @@ export async function getFlowTableAll(
             const classifications = jsonToList(i?.['common:category']);
             const classificationZH = genClassificationZH(classifications, thisCategory);
 
+            const thisLocation = locationData.find((l) => l['@value'] === i['locationOfSupply']);
+            let location = i['locationOfSupply'];
+            if (thisLocation?.['#text']) {
+              location = thisLocation['#text'];
+            }
+
             return {
               key: i.id,
               id: i.id,
@@ -149,6 +165,7 @@ export async function getFlowTableAll(
               synonyms: getLangText(i?.['common:synonyms'], lang),
               CASNumber: i?.CASNumber ?? '-',
               refFlowPropertyId: i?.referenceToFlowPropertyDataSet?.['@refObjectId'] ?? '-',
+              location: location ?? '-',
               modifiedAt: new Date(i?.modified_at),
             };
           } catch (e) {
@@ -162,6 +179,11 @@ export async function getFlowTableAll(
     } else {
       data = result.data.map((i: any) => {
         try {
+          const thisLocation = locationData.find((l) => l['@value'] === i['locationOfSupply']);
+          let location = i['locationOfSupply'];
+          if (thisLocation?.['#text']) {
+            location = thisLocation['#text'];
+          }
           return {
             key: i.id,
             id: i.id,
@@ -174,6 +196,7 @@ export async function getFlowTableAll(
             synonyms: getLangText(i['common:synonyms'], lang),
             CASNumber: i.CASNumber ?? '-',
             refFlowPropertyId: i.referenceToFlowPropertyDataSet?.['@refObjectId'] ?? '-',
+            location: location,
             modifiedAt: new Date(i.modified_at),
           };
         } catch (e) {
@@ -234,6 +257,18 @@ export async function getFlowTablePgroongaSearch(
     }
     const totalCount = result.data[0].total_count;
 
+    const locations: string[] = Array.from(
+      new Set(
+        result.data.map(
+          (i: any) => i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply,
+        ),
+      ),
+    );
+    let locationData: any[] = [];
+    await getILCDLocationByValues(lang, locations).then((res) => {
+      locationData = res.data;
+    });
+
     let data: any[] = [];
 
     if (lang === 'zh') {
@@ -259,6 +294,15 @@ export async function getFlowTablePgroongaSearch(
             );
             const classificationZH = genClassificationZH(classifications, thisCategory);
 
+            const thisLocation = locationData.find(
+              (l) =>
+                l['@value'] === i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply,
+            );
+            let location = i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply;
+            if (thisLocation?.['#text']) {
+              location = thisLocation['#text'];
+            }
+
             return {
               key: i.id,
               id: i.id,
@@ -271,6 +315,7 @@ export async function getFlowTablePgroongaSearch(
                 i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet ?? '-',
               classification: classificationToString(classificationZH),
               CASNumber: dataInfo?.CASNumber ?? '-',
+              location: location ?? '-',
               modifiedAt: new Date(i?.modified_at),
             };
           } catch (e) {
@@ -285,6 +330,15 @@ export async function getFlowTablePgroongaSearch(
       data = result.data.map((i: any) => {
         try {
           const dataInfo = i.json?.flowDataSet?.flowInformation?.dataSetInformation;
+          const thisLocation = locationData.find(
+            (l) =>
+              l['@value'] === i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply,
+          );
+          let location = i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply;
+          if (thisLocation?.['#text']) {
+            location = thisLocation['#text'];
+          }
+
           return {
             key: i.id,
             id: i.id,
@@ -300,6 +354,7 @@ export async function getFlowTablePgroongaSearch(
             ),
             flowType: i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet ?? '-',
             CASNumber: dataInfo?.CASNumber ?? '-',
+            location: location ?? '-',
             modifiedAt: new Date(i?.modified_at),
           };
         } catch (e) {
@@ -390,6 +445,7 @@ export async function flow_hybrid_search(
             ),
             flowType: i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet ?? '-',
             CASNumber: i.json?.flowDataSet?.flowInformation?.dataSetInformation?.CASNumber ?? '-',
+            location: i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply ?? '-',
           };
         } catch (e) {
           console.error(e);

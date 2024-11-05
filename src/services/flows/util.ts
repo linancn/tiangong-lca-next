@@ -84,6 +84,9 @@ export function genFlowJsonOrdered(id: string, data: any, oldData: any) {
               data?.flowInformation?.dataSetInformation?.['common:other']?.['ecn:ECNumber'],
           },
         },
+        geography: {
+          locationOfSupply: data?.flowInformation?.geography?.locationOfSupply,
+        },
         quantitativeReference: quantitativeReference,
       },
       modellingAndValidation: {
@@ -203,6 +206,9 @@ export function genFlowFromData(data: any) {
             data?.flowInformation?.dataSetInformation?.['common:other']?.['ecn:ECNumber'],
         },
       },
+      geography: {
+        locationOfSupply: data?.flowInformation?.geography?.locationOfSupply,
+      },
       quantitativeReference: {
         referenceToReferenceFlowProperty:
           data?.flowInformation?.quantitativeReference?.referenceToReferenceFlowProperty,
@@ -319,6 +325,7 @@ export function genFlowPropertyTabTableData(data: any, lang: string) {
         ),
         meanValue: item?.['meanValue'],
         quantitativeReference: item?.quantitativeReference ?? false,
+        location: item?.locationOfSupply ?? '-',
       });
     });
   }
