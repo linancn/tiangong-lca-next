@@ -19,7 +19,14 @@ export function genLifeCycleModelJsonOrdered(id: string, data: any, oldData: any
     };
   });
 
+  let referenceToReferenceProcess = null;
   const processInstance = nodes?.map((n: any) => {
+    console.log('n', n);
+
+    if (data?.quantitativeReference === '1') {
+      referenceToReferenceProcess = n?.['@dataSetInternalID'];
+    }
+
     const sourceEdges = data?.model?.edges?.filter((e: any) => e?.source?.cell === n?.id);
     const outputExchange = sourceEdges.map((e: any) => {
       const targetNode = nodes?.find((n: any) => n?.id === e?.target?.cell);
@@ -134,8 +141,7 @@ export function genLifeCycleModelJsonOrdered(id: string, data: any, oldData: any
           },
         },
         quantitativeReference: {
-          referenceToReferenceProcess:
-            data?.lifeCycleModelInformation?.quantitativeReference?.referenceToReferenceProcess,
+          referenceToReferenceProcess: referenceToReferenceProcess ?? {},
         },
         technology: {
           groupDeclarations: {},
@@ -1027,7 +1033,6 @@ export async function genLifeCycleModelProcess(id: string, data: any, oldData: a
   );
   if (parentProcess) {
     const processTree = genProcessTree(parentProcess, processInstance, dbProcessExchanges);
-
     allExchange = genProcessExchange(processTree);
   }
 

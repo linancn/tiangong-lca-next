@@ -38,6 +38,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
   const [infoData, setInfoData] = useState<any>({});
   const modelData = useGraphStore((state) => state.initData);
   const addNodes = useGraphStore((state) => state.addNodes);
+  const updateNode = useGraphStore((state) => state.updateNode);
   const removeNodes = useGraphStore((state) => state.removeNodes);
   const removeEdges = useGraphStore((state) => state.removeEdges);
   const updateEdge = useGraphStore((state) => state.updateEdge);
@@ -46,9 +47,11 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
   const nodes = useGraphStore((state) => state.nodes);
   const edges = useGraphStore((state) => state.edges);
 
+  const [nodeCount, setNodeCount] = useState(0);
+
   const { token } = theme.useToken();
 
-  const tools = [
+  const refTools = [
     {
       name: 'button',
       args: {
@@ -65,7 +68,8 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
           },
           {
             tagName: 'text',
-            textContent: '★',
+            textContent: '★', //https://symbl.cc/
+            // textContent: '☆',
             selector: 'icon',
             attrs: {
               fill: token.colorPrimary,
@@ -78,14 +82,77 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
           {
             tagName: 'title',
             textContent: intl.formatMessage({
-              id: 'pages.button.model.info',
-              defaultMessage: 'Base information',
+              id: 'pages.button.model.referenceNode',
+              defaultMessage: 'Reference node',
+            }),
+          },
+        ],
+        offset: { x: 10, y: -12 },
+        onClick() {},
+      },
+    },
+  ];
+
+  const nonRefTools = [
+    {
+      name: 'button',
+      args: {
+        markup: [
+          {
+            tagName: 'circle',
+            selector: 'button',
+            attrs: {
+              r: 10,
+              'stroke-width': 0,
+              fill: token.colorBgBase,
+              cursor: 'pointer',
+            },
+          },
+          {
+            tagName: 'text',
+            // textContent: '★', //https://symbl.cc/
+            textContent: '☆',
+            selector: 'icon',
+            attrs: {
+              fill: token.colorPrimary,
+              'font-size': 22,
+              'text-anchor': 'middle',
+              'pointer-events': 'none',
+              y: '0.3em',
+            },
+          },
+          {
+            tagName: 'title',
+            textContent: intl.formatMessage({
+              id: 'pages.button.model.setReference',
+              defaultMessage: 'Set as reference',
             }),
           },
         ],
         offset: { x: 10, y: -12 },
         onClick(view: any) {
-          console.log('button click', view);
+          const thisData = view.cell.store.data;
+          nodes.forEach((node) => {
+            if (node.id === thisData?.id) {
+              const updatedNodeData = {
+                data: {
+                  ...node?.data,
+                  quantitativeReference: '1',
+                },
+                tools: refTools,
+              };
+              updateNode(node.id ?? '', updatedNodeData);
+            } else {
+              const updatedNodeData = {
+                data: {
+                  ...node.data,
+                  quantitativeReference: '0',
+                },
+                tools: nonRefTools,
+              };
+              updateNode(node.id ?? '', updatedNodeData);
+            }
+          });
         },
       },
     },
@@ -163,7 +230,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
     ],
   };
 
-  const node = {
+  const nodeTemplate = {
     id: '',
     shape: 'rect',
     x: 200,
@@ -171,9 +238,10 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
     width: 300,
     height: 40,
     attrs: nodeAttrs,
-    tools: tools,
+    tools: nonRefTools,
     data: {
       label: [],
+      quantitativeReference: '0',
       generalComment: [],
     },
     ports: ports,
@@ -204,7 +272,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
     getProcessDetail(id).then(async (result: any) => {
       addNodes([
         {
-          ...node,
+          ...nodeTemplate,
           id: v4(),
           label: getLangText(
             result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name
@@ -362,10 +430,12 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
         setInfoData({ ...fromData, id: thisId });
         const model = genLifeCycleModelData(result.data?.json_tg ?? {}, lang);
         let initNodes = (model?.nodes ?? []).map((node: any) => {
+          console.log(node);
           return {
             ...node,
             attrs: nodeAttrs,
             ports: ports,
+            tools: node?.data?.quantitativeReference === '1' ? refTools : nonRefTools,
           };
         });
         if (readonly) {
@@ -434,10 +504,13 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
             }
             return edge;
           }) ?? [];
-        modelData({
+        setNodeCount(initNodes.length);
+        await modelData({
           nodes: initNodes,
           edges: initEdges,
         });
+        if (!readonly) {
+        }
         setSpinning(false);
       });
     } else {
@@ -455,6 +528,14 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
       setInfoData({ ...newData, id: thisId });
     }
   }, [drawerVisible]);
+
+  useEffect(() => {
+    nodes.forEach((node) => {
+      updateNode(node.id ?? '', {
+        tools: node?.data?.quantitativeReference === '1' ? refTools : nonRefTools,
+      });
+    });
+  }, [nodeCount]);
 
   return (
     <Space direction="vertical" size={'middle'}>
