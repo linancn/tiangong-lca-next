@@ -1,6 +1,12 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
-import { CASNumber, dataSetVersion, StringMultiLang_r } from '@/components/Validator/index';
+import LocationTextItemForm from '@/components/LocationTextItem/form';
+import {
+  CASNumber,
+  dataSetVersion,
+  StringMultiLang_o,
+  StringMultiLang_r,
+} from '@/components/Validator/index';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import { FlowpropertyTabTable } from '@/services/flows/data';
@@ -397,6 +403,28 @@ export const FlowForm: FC<Props> = ({
                             <Input />
                         </Form.Item>
                     </Card> */}
+        <Card
+          size="small"
+          title={
+            <FormattedMessage
+              id="pages.flow.view.flowInformation.geography"
+              defaultMessage="Geography"
+            />
+          }
+        >
+          <LocationTextItemForm
+            label={
+              <FormattedMessage
+                id="pages.flow.view.flowInformation.locationOfSupply"
+                defaultMessage="Location of supply"
+              />
+            }
+            name={['flowInformation', 'geography', 'locationOfSupply']}
+            lang={lang}
+            onData={onData}
+            rules={StringMultiLang_o}
+          />
+        </Card>
       </Space>
     ),
     modellingAndValidation: (

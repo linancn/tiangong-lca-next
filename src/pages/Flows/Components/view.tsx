@@ -1,5 +1,6 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
+import LocationTextItemDescription from '@/components/LocationTextItem/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import { getFlowDetail } from '@/services/flows/api';
@@ -331,6 +332,27 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
                         </Descriptions.Item>
                     </Descriptions>
                 </Card> */}
+        <Card
+          size="small"
+          title={
+            <FormattedMessage
+              id="pages.flow.view.flowInformation.geography"
+              defaultMessage="Geography"
+            />
+          }
+        >
+          <LocationTextItemDescription
+            lang={lang}
+            data={initData?.flowInformation?.geography?.locationOfSupply ?? '-'}
+            label={
+              <FormattedMessage
+                id="pages.flow.view.flowInformation.locationOfSupply"
+                defaultMessage="Location of supply"
+              />
+            }
+            labelStyle={{ width: '100px' }}
+          />
+        </Card>
       </>
     ),
     modellingAndValidation: (

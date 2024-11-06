@@ -98,6 +98,14 @@ const TableList: FC = () => {
       search: false,
     },
     {
+      title: (
+        <FormattedMessage id="pages.flow.locationOfSupply" defaultMessage="Location of supply" />
+      ),
+      dataIndex: 'locationOfSupply',
+      sorter: false,
+      search: false,
+    },
+    {
       title: <FormattedMessage id="pages.table.title.updatedAt" defaultMessage="Updated at" />,
       dataIndex: 'modifiedAt',
       valueType: 'dateTime',
