@@ -270,7 +270,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
   const addProcessNode = (id: any) => {
     setSpinning(true);
     getProcessDetail(id).then(async (result: any) => {
-      addNodes([
+      await addNodes([
         {
           ...nodeTemplate,
           id: v4(),
@@ -290,9 +290,11 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
             shortDescription:
               result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name
                 ?.baseName,
+            quantitativeReference: '0',
           },
         },
       ]);
+      setNodeCount(nodes.length);
       setSpinning(false);
     });
   };
@@ -307,6 +309,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
         );
         await removeEdges(selectedEdges.map((e) => e.id ?? ''));
         await removeNodes([node.id ?? '']);
+        setNodeCount(nodes.length);
       });
     } else {
       const selectedEdges = edges.filter((edge) => edge.selected);
@@ -430,7 +433,6 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
         setInfoData({ ...fromData, id: thisId });
         const model = genLifeCycleModelData(result.data?.json_tg ?? {}, lang);
         let initNodes = (model?.nodes ?? []).map((node: any) => {
-          console.log(node);
           return {
             ...node,
             attrs: nodeAttrs,

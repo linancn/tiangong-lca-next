@@ -21,9 +21,7 @@ export function genLifeCycleModelJsonOrdered(id: string, data: any, oldData: any
 
   let referenceToReferenceProcess = null;
   const processInstance = nodes?.map((n: any) => {
-    console.log('n', n);
-
-    if (data?.quantitativeReference === '1') {
+    if (n?.data?.quantitativeReference === '1') {
       referenceToReferenceProcess = n?.['@dataSetInternalID'];
     }
 
@@ -1021,6 +1019,7 @@ export async function genLifeCycleModelProcess(id: string, data: any, oldData: a
         .select(
           `
       id,
+      json->processDataSet->processInformation->quantitativeReference,
       json->processDataSet->exchanges->exchange
       `,
         )
@@ -1028,15 +1027,37 @@ export async function genLifeCycleModelProcess(id: string, data: any, oldData: a
     )?.data ?? [];
 
   let allExchange: any = [];
-  const parentProcess = processInstance.find(
-    (p: any) => p?.connections?.outputExchange?.length < 1,
+
+  const referenceToReferenceProcess =
+    data?.lifeCycleModelInformation?.quantitativeReference?.referenceToReferenceProcess;
+
+  const referenceProcess = processInstance.find(
+    (p: any) => p?.['@dataSetInternalID'] === referenceToReferenceProcess,
   );
-  if (parentProcess) {
-    const processTree = genProcessTree(parentProcess, processInstance, dbProcessExchanges);
+
+  const dbReferenceProcess = dbProcessExchanges.find(
+    (p: any) => p?.id === referenceProcess?.referenceToProcess?.['@refObjectId'],
+  ) as any;
+
+  const flowQuantitativeReference = dbReferenceProcess?.exchange?.find(
+    (e: any) =>
+      e?.['@dataSetInternalID'] ===
+      dbReferenceProcess?.quantitativeReference?.referenceToReferenceFlow,
+  );
+
+  if (referenceProcess) {
+    const processTree = genProcessTree(referenceProcess, processInstance, dbProcessExchanges);
     allExchange = genProcessExchange(processTree);
   }
 
   const exchange = sumProcessExchange(allExchange);
+
+  const thisFlowQuantitativeReference = exchange.find(
+    (e: any) =>
+      e?.referenceToFlowDataSet?.['@refObjectId'] ===
+        flowQuantitativeReference?.referenceToFlowDataSet?.['@refObjectId'] &&
+      e?.exchangeDirection.toUpperCase() === 'OUTPUT',
+  );
 
   const newData = removeEmptyObjects({
     processDataSet: {
@@ -1069,6 +1090,11 @@ export async function genLifeCycleModelProcess(id: string, data: any, oldData: a
           },
           'common:generalComment':
             data?.lifeCycleModelInformation?.dataSetInformation?.['common:generalComment'],
+        },
+        quantitativeReference: {
+          '@type': dbReferenceProcess?.quantitativeReference?.['@type'],
+          referenceToReferenceFlow: thisFlowQuantitativeReference?.['@dataSetInternalID'],
+          functionalUnitOrOther: dbReferenceProcess?.quantitativeReference?.functionalUnitOrOther,
         },
       },
 
