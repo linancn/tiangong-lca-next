@@ -983,74 +983,82 @@ export const ProcessForm: FC<Props> = ({
       </Space>
     ),
     exchanges: (
-      <Collapse
-        items={[
-          {
-            key: '1',
-            label: 'Input',
-            children: (
-              <ProTable<ProcessExchangeTable, ListPagination>
-                actionRef={actionRefExchangeTable}
-                search={false}
-                pagination={{
-                  showSizeChanger: false,
-                  pageSize: 10,
-                }}
-                toolBarRender={() => {
-                  return [
-                    <ProcessExchangeCreate
-                      key={0}
-                      direction={'input'}
-                      lang={lang}
-                      onData={onExchangeDataCreate}
-                    />,
-                  ];
-                }}
-                request={async (params: { pageSize: number; current: number }) => {
-                  return getProcessExchange(
-                    genProcessExchangeTableData(exchangeDataSource, lang),
-                    'Input',
-                    params,
-                  );
-                }}
-                columns={processExchangeColumns}
-              />
-            ),
-          },
-          {
-            key: '2',
-            label: 'Output',
-            children: (
-              <ProTable<ProcessExchangeTable, ListPagination>
-                actionRef={actionRefExchangeTable}
-                search={false}
-                pagination={{
-                  showSizeChanger: false,
-                  pageSize: 10,
-                }}
-                toolBarRender={() => {
-                  return [
-                    <ProcessExchangeCreate
-                      key={0}
-                      direction={'output'}
-                      lang={lang}
-                      onData={onExchangeDataCreate}
-                    />,
-                  ];
-                }}
-                request={async (params: { pageSize: number; current: number }) => {
-                  return getProcessExchange(
-                    genProcessExchangeTableData(exchangeDataSource, lang),
-                    'Output',
-                    params,
-                  );
-                }}
-                columns={processExchangeColumns}
-              />
-            ),
-          },
-        ]}
-      />
+      <>
+        <Collapse
+          defaultActiveKey={['1']}
+          items={[
+            {
+              key: '1',
+              label: 'Input',
+              children: (
+                <ProTable<ProcessExchangeTable, ListPagination>
+                  actionRef={actionRefExchangeTable}
+                  search={false}
+                  pagination={{
+                    showSizeChanger: false,
+                    pageSize: 10,
+                  }}
+                  toolBarRender={() => {
+                    return [
+                      <ProcessExchangeCreate
+                        key={0}
+                        direction={'input'}
+                        lang={lang}
+                        onData={onExchangeDataCreate}
+                      />,
+                    ];
+                  }}
+                  request={async (params: { pageSize: number; current: number }) => {
+                    return getProcessExchange(
+                      genProcessExchangeTableData(exchangeDataSource, lang),
+                      'Input',
+                      params,
+                    );
+                  }}
+                  columns={processExchangeColumns}
+                />
+              ),
+            },
+          ]}
+        />
+        <Collapse
+          defaultActiveKey={['1']}
+          items={[
+            {
+              key: '1',
+              label: 'Output',
+              children: (
+                <ProTable<ProcessExchangeTable, ListPagination>
+                  actionRef={actionRefExchangeTable}
+                  search={false}
+                  pagination={{
+                    showSizeChanger: false,
+                    pageSize: 10,
+                  }}
+                  toolBarRender={() => {
+                    return [
+                      <ProcessExchangeCreate
+                        key={0}
+                        direction={'output'}
+                        lang={lang}
+                        onData={onExchangeDataCreate}
+                      />,
+                    ];
+                  }}
+                  request={async (params: { pageSize: number; current: number }) => {
+                    return getProcessExchange(
+                      genProcessExchangeTableData(exchangeDataSource, lang),
+                      'Output',
+                      params,
+                    );
+                  }}
+                  columns={processExchangeColumns}
+                />
+              ),
+            },
+          ]}
+        />
+      </>
     ),
   };
 

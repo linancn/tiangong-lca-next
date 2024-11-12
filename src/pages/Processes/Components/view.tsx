@@ -5,7 +5,7 @@ import ContactSelectDescription from '@/pages/Contacts/Components/select/descrip
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import { ListPagination } from '@/services/general/data';
-import { getProcessDetail } from '@/services/processes/api';
+import { getProcessDetail, getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData, genProcessFromData } from '@/services/processes/util';
 import {
@@ -15,7 +15,7 @@ import {
   ProfileOutlined,
 } from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
-import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
+import { Button, Card, Collapse, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -908,15 +908,60 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
       </>
     ),
     exchanges: (
-      <ProTable<ProcessExchangeTable, ListPagination>
-        search={false}
-        pagination={{
-          showSizeChanger: false,
-          pageSize: 10,
-        }}
-        columns={processExchangeColumns}
-        dataSource={genProcessExchangeTableData(exchangeDataSource, lang)}
-      />
+      <>
+        <Collapse
+          defaultActiveKey={['1']}
+          items={[
+            {
+              key: '1',
+              label: 'Input',
+              children: (
+                <ProTable<ProcessExchangeTable, ListPagination>
+                  search={false}
+                  pagination={{
+                    showSizeChanger: false,
+                    pageSize: 10,
+                  }}
+                  request={async (params: { pageSize: number; current: number }) => {
+                    return getProcessExchange(
+                      genProcessExchangeTableData(exchangeDataSource, lang),
+                      'Input',
+                      params,
+                    );
+                  }}
+                  columns={processExchangeColumns}
+                />
+              ),
+            },
+          ]}
+        />
+        <Collapse
+          defaultActiveKey={['1']}
+          items={[
+            {
+              key: '1',
+              label: 'Output',
+              children: (
+                <ProTable<ProcessExchangeTable, ListPagination>
+                  search={false}
+                  pagination={{
+                    showSizeChanger: false,
+                    pageSize: 10,
+                  }}
+                  request={async (params: { pageSize: number; current: number }) => {
+                    return getProcessExchange(
+                      genProcessExchangeTableData(exchangeDataSource, lang),
+                      'Output',
+                      params,
+                    );
+                  }}
+                  columns={processExchangeColumns}
+                />
+              ),
+            },
+          ]}
+        />
+      </>
     ),
   };
 
