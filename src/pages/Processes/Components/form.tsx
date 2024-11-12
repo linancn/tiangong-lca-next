@@ -12,11 +12,12 @@ import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import { ListPagination } from '@/services/general/data';
+import { getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData } from '@/services/processes/util';
 import { CheckCircleOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
-import { Card, Divider, Form, Input, Select, Space, theme, Tooltip } from 'antd';
+import { Card, Collapse, Divider, Form, Input, Select, Space, theme, Tooltip } from 'antd';
 import { useRef, type FC } from 'react';
 import { FormattedMessage } from 'umi';
 import ProcessExchangeCreate from './Exchange/create';
@@ -982,18 +983,73 @@ export const ProcessForm: FC<Props> = ({
       </Space>
     ),
     exchanges: (
-      <ProTable<ProcessExchangeTable, ListPagination>
-        actionRef={actionRefExchangeTable}
-        search={false}
-        pagination={{
-          showSizeChanger: false,
-          pageSize: 10,
-        }}
-        toolBarRender={() => {
-          return [<ProcessExchangeCreate key={0} lang={lang} onData={onExchangeDataCreate} />];
-        }}
-        dataSource={genProcessExchangeTableData(exchangeDataSource, lang)}
-        columns={processExchangeColumns}
+      <Collapse
+        items={[
+          {
+            key: '1',
+            label: 'Input',
+            children: (
+              <ProTable<ProcessExchangeTable, ListPagination>
+                actionRef={actionRefExchangeTable}
+                search={false}
+                pagination={{
+                  showSizeChanger: false,
+                  pageSize: 10,
+                }}
+                toolBarRender={() => {
+                  return [
+                    <ProcessExchangeCreate
+                      key={0}
+                      direction={'input'}
+                      lang={lang}
+                      onData={onExchangeDataCreate}
+                    />,
+                  ];
+                }}
+                request={async (params: { pageSize: number; current: number }) => {
+                  return getProcessExchange(
+                    genProcessExchangeTableData(exchangeDataSource, lang),
+                    'Input',
+                    params,
+                  );
+                }}
+                columns={processExchangeColumns}
+              />
+            ),
+          },
+          {
+            key: '2',
+            label: 'Output',
+            children: (
+              <ProTable<ProcessExchangeTable, ListPagination>
+                actionRef={actionRefExchangeTable}
+                search={false}
+                pagination={{
+                  showSizeChanger: false,
+                  pageSize: 10,
+                }}
+                toolBarRender={() => {
+                  return [
+                    <ProcessExchangeCreate
+                      key={0}
+                      direction={'output'}
+                      lang={lang}
+                      onData={onExchangeDataCreate}
+                    />,
+                  ];
+                }}
+                request={async (params: { pageSize: number; current: number }) => {
+                  return getProcessExchange(
+                    genProcessExchangeTableData(exchangeDataSource, lang),
+                    'Output',
+                    params,
+                  );
+                }}
+                columns={processExchangeColumns}
+              />
+            ),
+          },
+        ]}
       />
     ),
   };

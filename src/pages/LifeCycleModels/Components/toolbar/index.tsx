@@ -247,6 +247,32 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
     ports: ports,
   };
 
+  const edgeTemplate = {
+    attrs: {
+      line: {
+        stroke: token.colorPrimary,
+      },
+    },
+    // labels: [{
+    //   position: 0.5,
+    //   attrs: {
+    //     body: {
+    //       stroke: token.colorBorder,
+    //       strokeWidth: 1,
+    //       fill: token.colorBgBase,
+    //       rx: 6,
+    //       ry: 6,
+    //     },
+    //     label: {
+    //       text: '1',
+    //       fill: token.colorTextBase,
+    //     },
+    //   },
+    // },
+    // ],
+    // tools: ['edge-editor'],
+  };
+
   const saveCallback = useCallback(() => {
     setIsSave(true);
   }, [isSave, setIsSave]);
@@ -377,13 +403,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
 
   useGraphEvent('edge:added', (evt) => {
     const edge = evt.edge;
-    updateEdge(edge.id, {
-      attrs: {
-        line: {
-          stroke: token.colorPrimary,
-        },
-      },
-    });
+    updateEdge(edge.id, edgeTemplate);
   });
 
   useGraphEvent('edge:connected', (evt) => {
@@ -405,6 +425,31 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
       },
     });
   });
+
+  // useGraphEvent('edge:changed', (evt) => {
+  //   const labels = evt?.edge?.getLabels();
+  //   if (labels?.length > 1) {
+  //     updateEdge(evt.edge.id, {
+  //       labels: [{
+  //         position: 0.5,
+  //         attrs: {
+  //           body: {
+  //             stroke: token.colorBorder,
+  //             strokeWidth: 1,
+  //             fill: token.colorBgBase,
+  //             rx: 6,
+  //             ry: 6,
+  //           },
+  //           label: {
+  //             text: labels[labels.length - 1]?.attrs?.label?.text,
+  //             fill: token.colorTextBase,
+  //           },
+  //         },
+  //       },
+  //       ],
+  //     });
+  //   }
+  // });
 
   // useGraphEvent('cell:click', async (evt) => {
   //   console.log('cell:click', evt);
