@@ -1056,7 +1056,8 @@ export async function genLifeCycleModelProcess(id: string, data: any, oldData: a
     (e: any) =>
       e?.referenceToFlowDataSet?.['@refObjectId'] ===
         flowQuantitativeReference?.referenceToFlowDataSet?.['@refObjectId'] &&
-      e?.exchangeDirection.toUpperCase() === 'OUTPUT',
+      e?.exchangeDirection.toUpperCase() ===
+        flowQuantitativeReference?.exchangeDirection.toUpperCase(),
   );
 
   const newData = removeEmptyObjects({

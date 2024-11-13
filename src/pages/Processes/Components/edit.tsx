@@ -48,11 +48,12 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
   };
 
   const handletExchangeDataCreate = (data: any) => {
-    if (fromData?.id)
+    if (fromData?.id) {
       setExchangeDataSource([
         ...exchangeDataSource,
         { ...data, '@dataSetInternalID': exchangeDataSource.length.toString() },
       ]);
+    }
   };
 
   const handletExchangeData = (data: any) => {

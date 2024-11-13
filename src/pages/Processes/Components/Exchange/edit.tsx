@@ -2,7 +2,7 @@ import LangTextItemForm from '@/components/LangTextItem/form';
 import FlowsSelectForm from '@/pages/Flows/Components/select/form';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
-import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
+import { ProForm, ProFormInstance } from '@ant-design/pro-components';
 import {
   Button,
   Card,
@@ -27,7 +27,7 @@ type Props = {
   data: any;
   lang: string;
   buttonType: string;
-  actionRef: React.MutableRefObject<ActionType | undefined>;
+  // actionRef: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
   onData: (data: any) => void;
 };
@@ -36,7 +36,7 @@ const ProcessExchangeEdit: FC<Props> = ({
   data,
   lang,
   buttonType,
-  actionRef,
+  // actionRef,
   setViewDrawerVisible,
   onData,
 }) => {
@@ -134,7 +134,7 @@ const ProcessExchangeEdit: FC<Props> = ({
             );
             formRefEdit.current?.resetFields();
             setDrawerVisible(false);
-            actionRef.current?.reload();
+            // actionRef.current?.reload();
             return true;
           }}
         >

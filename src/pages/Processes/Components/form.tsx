@@ -18,7 +18,7 @@ import { genProcessExchangeTableData } from '@/services/processes/util';
 import { CheckCircleOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
 import { Card, Collapse, Divider, Form, Input, Select, Space, theme, Tooltip } from 'antd';
-import { useRef, type FC } from 'react';
+import { useEffect, useRef, type FC } from 'react';
 import { FormattedMessage } from 'umi';
 import ProcessExchangeCreate from './Exchange/create';
 import ProcessExchangeDelete from './Exchange/delete';
@@ -54,7 +54,8 @@ export const ProcessForm: FC<Props> = ({
   onTabChange,
   exchangeDataSource,
 }) => {
-  const actionRefExchangeTable = useRef<ActionType>();
+  const actionRefExchangeTableInput = useRef<ActionType>();
+  const actionRefExchangeTableOutput = useRef<ActionType>();
   const { token } = theme.useToken();
   const tabList = [
     {
@@ -206,7 +207,6 @@ export const ProcessForm: FC<Props> = ({
               data={exchangeDataSource}
               lang={lang}
               buttonType={'icon'}
-              actionRef={actionRefExchangeTable}
               onData={onExchangeData}
               setViewDrawerVisible={() => {}}
             />
@@ -214,7 +214,6 @@ export const ProcessForm: FC<Props> = ({
               id={row.dataSetInternalID}
               data={exchangeDataSource}
               buttonType={'icon'}
-              actionRef={actionRefExchangeTable}
               setViewDrawerVisible={() => {}}
               onData={onExchangeData}
             />
@@ -992,7 +991,7 @@ export const ProcessForm: FC<Props> = ({
               label: 'Input',
               children: (
                 <ProTable<ProcessExchangeTable, ListPagination>
-                  actionRef={actionRefExchangeTable}
+                  actionRef={actionRefExchangeTableInput}
                   search={false}
                   pagination={{
                     showSizeChanger: false,
@@ -1029,7 +1028,7 @@ export const ProcessForm: FC<Props> = ({
               label: 'Output',
               children: (
                 <ProTable<ProcessExchangeTable, ListPagination>
-                  actionRef={actionRefExchangeTable}
+                  actionRef={actionRefExchangeTableOutput}
                   search={false}
                   pagination={{
                     showSizeChanger: false,
@@ -1061,6 +1060,11 @@ export const ProcessForm: FC<Props> = ({
       </>
     ),
   };
+
+  useEffect(() => {
+    actionRefExchangeTableInput.current?.reload();
+    actionRefExchangeTableOutput.current?.reload();
+  }, [exchangeDataSource]);
 
   return (
     <>

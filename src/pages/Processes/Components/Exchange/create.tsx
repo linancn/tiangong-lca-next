@@ -40,8 +40,9 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
   useEffect(() => {
     if (!drawerVisible) return;
     formRefCreate.current?.resetFields();
-    formRefCreate.current?.setFieldsValue({});
-    setFromData({});
+    const initData = { exchangeDirection: direction.toLowerCase() };
+    formRefCreate.current?.setFieldsValue(initData);
+    setFromData(initData);
   }, [drawerVisible]);
 
   return (
@@ -117,7 +118,6 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
               <Select
                 // placeholder="Select a direction"
                 optionFilterProp="direction"
-                defaultValue={direction}
                 options={[
                   { value: 'input', label: 'Input' },
                   { value: 'output', label: 'Output' },
