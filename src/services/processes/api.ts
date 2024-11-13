@@ -391,3 +391,25 @@ export async function deleteProcess(id: string) {
   const result = await supabase.from('processes').delete().eq('id', id);
   return result;
 }
+
+export async function getProcessExchange(
+  exchangeData: any[],
+  direction: string,
+  params: {
+    current?: number;
+    pageSize?: number;
+  },
+) {
+  const data = exchangeData.filter(
+    (i) => i.exchangeDirection.toUpperCase() === direction.toUpperCase(),
+  );
+  const start = ((params.current ?? 1) - 1) * (params.pageSize ?? 10);
+  const end = start + (params.pageSize ?? 10);
+  const paginatedData = data.slice(start, end);
+  return Promise.resolve({
+    data: paginatedData,
+    page: params.current ?? 1,
+    success: true,
+    total: data.length ?? 0,
+  });
+}

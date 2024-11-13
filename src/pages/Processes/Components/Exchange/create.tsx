@@ -23,10 +23,11 @@ import { FormattedMessage } from 'umi';
 import { DataDerivationTypeStatusOptions } from '../optiondata';
 
 type Props = {
+  direction: string;
   lang: string;
   onData: (data: any) => void;
 };
-const ProcessExchangeCreate: FC<Props> = ({ lang, onData }) => {
+const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
   const [fromData, setFromData] = useState<any>({});
@@ -116,6 +117,7 @@ const ProcessExchangeCreate: FC<Props> = ({ lang, onData }) => {
               <Select
                 // placeholder="Select a direction"
                 optionFilterProp="direction"
+                defaultValue={direction}
                 options={[
                   { value: 'input', label: 'Input' },
                   { value: 'output', label: 'Output' },
