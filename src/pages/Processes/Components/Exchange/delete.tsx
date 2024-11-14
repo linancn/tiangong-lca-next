@@ -1,5 +1,4 @@
 import { DeleteOutlined } from '@ant-design/icons';
-import { ActionType } from '@ant-design/pro-components';
 import { Button, message, Modal, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useState } from 'react';
@@ -9,7 +8,7 @@ type Props = {
   id: string;
   data: any;
   buttonType: string;
-  actionRef: React.MutableRefObject<ActionType | undefined>;
+  // actionRef: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
   onData: (data: any) => void;
 };
@@ -18,7 +17,7 @@ const ProcessExchangeDelete: FC<Props> = ({
   id,
   data,
   buttonType,
-  actionRef,
+  // actionRef,
   setViewDrawerVisible,
   onData,
 }) => {
@@ -47,8 +46,8 @@ const ProcessExchangeDelete: FC<Props> = ({
     );
     setViewDrawerVisible(false);
     setIsModalVisible(false);
-    actionRef.current?.reload();
-  }, [actionRef, id, setViewDrawerVisible]);
+    // actionRef.current?.reload();
+  }, [id, setViewDrawerVisible]);
 
   const handleCancel = useCallback(() => {
     setIsModalVisible(false);
