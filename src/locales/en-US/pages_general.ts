@@ -50,4 +50,6 @@ export default {
   'pages.search.placeholder': 'AI Search: Describe the data you need in one sentence or a few key words.',
 
   'pages.lifeCycleModel.drawer.title.create': 'Create Model',
+
+  'pages.version': 'Version',
 };

@@ -24,6 +24,7 @@ export default {
   'pages.unitgroup.id': 'ID',
   'pages.unitgroup.generalComment': 'General comment',
   'pages.unitgroup.name': 'Name of unit group',
+  'pages.unitgroup.unitName': 'Name of unit',
   'pages.unitgroup.classification': 'Classification',
   'pages.unitgroup.meanValue': 'Mean value (of unit)',
   'pages.unitgroup.quantitativeReference': 'Quantitative reference',

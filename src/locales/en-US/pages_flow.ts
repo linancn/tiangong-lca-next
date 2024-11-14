@@ -11,6 +11,7 @@ export default {
   'pages.flow.drawer.title.view': 'View Flow',
   'pages.flow.drawer.title.select': 'Select Flow',
   'pages.flow.drawer.title.edit': 'Edit Flow',
+  'pages.flow.model.drawer.title.refFlow': 'Ref Flow',
   'pages.flow.model.drawer.title.list': 'Model List',
   'pages.flow.model.drawer.title.edit': 'Edit Model',
   'pages.flow.model.drawer.title.view': 'View Model',

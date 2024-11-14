@@ -52,4 +52,6 @@ export default {
   'pages.search.placeholder': '智能查询：用一句话或几个关键词描述您所需要的数据。',
 
   'pages.lifeCycleModel.drawer.title.create': '创建模型',
+
+  'pages.version': '版本',
 };
