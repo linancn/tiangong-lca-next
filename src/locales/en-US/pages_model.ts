@@ -41,4 +41,6 @@ export default {
 
   'pages.lifeCycleModel.refNode': 'Ref node',
   'pages.lifeCycleModel.targetAmount': 'Target amount',
+  'pages.lifeCycleModel.originalAmount': 'Original amount',
+  'pages.lifeCycleModel.scalingFactor': 'Scaling factor',
 };

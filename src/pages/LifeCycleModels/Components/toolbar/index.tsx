@@ -37,6 +37,9 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
   const [thisId, setThisId] = useState(id);
   const [spinning, setSpinning] = useState(false);
   const [infoData, setInfoData] = useState<any>({});
+
+  const [targetAmountDrawerVisible, setTargetAmountDrawerVisible] = useState(false);
+
   const modelData = useGraphStore((state) => state.initData);
   const addNodes = useGraphStore((state) => state.addNodes);
   const updateNode = useGraphStore((state) => state.updateNode);
@@ -89,7 +92,9 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
           },
         ],
         offset: { x: 10, y: -12 },
-        onClick() {},
+        onClick() {
+          setTargetAmountDrawerVisible(true);
+        },
       },
     },
   ];
@@ -133,7 +138,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
         offset: { x: 10, y: -12 },
         onClick(view: any) {
           const thisData = view.cell.store.data;
-          nodes.forEach((node) => {
+          nodes.forEach(async (node) => {
             if (node.id === thisData?.id) {
               const updatedNodeData = {
                 data: {
@@ -142,7 +147,8 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
                 },
                 tools: refTools,
               };
-              updateNode(node.id ?? '', updatedNodeData);
+              await updateNode(node.id ?? '', updatedNodeData);
+              setTargetAmountDrawerVisible(true);
             } else {
               const updatedNodeData = {
                 data: {
@@ -151,7 +157,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
                 },
                 tools: nonRefTools,
               };
-              updateNode(node.id ?? '', updatedNodeData);
+              await updateNode(node.id ?? '', updatedNodeData);
             }
           });
         },
@@ -625,7 +631,9 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
       />
       <TargetAmount
         refNode={nodes.filter((node) => node?.data?.quantitativeReference === '1')}
+        drawerVisible={targetAmountDrawerVisible}
         lang={lang}
+        setDrawerVisible={setTargetAmountDrawerVisible}
         onData={updateTargetAmount}
       />
 

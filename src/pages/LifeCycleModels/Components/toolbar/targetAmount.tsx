@@ -13,11 +13,13 @@ import { FormattedMessage } from 'umi';
 
 type Props = {
   refNode: any;
+  drawerVisible: boolean;
   lang: string;
+  setDrawerVisible: (value: boolean) => void;
   onData: (data: any) => void;
 };
-const TargetAmount: FC<Props> = ({ refNode, lang, onData }) => {
-  const [drawerVisible, setDrawerVisible] = useState(false);
+const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisible, onData }) => {
+  // const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
   const [initData, setInitData] = useState<any>({});
   const [refExchange, setRefExchange] = useState<any>({});
@@ -135,7 +137,7 @@ const TargetAmount: FC<Props> = ({ refNode, lang, onData }) => {
             label={
               <FormattedMessage
                 id="pages.lifeCycleModel.originalAmount"
-                defaultMessage="Original quantity"
+                defaultMessage="Original amount"
               />
             }
             name={'originalAmount'}

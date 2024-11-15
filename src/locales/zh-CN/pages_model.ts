@@ -41,4 +41,6 @@ export default {
 
   'pages.lifeCycleModel.refNode': '参考节点',
   'pages.lifeCycleModel.targetAmount': '目标数量',
+  'pages.lifeCycleModel.originalAmount': '原始数量',
+  'pages.lifeCycleModel.scalingFactor': '缩放因子',
 };
