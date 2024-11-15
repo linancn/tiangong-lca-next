@@ -9,11 +9,16 @@ import {
 import { getILCDClassification } from '../ilcd/api';
 import { genLifeCycleModelJsonOrdered, genLifeCycleModelProcess } from './util';
 
-const updateLifeCycleModelProcess = async (id: string, data: any) => {
+const updateLifeCycleModelProcess = async (id: string, refNode: any, data: any) => {
   const result = await supabase.from('processes').select('id, json').eq('id', id);
   if (result.data && result.data.length === 1) {
     const oldData = result.data[0].json;
-    const newData = await genLifeCycleModelProcess(id, data?.lifeCycleModelDataSet, oldData);
+    const newData = await genLifeCycleModelProcess(
+      id,
+      refNode,
+      data?.lifeCycleModelDataSet,
+      oldData,
+    );
     const uResult = await supabase
       .from('processes')
       .update({ json_ordered: newData })
@@ -32,7 +37,12 @@ const updateLifeCycleModelProcess = async (id: string, data: any) => {
           'http://lca.jrc.it/ILCD/Process ../../schemas/ILCD_ProcessDataSet.xsd',
       },
     };
-    const newData = await genLifeCycleModelProcess(id, data?.lifeCycleModelDataSet, oldData);
+    const newData = await genLifeCycleModelProcess(
+      id,
+      refNode,
+      data?.lifeCycleModelDataSet,
+      oldData,
+    );
     const cResult = await supabase
       .from('processes')
       .insert([{ id: id, json_ordered: newData }])
@@ -59,7 +69,8 @@ export async function createLifeCycleModel(data: any) {
     .from('lifecyclemodels')
     .insert([{ id: data.id, json_ordered: newData, json_tg: { xflow: data?.model } }])
     .select();
-  updateLifeCycleModelProcess(data.id, newData);
+  const refNode = data?.model?.nodes.find((i: any) => i?.data?.quantitativeReference === '1');
+  updateLifeCycleModelProcess(data.id, refNode, newData);
   return result;
 }
 
@@ -73,7 +84,8 @@ export async function updateLifeCycleModel(data: any) {
       .update({ json_ordered: newData, json_tg: { xflow: data?.model } })
       .eq('id', data.id)
       .select();
-    updateLifeCycleModelProcess(data.id, newData);
+    const refNode = data?.model?.nodes.find((i: any) => i?.data?.quantitativeReference === '1');
+    updateLifeCycleModelProcess(data.id, refNode, newData);
     return updateResult;
   }
   return null;

@@ -43,8 +43,15 @@ const TargetAmount: FC<Props> = ({ refNode, lang, onData }) => {
             (item: any) =>
               item?.['@dataSetInternalID'] === quantitativeReference?.referenceToReferenceFlow,
           ) ?? {};
-        const initTargetAmount = refNode[0]?.data?.targetAmount ?? refExc?.resultingAmount;
-        formRefEdit.current?.setFieldsValue({ targetAmount: initTargetAmount });
+        const refNodeData = refNode[0]?.data;
+        const targetAmount = refNodeData?.targetAmount ?? refExc?.resultingAmount;
+        const originalAmount = refNodeData?.originalAmount ?? refExc?.resultingAmount;
+        const scalingFactor = refNodeData?.scalingFactor ?? targetAmount / originalAmount;
+        formRefEdit.current?.setFieldsValue({
+          targetAmount: targetAmount,
+          originalAmount: originalAmount,
+          scalingFactor: scalingFactor,
+        });
         setRefExchange(refExc);
       });
     }
@@ -100,6 +107,12 @@ const TargetAmount: FC<Props> = ({ refNode, lang, onData }) => {
               return [];
             },
           }}
+          onValuesChange={(value, values) => {
+            if (!value?.scalingFactor) {
+              const scalingFactor = values?.targetAmount / values?.originalAmount;
+              formRefEdit.current?.setFieldsValue({ scalingFactor: scalingFactor });
+            }
+          }}
           onFinish={async (values) => {
             onData(values);
             formRefEdit.current?.resetFields();
@@ -117,6 +130,28 @@ const TargetAmount: FC<Props> = ({ refNode, lang, onData }) => {
             name={'targetAmount'}
           >
             <Input />
+          </Form.Item>
+          <Form.Item
+            label={
+              <FormattedMessage
+                id="pages.lifeCycleModel.originalAmount"
+                defaultMessage="Original quantity"
+              />
+            }
+            name={'originalAmount'}
+          >
+            <Input disabled={true} />
+          </Form.Item>
+          <Form.Item
+            label={
+              <FormattedMessage
+                id="pages.lifeCycleModel.scalingFactor"
+                defaultMessage="Scaling factor"
+              />
+            }
+            name={'scalingFactor'}
+          >
+            <Input disabled={true} />
           </Form.Item>
           <Card
             size="small"

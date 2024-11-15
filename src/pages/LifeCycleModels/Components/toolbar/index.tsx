@@ -288,7 +288,9 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
       updateNode(refNode.id ?? '', {
         data: {
           ...refNode.data,
-          targetAmount: data.targetAmount,
+          targetAmount: data?.targetAmount,
+          originalAmount: data?.originalAmount,
+          scalingFactor: data?.scalingFactor,
         },
       });
     }

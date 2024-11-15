@@ -41,6 +41,7 @@ export function genLifeCycleModelJsonOrdered(id: string, data: any, oldData: any
     return removeEmptyObjects({
       '@dataSetInternalID': n?.['@dataSetInternalID'] ?? {},
       '@multiplicationFactor': n?.data?.multiplicationFactor ?? {},
+      scalingFactor: n?.data?.scalingFactor,
       referenceToProcess: {
         '@refObjectId': n?.data?.id ?? {},
         '@type': 'process data set',
@@ -994,7 +995,7 @@ const sumProcessExchange = (processExchange: any[]) => {
   });
 };
 
-export async function genLifeCycleModelProcess(id: string, data: any, oldData: any) {
+export async function genLifeCycleModelProcess(id: string, refNode: any, data: any, oldData: any) {
   let processIds: any[] = [];
   const processInstance =
     jsonToList(data?.lifeCycleModelInformation?.technology?.processes?.processInstance)?.map(
@@ -1050,15 +1051,35 @@ export async function genLifeCycleModelProcess(id: string, data: any, oldData: a
     allExchange = genProcessExchange(processTree);
   }
 
-  const exchange = sumProcessExchange(allExchange);
+  const sumExchange = sumProcessExchange(allExchange);
 
-  const thisFlowQuantitativeReference = exchange.find(
+  const thisFlowQuantitativeReference = sumExchange.find(
     (e: any) =>
       e?.referenceToFlowDataSet?.['@refObjectId'] ===
         flowQuantitativeReference?.referenceToFlowDataSet?.['@refObjectId'] &&
       e?.exchangeDirection.toUpperCase() ===
         flowQuantitativeReference?.exchangeDirection.toUpperCase(),
   );
+
+  const targetAmount = refNode?.data?.targetAmount;
+  const originalAmount = thisFlowQuantitativeReference?.resultingAmount;
+  const adjustedAmount = targetAmount / originalAmount;
+
+  const exchange = sumExchange.map((e: any) => {
+    if (e['@dataSetInternalID'] === thisFlowQuantitativeReference['@dataSetInternalID']) {
+      return {
+        ...e,
+        meanAmount: targetAmount,
+        resultingAmount: targetAmount,
+      };
+    } else {
+      return {
+        ...e,
+        meanAmount: e.meanAmount * adjustedAmount,
+        resultingAmount: e.resultingAmount * adjustedAmount,
+      };
+    }
+  });
 
   const newData = removeEmptyObjects({
     processDataSet: {
