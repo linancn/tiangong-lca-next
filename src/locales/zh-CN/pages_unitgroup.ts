@@ -23,6 +23,7 @@ export default {
   'pages.unitgroup.id': '身份信息',
   'pages.unitgroup.generalComment': '概述',
   'pages.unitgroup.name': '单位组名称',
+  'pages.unitgroup.unitName': '单位名称',
   'pages.unitgroup.classification': '分类',
   'pages.unitgroup.meanValue': '单位平均值',
   'pages.unitgroup.quantitativeReference': '量值参考',

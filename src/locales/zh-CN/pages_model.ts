@@ -38,4 +38,9 @@ export default {
   'pages.lifeCycleModel.administrativeInformation.referenceToEntitiesWithExclusiveAccess': '具有对此数据集的独占访问权的实体或人员',
   'pages.lifeCycleModel.administrativeInformation.licenseType': '许可类型',
   'pages.lifeCycleModel.administrativeInformation.accessRestrictions': '访问和使用限制',
+
+  'pages.lifeCycleModel.refNode': '参考节点',
+  'pages.lifeCycleModel.targetAmount': '目标数量',
+  'pages.lifeCycleModel.originalAmount': '原始数量',
+  'pages.lifeCycleModel.scalingFactor': '缩放因子',
 };

@@ -38,4 +38,9 @@ export default {
   'pages.lifeCycleModel.administrativeInformation.referenceToEntitiesWithExclusiveAccess': 'Entities or persons with exclusive access to this data set',
   'pages.lifeCycleModel.administrativeInformation.licenseType': 'License type',
   'pages.lifeCycleModel.administrativeInformation.accessRestrictions': 'Access and use restrictions',
+
+  'pages.lifeCycleModel.refNode': 'Ref node',
+  'pages.lifeCycleModel.targetAmount': 'Target amount',
+  'pages.lifeCycleModel.originalAmount': 'Original amount',
+  'pages.lifeCycleModel.scalingFactor': 'Scaling factor',
 };

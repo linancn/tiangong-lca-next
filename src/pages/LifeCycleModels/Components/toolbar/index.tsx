@@ -21,6 +21,7 @@ import ModelToolbarAdd from './add';
 import { Control } from './control';
 import ToolbarEditInfo from './eidtInfo';
 import EdgeExhange from './Exchange/index';
+import TargetAmount from './targetAmount';
 import ToolbarViewInfo from './viewInfo';
 
 type Props = {
@@ -36,6 +37,9 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
   const [thisId, setThisId] = useState(id);
   const [spinning, setSpinning] = useState(false);
   const [infoData, setInfoData] = useState<any>({});
+
+  const [targetAmountDrawerVisible, setTargetAmountDrawerVisible] = useState(false);
+
   const modelData = useGraphStore((state) => state.initData);
   const addNodes = useGraphStore((state) => state.addNodes);
   const updateNode = useGraphStore((state) => state.updateNode);
@@ -88,7 +92,9 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
           },
         ],
         offset: { x: 10, y: -12 },
-        onClick() {},
+        onClick() {
+          setTargetAmountDrawerVisible(true);
+        },
       },
     },
   ];
@@ -132,7 +138,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
         offset: { x: 10, y: -12 },
         onClick(view: any) {
           const thisData = view.cell.store.data;
-          nodes.forEach((node) => {
+          nodes.forEach(async (node) => {
             if (node.id === thisData?.id) {
               const updatedNodeData = {
                 data: {
@@ -141,7 +147,8 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
                 },
                 tools: refTools,
               };
-              updateNode(node.id ?? '', updatedNodeData);
+              await updateNode(node.id ?? '', updatedNodeData);
+              setTargetAmountDrawerVisible(true);
             } else {
               const updatedNodeData = {
                 data: {
@@ -150,7 +157,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
                 },
                 tools: nonRefTools,
               };
-              updateNode(node.id ?? '', updatedNodeData);
+              await updateNode(node.id ?? '', updatedNodeData);
             }
           });
         },
@@ -281,6 +288,20 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
     setInfoData({ ...data, id: thisId });
   };
 
+  const updateTargetAmount = (data: any) => {
+    const refNode = nodes.find((node) => node?.data?.quantitativeReference === '1');
+    if (refNode) {
+      updateNode(refNode.id ?? '', {
+        data: {
+          ...refNode.data,
+          targetAmount: data?.targetAmount,
+          originalAmount: data?.originalAmount,
+          scalingFactor: data?.scalingFactor,
+        },
+      });
+    }
+  };
+
   const updateEdgeData = (data: any) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id, shape, ...newEdge } = data;
@@ -314,13 +335,14 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
               result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name
                 ?.baseName,
             shortDescription:
-              result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name
-                ?.baseName,
+              result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.[
+                'common:generalComment'
+              ],
             quantitativeReference: '0',
           },
         },
       ]);
-      setNodeCount(nodes.length);
+      setNodeCount(nodeCount + 1);
       setSpinning(false);
     });
   };
@@ -334,8 +356,10 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
             (edge.source as any)?.cell === node.id || (edge.target as any)?.cell === node.id,
         );
         await removeEdges(selectedEdges.map((e) => e.id ?? ''));
+        if (node.data?.quantitativeReference === '1') {
+        }
         await removeNodes([node.id ?? '']);
-        setNodeCount(nodes.length);
+        setNodeCount(nodeCount - 1);
       });
     } else {
       const selectedEdges = edges.filter((edge) => edge.selected);
@@ -605,6 +629,14 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
         onData={updateEdgeData}
         readonly={readonly}
       />
+      <TargetAmount
+        refNode={nodes.filter((node) => node?.data?.quantitativeReference === '1')}
+        drawerVisible={targetAmountDrawerVisible}
+        lang={lang}
+        setDrawerVisible={setTargetAmountDrawerVisible}
+        onData={updateTargetAmount}
+      />
+
       {!readonly && (
         <>
           <ModelToolbarAdd buttonType={'icon'} lang={lang} onData={addProcessNode} />
