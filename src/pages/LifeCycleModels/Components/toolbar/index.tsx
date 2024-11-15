@@ -338,7 +338,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
               result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.[
                 'common:generalComment'
               ],
-            quantitativeReference: '0',
+            quantitativeReference: nodeCount === 0 ? '1' : '0',
           },
         },
       ]);
