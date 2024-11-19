@@ -8,7 +8,7 @@ import { getILCDClassification, getILCDLocationByValues } from '../ilcd/api';
 
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/es/table/interface';
-import { genProcessJsonOrdered } from './util';
+import { genProcessJsonOrdered, genProcessName } from './util';
 
 export async function createProcess(data: any) {
   // const newID = v4();
@@ -129,13 +129,7 @@ export async function getProcessTableAll(
               key: i.id,
               id: i.id,
               lang: lang,
-              baseName: getLangText(i.name?.baseName ?? {}, lang),
-              treatmentStandardsRoutes: getLangText(i.name?.treatmentStandardsRoutes ?? {}, lang),
-              mixAndLocationTypes: getLangText(i.name?.mixAndLocationTypes ?? {}, lang),
-              functionalUnitFlowProperties: getLangText(
-                i.name?.functionalUnitFlowProperties ?? {},
-                lang,
-              ),
+              name: genProcessName(i.name ?? {}, lang),
               generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
               classification: classificationToString(classificationZH ?? {}),
               referenceYear: i['common:referenceYear'] ?? '-',
@@ -162,13 +156,7 @@ export async function getProcessTableAll(
             key: i.id,
             id: i.id,
             lang: lang,
-            baseName: getLangText(i.name?.baseName ?? {}, lang),
-            treatmentStandardsRoutes: getLangText(i.name?.treatmentStandardsRoutes ?? {}, lang),
-            mixAndLocationTypes: getLangText(i.name?.mixAndLocationTypes ?? {}, lang),
-            functionalUnitFlowProperties: getLangText(
-              i.name?.functionalUnitFlowProperties ?? {},
-              lang,
-            ),
+            name: genProcessName(i.name ?? {}, lang),
             generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
             classification: classificationToString(i['common:class'] ?? {}),
             referenceYear: i['common:referenceYear'] ?? '-',
@@ -273,19 +261,7 @@ export async function getProcessTablePgroongaSearch(
             return {
               key: i.id,
               id: i.id,
-              baseName: getLangText(dataInfo?.dataSetInformation?.name?.baseName ?? {}, lang),
-              treatmentStandardsRoutes: getLangText(
-                dataInfo?.dataSetInformation?.name?.treatmentStandardsRoutes ?? {},
-                lang,
-              ),
-              mixAndLocationTypes: getLangText(
-                dataInfo?.dataSetInformation?.name?.mixAndLocationTypes ?? {},
-                lang,
-              ),
-              functionalUnitFlowProperties: getLangText(
-                dataInfo?.dataSetInformation?.name?.functionalUnitFlowProperties ?? {},
-                lang,
-              ),
+              name: genProcessName(i.name ?? {}, lang),
               generalComment: getLangText(
                 dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
                 lang,
@@ -321,19 +297,7 @@ export async function getProcessTablePgroongaSearch(
           return {
             key: i.id,
             id: i.id,
-            baseName: getLangText(dataInfo?.dataSetInformation?.name?.baseName ?? {}, lang),
-            treatmentStandardsRoutes: getLangText(
-              dataInfo?.dataSetInformation?.name?.treatmentStandardsRoutes ?? {},
-              lang,
-            ),
-            mixAndLocationTypes: getLangText(
-              dataInfo?.dataSetInformation?.name?.mixAndLocationTypes ?? {},
-              lang,
-            ),
-            functionalUnitFlowProperties: getLangText(
-              dataInfo?.dataSetInformation?.name?.functionalUnitFlowProperties ?? {},
-              lang,
-            ),
+            name: genProcessName(dataInfo?.dataSetInformation?.name ?? {}, lang),
             generalComment: getLangText(
               dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
               lang,
@@ -367,8 +331,8 @@ export async function getProcessTablePgroongaSearch(
   return result;
 }
 
-export async function getProcessDetail(id: string | undefined) {
-  if (id) {
+export async function getProcessDetail(id: string) {
+  if (id.length > 0) {
     const result = await supabase.from('processes').select('json, modified_at').eq('id', id);
     if (result.data && result.data.length > 0) {
       const data = result.data[0];

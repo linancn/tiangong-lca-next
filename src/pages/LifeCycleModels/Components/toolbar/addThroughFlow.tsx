@@ -93,12 +93,12 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
     },
     {
       title: <FormattedMessage id="pages.table.title.name" defaultMessage="Base name" />,
-      dataIndex: 'baseName',
+      dataIndex: 'name',
       sorter: false,
       search: false,
       render: (_, row) => [
         <Tooltip key={0} placement="topLeft" title={row.synonyms}>
-          {row.baseName}
+          {row.name}
         </Tooltip>,
       ],
     },

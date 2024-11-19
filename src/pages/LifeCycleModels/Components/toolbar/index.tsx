@@ -11,6 +11,7 @@ import {
   genLifeCycleModelInfoFromData,
 } from '@/services/lifeCycleModels/util';
 import { getProcessDetail } from '@/services/processes/api';
+import { genProcessFromData, genProcessName } from '@/services/processes/util';
 import { DeleteOutlined, SaveOutlined } from '@ant-design/icons';
 import { useGraphEvent, useGraphStore } from '@antv/xflow';
 import { Button, Space, Spin, Tooltip, message, theme } from 'antd';
@@ -55,115 +56,150 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
 
   const { token } = theme.useToken();
 
-  const refTools = [
-    {
-      name: 'button',
-      args: {
-        markup: [
-          {
-            tagName: 'circle',
-            selector: 'button',
-            attrs: {
-              r: 10,
-              'stroke-width': 0,
-              fill: token.colorBgBase,
-              cursor: 'pointer',
-            },
+  const ioFlowTool = {
+    name: 'button',
+    args: {
+      markup: [
+        {
+          tagName: 'circle',
+          selector: 'button',
+          attrs: {
+            r: 10,
+            'stroke-width': 0,
+            fill: token.colorBgBase,
+            cursor: 'pointer',
           },
-          {
-            tagName: 'text',
-            textContent: '★', //https://symbl.cc/
-            // textContent: '☆',
-            selector: 'icon',
-            attrs: {
-              fill: token.colorPrimary,
-              'font-size': 22,
-              'text-anchor': 'middle',
-              'pointer-events': 'none',
-              y: '0.3em',
-            },
-          },
-          {
-            tagName: 'title',
-            textContent: intl.formatMessage({
-              id: 'pages.button.model.referenceNode',
-              defaultMessage: 'Reference node',
-            }),
-          },
-        ],
-        offset: { x: 10, y: -12 },
-        onClick() {
-          setTargetAmountDrawerVisible(true);
         },
+        {
+          tagName: 'text',
+          textContent: '⇄', //https://symbl.cc/en/21C4/
+          selector: 'icon',
+          attrs: {
+            fill: token.colorPrimary,
+            'font-size': 22,
+            'text-anchor': 'middle',
+            'pointer-events': 'none',
+            y: '0.3em',
+          },
+        },
+        {
+          tagName: 'title',
+          textContent: intl.formatMessage({
+            id: 'pages.button.model.referenceNode',
+            defaultMessage: 'Reference node',
+          }),
+        },
+      ],
+      offset: { x: 35, y: -12 },
+      onClick() {
+        setTargetAmountDrawerVisible(true);
       },
     },
-  ];
+  };
 
-  const nonRefTools = [
-    {
-      name: 'button',
-      args: {
-        markup: [
-          {
-            tagName: 'circle',
-            selector: 'button',
-            attrs: {
-              r: 10,
-              'stroke-width': 0,
-              fill: token.colorBgBase,
-              cursor: 'pointer',
-            },
+  const refTool = {
+    name: 'button',
+    args: {
+      markup: [
+        {
+          tagName: 'circle',
+          selector: 'button',
+          attrs: {
+            r: 10,
+            'stroke-width': 0,
+            fill: token.colorBgBase,
+            cursor: 'pointer',
           },
-          {
-            tagName: 'text',
-            // textContent: '★', //https://symbl.cc/
-            textContent: '☆',
-            selector: 'icon',
-            attrs: {
-              fill: token.colorPrimary,
-              'font-size': 22,
-              'text-anchor': 'middle',
-              'pointer-events': 'none',
-              y: '0.3em',
-            },
-          },
-          {
-            tagName: 'title',
-            textContent: intl.formatMessage({
-              id: 'pages.button.model.setReference',
-              defaultMessage: 'Set as reference',
-            }),
-          },
-        ],
-        offset: { x: 10, y: -12 },
-        onClick(view: any) {
-          const thisData = view.cell.store.data;
-          nodes.forEach(async (node) => {
-            if (node.id === thisData?.id) {
-              const updatedNodeData = {
-                data: {
-                  ...node?.data,
-                  quantitativeReference: '1',
-                },
-                tools: refTools,
-              };
-              await updateNode(node.id ?? '', updatedNodeData);
-              setTargetAmountDrawerVisible(true);
-            } else {
-              const updatedNodeData = {
-                data: {
-                  ...node.data,
-                  quantitativeReference: '0',
-                },
-                tools: nonRefTools,
-              };
-              await updateNode(node.id ?? '', updatedNodeData);
-            }
-          });
         },
+        {
+          tagName: 'text',
+          textContent: '★', //https://symbl.cc/
+          selector: 'icon',
+          attrs: {
+            fill: token.colorPrimary,
+            'font-size': 22,
+            'text-anchor': 'middle',
+            'pointer-events': 'none',
+            y: '0.3em',
+          },
+        },
+        {
+          tagName: 'title',
+          textContent: intl.formatMessage({
+            id: 'pages.button.model.referenceNode',
+            defaultMessage: 'Reference node',
+          }),
+        },
+      ],
+      offset: { x: 10, y: -12 },
+      onClick() {
+        setTargetAmountDrawerVisible(true);
       },
     },
-  ];
+  };
+
+  const nonRefTool = {
+    name: 'button',
+    args: {
+      markup: [
+        {
+          tagName: 'circle',
+          selector: 'button',
+          attrs: {
+            r: 10,
+            'stroke-width': 0,
+            fill: token.colorBgBase,
+            cursor: 'pointer',
+          },
+        },
+        {
+          tagName: 'text',
+          textContent: '☆', //https://symbl.cc/
+          selector: 'icon',
+          attrs: {
+            fill: token.colorPrimary,
+            'font-size': 22,
+            'text-anchor': 'middle',
+            'pointer-events': 'none',
+            y: '0.3em',
+          },
+        },
+        {
+          tagName: 'title',
+          textContent: intl.formatMessage({
+            id: 'pages.button.model.setReference',
+            defaultMessage: 'Set as reference',
+          }),
+        },
+      ],
+      offset: { x: 10, y: -12 },
+      onClick(view: any) {
+        const thisData = view.cell.store.data;
+        nodes.forEach(async (node) => {
+          if (node.id === thisData?.id) {
+            const updatedNodeData = {
+              data: {
+                ...node?.data,
+                quantitativeReference: '1',
+              },
+              tools: [refTool, ioFlowTool],
+            };
+            await updateNode(node.id ?? '', updatedNodeData);
+            setTargetAmountDrawerVisible(true);
+          } else {
+            const updatedNodeData = {
+              data: {
+                ...node.data,
+                quantitativeReference: '0',
+              },
+              tools: [nonRefTool, ioFlowTool],
+            };
+            await updateNode(node.id ?? '', updatedNodeData);
+          }
+        });
+      },
+    },
+  };
 
   const nodeAttrs = {
     body: {
@@ -175,13 +211,24 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
     },
     label: {
       fill: token.colorTextBase,
+      refX: 0.5,
+      refY: 8,
+      textAnchor: 'middle',
+      textVerticalAnchor: 'top',
     },
   };
 
   const ports = {
     groups: {
-      group1: {
-        position: 'top',
+      groupInput: {
+        position: {
+          name: 'absolute',
+        },
+        label: {
+          position: {
+            name: 'right',
+          },
+        },
         attrs: {
           circle: {
             stroke: token.colorPrimary,
@@ -190,10 +237,21 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
             r: 4,
             magnet: true,
           },
+          text: {
+            fill: '#6a6c8a',
+            fontSize: 14,
+          },
         },
       },
-      group2: {
-        position: 'right',
+      groupOutput: {
+        position: {
+          name: 'absolute',
+        },
+        label: {
+          position: {
+            name: 'left',
+          },
+        },
         attrs: {
           circle: {
             stroke: token.colorPrimary,
@@ -202,56 +260,88 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
             r: 4,
             magnet: true,
           },
-        },
-      },
-      group3: {
-        position: 'bottom',
-        attrs: {
-          circle: {
-            stroke: token.colorPrimary,
-            fill: token.colorBgBase,
-            strokeWidth: 1,
-            r: 4,
-            magnet: true,
-          },
-        },
-      },
-      group4: {
-        position: 'left',
-        attrs: {
-          circle: {
-            stroke: token.colorPrimary,
-            fill: token.colorBgBase,
-            strokeWidth: 1,
-            r: 4,
-            magnet: true,
+          text: {
+            fill: '#6a6c8a',
+            fontSize: 14,
           },
         },
       },
     },
-    items: [
-      { id: 'group1', group: 'group1' },
-      { id: 'group2', group: 'group2' },
-      { id: 'group3', group: 'group3' },
-      { id: 'group4', group: 'group4' },
-    ],
   };
 
-  const nodeTemplate = {
+  // const ports = {
+  //   groups: {
+  //     group1: {
+  //       position: 'top',
+  //       attrs: {
+  //         circle: {
+  //           stroke: token.colorPrimary,
+  //           fill: token.colorBgBase,
+  //           strokeWidth: 1,
+  //           r: 4,
+  //           magnet: true,
+  //         },
+  //       },
+  //     },
+  //     group2: {
+  //       position: 'right',
+  //       attrs: {
+  //         circle: {
+  //           stroke: token.colorPrimary,
+  //           fill: token.colorBgBase,
+  //           strokeWidth: 1,
+  //           r: 4,
+  //           magnet: true,
+  //         },
+  //       },
+  //     },
+  //     group3: {
+  //       position: 'bottom',
+  //       attrs: {
+  //         circle: {
+  //           stroke: token.colorPrimary,
+  //           fill: token.colorBgBase,
+  //           strokeWidth: 1,
+  //           r: 4,
+  //           magnet: true,
+  //         },
+  //       },
+  //     },
+  //     group4: {
+  //       position: 'left',
+  //       attrs: {
+  //         circle: {
+  //           stroke: token.colorPrimary,
+  //           fill: token.colorBgBase,
+  //           strokeWidth: 1,
+  //           r: 4,
+  //           magnet: true,
+  //         },
+  //       },
+  //     },
+  //   },
+  //   items: [
+  //     { id: 'group1', group: 'group1' },
+  //     { id: 'group2', group: 'group2' },
+  //     { id: 'group3', group: 'group3' },
+  //     { id: 'group4', group: 'group4' },
+  //   ],
+  // };
+
+  const nodeTemplate: any = {
     id: '',
     shape: 'rect',
     x: 200,
     y: 100,
     width: 300,
-    height: 40,
+    height: 50,
     attrs: nodeAttrs,
-    tools: nonRefTools,
+    tools: [nonRefTool, ioFlowTool],
     data: {
       label: [],
       quantitativeReference: '0',
       generalComment: [],
     },
-    ports: ports,
   };
 
   const edgeTemplate = {
@@ -317,28 +407,46 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
   const addProcessNode = (id: any) => {
     setSpinning(true);
     getProcessDetail(id).then(async (result: any) => {
-      await addNodes([
+      const exchange =
+        genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? [];
+      const refExchange = exchange.find((i: any) => i?.quantitativeReference === true);
+      const inOrOut = refExchange?.exchangeDirection.toUpperCase() === 'INPUT';
+      const refPortItem = {
+        id: refExchange?.['@dataSetInternalID'] ?? '-',
+        args: { x: inOrOut ? 0 : '100%', y: 40 },
+        attrs: {
+          text: {
+            text: getLangText(
+              refExchange?.referenceToFlowDataSet?.['common:shortDescription'],
+              lang,
+            ),
+          },
+        },
+        group:
+          refExchange?.exchangeDirection.toUpperCase() === 'OUTPUT' ? 'groupOutput' : 'groupInput',
+      };
+      const name =
+        result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name ?? {};
+      addNodes([
         {
           ...nodeTemplate,
           id: v4(),
-          label: getLangText(
-            result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name
-              ?.baseName,
-            lang,
-          ),
+          label: genProcessName(name, lang),
           data: {
             id: id,
             version:
               result.data?.json?.processDataSet?.administrativeInformation
                 ?.publicationAndOwnership?.['common:dataSetVersion'],
-            label:
-              result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name
-                ?.baseName,
+            label: name,
             shortDescription:
               result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.[
                 'common:generalComment'
               ],
             quantitativeReference: nodeCount === 0 ? '1' : '0',
+          },
+          ports: {
+            ...ports,
+            items: [refPortItem],
           },
         },
       ]);
@@ -505,8 +613,25 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
           return {
             ...node,
             attrs: nodeAttrs,
-            ports: ports,
-            tools: node?.data?.quantitativeReference === '1' ? refTools : nonRefTools,
+            height: 75,
+            ports: {
+              ...ports,
+              items: [
+                {
+                  id: 'i1',
+                  args: { x: 0, y: 40 },
+                  attrs: { text: { text: 'Input' } },
+                  group: 'groupInput',
+                },
+                {
+                  id: 'i2',
+                  args: { x: '100%', y: 60 },
+                  attrs: { text: { text: 'Output' } },
+                  group: 'groupOutput',
+                },
+              ],
+            },
+            tools: [node?.data?.quantitativeReference === '1' ? refTool : nonRefTool, ioFlowTool],
           };
         });
         if (readonly) {
@@ -603,7 +728,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
   useEffect(() => {
     nodes.forEach((node) => {
       updateNode(node.id ?? '', {
-        tools: node?.data?.quantitativeReference === '1' ? refTools : nonRefTools,
+        tools: [node?.data?.quantitativeReference === '1' ? refTool : nonRefTool, ioFlowTool],
       });
     });
   }, [nodeCount]);
@@ -695,7 +820,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
           <br />
 
           <ProcessEdit
-            id={id}
+            id={id ?? ''}
             lang={lang}
             buttonType={'tool'}
             actionRef={undefined}

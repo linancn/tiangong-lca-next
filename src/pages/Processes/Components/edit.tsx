@@ -69,6 +69,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
   }, [setViewDrawerVisible]);
 
   const onReset = () => {
+    if (!id) return;
     setSpinning(true);
     getProcessDetail(id).then(async (result: any) => {
       setInitData({ ...genProcessFromData(result.data?.json?.processDataSet ?? {}), id: id });

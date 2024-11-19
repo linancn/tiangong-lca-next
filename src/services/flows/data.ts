@@ -1,9 +1,6 @@
 export type FlowTable = {
   id: string;
-  baseName: string;
-  treatmentStandardsRoutes: string;
-  mixAndLocationTypes: string;
-  flowProperties: string;
+  name: string;
   synonyms: string;
   classification: string;
   flowType: string;

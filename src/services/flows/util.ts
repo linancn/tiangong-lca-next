@@ -331,3 +331,26 @@ export function genFlowPropertyTabTableData(data: any, lang: string) {
   }
   return [];
 }
+
+export function genFlowName(name: any, lang: string) {
+  const baseName = getLangText(name?.baseName, lang);
+  const treatmentStandardsRoutes = getLangText(name?.treatmentStandardsRoutes, lang);
+  const mixAndLocationTypes = getLangText(name?.mixAndLocationTypes, lang);
+  const flowProperties = getLangText(name?.flowProperties, lang);
+  const nameStr = (
+    baseName +
+    '; ' +
+    treatmentStandardsRoutes +
+    '; ' +
+    mixAndLocationTypes +
+    '; ' +
+    flowProperties +
+    '; '
+  ).replace(/-; /g, '');
+  if (nameStr.endsWith('; ')) {
+    return nameStr.slice(0, -2);
+  }
+  if (nameStr.length === 0) {
+    return '-';
+  }
+}
