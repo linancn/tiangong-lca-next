@@ -8,7 +8,7 @@ export type FlowTable = {
   classification: string;
   flowType: string;
   CASNumber: string;
-  location: string;
+  locationOfSupply: string;
   refFlowPropertyId: string;
   modifiedAt: Date;
 };

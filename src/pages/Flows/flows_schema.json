@@ -63,6 +63,9 @@
       },
       "quantitativeReference": {
         "referenceToReferenceFlowProperty": "str"
+      },
+      "geography": {
+        "locationOfSupply": "str"
       }
     },
     "modellingAndValidation": {
