@@ -611,6 +611,18 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
         >
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
+              id="pages.process.view.modellingAndValidation.dataCutOffAndCompletenessPrinciples"
+              defaultMessage="Data cut-off and completeness principles"
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={
+              initData.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.dataCutOffAndCompletenessPrinciples
+            }
+          />
+          <Divider orientationMargin="0" orientation="left" plain>
+            <FormattedMessage
               id="pages.process.view.modellingAndValidation.deviationsFromCutOffAndCompletenessPrinciples"
               defaultMessage="Deviation from data cut-off and completeness principles / explanations"
             />
@@ -763,6 +775,20 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
     ),
     administrativeInformation: (
       <>
+        <ContactSelectDescription
+          title={
+            <FormattedMessage
+              id="pages.process.view.administrativeInformation.referenceToCommissioner"
+              defaultMessage="Commissioner of data set"
+            />
+          }
+          lang={lang}
+          data={
+            initData.administrativeInformation?.commissionerAndGoal?.[
+              'common:referenceToCommissioner'
+            ]
+          }
+        />
         <ContactSelectDescription
           title={
             <FormattedMessage

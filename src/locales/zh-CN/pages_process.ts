@@ -46,6 +46,7 @@ export default {
   'pages.process.view.modellingAndValidation.deviationsFromLCIMethodApproaches': '偏离LCI方法应用/解释',
   'pages.process.view.modellingAndValidation.deviationsFromModellingConstants': '偏离建模常数/解释',
   'pages.process.view.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness': '数据来源、处理和代表性',
+  'pages.process.view.modellingAndValidation.dataCutOffAndCompletenessPrinciples': '数据切断和完整性原则',
   'pages.process.view.modellingAndValidation.deviationsFromCutOffAndCompletenessPrinciples': '偏离数据切断和完整性原则/解释',
   'pages.process.view.modellingAndValidation.dataSelectionAndCombinationPrinciples': '数据选择和组合原则',
   'pages.process.view.modellingAndValidation.deviationsFromSelectionAndCombinationPrinciples': '偏离数据选择和组合原则/解释',
@@ -62,6 +63,7 @@ export default {
   'pages.process.view.modellingAndValidation.referenceToNameOfReviewerAndInstitution': '审查员姓名及机构',
 
   'pages.process.view.administrativeInformation': '管理信息',
+  'pages.process.view.administrativeInformation.referenceToCommissioner': '数据集委托方',
   'pages.process.view.administrativeInformation.RreferenceToPersonOrEntityGeneratingTheDataSet': '数据集生成者/建模者',
   'pages.process.view.administrativeInformation.TimeStamp': '时间戳（最后保存）',
   'pages.process.view.administrativeInformation.publicationAndOwnership': '出版和所有权',

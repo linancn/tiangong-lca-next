@@ -52,6 +52,7 @@ export default {
   'pages.process.view.modellingAndValidation.deviationsFromLCIMethodApproaches': 'Deviations from LCI method approaches / explanations',
   'pages.process.view.modellingAndValidation.deviationsFromModellingConstants': 'Deviation from modelling constants / explanations',
   'pages.process.view.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness': 'Data sources, treatment, and representativeness',
+  'pages.process.view.modellingAndValidation.dataCutOffAndCompletenessPrinciples': 'Data cut-off and completeness principles',
   'pages.process.view.modellingAndValidation.deviationsFromCutOffAndCompletenessPrinciples': 'Deviation from data cut-off and completeness principles / explanations',
   'pages.process.view.modellingAndValidation.dataSelectionAndCombinationPrinciples': 'Data selection and combination principles',
   'pages.process.view.modellingAndValidation.deviationsFromSelectionAndCombinationPrinciples': 'Deviation from data selection and combination principles / explanations',
@@ -67,6 +68,7 @@ export default {
   'pages.process.view.modellingAndValidation.reviewDetails': 'Review details',
   'pages.process.view.modellingAndValidation.referenceToNameOfReviewerAndInstitution': 'Reviewer name and institution',
 
+  'pages.process.view.administrativeInformation.referenceToCommissioner': 'Commissioner of data set',
   'pages.process.view.administrativeInformation.RreferenceToPersonOrEntityGeneratingTheDataSet': 'Data set generator / modeller',
   'pages.process.view.administrativeInformation.TimeStamp': 'Time stamp (last saved)',
   'pages.process.view.administrativeInformation.publicationAndOwnership': 'Publication and ownership',

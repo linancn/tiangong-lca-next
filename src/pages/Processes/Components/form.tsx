@@ -644,6 +644,26 @@ export const ProcessForm: FC<Props> = ({
         >
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
+              id="pages.process.view.modellingAndValidation.dataCutOffAndCompletenessPrinciples"
+              defaultMessage="Data cut-off and completeness principles"
+            />
+          </Divider>
+          <LangTextItemForm
+            name={[
+              'modellingAndValidation',
+              'dataSourcesTreatmentAndRepresentativeness',
+              'dataCutOffAndCompletenessPrinciples',
+            ]}
+            label={
+              <FormattedMessage
+                id="pages.process.view.modellingAndValidation.dataCutOffAndCompletenessPrinciples"
+                defaultMessage="Data cut-off and completeness principles"
+              />
+            }
+            rules={FTMultiLang_r}
+          />
+          <Divider orientationMargin="0" orientation="left" plain>
+            <FormattedMessage
               id="pages.process.view.modellingAndValidation.deviationsFromCutOffAndCompletenessPrinciples"
               defaultMessage="Deviation from data cut-off and completeness principles / explanations"
             />
@@ -855,6 +875,23 @@ export const ProcessForm: FC<Props> = ({
     ),
     administrativeInformation: (
       <Space direction="vertical" style={{ width: '100%' }}>
+        <ContactSelectForm
+          name={[
+            'administrativeInformation',
+            'commissionerAndGoal',
+            'common:referenceToCommissioner',
+          ]}
+          label={
+            <FormattedMessage
+              id="pages.process.view.administrativeInformation.referenceToCommissioner"
+              defaultMessage="Commissioner of data set"
+            />
+          }
+          lang={lang}
+          formRef={formRef}
+          onData={onData}
+        />
+
         <ContactSelectForm
           name={[
             'administrativeInformation',
