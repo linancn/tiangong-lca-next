@@ -68,6 +68,7 @@ export default {
   'pages.process.view.modellingAndValidation.reviewDetails': 'Review details',
   'pages.process.view.modellingAndValidation.referenceToNameOfReviewerAndInstitution': 'Reviewer name and institution',
 
+  'pages.process.view.administrativeInformation.referenceToCommissioner': 'Commissioner of data set',
   'pages.process.view.administrativeInformation.RreferenceToPersonOrEntityGeneratingTheDataSet': 'Data set generator / modeller',
   'pages.process.view.administrativeInformation.TimeStamp': 'Time stamp (last saved)',
   'pages.process.view.administrativeInformation.publicationAndOwnership': 'Publication and ownership',

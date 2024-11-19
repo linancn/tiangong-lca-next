@@ -878,6 +878,23 @@ export const ProcessForm: FC<Props> = ({
         <ContactSelectForm
           name={[
             'administrativeInformation',
+            'commissionerAndGoal',
+            'common:referenceToCommissioner',
+          ]}
+          label={
+            <FormattedMessage
+              id="pages.process.view.administrativeInformation.referenceToCommissioner"
+              defaultMessage="Commissioner of data set"
+            />
+          }
+          lang={lang}
+          formRef={formRef}
+          onData={onData}
+        />
+
+        <ContactSelectForm
+          name={[
+            'administrativeInformation',
             'dataGenerator',
             'common:referenceToPersonOrEntityGeneratingTheDataSet',
           ]}

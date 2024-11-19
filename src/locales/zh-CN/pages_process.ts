@@ -63,6 +63,7 @@ export default {
   'pages.process.view.modellingAndValidation.referenceToNameOfReviewerAndInstitution': '审查员姓名及机构',
 
   'pages.process.view.administrativeInformation': '管理信息',
+  'pages.process.view.administrativeInformation.referenceToCommissioner': '数据集委托方',
   'pages.process.view.administrativeInformation.RreferenceToPersonOrEntityGeneratingTheDataSet': '数据集生成者/建模者',
   'pages.process.view.administrativeInformation.TimeStamp': '时间戳（最后保存）',
   'pages.process.view.administrativeInformation.publicationAndOwnership': '出版和所有权',

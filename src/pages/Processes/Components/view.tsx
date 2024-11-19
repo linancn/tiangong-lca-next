@@ -778,6 +778,20 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
         <ContactSelectDescription
           title={
             <FormattedMessage
+              id="pages.process.view.administrativeInformation.referenceToCommissioner"
+              defaultMessage="Commissioner of data set"
+            />
+          }
+          lang={lang}
+          data={
+            initData.administrativeInformation?.commissionerAndGoal?.[
+              'common:referenceToCommissioner'
+            ]
+          }
+        />
+        <ContactSelectDescription
+          title={
+            <FormattedMessage
               id="pages.process.view.administrativeInformation.RreferenceToPersonOrEntityGeneratingTheDataSet"
               defaultMessage="Data set generator / modeller"
             />

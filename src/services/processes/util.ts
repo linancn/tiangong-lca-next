@@ -210,6 +210,31 @@ export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
         },
       },
       administrativeInformation: {
+        commissionerAndGoal: {
+          'common:referenceToCommissioner': {
+            '@refObjectId':
+              data?.administrativeInformation?.commissionerAndGoal?.[
+                'common:referenceToCommissioner'
+              ]?.['@refObjectId'] ?? {},
+            '@type':
+              data?.administrativeInformation?.commissionerAndGoal?.[
+                'common:referenceToCommissioner'
+              ]?.['@type'] ?? {},
+            '@uri':
+              data?.administrativeInformation?.commissionerAndGoal?.[
+                'common:referenceToCommissioner'
+              ]?.['@uri'] ?? {},
+            '@version':
+              data?.administrativeInformation?.commissionerAndGoal?.[
+                'common:referenceToCommissioner'
+              ]?.['@version'] ?? {},
+            'common:shortDescription': getLangJson(
+              data?.administrativeInformation?.commissionerAndGoal?.[
+                'common:referenceToCommissioner'
+              ]?.['common:shortDescription'],
+            ),
+          },
+        },
         dataGenerator: {
           'common:referenceToPersonOrEntityGeneratingTheDataSet': {
             '@refObjectId':
@@ -479,6 +504,31 @@ export function genProcessFromData(data: any) {
       },
     },
     administrativeInformation: {
+      commissionerAndGoal: {
+        'common:referenceToCommissioner': {
+          '@refObjectId':
+            data?.administrativeInformation?.commissionerAndGoal?.[
+              'common:referenceToCommissioner'
+            ]?.['@refObjectId'] ?? {},
+          '@type':
+            data?.administrativeInformation?.commissionerAndGoal?.[
+              'common:referenceToCommissioner'
+            ]?.['@type'] ?? {},
+          '@uri':
+            data?.administrativeInformation?.commissionerAndGoal?.[
+              'common:referenceToCommissioner'
+            ]?.['@uri'] ?? {},
+          '@version':
+            data?.administrativeInformation?.commissionerAndGoal?.[
+              'common:referenceToCommissioner'
+            ]?.['@version'] ?? {},
+          'common:shortDescription': getLangJson(
+            data?.administrativeInformation?.commissionerAndGoal?.[
+              'common:referenceToCommissioner'
+            ]?.['common:shortDescription'],
+          ),
+        },
+      },
       dataGenerator: {
         'common:referenceToPersonOrEntityGeneratingTheDataSet': {
           '@refObjectId':
