@@ -966,7 +966,6 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
   };
 
   const onView = () => {
-    console.log('onView');
     setDrawerVisible(true);
     setSpinning(true);
     getProcessDetail(id).then(async (result: any) => {

@@ -620,3 +620,26 @@ export function genProcessExchangeTableData(data: any, lang: string) {
   }
   return [];
 }
+
+export function genProcessName(name: any, lang: string) {
+  const baseName = getLangText(name?.baseName, lang);
+  const treatmentStandardsRoutes = getLangText(name?.treatmentStandardsRoutes, lang);
+  const mixAndLocationTypes = getLangText(name?.mixAndLocationTypes, lang);
+  const functionalUnitFlowProperties = getLangText(name?.functionalUnitFlowProperties, lang);
+  const nameStr = (
+    baseName +
+    '; ' +
+    treatmentStandardsRoutes +
+    '; ' +
+    mixAndLocationTypes +
+    '; ' +
+    functionalUnitFlowProperties +
+    '; '
+  ).replace(/-; /g, '');
+  if (nameStr.endsWith('; ')) {
+    return nameStr.slice(0, -2);
+  }
+  if (nameStr.length === 0) {
+    return '-';
+  }
+}

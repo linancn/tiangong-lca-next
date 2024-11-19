@@ -9,7 +9,7 @@ import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getILCDFlowCategorizationAll, getILCDLocationByValues } from '../ilcd/api';
-import { genFlowJsonOrdered } from './util';
+import { genFlowJsonOrdered, genFlowName } from './util';
 
 export async function createFlows(data: any) {
   // const newID = v4();
@@ -156,10 +156,7 @@ export async function getFlowTableAll(
             return {
               key: i.id,
               id: i.id,
-              baseName: getLangText(i?.name?.baseName, lang),
-              treatmentStandardsRoutes: getLangText(i?.name?.treatmentStandardsRoutes, lang),
-              mixAndLocationTypes: getLangText(i?.name?.mixAndLocationTypes, lang),
-              flowProperties: getLangText(i?.name?.flowProperties, lang),
+              name: genFlowName(i?.name ?? {}, lang),
               flowType: i?.typeOfDataSet ?? '-',
               classification: classificationToString(classificationZH),
               synonyms: getLangText(i?.['common:synonyms'], lang),
@@ -187,10 +184,7 @@ export async function getFlowTableAll(
           return {
             key: i.id,
             id: i.id,
-            baseName: getLangText(i?.name?.baseName, lang),
-            treatmentStandardsRoutes: getLangText(i?.name?.treatmentStandardsRoutes, lang),
-            mixAndLocationTypes: getLangText(i?.name?.mixAndLocationTypes, lang),
-            flowProperties: getLangText(i?.name?.flowProperties, lang),
+            name: genFlowName(i?.name ?? {}, lang),
             flowType: i.typeOfDataSet ?? '-',
             classification: classificationToString(i['common:category']),
             synonyms: getLangText(i['common:synonyms'], lang),
@@ -307,10 +301,7 @@ export async function getFlowTablePgroongaSearch(
             return {
               key: i.id,
               id: i.id,
-              baseName: getLangText(dataInfo?.name?.baseName ?? {}, lang),
-              treatmentStandardsRoutes: getLangText(dataInfo?.name?.treatmentStandardsRoutes, lang),
-              mixAndLocationTypes: getLangText(dataInfo?.name?.mixAndLocationTypes, lang),
-              flowProperties: getLangText(dataInfo?.name?.flowProperties, lang),
+              name: genFlowName(dataInfo?.name ?? {}, lang),
               synonyms: getLangText(dataInfo?.['common:synonyms'] ?? {}, lang),
               flowType:
                 i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet ?? '-',
@@ -343,10 +334,7 @@ export async function getFlowTablePgroongaSearch(
           return {
             key: i.id,
             id: i.id,
-            baseName: getLangText(dataInfo?.name?.baseName ?? {}, lang),
-            treatmentStandardsRoutes: getLangText(dataInfo?.name?.treatmentStandardsRoutes, lang),
-            mixAndLocationTypes: getLangText(dataInfo?.name?.mixAndLocationTypes, lang),
-            flowProperties: getLangText(dataInfo?.name?.flowProperties, lang),
+            name: genFlowName(dataInfo?.name ?? {}, lang),
             synonyms: getLangText(dataInfo?.['common:synonyms'] ?? {}, lang),
             classification: classificationToString(
               dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[
@@ -418,21 +406,8 @@ export async function flow_hybrid_search(
           return {
             key: i.id,
             id: i.id,
-            baseName: getLangText(
-              i.json?.flowDataSet?.flowInformation?.dataSetInformation?.name?.baseName,
-              lang,
-            ),
-            treatmentStandardsRoutes: getLangText(
-              i.json?.flowDataSet?.flowInformation?.dataSetInformation?.name
-                ?.treatmentStandardsRoutes,
-              lang,
-            ),
-            mixAndLocationTypes: getLangText(
-              i.json?.flowDataSet?.flowInformation?.dataSetInformation?.name?.mixAndLocationTypes,
-              lang,
-            ),
-            flowProperties: getLangText(
-              i.json?.flowDataSet?.flowInformation?.dataSetInformation?.name?.flowProperties,
+            name: genFlowName(
+              i.json?.flowDataSet?.flowInformation?.dataSetInformation?.name ?? {},
               lang,
             ),
             classification: classificationToString(

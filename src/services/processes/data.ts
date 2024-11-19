@@ -1,10 +1,7 @@
 export type ProcessTable = {
   id: string;
   lang: string;
-  baseName: string;
-  treatmentStandardsRoutes: string;
-  mixAndLocationTypes: string;
-  functionalUnitFlowProperties: string;
+  name: string;
   generalComment: string;
   classification: string;
   referenceYear: string;
