@@ -879,6 +879,23 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
             </Descriptions.Item>
           </Descriptions>
           <br />
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id="pages.process.view.administrativeInformation.workflowAndPublicationStatus"
+                  defaultMessage="Workflow and publication status	"
+                />
+              }
+              labelStyle={{ width: '200px' }}
+            >
+              {initData.administrativeInformation?.publicationAndOwnership?.[
+                'common:workflowAndPublicationStatus'
+              ] ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
+          <br />
           <ContactSelectDescription
             title={
               <FormattedMessage

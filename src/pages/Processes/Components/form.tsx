@@ -31,6 +31,7 @@ import {
   licenseTypeOptions,
   processtypeOfDataSetOptions,
   reviewTypeOptions,
+  workflowAndPublicationStatusOptions,
 } from './optiondata';
 
 type Props = {
@@ -973,6 +974,22 @@ export const ProcessForm: FC<Props> = ({
             ]}
           >
             <Input />
+          </Form.Item>
+
+          <Form.Item
+            label={
+              <FormattedMessage
+                id="pages.process.view.administrativeInformation.workflowAndPublicationStatus"
+                defaultMessage="Workflow and publication status	"
+              />
+            }
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:workflowAndPublicationStatus',
+            ]}
+          >
+            <Select options={workflowAndPublicationStatusOptions} />
           </Form.Item>
 
           <ContactSelectForm

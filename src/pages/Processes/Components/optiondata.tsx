@@ -363,6 +363,81 @@ export const reviewTypeOptions = [
   },
 ];
 
+export const workflowAndPublicationStatusOptions = [
+  {
+    value: 'Working draft',
+    label: (
+      <FormattedMessage
+        id="pages.process.view.administrativeInformation.workflowAndPublicationStatus.workingDraft"
+        defaultMessage="Working draft"
+      />
+    ),
+  },
+  {
+    value: 'Final draft for internal review',
+    label: (
+      <FormattedMessage
+        id="pages.process.view.administrativeInformation.workflowAndPublicationStatus.finalDraftForInternalReview"
+        defaultMessage="Final draft for internal review"
+      />
+    ),
+  },
+  {
+    value: 'Final draft for external review',
+    label: (
+      <FormattedMessage
+        id="pages.process.view.administrativeInformation.workflowAndPublicationStatus.finalDraftForExternalReview"
+        defaultMessage="Final draft for external review"
+      />
+    ),
+  },
+  {
+    value: 'Data set finalised; unpublished',
+    label: (
+      <FormattedMessage
+        id="pages.process.view.administrativeInformation.workflowAndPublicationStatus.dataSetFinalisedUnpublished"
+        defaultMessage="Data set finalised; unpublished"
+      />
+    ),
+  },
+  {
+    value: 'Under revision',
+    label: (
+      <FormattedMessage
+        id="pages.process.view.administrativeInformation.workflowAndPublicationStatus.underRevision"
+        defaultMessage="Under revision"
+      />
+    ),
+  },
+  {
+    value: 'Withdrawn',
+    label: (
+      <FormattedMessage
+        id="pages.process.view.administrativeInformation.workflowAndPublicationStatus.withdrawn"
+        defaultMessage="Withdrawn"
+      />
+    ),
+  },
+  {
+    value: 'Data set finalised; subsystems published',
+    label: (
+      <FormattedMessage
+        id="pages.process.view.administrativeInformation.workflowAndPublicationStatus.dataSetFinalisedSubsystemsPublished"
+        defaultMessage="Data set finalised; subsystems published"
+      />
+    ),
+  },
+  {
+    value: 'Data set finalised; entirely published',
+    label: (
+      <FormattedMessage
+        id="pages.process.view.administrativeInformation.workflowAndPublicationStatus.dataSetFinalisedEntirelyPublished"
+        defaultMessage="Data set finalised; entirely published"
+      />
+    ),
+  },
+];
+
 export const copyrightOptions = [
   {
     value: 'Yes',

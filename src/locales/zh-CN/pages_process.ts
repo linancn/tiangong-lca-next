@@ -70,6 +70,7 @@ export default {
   'pages.process.view.administrativeInformation.dateOfLastRevision': '最后修订日期',
   'pages.process.view.administrativeInformation.dataSetVersion': '数据集版本',
   'pages.process.view.administrativeInformation.permanentDataSetURI': '永久数据集统一资源标识符',
+  'pages.process.view.administrativeInformation.workflowAndPublicationStatus': '工作流和发布状态',
   'pages.process.view.administrativeInformation.referenceToOwnershipOfDataSet': '数据集所有者',
   'pages.process.view.administrativeInformation.referenceToOwnerOfDataSet': '数据集所有者的引用',
   'pages.process.view.administrativeInformation.copyright': '版权？',
@@ -145,6 +146,15 @@ export default {
   'pages.process.view.modellingAndValidation.Validation.Review.accreditedThirdPartyReview': '经认可的第三方审查',
   'pages.process.view.modellingAndValidation.Validation.Review.independentReviewPanel': '独立审查小组',
   'pages.process.view.modellingAndValidation.Validation.Review.notReviewed': '未审查',
+
+  'pages.process.view.administrativeInformation.workflowAndPublicationStatus.workingDraft': '草稿',
+  'pages.process.view.administrativeInformation.workflowAndPublicationStatus.finalDraftForInternalReview': '内部审查的最终草稿',
+  'pages.process.view.administrativeInformation.workflowAndPublicationStatus.finalDraftForExternalReview': '外部审查的最终草稿',
+  'pages.process.view.administrativeInformation.workflowAndPublicationStatus.dataSetFinalisedUnpublished': '数据集最终版; 未发布',
+  'pages.process.view.administrativeInformation.workflowAndPublicationStatus.underRevision': '修订中',
+  'pages.process.view.administrativeInformation.workflowAndPublicationStatus.withdrawn': '撤回',
+  'pages.process.view.administrativeInformation.workflowAndPublicationStatus.dataSetFinalisedSubsystemsPublished': '数据集最终版; 子系统已发布',
+  'pages.process.view.administrativeInformation.workflowAndPublicationStatus.dataSetFinalisedEntirelyPublished': '数据集最终版; 已全部发布',
 
   'pages.process.view.administrativeInformation.copyright.yes': '是',
   'pages.process.view.administrativeInformation.copyright.no': '否',

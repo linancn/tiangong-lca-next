@@ -75,6 +75,7 @@ export default {
   'pages.process.view.administrativeInformation.dateOfLastRevision': 'Date of last revision',
   'pages.process.view.administrativeInformation.dataSetVersion': 'Data set version',
   'pages.process.view.administrativeInformation.permanentDataSetURI': 'Permanent data set URI',
+  'pages.process.view.administrativeInformation.workflowAndPublicationStatus': 'Workflow and publication status',
   'pages.process.view.administrativeInformation.referenceToOwnershipOfDataSet': 'Owner of data set',
   // 'pages.process.view.administrativeInformation.referenceToOwnerOfDataSet': '数据集所有者的引用',
   'pages.process.view.administrativeInformation.copyright': 'Copyright?',
@@ -149,6 +150,15 @@ export default {
   'pages.process.view.modellingAndValidation.Validation.Review.accreditedThirdPartyReview': 'Accredited third party review',
   'pages.process.view.modellingAndValidation.Validation.Review.independentReviewPanel': 'Independent review panel',
   'pages.process.view.modellingAndValidation.Validation.Review.notReviewed': 'Not reviewed',
+
+  'pages.process.view.administrativeInformation.workflowAndPublicationStatus.workingDraft': 'Working draft',
+  'pages.process.view.administrativeInformation.workflowAndPublicationStatus.finalDraftForInternalReview': 'Final draft for internal review',
+  'pages.process.view.administrativeInformation.workflowAndPublicationStatus.finalDraftForExternalReview': 'Final draft for external review',
+  'pages.process.view.administrativeInformation.workflowAndPublicationStatus.dataSetFinalisedUnpublished': 'Data set finalised; unpublished',
+  'pages.process.view.administrativeInformation.workflowAndPublicationStatus.underRevision': 'Under revision',
+  'pages.process.view.administrativeInformation.workflowAndPublicationStatus.withdrawn': 'Withdrawn',
+  'pages.process.view.administrativeInformation.workflowAndPublicationStatus.dataSetFinalisedSubsystemsPublished': 'Data set finalised; subsystems published',
+  'pages.process.view.administrativeInformation.workflowAndPublicationStatus.dataSetFinalisedEntirelyPublished': 'Data set finalised; entirely published',
 
   'pages.process.view.administrativeInformation.copyright.yes': 'Yes',
   'pages.process.view.administrativeInformation.copyright.no': 'No',

@@ -276,6 +276,10 @@ export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
             data?.administrativeInformation?.publicationAndOwnership?.[
               'common:permanentDataSetURI'
             ] ?? {},
+          'common:workflowAndPublicationStatus':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:workflowAndPublicationStatus'
+            ] ?? {},
           'common:referenceToOwnershipOfDataSet': {
             '@refObjectId':
               data?.administrativeInformation?.publicationAndOwnership?.[
@@ -567,6 +571,10 @@ export function genProcessFromData(data: any) {
         'common:permanentDataSetURI':
           data?.administrativeInformation?.publicationAndOwnership?.[
             'common:permanentDataSetURI'
+          ] ?? {},
+        'common:workflowAndPublicationStatus':
+          data?.administrativeInformation?.publicationAndOwnership?.[
+            'common:workflowAndPublicationStatus'
           ] ?? {},
         'common:referenceToOwnershipOfDataSet': {
           '@refObjectId':
