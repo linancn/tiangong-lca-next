@@ -133,6 +133,10 @@ export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
           ),
         },
         dataSourcesTreatmentAndRepresentativeness: {
+          dataCutOffAndCompletenessPrinciples: getLangJson(
+            data?.modellingAndValidation?.LCIMethodAndAllocation
+              ?.dataCutOffAndCompletenessPrinciples,
+          ),
           deviationsFromCutOffAndCompletenessPrinciples: getLangJson(
             data?.modellingAndValidation?.LCIMethodAndAllocation
               ?.deviationsFromCutOffAndCompletenessPrinciples,
@@ -398,6 +402,9 @@ export function genProcessFromData(data: any) {
         ),
       },
       dataSourcesTreatmentAndRepresentativeness: {
+        dataCutOffAndCompletenessPrinciples: getLangJson(
+          data?.modellingAndValidation?.LCIMethodAndAllocation?.dataCutOffAndCompletenessPrinciples,
+        ),
         deviationsFromCutOffAndCompletenessPrinciples: getLangList(
           data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
             ?.deviationsFromCutOffAndCompletenessPrinciples,
