@@ -349,6 +349,20 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
           categoryType={'Process'}
         />
         <br />
+        <SourceSelectDescription
+          title={
+            <FormattedMessage
+              id="pages.process.view.processInformation.referenceToExternalDocumentation"
+              defaultMessage="Data set LCA report, background info"
+            />
+          }
+          data={
+            initData.processInformation?.dataSetInformation?.[
+              'common:referenceToExternalDocumentation'
+            ]
+          }
+          lang={lang}
+        />
         {/* <Card size="small" title={'Quantitative Reference'}>
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item key={0} label="Type" labelStyle={{ width: '100px' }}>

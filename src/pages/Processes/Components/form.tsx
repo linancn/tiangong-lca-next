@@ -362,6 +362,23 @@ export const ProcessForm: FC<Props> = ({
           />
         </Card>
 
+        <SourceSelectForm
+          name={[
+            'processInformation',
+            'dataSetInformation',
+            'common:referenceToExternalDocumentation',
+          ]}
+          label={
+            <FormattedMessage
+              id="pages.process.view.processInformation.referenceToExternalDocumentation"
+              defaultMessage="Data set LCA report, background info"
+            />
+          }
+          lang={lang}
+          formRef={formRef}
+          onData={onData}
+        />
+
         <Card
           size="small"
           title={
