@@ -22,6 +22,7 @@ import ModelToolbarAdd from './add';
 import { Control } from './control';
 import ToolbarEditInfo from './eidtInfo';
 import EdgeExhange from './Exchange/index';
+import IoPortSelector from './Exchange/ioPort';
 import TargetAmount from './targetAmount';
 import ToolbarViewInfo from './viewInfo';
 
@@ -40,6 +41,9 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
   const [infoData, setInfoData] = useState<any>({});
 
   const [targetAmountDrawerVisible, setTargetAmountDrawerVisible] = useState(false);
+  const [ioPortSelectorDirection, setIoPortSelectorDirection] = useState('');
+  const [ioPortSelectorNode, setIoPortSelectorNode] = useState<any>({});
+  const [ioPortSelectorDrawerVisible, setIoPortSelectorDrawerVisible] = useState(false);
 
   const modelData = useGraphStore((state) => state.initData);
   const addNodes = useGraphStore((state) => state.addNodes);
@@ -56,43 +60,92 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
 
   const { token } = theme.useToken();
 
-  const ioFlowTool = {
+  const inputFlowTool = {
     name: 'button',
     args: {
       markup: [
         {
-          tagName: 'circle',
+          tagName: 'rect',
           selector: 'button',
           attrs: {
-            r: 10,
-            'stroke-width': 0,
+            width: 50,
+            height: 20,
+            rx: 4,
+            ry: 4,
             fill: token.colorBgBase,
+            stroke: token.colorPrimary,
+            'stroke-width': 1,
             cursor: 'pointer',
           },
         },
         {
           tagName: 'text',
-          textContent: '⇄', //https://symbl.cc/en/21C4/
-          selector: 'icon',
+          textContent: intl.formatMessage({
+            id: 'pages.button.input',
+            defaultMessage: 'Input',
+          }),
+          selector: 'text',
           attrs: {
-            fill: token.colorPrimary,
-            'font-size': 22,
+            fill: token.colorTextBase,
+            'font-size': 12,
             'text-anchor': 'middle',
             'pointer-events': 'none',
-            y: '0.3em',
+            x: 25,
+            y: 13,
+          },
+        },
+      ],
+      offset: { x: 10, y: 30 },
+      async onClick(view: any) {
+        await setIoPortSelectorDirection('Input');
+        await setIoPortSelectorNode(view.cell.store.data);
+        await setIoPortSelectorDrawerVisible(true);
+      },
+    },
+  };
+
+  const outputFlowTool = {
+    name: 'button',
+    args: {
+      markup: [
+        {
+          tagName: 'rect',
+          selector: 'button',
+          attrs: {
+            width: 50,
+            height: 20,
+            rx: 4,
+            ry: 4,
+            fill: token.colorBgBase,
+            stroke: token.colorPrimary,
+            'stroke-width': 1,
+            cursor: 'pointer',
           },
         },
         {
-          tagName: 'title',
+          tagName: 'text',
           textContent: intl.formatMessage({
-            id: 'pages.button.model.referenceNode',
-            defaultMessage: 'Reference node',
+            id: 'pages.button.output',
+            defaultMessage: 'Output',
           }),
+          selector: 'text',
+          attrs: {
+            fill: token.colorTextBase,
+            'font-size': 12,
+            'text-anchor': 'middle',
+            'pointer-events': 'none',
+            x: 25,
+            y: 13,
+          },
         },
       ],
-      offset: { x: 35, y: -12 },
-      onClick() {
-        setTargetAmountDrawerVisible(true);
+      x: '100%',
+      y: 0,
+      offset: { x: -60, y: 30 },
+      async onClick(view: any) {
+        await setIoPortSelectorDirection('Output');
+        await setIoPortSelectorNode(view.cell.store.data);
+        await setIoPortSelectorDrawerVisible(true);
       },
     },
   };
@@ -182,7 +235,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
                 ...node?.data,
                 quantitativeReference: '1',
               },
-              tools: [refTool, ioFlowTool],
+              tools: [refTool, inputFlowTool, outputFlowTool],
             };
             await updateNode(node.id ?? '', updatedNodeData);
             setTargetAmountDrawerVisible(true);
@@ -192,7 +245,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
                 ...node.data,
                 quantitativeReference: '0',
               },
-              tools: [nonRefTool, ioFlowTool],
+              tools: [nonRefTool, inputFlowTool, outputFlowTool],
             };
             await updateNode(node.id ?? '', updatedNodeData);
           }
@@ -334,9 +387,9 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
     x: 200,
     y: 100,
     width: 300,
-    height: 50,
+    height: 80,
     attrs: nodeAttrs,
-    tools: [nonRefTool, ioFlowTool],
+    tools: [nonRefTool, inputFlowTool, outputFlowTool],
     data: {
       label: [],
       quantitativeReference: '0',
@@ -392,6 +445,54 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
     }
   };
 
+  const updateNodePorts = (data: any) => {
+    const group = ioPortSelectorDirection === 'Output' ? 'groupOutput' : 'groupInput';
+
+    const originalItems: any[] =
+      ioPortSelectorNode?.ports?.items?.filter((item: any) => item?.group !== group) ?? [];
+
+    let baseY = 65;
+    if (group === 'groupOutput') {
+      baseY = 65 + originalItems.length * 20;
+    }
+
+    const newItems: any[] = data?.selectedRowData?.map((item: any, index: number) => {
+      const textStr = getLangText(item?.referenceToFlowDataSet?.['common:shortDescription'], lang);
+      return {
+        id: ioPortSelectorDirection + ':' + item?.referenceToFlowDataSet?.['@refObjectId'],
+        args: { x: group === 'groupOutput' ? '100%' : 0, y: baseY + index * 20 },
+        attrs: {
+          text: {
+            text: textStr.substring(0, 30) + (textStr.substring(0, 30) !== textStr ? '...' : ''),
+          },
+        },
+        group: group,
+      };
+    });
+
+    let thisItems: any[] = [];
+    if (group === 'groupInput') {
+      const inputItemLength = newItems.length;
+      const outputItems = originalItems.map((item: any, index: number) => {
+        return { ...item, args: { ...item.args, y: 65 + (inputItemLength + index) * 20 } };
+      });
+      thisItems = [...newItems, ...outputItems];
+    } else if (group === 'groupOutput') {
+      thisItems = [...originalItems, ...newItems];
+    } else {
+      thisItems = ioPortSelectorNode?.ports?.items ?? [];
+    }
+
+    const thisPorts = {
+      ...ports,
+      items: thisItems,
+    };
+
+    const nodeHeight = 60 + thisItems.length * 20;
+
+    updateNode(ioPortSelectorNode.id, { width: 300, height: nodeHeight, ports: thisPorts });
+  };
+
   const updateEdgeData = (data: any) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id, shape, ...newEdge } = data;
@@ -411,15 +512,18 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
         genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? [];
       const refExchange = exchange.find((i: any) => i?.quantitativeReference === true);
       const inOrOut = refExchange?.exchangeDirection.toUpperCase() === 'INPUT';
+      const textStr = getLangText(
+        refExchange?.referenceToFlowDataSet?.['common:shortDescription'],
+        lang,
+      );
       const refPortItem = {
-        id: refExchange?.['@dataSetInternalID'] ?? '-',
-        args: { x: inOrOut ? 0 : '100%', y: 40 },
+        id:
+          (inOrOut ? 'Input:' : 'Output:') +
+          (refExchange?.referenceToFlowDataSet?.['@refObjectId'] ?? '-'),
+        args: { x: inOrOut ? 0 : '100%', y: 65 },
         attrs: {
           text: {
-            text: getLangText(
-              refExchange?.referenceToFlowDataSet?.['common:shortDescription'],
-              lang,
-            ),
+            text: textStr.substring(0, 30) + (textStr.substring(0, 30) !== textStr ? '...' : ''),
           },
         },
         group:
@@ -540,22 +644,36 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
 
   useGraphEvent('edge:connected', (evt) => {
     const edge = evt.edge;
-    const sourceNodeID = edge.getSourceCellId();
-    const targetNodeID = edge.getTargetCellId();
-    const sourceNode = nodes.find((node) => node.id === sourceNodeID);
-    const targetNode = nodes.find((node) => node.id === targetNodeID);
-    const sourceProcessId = sourceNode?.data?.id;
-    const targetProcessId = targetNode?.data?.id;
-    updateEdge(edge.id, {
-      data: {
-        node: {
-          sourceNodeID: sourceNodeID,
-          targetNodeID: targetNodeID,
-          sourceProcessId: sourceProcessId,
-          targetProcessId: targetProcessId,
+    const sourcePortID = edge.getSourcePortId();
+    const targetPortID = edge.getTargetPortId();
+    if (sourcePortID?.includes('Output') && targetPortID?.includes('Input')) {
+      const sourceNodeID = edge.getSourceCellId();
+      const targetNodeID = edge.getTargetCellId();
+      const sourceNode = nodes.find((node) => node.id === sourceNodeID);
+      const targetNode = nodes.find((node) => node.id === targetNodeID);
+      const sourceProcessId = sourceNode?.data?.id;
+      const targetProcessId = targetNode?.data?.id;
+      updateEdge(edge.id, {
+        data: {
+          connection: {
+            outputExchange: {
+              '@flowUUID': sourcePortID?.replace('Output:', ''),
+              downstreamProcess: {
+                '@flowUUID': targetPortID?.replace('Input:', ''),
+              },
+            },
+          },
+          node: {
+            sourceNodeID: sourceNodeID,
+            targetNodeID: targetNodeID,
+            sourceProcessId: sourceProcessId,
+            targetProcessId: targetProcessId,
+          },
         },
-      },
-    });
+      });
+    } else {
+      removeEdges([edge.id]);
+    }
   });
 
   // useGraphEvent('edge:changed', (evt) => {
@@ -613,25 +731,11 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
           return {
             ...node,
             attrs: nodeAttrs,
-            height: 75,
-            ports: {
-              ...ports,
-              items: [
-                {
-                  id: 'i1',
-                  args: { x: 0, y: 40 },
-                  attrs: { text: { text: 'Input' } },
-                  group: 'groupInput',
-                },
-                {
-                  id: 'i2',
-                  args: { x: '100%', y: 60 },
-                  attrs: { text: { text: 'Output' } },
-                  group: 'groupOutput',
-                },
-              ],
-            },
-            tools: [node?.data?.quantitativeReference === '1' ? refTool : nonRefTool, ioFlowTool],
+            tools: [
+              node?.data?.quantitativeReference === '1' ? refTool : nonRefTool,
+              inputFlowTool,
+              outputFlowTool,
+            ],
           };
         });
         if (readonly) {
@@ -728,7 +832,11 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
   useEffect(() => {
     nodes.forEach((node) => {
       updateNode(node.id ?? '', {
-        tools: [node?.data?.quantitativeReference === '1' ? refTool : nonRefTool, ioFlowTool],
+        tools: [
+          node?.data?.quantitativeReference === '1' ? refTool : nonRefTool,
+          inputFlowTool,
+          outputFlowTool,
+        ],
       });
     });
   }, [nodeCount]);
@@ -830,6 +938,14 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
       )}
       <Control items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin']} />
       <Spin spinning={spinning} fullscreen />
+      <IoPortSelector
+        lang={lang}
+        node={ioPortSelectorNode}
+        direction={ioPortSelectorDirection}
+        drawerVisible={ioPortSelectorDrawerVisible}
+        onData={updateNodePorts}
+        onDrawerVisible={setIoPortSelectorDrawerVisible}
+      />
     </Space>
   );
 };
