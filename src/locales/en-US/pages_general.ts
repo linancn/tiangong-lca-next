@@ -41,6 +41,8 @@ export default {
   'pages.button.model.zoomTo': 'Zoom To',
   'pages.button.model.zoomToFit': 'Zoom To Fit',
   'pages.button.model.zoomToOrigin': 'Zoom To Origin',
+  'pages.button.model.referenceNode': 'Reference node',
+  'pages.button.model.setReference': 'Set reference',
   'pages.button.item.add': 'Add',
   'pages.button.item.label': 'Item',
 

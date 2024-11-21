@@ -349,6 +349,20 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
           categoryType={'Process'}
         />
         <br />
+        <SourceSelectDescription
+          title={
+            <FormattedMessage
+              id="pages.process.view.processInformation.referenceToExternalDocumentation"
+              defaultMessage="Data set LCA report, background info"
+            />
+          }
+          data={
+            initData.processInformation?.dataSetInformation?.[
+              'common:referenceToExternalDocumentation'
+            ]
+          }
+          lang={lang}
+        />
         {/* <Card size="small" title={'Quantitative Reference'}>
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item key={0} label="Type" labelStyle={{ width: '100px' }}>
@@ -875,6 +889,23 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
             >
               {initData.administrativeInformation?.publicationAndOwnership?.[
                 'common:permanentDataSetURI'
+              ] ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
+          <br />
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id="pages.process.view.administrativeInformation.workflowAndPublicationStatus"
+                  defaultMessage="Workflow and publication status	"
+                />
+              }
+              labelStyle={{ width: '200px' }}
+            >
+              {initData.administrativeInformation?.publicationAndOwnership?.[
+                'common:workflowAndPublicationStatus'
               ] ?? '-'}
             </Descriptions.Item>
           </Descriptions>

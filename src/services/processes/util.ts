@@ -62,6 +62,29 @@ export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
           'common:generalComment': getLangJson(
             data?.processInformation?.dataSetInformation?.['common:generalComment'],
           ),
+          'common:referenceToExternalDocumentation': {
+            '@refObjectId':
+              data?.processInformation?.dataSetInformation?.[
+                'common:referenceToExternalDocumentation'
+              ]?.['@refObjectId'] ?? {},
+            '@type':
+              data?.processInformation?.dataSetInformation?.[
+                'common:referenceToExternalDocumentation'
+              ]?.['@type'] ?? {},
+            '@uri':
+              data?.processInformation?.dataSetInformation?.[
+                'common:referenceToExternalDocumentation'
+              ]?.['@uri'] ?? {},
+            '@version':
+              data?.processInformation?.dataSetInformation?.[
+                'common:referenceToExternalDocumentation'
+              ]?.['@version'] ?? {},
+            'common:shortDescription': getLangJson(
+              data?.processInformation?.dataSetInformation?.[
+                'common:referenceToExternalDocumentation'
+              ]?.['common:shortDescription'],
+            ),
+          },
         },
         quantitativeReference: { ...quantitativeReference },
         time: {
@@ -276,6 +299,10 @@ export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
             data?.administrativeInformation?.publicationAndOwnership?.[
               'common:permanentDataSetURI'
             ] ?? {},
+          'common:workflowAndPublicationStatus':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:workflowAndPublicationStatus'
+            ] ?? {},
           'common:referenceToOwnershipOfDataSet': {
             '@refObjectId':
               data?.administrativeInformation?.publicationAndOwnership?.[
@@ -311,7 +338,6 @@ export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
     },
   });
 }
-
 export function genProcessFromData(data: any) {
   const exchange = data?.exchanges?.exchange ?? [];
   let exchangeList = [];
@@ -349,6 +375,29 @@ export function genProcessFromData(data: any) {
         'common:generalComment': getLangList(
           data?.processInformation?.dataSetInformation?.['common:generalComment'],
         ),
+        'common:referenceToExternalDocumentation': {
+          '@refObjectId':
+            data?.processInformation?.dataSetInformation?.[
+              'common:referenceToExternalDocumentation'
+            ]?.['@refObjectId'] ?? {},
+          '@type':
+            data?.processInformation?.dataSetInformation?.[
+              'common:referenceToExternalDocumentation'
+            ]?.['@type'] ?? {},
+          '@uri':
+            data?.processInformation?.dataSetInformation?.[
+              'common:referenceToExternalDocumentation'
+            ]?.['@uri'] ?? {},
+          '@version':
+            data?.processInformation?.dataSetInformation?.[
+              'common:referenceToExternalDocumentation'
+            ]?.['@version'] ?? {},
+          'common:shortDescription': getLangJson(
+            data?.processInformation?.dataSetInformation?.[
+              'common:referenceToExternalDocumentation'
+            ]?.['common:shortDescription'],
+          ),
+        },
       },
       quantitativeReference: {
         '@type': data?.processInformation?.quantitativeReference?.['@type'] ?? {},
@@ -567,6 +616,10 @@ export function genProcessFromData(data: any) {
         'common:permanentDataSetURI':
           data?.administrativeInformation?.publicationAndOwnership?.[
             'common:permanentDataSetURI'
+          ] ?? {},
+        'common:workflowAndPublicationStatus':
+          data?.administrativeInformation?.publicationAndOwnership?.[
+            'common:workflowAndPublicationStatus'
           ] ?? {},
         'common:referenceToOwnershipOfDataSet': {
           '@refObjectId':
