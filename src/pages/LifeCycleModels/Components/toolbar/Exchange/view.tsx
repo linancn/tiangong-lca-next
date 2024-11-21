@@ -7,44 +7,29 @@ import { Button, Card, Col, Descriptions, Divider, Drawer, Row, Spin } from 'ant
 import type { FC } from 'react';
 import { useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import EdgeExchangeSelect from './select';
 
 type Props = {
   lang: string;
-  id: string;
   sourceProcessId: string;
   targetProcessId: string;
   sourceOutputFlowID: string;
   targetInputFlowID: string;
   drawerVisible: boolean;
-  onData: (data: any) => void;
   onDrawerClose: () => void;
 };
 const EdgeExchangeView: FC<Props> = ({
   lang,
-  id,
   sourceProcessId,
   targetProcessId,
   sourceOutputFlowID,
   targetInputFlowID,
   drawerVisible,
   onDrawerClose,
-  onData,
 }) => {
   const [exchangeDataSource, setExchangeDataSource] = useState<any>({});
   const [exchangeDataTarget, setExchangeDataTarget] = useState<any>({});
   const [spinningSource, setSpinningSource] = useState(false);
   const [spinningTarget, setSpinningTarget] = useState(false);
-  const [editDrawerVisible, setEditDrawerVisible] = useState(false);
-
-  // const onEdit = () => {
-  //   setEditDrawerVisible(true);
-  //   onDrawerClose();
-  // };
-
-  const onEditDrawerClose = () => {
-    setEditDrawerVisible(false);
-  };
 
   useEffect(() => {
     if (!drawerVisible) return;
@@ -91,16 +76,6 @@ const EdgeExchangeView: FC<Props> = ({
         width="90%"
         closable={false}
         extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={onDrawerClose} />}
-        // footer={
-        //   <Space size={'middle'} className={styles.footer_right}>
-        //     <Button onClick={onDrawerClose}>
-        //       <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
-        //     </Button>
-        //     <Button type="primary" onClick={onEdit}>
-        //       <FormattedMessage id="pages.button.edit" defaultMessage="Edit" />
-        //     </Button>
-        //   </Space>
-        // }
         footer={false}
         maskClosable={true}
         open={drawerVisible}
@@ -364,22 +339,7 @@ const EdgeExchangeView: FC<Props> = ({
             </Card>
           </Col>
         </Row>
-
-        {/* </Spin> */}
       </Drawer>
-
-      <EdgeExchangeSelect
-        id={id}
-        lang={lang}
-        sourceProcessId={sourceProcessId}
-        targetProcessId={targetProcessId}
-        onData={onData}
-        sourceRowKeys={[sourceOutputFlowID]}
-        targetRowKeys={[targetInputFlowID]}
-        optionType={'edit'}
-        drawerVisible={editDrawerVisible}
-        onDrawerClose={onEditDrawerClose}
-      />
     </>
   );
 };

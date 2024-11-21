@@ -498,17 +498,17 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
     updateNode(ioPortSelectorNode.id, { width: 300, height: nodeHeight, ports: thisPorts });
   };
 
-  const updateEdgeData = (data: any) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { id, shape, ...newEdge } = data;
-    if (newEdge.target) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { x, y, ...newTarget } = newEdge.target as any;
-      updateEdge(id, { ...newEdge, target: newTarget });
-    } else {
-      updateEdge(id, { ...newEdge });
-    }
-  };
+  // const updateEdgeData = (data: any) => {
+  //   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  //   const { id, shape, ...newEdge } = data;
+  //   if (newEdge.target) {
+  //     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  //     const { x, y, ...newTarget } = newEdge.target as any;
+  //     updateEdge(id, { ...newEdge, target: newTarget });
+  //   } else {
+  //     updateEdge(id, { ...newEdge });
+  //   }
+  // };
 
   const addProcessNode = (id: any) => {
     setSpinning(true);
@@ -869,7 +869,6 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
         lang={lang}
         disabled={edges.filter((edge) => edge.selected).length === 0}
         edge={edges.filter((edge) => edge.selected)?.[0]}
-        onData={updateEdgeData}
         readonly={readonly}
       />
       <TargetAmount
