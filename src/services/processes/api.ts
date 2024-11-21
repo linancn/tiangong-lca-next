@@ -64,6 +64,7 @@ export async function getProcessTableAll(
     json->processDataSet->processInformation->dataSetInformation->"common:generalComment",
     json->processDataSet->processInformation->time->>"common:referenceYear",
     json->processDataSet->processInformation->geography->locationOfOperationSupplyOrProduction->>"@location",
+    version,
     modified_at
   `;
 
