@@ -472,6 +472,9 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
           },
         },
         group: group,
+        data: {
+          textLang: item?.referenceToFlowDataSet?.['common:shortDescription'],
+        },
       };
     });
 
@@ -493,9 +496,10 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
       items: thisItems,
     };
 
+    const nodeWidth = ioPortSelectorNode.size.width;
     const nodeHeight = 60 + thisItems.length * 20;
 
-    updateNode(ioPortSelectorNode.id, { width: 300, height: nodeHeight, ports: thisPorts });
+    updateNode(ioPortSelectorNode.id, { width: nodeWidth, height: nodeHeight, ports: thisPorts });
   };
 
   // const updateEdgeData = (data: any) => {
@@ -535,6 +539,9 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
         },
         group:
           refExchange?.exchangeDirection.toUpperCase() === 'OUTPUT' ? 'groupOutput' : 'groupInput',
+        data: {
+          textLang: refExchange?.referenceToFlowDataSet?.['common:shortDescription'],
+        },
       };
       const name =
         result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name ?? {};

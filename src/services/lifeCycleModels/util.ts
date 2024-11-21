@@ -822,6 +822,25 @@ export function genLifeCycleModelData(data: any, lang: string) {
         return {
           ...node,
           label: genProcessName(node?.data?.label, lang),
+          ports: {
+            ...node?.ports,
+            items: node?.ports?.items?.map((item: any) => {
+              let textStr = item?.data?.textLang
+                ? getLangText(item?.data?.textLang, lang)
+                : item?.attrs?.text?.text;
+              return {
+                ...item,
+                attrs: {
+                  ...item?.attrs,
+                  text: {
+                    text:
+                      textStr.substring(0, 30) +
+                      (textStr.substring(0, 30) !== textStr ? '...' : ''),
+                  },
+                },
+              };
+            }),
+          },
         };
       }) ?? [],
     edges: data?.xflow?.edges ?? [],
