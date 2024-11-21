@@ -31,6 +31,7 @@ import {
   licenseTypeOptions,
   processtypeOfDataSetOptions,
   reviewTypeOptions,
+  workflowAndPublicationStatusOptions,
 } from './optiondata';
 
 type Props = {
@@ -360,6 +361,23 @@ export const ProcessForm: FC<Props> = ({
             }
           />
         </Card>
+
+        <SourceSelectForm
+          name={[
+            'processInformation',
+            'dataSetInformation',
+            'common:referenceToExternalDocumentation',
+          ]}
+          label={
+            <FormattedMessage
+              id="pages.process.view.processInformation.referenceToExternalDocumentation"
+              defaultMessage="Data set LCA report, background info"
+            />
+          }
+          lang={lang}
+          formRef={formRef}
+          onData={onData}
+        />
 
         <Card
           size="small"
@@ -973,6 +991,22 @@ export const ProcessForm: FC<Props> = ({
             ]}
           >
             <Input />
+          </Form.Item>
+
+          <Form.Item
+            label={
+              <FormattedMessage
+                id="pages.process.view.administrativeInformation.workflowAndPublicationStatus"
+                defaultMessage="Workflow and publication status	"
+              />
+            }
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:workflowAndPublicationStatus',
+            ]}
+          >
+            <Select options={workflowAndPublicationStatusOptions} />
           </Form.Item>
 
           <ContactSelectForm
