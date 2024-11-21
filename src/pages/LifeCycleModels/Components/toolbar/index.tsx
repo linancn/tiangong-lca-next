@@ -459,7 +459,12 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
     const newItems: any[] = data?.selectedRowData?.map((item: any, index: number) => {
       const textStr = getLangText(item?.referenceToFlowDataSet?.['common:shortDescription'], lang);
       return {
-        id: ioPortSelectorDirection + ':' + item?.referenceToFlowDataSet?.['@refObjectId'],
+        id:
+          ioPortSelectorDirection +
+          ':' +
+          (item?.['@dataSetInternalID'] ?? '-') +
+          ':' +
+          (item?.referenceToFlowDataSet?.['@refObjectId'] ?? '-'),
         args: { x: group === 'groupOutput' ? '100%' : 0, y: baseY + index * 20 },
         attrs: {
           text: {
@@ -519,6 +524,8 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
       const refPortItem = {
         id:
           (inOrOut ? 'Input:' : 'Output:') +
+          (refExchange?.['@dataSetInternalID'] ?? '-') +
+          ':' +
           (refExchange?.referenceToFlowDataSet?.['@refObjectId'] ?? '-'),
         args: { x: inOrOut ? 0 : '100%', y: 65 },
         attrs: {
