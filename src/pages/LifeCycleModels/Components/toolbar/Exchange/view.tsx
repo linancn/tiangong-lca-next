@@ -2,9 +2,8 @@ import LangTextItemDescription from '@/components/LangTextItem/description';
 import FlowsSelectDescription from '@/pages/Flows/Components/select/description';
 import { getProcessDetail } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
-import styles from '@/style/custom.less';
 import { CheckCircleTwoTone, CloseCircleOutlined, CloseOutlined } from '@ant-design/icons';
-import { Button, Card, Col, Descriptions, Divider, Drawer, Row, Space, Spin } from 'antd';
+import { Button, Card, Col, Descriptions, Divider, Drawer, Row, Spin } from 'antd';
 import type { FC } from 'react';
 import { useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -38,10 +37,10 @@ const EdgeExchangeView: FC<Props> = ({
   const [spinningTarget, setSpinningTarget] = useState(false);
   const [editDrawerVisible, setEditDrawerVisible] = useState(false);
 
-  const onEdit = () => {
-    setEditDrawerVisible(true);
-    onDrawerClose();
-  };
+  // const onEdit = () => {
+  //   setEditDrawerVisible(true);
+  //   onDrawerClose();
+  // };
 
   const onEditDrawerClose = () => {
     setEditDrawerVisible(false);
@@ -92,16 +91,17 @@ const EdgeExchangeView: FC<Props> = ({
         width="90%"
         closable={false}
         extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={onDrawerClose} />}
-        footer={
-          <Space size={'middle'} className={styles.footer_right}>
-            <Button onClick={onDrawerClose}>
-              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
-            </Button>
-            <Button type="primary" onClick={onEdit}>
-              <FormattedMessage id="pages.button.edit" defaultMessage="Edit" />
-            </Button>
-          </Space>
-        }
+        // footer={
+        //   <Space size={'middle'} className={styles.footer_right}>
+        //     <Button onClick={onDrawerClose}>
+        //       <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
+        //     </Button>
+        //     <Button type="primary" onClick={onEdit}>
+        //       <FormattedMessage id="pages.button.edit" defaultMessage="Edit" />
+        //     </Button>
+        //   </Space>
+        // }
+        footer={false}
         maskClosable={true}
         open={drawerVisible}
         onClose={onDrawerClose}

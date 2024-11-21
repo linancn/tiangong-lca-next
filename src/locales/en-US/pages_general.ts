@@ -25,6 +25,8 @@ export default {
   'pages.button.clear': 'Clear',
   'pages.button.model': 'Model',
   'pages.button.upload': 'Upload',
+  'pages.button.input': 'Input',
+  'pages.button.output': 'Output',
   'pages.button.model.add': 'Add node',
   'pages.button.model.info': 'Basic information',
   'pages.button.model.save': 'Save data',

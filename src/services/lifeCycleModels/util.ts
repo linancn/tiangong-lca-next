@@ -9,6 +9,7 @@ import {
   listToJson,
   removeEmptyObjects,
 } from '../general/util';
+import { genProcessName } from '../processes/util';
 import { supabase } from '../supabase';
 
 export function genLifeCycleModelJsonOrdered(id: string, data: any, oldData: any) {
@@ -820,7 +821,7 @@ export function genLifeCycleModelData(data: any, lang: string) {
       data?.xflow?.nodes?.map((node: any) => {
         return {
           ...node,
-          label: getLangText(node?.data?.label, lang),
+          label: genProcessName(node?.data?.label, lang),
         };
       }) ?? [],
     edges: data?.xflow?.edges ?? [],

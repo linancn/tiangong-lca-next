@@ -25,6 +25,8 @@ export default {
   'pages.button.clear': '清空',
   'pages.button.model': '模型',
   'pages.button.upload': '上传',
+  'pages.button.input': '流入',
+  'pages.button.output': '流出',
   'pages.button.model.add': '添加节点',
   'pages.button.model.info': '基础信息',
   'pages.button.model.save': '提交保存',
