@@ -819,9 +819,15 @@ export function genLifeCycleModelData(data: any, lang: string) {
   return {
     nodes:
       data?.xflow?.nodes?.map((node: any) => {
+        const nodeWidth = node.width;
+        const label = genProcessName(node?.data?.label, lang);
+        let labelSub = label?.substring(0, nodeWidth / 7 - 4);
+        if (lang === 'zh') {
+          labelSub = label?.substring(0, nodeWidth / 12 - 4);
+        }
         return {
           ...node,
-          label: genProcessName(node?.data?.label, lang),
+          label: label !== labelSub ? labelSub + '...' : label,
           ports: {
             ...node?.ports,
             items: node?.ports?.items?.map((item: any) => {

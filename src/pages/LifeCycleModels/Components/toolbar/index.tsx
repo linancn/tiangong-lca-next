@@ -386,7 +386,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
     shape: 'rect',
     x: 200,
     y: 100,
-    width: 300,
+    width: 350,
     height: 80,
     attrs: nodeAttrs,
     tools: [nonRefTool, inputFlowTool, outputFlowTool],
@@ -545,11 +545,17 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
       };
       const name =
         result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name ?? {};
+      const nodeWidth = nodeTemplate.width;
+      const label = genProcessName(name, lang);
+      let labelSub = label?.substring(0, nodeWidth / 7 - 4);
+      if (lang === 'zh') {
+        labelSub = label?.substring(0, nodeWidth / 12 - 4);
+      }
       addNodes([
         {
           ...nodeTemplate,
           id: v4(),
-          label: genProcessName(name, lang),
+          label: label !== labelSub ? labelSub + '...' : label,
           data: {
             id: id,
             version:
@@ -693,6 +699,17 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
     }
   });
 
+  useGraphEvent('node:change:size', (evt) => {
+    const node = evt.node;
+    const nodeWidth = node.getSize().width;
+    const label = genProcessName(node?.data?.label, lang);
+    let labelSub = label?.substring(0, nodeWidth / 7 - 4);
+    if (lang === 'zh') {
+      labelSub = label?.substring(0, nodeWidth / 12 - 4);
+    }
+    updateNode(node.id, { label: label !== labelSub ? labelSub + '...' : label });
+  });
+
   // useGraphEvent('edge:changed', (evt) => {
   //   const labels = evt?.edge?.getLabels();
   //   if (labels?.length > 1) {
@@ -747,7 +764,13 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
         let initNodes = (model?.nodes ?? []).map((node: any) => {
           return {
             ...node,
-            attrs: nodeAttrs,
+            attrs: {
+              ...nodeAttrs,
+              label: {
+                ...nodeAttrs.label,
+                title: genProcessName(node?.data?.label, lang),
+              },
+            },
             tools: [
               node?.data?.quantitativeReference === '1' ? refTool : nonRefTool,
               inputFlowTool,
