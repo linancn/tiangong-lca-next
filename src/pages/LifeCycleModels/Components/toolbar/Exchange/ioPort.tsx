@@ -199,7 +199,10 @@ const IoPortSelector: FC<Props> = ({
             <Button
               onClick={() => {
                 const selectedRowData = exchangeDataSource.filter((item) => {
-                  const itemObjectId = item?.referenceToFlowDataSet?.['@refObjectId'];
+                  const itemObjectId =
+                    (item?.['@dataSetInternalID'] ?? '-') +
+                    ':' +
+                    (item?.referenceToFlowDataSet?.['@refObjectId'] ?? '-');
                   const itemDirection = item?.exchangeDirection?.toUpperCase();
                   const filterDirection = direction?.toUpperCase();
 

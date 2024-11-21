@@ -653,13 +653,16 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
       const targetNode = nodes.find((node) => node.id === targetNodeID);
       const sourceProcessId = sourceNode?.data?.id;
       const targetProcessId = targetNode?.data?.id;
+      const sourcePortIDs = sourcePortID.split(':');
+      const targetPortIDs = targetPortID.split(':');
+
       updateEdge(edge.id, {
         data: {
           connection: {
             outputExchange: {
-              '@flowUUID': sourcePortID?.replace('Output:', ''),
+              '@flowUUID': sourcePortIDs?.[sourcePortIDs?.length - 1],
               downstreamProcess: {
-                '@flowUUID': targetPortID?.replace('Input:', ''),
+                '@flowUUID': targetPortIDs?.[targetPortIDs?.length - 1],
               },
             },
           },
