@@ -7,6 +7,7 @@ import {
   jsonToList,
 } from '../general/util';
 import { getILCDClassification } from '../ilcd/api';
+import { genProcessName } from '../processes/util';
 import { genLifeCycleModelJsonOrdered, genLifeCycleModelProcess } from './util';
 
 const updateLifeCycleModelProcess = async (id: string, refNode: any, data: any) => {
@@ -158,13 +159,7 @@ export async function getLifeCycleModelTableAll(
             return {
               key: i.id,
               id: i.id,
-              baseName: getLangText(i.name?.baseName ?? {}, lang),
-              treatmentStandardsRoutes: getLangText(i.name?.treatmentStandardsRoutes ?? {}, lang),
-              mixAndLocationTypes: getLangText(i.name?.mixAndLocationTypes ?? {}, lang),
-              functionalUnitFlowProperties: getLangText(
-                i.name?.functionalUnitFlowProperties ?? {},
-                lang,
-              ),
+              name: genProcessName(i.name ?? {}, lang),
               generalComment: getLangText(i?.['common:generalComment'], lang),
               classification: classificationToString(classificationZH ?? {}),
               version: i?.version,
@@ -184,13 +179,7 @@ export async function getLifeCycleModelTableAll(
           return {
             key: i.id,
             id: i.id,
-            baseName: getLangText(i.name?.baseName ?? {}, lang),
-            treatmentStandardsRoutes: getLangText(i.name?.treatmentStandardsRoutes ?? {}, lang),
-            mixAndLocationTypes: getLangText(i.name?.mixAndLocationTypes ?? {}, lang),
-            functionalUnitFlowProperties: getLangText(
-              i.name?.functionalUnitFlowProperties ?? {},
-              lang,
-            ),
+            name: genProcessName(i.name ?? {}, lang),
             generalComment: getLangText(i?.['common:generalComment'], lang),
             classification: classificationToString(i['common:class'] ?? {}),
             version: i?.version,

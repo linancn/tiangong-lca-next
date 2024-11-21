@@ -261,7 +261,7 @@ export async function getProcessTablePgroongaSearch(
             return {
               key: i.id,
               id: i.id,
-              name: genProcessName(i.name ?? {}, lang),
+              name: genProcessName(dataInfo?.dataSetInformation?.name ?? {}, lang),
               generalComment: getLangText(
                 dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
                 lang,

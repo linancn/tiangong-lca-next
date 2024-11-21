@@ -710,6 +710,12 @@ export function genProcessExchangeTableData(data: any, lang: string) {
     }
     return dataList?.map((item: any) => {
       return removeEmptyObjects({
+        // key:
+        //   (item?.['@dataSetInternalID'] ?? '-') +
+        //   ':' +
+        //   (item?.referenceToFlowDataSet?.['@refObjectId'] ?? '-') +
+        //   ':' +
+        //   (item?.referenceToFlowDataSet?.['@version'] ?? '-'),
         key:
           (item?.['@dataSetInternalID'] ?? '-') +
           ':' +
@@ -717,6 +723,7 @@ export function genProcessExchangeTableData(data: any, lang: string) {
         dataSetInternalID: item?.['@dataSetInternalID'] ?? '-',
         exchangeDirection: item?.exchangeDirection ?? '-',
         referenceToFlowDataSetId: item?.referenceToFlowDataSet?.['@refObjectId'] ?? '-',
+        // referenceToFlowDataSetVersion: item?.referenceToFlowDataSet?.['@version'] ?? '-',
         referenceToFlowDataSet: getLangText(
           item?.referenceToFlowDataSet?.['common:shortDescription'],
           lang,
