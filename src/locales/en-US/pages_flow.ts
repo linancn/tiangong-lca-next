@@ -27,6 +27,7 @@ export default {
   'pages.flow.view.administrativeInformation.publicationAndOwnership': 'Publication and ownership',
   'pages.flow.view.administrativeInformation.referenceToDataSetFormat': 'Data set format(s)',
   'pages.flow.view.administrativeInformation.timeStamp': 'Time stamp (last saved)',
+  'pages.flow.administrativeInformation.referenceToPersonOrEntityEnteringTheData': 'Data entry by:',
   'pages.flow.view.administrativeInformation': 'Administrative information',
   'pages.flow.view.flowInformation.name': 'Name',
   'pages.flow.view.flowInformation.baseName': 'Base name',

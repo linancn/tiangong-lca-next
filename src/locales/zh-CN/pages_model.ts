@@ -31,7 +31,7 @@ export default {
   'pages.lifeCycleModel.administrativeInformation.dataEntryBy': '数据输入方式',
   'pages.lifeCycleModel.administrativeInformation.timeStamp': '时间戳（最后保存）',
   'pages.lifeCycleModel.administrativeInformation.referenceToDataSetFormat': '数据集格式',
-  'pages.lifeCycleModel.administrativeInformation.referenceToPersonOrEntityEnteringTheData': '数据输入方式',
+  'pages.lifeCycleModel.administrativeInformation.referenceToPersonOrEntityEnteringTheData': '数据输入方式:',
   'pages.lifeCycleModel.administrativeInformation.publicationAndOwnership': '出版和所有权',
   'pages.lifeCycleModel.administrativeInformation.referenceToOwnershipOfDataSet': '数据集的所有者',
   'pages.lifeCycleModel.administrativeInformation.copyright': '版权?',

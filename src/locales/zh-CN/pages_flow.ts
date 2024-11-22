@@ -27,6 +27,7 @@ export default {
   'pages.flow.view.administrativeInformation.publicationAndOwnership': '出版和所有权',
   'pages.flow.view.administrativeInformation.referenceToDataSetFormat': '数据集格式',
   'pages.flow.view.administrativeInformation.timeStamp': '时间戳（最后保存）',
+  'pages.flow.administrativeInformation.referenceToPersonOrEntityEnteringTheData': '数据输入方式:',
   'pages.flow.view.administrativeInformation': '管理信息',
   'pages.flow.view.flowInformation.name': '名称',
   'pages.flow.view.flowInformation.baseName': '基础名称',

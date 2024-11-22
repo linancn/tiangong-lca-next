@@ -1,6 +1,7 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import LocationTextItemDescription from '@/components/LocationTextItem/description';
+import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import { getFlowDetail } from '@/services/flows/api';
@@ -483,6 +484,21 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
               <FormattedMessage
                 id="pages.flow.view.administrativeInformation.referenceToDataSetFormat"
                 defaultMessage="Data set format(s)"
+              />
+            }
+            lang={lang}
+          />
+          <br />
+          <ContactSelectDescription
+            data={
+              initData?.administrativeInformation?.dataEntryBy?.[
+                'common:referenceToPersonOrEntityEnteringTheData'
+              ]
+            }
+            title={
+              <FormattedMessage
+                id="pages.flow.view.administrativeInformation.referenceToPersonOrEntityEnteringTheData"
+                defaultMessage="Data entry by:"
               />
             }
             lang={lang}

@@ -7,6 +7,7 @@ import {
   StringMultiLang_o,
   StringMultiLang_r,
 } from '@/components/Validator/index';
+import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import { FlowpropertyTabTable } from '@/services/flows/data';
@@ -561,7 +562,25 @@ export const FlowForm: FC<Props> = ({
             name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
             onData={onData}
           />
+          <br />
+          <ContactSelectForm
+            lang={lang}
+            formRef={formRef}
+            label={
+              <FormattedMessage
+                id="pages.flow.administrativeInformation.referenceToPersonOrEntityEnteringTheData"
+                defaultMessage="Data entry by:"
+              />
+            }
+            name={[
+              'administrativeInformation',
+              'dataEntryBy',
+              'common:referenceToPersonOrEntityEnteringTheData',
+            ]}
+            onData={onData}
+          />
         </Card>
+        <br />
 
         <Card
           size="small"
