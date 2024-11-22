@@ -66,6 +66,23 @@
       },
       "geography": {
         "locationOfSupply": "str"
+      },
+      "technology": {
+        "technologicalApplicability": [
+          {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        ],
+        "referenceToTechnicalSpecification": {
+          "@type": "str",
+          "@refObjectId": "str",
+          "@uri": "str",
+          "common:shortDescription": {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        }
       }
     },
     "modellingAndValidation": {

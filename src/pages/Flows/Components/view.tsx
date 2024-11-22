@@ -353,6 +353,37 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
             labelStyle={{ width: '100px' }}
           />
         </Card>
+        <br />
+        <Card
+          size="small"
+          title={
+            <FormattedMessage
+              id="pages.flow.view.flowInformation.technology"
+              defaultMessage="Technological representativeness"
+            />
+          }
+        >
+          <Divider orientationMargin="0" orientation="left" plain>
+            <FormattedMessage
+              id="pages.flow.view.flowInformation.technologicalApplicability"
+              defaultMessage="Technical purpose of product or waste"
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={initData?.flowInformation?.technology?.technologicalApplicability ?? '-'}
+          />
+          <br />
+          <SourceSelectDescription
+            title={
+              <FormattedMessage
+                id="pages.flow.view.flowInformation.referenceToTechnicalSpecification"
+                defaultMessage="Technical specification"
+              />
+            }
+            data={initData?.flowInformation?.technology?.referenceToTechnicalSpecification ?? '-'}
+            lang={lang}
+          />
+        </Card>
       </>
     ),
     modellingAndValidation: (

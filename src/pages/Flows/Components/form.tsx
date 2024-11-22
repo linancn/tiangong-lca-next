@@ -14,7 +14,7 @@ import { genFlowPropertyTabTableData } from '@/services/flows/util';
 import { ListPagination } from '@/services/general/data';
 import { CheckCircleOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
-import { Card, Form, Input, Select, Space } from 'antd';
+import { Card, Divider, Form, Input, Select, Space } from 'antd';
 import type { FC } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -423,6 +423,44 @@ export const FlowForm: FC<Props> = ({
             lang={lang}
             onData={onData}
             rules={StringMultiLang_o}
+          />
+        </Card>
+        <br />
+        <Card
+          size="small"
+          title={
+            <FormattedMessage
+              id="pages.flow.view.flowInformation.technology"
+              defaultMessage="Technological representativeness"
+            />
+          }
+        >
+          <Divider orientationMargin="0" orientation="left" plain>
+            <FormattedMessage
+              id="pages.flow.view.flowInformation.technologicalApplicability"
+              defaultMessage="Technical purpose of product or waste"
+            />
+          </Divider>
+          <LangTextItemForm
+            name={['flowInformation', 'technology', 'technologicalApplicability']}
+            label={
+              <FormattedMessage
+                id="pages.flow.view.flowInformation.technologicalApplicability"
+                defaultMessage="Technical purpose of product or waste"
+              />
+            }
+          />
+          <SourceSelectForm
+            name={['flowInformation', 'technology', 'referenceToTechnicalSpecification']}
+            label={
+              <FormattedMessage
+                id="pages.flow.view.flowInformation.referenceToTechnicalSpecification"
+                defaultMessage="Technical specification"
+              />
+            }
+            lang={lang}
+            formRef={formRef}
+            onData={onData}
           />
         </Card>
       </Space>

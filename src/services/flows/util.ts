@@ -84,10 +84,30 @@ export function genFlowJsonOrdered(id: string, data: any, oldData: any) {
               data?.flowInformation?.dataSetInformation?.['common:other']?.['ecn:ECNumber'],
           },
         },
+        quantitativeReference: quantitativeReference,
         geography: {
           locationOfSupply: data?.flowInformation?.geography?.locationOfSupply,
         },
-        quantitativeReference: quantitativeReference,
+        technology: {
+          technologicalApplicability: getLangJson(
+            data?.flowInformation?.technology?.technologicalApplicability,
+          ),
+          referenceToTechnicalSpecification: {
+            '@type':
+              data?.flowInformation?.technology?.referenceToTechnicalSpecification?.['@type'] ?? {},
+            '@refObjectId':
+              data?.flowInformation?.technology?.referenceToTechnicalSpecification?.[
+                '@refObjectId'
+              ] ?? {},
+            '@uri':
+              data?.flowInformation?.technology?.referenceToTechnicalSpecification?.['@uri'] ?? {},
+            'common:shortDescription': getLangJson(
+              data?.flowInformation?.technology?.referenceToTechnicalSpecification?.[
+                'common:shortDescription'
+              ],
+            ),
+          },
+        },
       },
       modellingAndValidation: {
         LCIMethod: {
@@ -206,12 +226,32 @@ export function genFlowFromData(data: any) {
             data?.flowInformation?.dataSetInformation?.['common:other']?.['ecn:ECNumber'],
         },
       },
-      geography: {
-        locationOfSupply: data?.flowInformation?.geography?.locationOfSupply,
-      },
       quantitativeReference: {
         referenceToReferenceFlowProperty:
           data?.flowInformation?.quantitativeReference?.referenceToReferenceFlowProperty,
+      },
+      geography: {
+        locationOfSupply: data?.flowInformation?.geography?.locationOfSupply,
+      },
+      technology: {
+        technologicalApplicability: getLangList(
+          data?.flowInformation?.technology?.technologicalApplicability,
+        ),
+        referenceToTechnicalSpecification: {
+          '@type':
+            data?.flowInformation?.technology?.referenceToTechnicalSpecification?.['@type'] ?? {},
+          '@refObjectId':
+            data?.flowInformation?.technology?.referenceToTechnicalSpecification?.[
+              '@refObjectId'
+            ] ?? {},
+          '@uri':
+            data?.flowInformation?.technology?.referenceToTechnicalSpecification?.['@uri'] ?? {},
+          'common:shortDescription': getLangList(
+            data?.flowInformation?.technology?.referenceToTechnicalSpecification?.[
+              'common:shortDescription'
+            ],
+          ),
+        },
       },
       LCIMethod: {
         typeOfDataSet: data?.modellingAndValidation?.LCIMethod?.typeOfDataSet,
