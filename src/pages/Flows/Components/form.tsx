@@ -7,6 +7,7 @@ import {
   StringMultiLang_o,
   StringMultiLang_r,
 } from '@/components/Validator/index';
+import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import { FlowpropertyTabTable } from '@/services/flows/data';
@@ -14,7 +15,7 @@ import { genFlowPropertyTabTableData } from '@/services/flows/util';
 import { ListPagination } from '@/services/general/data';
 import { CheckCircleOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
-import { Card, Form, Input, Select, Space } from 'antd';
+import { Card, Divider, Form, Input, Select, Space } from 'antd';
 import type { FC } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -425,6 +426,44 @@ export const FlowForm: FC<Props> = ({
             rules={StringMultiLang_o}
           />
         </Card>
+        <br />
+        <Card
+          size="small"
+          title={
+            <FormattedMessage
+              id="pages.flow.view.flowInformation.technology"
+              defaultMessage="Technological representativeness"
+            />
+          }
+        >
+          <Divider orientationMargin="0" orientation="left" plain>
+            <FormattedMessage
+              id="pages.flow.view.flowInformation.technologicalApplicability"
+              defaultMessage="Technical purpose of product or waste"
+            />
+          </Divider>
+          <LangTextItemForm
+            name={['flowInformation', 'technology', 'technologicalApplicability']}
+            label={
+              <FormattedMessage
+                id="pages.flow.view.flowInformation.technologicalApplicability"
+                defaultMessage="Technical purpose of product or waste"
+              />
+            }
+          />
+          <SourceSelectForm
+            name={['flowInformation', 'technology', 'referenceToTechnicalSpecification']}
+            label={
+              <FormattedMessage
+                id="pages.flow.view.flowInformation.referenceToTechnicalSpecification"
+                defaultMessage="Technical specification"
+              />
+            }
+            lang={lang}
+            formRef={formRef}
+            onData={onData}
+          />
+        </Card>
       </Space>
     ),
     modellingAndValidation: (
@@ -523,7 +562,25 @@ export const FlowForm: FC<Props> = ({
             name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
             onData={onData}
           />
+          <br />
+          <ContactSelectForm
+            lang={lang}
+            formRef={formRef}
+            label={
+              <FormattedMessage
+                id="pages.flow.administrativeInformation.referenceToPersonOrEntityEnteringTheData"
+                defaultMessage="Data entry by:"
+              />
+            }
+            name={[
+              'administrativeInformation',
+              'dataEntryBy',
+              'common:referenceToPersonOrEntityEnteringTheData',
+            ]}
+            onData={onData}
+          />
         </Card>
+        <br />
 
         <Card
           size="small"
