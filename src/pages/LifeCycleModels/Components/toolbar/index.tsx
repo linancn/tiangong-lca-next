@@ -9,6 +9,8 @@ import {
 import {
   genLifeCycleModelData,
   genLifeCycleModelInfoFromData,
+  genNodeLabel,
+  genPortLabel,
 } from '@/services/lifeCycleModels/util';
 import { getProcessDetail } from '@/services/processes/api';
 import { genProcessFromData, genProcessName } from '@/services/processes/util';
@@ -386,7 +388,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
     shape: 'rect',
     x: 200,
     y: 100,
-    width: 300,
+    width: 350,
     height: 80,
     attrs: nodeAttrs,
     tools: [nonRefTool, inputFlowTool, outputFlowTool],
@@ -457,7 +459,13 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
     }
 
     const newItems: any[] = data?.selectedRowData?.map((item: any, index: number) => {
-      const textStr = getLangText(item?.referenceToFlowDataSet?.['common:shortDescription'], lang);
+      const nodeWidth = ioPortSelectorNode.size.width;
+      const label = getLangText(item?.referenceToFlowDataSet?.['common:shortDescription'], lang);
+
+      let labelSub = label?.substring(0, nodeWidth / 7 - 4);
+      if (lang === 'zh') {
+        labelSub = label?.substring(0, nodeWidth / 12 - 4);
+      }
       return {
         id:
           ioPortSelectorDirection +
@@ -468,10 +476,14 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
         args: { x: group === 'groupOutput' ? '100%' : 0, y: baseY + index * 20 },
         attrs: {
           text: {
-            text: textStr.substring(0, 30) + (textStr.substring(0, 30) !== textStr ? '...' : ''),
+            text: label !== labelSub ? labelSub + '...' : label,
+            title: labelSub,
           },
         },
         group: group,
+        data: {
+          textLang: item?.referenceToFlowDataSet?.['common:shortDescription'],
+        },
       };
     });
 
@@ -493,22 +505,24 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
       items: thisItems,
     };
 
+    const nodeWidth = ioPortSelectorNode.size.width;
     const nodeHeight = 60 + thisItems.length * 20;
 
-    updateNode(ioPortSelectorNode.id, { width: 300, height: nodeHeight, ports: thisPorts });
+    updateNode(ioPortSelectorNode.id, { ports: thisPorts });
+    updateNode(ioPortSelectorNode.id, { width: nodeWidth, height: nodeHeight });
   };
 
-  const updateEdgeData = (data: any) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { id, shape, ...newEdge } = data;
-    if (newEdge.target) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { x, y, ...newTarget } = newEdge.target as any;
-      updateEdge(id, { ...newEdge, target: newTarget });
-    } else {
-      updateEdge(id, { ...newEdge });
-    }
-  };
+  // const updateEdgeData = (data: any) => {
+  //   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  //   const { id, shape, ...newEdge } = data;
+  //   if (newEdge.target) {
+  //     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  //     const { x, y, ...newTarget } = newEdge.target as any;
+  //     updateEdge(id, { ...newEdge, target: newTarget });
+  //   } else {
+  //     updateEdge(id, { ...newEdge });
+  //   }
+  // };
 
   const addProcessNode = (id: any) => {
     setSpinning(true);
@@ -517,7 +531,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
         genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? [];
       const refExchange = exchange.find((i: any) => i?.quantitativeReference === true);
       const inOrOut = refExchange?.exchangeDirection.toUpperCase() === 'INPUT';
-      const textStr = getLangText(
+      const text = getLangText(
         refExchange?.referenceToFlowDataSet?.['common:shortDescription'],
         lang,
       );
@@ -530,19 +544,33 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
         args: { x: inOrOut ? 0 : '100%', y: 65 },
         attrs: {
           text: {
-            text: textStr.substring(0, 30) + (textStr.substring(0, 30) !== textStr ? '...' : ''),
+            text: genPortLabel(text ?? '', lang, nodeTemplate.width),
+            title: text,
           },
         },
         group:
           refExchange?.exchangeDirection.toUpperCase() === 'OUTPUT' ? 'groupOutput' : 'groupInput',
+        data: {
+          textLang: refExchange?.referenceToFlowDataSet?.['common:shortDescription'],
+        },
       };
       const name =
         result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name ?? {};
+      const label = genProcessName(name, lang);
+      const nodeWidth = nodeTemplate.width;
+
       addNodes([
         {
           ...nodeTemplate,
           id: v4(),
-          label: genProcessName(name, lang),
+          label: genNodeLabel(label ?? '', lang, nodeWidth),
+          attrs: {
+            ...nodeAttrs,
+            label: {
+              ...nodeAttrs.label,
+              title: label,
+            },
+          },
           data: {
             id: id,
             version:
@@ -686,6 +714,34 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
     }
   });
 
+  useGraphEvent('node:change:size', (evt) => {
+    const node = evt.node;
+    const nodeWidth = node.getSize().width;
+    const label = genProcessName(node?.data?.label, lang);
+
+    const newItems = node?.getPorts()?.map((item: any) => {
+      const itemText = getLangText(item?.data?.textLang, lang);
+
+      return {
+        ...item,
+        attrs: {
+          text: {
+            ...item?.attrs?.text,
+            text: genPortLabel(itemText ?? '', lang, nodeWidth),
+          },
+        },
+      };
+    });
+
+    updateNode(node.id, {
+      label: genNodeLabel(label ?? '', lang, nodeWidth),
+      ports: {
+        ...node?.ports,
+        items: newItems,
+      },
+    });
+  });
+
   // useGraphEvent('edge:changed', (evt) => {
   //   const labels = evt?.edge?.getLabels();
   //   if (labels?.length > 1) {
@@ -740,7 +796,6 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
         let initNodes = (model?.nodes ?? []).map((node: any) => {
           return {
             ...node,
-            attrs: nodeAttrs,
             tools: [
               node?.data?.quantitativeReference === '1' ? refTool : nonRefTool,
               inputFlowTool,
@@ -869,7 +924,6 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
         lang={lang}
         disabled={edges.filter((edge) => edge.selected).length === 0}
         edge={edges.filter((edge) => edge.selected)?.[0]}
-        onData={updateEdgeData}
         readonly={readonly}
       />
       <TargetAmount

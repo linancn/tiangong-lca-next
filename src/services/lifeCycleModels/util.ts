@@ -12,6 +12,22 @@ import {
 import { genProcessName } from '../processes/util';
 import { supabase } from '../supabase';
 
+export function genNodeLabel(label: string, lang: string, nodeWidth: number) {
+  let labelSub = label?.substring(0, nodeWidth / 7 - 4);
+  if (lang === 'zh') {
+    labelSub = label?.substring(0, nodeWidth / 12 - 4);
+  }
+  return label !== labelSub ? labelSub + '...' : label;
+}
+
+export function genPortLabel(label: string, lang: string, nodeWidth: number) {
+  let labelSub = label?.substring(0, nodeWidth / 7 - 10);
+  if (lang === 'zh') {
+    labelSub = label?.substring(0, nodeWidth / 12 - 10);
+  }
+  return label !== labelSub ? labelSub + '...' : label;
+}
+
 export function genLifeCycleModelJsonOrdered(id: string, data: any, oldData: any) {
   const nodes = data?.model?.nodes?.map((n: any, index: number) => {
     return {
@@ -819,9 +835,36 @@ export function genLifeCycleModelData(data: any, lang: string) {
   return {
     nodes:
       data?.xflow?.nodes?.map((node: any) => {
+        const nodeWidth = node.width;
+        const label = genProcessName(node?.data?.label, lang);
         return {
           ...node,
-          label: genProcessName(node?.data?.label, lang),
+          label: genNodeLabel(label ?? '', lang, nodeWidth),
+          attrs: {
+            ...node.attrs,
+            label: {
+              ...node.attrs.label,
+              title: label,
+            },
+          },
+          ports: {
+            ...node?.ports,
+            items: node?.ports?.items?.map((item: any) => {
+              const itemText = item?.data?.textLang
+                ? getLangText(item?.data?.textLang, lang)
+                : item?.attrs?.text?.text;
+              return {
+                ...item,
+                attrs: {
+                  ...item?.attrs,
+                  text: {
+                    text: genPortLabel(itemText ?? '', lang, nodeWidth),
+                    title: itemText,
+                  },
+                },
+              };
+            }),
+          },
         };
       }) ?? [],
     edges: data?.xflow?.edges ?? [],

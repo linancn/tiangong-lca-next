@@ -3,7 +3,6 @@ import { Button, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
-import EdgeExchangeSelect from './select';
 import EdgeExchangeView from './view';
 
 type Props = {
@@ -11,22 +10,9 @@ type Props = {
   disabled: boolean;
   edge: any;
   readonly: boolean;
-  onData: (data: any) => void;
 };
-const EdgeExhange: FC<Props> = ({ lang, disabled, edge, onData }) => {
+const EdgeExhange: FC<Props> = ({ lang, disabled, edge }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
-
-  const onEditEdgeData = (data: any) => {
-    const newData = {
-      outputExchange: {
-        '@flowUUID': data?.selectedSource?.referenceToFlowDataSet?.['@refObjectId'],
-        downstreamProcess: {
-          '@flowUUID': data?.selectedTarget?.referenceToFlowDataSet?.['@refObjectId'],
-        },
-      },
-    };
-    onData({ ...edge, data: { ...edge?.data, connection: newData } });
-  };
 
   const onDrawerOpen = () => {
     setDrawerVisible(true);
@@ -56,40 +42,14 @@ const EdgeExhange: FC<Props> = ({ lang, disabled, edge, onData }) => {
           onClick={onDrawerOpen}
         />
       </Tooltip>
-      <EdgeExchangeSelect
-        id={''}
-        lang={lang}
-        sourceProcessId={edge?.data?.node?.sourceProcessId}
-        targetProcessId={edge?.data?.node?.targetProcessId}
-        onData={onEditEdgeData}
-        sourceRowKeys={[]}
-        targetRowKeys={[]}
-        optionType={'create'}
-        drawerVisible={
-          drawerVisible &&
-          edge &&
-          !(
-            edge?.data?.connection?.outputExchange?.['@flowUUID'] &&
-            edge?.data?.connection?.outputExchange?.downstreamProcess?.['@flowUUID']
-          )
-        }
-        onDrawerClose={onDrawerClose}
-      />
       <EdgeExchangeView
         lang={lang}
-        id={edge?.id}
         sourceProcessId={edge?.data?.node?.sourceProcessId}
         targetProcessId={edge?.data?.node?.targetProcessId}
         sourceOutputFlowID={edge?.data?.connection?.outputExchange?.['@flowUUID']}
         targetInputFlowID={edge?.data?.connection?.outputExchange?.downstreamProcess?.['@flowUUID']}
-        drawerVisible={
-          drawerVisible &&
-          edge &&
-          edge?.data?.connection?.outputExchange?.['@flowUUID'] &&
-          edge?.data?.connection?.outputExchange?.downstreamProcess?.['@flowUUID']
-        }
+        drawerVisible={drawerVisible}
         onDrawerClose={onDrawerClose}
-        onData={onEditEdgeData}
       />
     </>
   );

@@ -1,11 +1,15 @@
 import { ListPagination } from '@/services/general/data';
 import { getLang } from '@/services/general/util';
-import { getLifeCycleModelTableAll } from '@/services/lifeCycleModels/api';
+import {
+  getLifeCycleModelTableAll,
+  getLifeCycleModelTablePgroongaSearch,
+} from '@/services/lifeCycleModels/api';
 import { LifeCycleModelTable } from '@/services/lifeCycleModels/data';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Card, Input, Space, Tooltip } from 'antd';
+import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 import LifeCycleModelCreate from './Components/create';
 import LifeCycleModelDelete from './Components/delete';
@@ -15,7 +19,7 @@ import LifeCycleModelView from './Components/view';
 const { Search } = Input;
 
 const TableList: FC = () => {
-  // const [keyWord, setKeyWord] = useState<any>('');
+  const [keyWord, setKeyWord] = useState<any>('');
 
   const location = useLocation();
   let dataSource = '';
@@ -65,7 +69,7 @@ const TableList: FC = () => {
     },
     {
       title: <FormattedMessage id="pages.table.title.updatedAt" defaultMessage="Updated at" />,
-      dataIndex: 'updatedAt',
+      dataIndex: 'modifiedAt',
       valueType: 'dateTime',
       sorter: false,
       search: false,
@@ -99,11 +103,11 @@ const TableList: FC = () => {
     },
   ];
 
-  // const onSearch: SearchProps['onSearch'] = (value) => {
-  // setKeyWord(value);
-  // actionRef.current?.setPageInfo?.({ current: 1 });
-  // actionRef.current?.reload();
-  // };
+  const onSearch: SearchProps['onSearch'] = (value) => {
+    setKeyWord(value);
+    actionRef.current?.setPageInfo?.({ current: 1 });
+    actionRef.current?.reload();
+  };
 
   return (
     <PageContainer header={{ title: false }}>
@@ -111,7 +115,7 @@ const TableList: FC = () => {
         <Search
           size={'large'}
           placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
-          // onSearch={onSearch}
+          onSearch={onSearch}
           enterButton
         />
       </Card>
@@ -145,9 +149,9 @@ const TableList: FC = () => {
           },
           sort,
         ) => {
-          // if (keyWord.length > 0) {
-          //   return getProductTablePgroongaSearch(params, lang, dataSource, keyWord, {});
-          // }
+          if (keyWord.length > 0) {
+            return getLifeCycleModelTablePgroongaSearch(params, lang, dataSource, keyWord, {});
+          }
           return getLifeCycleModelTableAll(params, sort, lang, dataSource);
         }}
         columns={processColumns}
