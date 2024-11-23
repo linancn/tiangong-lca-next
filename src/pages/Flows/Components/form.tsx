@@ -568,7 +568,7 @@ export const FlowForm: FC<Props> = ({
             formRef={formRef}
             label={
               <FormattedMessage
-                id="pages.flow.administrativeInformation.referenceToPersonOrEntityEnteringTheData"
+                id="pages.flow.view.administrativeInformation.referenceToPersonOrEntityEnteringTheData"
                 defaultMessage="Data entry by:"
               />
             }
@@ -618,6 +618,23 @@ export const FlowForm: FC<Props> = ({
           >
             <Input />
           </Form.Item>
+          <ContactSelectForm
+            lang={lang}
+            formRef={formRef}
+            label={
+              <FormattedMessage
+                id="pages.flow.view.administrativeInformation.referenceToOwnershipOfDataSet"
+                defaultMessage="Owner of data set"
+              />
+            }
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:referenceToOwnershipOfDataSet',
+            ]}
+            onData={onData}
+          />
+          <br />
         </Card>
       </Space>
     ),
