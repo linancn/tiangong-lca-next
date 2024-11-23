@@ -1,6 +1,7 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import LocationTextItemDescription from '@/components/LocationTextItem/description';
+import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import { getFlowDetail } from '@/services/flows/api';
@@ -353,6 +354,37 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
             labelStyle={{ width: '100px' }}
           />
         </Card>
+        <br />
+        <Card
+          size="small"
+          title={
+            <FormattedMessage
+              id="pages.flow.view.flowInformation.technology"
+              defaultMessage="Technological representativeness"
+            />
+          }
+        >
+          <Divider orientationMargin="0" orientation="left" plain>
+            <FormattedMessage
+              id="pages.flow.view.flowInformation.technologicalApplicability"
+              defaultMessage="Technical purpose of product or waste"
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={initData?.flowInformation?.technology?.technologicalApplicability ?? '-'}
+          />
+          <br />
+          <SourceSelectDescription
+            title={
+              <FormattedMessage
+                id="pages.flow.view.flowInformation.referenceToTechnicalSpecification"
+                defaultMessage="Technical specification"
+              />
+            }
+            data={initData?.flowInformation?.technology?.referenceToTechnicalSpecification ?? '-'}
+            lang={lang}
+          />
+        </Card>
       </>
     ),
     modellingAndValidation: (
@@ -456,6 +488,21 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
             }
             lang={lang}
           />
+          <br />
+          <ContactSelectDescription
+            data={
+              initData?.administrativeInformation?.dataEntryBy?.[
+                'common:referenceToPersonOrEntityEnteringTheData'
+              ]
+            }
+            title={
+              <FormattedMessage
+                id="pages.flow.view.administrativeInformation.referenceToPersonOrEntityEnteringTheData"
+                defaultMessage="Data entry by:"
+              />
+            }
+            lang={lang}
+          />
         </Card>
         <br />
         <Card
@@ -500,6 +547,21 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
               ] ?? '-'}
             </Descriptions.Item>
           </Descriptions>
+          <br />
+          <ContactSelectDescription
+            data={
+              initData?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]
+            }
+            title={
+              <FormattedMessage
+                id="pages.flow.view.administrativeInformation.referenceToOwnershipOfDataSet"
+                defaultMessage="Owner of data set"
+              />
+            }
+            lang={lang}
+          />
         </Card>
       </>
     ),

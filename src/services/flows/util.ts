@@ -84,10 +84,30 @@ export function genFlowJsonOrdered(id: string, data: any, oldData: any) {
               data?.flowInformation?.dataSetInformation?.['common:other']?.['ecn:ECNumber'],
           },
         },
+        quantitativeReference: quantitativeReference,
         geography: {
           locationOfSupply: data?.flowInformation?.geography?.locationOfSupply,
         },
-        quantitativeReference: quantitativeReference,
+        technology: {
+          technologicalApplicability: getLangJson(
+            data?.flowInformation?.technology?.technologicalApplicability,
+          ),
+          referenceToTechnicalSpecification: {
+            '@type':
+              data?.flowInformation?.technology?.referenceToTechnicalSpecification?.['@type'] ?? {},
+            '@refObjectId':
+              data?.flowInformation?.technology?.referenceToTechnicalSpecification?.[
+                '@refObjectId'
+              ] ?? {},
+            '@uri':
+              data?.flowInformation?.technology?.referenceToTechnicalSpecification?.['@uri'] ?? {},
+            'common:shortDescription': getLangJson(
+              data?.flowInformation?.technology?.referenceToTechnicalSpecification?.[
+                'common:shortDescription'
+              ],
+            ),
+          },
+        },
       },
       modellingAndValidation: {
         LCIMethod: {
@@ -143,6 +163,29 @@ export function genFlowJsonOrdered(id: string, data: any, oldData: any) {
               ],
             ),
           },
+          'common:referenceToPersonOrEntityEnteringTheData': {
+            '@refObjectId':
+              data?.administrativeInformation?.dataEntryBy?.[
+                'common:referenceToPersonOrEntityEnteringTheData'
+              ]?.['@refObjectId'],
+            '@type':
+              data?.administrativeInformation?.dataEntryBy?.[
+                'common:referenceToPersonOrEntityEnteringTheData'
+              ]?.['@type'],
+            '@uri':
+              data?.administrativeInformation?.dataEntryBy?.[
+                'common:referenceToPersonOrEntityEnteringTheData'
+              ]?.['@uri'],
+            '@version':
+              data?.administrativeInformation?.dataEntryBy?.[
+                'common:referenceToPersonOrEntityEnteringTheData'
+              ]?.['@version'],
+            'common:shortDescription': getLangJson(
+              data?.administrativeInformation?.dataEntryBy?.[
+                'common:referenceToPersonOrEntityEnteringTheData'
+              ]?.['common:shortDescription'],
+            ),
+          },
         },
         publicationAndOwnership: {
           'common:dataSetVersion':
@@ -151,6 +194,29 @@ export function genFlowJsonOrdered(id: string, data: any, oldData: any) {
             data?.administrativeInformation?.publicationAndOwnership?.[
               'common:permanentDataSetURI'
             ],
+          'common:referenceToOwnershipOfDataSet': {
+            '@refObjectId':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]?.['@refObjectId'],
+            '@type':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]?.['@type'],
+            '@uri':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]?.['@uri'],
+            '@version':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]?.['@version'],
+            'common:shortDescription': getLangJson(
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]?.['common:shortDescription'],
+            ),
+          },
         },
       },
       flowProperties: {
@@ -206,12 +272,32 @@ export function genFlowFromData(data: any) {
             data?.flowInformation?.dataSetInformation?.['common:other']?.['ecn:ECNumber'],
         },
       },
-      geography: {
-        locationOfSupply: data?.flowInformation?.geography?.locationOfSupply,
-      },
       quantitativeReference: {
         referenceToReferenceFlowProperty:
           data?.flowInformation?.quantitativeReference?.referenceToReferenceFlowProperty,
+      },
+      geography: {
+        locationOfSupply: data?.flowInformation?.geography?.locationOfSupply,
+      },
+      technology: {
+        technologicalApplicability: getLangList(
+          data?.flowInformation?.technology?.technologicalApplicability,
+        ),
+        referenceToTechnicalSpecification: {
+          '@type':
+            data?.flowInformation?.technology?.referenceToTechnicalSpecification?.['@type'] ?? {},
+          '@refObjectId':
+            data?.flowInformation?.technology?.referenceToTechnicalSpecification?.[
+              '@refObjectId'
+            ] ?? {},
+          '@uri':
+            data?.flowInformation?.technology?.referenceToTechnicalSpecification?.['@uri'] ?? {},
+          'common:shortDescription': getLangList(
+            data?.flowInformation?.technology?.referenceToTechnicalSpecification?.[
+              'common:shortDescription'
+            ],
+          ),
+        },
       },
       LCIMethod: {
         typeOfDataSet: data?.modellingAndValidation?.LCIMethod?.typeOfDataSet,
@@ -268,6 +354,29 @@ export function genFlowFromData(data: any) {
             ],
           ),
         },
+        'common:referenceToPersonOrEntityEnteringTheData': {
+          '@refObjectId':
+            data?.administrativeInformation?.dataEntryBy?.[
+              'common:referenceToPersonOrEntityEnteringTheData'
+            ]?.['@refObjectId'],
+          '@type':
+            data?.administrativeInformation?.dataEntryBy?.[
+              'common:referenceToPersonOrEntityEnteringTheData'
+            ]?.['@type'],
+          '@uri':
+            data?.administrativeInformation?.dataEntryBy?.[
+              'common:referenceToPersonOrEntityEnteringTheData'
+            ]?.['@uri'],
+          '@version':
+            data?.administrativeInformation?.dataEntryBy?.[
+              'common:referenceToPersonOrEntityEnteringTheData'
+            ]?.['@version'],
+          'common:shortDescription': getLangList(
+            data?.administrativeInformation?.dataEntryBy?.[
+              'common:referenceToPersonOrEntityEnteringTheData'
+            ]?.['common:shortDescription'],
+          ),
+        },
       },
       publicationAndOwnership: {
         'common:dataSetVersion':
@@ -275,6 +384,29 @@ export function genFlowFromData(data: any) {
           '01.00.000',
         'common:permanentDataSetURI':
           data?.administrativeInformation?.publicationAndOwnership?.['common:permanentDataSetURI'],
+        'common:referenceToOwnershipOfDataSet': {
+          '@refObjectId':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToOwnershipOfDataSet'
+            ]?.['@refObjectId'],
+          '@type':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToOwnershipOfDataSet'
+            ]?.['@type'],
+          '@uri':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToOwnershipOfDataSet'
+            ]?.['@uri'],
+          '@version':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToOwnershipOfDataSet'
+            ]?.['@version'],
+          'common:shortDescription': getLangList(
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToOwnershipOfDataSet'
+            ]?.['common:shortDescription'],
+          ),
+        },
       },
     },
     flowProperties: {
