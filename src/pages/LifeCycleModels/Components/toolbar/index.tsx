@@ -75,8 +75,8 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
             height: 20,
             rx: 4,
             ry: 4,
-            fill: 'white',
-            stroke: token.colorPrimary,
+            fill: token.colorBgContainer,
+            stroke: token.colorBorder,
             'stroke-width': 1,
             cursor: 'pointer',
           },
@@ -89,7 +89,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
           }),
           selector: 'text',
           attrs: {
-            fill: 'black',
+            fill: token.colorTextBase,
             'font-size': 12,
             'text-anchor': 'middle',
             'dominant-baseline': 'middle',
@@ -121,8 +121,8 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
             height: 20,
             rx: 4,
             ry: 4,
-            fill: 'white',
-            stroke: token.colorPrimary,
+            fill: token.colorBgContainer,
+            stroke: token.colorBorder,
             'stroke-width': 1,
             cursor: 'pointer',
           },
@@ -135,7 +135,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
           }),
           selector: 'text',
           attrs: {
-            fill: 'black',
+            fill: token.colorTextBase,
             'font-size': 12,
             'text-anchor': 'middle',
             'dominant-baseline': 'middle',
@@ -310,9 +310,9 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
 
   const nodeAttrs = {
     body: {
-      stroke: token.colorBorder,
+      stroke: token.colorPrimary,
       strokeWidth: 1,
-      fill: token.colorBgBase,
+      fill: token.colorBgContainer,
       rx: 6,
       ry: 6,
     },
@@ -345,7 +345,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
             magnet: true,
           },
           text: {
-            fill: '#6a6c8a',
+            fill: token.colorTextDescription,
             fontSize: 14,
           },
         },
@@ -368,7 +368,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
             magnet: true,
           },
           text: {
-            fill: '#6a6c8a',
+            fill: token.colorTextDescription,
             fontSize: 14,
           },
         },
@@ -444,7 +444,6 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
     width: 350,
     height: 80,
     attrs: nodeAttrs,
-    tools: [nonRefTool, inputFlowTool, outputFlowTool],
     data: {
       label: [],
       quantitativeReference: '0',
@@ -843,6 +842,11 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
         let initNodes = (model?.nodes ?? []).map((node: any) => {
           return {
             ...node,
+            attrs: nodeAttrs,
+            ports: {
+              ...node.ports,
+              groups: ports.groups,
+            },
             tools: [
               node?.data?.quantitativeReference === '1' ? refTool : nonRefTool,
               nodeTitleTool(node?.width ?? 0, genProcessName(node?.data?.label, lang) ?? ''),
