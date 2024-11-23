@@ -63,6 +63,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
   const { token } = theme.useToken();
 
   const inputFlowTool = {
+    id: 'inputFlow',
     name: 'button',
     args: {
       markup: [
@@ -74,7 +75,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
             height: 20,
             rx: 4,
             ry: 4,
-            fill: token.colorBgBase,
+            fill: 'white',
             stroke: token.colorPrimary,
             'stroke-width': 1,
             cursor: 'pointer',
@@ -88,12 +89,13 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
           }),
           selector: 'text',
           attrs: {
-            fill: token.colorTextBase,
+            fill: 'black',
             'font-size': 12,
             'text-anchor': 'middle',
+            'dominant-baseline': 'middle',
             'pointer-events': 'none',
             x: 25,
-            y: 13,
+            y: 10,
           },
         },
       ],
@@ -107,6 +109,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
   };
 
   const outputFlowTool = {
+    id: 'outputFlow',
     name: 'button',
     args: {
       markup: [
@@ -118,7 +121,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
             height: 20,
             rx: 4,
             ry: 4,
-            fill: token.colorBgBase,
+            fill: 'white',
             stroke: token.colorPrimary,
             'stroke-width': 1,
             cursor: 'pointer',
@@ -132,12 +135,13 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
           }),
           selector: 'text',
           attrs: {
-            fill: token.colorTextBase,
+            fill: 'black',
             'font-size': 12,
             'text-anchor': 'middle',
+            'dominant-baseline': 'middle',
             'pointer-events': 'none',
             x: 25,
-            y: 13,
+            y: 10,
           },
         },
       ],
@@ -153,6 +157,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
   };
 
   const refTool = {
+    id: 'ref',
     name: 'button',
     args: {
       markup: [
@@ -194,6 +199,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
   };
 
   const nonRefTool = {
+    id: 'nonRef',
     name: 'button',
     args: {
       markup: [
@@ -254,6 +260,52 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
         });
       },
     },
+  };
+
+  const nodeTitleTool = (width: number, title: string) => {
+    return {
+      id: 'nodeTitle',
+      name: 'button',
+      args: {
+        markup: [
+          {
+            tagName: 'rect',
+            selector: 'button',
+            attrs: {
+              width: width,
+              height: 26,
+              rx: 4,
+              ry: 4,
+              fill: token.colorPrimary,
+              stroke: token.colorPrimary,
+              'stroke-width': 1,
+              cursor: 'pointer',
+            },
+          },
+          {
+            tagName: 'text',
+            textContent: genNodeLabel(title ?? '', lang, width),
+            selector: 'text',
+            attrs: {
+              fill: 'white',
+              'font-size': 14,
+              'text-anchor': 'middle',
+              'dominant-baseline': 'middle',
+              'pointer-events': 'none',
+              x: width / 2,
+              y: 13,
+            },
+          },
+          {
+            tagName: 'title',
+            textContent: title,
+          },
+        ],
+        x: 0,
+        y: 0,
+        offset: { x: 0, y: 0 },
+      },
+    };
   };
 
   const nodeAttrs = {
@@ -385,6 +437,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
 
   const nodeTemplate: any = {
     id: '',
+    label: '',
     shape: 'rect',
     x: 200,
     y: 100,
@@ -556,21 +609,10 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
       };
       const name =
         result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name ?? {};
-      const label = genProcessName(name, lang);
-      const nodeWidth = nodeTemplate.width;
-
       addNodes([
         {
           ...nodeTemplate,
           id: v4(),
-          label: genNodeLabel(label ?? '', lang, nodeWidth),
-          attrs: {
-            ...nodeAttrs,
-            label: {
-              ...nodeAttrs.label,
-              title: label,
-            },
-          },
           data: {
             id: id,
             version:
@@ -721,7 +763,6 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
 
     const newItems = node?.getPorts()?.map((item: any) => {
       const itemText = getLangText(item?.data?.textLang, lang);
-
       return {
         ...item,
         attrs: {
@@ -739,6 +780,12 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
         ...node?.ports,
         items: newItems,
       },
+      tools: [
+        node?.data?.quantitativeReference === '1' ? refTool : nonRefTool,
+        nodeTitleTool(nodeWidth ?? 0, label ?? ''),
+        inputFlowTool,
+        outputFlowTool,
+      ],
     });
   });
 
@@ -798,6 +845,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
             ...node,
             tools: [
               node?.data?.quantitativeReference === '1' ? refTool : nonRefTool,
+              nodeTitleTool(node?.width ?? 0, genProcessName(node?.data?.label, lang) ?? ''),
               inputFlowTool,
               outputFlowTool,
             ],
@@ -869,11 +917,13 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
             }
             return edge;
           }) ?? [];
-        setNodeCount(initNodes.length);
         await modelData({
           nodes: initNodes,
           edges: initEdges,
         });
+
+        setNodeCount(initNodes.length);
+
         if (!readonly) {
         }
         setSpinning(false);
@@ -899,6 +949,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
       updateNode(node.id ?? '', {
         tools: [
           node?.data?.quantitativeReference === '1' ? refTool : nonRefTool,
+          nodeTitleTool(node?.width ?? 0, genProcessName(node?.data?.label, lang) ?? ''),
           inputFlowTool,
           outputFlowTool,
         ],

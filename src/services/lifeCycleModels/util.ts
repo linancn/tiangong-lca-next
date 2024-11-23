@@ -840,13 +840,6 @@ export function genLifeCycleModelData(data: any, lang: string) {
         return {
           ...node,
           label: genNodeLabel(label ?? '', lang, nodeWidth),
-          attrs: {
-            ...node.attrs,
-            label: {
-              ...node.attrs.label,
-              title: label,
-            },
-          },
           ports: {
             ...node?.ports,
             items: node?.ports?.items?.map((item: any) => {
