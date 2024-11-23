@@ -181,8 +181,8 @@ const IoPortSelector: FC<Props> = ({
       <Drawer
         title={
           <FormattedMessage
-            id="pages.flow.model.drawer.title.edge.exchange.edit"
-            defaultMessage="Edit exchange relation"
+            id="pages.flow.model.drawer.title.edge.exchange.select"
+            defaultMessage="Select flow port"
           />
         }
         width="90%"
