@@ -547,6 +547,21 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
               ] ?? '-'}
             </Descriptions.Item>
           </Descriptions>
+          <br />
+          <ContactSelectDescription
+            data={
+              initData?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]
+            }
+            title={
+              <FormattedMessage
+                id="pages.flow.view.administrativeInformation.referenceToOwnershipOfDataSet"
+                defaultMessage="Owner of data set"
+              />
+            }
+            lang={lang}
+          />
         </Card>
       </>
     ),
