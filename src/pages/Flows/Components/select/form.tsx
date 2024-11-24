@@ -1,6 +1,6 @@
 import UnitGroupFromMini from '@/pages/Unitgroups/Components/select/formMini';
 import { getFlowDetail } from '@/services/flows/api';
-import { genFlowFromData } from '@/services/flows/util';
+import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Divider, Form, Input, Row, Space, theme } from 'antd';
 import React, { FC, ReactNode, useEffect, useState } from 'react';
@@ -29,8 +29,9 @@ const FlowsSelectForm: FC<Props> = ({ name, label, lang, formRef, drawerVisible,
         '@refObjectId': `${rowKey}`,
         '@type': 'flow data set',
         '@uri': `../flows/${rowKey}.xml`,
-        'common:shortDescription':
-          selectedData?.flowInformation?.dataSetInformation?.name?.baseName ?? [],
+        'common:shortDescription': genFlowNameJson(
+          selectedData?.flowInformation?.dataSetInformation?.name,
+        ),
       });
       onData();
     });
