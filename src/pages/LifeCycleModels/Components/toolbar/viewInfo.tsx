@@ -7,10 +7,50 @@ import { Button, Card, Descriptions, Divider, Drawer, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
+import {
+  approvalOfOverallComplianceOptions,
+  documentationComplianceOptions,
+  licenseTypeOptions,
+  methodologicalComplianceOptions,
+  nomenclatureComplianceOptions,
+  qualityComplianceOptions,
+  reviewComplianceOptions,
+} from '../optiondata';
+
 type Props = {
   lang: string;
   data: any;
 };
+
+const getapprovalOfOverallComplianceOptions = (value: string) => {
+  const option = approvalOfOverallComplianceOptions.find((opt) => opt.value === value);
+  return option ? option.label : '-';
+};
+const getnomenclatureComplianceOptions = (value: string) => {
+  const option = nomenclatureComplianceOptions.find((opt) => opt.value === value);
+  return option ? option.label : '-';
+};
+const getmethodologicalComplianceOptions = (value: string) => {
+  const option = methodologicalComplianceOptions.find((opt) => opt.value === value);
+  return option ? option.label : '-';
+};
+const getreviewComplianceOptions = (value: string) => {
+  const option = reviewComplianceOptions.find((opt) => opt.value === value);
+  return option ? option.label : '-';
+};
+const getdocumentationComplianceOptions = (value: string) => {
+  const option = documentationComplianceOptions.find((opt) => opt.value === value);
+  return option ? option.label : '-';
+};
+const getqualityComplianceOptions = (value: string) => {
+  const option = qualityComplianceOptions.find((opt) => opt.value === value);
+  return option ? option.label : '-';
+};
+const getLicenseTypeOptions = (value: string) => {
+  const option = licenseTypeOptions.find((opt) => opt.value === value);
+  return option ? option.label : '-';
+};
+
 const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('lifeCycleModelInformation');
@@ -238,9 +278,11 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             }
             labelStyle={{ width: '180px' }}
           >
-            {data.modellingAndValidation?.complianceDeclarations?.compliance?.[
-              'common:approvalOfOverallCompliance'
-            ] ?? '-'}
+            {getapprovalOfOverallComplianceOptions(
+              data.modellingAndValidation?.complianceDeclarations?.compliance?.[
+                'common:approvalOfOverallCompliance'
+              ] ?? '-',
+            )}
           </Descriptions.Item>
         </Descriptions>
         <br />
@@ -255,9 +297,11 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             }
             labelStyle={{ width: '180px' }}
           >
-            {data.modellingAndValidation?.complianceDeclarations?.compliance?.[
-              'common:nomenclatureCompliance'
-            ] ?? '-'}
+            {getnomenclatureComplianceOptions(
+              data.modellingAndValidation?.complianceDeclarations?.compliance?.[
+                'common:nomenclatureCompliance'
+              ] ?? '-',
+            )}
           </Descriptions.Item>
         </Descriptions>
         <br />
@@ -272,9 +316,11 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             }
             labelStyle={{ width: '180px' }}
           >
-            {data.modellingAndValidation?.complianceDeclarations?.compliance?.[
-              'common:methodologicalCompliance'
-            ] ?? '-'}
+            {getmethodologicalComplianceOptions(
+              data.modellingAndValidation?.complianceDeclarations?.compliance?.[
+                'common:methodologicalCompliance'
+              ] ?? '-',
+            )}
           </Descriptions.Item>
         </Descriptions>
         <br />
@@ -289,9 +335,11 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             }
             labelStyle={{ width: '180px' }}
           >
-            {data.modellingAndValidation?.complianceDeclarations?.compliance?.[
-              'common:reviewCompliance'
-            ] ?? '-'}
+            {getreviewComplianceOptions(
+              data.modellingAndValidation?.complianceDeclarations?.compliance?.[
+                'common:reviewCompliance'
+              ] ?? '-',
+            )}
           </Descriptions.Item>
         </Descriptions>
         <br />
@@ -306,9 +354,11 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             }
             labelStyle={{ width: '180px' }}
           >
-            {data.modellingAndValidation?.complianceDeclarations?.compliance?.[
-              'common:documentationCompliance'
-            ] ?? '-'}
+            {getdocumentationComplianceOptions(
+              data.modellingAndValidation?.complianceDeclarations?.compliance?.[
+                'common:documentationCompliance'
+              ] ?? '-',
+            )}
           </Descriptions.Item>
         </Descriptions>
         <br />
@@ -323,9 +373,11 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             }
             labelStyle={{ width: '180px' }}
           >
-            {data.modellingAndValidation?.complianceDeclarations?.compliance?.[
-              'common:qualityCompliance'
-            ] ?? '-'}
+            {getqualityComplianceOptions(
+              data.modellingAndValidation?.complianceDeclarations?.compliance?.[
+                'common:qualityCompliance'
+              ] ?? '-',
+            )}
           </Descriptions.Item>
         </Descriptions>
       </>
@@ -448,15 +500,23 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             }
           />
           <br />
-          <Divider orientationMargin="0" orientation="left" plain>
-            <FormattedMessage
-              id="pages.lifeCycleModel.administrativeInformation.licenseType"
-              defaultMessage="License Type"
-            />
-          </Divider>
-          <LangTextItemDescription
-            data={data.administrativeInformation?.publicationAndOwnership?.['common:licenseType']}
-          />
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id="pages.lifeCycleModel.administrativeInformation.licenseType"
+                  defaultMessage="License type"
+                />
+              }
+              labelStyle={{ width: '180px' }}
+            >
+              {getLicenseTypeOptions(
+                data.administrativeInformation?.publicationAndOwnership?.['common:licenseType'] ??
+                  '-',
+              )}
+            </Descriptions.Item>
+          </Descriptions>
           <br />
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
