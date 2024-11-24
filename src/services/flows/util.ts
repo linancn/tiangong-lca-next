@@ -4,6 +4,7 @@ import {
   getLangJson,
   getLangList,
   getLangText,
+  jsonToList,
   removeEmptyObjects,
 } from '../general/util';
 
@@ -485,4 +486,14 @@ export function genFlowName(name: any, lang: string) {
   if (nameStr.length === 0) {
     return '-';
   }
+}
+
+export function genFlowNameJson(name: any) {
+  const nameJson = jsonToList(name?.baseName)?.map((item: any) => {
+    return {
+      '@xml:lang': item?.['@xml:lang'],
+      '#text': genFlowName(name, item?.['@xml:lang']),
+    };
+  });
+  return nameJson;
 }

@@ -17,6 +17,7 @@ export default {
   'pages.flow.model.drawer.title.view': 'View Model',
   'pages.flow.model.drawer.title.info': 'Model base information',
   'pages.flow.model.drawer.title.edge.exchange.list': 'Exchange relation list',
+  'pages.flow.model.drawer.title.edge.exchange.select': 'Select flow port',
   'pages.flow.model.drawer.title.edge.exchange.edit': 'Edit Exchange Relation',
   'pages.flow.model.drawer.title.edge.exchange.view': 'View exchange relation',
   'pages.flow.model.drawer.title.edge.exchange.create': 'Create Exchange Relation',
