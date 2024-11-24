@@ -9,6 +9,15 @@ import { Card, Form, Input, Select, Space, theme } from 'antd';
 import type { FC } from 'react';
 import React from 'react';
 import { FormattedMessage } from 'umi';
+import {
+  approvalOfOverallComplianceOptions,
+  documentationComplianceOptions,
+  licenseTypeOptions,
+  methodologicalComplianceOptions,
+  nomenclatureComplianceOptions,
+  qualityComplianceOptions,
+  reviewComplianceOptions,
+} from './optiondata';
 
 type Props = {
   lang: string;
@@ -325,7 +334,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             'common:approvalOfOverallCompliance',
           ]}
         >
-          <Input />
+          <Select options={approvalOfOverallComplianceOptions} />
         </Form.Item>
         <br />
         <Form.Item
@@ -342,7 +351,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             'common:nomenclatureCompliance',
           ]}
         >
-          <Input />
+          <Select options={nomenclatureComplianceOptions} />
         </Form.Item>
         <br />
         <Form.Item
@@ -359,7 +368,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             'common:methodologicalCompliance',
           ]}
         >
-          <Input />
+          <Select options={methodologicalComplianceOptions} />
         </Form.Item>
         <br />
         <Form.Item
@@ -376,7 +385,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             'common:reviewCompliance',
           ]}
         >
-          <Input />
+          <Select options={reviewComplianceOptions} />
         </Form.Item>
         <br />
         <Form.Item
@@ -393,7 +402,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             'common:documentationCompliance',
           ]}
         >
-          <Input />
+          <Select options={documentationComplianceOptions} />
         </Form.Item>
         <br />
         <Form.Item
@@ -410,7 +419,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             'common:qualityCompliance',
           ]}
         >
-          <Input />
+          <Select options={qualityComplianceOptions} />
         </Form.Item>
       </Space>
     ),
@@ -644,7 +653,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:licenseType']}
           >
-            <Input />
+            <Select options={licenseTypeOptions} />
           </Form.Item>
           <br />
           <Card
