@@ -185,13 +185,6 @@ export default [
     component: './Account',
   },
   {
-    path: '/demo',
-    name: 'Demo',
-    menu: false,
-    icon: 'Smile',
-    component: './Demo',
-  },
-  {
     path: '/user',
     layout: false,
     routes: [
