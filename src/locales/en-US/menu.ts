@@ -70,6 +70,16 @@ export default {
   'menu.tgdata.unitgroups': 'Unit Groups',
   'menu.tgdata.sources': 'Sources',
   'menu.tgdata.contacts': 'Contacts',
+  'menu.allist': 'Alliance Data',
+  'menu.aldata': 'Alliance Data',
+  'menu.aldata.models': 'Models',
+  'menu.aldata.products': 'Product Models',
+  'menu.aldata.processes': 'Processes',
+  'menu.aldata.flows': 'Flows',
+  'menu.aldata.flowproperties': 'Flow Properties',
+  'menu.aldata.unitgroups': 'Unit Groups',
+  'menu.aldata.sources': 'Sources',
+  'menu.aldata.contacts': 'Contacts',
 
   'menu.password_forgot': 'Forgot Password',
 };
