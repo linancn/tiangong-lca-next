@@ -65,6 +65,66 @@ export default [
     ],
   },
   {
+    path: '/allist',
+    menu: false,
+    name: 'allist',
+    icon: 'DeploymentUnitOutlined',
+    component: './Alliance',
+  },
+  {
+    path: '/aldata',
+    name: 'aldata',
+    icon: 'DeploymentUnitOutlined',
+    routes: [
+      {
+        path: '/aldata',
+        redirect: '/aldata/models',
+      },
+      {
+        name: 'models',
+        path: '/aldata/models',
+        icon: 'AppstoreAddOutlined',
+        component: './LifeCycleModels',
+      },
+      {
+        name: 'processes',
+        icon: 'ShareAltOutlined',
+        path: '/aldata/processes',
+        component: './Processes',
+      },
+      {
+        name: 'flows',
+        icon: 'NodeExpandOutlined',
+        path: '/aldata/flows',
+        component: './Flows',
+      },
+      {
+        name: 'flowproperties',
+        icon: 'ControlOutlined',
+        path: '/aldata/flowproperties',
+        component: './Flowproperties',
+      },
+      {
+        name: 'unitgroups',
+        icon: 'RetweetOutlined',
+        path: '/aldata/unitgroups',
+        component: './Unitgroups',
+      },
+      {
+        name: 'sources',
+        icon: 'PaperClipOutlined',
+        path: '/aldata/sources',
+        component: './Sources',
+      },
+      {
+        name: 'contacts',
+        icon: 'TeamOutlined',
+        path: '/aldata/contacts',
+        component: './Contacts',
+      },
+    ],
+  },
+  {
     path: '/mydata',
     name: 'mydata',
     icon: 'HomeOutlined',

@@ -70,6 +70,16 @@ export default {
   'menu.tgdata.unitgroups': '单位组',
   'menu.tgdata.sources': '来源',
   'menu.tgdata.contacts': '联系人',
+  'menu.allist': '联盟数据',
+  'menu.aldata': '联盟数据',
+  'menu.aldata.models': '模型',
+  'menu.aldata.products': '产品模型',
+  'menu.aldata.processes': '过程',
+  'menu.aldata.flows': '流',
+  'menu.aldata.flowproperties': '流属性',
+  'menu.aldata.unitgroups': '单位组',
+  'menu.aldata.sources': '来源',
+  'menu.aldata.contacts': '联系人',
 
   'menu.password_forgot': '忘记密码',
 };

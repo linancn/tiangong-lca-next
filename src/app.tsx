@@ -7,7 +7,7 @@ import { LinkOutlined } from '@ant-design/icons';
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
 import { SettingDrawer } from '@ant-design/pro-components';
 import type { RunTimeLayoutConfig } from '@umijs/max';
-import defaultSettings from '../config/defaultSettings';
+import { default as defaultSettings } from '../config/defaultSettings';
 import { errorConfig } from './requestErrorConfig';
 
 const isDev = process.env.NODE_ENV === 'development';
@@ -161,16 +161,24 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
         </>
       );
     },
+    menuDataRender: (menuDataProps) => {
+      const { pathname } = history.location;
+      if (pathname.startsWith('/aldata')) {
+        return menuDataProps.find((item) => item.path === '/aldata')?.children || [];
+      }
+      return menuDataProps.filter((item) => item.path !== '/aldata');
+    },
     menuItemRender: (menuItemProps, defaultDom) => {
       if (menuItemProps.isUrl || !menuItemProps.path) {
         return defaultDom;
       }
       return (
         <Link to={menuItemProps.path}>
-          {menuItemProps.pro_layout_parentKeys &&
+          {/* {menuItemProps.pro_layout_parentKeys &&
             menuItemProps.pro_layout_parentKeys.length > 0 && (
               <span className={styles.menu_icon_margin}>{menuItemProps.icon}</span>
-            )}
+            )} */}
+          <span className={styles.menu_icon_margin}>{menuItemProps.icon}</span>
           <span>{menuItemProps.name}</span>
         </Link>
       );
