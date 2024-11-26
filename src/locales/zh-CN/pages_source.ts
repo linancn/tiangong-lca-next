@@ -23,7 +23,7 @@ export default {
   'pages.source.view.administrativeInformation.publicationAndOwnership': '出版和所有权',
   'pages.source.view.administrativeInformation.dataSetVersion': '数据集版本',
   'pages.source.view.administrativeInformation.permanentDataSetURI': '永久数据集统一资源标识符',
-  'pages.source.view.administrativeInformation.referenceToOwnershipOfDataSet': '数据集所有者',
+  'pages.source.view.administrativeInformation.referenceToOwnershipOfDataSet': '数据集拥有者',
 
   //source.edit 编辑
   'pages.source.edit.sourceInformation': '源信息',
@@ -41,7 +41,7 @@ export default {
   'pages.source.edit.administrativeInformation.publicationAndOwnership': '出版和所有权',
   'pages.source.edit.administrativeInformation.dataSetVersion': '数据集版本',
   'pages.source.edit.administrativeInformation.permanentDataSetURI': '永久数据集统一资源标识符',
-  'pages.source.edit.administrativeInformation.referenceToOwnershipOfDataSet': '数据集所有者',
+  'pages.source.edit.administrativeInformation.referenceToOwnershipOfDataSet': '数据集拥有者',
   //source.delete 删除
   'pages.button.deleteMessage.Are you sure you want to delete this data': '您确认要删除此数据吗？',
   //source.create 创建
@@ -60,7 +60,7 @@ export default {
   'pages.source.create.administrativeInformation.publicationAndOwnership': '出版和所有权',
   'pages.source.create.administrativeInformation.dataSetVersion': '数据集版本',
   'pages.source.create.administrativeInformation.permanentDataSetURI': '永久数据集统一资源标识符',
-  'pages.source.create.administrativeInformation.referenceToOwnershipOfDataSet': '数据集所有者',
+  'pages.source.create.administrativeInformation.referenceToOwnershipOfDataSet': '数据集拥有者',
 
   'pages.source.view.sourceInformation.publicationType.undefined': '未定义',
   'pages.source.view.sourceInformation.publicationType.articleInPeriodical': '期刊文章',
