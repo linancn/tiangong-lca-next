@@ -82,15 +82,22 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <LifeCycleModelView id={row.id} lang={lang} buttonType={'icon'} />
+              <LifeCycleModelView
+                id={row.id}
+                version={row.version}
+                lang={lang}
+                buttonType={'icon'}
+              />
               <LifeCycleModelEdit
                 id={row.id}
+                version={row.version}
                 lang={lang}
                 actionRef={actionRef}
                 buttonType={'icon'}
               />
               <LifeCycleModelDelete
                 id={row.id}
+                version={row.version}
                 buttonType={'icon'}
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
@@ -133,7 +140,6 @@ const TableList: FC = () => {
             return [
               <LifeCycleModelCreate
                 key={0}
-                id={undefined}
                 lang={lang}
                 actionRef={actionRef}
                 buttonType={'icon'}

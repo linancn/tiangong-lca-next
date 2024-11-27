@@ -16,7 +16,9 @@ type Props = {
   buttonType: string;
   lang: string;
   sourceProcessId: string;
+  sourceProcessVersion: string;
   targetProcessId: string;
+  targetProcessVersion: string;
   sourceRowKeys: Key[];
   targetRowKeys: Key[];
   optionType: string;
@@ -28,7 +30,9 @@ const ExchangeSelect: FC<Props> = ({
   buttonType,
   lang,
   sourceProcessId,
+  sourceProcessVersion,
   targetProcessId,
+  targetProcessVersion,
   sourceRowKeys,
   targetRowKeys,
   optionType,
@@ -140,7 +144,7 @@ const ExchangeSelect: FC<Props> = ({
     setSelectedTargetRowKeys(targetRowKeys);
     setLoadingSource(true);
     setLoadingTarget(true);
-    getProcessDetail(sourceProcessId).then(async (result) => {
+    getProcessDetail(sourceProcessId, sourceProcessVersion).then(async (result) => {
       await setExchangeDataSource([
         ...(genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? []),
       ]);
@@ -163,7 +167,7 @@ const ExchangeSelect: FC<Props> = ({
       );
       setLoadingSource(false);
     });
-    getProcessDetail(targetProcessId).then(async (result) => {
+    getProcessDetail(targetProcessId, targetProcessVersion).then(async (result) => {
       await setExchangeDataTarget([
         ...(genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? []),
       ]);

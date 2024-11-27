@@ -29,16 +29,19 @@ import TargetAmount from './targetAmount';
 import ToolbarViewInfo from './viewInfo';
 
 type Props = {
-  id: string | undefined;
+  id: string;
+  version: string;
   lang: string;
   drawerVisible: boolean;
   isSave: boolean;
-  readonly: boolean;
+  action: string;
   setIsSave: (isSave: boolean) => void;
 };
 
-const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSave }) => {
+const Toolbar: FC<Props> = ({ id, version, lang, drawerVisible, isSave, action, setIsSave }) => {
   const [thisId, setThisId] = useState(id);
+  const [thisVersion, setThisVersion] = useState(version);
+  const [thisAction, setThisAction] = useState(action);
   const [spinning, setSpinning] = useState(false);
   const [infoData, setInfoData] = useState<any>({});
 
@@ -576,9 +579,9 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
   //   }
   // };
 
-  const addProcessNode = (id: any) => {
+  const addProcessNode = (id: string, version: string) => {
     setSpinning(true);
-    getProcessDetail(id).then(async (result: any) => {
+    getProcessDetail(id, version).then(async (result: any) => {
       const exchange =
         genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? [];
       const refExchange = exchange.find((i: any) => i?.quantitativeReference === true);
@@ -614,9 +617,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
           id: v4(),
           data: {
             id: id,
-            version:
-              result.data?.json?.processDataSet?.administrativeInformation
-                ?.publicationAndOwnership?.['common:dataSetVersion'],
+            version: result.data?.version,
             label: name,
             shortDescription:
               result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.[
@@ -677,8 +678,8 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
       },
     };
 
-    if (thisId) {
-      updateLifeCycleModel({ ...newData, id: id }).then((result: any) => {
+    if (thisAction === 'edit') {
+      updateLifeCycleModel({ ...newData, id: thisId, version: thisVersion }).then((result: any) => {
         if (result.data) {
           message.success(
             intl.formatMessage({
@@ -686,15 +687,16 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
               defaultMessage: 'Save successfully',
             }),
           );
+          setThisId(result.data?.[0]?.id);
+          setThisVersion(result.data?.[0]?.version);
           saveCallback();
         } else {
           message.error(result.error.message);
         }
         setSpinning(false);
       });
-    } else {
+    } else if (thisAction === 'create') {
       const newId = v4();
-      setThisId(newId);
       createLifeCycleModel({ ...newData, id: newId }).then((result: any) => {
         if (result.data) {
           message.success(
@@ -703,6 +705,9 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
               defaultMessage: 'Created successfully!',
             }),
           );
+          setThisAction('edit');
+          setThisId(result.data?.[0]?.id);
+          setThisVersion(result.data?.[0]?.version);
           saveCallback();
         } else {
           message.error(result.error.message);
@@ -728,7 +733,9 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
       const sourceNode = nodes.find((node) => node.id === sourceNodeID);
       const targetNode = nodes.find((node) => node.id === targetNodeID);
       const sourceProcessId = sourceNode?.data?.id;
+      const sourceProcessVersion = sourceNode?.data?.version;
       const targetProcessId = targetNode?.data?.id;
+      const targetProcessVersion = targetNode?.data?.version;
       const sourcePortIDs = sourcePortID.split(':');
       const targetPortIDs = targetPortID.split(':');
 
@@ -746,7 +753,9 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
             sourceNodeID: sourceNodeID,
             targetNodeID: targetNodeID,
             sourceProcessId: sourceProcessId,
+            sourceProcessVersion: sourceProcessVersion,
             targetProcessId: targetProcessId,
+            targetProcessVersion: targetProcessVersion,
           },
         },
       });
@@ -830,10 +839,10 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
 
   useEffect(() => {
     if (!drawerVisible) return;
-    if (id) {
+    if (id && version) {
       setIsSave(false);
       setSpinning(true);
-      getLifeCycleModelDetail(id).then(async (result: any) => {
+      getLifeCycleModelDetail(id, version).then(async (result: any) => {
         const fromData = genLifeCycleModelInfoFromData(
           result.data?.json?.lifeCycleModelDataSet ?? {},
         );
@@ -855,7 +864,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
             ],
           };
         });
-        if (readonly) {
+        if (thisAction === 'view') {
           initNodes = initNodes.map((node: any) => {
             return {
               ...node,
@@ -928,7 +937,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
 
         setNodeCount(initNodes.length);
 
-        if (!readonly) {
+        if (thisAction !== 'view') {
         }
         setSpinning(false);
       });
@@ -963,13 +972,14 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
 
   return (
     <Space direction="vertical" size={'middle'}>
-      {readonly ? (
+      {thisAction === 'view' ? (
         <ToolbarViewInfo lang={lang} data={infoData} />
       ) : (
         <ToolbarEditInfo data={infoData} onData={updateInfoData} lang={lang} />
       )}
       <ProcessView
         id={nodes.filter((node) => node.selected)?.[0]?.data?.id ?? ''}
+        version={nodes.filter((node) => node.selected)?.[0]?.data?.version ?? ''}
         dataSource={'tg'}
         buttonType={'toolIcon'}
         lang={lang}
@@ -979,7 +989,6 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
         lang={lang}
         disabled={edges.filter((edge) => edge.selected).length === 0}
         edge={edges.filter((edge) => edge.selected)?.[0]}
-        readonly={readonly}
       />
       <TargetAmount
         refNode={nodes.filter((node) => node?.data?.quantitativeReference === '1')}
@@ -989,7 +998,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
         onData={updateTargetAmount}
       />
 
-      {!readonly && (
+      {!(thisAction === 'view') && (
         <>
           <ModelToolbarAdd buttonType={'icon'} lang={lang} onData={addProcessNode} />
           {/* <Tooltip
@@ -1048,6 +1057,7 @@ const Toolbar: FC<Props> = ({ id, lang, drawerVisible, isSave, readonly, setIsSa
 
           <ProcessEdit
             id={id ?? ''}
+            version={version ?? ''}
             lang={lang}
             buttonType={'tool'}
             actionRef={undefined}

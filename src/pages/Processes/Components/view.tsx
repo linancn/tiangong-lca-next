@@ -31,6 +31,7 @@ import {
 
 type Props = {
   id: string;
+  version: string;
   lang: string;
   buttonType: string;
   dataSource: string;
@@ -63,7 +64,7 @@ const getLicenseTypeOptions = (value: string) => {
   return option ? option.label : '-';
 };
 
-const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) => {
+const ProcessView: FC<Props> = ({ id, version, dataSource, buttonType, lang, disabled }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   // const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [activeTabKey, setActiveTabKey] = useState<string>('processInformation');
@@ -1025,7 +1026,7 @@ const ProcessView: FC<Props> = ({ id, dataSource, buttonType, lang, disabled }) 
   const onView = () => {
     setDrawerVisible(true);
     setSpinning(true);
-    getProcessDetail(id).then(async (result: any) => {
+    getProcessDetail(id, version).then(async (result: any) => {
       setInitData({ ...genProcessFromData(result.data?.json?.processDataSet ?? {}), id: id });
       setExchangeDataSource([
         ...(genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? []),

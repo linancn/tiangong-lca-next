@@ -6,6 +6,7 @@ export default {
   'pages.table.title.classification': 'Classification',
   'pages.table.title.createdAt': 'Created at',
   'pages.table.title.updatedAt': 'Updated at',
+  'pages.table.title.modifiedAt': 'Updated at',
   'pages.table.title.option': 'Option',
   'pages.table.title.version': 'Version',
 

@@ -31,7 +31,11 @@ export async function createProcess(data: any) {
 }
 
 export async function updateProcess(data: any) {
-  const result = await supabase.from('processes').select('id, json').eq('id', data.id);
+  const result = await supabase
+    .from('processes')
+    .select('id, json')
+    .eq('id', data.id)
+    .eq('version', data.version);
   if (result.data && result.data.length === 1) {
     const oldData = result.data[0].json;
     const newData = genProcessJsonOrdered(data.id, data, oldData);
@@ -39,6 +43,7 @@ export async function updateProcess(data: any) {
       .from('processes')
       .update({ json_ordered: newData })
       .eq('id', data.id)
+      .eq('version', data.version)
       .select();
     return updateResult;
   }
@@ -127,8 +132,9 @@ export async function getProcessTableAll(
             }
 
             return {
-              key: i.id,
+              key: i.id + ':' + i.version,
               id: i.id,
+              version: i.version,
               lang: lang,
               name: genProcessName(i.name ?? {}, lang),
               generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
@@ -154,8 +160,9 @@ export async function getProcessTableAll(
             location = thisLocation['#text'];
           }
           return {
-            key: i.id,
+            key: i.id + ':' + i.version,
             id: i.id,
+            version: i.version,
             lang: lang,
             name: genProcessName(i.name ?? {}, lang),
             generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
@@ -332,13 +339,19 @@ export async function getProcessTablePgroongaSearch(
   return result;
 }
 
-export async function getProcessDetail(id: string) {
+export async function getProcessDetail(id: string, version: string) {
   if (id.length > 0) {
-    const result = await supabase.from('processes').select('json, modified_at').eq('id', id);
+    const result = await supabase
+      .from('processes')
+      .select('id, version, json, modified_at')
+      .eq('id', id)
+      .eq('version', version);
     if (result.data && result.data.length > 0) {
       const data = result.data[0];
       return Promise.resolve({
         data: {
+          id: data.id,
+          version: data.version,
           json: data.json,
           modifiedAt: data?.modified_at,
         },
@@ -352,8 +365,8 @@ export async function getProcessDetail(id: string) {
   });
 }
 
-export async function deleteProcess(id: string) {
-  const result = await supabase.from('processes').delete().eq('id', id);
+export async function deleteProcess(id: string, version: string) {
+  const result = await supabase.from('processes').delete().eq('id', id).eq('version', version);
   return result;
 }
 

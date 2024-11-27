@@ -9,7 +9,6 @@ type Props = {
   lang: string;
   disabled: boolean;
   edge: any;
-  readonly: boolean;
 };
 const EdgeExhange: FC<Props> = ({ lang, disabled, edge }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -45,7 +44,9 @@ const EdgeExhange: FC<Props> = ({ lang, disabled, edge }) => {
       <EdgeExchangeView
         lang={lang}
         sourceProcessId={edge?.data?.node?.sourceProcessId}
+        sourceProcessVersion={edge?.data?.node?.sourceProcessVersion}
         targetProcessId={edge?.data?.node?.targetProcessId}
+        targetProcessVersion={edge?.data?.node?.targetProcessVersion}
         sourceOutputFlowID={edge?.data?.connection?.outputExchange?.['@flowUUID']}
         targetInputFlowID={edge?.data?.connection?.outputExchange?.downstreamProcess?.['@flowUUID']}
         drawerVisible={drawerVisible}

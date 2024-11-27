@@ -167,7 +167,7 @@ const IoPortSelector: FC<Props> = ({
     setSelectedRowKeys(
       node?.ports?.items?.map((item: any) => item?.id?.replace(direction + ':', '')) ?? [],
     );
-    getProcessDetail(node?.data?.id).then(async (result: any) => {
+    getProcessDetail(node?.data?.id, node?.data?.version).then(async (result: any) => {
       setExchangeDataSource([
         ...(genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? []),
       ]);

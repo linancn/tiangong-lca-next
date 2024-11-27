@@ -36,7 +36,8 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
     if (!drawerVisible) return;
     if (refNode.length > 0) {
       const id = refNode[0]?.data?.id;
-      getProcessDetail(id).then(async (result: any) => {
+      const version = refNode[0]?.data?.version;
+      getProcessDetail(id, version).then(async (result: any) => {
         const dataSet = genProcessFromData(result.data?.json?.processDataSet ?? {});
         setInitData({ ...dataSet, id: id });
         const quantitativeReference = dataSet?.processInformation?.quantitativeReference;

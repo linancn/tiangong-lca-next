@@ -21,13 +21,21 @@ import { FormattedMessage, useIntl } from 'umi';
 import { ProcessForm } from './form';
 
 type Props = {
-  id: string | undefined;
+  id: string;
+  version: string;
   lang: string;
   buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined> | undefined;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
 };
-const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawerVisible }) => {
+const ProcessEdit: FC<Props> = ({
+  id,
+  version,
+  lang,
+  buttonType,
+  actionRef,
+  setViewDrawerVisible,
+}) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
   const [activeTabKey, setActiveTabKey] = useState<string>('processInformation');
@@ -69,9 +77,8 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
   }, [setViewDrawerVisible]);
 
   const onReset = () => {
-    if (!id) return;
     setSpinning(true);
-    getProcessDetail(id).then(async (result: any) => {
+    getProcessDetail(id, version).then(async (result: any) => {
       setInitData({ ...genProcessFromData(result.data?.json?.processDataSet ?? {}), id: id });
       setFromData({ ...genProcessFromData(result.data?.json?.processDataSet ?? {}), id: id });
       setExchangeDataSource(
@@ -108,6 +115,7 @@ const ProcessEdit: FC<Props> = ({ id, lang, buttonType, actionRef, setViewDrawer
           placement="left"
         >
           <Button
+            disabled={id === ''}
             type="primary"
             icon={<ProductOutlined />}
             size="small"

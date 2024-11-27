@@ -8,12 +8,11 @@ import { FormattedMessage } from 'umi';
 import Toolbar from './toolbar';
 
 type Props = {
-  id: string | undefined;
   buttonType: string;
   lang: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
 };
-const LifeCycleModelCreate: FC<Props> = ({ id, buttonType, lang, actionRef }) => {
+const LifeCycleModelCreate: FC<Props> = ({ buttonType, lang, actionRef }) => {
   const [isSave, setIsSave] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
 
@@ -118,12 +117,13 @@ const LifeCycleModelCreate: FC<Props> = ({ id, buttonType, lang, actionRef }) =>
             </Layout>
             <Sider width="50px" style={siderStyle}>
               <Toolbar
-                id={id}
+                id={''}
+                version={''}
                 lang={lang}
                 drawerVisible={drawerVisible}
                 isSave={isSave}
                 setIsSave={setIsSave}
-                readonly={false}
+                action={'create'}
               />
             </Sider>
           </Layout>
