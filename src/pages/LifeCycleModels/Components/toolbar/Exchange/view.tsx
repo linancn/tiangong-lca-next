@@ -11,7 +11,9 @@ import { FormattedMessage } from 'umi';
 type Props = {
   lang: string;
   sourceProcessId: string;
+  sourceProcessVersion: string;
   targetProcessId: string;
+  targetProcessVersion: string;
   sourceOutputFlowID: string;
   targetInputFlowID: string;
   drawerVisible: boolean;
@@ -20,7 +22,9 @@ type Props = {
 const EdgeExchangeView: FC<Props> = ({
   lang,
   sourceProcessId,
+  sourceProcessVersion,
   targetProcessId,
+  targetProcessVersion,
   sourceOutputFlowID,
   targetInputFlowID,
   drawerVisible,
@@ -35,31 +39,27 @@ const EdgeExchangeView: FC<Props> = ({
     if (!drawerVisible) return;
     setSpinningSource(true);
     setSpinningTarget(true);
-    getProcessDetail(sourceProcessId).then(async (result) => {
-      const sourceDatas = (
+    getProcessDetail(sourceProcessId, sourceProcessVersion).then(async (result) => {
+      const sourceData = (
         genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? []
-      ).filter(
+      ).find(
         (item: any) =>
           (item?.exchangeDirection).toLowerCase() === 'output' &&
           item?.referenceToFlowDataSet?.['@refObjectId'] === sourceOutputFlowID,
       );
-      if (sourceDatas.length > 0) {
-        setExchangeDataSource(sourceDatas[0]);
-      }
+      setExchangeDataSource(sourceData);
       setSpinningSource(false);
     });
 
-    getProcessDetail(targetProcessId).then(async (result) => {
-      const targetDatas = (
+    getProcessDetail(targetProcessId, targetProcessVersion).then(async (result) => {
+      const targetData = (
         genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? []
-      ).filter(
+      ).find(
         (item: any) =>
           (item?.exchangeDirection).toLowerCase() === 'input' &&
           item?.referenceToFlowDataSet?.['@refObjectId'] === targetInputFlowID,
       );
-      if (targetDatas.length > 0) {
-        setExchangeDataTarget(targetDatas[0]);
-      }
+      setExchangeDataTarget(targetData);
       setSpinningTarget(false);
     });
   }, [drawerVisible]);
@@ -104,7 +104,7 @@ const EdgeExchangeView: FC<Props> = ({
                     }
                     labelStyle={{ width: '220px' }}
                   >
-                    {exchangeDataSource.exchangeDirection ?? '-'}
+                    {exchangeDataSource?.exchangeDirection ?? '-'}
                   </Descriptions.Item>
                 </Descriptions>
                 <br />
@@ -115,7 +115,7 @@ const EdgeExchangeView: FC<Props> = ({
                       defaultMessage="Flow"
                     />
                   }
-                  data={exchangeDataSource.referenceToFlowDataSet ?? {}}
+                  data={exchangeDataSource?.referenceToFlowDataSet ?? {}}
                   lang={lang}
                 />
                 <br />
@@ -130,7 +130,7 @@ const EdgeExchangeView: FC<Props> = ({
                     }
                     labelStyle={{ width: '220px' }}
                   >
-                    {exchangeDataSource.meanAmount ?? '-'}
+                    {exchangeDataSource?.meanAmount ?? '-'}
                   </Descriptions.Item>
                 </Descriptions>
                 <br />
@@ -145,7 +145,7 @@ const EdgeExchangeView: FC<Props> = ({
                     }
                     labelStyle={{ width: '220px' }}
                   >
-                    {exchangeDataSource.resultingAmount ?? '-'}
+                    {exchangeDataSource?.resultingAmount ?? '-'}
                   </Descriptions.Item>
                 </Descriptions>
                 <br />
@@ -160,7 +160,7 @@ const EdgeExchangeView: FC<Props> = ({
                     }
                     labelStyle={{ width: '220px' }}
                   >
-                    {exchangeDataSource.dataDerivationTypeStatus ?? '-'}
+                    {exchangeDataSource?.dataDerivationTypeStatus ?? '-'}
                   </Descriptions.Item>
                 </Descriptions>
 
@@ -170,7 +170,7 @@ const EdgeExchangeView: FC<Props> = ({
                     defaultMessage="Comment"
                   />
                 </Divider>
-                <LangTextItemDescription data={exchangeDataSource.generalComment} />
+                <LangTextItemDescription data={exchangeDataSource?.generalComment} />
                 <br />
                 <Card
                   size="small"
@@ -192,7 +192,7 @@ const EdgeExchangeView: FC<Props> = ({
                       }
                       labelStyle={{ width: '220px' }}
                     >
-                      {exchangeDataSource.quantitativeReference ? (
+                      {exchangeDataSource?.quantitativeReference ? (
                         <CheckCircleTwoTone twoToneColor="#52c41a" />
                       ) : (
                         <CloseCircleOutlined />
@@ -205,7 +205,7 @@ const EdgeExchangeView: FC<Props> = ({
                       defaultMessage="Functional unit, Production period, or Other parameter"
                     />
                   </Divider>
-                  <LangTextItemDescription data={exchangeDataSource.functionalUnitOrOther} />
+                  <LangTextItemDescription data={exchangeDataSource?.functionalUnitOrOther} />
                 </Card>
               </Spin>
             </Card>
@@ -232,7 +232,7 @@ const EdgeExchangeView: FC<Props> = ({
                     }
                     labelStyle={{ width: '220px' }}
                   >
-                    {exchangeDataTarget.exchangeDirection ?? '-'}
+                    {exchangeDataTarget?.exchangeDirection ?? '-'}
                   </Descriptions.Item>
                 </Descriptions>
                 <br />
@@ -243,7 +243,7 @@ const EdgeExchangeView: FC<Props> = ({
                       defaultMessage="Flow"
                     />
                   }
-                  data={exchangeDataTarget.referenceToFlowDataSet ?? {}}
+                  data={exchangeDataTarget?.referenceToFlowDataSet ?? {}}
                   lang={lang}
                 />
                 <br />
@@ -258,7 +258,7 @@ const EdgeExchangeView: FC<Props> = ({
                     }
                     labelStyle={{ width: '220px' }}
                   >
-                    {exchangeDataTarget.meanAmount ?? '-'}
+                    {exchangeDataTarget?.meanAmount ?? '-'}
                   </Descriptions.Item>
                 </Descriptions>
                 <br />
@@ -273,7 +273,7 @@ const EdgeExchangeView: FC<Props> = ({
                     }
                     labelStyle={{ width: '220px' }}
                   >
-                    {exchangeDataTarget.resultingAmount ?? '-'}
+                    {exchangeDataTarget?.resultingAmount ?? '-'}
                   </Descriptions.Item>
                 </Descriptions>
                 <br />
@@ -288,7 +288,7 @@ const EdgeExchangeView: FC<Props> = ({
                     }
                     labelStyle={{ width: '220px' }}
                   >
-                    {exchangeDataTarget.dataDerivationTypeStatus ?? '-'}
+                    {exchangeDataTarget?.dataDerivationTypeStatus ?? '-'}
                   </Descriptions.Item>
                 </Descriptions>
 
@@ -298,7 +298,7 @@ const EdgeExchangeView: FC<Props> = ({
                     defaultMessage="Comment"
                   />
                 </Divider>
-                <LangTextItemDescription data={exchangeDataTarget.generalComment} />
+                <LangTextItemDescription data={exchangeDataTarget?.generalComment} />
                 <br />
                 <Card
                   size="small"
@@ -320,7 +320,7 @@ const EdgeExchangeView: FC<Props> = ({
                       }
                       labelStyle={{ width: '220px' }}
                     >
-                      {exchangeDataTarget.quantitativeReference ? (
+                      {exchangeDataTarget?.quantitativeReference ? (
                         <CheckCircleTwoTone twoToneColor="#52c41a" />
                       ) : (
                         <CloseCircleOutlined />
@@ -333,7 +333,7 @@ const EdgeExchangeView: FC<Props> = ({
                       defaultMessage="Functional unit, Production period, or Other parameter"
                     />
                   </Divider>
-                  <LangTextItemDescription data={exchangeDataTarget.functionalUnitOrOther} />
+                  <LangTextItemDescription data={exchangeDataTarget?.functionalUnitOrOther} />
                 </Card>
               </Spin>
             </Card>

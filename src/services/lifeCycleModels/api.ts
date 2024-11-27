@@ -10,8 +10,17 @@ import { getILCDClassification } from '../ilcd/api';
 import { genProcessName } from '../processes/util';
 import { genLifeCycleModelJsonOrdered, genLifeCycleModelProcess } from './util';
 
-const updateLifeCycleModelProcess = async (id: string, refNode: any, data: any) => {
-  const result = await supabase.from('processes').select('id, json').eq('id', id);
+const updateLifeCycleModelProcess = async (
+  id: string,
+  version: string,
+  refNode: any,
+  data: any,
+) => {
+  const result = await supabase
+    .from('processes')
+    .select('id, json')
+    .eq('id', id)
+    .eq('version', version);
   if (result.data && result.data.length === 1) {
     const oldData = result.data[0].json;
     const newData = await genLifeCycleModelProcess(
@@ -24,6 +33,7 @@ const updateLifeCycleModelProcess = async (id: string, refNode: any, data: any) 
       .from('processes')
       .update({ json_ordered: newData })
       .eq('id', id)
+      .eq('version', version)
       .select();
     return uResult;
   } else {
@@ -70,13 +80,19 @@ export async function createLifeCycleModel(data: any) {
     .from('lifecyclemodels')
     .insert([{ id: data.id, json_ordered: newData, json_tg: { xflow: data?.model } }])
     .select();
-  const refNode = data?.model?.nodes.find((i: any) => i?.data?.quantitativeReference === '1');
-  updateLifeCycleModelProcess(data.id, refNode, newData);
+  if (result.data && result.data.length === 1) {
+    const refNode = data?.model?.nodes.find((i: any) => i?.data?.quantitativeReference === '1');
+    updateLifeCycleModelProcess(data.id, result?.data[0].version, refNode, newData);
+  }
   return result;
 }
 
 export async function updateLifeCycleModel(data: any) {
-  const result = await supabase.from('lifecyclemodels').select('id, json').eq('id', data.id);
+  const result = await supabase
+    .from('lifecyclemodels')
+    .select('id, json')
+    .eq('id', data.id)
+    .eq('version', data.version);
   if (result.data && result.data.length === 1) {
     const oldData = result.data[0].json;
     const newData = genLifeCycleModelJsonOrdered(data.id, data, oldData);
@@ -84,16 +100,21 @@ export async function updateLifeCycleModel(data: any) {
       .from('lifecyclemodels')
       .update({ json_ordered: newData, json_tg: { xflow: data?.model } })
       .eq('id', data.id)
+      .eq('version', data.version)
       .select();
     const refNode = data?.model?.nodes.find((i: any) => i?.data?.quantitativeReference === '1');
-    updateLifeCycleModelProcess(data.id, refNode, newData);
+    updateLifeCycleModelProcess(data.id, data.version, refNode, newData);
     return updateResult;
   }
   return null;
 }
 
-export async function deleteLifeCycleModel(id: string) {
-  const result = await supabase.from('lifecyclemodels').delete().eq('id', id);
+export async function deleteLifeCycleModel(id: string, version: string) {
+  const result = await supabase
+    .from('lifecyclemodels')
+    .delete()
+    .eq('id', id)
+    .eq('version', version);
   return result;
 }
 
@@ -317,8 +338,12 @@ export async function getLifeCycleModelTablePgroongaSearch(
   return result;
 }
 
-export async function getLifeCycleModelDetail(id: string) {
-  const result = await supabase.from('lifecyclemodels').select('json, json_tg').eq('id', id);
+export async function getLifeCycleModelDetail(id: string, version: string) {
+  const result = await supabase
+    .from('lifecyclemodels')
+    .select('json, json_tg')
+    .eq('id', id)
+    .eq('version', version);
   if (result.data && result.data.length > 0) {
     const data = result.data[0];
     return Promise.resolve({

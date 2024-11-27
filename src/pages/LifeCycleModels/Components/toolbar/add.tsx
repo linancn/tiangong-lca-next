@@ -14,7 +14,7 @@ import { FormattedMessage, useIntl } from 'umi';
 type Props = {
   buttonType: string;
   lang: string;
-  onData: (rowKey: any) => void;
+  onData: (id: string, version: string) => void;
 };
 
 const { Search } = Input;
@@ -112,8 +112,14 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created at" />,
-      dataIndex: 'createdAt',
+      title: <FormattedMessage id="pages.table.title.version" defaultMessage="Version" />,
+      dataIndex: 'version',
+      sorter: false,
+      search: false,
+    },
+    {
+      title: <FormattedMessage id="pages.table.title.modifiedAt" defaultMessage="Updated at" />,
+      dataIndex: 'modifiedAt',
       valueType: 'dateTime',
       sorter: false,
       search: false,
@@ -127,6 +133,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
           <Space size={'small'} key={0}>
             <ProcessView
               id={row.id}
+              version={row.version}
               dataSource={'tg'}
               buttonType={'icon'}
               lang={lang}
@@ -285,7 +292,9 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
             </Button>
             <Button
               onClick={() => {
-                onData(selectedRowKeys[0]);
+                const selectedRowKey = selectedRowKeys[0] as string;
+                const selectedRowSplit = selectedRowKey.split(':');
+                onData(selectedRowSplit[0], selectedRowSplit[1]);
                 setDrawerVisible(false);
               }}
               type="primary"

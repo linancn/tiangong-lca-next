@@ -8,10 +8,11 @@ import Toolbar from './toolbar';
 
 type Props = {
   id: string;
+  version: string;
   buttonType: string;
   lang: string;
 };
-const LifeCycleModelView: FC<Props> = ({ id, buttonType, lang }) => {
+const LifeCycleModelView: FC<Props> = ({ id, version, buttonType, lang }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const { token } = theme.useToken();
 
@@ -100,11 +101,12 @@ const LifeCycleModelView: FC<Props> = ({ id, buttonType, lang }) => {
             <Sider width="50px" style={siderStyle}>
               <Toolbar
                 id={id}
+                version={version}
                 lang={lang}
                 drawerVisible={drawerVisible}
                 isSave={true}
                 setIsSave={() => {}}
-                readonly={true}
+                action={'view'}
               />
             </Sider>
           </Layout>

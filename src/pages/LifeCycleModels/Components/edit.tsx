@@ -9,11 +9,12 @@ import Toolbar from './toolbar';
 
 type Props = {
   id: string | undefined;
+  version: string | undefined;
   buttonType: string;
   lang: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
 };
-const LifeCycleModelEdit: FC<Props> = ({ id, buttonType, lang, actionRef }) => {
+const LifeCycleModelEdit: FC<Props> = ({ id, version, buttonType, lang, actionRef }) => {
   const [isSave, setIsSave] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
 
@@ -115,12 +116,13 @@ const LifeCycleModelEdit: FC<Props> = ({ id, buttonType, lang, actionRef }) => {
             </Layout>
             <Sider width="50px" style={siderStyle}>
               <Toolbar
-                id={id}
+                id={id ?? ''}
+                version={version ?? ''}
                 lang={lang}
                 drawerVisible={drawerVisible}
                 isSave={isSave}
                 setIsSave={setIsSave}
-                readonly={false}
+                action={'edit'}
               />
             </Sider>
           </Layout>

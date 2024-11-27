@@ -1,5 +1,7 @@
 export type ProcessTable = {
+  key: string;
   id: string;
+  version: string;
   lang: string;
   name: string;
   generalComment: string;
