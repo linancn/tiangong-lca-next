@@ -78,7 +78,6 @@ export default {
   'pages.process.view.administrativeInformation.permanentDataSetURI': 'Permanent data set URI',
   'pages.process.view.administrativeInformation.workflowAndPublicationStatus': 'Workflow and publication status',
   'pages.process.view.administrativeInformation.referenceToOwnershipOfDataSet': 'Owner of data set',
-  // 'pages.process.view.administrativeInformation.referenceToOwnerOfDataSet': '数据集所有者的引用',
   'pages.process.view.administrativeInformation.copyright': 'Copyright?',
   'pages.process.view.administrativeInformation.licenseType': 'License type',
 
