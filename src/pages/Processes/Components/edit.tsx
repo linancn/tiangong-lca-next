@@ -47,7 +47,6 @@ const ProcessEdit: FC<Props> = ({
 
   const handletFromData = () => {
     if (fromData?.id) {
-      console.log('fromData', formRefEdit.current?.getFieldsValue()?.[activeTabKey]);
       setFromData({
         ...fromData,
         [activeTabKey]: formRefEdit.current?.getFieldsValue()?.[activeTabKey] ?? {},
@@ -79,14 +78,13 @@ const ProcessEdit: FC<Props> = ({
   const onReset = () => {
     setSpinning(true);
     getProcessDetail(id, version).then(async (result: any) => {
-      setInitData({ ...genProcessFromData(result.data?.json?.processDataSet ?? {}), id: id });
-      setFromData({ ...genProcessFromData(result.data?.json?.processDataSet ?? {}), id: id });
-      setExchangeDataSource(
-        genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? [],
-      );
+      const dataSet = genProcessFromData(result.data?.json?.processDataSet ?? {});
+      setInitData({ ...dataSet, id: id });
+      setFromData({ ...dataSet, id: id });
+      setExchangeDataSource(dataSet?.exchanges?.exchange ?? []);
       formRefEdit.current?.resetFields();
       formRefEdit.current?.setFieldsValue({
-        ...genProcessFromData(result.data?.json?.processDataSet ?? {}),
+        ...dataSet,
         id: id,
       });
       setSpinning(false);
@@ -183,6 +181,7 @@ const ProcessEdit: FC<Props> = ({
               const updateResult = await updateProcess({
                 ...fromData,
                 id: id,
+                version: version,
                 exchanges: { exchange: [...exchangeDataSource] },
               });
               if (updateResult?.data) {
