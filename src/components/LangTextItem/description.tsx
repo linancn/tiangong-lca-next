@@ -22,10 +22,10 @@ const LangTextItemDescription: FC<Props> = ({ data }) => {
       {items?.map((name: any, index: number) => (
         <Descriptions.Item
           key={index}
-          label={name['@xml:lang'] ?? '-'}
+          label={name?.['@xml:lang'] ?? '-'}
           labelStyle={{ width: '100px' }}
         >
-          {name['#text'] ?? '-'}
+          {name?.['#text'] ?? '-'}
         </Descriptions.Item>
       ))}
     </Descriptions>
