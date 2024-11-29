@@ -215,6 +215,7 @@ export async function getProcessTablePgroongaSearch(
       data_source: dataSource,
       this_user_id: session.data.session.user?.id,
     });
+    console.log('result', result);
   }
   if (result.error) {
     console.log('error', result.error);
@@ -267,7 +268,7 @@ export async function getProcessTablePgroongaSearch(
             const classificationZH = genClassificationZH(classifications, res?.data);
 
             return {
-              key: i.id,
+              key: i.id + ':' + i.version,
               id: i.id,
               name: genProcessName(dataInfo?.dataSetInformation?.name ?? {}, lang),
               generalComment: getLangText(
@@ -277,6 +278,7 @@ export async function getProcessTablePgroongaSearch(
               classification: classificationToString(classificationZH),
               referenceYear: dataInfo?.time?.['common:referenceYear'] ?? '-',
               location: location ?? '-',
+              version: i.version,
               modifiedAt: new Date(i?.modified_at),
             };
           } catch (e) {
@@ -303,7 +305,7 @@ export async function getProcessTablePgroongaSearch(
           }
 
           return {
-            key: i.id,
+            key: i.id + ':' + i.version,
             id: i.id,
             name: genProcessName(dataInfo?.dataSetInformation?.name ?? {}, lang),
             generalComment: getLangText(
@@ -317,6 +319,7 @@ export async function getProcessTablePgroongaSearch(
             ),
             referenceYear: dataInfo?.time?.['common:referenceYear'] ?? '-',
             location: location ?? '-',
+            version: i.version,
             modifiedAt: new Date(i?.modified_at),
           };
         } catch (e) {
