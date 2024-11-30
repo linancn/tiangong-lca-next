@@ -117,10 +117,10 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
               {' '}
               <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
             </Button>
-            <Button onClick={onReset}>
+            {/* <Button onClick={onReset}>
               {' '}
               <FormattedMessage id="pages.button.reset" defaultMessage="Reset" />
-            </Button>
+            </Button> */}
             <Button onClick={() => formRefEdit.current?.submit()} type="primary">
               <FormattedMessage id="pages.button.submit" defaultMessage="Submit" />
             </Button>

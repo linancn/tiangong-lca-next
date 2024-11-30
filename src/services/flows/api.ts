@@ -479,7 +479,7 @@ export async function getFlowDetail(id: string, version: string) {
     }
   }
   return Promise.resolve({
-    data: {},
+    data: null,
     success: true,
   });
 }
