@@ -8,11 +8,12 @@ import { FormattedMessage, useIntl } from 'umi';
 
 type Props = {
   id: string;
+  version: string;
   buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
 };
-const FlowsDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisible }) => {
+const FlowsDelete: FC<Props> = ({ id, version, buttonType, actionRef, setViewDrawerVisible }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const intl = useIntl();
 
@@ -21,7 +22,7 @@ const FlowsDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisibl
   }, []);
 
   const handleOk = useCallback(() => {
-    deleteFlows(id).then(async (result: any) => {
+    deleteFlows(id, version).then(async (result: any) => {
       if (result.status === 204) {
         message.success(
           intl.formatMessage({

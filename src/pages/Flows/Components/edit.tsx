@@ -11,11 +11,12 @@ import { FlowForm } from './form';
 
 type Props = {
   id: string;
+  version: string;
   buttonType: string;
   lang: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
 };
-const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
+const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
   const formRefEdit = useRef<ProFormInstance>();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('flowInformation');
@@ -65,7 +66,7 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
 
   const onReset = () => {
     setSpinning(true);
-    getFlowDetail(id).then(async (result: any) => {
+    getFlowDetail(id, version).then(async (result: any) => {
       const fromData0 = await genFlowFromData(result.data?.json?.flowDataSet ?? {});
       setInitData({ ...fromData0, id: id });
       setPropertyDataSource(fromData0?.flowProperties?.flowProperty ?? []);
@@ -136,7 +137,7 @@ const FlowsEdit: FC<Props> = ({ id, buttonType, actionRef, lang }) => {
               },
             }}
             onFinish={async () => {
-              const updateResult = await updateFlows({ ...fromData, id });
+              const updateResult = await updateFlows(id, version, fromData);
               if (updateResult?.data) {
                 message.success(
                   intl.formatMessage({

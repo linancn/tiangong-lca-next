@@ -69,7 +69,7 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
           'common:timeStamp': currentDateTime,
         },
         publicationAndOwnership: {
-          'common:dataSetVersion': '01.00.000',
+          'common:dataSetVersion': '01.01.000',
         },
       },
     };

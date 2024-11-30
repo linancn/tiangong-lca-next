@@ -21,13 +21,14 @@ import FlowsView from '../view';
 
 type Props = {
   buttonType: string;
+  buttonText?: any;
   lang: string;
-  onData: (rowKey: any) => void;
+  onData: (id: string, version: string) => void;
 };
 
 const { Search } = Input;
 
-const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
+const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }) => {
   const [tgKeyWord, setTgKeyWord] = useState<any>('');
   const [myKeyWord, setMyKeyWord] = useState<any>('');
 
@@ -136,6 +137,12 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       sorter: false,
       search: false,
     },
+    {
+      title: <FormattedMessage id="pages.table.title.version" defaultMessage="Version" />,
+      dataIndex: 'version',
+      sorter: false,
+      search: false,
+    },
     // {
     //   title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At" />,
     //   dataIndex: 'created_at',
@@ -151,21 +158,23 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
         if (activeTabKey === 'tg') {
           return [
             <Space size={'small'} key={0}>
-              <FlowsView id={row.id} lang={lang} buttonType={'icon'} />
+              <FlowsView id={row.id} version={row.version} lang={lang} buttonType={'icon'} />
             </Space>,
           ];
         } else if (activeTabKey === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <FlowsView id={row.id} lang={lang} buttonType={'icon'} />
+              <FlowsView id={row.id} version={row.version} lang={lang} buttonType={'icon'} />
               <FlowsEdit
                 id={row.id}
+                version={row.version}
                 buttonType={'icon'}
                 lang={lang}
                 actionRef={myActionRefSelect}
               />
               <FlowsDelete
                 id={row.id}
+                version={row.version}
                 buttonType={'icon'}
                 actionRef={myActionRefSelect}
                 setViewDrawerVisible={() => {}}
@@ -315,15 +324,18 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
   return (
     <>
       {buttonType === 'icon' ? (
-        <Tooltip title={<FormattedMessage id="pages.button.select" defaultMessage="Select" />}>
+        <Tooltip
+          title={
+            buttonText ?? <FormattedMessage id="pages.button.select" defaultMessage="Select" />
+          }
+        >
           <Button shape="circle" icon={<DatabaseOutlined />} size="small" onClick={onSelect} />
         </Tooltip>
       ) : (
         <Button onClick={onSelect}>
-          <FormattedMessage id="pages.button.select" defaultMessage="select" />
+          {buttonText ?? <FormattedMessage id="pages.button.select" defaultMessage="Select" />}
         </Button>
       )}
-
       <Drawer
         title={
           <FormattedMessage id="pages.flow.drawer.title.select" defaultMessage="Selete Flow" />
@@ -348,7 +360,8 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
             </Button>
             <Button
               onClick={() => {
-                onData(selectedRowKeys);
+                const keys = selectedRowKeys?.[0]?.toString().split(':');
+                onData(keys[0], keys[1]);
                 setDrawerVisible(false);
               }}
               type="primary"

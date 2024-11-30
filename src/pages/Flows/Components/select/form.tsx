@@ -20,15 +20,17 @@ type Props = {
 
 const FlowsSelectForm: FC<Props> = ({ name, label, lang, formRef, drawerVisible, onData }) => {
   const [id, setId] = useState<string | undefined>(undefined);
+  const [version, setVersion] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
 
-  const handletFlowsData = (rowKey: any) => {
-    getFlowDetail(rowKey).then(async (result: any) => {
+  const handletFlowsData = (rowKey: string, version: string) => {
+    getFlowDetail(rowKey, version).then(async (result: any) => {
       const selectedData = genFlowFromData(result.data?.json?.flowDataSet ?? {});
       await formRef.current?.setFieldValue(name, {
         '@refObjectId': `${rowKey}`,
         '@type': 'flow data set',
         '@uri': `../flows/${rowKey}.xml`,
+        '@version': result.data?.version ?? '',
         'common:shortDescription': genFlowNameJson(
           selectedData?.flowInformation?.dataSetInformation?.name,
         ),
@@ -41,6 +43,7 @@ const FlowsSelectForm: FC<Props> = ({ name, label, lang, formRef, drawerVisible,
     if (drawerVisible) {
       if (formRef.current?.getFieldValue([...name, '@refObjectId'])) {
         setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
+        setVersion(formRef.current?.getFieldValue([...name, '@version']));
       }
     }
   });
@@ -60,8 +63,28 @@ const FlowsSelectForm: FC<Props> = ({ name, label, lang, formRef, drawerVisible,
           <Input disabled={true} style={{ width: '350px', color: token.colorTextDescription }} />
         </Form.Item>
         <Space direction="horizontal" style={{ marginTop: '6px' }}>
-          <FlowsSelectDrawer buttonType="text" lang={lang} onData={handletFlowsData} />
-          {id && <FlowsView lang={lang} id={id} buttonType="text" />}
+          {!id && <FlowsSelectDrawer buttonType="text" lang={lang} onData={handletFlowsData} />}
+          {id && (
+            <FlowsSelectDrawer
+              buttonType="text"
+              buttonText={<FormattedMessage id="pages.button.reselect" defaultMessage="Reselect" />}
+              lang={lang}
+              onData={handletFlowsData}
+            />
+          )}
+          {id && (
+            <Button
+              onClick={() => {
+                handletFlowsData(id, version ?? '');
+              }}
+            >
+              <FormattedMessage
+                id="pages.button.updateReference"
+                defaultMessage="Update reference"
+              />
+            </Button>
+          )}
+          {id && <FlowsView lang={lang} id={id} version={version ?? ''} buttonType="text" />}
           {id && (
             <Button
               onClick={() => {
@@ -83,6 +106,14 @@ const FlowsSelectForm: FC<Props> = ({ name, label, lang, formRef, drawerVisible,
       <Form.Item
         label={<FormattedMessage id="pages.process.view.exchange.uri" defaultMessage="URI" />}
         name={[...name, '@uri']}
+      >
+        <Input disabled={true} style={{ color: token.colorTextDescription }} />
+      </Form.Item>
+      <Form.Item
+        label={
+          <FormattedMessage id="pages.process.veiw.exchange.version" defaultMessage="Version" />
+        }
+        name={[...name, '@version']}
       >
         <Input disabled={true} style={{ color: token.colorTextDescription }} />
       </Form.Item>
