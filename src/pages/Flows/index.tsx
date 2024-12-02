@@ -90,6 +90,12 @@ const TableList: FC = () => {
       search: false,
     },
     {
+      title: <FormattedMessage id="pages.table.title.version" defaultMessage="Version" />,
+      dataIndex: 'version',
+      sorter: false,
+      search: false,
+    },
+    {
       title: <FormattedMessage id="pages.table.title.updatedAt" defaultMessage="Updated at" />,
       dataIndex: 'modifiedAt',
       valueType: 'dateTime',
@@ -104,10 +110,17 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <FlowsView buttonType={'icon'} id={row.id} lang={lang} />
-              <FlowsEdit id={row.id} lang={lang} buttonType={'icon'} actionRef={actionRef} />
+              <FlowsView buttonType={'icon'} id={row.id} version={row.version} lang={lang} />
+              <FlowsEdit
+                id={row.id}
+                version={row.version}
+                lang={lang}
+                buttonType={'icon'}
+                actionRef={actionRef}
+              />
               <FlowsDelete
                 id={row.id}
+                version={row.version}
                 buttonType={'icon'}
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
@@ -117,7 +130,7 @@ const TableList: FC = () => {
         }
         return [
           <Space size={'small'} key={0}>
-            <FlowsView buttonType={'icon'} id={row.id} lang={lang} />
+            <FlowsView buttonType={'icon'} id={row.id} version={row.version} lang={lang} />
           </Space>,
         ];
       },

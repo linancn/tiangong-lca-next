@@ -22,6 +22,8 @@ export default {
   'pages.button.cancel': 'Cancel',
   'pages.button.submit': 'Submit',
   'pages.button.select': 'Select',
+  'pages.button.reselect': 'Reselect',
+  'pages.button.updateReference': 'Update reference',
   'pages.button.export': 'Export',
   'pages.button.clear': 'Clear',
   'pages.button.model': 'Model',

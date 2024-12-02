@@ -1,5 +1,6 @@
 export type FlowTable = {
   id: string;
+  version: string;
   name: string;
   synonyms: string;
   classification: string;

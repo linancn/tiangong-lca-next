@@ -19,6 +19,7 @@ import PropertyView from './Property/view';
 
 type Props = {
   id: string;
+  version: string;
   lang: string;
   buttonType: string;
   data?: any;
@@ -29,7 +30,7 @@ const getComplianceLabel = (value: string) => {
   return option ? option.label : '-';
 };
 
-const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
+const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('flowInformation');
   const [spinning, setSpinning] = useState(false);
@@ -581,7 +582,7 @@ const FlowsView: FC<Props> = ({ id, buttonType, lang }) => {
   const onView = () => {
     setDrawerVisible(true);
     setSpinning(true);
-    getFlowDetail(id).then(async (result: any) => {
+    getFlowDetail(id, version).then(async (result: any) => {
       const fromData = genFlowFromData(result.data?.json?.flowDataSet ?? {});
       setInitData({ ...fromData, id: id });
       setPropertyDataSource(fromData?.flowProperties?.flowProperty ?? []);

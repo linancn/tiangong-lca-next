@@ -14,13 +14,21 @@ export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
       if (item?.quantitativeReference) {
         quantitativeReference = {
           '@type': 'Reference flow(s)',
-          referenceToReferenceFlow: item['@dataSetInternalID'],
+          referenceToReferenceFlow: item?.['@dataSetInternalID'],
           functionalUnitOrOther: getLangJson(item.functionalUnitOrOther),
         };
       }
       return {
-        '@dataSetInternalID': item['@dataSetInternalID'],
-        referenceToFlowDataSet: item.referenceToFlowDataSet,
+        '@dataSetInternalID': item?.['@dataSetInternalID'],
+        referenceToFlowDataSet: {
+          '@type': item?.referenceToFlowDataSet?.['@type'],
+          '@refObjectId': item?.referenceToFlowDataSet?.['@refObjectId'],
+          '@uri': item?.referenceToFlowDataSet?.['@uri'],
+          '@version': item?.referenceToFlowDataSet?.['@version'],
+          'common:shortDescription': getLangJson(
+            item?.referenceToFlowDataSet?.['common:shortDescription'],
+          ),
+        },
         exchangeDirection: item.exchangeDirection,
         meanAmount: item.meanAmount,
         resultingAmount: item.resultingAmount,
@@ -657,13 +665,14 @@ export function genProcessFromData(data: any) {
           (data?.processInformation?.quantitativeReference?.referenceToReferenceFlow ?? '')
         ) {
           return {
-            '@dataSetInternalID': item['@dataSetInternalID'],
+            '@dataSetInternalID': item?.['@dataSetInternalID'],
             referenceToFlowDataSet: {
-              '@type': item.referenceToFlowDataSet?.['@type'],
-              '@refObjectId': item.referenceToFlowDataSet?.['@refObjectId'],
-              '@uri': item.referenceToFlowDataSet?.['@uri'],
+              '@type': item?.referenceToFlowDataSet?.['@type'],
+              '@refObjectId': item?.referenceToFlowDataSet?.['@refObjectId'],
+              '@uri': item?.referenceToFlowDataSet?.['@uri'],
+              '@version': item?.referenceToFlowDataSet?.['@version'],
               'common:shortDescription': getLangList(
-                item.referenceToFlowDataSet?.['common:shortDescription'],
+                item?.referenceToFlowDataSet?.['common:shortDescription'],
               ),
             },
             exchangeDirection: item.exchangeDirection,
@@ -678,13 +687,14 @@ export function genProcessFromData(data: any) {
           };
         } else {
           return {
-            '@dataSetInternalID': item['@dataSetInternalID'],
+            '@dataSetInternalID': item?.['@dataSetInternalID'],
             referenceToFlowDataSet: {
-              '@type': item.referenceToFlowDataSet?.['@type'],
-              '@refObjectId': item.referenceToFlowDataSet?.['@refObjectId'],
-              '@uri': item.referenceToFlowDataSet?.['@uri'],
+              '@type': item?.referenceToFlowDataSet?.['@type'],
+              '@refObjectId': item?.referenceToFlowDataSet?.['@refObjectId'],
+              '@uri': item?.referenceToFlowDataSet?.['@uri'],
+              '@version': item?.referenceToFlowDataSet?.['@version'],
               'common:shortDescription': getLangList(
-                item.referenceToFlowDataSet?.['common:shortDescription'],
+                item?.referenceToFlowDataSet?.['common:shortDescription'],
               ),
             },
             exchangeDirection: item.exchangeDirection,

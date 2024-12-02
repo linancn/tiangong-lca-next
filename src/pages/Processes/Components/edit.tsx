@@ -1,3 +1,5 @@
+import { getFlowDetail } from '@/services/flows/api';
+import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
 import { getProcessDetail, updateProcess } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
 import styles from '@/style/custom.less';
@@ -65,6 +67,36 @@ const ProcessEdit: FC<Props> = ({
 
   const handletExchangeData = (data: any) => {
     if (fromData?.id) setExchangeDataSource([...data]);
+  };
+
+  const updateReference = async () => {
+    const newExchangeDataSource = await Promise.all(
+      exchangeDataSource.map(async (item: any) => {
+        const refObjectId = item?.referenceToFlowDataSet?.['@refObjectId'] ?? '';
+        const version = item?.referenceToFlowDataSet?.['@version'] ?? '';
+
+        const result = await getFlowDetail(refObjectId, version);
+
+        if (!result?.data) {
+          return item;
+        }
+
+        const refData = genFlowFromData(result.data?.json?.flowDataSet ?? {});
+
+        return {
+          ...item,
+          referenceToFlowDataSet: {
+            ...item?.referenceToFlowDataSet,
+            '@version': result.data?.version ?? '',
+            'common:shortDescription': genFlowNameJson(
+              refData?.flowInformation?.dataSetInformation?.name,
+            ),
+          },
+        };
+      }),
+    );
+
+    setExchangeDataSource(newExchangeDataSource);
   };
 
   const onTabChange = (key: string) => {
@@ -151,12 +183,21 @@ const ProcessEdit: FC<Props> = ({
         footer={
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
-              {' '}
               <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
             </Button>
-            <Button onClick={onReset}>
+            {/* <Button onClick={onReset}>
               {' '}
               <FormattedMessage id="pages.button.reset" defaultMessage="Reset" />
+            </Button> */}
+            <Button
+              onClick={() => {
+                updateReference();
+              }}
+            >
+              <FormattedMessage
+                id="pages.button.updateReference"
+                defaultMessage="Update reference"
+              />
             </Button>
             <Button onClick={() => formRefEdit.current?.submit()} type="primary">
               <FormattedMessage id="pages.button.submit" defaultMessage="Submit" />

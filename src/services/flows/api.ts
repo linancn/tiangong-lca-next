@@ -32,23 +32,24 @@ export async function createFlows(data: any) {
   return result;
 }
 
-export async function updateFlows(data: any) {
-  const result = await supabase.from('flows').select('id, json').eq('id', data.id);
+export async function updateFlows(id: string, version: string, data: any) {
+  const result = await supabase.from('flows').select('json').eq('id', id).eq('version', version);
   if (result.data && result.data.length === 1) {
     const oldData = result.data[0].json;
-    const newData = genFlowJsonOrdered(data.id, data, oldData);
+    const newData = genFlowJsonOrdered(id, data, oldData);
     const updateResult = await supabase
       .from('flows')
       .update({ json_ordered: newData })
       .eq('id', data.id)
+      .eq('version', version)
       .select();
     return updateResult;
   }
   return null;
 }
 
-export async function deleteFlows(id: string) {
-  const result = await supabase.from('flows').delete().eq('id', id);
+export async function deleteFlows(id: string, version: string) {
+  const result = await supabase.from('flows').delete().eq('id', id).eq('version', version);
   return result;
 }
 
@@ -76,6 +77,7 @@ export async function getFlowTableAll(
     json->flowDataSet->flowInformation->geography->>locationOfSupply,
     json->flowDataSet->modellingAndValidation->LCIMethod->>typeOfDataSet,
     json->flowDataSet->flowProperties->flowProperty->referenceToFlowPropertyDataSet,
+    version,
     modified_at
   `;
 
@@ -154,7 +156,7 @@ export async function getFlowTableAll(
             }
 
             return {
-              key: i.id,
+              key: i.id + ':' + i.version,
               id: i.id,
               name: genFlowName(i?.name ?? {}, lang),
               flowType: i?.typeOfDataSet ?? '-',
@@ -163,6 +165,7 @@ export async function getFlowTableAll(
               CASNumber: i?.CASNumber ?? '-',
               refFlowPropertyId: i?.referenceToFlowPropertyDataSet?.['@refObjectId'] ?? '-',
               locationOfSupply: locationOfSupply ?? '-',
+              version: i.version,
               modifiedAt: new Date(i?.modified_at),
             };
           } catch (e) {
@@ -182,7 +185,7 @@ export async function getFlowTableAll(
             locationOfSupply = thisLocation['#text'];
           }
           return {
-            key: i.id,
+            key: i.id + ':' + i.version,
             id: i.id,
             name: genFlowName(i?.name ?? {}, lang),
             flowType: i.typeOfDataSet ?? '-',
@@ -191,6 +194,7 @@ export async function getFlowTableAll(
             CASNumber: i.CASNumber ?? '-',
             refFlowPropertyId: i.referenceToFlowPropertyDataSet?.['@refObjectId'] ?? '-',
             locationOfSupply: locationOfSupply,
+            version: i.version,
             modifiedAt: new Date(i.modified_at),
           };
         } catch (e) {
@@ -299,7 +303,7 @@ export async function getFlowTablePgroongaSearch(
             }
 
             return {
-              key: i.id,
+              key: i.id + ':' + i.version,
               id: i.id,
               name: genFlowName(dataInfo?.name ?? {}, lang),
               synonyms: getLangText(dataInfo?.['common:synonyms'] ?? {}, lang),
@@ -308,6 +312,7 @@ export async function getFlowTablePgroongaSearch(
               classification: classificationToString(classificationZH),
               CASNumber: dataInfo?.CASNumber ?? '-',
               locationOfSupply: locationOfSupply ?? '-',
+              version: i.version,
               modifiedAt: new Date(i?.modified_at),
             };
           } catch (e) {
@@ -332,7 +337,7 @@ export async function getFlowTablePgroongaSearch(
           }
 
           return {
-            key: i.id,
+            key: i.id + ':' + i.version,
             id: i.id,
             name: genFlowName(dataInfo?.name ?? {}, lang),
             synonyms: getLangText(dataInfo?.['common:synonyms'] ?? {}, lang),
@@ -344,6 +349,7 @@ export async function getFlowTablePgroongaSearch(
             flowType: i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet ?? '-',
             CASNumber: dataInfo?.CASNumber ?? '-',
             locationOfSupply: locationOfSupply ?? '-',
+            version: i.version,
             modifiedAt: new Date(i?.modified_at),
           };
         } catch (e) {
@@ -404,7 +410,7 @@ export async function flow_hybrid_search(
       data: result.data.map((i: any) => {
         try {
           return {
-            key: i.id,
+            key: i.id + ':' + i.version,
             id: i.id,
             name: genFlowName(
               i.json?.flowDataSet?.flowInformation?.dataSetInformation?.name ?? {},
@@ -442,21 +448,38 @@ export async function flow_hybrid_search(
   });
 }
 
-export async function getFlowDetail(id: string) {
-  const result = await supabase.from('flows').select('json, modified_at').eq('id', id);
-  if (result.data && result.data.length > 0) {
-    const data = result.data[0];
-    return Promise.resolve({
-      data: {
-        id: id,
-        json: data.json,
-        modifiedAt: data?.modified_at,
-      },
-      success: true,
-    });
+export async function getFlowDetail(id: string, version: string) {
+  let result: any = {};
+  if (id && id.length === 36) {
+    if (version && version.length === 9) {
+      result = await supabase
+        .from('flows')
+        .select('json,version, modified_at')
+        .eq('id', id)
+        .eq('version', version);
+    } else {
+      result = await supabase
+        .from('flows')
+        .select('json,version, modified_at')
+        .eq('id', id)
+        .order('version', { ascending: false })
+        .range(0, 0);
+    }
+    if (result?.data && result.data.length > 0) {
+      const data = result.data[0];
+      return Promise.resolve({
+        data: {
+          id: id,
+          version: data.version,
+          json: data.json,
+          modifiedAt: data?.modified_at,
+        },
+        success: true,
+      });
+    }
   }
   return Promise.resolve({
-    data: {},
+    data: null,
     success: true,
   });
 }
