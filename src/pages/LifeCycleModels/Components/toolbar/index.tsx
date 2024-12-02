@@ -14,7 +14,7 @@ import {
 } from '@/services/lifeCycleModels/util';
 import { getProcessDetail } from '@/services/processes/api';
 import { genProcessFromData, genProcessName } from '@/services/processes/util';
-import { DeleteOutlined, SaveOutlined } from '@ant-design/icons';
+import { CopyOutlined, DeleteOutlined, SaveOutlined } from '@ant-design/icons';
 import { useGraphEvent, useGraphStore } from '@antv/xflow';
 import { Button, Space, Spin, Tooltip, message, theme } from 'antd';
 import { FC, useCallback, useEffect, useState } from 'react';
@@ -377,6 +377,7 @@ const Toolbar: FC<Props> = ({ id, version, lang, drawerVisible, isSave, action, 
         },
       },
     },
+    items: [],
   };
 
   // const ports = {
@@ -633,6 +634,90 @@ const Toolbar: FC<Props> = ({ id, version, lang, drawerVisible, isSave, action, 
       ]);
       setNodeCount(nodeCount + 1);
       setSpinning(false);
+    });
+  };
+
+  const updateReference = async () => {
+    nodes.forEach((node) => {
+      const nodeWidth = node?.size?.width ?? nodeTemplate.width;
+      getProcessDetail(node?.data?.id ?? '', node?.data?.version ?? '').then(
+        async (result: any) => {
+          const newLabel =
+            result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name ?? {};
+          const newShortDescription =
+            result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.[
+              'common:generalComment'
+            ] ?? {};
+          const newVersion = result.data?.version ?? '';
+          const exchanges =
+            genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? [];
+          const newItems = (node?.ports as any)?.items?.map((item: any) => {
+            const newItem = exchanges.find(
+              (i: any) =>
+                (
+                  (i?.exchangeDirection ?? '-') +
+                  ':' +
+                  (i?.['@dataSetInternalID'] ?? '-') +
+                  ':' +
+                  (i?.referenceToFlowDataSet?.['@refObjectId'] ?? '-')
+                ).toUpperCase() === (item?.id ?? '-').toUpperCase(),
+            );
+            if (newItem) {
+              const newTitle = getLangText(
+                newItem?.referenceToFlowDataSet?.['common:shortDescription'],
+                lang,
+              );
+              return {
+                ...item,
+                attrs: {
+                  ...item?.attrs,
+                  text: {
+                    text: genPortLabel(newTitle, lang, nodeWidth),
+                    title: newTitle,
+                  },
+                },
+                data: {
+                  ...item?.data,
+                  textLang: newItem?.referenceToFlowDataSet?.['common:shortDescription'],
+                },
+              };
+            } else {
+              return {
+                ...item,
+                attrs: {
+                  ...item?.attrs,
+                  text: {
+                    text: '-',
+                    title: '-',
+                  },
+                },
+                data: {
+                  ...item?.data,
+                  textLang: {},
+                },
+              };
+            }
+          });
+          updateNode(node.id ?? '', {
+            data: {
+              ...node.data,
+              label: newLabel,
+              shortDescription: newShortDescription,
+              version: newVersion,
+            },
+            tools: [
+              node?.data?.quantitativeReference === '1' ? refTool : nonRefTool,
+              nodeTitleTool(node?.width ?? 0, genProcessName(newLabel, lang) ?? ''),
+              inputFlowTool,
+              outputFlowTool,
+            ],
+            ports: {
+              ...node?.ports,
+              items: newItems,
+            },
+          });
+        },
+      );
     });
   };
 
@@ -1020,7 +1105,23 @@ const Toolbar: FC<Props> = ({ id, version, lang, drawerVisible, isSave, action, 
               }
             />
           </Tooltip> */}
-
+          <Tooltip
+            title={
+              <FormattedMessage
+                id="pages.button.updateReference"
+                defaultMessage="Update reference"
+              />
+            }
+            placement="left"
+          >
+            <Button
+              type="primary"
+              size="small"
+              icon={<CopyOutlined />}
+              style={{ boxShadow: 'none' }}
+              onClick={updateReference}
+            />
+          </Tooltip>
           <Tooltip
             title={
               <FormattedMessage id="pages.button.model.delete" defaultMessage="Delete element" />

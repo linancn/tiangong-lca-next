@@ -129,7 +129,6 @@ const ProcessEdit: FC<Props> = ({
   }, [drawerVisible]);
 
   useEffect(() => {
-    console.log('exchangeDataSource', exchangeDataSource);
     setFromData({
       ...fromData,
       exchanges: {
