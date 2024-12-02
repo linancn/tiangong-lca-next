@@ -28,7 +28,7 @@ export default {
   'pages.lifeCycleModel.administrativeInformation.project': 'Project',
   'pages.lifeCycleModel.administrativeInformation.intendedApplications': 'Intended applications',
   'pages.lifeCycleModel.administrativeInformation.referenceToPersonOrEntityGeneratingTheDataSet': 'Data set generator / modeller',
-  'pages.lifeCycleModel.administrativeInformation.dataEntryBy': 'Data entry by:',
+  'pages.lifeCycleModel.administrativeInformation.dataEntryBy': 'Data entry by',
   'pages.lifeCycleModel.administrativeInformation.timeStamp': 'Time stamp (last saved)',
   'pages.lifeCycleModel.administrativeInformation.referenceToDataSetFormat': 'Data set format(s)',
   'pages.lifeCycleModel.administrativeInformation.referenceToPersonOrEntityEnteringTheData': 'Data entry by:',

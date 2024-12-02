@@ -35,7 +35,7 @@ export default {
   'pages.process.view.processInformation.technology': '技术代表性',
   'pages.process.view.processInformation.technologyDescriptionAndIncludedProcesses': '技术描述及背景系统',
   'pages.process.view.processInformation.technologicalApplicability': '产品或工艺的技术用途',
-  'pages.process.view.processInformation.referenceToTechnologyFlowDiagrammOrPicture': '流程图或图片',
+  'pages.process.view.processInformation.referenceToTechnologyFlowDiagrammOrPicture': '流程图或者工艺图',
   'pages.process.view.processInformation.mathematicalRelations': '数学模型',
   'pages.process.view.processInformation.modelDescription': '模型描述',
   'pages.process.view.modellingAndValidation': '建模和验证',
@@ -72,8 +72,7 @@ export default {
   'pages.process.view.administrativeInformation.dataSetVersion': '数据集版本',
   'pages.process.view.administrativeInformation.permanentDataSetURI': '永久数据集统一资源标识符',
   'pages.process.view.administrativeInformation.workflowAndPublicationStatus': '工作流和发布状态',
-  'pages.process.view.administrativeInformation.referenceToOwnershipOfDataSet': '数据集所有者',
-  'pages.process.view.administrativeInformation.referenceToOwnerOfDataSet': '数据集所有者的引用',
+  'pages.process.view.administrativeInformation.referenceToOwnershipOfDataSet': '数据集拥有者',
   'pages.process.view.administrativeInformation.copyright': '版权？',
   'pages.process.view.administrativeInformation.licenseType': '许可类型',
 
