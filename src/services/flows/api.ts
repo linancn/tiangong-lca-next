@@ -40,7 +40,7 @@ export async function updateFlows(id: string, version: string, data: any) {
     const updateResult = await supabase
       .from('flows')
       .update({ json_ordered: newData })
-      .eq('id', data.id)
+      .eq('id', id)
       .eq('version', version)
       .select();
     return updateResult;
