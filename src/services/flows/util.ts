@@ -8,7 +8,7 @@ import {
   removeEmptyObjects,
 } from '../general/util';
 
-export function genFlowJsonOrdered(id: string, data: any, oldData: any) {
+export function genFlowJsonOrdered(id: string, data: any) {
   let quantitativeReference = {};
   const flowProperty =
     data?.flowProperties?.flowProperty?.map((item: any) => {
@@ -41,12 +41,21 @@ export function genFlowJsonOrdered(id: string, data: any, oldData: any) {
 
   return removeEmptyObjects({
     flowDataSet: {
-      '@xmlns': oldData.flowDataSet?.['@xmlns'],
-      '@xmlns:common': oldData.flowDataSet?.['@xmlns:common'],
-      '@xmlns:ecn': oldData.flowDataSet?.['@xmlns:ecn'],
-      '@xmlns:xsi': oldData.flowDataSet?.['@xmlns:xsi'],
-      '@version': oldData.flowDataSet?.['@version'],
-      '@xsi:schemaLocation': oldData.flowDataSet?.['@xsi:schemaLocation'],
+      // '@xmlns': oldData.flowDataSet?.['@xmlns'],
+      // '@xmlns:common': oldData.flowDataSet?.['@xmlns:common'],
+      // '@xmlns:ecn': oldData.flowDataSet?.['@xmlns:ecn'],
+      // '@xmlns:xsi': oldData.flowDataSet?.['@xmlns:xsi'],
+      // '@version': oldData.flowDataSet?.['@version'],
+      // '@xsi:schemaLocation': oldData.flowDataSet?.['@xsi:schemaLocation'],
+
+      '@xmlns': 'http://lca.jrc.it/ILCD/Flow',
+      '@xmlns:common': 'http://lca.jrc.it/ILCD/Common',
+      '@xmlns:ecn': 'http://eplca.jrc.ec.europa.eu/ILCD/Extensions/2018/ECNumber',
+      '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
+      '@version': '1.1',
+      '@locations': '../ILCDLocations.xml',
+      '@xsi:schemaLocation': 'http://lca.jrc.it/ILCD/Flow ../../schemas/ILCD_FlowDataSet.xsd',
+
       flowInformation: {
         dataSetInformation: {
           'common:UUID': id,

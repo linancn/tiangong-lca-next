@@ -32,7 +32,7 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
   };
 
   const handletFromData = () => {
-    if (fromData?.id)
+    if (fromData)
       setFromData({
         ...fromData,
         [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
@@ -73,12 +73,11 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
         },
       },
     };
-    const newId = v4();
-    setInitData({ ...newData, id: newId });
+    setInitData(newData);
     setPropertyDataSource([]);
     formRefCreate.current?.resetFields();
     formRefCreate.current?.setFieldsValue(newData);
-    setFromData({ ...newData, id: newId });
+    setFromData(newData);
   }, [drawerVisible]);
 
   return (
@@ -131,7 +130,7 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
             setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
           }}
           onFinish={async () => {
-            const result = await createFlows(fromData);
+            const result = await createFlows(v4(), fromData);
             if (result.data) {
               message.success(
                 intl.formatMessage({

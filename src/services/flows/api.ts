@@ -11,20 +11,8 @@ import { SortOrder } from 'antd/lib/table/interface';
 import { getILCDFlowCategorizationAll, getILCDLocationByValues } from '../ilcd/api';
 import { genFlowJsonOrdered, genFlowName } from './util';
 
-export async function createFlows(data: any) {
-  // const newID = v4();
-  const oldData = {
-    flowDataSet: {
-      '@xmlns': 'http://lca.jrc.it/ILCD/Flow',
-      '@xmlns:common': 'http://lca.jrc.it/ILCD/Common',
-      '@xmlns:ecn': 'http://eplca.jrc.ec.europa.eu/ILCD/Extensions/2018/ECNumber',
-      '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
-      '@version': '1.1',
-      '@locations': '../ILCDLocations.xml',
-      '@xsi:schemaLocation': 'http://lca.jrc.it/ILCD/Flow ../../schemas/ILCD_FlowDataSet.xsd',
-    },
-  };
-  const newData = genFlowJsonOrdered(data.id, data, oldData);
+export async function createFlows(id: string, data: any) {
+  const newData = genFlowJsonOrdered(id, data);
   const result = await supabase
     .from('flows')
     .insert([{ id: data.id, json_ordered: newData }])
@@ -33,19 +21,14 @@ export async function createFlows(data: any) {
 }
 
 export async function updateFlows(id: string, version: string, data: any) {
-  const result = await supabase.from('flows').select('json').eq('id', id).eq('version', version);
-  if (result.data && result.data.length === 1) {
-    const oldData = result.data[0].json;
-    const newData = genFlowJsonOrdered(id, data, oldData);
-    const updateResult = await supabase
-      .from('flows')
-      .update({ json_ordered: newData })
-      .eq('id', id)
-      .eq('version', version)
-      .select();
-    return updateResult;
-  }
-  return null;
+  const newData = genFlowJsonOrdered(id, data);
+  const updateResult = await supabase
+    .from('flows')
+    .update({ json_ordered: newData })
+    .eq('id', id)
+    .eq('version', version)
+    .select();
+  return updateResult;
 }
 
 export async function deleteFlows(id: string, version: string) {
