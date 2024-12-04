@@ -1,5 +1,6 @@
 import { getContactDetail } from '@/services/contacts/api';
 import { genContactFromData } from '@/services/contacts/util';
+import { jsonToList } from '@/services/general/util';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Divider, Form, Input, Row, Space, theme } from 'antd';
 import React, { FC, ReactNode, useEffect, useState } from 'react';
@@ -19,41 +20,33 @@ type Props = {
 
 const ContactSelectForm: FC<Props> = ({ name, label, lang, formRef, onData }) => {
   const [id, setId] = useState<string | undefined>(undefined);
+  const [version, setVersion] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
 
-  const handletContactData = (rowKey: any) => {
-    getContactDetail(rowKey).then(async (result: any) => {
+  const handletContactData = (rowKey: string, version: string) => {
+    getContactDetail(rowKey, version).then(async (result: any) => {
       const selectedData = genContactFromData(result.data?.json?.contactDataSet ?? {});
       await formRef.current?.setFieldValue(name, {
         '@refObjectId': `${rowKey}`,
         '@type': 'contact data set',
         '@uri': `../contacts/${rowKey}.xml`,
-        'common:shortDescription':
-          selectedData?.contactInformation?.dataSetInformation?.['common:shortName']?.map(
-            (item: any) => {
-              return {
-                ...item,
-                '#text': `${item['#text']}, ${
-                  selectedData?.contactInformation?.dataSetInformation?.email ?? ''
-                }`,
-              };
-            },
-          ) ?? [],
         '@version':
-          result.data.json?.contactDataSet?.administrativeInformation?.publicationAndOwnership?.[
+          selectedData?.administrativeInformation?.publicationAndOwnership?.[
             'common:dataSetVersion'
-          ],
+          ] ?? '',
+        'common:shortDescription':
+          jsonToList(selectedData?.contactInformation?.dataSetInformation?.['common:shortName']) ??
+          [],
       });
       onData();
     });
   };
 
-  // const actionRef = React.useRef<ActionType | undefined>(undefined);
-
-  // const id = formRef.current?.getFieldValue([...name, '@refObjectId']);
-
   useEffect(() => {
-    setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
+    if (formRef.current?.getFieldValue([...name, '@refObjectId'])) {
+      setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
+      setVersion(formRef.current?.getFieldValue([...name, '@version']));
+    }
   });
 
   return (
@@ -66,8 +59,28 @@ const ContactSelectForm: FC<Props> = ({ name, label, lang, formRef, onData }) =>
           <Input disabled={true} style={{ width: '350px', color: token.colorTextDescription }} />
         </Form.Item>
         <Space direction="horizontal" style={{ marginTop: '6px' }}>
-          <ContactSelectDrawer buttonType="text" lang={lang} onData={handletContactData} />
-          {id && <ContactView lang={lang} id={id} buttonType="text" />}
+          {!id && <ContactSelectDrawer buttonType="text" lang={lang} onData={handletContactData} />}
+          {id && (
+            <ContactSelectDrawer
+              buttonType="text"
+              buttonText={<FormattedMessage id="pages.button.reselect" defaultMessage="Reselect" />}
+              lang={lang}
+              onData={handletContactData}
+            />
+          )}
+          {id && (
+            <Button
+              onClick={() => {
+                handletContactData(id, version ?? '');
+              }}
+            >
+              <FormattedMessage
+                id="pages.button.updateReference"
+                defaultMessage="Update reference"
+              />
+            </Button>
+          )}
+          {id && <ContactView lang={lang} id={id} version={version ?? ''} buttonType="text" />}
           {id && (
             <Button
               onClick={() => {

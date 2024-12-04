@@ -7,14 +7,19 @@ import {
   removeEmptyObjects,
 } from '../general/util';
 
-export function genContactJsonOrdered(id: string, data: any, oldData: any) {
+export function genContactJsonOrdered(id: string, data: any) {
   return removeEmptyObjects({
     contactDataSet: {
-      '@xmlns': oldData.contactDataSet?.['@xmlns'] ?? {},
-      '@xmlns:common': oldData.contactDataSet?.['@xmlns:common'] ?? {},
-      '@xmlns:xsi': oldData.contactDataSet?.['@xmlns:xsi'] ?? {},
-      '@version': oldData.contactDataSet['@version'] ?? {},
-      '@xsi:schemaLocation': oldData.contactDataSet['@xsi:schemaLocation'] ?? {},
+      // '@xmlns': oldData.contactDataSet?.['@xmlns'] ?? {},
+      // '@xmlns:common': oldData.contactDataSet?.['@xmlns:common'] ?? {},
+      // '@xmlns:xsi': oldData.contactDataSet?.['@xmlns:xsi'] ?? {},
+      // '@version': oldData.contactDataSet['@version'] ?? {},
+      // '@xsi:schemaLocation': oldData.contactDataSet['@xsi:schemaLocation'] ?? {},
+      '@xmlns:common': 'http://lca.jrc.it/ILCD/Common',
+      '@xmlns': 'http://lca.jrc.it/ILCD/Contact',
+      '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
+      '@version': '1.1',
+      '@xsi:schemaLocation': 'http://lca.jrc.it/ILCD/Contact ../../schemas/ILCD_ContactDataSet.xsd',
       contactInformation: {
         dataSetInformation: {
           'common:UUID': id,
@@ -113,6 +118,7 @@ export function genContactJsonOrdered(id: string, data: any, oldData: any) {
 }
 
 export function genContactFromData(data: any) {
+  if (!data) return {};
   return removeEmptyObjects({
     contactInformation: {
       dataSetInformation: {
@@ -183,8 +189,7 @@ export function genContactFromData(data: any) {
       },
       publicationAndOwnership: {
         'common:dataSetVersion':
-          data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'] ??
-          '01.00.000',
+          data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'],
         'common:referenceToPrecedingDataSetVersion': {
           '@refObjectId':
             data?.administrativeInformation?.publicationAndOwnership?.[

@@ -21,3 +21,5 @@ export const langOptions = [
     label: 'zh',
   },
 ];
+
+export const initVersion = '01.01.000';

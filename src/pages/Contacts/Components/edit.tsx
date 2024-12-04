@@ -10,17 +10,25 @@ import { FormattedMessage, useIntl } from 'umi';
 import { ContactForm } from './form';
 type Props = {
   id: string;
+  version: string;
   buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
   lang: string;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
 };
-const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerVisible }) => {
+const ContactEdit: FC<Props> = ({
+  id,
+  version,
+  buttonType,
+  actionRef,
+  lang,
+  setViewDrawerVisible,
+}) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<any>({});
-  const [fromData, setFromData] = useState<any>({});
+  const [fromData, setFromData] = useState<any>(undefined);
   const [activeTabKey, setActiveTabKey] = useState<string>('contactInformation');
   const intl = useIntl();
 
@@ -29,7 +37,7 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
   }, [setViewDrawerVisible]);
 
   const handletFromData = () => {
-    if (fromData?.id)
+    if (fromData)
       setFromData({
         ...fromData,
         [activeTabKey]: formRefEdit.current?.getFieldsValue()?.[activeTabKey] ?? {},
@@ -43,14 +51,11 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
   const onReset = () => {
     setSpinning(true);
     formRefEdit.current?.resetFields();
-    getContactDetail(id).then(async (result) => {
+    getContactDetail(id, version).then(async (result) => {
       const contactFromData = genContactFromData(result.data?.json?.contactDataSet ?? {});
-      setInitData({ ...contactFromData, id: id });
-      formRefEdit.current?.setFieldsValue({
-        ...contactFromData,
-        id: id,
-      });
-      setFromData({ ...contactFromData, id: id });
+      setInitData(contactFromData);
+      formRefEdit.current?.setFieldsValue(contactFromData);
+      setFromData(contactFromData);
       setSpinning(false);
     });
   };
@@ -93,9 +98,9 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
             <Button onClick={() => setDrawerVisible(false)}>
               <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
             </Button>
-            <Button onClick={onReset}>
+            {/* <Button onClick={onReset}>
               <FormattedMessage id="pages.button.reset" defaultMessage="Reset" />
-            </Button>
+            </Button> */}
             <Button onClick={() => formRefEdit.current?.submit()} type="primary">
               <FormattedMessage id="pages.button.submit" defaultMessage="Submit" />
             </Button>
@@ -116,7 +121,7 @@ const ContactEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawer
             initialValues={initData}
             onFinish={async () => {
               setSpinning(true);
-              const updateResult = await updateContact({ ...fromData });
+              const updateResult = await updateContact(id, version, fromData);
               if (updateResult?.data) {
                 message.success(
                   intl.formatMessage({
