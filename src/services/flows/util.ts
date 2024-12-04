@@ -41,12 +41,12 @@ export function genFlowJsonOrdered(id: string, data: any, oldData: any) {
 
   return removeEmptyObjects({
     flowDataSet: {
-      '@xmlns': oldData.flowPropertyDataSet?.['@xmlns'],
-      '@xmlns:common': oldData.flowPropertyDataSet?.['@xmlns:common'],
-      '@xmlns:ecn': oldData.flowPropertyDataSet?.['@xmlns:ecn'],
-      '@xmlns:xsi': oldData.flowPropertyDataSet?.['@xmlns:xsi'],
-      '@version': oldData.flowPropertyDataSet?.['@version'],
-      '@xsi:schemaLocation': oldData.flowPropertyDataSet?.['@xsi:schemaLocation'],
+      '@xmlns': oldData.flowDataSet?.['@xmlns'],
+      '@xmlns:common': oldData.flowDataSet?.['@xmlns:common'],
+      '@xmlns:ecn': oldData.flowDataSet?.['@xmlns:ecn'],
+      '@xmlns:xsi': oldData.flowDataSet?.['@xmlns:xsi'],
+      '@version': oldData.flowDataSet?.['@version'],
+      '@xsi:schemaLocation': oldData.flowDataSet?.['@xsi:schemaLocation'],
       flowInformation: {
         dataSetInformation: {
           'common:UUID': id,

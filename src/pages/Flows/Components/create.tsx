@@ -131,7 +131,7 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
             setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
           }}
           onFinish={async () => {
-            const result = await createFlows({ ...fromData });
+            const result = await createFlows(fromData);
             if (result.data) {
               message.success(
                 intl.formatMessage({
