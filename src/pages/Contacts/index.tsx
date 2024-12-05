@@ -63,6 +63,12 @@ const TableList: FC = () => {
       search: false,
     },
     {
+      title: <FormattedMessage id="pages.table.title.version" defaultMessage="Version" />,
+      dataIndex: 'version',
+      sorter: false,
+      search: false,
+    },
+    {
       title: <FormattedMessage id="pages.table.title.updatedAt" defaultMessage="Updated at" />,
       dataIndex: 'modifiedAt',
       valueType: 'dateTime',
@@ -79,12 +85,14 @@ const TableList: FC = () => {
             <Space size={'small'} key={0}>
               <ContactView
                 id={row.id}
+                version={row.version}
                 lang={lang}
                 buttonType="icon"
                 // actionRef={actionRef}
               />
               <ContactEdit
                 id={row.id}
+                version={row.version}
                 lang={lang}
                 buttonType={'icon'}
                 actionRef={actionRef}
@@ -92,6 +100,7 @@ const TableList: FC = () => {
               />
               <ContactDelete
                 id={row.id}
+                version={row.version}
                 buttonType={'icon'}
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
@@ -103,6 +112,7 @@ const TableList: FC = () => {
           <Space size={'small'} key={0}>
             <ContactView
               id={row.id}
+              version={row.version}
               lang={lang}
               buttonType="icon"
               // actionRef={actionRef}

@@ -1,4 +1,5 @@
 import { createContact } from '@/services/contacts/api';
+import { initVersion } from '@/services/general/data';
 import { formatDateTime } from '@/services/general/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
@@ -46,15 +47,15 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
           'common:timeStamp': currentDateTime,
         },
         publicationAndOwnership: {
-          'common:dataSetVersion': '01.00.000',
+          'common:dataSetVersion': initVersion,
         },
       },
     };
-    const newId = v4();
-    setInitData({ ...newData, id: newId });
+    // const newId = v4();
+    setInitData(newData);
     formRefCreate.current?.resetFields();
     formRefCreate.current?.setFieldsValue(newData);
-    setFromData({ ...newData, id: newId });
+    setFromData(newData);
   }, [drawerVisible]);
 
   return (
@@ -111,7 +112,7 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
             },
           }}
           onFinish={async () => {
-            const result = await createContact({ ...fromData });
+            const result = await createContact(v4(), fromData);
             if (result.data) {
               message.success(
                 intl.formatMessage({

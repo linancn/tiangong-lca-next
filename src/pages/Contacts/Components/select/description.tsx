@@ -28,7 +28,12 @@ const ContactSelectDescription: FC<Props> = ({ title, data, lang }) => {
           </Descriptions.Item>
         </Descriptions>
         {data?.['@refObjectId'] && (
-          <ContactView id={data?.['@refObjectId']} lang={lang} buttonType="text" />
+          <ContactView
+            id={data?.['@refObjectId']}
+            version={data?.['@version']}
+            lang={lang}
+            buttonType="text"
+          />
         )}
       </Space>
       <br />

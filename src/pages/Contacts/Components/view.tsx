@@ -12,13 +12,12 @@ import ContractDescription from './select/description';
 
 type Props = {
   id: string;
+  version: string;
   lang: string;
   buttonType: string;
-  // actionRef: React.MutableRefObject<ActionType | undefined>;
 };
-const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
+const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
-  // const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<any>({});
   const [activeTabKey, setActiveTabKey] = useState<string>('contactInformation');
@@ -155,7 +154,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
           lang={lang}
           title={
             <FormattedMessage id="pages.contact.referenceToContact" defaultMessage="Belongs to:" />
-          } //这块需要改吗？
+          }
         ></ContractDescription>
       </>
     ),
@@ -259,29 +258,8 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
   const onView = () => {
     setDrawerVisible(true);
     setSpinning(true);
-    getContactDetail(id).then(async (result: any) => {
+    getContactDetail(id, version).then(async (result: any) => {
       setInitData({ ...genContactFromData(result.data?.json?.contactDataSet ?? {}) });
-      // if (dataSource === 'my') {
-      //   setFooterButtons(
-      //     <>
-      //       <ContactDelete
-      //         id={id}
-      //         buttonType={'text'}
-      //         actionRef={actionRef}
-      //         setViewDrawerVisible={setDrawerVisible}
-      //       />
-      //       <ContactEdit
-      //         id={id}
-      //         lang={lang}
-      //         buttonType={'text'}
-      //         actionRef={actionRef}
-      //         setViewDrawerVisible={setDrawerVisible}
-      //       />
-      //     </>,
-      //   );
-      // } else {
-      //   setFooterButtons(<></>);
-      // }
       setSpinning(false);
     });
   };

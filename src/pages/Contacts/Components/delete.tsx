@@ -8,11 +8,12 @@ import { FormattedMessage, useIntl } from 'umi';
 
 type Props = {
   id: string;
+  version: string;
   buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
 };
-const ContactDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisible }) => {
+const ContactDelete: FC<Props> = ({ id, version, buttonType, actionRef, setViewDrawerVisible }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const intl = useIntl();
 
@@ -21,7 +22,7 @@ const ContactDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisi
   }, []);
 
   const handleOk = useCallback(() => {
-    deleteContact(id).then(async (result: any) => {
+    deleteContact(id, version).then(async (result: any) => {
       if (result.status === 204) {
         message.success(
           intl.formatMessage({

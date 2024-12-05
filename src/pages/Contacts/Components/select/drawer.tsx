@@ -14,13 +14,14 @@ import ContactView from '../view';
 
 type Props = {
   buttonType: string;
+  buttonText?: any;
   lang: string;
-  onData: (rowKey: any) => void;
+  onData: (rowKey: string, version: string) => void;
 };
 
 const { Search } = Input;
 
-const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
+const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }) => {
   const [tgKeyWord, setTgKeyWord] = useState<any>('');
   const [myKeyWord, setMyKeyWord] = useState<any>('');
 
@@ -113,8 +114,14 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created at" />,
-      dataIndex: 'createdAt',
+      title: <FormattedMessage id="pages.table.title.version" defaultMessage="Version" />,
+      dataIndex: 'version',
+      sorter: false,
+      search: false,
+    },
+    {
+      title: <FormattedMessage id="pages.table.title.updatedAt" defaultMessage="Updated at" />,
+      dataIndex: 'modifiedAt',
       valueType: 'dateTime',
       sorter: false,
       search: false,
@@ -126,7 +133,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       render: (_, row) => {
         return [
           <Space size={'small'} key={0}>
-            <ContactView id={row.id} lang={lang} buttonType="icon" />
+            <ContactView id={row.id} version={row.version} lang={lang} buttonType="icon" />
           </Space>,
         ];
 
@@ -268,12 +275,16 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
   return (
     <>
       {buttonType === 'icon' ? (
-        <Tooltip title={<FormattedMessage id="pages.button.select" defaultMessage="Select" />}>
+        <Tooltip
+          title={
+            buttonText ?? <FormattedMessage id="pages.button.select" defaultMessage="Select" />
+          }
+        >
           <Button shape="circle" icon={<DatabaseOutlined />} size="small" onClick={onSelect} />
         </Tooltip>
       ) : (
         <Button onClick={onSelect}>
-          <FormattedMessage id="pages.button.select" defaultMessage="Select" />
+          {buttonText ?? <FormattedMessage id="pages.button.select" defaultMessage="Select" />}
         </Button>
       )}
 
@@ -303,7 +314,8 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
             </Button>
             <Button
               onClick={() => {
-                onData(selectedRowKeys);
+                const keys = selectedRowKeys?.[0]?.toString().split(':');
+                onData(keys[0], keys[1]);
                 setDrawerVisible(false);
               }}
               type="primary"

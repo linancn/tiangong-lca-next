@@ -7,45 +7,32 @@ import {
 
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
+import { getDataDetail } from '../general/api';
 import { getILCDClassification } from '../ilcd/api';
 import { genContactJsonOrdered } from './util';
 
-export async function createContact(data: any) {
-  // const newID = v4();
-  const oldData = {
-    contactDataSet: {
-      '@xmlns:common': 'http://lca.jrc.it/ILCD/Common',
-      '@xmlns': 'http://lca.jrc.it/ILCD/Contact',
-      '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
-      '@version': '1.1',
-      '@xsi:schemaLocation': 'http://lca.jrc.it/ILCD/Contact ../../schemas/ILCD_ContactDataSet.xsd',
-    },
-  };
-  const newData = genContactJsonOrdered(data.id, data, oldData);
+export async function createContact(id: string, data: any) {
+  const newData = genContactJsonOrdered(id, data);
   const result = await supabase
     .from('contacts')
-    .insert([{ id: data.id, json_ordered: newData }])
+    .insert([{ id: id, json_ordered: newData }])
     .select();
   return result;
 }
 
-export async function updateContact(data: any) {
-  const result = await supabase.from('contacts').select('id, json').eq('id', data.id);
-  if (result.data && result.data.length === 1) {
-    const oldData = result.data[0].json;
-    const newData = genContactJsonOrdered(data.id, data, oldData);
-    const updateResult = await supabase
-      .from('contacts')
-      .update({ json_ordered: newData })
-      .eq('id', data.id)
-      .select();
-    return updateResult;
-  }
-  return null;
+export async function updateContact(id: string, version: string, data: any) {
+  const newData = genContactJsonOrdered(id, data);
+  const updateResult = await supabase
+    .from('contacts')
+    .update({ json_ordered: newData })
+    .eq('id', id)
+    .eq('version', version)
+    .select();
+  return updateResult;
 }
 
-export async function deleteContact(id: string) {
-  const result = await supabase.from('contacts').delete().eq('id', id);
+export async function deleteContact(id: string, version: string) {
+  const result = await supabase.from('contacts').delete().eq('id', id).eq('version', version);
   return result;
 }
 
@@ -67,6 +54,7 @@ export async function getContactTableAll(
     json->contactDataSet->contactInformation->dataSetInformation->"common:name",
     json->contactDataSet->contactInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
     json->contactDataSet->contactInformation->dataSetInformation->>email,
+    version,
     modified_at
   `;
 
@@ -122,12 +110,13 @@ export async function getContactTableAll(
           const classificationZH = genClassificationZH(classifications, res?.data);
 
           return {
-            key: i.id,
+            key: i.id + ':' + i.version,
             id: i.id,
             shortName: getLangText(i?.['common:shortName'], lang),
             name: getLangText(i?.['common:name'], lang),
             classification: classificationToString(classificationZH),
             email: i?.email ?? '-',
+            version: i.version,
             modifiedAt: new Date(i?.modified_at),
           };
         } catch (e) {
@@ -198,12 +187,13 @@ export async function getContactTablePgroongaSearch(
           );
           const classificationZH = genClassificationZH(classifications, res?.data);
           return {
-            key: i.id,
+            key: i.id + ':' + i.version,
             id: i.id,
             shortName: getLangText(dataInfo?.['common:shortName'], lang),
             name: getLangText(dataInfo?.['common:name'], lang),
             classification: classificationToString(classificationZH),
             email: dataInfo?.email ?? '-',
+            version: i.version,
             modifiedAt: new Date(i?.modified_at),
           };
         } catch (e) {
@@ -225,20 +215,6 @@ export async function getContactTablePgroongaSearch(
   return result;
 }
 
-export async function getContactDetail(id: string) {
-  const result = await supabase.from('contacts').select('json, modified_at').eq('id', id);
-  if (result.data && result.data.length > 0) {
-    const data = result.data[0];
-    return Promise.resolve({
-      data: {
-        json: data.json,
-        modifiedAt: data?.modified_at,
-      },
-      success: true,
-    });
-  }
-  return Promise.resolve({
-    data: null,
-    success: true,
-  });
+export async function getContactDetail(id: string, version: string) {
+  return getDataDetail(id, version, 'contacts');
 }
