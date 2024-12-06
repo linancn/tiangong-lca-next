@@ -516,19 +516,18 @@ const Toolbar: FC<Props> = ({ id, version, lang, drawerVisible, isSave, action, 
 
     const newItems: any[] = data?.selectedRowData?.map((item: any, index: number) => {
       const nodeWidth = ioPortSelectorNode.size.width;
-      const label = getLangText(item?.referenceToFlowDataSet?.['common:shortDescription'], lang);
+      const textLang = item?.referenceToFlowDataSet?.['common:shortDescription'];
+      const direction = ioPortSelectorDirection.toUpperCase();
+      const flowUUID = item?.referenceToFlowDataSet?.['@refObjectId'] ?? '-';
+      const label = getLangText(textLang, lang);
 
       let labelSub = label?.substring(0, nodeWidth / 7 - 4);
       if (lang === 'zh') {
         labelSub = label?.substring(0, nodeWidth / 12 - 4);
       }
+
       return {
-        id:
-          ioPortSelectorDirection +
-          ':' +
-          (item?.['@dataSetInternalID'] ?? '-') +
-          ':' +
-          (item?.referenceToFlowDataSet?.['@refObjectId'] ?? '-'),
+        id: direction + ':' + flowUUID,
         args: { x: group === 'groupOutput' ? '100%' : 0, y: baseY + index * 20 },
         attrs: {
           text: {
@@ -538,7 +537,7 @@ const Toolbar: FC<Props> = ({ id, version, lang, drawerVisible, isSave, action, 
         },
         group: group,
         data: {
-          textLang: item?.referenceToFlowDataSet?.['common:shortDescription'],
+          textLang: textLang,
         },
       };
     });
@@ -593,8 +592,7 @@ const Toolbar: FC<Props> = ({ id, version, lang, drawerVisible, isSave, action, 
       );
       const refPortItem = {
         id:
-          (inOrOut ? 'Input:' : 'Output:') +
-          (refExchange?.['@dataSetInternalID'] ?? '-') +
+          (inOrOut ? 'INPUT' : 'OUTPUT') +
           ':' +
           (refExchange?.referenceToFlowDataSet?.['@refObjectId'] ?? '-'),
         args: { x: inOrOut ? 0 : '100%', y: 65 },
@@ -652,16 +650,16 @@ const Toolbar: FC<Props> = ({ id, version, lang, drawerVisible, isSave, action, 
           const exchanges =
             genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? [];
           const newItems = (node?.ports as any)?.items?.map((item: any) => {
-            const newItem = exchanges.find(
-              (i: any) =>
-                (
-                  (i?.exchangeDirection ?? '-') +
+            const newItem = exchanges.find((i: any) => {
+              const ids = item?.id?.split(':');
+              if (ids.length < 2) return false;
+              return (
+                (i?.exchangeDirection ?? '-').toUpperCase() +
                   ':' +
-                  (i?.['@dataSetInternalID'] ?? '-') +
-                  ':' +
-                  (i?.referenceToFlowDataSet?.['@refObjectId'] ?? '-')
-                ).toUpperCase() === (item?.id ?? '-').toUpperCase(),
-            );
+                  (i?.referenceToFlowDataSet?.['@refObjectId'] ?? '-') ===
+                ids[0].toUpperCase() + ':' + (ids[ids.length - 1] ?? '-')
+              );
+            });
             if (newItem) {
               const newTitle = getLangText(
                 newItem?.referenceToFlowDataSet?.['common:shortDescription'],
@@ -812,7 +810,10 @@ const Toolbar: FC<Props> = ({ id, version, lang, drawerVisible, isSave, action, 
     const edge = evt.edge;
     const sourcePortID = edge.getSourcePortId();
     const targetPortID = edge.getTargetPortId();
-    if (sourcePortID?.includes('Output') && targetPortID?.includes('Input')) {
+    if (
+      sourcePortID?.toUpperCase()?.includes('OUTPUT') &&
+      targetPortID?.toUpperCase()?.includes('INPUT')
+    ) {
       const sourceNodeID = edge.getSourceCellId();
       const targetNodeID = edge.getTargetCellId();
       const sourceNode = nodes.find((node) => node.id === sourceNodeID);

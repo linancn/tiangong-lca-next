@@ -47,17 +47,17 @@ const IoPortSelector: FC<Props> = ({
     //   dataIndex: 'dataSetInternalID',
     //   search: false,
     // },
-    {
-      title: (
-        <FormattedMessage
-          id="pages.process.exchange.exchangeDirection"
-          defaultMessage="Direction"
-        />
-      ),
-      dataIndex: 'exchangeDirection',
-      sorter: false,
-      search: false,
-    },
+    // {
+    //   title: (
+    //     <FormattedMessage
+    //       id="pages.process.exchange.exchangeDirection"
+    //       defaultMessage="Direction"
+    //     />
+    //   ),
+    //   dataIndex: 'exchangeDirection',
+    //   sorter: false,
+    //   search: false,
+    // },
     {
       title: <FormattedMessage id="processExchange.referenceToFlowDataSet" defaultMessage="Flow" />,
       dataIndex: 'referenceToFlowDataSet',
@@ -68,6 +68,12 @@ const IoPortSelector: FC<Props> = ({
           {row.referenceToFlowDataSet}
         </Tooltip>,
       ],
+    },
+    {
+      title: <FormattedMessage id="pages.table.title.version" defaultMessage="Version" />,
+      dataIndex: 'referenceToFlowDataSetVersion',
+      sorter: false,
+      search: false,
     },
     {
       title: <FormattedMessage id="processExchange.meanAmount" defaultMessage="Mean amount" />,
@@ -164,9 +170,7 @@ const IoPortSelector: FC<Props> = ({
   useEffect(() => {
     if (!drawerVisible) return;
     setDataLoading(true);
-    setSelectedRowKeys(
-      node?.ports?.items?.map((item: any) => item?.id?.replace(direction + ':', '')) ?? [],
-    );
+    setSelectedRowKeys(node?.ports?.items?.map((item: any) => item?.id ?? []));
     getProcessDetail(node?.data?.id, node?.data?.version).then(async (result: any) => {
       setExchangeDataSource([
         ...(genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? []),
@@ -199,16 +203,12 @@ const IoPortSelector: FC<Props> = ({
             <Button
               onClick={() => {
                 const selectedRowData = exchangeDataSource.filter((item) => {
-                  const itemObjectId =
-                    (item?.['@dataSetInternalID'] ?? '-') +
+                  const itemKey =
+                    (item?.exchangeDirection ?? '-').toUpperCase() +
                     ':' +
                     (item?.referenceToFlowDataSet?.['@refObjectId'] ?? '-');
-                  const itemDirection = item?.exchangeDirection?.toUpperCase();
-                  const filterDirection = direction?.toUpperCase();
 
-                  return (
-                    selectedRowKeys.includes(itemObjectId) && itemDirection === filterDirection
-                  );
+                  return selectedRowKeys.includes(itemKey);
                 });
 
                 onData({ selectedRowData: selectedRowData });

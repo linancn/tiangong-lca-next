@@ -136,7 +136,7 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
       render: (_, row) => {
         return [
           <Space size={'small'} key={0}>
-            <FlowsView id={row.id} lang={lang} buttonType={'icon'} />
+            <FlowsView id={row.id} version={row.version} lang={lang} buttonType={'icon'} />
           </Space>,
         ];
       },
