@@ -44,7 +44,7 @@ const EdgeExchangeView: FC<Props> = ({
         genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? []
       ).find(
         (item: any) =>
-          (item?.exchangeDirection).toLowerCase() === 'output' &&
+          (item?.exchangeDirection).toUpperCase() === 'OUTPUT' &&
           item?.referenceToFlowDataSet?.['@refObjectId'] === sourceOutputFlowID,
       );
       setExchangeDataSource(sourceData);
@@ -56,7 +56,7 @@ const EdgeExchangeView: FC<Props> = ({
         genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? []
       ).find(
         (item: any) =>
-          (item?.exchangeDirection).toLowerCase() === 'input' &&
+          (item?.exchangeDirection).toUpperCase() === 'INPUT' &&
           item?.referenceToFlowDataSet?.['@refObjectId'] === targetInputFlowID,
       );
       setExchangeDataTarget(targetData);

@@ -8,6 +8,7 @@ import {
 import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/lib/table/interface';
+import { getDataDetail } from '../general/api';
 import { getILCDFlowCategorizationAll, getILCDLocationByValues } from '../ilcd/api';
 import { genFlowJsonOrdered, genFlowName } from './util';
 
@@ -432,39 +433,7 @@ export async function flow_hybrid_search(
 }
 
 export async function getFlowDetail(id: string, version: string) {
-  let result: any = {};
-  if (id && id.length === 36) {
-    if (version && version.length === 9) {
-      result = await supabase
-        .from('flows')
-        .select('json,version, modified_at')
-        .eq('id', id)
-        .eq('version', version);
-    } else {
-      result = await supabase
-        .from('flows')
-        .select('json,version, modified_at')
-        .eq('id', id)
-        .order('version', { ascending: false })
-        .range(0, 0);
-    }
-    if (result?.data && result.data.length > 0) {
-      const data = result.data[0];
-      return Promise.resolve({
-        data: {
-          id: id,
-          version: data.version,
-          json: data.json,
-          modifiedAt: data?.modified_at,
-        },
-        success: true,
-      });
-    }
-  }
-  return Promise.resolve({
-    data: null,
-    success: true,
-  });
+  return getDataDetail(id, version, 'flows');
 }
 
 export async function getReferenceProperty(id: string) {

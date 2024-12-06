@@ -103,17 +103,17 @@ export const ProcessForm: FC<Props> = ({
     //   dataIndex: 'dataSetInternalID',
     //   search: false,
     // },
-    {
-      title: (
-        <FormattedMessage
-          id="pages.process.exchange.exchangeDirection"
-          defaultMessage="Direction"
-        />
-      ),
-      dataIndex: 'exchangeDirection',
-      sorter: false,
-      search: false,
-    },
+    // {
+    //   title: (
+    //     <FormattedMessage
+    //       id="pages.process.exchange.exchangeDirection"
+    //       defaultMessage="Direction"
+    //     />
+    //   ),
+    //   dataIndex: 'exchangeDirection',
+    //   sorter: false,
+    //   search: false,
+    // },
     {
       title: <FormattedMessage id="processExchange.referenceToFlowDataSet" defaultMessage="Flow" />,
       dataIndex: 'referenceToFlowDataSet',
@@ -124,6 +124,12 @@ export const ProcessForm: FC<Props> = ({
           {row.referenceToFlowDataSet}
         </Tooltip>,
       ],
+    },
+    {
+      title: <FormattedMessage id="pages.table.title.version" defaultMessage="Version" />,
+      dataIndex: 'referenceToFlowDataSetVersion',
+      sorter: false,
+      search: false,
     },
     {
       title: (
@@ -144,7 +150,6 @@ export const ProcessForm: FC<Props> = ({
       sorter: false,
       search: false,
     },
-
     {
       title: (
         <FormattedMessage

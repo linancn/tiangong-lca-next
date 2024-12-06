@@ -343,17 +343,27 @@ export async function getProcessTablePgroongaSearch(
 }
 
 export async function getProcessDetail(id: string, version: string) {
-  if (id.length > 0) {
-    const result = await supabase
-      .from('processes')
-      .select('id, version, json, modified_at')
-      .eq('id', id)
-      .eq('version', version);
-    if (result.data && result.data.length > 0) {
+  let result: any = {};
+  if (id && id.length === 36) {
+    if (version && version.length === 9) {
+      result = await supabase
+        .from('processes')
+        .select('json,version, modified_at')
+        .eq('id', id)
+        .eq('version', version);
+    } else {
+      result = await supabase
+        .from('processes')
+        .select('json,version, modified_at')
+        .eq('id', id)
+        .order('version', { ascending: false })
+        .range(0, 0);
+    }
+    if (result?.data && result.data.length > 0) {
       const data = result.data[0];
       return Promise.resolve({
         data: {
-          id: data.id,
+          id: id,
           version: data.version,
           json: data.json,
           modifiedAt: data?.modified_at,
@@ -382,7 +392,7 @@ export async function getProcessExchange(
   },
 ) {
   const data = exchangeData.filter(
-    (i) => i.exchangeDirection.toUpperCase() === direction.toUpperCase(),
+    (i) => i?.exchangeDirection.toUpperCase() === direction.toUpperCase(),
   );
   const start = ((params.current ?? 1) - 1) * (params.pageSize ?? 10);
   const end = start + (params.pageSize ?? 10);

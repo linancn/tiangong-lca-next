@@ -183,6 +183,7 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
               {refExchange?.referenceToFlowDataSet?.['@refObjectId'] && (
                 <FlowsView
                   id={refExchange?.referenceToFlowDataSet?.['@refObjectId']}
+                  version={refExchange?.referenceToFlowDataSet?.['@version']}
                   lang={lang}
                   buttonType="text"
                 />
