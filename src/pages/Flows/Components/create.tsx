@@ -18,8 +18,8 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
   const [activeTabKey, setActiveTabKey] = useState<string>('flowInformation');
-  const [initData, setInitData] = useState<any>({});
-  const [fromData, setFromData] = useState<any>({});
+  const [initData, setInitData] = useState<any>(undefined);
+  const [fromData, setFromData] = useState<any>(undefined);
   const [propertyDataSource, setPropertyDataSource] = useState<any>([]);
   const intl = useIntl();
 
@@ -40,11 +40,11 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
   };
 
   const handletPropertyData = (data: any) => {
-    if (fromData?.id) setPropertyDataSource([...data]);
+    if (fromData) setPropertyDataSource([...data]);
   };
 
   const handletPropertyDataCreate = (data: any) => {
-    if (fromData?.id)
+    if (fromData)
       setPropertyDataSource([
         ...propertyDataSource,
         { ...data, '@dataSetInternalID': propertyDataSource.length.toString() },

@@ -20,7 +20,7 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
   const formRefEdit = useRef<ProFormInstance>();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('flowInformation');
-  const [fromData, setFromData] = useState<any>({});
+  const [fromData, setFromData] = useState<any>(undefined);
   const [initData, setInitData] = useState<any>({});
   const [flowType, setFlowType] = useState<string>();
   const [spinning, setSpinning] = useState(false);
@@ -32,7 +32,7 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
   };
 
   const handletFromData = () => {
-    if (fromData?.id)
+    if (fromData)
       setFromData({
         ...fromData,
         [activeTabKey]: formRefEdit.current?.getFieldsValue()?.[activeTabKey] ?? {},
@@ -40,11 +40,11 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
   };
 
   const handletPropertyData = (data: any) => {
-    if (fromData?.id) setPropertyDataSource([...data]);
+    if (fromData) setPropertyDataSource([...data]);
   };
 
   const handletPropertyDataCreate = (data: any) => {
-    if (fromData?.id)
+    if (fromData)
       setPropertyDataSource([
         ...propertyDataSource,
         { ...data, '@dataSetInternalID': propertyDataSource.length.toString() },
