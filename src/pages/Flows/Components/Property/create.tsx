@@ -43,8 +43,8 @@ const PropertyCreate: FC<Props> = ({ lang, onData }) => {
       <Drawer
         title={
           <FormattedMessage
-            id="pages.process.exchange.drawer.title.create"
-            defaultMessage="Create Exchange"
+            id="pages.flowproperty.drawer.title.create"
+            defaultMessage="Create Flow property"
           />
         }
         width="90%"
@@ -81,7 +81,7 @@ const PropertyCreate: FC<Props> = ({ lang, onData }) => {
             },
           }}
           onFinish={async () => {
-            onData({ ...fromData });
+            onData(fromData);
             formRefCreate.current?.resetFields();
             setDrawerVisible(false);
             return true;
