@@ -16,7 +16,7 @@ export async function createFlows(id: string, data: any) {
   const newData = genFlowJsonOrdered(id, data);
   const result = await supabase
     .from('flows')
-    .insert([{ id: data.id, json_ordered: newData }])
+    .insert([{ id: id, json_ordered: newData }])
     .select();
   return result;
 }
