@@ -40,8 +40,8 @@ const FileGallery: FC<Props> = ({ data }) => {
     fetchData();
   }, [data]);
 
-  if (!data) {
-    return <></>;
+  if (!data || data.length === 0) {
+    return <>-</>;
   }
 
   return (
