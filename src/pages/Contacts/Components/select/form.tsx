@@ -23,8 +23,8 @@ const ContactSelectForm: FC<Props> = ({ name, label, lang, formRef, onData }) =>
   const [version, setVersion] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
 
-  const handletContactData = (rowKey: string, version: string) => {
-    getContactDetail(rowKey, version).then(async (result: any) => {
+  const handletContactData = (rowKey: string, thisVersion: string) => {
+    getContactDetail(rowKey, thisVersion).then(async (result: any) => {
       const selectedData = genContactFromData(result.data?.json?.contactDataSet ?? {});
       await formRef.current?.setFieldValue(name, {
         '@refObjectId': `${rowKey}`,
@@ -43,10 +43,8 @@ const ContactSelectForm: FC<Props> = ({ name, label, lang, formRef, onData }) =>
   };
 
   useEffect(() => {
-    if (formRef.current?.getFieldValue([...name, '@refObjectId'])) {
-      setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
-      setVersion(formRef.current?.getFieldValue([...name, '@version']));
-    }
+    setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
+    setVersion(formRef.current?.getFieldValue([...name, '@version']));
   });
 
   return (

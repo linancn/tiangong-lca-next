@@ -78,6 +78,10 @@ export function genContactJsonOrdered(id: string, data: any) {
               data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
                 '@uri'
               ],
+            '@version':
+              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
+                '@version'
+              ],
             'common:shortDescription': getLangJson(
               data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
                 'common:shortDescription'
@@ -101,6 +105,10 @@ export function genContactJsonOrdered(id: string, data: any) {
               data?.administrativeInformation?.publicationAndOwnership?.[
                 'common:referenceToPrecedingDataSetVersion'
               ]?.['@uri'],
+            '@version':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToPrecedingDataSetVersion'
+              ]?.['@version'],
             'common:shortDescription': getLangJson(
               data?.administrativeInformation?.publicationAndOwnership?.[
                 'common:referenceToPrecedingDataSetVersion'
@@ -180,6 +188,10 @@ export function genContactFromData(data: any) {
             data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
               '@uri'
             ],
+          '@version':
+            data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
+              '@version'
+            ],
           'common:shortDescription': getLangList(
             data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
               'common:shortDescription'
@@ -203,6 +215,10 @@ export function genContactFromData(data: any) {
             data?.administrativeInformation?.publicationAndOwnership?.[
               'common:referenceToPrecedingDataSetVersion'
             ]?.['@uri'],
+          '@version':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToPrecedingDataSetVersion'
+            ]?.['@version'],
           'common:shortDescription': getLangList(
             data?.administrativeInformation?.publicationAndOwnership?.[
               'common:referenceToPrecedingDataSetVersion'
