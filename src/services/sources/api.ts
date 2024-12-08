@@ -7,45 +7,32 @@ import {
 
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
+import { getDataDetail } from '../general/api';
 import { getILCDClassification } from '../ilcd/api';
 import { genSourceJsonOrdered } from './util';
 
-export async function createSource(data: any) {
-  // const newID = v4();/
-  const oldData = {
-    sourceDataSet: {
-      '@xmlns:common': 'http://lca.jrc.it/ILCD/Common',
-      '@xmlns': 'http://lca.jrc.it/ILCD/Source',
-      '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
-      '@version': '1.1',
-      '@xsi:schemaLocation': 'http://lca.jrc.it/ILCD/Source ../../schemas/ILCD_SourceDataSet.xsd',
-    },
-  };
-  const newData = genSourceJsonOrdered(data.id, data, oldData);
+export async function createSource(id: string, data: any) {
+  const newData = genSourceJsonOrdered(id, data);
   const result = await supabase
     .from('sources')
-    .insert([{ id: data.id, json_ordered: newData }])
+    .insert([{ id: id, json_ordered: newData }])
     .select();
   return result;
 }
 
-export async function updateSource(data: any) {
-  const result = await supabase.from('sources').select('id, json').eq('id', data.id);
-  if (result.data && result.data.length === 1) {
-    const oldData = result.data[0].json;
-    const newData = genSourceJsonOrdered(data.id, data, oldData);
-    const updateResult = await supabase
-      .from('sources')
-      .update({ json_ordered: newData })
-      .eq('id', data.id)
-      .select();
-    return updateResult;
-  }
-  return null;
+export async function updateSource(id: string, version: string, data: any) {
+  const newData = genSourceJsonOrdered(id, data);
+  const updateResult = await supabase
+    .from('sources')
+    .update({ json_ordered: newData })
+    .eq('id', id)
+    .eq('version', version)
+    .select();
+  return updateResult;
 }
 
-export async function deleteSource(id: string) {
-  const result = await supabase.from('sources').delete().eq('id', id);
+export async function deleteSource(id: string, version: string) {
+  const result = await supabase.from('sources').delete().eq('id', id).eq('version', version);
   return result;
 }
 
@@ -67,6 +54,7 @@ export async function getSourceTableAll(
     json->sourceDataSet->sourceInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
     json->sourceDataSet->sourceInformation->dataSetInformation->>sourceCitation,
     json->sourceDataSet->sourceInformation->dataSetInformation->>publicationType,
+    version,
     modified_at
   `;
 
@@ -116,12 +104,13 @@ export async function getSourceTableAll(
             const classifications = jsonToList(i['common:class']);
             const classificationZH = genClassificationZH(classifications, res?.data);
             return {
-              key: i.id,
+              key: i.id + ':' + i.version,
               id: i.id,
               shortName: getLangText(i['common:shortName'], lang),
               classification: classificationToString(classificationZH),
               sourceCitation: i.sourceCitation ?? '-',
               publicationType: i.publicationType ?? '-',
+              version: i.version,
               modifiedAt: new Date(i.modified_at),
             };
           } catch (e) {
@@ -136,12 +125,13 @@ export async function getSourceTableAll(
       data = result.data.map((i: any) => {
         try {
           return {
-            key: i.id,
+            key: i.id + ':' + i.version,
             id: i.id,
             shortName: getLangText(i?.['common:shortName'], lang),
             classification: classificationToString(i?.['common:class']),
             sourceCitation: i?.sourceCitation ?? '-',
             publicationType: i?.publicationType ?? '-',
+            version: i.version,
             modifiedAt: new Date(i?.modified_at),
           };
         } catch (e) {
@@ -265,20 +255,6 @@ export async function getSourceTablePgroongaSearch(
   return result;
 }
 
-export async function getSourceDetail(id: string) {
-  const result = await supabase.from('sources').select('json, modified_at').eq('id', id);
-  if (result.data && result.data.length > 0) {
-    const data = result.data[0];
-    return Promise.resolve({
-      data: {
-        json: data.json,
-        modifiedAt: data?.modified_at,
-      },
-      success: true,
-    });
-  }
-  return Promise.resolve({
-    data: null,
-    success: true,
-  });
+export async function getSourceDetail(id: string, version: string) {
+  return getDataDetail(id, version, 'sources');
 }

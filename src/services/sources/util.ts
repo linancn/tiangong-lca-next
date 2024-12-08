@@ -8,14 +8,19 @@ import {
   removeEmptyObjects,
 } from '../general/util';
 
-export function genSourceJsonOrdered(id: string, data: any, oldData: any) {
+export function genSourceJsonOrdered(id: string, data: any) {
   return removeEmptyObjects({
     sourceDataSet: {
-      '@xmlns:common': oldData.sourceDataSet?.['@xmlns:common'] ?? {},
-      '@xmlns': oldData.sourceDataSet?.['@xmlns'] ?? {},
-      '@xmlns:xsi': oldData.sourceDataSet?.['@xmlns:xsi'] ?? {},
-      '@version': oldData.sourceDataSet?.['@version'] ?? {},
-      '@xsi:schemaLocation': oldData.sourceDataSet?.['@xsi:schemaLocation'] ?? {},
+      // '@xmlns:common': oldData.sourceDataSet?.['@xmlns:common'] ?? {},
+      // '@xmlns': oldData.sourceDataSet?.['@xmlns'] ?? {},
+      // '@xmlns:xsi': oldData.sourceDataSet?.['@xmlns:xsi'] ?? {},
+      // '@version': oldData.sourceDataSet?.['@version'] ?? {},
+      // '@xsi:schemaLocation': oldData.sourceDataSet?.['@xsi:schemaLocation'] ?? {},
+      '@xmlns:common': 'http://lca.jrc.it/ILCD/Common',
+      '@xmlns': 'http://lca.jrc.it/ILCD/Source',
+      '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
+      '@version': '1.1',
+      '@xsi:schemaLocation': 'http://lca.jrc.it/ILCD/Source ../../schemas/ILCD_SourceDataSet.xsd',
       sourceInformation: {
         dataSetInformation: {
           'common:UUID': id,
@@ -71,6 +76,10 @@ export function genSourceJsonOrdered(id: string, data: any, oldData: any) {
               data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
                 '@uri'
               ] ?? {},
+            '@version':
+              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
+                '@version'
+              ] ?? {},
             'common:shortDescription': getLangJson(
               data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
                 'common:shortDescription'
@@ -95,6 +104,10 @@ export function genSourceJsonOrdered(id: string, data: any, oldData: any) {
               data?.administrativeInformation?.publicationAndOwnership?.[
                 'common:referenceToOwnershipOfDataSet'
               ]?.['@uri'] ?? {},
+            '@version':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]?.['@version'] ?? {},
             'common:shortDescription': getLangJson(
               data?.administrativeInformation?.publicationAndOwnership?.[
                 'common:referenceToOwnershipOfDataSet'
@@ -166,6 +179,10 @@ export function genSourceFromData(data: any) {
             data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
               '@uri'
             ],
+          '@version':
+            data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
+              '@version'
+            ],
           'common:shortDescription': getLangList(
             data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
               'common:shortDescription'
@@ -189,6 +206,10 @@ export function genSourceFromData(data: any) {
             data?.administrativeInformation?.publicationAndOwnership?.[
               'common:referenceToOwnershipOfDataSet'
             ]?.['@uri'],
+          '@version':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToOwnershipOfDataSet'
+            ]?.['@version'],
           'common:shortDescription': getLangList(
             data?.administrativeInformation?.publicationAndOwnership?.[
               'common:referenceToOwnershipOfDataSet'

@@ -1,7 +1,7 @@
 import { deleteSource, getSourceDetail } from '@/services/sources/api';
 import { genSourceFromData } from '@/services/sources/util';
 import { supabaseStorageBucket } from '@/services/supabase/key';
-import { getFileUrls, removeFile } from '@/services/supabase/storage';
+import { getThumbFileUrls, removeFile } from '@/services/supabase/storage';
 import { DeleteOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
 import { Button, Modal, Tooltip, message } from 'antd';
@@ -11,11 +11,12 @@ import { FormattedMessage, useIntl } from 'umi';
 
 type Props = {
   id: string;
+  version: string;
   buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
 };
-const SourceDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisible }) => {
+const SourceDelete: FC<Props> = ({ id, version, buttonType, actionRef, setViewDrawerVisible }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const intl = useIntl();
 
@@ -24,7 +25,7 @@ const SourceDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisib
   }, []);
 
   const deleteData = () => {
-    deleteSource(id).then(async (result: any) => {
+    deleteSource(id, version).then(async (result: any) => {
       if (result.status === 204) {
         message.success(
           intl.formatMessage({
@@ -42,9 +43,9 @@ const SourceDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisib
   };
 
   const handleOk = useCallback(async () => {
-    await getSourceDetail(id).then(async (result: any) => {
+    await getSourceDetail(id, version).then(async (result: any) => {
       const dataSet = genSourceFromData(result.data?.json?.sourceDataSet ?? {});
-      const initFile = await getFileUrls(
+      const initFile = await getThumbFileUrls(
         dataSet.sourceInformation?.dataSetInformation?.referenceToDigitalFile,
       );
 

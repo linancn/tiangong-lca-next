@@ -1,3 +1,4 @@
+import { initVersion } from '@/services/general/data';
 import { formatDateTime } from '@/services/general/util';
 import { createSource } from '@/services/sources/api';
 import { supabaseStorageBucket } from '@/services/supabase/key';
@@ -30,7 +31,7 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
   const intl = useIntl();
 
   const handletFromData = () => {
-    if (fromData?.id)
+    if (fromData)
       setFromData({
         ...fromData,
         [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
@@ -77,7 +78,7 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
       });
     }
 
-    const result = await createSource({
+    const result = await createSource(v4(), {
       ...fromData,
       sourceInformation: {
         ...fromData.sourceInformation,
@@ -122,13 +123,15 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
         dataEntryBy: {
           'common:timeStamp': currentDateTime,
         },
+        publicationAndOwnership: {
+          'common:dataSetVersion': initVersion,
+        },
       },
     };
-    const newId = v4();
-    setInitData({ ...newData, id: newId });
+    setInitData(newData);
     formRefCreate.current?.resetFields();
     formRefCreate.current?.setFieldsValue(newData);
-    setFromData({ ...newData, id: newId });
+    setFromData(newData);
     setFileList0([]);
     setFileList([]);
   }, [drawerVisible]);

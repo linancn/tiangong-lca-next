@@ -30,6 +30,7 @@ export default {
   'pages.button.upload': '上传',
   'pages.button.input': '流入',
   'pages.button.output': '流出',
+  'pages.button.downloadFile': '下载文件',
   'pages.button.model.add': '添加节点',
   'pages.button.model.info': '基础信息',
   'pages.button.model.save': '提交保存',

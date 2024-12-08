@@ -12,21 +12,23 @@ type Props = {
 
 const LevelTextItemDescription: FC<Props> = ({ data, lang, categoryType, flowType }) => {
   const [spinning, setSpinning] = useState<boolean>(false);
-  const [calssStr, setClassStr] = useState<any>('');
+  const [calssStr, setClassStr] = useState<any>(undefined);
 
   useEffect(() => {
     if (data && Array.isArray(data) && data.length > 0) {
-      setSpinning(true);
-      if (categoryType === 'Flow' && flowType === 'Elementary flow') {
-        getILCDFlowCategorization(lang, [data[0]]).then((res) => {
-          setClassStr(genClassStr(data, 0, res.data));
-          setSpinning(false);
-        });
-      } else {
-        getILCDClassification(categoryType, lang, [data[0]]).then((res) => {
-          setClassStr(genClassStr(data, 0, res.data));
-          setSpinning(false);
-        });
+      if (data[0] !== undefined) {
+        setSpinning(true);
+        if (categoryType === 'Flow' && flowType === 'Elementary flow') {
+          getILCDFlowCategorization(lang, [data[0]]).then((res) => {
+            setClassStr(genClassStr(data, 0, res.data));
+            setSpinning(false);
+          });
+        } else {
+          getILCDClassification(categoryType, lang, [data[0]]).then((res) => {
+            setClassStr(genClassStr(data, 0, res.data));
+            setSpinning(false);
+          });
+        }
       }
     }
   }, [data]);
@@ -41,7 +43,7 @@ const LevelTextItemDescription: FC<Props> = ({ data, lang, categoryType, flowTyp
           }
           labelStyle={{ width: '100px' }}
         >
-          {calssStr}
+          {calssStr ?? '-'}
         </Descriptions.Item>
       </Descriptions>
     </Spin>

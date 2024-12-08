@@ -3,6 +3,7 @@ export type SourceTable = {
   id: string;
   lang: string;
   shortName: string;
+  version: string;
   classification: string;
   sourceCitation: string;
   publicationType: string;

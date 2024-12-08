@@ -1,8 +1,9 @@
-import { getFileUrls, isImage } from '@/services/supabase/storage';
+import { getOriginalFileUrl, getThumbFileUrls, isImage } from '@/services/supabase/storage';
 import { Card, Image, Space, Spin } from 'antd';
 import React, { FC } from 'react';
 
 import { FileTwoTone } from '@ant-design/icons';
+import { useIntl } from 'umi';
 
 type Props = {
   data: any;
@@ -12,10 +13,25 @@ const FileGallery: FC<Props> = ({ data }) => {
   const [fileUrls, setFileUrls] = React.useState<any[]>([]);
   const [spinning, setSpinning] = React.useState<boolean>(false);
 
+  const intl = useIntl();
+
+  const updateFileUrls = (previewUrl: any, index: number) => {
+    setFileUrls((prevFileUrls) => {
+      const newFileUrls = [...prevFileUrls];
+      if (newFileUrls.length > index) {
+        newFileUrls[index] = {
+          ...newFileUrls[index],
+          url: previewUrl,
+        };
+      }
+      return newFileUrls;
+    });
+  };
+
   React.useEffect(() => {
     const fetchData = async () => {
       if (data) {
-        const urls = await getFileUrls(data);
+        const urls = await getThumbFileUrls(data);
         setFileUrls(urls);
         setSpinning(false);
       }
@@ -24,8 +40,8 @@ const FileGallery: FC<Props> = ({ data }) => {
     fetchData();
   }, [data]);
 
-  if (!data) {
-    return <></>;
+  if (!data || data.length === 0) {
+    return <>-</>;
   }
 
   return (
@@ -53,8 +69,15 @@ const FileGallery: FC<Props> = ({ data }) => {
                       height: '100%',
                       objectFit: 'cover',
                     }}
-                    src={fileUrl.url}
+                    src={fileUrl.thumbUrl}
                     preview={{
+                      onVisibleChange: (visible) => {
+                        if (visible) {
+                          getOriginalFileUrl(fileUrl.uid, fileUrl.name).then((res) => {
+                            updateFileUrls(res.url, index);
+                          });
+                        }
+                      },
                       src: fileUrl.url,
                     }}
                   />
@@ -62,7 +85,19 @@ const FileGallery: FC<Props> = ({ data }) => {
               );
             } else {
               return (
-                <a href={fileUrl.url} target="blank" title="Open file" key={index}>
+                <a
+                  target="blank"
+                  title={intl.formatMessage({
+                    id: 'pages.button.downloadFile',
+                    defaultMessage: 'Download file',
+                  })}
+                  key={index}
+                  onClick={() => {
+                    getOriginalFileUrl(fileUrl.uid, fileUrl.name).then((res) => {
+                      window.open(res.url, '_blank');
+                    });
+                  }}
+                >
                   <Card
                     style={{
                       width: 100,

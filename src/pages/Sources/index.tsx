@@ -66,6 +66,12 @@ const TableList: FC = () => {
       search: false,
     },
     {
+      title: <FormattedMessage id="pages.table.title.version" defaultMessage="Version" />,
+      dataIndex: 'version',
+      sorter: false,
+      search: false,
+    },
+    {
       title: <FormattedMessage id="pages.table.title.updatedAt" defaultMessage="Updated at" />,
       dataIndex: 'modifiedAt',
       valueType: 'dateTime',
@@ -80,9 +86,10 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <SourceView lang={lang} id={row.id} buttonType={'icon'} />
+              <SourceView lang={lang} id={row.id} version={row.version} buttonType={'icon'} />
               <SourceEdit
                 id={row.id}
+                version={row.version}
                 lang={lang}
                 buttonType={'icon'}
                 actionRef={actionRef}
@@ -90,6 +97,7 @@ const TableList: FC = () => {
               />
               <SourceDelete
                 id={row.id}
+                version={row.version}
                 buttonType={'icon'}
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
@@ -99,7 +107,7 @@ const TableList: FC = () => {
         }
         return [
           <Space size={'small'} key={0}>
-            <SourceView lang={lang} id={row.id} buttonType={'icon'} />
+            <SourceView lang={lang} id={row.id} version={row.version} buttonType={'icon'} />
           </Space>,
         ];
       },

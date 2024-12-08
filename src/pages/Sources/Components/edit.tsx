@@ -1,7 +1,7 @@
 import { getSourceDetail, updateSource } from '@/services/sources/api';
 import { genSourceFromData } from '@/services/sources/util';
 import { supabaseStorageBucket } from '@/services/supabase/key';
-import { getFileUrls, removeFile, uploadFile } from '@/services/supabase/storage';
+import { getThumbFileUrls, removeFile, uploadFile } from '@/services/supabase/storage';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -15,13 +15,21 @@ import { SourceForm } from './form';
 
 type Props = {
   id: string;
+  version: string;
   lang: string;
   buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerVisible }) => {
+const SourceEdit: FC<Props> = ({
+  id,
+  version,
+  buttonType,
+  actionRef,
+  lang,
+  setViewDrawerVisible,
+}) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
   const [activeTabKey, setActiveTabKey] = useState<string>('sourceInformation');
@@ -33,7 +41,7 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerV
   const [loadFiles, setLoadFiles] = useState<any[]>([]);
 
   const handletFromData = () => {
-    if (fromData?.id)
+    if (fromData)
       setFromData({
         ...fromData,
         [activeTabKey]: formRefEdit.current?.getFieldsValue()?.[activeTabKey] ?? {},
@@ -54,16 +62,12 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerV
 
   const onReset = () => {
     setSpinning(true);
-    getSourceDetail(id).then(async (result: any) => {
+    getSourceDetail(id, version).then(async (result: any) => {
       const dataSet = genSourceFromData(result.data?.json?.sourceDataSet ?? {});
-      setInitData({ ...dataSet, id: id });
-      setFromData({ ...dataSet, id: id });
-      formRefEdit.current?.resetFields();
-      formRefEdit.current?.setFieldsValue({
-        ...dataSet,
-        id: id,
-      });
-      const initFile = await getFileUrls(
+      setInitData(dataSet);
+      setFromData(dataSet);
+      formRefEdit.current?.setFieldsValue(dataSet);
+      const initFile = await getThumbFileUrls(
         dataSet.sourceInformation?.dataSetInformation?.referenceToDigitalFile,
       );
       await setFileList0(initFile);
@@ -104,7 +108,7 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerV
       });
     }
 
-    const result = await updateSource({
+    const result = await updateSource(id, version, {
       ...fromData,
       sourceInformation: {
         ...fromData.sourceInformation,
@@ -175,9 +179,9 @@ const SourceEdit: FC<Props> = ({ id, buttonType, actionRef, lang, setViewDrawerV
             <Button onClick={() => setDrawerVisible(false)}>
               <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
             </Button>
-            <Button onClick={onReset}>
+            {/* <Button onClick={onReset}>
               <FormattedMessage id="pages.button.reset" defaultMessage="Reset" />
-            </Button>
+            </Button> */}
             <Button onClick={() => formRefEdit.current?.submit()} type="primary">
               <FormattedMessage id="pages.button.submit" defaultMessage="Submit" />
             </Button>

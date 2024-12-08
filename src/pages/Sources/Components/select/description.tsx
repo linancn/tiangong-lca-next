@@ -25,7 +25,12 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
           </Descriptions.Item>
         </Descriptions>
         {data?.['@refObjectId'] && (
-          <SourceView id={data?.['@refObjectId']} buttonType="text" lang={lang} />
+          <SourceView
+            id={data?.['@refObjectId']}
+            version={data?.['@version']}
+            buttonType="text"
+            lang={lang}
+          />
         )}
       </Space>
       <br />
@@ -47,6 +52,16 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
           labelStyle={{ width: '140px' }}
         >
           {data?.['@uri'] ?? '-'}
+        </Descriptions.Item>
+      </Descriptions>
+      <br />
+      <Descriptions bordered size={'small'} column={1}>
+        <Descriptions.Item
+          key={0}
+          label={<FormattedMessage id="pages.contact.version" defaultMessage="Version" />}
+          labelStyle={{ width: '140px' }}
+        >
+          {data?.['@version'] ?? '-'}
         </Descriptions.Item>
       </Descriptions>
       {/* <br />
