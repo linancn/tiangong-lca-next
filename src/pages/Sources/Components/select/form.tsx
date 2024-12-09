@@ -19,15 +19,20 @@ type Props = {
 
 const SourceSelectForm: FC<Props> = ({ name, label, lang, formRef, onData }) => {
   const [id, setId] = useState<string | undefined>(undefined);
+  const [version, setVersion] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
 
-  const handletSourceData = (rowKey: any) => {
-    getSourceDetail(rowKey).then(async (result: any) => {
+  const handletSourceData = (rowKey: string, thisVersion: string) => {
+    getSourceDetail(rowKey, thisVersion).then(async (result: any) => {
       const selectedData = genSourceFromData(result.data?.json?.sourceDataSet ?? {});
       await formRef.current?.setFieldValue(name, {
         '@refObjectId': `${rowKey}`,
         '@type': 'source data set',
         '@uri': `../sources/${rowKey}.xml`,
+        '@version':
+          selectedData?.administrativeInformation?.publicationAndOwnership?.[
+            'common:dataSetVersion'
+          ] ?? '',
         'common:shortDescription':
           selectedData?.sourceInformation?.dataSetInformation?.['common:shortName'] ?? [],
       });
@@ -39,6 +44,7 @@ const SourceSelectForm: FC<Props> = ({ name, label, lang, formRef, onData }) => 
 
   useEffect(() => {
     setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
+    setVersion(formRef.current?.getFieldValue([...name, '@version']));
   });
 
   return (
@@ -51,8 +57,28 @@ const SourceSelectForm: FC<Props> = ({ name, label, lang, formRef, onData }) => 
           <Input disabled={true} style={{ width: '350px', color: token.colorTextDescription }} />
         </Form.Item>
         <Space direction="horizontal" style={{ marginTop: '6px' }}>
-          <SourceSelectDrawer buttonType="text" lang={lang} onData={handletSourceData} />
-          {id && <SourceView lang={lang} id={id} buttonType="text" />}
+          {!id && <SourceSelectDrawer buttonType="text" lang={lang} onData={handletSourceData} />}
+          {id && (
+            <SourceSelectDrawer
+              buttonType="text"
+              buttonText={<FormattedMessage id="pages.button.reselect" defaultMessage="Reselect" />}
+              lang={lang}
+              onData={handletSourceData}
+            />
+          )}
+          {id && (
+            <Button
+              onClick={() => {
+                handletSourceData(id, version ?? '');
+              }}
+            >
+              <FormattedMessage
+                id="pages.button.updateReference"
+                defaultMessage="Update reference"
+              />
+            </Button>
+          )}
+          {id && <SourceView lang={lang} id={id} version={version ?? ''} buttonType="text" />}
           {id && (
             <Button
               onClick={() => {
@@ -74,6 +100,12 @@ const SourceSelectForm: FC<Props> = ({ name, label, lang, formRef, onData }) => 
       <Form.Item
         label={<FormattedMessage id="pages.contact.uri" defaultMessage="URI" />}
         name={[...name, '@uri']}
+      >
+        <Input disabled={true} style={{ color: token.colorTextDescription }} />
+      </Form.Item>
+      <Form.Item
+        label={<FormattedMessage id="pages.contact.version" defaultMessage="Version" />}
+        name={[...name, '@version']}
       >
         <Input disabled={true} style={{ color: token.colorTextDescription }} />
       </Form.Item>

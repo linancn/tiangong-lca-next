@@ -1,5 +1,5 @@
 import { GetProp, UploadFile, UploadProps } from 'antd';
-import { supabaseStorageBucket, supabaseUrl } from '../supabase/key';
+import { supabaseStorageBucket } from '../supabase/key';
 
 import path from 'path';
 import { supabase } from '../supabase';
@@ -20,12 +20,34 @@ export const isImage = (file: UploadFile) => {
   return imageExtensions.includes(path.extname(file.name));
 };
 
-export async function getFileUrls(fileList: any) {
-  const session = await supabase.auth.getSession();
-  if (!session) {
-    throw new Error('No session');
+export async function getOriginalFileUrl(file: string, name: string) {
+  if (!file) {
+    return {};
   }
+  const filePaths = file.split('/');
+  if (filePaths.length === 3) {
+    try {
+      const originalFile = await supabase.storage.from(filePaths[1]).download(filePaths[2]);
 
+      if (!originalFile.data) {
+        return { uid: file, status: 'error', name: name, url: '' };
+      }
+
+      const originalFileUrl = URL.createObjectURL(originalFile.data);
+      return {
+        uid: file,
+        status: 'done',
+        name: name,
+        url: originalFileUrl,
+      };
+    } catch (e) {
+      return { uid: file, status: 'error', name: name, url: '' };
+    }
+  }
+  return { uid: file, status: 'error', name: name, url: '' };
+}
+
+export async function getThumbFileUrls(fileList: any) {
   if (!fileList) {
     return [];
   }
@@ -34,30 +56,35 @@ export async function getFileUrls(fileList: any) {
     fileList.map(async (fileJson: any, index: number) => {
       const file = fileJson?.['@uri'];
       if (file) {
-        const fileUrl = `${supabaseUrl}/storage/v1/object/authenticated${file.replace('..', '')}`;
-        try {
-          const response = await fetch(fileUrl, {
-            headers: {
-              Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
-            },
-          });
-          if (!response.ok) {
-            return { uid: file, status: 'error', name: `${index}` };
+        const filePaths = file.split('/');
+        if (filePaths.length === 3) {
+          try {
+            let thumbFileUrl = '.';
+            if (imageExtensions.includes(path.extname(file))) {
+              const thumbFile = await supabase.storage.from(filePaths[1]).download(filePaths[2], {
+                transform: {
+                  width: 100,
+                  height: 100,
+                  resize: 'contain',
+                },
+              });
+              if (thumbFile.data) {
+                thumbFileUrl = URL.createObjectURL(thumbFile.data);
+              }
+            }
+            return {
+              uid: file,
+              status: 'done',
+              name: `${index + 1}${path.extname(file)}`,
+              thumbUrl: thumbFileUrl,
+              url: thumbFileUrl,
+            };
+          } catch (e) {
+            return { uid: file, status: 'error', name: `${index + 1}${path.extname(file)}` };
           }
-          const blob = await response.blob();
-          const blobUrl = URL.createObjectURL(blob);
-          const thumbUrl = imageExtensions.includes(path.extname(file)) ? blobUrl : '.';
-          return {
-            uid: file,
-            status: 'done',
-            name: `${index}${path.extname(file)}`,
-            thumbUrl: thumbUrl,
-            url: blobUrl,
-          };
-        } catch (e) {
-          return { uid: file, status: 'error', name: `${index}${path.extname(file)}` };
         }
       }
+      return { uid: file, status: 'error', name: `${index + 1}${path.extname(file)}` };
     }),
   );
   return urls;

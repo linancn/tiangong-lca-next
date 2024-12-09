@@ -14,6 +14,7 @@ import { publicationTypeOptions } from './optiondata';
 import SourceSelectDescription from './select/description';
 type Props = {
   id: string;
+  version: string;
   // dataSource: string;
   buttonType: string;
   // actionRef: React.MutableRefObject<ActionType | undefined>;
@@ -25,7 +26,7 @@ const getPublicationTypeLabel = (value: string) => {
   return option ? option.label : '-';
 };
 
-const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
+const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
   const [activeTabKey, setActiveTabKey] = useState<string>('sourceInformation');
   const [drawerVisible, setDrawerVisible] = useState(false);
   // const [footerButtons, setFooterButtons] = useState<JSX.Element>();
@@ -280,8 +281,8 @@ const SourceView: FC<Props> = ({ id, buttonType, lang }) => {
   const onView = () => {
     setDrawerVisible(true);
     setSpinning(true);
-    getSourceDetail(id).then(async (result: any) => {
-      setInitData({ ...genSourceFromData(result.data?.json?.sourceDataSet ?? {}), id: id });
+    getSourceDetail(id, version).then(async (result: any) => {
+      setInitData(genSourceFromData(result.data?.json?.sourceDataSet ?? {}));
       // if (dataSource === 'my') {
       //   setFooterButtons(
       //     <>

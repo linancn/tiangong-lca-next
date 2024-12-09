@@ -1,5 +1,5 @@
 import { ST_r, StringMultiLang_r, dataSetVersion } from '@/components/Validator/index';
-import { FileType, getBase64, isImage } from '@/services/supabase/storage';
+import { FileType, getBase64, getOriginalFileUrl, isImage } from '@/services/supabase/storage';
 import { Card, Form, Image, Input, Select, Space, Upload, UploadFile } from 'antd';
 import { FC, useState } from 'react';
 
@@ -43,11 +43,17 @@ export const SourceForm: FC<Props> = ({
     if (isImage(file)) {
       if (!file.url && !file.preview) {
         file.preview = await getBase64(file.originFileObj as FileType);
+        setPreviewImage(file.preview);
+      } else {
+        getOriginalFileUrl(file.uid, file.name).then((res) => {
+          setPreviewImage(res?.url ?? '');
+        });
       }
-      setPreviewImage(file.thumbUrl || (file.preview as string));
       setPreviewOpen(true);
     } else {
-      window.open(file.url || (file.preview as string), '_blank');
+      getOriginalFileUrl(file.uid, file.name).then((res) => {
+        window.open(res.url, '_blank');
+      });
     }
   };
 
@@ -171,7 +177,6 @@ export const SourceForm: FC<Props> = ({
               return false;
             }}
             onChange={({ fileList: newFileList }) => {
-              console.log(fileList);
               setFileList(newFileList);
             }}
           >
@@ -310,18 +315,13 @@ export const SourceForm: FC<Props> = ({
   };
 
   return (
-    <>
-      <Card
-        style={{ width: '100%' }}
-        tabList={tabList}
-        activeTabKey={activeTabKey}
-        onTabChange={onTabChange}
-      >
-        {tabContent[activeTabKey]}
-      </Card>
-      <Form.Item name="id" hidden>
-        <Input />
-      </Form.Item>
-    </>
+    <Card
+      style={{ width: '100%' }}
+      tabList={tabList}
+      activeTabKey={activeTabKey}
+      onTabChange={onTabChange}
+    >
+      {tabContent[activeTabKey]}
+    </Card>
   );
 };
