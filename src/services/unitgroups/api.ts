@@ -7,48 +7,32 @@ import {
 
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
+import { getDataDetail } from '../general/api';
 import { getILCDClassification } from '../ilcd/api';
 import { genUnitGroupJsonOrdered } from './util';
 
-const table_name = 'unitgroups';
-
-export async function createUnitGroup(data: any) {
-  // const newID = v4();
-  const oldData = {
-    unitGroupDataSet: {
-      '@xmlns': 'http://lca.jrc.it/ILCD/UnitGroup',
-      '@xmlns:common': 'http://lca.jrc.it/ILCD/Common',
-      '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
-      '@version': '1.1',
-      '@xsi:schemaLocation':
-        'http://lca.jrc.it/ILCD/UnitGroup ../../schemas/ILCD_UnitGroupDataSet.xsd',
-    },
-  };
-  const newData = genUnitGroupJsonOrdered(data.id, data, oldData);
+export async function createUnitGroup(id: string, data: any) {
+  const newData = genUnitGroupJsonOrdered(id, data);
   const result = await supabase
-    .from(table_name)
-    .insert([{ id: data.id, json_ordered: newData }])
+    .from('unitgroups')
+    .insert([{ id: id, json_ordered: newData }])
     .select();
   return result;
 }
 
-export async function updateUnitGroup(data: any) {
-  const result = await supabase.from(table_name).select('id, json').eq('id', data.id);
-  if (result.data && result.data.length === 1) {
-    const oldData = result.data[0].json;
-    const newData = genUnitGroupJsonOrdered(data.id, data, oldData);
-    const updateResult = await supabase
-      .from(table_name)
-      .update({ json_ordered: newData })
-      .eq('id', data.id)
-      .select();
-    return updateResult;
-  }
-  return null;
+export async function updateUnitGroup(id: string, version: string, data: any) {
+  const newData = genUnitGroupJsonOrdered(id, data);
+  const updateResult = await supabase
+    .from('unitgroups')
+    .update({ json_ordered: newData })
+    .eq('id', id)
+    .eq('version', version)
+    .select();
+  return updateResult;
 }
 
-export async function deleteUnitGroup(id: string) {
-  const result = await supabase.from(table_name).delete().eq('id', id);
+export async function deleteUnitGroup(id: string, version: string) {
+  const result = await supabase.from('unitgroups').delete().eq('id', id).eq('version', version);
   return result;
 }
 
@@ -70,13 +54,14 @@ export async function getUnitGroupTableAll(
         json->unitGroupDataSet->unitGroupInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
         json->unitGroupDataSet->unitGroupInformation->quantitativeReference->>referenceToReferenceUnit,
         json->unitGroupDataSet->units->unit,
+        version,
         modified_at
     `;
 
   let result: any = {};
   if (dataSource === 'tg') {
     result = await supabase
-      .from(table_name)
+      .from('unitgroups')
       .select(selectStr, { count: 'exact' })
       .eq('state_code', 100)
       .order(sortBy, { ascending: orderBy === 'ascend' })
@@ -88,7 +73,7 @@ export async function getUnitGroupTableAll(
     const session = await supabase.auth.getSession();
     if (session.data.session) {
       result = await supabase
-        .from(table_name)
+        .from('unitgroups')
         .select(selectStr, { count: 'exact' })
         .eq('user_id', session.data.session.user?.id)
         .order(sortBy, { ascending: orderBy === 'ascend' })
@@ -132,6 +117,7 @@ export async function getUnitGroupTableAll(
               refUnitId: i?.referenceToReferenceUnit ?? '-',
               refUnitName: refUnit?.name ?? '-',
               refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
+              version: i.version,
               modifiedAt: new Date(i?.modified_at),
             };
           } catch (e) {
@@ -157,6 +143,7 @@ export async function getUnitGroupTableAll(
             refUnitId: i?.referenceToReferenceUnit ?? '-',
             refUnitName: refUnit?.name ?? '-',
             refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
+            version: i.version,
             modifiedAt: new Date(i?.modified_at),
           };
         } catch (e) {
@@ -235,13 +222,14 @@ export async function getUnitGroupTablePgroongaSearch(
             const classificationZH = genClassificationZH(classifications, res?.data);
 
             return {
-              key: i.id,
+              key: i.id + ':' + i.version,
               id: i.id,
               name: getLangText(dataInfo?.dataSetInformation?.['common:name'] ?? {}, lang),
               classification: classificationToString(classificationZH),
               refUnitId: refUnitId,
               refUnitName: refUnit?.name ?? '-',
               refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
+              version: i.version,
               modifiedAt: new Date(i?.modified_at),
             };
           } catch (e) {
@@ -262,7 +250,7 @@ export async function getUnitGroupTablePgroongaSearch(
           const refUnit = unitList.find((item) => item?.['@dataSetInternalID'] === refUnitId);
 
           return {
-            key: i.id,
+            key: i.id + ':' + i.version,
             id: i.id,
             name: getLangText(dataInfo?.dataSetInformation?.['common:name'] ?? {}, lang),
             classification: classificationToString(
@@ -273,6 +261,7 @@ export async function getUnitGroupTablePgroongaSearch(
             refUnitId: refUnitId,
             refUnitName: refUnit?.name ?? '-',
             refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
+            version: i.version,
             modifiedAt: new Date(i?.modified_at),
           };
         } catch (e) {
@@ -295,57 +284,52 @@ export async function getUnitGroupTablePgroongaSearch(
   return result;
 }
 
-export async function getUnitGroupDetail(id: string) {
-  const result = await supabase.from(table_name).select('json, modified_at').eq('id', id);
-  if (result.data && result.data.length > 0) {
-    const data = result.data[0];
-    return Promise.resolve({
-      data: {
-        json: data?.json,
-        modifiedAt: data?.modified_at,
-      },
-      success: true,
-    });
-  }
-  return Promise.resolve({
-    data: {},
-    success: true,
-  });
+export async function getUnitGroupDetail(id: string, version: string) {
+  return getDataDetail(id, version, 'unitgroups');
 }
 
-export async function getReferenceUnit(id: string) {
-  if (id) {
-    const selectStr = `
+export async function getReferenceUnit(id: string, version: string) {
+  let result: any = {};
+  const selectStr = `
         id,
+        version,
         json->unitGroupDataSet->unitGroupInformation->dataSetInformation->"common:name",
         json->unitGroupDataSet->unitGroupInformation->quantitativeReference->referenceToReferenceUnit,
         json->unitGroupDataSet->units->unit
     `;
-
-    const result = await supabase.from(table_name).select(selectStr).eq('id', id);
-
-    if (result.error) {
-      console.log('error', result.error);
-    }
-
-    if (result.data) {
-      if (result.data.length === 0) {
-        return Promise.resolve({
-          data: {},
-          success: true,
-        });
+  if (id && id.length === 36) {
+    if (version && version.length === 9) {
+      result = await supabase
+        .from('unitgroups')
+        .select(selectStr)
+        .eq('id', id)
+        .eq('version', version);
+      if (result.data === null || result.data.length === 0) {
+        result = await supabase
+          .from('unitgroups')
+          .select(selectStr)
+          .eq('id', id)
+          .order('version', { ascending: false })
+          .range(0, 0);
       }
-
+    } else {
+      result = await supabase
+        .from('unitgroups')
+        .select(selectStr)
+        .eq('id', id)
+        .order('version', { ascending: false })
+        .range(0, 0);
+    }
+    if (result?.data && result.data.length > 0) {
       const data = result.data[0];
-
       const dataList = jsonToList(data?.unit);
       const refData = dataList.find(
         (item) => item?.['@dataSetInternalID'] === data?.referenceToReferenceUnit,
       );
-
       return Promise.resolve({
         data: {
           id: data.id,
+          version: data.version,
           name: data['common:name'],
           refUnitId: data?.referenceToReferenceUnit ?? '-',
           refUnitName: refData?.name ?? '-',
@@ -354,9 +338,9 @@ export async function getReferenceUnit(id: string) {
         success: true,
       });
     }
+    return Promise.resolve({
+      data: null,
+      success: false,
+    });
   }
-  return Promise.resolve({
-    data: {},
-    success: false,
-  });
 }

@@ -127,6 +127,7 @@ export const FlowForm: FC<Props> = ({
           <ReferenceUnit
             key={0}
             id={row.referenceToFlowPropertyDataSetId}
+            version={row.referenceToFlowPropertyDataSetVersion}
             idType={'flowproperty'}
             lang={lang}
           />,

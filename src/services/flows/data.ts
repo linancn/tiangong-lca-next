@@ -23,6 +23,7 @@ export type FlowpropertyTabTable = {
   dataSetInternalID: string;
   meanValue: string;
   referenceToFlowPropertyDataSetId: string;
+  referenceToFlowPropertyDataSetVersion: string;
   referenceToFlowPropertyDataSet: string;
   quantitativeReference: boolean;
 };

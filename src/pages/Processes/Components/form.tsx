@@ -162,7 +162,13 @@ export const ProcessForm: FC<Props> = ({
       search: false,
       render: (_, row) => {
         return [
-          <ReferenceUnit key={0} id={row.referenceToFlowDataSetId} idType={'flow'} lang={lang} />,
+          <ReferenceUnit
+            key={0}
+            id={row.referenceToFlowDataSetId}
+            version={row.referenceToFlowDataSetVersion}
+            idType={'flow'}
+            lang={lang}
+          />,
         ];
       },
     },

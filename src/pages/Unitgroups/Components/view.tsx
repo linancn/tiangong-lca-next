@@ -16,8 +16,7 @@ import { complianceOptions } from './optiondata';
 
 type Props = {
   id: string;
-  // dataSource: string;
-  // actionRef: React.MutableRefObject<ActionType | undefined>;
+  version: string;
   lang: string;
   buttonType: string;
 };
@@ -27,7 +26,7 @@ const getComplianceLabel = (value: string) => {
   return option ? option.label : '-';
 };
 
-const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
+const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   // const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [spinning, setSpinning] = useState(false);
@@ -317,7 +316,7 @@ const ContactView: FC<Props> = ({ id, lang, buttonType }) => {
   const onView = () => {
     setDrawerVisible(true);
     setSpinning(true);
-    getUnitGroupDetail(id).then(async (result: any) => {
+    getUnitGroupDetail(id, version).then(async (result: any) => {
       setInitData({ ...genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {}) });
       setUnitDataSource([
         ...(genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {})?.units?.unit ?? []),

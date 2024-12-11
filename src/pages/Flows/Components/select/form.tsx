@@ -157,6 +157,7 @@ const FlowsSelectForm: FC<Props> = ({ name, label, lang, formRef, drawerVisible,
 
       <UnitGroupFromMini
         id={id}
+        version={version}
         idType={'flow'}
         name={name}
         formRef={formRef}

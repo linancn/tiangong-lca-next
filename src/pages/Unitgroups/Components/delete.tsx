@@ -8,11 +8,18 @@ import { FormattedMessage, useIntl } from 'umi';
 
 type Props = {
   id: string;
+  version: string;
   buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
 };
-const UnitGroupDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVisible }) => {
+const UnitGroupDelete: FC<Props> = ({
+  id,
+  version,
+  buttonType,
+  actionRef,
+  setViewDrawerVisible,
+}) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const intl = useIntl();
 
@@ -21,7 +28,7 @@ const UnitGroupDelete: FC<Props> = ({ id, buttonType, actionRef, setViewDrawerVi
   }, []);
 
   const handleOk = useCallback(() => {
-    deleteUnitGroup(id).then(async (result: any) => {
+    deleteUnitGroup(id, version).then(async (result: any) => {
       if (result.status === 204) {
         message.success(
           intl.formatMessage({

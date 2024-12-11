@@ -11,13 +11,14 @@ const { TextArea } = Input;
 
 type Props = {
   id: string | undefined;
+  version: string | undefined;
   idType: string;
   name: any;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   drawerVisible: boolean;
 };
 
-const UnitGroupFromMini: FC<Props> = ({ id, idType, name, formRef, drawerVisible }) => {
+const UnitGroupFromMini: FC<Props> = ({ id, version, idType, name, formRef, drawerVisible }) => {
   const [spinning, setSpinning] = useState<boolean>(false);
   const { token } = theme.useToken();
 
@@ -25,24 +26,26 @@ const UnitGroupFromMini: FC<Props> = ({ id, idType, name, formRef, drawerVisible
     if (id && drawerVisible) {
       if (idType === 'flow') {
         setSpinning(true);
-        getReferenceProperty(id).then((res1: any) => {
-          getReferenceUnitGroup(res1.data?.refFlowPropertytId).then((res2: any) => {
-            getReferenceUnit(res2.data?.refUnitGroupId).then((res3: any) => {
-              formRef.current?.setFieldValue([...name, 'refUnitGroup'], {
-                shortDescription: jsonToList(res2.data?.refUnitGroupShortDescription),
-                refUnit: {
-                  name: res3.data?.refUnitName ?? '',
-                  generalComment: jsonToList(res3.data?.refUnitGeneralComment),
-                },
+        getReferenceProperty(id, version ?? '').then((res1: any) => {
+          getReferenceUnitGroup(res1.data?.refFlowPropertytId, res1.data?.version).then(
+            (res2: any) => {
+              getReferenceUnit(res2.data?.refUnitGroupId, res2.data?.version).then((res3: any) => {
+                formRef.current?.setFieldValue([...name, 'refUnitGroup'], {
+                  shortDescription: jsonToList(res2.data?.refUnitGroupShortDescription),
+                  refUnit: {
+                    name: res3.data?.refUnitName ?? '',
+                    generalComment: jsonToList(res3.data?.refUnitGeneralComment),
+                  },
+                });
+                setSpinning(false);
               });
-              setSpinning(false);
-            });
-          });
+            },
+          );
         });
       } else if (idType === 'flowproperty') {
         setSpinning(true);
-        getReferenceUnitGroup(id).then((res1: any) => {
-          getReferenceUnit(res1.data?.refUnitGroupId).then((res2: any) => {
+        getReferenceUnitGroup(id, version ?? '').then((res1: any) => {
+          getReferenceUnit(res1.data?.refUnitGroupId, res1.data?.version).then((res2: any) => {
             formRef.current?.setFieldValue([...name, 'refUnitGroup'], {
               shortDescription: jsonToList(res1.data?.refUnitGroupShortDescription),
               refUnit: {

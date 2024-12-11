@@ -461,6 +461,8 @@ export function genFlowPropertyTabTableData(data: any, lang: string) {
         dataSetInternalID: item?.['@dataSetInternalID'] ?? '-',
         referenceToFlowPropertyDataSetId:
           item?.referenceToFlowPropertyDataSet?.['@refObjectId'] ?? '-',
+        referenceToFlowPropertyDataSetVersion:
+          item?.referenceToFlowPropertyDataSet?.['@version'] ?? '-',
         referenceToFlowPropertyDataSet: getLangText(
           item?.referenceToFlowPropertyDataSet?.['common:shortDescription'],
           lang,

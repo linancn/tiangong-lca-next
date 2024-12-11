@@ -436,39 +436,44 @@ export async function getFlowDetail(id: string, version: string) {
   return getDataDetail(id, version, 'flows');
 }
 
-export async function getReferenceProperty(id: string) {
-  if (id) {
-    const selectStr = `
+export async function getReferenceProperty(id: string, version: string) {
+  let result: any = {};
+  const selectStr = `
         id,
+        version,
         json->flowDataSet->flowInformation->dataSetInformation->name,
         json->flowDataSet->flowInformation->quantitativeReference->referenceToReferenceFlowProperty,
         json->flowDataSet->flowProperties->flowProperty
     `;
-
-    const result = await supabase.from('flows').select(selectStr).eq('id', id);
-
-    if (result.error) {
-      console.log('error', result.error);
-    }
-
-    if (result.data) {
-      if (result.data.length === 0) {
-        return Promise.resolve({
-          data: {},
-          success: true,
-        });
+  if (id && id.length === 36) {
+    if (version && version.length === 9) {
+      result = await supabase.from('flows').select(selectStr).eq('id', id).eq('version', version);
+      if (result.data === null || result.data.length === 0) {
+        result = await supabase
+          .from('flows')
+          .select(selectStr)
+          .eq('id', id)
+          .order('version', { ascending: false })
+          .range(0, 0);
       }
-
+    } else {
+      result = await supabase
+        .from('flows')
+        .select(selectStr)
+        .eq('id', id)
+        .order('version', { ascending: false })
+        .range(0, 0);
+    }
+    if (result?.data && result.data.length > 0) {
       const data = result.data[0];
-
       const dataList = jsonToList(data?.flowProperty);
       const refData = dataList.find(
         (item) => item?.['@dataSetInternalID'] === data?.referenceToReferenceFlowProperty,
       );
-
       return Promise.resolve({
         data: {
           id: data.id,
+          version: data.version,
           name: data?.name ?? '-',
           refFlowPropertytId: refData?.referenceToFlowPropertyDataSet?.['@refObjectId'] ?? '-',
           refFlowPropertyShortDescription:
@@ -477,9 +482,9 @@ export async function getReferenceProperty(id: string) {
         success: true,
       });
     }
+    return Promise.resolve({
+      data: null,
+      success: false,
+    });
   }
-  return Promise.resolve({
-    data: {},
-    success: false,
-  });
 }

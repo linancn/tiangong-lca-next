@@ -116,6 +116,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
           <ReferenceUnit
             key={0}
             id={row.referenceToFlowPropertyDataSetId}
+            version={row.referenceToFlowPropertyDataSetVersion}
             idType={'flowproperty'}
             lang={lang}
           />,
