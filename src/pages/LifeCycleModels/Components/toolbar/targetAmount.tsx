@@ -236,6 +236,7 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
             <br />
             <UnitGroupDescriptionMini
               id={refExchange?.referenceToFlowDataSet?.['@refObjectId']}
+              version={refExchange?.referenceToFlowDataSet?.['@version']}
               idType={'flow'}
             />
           </Card>

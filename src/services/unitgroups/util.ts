@@ -7,7 +7,7 @@ import {
   removeEmptyObjects,
 } from '../general/util';
 
-export function genUnitGroupJsonOrdered(id: string, data: any, oldData: any) {
+export function genUnitGroupJsonOrdered(id: string, data: any) {
   let quantitativeReference = {};
   const unit =
     data?.units?.unit?.map((item: any) => {
@@ -26,11 +26,17 @@ export function genUnitGroupJsonOrdered(id: string, data: any, oldData: any) {
 
   return removeEmptyObjects({
     unitGroupDataSet: {
-      '@xmlns': oldData.unitGroupDataSet?.['@xmlns'] ?? {},
-      '@xmlns:common': oldData.unitGroupDataSet?.['@xmlns:common'] ?? {},
-      '@xmlns:xsi': oldData.unitGroupDataSet?.['@xmlns:xsi'] ?? {},
-      '@version': oldData.unitGroupDataSet?.['@version'] ?? {},
-      '@xsi:schemaLocation': oldData.unitGroupDataSet?.['@xsi:schemaLocation'] ?? {},
+      // '@xmlns': oldData.unitGroupDataSet?.['@xmlns'] ?? {},
+      // '@xmlns:common': oldData.unitGroupDataSet?.['@xmlns:common'] ?? {},
+      // '@xmlns:xsi': oldData.unitGroupDataSet?.['@xmlns:xsi'] ?? {},
+      // '@version': oldData.unitGroupDataSet?.['@version'] ?? {},
+      // '@xsi:schemaLocation': oldData.unitGroupDataSet?.['@xsi:schemaLocation'] ?? {},
+      '@xmlns': 'http://lca.jrc.it/ILCD/UnitGroup',
+      '@xmlns:common': 'http://lca.jrc.it/ILCD/Common',
+      '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
+      '@version': '1.1',
+      '@xsi:schemaLocation':
+        'http://lca.jrc.it/ILCD/UnitGroup ../../schemas/ILCD_UnitGroupDataSet.xsd',
       unitGroupInformation: {
         dataSetInformation: {
           'common:UUID': id,

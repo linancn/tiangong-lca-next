@@ -20,10 +20,11 @@ type Props = {
 
 const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData }) => {
   const [id, setId] = useState<string | undefined>(undefined);
+  const [version, setVersion] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
 
-  const handletUnitgroupsData = (rowKey: any) => {
-    getUnitGroupDetail(rowKey).then(async (result: any) => {
+  const handletUnitgroupsData = (rowKey: string, version: string) => {
+    getUnitGroupDetail(rowKey, version).then(async (result: any) => {
       const selectedData = genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {});
 
       const unitList = jsonToList(selectedData?.units.unit);
@@ -37,6 +38,10 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData })
         '@refObjectId': `${rowKey}`,
         '@type': 'unit group data set',
         '@uri': `../unitgroups/${rowKey}.xml`,
+        '@version':
+          selectedData?.administrativeInformation?.publicationAndOwnership?.[
+            'common:dataSetVersion'
+          ] ?? '',
         'common:shortDescription':
           selectedData?.unitGroupInformation?.dataSetInformation?.['common:name'] ?? [],
         refUnit: {
@@ -51,14 +56,16 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData })
   useEffect(() => {
     if (formRef.current?.getFieldValue([...name, '@refObjectId'])) {
       setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
-      getReferenceUnit(formRef.current?.getFieldValue([...name, '@refObjectId'])).then(
-        (res: any) => {
-          formRef.current?.setFieldValue([...name, 'refUnit'], {
-            name: res.data?.refUnitName ?? '',
-            generalComment: res.data?.refUnitGeneralComment ?? [],
-          });
-        },
-      );
+      setVersion(formRef.current?.getFieldValue([...name, '@version']));
+      getReferenceUnit(
+        formRef.current?.getFieldValue([...name, '@refObjectId']),
+        formRef.current?.getFieldValue([...name, '@version']),
+      ).then((res: any) => {
+        formRef.current?.setFieldValue([...name, 'refUnit'], {
+          name: res.data?.refUnitName ?? '',
+          generalComment: res.data?.refUnitGeneralComment ?? [],
+        });
+      });
     }
   });
 
@@ -77,8 +84,31 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData })
           <Input disabled={true} style={{ width: '350px', color: token.colorTextDescription }} />
         </Form.Item>
         <Space direction="horizontal" style={{ marginTop: '6px' }}>
-          <UnitgroupsSelectDrawer buttonType="text" lang={lang} onData={handletUnitgroupsData} />
-          {id && <UnitgroupsView lang={lang} id={id} buttonType="text" />}
+          {!id && (
+            <UnitgroupsSelectDrawer buttonType="text" lang={lang} onData={handletUnitgroupsData} />
+          )}
+
+          {id && (
+            <UnitgroupsSelectDrawer
+              buttonType="text"
+              buttonText={<FormattedMessage id="pages.button.reselect" defaultMessage="Reselect" />}
+              lang={lang}
+              onData={handletUnitgroupsData}
+            />
+          )}
+          {id && (
+            <Button
+              onClick={() => {
+                handletUnitgroupsData(id, version ?? '');
+              }}
+            >
+              <FormattedMessage
+                id="pages.button.updateReference"
+                defaultMessage="Update reference"
+              />
+            </Button>
+          )}
+          {id && <UnitgroupsView lang={lang} id={id} version={version ?? ''} buttonType="text" />}
           {id && (
             <Button
               onClick={() => {
@@ -103,6 +133,14 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData })
       >
         <Input disabled={true} style={{ color: token.colorTextDescription }} />
       </Form.Item>
+
+      <Form.Item
+        label={<FormattedMessage id="pages.contact.version" defaultMessage="Version" />}
+        name={[...name, '@version']}
+      >
+        <Input disabled={true} style={{ color: token.colorTextDescription }} />
+      </Form.Item>
+
       <Divider orientationMargin="0" orientation="left" plain>
         <FormattedMessage
           id="pages.FlowProperties.view.shortDescription"

@@ -40,6 +40,6 @@ export async function getDataDetail(id: string, version: string, table: string) 
   }
   return Promise.resolve({
     data: null,
-    success: true,
+    success: false,
   });
 }

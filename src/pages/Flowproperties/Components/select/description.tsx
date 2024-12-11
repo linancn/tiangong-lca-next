@@ -70,7 +70,11 @@ const FlowpropertiesSelectDescription: FC<Props> = ({ title, data, lang }) => {
       <LangTextItemDescription data={data?.['common:shortDescription']} />
       <br />
 
-      <UnitGroupDescriptionMini id={data?.['@refObjectId']} idType={'flowproperty'} />
+      <UnitGroupDescriptionMini
+        id={data?.['@refObjectId']}
+        version={data?.['@version']}
+        idType={'flowproperty'}
+      />
     </Card>
   );
 };

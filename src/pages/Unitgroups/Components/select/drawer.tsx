@@ -14,13 +14,14 @@ import UnitGroupView from '../view';
 
 type Props = {
   buttonType: string;
+  buttonText?: any;
   lang: string;
-  onData: (rowKey: any) => void;
+  onData: (rowKey: string, version: string) => void;
 };
 
 const { Search } = Input;
 
-const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
+const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }) => {
   const [tgKeyWord, setTgKeyWord] = useState<any>('');
   const [myKeyWord, setMyKeyWord] = useState<any>('');
 
@@ -117,6 +118,12 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       sorter: false,
       search: false,
     },
+    {
+      title: <FormattedMessage id="pages.table.title.version" defaultMessage="Version" />,
+      dataIndex: 'version',
+      sorter: false,
+      search: false,
+    },
     // {
     //   title: <FormattedMessage id="unitGroup.email" defaultMessage="Reference Unit"></FormattedMessage>,
     //   dataIndex: 'referenceToReferenceUnit',
@@ -126,11 +133,11 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
     {
       title: (
         <FormattedMessage
-          id="pages.table.title.createdAt"
-          defaultMessage="Created at"
+          id="pages.table.title.modifiedAt"
+          defaultMessage="Updated at"
         ></FormattedMessage>
       ),
-      dataIndex: 'createdAt',
+      dataIndex: 'modifiedAt',
       valueType: 'dateTime',
       sorter: false,
       search: false,
@@ -142,7 +149,15 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
-        return [<UnitGroupView key={0} buttonType={'icon'} lang={lang} id={row.id} />];
+        return [
+          <UnitGroupView
+            key={0}
+            buttonType={'icon'}
+            lang={lang}
+            id={row.id}
+            version={row.version}
+          />,
+        ];
         // if (activeTabKey === 'my') {
         //   return [
         //     <Space size={'small'} key={0}>
@@ -281,12 +296,16 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
   return (
     <>
       {buttonType === 'icon' ? (
-        <Tooltip title={<FormattedMessage id="pages.button.select" defaultMessage="Select" />}>
+        <Tooltip
+          title={
+            buttonText ?? <FormattedMessage id="pages.button.select" defaultMessage="Select" />
+          }
+        >
           <Button shape="circle" icon={<DatabaseOutlined />} size="small" onClick={onSelect} />
         </Tooltip>
       ) : (
         <Button onClick={onSelect}>
-          <FormattedMessage id="pages.button.select" defaultMessage="Select" />
+          {buttonText ?? <FormattedMessage id="pages.button.select" defaultMessage="Select" />}
         </Button>
       )}
 
@@ -317,7 +336,8 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
             </Button>
             <Button
               onClick={() => {
-                onData(selectedRowKeys);
+                const keys = selectedRowKeys?.[0]?.toString().split(':');
+                onData(keys[0], keys[1]);
                 setDrawerVisible(false);
               }}
               type="primary"

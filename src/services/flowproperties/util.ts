@@ -45,6 +45,9 @@ export function genFlowpropertyJsonOrdered(id: string, data: any, oldData: any) 
             '@uri':
               data?.flowPropertiesInformation?.quantitativeReference
                 ?.referenceToReferenceUnitGroup?.['@uri'],
+            '@version':
+              data?.flowPropertiesInformation?.quantitativeReference
+                ?.referenceToReferenceUnitGroup?.['@version'],
             'common:shortDescription': getLangJson(
               data?.flowPropertiesInformation?.quantitativeReference
                 ?.referenceToReferenceUnitGroup?.['common:shortDescription'],
@@ -96,6 +99,10 @@ export function genFlowpropertyJsonOrdered(id: string, data: any, oldData: any) 
             '@uri':
               data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
                 '@uri'
+              ],
+            '@version':
+              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
+                '@version'
               ],
             'common:shortDescription': getLangJson(
               data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
@@ -170,6 +177,10 @@ export function genFlowpropertyFromData(data: any) {
           '@uri':
             data?.flowPropertiesInformation?.quantitativeReference?.referenceToReferenceUnitGroup?.[
               '@uri'
+            ],
+          '@version':
+            data?.flowPropertiesInformation?.quantitativeReference?.referenceToReferenceUnitGroup?.[
+              '@version'
             ],
           'common:shortDescription': getLangList(
             data?.flowPropertiesInformation?.quantitativeReference?.referenceToReferenceUnitGroup?.[

@@ -12,12 +12,20 @@ import { UnitGroupForm } from './form';
 
 type Props = {
   id: string;
+  version: string;
   buttonType: string;
   lang: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
 };
-const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDrawerVisible }) => {
+const UnitGroupEdit: FC<Props> = ({
+  id,
+  version,
+  buttonType,
+  lang,
+  actionRef,
+  setViewDrawerVisible,
+}) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
   const [activeTabKey, setActiveTabKey] = useState<string>('unitGroupInformation');
@@ -28,7 +36,7 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
   const intl = useIntl();
 
   const handletFromData = () => {
-    if (fromData?.id)
+    if (fromData)
       setFromData({
         ...fromData,
         [activeTabKey]: formRefEdit.current?.getFieldsValue()?.[activeTabKey] ?? {},
@@ -36,7 +44,7 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
   };
 
   const handletUnitDataCreate = (data: any) => {
-    if (fromData?.id)
+    if (fromData)
       setUnitDataSource([
         ...unitDataSource,
         { ...data, '@dataSetInternalID': unitDataSource.length.toString() },
@@ -44,7 +52,7 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
   };
 
   const handletUnitData = (data: any) => {
-    if (fromData?.id) setUnitDataSource([...data]);
+    if (fromData) setUnitDataSource([...data]);
   };
 
   const onTabChange = (key: string) => {
@@ -57,7 +65,7 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
 
   const onReset = () => {
     setSpinning(true);
-    getUnitGroupDetail(id).then(async (result: any) => {
+    getUnitGroupDetail(id, version).then(async (result: any) => {
       setInitData({ ...genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {}), id: id });
       setFromData({
         ...genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {}),
@@ -135,9 +143,9 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
             >
               <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel"></FormattedMessage>
             </Button>
-            <Button onClick={onReset}>
+            {/* <Button onClick={onReset}>
               <FormattedMessage id="pages.button.reset" defaultMessage="Reset"></FormattedMessage>
-            </Button>
+            </Button> */}
             <Button
               onClick={() => {
                 formRefEdit.current?.submit();
@@ -162,7 +170,7 @@ const UnitGroupEdit: FC<Props> = ({ id, buttonType, lang, actionRef, setViewDraw
               },
             }}
             onFinish={async () => {
-              const updateResult = await updateUnitGroup({ ...fromData, id });
+              const updateResult = await updateUnitGroup(id, version, fromData);
               if (updateResult?.data) {
                 message.success(
                   intl.formatMessage({

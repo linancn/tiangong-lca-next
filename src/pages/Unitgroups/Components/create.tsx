@@ -1,3 +1,4 @@
+import { initVersion } from '@/services/general/data';
 import { formatDateTime } from '@/services/general/util';
 import { createUnitGroup } from '@/services/unitgroups/api';
 import styles from '@/style/custom.less';
@@ -28,7 +29,7 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
   }, [actionRef]);
 
   const handletFromData = () => {
-    if (fromData?.id)
+    if (fromData)
       setFromData({
         ...fromData,
         [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
@@ -36,7 +37,7 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
   };
 
   const handletUnitDataCreate = (data: any) => {
-    if (fromData?.id)
+    if (fromData)
       setUnitDataSource([
         ...unitDataSource,
         { ...data, '@dataSetInternalID': unitDataSource.length.toString() },
@@ -44,7 +45,7 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
   };
 
   const handletUnitData = (data: any) => {
-    if (fromData?.id) setUnitDataSource([...data]);
+    if (fromData) setUnitDataSource([...data]);
   };
 
   const onTabChange = (key: string) => {
@@ -59,13 +60,15 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
         dataEntryBy: {
           'common:timeStamp': currentDateTime,
         },
+        publicationAndOwnership: {
+          'common:dataSetVersion': initVersion,
+        },
       },
     };
-    const newId = v4();
-    setInitData({ ...newData, id: newId });
+    setInitData(newData);
     formRefCreate.current?.resetFields();
     formRefCreate.current?.setFieldsValue(newData);
-    setFromData({ ...newData, id: newId });
+    setFromData(newData);
     setUnitDataSource([]);
   }, [drawerVisible]);
 
@@ -144,7 +147,7 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
             },
           }}
           onFinish={async () => {
-            const result = await createUnitGroup({ ...fromData });
+            const result = await createUnitGroup(v4(), fromData);
             if (result.data) {
               message.success(
                 intl.formatMessage({

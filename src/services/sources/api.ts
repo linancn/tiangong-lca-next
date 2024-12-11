@@ -204,12 +204,13 @@ export async function getSourceTablePgroongaSearch(
             const classificationZH = genClassificationZH(classifications, res?.data);
 
             return {
-              key: i.id,
+              key: i.id + ':' + i.version,
               id: i.id,
               shortName: getLangText(dataInfo?.['common:shortName'], lang),
               classification: classificationToString(classificationZH),
               sourceCitation: dataInfo?.sourceCitation ?? '-',
               publicationType: dataInfo?.publicationType ?? '-',
+              version: i.version,
               modifiedAt: new Date(i?.modified_at),
             };
           } catch (e) {
@@ -225,7 +226,7 @@ export async function getSourceTablePgroongaSearch(
         const dataInfo = i.json?.sourceDataSet?.sourceInformation?.dataSetInformation;
         try {
           return {
-            key: i.id,
+            key: i.id + ':' + i.version,
             id: i.id,
             shortName: getLangText(dataInfo?.['common:shortName'], lang),
             classification: classificationToString(
@@ -233,6 +234,7 @@ export async function getSourceTablePgroongaSearch(
             ),
             sourceCitation: dataInfo?.sourceCitation ?? '-',
             publicationType: dataInfo?.publicationType ?? '-',
+            version: i.version,
             modifiedAt: new Date(dataInfo?.modified_at),
           };
         } catch (e) {

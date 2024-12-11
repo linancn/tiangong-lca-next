@@ -28,6 +28,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
   onData,
 }) => {
   const [id, setId] = useState<string | undefined>(undefined);
+  const [version, setVersion] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
 
   const handletFlowpropertyData = (rowKey: any) => {
@@ -45,8 +46,9 @@ const FlowpropertiesSelectForm: FC<Props> = ({
   };
 
   useEffect(() => {
-    if (formRef.current?.getFieldValue([...name, '@refObjectId'])) {
+    if (formRef.current?.getFieldValue(name)) {
       setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
+      setVersion(formRef.current?.getFieldValue([...name, '@version']));
     }
   });
 
@@ -142,6 +144,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
 
       <UnitGroupFromMini
         id={id}
+        version={version}
         idType={'flowproperty'}
         name={name}
         formRef={formRef}

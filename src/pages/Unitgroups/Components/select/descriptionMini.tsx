@@ -7,10 +7,11 @@ import { FC, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 type Props = {
   id: string | undefined;
+  version: string | undefined;
   idType: string;
 };
 
-const UnitGroupDescriptionMini: FC<Props> = ({ id, idType }) => {
+const UnitGroupDescriptionMini: FC<Props> = ({ id, version, idType }) => {
   const [spinning, setSpinning] = useState<boolean>(false);
   const [refUnitGroup, setRefUnitGroup] = useState<any>({});
   const [refUnit, setRefUnit] = useState<any>({});
@@ -19,21 +20,21 @@ const UnitGroupDescriptionMini: FC<Props> = ({ id, idType }) => {
     if (id) {
       if (idType === 'flow') {
         setSpinning(true);
-        getReferenceProperty(id).then((res1: any) => {
-          getReferenceUnitGroup(res1.data?.refFlowPropertytId).then((res2: any) => {
+        getReferenceProperty(id, version ?? '').then((res1: any) => {
+          getReferenceUnitGroup(res1.data?.refFlowPropertytId, res1.data?.re).then((res2: any) => {
             setRefUnitGroup(res2.data);
-            getReferenceUnit(res2.data?.refUnitGroupId).then((res3) => {
-              setRefUnit(res3.data);
+            getReferenceUnit(res2.data?.refUnitGroupId, res2.data?.version).then((res3) => {
+              setRefUnit(res3?.data);
               setSpinning(false);
             });
           });
         });
       } else if (idType === 'flowproperty') {
         setSpinning(true);
-        getReferenceUnitGroup(id).then((res1: any) => {
+        getReferenceUnitGroup(id, version ?? '').then((res1: any) => {
           setRefUnitGroup(res1.data);
-          getReferenceUnit(res1.data?.refUnitGroupId).then((res2) => {
-            setRefUnit(res2.data);
+          getReferenceUnit(res1.data?.refUnitGroupId, res1.data?.version).then((res2) => {
+            setRefUnit(res2?.data);
             setSpinning(false);
           });
         });

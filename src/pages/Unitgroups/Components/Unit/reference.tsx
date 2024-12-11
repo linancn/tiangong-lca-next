@@ -7,10 +7,11 @@ import { useEffect, useState, type FC } from 'react';
 
 type Props = {
   id: string;
+  version: string;
   idType: string;
   lang: string;
 };
-const ReferenceUnit: FC<Props> = ({ id, idType, lang }) => {
+const ReferenceUnit: FC<Props> = ({ id, version, idType, lang }) => {
   const [refUnit, setRefUnit] = useState<any>({});
   const [spinning, setSpinning] = useState<boolean>(false);
 
@@ -18,26 +19,28 @@ const ReferenceUnit: FC<Props> = ({ id, idType, lang }) => {
     if (id) {
       if (idType === 'flow') {
         setSpinning(true);
-        getReferenceProperty(id).then((res1: any) => {
-          getReferenceUnitGroup(res1.data?.refFlowPropertytId).then((res2: any) => {
-            getReferenceUnit(res2.data?.refUnitGroupId).then((res3) => {
-              setRefUnit(res3.data);
-              setSpinning(false);
-            });
-          });
+        getReferenceProperty(id, version).then((res1: any) => {
+          getReferenceUnitGroup(res1.data?.refFlowPropertytId, res1.data?.version).then(
+            (res2: any) => {
+              getReferenceUnit(res2.data?.refUnitGroupId, res2.data?.version).then((res3) => {
+                setRefUnit(res3?.data);
+                setSpinning(false);
+              });
+            },
+          );
         });
       } else if (idType === 'flowproperty') {
         setSpinning(true);
-        getReferenceUnitGroup(id).then((res1: any) => {
-          getReferenceUnit(res1.data?.refUnitGroupId).then((res2) => {
-            setRefUnit(res2.data);
+        getReferenceUnitGroup(id, version).then((res1: any) => {
+          getReferenceUnit(res1.data?.refUnitGroupId, res1.data?.version).then((res2) => {
+            setRefUnit(res2?.data);
             setSpinning(false);
           });
         });
       } else if (idType === 'unitgroup') {
         setSpinning(true);
-        getReferenceUnit(id).then((res1) => {
-          setRefUnit(res1.data);
+        getReferenceUnit(id, version).then((res1) => {
+          setRefUnit(res1?.data);
           setSpinning(false);
         });
       }
@@ -46,9 +49,9 @@ const ReferenceUnit: FC<Props> = ({ id, idType, lang }) => {
 
   return (
     <Spin spinning={spinning}>
-      {getLangText(refUnit.name, lang)} (
-      <Tooltip placement="topLeft" title={getLangText(refUnit.refUnitGeneralComment, lang)}>
-        {refUnit.refUnitName}
+      {getLangText(refUnit?.name, lang)} (
+      <Tooltip placement="topLeft" title={getLangText(refUnit?.refUnitGeneralComment, lang)}>
+        {refUnit?.refUnitName}
       </Tooltip>
       )
     </Spin>

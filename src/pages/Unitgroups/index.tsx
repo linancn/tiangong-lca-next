@@ -74,6 +74,12 @@ const TableList: FC = () => {
       search: false,
     },
     {
+      title: <FormattedMessage id="pages.table.title.version" defaultMessage="Version" />,
+      dataIndex: 'version',
+      sorter: false,
+      search: false,
+    },
+    {
       title: (
         <FormattedMessage
           id="pages.table.title.updatedAt"
@@ -95,9 +101,10 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <UnitGroupView buttonType={'icon'} lang={lang} id={row.id} />
+              <UnitGroupView buttonType={'icon'} lang={lang} id={row.id} version={row.version} />
               <UnitGroupEdit
                 id={row.id}
+                version={row.version}
                 buttonType={'icon'}
                 lang={lang}
                 actionRef={actionRef}
@@ -105,6 +112,7 @@ const TableList: FC = () => {
               ></UnitGroupEdit>
               <UnitGroupDelete
                 id={row.id}
+                version={row.version}
                 buttonType={'icon'}
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
@@ -114,7 +122,7 @@ const TableList: FC = () => {
         }
         return [
           <Space size={'small'} key={0}>
-            <UnitGroupView buttonType={'icon'} lang={lang} id={row.id} />
+            <UnitGroupView buttonType={'icon'} lang={lang} id={row.id} version={row.version} />
           </Space>,
         ];
       },

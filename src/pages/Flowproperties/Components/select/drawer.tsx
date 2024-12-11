@@ -115,7 +115,15 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
       sorter: false,
       search: false,
       render: (_, row) => {
-        return [<ReferenceUnit key={0} id={row.refUnitGroupId} idType={'unitgroup'} lang={lang} />];
+        return [
+          <ReferenceUnit
+            key={0}
+            id={row.refUnitGroupId}
+            version={row.version}
+            idType={'unitgroup'}
+            lang={lang}
+          />,
+        ];
       },
     },
     {
