@@ -21,7 +21,7 @@ import FlowpropertyView from '../view';
 type Props = {
   buttonType: string;
   lang: string;
-  onData: (rowKey: any) => void;
+  onData: (rowKey: string, version: string) => void;
 };
 
 const { Search } = Input;
@@ -141,21 +141,23 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
         if (activeTabKey === 'tg') {
           return [
             <Space size={'small'} key={0}>
-              <FlowpropertyView lang={lang} buttonType={'icon'} id={row.id} />
+              <FlowpropertyView lang={lang} buttonType={'icon'} id={row.id} version={row.version} />
             </Space>,
           ];
         } else if (activeTabKey === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <FlowpropertyView lang={lang} buttonType={'icon'} id={row.id} />
+              <FlowpropertyView lang={lang} buttonType={'icon'} id={row.id} version={row.version} />
               <FlowpropertiesEdit
                 lang={lang}
                 id={row.id}
+                version={row.version}
                 buttonType={'icon'}
                 actionRef={myActionRefSelect}
               />
               <FlowpropertiesDelete
                 id={row.id}
+                version={row.version}
                 buttonType={'icon'}
                 actionRef={myActionRefSelect}
                 setViewDrawerVisible={() => {}}
@@ -309,7 +311,8 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
             </Button>
             <Button
               onClick={() => {
-                onData(selectedRowKeys);
+                const keys = selectedRowKeys?.[0]?.toString().split(':');
+                onData(keys[0], keys[1]);
                 setDrawerVisible(false);
               }}
               type="primary"

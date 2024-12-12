@@ -20,6 +20,7 @@ export type FlowModelTable = {
 
 export type FlowpropertyTabTable = {
   id: string;
+  version: string;
   dataSetInternalID: string;
   meanValue: string;
   referenceToFlowPropertyDataSetId: string;

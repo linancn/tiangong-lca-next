@@ -102,6 +102,12 @@ export const FlowForm: FC<Props> = ({
       search: false,
     },
     {
+      title: <FormattedMessage id="pages.table.title.version" defaultMessage="Version" />,
+      dataIndex: 'referenceToFlowPropertyDataSetVersion',
+      sorter: false,
+      search: false,
+    },
+    {
       title: (
         <FormattedMessage
           id="pages.flow.view.flowProperties.meanValue"

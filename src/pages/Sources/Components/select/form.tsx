@@ -22,20 +22,19 @@ const SourceSelectForm: FC<Props> = ({ name, label, lang, formRef, onData }) => 
   const [version, setVersion] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
 
-  const handletSourceData = (rowKey: string, thisVersion: string) => {
-    getSourceDetail(rowKey, thisVersion).then(async (result: any) => {
+  const handletSourceData = (rowId: string, rowVersion: string) => {
+    getSourceDetail(rowId, rowVersion).then(async (result: any) => {
       const selectedData = genSourceFromData(result.data?.json?.sourceDataSet ?? {});
       await formRef.current?.setFieldValue(name, {
-        '@refObjectId': `${rowKey}`,
+        '@refObjectId': rowId,
         '@type': 'source data set',
-        '@uri': `../sources/${rowKey}.xml`,
-        '@version':
-          selectedData?.administrativeInformation?.publicationAndOwnership?.[
-            'common:dataSetVersion'
-          ] ?? '',
+        '@uri': `../sources/${rowId}.xml`,
+        '@version': result.data?.version,
         'common:shortDescription':
           selectedData?.sourceInformation?.dataSetInformation?.['common:shortName'] ?? [],
       });
+      setId(rowId);
+      setVersion(result.data?.version);
       onData();
     });
   };

@@ -30,7 +30,12 @@ const FlowpropertiesSelectDescription: FC<Props> = ({ title, data, lang }) => {
           </Descriptions.Item>
         </Descriptions>
         {data?.['@refObjectId'] && (
-          <FlowpropertiesView id={data?.['@refObjectId']} lang={lang} buttonType="text" />
+          <FlowpropertiesView
+            id={data?.['@refObjectId']}
+            version={data?.['@version']}
+            lang={lang}
+            buttonType="text"
+          />
         )}
       </Space>
       <br />

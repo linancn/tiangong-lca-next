@@ -21,7 +21,6 @@ const PropertyView: FC<Props> = ({ id, data, lang, buttonType }) => {
   const [viewData, setViewData] = useState<any>({});
 
   const onView = () => {
-    console.log('data', data);
     setDrawerVisible(true);
     const filteredData = data?.find((item: any) => item['@dataSetInternalID'] === id) ?? {};
     setViewData(filteredData);
