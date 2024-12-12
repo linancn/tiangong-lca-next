@@ -23,6 +23,7 @@ export function genFlowJsonOrdered(id: string, data: any) {
           '@refObjectId': item?.referenceToFlowPropertyDataSet?.['@refObjectId'],
           '@type': item?.referenceToFlowPropertyDataSet?.['@type'],
           '@uri': item?.referenceToFlowPropertyDataSet?.['@uri'],
+          '@version': item?.referenceToFlowPropertyDataSet?.['@version'],
           'common:shortDescription': getLangJson(
             item?.referenceToFlowPropertyDataSet?.['common:shortDescription'],
           ),
@@ -427,6 +428,7 @@ export function genFlowFromData(data: any) {
             '@refObjectId': item?.referenceToFlowPropertyDataSet?.['@refObjectId'],
             '@type': item?.referenceToFlowPropertyDataSet?.['@type'],
             '@uri': item?.referenceToFlowPropertyDataSet?.['@uri'],
+            '@version': item?.referenceToFlowPropertyDataSet?.['@version'],
             'common:shortDescription': getLangList(
               item?.referenceToFlowPropertyDataSet?.['common:shortDescription'],
             ),

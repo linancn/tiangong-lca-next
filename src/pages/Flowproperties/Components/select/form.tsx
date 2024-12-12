@@ -31,16 +31,19 @@ const FlowpropertiesSelectForm: FC<Props> = ({
   const [version, setVersion] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
 
-  const handletFlowpropertyData = (rowKey: any) => {
-    getFlowpropertyDetail(rowKey).then(async (result: any) => {
+  const handletFlowpropertyData = (rowId: string, rowVersion: string) => {
+    getFlowpropertyDetail(rowId, rowVersion ?? '').then(async (result: any) => {
       const selectedData = genFlowpropertyFromData(result.data?.json?.flowPropertyDataSet ?? {});
       await formRef.current?.setFieldValue(name, {
-        '@refObjectId': `${rowKey}`,
+        '@refObjectId': rowId,
         '@type': 'flow property data set',
-        '@uri': `../flowproperties/${rowKey}.xml`,
+        '@uri': `../flowproperties/${rowId}.xml`,
+        '@version': result.data?.version,
         'common:shortDescription':
           selectedData?.flowPropertiesInformation?.dataSetInformation?.['common:name'] ?? [],
       });
+      setId(rowId);
+      setVersion(result.data?.version);
       onData();
     });
   };
@@ -72,7 +75,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
             lang={lang}
             onData={handletFlowpropertyData}
           />
-          {id && <FlowpropertyView lang={lang} id={id} buttonType="text" />}
+          {id && <FlowpropertyView lang={lang} id={id} version={version ?? ''} buttonType="text" />}
           {id && (
             <Button
               onClick={() => {
@@ -97,9 +100,9 @@ const FlowpropertiesSelectForm: FC<Props> = ({
       >
         <Input disabled={true} style={{ color: token.colorTextDescription }} />
       </Form.Item>
-      {/* <Form.Item label="Version" name={[...name, '@version']}>
+      <Form.Item label="Version" name={[...name, '@version']}>
         <Input disabled={true} />
-      </Form.Item> */}
+      </Form.Item>
       <Divider orientationMargin="0" orientation="left" plain>
         <FormattedMessage
           id="pages.flow.view.flowProperties.shortDescription"

@@ -23,18 +23,20 @@ const FlowsSelectForm: FC<Props> = ({ name, label, lang, formRef, drawerVisible,
   const [version, setVersion] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
 
-  const handletFlowsData = (rowKey: string, version: string) => {
-    getFlowDetail(rowKey, version).then(async (result: any) => {
+  const handletFlowsData = (rowId: string, rowVersion: string) => {
+    getFlowDetail(rowId, rowVersion).then(async (result: any) => {
       const selectedData = genFlowFromData(result.data?.json?.flowDataSet ?? {});
       await formRef.current?.setFieldValue(name, {
-        '@refObjectId': `${rowKey}`,
+        '@refObjectId': rowId,
         '@type': 'flow data set',
-        '@uri': `../flows/${rowKey}.xml`,
+        '@uri': `../flows/${rowId}.xml`,
         '@version': result.data?.version ?? '',
         'common:shortDescription': genFlowNameJson(
           selectedData?.flowInformation?.dataSetInformation?.name,
         ),
       });
+      setId(rowId);
+      setVersion(result.data?.version);
       onData();
     });
   };

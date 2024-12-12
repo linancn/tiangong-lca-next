@@ -6,15 +6,20 @@ import {
   removeEmptyObjects,
 } from '../general/util';
 
-export function genFlowpropertyJsonOrdered(id: string, data: any, oldData: any) {
-  console.log('genFlowpropertyJsonOrdered', data);
+export function genFlowpropertyJsonOrdered(id: string, data: any) {
   return removeEmptyObjects({
     flowPropertyDataSet: {
-      '@xmlns': oldData.flowPropertyDataSet?.['@xmlns'] ?? {},
-      '@xmlns:common': oldData.flowPropertyDataSet?.['@xmlns:common'] ?? {},
-      '@xmlns:xsi': oldData.flowPropertyDataSet?.['@xmlns:xsi'] ?? {},
-      '@version': oldData.flowPropertyDataSet?.['@version'] ?? {},
-      '@xsi:schemaLocation': oldData.flowPropertyDataSet?.['@xsi:schemaLocation'] ?? {},
+      // '@xmlns': oldData.flowPropertyDataSet?.['@xmlns'] ?? {},
+      // '@xmlns:common': oldData.flowPropertyDataSet?.['@xmlns:common'] ?? {},
+      // '@xmlns:xsi': oldData.flowPropertyDataSet?.['@xmlns:xsi'] ?? {},
+      // '@version': oldData.flowPropertyDataSet?.['@version'] ?? {},
+      // '@xsi:schemaLocation': oldData.flowPropertyDataSet?.['@xsi:schemaLocation'] ?? {},
+      '@xmlns:common': 'http://lca.jrc.it/ILCD/Common',
+      '@xmlns': 'http://lca.jrc.it/ILCD/FlowProperty',
+      '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
+      '@version': '1.1',
+      '@xsi:schemaLocation':
+        'http://lca.jrc.it/ILCD/FlowProperty ../../schemas/ILCD_FlowPropertyDataSet.xsd',
       flowPropertiesInformation: {
         dataSetInformation: {
           'common:UUID': id,

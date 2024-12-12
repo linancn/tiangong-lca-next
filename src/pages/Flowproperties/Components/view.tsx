@@ -14,6 +14,7 @@ import FlowpropertiesSelectDescription from './select/description';
 
 type Props = {
   id: string;
+  version: string;
   // actionRef: React.MutableRefObject<ActionType | undefined>;
   buttonType: string;
   lang: string;
@@ -24,7 +25,7 @@ const getComplianceLabel = (value: string) => {
   return option ? option.label : '-';
 };
 
-const FlowpropertyView: FC<Props> = ({ id, buttonType, lang }) => {
+const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('flowPropertiesInformation');
   const [spinning, setSpinning] = useState(false);
@@ -268,11 +269,8 @@ const FlowpropertyView: FC<Props> = ({ id, buttonType, lang }) => {
   const onView = () => {
     setDrawerVisible(true);
     setSpinning(true);
-    getFlowpropertyDetail(id).then(async (result: any) => {
-      setInitData({
-        ...genFlowpropertyFromData(result.data?.json?.flowPropertyDataSet ?? {}),
-        id: id,
-      });
+    getFlowpropertyDetail(id, version).then(async (result: any) => {
+      setInitData(genFlowpropertyFromData(result.data?.json?.flowPropertyDataSet ?? {}));
       setSpinning(false);
     });
   };

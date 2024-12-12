@@ -23,21 +23,20 @@ const ContactSelectForm: FC<Props> = ({ name, label, lang, formRef, onData }) =>
   const [version, setVersion] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
 
-  const handletContactData = (rowKey: string, thisVersion: string) => {
-    getContactDetail(rowKey, thisVersion).then(async (result: any) => {
+  const handletContactData = (rowId: string, rowVersion: string) => {
+    getContactDetail(rowId, rowVersion).then(async (result: any) => {
       const selectedData = genContactFromData(result.data?.json?.contactDataSet ?? {});
       await formRef.current?.setFieldValue(name, {
-        '@refObjectId': `${rowKey}`,
+        '@refObjectId': rowId,
         '@type': 'contact data set',
-        '@uri': `../contacts/${rowKey}.xml`,
-        '@version':
-          selectedData?.administrativeInformation?.publicationAndOwnership?.[
-            'common:dataSetVersion'
-          ] ?? '',
+        '@uri': `../contacts/${rowId}.xml`,
+        '@version': result.data?.version,
         'common:shortDescription':
           jsonToList(selectedData?.contactInformation?.dataSetInformation?.['common:shortName']) ??
           [],
       });
+      setId(rowId);
+      setVersion(result.data?.version);
       onData();
     });
   };

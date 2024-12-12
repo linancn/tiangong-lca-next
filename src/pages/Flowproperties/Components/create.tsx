@@ -70,11 +70,11 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
         },
       },
     };
-    const newId = v4();
-    setInitData({ ...newData, id: newId });
+
+    setInitData(newData);
     formRefCreate.current?.resetFields();
     formRefCreate.current?.setFieldsValue(newData);
-    setFromData({ ...newData, id: newId });
+    setFromData(newData);
   }, [drawerVisible]);
 
   return (
@@ -132,7 +132,7 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
             },
           }}
           onFinish={async () => {
-            const result = await createFlowproperties({ ...fromData });
+            const result = await createFlowproperties(v4(), fromData);
             if (result.data) {
               message.success(
                 intl.formatMessage({

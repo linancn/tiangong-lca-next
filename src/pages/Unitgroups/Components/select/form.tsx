@@ -23,8 +23,8 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData })
   const [version, setVersion] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
 
-  const handletUnitgroupsData = (rowKey: string, version: string) => {
-    getUnitGroupDetail(rowKey, version).then(async (result: any) => {
+  const handletUnitgroupsData = (rowId: string, rowVersion: string) => {
+    getUnitGroupDetail(rowId, rowVersion).then(async (result: any) => {
       const selectedData = genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {});
 
       const unitList = jsonToList(selectedData?.units.unit);
@@ -35,13 +35,10 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData })
       );
 
       await formRef.current?.setFieldValue(name, {
-        '@refObjectId': `${rowKey}`,
+        '@refObjectId': rowId,
         '@type': 'unit group data set',
-        '@uri': `../unitgroups/${rowKey}.xml`,
-        '@version':
-          selectedData?.administrativeInformation?.publicationAndOwnership?.[
-            'common:dataSetVersion'
-          ] ?? '',
+        '@uri': `../unitgroups/${rowId}.xml`,
+        '@version': result.data?.version,
         'common:shortDescription':
           selectedData?.unitGroupInformation?.dataSetInformation?.['common:name'] ?? [],
         refUnit: {
@@ -49,6 +46,8 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData })
           generalComment: refUnit?.generalComment ?? [],
         },
       });
+      setId(rowId);
+      setVersion(result.data?.version);
       onData();
     });
   };

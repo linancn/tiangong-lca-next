@@ -283,9 +283,6 @@ export const FlowpropertyForm: FC<Props> = ({
       >
         {tabContent[activeTabKey]}
       </Card>
-      <Form.Item name="id" hidden>
-        <Input />
-      </Form.Item>
     </>
   );
 };
