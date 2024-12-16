@@ -21,6 +21,8 @@ export default {
   'pages.button.reset': '重置',
   'pages.button.cancel': '取消',
   'pages.button.submit': '提交',
+  'pages.button.save': '保存',
+  'pages.button.review': '提交审核',
   'pages.button.select': '选择',
   'pages.button.reselect': '重选',
   'pages.button.updateReference': '更新引用',

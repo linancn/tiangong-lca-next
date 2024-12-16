@@ -21,6 +21,8 @@ export default {
   'pages.button.delete.success': 'Selected record has been deleted.',
   'pages.button.cancel': 'Cancel',
   'pages.button.submit': 'Submit',
+  'pages.button.save': 'Save',
+  'pages.button.review': 'Sumit for review',
   'pages.button.select': 'Select',
   'pages.button.reselect': 'Reselect',
   'pages.button.updateReference': 'Update reference',

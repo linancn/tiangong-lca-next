@@ -121,7 +121,7 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
               <FormattedMessage id="pages.button.reset" defaultMessage="Reset" />
             </Button>
             <Button onClick={() => formRefEdit.current?.submit()} type="primary">
-              <FormattedMessage id="pages.button.submit" defaultMessage="Submit" />
+              <FormattedMessage id="pages.button.save" defaultMessage="Save" />
             </Button>
           </Space>
         }
