@@ -87,7 +87,7 @@ const UnitCreate: FC<Props> = ({ onData }) => {
               }}
               type="primary"
             >
-              <FormattedMessage id="pages.button.submit" defaultMessage="Submit"></FormattedMessage>
+              <FormattedMessage id="pages.button.save" defaultMessage="Save"></FormattedMessage>
             </Button>
           </Space>
         }

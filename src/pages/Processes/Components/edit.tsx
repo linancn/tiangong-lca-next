@@ -182,13 +182,9 @@ const ProcessEdit: FC<Props> = ({
         onClose={() => setDrawerVisible(false)}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
-            <Button onClick={() => setDrawerVisible(false)}>
-              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
+            <Button onClick={() => {}}>
+              <FormattedMessage id="pages.button.review" defaultMessage="Submit for review" />
             </Button>
-            {/* <Button onClick={onReset}>
-              {' '}
-              <FormattedMessage id="pages.button.reset" defaultMessage="Reset" />
-            </Button> */}
             <Button
               onClick={() => {
                 updateReference();
@@ -199,8 +195,18 @@ const ProcessEdit: FC<Props> = ({
                 defaultMessage="Update reference"
               />
             </Button>
+            <> </>
+            <> </>
+            <Button onClick={() => setDrawerVisible(false)}>
+              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
+            </Button>
+            {/* <Button onClick={onReset}>
+              {' '}
+              <FormattedMessage id="pages.button.reset" defaultMessage="Reset" />
+            </Button> */}
+
             <Button onClick={() => formRefEdit.current?.submit()} type="primary">
-              <FormattedMessage id="pages.button.submit" defaultMessage="Submit" />
+              <FormattedMessage id="pages.button.save" defaultMessage="Save" />
             </Button>
           </Space>
         }

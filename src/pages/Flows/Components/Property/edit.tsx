@@ -87,7 +87,7 @@ const PropertyEdit: FC<Props> = ({
               <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
             </Button>
             <Button onClick={() => formRefEdit.current?.submit()} type="primary">
-              <FormattedMessage id="pages.button.submit" defaultMessage="Submit" />
+              <FormattedMessage id="pages.button.save" defaultMessage="Save" />
             </Button>
           </Space>
         }

@@ -115,7 +115,7 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
               <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
             </Button>
             <Button onClick={() => formRefCreate.current?.submit()} type="primary">
-              <FormattedMessage id="pages.button.submit" defaultMessage="Submit" />
+              <FormattedMessage id="pages.button.save" defaultMessage="Save" />
             </Button>
           </Space>
         }
