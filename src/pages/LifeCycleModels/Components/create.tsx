@@ -5,7 +5,7 @@ import { Button, Drawer, Layout, theme, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import Toolbar from './toolbar';
+import Toolbar from './toolbar/editIndex';
 
 type Props = {
   buttonType: string;

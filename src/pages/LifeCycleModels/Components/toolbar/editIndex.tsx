@@ -1,5 +1,6 @@
 import ProcessEdit from '@/pages/Processes/Components/edit';
 import ProcessView from '@/pages/Processes/Components/view';
+import { initVersion } from '@/services/general/data';
 import { formatDateTime, getLangText } from '@/services/general/util';
 import {
   createLifeCycleModel,
@@ -26,7 +27,6 @@ import ToolbarEditInfo from './eidtInfo';
 import EdgeExhange from './Exchange/index';
 import IoPortSelector from './Exchange/ioPort';
 import TargetAmount from './targetAmount';
-import ToolbarViewInfo from './viewInfo';
 
 type Props = {
   id: string;
@@ -38,7 +38,15 @@ type Props = {
   setIsSave: (isSave: boolean) => void;
 };
 
-const Toolbar: FC<Props> = ({ id, version, lang, drawerVisible, isSave, action, setIsSave }) => {
+const ToolbarEdit: FC<Props> = ({
+  id,
+  version,
+  lang,
+  drawerVisible,
+  isSave,
+  action,
+  setIsSave,
+}) => {
   const [thisId, setThisId] = useState(id);
   const [thisVersion, setThisVersion] = useState(version);
   const [thisAction, setThisAction] = useState(action);
@@ -379,65 +387,6 @@ const Toolbar: FC<Props> = ({ id, version, lang, drawerVisible, isSave, action, 
     },
     items: [],
   };
-
-  // const ports = {
-  //   groups: {
-  //     group1: {
-  //       position: 'top',
-  //       attrs: {
-  //         circle: {
-  //           stroke: token.colorPrimary,
-  //           fill: token.colorBgBase,
-  //           strokeWidth: 1,
-  //           r: 4,
-  //           magnet: true,
-  //         },
-  //       },
-  //     },
-  //     group2: {
-  //       position: 'right',
-  //       attrs: {
-  //         circle: {
-  //           stroke: token.colorPrimary,
-  //           fill: token.colorBgBase,
-  //           strokeWidth: 1,
-  //           r: 4,
-  //           magnet: true,
-  //         },
-  //       },
-  //     },
-  //     group3: {
-  //       position: 'bottom',
-  //       attrs: {
-  //         circle: {
-  //           stroke: token.colorPrimary,
-  //           fill: token.colorBgBase,
-  //           strokeWidth: 1,
-  //           r: 4,
-  //           magnet: true,
-  //         },
-  //       },
-  //     },
-  //     group4: {
-  //       position: 'left',
-  //       attrs: {
-  //         circle: {
-  //           stroke: token.colorPrimary,
-  //           fill: token.colorBgBase,
-  //           strokeWidth: 1,
-  //           r: 4,
-  //           magnet: true,
-  //         },
-  //       },
-  //     },
-  //   },
-  //   items: [
-  //     { id: 'group1', group: 'group1' },
-  //     { id: 'group2', group: 'group2' },
-  //     { id: 'group3', group: 'group3' },
-  //     { id: 'group4', group: 'group4' },
-  //   ],
-  // };
 
   const nodeTemplate: any = {
     id: '',
@@ -883,46 +832,6 @@ const Toolbar: FC<Props> = ({ id, version, lang, drawerVisible, isSave, action, 
     });
   });
 
-  // useGraphEvent('edge:changed', (evt) => {
-  //   const labels = evt?.edge?.getLabels();
-  //   if (labels?.length > 1) {
-  //     updateEdge(evt.edge.id, {
-  //       labels: [{
-  //         position: 0.5,
-  //         attrs: {
-  //           body: {
-  //             stroke: token.colorBorder,
-  //             strokeWidth: 1,
-  //             fill: token.colorBgBase,
-  //             rx: 6,
-  //             ry: 6,
-  //           },
-  //           label: {
-  //             text: labels[labels.length - 1]?.attrs?.label?.text,
-  //             fill: token.colorTextBase,
-  //           },
-  //         },
-  //       },
-  //       ],
-  //     });
-  //   }
-  // });
-
-  // useGraphEvent('cell:click', async (evt) => {
-  //   console.log('cell:click', evt);
-  //   console.log(nodes.filter((node) => node.selected)?.[0]?.data?.id);
-  // });
-
-  // useGraphEvent('node:dblclick', (evt) => {
-  //   console.log('node:dblclick', evt);
-  // });
-
-  // useGraphEvent('edge:dblclick', (evt) => {
-  //   console.log('edge:dblclick', evt);
-  //   const selectedEdges = edges.filter((edge) => edge.selected);
-  //   console.log(selectedEdges);
-  // });
-
   useEffect(() => {
     if (!drawerVisible) return;
     if (id && version) {
@@ -950,55 +859,6 @@ const Toolbar: FC<Props> = ({ id, version, lang, drawerVisible, isSave, action, 
             ],
           };
         });
-        if (thisAction === 'view') {
-          initNodes = initNodes.map((node: any) => {
-            return {
-              ...node,
-              ports: {
-                ...node?.ports,
-                groups: {
-                  ...node?.ports?.groups,
-                  group1: {
-                    ...node.ports?.groups?.group1,
-                    attrs: {
-                      circle: {
-                        strokeWidth: 0,
-                        r: 0,
-                      },
-                    },
-                  },
-                  group2: {
-                    ...node.ports?.groups?.group2,
-                    attrs: {
-                      circle: {
-                        strokeWidth: 0,
-                        r: 0,
-                      },
-                    },
-                  },
-                  group3: {
-                    ...node.ports?.groups?.group3,
-                    attrs: {
-                      circle: {
-                        strokeWidth: 0,
-                        r: 0,
-                      },
-                    },
-                  },
-                  group4: {
-                    ...node.ports?.groups?.group4,
-                    attrs: {
-                      circle: {
-                        strokeWidth: 0,
-                        r: 0,
-                      },
-                    },
-                  },
-                },
-              },
-            };
-          });
-        }
         const initEdges =
           model?.edges?.map((edge: any) => {
             if (edge.target) {
@@ -1022,9 +882,6 @@ const Toolbar: FC<Props> = ({ id, version, lang, drawerVisible, isSave, action, 
         });
 
         setNodeCount(initNodes.length);
-
-        if (thisAction !== 'view') {
-        }
         setSpinning(false);
       });
     } else {
@@ -1035,7 +892,7 @@ const Toolbar: FC<Props> = ({ id, version, lang, drawerVisible, isSave, action, 
             'common:timeStamp': currentDateTime,
           },
           publicationAndOwnership: {
-            'common:dataSetVersion': '01.00.000',
+            'common:dataSetVersion': initVersion,
           },
         },
       };
@@ -1058,15 +915,11 @@ const Toolbar: FC<Props> = ({ id, version, lang, drawerVisible, isSave, action, 
 
   return (
     <Space direction="vertical" size={'middle'}>
-      {thisAction === 'view' ? (
-        <ToolbarViewInfo lang={lang} data={infoData} />
-      ) : (
-        <ToolbarEditInfo data={infoData} onData={updateInfoData} lang={lang} />
-      )}
+      <ToolbarEditInfo data={infoData} onData={updateInfoData} lang={lang} />
       <ProcessView
         id={nodes.filter((node) => node.selected)?.[0]?.data?.id ?? ''}
         version={nodes.filter((node) => node.selected)?.[0]?.data?.version ?? ''}
-        dataSource={'tg'}
+        // dataSource={'tg'}
         buttonType={'toolIcon'}
         lang={lang}
         disabled={nodes.filter((node) => node.selected).length === 0}
@@ -1084,10 +937,8 @@ const Toolbar: FC<Props> = ({ id, version, lang, drawerVisible, isSave, action, 
         onData={updateTargetAmount}
       />
 
-      {!(thisAction === 'view') && (
-        <>
-          <ModelToolbarAdd buttonType={'icon'} lang={lang} onData={addProcessNode} />
-          {/* <Tooltip
+      <ModelToolbarAdd buttonType={'icon'} lang={lang} onData={addProcessNode} />
+      {/* <Tooltip
             title={
               <FormattedMessage
                 id="pages.button.model.design"
@@ -1106,67 +957,60 @@ const Toolbar: FC<Props> = ({ id, version, lang, drawerVisible, isSave, action, 
               }
             />
           </Tooltip> */}
-          <Tooltip
-            title={
-              <FormattedMessage
-                id="pages.button.updateReference"
-                defaultMessage="Update reference"
-              />
-            }
-            placement="left"
-          >
-            <Button
-              type="primary"
-              size="small"
-              icon={<CopyOutlined />}
-              style={{ boxShadow: 'none' }}
-              onClick={updateReference}
-            />
-          </Tooltip>
-          <Tooltip
-            title={
-              <FormattedMessage id="pages.button.model.delete" defaultMessage="Delete element" />
-            }
-            placement="left"
-          >
-            <Button
-              type="primary"
-              size="small"
-              icon={<DeleteOutlined />}
-              style={{ boxShadow: 'none' }}
-              disabled={
-                nodes.filter((node) => node.selected).length === 0 &&
-                edges.filter((edge) => edge.selected).length === 0
-              }
-              onClick={deleteCell}
-            />
-          </Tooltip>
-          <br />
+      <Tooltip
+        title={
+          <FormattedMessage id="pages.button.updateReference" defaultMessage="Update reference" />
+        }
+        placement="left"
+      >
+        <Button
+          type="primary"
+          size="small"
+          icon={<CopyOutlined />}
+          style={{ boxShadow: 'none' }}
+          onClick={updateReference}
+        />
+      </Tooltip>
+      <Tooltip
+        title={<FormattedMessage id="pages.button.model.delete" defaultMessage="Delete element" />}
+        placement="left"
+      >
+        <Button
+          type="primary"
+          size="small"
+          icon={<DeleteOutlined />}
+          style={{ boxShadow: 'none' }}
+          disabled={
+            nodes.filter((node) => node.selected).length === 0 &&
+            edges.filter((edge) => edge.selected).length === 0
+          }
+          onClick={deleteCell}
+        />
+      </Tooltip>
+      <br />
 
-          <Tooltip
-            title={<FormattedMessage id="pages.button.model.save" defaultMessage="Save data" />}
-            placement="left"
-          >
-            <Button
-              type="primary"
-              size="small"
-              icon={<SaveOutlined />}
-              style={{ boxShadow: 'none' }}
-              onClick={saveData}
-            />
-          </Tooltip>
-          <br />
+      <Tooltip
+        title={<FormattedMessage id="pages.button.model.save" defaultMessage="Save data" />}
+        placement="left"
+      >
+        <Button
+          type="primary"
+          size="small"
+          icon={<SaveOutlined />}
+          style={{ boxShadow: 'none' }}
+          onClick={saveData}
+        />
+      </Tooltip>
+      <br />
 
-          <ProcessEdit
-            id={id ?? ''}
-            version={version ?? ''}
-            lang={lang}
-            buttonType={'tool'}
-            actionRef={undefined}
-            setViewDrawerVisible={() => {}}
-          />
-        </>
-      )}
+      <ProcessEdit
+        id={id ?? ''}
+        version={version ?? ''}
+        lang={lang}
+        buttonType={'tool'}
+        actionRef={undefined}
+        setViewDrawerVisible={() => {}}
+      />
       <Control items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin']} />
       <Spin spinning={spinning} fullscreen />
       <IoPortSelector
@@ -1181,4 +1025,4 @@ const Toolbar: FC<Props> = ({ id, version, lang, drawerVisible, isSave, action, 
   );
 };
 
-export default Toolbar;
+export default ToolbarEdit;

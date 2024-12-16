@@ -5,7 +5,7 @@ import { Button, Drawer, Layout, theme, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import Toolbar from './toolbar';
+import ToolbarEdit from './toolbar/editIndex';
 
 type Props = {
   id: string | undefined;
@@ -115,7 +115,7 @@ const LifeCycleModelEdit: FC<Props> = ({ id, version, buttonType, lang, actionRe
               </Content>
             </Layout>
             <Sider width="50px" style={siderStyle}>
-              <Toolbar
+              <ToolbarEdit
                 id={id ?? ''}
                 version={version ?? ''}
                 lang={lang}

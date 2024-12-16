@@ -4,7 +4,7 @@ import { Button, Drawer, Layout, theme, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
-import Toolbar from './toolbar';
+import ToolbarView from './toolbar/viewIndex';
 
 type Props = {
   id: string;
@@ -79,7 +79,6 @@ const LifeCycleModelView: FC<Props> = ({ id, version, buttonType, lang }) => {
                   zoomable
                   pannable
                   minScale={0.5}
-                  readonly={true}
                   connectionOptions={{
                     router: {
                       name: 'manhattan',
@@ -99,15 +98,7 @@ const LifeCycleModelView: FC<Props> = ({ id, version, buttonType, lang }) => {
               </Content>
             </Layout>
             <Sider width="50px" style={siderStyle}>
-              <Toolbar
-                id={id}
-                version={version}
-                lang={lang}
-                drawerVisible={drawerVisible}
-                isSave={true}
-                setIsSave={() => {}}
-                action={'view'}
-              />
+              <ToolbarView id={id} version={version} lang={lang} drawerVisible={drawerVisible} />
             </Sider>
           </Layout>
         </XFlow>

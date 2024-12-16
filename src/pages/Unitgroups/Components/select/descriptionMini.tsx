@@ -21,19 +21,21 @@ const UnitGroupDescriptionMini: FC<Props> = ({ id, version, idType }) => {
       if (idType === 'flow') {
         setSpinning(true);
         getReferenceProperty(id, version ?? '').then((res1: any) => {
-          getReferenceUnitGroup(res1.data?.refFlowPropertytId, res1.data?.re).then((res2: any) => {
-            setRefUnitGroup(res2.data);
-            getReferenceUnit(res2.data?.refUnitGroupId, res2.data?.version).then((res3) => {
-              setRefUnit(res3?.data);
-              setSpinning(false);
-            });
-          });
+          getReferenceUnitGroup(res1?.data?.refFlowPropertytId, res1?.data?.re).then(
+            (res2: any) => {
+              setRefUnitGroup(res2?.data);
+              getReferenceUnit(res2?.data?.refUnitGroupId, res2?.data?.version).then((res3) => {
+                setRefUnit(res3?.data);
+                setSpinning(false);
+              });
+            },
+          );
         });
       } else if (idType === 'flowproperty') {
         setSpinning(true);
         getReferenceUnitGroup(id, version ?? '').then((res1: any) => {
           setRefUnitGroup(res1.data);
-          getReferenceUnit(res1.data?.refUnitGroupId, res1.data?.version).then((res2) => {
+          getReferenceUnit(res1?.data?.refUnitGroupId, res1?.data?.version).then((res2) => {
             setRefUnit(res2?.data);
             setSpinning(false);
           });

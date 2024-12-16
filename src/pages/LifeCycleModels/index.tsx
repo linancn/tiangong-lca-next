@@ -105,7 +105,11 @@ const TableList: FC = () => {
             </Space>,
           ];
         }
-        return [<Space size={'small'} key={0}></Space>];
+        return [
+          <Space size={'small'} key={0}>
+            <LifeCycleModelView id={row.id} version={row.version} lang={lang} buttonType={'icon'} />
+          </Space>,
+        ];
       },
     },
   ];

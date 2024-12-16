@@ -1,13 +1,12 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import FlowsSelectDescription from '@/pages/Flows/Components/select/description';
-import styles from '@/style/custom.less';
 import {
   CheckCircleTwoTone,
   CloseCircleOutlined,
   CloseOutlined,
   ProfileOutlined,
 } from '@ant-design/icons';
-import { Button, Card, Descriptions, Divider, Drawer, Space, Tooltip } from 'antd';
+import { Button, Card, Descriptions, Divider, Drawer, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -17,7 +16,7 @@ type Props = {
   id: string;
   data: any;
   lang: string;
-  dataSource: string;
+  // dataSource: string;
   buttonType: string;
   // actionRef: React.MutableRefObject<ActionType | undefined>;
 };
@@ -27,9 +26,9 @@ const getDataDerivationTypeStatusOptions = (value: string) => {
   return option ? option.label : '-';
 };
 
-const ProcessExchangeView: FC<Props> = ({ id, data, lang, dataSource, buttonType }) => {
+const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [footerButtons, setFooterButtons] = useState<JSX.Element>();
+  // const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [viewData, setViewData] = useState<any>({});
   // const [spinning, setSpinning] = useState(false);
 
@@ -38,27 +37,27 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, dataSource, buttonType
     const filteredData = data?.find((item: any) => item['@dataSetInternalID'] === id) ?? {};
     setViewData(filteredData);
     // setSpinning(true);
-    if (dataSource === 'my') {
-      setFooterButtons(
-        <>
-          {/* <ProcessExchangeDelete
-              id={id}
-              data={[]}
-              buttonType={'text'}
-              actionRef={actionRef}
-              setViewDrawerVisible={setDrawerVisible}
-            /> */}
-          {/* <ContactEdit
-              id={id}
-              buttonType={'text'}
-              actionRef={actionRef}
-              setViewDrawerVisible={setDrawerVisible}
-            /> */}
-        </>,
-      );
-    } else {
-      setFooterButtons(<></>);
-    }
+    // if (dataSource === 'my') {
+    //   setFooterButtons(
+    //     <>
+    //       <ProcessExchangeDelete
+    //           id={id}
+    //           data={[]}
+    //           buttonType={'text'}
+    //           actionRef={actionRef}
+    //           setViewDrawerVisible={setDrawerVisible}
+    //         />
+    //       <ContactEdit
+    //           id={id}
+    //           buttonType={'text'}
+    //           actionRef={actionRef}
+    //           setViewDrawerVisible={setDrawerVisible}
+    //         />
+    //     </>,
+    //   );
+    // } else {
+    //   setFooterButtons(<></>);
+    // }
     // setSpinning(false);
   };
 
@@ -90,9 +89,10 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, dataSource, buttonType
           />
         }
         footer={
-          <Space size={'middle'} className={styles.footer_right}>
-            {footerButtons}
-          </Space>
+          false
+          // <Space size={'middle'} className={styles.footer_right}>
+          //   {footerButtons}
+          // </Space>
         }
         maskClosable={true}
         open={drawerVisible}
