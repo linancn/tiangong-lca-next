@@ -12,6 +12,7 @@ import {
   CheckCircleTwoTone,
   CloseCircleOutlined,
   CloseOutlined,
+  ProductOutlined,
   ProfileOutlined,
 } from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
@@ -34,7 +35,6 @@ type Props = {
   version: string;
   lang: string;
   buttonType: string;
-  dataSource: string;
   disabled: boolean;
   // actionRef: React.MutableRefObject<ActionType | undefined>;
 };
@@ -64,7 +64,7 @@ const getLicenseTypeOptions = (value: string) => {
   return option ? option.label : '-';
 };
 
-const ProcessView: FC<Props> = ({ id, version, dataSource, buttonType, lang, disabled }) => {
+const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   // const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [activeTabKey, setActiveTabKey] = useState<string>('processInformation');
@@ -219,17 +219,16 @@ const ProcessView: FC<Props> = ({ id, version, dataSource, buttonType, lang, dis
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
-        if (dataSource === 'my') {
-          return [
-            <Space size={'small'} key={0}>
-              <ProcessExchangeView
-                id={row.dataSetInternalID}
-                data={exchangeDataSource}
-                dataSource={'my'}
-                buttonType={'icon'}
-                lang={lang}
-              />
-              {/* <ProcessEdit
+        return [
+          <Space size={'small'} key={0}>
+            <ProcessExchangeView
+              id={row.dataSetInternalID}
+              data={exchangeDataSource}
+              // dataSource={'my'}
+              buttonType={'icon'}
+              lang={lang}
+            />
+            {/* <ProcessEdit
                 id={row.id}
                 lang={lang}
                 buttonType={'icon'}
@@ -242,18 +241,6 @@ const ProcessView: FC<Props> = ({ id, version, dataSource, buttonType, lang, dis
                 actionRef={actionRef}
                 setViewDrawerVisible={() => { }}
               /> */}
-            </Space>,
-          ];
-        }
-        return [
-          <Space size={'small'} key={0}>
-            <ProcessExchangeView
-              id={row.dataSetInternalID}
-              data={exchangeDataSource}
-              lang={lang}
-              dataSource={'tg'}
-              buttonType={'icon'}
-            />
           </Space>,
         ];
       },
@@ -1080,6 +1067,20 @@ const ProcessView: FC<Props> = ({ id, version, dataSource, buttonType, lang, dis
             icon={<ProfileOutlined />}
             onClick={onView}
             disabled={disabled}
+          />
+        </Tooltip>
+      ) : buttonType === 'toolResultIcon' ? (
+        <Tooltip
+          title={<FormattedMessage id="pages.button.model.result" defaultMessage="Model result" />}
+          placement="left"
+        >
+          <Button
+            disabled={id === ''}
+            type="primary"
+            icon={<ProductOutlined />}
+            size="small"
+            style={{ boxShadow: 'none' }}
+            onClick={onView}
           />
         </Tooltip>
       ) : buttonType === 'icon' ? (

@@ -95,7 +95,7 @@ const TableList: FC = () => {
               <ProcessView
                 id={row.id}
                 version={row.version}
-                dataSource={dataSource}
+                // dataSource={dataSource}
                 buttonType={'icon'}
                 lang={lang}
                 disabled={false}
@@ -123,7 +123,7 @@ const TableList: FC = () => {
             <ProcessView
               id={row.id}
               version={row.version}
-              dataSource={dataSource}
+              // dataSource={dataSource}
               buttonType={'icon'}
               lang={lang}
               disabled={false}

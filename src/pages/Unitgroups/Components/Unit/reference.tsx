@@ -20,9 +20,9 @@ const ReferenceUnit: FC<Props> = ({ id, version, idType, lang }) => {
       if (idType === 'flow') {
         setSpinning(true);
         getReferenceProperty(id, version).then((res1: any) => {
-          getReferenceUnitGroup(res1.data?.refFlowPropertytId, res1.data?.version).then(
+          getReferenceUnitGroup(res1?.data?.refFlowPropertytId, res1?.data?.version).then(
             (res2: any) => {
-              getReferenceUnit(res2.data?.refUnitGroupId, res2.data?.version).then((res3) => {
+              getReferenceUnit(res2?.data?.refUnitGroupId, res2?.data?.version).then((res3) => {
                 setRefUnit(res3?.data);
                 setSpinning(false);
               });
@@ -32,7 +32,7 @@ const ReferenceUnit: FC<Props> = ({ id, version, idType, lang }) => {
       } else if (idType === 'flowproperty') {
         setSpinning(true);
         getReferenceUnitGroup(id, version).then((res1: any) => {
-          getReferenceUnit(res1.data?.refUnitGroupId, res1.data?.version).then((res2) => {
+          getReferenceUnit(res1?.data?.refUnitGroupId, res1?.data?.version).then((res2) => {
             setRefUnit(res2?.data);
             setSpinning(false);
           });
