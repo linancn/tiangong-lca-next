@@ -10,6 +10,7 @@ export default {
   'pages.process.exchange.resultingAmount': 'Resulting amount',
   'pages.process.exchange.meanAmount': 'Mean amount',
   'pages.process.exchange.quantitativeReference': 'Quantitative reference',
+  'pages.process.exchange.uncertaintyDistributionType': 'Uncertainty distribution type',
   'pages.process.exchange.dataDerivationTypeStatus': 'Data derivation type / status',
 
   'pages.process.exchange.drawer.title.create': 'Create Exchange',
@@ -84,6 +85,7 @@ export default {
   'processExchange.exchangeDirection': 'Exchange direction',
   'processExchange.resultingAmount': 'Resulting amount',
   'processExchange.meanAmount': 'Mean amount',
+  'processExchange.uncertaintyDistributionType': 'Uncertainty distribution type',
   'processExchange.quantitativeReference': 'Quantitative reference',
   'processExchange.referenceToFlowDataSet': 'Flow',
 
@@ -93,6 +95,7 @@ export default {
   'pages.button.deleteMessage.areyousureyouwanttodeletethisdata': 'Are you sure you want to delete this data?',
   //exchange查看创建编辑
   'pages.process.view.exchange.exchangeDirection': 'Exchange direction',
+  'pages.process.view.exchange.relativeStandardDeviation95In': 'Relative standard deviation 95 in',
   'pages.process.view.exchange.referenceToFlowDataSet': 'Flow',
   'pages.process.view.exchange.refObjectId': 'Ref object id',
   'pages.process.view.exchange.type': 'Type',

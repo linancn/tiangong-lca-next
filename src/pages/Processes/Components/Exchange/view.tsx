@@ -160,6 +160,78 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
             key={0}
             label={
               <FormattedMessage
+                id="processExchange.uncertaintyDistributionType"
+                defaultMessage="Uncertainty distribution type"
+              />
+            }
+            labelStyle={{ width: '220px' }}
+          >
+            {viewData.uncertaintyDistributionType ?? '-'}
+          </Descriptions.Item>
+        </Descriptions>
+        {viewData.uncertaintyDistributionType === 'uniform' ? (
+          <>
+            <br />
+            <Descriptions bordered size={'small'} column={1}>
+              <Descriptions.Item
+                key={0}
+                label={
+                  <FormattedMessage
+                    id="pages.process.view.exchange.minimumAmount"
+                    defaultMessage="Minimum amount"
+                  />
+                }
+                labelStyle={{ width: '220px' }}
+              >
+                {viewData.minimumAmount ?? '-'}
+              </Descriptions.Item>
+            </Descriptions>
+            <br />
+            <Descriptions bordered size={'small'} column={1}>
+              <Descriptions.Item
+                key={0}
+                label={
+                  <FormattedMessage
+                    id="pages.process.view.exchange.maximumAmount"
+                    defaultMessage="Maximum amount"
+                  />
+                }
+                labelStyle={{ width: '220px' }}
+              >
+                {viewData.maximumAmount ?? '-'}
+              </Descriptions.Item>
+            </Descriptions>
+          </>
+        ) : (
+          <></>
+        )}
+        {viewData.uncertaintyDistributionType === 'log-normal' ? (
+          <>
+            <br />
+            <Descriptions bordered size={'small'} column={1}>
+              <Descriptions.Item
+                key={0}
+                label={
+                  <FormattedMessage
+                    id="pages.process.view.exchange.relativeStandardDeviation95In"
+                    defaultMessage="Relative standard deviation 95 in"
+                  />
+                }
+                labelStyle={{ width: '220px' }}
+              >
+                {viewData.relativeStandardDeviation95In ?? '-'}
+              </Descriptions.Item>
+            </Descriptions>
+          </>
+        ) : (
+          <></>
+        )}
+        <br />
+        <Descriptions bordered size={'small'} column={1}>
+          <Descriptions.Item
+            key={0}
+            label={
+              <FormattedMessage
                 id="pages.process.view.exchange.dataDerivationTypeStatus"
                 defaultMessage="'Data derivation type / status"
               />

@@ -152,15 +152,6 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
     },
     {
       title: (
-        <FormattedMessage id="processExchange.resultingAmount" defaultMessage="Resulting amount" />
-      ),
-      dataIndex: 'resultingAmount',
-      sorter: false,
-      search: false,
-    },
-
-    {
-      title: (
         <FormattedMessage
           id="pages.flowproperty.referenceToReferenceUnitGroup"
           defaultMessage="Reference unit"
@@ -190,6 +181,17 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
         />
       ),
       dataIndex: 'dataDerivationTypeStatus',
+      sorter: false,
+      search: false,
+    },
+    {
+      title: (
+        <FormattedMessage
+          id="processExchange.uncertaintyDistributionType"
+          defaultMessage="Uncertainty distribution type"
+        />
+      ),
+      dataIndex: 'uncertaintyDistributionType',
       sorter: false,
       search: false,
     },
