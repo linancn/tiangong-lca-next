@@ -5,6 +5,7 @@ import {
   getLangList,
   getLangText,
   removeEmptyObjects,
+  toAmountNumber,
 } from '../general/util';
 
 export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
@@ -18,6 +19,8 @@ export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
           functionalUnitOrOther: getLangJson(item.functionalUnitOrOther),
         };
       }
+      const resultingAmount =
+        toAmountNumber(item.resultingAmount) === 0 ? item.meanAmount : item.resultingAmount;
       return {
         '@dataSetInternalID': item?.['@dataSetInternalID'],
         referenceToFlowDataSet: {
@@ -31,7 +34,7 @@ export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
         },
         exchangeDirection: item.exchangeDirection,
         meanAmount: item.meanAmount,
-        resultingAmount: item.resultingAmount,
+        resultingAmount: resultingAmount,
         dataDerivationTypeStatus: item.dataDerivationTypeStatus,
         generalComment: getLangJson(item.generalComment),
       };
@@ -341,11 +344,12 @@ export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
         },
       },
       exchanges: {
-        exchange: [...exchange],
+        exchange: exchange,
       },
     },
   });
 }
+
 export function genProcessFromData(data: any) {
   const exchange = data?.exchanges?.exchange ?? [];
   let exchangeList = [];
@@ -678,6 +682,10 @@ export function genProcessFromData(data: any) {
             exchangeDirection: item.exchangeDirection,
             meanAmount: item.meanAmount,
             resultingAmount: item.resultingAmount,
+            minimumAmount: item.minimumAmount,
+            maximumAmount: item.maximumAmount,
+            uncertaintyDistributionType: item.uncertaintyDistributionType,
+            relativeStandardDeviation95In: item.relativeStandardDeviation95In,
             dataDerivationTypeStatus: item.dataDerivationTypeStatus,
             generalComment: getLangList(item.generalComment),
             quantitativeReference: true,

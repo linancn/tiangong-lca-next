@@ -61,7 +61,7 @@ const UnitGroupDescriptionMini: FC<Props> = ({ id, version, idType }) => {
             defaultMessage="Short description" //有问题
           />
         </Divider>
-        <LangTextItemDescription data={refUnitGroup.refUnitGroupShortDescription} />
+        <LangTextItemDescription data={refUnitGroup?.refUnitGroupShortDescription} />
         <br />
         <Card
           size="small"

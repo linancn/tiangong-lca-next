@@ -370,3 +370,12 @@ export function listToJson(list: any) {
   }
   return {};
 }
+
+export function toAmountNumber(amount: string) {
+  let thisAmount = Number(amount);
+  if (isNaN(thisAmount)) {
+    return 0;
+  } else {
+    return thisAmount;
+  }
+}

@@ -10,6 +10,7 @@ export default {
   'pages.process.exchange.resultingAmount': '结果量',
   'pages.process.exchange.meanAmount': '平均量',
   'pages.process.exchange.quantitativeReference': '量值参考',
+  'pages.process.exchange.uncertaintyDistributionType': '不确定性分布类型',
   'pages.process.exchange.dataDerivationTypeStatus': '数据推导类型/状态 ',
 
   'pages.process.exchange.drawer.title.create': '创建输入/输出',
@@ -80,6 +81,7 @@ export default {
   'processExchange.exchangeDirection': '输入/输出方向',
   'processExchange.resultingAmount': '结果量',
   'processExchange.meanAmount': '平均量',
+  'processExchange.uncertaintyDistributionType': '不确定性分布类型',
   'processExchange.quantitativeReference': '量值参考',
   'processExchange.referenceToFlowDataSet': '流',
 
@@ -96,6 +98,7 @@ export default {
   'pages.process.view.exchange.shortDescription': '简述',
   'pages.process.view.exchange.meanAmount': '平均量',
   'pages.process.view.exchange.resultingAmount': '结果量',
+  'pages.process.view.exchange.relativeStandardDeviation95In': '95%相对标准偏差',
   'pages.process.view.exchange.dataDerivationTypeStatus': '数据推导类型/状态',
   'pages.process.view.exchange.generalComment': '备注',
   'pages.process.view.exchange.quantitativeReference': '量值参考',
