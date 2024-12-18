@@ -349,6 +349,7 @@ export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
     },
   });
 }
+
 export function genProcessFromData(data: any) {
   const exchange = data?.exchanges?.exchange ?? [];
   let exchangeList = [];
