@@ -200,6 +200,75 @@ const ProcessExchangeEdit: FC<Props> = ({
             >
               <Input />
             </Form.Item>
+
+            <Form.Item
+              label={
+                <FormattedMessage
+                  id="processExchange.uncertaintyDistributionType"
+                  defaultMessage="Uncertainty distribution type"
+                />
+              }
+              name={'uncertaintyDistributionType'}
+            >
+              <Select
+                options={[
+                  { value: 'undefined', label: 'Undefined' },
+                  { value: 'log-normal', label: 'Lognormal' },
+                  { value: 'normal', label: 'Normal' },
+                  { value: 'triangular', label: 'Triangular' },
+                  { value: 'uniform', label: 'Uniform' },
+                ]}
+              />
+            </Form.Item>
+            {formRefEdit.current?.getFieldValue('uncertaintyDistributionType') === 'triangular' ||
+            formRefEdit.current?.getFieldValue('uncertaintyDistributionType') === 'uniform' ? (
+              <>
+                <Form.Item
+                  label={
+                    <FormattedMessage
+                      id="processExchange.minimumAmount"
+                      defaultMessage="Minimum amount"
+                    />
+                  }
+                  name={'minimumAmount'}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  label={
+                    <FormattedMessage
+                      id="processExchange.maximumAmount"
+                      defaultMessage="Maximum amount"
+                    />
+                  }
+                  name={'maximumAmount'}
+                >
+                  <Input />
+                </Form.Item>
+              </>
+            ) : (
+              <></>
+            )}
+
+            {formRefEdit.current?.getFieldValue('uncertaintyDistributionType') === 'log-normal' ||
+            formRefEdit.current?.getFieldValue('uncertaintyDistributionType') === 'log-normal' ? (
+              <>
+                <Form.Item
+                  label={
+                    <FormattedMessage
+                      id="processExchange.relativeStandardDeviation95In"
+                      defaultMessage="Relative standard deviation 95 in"
+                    />
+                  }
+                  name={'relativeStandardDeviation95In'}
+                >
+                  <Input />
+                </Form.Item>
+              </>
+            ) : (
+              <></>
+            )}
+
             <Form.Item
               label={
                 <FormattedMessage
