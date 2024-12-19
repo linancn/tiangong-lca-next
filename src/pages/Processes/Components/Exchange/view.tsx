@@ -129,10 +129,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
           <Descriptions.Item
             key={0}
             label={
-              <FormattedMessage
-                id="pages.process.view.exchange.meanAmount"
-                defaultMessage="Mean amount"
-              />
+              <FormattedMessage id="processExchange.meanAmount" defaultMessage="Mean amount" />
             }
             labelStyle={{ width: '220px' }}
           >
@@ -145,7 +142,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
             key={0}
             label={
               <FormattedMessage
-                id="pages.process.view.exchange.resultingAmount"
+                id="processExchange.resultingAmount"
                 defaultMessage="Resulting amount"
               />
             }
@@ -169,7 +166,8 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
             {viewData.uncertaintyDistributionType ?? '-'}
           </Descriptions.Item>
         </Descriptions>
-        {viewData.uncertaintyDistributionType === 'uniform' ? (
+        {viewData.uncertaintyDistributionType === 'triangular' ||
+        viewData.uncertaintyDistributionType === 'uniform' ? (
           <>
             <br />
             <Descriptions bordered size={'small'} column={1}>
@@ -177,7 +175,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
                 key={0}
                 label={
                   <FormattedMessage
-                    id="pages.process.view.exchange.minimumAmount"
+                    id="processExchange.minimumAmount"
                     defaultMessage="Minimum amount"
                   />
                 }
@@ -192,7 +190,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
                 key={0}
                 label={
                   <FormattedMessage
-                    id="pages.process.view.exchange.maximumAmount"
+                    id="processExchange.maximumAmount"
                     defaultMessage="Maximum amount"
                   />
                 }
@@ -205,7 +203,8 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
         ) : (
           <></>
         )}
-        {viewData.uncertaintyDistributionType === 'log-normal' ? (
+        {viewData.uncertaintyDistributionType === 'normal' ||
+        viewData.uncertaintyDistributionType === 'log-normal' ? (
           <>
             <br />
             <Descriptions bordered size={'small'} column={1}>
@@ -213,7 +212,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
                 key={0}
                 label={
                   <FormattedMessage
-                    id="pages.process.view.exchange.relativeStandardDeviation95In"
+                    id="processExchange.relativeStandardDeviation95In"
                     defaultMessage="Relative standard deviation 95 in"
                   />
                 }
