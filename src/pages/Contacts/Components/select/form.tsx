@@ -11,6 +11,7 @@ import ContactSelectDrawer from './drawer';
 const { TextArea } = Input;
 
 type Props = {
+  parentName?: any;
   name: any;
   label: ReactNode | string;
   lang: string;
@@ -18,7 +19,7 @@ type Props = {
   onData: () => void;
 };
 
-const ContactSelectForm: FC<Props> = ({ name, label, lang, formRef, onData }) => {
+const ContactSelectForm: FC<Props> = ({ parentName, name, label, lang, formRef, onData }) => {
   const [id, setId] = useState<string | undefined>(undefined);
   const [version, setVersion] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
@@ -26,7 +27,7 @@ const ContactSelectForm: FC<Props> = ({ name, label, lang, formRef, onData }) =>
   const handletContactData = (rowId: string, rowVersion: string) => {
     getContactDetail(rowId, rowVersion).then(async (result: any) => {
       const selectedData = genContactFromData(result.data?.json?.contactDataSet ?? {});
-      await formRef.current?.setFieldValue(name, {
+      await formRef.current?.setFieldValue([...parentName, ...name], {
         '@refObjectId': rowId,
         '@type': 'contact data set',
         '@uri': `../contacts/${rowId}.xml`,
@@ -42,8 +43,13 @@ const ContactSelectForm: FC<Props> = ({ name, label, lang, formRef, onData }) =>
   };
 
   useEffect(() => {
-    setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
-    setVersion(formRef.current?.getFieldValue([...name, '@version']));
+    if (parentName) {
+      setId(formRef.current?.getFieldValue([...parentName, ...name, '@refObjectId']));
+      setVersion(formRef.current?.getFieldValue([...parentName, ...name, '@version']));
+    } else {
+      setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
+      setVersion(formRef.current?.getFieldValue([...name, '@version']));
+    }
   });
 
   return (

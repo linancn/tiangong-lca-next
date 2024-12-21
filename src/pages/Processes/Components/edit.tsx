@@ -225,10 +225,8 @@ const ProcessEdit: FC<Props> = ({
             }}
             onFinish={async () => {
               setSpinning(true);
-              const updateResult = await updateProcess({
+              const updateResult = await updateProcess(id, version, {
                 ...fromData,
-                id: id,
-                version: version,
                 exchanges: { exchange: [...exchangeDataSource] },
               });
               if (updateResult?.data) {

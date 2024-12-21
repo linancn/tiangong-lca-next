@@ -8,7 +8,7 @@ import {
   toAmountNumber,
 } from '../general/util';
 
-export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
+export function genProcessJsonOrdered(id: string, data: any) {
   let quantitativeReference = {};
   const exchange =
     data?.exchanges?.exchange?.map((item: any) => {
@@ -45,11 +45,17 @@ export function genProcessJsonOrdered(id: string, data: any, oldData: any) {
     }) ?? [];
   return removeEmptyObjects({
     processDataSet: {
-      '@xmlns:common': oldData.processDataSet?.['@xmlns:common'] ?? {},
-      '@xmlns': oldData.processDataSet?.['@xmlns'] ?? {},
-      '@xmlns:xsi': oldData.processDataSet?.['@xmlns:xsi'] ?? {},
-      '@version': oldData.processDataSet['@version'] ?? {},
-      '@xsi:schemaLocation': oldData.processDataSet['@xsi:schemaLocation'] ?? {},
+      // '@xmlns:common': oldData.processDataSet?.['@xmlns:common'] ?? {},
+      // '@xmlns': oldData.processDataSet?.['@xmlns'] ?? {},
+      // '@xmlns:xsi': oldData.processDataSet?.['@xmlns:xsi'] ?? {},
+      // '@version': oldData.processDataSet['@version'] ?? {},
+      // '@xsi:schemaLocation': oldData.processDataSet['@xsi:schemaLocation'] ?? {},
+      '@xmlns:common': 'http://lca.jrc.it/ILCD/Common',
+      '@xmlns': 'http://lca.jrc.it/ILCD/Process',
+      '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
+      '@version': '1.1',
+      '@locations': '../ILCDLocations.xml',
+      '@xsi:schemaLocation': 'http://lca.jrc.it/ILCD/Process ../../schemas/ILCD_ProcessDataSet.xsd',
       processInformation: {
         dataSetInformation: {
           'common:UUID': id,
