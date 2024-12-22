@@ -86,7 +86,7 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                         name={[
                           subField.name,
                           'common:dataQualityIndicators',
-                          'dataQualityIndicator',
+                          'common:dataQualityIndicator',
                         ]}
                       />
                     </Card>
@@ -133,6 +133,7 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                       formRef={formRef}
                       onData={onData}
                     />
+                    <br />
                     <SourceSelectForm
                       parentName={name}
                       name={[subField.name, 'common:referenceToCompleteReviewReport']}

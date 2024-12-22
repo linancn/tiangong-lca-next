@@ -125,11 +125,11 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                     <br />
                     <SourceSelectForm
                       parentName={name}
-                      name={[subField.name, 'common:referenceToCompleteReviewReport']}
+                      name={[subField.name, 'common:referenceToComplianceSystem']}
                       label={
                         <FormattedMessage
-                          id="pages.process.view.modellingAndValidation.referenceToCompleteReviewReport"
-                          defaultMessage="Complete review report"
+                          id="pages.process.view.modellingAndValidation.referenceToComplianceSystem"
+                          defaultMessage="Compliance system"
                         />
                       }
                       lang={lang}
