@@ -759,9 +759,12 @@ const ToolbarEdit: FC<Props> = ({
     const edge = evt.edge;
     const sourcePortID = edge.getSourcePortId();
     const targetPortID = edge.getTargetPortId();
+    const sourceFlowIDs = sourcePortID?.split(':');
+    const targetFlowIDs = targetPortID?.split(':');
     if (
       sourcePortID?.toUpperCase()?.includes('OUTPUT') &&
-      targetPortID?.toUpperCase()?.includes('INPUT')
+      targetPortID?.toUpperCase()?.includes('INPUT') &&
+      sourceFlowIDs?.[sourceFlowIDs?.length - 1] === targetFlowIDs?.[targetFlowIDs?.length - 1]
     ) {
       const sourceNodeID = edge.getSourceCellId();
       const targetNodeID = edge.getTargetCellId();

@@ -80,7 +80,7 @@ const UnitGroupDescriptionMini: FC<Props> = ({ id, version, idType }) => {
               }
               labelStyle={{ width: '100px' }}
             >
-              {refUnit.refUnitName ?? '-'}
+              {refUnit?.refUnitName ?? '-'}
             </Descriptions.Item>
           </Descriptions>
           <Divider orientationMargin="0" orientation="left" plain>
@@ -89,7 +89,7 @@ const UnitGroupDescriptionMini: FC<Props> = ({ id, version, idType }) => {
               defaultMessage="General comment"
             />
           </Divider>
-          <LangTextItemDescription data={refUnit.refUnitGeneralComment} />
+          <LangTextItemDescription data={refUnit?.refUnitGeneralComment} />
         </Card>
       </Card>
     </Spin>

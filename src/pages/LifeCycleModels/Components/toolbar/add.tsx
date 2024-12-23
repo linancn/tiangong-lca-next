@@ -134,7 +134,6 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
             <ProcessView
               id={row.id}
               version={row.version}
-              dataSource={'tg'}
               buttonType={'icon'}
               lang={lang}
               disabled={false}
