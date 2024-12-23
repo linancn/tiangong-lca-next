@@ -10,6 +10,7 @@ import SourceSelectDrawer from './drawer';
 const { TextArea } = Input;
 
 type Props = {
+  parentName?: any;
   name: any;
   label: ReactNode | string;
   lang: string;
@@ -17,7 +18,7 @@ type Props = {
   onData: () => void;
 };
 
-const SourceSelectForm: FC<Props> = ({ name, label, lang, formRef, onData }) => {
+const SourceSelectForm: FC<Props> = ({ parentName, name, label, lang, formRef, onData }) => {
   const [id, setId] = useState<string | undefined>(undefined);
   const [version, setVersion] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
@@ -25,14 +26,25 @@ const SourceSelectForm: FC<Props> = ({ name, label, lang, formRef, onData }) => 
   const handletSourceData = (rowId: string, rowVersion: string) => {
     getSourceDetail(rowId, rowVersion).then(async (result: any) => {
       const selectedData = genSourceFromData(result.data?.json?.sourceDataSet ?? {});
-      await formRef.current?.setFieldValue(name, {
-        '@refObjectId': rowId,
-        '@type': 'source data set',
-        '@uri': `../sources/${rowId}.xml`,
-        '@version': result.data?.version,
-        'common:shortDescription':
-          selectedData?.sourceInformation?.dataSetInformation?.['common:shortName'] ?? [],
-      });
+      if (parentName) {
+        await formRef.current?.setFieldValue([...parentName, ...name], {
+          '@refObjectId': rowId,
+          '@type': 'source data set',
+          '@uri': `../sources/${rowId}.xml`,
+          '@version': result.data?.version,
+          'common:shortDescription':
+            selectedData?.sourceInformation?.dataSetInformation?.['common:shortName'] ?? [],
+        });
+      } else {
+        await formRef.current?.setFieldValue(name, {
+          '@refObjectId': rowId,
+          '@type': 'source data set',
+          '@uri': `../sources/${rowId}.xml`,
+          '@version': result.data?.version,
+          'common:shortDescription':
+            selectedData?.sourceInformation?.dataSetInformation?.['common:shortName'] ?? [],
+        });
+      }
       setId(rowId);
       setVersion(result.data?.version);
       onData();
@@ -42,8 +54,13 @@ const SourceSelectForm: FC<Props> = ({ name, label, lang, formRef, onData }) => 
   // const id = formRef.current?.getFieldValue([...name, '@refObjectId']);
 
   useEffect(() => {
-    setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
-    setVersion(formRef.current?.getFieldValue([...name, '@version']));
+    if (parentName) {
+      setId(formRef.current?.getFieldValue([...parentName, ...name, '@refObjectId']));
+      setVersion(formRef.current?.getFieldValue([...parentName, ...name, '@version']));
+    } else {
+      setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
+      setVersion(formRef.current?.getFieldValue([...name, '@version']));
+    }
   });
 
   return (

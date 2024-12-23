@@ -20,6 +20,7 @@ import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/p
 import { Card, Collapse, Divider, Form, Input, Select, Space, theme, Tooltip } from 'antd';
 import { useEffect, useRef, type FC } from 'react';
 import { FormattedMessage } from 'umi';
+import ComplianceItemForm from './Compliance/form';
 import ProcessExchangeCreate from './Exchange/create';
 import ProcessExchangeDelete from './Exchange/delete';
 import ProcessExchangeEdit from './Exchange/edit';
@@ -30,9 +31,9 @@ import {
   LCIMethodPrincipleOptions,
   licenseTypeOptions,
   processtypeOfDataSetOptions,
-  reviewTypeOptions,
   workflowAndPublicationStatusOptions,
 } from './optiondata';
+import ReveiwItemForm from './Review/form';
 
 type Props = {
   lang: string;
@@ -89,6 +90,19 @@ export const ProcessForm: FC<Props> = ({
     {
       key: 'exchanges',
       tab: <FormattedMessage id="pages.process.view.exchanges" defaultMessage="Exchanges" />,
+    },
+    {
+      key: 'validation',
+      tab: <FormattedMessage id="pages.process.validation" defaultMessage="Validation" />,
+    },
+    {
+      key: 'complianceDeclarations',
+      tab: (
+        <FormattedMessage
+          id="pages.process.complianceDeclarations"
+          defaultMessage="Compliance declarations"
+        />
+      ),
     },
   ];
   const processExchangeColumns: ProColumns<ProcessExchangeTable>[] = [
@@ -211,7 +225,6 @@ export const ProcessForm: FC<Props> = ({
               id={row.dataSetInternalID}
               data={exchangeDataSource}
               lang={lang}
-              dataSource={'my'}
               buttonType={'icon'}
             />
             <ProcessExchangeEdit
@@ -845,61 +858,6 @@ export const ProcessForm: FC<Props> = ({
             />
           }
         />
-        <Card
-          size="small"
-          title={
-            <FormattedMessage
-              id="pages.process.view.modellingAndValidation.Review"
-              defaultMessage="Review"
-            />
-          }
-        >
-          <Form.Item
-            label={
-              <FormattedMessage
-                id="pages.process.view.modellingAndValidation.type"
-                defaultMessage="Type of review"
-              />
-            }
-            name={['modellingAndValidation', 'validation', 'review', '@type']}
-          >
-            <Select options={reviewTypeOptions} />
-          </Form.Item>
-          <Divider orientationMargin="0" orientation="left" plain>
-            <FormattedMessage
-              id="pages.process.view.modellingAndValidation.reviewDetails"
-              defaultMessage="Review details"
-            />
-          </Divider>
-          <LangTextItemForm
-            name={['modellingAndValidation', 'validation', 'review', 'common:reviewDetails']}
-            label={
-              <FormattedMessage
-                id="pages.process.view.modellingAndValidation.reviewDetails"
-                defaultMessage="Review details"
-              />
-            }
-            rules={FTMultiLang_r}
-          />
-
-          <ContactSelectForm
-            name={[
-              'modellingAndValidation',
-              'validation',
-              'review',
-              'common:referenceToNameOfReviewerAndInstitution',
-            ]}
-            label={
-              <FormattedMessage
-                id="pages.process.view.modellingAndValidation.referenceToNameOfReviewerAndInstitution"
-                defaultMessage="Reviewer name and institution"
-              />
-            }
-            lang={lang}
-            formRef={formRef}
-            onData={onData}
-          />
-        </Card>
       </Space>
     ),
     administrativeInformation: (
@@ -1141,6 +1099,22 @@ export const ProcessForm: FC<Props> = ({
         />
       </>
     ),
+    validation: (
+      <ReveiwItemForm
+        name={['validation', 'review']}
+        lang={lang}
+        formRef={formRef}
+        onData={onData}
+      />
+    ),
+    complianceDeclarations: (
+      <ComplianceItemForm
+        name={['complianceDeclarations', 'compliance']}
+        lang={lang}
+        formRef={formRef}
+        onData={onData}
+      />
+    ),
   };
 
   useEffect(() => {
@@ -1149,18 +1123,13 @@ export const ProcessForm: FC<Props> = ({
   }, [exchangeDataSource]);
 
   return (
-    <>
-      <Card
-        style={{ width: '100%' }}
-        tabList={tabList}
-        activeTabKey={activeTabKey}
-        onTabChange={onTabChange}
-      >
-        {tabContent[activeTabKey]}
-      </Card>
-      <Form.Item name="id" hidden>
-        <Input />
-      </Form.Item>
-    </>
+    <Card
+      style={{ width: '100%' }}
+      tabList={tabList}
+      activeTabKey={activeTabKey}
+      onTabChange={onTabChange}
+    >
+      {tabContent[activeTabKey]}
+    </Card>
   );
 };

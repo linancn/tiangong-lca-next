@@ -42,7 +42,9 @@ export default {
   'pages.process.view.processInformation.mathematicalRelations': 'Mathematical model',
   'pages.process.view.processInformation.modelDescription': 'Model description',
   'pages.process.view.administrativeInformation': 'Administrative information',
-  'pages.process.view.modellingAndValidation': 'Modelling and validation',
+  'pages.process.view.modellingAndValidation': 'Modelling',
+  'pages.process.validation': 'Validation',
+  'pages.process.complianceDeclarations': 'Compliance declarations',
 
   'pages.process.view.exchanges': 'Inputs and Outputs',
 

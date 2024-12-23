@@ -10,44 +10,24 @@ import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/es/table/interface';
 import { genProcessJsonOrdered, genProcessName } from './util';
 
-export async function createProcess(data: any) {
-  // const newID = v4();
-  const oldData = {
-    processDataSet: {
-      '@xmlns:common': 'http://lca.jrc.it/ILCD/Common',
-      '@xmlns': 'http://lca.jrc.it/ILCD/Process',
-      '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
-      '@version': '1.1',
-      '@locations': '../ILCDLocations.xml',
-      '@xsi:schemaLocation': 'http://lca.jrc.it/ILCD/Process ../../schemas/ILCD_ProcessDataSet.xsd',
-    },
-  };
-  const newData = genProcessJsonOrdered(data.id, data, oldData);
+export async function createProcess(id: string, data: any) {
+  const newData = genProcessJsonOrdered(id, data);
   const result = await supabase
     .from('processes')
-    .insert([{ id: data.id, json_ordered: newData }])
+    .insert([{ id: id, json_ordered: newData }])
     .select();
   return result;
 }
 
-export async function updateProcess(data: any) {
-  const result = await supabase
+export async function updateProcess(id: string, version: string, data: any) {
+  const newData = genProcessJsonOrdered(id, data);
+  const updateResult = await supabase
     .from('processes')
-    .select('id, json')
-    .eq('id', data.id)
-    .eq('version', data.version);
-  if (result.data && result.data.length === 1) {
-    const oldData = result.data[0].json;
-    const newData = genProcessJsonOrdered(data.id, data, oldData);
-    const updateResult = await supabase
-      .from('processes')
-      .update({ json_ordered: newData })
-      .eq('id', data.id)
-      .eq('version', data.version)
-      .select();
-    return updateResult;
-  }
-  return null;
+    .update({ json_ordered: newData })
+    .eq('id', id)
+    .eq('version', version)
+    .select();
+  return updateResult;
 }
 
 export async function getProcessTableAll(

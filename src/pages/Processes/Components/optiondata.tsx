@@ -363,6 +363,173 @@ export const reviewTypeOptions = [
   },
 ];
 
+export const scopeNameOptions = [
+  {
+    value: 'Raw data',
+    label: 'Raw data',
+  },
+  {
+    value: 'Unit process(es), single operation',
+    label: 'Unit process(es), single operation',
+  },
+  {
+    value: 'Unit process(es), black box',
+    label: 'Unit process(es), black box',
+  },
+  {
+    value: 'LCI results or Partly terminated system',
+    label: 'LCI results or Partly terminated system',
+  },
+  {
+    value: 'LCIA results',
+    label: 'LCIA results',
+  },
+  {
+    value: 'Documentation',
+    label: 'Documentation',
+  },
+  {
+    value: 'Life cycle inventory methods',
+    label: 'Life cycle inventory methods',
+  },
+  {
+    value: 'LCIA results calculation',
+    label: 'LCIA results calculation',
+  },
+  {
+    value: 'Goal and scope definition',
+    label: 'Goal and scope definition',
+  },
+];
+
+export const methodNameOptions = [
+  {
+    value: 'Validation of data sources',
+    label: 'Validation of data sources',
+  },
+  {
+    value: 'Sample tests on calculations',
+    label: 'Sample tests on calculations',
+  },
+  {
+    value: 'Energy balance',
+    label: 'Energy balance',
+  },
+  {
+    value: 'Element balance',
+    label: 'Element balance',
+  },
+  {
+    value: 'Cross-check with other source',
+    label: 'Cross-check with other source',
+  },
+  {
+    value: 'Cross-check with other data set',
+    label: 'Cross-check with other data set',
+  },
+  {
+    value: 'Expert judgement',
+    label: 'Expert judgement',
+  },
+  {
+    value: 'Mass balance',
+    label: 'Mass balance',
+  },
+  {
+    value: 'Compliance with legal limits',
+    label: 'Compliance with legal limits',
+  },
+  {
+    value: 'Compliance with ISO 14040 to 14044',
+    label: 'Compliance with ISO 14040 to 14044',
+  },
+  {
+    value: 'Documentation',
+    label: 'Documentation',
+  },
+  {
+    value: 'Evidence collection by means of plant visits and/or interviews',
+    label: 'Evidence collection by means of plant visits and/or interviews',
+  },
+];
+
+export const dataQualityIndicatorNameOptions = [
+  {
+    value: 'Technological representativeness',
+    label: 'Technological representativeness',
+  },
+  {
+    value: 'Time representativeness',
+    label: 'Time representativeness',
+  },
+  {
+    value: 'Geographical representativeness',
+    label: 'Geographical representativeness',
+  },
+  {
+    value: 'Completeness',
+    label: 'Completeness',
+  },
+  {
+    value: 'Precision',
+    label: 'Precision',
+  },
+  {
+    value: 'Methodological appropriateness and consistency',
+    label: 'Methodological appropriateness and consistency',
+  },
+  {
+    value: 'Overall quality',
+    label: 'Overall quality',
+  },
+];
+
+export const dataQualityIndicatorValueOptions = [
+  {
+    value: 'Very good',
+    label: 'Very good',
+  },
+  {
+    value: 'Good',
+    label: 'Good',
+  },
+  {
+    value: 'Fair',
+    label: 'Fair',
+  },
+  {
+    value: 'Poor',
+    label: 'Poor',
+  },
+  {
+    value: 'Very poor',
+    label: 'Very poor',
+  },
+  {
+    value: 'Not evaluated / unknown',
+    label: 'Not evaluated / unknown',
+  },
+  {
+    value: 'Not applicable',
+    label: 'Not applicable',
+  },
+];
+
+export const complianceOptions = [
+  {
+    value: 'Fully compliant',
+    label: 'Fully compliant',
+  },
+  {
+    value: 'Not compliant',
+    label: 'Not compliant',
+  },
+  {
+    value: 'Not defined',
+    label: 'Not defined',
+  },
+];
+
 export const workflowAndPublicationStatusOptions = [
   {
     value: 'Working draft',

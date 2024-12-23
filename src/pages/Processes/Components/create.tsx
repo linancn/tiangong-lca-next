@@ -129,7 +129,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             },
           }}
           onFinish={async () => {
-            const result = await createProcess({ ...fromData });
+            const result = await createProcess(v4(), fromData);
             if (result.data) {
               message.success(
                 intl.formatMessage({
