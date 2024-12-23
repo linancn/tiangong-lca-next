@@ -109,14 +109,14 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
             }
             labelStyle={{ width: '100px' }}
           >
-            {refUnit.refUnitName ?? '-'}
+            {refUnit?.refUnitName ?? '-'}
           </Descriptions.Item>
         </Descriptions>
         <br />
         <Divider orientationMargin="0" orientation="left" plain>
           <FormattedMessage id="pages.unitgroup.generalComment" defaultMessage="General comment" />
         </Divider>
-        <LangTextItemDescription data={refUnit.refUnitGeneralComment} />
+        <LangTextItemDescription data={refUnit?.refUnitGeneralComment} />
       </Card>
     </Card>
   );
