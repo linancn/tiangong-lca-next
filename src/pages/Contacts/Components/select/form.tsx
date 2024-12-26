@@ -27,15 +27,29 @@ const ContactSelectForm: FC<Props> = ({ parentName, name, label, lang, formRef, 
   const handletContactData = (rowId: string, rowVersion: string) => {
     getContactDetail(rowId, rowVersion).then(async (result: any) => {
       const selectedData = genContactFromData(result.data?.json?.contactDataSet ?? {});
-      await formRef.current?.setFieldValue([...parentName, ...name], {
-        '@refObjectId': rowId,
-        '@type': 'contact data set',
-        '@uri': `../contacts/${rowId}.xml`,
-        '@version': result.data?.version,
-        'common:shortDescription':
-          jsonToList(selectedData?.contactInformation?.dataSetInformation?.['common:shortName']) ??
-          [],
-      });
+      if (parentName) {
+        await formRef.current?.setFieldValue([...parentName, ...name], {
+          '@refObjectId': rowId,
+          '@type': 'contact data set',
+          '@uri': `../contacts/${rowId}.xml`,
+          '@version': result.data?.version,
+          'common:shortDescription':
+            jsonToList(
+              selectedData?.contactInformation?.dataSetInformation?.['common:shortName'],
+            ) ?? [],
+        });
+      } else {
+        await formRef.current?.setFieldValue(name, {
+          '@refObjectId': rowId,
+          '@type': 'contact data set',
+          '@uri': `../contacts/${rowId}.xml`,
+          '@version': result.data?.version,
+          'common:shortDescription':
+            jsonToList(
+              selectedData?.contactInformation?.dataSetInformation?.['common:shortName'],
+            ) ?? [],
+        });
+      }
       setId(rowId);
       setVersion(result.data?.version);
       onData();
