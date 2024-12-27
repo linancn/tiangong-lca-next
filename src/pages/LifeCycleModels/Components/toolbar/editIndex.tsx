@@ -14,7 +14,7 @@ import {
   genPortLabel,
 } from '@/services/lifeCycleModels/util';
 import { getProcessDetail } from '@/services/processes/api';
-import { genProcessFromData, genProcessName } from '@/services/processes/util';
+import { genProcessFromData, genProcessName, genProcessNameJson } from '@/services/processes/util';
 import { CopyOutlined, DeleteOutlined, SaveOutlined } from '@ant-design/icons';
 import { useGraphEvent, useGraphStore } from '@antv/xflow';
 import { Button, Space, Spin, Tooltip, message, theme } from 'antd';
@@ -567,10 +567,7 @@ const ToolbarEdit: FC<Props> = ({
             id: id,
             version: result.data?.version,
             label: name,
-            shortDescription:
-              result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.[
-                'common:generalComment'
-              ],
+            shortDescription: genProcessNameJson(name),
             quantitativeReference: nodeCount === 0 ? '1' : '0',
           },
           ports: {
@@ -591,10 +588,9 @@ const ToolbarEdit: FC<Props> = ({
         async (result: any) => {
           const newLabel =
             result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name ?? {};
-          const newShortDescription =
-            result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.[
-              'common:generalComment'
-            ] ?? {};
+          const newShortDescription = genProcessNameJson(
+            result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name ?? {},
+          );
           const newVersion = result.data?.version ?? '';
           const exchanges =
             genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? [];
