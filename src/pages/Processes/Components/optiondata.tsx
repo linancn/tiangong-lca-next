@@ -366,167 +366,327 @@ export const reviewTypeOptions = [
 export const scopeNameOptions = [
   {
     value: 'Raw data',
-    label: 'Raw data',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.scopeName.rawData"
+        defaultMessage="Raw data"
+      />
+    ),
   },
   {
     value: 'Unit process(es), single operation',
-    label: 'Unit process(es), single operation',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.scopeName.unitProcessSingleOperation"
+        defaultMessage="Unit process(es), single operation"
+      />
+    ),
   },
   {
     value: 'Unit process(es), black box',
-    label: 'Unit process(es), black box',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.scopeName.unitProcessBlackBox"
+        defaultMessage="Unit process(es), black box"
+      />
+    ),
   },
   {
     value: 'LCI results or Partly terminated system',
-    label: 'LCI results or Partly terminated system',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.scopeName.lciResultsPartlyTerminatedSystem"
+        defaultMessage="LCI results or Partly terminated system"
+      />
+    ),
   },
   {
     value: 'LCIA results',
-    label: 'LCIA results',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.scopeName.lciaResults"
+        defaultMessage="LCIA results"
+      />
+    ),
   },
   {
     value: 'Documentation',
-    label: 'Documentation',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.scopeName.documentation"
+        defaultMessage="Documentation"
+      />
+    ),
   },
   {
     value: 'Life cycle inventory methods',
-    label: 'Life cycle inventory methods',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.scopeName.lifeCycleInventoryMethods"
+        defaultMessage="Life cycle inventory methods"
+      />
+    ),
   },
   {
     value: 'LCIA results calculation',
-    label: 'LCIA results calculation',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.scopeName.lciaResultsCalculation"
+        defaultMessage="LCIA results calculation"
+      />
+    ),
   },
   {
     value: 'Goal and scope definition',
-    label: 'Goal and scope definition',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.scopeName.goalAndScopeDefinition"
+        defaultMessage="Goal and scope definition"
+      />
+    ),
   },
 ];
 
 export const methodNameOptions = [
   {
     value: 'Validation of data sources',
-    label: 'Validation of data sources',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.methodName.validationOfDataSources"
+        defaultMessage="Validation of data sources"
+      />
+    ),
   },
   {
     value: 'Sample tests on calculations',
-    label: 'Sample tests on calculations',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.methodName.sampleTestsOnCalculations"
+        defaultMessage="Sample tests on calculations"
+      />
+    ),
   },
   {
     value: 'Energy balance',
-    label: 'Energy balance',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.methodName.energyBalance"
+        defaultMessage="Energy balance"
+      />
+    ),
   },
   {
     value: 'Element balance',
-    label: 'Element balance',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.methodName.elementBalance"
+        defaultMessage="Element balance"
+      />
+    ),
   },
   {
     value: 'Cross-check with other source',
-    label: 'Cross-check with other source',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.methodName.crossCheckWithOtherSource"
+        defaultMessage="Cross-check with other source"
+      />
+    ),
   },
   {
     value: 'Cross-check with other data set',
-    label: 'Cross-check with other data set',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.methodName.crossCheckWithOtherDataSet"
+        defaultMessage="Cross-check with other data set"
+      />
+    ),
   },
   {
     value: 'Expert judgement',
-    label: 'Expert judgement',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.methodName.expertJudgement"
+        defaultMessage="Expert judgement"
+      />
+    ),
   },
   {
     value: 'Mass balance',
-    label: 'Mass balance',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.methodName.massBalance"
+        defaultMessage="Mass balance"
+      />
+    ),
   },
   {
     value: 'Compliance with legal limits',
-    label: 'Compliance with legal limits',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.methodName.complianceWithLegalLimits"
+        defaultMessage="Compliance with legal limits"
+      />
+    ),
   },
   {
     value: 'Compliance with ISO 14040 to 14044',
-    label: 'Compliance with ISO 14040 to 14044',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.methodName.complianceWithISO14040to14044"
+        defaultMessage="Compliance with ISO 14040 to 14044"
+      />
+    ),
   },
   {
     value: 'Documentation',
-    label: 'Documentation',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.methodName.documentation"
+        defaultMessage="Documentation"
+      />
+    ),
   },
   {
     value: 'Evidence collection by means of plant visits and/or interviews',
-    label: 'Evidence collection by means of plant visits and/or interviews',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.methodName.evidenceCollection"
+        defaultMessage="Evidence collection by means of plant visits and/or interviews"
+      />
+    ),
   },
 ];
 
 export const dataQualityIndicatorNameOptions = [
   {
     value: 'Technological representativeness',
-    label: 'Technological representativeness',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.dataQualityIndicatorName.technologicalRepresentativeness"
+        defaultMessage="Technological representativeness"
+      />
+    ),
   },
   {
     value: 'Time representativeness',
-    label: 'Time representativeness',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.dataQualityIndicatorName.timeRepresentativeness"
+        defaultMessage="Time representativeness"
+      />
+    ),
   },
   {
     value: 'Geographical representativeness',
-    label: 'Geographical representativeness',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.dataQualityIndicatorName.geographicalRepresentativeness"
+        defaultMessage="Geographical representativeness"
+      />
+    ),
   },
   {
     value: 'Completeness',
-    label: 'Completeness',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.dataQualityIndicatorName.completeness"
+        defaultMessage="Completeness"
+      />
+    ),
   },
   {
     value: 'Precision',
-    label: 'Precision',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.dataQualityIndicatorName.precision"
+        defaultMessage="Precision"
+      />
+    ),
   },
   {
     value: 'Methodological appropriateness and consistency',
-    label: 'Methodological appropriateness and consistency',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.dataQualityIndicatorName.methodologicalAppropriateness"
+        defaultMessage="Methodological appropriateness and consistency"
+      />
+    ),
   },
   {
     value: 'Overall quality',
-    label: 'Overall quality',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.dataQualityIndicatorName.overallQuality"
+        defaultMessage="Overall quality"
+      />
+    ),
   },
 ];
 
 export const dataQualityIndicatorValueOptions = [
   {
     value: 'Very good',
-    label: 'Very good',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.dataQualityIndicatorValue.veryGood"
+        defaultMessage="Very good"
+      />
+    ),
   },
   {
     value: 'Good',
-    label: 'Good',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.dataQualityIndicatorValue.good"
+        defaultMessage="Good"
+      />
+    ),
   },
   {
     value: 'Fair',
-    label: 'Fair',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.dataQualityIndicatorValue.fair"
+        defaultMessage="Fair"
+      />
+    ),
   },
   {
     value: 'Poor',
-    label: 'Poor',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.dataQualityIndicatorValue.poor"
+        defaultMessage="Poor"
+      />
+    ),
   },
   {
     value: 'Very poor',
-    label: 'Very poor',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.dataQualityIndicatorValue.veryPoor"
+        defaultMessage="Very poor"
+      />
+    ),
   },
   {
     value: 'Not evaluated / unknown',
-    label: 'Not evaluated / unknown',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.dataQualityIndicatorValue.notEvaluatedUnknown"
+        defaultMessage="Not evaluated / unknown"
+      />
+    ),
   },
   {
     value: 'Not applicable',
-    label: 'Not applicable',
-  },
-];
-
-export const complianceOptions = [
-  {
-    value: 'Fully compliant',
-    label: 'Fully compliant',
-  },
-  {
-    value: 'Not compliant',
-    label: 'Not compliant',
-  },
-  {
-    value: 'Not defined',
-    label: 'Not defined',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.dataQualityIndicatorValue.notApplicable"
+        defaultMessage="Not applicable"
+      />
+    ),
   },
 ];
 
@@ -726,6 +886,186 @@ export const DataDerivationTypeStatusOptions = [
       <FormattedMessage
         id="pages.process.view.exchanges.uncertaintyDistributionType.missingUnimportant"
         defaultMessage="Missing unimportant"
+      />
+    ),
+  },
+];
+
+export const approvalOfOverallComplianceOptions = [
+  {
+    value: 'Fully compliant',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.approvalOfOverallCompliance.fullyCompliant"
+        defaultMessage="Fully compliant"
+      />
+    ),
+  },
+  {
+    value: 'Not compliant',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.approvalOfOverallCompliance.notCompliant"
+        defaultMessage="Not compliant"
+      />
+    ),
+  },
+  {
+    value: 'Not defined',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.approvalOfOverallCompliance.notDefined"
+        defaultMessage="Not defined"
+      />
+    ),
+  },
+];
+
+export const nomenclatureComplianceOptions = [
+  {
+    value: 'Fully compliant',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.nomenclatureCompliance.fullyCompliant"
+        defaultMessage="Fully compliant"
+      />
+    ),
+  },
+  {
+    value: 'Not compliant',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.nomenclatureCompliance.notCompliant"
+        defaultMessage="Not compliant"
+      />
+    ),
+  },
+  {
+    value: 'Not defined',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.nomenclatureCompliance.notDefined"
+        defaultMessage="Not defined"
+      />
+    ),
+  },
+];
+
+export const methodologicalComplianceOptions = [
+  {
+    value: 'Fully compliant',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.methodologicalCompliance.fullyCompliant"
+        defaultMessage="Fully compliant"
+      />
+    ),
+  },
+  {
+    value: 'Not compliant',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.methodologicalCompliance.notCompliant"
+        defaultMessage="Not compliant"
+      />
+    ),
+  },
+  {
+    value: 'Not defined',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.methodologicalCompliance.notDefined"
+        defaultMessage="Not defined"
+      />
+    ),
+  },
+];
+
+export const reviewComplianceOptions = [
+  {
+    value: 'Fully compliant',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.reviewCompliance.fullyCompliant"
+        defaultMessage="Fully compliant"
+      />
+    ),
+  },
+  {
+    value: 'Not compliant',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.reviewCompliance.notCompliant"
+        defaultMessage="Not compliant"
+      />
+    ),
+  },
+  {
+    value: 'Not defined',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.reviewCompliance.notDefined"
+        defaultMessage="Not defined"
+      />
+    ),
+  },
+];
+
+export const documentationComplianceOptions = [
+  {
+    value: 'Fully compliant',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.documentationCompliance.fullyCompliant"
+        defaultMessage="Fully compliant"
+      />
+    ),
+  },
+  {
+    value: 'Not compliant',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.documentationCompliance.notCompliant"
+        defaultMessage="Not compliant"
+      />
+    ),
+  },
+  {
+    value: 'Not defined',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.documentationCompliance.notDefined"
+        defaultMessage="Not defined"
+      />
+    ),
+  },
+];
+
+export const qualityComplianceOptions = [
+  {
+    value: 'Fully compliant',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.qualityCompliance.fullyCompliant"
+        defaultMessage="Fully compliant"
+      />
+    ),
+  },
+  {
+    value: 'Not compliant',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.qualityCompliance.notCompliant"
+        defaultMessage="Not compliant"
+      />
+    ),
+  },
+  {
+    value: 'Not defined',
+    label: (
+      <FormattedMessage
+        id="pages.process.modellingAndValidation.qualityCompliance.notDefined"
+        defaultMessage="Not defined"
       />
     ),
   },
