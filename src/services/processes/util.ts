@@ -912,3 +912,13 @@ export function genProcessName(name: any, lang: string) {
     return '-';
   }
 }
+
+export function genProcessNameJson(name: any) {
+  const nameJson = jsonToList(name?.baseName)?.map((item: any) => {
+    return {
+      '@xml:lang': item?.['@xml:lang'],
+      '#text': genProcessName(name, item?.['@xml:lang']),
+    };
+  });
+  return nameJson;
+}

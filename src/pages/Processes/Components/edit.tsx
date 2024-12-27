@@ -105,6 +105,7 @@ const ProcessEdit: FC<Props> = ({
 
   const onEdit = useCallback(() => {
     setDrawerVisible(true);
+    setActiveTabKey('processInformation');
   }, [setViewDrawerVisible]);
 
   const onReset = () => {

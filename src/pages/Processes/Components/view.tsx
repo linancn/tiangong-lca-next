@@ -1020,6 +1020,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
 
   const onView = () => {
     setDrawerVisible(true);
+    setActiveTabKey('processInformation');
     setSpinning(true);
     getProcessDetail(id, version).then(async (result: any) => {
       setInitData({ ...genProcessFromData(result.data?.json?.processDataSet ?? {}), id: id });
