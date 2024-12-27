@@ -4,8 +4,14 @@ import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Form, Row, Select, Space } from 'antd';
 import { FC } from 'react';
 import { FormattedMessage } from 'umi';
-import { complianceOptions } from '../optiondata';
-
+import {
+  approvalOfOverallComplianceOptions,
+  documentationComplianceOptions,
+  methodologicalComplianceOptions,
+  nomenclatureComplianceOptions,
+  qualityComplianceOptions,
+  reviewComplianceOptions,
+} from '../optiondata';
 // const { TextArea } = Input;
 
 type Props = {
@@ -54,7 +60,7 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                         }
                         name={[subField.name, 'common:approvalOfOverallCompliance']}
                       >
-                        <Select options={complianceOptions} />
+                        <Select options={approvalOfOverallComplianceOptions} />
                       </Form.Item>
                     </Col>
                     <Col flex="auto" style={{ marginRight: '10px' }}>
@@ -67,7 +73,7 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                         }
                         name={[subField.name, 'common:nomenclatureCompliance']}
                       >
-                        <Select options={complianceOptions} />
+                        <Select options={nomenclatureComplianceOptions} />
                       </Form.Item>
                     </Col>
                     <Col flex="auto" style={{ marginRight: '10px' }}>
@@ -80,7 +86,7 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                         }
                         name={[subField.name, 'common:methodologicalCompliance']}
                       >
-                        <Select options={complianceOptions} />
+                        <Select options={methodologicalComplianceOptions} />
                       </Form.Item>
                     </Col>
                     <Col flex="auto" style={{ marginRight: '10px' }}>
@@ -93,7 +99,7 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                         }
                         name={[subField.name, 'common:reviewCompliance']}
                       >
-                        <Select options={complianceOptions} />
+                        <Select options={reviewComplianceOptions} />
                       </Form.Item>
                     </Col>
                     <Col flex="auto" style={{ marginRight: '10px' }}>
@@ -106,7 +112,7 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                         }
                         name={[subField.name, 'common:documentationCompliance']}
                       >
-                        <Select options={complianceOptions} />
+                        <Select options={documentationComplianceOptions} />
                       </Form.Item>
                     </Col>
                     <Col flex="auto" style={{ marginRight: '10px' }}>
@@ -119,7 +125,7 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                         }
                         name={[subField.name, 'common:qualityCompliance']}
                       >
-                        <Select options={complianceOptions} />
+                        <Select options={qualityComplianceOptions} />
                       </Form.Item>
                     </Col>
                     <br />
