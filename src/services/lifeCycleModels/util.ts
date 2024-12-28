@@ -1105,7 +1105,7 @@ const sumProcessExchange = (processExchange: any[]) => {
     pe?.exchange?.forEach((e: any) => {
       if (
         e?.exchangeDirection.toUpperCase() === 'OUTPUT' &&
-        !pe?.outputFlowIds?.includes(e?.referenceToFlowDataSet?.['@refObjectId'])
+        !pe?.connectionFlow?.outputFlowIds?.includes(e?.referenceToFlowDataSet?.['@refObjectId'])
       ) {
         const newAmount = e?.meanAmount * pe?.scalingFactor;
         const newExchange = {
@@ -1116,7 +1116,7 @@ const sumProcessExchange = (processExchange: any[]) => {
         allExchange.push(newExchange);
       } else if (
         e?.exchangeDirection.toUpperCase() === 'INPUT' &&
-        !pe?.inputFlowIds?.includes(e?.referenceToFlowDataSet?.['@refObjectId'])
+        !pe?.connectionFlow?.inputFlowIds?.includes(e?.referenceToFlowDataSet?.['@refObjectId'])
       ) {
         const newAmount = e?.meanAmount * pe?.scalingFactor;
         const newExchange = {
@@ -1151,7 +1151,6 @@ const sumProcessExchange = (processExchange: any[]) => {
       '@dataSetInternalID': (index + 1).toString(),
     };
   });
-  return [];
 };
 
 export async function genLifeCycleModelProcess(id: string, refNode: any, data: any, oldData: any) {
@@ -1218,6 +1217,7 @@ export async function genLifeCycleModelProcess(id: string, refNode: any, data: a
       processInstance,
       dbProcessExchanges,
     );
+
     sumExchange = sumProcessExchange(calculatePE ?? []);
   }
 
