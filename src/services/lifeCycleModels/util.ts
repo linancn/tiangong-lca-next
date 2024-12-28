@@ -44,16 +44,28 @@ export function genLifeCycleModelJsonOrdered(id: string, data: any, oldData: any
     }
 
     const sourceEdges = data?.model?.edges?.filter((e: any) => e?.source?.cell === n?.id);
-    const outputExchange = sourceEdges.map((e: any) => {
-      const targetNode = nodes?.find((n: any) => n?.id === e?.target?.cell);
 
-      return removeEmptyObjects({
-        '@flowUUID': e?.data?.connection?.outputExchange?.['@flowUUID'],
-        downstreamProcess: {
+    const sourceEdgeGroupeds = sourceEdges.reduce((acc: any, edge: any) => {
+      const key = edge?.data?.connection?.outputExchange?.['@flowUUID'];
+      if (!acc[key]) {
+        acc[key] = [];
+      }
+      acc[key].push(edge);
+      return acc;
+    }, {});
+
+    const outputExchange = Object.entries(sourceEdgeGroupeds).map(([key, edges]) => {
+      const downstreamProcesses = jsonToList(edges)?.map((e: any) => {
+        const targetNode = nodes?.find((n: any) => n?.id === e?.target?.cell);
+        return {
           '@flowUUID': e?.data?.connection?.outputExchange?.downstreamProcess?.['@flowUUID'],
           '@id': targetNode?.['@dataSetInternalID'],
-        },
+        };
       });
+      return {
+        '@flowUUID': key,
+        downstreamProcess: listToJson(downstreamProcesses),
+      };
     });
 
     return removeEmptyObjects({
@@ -865,170 +877,259 @@ export function genLifeCycleModelData(data: any, lang: string) {
   };
 }
 
-const genProcessTree = (
-  thisModelProcess: any,
+const calculateProcessExchange = (
+  modelProcess: any,
+  dependProcess: any,
+  targetAmount: number,
+  connectionFlowId: string,
+  connectionDirection: string,
   nodeTreeIds: any[],
   modelProcesses: any[],
   dbProcessExchanges: any[],
-): any => {
+) => {
+  if (nodeTreeIds.includes(modelProcess?.['@dataSetInternalID'])) {
+    return undefined;
+  }
+
+  const thisNodeTreeIds = [...nodeTreeIds, modelProcess?.['@dataSetInternalID']];
+
+  let newProcessExchanges: any[] = [];
+
   const dbPE = dbProcessExchanges?.find(
-    (p: any) => p?.id === thisModelProcess?.referenceToProcess?.['@refObjectId'],
+    (p: any) => p?.id === modelProcess?.referenceToProcess?.['@refObjectId'],
   );
-  const upstreamProcess = modelProcesses.filter((p: any) =>
-    p?.connections?.outputExchange?.some(
-      (o: any) => o?.downstreamProcess?.['@id'] === thisModelProcess?.['@dataSetInternalID'],
+
+  let scalingFactor = 1;
+  if (dependProcess === null) {
+    const thisRefFlow = dbPE?.exchange?.find(
+      (e: any) =>
+        dbPE?.quantitativeReference?.referenceToReferenceFlow === e?.['@dataSetInternalID'],
+    );
+    const thisRefMeanAmount = toAmountNumber(thisRefFlow?.meanAmount);
+    if (thisRefMeanAmount !== 0 && targetAmount !== 0) {
+      scalingFactor = targetAmount / thisRefMeanAmount;
+    }
+  } else {
+    const thisRefFlow = dbPE?.exchange?.find(
+      (e: any) =>
+        e?.referenceToFlowDataSet?.['@refObjectId'] === connectionFlowId &&
+        e?.exchangeDirection.toUpperCase() === connectionDirection,
+    );
+    const thisRefMeanAmount = toAmountNumber(thisRefFlow?.meanAmount);
+    if (thisRefMeanAmount !== 0 && targetAmount !== 0) {
+      scalingFactor = targetAmount / thisRefMeanAmount;
+    }
+  }
+
+  const outputExchanges = jsonToList(modelProcess?.connections?.outputExchange);
+
+  const outputFlowIds = outputExchanges
+    .map((o: any) => {
+      const downstreamProcesses = jsonToList(o?.downstreamProcess);
+      if (connectionDirection !== 'OUTPUT') {
+        if (downstreamProcesses.length !== 1) {
+          return null;
+        } else {
+          const dsModelProcess = modelProcesses.find(
+            (p: any) => p?.['@dataSetInternalID'] === downstreamProcesses[0]?.['@id'],
+          );
+          const connectionOutputFlow = dbPE.exchange?.find((e: any) => {
+            return (
+              e?.referenceToFlowDataSet?.['@refObjectId'] === o?.['@flowUUID'] &&
+              e?.exchangeDirection.toUpperCase() === 'OUTPUT'
+            );
+          });
+          const outputFlowMeanAmount =
+            toAmountNumber(connectionOutputFlow?.meanAmount) * scalingFactor;
+          const outputPE = calculateProcessExchange(
+            dsModelProcess,
+            modelProcess,
+            outputFlowMeanAmount,
+            o?.['@flowUUID'],
+            'INPUT',
+            thisNodeTreeIds,
+            modelProcesses,
+            dbProcessExchanges,
+          );
+
+          if (outputPE) {
+            newProcessExchanges.push(...outputPE);
+            return o?.['@flowUUID'];
+          } else {
+            return null;
+          }
+        }
+      } else {
+        if (o?.['@flowUUID'] !== connectionFlowId) {
+          if (downstreamProcesses.length !== 1) {
+            return null;
+          } else {
+            const dsModelProcess = modelProcesses.find(
+              (p: any) => p?.['@dataSetInternalID'] === downstreamProcesses[0]?.['@id'],
+            );
+            const connectionOutputFlow = dbPE.exchange?.find((e: any) => {
+              return (
+                e?.referenceToFlowDataSet?.['@refObjectId'] === o?.['@flowUUID'] &&
+                e?.exchangeDirection.toUpperCase() === 'OUTPUT'
+              );
+            });
+            const outputFlowMeanAmount =
+              toAmountNumber(connectionOutputFlow?.meanAmount) * scalingFactor;
+            const outputPE = calculateProcessExchange(
+              dsModelProcess,
+              modelProcess,
+              outputFlowMeanAmount,
+              o?.['@flowUUID'],
+              'INPUT',
+              thisNodeTreeIds,
+              modelProcesses,
+              dbProcessExchanges,
+            );
+            if (outputPE) {
+              newProcessExchanges.push(...outputPE);
+              return o?.['@flowUUID'];
+            } else {
+              return null;
+            }
+          }
+        } else {
+          return o?.['@flowUUID'];
+        }
+      }
+    })
+    .filter((outputFlowId: any) => outputFlowId !== null);
+
+  const upstreamModelProcesses = modelProcesses.filter((mp: any) =>
+    jsonToList(mp?.connections?.outputExchange)?.some((o: any) =>
+      jsonToList(o?.downstreamProcess)?.some(
+        (dp: any) => dp?.['@id'] === modelProcess?.['@dataSetInternalID'],
+      ),
     ),
   );
 
-  let isCycle = false;
-  if (nodeTreeIds.includes(thisModelProcess?.['@dataSetInternalID'])) {
-    isCycle = true;
-    return undefined;
-  }
+  const inputFlowIds = upstreamModelProcesses
+    .map((usModelProcess: any) => {
+      if (usModelProcess?.['@dataSetInternalID'] === dependProcess?.['@dataSetInternalID']) {
+        return connectionFlowId;
+      } else {
+        const upstreamModelProcessOutputExchanges = jsonToList(
+          usModelProcess?.connections?.outputExchange,
+        );
+        const upstreamModelProcessOutputExchangesFilter =
+          upstreamModelProcessOutputExchanges.filter((o: any) =>
+            jsonToList(o?.downstreamProcess)?.some(
+              (dp: any) => dp?.['@id'] === modelProcess?.['@dataSetInternalID'],
+            ),
+          );
 
-  const newNodeTreeIds = [...nodeTreeIds, thisModelProcess?.['@dataSetInternalID']];
-  const newUpstreamProcesses =
-    upstreamProcess?.map((p: any) => {
-      const outputExchange = p?.connections?.outputExchange?.find(
-        (o: any) => o?.downstreamProcess?.['@id'] === thisModelProcess?.['@dataSetInternalID'],
-      );
-      const newUpstreamProcess = genProcessTree(
-        p,
-        newNodeTreeIds,
-        modelProcesses,
-        dbProcessExchanges,
-      );
-      if (newUpstreamProcess === undefined) {
-        isCycle = true;
-        return undefined;
+        if (upstreamModelProcessOutputExchangesFilter.length !== 1) {
+          return null;
+        } else {
+          const upstreamModelProcessOutputExchange = upstreamModelProcessOutputExchangesFilter[0];
+          if (
+            upstreamModelProcessOutputExchange?.['@flowUUID'] === connectionFlowId &&
+            connectionDirection === 'INPUT'
+          ) {
+            return null;
+          } else {
+            const usModelProcessRepeated = upstreamModelProcesses.filter((usmp: any) => {
+              const connectionOutputExchange = jsonToList(usmp?.connections?.outputExchange)?.find(
+                (o: any) => o?.['@flowUUID'] === upstreamModelProcessOutputExchange?.['@flowUUID'],
+              );
+              if (connectionOutputExchange) {
+                const connectionDownstreamProcess = jsonToList(
+                  connectionOutputExchange?.downstreamProcess,
+                )?.some((dp: any) => dp?.['@id'] === modelProcess?.['@dataSetInternalID']);
+                if (connectionDownstreamProcess) {
+                  return true;
+                } else {
+                  return false;
+                }
+              } else {
+                return false;
+              }
+            });
+            if (usModelProcessRepeated?.length !== 1) {
+              return null;
+            } else {
+              const connectionInputFlow = dbPE?.exchange?.find((e: any) => {
+                return (
+                  e?.referenceToFlowDataSet?.['@refObjectId'] ===
+                    upstreamModelProcessOutputExchange?.['@flowUUID'] &&
+                  e?.exchangeDirection.toUpperCase() === 'INPUT'
+                );
+              });
+              const inputFlowMeanAmount =
+                toAmountNumber(connectionInputFlow?.meanAmount) * scalingFactor;
+              const inputPE = calculateProcessExchange(
+                usModelProcess,
+                modelProcess,
+                inputFlowMeanAmount,
+                upstreamModelProcessOutputExchange?.['@flowUUID'],
+                'OUTPUT',
+                thisNodeTreeIds,
+                modelProcesses,
+                dbProcessExchanges,
+              );
+              if (inputPE) {
+                newProcessExchanges.push(...inputPE);
+                return upstreamModelProcessOutputExchange?.['@flowUUID'];
+              } else {
+                return null;
+              }
+            }
+          }
+        }
       }
-      return {
-        connection: {
-          thisFlowId: outputExchange?.downstreamProcess?.['@flowUUID'],
-          upstreamFlowId: outputExchange?.['@flowUUID'],
-        },
-        upstreamProcess: newUpstreamProcess,
-      };
-    }) ?? [];
+    })
+    .filter((inputFlowId: any) => inputFlowId !== null);
 
-  if (isCycle) {
-    return undefined;
-  }
-
-  return {
-    // modelProcess: thisModelProcess,
-    nodeTreeIds: newNodeTreeIds,
-    dbProcessExchanges: dbPE,
-    upstreamProcesses: newUpstreamProcesses,
+  const newProcessExchange = {
+    processId: modelProcess?.referenceToProcess?.['@refObjectId'],
+    scalingFactor: scalingFactor,
+    exchange: dbPE.exchange,
+    connectionFlow: {
+      outputFlowIds: outputFlowIds,
+      inputFlowIds: inputFlowIds,
+    },
   };
-};
 
-const genProcessExchange = (
-  processTree: any,
-  targetAmount: number,
-  refFlowId: string,
-  refDirection: string,
-  isLastNode: boolean,
-) => {
-  let newExchange: any[] = [];
+  newProcessExchanges.push(newProcessExchange);
 
-  const exchange = processTree?.dbProcessExchanges?.exchange ?? [];
-
-  const thisRefFlow = exchange?.find((e: any) => {
-    return (
-      e?.referenceToFlowDataSet?.['@refObjectId'] === refFlowId &&
-      e?.exchangeDirection.toUpperCase() === refDirection
-    );
-  });
-
-  let scalingFactor = 1;
-  const thisRefMeanAmount = toAmountNumber(thisRefFlow?.meanAmount);
-  if (thisRefMeanAmount !== 0 && targetAmount !== 0) {
-    scalingFactor = targetAmount / thisRefMeanAmount;
-  }
-
-  if (isLastNode) {
-    if (processTree?.upstreamProcesses?.length > 0) {
-      processTree?.upstreamProcesses?.forEach((u: any) => {
-        const inputExchange = exchange?.find(
-          (e: any) =>
-            e?.exchangeDirection.toUpperCase() === 'INPUT' &&
-            e?.referenceToFlowDataSet?.['@refObjectId'] === u?.connection?.thisFlowId,
-        );
-
-        if (u?.upstreamProcess) {
-          const uExchange = genProcessExchange(
-            u?.upstreamProcess,
-            toAmountNumber(inputExchange?.meanAmount) * scalingFactor,
-            u?.connection?.upstreamFlowId,
-            'OUTPUT',
-            false,
-          );
-          uExchange?.forEach((e: any) => {
-            newExchange.push(e);
-          });
-        }
-      });
-    }
-    exchange?.forEach((e: any) => {
-      const edgeFlow = processTree?.upstreamProcesses?.find(
-        (u: any) => u?.connection?.thisFlowId === e?.referenceToFlowDataSet?.['@refObjectId'],
-      );
-      if (!(edgeFlow && e?.exchangeDirection.toUpperCase() === 'INPUT')) {
-        const thisMeanAmount = toAmountNumber(e?.meanAmount) * scalingFactor;
-        newExchange.push({
-          ...e,
-          meanAmount: thisMeanAmount,
-          resultingAmount: thisMeanAmount,
-        });
-      }
-    });
-  } else {
-    if (processTree?.upstreamProcesses?.length > 0) {
-      processTree?.upstreamProcesses?.forEach((u: any) => {
-        const inputExchange = exchange?.find(
-          (e: any) =>
-            e?.exchangeDirection.toUpperCase() === 'INPUT' &&
-            e?.referenceToFlowDataSet?.['@refObjectId'] === u?.connection?.thisFlowId,
-        );
-        if (u?.upstreamProcess) {
-          const uExchange = genProcessExchange(
-            u?.upstreamProcess,
-            toAmountNumber(inputExchange?.meanAmount) * scalingFactor,
-            u?.connection?.upstreamFlowId,
-            'OUTPUT',
-            false,
-          );
-
-          uExchange?.forEach((e: any) => {
-            newExchange.push(e);
-          });
-        }
-      });
-    }
-    exchange?.forEach((e: any) => {
-      if (
-        !(
-          e?.referenceToFlowDataSet?.['@refObjectId'] === refFlowId &&
-          e?.exchangeDirection.toUpperCase() === refDirection
-        )
-      ) {
-        const thisMeanAmount = toAmountNumber(e?.meanAmount) * scalingFactor;
-
-        newExchange.push({
-          ...e,
-          meanAmount: thisMeanAmount,
-          resultingAmount: thisMeanAmount,
-        });
-      }
-    });
-  }
-  return newExchange;
+  return newProcessExchanges;
 };
 
 const sumProcessExchange = (processExchange: any[]) => {
+  let allExchange: any[] = [];
+  processExchange?.forEach((pe: any) => {
+    pe?.exchange?.forEach((e: any) => {
+      if (
+        e?.exchangeDirection.toUpperCase() === 'OUTPUT' &&
+        !pe?.outputFlowIds?.includes(e?.referenceToFlowDataSet?.['@refObjectId'])
+      ) {
+        const newAmount = e?.meanAmount * pe?.scalingFactor;
+        const newExchange = {
+          ...e,
+          meanAmount: newAmount,
+          resultingAmount: newAmount,
+        };
+        allExchange.push(newExchange);
+      } else if (
+        e?.exchangeDirection.toUpperCase() === 'INPUT' &&
+        !pe?.inputFlowIds?.includes(e?.referenceToFlowDataSet?.['@refObjectId'])
+      ) {
+        const newAmount = e?.meanAmount * pe?.scalingFactor;
+        const newExchange = {
+          ...e,
+          meanAmount: newAmount,
+          resultingAmount: newAmount,
+        };
+        allExchange.push(newExchange);
+      }
+    });
+  });
   const sumData =
-    processExchange?.reduce((acc, curr) => {
+    allExchange?.reduce((acc, curr) => {
       const cId =
         curr?.exchangeDirection.toUpperCase() +
         '_' +
@@ -1050,6 +1151,7 @@ const sumProcessExchange = (processExchange: any[]) => {
       '@dataSetInternalID': (index + 1).toString(),
     };
   });
+  return [];
 };
 
 export async function genLifeCycleModelProcess(id: string, refNode: any, data: any, oldData: any) {
@@ -1084,7 +1186,7 @@ export async function genLifeCycleModelProcess(id: string, refNode: any, data: a
         .in('id', processIds)
     )?.data ?? [];
 
-  let allExchange: any = [];
+  let sumExchange: any = [];
 
   const referenceToReferenceProcess =
     data?.lifeCycleModelInformation?.quantitativeReference?.referenceToReferenceProcess;
@@ -1106,22 +1208,21 @@ export async function genLifeCycleModelProcess(id: string, refNode: any, data: a
   const targetAmount = Number(refNode?.data?.targetAmount ?? '0');
 
   if (referenceProcess) {
-    const processTree = genProcessTree(referenceProcess, [], processInstance, dbProcessExchanges);
-    if (processTree) {
-      allExchange = genProcessExchange(
-        processTree,
-        targetAmount,
-        thisFlowQuantitativeReference?.referenceToFlowDataSet?.['@refObjectId'],
-        thisFlowQuantitativeReference?.exchangeDirection.toUpperCase(),
-        true,
-      );
-    }
+    const calculatePE = calculateProcessExchange(
+      referenceProcess,
+      null,
+      targetAmount,
+      '',
+      '',
+      [],
+      processInstance,
+      dbProcessExchanges,
+    );
+    sumExchange = sumProcessExchange(calculatePE ?? []);
   }
 
-  const sumExchange = sumProcessExchange(allExchange);
-
   const referenceToReferenceFlow = sumExchange?.find(
-    (e) =>
+    (e: any) =>
       e?.exchangeDirection.toUpperCase() ===
         thisFlowQuantitativeReference?.exchangeDirection.toUpperCase() &&
       e?.referenceToFlowDataSet?.['@refObjectId'] ===
