@@ -1,20 +1,20 @@
 import { getLang, getLangText } from '@/services/general/util';
 import { Card, Col, Row } from 'antd';
 import React from 'react';
-import { Partners } from './info';
+import { Teams } from './info';
 
 import { PageContainer } from '@ant-design/pro-components';
 import Meta from 'antd/es/card/Meta';
 import { FormattedMessage, useIntl } from 'umi';
 
-const AllianceList: React.FC = () => {
+const TeamList: React.FC = () => {
   const { locale } = useIntl();
   const lang = getLang(locale);
 
   return (
-    <PageContainer title={<FormattedMessage id="menu.aldata" defaultMessage="Alliance data" />}>
+    <PageContainer title={<FormattedMessage id="menu.teamlist" defaultMessage="Data ecology" />}>
       <Row gutter={16}>
-        {Partners.map((partner, index) => {
+        {Teams.map((team, index) => {
           return (
             <Col span={8} key={index}>
               <Card
@@ -35,18 +35,18 @@ const AllianceList: React.FC = () => {
                     }}
                   >
                     <img
-                      src={`/images/allianceLogo/${partner.logo}`}
+                      src={`/images/dataLogo/${team.logo}`}
                       style={{ maxWidth: '100%', maxHeight: '100%' }}
                     />
                   </div>
                 }
                 onClick={() => {
-                  window.open(`/aldata?id=${partner.id}`);
+                  window.open(`/tedata/models?id=${team.id}`);
                 }}
               >
                 <Meta
-                  title={getLangText(partner.title, lang)}
-                  description={getLangText(partner.description, lang)}
+                  title={getLangText(team.title, lang)}
+                  description={getLangText(team.description, lang)}
                 />
               </Card>
             </Col>
@@ -57,4 +57,4 @@ const AllianceList: React.FC = () => {
   );
 };
 
-export default AllianceList;
+export default TeamList;

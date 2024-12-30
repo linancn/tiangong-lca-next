@@ -162,11 +162,20 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       );
     },
     menuDataRender: (menuDataProps) => {
-      const { pathname } = history.location;
-      if (pathname.startsWith('/aldata')) {
-        return menuDataProps.find((item) => item.path === '/aldata')?.children || [];
+      const location = history.location;
+      if (location.pathname.startsWith('/tedata')) {
+        const searchParams = new URLSearchParams(location.search);
+        const teamIds = searchParams.get('id');
+        const teMenus = menuDataProps.find((item) => item.path === '/tedata')?.children || [];
+        const newTeMenus = teMenus.map((item) => {
+          return {
+            ...item,
+            path: item.path + '?id=' + teamIds,
+          };
+        });
+        return newTeMenus;
       }
-      return menuDataProps.filter((item) => item.path !== '/aldata');
+      return menuDataProps.filter((item) => item.path !== '/tedata');
     },
     menuItemRender: (menuItemProps, defaultDom) => {
       if (menuItemProps.isUrl || !menuItemProps.path) {
