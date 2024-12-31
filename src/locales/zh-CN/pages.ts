@@ -1,6 +1,6 @@
 export default {
   'pages.layouts.userLayout.title': '',
-
+  'pages.web.name': '天工生命周期数据平台',
   'pages.404.buttonText': '返回首页',
   'pages.404.subTitle': '抱歉，您访问的页面不存在。',
   'pages.admin.subPage.alertMessage': 'umi ui 现已发布，欢迎使用 npm run ui 启动体验。',

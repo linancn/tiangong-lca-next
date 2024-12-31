@@ -1,5 +1,4 @@
 import { ProLayoutProps } from '@ant-design/pro-components';
-
 /**
  * @name
  */
@@ -14,7 +13,7 @@ const Settings: ProLayoutProps & {
   fixedHeader: false,
   fixSiderbar: true,
   colorWeak: false,
-  title: 'TianGong LCA',
+  title: 'TianGong LCA Data Platform',
   pwa: true,
   logo: '/logo.svg',
   iconfontUrl: '',

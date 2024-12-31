@@ -107,7 +107,6 @@ const ExchangeSelect: FC<Props> = ({
               id={row.dataSetInternalID}
               data={exchangeDataSource}
               lang={lang}
-              dataSource={'my'}
               buttonType={'icon'}
             />
           </Space>,
@@ -128,7 +127,6 @@ const ExchangeSelect: FC<Props> = ({
               id={row.dataSetInternalID}
               data={exchangeDataTarget}
               lang={lang}
-              dataSource={'my'}
               buttonType={'icon'}
             />
           </Space>,
