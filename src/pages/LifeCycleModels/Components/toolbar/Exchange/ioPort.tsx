@@ -156,7 +156,7 @@ const IoPortSelector: FC<Props> = ({
               id={row.dataSetInternalID}
               data={exchangeDataSource}
               lang={lang}
-              dataSource={'tg'}
+              // dataSource={'tg'}
               buttonType={'icon'}
             />
           </Space>,
