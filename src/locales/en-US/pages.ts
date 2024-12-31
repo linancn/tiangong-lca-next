@@ -1,6 +1,5 @@
 export default {
   'pages.layouts.userLayout.title': '',
-  'pages.web.name': 'TianGong LCA Data Platform',
   'pages.404.buttonText': 'Back Home',
   'pages.404.subTitle': 'Sorry, the page you visited does not exist.',
   'pages.admin.subPage.alertMessage': 'Umi ui is now released, welcome to use npm run ui to start the experience.',

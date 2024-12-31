@@ -7,6 +7,7 @@ import { LinkOutlined } from '@ant-design/icons';
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
 import { SettingDrawer } from '@ant-design/pro-components';
 import type { RunTimeLayoutConfig } from '@umijs/max';
+import { useIntl } from 'umi';
 import { default as defaultSettings } from '../config/defaultSettings';
 import { errorConfig } from './requestErrorConfig';
 
@@ -63,6 +64,8 @@ export async function getInitialState(): Promise<{
 
 // ProLayout 支持的api https://procomponents.ant.design/components/layout
 export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { formatMessage } = useIntl();
   const handleClickFunction = () => {
     setInitialState((prevState: any) => {
       const newState = {
@@ -192,6 +195,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
         </Link>
       );
     },
+    title: formatMessage({ id: 'pages.name', defaultMessage: 'TianGong LCA Data Platform' }),
     ...initialState?.settings,
   };
 };

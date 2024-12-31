@@ -14,7 +14,7 @@ export default [
   {
     path: '/tgdata',
     name: 'tgdata',
-    icon: 'DatabaseOutlined',
+    icon: 'FolderOpenOutlined',
     routes: [
       {
         path: '/tgdata',
@@ -60,6 +60,59 @@ export default [
         name: 'contacts',
         icon: 'TeamOutlined',
         path: '/tgdata/contacts',
+        component: './Contacts',
+      },
+    ],
+  },
+  {
+    path: '/codata',
+    name: 'codata',
+    icon: 'FileZipOutlined',
+    routes: [
+      {
+        path: '/codata',
+        redirect: '/codata/models',
+      },
+      {
+        name: 'models',
+        path: '/codata/models',
+        icon: 'AppstoreAddOutlined',
+        component: './LifeCycleModels',
+      },
+      {
+        name: 'processes',
+        icon: 'ShareAltOutlined',
+        path: '/codata/processes',
+        component: './Processes',
+      },
+      {
+        name: 'flows',
+        icon: 'NodeExpandOutlined',
+        path: '/codata/flows',
+        component: './Flows',
+      },
+      {
+        name: 'flowproperties',
+        icon: 'ControlOutlined',
+        path: '/codata/flowproperties',
+        component: './Flowproperties',
+      },
+      {
+        name: 'unitgroups',
+        icon: 'RetweetOutlined',
+        path: '/codata/unitgroups',
+        component: './Unitgroups',
+      },
+      {
+        name: 'sources',
+        icon: 'PaperClipOutlined',
+        path: '/codata/sources',
+        component: './Sources',
+      },
+      {
+        name: 'contacts',
+        icon: 'TeamOutlined',
+        path: '/codata/contacts',
         component: './Contacts',
       },
     ],
