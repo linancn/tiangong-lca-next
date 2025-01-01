@@ -386,7 +386,7 @@ const Welcome: React.FC = () => {
                     </div>
                   }
                   onClick={() => {
-                    window.open(`/tedata/models?tid=${team.id}`);
+                    window.location.href = `/tgdata/models?tid=${team.id}&tname=${getLangText(team.title, lang)}`;
                   }}
                 >
                   <Meta

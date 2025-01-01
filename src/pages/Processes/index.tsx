@@ -9,6 +9,7 @@ import { ProcessTable } from '@/services/processes/data';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
+import { getDataTitle } from '../Utils';
 import ProcessCreate from './Components/create';
 import ProcessDelete from './Components/delete';
 import ProcessEdit from './Components/edit';
@@ -21,6 +22,11 @@ const TableList: FC = () => {
 
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
+
+  const searchParams = new URLSearchParams(location.search);
+  const tname = searchParams.get('tname');
+  const tid = searchParams.get('tid');
+  const tids = tid ? tid.split(',') : [];
 
   const intl = useIntl();
 
@@ -136,7 +142,7 @@ const TableList: FC = () => {
   };
 
   return (
-    <PageContainer header={{ title: false }}>
+    <PageContainer header={{ title: tname ?? false, breadcrumb: {} }}>
       <Card>
         <Search
           size={'large'}
@@ -146,7 +152,12 @@ const TableList: FC = () => {
         />
       </Card>
       <ProTable<ProcessTable, ListPagination>
-        headerTitle={<FormattedMessage id="menu.tgdata.processes" defaultMessage="Processes" />}
+        headerTitle={
+          <>
+            {getDataTitle(dataSource)} /{' '}
+            <FormattedMessage id="menu.tgdata.processes" defaultMessage="Processes" />
+          </>
+        }
         actionRef={actionRef}
         search={false}
         options={{ fullScreen: true }}
@@ -170,7 +181,7 @@ const TableList: FC = () => {
           if (keyWord.length > 0) {
             return getProcessTablePgroongaSearch(params, lang, dataSource, keyWord, {});
           }
-          return getProcessTableAll(params, sort, lang, dataSource);
+          return getProcessTableAll(params, sort, lang, dataSource, tids);
         }}
         columns={processColumns}
       />

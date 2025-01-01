@@ -11,6 +11,7 @@ import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
+import { getDataTitle } from '../Utils';
 import LifeCycleModelCreate from './Components/create';
 import LifeCycleModelDelete from './Components/delete';
 import LifeCycleModelEdit from './Components/edit';
@@ -23,6 +24,11 @@ const TableList: FC = () => {
 
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
+  const searchParams = new URLSearchParams(location.search);
+  const tname = searchParams.get('tname');
+  const tid = searchParams.get('tid');
+  const tids = tid ? tid.split(',') : [];
+
   const intl = useIntl();
 
   const lang = getLang(intl.locale);
@@ -115,7 +121,7 @@ const TableList: FC = () => {
   };
 
   return (
-    <PageContainer header={{ title: false }}>
+    <PageContainer header={{ title: tname ?? false, breadcrumb: {} }}>
       <Card>
         <Search
           size={'large'}
@@ -125,7 +131,12 @@ const TableList: FC = () => {
         />
       </Card>
       <ProTable<LifeCycleModelTable, ListPagination>
-        headerTitle={<FormattedMessage id="menu.tgdata.products" defaultMessage="Product Models" />}
+        headerTitle={
+          <>
+            {getDataTitle(dataSource)} /{' '}
+            <FormattedMessage id="menu.tgdata.products" defaultMessage="Product Models" />
+          </>
+        }
         actionRef={actionRef}
         search={false}
         options={{ fullScreen: true }}
@@ -156,7 +167,7 @@ const TableList: FC = () => {
           if (keyWord.length > 0) {
             return getLifeCycleModelTablePgroongaSearch(params, lang, dataSource, keyWord, {});
           }
-          return getLifeCycleModelTableAll(params, sort, lang, dataSource);
+          return getLifeCycleModelTableAll(params, sort, lang, dataSource, tids);
         }}
         columns={processColumns}
       />

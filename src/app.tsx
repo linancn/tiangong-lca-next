@@ -167,8 +167,9 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     menuDataRender: (menuDataProps) => {
       const location = history.location;
       const searchParams = new URLSearchParams(location.search);
-      const teamIds = searchParams.get('tid');
-      if (teamIds) {
+      const tname = searchParams.get('tname');
+      const tid = searchParams.get('tid');
+      if (tid) {
         const teamMenus = menuDataProps.filter((item) => item.path !== '/mydata');
         return (
           teamMenus?.map((menu) => {
@@ -177,7 +178,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
               children: menu?.children?.map((item) => {
                 return {
                   ...item,
-                  path: item.path + '?tid=' + teamIds,
+                  path: item.path + '?tid=' + tid + '&tname=' + (tname ?? ''),
                 };
               }),
             };

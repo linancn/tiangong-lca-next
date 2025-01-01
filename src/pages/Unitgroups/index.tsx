@@ -9,6 +9,7 @@ import { UnitGroupTable } from '@/services/unitgroups/data';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
+import { getDataTitle } from '../Utils';
 import UnitGroupCreate from './Components/create';
 import UnitGroupDelete from './Components/delete';
 import UnitGroupEdit from './Components/edit';
@@ -21,6 +22,11 @@ const TableList: FC = () => {
 
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
+
+  const searchParams = new URLSearchParams(location.search);
+  const tname = searchParams.get('tname');
+  const tid = searchParams.get('tid');
+  const tids = tid ? tid.split(',') : [];
 
   const intl = useIntl();
 
@@ -130,7 +136,7 @@ const TableList: FC = () => {
   };
 
   return (
-    <PageContainer header={{ title: false }}>
+    <PageContainer header={{ title: tname ?? false, breadcrumb: {} }}>
       <Card>
         <Search
           size={'large'}
@@ -140,7 +146,12 @@ const TableList: FC = () => {
         />
       </Card>
       <ProTable<UnitGroupTable, ListPagination>
-        headerTitle={<FormattedMessage id="menu.tgdata.unitgroups" defaultMessage="Unit Groups" />}
+        headerTitle={
+          <>
+            {getDataTitle(dataSource)} /{' '}
+            <FormattedMessage id="menu.tgdata.unitgroups" defaultMessage="Unit Groups" />
+          </>
+        }
         actionRef={actionRef}
         search={false}
         options={{ fullScreen: true }}
@@ -164,7 +175,7 @@ const TableList: FC = () => {
           if (keyWord.length > 0) {
             return getUnitGroupTablePgroongaSearch(params, lang, dataSource, keyWord, {});
           }
-          return getUnitGroupTableAll(params, sort, lang, dataSource);
+          return getUnitGroupTableAll(params, sort, lang, dataSource, tids);
         }}
         columns={unitGroupColumns}
       ></ProTable>

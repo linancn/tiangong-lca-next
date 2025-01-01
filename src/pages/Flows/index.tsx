@@ -9,6 +9,7 @@ import { getDataSource, getLang } from '@/services/general/util';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
+import { getDataTitle } from '../Utils';
 import FlowsCreate from './Components/create';
 import FlowsDelete from './Components/delete';
 import FlowsEdit from './Components/edit';
@@ -22,6 +23,11 @@ const TableList: FC = () => {
 
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
+
+  const searchParams = new URLSearchParams(location.search);
+  const tname = searchParams.get('tname');
+  const tid = searchParams.get('tid');
+  const tids = tid ? tid.split(',') : [];
 
   const intl = useIntl();
 
@@ -139,7 +145,7 @@ const TableList: FC = () => {
   };
 
   return (
-    <PageContainer header={{ title: false }}>
+    <PageContainer header={{ title: tname ?? false, breadcrumb: {} }}>
       <Card>
         <Search
           size={'large'}
@@ -149,7 +155,12 @@ const TableList: FC = () => {
         />
       </Card>
       <ProTable<FlowTable, ListPagination>
-        headerTitle={<FormattedMessage id="menu.tgdata.flows" defaultMessage="Flows" />}
+        headerTitle={
+          <>
+            {getDataTitle(dataSource)} /{' '}
+            <FormattedMessage id="menu.tgdata.flows" defaultMessage="Flows" />
+          </>
+        }
         actionRef={actionRef}
         search={false}
         options={{ fullScreen: true }}
@@ -177,7 +188,9 @@ const TableList: FC = () => {
               flowType: flowTypeFilter,
             });
           }
-          return getFlowTableAll(params, sort, lang, dataSource, { flowType: flowTypeFilter });
+          return getFlowTableAll(params, sort, lang, dataSource, tids, {
+            flowType: flowTypeFilter,
+          });
         }}
         columns={flowsColumns}
       />

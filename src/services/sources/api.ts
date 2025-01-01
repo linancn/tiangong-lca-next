@@ -44,6 +44,7 @@ export async function getSourceTableAll(
   sort: Record<string, SortOrder>,
   lang: string,
   dataSource: string,
+  tids: string[],
 ) {
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
   const orderBy = sort[sortBy] ?? 'descend';
@@ -60,44 +61,35 @@ export async function getSourceTableAll(
 
   const tableName = 'sources';
 
-  let result: any = {};
+  let query = supabase
+    .from(tableName)
+    .select(selectStr, { count: 'exact' })
+    .order(sortBy, { ascending: orderBy === 'ascend' })
+    .range(
+      ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
+      (params.current ?? 1) * (params.pageSize ?? 10) - 1,
+    );
+
   if (dataSource === 'tg') {
-    result = await supabase
-      .from(tableName)
-      .select(selectStr, { count: 'exact' })
-      .eq('state_code', 100)
-      .order(sortBy, { ascending: orderBy === 'ascend' })
-      .range(
-        ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-        (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-      );
+    query = query.eq('state_code', 100);
   } else if (dataSource === 'co') {
-    const session = await supabase.auth.getSession();
-    if (session.data.session) {
-      result = await supabase
-        .from(tableName)
-        .select(selectStr, { count: 'exact' })
-        .eq('state_code', 200)
-        .order(sortBy, { ascending: orderBy === 'ascend' })
-        .range(
-          ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-          (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-        );
-    }
+    query = query.eq('state_code', 200);
   } else if (dataSource === 'my') {
     const session = await supabase.auth.getSession();
     if (session.data.session) {
-      result = await supabase
-        .from(tableName)
-        .select(selectStr, { count: 'exact' })
-        .eq('user_id', session.data.session.user?.id)
-        .order(sortBy, { ascending: orderBy === 'ascend' })
-        .range(
-          ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-          (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-        );
+      query = query.eq('user_id', session?.data?.session?.user?.id);
+    } else {
+      return Promise.resolve({
+        data: [],
+        success: false,
+      });
     }
   }
+
+  if (tids.length > 0) {
+    query = query.in('user_id', tids);
+  }
+  const result = await query;
 
   if (result?.error) {
     console.log('error', result?.error);

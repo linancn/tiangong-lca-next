@@ -9,6 +9,7 @@ import { SourceTable } from '@/services/sources/data';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
+import { getDataTitle } from '../Utils';
 import SourceCreate from './Components/create';
 import SourceDelete from './Components/delete';
 import SourceEdit from './Components/edit';
@@ -21,6 +22,12 @@ const TableList: FC = () => {
 
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
+
+  const searchParams = new URLSearchParams(location.search);
+  const tname = searchParams.get('tname');
+  const tid = searchParams.get('tid');
+  const tids = tid ? tid.split(',') : [];
+
   const intl = useIntl();
 
   const lang = getLang(intl.locale);
@@ -115,7 +122,7 @@ const TableList: FC = () => {
   };
 
   return (
-    <PageContainer header={{ title: false }}>
+    <PageContainer header={{ title: tname ?? false, breadcrumb: {} }}>
       <Card>
         <Search
           size={'large'}
@@ -125,7 +132,12 @@ const TableList: FC = () => {
         />
       </Card>
       <ProTable<SourceTable, ListPagination>
-        headerTitle={<FormattedMessage id="menu.tgdata.sources" defaultMessage="Sources" />}
+        headerTitle={
+          <>
+            {getDataTitle(dataSource)} /{' '}
+            <FormattedMessage id="menu.tgdata.sources" defaultMessage="Sources" />
+          </>
+        }
         actionRef={actionRef}
         search={false}
         options={{ fullScreen: true }}
@@ -149,7 +161,7 @@ const TableList: FC = () => {
           if (keyWord.length > 0) {
             return getSourceTablePgroongaSearch(params, lang, dataSource, keyWord, {});
           }
-          return getSourceTableAll(params, sort, lang, dataSource);
+          return getSourceTableAll(params, sort, lang, dataSource, tids);
         }}
         columns={sourceColumns}
       />
