@@ -58,10 +58,12 @@ export async function getUnitGroupTableAll(
         modified_at
     `;
 
+  const tableName = 'unitgroups';
+
   let result: any = {};
   if (dataSource === 'tg') {
     result = await supabase
-      .from('unitgroups')
+      .from(tableName)
       .select(selectStr, { count: 'exact' })
       .eq('state_code', 100)
       .order(sortBy, { ascending: orderBy === 'ascend' })
@@ -69,11 +71,24 @@ export async function getUnitGroupTableAll(
         ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
         (params.current ?? 1) * (params.pageSize ?? 10) - 1,
       );
+  } else if (dataSource === 'co') {
+    const session = await supabase.auth.getSession();
+    if (session.data.session) {
+      result = await supabase
+        .from(tableName)
+        .select(selectStr, { count: 'exact' })
+        .eq('state_code', 200)
+        .order(sortBy, { ascending: orderBy === 'ascend' })
+        .range(
+          ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
+          (params.current ?? 1) * (params.pageSize ?? 10) - 1,
+        );
+    }
   } else if (dataSource === 'my') {
     const session = await supabase.auth.getSession();
     if (session.data.session) {
       result = await supabase
-        .from('unitgroups')
+        .from(tableName)
         .select(selectStr, { count: 'exact' })
         .eq('user_id', session.data.session.user?.id)
         .order(sortBy, { ascending: orderBy === 'ascend' })

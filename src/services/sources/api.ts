@@ -58,10 +58,12 @@ export async function getSourceTableAll(
     modified_at
   `;
 
+  const tableName = 'sources';
+
   let result: any = {};
   if (dataSource === 'tg') {
     result = await supabase
-      .from('sources')
+      .from(tableName)
       .select(selectStr, { count: 'exact' })
       .eq('state_code', 100)
       .order(sortBy, { ascending: orderBy === 'ascend' })
@@ -69,11 +71,24 @@ export async function getSourceTableAll(
         ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
         (params.current ?? 1) * (params.pageSize ?? 10) - 1,
       );
+  } else if (dataSource === 'co') {
+    const session = await supabase.auth.getSession();
+    if (session.data.session) {
+      result = await supabase
+        .from(tableName)
+        .select(selectStr, { count: 'exact' })
+        .eq('state_code', 200)
+        .order(sortBy, { ascending: orderBy === 'ascend' })
+        .range(
+          ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
+          (params.current ?? 1) * (params.pageSize ?? 10) - 1,
+        );
+    }
   } else if (dataSource === 'my') {
     const session = await supabase.auth.getSession();
     if (session.data.session) {
       result = await supabase
-        .from('sources')
+        .from(tableName)
         .select(selectStr, { count: 'exact' })
         .eq('user_id', session.data.session.user?.id)
         .order(sortBy, { ascending: orderBy === 'ascend' })
@@ -84,12 +99,12 @@ export async function getSourceTableAll(
     }
   }
 
-  if (result.error) {
-    console.log('error', result.error);
+  if (result?.error) {
+    console.log('error', result?.error);
   }
 
-  if (result.data) {
-    if (result.data.length === 0) {
+  if (result?.data) {
+    if (result?.data?.length === 0) {
       return Promise.resolve({
         data: [],
         success: true,
@@ -99,7 +114,7 @@ export async function getSourceTableAll(
     let data: any[] = [];
     if (lang === 'zh') {
       await getILCDClassification('Source', lang, ['all']).then((res) => {
-        data = result.data.map((i: any) => {
+        data = result?.data?.map((i: any) => {
           try {
             const classifications = jsonToList(i['common:class']);
             const classificationZH = genClassificationZH(classifications, res?.data);
@@ -122,7 +137,7 @@ export async function getSourceTableAll(
         });
       });
     } else {
-      data = result.data.map((i: any) => {
+      data = result?.data?.map((i: any) => {
         try {
           return {
             key: i.id + ':' + i.version,

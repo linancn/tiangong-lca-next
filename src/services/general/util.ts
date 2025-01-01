@@ -379,3 +379,14 @@ export function toAmountNumber(amount: string) {
     return thisAmount;
   }
 }
+
+export function getDataSource(pathname: string) {
+  if (pathname.includes('/mydata')) {
+    return 'my';
+  } else if (pathname.includes('/tgdata')) {
+    return 'tg';
+  } else if (pathname.includes('/codata')) {
+    return 'co';
+  }
+  return '';
+}

@@ -166,19 +166,26 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     },
     menuDataRender: (menuDataProps) => {
       const location = history.location;
-      if (location.pathname.startsWith('/tedata')) {
-        const searchParams = new URLSearchParams(location.search);
-        const teamIds = searchParams.get('id');
-        const teMenus = menuDataProps.find((item) => item.path === '/tedata')?.children || [];
-        const newTeMenus = teMenus.map((item) => {
-          return {
-            ...item,
-            path: item.path + '?id=' + teamIds,
-          };
-        });
-        return newTeMenus;
+      const searchParams = new URLSearchParams(location.search);
+      const teamIds = searchParams.get('tid');
+      if (teamIds) {
+        const teamMenus = menuDataProps.filter((item) => item.path !== '/mydata');
+        return (
+          teamMenus?.map((menu) => {
+            return {
+              ...menu,
+              children: menu?.children?.map((item) => {
+                return {
+                  ...item,
+                  path: item.path + '?tid=' + teamIds,
+                };
+              }),
+            };
+          }) ?? []
+        );
+      } else {
+        return menuDataProps;
       }
-      return menuDataProps.filter((item) => item.path !== '/tedata');
     },
     menuItemRender: (menuItemProps, defaultDom) => {
       if (menuItemProps.isUrl || !menuItemProps.path) {

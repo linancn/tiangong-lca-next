@@ -90,6 +90,8 @@ export async function getFlowTableAll(
   }
   if (dataSource === 'tg') {
     query = query.eq('state_code', 100);
+  } else if (dataSource === 'co') {
+    query = query.eq('state_code', 200);
   } else if (dataSource === 'my') {
     const session = await supabase.auth.getSession();
     query = query.eq('user_id', session?.data?.session?.user?.id);

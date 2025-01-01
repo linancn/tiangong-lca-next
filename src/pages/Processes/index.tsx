@@ -4,7 +4,7 @@ import { useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 
 import { ListPagination } from '@/services/general/data';
-import { getLang } from '@/services/general/util';
+import { getDataSource, getLang } from '@/services/general/util';
 import { ProcessTable } from '@/services/processes/data';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { SearchProps } from 'antd/es/input/Search';
@@ -20,12 +20,7 @@ const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<any>('');
 
   const location = useLocation();
-  let dataSource = '';
-  if (location.pathname.includes('/mydata')) {
-    dataSource = 'my';
-  } else if (location.pathname.includes('/tgdata')) {
-    dataSource = 'tg';
-  }
+  const dataSource = getDataSource(location.pathname);
 
   const intl = useIntl();
 

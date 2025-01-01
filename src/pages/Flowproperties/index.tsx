@@ -4,7 +4,7 @@ import {
 } from '@/services/flowproperties/api';
 import { FlowpropertyTable } from '@/services/flowproperties/data';
 import { ListPagination } from '@/services/general/data';
-import { getLang } from '@/services/general/util';
+import { getDataSource, getLang } from '@/services/general/util';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Card, Input, Space, Tooltip } from 'antd';
 import { useRef, useState } from 'react';
@@ -24,12 +24,7 @@ const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<any>('');
 
   const location = useLocation();
-  let dataSource = '';
-  if (location.pathname.includes('/mydata')) {
-    dataSource = 'my';
-  } else if (location.pathname.includes('/tgdata')) {
-    dataSource = 'tg';
-  }
+  const dataSource = getDataSource(location.pathname);
 
   const intl = useIntl();
 
