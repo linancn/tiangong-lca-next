@@ -373,20 +373,8 @@ const Welcome: React.FC = () => {
                     paddingTop: '24px',
                   }}
                   cover={
-                    <div
-                      // style={{
-                      //   width: 200,
-                      //   height: 200,
-                      //   padding: 36,
-                      //   margin: '0 auto',
-                      // }}
-                      className={styles.team_logo_container}
-                    >
-                      <img
-                        src={`/images/dataLogo/${logo}`}
-                        // style={{ height: '100%', width: 'auto', maxWidth: '100%' }}
-                        className={styles.team_logo}
-                      />
+                    <div className={styles.team_logo_container}>
+                      <img src={`/images/dataLogo/${logo}`} className={styles.team_logo} />
                     </div>
                   }
                   onClick={() => {

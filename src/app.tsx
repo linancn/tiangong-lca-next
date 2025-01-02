@@ -203,8 +203,8 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
         </Link>
       );
     },
-    title: formatMessage({ id: 'pages.name', defaultMessage: 'TianGong LCA Data Platform' }),
     ...initialState?.settings,
+    title: formatMessage({ id: 'pages.name', defaultMessage: 'TianGong LCA Data Platform' }),
   };
 };
 
