@@ -73,6 +73,52 @@ const ToolbarEdit: FC<Props> = ({
 
   const { token } = theme.useToken();
 
+  const nodeTitleTool = (width: number, title: string) => {
+    return {
+      id: 'nodeTitle',
+      name: 'button',
+      args: {
+        markup: [
+          {
+            tagName: 'rect',
+            selector: 'button',
+            attrs: {
+              width: width,
+              height: 26,
+              rx: 4,
+              ry: 4,
+              fill: token.colorPrimary,
+              stroke: token.colorPrimary,
+              'stroke-width': 1,
+              cursor: 'pointer',
+            },
+          },
+          {
+            tagName: 'text',
+            textContent: genNodeLabel(title ?? '', lang, width),
+            selector: 'text',
+            attrs: {
+              fill: 'white',
+              'font-size': 14,
+              'text-anchor': 'middle',
+              'dominant-baseline': 'middle',
+              'pointer-events': 'none',
+              x: width / 2,
+              y: 13,
+            },
+          },
+          {
+            tagName: 'title',
+            textContent: title,
+          },
+        ],
+        x: 0,
+        y: 0,
+        offset: { x: 0, y: 0 },
+      },
+    };
+  };
+
   const inputFlowTool = {
     id: 'inputFlow',
     name: 'button',
@@ -254,7 +300,12 @@ const ToolbarEdit: FC<Props> = ({
                 ...node?.data,
                 quantitativeReference: '1',
               },
-              tools: [refTool, inputFlowTool, outputFlowTool],
+              tools: (node.tools as any)?.map((tool: any) => {
+                if (tool.id === 'nonRef') {
+                  return refTool;
+                }
+                return tool;
+              }),
             };
             await updateNode(node.id ?? '', updatedNodeData);
             setTargetAmountDrawerVisible(true);
@@ -264,59 +315,20 @@ const ToolbarEdit: FC<Props> = ({
                 ...node.data,
                 quantitativeReference: '0',
               },
-              tools: [nonRefTool, inputFlowTool, outputFlowTool],
+              tools: (node.tools as any)?.map((tool: any) => {
+                if (tool.id === 'ref') {
+                  return nonRefTool;
+                } else if (tool.id === 'nonRef') {
+                  return nonRefTool;
+                }
+                return tool;
+              }),
             };
             await updateNode(node.id ?? '', updatedNodeData);
           }
         });
       },
     },
-  };
-
-  const nodeTitleTool = (width: number, title: string) => {
-    return {
-      id: 'nodeTitle',
-      name: 'button',
-      args: {
-        markup: [
-          {
-            tagName: 'rect',
-            selector: 'button',
-            attrs: {
-              width: width,
-              height: 26,
-              rx: 4,
-              ry: 4,
-              fill: token.colorPrimary,
-              stroke: token.colorPrimary,
-              'stroke-width': 1,
-              cursor: 'pointer',
-            },
-          },
-          {
-            tagName: 'text',
-            textContent: genNodeLabel(title ?? '', lang, width),
-            selector: 'text',
-            attrs: {
-              fill: 'white',
-              'font-size': 14,
-              'text-anchor': 'middle',
-              'dominant-baseline': 'middle',
-              'pointer-events': 'none',
-              x: width / 2,
-              y: 13,
-            },
-          },
-          {
-            tagName: 'title',
-            textContent: title,
-          },
-        ],
-        x: 0,
-        y: 0,
-        offset: { x: 0, y: 0 },
-      },
-    };
   };
 
   const nodeAttrs = {
