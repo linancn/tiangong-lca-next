@@ -203,7 +203,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData })
             if (myKeyWord.length > 0) {
               return getSourceTablePgroongaSearch(params, lang, 'my', myKeyWord, {});
             }
-            return getSourceTableAll(params, sort, lang, 'my');
+            return getSourceTableAll(params, sort, lang, 'my', []);
           }}
           columns={sourceColumns}
           rowSelection={{
@@ -245,7 +245,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData })
             if (tgKeyWord.length > 0) {
               return getSourceTablePgroongaSearch(params, lang, 'tg', tgKeyWord, {});
             }
-            return getSourceTableAll(params, sort, lang, 'tg');
+            return getSourceTableAll(params, sort, lang, 'tg', []);
           }}
           columns={sourceColumns}
           rowSelection={{

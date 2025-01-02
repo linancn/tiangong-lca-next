@@ -253,7 +253,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }) 
                 flowType: flowTypeFilter,
               });
             }
-            return getFlowTableAll(params, sort, lang, 'tg', { flowType: flowTypeFilter });
+            return getFlowTableAll(params, sort, lang, 'tg', [], { flowType: flowTypeFilter });
           }}
           columns={FlowsColumns}
           rowSelection={{
@@ -299,7 +299,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }) 
                 flowType: flowTypeFilter,
               });
             }
-            return getFlowTableAll(params, sort, lang, 'my', { flowType: flowTypeFilter });
+            return getFlowTableAll(params, sort, lang, 'my', [], { flowType: flowTypeFilter });
           }}
           columns={FlowsColumns}
           toolBarRender={() => {

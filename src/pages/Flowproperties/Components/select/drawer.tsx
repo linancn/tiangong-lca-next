@@ -208,7 +208,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
             if (tgKeyWord.length > 0) {
               return getFlowpropertyTablePgroongaSearch(params, lang, 'tg', tgKeyWord, {});
             }
-            return getFlowpropertyTableAll(params, sort, lang, 'tg');
+            return getFlowpropertyTableAll(params, sort, lang, 'tg', []);
           }}
           columns={FlowpropertyColumns}
           rowSelection={{
@@ -253,7 +253,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
             if (myKeyWord.length > 0) {
               return getFlowpropertyTablePgroongaSearch(params, lang, 'my', myKeyWord, {});
             }
-            return getFlowpropertyTableAll(params, sort, lang, 'my');
+            return getFlowpropertyTableAll(params, sort, lang, 'my', []);
           }}
           columns={FlowpropertyColumns}
           rowSelection={{
