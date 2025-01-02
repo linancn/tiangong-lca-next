@@ -316,9 +316,7 @@ const ToolbarEdit: FC<Props> = ({
                 quantitativeReference: '0',
               },
               tools: (node.tools as any)?.map((tool: any) => {
-                if (tool.id === 'ref') {
-                  return nonRefTool;
-                } else if (tool.id === 'nonRef') {
+                if (tool.id === 'ref' || tool.id === 'nonRef') {
                   return nonRefTool;
                 }
                 return tool;
