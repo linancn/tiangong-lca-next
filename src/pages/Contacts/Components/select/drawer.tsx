@@ -208,7 +208,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }
             if (tgKeyWord.length > 0) {
               return getContactTablePgroongaSearch(params, lang, 'tg', tgKeyWord, {});
             }
-            return getContactTableAll(params, sort, lang, 'tg');
+            return getContactTableAll(params, sort, lang, 'tg', []);
           }}
           columns={contactColumns}
           rowSelection={{
@@ -250,7 +250,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }
             if (myKeyWord.length > 0) {
               return getContactTablePgroongaSearch(params, lang, 'my', myKeyWord, {});
             }
-            return getContactTableAll(params, sort, lang, 'my');
+            return getContactTableAll(params, sort, lang, 'my', []);
           }}
           toolBarRender={() => {
             return [<ContactCreate lang={lang} key={0} actionRef={myActionRefSelect} />];

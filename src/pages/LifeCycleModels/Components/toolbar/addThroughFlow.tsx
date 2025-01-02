@@ -203,7 +203,7 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
               }
               return getFlowTablePgroongaSearch(params, lang, 'tg', tgKeyWord, {});
             }
-            return getFlowTableAll(params, sort, lang, 'tg');
+            return getFlowTableAll(params, sort, lang, 'tg', []);
           }}
           columns={FlowsColumns}
         />
@@ -239,7 +239,7 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
             if (myKeyWord.length > 0) {
               return getFlowTablePgroongaSearch(params, lang, 'my', myKeyWord, {});
             }
-            return getFlowTableAll(params, sort, lang, 'my');
+            return getFlowTableAll(params, sort, lang, 'my', []);
           }}
           columns={FlowsColumns}
           rowSelection={{

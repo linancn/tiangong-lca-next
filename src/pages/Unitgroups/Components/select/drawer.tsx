@@ -229,7 +229,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
             if (myKeyWord.length > 0) {
               return getUnitGroupTablePgroongaSearch(params, lang, 'my', myKeyWord, {});
             }
-            return getUnitGroupTableAll(params, sort, lang, 'my');
+            return getUnitGroupTableAll(params, sort, lang, 'my', []);
           }}
           columns={unitGroupColumns}
           rowSelection={{
@@ -274,7 +274,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
             if (tgKeyWord.length > 0) {
               return getUnitGroupTablePgroongaSearch(params, lang, 'tg', tgKeyWord, {});
             }
-            return getUnitGroupTableAll(params, sort, lang, 'tg');
+            return getUnitGroupTableAll(params, sort, lang, 'tg', []);
           }}
           columns={unitGroupColumns}
           rowSelection={{
