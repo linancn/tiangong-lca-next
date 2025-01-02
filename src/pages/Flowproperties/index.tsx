@@ -4,7 +4,7 @@ import {
 } from '@/services/flowproperties/api';
 import { FlowpropertyTable } from '@/services/flowproperties/data';
 import { ListPagination } from '@/services/general/data';
-import { getLang } from '@/services/general/util';
+import { getDataSource, getLang } from '@/services/general/util';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Card, Input, Space, Tooltip } from 'antd';
 import { useRef, useState } from 'react';
@@ -13,6 +13,7 @@ import { FormattedMessage, useIntl, useLocation } from 'umi';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import ReferenceUnit from '../Unitgroups/Components/Unit/reference';
+import { getDataTitle } from '../Utils';
 import FlowpropertiesCreate from './Components/create';
 import FlowpropertiesDelete from './Components/delete';
 import FlowpropertiesEdit from './Components/edit';
@@ -24,12 +25,12 @@ const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<any>('');
 
   const location = useLocation();
-  let dataSource = '';
-  if (location.pathname.includes('/mydata')) {
-    dataSource = 'my';
-  } else if (location.pathname.includes('/tgdata')) {
-    dataSource = 'tg';
-  }
+  const dataSource = getDataSource(location.pathname);
+
+  const searchParams = new URLSearchParams(location.search);
+  const tname = searchParams.get('tname');
+  const tid = searchParams.get('tid');
+  const tids = tid ? tid.split(',') : [];
 
   const intl = useIntl();
 
@@ -137,7 +138,7 @@ const TableList: FC = () => {
   };
 
   return (
-    <PageContainer header={{ title: false }}>
+    <PageContainer header={{ title: tname ?? false, breadcrumb: {} }}>
       <Card>
         <Search
           size={'large'}
@@ -148,7 +149,10 @@ const TableList: FC = () => {
       </Card>
       <ProTable<FlowpropertyTable, ListPagination>
         headerTitle={
-          <FormattedMessage id="menu.tgdata.flowproperties" defaultMessage="Flow Properties" />
+          <>
+            {getDataTitle(dataSource)} /{' '}
+            <FormattedMessage id="menu.tgdata.flowproperties" defaultMessage="Flow Properties" />
+          </>
         }
         actionRef={actionRef}
         search={false}
@@ -173,7 +177,7 @@ const TableList: FC = () => {
           if (keyWord.length > 0) {
             return getFlowpropertyTablePgroongaSearch(params, lang, dataSource, keyWord, {});
           }
-          return getFlowpropertyTableAll(params, sort, lang, dataSource);
+          return getFlowpropertyTableAll(params, sort, lang, dataSource, tids);
         }}
         columns={flowpropertiesColumns}
       />

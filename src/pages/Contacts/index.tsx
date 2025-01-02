@@ -1,13 +1,14 @@
 import { getContactTableAll, getContactTablePgroongaSearch } from '@/services/contacts/api';
 import { ContactTable } from '@/services/contacts/data';
 import { ListPagination } from '@/services/general/data';
-import { getLang } from '@/services/general/util';
+import { getDataSource, getLang } from '@/services/general/util';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Card, Input, Space, Tooltip } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
+import { getDataTitle } from '../Utils';
 import ContactCreate from './Components/create';
 import ContactDelete from './Components/delete';
 import ContactEdit from './Components/edit';
@@ -19,12 +20,12 @@ const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<any>('');
 
   const location = useLocation();
-  let dataSource = '';
-  if (location.pathname.includes('/mydata')) {
-    dataSource = 'my';
-  } else if (location.pathname.includes('/tgdata')) {
-    dataSource = 'tg';
-  }
+  const dataSource = getDataSource(location.pathname);
+
+  const searchParams = new URLSearchParams(location.search);
+  const tname = searchParams.get('tname');
+  const tid = searchParams.get('tid');
+  const tids = tid ? tid.split(',') : [];
 
   const intl = useIntl();
 
@@ -130,7 +131,7 @@ const TableList: FC = () => {
   };
 
   return (
-    <PageContainer header={{ title: false }}>
+    <PageContainer header={{ title: tname ?? false, breadcrumb: {} }}>
       <Card>
         <Search
           size={'large'}
@@ -140,7 +141,12 @@ const TableList: FC = () => {
         />
       </Card>
       <ProTable<ContactTable, ListPagination>
-        headerTitle={<FormattedMessage id="menu.tgdata.contacts" defaultMessage="Contacts" />}
+        headerTitle={
+          <>
+            {getDataTitle(dataSource)} /{' '}
+            <FormattedMessage id="menu.tgdata.contacts" defaultMessage="Contacts" />
+          </>
+        }
         actionRef={actionRef}
         search={false}
         options={{ fullScreen: true }}
@@ -164,7 +170,7 @@ const TableList: FC = () => {
           if (keyWord.length > 0) {
             return getContactTablePgroongaSearch(params, lang, dataSource, keyWord, {});
           }
-          return getContactTableAll(params, sort, lang, dataSource);
+          return getContactTableAll(params, sort, lang, dataSource, tids);
         }}
         columns={contactColumns}
       />

@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { PageContainer } from '@ant-design/pro-components';
 import Meta from 'antd/es/card/Meta';
 import CountUp from 'react-countup';
-import { useIntl } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 import { Teams } from './TeamList/info';
 
 const Welcome: React.FC = () => {
@@ -32,107 +32,6 @@ const Welcome: React.FC = () => {
   }, [isDarkMode]);
 
   const info = {
-    title: [
-      {
-        '@xml:lang': 'zh',
-        '#text': '欢迎使用天工数据库',
-      },
-      {
-        '@xml:lang': 'en',
-        '#text': 'Welcome to TianGong Database',
-      },
-    ],
-    meta1: {
-      title: [
-        {
-          '@xml:lang': 'zh',
-          '#text': '开放 & 免费',
-        },
-        {
-          '@xml:lang': 'en',
-          '#text': 'Open & Free',
-        },
-      ],
-      description: [
-        {
-          '@xml:lang': 'zh',
-          '#text': (
-            <>天工数据库对所有人免费开放，促进 LCA 数据的公开、公平、共享，助力全球可持续发展。</>
-          ),
-        },
-        {
-          '@xml:lang': 'en',
-          '#text': (
-            <>
-              Our database is openly accessible and free for all, promoting the democratization of
-              sustainability data to foster global collaboration and innovation.
-            </>
-          ),
-        },
-      ],
-    },
-    meta2: {
-      title: [
-        {
-          '@xml:lang': 'zh',
-          '#text': '可追溯 & 可信赖',
-        },
-        {
-          '@xml:lang': 'en',
-          '#text': 'Traceable & Crediable',
-        },
-      ],
-      description: [
-        {
-          '@xml:lang': 'zh',
-          '#text': (
-            <>
-              天工数据库基于透明和可靠的价值观构建，确保每一条数据来源清晰且经过仔细验证，基于可信数据支撑准确的评估。
-            </>
-          ),
-        },
-        {
-          '@xml:lang': 'en',
-          '#text': (
-            <>
-              Built on a foundation of transparency and reliability, our database ensures every
-              piece of data is meticulously verified and clearly sourced, offering trusted
-              information for accurate assessments.
-            </>
-          ),
-        },
-      ],
-    },
-    meta3: {
-      title: [
-        {
-          '@xml:lang': 'zh',
-          '#text': '持续更新 & 扩展',
-        },
-        {
-          '@xml:lang': 'en',
-          '#text': 'Updating & Expanding',
-        },
-      ],
-      description: [
-        {
-          '@xml:lang': 'zh',
-          '#text': (
-            <>天工数据库持续动态更新，在扩展行业、部门和产品覆盖的同时，持续进行修正和更新。</>
-          ),
-        },
-        {
-          '@xml:lang': 'en',
-          '#text': (
-            <>
-              Our database continuously grows, adding new data and broadening its coverage. While
-              prioritizing expansion, we remain vigilant in ensuring accuracy, making careful
-              updates and corrections as needed.
-            </>
-          ),
-        },
-      ],
-    },
     data1: {
       value: 4000,
       title: [
@@ -356,7 +255,10 @@ const Welcome: React.FC = () => {
             color: token.colorTextHeading,
           }}
         >
-          {getLangText(info.title, lang)}
+          <FormattedMessage
+            id="pages.welcome"
+            defaultMessage="Welcome to TianGong LCA Data Platform"
+          />
         </div>
         <p
           style={{
@@ -381,8 +283,8 @@ const Welcome: React.FC = () => {
               cover={<SVG1 />}
             >
               <Meta
-                title={getLangText(info.meta1.title, lang)}
-                description={getLangText(info.meta1.description, lang)}
+                title={<FormattedMessage id="pages.card.title.1" />}
+                description={<FormattedMessage id="pages.card.description.1" />}
               />
             </Card>
           </Col>
@@ -398,8 +300,8 @@ const Welcome: React.FC = () => {
               cover={<SVG2 />}
             >
               <Meta
-                title={getLangText(info.meta2.title, lang)}
-                description={getLangText(info.meta2.description, lang)}
+                title={<FormattedMessage id="pages.card.title.2" />}
+                description={<FormattedMessage id="pages.card.description.2" />}
               />
             </Card>
           </Col>
@@ -415,8 +317,8 @@ const Welcome: React.FC = () => {
               cover={<SVG3 />}
             >
               <Meta
-                title={getLangText(info.meta3.title, lang)}
-                description={getLangText(info.meta3.description, lang)}
+                title={<FormattedMessage id="pages.card.title.3" />}
+                description={<FormattedMessage id="pages.card.description.3" />}
               />
             </Card>
           </Col>
@@ -452,7 +354,10 @@ const Welcome: React.FC = () => {
             />
           </Col>
         </Row>
-        <Divider orientation="left">Custom</Divider>
+        <br />
+        <Divider orientation="left" orientationMargin="0">
+          <FormattedMessage id="pages.dataEcology" defaultMessage="Data Ecology" />
+        </Divider>
         <Row gutter={16}>
           {Teams.map((team, index) => {
             return (
@@ -476,12 +381,12 @@ const Welcome: React.FC = () => {
                     >
                       <img
                         src={`/images/dataLogo/${team.logo}`}
-                        style={{ maxWidth: '100%', maxHeight: '100%' }}
+                        style={{ height: '100%', width: 'auto', maxWidth: '100%' }}
                       />
                     </div>
                   }
                   onClick={() => {
-                    window.open(`/tedata/models?tid=${team.id}`);
+                    window.location.href = `/tgdata/models?tid=${team.id}&tname=${getLangText(team.title, lang)}`;
                   }}
                 >
                   <Meta

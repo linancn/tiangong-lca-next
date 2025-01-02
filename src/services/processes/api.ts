@@ -38,6 +38,7 @@ export async function getProcessTableAll(
   sort: Record<string, SortOrder>,
   lang: string,
   dataSource: string,
+  tids: string[],
 ) {
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
   const orderBy = sort[sortBy] ?? 'descend';
@@ -53,45 +54,52 @@ export async function getProcessTableAll(
     modified_at
   `;
 
-  let result: any = {};
+  const tableName = 'processes';
+
+  let query = supabase
+    .from(tableName)
+    .select(selectStr, { count: 'exact' })
+    .order(sortBy, { ascending: orderBy === 'ascend' })
+    .range(
+      ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
+      (params.current ?? 1) * (params.pageSize ?? 10) - 1,
+    );
+
   if (dataSource === 'tg') {
-    result = await supabase
-      .from('processes')
-      .select(selectStr, { count: 'exact' })
-      .eq('state_code', 100)
-      .order(sortBy, { ascending: orderBy === 'ascend' })
-      .range(
-        ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-        (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-      );
+    query = query.eq('state_code', 100);
+  } else if (dataSource === 'co') {
+    query = query.eq('state_code', 200);
   } else if (dataSource === 'my') {
     const session = await supabase.auth.getSession();
     if (session.data.session) {
-      result = await supabase
-        .from('processes')
-        .select(selectStr, { count: 'exact' })
-        .eq('user_id', session.data.session.user?.id)
-        .order(sortBy, { ascending: orderBy === 'ascend' })
-        .range(
-          ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-          (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-        );
+      query = query.eq('user_id', session?.data?.session?.user?.id);
+    } else {
+      return Promise.resolve({
+        data: [],
+        success: false,
+      });
     }
   }
 
-  if (result.error) {
-    console.log('error', result.error);
+  if (tids.length > 0) {
+    query = query.in('user_id', tids);
   }
 
-  if (result.data) {
-    if (result.data.length === 0) {
+  const result = await query;
+
+  if (result?.error) {
+    console.log('error', result?.error);
+  }
+
+  if (result?.data) {
+    if (result?.data.length === 0) {
       return Promise.resolve({
         data: [],
         success: true,
       });
     }
 
-    const locations: string[] = Array.from(new Set(result.data.map((i: any) => i['@location'])));
+    const locations: string[] = Array.from(new Set(result?.data.map((i: any) => i['@location'])));
     let locationData: any[] = [];
     await getILCDLocationByValues(lang, locations).then((res) => {
       locationData = res.data;
@@ -100,7 +108,7 @@ export async function getProcessTableAll(
     let data: any[] = [];
     if (lang === 'zh') {
       await getILCDClassification('Process', lang, ['all']).then((res) => {
-        data = result.data.map((i: any) => {
+        data = result?.data.map((i: any) => {
           try {
             const classifications = jsonToList(i['common:class']);
             const classificationZH = genClassificationZH(classifications, res?.data);
@@ -132,7 +140,7 @@ export async function getProcessTableAll(
         });
       });
     } else {
-      data = result.data.map((i: any) => {
+      data = result?.data?.map((i: any) => {
         try {
           const thisLocation = locationData.find((l) => l['@value'] === i['@location']);
           let location = i['@location'];
@@ -162,9 +170,9 @@ export async function getProcessTableAll(
 
     return Promise.resolve({
       data: data,
-      page: params.current ?? 1,
+      page: params?.current ?? 1,
       success: true,
-      total: result.count ?? 0,
+      total: result?.count ?? 0,
     });
   }
   return Promise.resolve({
@@ -324,7 +332,6 @@ export async function getProcessTablePgroongaSearch(
       data_source: dataSource,
       this_user_id: session.data.session.user?.id,
     });
-    console.log('result', result);
   }
   if (result.error) {
     console.log('error', result.error);

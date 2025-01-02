@@ -44,6 +44,7 @@ export async function getSourceTableAll(
   sort: Record<string, SortOrder>,
   lang: string,
   dataSource: string,
+  tids: string[],
 ) {
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
   const orderBy = sort[sortBy] ?? 'descend';
@@ -58,38 +59,44 @@ export async function getSourceTableAll(
     modified_at
   `;
 
-  let result: any = {};
+  const tableName = 'sources';
+
+  let query = supabase
+    .from(tableName)
+    .select(selectStr, { count: 'exact' })
+    .order(sortBy, { ascending: orderBy === 'ascend' })
+    .range(
+      ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
+      (params.current ?? 1) * (params.pageSize ?? 10) - 1,
+    );
+
   if (dataSource === 'tg') {
-    result = await supabase
-      .from('sources')
-      .select(selectStr, { count: 'exact' })
-      .eq('state_code', 100)
-      .order(sortBy, { ascending: orderBy === 'ascend' })
-      .range(
-        ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-        (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-      );
+    query = query.eq('state_code', 100);
+  } else if (dataSource === 'co') {
+    query = query.eq('state_code', 200);
   } else if (dataSource === 'my') {
     const session = await supabase.auth.getSession();
     if (session.data.session) {
-      result = await supabase
-        .from('sources')
-        .select(selectStr, { count: 'exact' })
-        .eq('user_id', session.data.session.user?.id)
-        .order(sortBy, { ascending: orderBy === 'ascend' })
-        .range(
-          ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-          (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-        );
+      query = query.eq('user_id', session?.data?.session?.user?.id);
+    } else {
+      return Promise.resolve({
+        data: [],
+        success: false,
+      });
     }
   }
 
-  if (result.error) {
-    console.log('error', result.error);
+  if (tids.length > 0) {
+    query = query.in('user_id', tids);
+  }
+  const result = await query;
+
+  if (result?.error) {
+    console.log('error', result?.error);
   }
 
-  if (result.data) {
-    if (result.data.length === 0) {
+  if (result?.data) {
+    if (result?.data?.length === 0) {
       return Promise.resolve({
         data: [],
         success: true,
@@ -99,7 +106,7 @@ export async function getSourceTableAll(
     let data: any[] = [];
     if (lang === 'zh') {
       await getILCDClassification('Source', lang, ['all']).then((res) => {
-        data = result.data.map((i: any) => {
+        data = result?.data?.map((i: any) => {
           try {
             const classifications = jsonToList(i['common:class']);
             const classificationZH = genClassificationZH(classifications, res?.data);
@@ -122,7 +129,7 @@ export async function getSourceTableAll(
         });
       });
     } else {
-      data = result.data.map((i: any) => {
+      data = result?.data?.map((i: any) => {
         try {
           return {
             key: i.id + ':' + i.version,

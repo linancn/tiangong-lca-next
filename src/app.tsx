@@ -7,6 +7,7 @@ import { LinkOutlined } from '@ant-design/icons';
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
 import { SettingDrawer } from '@ant-design/pro-components';
 import type { RunTimeLayoutConfig } from '@umijs/max';
+import { useIntl } from 'umi';
 import { default as defaultSettings } from '../config/defaultSettings';
 import { errorConfig } from './requestErrorConfig';
 
@@ -63,6 +64,8 @@ export async function getInitialState(): Promise<{
 
 // ProLayout 支持的api https://procomponents.ant.design/components/layout
 export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { formatMessage } = useIntl();
   const handleClickFunction = () => {
     setInitialState((prevState: any) => {
       const newState = {
@@ -163,19 +166,27 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     },
     menuDataRender: (menuDataProps) => {
       const location = history.location;
-      if (location.pathname.startsWith('/tedata')) {
-        const searchParams = new URLSearchParams(location.search);
-        const teamIds = searchParams.get('id');
-        const teMenus = menuDataProps.find((item) => item.path === '/tedata')?.children || [];
-        const newTeMenus = teMenus.map((item) => {
-          return {
-            ...item,
-            path: item.path + '?id=' + teamIds,
-          };
-        });
-        return newTeMenus;
+      const searchParams = new URLSearchParams(location.search);
+      const tname = searchParams.get('tname');
+      const tid = searchParams.get('tid');
+      if (tid) {
+        const teamMenus = menuDataProps.filter((item) => item.path !== '/mydata');
+        return (
+          teamMenus?.map((menu) => {
+            return {
+              ...menu,
+              children: menu?.children?.map((item) => {
+                return {
+                  ...item,
+                  path: item.path + '?tid=' + tid + '&tname=' + (tname ?? ''),
+                };
+              }),
+            };
+          }) ?? []
+        );
+      } else {
+        return menuDataProps;
       }
-      return menuDataProps.filter((item) => item.path !== '/tedata');
     },
     menuItemRender: (menuItemProps, defaultDom) => {
       if (menuItemProps.isUrl || !menuItemProps.path) {
@@ -192,6 +203,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
         </Link>
       );
     },
+    title: formatMessage({ id: 'pages.name', defaultMessage: 'TianGong LCA Data Platform' }),
     ...initialState?.settings,
   };
 };

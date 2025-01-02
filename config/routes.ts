@@ -14,7 +14,7 @@ export default [
   {
     path: '/tgdata',
     name: 'tgdata',
-    icon: 'DatabaseOutlined',
+    icon: 'FolderOpenOutlined',
     routes: [
       {
         path: '/tgdata',
@@ -65,64 +65,64 @@ export default [
     ],
   },
   {
-    path: '/teamlist',
-    menu: false,
-    name: 'teamlist',
-    icon: 'DeploymentUnitOutlined',
-    component: './TeamList',
-  },
-  {
-    path: '/tedata',
-    name: 'tedata',
-    icon: 'DeploymentUnitOutlined',
+    path: '/codata',
+    name: 'codata',
+    icon: 'FileZipOutlined',
     routes: [
       {
-        path: '/tedata',
-        redirect: '/tedata/models',
+        path: '/codata',
+        redirect: '/codata/models',
       },
       {
         name: 'models',
-        path: '/tedata/models',
+        path: '/codata/models',
         icon: 'AppstoreAddOutlined',
         component: './LifeCycleModels',
       },
       {
         name: 'processes',
         icon: 'ShareAltOutlined',
-        path: '/tedata/processes',
+        path: '/codata/processes',
         component: './Processes',
       },
       {
         name: 'flows',
         icon: 'NodeExpandOutlined',
-        path: '/tedata/flows',
+        path: '/codata/flows',
         component: './Flows',
       },
       {
         name: 'flowproperties',
         icon: 'ControlOutlined',
-        path: '/tedata/flowproperties',
+        path: '/codata/flowproperties',
         component: './Flowproperties',
       },
       {
         name: 'unitgroups',
         icon: 'RetweetOutlined',
-        path: '/tedata/unitgroups',
+        path: '/codata/unitgroups',
         component: './Unitgroups',
       },
       {
         name: 'sources',
         icon: 'PaperClipOutlined',
-        path: '/tedata/sources',
+        path: '/codata/sources',
         component: './Sources',
       },
       {
         name: 'contacts',
         icon: 'TeamOutlined',
-        path: '/tedata/contacts',
+        path: '/codata/contacts',
         component: './Contacts',
       },
     ],
+  },
+  {
+    path: '/teamlist',
+    menu: false,
+    name: 'teamlist',
+    icon: 'DeploymentUnitOutlined',
+    component: './TeamList',
   },
   {
     path: '/mydata',

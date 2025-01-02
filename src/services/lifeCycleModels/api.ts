@@ -126,6 +126,7 @@ export async function getLifeCycleModelTableAll(
   sort: Record<string, SortOrder>,
   lang: string,
   dataSource: string,
+  tids: string[],
 ) {
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
   const orderBy = sort[sortBy] ?? 'descend';
@@ -139,23 +140,38 @@ export async function getLifeCycleModelTableAll(
     modified_at
   `;
 
-  let result: any = {};
+  const tableName = 'lifecyclemodels';
+
   let query = supabase
-    .from('lifecyclemodels')
+    .from(tableName)
     .select(selectStr, { count: 'exact' })
     .order(sortBy, { ascending: orderBy === 'ascend' })
     .range(
       ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
       (params.current ?? 1) * (params.pageSize ?? 10) - 1,
     );
+
   if (dataSource === 'tg') {
     query = query.eq('state_code', 100);
+  } else if (dataSource === 'co') {
+    query = query.eq('state_code', 200);
   } else if (dataSource === 'my') {
     const session = await supabase.auth.getSession();
-    query = query.eq('user_id', session?.data?.session?.user?.id);
+    if (session.data.session) {
+      query = query.eq('user_id', session?.data?.session?.user?.id);
+    } else {
+      return Promise.resolve({
+        data: [],
+        success: false,
+      });
+    }
   }
 
-  result = await query;
+  if (tids.length > 0) {
+    query = query.in('user_id', tids);
+  }
+
+  const result = await query;
 
   if (result.error) {
     console.log('error', result.error);

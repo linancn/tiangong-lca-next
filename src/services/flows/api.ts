@@ -45,6 +45,7 @@ export async function getFlowTableAll(
   sort: Record<string, SortOrder>,
   lang: string,
   dataSource: string,
+  tids: string[],
   filters?: {
     flowType?: string;
   },
@@ -65,9 +66,10 @@ export async function getFlowTableAll(
     modified_at
   `;
 
-  let result: any = {};
+  const tableName = 'flows';
+
   let query = supabase
-    .from('flows')
+    .from(tableName)
     .select(selectStr, { count: 'exact' })
     .order(sortBy, { ascending: orderBy === 'ascend' })
     .range(
@@ -90,12 +92,18 @@ export async function getFlowTableAll(
   }
   if (dataSource === 'tg') {
     query = query.eq('state_code', 100);
+  } else if (dataSource === 'co') {
+    query = query.eq('state_code', 200);
   } else if (dataSource === 'my') {
     const session = await supabase.auth.getSession();
     query = query.eq('user_id', session?.data?.session?.user?.id);
   }
 
-  result = await query;
+  if (tids.length > 0) {
+    query = query.in('user_id', tids);
+  }
+
+  const result = await query;
 
   if (result.error) {
     console.log('error', result.error);
