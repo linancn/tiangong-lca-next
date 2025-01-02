@@ -7,5 +7,5 @@ export default {
   'pages.card.description.2': 'The platform gathers comprehensive and authoritative life cycle data, covering diverse scenarios, and strives to present the real industry trends and environmental impacts.',
   'pages.card.title.3': 'Internationality & Openness',
   'pages.card.description.3': 'Tiangong LCA Data Platform is committed to building a global interconnected network, realizing seamless data docking and promoting the efficient sharing and application of life cycle information.',
-  'pages.dataEcology': 'Data Ecology',
+  'pages.dataEcosystem': 'Data Ecosystem',
 };

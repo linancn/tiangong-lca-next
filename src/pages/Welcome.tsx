@@ -357,7 +357,7 @@ const Welcome: React.FC = () => {
         </Row>
         <br />
         <Divider orientation="left" orientationMargin="0">
-          <FormattedMessage id="pages.dataEcology" defaultMessage="Data Ecology" />
+          <FormattedMessage id="pages.dataEcosystem" defaultMessage="Data Ecosystem" />
         </Divider>
         <Row gutter={16}>
           {Teams.map((team, index) => {

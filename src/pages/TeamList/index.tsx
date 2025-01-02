@@ -13,7 +13,7 @@ const TeamList: React.FC = () => {
   const lang = getLang(locale);
 
   return (
-    <PageContainer title={<FormattedMessage id="menu.teamlist" defaultMessage="Data ecology" />}>
+    <PageContainer title={<FormattedMessage id="menu.teamlist" defaultMessage="Data Ecosystem" />}>
       <Row gutter={16}>
         {Teams.map((team, index) => {
           return (
