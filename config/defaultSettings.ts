@@ -13,6 +13,7 @@ const Settings: ProLayoutProps & {
   fixedHeader: false,
   fixSiderbar: true,
   colorWeak: false,
+  title: '',
   pwa: true,
   logo: '/logo.svg',
   iconfontUrl: '',
