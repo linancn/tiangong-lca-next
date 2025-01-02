@@ -23,10 +23,10 @@ import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
 import ModelToolbarAdd from './add';
 import { Control } from './control';
+import TargetAmount from './editTargetAmount';
 import ToolbarEditInfo from './eidtInfo';
 import EdgeExhange from './Exchange/index';
 import IoPortSelector from './Exchange/ioPort';
-import TargetAmount from './targetAmount';
 
 type Props = {
   id: string;
@@ -926,20 +926,19 @@ const ToolbarEdit: FC<Props> = ({
     <Space direction="vertical" size={'middle'}>
       <ToolbarEditInfo data={infoData} onData={updateInfoData} lang={lang} />
       <ProcessView
-        id={nodes.filter((node) => node.selected)?.[0]?.data?.id ?? ''}
-        version={nodes.filter((node) => node.selected)?.[0]?.data?.version ?? ''}
-        // dataSource={'tg'}
+        id={nodes.find((node) => node.selected)?.data?.id ?? ''}
+        version={nodes.find((node) => node.selected)?.data?.version ?? ''}
         buttonType={'toolIcon'}
         lang={lang}
-        disabled={nodes.filter((node) => node.selected).length === 0}
+        disabled={!nodes.find((node) => node.selected)}
       />
       <EdgeExhange
         lang={lang}
-        disabled={edges.filter((edge) => edge.selected).length === 0}
-        edge={edges.filter((edge) => edge.selected)?.[0]}
+        disabled={!edges.find((edge) => edge.selected)}
+        edge={edges.find((edge) => edge.selected)}
       />
       <TargetAmount
-        refNode={nodes.filter((node) => node?.data?.quantitativeReference === '1')}
+        refNode={nodes.find((node) => node?.data?.quantitativeReference === '1')}
         drawerVisible={targetAmountDrawerVisible}
         lang={lang}
         setDrawerVisible={setTargetAmountDrawerVisible}

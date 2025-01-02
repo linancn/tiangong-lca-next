@@ -34,9 +34,9 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
 
   useEffect(() => {
     if (!drawerVisible) return;
-    if (refNode.length > 0) {
-      const id = refNode[0]?.data?.id;
-      const version = refNode[0]?.data?.version;
+    if (refNode) {
+      const id = refNode?.data?.id;
+      const version = refNode?.data?.version;
       getProcessDetail(id, version).then(async (result: any) => {
         const dataSet = genProcessFromData(result.data?.json?.processDataSet ?? {});
         setInitData({ ...dataSet, id: id });
@@ -46,7 +46,7 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
             (item: any) =>
               item?.['@dataSetInternalID'] === quantitativeReference?.referenceToReferenceFlow,
           ) ?? {};
-        const refNodeData = refNode[0]?.data;
+        const refNodeData = refNode?.data;
         const targetAmount = refNodeData?.targetAmount ?? refExc?.meanAmount;
         const originalAmount = refNodeData?.originalAmount ?? refExc?.meanAmount;
         const scalingFactor = refNodeData?.scalingFactor ?? targetAmount / originalAmount;
@@ -73,7 +73,7 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
           size="small"
           icon={<StarOutlined />}
           style={{ boxShadow: 'none' }}
-          disabled={refNode.length === 0}
+          disabled={!refNode}
           onClick={onDrawerOpen}
         />
       </Tooltip>
@@ -245,18 +245,6 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
             size="small"
             title={<FormattedMessage id="pages.lifeCycleModel.refNode" defaultMessage="Ref node" />}
           >
-            {/* <Descriptions bordered size={'small'} column={1}>
-                            <Descriptions.Item
-                                key={0}
-                                label={
-                                    <FormattedMessage id="pages.source.view.sourceInformation.id" defaultMessage="ID" />
-                                }
-                                labelStyle={{ width: '100px' }}
-                            >
-                                {nodeData?.id ?? '-'}
-                            </Descriptions.Item>
-                        </Descriptions>
-                        <br /> */}
             <Divider orientationMargin="0" orientation="left" plain>
               <FormattedMessage id="pages.lifeCycleModel.information.name" defaultMessage="Name" />
             </Divider>
