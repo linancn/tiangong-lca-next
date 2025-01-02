@@ -1,4 +1,5 @@
 import { getLang, getLangText } from '@/services/general/util';
+import styles from '@/style/custom.less';
 import { Card, Col, Divider, Row, Statistic, StatisticProps, theme } from 'antd';
 import React, { useEffect, useState } from 'react';
 
@@ -360,6 +361,7 @@ const Welcome: React.FC = () => {
         </Divider>
         <Row gutter={16}>
           {Teams.map((team, index) => {
+            const logo = isDarkMode ? team.darkLogo : team.lightLogo;
             return (
               <Col span={8} key={index}>
                 <Card
@@ -372,16 +374,18 @@ const Welcome: React.FC = () => {
                   }}
                   cover={
                     <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        height: '200px',
-                      }}
+                      // style={{
+                      //   width: 200,
+                      //   height: 200,
+                      //   padding: 36,
+                      //   margin: '0 auto',
+                      // }}
+                      className={styles.team_logo_container}
                     >
                       <img
-                        src={`/images/dataLogo/${team.logo}`}
-                        style={{ height: '100%', width: 'auto', maxWidth: '100%' }}
+                        src={`/images/dataLogo/${logo}`}
+                        // style={{ height: '100%', width: 'auto', maxWidth: '100%' }}
+                        className={styles.team_logo}
                       />
                     </div>
                   }

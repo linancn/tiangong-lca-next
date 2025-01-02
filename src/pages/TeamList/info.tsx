@@ -1,5 +1,44 @@
 export const Teams = [
   {
+    id: '9c4751b6-b31c-477a-944f-cd5b47576835',
+    title: [
+      {
+        '@xml:lang': 'zh',
+        '#text': '海科数据',
+      },
+      {
+        '@xml:lang': 'en',
+        '#text': 'HiQLCD',
+      },
+    ],
+    description: [
+      {
+        '@xml:lang': 'zh',
+        '#text': (
+          <>
+            HiQLCD由上海海科数据智能科技有限公司开发，致力于为中国制造产品提供符合国际主流生命周期评价（LCA）标准的高质量数据支持。最新发布的1.0版本包含超过10,000条详实的数据集，覆盖能源生产（石油、煤炭、电力、天然气）、基础原材料生产（钢铁、铜、铝、塑料、橡胶）、加工工艺（注塑、折弯、机加工）以及部分下游产品（电气设备、加工机械）等核心领域。通过精准而本地化的数据，HiQLCD不仅满足企业在全球可持续发展中的合规需求，更助力优化生产流程和供应链管理，推动绿色发展与环境友好型创新。
+          </>
+        ),
+      },
+      {
+        '@xml:lang': 'en',
+        '#text': (
+          <>
+            HiQLCD, developed by Shanghai HiQ Smart Data Co., Ltd., is a Chinese LCA database aimed
+            at providing High-Quality lifecycle assessment data for products. Unlike existing
+            databases, which often suffer from limited data, outdated information, and inconsistent
+            methodologies, HiQLCD offers over 10,000 high-quality, up-to-date datasets. These cover
+            critical areas such as energy production, raw materials, manufacturing processes, and
+            downstream products. By providing accurate and consistent data, HiQLCD enables
+            businesses to make informed decisions and effectively pursue sustainability goals.
+          </>
+        ),
+      },
+    ],
+    lightLogo: 'hiq.svg',
+    darkLogo: 'hiq-dark.svg',
+  },
+  {
     id: '91b8bb31-96c8-4191-8e16-b9090a7fc5a9',
     title: [
       {
@@ -29,7 +68,8 @@ export const Teams = [
         ),
       },
     ],
-    logo: 'sjtu.png',
+    lightLogo: 'usst.svg',
+    darkLogo: 'usst-dark.svg',
   },
   {
     id: '95fa5ba5-b0d3-4d1c-95a8-40270e2399d3,bd982725-532e-4851-9940-51499a2109af',
@@ -61,7 +101,8 @@ export const Teams = [
         ),
       },
     ],
-    logo: 'cumtb.png',
+    lightLogo: 'cumtb.svg',
+    darkLogo: 'cumtb-dark.svg',
   },
   {
     id: '79e7f7c7-4b38-4d2e-a550-c76011d1001c',
@@ -93,7 +134,8 @@ export const Teams = [
         ),
       },
     ],
-    logo: 'sues.png',
+    lightLogo: 'sues.svg',
+    darkLogo: 'sues-dark.svg',
   },
   {
     id: 'a8397fcd-6d7a-4779-a6db-5806541e6df3,035e2a24-47b5-4327-8158-4d13b82dabd5,91d3aefe-e4a8-411b-b63b-ffc3f3fe3f3c,5385953c-7557-4f2b-8359-ab3d62dce597,0b86dd09-76e1-418f-88ec-8f5ed5519cb0,1c7e995b-4c55-4204-8977-3ef020e758ed,dbcf5d8a-60bb-4dfc-a2b3-e8b4ab9352c0',
@@ -125,7 +167,8 @@ export const Teams = [
         ),
       },
     ],
-    logo: 'tsinghua.jpg',
+    lightLogo: 'thu.svg',
+    darkLogo: 'thu-dark.svg',
   },
   {
     id: 'ee842dac-8314-4c71-9d6a-1ce85475c198',
@@ -157,7 +200,8 @@ export const Teams = [
         ),
       },
     ],
-    logo: 'neu.png',
+    lightLogo: 'neu.svg',
+    darkLogo: 'neu-dark.svg',
   },
   {
     id: 'ecab975e-440e-463d-aa95-b0f21f63afc5',
@@ -189,6 +233,7 @@ export const Teams = [
         ),
       },
     ],
-    logo: 'caep.png',
+    lightLogo: 'caep.svg',
+    darkLogo: 'caep-dark.svg',
   },
 ];

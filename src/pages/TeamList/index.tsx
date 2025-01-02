@@ -1,4 +1,5 @@
 import { getLang, getLangText } from '@/services/general/util';
+import styles from '@/style/custom.less';
 import { Card, Col, Row } from 'antd';
 import React from 'react';
 import { Teams } from './info';
@@ -19,25 +20,9 @@ const TeamList: React.FC = () => {
             <Col span={8} key={index}>
               <Card
                 hoverable
-                style={{
-                  width: '100%',
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  paddingTop: '24px',
-                }}
                 cover={
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      height: '200px',
-                    }}
-                  >
-                    <img
-                      src={`/images/dataLogo/${team.logo}`}
-                      style={{ maxWidth: '100%', maxHeight: '100%' }}
-                    />
+                  <div className={styles.team_logo_container}>
+                    <img src={`team_logo_container/images/dataLogo/${team.lightLogo}`} />
                   </div>
                 }
                 onClick={() => {
