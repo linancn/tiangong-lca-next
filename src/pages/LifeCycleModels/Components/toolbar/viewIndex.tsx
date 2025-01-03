@@ -14,6 +14,7 @@ import { FC, useEffect, useState } from 'react';
 import { useIntl } from 'umi';
 import { Control } from './control';
 import EdgeExhange from './Exchange/index';
+import IoPortView from './Exchange/ioPortView';
 import ToolbarViewInfo from './viewInfo';
 import TargetAmount from './viewTargetAmount';
 
@@ -29,6 +30,9 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
   const [infoData, setInfoData] = useState<any>({});
 
   const [targetAmountDrawerVisible, setTargetAmountDrawerVisible] = useState(false);
+  const [ioPortSelectorDirection, setIoPortSelectorDirection] = useState('');
+  const [ioPortSelectorNode, setIoPortSelectorNode] = useState<any>({});
+  const [ioPortSelectorDrawerVisible, setIoPortSelectorDrawerVisible] = useState(false);
 
   const modelData = useGraphStore((state) => state.initData);
   const updateNode = useGraphStore((state) => state.updateNode);
@@ -80,6 +84,11 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
         },
       ],
       offset: { x: 10, y: 30 },
+      async onClick(view: any) {
+        await setIoPortSelectorDirection('Input');
+        await setIoPortSelectorNode(view.cell.store.data);
+        await setIoPortSelectorDrawerVisible(true);
+      },
     },
   };
 
@@ -123,6 +132,11 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
       x: '100%',
       y: 0,
       offset: { x: -60, y: 30 },
+      async onClick(view: any) {
+        await setIoPortSelectorDirection('Output');
+        await setIoPortSelectorNode(view.cell.store.data);
+        await setIoPortSelectorDrawerVisible(true);
+      },
     },
   };
 
@@ -402,6 +416,13 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
       />
       <Control items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin']} />
       <Spin spinning={spinning} fullscreen />
+      <IoPortView
+        lang={lang}
+        node={ioPortSelectorNode}
+        direction={ioPortSelectorDirection}
+        drawerVisible={ioPortSelectorDrawerVisible}
+        onDrawerVisible={setIoPortSelectorDrawerVisible}
+      />
     </Space>
   );
 };

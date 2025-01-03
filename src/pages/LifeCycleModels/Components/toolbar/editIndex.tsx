@@ -26,7 +26,7 @@ import { Control } from './control';
 import TargetAmount from './editTargetAmount';
 import ToolbarEditInfo from './eidtInfo';
 import EdgeExhange from './Exchange/index';
-import IoPortSelector from './Exchange/ioPort';
+import IoPortSelect from './Exchange/ioPortSelect';
 
 type Props = {
   id: string;
@@ -1021,7 +1021,7 @@ const ToolbarEdit: FC<Props> = ({
       />
       <Control items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin']} />
       <Spin spinning={spinning} fullscreen />
-      <IoPortSelector
+      <IoPortSelect
         lang={lang}
         node={ioPortSelectorNode}
         direction={ioPortSelectorDirection}

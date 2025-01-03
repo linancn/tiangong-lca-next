@@ -4,7 +4,6 @@ import { ListPagination } from '@/services/general/data';
 import { getProcessDetail, getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData, genProcessFromData } from '@/services/processes/util';
-import styles from '@/style/custom.less';
 import { CheckCircleTwoTone, CloseCircleOutlined, CloseOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Drawer, Space, Tooltip } from 'antd';
@@ -17,18 +16,10 @@ type Props = {
   lang: string;
   direction: string;
   drawerVisible: boolean;
-  onData: (data: any) => void;
   onDrawerVisible: (option: boolean) => void;
 };
 
-const IoPortSelector: FC<Props> = ({
-  node,
-  lang,
-  direction,
-  drawerVisible,
-  onData,
-  onDrawerVisible,
-}) => {
+const IoPortSelector: FC<Props> = ({ node, lang, direction, drawerVisible, onDrawerVisible }) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [exchangeDataSource, setExchangeDataSource] = useState<any[]>([]);
 
@@ -42,22 +33,6 @@ const IoPortSelector: FC<Props> = ({
       valueType: 'index',
       search: false,
     },
-    // {
-    //   title: <FormattedMessage id="processExchange.dataSetInternalID" defaultMessage="DataSet Internal ID" />,
-    //   dataIndex: 'dataSetInternalID',
-    //   search: false,
-    // },
-    // {
-    //   title: (
-    //     <FormattedMessage
-    //       id="pages.process.exchange.exchangeDirection"
-    //       defaultMessage="Direction"
-    //     />
-    //   ),
-    //   dataIndex: 'exchangeDirection',
-    //   sorter: false,
-    //   search: false,
-    // },
     {
       title: <FormattedMessage id="processExchange.referenceToFlowDataSet" defaultMessage="Flow" />,
       dataIndex: 'referenceToFlowDataSet',
@@ -89,7 +64,6 @@ const IoPortSelector: FC<Props> = ({
       sorter: false,
       search: false,
     },
-
     {
       title: (
         <FormattedMessage
@@ -156,7 +130,6 @@ const IoPortSelector: FC<Props> = ({
               id={row.dataSetInternalID}
               data={exchangeDataSource}
               lang={lang}
-              // dataSource={'tg'}
               buttonType={'icon'}
             />
           </Space>,
@@ -164,10 +137,6 @@ const IoPortSelector: FC<Props> = ({
       },
     },
   ];
-
-  const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
-    setSelectedRowKeys(newSelectedRowKeys);
-  };
 
   const onDrawerClose = () => {
     onDrawerVisible(false);
@@ -191,8 +160,8 @@ const IoPortSelector: FC<Props> = ({
       <Drawer
         title={
           <FormattedMessage
-            id="pages.flow.model.drawer.title.edge.exchange.select"
-            defaultMessage="Select flow port"
+            id="pages.flow.model.drawer.title.edge.port.view"
+            defaultMessage="View flow port"
           />
         }
         width="90%"
@@ -201,31 +170,7 @@ const IoPortSelector: FC<Props> = ({
         maskClosable={false}
         open={drawerVisible}
         onClose={onDrawerClose}
-        footer={
-          <Space size={'middle'} className={styles.footer_right}>
-            <Button onClick={onDrawerClose}>
-              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
-            </Button>
-            <Button
-              onClick={() => {
-                const selectedRowData = exchangeDataSource.filter((item) => {
-                  const itemKey =
-                    (item?.exchangeDirection ?? '-').toUpperCase() +
-                    ':' +
-                    (item?.referenceToFlowDataSet?.['@refObjectId'] ?? '-');
-
-                  return selectedRowKeys.includes(itemKey);
-                });
-
-                onData({ selectedRowData: selectedRowData });
-                onDrawerClose();
-              }}
-              type="primary"
-            >
-              <FormattedMessage id="pages.button.submit" defaultMessage="Submit" />
-            </Button>
-          </Space>
-        }
+        footer={false}
       >
         <ProTable<ProcessExchangeTable, ListPagination>
           actionRef={actionRefSelect}
@@ -243,10 +188,11 @@ const IoPortSelector: FC<Props> = ({
             );
           }}
           columns={processExchangeColumns}
+          tableAlertRender={false}
+          tableAlertOptionRender={false}
           rowSelection={{
-            alwaysShowAlert: true,
+            alwaysShowAlert: false,
             selectedRowKeys: selectedRowKeys,
-            onChange: onSelectChange,
           }}
         />
       </Drawer>
