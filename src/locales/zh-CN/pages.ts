@@ -49,7 +49,7 @@ export default {
   'pages.login.termsOfUse': '使用条款',
   'pages.login.privacyNotice': '隐私声明',
   'pages.login.title': '天工生命周期数据平台',
-  'pages.login.subTitle': '欢迎使用天工生命周期数据平台',
+  'pages.login.subTitle': '全球最大的开放生命周期数据平台',
   'pages.welcome.alertMessage': '更快更强的重型组件，已经发布。',
   'pages.welcome.link': '欢迎使用',
   'pages.login.passwordReset.title': '重置密码',

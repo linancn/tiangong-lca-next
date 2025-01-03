@@ -49,7 +49,7 @@ export default {
   'pages.login.termsOfUse': 'Terms of Use',
   'pages.login.privacyNotice': 'Privacy Notice',
   'pages.login.title': 'TianGong LCA Data Platform',
-  'pages.login.subTitle': 'Welcome to TianGong LCA Data Platform',
+  'pages.login.subTitle': "World's Largest Open LCA Data Platform",
   'pages.welcome.alertMessage': 'Faster and stronger heavy-duty components have been released.',
   'pages.welcome.link': 'Welcome',
   'pages.login.passwordReset.title': 'Reset Password',
