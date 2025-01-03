@@ -16,7 +16,7 @@ export const Teams = [
         '@xml:lang': 'zh',
         '#text': (
           <>
-            HiQLCD由上海海科数据智能科技有限公司开发，致力于为中国制造产品提供符合国际主流生命周期评价（LCA）标准的高质量数据支持。最新发布的1.0版本包含超过10,000条详实的数据集，覆盖能源生产（石油、煤炭、电力、天然气）、基础原材料生产（钢铁、铜、铝、塑料、橡胶）、加工工艺（注塑、折弯、机加工）以及部分下游产品（电气设备、加工机械）等核心领域。通过精准而本地化的数据，HiQLCD不仅满足企业在全球可持续发展中的合规需求，更助力优化生产流程和供应链管理，推动绿色发展与环境友好型创新。
+            HiQLCD由上海海科数据智能科技有限公司开发，1.0版本数据集包含超过10,000条详实的数据，覆盖能源（石油、煤炭、电力、天然气）、基础原材料（钢铁、铜、铝、塑料、橡胶）、及下游产品（电气设备、加工机械）等领域。
           </>
         ),
       },
@@ -24,13 +24,9 @@ export const Teams = [
         '@xml:lang': 'en',
         '#text': (
           <>
-            HiQLCD, developed by Shanghai HiQ Smart Data Co., Ltd., is a Chinese LCA database aimed
-            at providing High-Quality lifecycle assessment data for products. Unlike existing
-            databases, which often suffer from limited data, outdated information, and inconsistent
-            methodologies, HiQLCD offers over 10,000 high-quality, up-to-date datasets. These cover
-            critical areas such as energy production, raw materials, manufacturing processes, and
-            downstream products. By providing accurate and consistent data, HiQLCD enables
-            businesses to make informed decisions and effectively pursue sustainability goals.
+            HiQLCD, developed by Shanghai HiQ Smart Data Co., Ltd, provides over 10,000 high
+            quality, up-to-date data sets covering critical areas such as energy production, raw
+            materials, manufacturing processes and downstream products.
           </>
         ),
       },
@@ -39,15 +35,15 @@ export const Teams = [
     darkLogo: 'hiq-dark.svg',
   },
   {
-    id: '91b8bb31-96c8-4191-8e16-b9090a7fc5a9',
+    id: 'a8397fcd-6d7a-4779-a6db-5806541e6df3,035e2a24-47b5-4327-8158-4d13b82dabd5,91d3aefe-e4a8-411b-b63b-ffc3f3fe3f3c,5385953c-7557-4f2b-8359-ab3d62dce597,0b86dd09-76e1-418f-88ec-8f5ed5519cb0,1c7e995b-4c55-4204-8977-3ef020e758ed,dbcf5d8a-60bb-4dfc-a2b3-e8b4ab9352c0',
     title: [
       {
         '@xml:lang': 'zh',
-        '#text': '上海理工大学 黄蓓佳老师团队',
+        '#text': '清华大学 徐明团队',
       },
       {
         '@xml:lang': 'en',
-        '#text': '上海理工大学 黄蓓佳老师团队',
+        '#text': 'Ming Xu Team, Tsinghua University',
       },
     ],
     description: [
@@ -55,7 +51,7 @@ export const Teams = [
         '@xml:lang': 'zh',
         '#text': (
           <>
-            上海理工大学黄蓓佳教授课题组主要从事环境评价、环境规划与管理、产业生态、低碳与可持续发展方向的研究。近年来致力于产业全生命周期评估与管理研究，通过构建减排方案的全生命周期环境效益评估模型、建立环境-经济-能源耦合评价方法，明晰建筑业、可再生能源等行业的全生命周期绿色转型优化路径。
+            天工计划团队，负责电力系统（火电、光伏、风电、水电、核电、输配电）、能源领域（氢能、电池）、矿产领域（铝、硅）、包装材料行业的开放数据研制。
           </>
         ),
       },
@@ -63,7 +59,44 @@ export const Teams = [
         '@xml:lang': 'en',
         '#text': (
           <>
-            上海理工大学黄蓓佳教授课题组主要从事环境评价、环境规划与管理、产业生态、低碳与可持续发展方向的研究。近年来致力于产业全生命周期评估与管理研究，通过构建减排方案的全生命周期环境效益评估模型、建立环境-经济-能源耦合评价方法，明晰建筑业、可再生能源等行业的全生命周期绿色转型优化路径。
+            Life Cycle Open Data development teams in the power system (thermal power, photovoltaic,
+            wind power, hydropower, nuclear power, transmission and distribution), energy field
+            (hydrogen energy, batteries), mineral field (aluminium, silicon), packaging materials
+            industry.
+          </>
+        ),
+      },
+    ],
+    lightLogo: 'thu.svg',
+    darkLogo: 'thu-dark.svg',
+  },
+  {
+    id: '91b8bb31-96c8-4191-8e16-b9090a7fc5a9',
+    title: [
+      {
+        '@xml:lang': 'zh',
+        '#text': '上海理工大学 黄蓓佳团队',
+      },
+      {
+        '@xml:lang': 'en',
+        '#text': 'Beijia Huang Team, University of Shanghai  for Science and Technology ',
+      },
+    ],
+    description: [
+      {
+        '@xml:lang': 'zh',
+        '#text': (
+          <>
+            天工计划团队，从事建筑行业低碳与可持续发展方向的研究，负责建材领域（砂石、砖块、石灰、玻璃）的开放数据研制。
+          </>
+        ),
+      },
+      {
+        '@xml:lang': 'en',
+        '#text': (
+          <>
+            Life Cycle Open Data development teams for building materials products (sand, gravel,
+            bricks, lime, glass).
           </>
         ),
       },
@@ -76,11 +109,11 @@ export const Teams = [
     title: [
       {
         '@xml:lang': 'zh',
-        '#text': '中国矿业大学（北京）管理学院 冯翠洋老师团队',
+        '#text': '中国矿业大学（北京） 冯翠洋团队',
       },
       {
         '@xml:lang': 'en',
-        '#text': '中国矿业大学（北京）管理学院 冯翠洋老师团队',
+        '#text': 'Cuiyang Feng Team, China University of Mining & Technology, Beijing ',
       },
     ],
     description: [
@@ -88,7 +121,7 @@ export const Teams = [
         '@xml:lang': 'zh',
         '#text': (
           <>
-            中国矿业大学（北京）管理学院冯翠洋团队长期从事化石能源领域研究工作，在煤炭、石油、天然气等化石燃料的资源管理和环境效益分析方面具有较好的研究基础。团队成员主要由中国矿业大学（北京）管理学院的师生组成，主要负责天工计划数据库能源（煤炭、石油、天然气）领域数据收集工作。
+            天工计划团队，从事化石能源领域的资源管理和环境效益分析研究，负责能源领域（煤炭、石油、天然气）的开放数据研制。
           </>
         ),
       },
@@ -96,7 +129,7 @@ export const Teams = [
         '@xml:lang': 'en',
         '#text': (
           <>
-            中国矿业大学（北京）管理学院冯翠洋团队长期从事化石能源领域研究工作，在煤炭、石油、天然气等化石燃料的资源管理和环境效益分析方面具有较好的研究基础。团队成员主要由中国矿业大学（北京）管理学院的师生组成，主要负责天工计划数据库能源（煤炭、石油、天然气）领域数据收集工作。
+            Life Cycle Open Data development teams for the energy sector (coal, oil, natural gas).
           </>
         ),
       },
@@ -113,7 +146,8 @@ export const Teams = [
       },
       {
         '@xml:lang': 'en',
-        '#text': '上海工程技术大学 碳中和系统工程课题组',
+        '#text':
+          'Team of Systems Engineering for Carbon Neutrality, Shanghai University of Engineering Science',
       },
     ],
     description: [
@@ -121,7 +155,7 @@ export const Teams = [
         '@xml:lang': 'zh',
         '#text': (
           <>
-            课题组隶属国家级人才李光辉教授成立的研究中心，由化学化工学院陆嘉麒博士担任学科带头人，从事废弃物化学循环、膜法水处理、石油化工生产等领域的碳足迹评估与降碳集成优化研究。主要负责天工计划石油化工、废弃物处理等领域数据收集工作。
+            天工计划团队，从事废弃物化学循环、石油化工生产等领域的碳足迹评估研究，负责废弃物处理领域、石油化工领域（甲醇、乙酸）的开放数据研制。
           </>
         ),
       },
@@ -129,46 +163,14 @@ export const Teams = [
         '@xml:lang': 'en',
         '#text': (
           <>
-            课题组隶属国家级人才李光辉教授成立的研究中心，由化学化工学院陆嘉麒博士担任学科带头人，从事废弃物化学循环、膜法水处理、石油化工生产等领域的碳足迹评估与降碳集成优化研究。主要负责天工计划石油化工、废弃物处理等领域数据收集工作。
+            Life Cycle Open Data development teams for waste management and petrochemicals
+            (methanol, acetic acid).
           </>
         ),
       },
     ],
     lightLogo: 'sues.svg',
     darkLogo: 'sues-dark.svg',
-  },
-  {
-    id: 'a8397fcd-6d7a-4779-a6db-5806541e6df3,035e2a24-47b5-4327-8158-4d13b82dabd5,91d3aefe-e4a8-411b-b63b-ffc3f3fe3f3c,5385953c-7557-4f2b-8359-ab3d62dce597,0b86dd09-76e1-418f-88ec-8f5ed5519cb0,1c7e995b-4c55-4204-8977-3ef020e758ed,dbcf5d8a-60bb-4dfc-a2b3-e8b4ab9352c0',
-    title: [
-      {
-        '@xml:lang': 'zh',
-        '#text': '清华大学 徐明团队',
-      },
-      {
-        '@xml:lang': 'en',
-        '#text': '清华大学 徐明团队',
-      },
-    ],
-    description: [
-      {
-        '@xml:lang': 'zh',
-        '#text': (
-          <>
-            清华大学环境学院环境数据科学与系统工程研究团队由碳中和讲席教授徐明牵头成立，针对国家、地方、行业和企业实现“双碳”目标的重大需求，基于环境系统工程理论和环境数据科学方法，开展中国工业系统“基因组测序”、生命周期评价、碳足迹核算与分析、工业绿色低碳发展数据空间建设、数据-知识双驱动的行业绿色低碳转型理论、工具、软件与解决方案研发等工作，解决“双碳”背景下重点行业低碳发展路径规划、产品绿色设计、ESG与绿色金融等实际问题。
-          </>
-        ),
-      },
-      {
-        '@xml:lang': 'en',
-        '#text': (
-          <>
-            清华大学环境学院环境数据科学与系统工程研究团队由碳中和讲席教授徐明牵头成立，针对国家、地方、行业和企业实现“双碳”目标的重大需求，基于环境系统工程理论和环境数据科学方法，开展中国工业系统“基因组测序”、生命周期评价、碳足迹核算与分析、工业绿色低碳发展数据空间建设、数据-知识双驱动的行业绿色低碳转型理论、工具、软件与解决方案研发等工作，解决“双碳”背景下重点行业低碳发展路径规划、产品绿色设计、ESG与绿色金融等实际问题。
-          </>
-        ),
-      },
-    ],
-    lightLogo: 'thu.svg',
-    darkLogo: 'thu-dark.svg',
   },
   {
     id: 'ee842dac-8314-4c71-9d6a-1ce85475c198',
@@ -179,7 +181,7 @@ export const Teams = [
       },
       {
         '@xml:lang': 'en',
-        '#text': '东北大学 岳强团队',
+        '#text': 'Qiang Yue Team, Northeastern University',
       },
     ],
     description: [
@@ -187,7 +189,7 @@ export const Teams = [
         '@xml:lang': 'zh',
         '#text': (
           <>
-            工计划钢铁行业研究团队来自于东北大学冶金学院/国家环境保护生态工业重点实验室，以工业生态学与节能减排研究所的岳强教授为中心，包括博士研究生王环宇以及付翔、纪伟、伊晓昱、郑新鹏、冯明阳五名硕士研究生。团队负责钢铁行业钢材生产全生命周期过程单元流程图绘制、相关文献的收集整理以及完整数据清单的录入工作，以期为中国钢铁行业构建一个本土化钢材生产的单元过程数据库。
+            天工计划团队，从事工业生态学、金属流程工业节能减排理论与技术研究，负责钢铁领域（钢铁生产及废钢回收）的开放数据研制。
           </>
         ),
       },
@@ -195,7 +197,8 @@ export const Teams = [
         '@xml:lang': 'en',
         '#text': (
           <>
-            天工计划钢铁行业研究团队来自于东北大学冶金学院/国家环境保护生态工业重点实验室，以工业生态学与节能减排研究所的岳强教授为中心，包括博士研究生王环宇以及付翔、纪伟、伊晓昱、郑新鹏、冯明阳五名硕士研究生。团队负责钢铁行业钢材生产全生命周期过程单元流程图绘制、相关文献的收集整理以及完整数据清单的录入工作，以期为中国钢铁行业构建一个本土化钢材生产的单元过程数据库。
+            Life Cycle Open Data development teams in the iron and steel sector (iron and steel
+            production and steel scrap recycling).
           </>
         ),
       },
@@ -212,7 +215,7 @@ export const Teams = [
       },
       {
         '@xml:lang': 'en',
-        '#text': '生态环境部环境规划院 张红振团队',
+        '#text': 'Hongzhen Zhang Team, Chinese Academy of Environmental Planning',
       },
     ],
     description: [
@@ -220,7 +223,7 @@ export const Teams = [
         '@xml:lang': 'zh',
         '#text': (
           <>
-            张红振研究员团队主要在土壤污染防治政策标准研究制定、水土环境污染治理与生态景观提升、绿色修复与可持续棕地利用、基于自然的资源环境高效利用与生态景观问题系统解决方案等领域进行探索探究。业务领域包括：开展大型污染地块和农用地调查评估、修复与风险管控技术研发和工程示范。承担土壤生态环境保护规划、政策的制定、考核和评估研究。开展污染土壤和地下水绿色修复和可持续风险管控评估和实践。提供棕地、园区、流域、矿区等生态景观设计与恢复领域的技术支持。
+            天工计划团队，从事绿色修复与可持续土地利用研究，负责修复领域（土壤与地下水修复）的开放数据研制。
           </>
         ),
       },
@@ -228,7 +231,8 @@ export const Teams = [
         '@xml:lang': 'en',
         '#text': (
           <>
-            张红振研究员团队主要在土壤污染防治政策标准研究制定、水土环境污染治理与生态景观提升、绿色修复与可持续棕地利用、基于自然的资源环境高效利用与生态景观问题系统解决方案等领域进行探索探究。业务领域包括：开展大型污染地块和农用地调查评估、修复与风险管控技术研发和工程示范。承担土壤生态环境保护规划、政策的制定、考核和评估研究。开展污染土壤和地下水绿色修复和可持续风险管控评估和实践。提供棕地、园区、流域、矿区等生态景观设计与恢复领域的技术支持。
+            Life Cycle Open Data development teams in the field of remediation (soil and groundwater
+            remediation).
           </>
         ),
       },
