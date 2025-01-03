@@ -34,7 +34,7 @@ const Welcome: React.FC = () => {
 
   const info = {
     data1: {
-      value: 4000,
+      value: 12320,
       title: [
         {
           '@xml:lang': 'zh',
@@ -47,7 +47,7 @@ const Welcome: React.FC = () => {
       ],
     },
     data2: {
-      value: 50,
+      value: 78,
       title: [
         {
           '@xml:lang': 'zh',
@@ -60,7 +60,7 @@ const Welcome: React.FC = () => {
       ],
     },
     data3: {
-      value: 200,
+      value: 2670,
       title: [
         {
           '@xml:lang': 'zh',
@@ -73,7 +73,7 @@ const Welcome: React.FC = () => {
       ],
     },
     data4: {
-      value: 150,
+      value: 170,
       title: [
         {
           '@xml:lang': 'zh',
