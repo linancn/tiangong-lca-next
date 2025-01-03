@@ -1,6 +1,6 @@
 import { getLang, getLangText } from '@/services/general/util';
 import styles from '@/style/custom.less';
-import { Card, Col, Divider, Row, Statistic, StatisticProps } from 'antd';
+import { Card, Col, Divider, Row, Statistic, StatisticProps, theme } from 'antd';
 import React, { useEffect, useState } from 'react';
 
 import { PageContainer } from '@ant-design/pro-components';
@@ -10,7 +10,7 @@ import { FormattedMessage, useIntl } from 'umi';
 import { Teams } from './TeamList/info';
 
 const Welcome: React.FC = () => {
-  // const { token } = theme.useToken();
+  const { token } = theme.useToken();
 
   const { locale } = useIntl();
   const lang = getLang(locale);
@@ -153,7 +153,7 @@ const Welcome: React.FC = () => {
         <Divider
           orientation="left"
           orientationMargin="0"
-          style={{ fontSize: '1.2em', fontWeight: 'bold', color: color3 }}
+          style={{ fontSize: '1.2em', fontWeight: 'bold', color: token.colorText }}
         >
           <FormattedMessage id="pages.dataEcosystem" defaultMessage="Data Ecosystem" />
         </Divider>
