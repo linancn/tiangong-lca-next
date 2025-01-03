@@ -14,8 +14,9 @@ import { FC, useEffect, useState } from 'react';
 import { useIntl } from 'umi';
 import { Control } from './control';
 import EdgeExhange from './Exchange/index';
-import TargetAmount from './targetAmount';
+import IoPortView from './Exchange/ioPortView';
 import ToolbarViewInfo from './viewInfo';
+import TargetAmount from './viewTargetAmount';
 
 type Props = {
   id: string;
@@ -29,6 +30,9 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
   const [infoData, setInfoData] = useState<any>({});
 
   const [targetAmountDrawerVisible, setTargetAmountDrawerVisible] = useState(false);
+  const [ioPortSelectorDirection, setIoPortSelectorDirection] = useState('');
+  const [ioPortSelectorNode, setIoPortSelectorNode] = useState<any>({});
+  const [ioPortSelectorDrawerVisible, setIoPortSelectorDrawerVisible] = useState(false);
 
   const modelData = useGraphStore((state) => state.initData);
   const updateNode = useGraphStore((state) => state.updateNode);
@@ -80,6 +84,11 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
         },
       ],
       offset: { x: 10, y: 30 },
+      async onClick(view: any) {
+        await setIoPortSelectorDirection('Input');
+        await setIoPortSelectorNode(view.cell.store.data);
+        await setIoPortSelectorDrawerVisible(true);
+      },
     },
   };
 
@@ -123,6 +132,11 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
       x: '100%',
       y: 0,
       offset: { x: -60, y: 30 },
+      async onClick(view: any) {
+        await setIoPortSelectorDirection('Output');
+        await setIoPortSelectorNode(view.cell.store.data);
+        await setIoPortSelectorDrawerVisible(true);
+      },
     },
   };
 
@@ -314,53 +328,6 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
             ],
           };
         });
-        // initNodes = initNodes.map((node: any) => {
-        //   return {
-        //     ...node,
-        //     ports: {
-        //       ...node?.ports,
-        //       groups: {
-        //         ...node?.ports?.groups,
-        //         group1: {
-        //           ...node.ports?.groups?.group1,
-        //           attrs: {
-        //             circle: {
-        //               strokeWidth: 0,
-        //               r: 0,
-        //             },
-        //           },
-        //         },
-        //         group2: {
-        //           ...node.ports?.groups?.group2,
-        //           attrs: {
-        //             circle: {
-        //               strokeWidth: 0,
-        //               r: 0,
-        //             },
-        //           },
-        //         },
-        //         group3: {
-        //           ...node.ports?.groups?.group3,
-        //           attrs: {
-        //             circle: {
-        //               strokeWidth: 0,
-        //               r: 0,
-        //             },
-        //           },
-        //         },
-        //         group4: {
-        //           ...node.ports?.groups?.group4,
-        //           attrs: {
-        //             circle: {
-        //               strokeWidth: 0,
-        //               r: 0,
-        //             },
-        //           },
-        //         },
-        //       },
-        //     },
-        //   };
-        // });
 
         const initEdges =
           model?.edges?.map((edge: any) => {
@@ -386,8 +353,6 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
 
         setNodeCount(initNodes.length);
 
-        // if (thisAction !== 'view') {
-        // }
         setSpinning(false);
       });
     } else {
@@ -423,20 +388,19 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
     <Space direction="vertical" size={'middle'}>
       <ToolbarViewInfo lang={lang} data={infoData} />
       <ProcessView
-        id={nodes.filter((node) => node.selected)?.[0]?.data?.id ?? ''}
-        version={nodes.filter((node) => node.selected)?.[0]?.data?.version ?? ''}
-        // dataSource={'tg'}
+        id={nodes.find((node) => node.selected)?.data?.id ?? ''}
+        version={nodes.find((node) => node.selected)?.data?.version ?? ''}
         buttonType={'toolIcon'}
         lang={lang}
-        disabled={nodes.filter((node) => node.selected).length === 0}
+        disabled={!nodes.find((node) => node.selected)}
       />
       <EdgeExhange
         lang={lang}
-        disabled={edges.filter((edge) => edge.selected).length === 0}
-        edge={edges.filter((edge) => edge.selected)?.[0]}
+        disabled={!edges.find((edge) => edge.selected)}
+        edge={edges.find((edge) => edge.selected)}
       />
       <TargetAmount
-        refNode={nodes.filter((node) => node?.data?.quantitativeReference === '1')}
+        refNode={nodes.find((node) => node?.data?.quantitativeReference === '1')}
         drawerVisible={targetAmountDrawerVisible}
         lang={lang}
         setDrawerVisible={setTargetAmountDrawerVisible}
@@ -448,11 +412,17 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
         version={version ?? ''}
         lang={lang}
         buttonType={'toolResultIcon'}
-        // dataSource={''}
         disabled={false}
       />
       <Control items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin']} />
       <Spin spinning={spinning} fullscreen />
+      <IoPortView
+        lang={lang}
+        node={ioPortSelectorNode}
+        direction={ioPortSelectorDirection}
+        drawerVisible={ioPortSelectorDrawerVisible}
+        onDrawerVisible={setIoPortSelectorDrawerVisible}
+      />
     </Space>
   );
 };

@@ -23,10 +23,10 @@ import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
 import ModelToolbarAdd from './add';
 import { Control } from './control';
+import TargetAmount from './editTargetAmount';
 import ToolbarEditInfo from './eidtInfo';
 import EdgeExhange from './Exchange/index';
-import IoPortSelector from './Exchange/ioPort';
-import TargetAmount from './targetAmount';
+import IoPortSelect from './Exchange/ioPortSelect';
 
 type Props = {
   id: string;
@@ -72,6 +72,52 @@ const ToolbarEdit: FC<Props> = ({
   const [nodeCount, setNodeCount] = useState(0);
 
   const { token } = theme.useToken();
+
+  const nodeTitleTool = (width: number, title: string) => {
+    return {
+      id: 'nodeTitle',
+      name: 'button',
+      args: {
+        markup: [
+          {
+            tagName: 'rect',
+            selector: 'button',
+            attrs: {
+              width: width,
+              height: 26,
+              rx: 4,
+              ry: 4,
+              fill: token.colorPrimary,
+              stroke: token.colorPrimary,
+              'stroke-width': 1,
+              cursor: 'pointer',
+            },
+          },
+          {
+            tagName: 'text',
+            textContent: genNodeLabel(title ?? '', lang, width),
+            selector: 'text',
+            attrs: {
+              fill: 'white',
+              'font-size': 14,
+              'text-anchor': 'middle',
+              'dominant-baseline': 'middle',
+              'pointer-events': 'none',
+              x: width / 2,
+              y: 13,
+            },
+          },
+          {
+            tagName: 'title',
+            textContent: title,
+          },
+        ],
+        x: 0,
+        y: 0,
+        offset: { x: 0, y: 0 },
+      },
+    };
+  };
 
   const inputFlowTool = {
     id: 'inputFlow',
@@ -254,7 +300,12 @@ const ToolbarEdit: FC<Props> = ({
                 ...node?.data,
                 quantitativeReference: '1',
               },
-              tools: [refTool, inputFlowTool, outputFlowTool],
+              tools: (node.tools as any)?.map((tool: any) => {
+                if (tool.id === 'nonRef') {
+                  return refTool;
+                }
+                return tool;
+              }),
             };
             await updateNode(node.id ?? '', updatedNodeData);
             setTargetAmountDrawerVisible(true);
@@ -264,59 +315,18 @@ const ToolbarEdit: FC<Props> = ({
                 ...node.data,
                 quantitativeReference: '0',
               },
-              tools: [nonRefTool, inputFlowTool, outputFlowTool],
+              tools: (node.tools as any)?.map((tool: any) => {
+                if (tool.id === 'ref' || tool.id === 'nonRef') {
+                  return nonRefTool;
+                }
+                return tool;
+              }),
             };
             await updateNode(node.id ?? '', updatedNodeData);
           }
         });
       },
     },
-  };
-
-  const nodeTitleTool = (width: number, title: string) => {
-    return {
-      id: 'nodeTitle',
-      name: 'button',
-      args: {
-        markup: [
-          {
-            tagName: 'rect',
-            selector: 'button',
-            attrs: {
-              width: width,
-              height: 26,
-              rx: 4,
-              ry: 4,
-              fill: token.colorPrimary,
-              stroke: token.colorPrimary,
-              'stroke-width': 1,
-              cursor: 'pointer',
-            },
-          },
-          {
-            tagName: 'text',
-            textContent: genNodeLabel(title ?? '', lang, width),
-            selector: 'text',
-            attrs: {
-              fill: 'white',
-              'font-size': 14,
-              'text-anchor': 'middle',
-              'dominant-baseline': 'middle',
-              'pointer-events': 'none',
-              x: width / 2,
-              y: 13,
-            },
-          },
-          {
-            tagName: 'title',
-            textContent: title,
-          },
-        ],
-        x: 0,
-        y: 0,
-        offset: { x: 0, y: 0 },
-      },
-    };
   };
 
   const nodeAttrs = {
@@ -916,20 +926,19 @@ const ToolbarEdit: FC<Props> = ({
     <Space direction="vertical" size={'middle'}>
       <ToolbarEditInfo data={infoData} onData={updateInfoData} lang={lang} />
       <ProcessView
-        id={nodes.filter((node) => node.selected)?.[0]?.data?.id ?? ''}
-        version={nodes.filter((node) => node.selected)?.[0]?.data?.version ?? ''}
-        // dataSource={'tg'}
+        id={nodes.find((node) => node.selected)?.data?.id ?? ''}
+        version={nodes.find((node) => node.selected)?.data?.version ?? ''}
         buttonType={'toolIcon'}
         lang={lang}
-        disabled={nodes.filter((node) => node.selected).length === 0}
+        disabled={!nodes.find((node) => node.selected)}
       />
       <EdgeExhange
         lang={lang}
-        disabled={edges.filter((edge) => edge.selected).length === 0}
-        edge={edges.filter((edge) => edge.selected)?.[0]}
+        disabled={!edges.find((edge) => edge.selected)}
+        edge={edges.find((edge) => edge.selected)}
       />
       <TargetAmount
-        refNode={nodes.filter((node) => node?.data?.quantitativeReference === '1')}
+        refNode={nodes.find((node) => node?.data?.quantitativeReference === '1')}
         drawerVisible={targetAmountDrawerVisible}
         lang={lang}
         setDrawerVisible={setTargetAmountDrawerVisible}
@@ -1012,7 +1021,7 @@ const ToolbarEdit: FC<Props> = ({
       />
       <Control items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin']} />
       <Spin spinning={spinning} fullscreen />
-      <IoPortSelector
+      <IoPortSelect
         lang={lang}
         node={ioPortSelectorNode}
         direction={ioPortSelectorDirection}
