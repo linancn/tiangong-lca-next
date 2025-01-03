@@ -38,6 +38,13 @@ const LevelTextItemForm: FC<Props> = ({ name, lang, dataType, flowType, formRef,
     onData();
   };
 
+  const filter = (inputValue: string, path: any[]) =>
+    path.some(
+      (option) =>
+        typeof option.label === 'string' &&
+        option.label.toLowerCase().includes(inputValue.toLowerCase()),
+    );
+
   return (
     <>
       <Form.Item
@@ -46,7 +53,12 @@ const LevelTextItemForm: FC<Props> = ({ name, lang, dataType, flowType, formRef,
         }
         name={[...name, 'value']}
       >
-        <Cascader style={{ width: '100%' }} options={selectOptions} onChange={onChange} />
+        <Cascader
+          style={{ width: '100%' }}
+          options={selectOptions}
+          onChange={onChange}
+          showSearch={{ filter }}
+        />
       </Form.Item>
       <Form.Item name={[...name, 'id']} hidden>
         <Input />
