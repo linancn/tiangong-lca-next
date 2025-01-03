@@ -7,5 +7,5 @@ export default {
   'pages.card.description.2': '平台汇聚全面、权威的生命周期数据，覆盖多样化场景，力求展现真实的行业动态与环境影响。',
   'pages.card.title.3': '国际性 & 开放性',
   'pages.card.description.3': '天工生命周期数据平台致力于打造全球化的互联网络，实现数据无缝对接，促进生命周期信息的高效共享与应用。',
-  'pages.dataEcosystem': '数据生态',
+  'pages.dataEcosystem': '数据生态 (按拼音排序)',
 };
