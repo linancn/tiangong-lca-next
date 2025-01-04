@@ -1,8 +1,8 @@
 {
   "name": "tiangong-lca-next",
-  "version": "0.0.7",
+  "version": "0.0.10",
   "private": true,
-  "description": "An out-of-box UI solution for enterprise applications",
+  "description": "An out-of-box LCA Data solution",
   "homepage": "./",
   "license": "MIT",
   "author": "TianGong LCA <linanenv@gmail.com> (https://lca.tiangong.earth/)",
