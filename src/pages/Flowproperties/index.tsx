@@ -4,7 +4,7 @@ import {
 } from '@/services/flowproperties/api';
 import { FlowpropertyTable } from '@/services/flowproperties/data';
 import { ListPagination } from '@/services/general/data';
-import { getDataSource, getLang } from '@/services/general/util';
+import { getDataSource, getLang, getLangText } from '@/services/general/util';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Card, Input, Space, Tooltip } from 'antd';
 import { useRef, useState } from 'react';
@@ -12,6 +12,7 @@ import { FormattedMessage, useIntl, useLocation } from 'umi';
 
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
+import { Teams } from '../TeamList/info';
 import ReferenceUnit from '../Unitgroups/Components/Unit/reference';
 import { getDataTitle } from '../Utils';
 import FlowpropertiesCreate from './Components/create';
@@ -28,13 +29,14 @@ const TableList: FC = () => {
   const dataSource = getDataSource(location.pathname);
 
   const searchParams = new URLSearchParams(location.search);
-  const tname = searchParams.get('tname');
   const tid = searchParams.get('tid');
   const tids = tid ? tid.split(',') : [];
 
   const intl = useIntl();
 
   const lang = getLang(intl.locale);
+  const tname = getLangText(Teams.find((team) => team.id === tid)?.title, lang) || '';
+
   const actionRef = useRef<ActionType>();
   const flowpropertiesColumns: ProColumns<FlowpropertyTable>[] = [
     {

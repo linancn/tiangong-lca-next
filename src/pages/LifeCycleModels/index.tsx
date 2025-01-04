@@ -1,5 +1,5 @@
 import { ListPagination } from '@/services/general/data';
-import { getDataSource, getLang } from '@/services/general/util';
+import { getDataSource, getLang, getLangText } from '@/services/general/util';
 import {
   getLifeCycleModelTableAll,
   getLifeCycleModelTablePgroongaSearch,
@@ -11,6 +11,7 @@ import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
+import { Teams } from '../TeamList/info';
 import { getDataTitle } from '../Utils';
 import LifeCycleModelCreate from './Components/create';
 import LifeCycleModelDelete from './Components/delete';
@@ -25,13 +26,14 @@ const TableList: FC = () => {
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
   const searchParams = new URLSearchParams(location.search);
-  const tname = searchParams.get('tname');
   const tid = searchParams.get('tid');
   const tids = tid ? tid.split(',') : [];
 
   const intl = useIntl();
 
   const lang = getLang(intl.locale);
+  const tname = getLangText(Teams.find((team) => team.id === tid)?.title, lang) || '';
+
   const actionRef = useRef<ActionType>();
   const processColumns: ProColumns<LifeCycleModelTable>[] = [
     {
