@@ -24,158 +24,73 @@
                         "@id": "0111",
                         "@name": "Growing of cereals (except rice), leguminous crops and oil seeds"
                       },
-                      {
-                        "@id": "0112",
-                        "@name": "Growing of rice"
-                      },
+                      { "@id": "0112", "@name": "Growing of rice" },
                       {
                         "@id": "0113",
                         "@name": "Growing of vegetables and melons, roots and tubers"
                       },
-                      {
-                        "@id": "0114",
-                        "@name": "Growing of sugar cane"
-                      },
-                      {
-                        "@id": "0115",
-                        "@name": "Growing of tobacco"
-                      },
-                      {
-                        "@id": "0116",
-                        "@name": "Growing of fibre crops"
-                      },
-                      {
-                        "@id": "0119",
-                        "@name": "Growing of other non-perennial crops"
-                      }
+                      { "@id": "0114", "@name": "Growing of sugar cane" },
+                      { "@id": "0115", "@name": "Growing of tobacco" },
+                      { "@id": "0116", "@name": "Growing of fibre crops" },
+                      { "@id": "0119", "@name": "Growing of other non-perennial crops" }
                     ]
                   },
                   {
                     "@id": "012",
                     "@name": "Growing of perennial crops",
                     "category": [
-                      {
-                        "@id": "0121",
-                        "@name": "Growing of grapes"
-                      },
-                      {
-                        "@id": "0122",
-                        "@name": "Growing of tropical and subtropical fruits"
-                      },
-                      {
-                        "@id": "0123",
-                        "@name": "Growing of citrus fruits"
-                      },
-                      {
-                        "@id": "0124",
-                        "@name": "Growing of pome fruits and stone fruits"
-                      },
-                      {
-                        "@id": "0125",
-                        "@name": "Growing of other tree and bush fruits and nuts"
-                      },
-                      {
-                        "@id": "0126",
-                        "@name": "Growing of oleaginous fruits"
-                      },
-                      {
-                        "@id": "0127",
-                        "@name": "Growing of beverage crops"
-                      },
+                      { "@id": "0121", "@name": "Growing of grapes" },
+                      { "@id": "0122", "@name": "Growing of tropical and subtropical fruits" },
+                      { "@id": "0123", "@name": "Growing of citrus fruits" },
+                      { "@id": "0124", "@name": "Growing of pome fruits and stone fruits" },
+                      { "@id": "0125", "@name": "Growing of other tree and bush fruits and nuts" },
+                      { "@id": "0126", "@name": "Growing of oleaginous fruits" },
+                      { "@id": "0127", "@name": "Growing of beverage crops" },
                       {
                         "@id": "0128",
                         "@name": "Growing of spices, aromatic, drug and pharmaceutical crops"
                       },
-                      {
-                        "@id": "0129",
-                        "@name": "Growing of other perennial crops"
-                      }
+                      { "@id": "0129", "@name": "Growing of other perennial crops" }
                     ]
                   },
                   {
                     "@id": "013",
                     "@name": "Plant propagation",
-                    "category": [
-                      {
-                        "@id": "0130",
-                        "@name": "Plant propagation"
-                      }
-                    ]
+                    "category": [{ "@id": "0130", "@name": "Plant propagation" }]
                   },
                   {
                     "@id": "014",
                     "@name": "Animal production",
                     "category": [
-                      {
-                        "@id": "0141",
-                        "@name": "Raising of cattle and buffaloes"
-                      },
-                      {
-                        "@id": "0142",
-                        "@name": "Raising of horses and other equines"
-                      },
-                      {
-                        "@id": "0143",
-                        "@name": "Raising of camels and camelids"
-                      },
-                      {
-                        "@id": "0144",
-                        "@name": "Raising of sheep and goats"
-                      },
-                      {
-                        "@id": "0145",
-                        "@name": "Raising of swine and pigs"
-                      },
-                      {
-                        "@id": "0146",
-                        "@name": "Raising of poultry"
-                      },
-                      {
-                        "@id": "0149",
-                        "@name": "Raising of other animals"
-                      }
+                      { "@id": "0141", "@name": "Raising of cattle and buffaloes" },
+                      { "@id": "0142", "@name": "Raising of horses and other equines" },
+                      { "@id": "0143", "@name": "Raising of camels and camelids" },
+                      { "@id": "0144", "@name": "Raising of sheep and goats" },
+                      { "@id": "0145", "@name": "Raising of swine and pigs" },
+                      { "@id": "0146", "@name": "Raising of poultry" },
+                      { "@id": "0149", "@name": "Raising of other animals" }
                     ]
                   },
                   {
                     "@id": "015",
                     "@name": "Mixed farming",
-                    "category": [
-                      {
-                        "@id": "0150",
-                        "@name": "Mixed farming"
-                      }
-                    ]
+                    "category": [{ "@id": "0150", "@name": "Mixed farming" }]
                   },
                   {
                     "@id": "016",
                     "@name": "Support activities to agriculture and post-harvest crop activities",
                     "category": [
-                      {
-                        "@id": "0161",
-                        "@name": "Support activities for crop production"
-                      },
-                      {
-                        "@id": "0162",
-                        "@name": "Support activities for animal production"
-                      },
-                      {
-                        "@id": "0163",
-                        "@name": "Post-harvest crop activities"
-                      },
-                      {
-                        "@id": "0164",
-                        "@name": "Seed processing for propagation"
-                      }
+                      { "@id": "0161", "@name": "Support activities for crop production" },
+                      { "@id": "0162", "@name": "Support activities for animal production" },
+                      { "@id": "0163", "@name": "Post-harvest crop activities" },
+                      { "@id": "0164", "@name": "Seed processing for propagation" }
                     ]
                   },
                   {
                     "@id": "017",
                     "@name": "Hunting, trapping and related service activities",
                     "category": [
-                      {
-                        "@id": "0170",
-                        "@name": "Hunting, trapping and related service activities"
-                      }
+                      { "@id": "0170", "@name": "Hunting, trapping and related service activities" }
                     ]
                   }
                 ]
@@ -188,41 +103,25 @@
                     "@id": "021",
                     "@name": "Silviculture and other forestry activities",
                     "category": [
-                      {
-                        "@id": "0210",
-                        "@name": "Silviculture and other forestry activities"
-                      }
+                      { "@id": "0210", "@name": "Silviculture and other forestry activities" }
                     ]
                   },
                   {
                     "@id": "022",
                     "@name": "Logging",
-                    "category": [
-                      {
-                        "@id": "0220",
-                        "@name": "Logging"
-                      }
-                    ]
+                    "category": [{ "@id": "0220", "@name": "Logging" }]
                   },
                   {
                     "@id": "023",
                     "@name": "Gathering of non-wood forest products",
                     "category": [
-                      {
-                        "@id": "0230",
-                        "@name": "Gathering of non-wood forest products"
-                      }
+                      { "@id": "0230", "@name": "Gathering of non-wood forest products" }
                     ]
                   },
                   {
                     "@id": "024",
                     "@name": "Support services to forestry",
-                    "category": [
-                      {
-                        "@id": "0240",
-                        "@name": "Support services to forestry"
-                      }
-                    ]
+                    "category": [{ "@id": "0240", "@name": "Support services to forestry" }]
                   }
                 ]
               },
@@ -234,38 +133,23 @@
                     "@id": "031",
                     "@name": "Fishing",
                     "category": [
-                      {
-                        "@id": "0311",
-                        "@name": "Marine fishing"
-                      },
-                      {
-                        "@id": "0312",
-                        "@name": "Freshwater fishing"
-                      }
+                      { "@id": "0311", "@name": "Marine fishing" },
+                      { "@id": "0312", "@name": "Freshwater fishing" }
                     ]
                   },
                   {
                     "@id": "032",
                     "@name": "Aquaculture",
                     "category": [
-                      {
-                        "@id": "0321",
-                        "@name": "Marine aquaculture"
-                      },
-                      {
-                        "@id": "0322",
-                        "@name": "Freshwater aquaculture"
-                      }
+                      { "@id": "0321", "@name": "Marine aquaculture" },
+                      { "@id": "0322", "@name": "Freshwater aquaculture" }
                     ]
                   },
                   {
                     "@id": "033",
                     "@name": "Support activities for fishing and aquaculture",
                     "category": [
-                      {
-                        "@id": "0330",
-                        "@name": "Support activities for fishing and aquaculture"
-                      }
+                      { "@id": "0330", "@name": "Support activities for fishing and aquaculture" }
                     ]
                   }
                 ]
@@ -283,22 +167,12 @@
                   {
                     "@id": "051",
                     "@name": "Mining of hard coal",
-                    "category": [
-                      {
-                        "@id": "0510",
-                        "@name": "Mining of hard coal"
-                      }
-                    ]
+                    "category": [{ "@id": "0510", "@name": "Mining of hard coal" }]
                   },
                   {
                     "@id": "052",
                     "@name": "Mining of lignite",
-                    "category": [
-                      {
-                        "@id": "0520",
-                        "@name": "Mining of lignite"
-                      }
-                    ]
+                    "category": [{ "@id": "0520", "@name": "Mining of lignite" }]
                   }
                 ]
               },
@@ -309,22 +183,12 @@
                   {
                     "@id": "061",
                     "@name": "Extraction of crude petroleum",
-                    "category": [
-                      {
-                        "@id": "0610",
-                        "@name": "Extraction of crude petroleum"
-                      }
-                    ]
+                    "category": [{ "@id": "0610", "@name": "Extraction of crude petroleum" }]
                   },
                   {
                     "@id": "062",
                     "@name": "Extraction of natural gas",
-                    "category": [
-                      {
-                        "@id": "0620",
-                        "@name": "Extraction of natural gas"
-                      }
-                    ]
+                    "category": [{ "@id": "0620", "@name": "Extraction of natural gas" }]
                   }
                 ]
               },
@@ -335,25 +199,14 @@
                   {
                     "@id": "071",
                     "@name": "Mining of iron ores",
-                    "category": [
-                      {
-                        "@id": "0710",
-                        "@name": "Mining of iron ores"
-                      }
-                    ]
+                    "category": [{ "@id": "0710", "@name": "Mining of iron ores" }]
                   },
                   {
                     "@id": "072",
                     "@name": "Mining of non-ferrous metal ores",
                     "category": [
-                      {
-                        "@id": "0721",
-                        "@name": "Mining of uranium and thorium ores"
-                      },
-                      {
-                        "@id": "0729",
-                        "@name": "Mining of other non-ferrous metal ores"
-                      }
+                      { "@id": "0721", "@name": "Mining of uranium and thorium ores" },
+                      { "@id": "0729", "@name": "Mining of other non-ferrous metal ores" }
                     ]
                   }
                 ]
@@ -365,33 +218,16 @@
                   {
                     "@id": "081",
                     "@name": "Quarrying of stone, sand and clay",
-                    "category": [
-                      {
-                        "@id": "0810",
-                        "@name": "Quarrying of stone, sand and clay"
-                      }
-                    ]
+                    "category": [{ "@id": "0810", "@name": "Quarrying of stone, sand and clay" }]
                   },
                   {
                     "@id": "089",
                     "@name": "Mining and quarrying n.e.c.",
                     "category": [
-                      {
-                        "@id": "0891",
-                        "@name": "Mining of chemical and fertilizer minerals"
-                      },
-                      {
-                        "@id": "0892",
-                        "@name": "Extraction of peat"
-                      },
-                      {
-                        "@id": "0893",
-                        "@name": "Extraction of salt"
-                      },
-                      {
-                        "@id": "0899",
-                        "@name": "Other mining and quarrying n.e.c."
-                      }
+                      { "@id": "0891", "@name": "Mining of chemical and fertilizer minerals" },
+                      { "@id": "0892", "@name": "Extraction of peat" },
+                      { "@id": "0893", "@name": "Extraction of salt" },
+                      { "@id": "0899", "@name": "Other mining and quarrying n.e.c." }
                     ]
                   }
                 ]
@@ -435,12 +271,7 @@
                   {
                     "@id": "101",
                     "@name": "Processing and preserving of meat",
-                    "category": [
-                      {
-                        "@id": "1010",
-                        "@name": "Processing and preserving of meat"
-                      }
-                    ]
+                    "category": [{ "@id": "1010", "@name": "Processing and preserving of meat" }]
                   },
                   {
                     "@id": "102",
@@ -475,39 +306,22 @@
                   {
                     "@id": "105",
                     "@name": "Manufacture of dairy products",
-                    "category": [
-                      {
-                        "@id": "1050",
-                        "@name": "Manufacture of dairy products"
-                      }
-                    ]
+                    "category": [{ "@id": "1050", "@name": "Manufacture of dairy products" }]
                   },
                   {
                     "@id": "106",
                     "@name": "Manufacture of grain mill products, starches and starch products",
                     "category": [
-                      {
-                        "@id": "1061",
-                        "@name": "Manufacture of grain mill products"
-                      },
-                      {
-                        "@id": "1062",
-                        "@name": "Manufacture of starches and starch products"
-                      }
+                      { "@id": "1061", "@name": "Manufacture of grain mill products" },
+                      { "@id": "1062", "@name": "Manufacture of starches and starch products" }
                     ]
                   },
                   {
                     "@id": "107",
                     "@name": "Manufacture of other food products",
                     "category": [
-                      {
-                        "@id": "1071",
-                        "@name": "Manufacture of bakery products"
-                      },
-                      {
-                        "@id": "1072",
-                        "@name": "Manufacture of sugar"
-                      },
+                      { "@id": "1071", "@name": "Manufacture of bakery products" },
+                      { "@id": "1072", "@name": "Manufacture of sugar" },
                       {
                         "@id": "1073",
                         "@name": "Manufacture of cocoa, chocolate and sugar confectionery"
@@ -516,29 +330,15 @@
                         "@id": "1074",
                         "@name": "Manufacture of macaroni, noodles, couscous and similar farinaceous products"
                       },
-                      {
-                        "@id": "1075",
-                        "@name": "Manufacture of prepared meals and dishes"
-                      },
-                      {
-                        "@id": "1076",
-                        "@name": "Processing of coffee and tea"
-                      },
-                      {
-                        "@id": "1079",
-                        "@name": "Manufacture of other food products n.e.c."
-                      }
+                      { "@id": "1075", "@name": "Manufacture of prepared meals and dishes" },
+                      { "@id": "1076", "@name": "Processing of coffee and tea" },
+                      { "@id": "1079", "@name": "Manufacture of other food products n.e.c." }
                     ]
                   },
                   {
                     "@id": "108",
                     "@name": "Manufacture of prepared animal feeds",
-                    "category": [
-                      {
-                        "@id": "1080",
-                        "@name": "Manufacture of prepared animal feeds"
-                      }
-                    ]
+                    "category": [{ "@id": "1080", "@name": "Manufacture of prepared animal feeds" }]
                   }
                 ]
               },
@@ -550,22 +350,10 @@
                     "@id": "110",
                     "@name": "Manufacture of beverages",
                     "category": [
-                      {
-                        "@id": "1101",
-                        "@name": "Distilling, rectifying and blending of spirits"
-                      },
-                      {
-                        "@id": "1102",
-                        "@name": "Manufacture of wines"
-                      },
-                      {
-                        "@id": "1103",
-                        "@name": "Manufacture of beer"
-                      },
-                      {
-                        "@id": "1104",
-                        "@name": "Manufacture of malt"
-                      },
+                      { "@id": "1101", "@name": "Distilling, rectifying and blending of spirits" },
+                      { "@id": "1102", "@name": "Manufacture of wines" },
+                      { "@id": "1103", "@name": "Manufacture of beer" },
+                      { "@id": "1104", "@name": "Manufacture of malt" },
                       {
                         "@id": "1105",
                         "@name": "Manufacture of soft drinks; production of mineral waters and other bottled waters"
@@ -581,12 +369,7 @@
                   {
                     "@id": "120",
                     "@name": "Manufacture of tobacco products",
-                    "category": [
-                      {
-                        "@id": "1200",
-                        "@name": "Manufacture of tobacco products"
-                      }
-                    ]
+                    "category": [{ "@id": "1200", "@name": "Manufacture of tobacco products" }]
                   }
                 ]
               },
@@ -598,44 +381,23 @@
                     "@id": "131",
                     "@name": "Spinning, weaving and finishing of textiles",
                     "category": [
-                      {
-                        "@id": "1311",
-                        "@name": "Preparation and spinning of textile fibres"
-                      },
-                      {
-                        "@id": "1312",
-                        "@name": "Weaving of textiles"
-                      },
-                      {
-                        "@id": "1313",
-                        "@name": "Finishing of textiles"
-                      }
+                      { "@id": "1311", "@name": "Preparation and spinning of textile fibres" },
+                      { "@id": "1312", "@name": "Weaving of textiles" },
+                      { "@id": "1313", "@name": "Finishing of textiles" }
                     ]
                   },
                   {
                     "@id": "139",
                     "@name": "Manufacture of other textiles",
                     "category": [
-                      {
-                        "@id": "1391",
-                        "@name": "Manufacture of knitted and crocheted fabrics"
-                      },
+                      { "@id": "1391", "@name": "Manufacture of knitted and crocheted fabrics" },
                       {
                         "@id": "1392",
                         "@name": "Manufacture of made-up textile articles, except apparel"
                       },
-                      {
-                        "@id": "1393",
-                        "@name": "Manufacture of carpets and rugs"
-                      },
-                      {
-                        "@id": "1394",
-                        "@name": "Manufacture of cordage, rope, twine and netting"
-                      },
-                      {
-                        "@id": "1399",
-                        "@name": "Manufacture of other textiles n.e.c."
-                      }
+                      { "@id": "1393", "@name": "Manufacture of carpets and rugs" },
+                      { "@id": "1394", "@name": "Manufacture of cordage, rope, twine and netting" },
+                      { "@id": "1399", "@name": "Manufacture of other textiles n.e.c." }
                     ]
                   }
                 ]
@@ -657,21 +419,13 @@
                   {
                     "@id": "142",
                     "@name": "Manufacture of articles of fur",
-                    "category": [
-                      {
-                        "@id": "1420",
-                        "@name": "Manufacture of articles of fur"
-                      }
-                    ]
+                    "category": [{ "@id": "1420", "@name": "Manufacture of articles of fur" }]
                   },
                   {
                     "@id": "143",
                     "@name": "Manufacture of knitted and crocheted apparel",
                     "category": [
-                      {
-                        "@id": "1430",
-                        "@name": "Manufacture of knitted and crocheted apparel"
-                      }
+                      { "@id": "1430", "@name": "Manufacture of knitted and crocheted apparel" }
                     ]
                   }
                 ]
@@ -697,12 +451,7 @@
                   {
                     "@id": "152",
                     "@name": "Manufacture of footwear",
-                    "category": [
-                      {
-                        "@id": "1520",
-                        "@name": "Manufacture of footwear"
-                      }
-                    ]
+                    "category": [{ "@id": "1520", "@name": "Manufacture of footwear" }]
                   }
                 ]
               },
@@ -713,12 +462,7 @@
                   {
                     "@id": "161",
                     "@name": "Sawmilling and planing of wood",
-                    "category": [
-                      {
-                        "@id": "1610",
-                        "@name": "Sawmilling and planing of wood"
-                      }
-                    ]
+                    "category": [{ "@id": "1610", "@name": "Sawmilling and planing of wood" }]
                   },
                   {
                     "@id": "162",
@@ -728,14 +472,8 @@
                         "@id": "1621",
                         "@name": "Manufacture of veneer sheets and wood-based panels"
                       },
-                      {
-                        "@id": "1622",
-                        "@name": "Manufacture of builders' carpentry and joinery"
-                      },
-                      {
-                        "@id": "1623",
-                        "@name": "Manufacture of wooden containers"
-                      },
+                      { "@id": "1622", "@name": "Manufacture of builders' carpentry and joinery" },
+                      { "@id": "1623", "@name": "Manufacture of wooden containers" },
                       {
                         "@id": "1629",
                         "@name": "Manufacture of other products of wood; manufacture of articles of cork, straw and plaiting materials"
@@ -752,10 +490,7 @@
                     "@id": "170",
                     "@name": "Manufacture of paper and paper products",
                     "category": [
-                      {
-                        "@id": "1701",
-                        "@name": "Manufacture of pulp, paper and paperboard"
-                      },
+                      { "@id": "1701", "@name": "Manufacture of pulp, paper and paperboard" },
                       {
                         "@id": "1702",
                         "@name": "Manufacture of corrugated paper and paperboard and of containers of paper and paperboard"
@@ -776,25 +511,14 @@
                     "@id": "181",
                     "@name": "Printing and service activities related to printing",
                     "category": [
-                      {
-                        "@id": "1811",
-                        "@name": "Printing"
-                      },
-                      {
-                        "@id": "1812",
-                        "@name": "Service activities related to printing"
-                      }
+                      { "@id": "1811", "@name": "Printing" },
+                      { "@id": "1812", "@name": "Service activities related to printing" }
                     ]
                   },
                   {
                     "@id": "182",
                     "@name": "Reproduction of recorded media",
-                    "category": [
-                      {
-                        "@id": "1820",
-                        "@name": "Reproduction of recorded media"
-                      }
-                    ]
+                    "category": [{ "@id": "1820", "@name": "Reproduction of recorded media" }]
                   }
                 ]
               },
@@ -805,12 +529,7 @@
                   {
                     "@id": "191",
                     "@name": "Manufacture of coke oven products",
-                    "category": [
-                      {
-                        "@id": "1910",
-                        "@name": "Manufacture of coke oven products"
-                      }
-                    ]
+                    "category": [{ "@id": "1910", "@name": "Manufacture of coke oven products" }]
                   },
                   {
                     "@id": "192",
@@ -832,10 +551,7 @@
                     "@id": "201",
                     "@name": "Manufacture of basic chemicals, fertilizers and nitrogen compounds, plastics and synthetic rubber in primary forms",
                     "category": [
-                      {
-                        "@id": "2011",
-                        "@name": "Manufacture of basic chemicals"
-                      },
+                      { "@id": "2011", "@name": "Manufacture of basic chemicals" },
                       {
                         "@id": "2012",
                         "@name": "Manufacture of fertilizers and nitrogen compounds"
@@ -862,21 +578,13 @@
                         "@id": "2023",
                         "@name": "Manufacture of soap and detergents, cleaning and polishing preparations, perfumes and toilet preparations"
                       },
-                      {
-                        "@id": "2029",
-                        "@name": "Manufacture of other chemical products n.e.c."
-                      }
+                      { "@id": "2029", "@name": "Manufacture of other chemical products n.e.c." }
                     ]
                   },
                   {
                     "@id": "203",
                     "@name": "Manufacture of man-made fibres",
-                    "category": [
-                      {
-                        "@id": "2030",
-                        "@name": "Manufacture of man-made fibres"
-                      }
-                    ]
+                    "category": [{ "@id": "2030", "@name": "Manufacture of man-made fibres" }]
                   }
                 ]
               },
@@ -908,21 +616,13 @@
                         "@id": "2211",
                         "@name": "Manufacture of rubber tyres and tubes; retreading and rebuilding of rubber tyres"
                       },
-                      {
-                        "@id": "2219",
-                        "@name": "Manufacture of other rubber products"
-                      }
+                      { "@id": "2219", "@name": "Manufacture of other rubber products" }
                     ]
                   },
                   {
                     "@id": "222",
                     "@name": "Manufacture of plastics products",
-                    "category": [
-                      {
-                        "@id": "2220",
-                        "@name": "Manufacture of plastics products"
-                      }
-                    ]
+                    "category": [{ "@id": "2220", "@name": "Manufacture of plastics products" }]
                   }
                 ]
               },
@@ -934,40 +634,25 @@
                     "@id": "231",
                     "@name": "Manufacture of glass and glass products",
                     "category": [
-                      {
-                        "@id": "2310",
-                        "@name": "Manufacture of glass and glass products"
-                      }
+                      { "@id": "2310", "@name": "Manufacture of glass and glass products" }
                     ]
                   },
                   {
                     "@id": "239",
                     "@name": "Manufacture of non-metallic mineral products n.e.c.",
                     "category": [
-                      {
-                        "@id": "2391",
-                        "@name": "Manufacture of refractory products"
-                      },
-                      {
-                        "@id": "2392",
-                        "@name": "Manufacture of clay building materials"
-                      },
+                      { "@id": "2391", "@name": "Manufacture of refractory products" },
+                      { "@id": "2392", "@name": "Manufacture of clay building materials" },
                       {
                         "@id": "2393",
                         "@name": "Manufacture of other porcelain and ceramic products"
                       },
-                      {
-                        "@id": "2394",
-                        "@name": "Manufacture of cement, lime and plaster"
-                      },
+                      { "@id": "2394", "@name": "Manufacture of cement, lime and plaster" },
                       {
                         "@id": "2395",
                         "@name": "Manufacture of articles of concrete, cement and plaster"
                       },
-                      {
-                        "@id": "2396",
-                        "@name": "Cutting, shaping and finishing of stone"
-                      },
+                      { "@id": "2396", "@name": "Cutting, shaping and finishing of stone" },
                       {
                         "@id": "2399",
                         "@name": "Manufacture of other non-metallic mineral products n.e.c."
@@ -983,12 +668,7 @@
                   {
                     "@id": "241",
                     "@name": "Manufacture of basic iron and steel",
-                    "category": [
-                      {
-                        "@id": "2410",
-                        "@name": "Manufacture of basic iron and steel"
-                      }
-                    ]
+                    "category": [{ "@id": "2410", "@name": "Manufacture of basic iron and steel" }]
                   },
                   {
                     "@id": "242",
@@ -1004,14 +684,8 @@
                     "@id": "243",
                     "@name": "Casting of metals",
                     "category": [
-                      {
-                        "@id": "2431",
-                        "@name": "Casting of iron and steel"
-                      },
-                      {
-                        "@id": "2432",
-                        "@name": "Casting of non-ferrous metals"
-                      }
+                      { "@id": "2431", "@name": "Casting of iron and steel" },
+                      { "@id": "2432", "@name": "Casting of non-ferrous metals" }
                     ]
                   }
                 ]
@@ -1024,10 +698,7 @@
                     "@id": "251",
                     "@name": "Manufacture of structural metal products, tanks, reservoirs and steam generators",
                     "category": [
-                      {
-                        "@id": "2511",
-                        "@name": "Manufacture of structural metal products"
-                      },
+                      { "@id": "2511", "@name": "Manufacture of structural metal products" },
                       {
                         "@id": "2512",
                         "@name": "Manufacture of tanks, reservoirs and containers of metal"
@@ -1042,10 +713,7 @@
                     "@id": "252",
                     "@name": "Manufacture of weapons and ammunition",
                     "category": [
-                      {
-                        "@id": "2520",
-                        "@name": "Manufacture of weapons and ammunition"
-                      }
+                      { "@id": "2520", "@name": "Manufacture of weapons and ammunition" }
                     ]
                   },
                   {
@@ -1056,10 +724,7 @@
                         "@id": "2591",
                         "@name": "Forging, pressing, stamping and roll-forming of metal; powder metallurgy"
                       },
-                      {
-                        "@id": "2592",
-                        "@name": "Treatment and coating of metals; machining"
-                      },
+                      { "@id": "2592", "@name": "Treatment and coating of metals; machining" },
                       {
                         "@id": "2593",
                         "@name": "Manufacture of cutlery, hand tools and general hardware"
@@ -1104,21 +769,13 @@
                     "@id": "263",
                     "@name": "Manufacture of communication equipment",
                     "category": [
-                      {
-                        "@id": "2630",
-                        "@name": "Manufacture of communication equipment"
-                      }
+                      { "@id": "2630", "@name": "Manufacture of communication equipment" }
                     ]
                   },
                   {
                     "@id": "264",
                     "@name": "Manufacture of consumer electronics",
-                    "category": [
-                      {
-                        "@id": "2640",
-                        "@name": "Manufacture of consumer electronics"
-                      }
-                    ]
+                    "category": [{ "@id": "2640", "@name": "Manufacture of consumer electronics" }]
                   },
                   {
                     "@id": "265",
@@ -1128,10 +785,7 @@
                         "@id": "2651",
                         "@name": "Manufacture of measuring, testing, navigating and control equipment"
                       },
-                      {
-                        "@id": "2652",
-                        "@name": "Manufacture of watches and clocks"
-                      }
+                      { "@id": "2652", "@name": "Manufacture of watches and clocks" }
                     ]
                   },
                   {
@@ -1158,10 +812,7 @@
                     "@id": "268",
                     "@name": "Manufacture of magnetic and optical media",
                     "category": [
-                      {
-                        "@id": "2680",
-                        "@name": "Manufacture of magnetic and optical media"
-                      }
+                      { "@id": "2680", "@name": "Manufacture of magnetic and optical media" }
                     ]
                   }
                 ]
@@ -1184,58 +835,36 @@
                     "@id": "272",
                     "@name": "Manufacture of batteries and accumulators",
                     "category": [
-                      {
-                        "@id": "2720",
-                        "@name": "Manufacture of batteries and accumulators"
-                      }
+                      { "@id": "2720", "@name": "Manufacture of batteries and accumulators" }
                     ]
                   },
                   {
                     "@id": "273",
                     "@name": "Manufacture of wiring and wiring devices",
                     "category": [
-                      {
-                        "@id": "2731",
-                        "@name": "Manufacture of fibre optic cables"
-                      },
+                      { "@id": "2731", "@name": "Manufacture of fibre optic cables" },
                       {
                         "@id": "2732",
                         "@name": "Manufacture of other electronic and electric wires and cables"
                       },
-                      {
-                        "@id": "2733",
-                        "@name": "Manufacture of wiring devices"
-                      }
+                      { "@id": "2733", "@name": "Manufacture of wiring devices" }
                     ]
                   },
                   {
                     "@id": "274",
                     "@name": "Manufacture of lighting equipment",
-                    "category": [
-                      {
-                        "@id": "2740",
-                        "@name": "Manufacture of lighting equipment"
-                      }
-                    ]
+                    "category": [{ "@id": "2740", "@name": "Manufacture of lighting equipment" }]
                   },
                   {
                     "@id": "275",
                     "@name": "Manufacture of domestic appliances",
-                    "category": [
-                      {
-                        "@id": "2750",
-                        "@name": "Manufacture of domestic appliances"
-                      }
-                    ]
+                    "category": [{ "@id": "2750", "@name": "Manufacture of domestic appliances" }]
                   },
                   {
                     "@id": "279",
                     "@name": "Manufacture of other electrical equipment",
                     "category": [
-                      {
-                        "@id": "2790",
-                        "@name": "Manufacture of other electrical equipment"
-                      }
+                      { "@id": "2790", "@name": "Manufacture of other electrical equipment" }
                     ]
                   }
                 ]
@@ -1252,10 +881,7 @@
                         "@id": "2811",
                         "@name": "Manufacture of engines and turbines, except aircraft, vehicle and cycle engines"
                       },
-                      {
-                        "@id": "2812",
-                        "@name": "Manufacture of fluid power equipment"
-                      },
+                      { "@id": "2812", "@name": "Manufacture of fluid power equipment" },
                       {
                         "@id": "2813",
                         "@name": "Manufacture of other pumps, compressors, taps and valves"
@@ -1268,22 +894,13 @@
                         "@id": "2815",
                         "@name": "Manufacture of ovens, furnaces and permanent household heating equipment"
                       },
-                      {
-                        "@id": "2816",
-                        "@name": "Manufacture of lifting and handling equipment"
-                      },
+                      { "@id": "2816", "@name": "Manufacture of lifting and handling equipment" },
                       {
                         "@id": "2817",
                         "@name": "Manufacture of office machinery and equipment (except computers and peripheral equipment)"
                       },
-                      {
-                        "@id": "2818",
-                        "@name": "Manufacture of power-driven hand tools"
-                      },
-                      {
-                        "@id": "2819",
-                        "@name": "Manufacture of other general-purpose machinery"
-                      }
+                      { "@id": "2818", "@name": "Manufacture of power-driven hand tools" },
+                      { "@id": "2819", "@name": "Manufacture of other general-purpose machinery" }
                     ]
                   },
                   {
@@ -1298,10 +915,7 @@
                         "@id": "2822",
                         "@name": "Manufacture of metal-forming machinery and machine tools"
                       },
-                      {
-                        "@id": "2823",
-                        "@name": "Manufacture of machinery for metallurgy"
-                      },
+                      { "@id": "2823", "@name": "Manufacture of machinery for metallurgy" },
                       {
                         "@id": "2824",
                         "@name": "Manufacture of machinery for mining, quarrying and construction"
@@ -1314,10 +928,7 @@
                         "@id": "2826",
                         "@name": "Manufacture of machinery for textile, apparel and leather production"
                       },
-                      {
-                        "@id": "2829",
-                        "@name": "Manufacture of other special-purpose machinery"
-                      }
+                      { "@id": "2829", "@name": "Manufacture of other special-purpose machinery" }
                     ]
                   }
                 ]
@@ -1329,12 +940,7 @@
                   {
                     "@id": "291",
                     "@name": "Manufacture of motor vehicles",
-                    "category": [
-                      {
-                        "@id": "2910",
-                        "@name": "Manufacture of motor vehicles"
-                      }
-                    ]
+                    "category": [{ "@id": "2910", "@name": "Manufacture of motor vehicles" }]
                   },
                   {
                     "@id": "292",
@@ -1366,14 +972,8 @@
                     "@id": "301",
                     "@name": "Building of ships and boats",
                     "category": [
-                      {
-                        "@id": "3011",
-                        "@name": "Building of ships and floating structures"
-                      },
-                      {
-                        "@id": "3012",
-                        "@name": "Building of pleasure and sporting boats"
-                      }
+                      { "@id": "3011", "@name": "Building of ships and floating structures" },
+                      { "@id": "3012", "@name": "Building of pleasure and sporting boats" }
                     ]
                   },
                   {
@@ -1400,28 +1000,16 @@
                     "@id": "304",
                     "@name": "Manufacture of military fighting vehicles",
                     "category": [
-                      {
-                        "@id": "3040",
-                        "@name": "Manufacture of military fighting vehicles"
-                      }
+                      { "@id": "3040", "@name": "Manufacture of military fighting vehicles" }
                     ]
                   },
                   {
                     "@id": "309",
                     "@name": "Manufacture of transport equipment n.e.c.",
                     "category": [
-                      {
-                        "@id": "3091",
-                        "@name": "Manufacture of motorcycles"
-                      },
-                      {
-                        "@id": "3092",
-                        "@name": "Manufacture of bicycles and invalid carriages"
-                      },
-                      {
-                        "@id": "3099",
-                        "@name": "Manufacture of other transport equipment n.e.c."
-                      }
+                      { "@id": "3091", "@name": "Manufacture of motorcycles" },
+                      { "@id": "3092", "@name": "Manufacture of bicycles and invalid carriages" },
+                      { "@id": "3099", "@name": "Manufacture of other transport equipment n.e.c." }
                     ]
                   }
                 ]
@@ -1434,14 +1022,8 @@
                     "@id": "310",
                     "@name": "Manufacture of furniture",
                     "category": [
-                      {
-                        "@id": "3101",
-                        "@name": "Manufacture of wooden furniture"
-                      },
-                      {
-                        "@id": "3102",
-                        "@name": "Manufacture of other furniture"
-                      }
+                      { "@id": "3101", "@name": "Manufacture of wooden furniture" },
+                      { "@id": "3102", "@name": "Manufacture of other furniture" }
                     ]
                   }
                 ]
@@ -1454,10 +1036,7 @@
                     "@id": "321",
                     "@name": "Manufacture of jewellery, bijouterie and related articles",
                     "category": [
-                      {
-                        "@id": "3211",
-                        "@name": "Manufacture of jewellery and related articles"
-                      },
+                      { "@id": "3211", "@name": "Manufacture of jewellery and related articles" },
                       {
                         "@id": "3212",
                         "@name": "Manufacture of imitation jewellery and related articles"
@@ -1467,32 +1046,17 @@
                   {
                     "@id": "322",
                     "@name": "Manufacture of musical instruments",
-                    "category": [
-                      {
-                        "@id": "3220",
-                        "@name": "Manufacture of musical instruments"
-                      }
-                    ]
+                    "category": [{ "@id": "3220", "@name": "Manufacture of musical instruments" }]
                   },
                   {
                     "@id": "323",
                     "@name": "Manufacture of sports goods",
-                    "category": [
-                      {
-                        "@id": "3230",
-                        "@name": "Manufacture of sports goods"
-                      }
-                    ]
+                    "category": [{ "@id": "3230", "@name": "Manufacture of sports goods" }]
                   },
                   {
                     "@id": "324",
                     "@name": "Manufacture of games and toys",
-                    "category": [
-                      {
-                        "@id": "3240",
-                        "@name": "Manufacture of games and toys"
-                      }
-                    ]
+                    "category": [{ "@id": "3240", "@name": "Manufacture of games and toys" }]
                   },
                   {
                     "@id": "325",
@@ -1507,12 +1071,7 @@
                   {
                     "@id": "329",
                     "@name": "Other manufacturing n.e.c.",
-                    "category": [
-                      {
-                        "@id": "3290",
-                        "@name": "Other manufacturing n.e.c."
-                      }
-                    ]
+                    "category": [{ "@id": "3290", "@name": "Other manufacturing n.e.c." }]
                   }
                 ]
               },
@@ -1528,26 +1087,17 @@
                         "@id": "3311",
                         "@name": "Repair and maintenance of fabricated metal products"
                       },
-                      {
-                        "@id": "3312",
-                        "@name": "Repair and maintenance of machinery"
-                      },
+                      { "@id": "3312", "@name": "Repair and maintenance of machinery" },
                       {
                         "@id": "3313",
                         "@name": "Repair and maintenance of electronic and optical equipment"
                       },
-                      {
-                        "@id": "3314",
-                        "@name": "Repair and maintenance of electrical equipment"
-                      },
+                      { "@id": "3314", "@name": "Repair and maintenance of electrical equipment" },
                       {
                         "@id": "3315",
                         "@name": "Repair and maintenance of transport equipment, except motor vehicles"
                       },
-                      {
-                        "@id": "3319",
-                        "@name": "Repair and maintenance of other equipment"
-                      }
+                      { "@id": "3319", "@name": "Repair and maintenance of other equipment" }
                     ]
                   },
                   {
@@ -1603,12 +1153,7 @@
                   {
                     "@id": "353",
                     "@name": "Steam and air conditioning supply",
-                    "category": [
-                      {
-                        "@id": "3530",
-                        "@name": "Steam and air conditioning supply"
-                      }
-                    ]
+                    "category": [{ "@id": "3530", "@name": "Steam and air conditioning supply" }]
                   },
                   {
                     "@id": "354",
@@ -1636,10 +1181,7 @@
                     "@id": "360",
                     "@name": "Water collection, treatment and supply",
                     "category": [
-                      {
-                        "@id": "3600",
-                        "@name": "Water collection, treatment and supply"
-                      }
+                      { "@id": "3600", "@name": "Water collection, treatment and supply" }
                     ]
                   }
                 ]
@@ -1651,12 +1193,7 @@
                   {
                     "@id": "370",
                     "@name": "Sewerage",
-                    "category": [
-                      {
-                        "@id": "3700",
-                        "@name": "Sewerage"
-                      }
-                    ]
+                    "category": [{ "@id": "3700", "@name": "Sewerage" }]
                   }
                 ]
               },
@@ -1668,39 +1205,22 @@
                     "@id": "381",
                     "@name": "Waste collection activities",
                     "category": [
-                      {
-                        "@id": "3811",
-                        "@name": "Collection of non-hazardous waste"
-                      },
-                      {
-                        "@id": "3812",
-                        "@name": "Collection of hazardous waste"
-                      }
+                      { "@id": "3811", "@name": "Collection of non-hazardous waste" },
+                      { "@id": "3812", "@name": "Collection of hazardous waste" }
                     ]
                   },
                   {
                     "@id": "382",
                     "@name": "Waste treatment and disposal",
                     "category": [
-                      {
-                        "@id": "3821",
-                        "@name": "Treatment and disposal of non-hazardous waste"
-                      },
-                      {
-                        "@id": "3822",
-                        "@name": "Treatment and disposal of hazardous waste"
-                      }
+                      { "@id": "3821", "@name": "Treatment and disposal of non-hazardous waste" },
+                      { "@id": "3822", "@name": "Treatment and disposal of hazardous waste" }
                     ]
                   },
                   {
                     "@id": "383",
                     "@name": "Materials and other waste recovery",
-                    "category": [
-                      {
-                        "@id": "3830",
-                        "@name": "Materials and other waste recovery"
-                      }
-                    ]
+                    "category": [{ "@id": "3830", "@name": "Materials and other waste recovery" }]
                   }
                 ]
               },
@@ -1749,31 +1269,18 @@
                   {
                     "@id": "421",
                     "@name": "Construction of roads and railways",
-                    "category": [
-                      {
-                        "@id": "4210",
-                        "@name": "Construction of roads and railways"
-                      }
-                    ]
+                    "category": [{ "@id": "4210", "@name": "Construction of roads and railways" }]
                   },
                   {
                     "@id": "422",
                     "@name": "Construction of utility projects",
-                    "category": [
-                      {
-                        "@id": "4220",
-                        "@name": "Construction of utility projects"
-                      }
-                    ]
+                    "category": [{ "@id": "4220", "@name": "Construction of utility projects" }]
                   },
                   {
                     "@id": "429",
                     "@name": "Construction of other civil engineering projects",
                     "category": [
-                      {
-                        "@id": "4290",
-                        "@name": "Construction of other civil engineering projects"
-                      }
+                      { "@id": "4290", "@name": "Construction of other civil engineering projects" }
                     ]
                   }
                 ]
@@ -1786,43 +1293,26 @@
                     "@id": "431",
                     "@name": "Demolition and site preparation",
                     "category": [
-                      {
-                        "@id": "4311",
-                        "@name": "Demolition"
-                      },
-                      {
-                        "@id": "4312",
-                        "@name": "Site preparation"
-                      }
+                      { "@id": "4311", "@name": "Demolition" },
+                      { "@id": "4312", "@name": "Site preparation" }
                     ]
                   },
                   {
                     "@id": "432",
                     "@name": "Electrical, plumbing and other construction installation activities",
                     "category": [
-                      {
-                        "@id": "4321",
-                        "@name": "Electrical installation"
-                      },
+                      { "@id": "4321", "@name": "Electrical installation" },
                       {
                         "@id": "4322",
                         "@name": "Plumbing, heat and air-conditioning installation"
                       },
-                      {
-                        "@id": "4329",
-                        "@name": "Other construction installation"
-                      }
+                      { "@id": "4329", "@name": "Other construction installation" }
                     ]
                   },
                   {
                     "@id": "433",
                     "@name": "Building completion and finishing",
-                    "category": [
-                      {
-                        "@id": "4330",
-                        "@name": "Building completion and finishing"
-                      }
-                    ]
+                    "category": [{ "@id": "4330", "@name": "Building completion and finishing" }]
                   },
                   {
                     "@id": "434",
@@ -1838,10 +1328,7 @@
                     "@id": "439",
                     "@name": "Other specialized construction activities",
                     "category": [
-                      {
-                        "@id": "4390",
-                        "@name": "Other specialized construction activities"
-                      }
+                      { "@id": "4390", "@name": "Other specialized construction activities" }
                     ]
                   }
                 ]
@@ -1859,12 +1346,7 @@
                   {
                     "@id": "461",
                     "@name": "Wholesale on a fee or contract basis",
-                    "category": [
-                      {
-                        "@id": "4610",
-                        "@name": "Wholesale on a fee or contract basis"
-                      }
-                    ]
+                    "category": [{ "@id": "4610", "@name": "Wholesale on a fee or contract basis" }]
                   },
                   {
                     "@id": "462",
@@ -1880,28 +1362,19 @@
                     "@id": "463",
                     "@name": "Wholesale of food, beverages and tobacco",
                     "category": [
-                      {
-                        "@id": "4630",
-                        "@name": "Wholesale of food, beverages and tobacco"
-                      }
+                      { "@id": "4630", "@name": "Wholesale of food, beverages and tobacco" }
                     ]
                   },
                   {
                     "@id": "464",
                     "@name": "Wholesale of household goods",
                     "category": [
-                      {
-                        "@id": "4641",
-                        "@name": "Wholesale of textiles, clothing and footwear"
-                      },
+                      { "@id": "4641", "@name": "Wholesale of textiles, clothing and footwear" },
                       {
                         "@id": "4642",
                         "@name": "Wholesale of household, office and shop furniture, carpets and lighting equipment"
                       },
-                      {
-                        "@id": "4649",
-                        "@name": "Wholesale of other household goods"
-                      }
+                      { "@id": "4649", "@name": "Wholesale of other household goods" }
                     ]
                   },
                   {
@@ -1920,20 +1393,14 @@
                         "@id": "4653",
                         "@name": "Wholesale of agricultural machinery, equipment and supplies"
                       },
-                      {
-                        "@id": "4659",
-                        "@name": "Wholesale of other machinery and equipment"
-                      }
+                      { "@id": "4659", "@name": "Wholesale of other machinery and equipment" }
                     ]
                   },
                   {
                     "@id": "466",
                     "@name": "Wholesale of motor vehicles, motorcycles and related parts and accessories",
                     "category": [
-                      {
-                        "@id": "4661",
-                        "@name": "Wholesale of motor vehicles"
-                      },
+                      { "@id": "4661", "@name": "Wholesale of motor vehicles" },
                       {
                         "@id": "4662",
                         "@name": "Wholesale of motor vehicle parts and accessories"
@@ -1952,10 +1419,7 @@
                         "@id": "4671",
                         "@name": "Wholesale of solid, liquid and gaseous fuels and related products"
                       },
-                      {
-                        "@id": "4672",
-                        "@name": "Wholesale of metals and metal ores"
-                      },
+                      { "@id": "4672", "@name": "Wholesale of metals and metal ores" },
                       {
                         "@id": "4673",
                         "@name": "Wholesale of construction materials, hardware, plumbing and heating equipment and supplies"
@@ -1969,12 +1433,7 @@
                   {
                     "@id": "469",
                     "@name": "Non-specialized wholesale trade",
-                    "category": [
-                      {
-                        "@id": "4690",
-                        "@name": "Non-specialized wholesale trade"
-                      }
-                    ]
+                    "category": [{ "@id": "4690", "@name": "Non-specialized wholesale trade" }]
                   }
                 ]
               },
@@ -1990,39 +1449,22 @@
                         "@id": "4711",
                         "@name": "Non-specialized retail sale with food, beverages or tobacco predominating"
                       },
-                      {
-                        "@id": "4719",
-                        "@name": "Other non-specialized retail sale"
-                      }
+                      { "@id": "4719", "@name": "Other non-specialized retail sale" }
                     ]
                   },
                   {
                     "@id": "472",
                     "@name": "Retail sale of food, beverages and tobacco",
                     "category": [
-                      {
-                        "@id": "4721",
-                        "@name": "Retail sale of food"
-                      },
-                      {
-                        "@id": "4722",
-                        "@name": "Retail sale of beverages"
-                      },
-                      {
-                        "@id": "4723",
-                        "@name": "Retail sale of tobacco products"
-                      }
+                      { "@id": "4721", "@name": "Retail sale of food" },
+                      { "@id": "4722", "@name": "Retail sale of beverages" },
+                      { "@id": "4723", "@name": "Retail sale of tobacco products" }
                     ]
                   },
                   {
                     "@id": "473",
                     "@name": "Retail sale of automotive fuel",
-                    "category": [
-                      {
-                        "@id": "4730",
-                        "@name": "Retail sale of automotive fuel"
-                      }
-                    ]
+                    "category": [{ "@id": "4730", "@name": "Retail sale of automotive fuel" }]
                   },
                   {
                     "@id": "474",
@@ -2038,10 +1480,7 @@
                     "@id": "475",
                     "@name": "Retail sale of other household equipment",
                     "category": [
-                      {
-                        "@id": "4751",
-                        "@name": "Retail sale of textiles"
-                      },
+                      { "@id": "4751", "@name": "Retail sale of textiles" },
                       {
                         "@id": "4752",
                         "@name": "Retail sale of hardware, building materials, paints and glass"
@@ -2064,14 +1503,8 @@
                         "@id": "4761",
                         "@name": "Retail sale of books, newspapers, stationery and office supplies"
                       },
-                      {
-                        "@id": "4762",
-                        "@name": "Retail sale of sporting equipment"
-                      },
-                      {
-                        "@id": "4763",
-                        "@name": "Retail sale of games and toys"
-                      },
+                      { "@id": "4762", "@name": "Retail sale of sporting equipment" },
+                      { "@id": "4763", "@name": "Retail sale of games and toys" },
                       {
                         "@id": "4769",
                         "@name": "Retail sale of cultural and recreational goods n.e.c."
@@ -2090,24 +1523,15 @@
                         "@id": "4772",
                         "@name": "Retail sale of pharmaceutical and medical goods, cosmetic and toilet articles"
                       },
-                      {
-                        "@id": "4773",
-                        "@name": "Retail sale of other new goods n.e.c."
-                      },
-                      {
-                        "@id": "4774",
-                        "@name": "Retail sale of second-hand goods"
-                      }
+                      { "@id": "4773", "@name": "Retail sale of other new goods n.e.c." },
+                      { "@id": "4774", "@name": "Retail sale of second-hand goods" }
                     ]
                   },
                   {
                     "@id": "478",
                     "@name": "Retail sale of motor vehicles, motorcycles and related parts and accessories",
                     "category": [
-                      {
-                        "@id": "4781",
-                        "@name": "Retail sale of motor vehicles"
-                      },
+                      { "@id": "4781", "@name": "Retail sale of motor vehicles" },
                       {
                         "@id": "4782",
                         "@name": "Retail sale of motor vehicle parts and accessories"
@@ -2144,43 +1568,23 @@
                     "@id": "491",
                     "@name": "Transport via railways",
                     "category": [
-                      {
-                        "@id": "4911",
-                        "@name": "Passenger rail transport, interurban"
-                      },
-                      {
-                        "@id": "4912",
-                        "@name": "Freight rail transport"
-                      }
+                      { "@id": "4911", "@name": "Passenger rail transport, interurban" },
+                      { "@id": "4912", "@name": "Freight rail transport" }
                     ]
                   },
                   {
                     "@id": "492",
                     "@name": "Other land transport",
                     "category": [
-                      {
-                        "@id": "4921",
-                        "@name": "Urban and suburban passenger land transport"
-                      },
-                      {
-                        "@id": "4922",
-                        "@name": "Other passenger land transport"
-                      },
-                      {
-                        "@id": "4923",
-                        "@name": "Freight transport by road"
-                      }
+                      { "@id": "4921", "@name": "Urban and suburban passenger land transport" },
+                      { "@id": "4922", "@name": "Other passenger land transport" },
+                      { "@id": "4923", "@name": "Freight transport by road" }
                     ]
                   },
                   {
                     "@id": "493",
                     "@name": "Transport via pipeline",
-                    "category": [
-                      {
-                        "@id": "4930",
-                        "@name": "Transport via pipeline"
-                      }
-                    ]
+                    "category": [{ "@id": "4930", "@name": "Transport via pipeline" }]
                   }
                 ]
               },
@@ -2192,28 +1596,16 @@
                     "@id": "501",
                     "@name": "Sea and coastal water transport",
                     "category": [
-                      {
-                        "@id": "5011",
-                        "@name": "Sea and coastal passenger water transport"
-                      },
-                      {
-                        "@id": "5012",
-                        "@name": "Sea and coastal freight water transport"
-                      }
+                      { "@id": "5011", "@name": "Sea and coastal passenger water transport" },
+                      { "@id": "5012", "@name": "Sea and coastal freight water transport" }
                     ]
                   },
                   {
                     "@id": "502",
                     "@name": "Inland water transport",
                     "category": [
-                      {
-                        "@id": "5021",
-                        "@name": "Inland passenger water transport"
-                      },
-                      {
-                        "@id": "5022",
-                        "@name": "Inland freight water transport"
-                      }
+                      { "@id": "5021", "@name": "Inland passenger water transport" },
+                      { "@id": "5022", "@name": "Inland freight water transport" }
                     ]
                   }
                 ]
@@ -2225,22 +1617,12 @@
                   {
                     "@id": "511",
                     "@name": "Passenger air transport",
-                    "category": [
-                      {
-                        "@id": "5110",
-                        "@name": "Passenger air transport"
-                      }
-                    ]
+                    "category": [{ "@id": "5110", "@name": "Passenger air transport" }]
                   },
                   {
                     "@id": "512",
                     "@name": "Freight air transport",
-                    "category": [
-                      {
-                        "@id": "5120",
-                        "@name": "Freight air transport"
-                      }
-                    ]
+                    "category": [{ "@id": "5120", "@name": "Freight air transport" }]
                   }
                 ]
               },
@@ -2251,12 +1633,7 @@
                   {
                     "@id": "521",
                     "@name": "Warehousing and storage",
-                    "category": [
-                      {
-                        "@id": "5210",
-                        "@name": "Warehousing and storage"
-                      }
-                    ]
+                    "category": [{ "@id": "5210", "@name": "Warehousing and storage" }]
                   },
                   {
                     "@id": "522",
@@ -2274,14 +1651,8 @@
                         "@id": "5223",
                         "@name": "Service activities incidental to air transportation"
                       },
-                      {
-                        "@id": "5224",
-                        "@name": "Cargo handling"
-                      },
-                      {
-                        "@id": "5229",
-                        "@name": "Other support activities for transportation"
-                      }
+                      { "@id": "5224", "@name": "Cargo handling" },
+                      { "@id": "5229", "@name": "Other support activities for transportation" }
                     ]
                   },
                   {
@@ -2307,22 +1678,12 @@
                   {
                     "@id": "531",
                     "@name": "Postal activities",
-                    "category": [
-                      {
-                        "@id": "5310",
-                        "@name": "Postal activities"
-                      }
-                    ]
+                    "category": [{ "@id": "5310", "@name": "Postal activities" }]
                   },
                   {
                     "@id": "532",
                     "@name": "Courier activities",
-                    "category": [
-                      {
-                        "@id": "5320",
-                        "@name": "Courier activities"
-                      }
-                    ]
+                    "category": [{ "@id": "5320", "@name": "Courier activities" }]
                   },
                   {
                     "@id": "533",
@@ -2350,20 +1711,14 @@
                     "@id": "551",
                     "@name": "Hotels and similar accommodation activities",
                     "category": [
-                      {
-                        "@id": "5510",
-                        "@name": "Hotels and similar accommodation activities"
-                      }
+                      { "@id": "5510", "@name": "Hotels and similar accommodation activities" }
                     ]
                   },
                   {
                     "@id": "552",
                     "@name": "Other short term accommodation activities",
                     "category": [
-                      {
-                        "@id": "5520",
-                        "@name": "Other short term accommodation activities"
-                      }
+                      { "@id": "5520", "@name": "Other short term accommodation activities" }
                     ]
                   },
                   {
@@ -2389,12 +1744,7 @@
                   {
                     "@id": "559",
                     "@name": "Other accommodation n.e.c.",
-                    "category": [
-                      {
-                        "@id": "5590",
-                        "@name": "Other accommodation n.e.c."
-                      }
-                    ]
+                    "category": [{ "@id": "5590", "@name": "Other accommodation n.e.c." }]
                   }
                 ]
               },
@@ -2406,35 +1756,21 @@
                     "@id": "561",
                     "@name": "Restaurants and mobile food service activities",
                     "category": [
-                      {
-                        "@id": "5610",
-                        "@name": "Restaurants and mobile food service activities"
-                      }
+                      { "@id": "5610", "@name": "Restaurants and mobile food service activities" }
                     ]
                   },
                   {
                     "@id": "562",
                     "@name": "Event catering and other food service activities",
                     "category": [
-                      {
-                        "@id": "5621",
-                        "@name": "Event catering activities"
-                      },
-                      {
-                        "@id": "5629",
-                        "@name": "Other food service activities"
-                      }
+                      { "@id": "5621", "@name": "Event catering activities" },
+                      { "@id": "5629", "@name": "Other food service activities" }
                     ]
                   },
                   {
                     "@id": "563",
                     "@name": "Beverage serving activities",
-                    "category": [
-                      {
-                        "@id": "5630",
-                        "@name": "Beverage serving activities"
-                      }
-                    ]
+                    "category": [{ "@id": "5630", "@name": "Beverage serving activities" }]
                   },
                   {
                     "@id": "564",
@@ -2462,36 +1798,18 @@
                     "@id": "581",
                     "@name": "Publishing of books, newspapers, periodicals and other publishing activities",
                     "category": [
-                      {
-                        "@id": "5811",
-                        "@name": "Publishing of books"
-                      },
-                      {
-                        "@id": "5812",
-                        "@name": "Publishing of newspapers"
-                      },
-                      {
-                        "@id": "5813",
-                        "@name": "Publishing of journals and periodicals"
-                      },
-                      {
-                        "@id": "5819",
-                        "@name": "Other publishing activities"
-                      }
+                      { "@id": "5811", "@name": "Publishing of books" },
+                      { "@id": "5812", "@name": "Publishing of newspapers" },
+                      { "@id": "5813", "@name": "Publishing of journals and periodicals" },
+                      { "@id": "5819", "@name": "Other publishing activities" }
                     ]
                   },
                   {
                     "@id": "582",
                     "@name": "Software publishing",
                     "category": [
-                      {
-                        "@id": "5821",
-                        "@name": "Publishing of video games"
-                      },
-                      {
-                        "@id": "5829",
-                        "@name": "Other software publishing"
-                      }
+                      { "@id": "5821", "@name": "Publishing of video games" },
+                      { "@id": "5829", "@name": "Other software publishing" }
                     ]
                   }
                 ]
@@ -2516,20 +1834,14 @@
                         "@id": "5913",
                         "@name": "Motion picture, video and television programme distribution activities"
                       },
-                      {
-                        "@id": "5914",
-                        "@name": "Motion picture projection activities"
-                      }
+                      { "@id": "5914", "@name": "Motion picture projection activities" }
                     ]
                   },
                   {
                     "@id": "592",
                     "@name": "Sound recording and music publishing activities",
                     "category": [
-                      {
-                        "@id": "5920",
-                        "@name": "Sound recording and music publishing activities"
-                      }
+                      { "@id": "5920", "@name": "Sound recording and music publishing activities" }
                     ]
                   }
                 ]
@@ -2562,10 +1874,7 @@
                     "@id": "603",
                     "@name": "News agency and other content distribution activities",
                     "category": [
-                      {
-                        "@id": "6031",
-                        "@name": "News agency activities"
-                      },
+                      { "@id": "6031", "@name": "News agency activities" },
                       {
                         "@id": "6039",
                         "@name": "Social network sites and other content distribution activities"
@@ -2607,12 +1916,7 @@
                   {
                     "@id": "619",
                     "@name": "Other telecommunication activities",
-                    "category": [
-                      {
-                        "@id": "6190",
-                        "@name": "Other telecommunication activities"
-                      }
-                    ]
+                    "category": [{ "@id": "6190", "@name": "Other telecommunication activities" }]
                   }
                 ]
               },
@@ -2628,10 +1932,7 @@
                         "@id": "6211",
                         "@name": "Development of video games, video game software, and video game software tools"
                       },
-                      {
-                        "@id": "6219",
-                        "@name": "Other computer programming activities"
-                      }
+                      { "@id": "6219", "@name": "Other computer programming activities" }
                     ]
                   },
                   {
@@ -2696,72 +1997,39 @@
                     "@id": "641",
                     "@name": "Monetary intermediation",
                     "category": [
-                      {
-                        "@id": "6411",
-                        "@name": "Central banking"
-                      },
-                      {
-                        "@id": "6419",
-                        "@name": "Other monetary intermediation"
-                      }
+                      { "@id": "6411", "@name": "Central banking" },
+                      { "@id": "6419", "@name": "Other monetary intermediation" }
                     ]
                   },
                   {
                     "@id": "642",
                     "@name": "Activities of holding companies and financing conduits",
                     "category": [
-                      {
-                        "@id": "6421",
-                        "@name": "Activities of holding companies"
-                      },
-                      {
-                        "@id": "6422",
-                        "@name": "Activities of financing conduits"
-                      }
+                      { "@id": "6421", "@name": "Activities of holding companies" },
+                      { "@id": "6422", "@name": "Activities of financing conduits" }
                     ]
                   },
                   {
                     "@id": "643",
                     "@name": "Activities of trusts, funds and similar financial entities",
                     "category": [
-                      {
-                        "@id": "6431",
-                        "@name": "Activities of money market funds"
-                      },
+                      { "@id": "6431", "@name": "Activities of money market funds" },
                       {
                         "@id": "6432",
                         "@name": "Activities of non-money market investments funds"
                       },
-                      {
-                        "@id": "6433",
-                        "@name": "Activities of trust, estate and agency accounts"
-                      }
+                      { "@id": "6433", "@name": "Activities of trust, estate and agency accounts" }
                     ]
                   },
                   {
                     "@id": "649",
                     "@name": "Other financial service activities, except insurance and pension funding activities",
                     "category": [
-                      {
-                        "@id": "6491",
-                        "@name": "Financial leasing activities"
-                      },
-                      {
-                        "@id": "6492",
-                        "@name": "International trade financing activities"
-                      },
-                      {
-                        "@id": "6493",
-                        "@name": "Factoring activities"
-                      },
-                      {
-                        "@id": "6494",
-                        "@name": "Securitisation activities"
-                      },
-                      {
-                        "@id": "6495",
-                        "@name": "Other credit granting activities"
-                      },
+                      { "@id": "6491", "@name": "Financial leasing activities" },
+                      { "@id": "6492", "@name": "International trade financing activities" },
+                      { "@id": "6493", "@name": "Factoring activities" },
+                      { "@id": "6494", "@name": "Securitisation activities" },
+                      { "@id": "6495", "@name": "Other credit granting activities" },
                       {
                         "@id": "6499",
                         "@name": "Other financial service activities n.e.c., except insurance and pension funding activities"
@@ -2778,35 +2046,19 @@
                     "@id": "651",
                     "@name": "Insurance",
                     "category": [
-                      {
-                        "@id": "6511",
-                        "@name": "Life insurance"
-                      },
-                      {
-                        "@id": "6512",
-                        "@name": "Non-life insurance"
-                      }
+                      { "@id": "6511", "@name": "Life insurance" },
+                      { "@id": "6512", "@name": "Non-life insurance" }
                     ]
                   },
                   {
                     "@id": "652",
                     "@name": "Reinsurance",
-                    "category": [
-                      {
-                        "@id": "6520",
-                        "@name": "Reinsurance"
-                      }
-                    ]
+                    "category": [{ "@id": "6520", "@name": "Reinsurance" }]
                   },
                   {
                     "@id": "653",
                     "@name": "Pension funding",
-                    "category": [
-                      {
-                        "@id": "6530",
-                        "@name": "Pension funding"
-                      }
-                    ]
+                    "category": [{ "@id": "6530", "@name": "Pension funding" }]
                   }
                 ]
               },
@@ -2818,14 +2070,8 @@
                     "@id": "661",
                     "@name": "Activities auxiliary to financial services, except insurance and pension funding",
                     "category": [
-                      {
-                        "@id": "6611",
-                        "@name": "Administration of financial markets"
-                      },
-                      {
-                        "@id": "6612",
-                        "@name": "Security and commodity contracts brokerage"
-                      },
+                      { "@id": "6611", "@name": "Administration of financial markets" },
+                      { "@id": "6612", "@name": "Security and commodity contracts brokerage" },
                       {
                         "@id": "6619",
                         "@name": "Other activities auxiliary to financial service activities, except insurance and pension funding"
@@ -2836,14 +2082,8 @@
                     "@id": "662",
                     "@name": "Activities auxiliary to insurance and pension funding",
                     "category": [
-                      {
-                        "@id": "6621",
-                        "@name": "Risk and damage evaluation"
-                      },
-                      {
-                        "@id": "6622",
-                        "@name": "Activities of insurance agents and brokers"
-                      },
+                      { "@id": "6621", "@name": "Risk and damage evaluation" },
+                      { "@id": "6622", "@name": "Activities of insurance agents and brokers" },
                       {
                         "@id": "6629",
                         "@name": "Other activities auxiliary to insurance and pension funding"
@@ -2853,12 +2093,7 @@
                   {
                     "@id": "663",
                     "@name": "Fund management activities",
-                    "category": [
-                      {
-                        "@id": "6630",
-                        "@name": "Fund management activities"
-                      }
-                    ]
+                    "category": [{ "@id": "6630", "@name": "Fund management activities" }]
                   }
                 ]
               }
@@ -2911,12 +2146,7 @@
                   {
                     "@id": "691",
                     "@name": "Legal activities",
-                    "category": [
-                      {
-                        "@id": "6910",
-                        "@name": "Legal activities"
-                      }
-                    ]
+                    "category": [{ "@id": "6910", "@name": "Legal activities" }]
                   },
                   {
                     "@id": "692",
@@ -2937,12 +2167,7 @@
                   {
                     "@id": "701",
                     "@name": "Activities of head offices",
-                    "category": [
-                      {
-                        "@id": "7010",
-                        "@name": "Activities of head offices"
-                      }
-                    ]
+                    "category": [{ "@id": "7010", "@name": "Activities of head offices" }]
                   },
                   {
                     "@id": "702",
@@ -2973,12 +2198,7 @@
                   {
                     "@id": "712",
                     "@name": "Technical testing and analysis",
-                    "category": [
-                      {
-                        "@id": "7120",
-                        "@name": "Technical testing and analysis"
-                      }
-                    ]
+                    "category": [{ "@id": "7120", "@name": "Technical testing and analysis" }]
                   }
                 ]
               },
@@ -3015,12 +2235,7 @@
                   {
                     "@id": "731",
                     "@name": "Advertising activities",
-                    "category": [
-                      {
-                        "@id": "7310",
-                        "@name": "Advertising activities"
-                      }
-                    ]
+                    "category": [{ "@id": "7310", "@name": "Advertising activities" }]
                   },
                   {
                     "@id": "732",
@@ -3035,12 +2250,7 @@
                   {
                     "@id": "733",
                     "@name": "Public relations activities",
-                    "category": [
-                      {
-                        "@id": "7330",
-                        "@name": "Public relations activities"
-                      }
-                    ]
+                    "category": [{ "@id": "7330", "@name": "Public relations activities" }]
                   }
                 ]
               },
@@ -3051,31 +2261,18 @@
                   {
                     "@id": "741",
                     "@name": "Specialized design activities",
-                    "category": [
-                      {
-                        "@id": "7410",
-                        "@name": "Specialized design activities"
-                      }
-                    ]
+                    "category": [{ "@id": "7410", "@name": "Specialized design activities" }]
                   },
                   {
                     "@id": "742",
                     "@name": "Photographic activities",
-                    "category": [
-                      {
-                        "@id": "7420",
-                        "@name": "Photographic activities"
-                      }
-                    ]
+                    "category": [{ "@id": "7420", "@name": "Photographic activities" }]
                   },
                   {
                     "@id": "743",
                     "@name": "Translation and interpretation activities",
                     "category": [
-                      {
-                        "@id": "7430",
-                        "@name": "Translation and interpretation activities"
-                      }
+                      { "@id": "7430", "@name": "Translation and interpretation activities" }
                     ]
                   },
                   {
@@ -3101,12 +2298,7 @@
                   {
                     "@id": "750",
                     "@name": "Veterinary activities",
-                    "category": [
-                      {
-                        "@id": "7500",
-                        "@name": "Veterinary activities"
-                      }
-                    ]
+                    "category": [{ "@id": "7500", "@name": "Veterinary activities" }]
                   }
                 ]
               }
@@ -3123,12 +2315,7 @@
                   {
                     "@id": "771",
                     "@name": "Rental and leasing of motor vehicles",
-                    "category": [
-                      {
-                        "@id": "7710",
-                        "@name": "Rental and leasing of motor vehicles"
-                      }
-                    ]
+                    "category": [{ "@id": "7710", "@name": "Rental and leasing of motor vehicles" }]
                   },
                   {
                     "@id": "772",
@@ -3188,10 +2375,7 @@
                     "@id": "781",
                     "@name": "Activities of employment placement agencies",
                     "category": [
-                      {
-                        "@id": "7810",
-                        "@name": "Activities of employment placement agencies"
-                      }
+                      { "@id": "7810", "@name": "Activities of employment placement agencies" }
                     ]
                   },
                   {
@@ -3214,25 +2398,14 @@
                     "@id": "791",
                     "@name": "Travel agency and tour operator activities",
                     "category": [
-                      {
-                        "@id": "7911",
-                        "@name": "Travel agency activities"
-                      },
-                      {
-                        "@id": "7912",
-                        "@name": "Tour operator activities"
-                      }
+                      { "@id": "7911", "@name": "Travel agency activities" },
+                      { "@id": "7912", "@name": "Tour operator activities" }
                     ]
                   },
                   {
                     "@id": "799",
                     "@name": "Other travel related activities",
-                    "category": [
-                      {
-                        "@id": "7990",
-                        "@name": "Other travel related activities"
-                      }
-                    ]
+                    "category": [{ "@id": "7990", "@name": "Other travel related activities" }]
                   }
                 ]
               },
@@ -3244,14 +2417,8 @@
                     "@id": "801",
                     "@name": "Investigation and security activities",
                     "category": [
-                      {
-                        "@id": "8011",
-                        "@name": "Investigation and private security activities"
-                      },
-                      {
-                        "@id": "8019",
-                        "@name": "Security activities n.e.c."
-                      }
+                      { "@id": "8011", "@name": "Investigation and private security activities" },
+                      { "@id": "8019", "@name": "Security activities n.e.c." }
                     ]
                   }
                 ]
@@ -3264,35 +2431,21 @@
                     "@id": "811",
                     "@name": "Combined facilities support activities",
                     "category": [
-                      {
-                        "@id": "8110",
-                        "@name": "Combined facilities support activities"
-                      }
+                      { "@id": "8110", "@name": "Combined facilities support activities" }
                     ]
                   },
                   {
                     "@id": "812",
                     "@name": "Cleaning activities",
                     "category": [
-                      {
-                        "@id": "8121",
-                        "@name": "General cleaning of buildings"
-                      },
-                      {
-                        "@id": "8129",
-                        "@name": "Other cleaning activities"
-                      }
+                      { "@id": "8121", "@name": "General cleaning of buildings" },
+                      { "@id": "8129", "@name": "Other cleaning activities" }
                     ]
                   },
                   {
                     "@id": "813",
                     "@name": "Landscape service activities",
-                    "category": [
-                      {
-                        "@id": "8130",
-                        "@name": "Landscape service activities"
-                      }
-                    ]
+                    "category": [{ "@id": "8130", "@name": "Landscape service activities" }]
                   }
                 ]
               },
@@ -3304,30 +2457,19 @@
                     "@id": "821",
                     "@name": "Office administrative and support activities",
                     "category": [
-                      {
-                        "@id": "8210",
-                        "@name": "Office administrative and support activities"
-                      }
+                      { "@id": "8210", "@name": "Office administrative and support activities" }
                     ]
                   },
                   {
                     "@id": "822",
                     "@name": "Activities of call centres",
-                    "category": [
-                      {
-                        "@id": "8220",
-                        "@name": "Activities of call centres"
-                      }
-                    ]
+                    "category": [{ "@id": "8220", "@name": "Activities of call centres" }]
                   },
                   {
                     "@id": "823",
                     "@name": "Organization of conventions and trade shows",
                     "category": [
-                      {
-                        "@id": "8230",
-                        "@name": "Organization of conventions and trade shows"
-                      }
+                      { "@id": "8230", "@name": "Organization of conventions and trade shows" }
                     ]
                   },
                   {
@@ -3348,14 +2490,8 @@
                         "@id": "8291",
                         "@name": "Activities of collection agencies and credit bureaus"
                       },
-                      {
-                        "@id": "8292",
-                        "@name": "Packaging activities"
-                      },
-                      {
-                        "@id": "8299",
-                        "@name": "Other business support service activities n.e.c."
-                      }
+                      { "@id": "8292", "@name": "Packaging activities" },
+                      { "@id": "8299", "@name": "Other business support service activities n.e.c." }
                     ]
                   }
                 ]
@@ -3374,10 +2510,7 @@
                     "@id": "841",
                     "@name": "Administration of the State and the economic, social and environmental policies of the community",
                     "category": [
-                      {
-                        "@id": "8411",
-                        "@name": "General public administration activities"
-                      },
+                      { "@id": "8411", "@name": "General public administration activities" },
                       {
                         "@id": "8412",
                         "@name": "Regulation of the activities of providing health care, education, cultural services and other social services, excluding social security and environment"
@@ -3396,28 +2529,16 @@
                     "@id": "842",
                     "@name": "Provision of services to the community as a whole",
                     "category": [
-                      {
-                        "@id": "8421",
-                        "@name": "Foreign affairs"
-                      },
-                      {
-                        "@id": "8422",
-                        "@name": "Defence activities"
-                      },
-                      {
-                        "@id": "8423",
-                        "@name": "Public order and safety activities"
-                      }
+                      { "@id": "8421", "@name": "Foreign affairs" },
+                      { "@id": "8422", "@name": "Defence activities" },
+                      { "@id": "8423", "@name": "Public order and safety activities" }
                     ]
                   },
                   {
                     "@id": "843",
                     "@name": "Compulsory social security activities",
                     "category": [
-                      {
-                        "@id": "8430",
-                        "@name": "Compulsory social security activities"
-                      }
+                      { "@id": "8430", "@name": "Compulsory social security activities" }
                     ]
                   }
                 ]
@@ -3435,71 +2556,35 @@
                   {
                     "@id": "851",
                     "@name": "Pre-primary education",
-                    "category": [
-                      {
-                        "@id": "8510",
-                        "@name": "Pre-primary education"
-                      }
-                    ]
+                    "category": [{ "@id": "8510", "@name": "Pre-primary education" }]
                   },
                   {
                     "@id": "852",
                     "@name": "Primary education",
-                    "category": [
-                      {
-                        "@id": "8520",
-                        "@name": "Primary education"
-                      }
-                    ]
+                    "category": [{ "@id": "8520", "@name": "Primary education" }]
                   },
                   {
                     "@id": "853",
                     "@name": "Secondary and post-secondary non-tertiary education",
                     "category": [
-                      {
-                        "@id": "8531",
-                        "@name": "General secondary education"
-                      },
-                      {
-                        "@id": "8532",
-                        "@name": "Vocational secondary education"
-                      },
-                      {
-                        "@id": "8533",
-                        "@name": "Post-secondary non-tertiary education"
-                      }
+                      { "@id": "8531", "@name": "General secondary education" },
+                      { "@id": "8532", "@name": "Vocational secondary education" },
+                      { "@id": "8533", "@name": "Post-secondary non-tertiary education" }
                     ]
                   },
                   {
                     "@id": "854",
                     "@name": "Tertiary education",
-                    "category": [
-                      {
-                        "@id": "8540",
-                        "@name": "Tertiary education"
-                      }
-                    ]
+                    "category": [{ "@id": "8540", "@name": "Tertiary education" }]
                   },
                   {
                     "@id": "855",
                     "@name": "Other education",
                     "category": [
-                      {
-                        "@id": "8551",
-                        "@name": "Sports and recreation education"
-                      },
-                      {
-                        "@id": "8552",
-                        "@name": "Cultural education"
-                      },
-                      {
-                        "@id": "8553",
-                        "@name": "Driving school activities"
-                      },
-                      {
-                        "@id": "8559",
-                        "@name": "Other education n.e.c."
-                      }
+                      { "@id": "8551", "@name": "Sports and recreation education" },
+                      { "@id": "8552", "@name": "Cultural education" },
+                      { "@id": "8553", "@name": "Driving school activities" },
+                      { "@id": "8559", "@name": "Other education n.e.c." }
                     ]
                   },
                   {
@@ -3510,10 +2595,7 @@
                         "@id": "8561",
                         "@name": "Intermediation service activities for courses and tutors"
                       },
-                      {
-                        "@id": "8569",
-                        "@name": "Other educational support activities"
-                      }
+                      { "@id": "8569", "@name": "Other educational support activities" }
                     ]
                   }
                 ]
@@ -3531,21 +2613,13 @@
                   {
                     "@id": "861",
                     "@name": "Hospital activities",
-                    "category": [
-                      {
-                        "@id": "8610",
-                        "@name": "Hospital activities"
-                      }
-                    ]
+                    "category": [{ "@id": "8610", "@name": "Hospital activities" }]
                   },
                   {
                     "@id": "862",
                     "@name": "Medical and dental practice activities",
                     "category": [
-                      {
-                        "@id": "8620",
-                        "@name": "Medical and dental practice activities"
-                      }
+                      { "@id": "8620", "@name": "Medical and dental practice activities" }
                     ]
                   },
                   {
@@ -3556,10 +2630,7 @@
                         "@id": "8691",
                         "@name": "Intermediation service activities for medical, dental, and other human health services"
                       },
-                      {
-                        "@id": "8699",
-                        "@name": "Other human health activities n.e.c"
-                      }
+                      { "@id": "8699", "@name": "Other human health activities n.e.c" }
                     ]
                   }
                 ]
@@ -3571,12 +2642,7 @@
                   {
                     "@id": "871",
                     "@name": "Residential nursing care activities",
-                    "category": [
-                      {
-                        "@id": "8710",
-                        "@name": "Residential nursing care activities"
-                      }
-                    ]
+                    "category": [{ "@id": "8710", "@name": "Residential nursing care activities" }]
                   },
                   {
                     "@id": "872",
@@ -3606,10 +2672,7 @@
                         "@id": "8791",
                         "@name": "Intermediation service activities for residential care activities"
                       },
-                      {
-                        "@id": "8799",
-                        "@name": "Other residential care activities n.e.c."
-                      }
+                      { "@id": "8799", "@name": "Other residential care activities n.e.c." }
                     ]
                   }
                 ]
@@ -3658,34 +2721,20 @@
                         "@id": "9011",
                         "@name": "Literary creation and musical composition activities"
                       },
-                      {
-                        "@id": "9012",
-                        "@name": "Visual arts creation activities"
-                      },
-                      {
-                        "@id": "9013",
-                        "@name": "Other arts creation activities"
-                      }
+                      { "@id": "9012", "@name": "Visual arts creation activities" },
+                      { "@id": "9013", "@name": "Other arts creation activities" }
                     ]
                   },
                   {
                     "@id": "902",
                     "@name": "Activities of performing arts",
-                    "category": [
-                      {
-                        "@id": "9020",
-                        "@name": "Activities of performing arts"
-                      }
-                    ]
+                    "category": [{ "@id": "9020", "@name": "Activities of performing arts" }]
                   },
                   {
                     "@id": "903",
                     "@name": "Support activities to arts creation and performing arts",
                     "category": [
-                      {
-                        "@id": "9031",
-                        "@name": "Operation of arts facilities and sites"
-                      },
+                      { "@id": "9031", "@name": "Operation of arts facilities and sites" },
                       {
                         "@id": "9039",
                         "@name": "Other support activities to arts creation and performing arts"
@@ -3702,28 +2751,16 @@
                     "@id": "911",
                     "@name": "Library and archive activities",
                     "category": [
-                      {
-                        "@id": "9111",
-                        "@name": "Library activities"
-                      },
-                      {
-                        "@id": "9112",
-                        "@name": "Archive activities"
-                      }
+                      { "@id": "9111", "@name": "Library activities" },
+                      { "@id": "9112", "@name": "Archive activities" }
                     ]
                   },
                   {
                     "@id": "912",
                     "@name": "Museum, collection, historical site and monument activities",
                     "category": [
-                      {
-                        "@id": "9121",
-                        "@name": "Museum and collection activities"
-                      },
-                      {
-                        "@id": "9122",
-                        "@name": "Historical site and monument activities"
-                      }
+                      { "@id": "9121", "@name": "Museum and collection activities" },
+                      { "@id": "9122", "@name": "Historical site and monument activities" }
                     ]
                   },
                   {
@@ -3740,14 +2777,8 @@
                     "@id": "914",
                     "@name": "Botanical and zoological garden and nature reserve activities",
                     "category": [
-                      {
-                        "@id": "9141",
-                        "@name": "Botanical and zoological garden activities"
-                      },
-                      {
-                        "@id": "9142",
-                        "@name": "Nature reserve activities"
-                      }
+                      { "@id": "9141", "@name": "Botanical and zoological garden activities" },
+                      { "@id": "9142", "@name": "Nature reserve activities" }
                     ]
                   }
                 ]
@@ -3759,12 +2790,7 @@
                   {
                     "@id": "920",
                     "@name": "Gambling and betting activities",
-                    "category": [
-                      {
-                        "@id": "9200",
-                        "@name": "Gambling and betting activities"
-                      }
-                    ]
+                    "category": [{ "@id": "9200", "@name": "Gambling and betting activities" }]
                   }
                 ]
               },
@@ -3776,32 +2802,17 @@
                     "@id": "931",
                     "@name": "Sports activities",
                     "category": [
-                      {
-                        "@id": "9311",
-                        "@name": "Operation of sports facilities"
-                      },
-                      {
-                        "@id": "9312",
-                        "@name": "Activities of sports clubs"
-                      },
-                      {
-                        "@id": "9319",
-                        "@name": "Other sports activities"
-                      }
+                      { "@id": "9311", "@name": "Operation of sports facilities" },
+                      { "@id": "9312", "@name": "Activities of sports clubs" },
+                      { "@id": "9319", "@name": "Other sports activities" }
                     ]
                   },
                   {
                     "@id": "932",
                     "@name": "Amusement and recreation activities",
                     "category": [
-                      {
-                        "@id": "9321",
-                        "@name": "Activities of amusement parks and theme parks"
-                      },
-                      {
-                        "@id": "9329",
-                        "@name": "Other amusement and recreation activities"
-                      }
+                      { "@id": "9321", "@name": "Activities of amusement parks and theme parks" },
+                      { "@id": "9329", "@name": "Other amusement and recreation activities" }
                     ]
                   }
                 ]
@@ -3833,25 +2844,14 @@
                   {
                     "@id": "942",
                     "@name": "Activities of trade unions",
-                    "category": [
-                      {
-                        "@id": "9420",
-                        "@name": "Activities of trade unions"
-                      }
-                    ]
+                    "category": [{ "@id": "9420", "@name": "Activities of trade unions" }]
                   },
                   {
                     "@id": "949",
                     "@name": "Activities of other membership organizations",
                     "category": [
-                      {
-                        "@id": "9491",
-                        "@name": "Activities of religious organizations"
-                      },
-                      {
-                        "@id": "9492",
-                        "@name": "Activities of political organizations"
-                      },
+                      { "@id": "9491", "@name": "Activities of religious organizations" },
+                      { "@id": "9492", "@name": "Activities of political organizations" },
                       {
                         "@id": "9499",
                         "@name": "Activities of other membership organizations n.e.c."
@@ -3878,10 +2878,7 @@
                     "@id": "952",
                     "@name": "Repair and maintenance of personal and household goods",
                     "category": [
-                      {
-                        "@id": "9521",
-                        "@name": "Repair and maintenance of consumer electronics"
-                      },
+                      { "@id": "9521", "@name": "Repair and maintenance of consumer electronics" },
                       {
                         "@id": "9522",
                         "@name": "Repair and maintenance of household appliances and home and garden equipment"
@@ -3904,14 +2901,8 @@
                     "@id": "953",
                     "@name": "Repair and maintenance of motor vehicles and motorcycles",
                     "category": [
-                      {
-                        "@id": "9531",
-                        "@name": "Repair and maintenance of motor vehicles"
-                      },
-                      {
-                        "@id": "9532",
-                        "@name": "Repair and maintenance of motorcycles"
-                      }
+                      { "@id": "9531", "@name": "Repair and maintenance of motor vehicles" },
+                      { "@id": "9532", "@name": "Repair and maintenance of motorcycles" }
                     ]
                   },
                   {
@@ -3934,39 +2925,25 @@
                     "@id": "961",
                     "@name": "Washing and cleaning of textile and fur products",
                     "category": [
-                      {
-                        "@id": "9610",
-                        "@name": "Washing and cleaning of textile and fur products"
-                      }
+                      { "@id": "9610", "@name": "Washing and cleaning of textile and fur products" }
                     ]
                   },
                   {
                     "@id": "962",
                     "@name": "Hairdressing, beauty treatment, day spa and similar activities",
                     "category": [
-                      {
-                        "@id": "9621",
-                        "@name": "Hairdressing and barber activities"
-                      },
+                      { "@id": "9621", "@name": "Hairdressing and barber activities" },
                       {
                         "@id": "9622",
                         "@name": "Beauty care and other beauty treatment activities"
                       },
-                      {
-                        "@id": "9623",
-                        "@name": "Day spa, sauna and steam bath activities"
-                      }
+                      { "@id": "9623", "@name": "Day spa, sauna and steam bath activities" }
                     ]
                   },
                   {
                     "@id": "963",
                     "@name": "Funeral and related activities",
-                    "category": [
-                      {
-                        "@id": "9630",
-                        "@name": "Funeral and related activities"
-                      }
-                    ]
+                    "category": [{ "@id": "9630", "@name": "Funeral and related activities" }]
                   },
                   {
                     "@id": "964",
@@ -3982,10 +2959,7 @@
                     "@id": "969",
                     "@name": "Other personal service activities n.e.c.",
                     "category": [
-                      {
-                        "@id": "9690",
-                        "@name": "Other personal service activities n.e.c."
-                      }
+                      { "@id": "9690", "@name": "Other personal service activities n.e.c." }
                     ]
                   }
                 ]
