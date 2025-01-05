@@ -35,7 +35,8 @@ const TableList: FC = () => {
   const intl = useIntl();
 
   const lang = getLang(intl.locale);
-  const tname = getLangText(Teams.find((team) => team.id === tid)?.title, lang) || '';
+  const titleJson = Teams.find((team) => team.id === tid)?.title;
+  const tname = titleJson ? getLangText(Teams.find((team) => team.id === tid)?.title, lang) : false;
 
   const actionRef = useRef<ActionType>();
   const flowpropertiesColumns: ProColumns<FlowpropertyTable>[] = [
@@ -140,7 +141,7 @@ const TableList: FC = () => {
   };
 
   return (
-    <PageContainer header={{ title: tname ?? false, breadcrumb: {} }}>
+    <PageContainer header={{ title: tname, breadcrumb: {} }}>
       <Card>
         <Search
           size={'large'}
