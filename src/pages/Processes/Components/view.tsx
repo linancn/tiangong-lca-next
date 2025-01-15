@@ -799,6 +799,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
             ]
           }
         />
+        <br />
         <ContactSelectDescription
           title={
             <FormattedMessage
@@ -828,6 +829,91 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
             {initData.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-'}
           </Descriptions.Item>
         </Descriptions>
+        <br />
+
+        <Card
+          size="small"
+          title={
+            <FormattedMessage
+              id="pages.process.view.administrativeInformation.dataEntryBy"
+              defaultMessage="Data entry by"
+            />
+          }
+        >
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id="pages.process.view.administrativeInformation.timeStamp"
+                  defaultMessage="Time stamp (last saved)"
+                />
+              }
+              labelStyle={{ width: '150px' }}
+            >
+              {initData?.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
+          <br />
+          <SourceSelectDescription
+            data={
+              initData?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']
+            }
+            title={
+              <FormattedMessage
+                id="pages.flow.process.administrativeInformation.referenceToDataSetFormat"
+                defaultMessage="Data set format(s)"
+              />
+            }
+            lang={lang}
+          />
+          <br />
+          <SourceSelectDescription
+            data={
+              initData?.administrativeInformation?.dataEntryBy?.[
+                'common:referenceToConvertedOriginalDataSetFrom'
+              ]
+            }
+            title={
+              <FormattedMessage
+                id="pages.process.view.administrativeInformation.referenceToConvertedOriginalDataSetFrom"
+                defaultMessage="Converted original data set from:"
+              />
+            }
+            lang={lang}
+          />
+          <br />
+          <ContactSelectDescription
+            data={
+              initData?.administrativeInformation?.dataEntryBy?.[
+                'common:referenceToPersonOrEntityEnteringTheData'
+              ]
+            }
+            title={
+              <FormattedMessage
+                id="pages.process.view.administrativeInformation.referenceToPersonOrEntityEnteringTheData"
+                defaultMessage="Data entry by:"
+              />
+            }
+            lang={lang}
+          />
+          <br />
+          <SourceSelectDescription
+            data={
+              initData?.administrativeInformation?.dataEntryBy?.[
+                'common:referenceToDataSetUseApproval'
+              ]
+            }
+            title={
+              <FormattedMessage
+                id="pages.process.view.administrativeInformation.referenceToDataSetUseApproval"
+                defaultMessage="Official approval of data set by producer/operator:"
+              />
+            }
+            lang={lang}
+          />
+          <br />
+        </Card>
         <br />
         <Card
           size="small"
