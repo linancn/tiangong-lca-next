@@ -912,6 +912,92 @@ export const ProcessForm: FC<Props> = ({
           size="small"
           title={
             <FormattedMessage
+              id="pages.process.view.administrativeInformation.dataEntryBy"
+              defaultMessage="Data entry by"
+            />
+          }
+        >
+          <Form.Item
+            label={
+              <FormattedMessage
+                id="pages.process.view.administrativeInformation.timeStamp"
+                defaultMessage="Time stamp (last saved)"
+              />
+            }
+            name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
+          >
+            <Input disabled={true} style={{ color: '#000' }} />
+          </Form.Item>
+          <SourceSelectForm
+            lang={lang}
+            formRef={formRef}
+            label={
+              <FormattedMessage
+                id="pages.process.view.administrativeInformation.referenceToDataSetFormat"
+                defaultMessage="Data set format(s)"
+              />
+            }
+            name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
+            onData={onData}
+          />
+          <br />
+          <SourceSelectForm
+            lang={lang}
+            formRef={formRef}
+            label={
+              <FormattedMessage
+                id="pages.process.view.administrativeInformation.referenceToConvertedOriginalDataSetFrom"
+                defaultMessage="Converted original data set from:"
+              />
+            }
+            name={[
+              'administrativeInformation',
+              'dataEntryBy',
+              'common:referenceToConvertedOriginalDataSetFrom',
+            ]}
+            onData={onData}
+          />
+          <br />
+          <ContactSelectForm
+            lang={lang}
+            formRef={formRef}
+            label={
+              <FormattedMessage
+                id="pages.process.view.administrativeInformation.referenceToPersonOrEntityEnteringTheData"
+                defaultMessage="Data entry by:"
+              />
+            }
+            name={[
+              'administrativeInformation',
+              'dataEntryBy',
+              'common:referenceToPersonOrEntityEnteringTheData',
+            ]}
+            onData={onData}
+          />
+          <br />
+          <SourceSelectForm
+            lang={lang}
+            formRef={formRef}
+            label={
+              <FormattedMessage
+                id="pages.process.view.administrativeInformation.referenceToDataSetUseApproval"
+                defaultMessage="Official approval of data set by producer/operator:"
+              />
+            }
+            name={[
+              'administrativeInformation',
+              'dataEntryBy',
+              'common:referenceToDataSetUseApproval',
+            ]}
+            onData={onData}
+          />
+        </Card>
+        <br />
+
+        <Card
+          size="small"
+          title={
+            <FormattedMessage
               id="pages.process.view.administrativeInformation.publicationAndOwnership"
               defaultMessage="Publication and ownership"
             />
