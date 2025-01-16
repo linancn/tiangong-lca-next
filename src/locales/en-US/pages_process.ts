@@ -73,8 +73,14 @@ export default {
   'pages.process.view.modellingAndValidation.referenceToNameOfReviewerAndInstitution': 'Reviewer name and institution',
 
   'pages.process.view.administrativeInformation.referenceToCommissioner': 'Commissioner of data set',
+  'pages.process.view.administrativeInformation.intendedApplications': 'Intended applications',
   'pages.process.view.administrativeInformation.RreferenceToPersonOrEntityGeneratingTheDataSet': 'Data set generator / modeller',
-  'pages.process.view.administrativeInformation.TimeStamp': 'Time stamp (last saved)',
+  'pages.process.view.administrativeInformation.dataEntryBy': 'Data entry by',
+  'pages.process.view.administrativeInformation.timeStamp': 'Time stamp (last saved)',
+  'pages.process.view.administrativeInformation.referenceToDataSetFormat': 'Data set format(s)',
+  'pages.process.view.administrativeInformation.referenceToConvertedOriginalDataSetFrom': 'Converted original data set from:',
+  'pages.process.view.administrativeInformation.referenceToPersonOrEntityEnteringTheData': 'Data entry by:',
+  'pages.process.view.administrativeInformation.referenceToDataSetUseApproval': 'Official approval of data set by producer/operator:',
   'pages.process.view.administrativeInformation.publicationAndOwnership': 'Publication and ownership',
   'pages.process.view.administrativeInformation.dateOfLastRevision': 'Date of last revision',
   'pages.process.view.administrativeInformation.dataSetVersion': 'Data set version',
@@ -83,7 +89,6 @@ export default {
   'pages.process.view.administrativeInformation.referenceToOwnershipOfDataSet': 'Owner of data set',
   'pages.process.view.administrativeInformation.copyright': 'Copyright?',
   'pages.process.view.administrativeInformation.licenseType': 'License type',
-
   'processExchange.exchangeDirection': 'Exchange direction',
   'processExchange.resultingAmount': 'Resulting amount',
   'processExchange.meanAmount': 'Mean amount',
