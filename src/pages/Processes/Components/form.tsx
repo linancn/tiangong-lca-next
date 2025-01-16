@@ -878,6 +878,29 @@ export const ProcessForm: FC<Props> = ({
           formRef={formRef}
           onData={onData}
         />
+        <Card
+          size="small"
+          title={
+            <FormattedMessage
+              id="pages.process.view.administrativeInformation.intendedApplications"
+              defaultMessage="Intended applications"
+            />
+          }
+        >
+          <LangTextItemForm
+            name={[
+              'administrativeInformation',
+              'commissionerAndGoal',
+              'common:intendedApplications',
+            ]}
+            label={
+              <FormattedMessage
+                id="pages.process.view.administrativeInformation.intendedApplications"
+                defaultMessage="Intended applications"
+              />
+            }
+          />
+        </Card>
 
         <ContactSelectForm
           name={[
@@ -895,18 +918,6 @@ export const ProcessForm: FC<Props> = ({
           formRef={formRef}
           onData={onData}
         />
-
-        <Form.Item
-          label={
-            <FormattedMessage
-              id="pages.process.view.administrativeInformation.TimeStamp"
-              defaultMessage="Time stamp (last saved)"
-            />
-          }
-          name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
-        >
-          <Input disabled={true} style={{ color: token.colorTextDescription }} />
-        </Form.Item>
 
         <Card
           size="small"
@@ -926,7 +937,7 @@ export const ProcessForm: FC<Props> = ({
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
           >
-            <Input disabled={true} style={{ color: '#000' }} />
+            <Input disabled={true} style={{ color: token.colorTextDescription }} />
           </Form.Item>
           <SourceSelectForm
             lang={lang}
