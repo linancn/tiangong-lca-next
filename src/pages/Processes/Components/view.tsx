@@ -285,7 +285,6 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
           <LangTextItemDescription
             data={initData.processInformation?.dataSetInformation?.name?.baseName}
           />
-          <br />
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
               id="pages.process.view.processInformation.treatmentStandardsRoutes"
@@ -298,7 +297,6 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
               '-'
             }
           />
-          <br />
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
               id="pages.process.view.processInformation.mixAndLocationTypes"
@@ -310,7 +308,6 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
               initData?.processInformation?.dataSetInformation?.name?.mixAndLocationTypes ?? '-'
             }
           />
-          <br />
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
               id="pages.process.view.processInformation.functionalUnitFlowProperties"
@@ -383,6 +380,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
           />
         </Card>
         <br /> */}
+        <br />
         <Card
           size="small"
           title={
@@ -755,7 +753,6 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
               )}
             </Descriptions.Item>
           </Descriptions>
-          <br />
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
               id="pages.process.view.modellingAndValidation.reviewDetails"
@@ -799,7 +796,19 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
             ]
           }
         />
+        <Divider orientationMargin="0" orientation="left" plain>
+          <FormattedMessage
+            id="pages.process.view.administrativeInformation.intendedApplications"
+            defaultMessage="Intended applications"
+          />
+        </Divider>
+        <LangTextItemDescription
+          data={
+            initData.administrativeInformation?.commissionerAndGoal?.['common:intendedApplications']
+          }
+        />
         <br />
+
         <ContactSelectDescription
           title={
             <FormattedMessage
@@ -814,21 +823,6 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
             ]
           }
         />
-        <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id="pages.process.view.administrativeInformation.TimeStamp"
-                defaultMessage="Time stamp (last saved)"
-              />
-            }
-            labelStyle={{ width: '220px' }}
-          >
-            {initData.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
         <br />
 
         <Card

@@ -342,6 +342,9 @@ export function genProcessJsonOrdered(id: string, data: any) {
               ]?.['common:shortDescription'],
             ),
           },
+          'common:intendedApplications': getLangJson(
+            data?.administrativeInformation?.commissionerAndGoal?.['common:intendedApplications'],
+          ),
         },
         dataGenerator: {
           'common:referenceToPersonOrEntityGeneratingTheDataSet': {
@@ -740,6 +743,9 @@ export function genProcessFromData(data: any) {
             ]?.['common:shortDescription'],
           ),
         },
+        'common:intendedApplications': getLangList(
+          data?.administrativeInformation?.commissionerAndGoal?.['common:intendedApplications'],
+        ),
       },
       dataGenerator: {
         'common:referenceToPersonOrEntityGeneratingTheDataSet': {
