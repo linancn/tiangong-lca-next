@@ -302,6 +302,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
             if (myKeyWord.length > 0) {
               return getFlowTablePgroongaSearch(params, lang, 'my', myKeyWord, {
                 flowType: flowTypeFilter,
+                asInput: asInput,
               });
             }
             return getFlowTableAll(params, sort, lang, 'my', [], {
