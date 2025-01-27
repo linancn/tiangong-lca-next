@@ -97,7 +97,10 @@ export function genFlowJsonOrdered(id: string, data: any) {
         },
         quantitativeReference: quantitativeReference,
         geography: {
-          locationOfSupply: data?.flowInformation?.geography?.locationOfSupply,
+          locationOfSupply:
+            data?.flowInformation?.geography?.locationOfSupply === 'NULL'
+              ? {}
+              : (data?.flowInformation?.geography?.locationOfSupply ?? {}),
         },
         technology: {
           technologicalApplicability: getLangJson(
