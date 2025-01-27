@@ -252,6 +252,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
               }
               return getFlowTablePgroongaSearch(params, lang, 'tg', tgKeyWord, {
                 flowType: flowTypeFilter,
+                asInput: asInput,
               });
             }
             return getFlowTableAll(params, sort, lang, 'tg', [], {
@@ -303,7 +304,10 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
                 flowType: flowTypeFilter,
               });
             }
-            return getFlowTableAll(params, sort, lang, 'my', [], { flowType: flowTypeFilter });
+            return getFlowTableAll(params, sort, lang, 'my', [], {
+              flowType: flowTypeFilter,
+              asInput: asInput,
+            });
           }}
           columns={FlowsColumns}
           toolBarRender={() => {
