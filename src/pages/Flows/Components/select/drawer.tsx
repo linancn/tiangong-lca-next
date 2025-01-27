@@ -23,12 +23,13 @@ type Props = {
   buttonType: string;
   buttonText?: any;
   lang: string;
+  asInput?: boolean;
   onData: (id: string, version: string) => void;
 };
 
 const { Search } = Input;
 
-const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }) => {
+const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, onData }) => {
   const [tgKeyWord, setTgKeyWord] = useState<any>('');
   const [myKeyWord, setMyKeyWord] = useState<any>('');
 
@@ -253,7 +254,10 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }) 
                 flowType: flowTypeFilter,
               });
             }
-            return getFlowTableAll(params, sort, lang, 'tg', [], { flowType: flowTypeFilter });
+            return getFlowTableAll(params, sort, lang, 'tg', [], {
+              flowType: flowTypeFilter,
+              asInput: asInput,
+            });
           }}
           columns={FlowsColumns}
           rowSelection={{
@@ -319,6 +323,14 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }) 
   useEffect(() => {
     if (!drawerVisible) return;
     setSelectedRowKeys([]);
+    if (activeTabKey === 'tg') {
+      tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
+      tgActionRefSelect.current?.reload();
+    }
+    if (activeTabKey === 'my') {
+      myActionRefSelect.current?.setPageInfo?.({ current: 1 });
+      myActionRefSelect.current?.reload();
+    }
   }, [drawerVisible]);
 
   return (

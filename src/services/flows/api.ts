@@ -48,6 +48,7 @@ export async function getFlowTableAll(
   tids: string[],
   filters?: {
     flowType?: string;
+    asInput?: boolean;
   },
 ) {
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
@@ -90,6 +91,15 @@ export async function getFlowTableAll(
       );
     }
   }
+
+  if (filters?.asInput) {
+    query = query.not(
+      'json',
+      'cs',
+      '{"flowDataSet":{"flowInformation":{"dataSetInformation":{"classificationInformation":{"common:elementaryFlowCategorization":{"common:category":[{"#text": "Emissions", "@level": "0"}]}}}}}}',
+    );
+  }
+
   if (dataSource === 'tg') {
     query = query.eq('state_code', 100);
   } else if (dataSource === 'co') {
