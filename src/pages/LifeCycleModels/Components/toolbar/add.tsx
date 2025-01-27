@@ -1,3 +1,4 @@
+import ProcessCreate from '@/pages/Processes/Components/create';
 import ProcessView from '@/pages/Processes/Components/view';
 import { ListPagination } from '@/services/general/data';
 import { getProcessTableAll, getProcessTablePgroongaSearch } from '@/services/processes/api';
@@ -214,6 +215,9 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
+          }}
+          toolBarRender={() => {
+            return [<ProcessCreate key={0} lang={lang} actionRef={myActionRefSelect} />];
           }}
           request={async (
             params: {
