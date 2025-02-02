@@ -79,6 +79,17 @@ export async function getProcessTableAll(
         success: false,
       });
     }
+  } else if (dataSource === 'te') {
+    const userData = await supabase.auth.getUser();
+    const teamId = userData.data.user?.user_metadata?.team_id;
+    if (teamId) {
+      query = query.eq('team_id', teamId);
+    } else {
+      return Promise.resolve({
+        data: [],
+        success: false,
+      });
+    }
   }
 
   if (tids.length > 0) {

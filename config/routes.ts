@@ -127,7 +127,7 @@ export default [
   {
     path: '/mydata',
     name: 'mydata',
-    icon: 'HomeOutlined',
+    icon: 'UserOutlined',
     routes: [
       {
         path: '/mydata',
@@ -173,6 +173,59 @@ export default [
         name: 'contacts',
         icon: 'TeamOutlined',
         path: '/mydata/contacts',
+        component: './Contacts',
+      },
+    ],
+  },
+  {
+    path: '/tedata',
+    name: 'tedata',
+    icon: 'TeamOutlined',
+    routes: [
+      {
+        path: '/tedata',
+        redirect: '/tedata/models',
+      },
+      {
+        name: 'models',
+        path: '/tedata/models',
+        icon: 'AppstoreAddOutlined',
+        component: './LifeCycleModels',
+      },
+      {
+        name: 'processes',
+        icon: 'ShareAltOutlined',
+        path: '/tedata/processes',
+        component: './Processes',
+      },
+      {
+        name: 'flows',
+        icon: 'NodeExpandOutlined',
+        path: '/tedata/flows',
+        component: './Flows',
+      },
+      {
+        name: 'flowproperties',
+        icon: 'ControlOutlined',
+        path: '/tedata/flowproperties',
+        component: './Flowproperties',
+      },
+      {
+        name: 'unitgroups',
+        icon: 'RetweetOutlined',
+        path: '/tedata/unitgroups',
+        component: './Unitgroups',
+      },
+      {
+        name: 'sources',
+        icon: 'PaperClipOutlined',
+        path: '/tedata/sources',
+        component: './Sources',
+      },
+      {
+        name: 'contacts',
+        icon: 'TeamOutlined',
+        path: '/tedata/contacts',
         component: './Contacts',
       },
     ],

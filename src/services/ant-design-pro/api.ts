@@ -12,6 +12,7 @@ export async function currentUser(options?: { [key: string]: any }) {
   const user: API.CurrentUser = {
     name: data?.user?.user_metadata?.display_name ?? data?.user?.email,
     userid: data?.user?.id,
+    teamid: data?.user?.user_metadata?.team_id,
     email: data?.user?.email,
     role: data?.user?.role,
   };

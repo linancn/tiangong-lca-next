@@ -169,7 +169,9 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       const searchParams = new URLSearchParams(location.search);
       const tid = searchParams.get('tid');
       if (tid) {
-        const teamMenus = menuDataProps.filter((item) => item.path !== '/mydata');
+        const teamMenus = menuDataProps.filter(
+          (item) => item.path === '/tgdata' || item.path === '/codata',
+        );
         return (
           teamMenus?.map((menu) => {
             return {

@@ -71,7 +71,7 @@ export default {
   'menu.tgdata.sources': '来源',
   'menu.tgdata.contacts': '联系人',
   'menu.teamlist': '数据生态',
-  'menu.tedata': '数据生态',
+  'menu.tedata': '团队数据',
   'menu.tedata.models': '模型',
   'menu.tedata.products': '产品模型',
   'menu.tedata.processes': '过程',
