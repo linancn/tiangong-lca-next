@@ -38,7 +38,7 @@ export async function getProcessTableAll(
   sort: Record<string, SortOrder>,
   lang: string,
   dataSource: string,
-  tids: string[],
+  tid: string,
 ) {
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
   const orderBy = sort[sortBy] ?? 'descend';
@@ -67,8 +67,14 @@ export async function getProcessTableAll(
 
   if (dataSource === 'tg') {
     query = query.eq('state_code', 100);
+    if (tid.length > 0) {
+      query = query.eq('team_id', tid);
+    }
   } else if (dataSource === 'co') {
     query = query.eq('state_code', 200);
+    if (tid.length > 0) {
+      query = query.eq('team_id', tid);
+    }
   } else if (dataSource === 'my') {
     const session = await supabase.auth.getSession();
     if (session.data.session) {
@@ -90,10 +96,6 @@ export async function getProcessTableAll(
         success: false,
       });
     }
-  }
-
-  if (tids.length > 0) {
-    query = query.in('user_id', tids);
   }
 
   const result = await query;

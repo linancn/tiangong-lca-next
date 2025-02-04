@@ -45,7 +45,7 @@ export async function getFlowTableAll(
   sort: Record<string, SortOrder>,
   lang: string,
   dataSource: string,
-  tids: string[],
+  tid: string,
   filters?: {
     flowType?: string;
     asInput?: boolean;
@@ -102,15 +102,35 @@ export async function getFlowTableAll(
 
   if (dataSource === 'tg') {
     query = query.eq('state_code', 100);
+    if (tid.length > 0) {
+      query = query.eq('team_id', tid);
+    }
   } else if (dataSource === 'co') {
     query = query.eq('state_code', 200);
+    if (tid.length > 0) {
+      query = query.eq('team_id', tid);
+    }
   } else if (dataSource === 'my') {
     const session = await supabase.auth.getSession();
-    query = query.eq('user_id', session?.data?.session?.user?.id);
-  }
-
-  if (tids.length > 0) {
-    query = query.in('user_id', tids);
+    if (session.data.session) {
+      query = query.eq('user_id', session?.data?.session?.user?.id);
+    } else {
+      return Promise.resolve({
+        data: [],
+        success: false,
+      });
+    }
+  } else if (dataSource === 'te') {
+    const userData = await supabase.auth.getUser();
+    const teamId = userData.data.user?.user_metadata?.team_id;
+    if (teamId) {
+      query = query.eq('team_id', teamId);
+    } else {
+      return Promise.resolve({
+        data: [],
+        success: false,
+      });
+    }
   }
 
   const result = await query;

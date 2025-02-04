@@ -44,7 +44,7 @@ export async function getSourceTableAll(
   sort: Record<string, SortOrder>,
   lang: string,
   dataSource: string,
-  tids: string[],
+  tid: string,
 ) {
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
   const orderBy = sort[sortBy] ?? 'descend';
@@ -72,8 +72,14 @@ export async function getSourceTableAll(
 
   if (dataSource === 'tg') {
     query = query.eq('state_code', 100);
+    if (tid.length > 0) {
+      query = query.eq('team_id', tid);
+    }
   } else if (dataSource === 'co') {
     query = query.eq('state_code', 200);
+    if (tid.length > 0) {
+      query = query.eq('team_id', tid);
+    }
   } else if (dataSource === 'my') {
     const session = await supabase.auth.getSession();
     if (session.data.session) {
@@ -84,11 +90,19 @@ export async function getSourceTableAll(
         success: false,
       });
     }
+  } else if (dataSource === 'te') {
+    const userData = await supabase.auth.getUser();
+    const teamId = userData.data.user?.user_metadata?.team_id;
+    if (teamId) {
+      query = query.eq('team_id', teamId);
+    } else {
+      return Promise.resolve({
+        data: [],
+        success: false,
+      });
+    }
   }
 
-  if (tids.length > 0) {
-    query = query.in('user_id', tids);
-  }
   const result = await query;
 
   if (result?.error) {

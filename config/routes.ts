@@ -118,13 +118,6 @@ export default [
     ],
   },
   {
-    path: '/teamlist',
-    menu: false,
-    name: 'teamlist',
-    icon: 'DeploymentUnitOutlined',
-    component: './TeamList',
-  },
-  {
     path: '/mydata',
     name: 'mydata',
     icon: 'UserOutlined',
