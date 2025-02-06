@@ -387,6 +387,8 @@ export function getDataSource(pathname: string) {
     return 'tg';
   } else if (pathname.includes('/codata')) {
     return 'co';
+  } else if (pathname.includes('/tedata')) {
+    return 'te';
   }
   return '';
 }

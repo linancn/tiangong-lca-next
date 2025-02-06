@@ -45,9 +45,10 @@ export async function getFlowTableAll(
   sort: Record<string, SortOrder>,
   lang: string,
   dataSource: string,
-  tids: string[],
+  tid: string,
   filters?: {
     flowType?: string;
+    asInput?: boolean;
   },
 ) {
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
@@ -90,17 +91,46 @@ export async function getFlowTableAll(
       );
     }
   }
-  if (dataSource === 'tg') {
-    query = query.eq('state_code', 100);
-  } else if (dataSource === 'co') {
-    query = query.eq('state_code', 200);
-  } else if (dataSource === 'my') {
-    const session = await supabase.auth.getSession();
-    query = query.eq('user_id', session?.data?.session?.user?.id);
+
+  if (filters?.asInput) {
+    query = query.not(
+      'json',
+      'cs',
+      '{"flowDataSet":{"flowInformation":{"dataSetInformation":{"classificationInformation":{"common:elementaryFlowCategorization":{"common:category":[{"#text": "Emissions", "@level": "0"}]}}}}}}',
+    );
   }
 
-  if (tids.length > 0) {
-    query = query.in('user_id', tids);
+  if (dataSource === 'tg') {
+    query = query.eq('state_code', 100);
+    if (tid.length > 0) {
+      query = query.eq('team_id', tid);
+    }
+  } else if (dataSource === 'co') {
+    query = query.eq('state_code', 200);
+    if (tid.length > 0) {
+      query = query.eq('team_id', tid);
+    }
+  } else if (dataSource === 'my') {
+    const session = await supabase.auth.getSession();
+    if (session.data.session) {
+      query = query.eq('user_id', session?.data?.session?.user?.id);
+    } else {
+      return Promise.resolve({
+        data: [],
+        success: false,
+      });
+    }
+  } else if (dataSource === 'te') {
+    const userData = await supabase.auth.getUser();
+    const teamId = userData.data.user?.user_metadata?.team_id;
+    if (teamId) {
+      query = query.eq('team_id', teamId);
+    } else {
+      return Promise.resolve({
+        data: [],
+        success: false,
+      });
+    }
   }
 
   const result = await query;
@@ -220,7 +250,7 @@ export async function getFlowTablePgroongaSearch(
   lang: string,
   dataSource: string,
   queryText: string,
-  filterCondition: any,
+  filter: any,
 ) {
   let result: any = {};
   const session = await supabase.auth.getSession();
@@ -228,7 +258,7 @@ export async function getFlowTablePgroongaSearch(
   if (session.data.session) {
     result = await supabase.rpc('pgroonga_search_flows', {
       query_text: queryText,
-      filter_condition: filterCondition,
+      filter_condition: filter,
       page_size: params.pageSize ?? 10,
       page_current: params.current ?? 1,
       data_source: dataSource,

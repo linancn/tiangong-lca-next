@@ -80,7 +80,7 @@ export default {
   'menu.codata.sources': 'Sources',
   'menu.codata.contacts': 'Contacts',
   'menu.teamlist': 'Data Ecosystem',
-  'menu.tedata': 'Data Ecosystem',
+  'menu.tedata': 'Team Data',
   'menu.tedata.models': 'Models',
   'menu.tedata.products': 'Product Models',
   'menu.tedata.processes': 'Processes',

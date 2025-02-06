@@ -121,7 +121,11 @@ export function genProcessJsonOrdered(id: string, data: any) {
             '@location':
               data?.processInformation?.geography?.locationOfOperationSupplyOrProduction?.[
                 '@location'
-              ] ?? {},
+              ] === 'NULL'
+                ? {}
+                : (data?.processInformation?.geography?.locationOfOperationSupplyOrProduction?.[
+                    '@location'
+                  ] ?? {}),
             descriptionOfRestrictions: getLangJson(
               data?.processInformation?.geography?.locationOfOperationSupplyOrProduction
                 ?.descriptionOfRestrictions,

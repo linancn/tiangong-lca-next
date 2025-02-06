@@ -31,6 +31,7 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
   const [fromData, setFromData] = useState<any>({});
+  const [asInput, setAsInput] = useState(false);
   const [functionalUnitOrOther, setFunctionalUnitOrOther] = useState(false);
 
   const handletFromData = () => {
@@ -41,6 +42,7 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
     if (!drawerVisible) return;
     formRefCreate.current?.resetFields();
     const initData = { exchangeDirection: direction.toLowerCase() };
+    setAsInput(direction.toLowerCase() === 'input');
     formRefCreate.current?.setFieldsValue(initData);
     setFromData(initData);
   }, [drawerVisible]);
@@ -122,6 +124,9 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
                   { value: 'input', label: 'Input' },
                   { value: 'output', label: 'Output' },
                 ]}
+                onChange={(value) => {
+                  setAsInput(value === 'input');
+                }}
               />
             </Form.Item>
             <FlowsSelectForm
@@ -135,6 +140,7 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
               lang={lang}
               drawerVisible={drawerVisible}
               formRef={formRefCreate}
+              asInput={asInput}
               onData={handletFromData}
             />
             <Form.Item

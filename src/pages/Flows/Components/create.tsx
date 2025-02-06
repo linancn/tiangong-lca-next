@@ -1,5 +1,7 @@
 import { createFlows } from '@/services/flows/api';
 import { formatDateTime } from '@/services/general/util';
+import { getSourceDetail } from '@/services/sources/api';
+import { genSourceFromData } from '@/services/sources/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -62,22 +64,67 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
 
   useEffect(() => {
     if (!drawerVisible) return;
-    const currentDateTime = formatDateTime(new Date());
-    const newData = {
-      administrativeInformation: {
-        dataEntryBy: {
-          'common:timeStamp': currentDateTime,
-        },
-        publicationAndOwnership: {
-          'common:dataSetVersion': '01.01.000',
-        },
-      },
-    };
-    setInitData(newData);
-    setPropertyDataSource([]);
-    formRefCreate.current?.resetFields();
-    formRefCreate.current?.setFieldsValue(newData);
-    setFromData(newData);
+    const referenceToComplianceSystemId = '9ba3ac1e-6797-4cc0-afd5-1b8f7bf28c6a';
+    const referenceToDataSetFormatId = 'a97a0155-0234-4b87-b4ce-a45da52f2a40';
+
+    getSourceDetail(referenceToComplianceSystemId, '').then(async (result1: any) => {
+      const referenceToComplianceSystemData = genSourceFromData(
+        result1.data?.json?.sourceDataSet ?? {},
+      );
+      const referenceToComplianceSystem = {
+        '@refObjectId': referenceToComplianceSystemId,
+        '@type': 'source data set',
+        '@uri': `../sources/${referenceToComplianceSystemId}.xml`,
+        '@version': result1.data?.version,
+        'common:shortDescription':
+          referenceToComplianceSystemData?.sourceInformation?.dataSetInformation?.[
+            'common:shortName'
+          ] ?? [],
+      };
+
+      getSourceDetail(referenceToDataSetFormatId, '').then(async (result2: any) => {
+        const referenceToDataSetFormatData = genSourceFromData(
+          result2.data?.json?.sourceDataSet ?? {},
+        );
+        const referenceToDataSetFormat = {
+          '@refObjectId': referenceToDataSetFormatId,
+          '@type': 'source data set',
+          '@uri': `../sources/${referenceToDataSetFormatId}.xml`,
+          '@version': result2.data?.version,
+          'common:shortDescription':
+            referenceToDataSetFormatData?.sourceInformation?.dataSetInformation?.[
+              'common:shortName'
+            ] ?? [],
+        };
+
+        const currentDateTime = formatDateTime(new Date());
+        const newData = {
+          modellingAndValidation: {
+            complianceDeclarations: {
+              compliance: {
+                'common:referenceToComplianceSystem': referenceToComplianceSystem,
+              },
+            },
+          },
+          administrativeInformation: {
+            dataEntryBy: {
+              'common:timeStamp': currentDateTime,
+              'common:referenceToDataSetFormat': referenceToDataSetFormat,
+            },
+            publicationAndOwnership: {
+              'common:dataSetVersion': '01.01.000',
+            },
+          },
+        };
+
+        setInitData(newData);
+
+        setPropertyDataSource([]);
+        formRefCreate.current?.resetFields();
+        formRefCreate.current?.setFieldsValue(newData);
+        setFromData(newData);
+      });
+    });
   }, [drawerVisible]);
 
   return (

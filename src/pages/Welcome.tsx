@@ -3,11 +3,11 @@ import styles from '@/style/custom.less';
 import { Card, Col, Divider, Row, Statistic, StatisticProps, theme } from 'antd';
 import React, { useEffect, useState } from 'react';
 
+import { getTeams } from '@/services/teams/api';
 import { PageContainer } from '@ant-design/pro-components';
 import Meta from 'antd/es/card/Meta';
 import CountUp from 'react-countup';
 import { FormattedMessage, useIntl } from 'umi';
-import { Teams } from './TeamList/info';
 
 const Welcome: React.FC = () => {
   const { token } = theme.useToken();
@@ -16,18 +16,24 @@ const Welcome: React.FC = () => {
   const lang = getLang(locale);
 
   const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
-  // const [color1, setColor1] = useState('#16163F');
-  // const [color2, setColor2] = useState('#e7e7eb');
   const [color3, setColor3] = useState('#5C246A');
+
+  const [teams, setTeams] = React.useState<any>(null);
+
+  useEffect(() => {
+    if (teams) {
+      return;
+    }
+    getTeams().then((res) => {
+      console.log(res);
+      setTeams(res.data);
+    });
+  }, []);
 
   useEffect(() => {
     if (isDarkMode) {
-      // setColor1('#e9e9c0');
-      // setColor2('#ddbbff');
       setColor3('#9e3ffd');
     } else {
-      // setColor1('#16163F');
-      // setColor2('#aba1ab');
       setColor3('#5C246A');
     }
   }, [isDarkMode]);
@@ -158,8 +164,8 @@ const Welcome: React.FC = () => {
           <FormattedMessage id="pages.dataEcosystem" defaultMessage="Data Ecosystem" />
         </Divider>
         <Row gutter={16}>
-          {Teams.map((team, index) => {
-            const logo = isDarkMode ? team.darkLogo : team.lightLogo;
+          {teams?.map((team: any, index: React.Key | null | undefined) => {
+            const logo = isDarkMode ? team.json?.darkLogo : team.json?.lightLogo;
             return (
               <Col span={8} key={index}>
                 <Card
@@ -180,8 +186,8 @@ const Welcome: React.FC = () => {
                   }}
                 >
                   <Meta
-                    title={getLangText(team.title, lang)}
-                    description={getLangText(team.description, lang)}
+                    title={getLangText(team.json?.title, lang)}
+                    description={getLangText(team.json?.description, lang)}
                   />
                 </Card>
               </Col>

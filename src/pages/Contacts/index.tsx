@@ -2,13 +2,13 @@ import { getContactTableAll, getContactTablePgroongaSearch } from '@/services/co
 import { ContactTable } from '@/services/contacts/data';
 import { ListPagination } from '@/services/general/data';
 import { getDataSource, getLang, getLangText } from '@/services/general/util';
+import { getTeamById } from '@/services/teams/api';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Card, Input, Space, Tooltip } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
-import { Teams } from '../TeamList/info';
 import { getDataTitle } from '../Utils';
 import ContactCreate from './Components/create';
 import ContactDelete from './Components/delete';
@@ -19,19 +19,17 @@ const { Search } = Input;
 
 const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<any>('');
+  const [team, setTeam] = useState<any>(null);
 
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
 
   const searchParams = new URLSearchParams(location.search);
   const tid = searchParams.get('tid');
-  const tids = tid ? tid.split(',') : [];
 
   const intl = useIntl();
 
   const lang = getLang(intl.locale);
-  const titleJson = Teams.find((team) => team.id === tid)?.title;
-  const tname = titleJson ? getLangText(Teams.find((team) => team.id === tid)?.title, lang) : false;
 
   const actionRef = useRef<ActionType>();
   const contactColumns: ProColumns<ContactTable>[] = [
@@ -127,6 +125,15 @@ const TableList: FC = () => {
     },
   ];
 
+  useEffect(() => {
+    if (team) {
+      return;
+    }
+    getTeamById(tid ?? '').then((res) => {
+      if (res.data.length > 0) setTeam(res.data[0]);
+    });
+  }, []);
+
   const onSearch: SearchProps['onSearch'] = (value) => {
     setKeyWord(value);
     actionRef.current?.setPageInfo?.({ current: 1 });
@@ -134,7 +141,12 @@ const TableList: FC = () => {
   };
 
   return (
-    <PageContainer header={{ title: tname, breadcrumb: {} }}>
+    <PageContainer
+      header={{
+        title: team?.json?.title ? getLangText(team?.json?.title, lang) : false,
+        breadcrumb: {},
+      }}
+    >
       <Card>
         <Search
           size={'large'}
@@ -173,7 +185,7 @@ const TableList: FC = () => {
           if (keyWord.length > 0) {
             return getContactTablePgroongaSearch(params, lang, dataSource, keyWord, {});
           }
-          return getContactTableAll(params, sort, lang, dataSource, tids);
+          return getContactTableAll(params, sort, lang, dataSource, tid ?? '');
         }}
         columns={contactColumns}
       />

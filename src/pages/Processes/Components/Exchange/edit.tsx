@@ -44,6 +44,7 @@ const ProcessExchangeEdit: FC<Props> = ({
   const formRefEdit = useRef<ProFormInstance>();
   const [fromData, setFromData] = useState<any>({});
   const [initData, setInitData] = useState<any>({});
+  const [asInput, setAsInput] = useState(false);
   const [functionalUnitOrOther, setFunctionalUnitOrOther] = useState(false);
 
   const handletFromData = () => {
@@ -63,6 +64,7 @@ const ProcessExchangeEdit: FC<Props> = ({
     setFromData(filteredData);
     setFunctionalUnitOrOther(filteredData?.quantitativeReference ?? false);
     // setSpinning(false);
+    setAsInput(filteredData?.exchangeDirection?.toLowerCase() === 'input');
   };
 
   useEffect(() => {
@@ -163,6 +165,9 @@ const ProcessExchangeEdit: FC<Props> = ({
                   { value: 'input', label: 'Input' },
                   { value: 'output', label: 'Output' },
                 ]}
+                onChange={(value) => {
+                  setAsInput(value === 'input');
+                }}
               />
             </Form.Item>
             <FlowsSelectForm
@@ -176,6 +181,7 @@ const ProcessExchangeEdit: FC<Props> = ({
               lang={lang}
               formRef={formRefEdit}
               drawerVisible={drawerVisible}
+              asInput={asInput}
               onData={handletFromData}
             />
             <Form.Item

@@ -19,7 +19,7 @@ import { Card, Divider, Form, Input, Select, Space } from 'antd';
 import type { FC } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import { complianceOptions, flowTypeOptions } from './optiondata';
+import { complianceOptions, myFlowTypeOptions } from './optiondata';
 import PropertyCreate from './Property/create';
 import PropertyDelete from './Property/delete';
 import PropertyEdit from './Property/edit';
@@ -327,7 +327,7 @@ export const FlowForm: FC<Props> = ({
             name={['flowInformation', 'LCIMethod', 'typeOfDataSet']}
           >
             <Select
-              options={flowTypeOptions}
+              options={myFlowTypeOptions}
               onChange={(value) => {
                 if (thisFlowType === 'Elementary flow' || value === 'Elementary flow') {
                   const nameList = [

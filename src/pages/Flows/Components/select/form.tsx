@@ -15,10 +15,19 @@ type Props = {
   lang: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   drawerVisible: boolean;
+  asInput?: boolean;
   onData: () => void;
 };
 
-const FlowsSelectForm: FC<Props> = ({ name, label, lang, formRef, drawerVisible, onData }) => {
+const FlowsSelectForm: FC<Props> = ({
+  name,
+  label,
+  lang,
+  formRef,
+  drawerVisible,
+  asInput,
+  onData,
+}) => {
   const [id, setId] = useState<string | undefined>(undefined);
   const [version, setVersion] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
@@ -65,12 +74,20 @@ const FlowsSelectForm: FC<Props> = ({ name, label, lang, formRef, drawerVisible,
           <Input disabled={true} style={{ width: '350px', color: token.colorTextDescription }} />
         </Form.Item>
         <Space direction="horizontal" style={{ marginTop: '6px' }}>
-          {!id && <FlowsSelectDrawer buttonType="text" lang={lang} onData={handletFlowsData} />}
+          {!id && (
+            <FlowsSelectDrawer
+              buttonType="text"
+              lang={lang}
+              asInput={asInput}
+              onData={handletFlowsData}
+            />
+          )}
           {id && (
             <FlowsSelectDrawer
               buttonType="text"
               buttonText={<FormattedMessage id="pages.button.reselect" defaultMessage="Reselect" />}
               lang={lang}
+              asInput={asInput}
               onData={handletFlowsData}
             />
           )}

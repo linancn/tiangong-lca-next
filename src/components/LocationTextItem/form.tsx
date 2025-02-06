@@ -12,7 +12,8 @@ type Props = {
 const LocationTextItemForm: FC<Props> = ({ name, label, lang, onData, rules }) => {
   const [locationData, setLocationData] = useState<any>([]);
 
-  const handleLChange = async () => {
+  const handleLChange = async (value: any) => {
+    console.log(value);
     onData();
   };
 
@@ -21,10 +22,15 @@ const LocationTextItemForm: FC<Props> = ({ name, label, lang, onData, rules }) =
       if (res.success) {
         const data: any = res.data?.[0]?.location ?? [];
         setLocationData(
-          data?.map((l: any) => ({
-            label: l?.['@value'] + ' (' + l?.['#text'] + ')',
-            value: l?.['@value'],
-          })) ?? [],
+          data?.map((l: any) => {
+            if (l?.['@value'] === 'NULL') {
+              return { label: '', value: 'NULL' };
+            }
+            return {
+              label: l?.['@value'] + ' (' + l?.['#text'] + ')',
+              value: l?.['@value'],
+            };
+          }) ?? [],
         );
       }
     });

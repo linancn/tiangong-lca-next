@@ -1,5 +1,26 @@
 import { FormattedMessage } from 'umi';
 
+export const myFlowTypeOptions = [
+  {
+    value: 'Product flow',
+    label: (
+      <FormattedMessage
+        id="pages.flow.view.modellingAndValidation.typeOfDataSet.productFlow"
+        defaultMessage="Product flow"
+      />
+    ),
+  },
+  {
+    value: 'Waste flow',
+    label: (
+      <FormattedMessage
+        id="pages.flow.view.modellingAndValidation.typeOfDataSet.wasteFlow"
+        defaultMessage="Waste flow"
+      />
+    ),
+  },
+];
+
 export const flowTypeOptions = [
   {
     value: 'Elementary flow',
