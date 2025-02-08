@@ -12,6 +12,7 @@ import pages_process from './zh-CN/pages_process';
 import pages_product from './zh-CN/pages_product';
 import pages_source from './zh-CN/pages_source';
 import pages_unitgroup from './zh-CN/pages_unitgroup';
+import prompts from './zh-CN/prompts';
 import pwa from './zh-CN/pwa';
 import settingDrawer from './zh-CN/settingDrawer';
 import settings from './zh-CN/settings';
@@ -43,4 +44,5 @@ export default {
   ...pages_source,
   ...pages_product,
   ...validator,
+  ...prompts,
 };

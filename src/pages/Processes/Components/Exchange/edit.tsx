@@ -21,6 +21,7 @@ import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { DataDerivationTypeStatusOptions } from '../optiondata';
+import { convertUnit } from '@/utils/index';
 
 type Props = {
   id: string;
@@ -30,6 +31,7 @@ type Props = {
   // actionRef: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
   onData: (data: any) => void;
+  getRefUnit: () => string | undefined // 获取参考单位值
 };
 const ProcessExchangeEdit: FC<Props> = ({
   id,
@@ -39,6 +41,7 @@ const ProcessExchangeEdit: FC<Props> = ({
   // actionRef,
   setViewDrawerVisible,
   onData,
+  getRefUnit
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
@@ -46,6 +49,7 @@ const ProcessExchangeEdit: FC<Props> = ({
   const [initData, setInitData] = useState<any>({});
   const [asInput, setAsInput] = useState(false);
   const [functionalUnitOrOther, setFunctionalUnitOrOther] = useState(false);
+  const [isConverted, setIsConverted] = useState(false);//只需要在第一次展示的时候转换一次
 
   const handletFromData = () => {
     setFromData(formRefEdit.current?.getFieldsValue() ?? {});
@@ -59,6 +63,22 @@ const ProcessExchangeEdit: FC<Props> = ({
     // setSpinning(true);
     formRefEdit.current?.resetFields();
     const filteredData = data?.find((item: any) => item['@dataSetInternalID'] === id) ?? {};
+    console.log('setInitData', filteredData, filteredData?.meanAmount, filteredData?.meanAmountUnit, getRefUnit())
+    if (!isConverted) {
+      const resMeanAmount = convertUnit(filteredData?.meanAmount, getRefUnit(), filteredData?.meanAmountUnit);
+      if (resMeanAmount.status === 'success') {
+        filteredData.meanAmount = resMeanAmount.value
+      } else {
+        return false
+      };
+      const resResoultingAmount = convertUnit(filteredData?.resultingAmount, getRefUnit(), filteredData?.resultingAmountUnit);
+      if (resResoultingAmount.status === 'success') {
+        filteredData.resultingAmount = resResoultingAmount.value
+      } else {
+        return false
+      };
+      setIsConverted(true)
+    }
     setInitData(filteredData);
     formRefEdit.current?.setFieldsValue(filteredData);
     setFromData(filteredData);
@@ -68,7 +88,9 @@ const ProcessExchangeEdit: FC<Props> = ({
   };
 
   useEffect(() => {
-    if (!drawerVisible) return;
+    if (!drawerVisible) {
+      return
+    };
     onReset();
   }, [drawerVisible]);
 
@@ -184,29 +206,54 @@ const ProcessExchangeEdit: FC<Props> = ({
               asInput={asInput}
               onData={handletFromData}
             />
-            <Form.Item
-              label={
-                <FormattedMessage
-                  id="pages.process.view.exchange.meanAmount"
-                  defaultMessage="Mean amount"
-                />
-              }
-              name={'meanAmount'}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label={
-                <FormattedMessage
-                  id="pages.process.view.exchange.resultingAmount"
-                  defaultMessage="Resulting amount"
-                />
-              }
-              name={'resultingAmount'}
-            >
-              <Input />
-            </Form.Item>
-
+            <Card>
+              <Form.Item
+                label={
+                  <FormattedMessage
+                    id="pages.process.view.exchange.meanAmount"
+                    defaultMessage="Mean amount"
+                  />
+                }
+                name={'meanAmount'}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
+                label={
+                  <FormattedMessage
+                    id="pages.process.view.exchange.unitName"
+                    defaultMessage="Name of unit"
+                  />
+                }
+                name={'meanAmountUnit'}
+              >
+                <Input />
+              </Form.Item>
+            </Card>
+            <Card>
+              <Form.Item
+                label={
+                  <FormattedMessage
+                    id="pages.process.view.exchange.resultingAmount"
+                    defaultMessage="Resulting amount"
+                  />
+                }
+                name={'resultingAmount'}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
+                label={
+                  <FormattedMessage
+                    id="pages.process.view.exchange.unitName"
+                    defaultMessage="Name of unit"
+                  />
+                }
+                name={'resultingAmountUnit'}
+              >
+                <Input />
+              </Form.Item>
+            </Card>
             <Form.Item
               label={
                 <FormattedMessage
@@ -227,7 +274,7 @@ const ProcessExchangeEdit: FC<Props> = ({
               />
             </Form.Item>
             {formRefEdit.current?.getFieldValue('uncertaintyDistributionType') === 'triangular' ||
-            formRefEdit.current?.getFieldValue('uncertaintyDistributionType') === 'uniform' ? (
+              formRefEdit.current?.getFieldValue('uncertaintyDistributionType') === 'uniform' ? (
               <>
                 <Form.Item
                   label={
@@ -257,7 +304,7 @@ const ProcessExchangeEdit: FC<Props> = ({
             )}
 
             {formRefEdit.current?.getFieldValue('uncertaintyDistributionType') === 'log-normal' ||
-            formRefEdit.current?.getFieldValue('uncertaintyDistributionType') === 'log-normal' ? (
+              formRefEdit.current?.getFieldValue('uncertaintyDistributionType') === 'log-normal' ? (
               <>
                 <Form.Item
                   label={
