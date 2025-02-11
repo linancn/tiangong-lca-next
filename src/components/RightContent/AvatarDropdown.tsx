@@ -1,8 +1,9 @@
-import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
+import { LogoutOutlined, UserOutlined, TeamOutlined } from '@ant-design/icons';
 import { history, useModel } from '@umijs/max';
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
-import { outLogin } from '@/services/ant-design-pro/api';
+import { outLogin, } from '@/services/ant-design-pro/api';
+import { getUserRoles } from '@/services/roles/api';
 import { Spin } from 'antd';
 import { createStyles } from 'antd-style';
 import { stringify } from 'querystring';
@@ -41,6 +42,18 @@ const useStyles = createStyles(({ token }) => {
 });
 
 export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) => {
+  const [userRole, setUserRole] = useState('');
+
+  const initialUserRole = async () => {
+    const { data, success } = await getUserRoles();
+    if (success && data.length) {
+      setUserRole(data[0].role);
+    }
+  }
+
+  useEffect(() => {
+    initialUserRole();
+  }, []);
   /**
    * 退出登录，并且将当前的 url 保存
    */
@@ -74,6 +87,10 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
         loginOut();
         return;
       }
+      if (key === 'team') {
+        history.push(`/team`);
+        return;
+      };
       history.push(`/account`);
     },
     [setInitialState],
@@ -116,6 +133,14 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
       label: <FormattedMessage id="menu.account.logout" defaultMessage="Logout" />,
     },
   ];
+
+  if (userRole === "owner" || userRole === 'admin') {
+    menuItems.splice(1, 0, {
+      key: 'team',
+      icon: <TeamOutlined />,
+      label: <FormattedMessage id="menu.account.team" defaultMessage="Team Management" />,
+    })
+  }
 
   return (
     <HeaderDropdown
