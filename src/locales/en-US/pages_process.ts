@@ -271,4 +271,9 @@ export default {
   'pages.process.modellingAndValidation.dataQualityIndicatorValue.veryPoor': 'Very poor',
   'pages.process.modellingAndValidation.dataQualityIndicatorValue.notEvaluatedUnknown': 'Not evaluated / unknown',
   'pages.process.modellingAndValidation.dataQualityIndicatorValue.notApplicable': 'Not applicable',
+
+  'pages.process.unitConvert.title': 'Unit Conversion',
+  'pages.process.unitConvert.value': 'Value',
+  'pages.process.unitConvert.unit': 'Unit',
+  'pages.process.unitConvert.result': 'Result',
 };
