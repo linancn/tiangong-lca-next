@@ -4,12 +4,12 @@ import { Flex, Form, Spin, Tabs, Upload, message, Select, Input, Table, Button, 
 import { useEffect, useRef, useState } from 'react';
 import { PlusOutlined, DeleteOutlined, CrownOutlined, UserOutlined } from '@ant-design/icons';
 import type { UploadFile } from 'antd/es/upload/interface';
-import { getTeamMembersApi, editTeamMessage, getTeamMessageApi, updateRoleApi, delRoleApi } from '@/services/teams/api';
+import { getTeamMembersApi, editTeamMessage, getTeamMessageApi, updateRoleApi, delRoleApi, uploadLogoApi, deleteLogoApi } from '@/services/teams/api';
 import { ListPagination } from '@/services/general/data';
 import { TeamMemberTable } from '@/services/teams/data';
 import AddMemberModal from './Components/AddMemberModal';
 import { getUserRoles } from '@/services/roles/api';
-
+const LogoBaseUrl = 'https://qgzvkongdjqiiamzbbts.supabase.co/storage/v1/object/public/sys-files/'
 
 const Team = () => {
     const [activeTabKey, setActiveTabKey] = useState('info');
@@ -21,7 +21,7 @@ const Team = () => {
         if (success && data.length) {
             setTeamId(data[0].team_id);
             setUserRole(data[0].role);
-            console.log('团队id', data[0].team_id, '用户角色', data[0].role)
+            // console.log('团队id', data[0].team_id, '用户角色', data[0].role)
         }
     }
 
@@ -37,9 +37,11 @@ const Team = () => {
 
     const renderTeamInfoForm = () => {
         const formRefEdit = useRef<ProFormInstance>();
-        const [lightLogo, setLightLogo] = useState<UploadFile[]>([]);
-        const [darkLogo, setDarkLogo] = useState<UploadFile[]>([]);
+        const [lightLogo, setLightLogo] = useState('');
+        const [darkLogo, setDarkLogo] = useState('');
         const [teamInfoSpinning, setTeamInfoSpinning] = useState(false);
+        const [lightLogoSpinning, setLightLogoSpinning] = useState(false);
+        const [darkLogoSpinning, setDarkLogoSpinning] = useState(false);
 
         const getTeamInfo = async (id: string) => {
             setTeamInfoSpinning(true);
@@ -67,8 +69,10 @@ const Team = () => {
                 }) => {
                     _formData[`description-${d['@xml:lang']}`] = d['#text'];
                 });
-                // console.log('转化成表单值', _formData)
-                formRefEdit.current?.setFieldsValue(_formData)
+                // console.log('转化成表单值', _formData);
+                setLightLogo(data[0]?.json.lightLogo);
+                setDarkLogo(data[0]?.json.darkLogo);
+                formRefEdit.current?.setFieldsValue({ ..._formData, darkLogo: LogoBaseUrl + data[0]?.json.darkLogo, lightLogo: LogoBaseUrl + data[0]?.json.lightLogo });
             };
             setTeamInfoSpinning(false);
         };
@@ -95,6 +99,67 @@ const Team = () => {
 
             return result;
         };
+
+        const removeLogo = async (type: 'lightLogo' | 'darkLogo') => {
+            if (type === 'lightLogo') {
+                setLightLogo('');
+            } else {
+                setDarkLogo('');
+            }
+
+        };
+
+        const uploadLogo = async (fileList: UploadFile[], type: 'lightLogo' | 'darkLogo') => {
+            if (fileList.length > 0) {
+                const file = fileList[0].originFileObj;
+                if (file) {
+                    // 检查文件类型是否为图片
+                    if (!file.type.startsWith('image/')) {
+                        message.error(
+                            intl.formatMessage({
+                                id: 'teams.logo.typeError',
+                                defaultMessage: 'Only image files can be uploaded!',
+                            }),
+                        );
+                        if (type === 'lightLogo') {
+                            setLightLogo('');
+                        } else {
+                            setDarkLogo('');
+                        }
+                        return;
+                    }
+                    // 检查文件名是否包含中文字符
+                    if (/[\u4e00-\u9fa5]/.test(file.name)) {
+                        message.error(
+                            intl.formatMessage({
+                                id: 'teams.logo.nameError',
+                                defaultMessage: 'File name cannot contain Chinese characters!',
+                            }),
+                        );
+                        if (type === 'lightLogo') {
+                            setLightLogo('');
+                        } else {
+                            setDarkLogo('');
+                        }
+                        return;
+                    }
+                    try {
+                        const { data } = await uploadLogoApi(file.name, file);
+                        console.log('上传结果', data);
+                        if (type === 'lightLogo') {
+                            setLightLogo(data.path);
+                            setLightLogoSpinning(false);
+                        } else {
+                            setDarkLogo(data.path);
+                            setDarkLogoSpinning(false);
+                        }
+                    } catch (error) {
+                        console.log('上传失败', error)
+                    }
+                }
+            }
+
+        };
         return <Flex gap="middle" vertical style={{ maxWidth: '50%', minWidth: '200px' }}>
             <Spin spinning={teamInfoSpinning}>
                 <ProForm
@@ -106,12 +171,10 @@ const Team = () => {
                         ),
                     }}
                     onFinish={async (values) => {
-                        setTeamInfoSpinning(true);
-                        // console.log('填写的表单值', values)
                         try {
                             if (!teamId) return;
                             const params = getParams(values);
-                            const { data, error } = await editTeamMessage(teamId, params);
+                            const { data, error } = await editTeamMessage(teamId, { ...params, darkLogo, lightLogo });
                             if (error) {
                                 message.error(
                                     intl.formatMessage({
@@ -241,11 +304,22 @@ const Team = () => {
                         })}
                     >
                         <Upload
+                            beforeUpload={() => {
+                                setLightLogoSpinning(true);
+                                return true;
+                            }}
+                            onRemove={() => removeLogo('lightLogo')}
+                            maxCount={1}
                             listType="picture-card"
-                            fileList={lightLogo}
-                            onChange={({ fileList }) => setLightLogo(fileList)}
+                            fileList={lightLogo ? [{
+                                uid: '-1',
+                                name: 'logo',
+                                status: 'done',
+                                url: LogoBaseUrl + lightLogo
+                            }] : []}
+                            onChange={({ fileList }) => uploadLogo(fileList, 'lightLogo')}
                         >
-                            {lightLogo.length < 1 && <PlusOutlined />}
+                            {lightLogo.length == 0 && <Spin spinning={lightLogoSpinning}><PlusOutlined /></Spin>}
                         </Upload>
                     </Form.Item>
 
@@ -257,11 +331,22 @@ const Team = () => {
                         })}
                     >
                         <Upload
+                            beforeUpload={() => {
+                                setDarkLogoSpinning(true);
+                                return true;
+                            }}
+                            onRemove={() => removeLogo('darkLogo')}
+                            maxCount={1}
                             listType="picture-card"
-                            fileList={darkLogo}
-                            onChange={({ fileList }) => setDarkLogo(fileList)}
+                            fileList={darkLogo ? [{
+                                uid: '-1',
+                                name: 'logo',
+                                status: 'done',
+                                url: LogoBaseUrl + darkLogo
+                            }] : []}
+                            onChange={({ fileList }) => uploadLogo(fileList, 'darkLogo')}
                         >
-                            {darkLogo.length < 1 && <PlusOutlined />}
+                            {darkLogo.length == 0 && <Spin spinning={darkLogoSpinning}><PlusOutlined /></Spin>}
                         </Upload>
                     </Form.Item>
                 </ProForm>
@@ -286,14 +371,14 @@ const Team = () => {
                     message.error(
                         intl.formatMessage({
                             id: 'teams.members.actionError',
-                            defaultMessage: '设置失败!',
+                            defaultMessage: 'Action failed!',
                         }),
                     );
                 } else {
                     message.success(
                         intl.formatMessage({
                             id: 'teams.members.actionSuccess',
-                            defaultMessage: '设置成功!',
+                            defaultMessage: 'Action success!',
                         }),
                     );
                     actionRef.current?.reload();
@@ -341,14 +426,14 @@ const Team = () => {
                                                         message.error(
                                                             intl.formatMessage({
                                                                 id: 'teams.members.actionError',
-                                                                defaultMessage: '操作失败!',
+                                                                defaultMessage: 'Action failed!',
                                                             }),
                                                         );
                                                     } else {
                                                         message.success(
                                                             intl.formatMessage({
                                                                 id: 'teams.members.actionSuccess',
-                                                                defaultMessage: '操作成功!',
+                                                                defaultMessage: 'Action success!',
                                                             }),
                                                         );
                                                     }
@@ -361,7 +446,7 @@ const Team = () => {
                                 />
                             </Tooltip>)
                         }
-                        {record.role !== 'admin' && record.role !== "is_invited" && userRole === 'owner'&&record.role!=='owner' && (
+                        {record.role !== 'admin' && record.role !== "is_invited" && userRole === 'owner' && record.role !== 'owner' && (
                             <Tooltip title={intl.formatMessage({ id: 'teams.members.setAdmin' })}>
                                 <Button
                                     type="text"
@@ -430,7 +515,7 @@ const Team = () => {
                                 message.error(
                                     intl.formatMessage({
                                         id: 'pages.team.members.getError',
-                                        defaultMessage: '获取团队成员失败!',
+                                        defaultMessage: 'Failed to get team members!',
                                     }),
                                 );
                                 return {

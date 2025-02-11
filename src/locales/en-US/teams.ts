@@ -23,4 +23,8 @@ export default {
   'teams.notification.team.invite.accept': 'Accept',
   'teams.notification.team.invite.reject': 'Reject',
   'teams.members.role.invited': 'Invited',
+  'teams.logo.typeError': 'Only image files can be uploaded!',
+  'teams.logo.uploadSuccess': 'Upload successful!',
+  'teams.logo.uploadError': 'Upload failed!',
+  'teams.logo.nameError': 'File name cannot contain Chinese characters!',
 };

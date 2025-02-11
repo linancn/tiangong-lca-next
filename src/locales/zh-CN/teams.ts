@@ -23,4 +23,8 @@ export default {
   'teams.notification.team.invite.accept': '同意',
   'teams.notification.team.invite.reject': '拒绝',
   'teams.members.role.invited': '邀请中',
+  'teams.logo.typeError': '只能上传图片文件!',
+  'teams.logo.uploadSuccess': '上传成功!',
+  'teams.logo.uploadError': '上传失败!',
+  'teams.logo.nameError': '文件名不能包含中文字符!',
 };

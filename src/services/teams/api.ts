@@ -50,7 +50,7 @@ export async function getTeamMessageApi(id: string) {
   const result = await supabase
     .from('teams')
     .select("*")
-    .eq('id', id)
+    .eq('id', id);
   return result;
 }
 
@@ -126,12 +126,12 @@ export async function getTeamMembersApi(teamId: string) {
 
 export async function addTeamMemberApi(teamId: string, email: string) {
   const { data: userResult } = await supabase
-    .from('auth.users')
+    .from('users')
     .select('id')
     .eq('email', email)
     .single();
-  console.log('用户信息--->', userResult)
-  const id = userResult?.id || '105dc0d0-b669-466f-bece-2f50286f7412';//TODOH 测试的id
+  // console.log('用户信息--->', userResult)
+  const id = userResult?.id 
 
   // 检查用户是否已在团队中
   const { data: existingRole, error: roleCheckError } = await supabase
@@ -223,3 +223,26 @@ export async function getTeamInvitationStatusApi() {
   }
 
 }
+
+export async function uploadLogoApi(name: string, file: File) {
+  const res = await supabase
+    .storage
+    .from('sys-files')
+    .upload(`logo/${Date.now()}-${encodeURIComponent(name)}`, file);
+
+  console.log(res);
+  if (res.error) {
+    throw res.error;
+  } else {
+    return res
+  }
+}
+
+// export async function deleteLogoApi(path: string) {
+//   const res = await supabase
+//     .storage
+//     .from('sys-files')
+//     .remove([path]);
+
+//   return res
+// }
