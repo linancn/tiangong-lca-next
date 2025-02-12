@@ -73,7 +73,7 @@ const UnitConvert: React.FC<UnitConvertProps> = ({ visible, onCancel, onOk, unit
                     rules={[{ required: true }]}
                 >
                     <Select onChange={handleUnitChange}>
-                        {units.map((unit) => (
+                        {units&&units?.length&&units.map((unit) => (
                             <Select.Option key={unit.name} value={unit.name}>
                                 {unit.name}
                             </Select.Option>
