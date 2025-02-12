@@ -15,7 +15,7 @@ import { FormattedMessage, useIntl } from 'umi';
 type Props = {
   buttonType: string;
   lang: string;
-  onData: (id: string, version: string) => void;
+  onData: (processes:{id:string,version:string}[]) => void;
 };
 
 const { Search } = Input;
@@ -188,7 +188,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
           }}
           columns={processColumns}
           rowSelection={{
-            type: 'radio',
+            type: 'checkbox',
             alwaysShowAlert: true,
             selectedRowKeys,
             onChange: onSelectChange,
@@ -233,7 +233,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
           }}
           columns={processColumns}
           rowSelection={{
-            type: 'radio',
+            type: 'checkbox',
             alwaysShowAlert: true,
             selectedRowKeys,
             onChange: onSelectChange,
@@ -295,9 +295,12 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
             </Button>
             <Button
               onClick={() => {
-                const selectedRowKey = selectedRowKeys[0] as string;
-                const selectedRowSplit = selectedRowKey.split(':');
-                onData(selectedRowSplit[0], selectedRowSplit[1]);
+                const keys = selectedRowKeys as string[];
+                const selectedRowSplit = keys.map((key)=>{
+                  const [id,version] = key.split(':');
+                  return {id,version};
+                })
+                onData(selectedRowSplit);
                 setDrawerVisible(false);
               }}
               type="primary"
