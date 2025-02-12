@@ -173,6 +173,9 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
+            onChange: () => {  
+              setSelectedRowKeys([]);
+            }
           }}
           request={async (
             params: {
@@ -215,6 +218,9 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
+            onChange: () => {  
+              setSelectedRowKeys([]);
+            }
           }}
           toolBarRender={() => {
             return [<ProcessCreate key={0} lang={lang} actionRef={myActionRefSelect} />];

@@ -591,9 +591,11 @@ const ToolbarEdit: FC<Props> = ({
         ]);
       }
 
-      result?.data.forEach((item:TAddProcessNodesParams) => {
-        dealData(item);
-      })
+      if(result&&result.data){
+        result?.data.forEach((item:TAddProcessNodesParams) => {
+          dealData(item);
+        })
+      }
 
       setNodeCount(nodeCount + 1);
       setSpinning(false);
