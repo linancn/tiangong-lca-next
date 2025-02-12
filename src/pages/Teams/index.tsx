@@ -4,7 +4,7 @@ import { Flex, Form, Spin, Tabs, Upload, message, Select, Input, Table, Button, 
 import { useEffect, useRef, useState } from 'react';
 import { PlusOutlined, DeleteOutlined, CrownOutlined, UserOutlined } from '@ant-design/icons';
 import type { UploadFile } from 'antd/es/upload/interface';
-import { getTeamMembersApi, editTeamMessage, getTeamMessageApi, updateRoleApi, delRoleApi, uploadLogoApi, deleteLogoApi } from '@/services/teams/api';
+import { getTeamMembersApi, editTeamMessage, getTeamMessageApi, updateRoleApi, delRoleApi, uploadLogoApi } from '@/services/teams/api';
 import { ListPagination } from '@/services/general/data';
 import { TeamMemberTable } from '@/services/teams/data';
 import AddMemberModal from './Components/AddMemberModal';
