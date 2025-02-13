@@ -109,6 +109,7 @@ export default {
   'pages.process.veiw.exchange.version': '版本',
   'pages.process.view.exchange.shortDescription': '简述',
   'pages.process.view.exchange.meanAmount': '平均量',
+  'pages.process.view.exchange.unitName': '单位名称',
   'pages.process.view.exchange.resultingAmount': '结果量',
   'pages.process.view.exchange.relativeStandardDeviation95In': '95%相对标准偏差',
   'pages.process.view.exchange.dataDerivationTypeStatus': '数据推导类型/状态',

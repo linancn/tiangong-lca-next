@@ -36,11 +36,13 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
   }, [actionRef]);
 
   const handletExchangeDataCreate = (data: any) => {
-    if (fromData?.id)
+    if (fromData?.id){
+      console.log('on-data-data',data)
       setExchangeDataSource([
         ...exchangeDataSource,
         { ...data, '@dataSetInternalID': exchangeDataSource.length.toString() },
       ]);
+    }
   };
 
   const handletExchangeData = (data: any) => {
@@ -129,6 +131,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             },
           }}
           onFinish={async () => {
+            console.log('submit--------', fromData);
             const result = await createProcess(v4(), fromData);
             if (result.data) {
               message.success(
