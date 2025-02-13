@@ -17,6 +17,7 @@ import pwa from './en-US/pwa';
 import settingDrawer from './en-US/settingDrawer';
 import settings from './en-US/settings';
 import validator from './en-US/validator';
+import teams from './en-US/pages_teams'
 
 export default {
   'navBar.lang': 'Languages',
@@ -44,5 +45,5 @@ export default {
   ...pages_source,
   ...pages_product,
   ...validator,
-  ...prompts,
+  ...prompts
 };

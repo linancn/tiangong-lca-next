@@ -231,6 +231,13 @@ export default [
     component: './Account',
   },
   {
+    path: '/team',
+    name: 'team',
+    menu: false,
+    icon: 'UserOutlined',
+    component: './Teams',
+  },
+  {
     path: '/user',
     layout: false,
     routes: [
