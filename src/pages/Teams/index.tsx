@@ -21,7 +21,7 @@ const Team = () => {
         if (success && data.length) {
             setTeamId(data[0].team_id);
             setUserRole(data[0].role);
-            // console.log('团队id', data[0].team_id, '用户角色', data[0].role)
+            console.log('团队id', data[0].team_id, '用户角色', data[0].role)
         }
     }
 
@@ -78,7 +78,7 @@ const Team = () => {
         };
 
         useEffect(() => {
-            teamId && getTeamInfo(teamId);
+            userRole !== 'member' && teamId && getTeamInfo(teamId);
         }, [teamId]);
 
         const getParams = (input: Record<string, string>) => {
@@ -360,7 +360,7 @@ const Team = () => {
         const actionRef = useRef<any>(null);
 
         useEffect(() => {
-            teamId && actionRef.current?.reload();
+            userRole !== 'member' && teamId && actionRef.current?.reload();
         }, [teamId]);
 
         const updateRole = async (teamId: string, userId: string, role: 'admin' | 'member') => {
@@ -412,8 +412,9 @@ const Team = () => {
                 render: (_: any, record: TeamMemberTable) => (
                     <Flex gap="small">
                         {
-                            record.role !== 'owner' && (<Tooltip title={intl.formatMessage({ id: 'teams.members.delete' })}>
+                            (<Tooltip title={intl.formatMessage({ id: 'teams.members.delete' })}>
                                 <Button
+                                    disabled={record.role == 'owner' || record.role == 'admin'}
                                     type="text"
                                     icon={<DeleteOutlined />}
                                     onClick={() => {
@@ -437,6 +438,7 @@ const Team = () => {
                                                             }),
                                                         );
                                                     }
+                                                    actionRef.current?.reload();
                                                 } catch (error) {
                                                     console.error(error);
                                                 }
@@ -446,18 +448,20 @@ const Team = () => {
                                 />
                             </Tooltip>)
                         }
-                        {record.role !== 'admin' && record.role !== "is_invited" && userRole === 'owner' && record.role !== 'owner' && (
+                        {(
                             <Tooltip title={intl.formatMessage({ id: 'teams.members.setAdmin' })}>
                                 <Button
+                                    disabled={record.role == 'admin' || userRole !== 'owner' || record.role == 'owner'}
                                     type="text"
                                     icon={<CrownOutlined />}
                                     onClick={() => updateRole(record?.team_id, record?.user_id, 'admin')}
                                 />
                             </Tooltip>
                         )}
-                        {record.role === 'admin' && userRole === 'owner' && (
+                        {(
                             <Tooltip title={intl.formatMessage({ id: 'teams.members.setMember' })}>
                                 <Button
+                                    disabled={record.role !== 'admin'}
                                     type="text"
                                     icon={<UserOutlined />}
                                     onClick={() => updateRole(record?.team_id, record?.user_id, 'member')}
@@ -499,8 +503,12 @@ const Team = () => {
                         sort,
                     ) => {
                         try {
-                            if (!teamId) {
-                                return
+                            if (userRole == 'member' || !teamId) {
+                                return {
+                                    data: [],
+                                    success: true,
+                                    total: 0
+                                }
                             }
                             setMembersLoading(true);
                             const { data, success } = await getTeamMembersApi(teamId);
@@ -519,9 +527,9 @@ const Team = () => {
                                     }),
                                 );
                                 return {
-                                    data: data || [],
+                                    data: [],
                                     success: true,
-                                    total: data?.length || 0
+                                    total: 0
                                 };
                             }
                         } catch (error) {

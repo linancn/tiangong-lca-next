@@ -131,7 +131,7 @@ export async function addTeamMemberApi(teamId: string, email: string) {
     .eq('email', email)
     .single();
   // console.log('用户信息--->', userResult)
-  const id = userResult?.id 
+  const id = userResult?.id
 
   // 检查用户是否已在团队中
   const { data: existingRole, error: roleCheckError } = await supabase
