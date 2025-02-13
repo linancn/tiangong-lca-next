@@ -19,6 +19,12 @@ export async function getTeams() {
 }
 
 export async function getTeamById(id: string) {
+  if(!id){
+    return Promise.resolve({
+      data: [],
+      success: false,
+    });
+  }
   const result = await supabase
     .from('teams')
     .select(
