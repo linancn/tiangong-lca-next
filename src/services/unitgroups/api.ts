@@ -355,7 +355,6 @@ export async function getReferenceUnit(id: string, version: string) {
           refUnitId: data?.referenceToReferenceUnit ?? '-',
           refUnitName: refData?.name ?? '-',
           refUnitGeneralComment: refData?.generalComment,
-          unit:dataList
         },
         success: true,
       });

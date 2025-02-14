@@ -271,9 +271,4 @@ export default {
   'pages.process.modellingAndValidation.dataQualityIndicatorValue.veryPoor': '非常差',
   'pages.process.modellingAndValidation.dataQualityIndicatorValue.notEvaluatedUnknown': '未评估 / 未知',
   'pages.process.modellingAndValidation.dataQualityIndicatorValue.notApplicable': '不适用',
-
-  'pages.process.unitConvert.title': '单位转换',
-  'pages.process.unitConvert.value': '值',
-  'pages.process.unitConvert.unit': '单位',
-  'pages.process.unitConvert.result': '结果',
 };
