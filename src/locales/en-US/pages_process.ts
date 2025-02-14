@@ -112,6 +112,7 @@ export default {
   'pages.process.veiw.exchange.version': 'Version',
   'pages.process.view.exchange.shortDescription': 'Short description',
   'pages.process.view.exchange.meanAmount': 'Mean amount',
+  'pages.process.view.exchange.unitName': 'Name of unit',
   'pages.process.view.exchange.resultingAmount': 'Resulting amount',
   'pages.process.view.exchange.dataDerivationTypeStatus': 'Data derivation type / status',
   'pages.process.view.exchange.generalComment': 'Comment',

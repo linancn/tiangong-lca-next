@@ -391,7 +391,7 @@ export async function getProcessTablePgroongaSearch(
 
             const classifications = jsonToList(
               dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-                'common:class'
+              'common:class'
               ],
             );
             const classificationZH = genClassificationZH(classifications, res?.data);
@@ -443,7 +443,7 @@ export async function getProcessTablePgroongaSearch(
             ),
             classification: classificationToString(
               dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-                'common:class'
+              'common:class'
               ],
             ),
             referenceYear: dataInfo?.time?.['common:referenceYear'] ?? '-',

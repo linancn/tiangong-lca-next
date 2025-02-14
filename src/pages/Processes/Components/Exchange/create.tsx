@@ -13,6 +13,7 @@ import {
   Drawer,
   Form,
   Input,
+  message,
   Select,
   Space,
   Switch,
@@ -23,6 +24,8 @@ import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { DataDerivationTypeStatusOptions } from '../optiondata';
+import { UnitsContext } from '@/contexts/unitContext';
+import UnitConvert from '@/components/UnitConvert';
 
 type Props = {
   direction: string;
@@ -122,7 +125,23 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
             },
           }}
           onFinish={async () => {
+            const resultUnit = fromData?.referenceToFlowDataSet?.refUnitGroup?.refUnit?.name;
+            if (resultUnit) {
+              const resMeanAmount = convertUnit(fromData?.meanAmount, fromData?.meanAmountUnit, resultUnit);
+              if (resMeanAmount.status === 'success') {
+                fromData.meanAmount = resMeanAmount.value
+              } else {
+                return false
+              };
+              const resResoultingAmount = convertUnit(fromData?.resultingAmount, fromData?.resultingAmountUnit, resultUnit);
+              if (resResoultingAmount.status === 'success') {
+                fromData.resultingAmount = resResoultingAmount.value
+              } else {
+                return false
+              };
+            };
             onData({ ...fromData });
+            console.log('fromDataaaaaaaaaaaa', fromData);
             formRefCreate.current?.resetFields();
             setDrawerVisible(false);
             return true;

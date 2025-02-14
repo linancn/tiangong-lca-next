@@ -600,7 +600,7 @@ const ToolbarEdit: FC<Props> = ({
 
       setNodeCount(nodeCount + 1);
       setSpinning(false);
-    });
+    })
   };
 
   const updateReference = async () => {
@@ -622,8 +622,8 @@ const ToolbarEdit: FC<Props> = ({
               if (ids.length < 2) return false;
               return (
                 (i?.exchangeDirection ?? '-').toUpperCase() +
-                  ':' +
-                  (i?.referenceToFlowDataSet?.['@refObjectId'] ?? '-') ===
+                ':' +
+                (i?.referenceToFlowDataSet?.['@refObjectId'] ?? '-') ===
                 ids[0].toUpperCase() + ':' + (ids[ids.length - 1] ?? '-')
               );
             });
@@ -1029,7 +1029,7 @@ const ToolbarEdit: FC<Props> = ({
         lang={lang}
         buttonType={'tool'}
         actionRef={undefined}
-        setViewDrawerVisible={() => {}}
+        setViewDrawerVisible={() => { }}
       />
       <Control items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin']} />
       <Spin spinning={spinning} fullscreen />
