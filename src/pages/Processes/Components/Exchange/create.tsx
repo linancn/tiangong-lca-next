@@ -1,6 +1,4 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
-import UnitConvert from '@/components/UnitConvert';
-import { UnitsContext } from '@/contexts/unitContext';
 import FlowsSelectForm from '@/pages/Flows/Components/select/form';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
@@ -42,6 +40,9 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
   const [unitConvertVisible, setUnitConvertVisible] = useState(false);
   const [unitConvertName, setUnitConvertName] = useState('');
 
+  // useEffect(() => {
+  //   console.log('units', units)
+  // }, [units]);
   useEffect(() => {
     if (!unitConvertVisible) {
       setUnitConvertName('');
@@ -78,7 +79,7 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
         onCancel={() => setUnitConvertVisible(false)}
         onOk={(result) => {
           formRefCreate.current?.setFieldValue(unitConvertName, result);
-          setFromData({ ...fromData, [unitConvertName]: result });
+          setFromData({...fromData, [unitConvertName]: result})
         }}
         units={units}
         value={undefined}
@@ -194,12 +195,7 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
               }
               name={'meanAmount'}
             >
-              <Input
-                onClick={() => {
-                  setUnitConvertVisible(true);
-                  setUnitConvertName('meanAmount');
-                }}
-              />
+              <Input onClick={() => {setUnitConvertVisible(true);setUnitConvertName('meanAmount')}} />
             </Form.Item>
             <Form.Item
               label={
@@ -210,12 +206,7 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
               }
               name={'resultingAmount'}
             >
-              <Input
-                onClick={() => {
-                  setUnitConvertVisible(true);
-                  setUnitConvertName('resultingAmount');
-                }}
-              />
+              <Input onClick={() => {setUnitConvertVisible(true);setUnitConvertName('resultingAmount')}} />
             </Form.Item>
             <Form.Item
               label={

@@ -38,7 +38,7 @@ export async function getProcessTableAll(
   sort: Record<string, SortOrder>,
   lang: string,
   dataSource: string,
-  tid: string | [],
+  tid: string,
 ) {
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
   const orderBy = sort[sortBy] ?? 'descend';
@@ -471,9 +471,9 @@ export async function getProcessTablePgroongaSearch(
   return result;
 }
 
-export async function getProcessDetailByIdAndVersion(data: { id: string; version: string }[]) {
+export async function getProcessDetailByIdAndVersion(data: { id: string, version: string }[]) {
   if (data && data.length) {
-    const ids = data.map((item) => item.id);
+    const ids = data.map(item => item.id);
 
     const resultByIds = await supabase
       .from('processes')
@@ -491,7 +491,7 @@ export async function getProcessDetailByIdAndVersion(data: { id: string; version
         success: true,
       });
     }
-  }
+  };
   return Promise.resolve({
     data: null,
     success: true,
