@@ -566,27 +566,18 @@ const Team = () => {
               setMembersLoading(true);
               const { data, success } = await getTeamMembersApi(params, sort, teamId);
 
-              if (success) {
-                return {
-                  data,
-                  success,
-                  total: data?.length || 0,
-                };
-              } else {
-                message.error(
-                  intl.formatMessage({
-                    id: 'pages.team.members.getError',
-                    defaultMessage: 'Failed to get team members!',
-                  }),
-                );
-              }
               return {
-                data: [],
-                success: true,
-                total: 0,
+                data: data || [],
+                success: success || false,
+                total: data?.length || 0,
               };
             } catch (error) {
               console.error(error);
+              return {
+                data: [],
+                success: false,
+                total: 0,
+              };
             } finally {
               setMembersLoading(false);
             }
