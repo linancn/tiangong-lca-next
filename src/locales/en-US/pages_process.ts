@@ -109,7 +109,6 @@ export default {
   'pages.process.view.exchange.refObjectId': 'Ref object id',
   'pages.process.view.exchange.type': 'Type',
   'pages.process.view.exchange.uri': 'URI',
-  'pages.process.veiw.exchange.version': 'Version',
   'pages.process.view.exchange.shortDescription': 'Short description',
   'pages.process.view.exchange.meanAmount': 'Mean amount',
   'pages.process.view.exchange.unitName': 'Name of unit',

@@ -172,6 +172,7 @@ const Control = (props: ControlIProps) => {
           );
         } else if (ControlActionList.includes(tool)) {
           return (
+            <>
               <Tooltip key={tool} title={ControlToolMap[tool].label} placement="left">
                 <Button
                   type="primary"
@@ -182,6 +183,7 @@ const Control = (props: ControlIProps) => {
                   disabled={!isToolButtonEnabled(tool as ControlEnum)}
                 />
               </Tooltip>
+            </>
           );
         } else {
           return null;

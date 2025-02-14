@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { supabaseAnonKey, supabaseUrl,serviceRoleKey } from './key';
+import { supabaseAnonKey, supabaseUrl } from './key';
 
 const options = {
   auth: {
@@ -9,16 +9,4 @@ const options = {
   },
 };
 
-const authOptions = {
-  db: {
-    schema: 'public',
-  },
-  auth: {
-    autorRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true,
-  },
-};
-
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, options);
-export const supabaseAuth = createClient(supabaseUrl, serviceRoleKey, options);
