@@ -13,7 +13,7 @@ import {
   genNodeLabel,
   genPortLabel,
 } from '@/services/lifeCycleModels/util';
-import { getProcessDetail, getProcessDetailByIdAndVersion } from '@/services/processes/api';
+import { getProcessDetail } from '@/services/processes/api';
 import { genProcessFromData, genProcessName, genProcessNameJson } from '@/services/processes/util';
 import { CopyOutlined, DeleteOutlined, SaveOutlined } from '@ant-design/icons';
 import { useGraphEvent, useGraphStore } from '@antv/xflow';
@@ -538,68 +538,57 @@ const ToolbarEdit: FC<Props> = ({
   //   }
   // };
 
-  type  TAddProcessNodesParams={ id: string, version: string }
-
-  const addProcessNodes = (processes: TAddProcessNodesParams[]) => {
+  const addProcessNode = (id: string, version: string) => {
     setSpinning(true);
-    getProcessDetailByIdAndVersion(processes).then(async(result: any) => {
-      const dealData = (data:any) => {
-        const exchange =
-          genProcessFromData(data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? [];
-        const refExchange = exchange.find((i: any) => i?.quantitativeReference === true);
-        const inOrOut = refExchange?.exchangeDirection.toUpperCase() === 'INPUT';
-        const text = getLangText(
-          refExchange?.referenceToFlowDataSet?.['common:shortDescription'],
-          lang,
-        );
-        const refPortItem = {
-          id:
-            (inOrOut ? 'INPUT' : 'OUTPUT') +
-            ':' +
-            (refExchange?.referenceToFlowDataSet?.['@refObjectId'] ?? '-'),
-          args: { x: inOrOut ? 0 : '100%', y: 65 },
-          attrs: {
-            text: {
-              text: genPortLabel(text ?? '', lang, nodeTemplate.width),
-              title: text,
-            },
+    getProcessDetail(id, version).then(async (result: any) => {
+      const exchange =
+        genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? [];
+      const refExchange = exchange.find((i: any) => i?.quantitativeReference === true);
+      const inOrOut = refExchange?.exchangeDirection.toUpperCase() === 'INPUT';
+      const text = getLangText(
+        refExchange?.referenceToFlowDataSet?.['common:shortDescription'],
+        lang,
+      );
+      const refPortItem = {
+        id:
+          (inOrOut ? 'INPUT' : 'OUTPUT') +
+          ':' +
+          (refExchange?.referenceToFlowDataSet?.['@refObjectId'] ?? '-'),
+        args: { x: inOrOut ? 0 : '100%', y: 65 },
+        attrs: {
+          text: {
+            text: genPortLabel(text ?? '', lang, nodeTemplate.width),
+            title: text,
           },
-          group:
-            refExchange?.exchangeDirection.toUpperCase() === 'OUTPUT' ? 'groupOutput' : 'groupInput',
+        },
+        group:
+          refExchange?.exchangeDirection.toUpperCase() === 'OUTPUT' ? 'groupOutput' : 'groupInput',
+        data: {
+          textLang: refExchange?.referenceToFlowDataSet?.['common:shortDescription'],
+        },
+      };
+      const name =
+        result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name ?? {};
+      addNodes([
+        {
+          ...nodeTemplate,
+          id: v4(),
           data: {
-            textLang: refExchange?.referenceToFlowDataSet?.['common:shortDescription'],
+            id: id,
+            version: result.data?.version,
+            label: name,
+            shortDescription: genProcessNameJson(name),
+            quantitativeReference: nodeCount === 0 ? '1' : '0',
           },
-        };
-        const name =
-          data?.json?.processDataSet?.processInformation?.dataSetInformation?.name ?? {};
-        addNodes([
-          {
-            ...nodeTemplate,
-            id: v4(),
-            data: {
-              id: data.id,
-              version: data?.version,
-              label: name,
-              shortDescription: genProcessNameJson(name),
-              quantitativeReference: nodeCount === 0 ? '1' : '0',
-            },
-            ports: {
-              ...ports,
-              items: [refPortItem],
-            },
+          ports: {
+            ...ports,
+            items: [refPortItem],
           },
-        ]);
-      }
-
-      if(result&&result.data){
-        result?.data.forEach((item:TAddProcessNodesParams) => {
-          dealData(item);
-        })
-      }
-
+        },
+      ]);
       setNodeCount(nodeCount + 1);
       setSpinning(false);
-    })
+    });
   };
 
   const updateReference = async () => {
@@ -621,8 +610,8 @@ const ToolbarEdit: FC<Props> = ({
               if (ids.length < 2) return false;
               return (
                 (i?.exchangeDirection ?? '-').toUpperCase() +
-                ':' +
-                (i?.referenceToFlowDataSet?.['@refObjectId'] ?? '-') ===
+                  ':' +
+                  (i?.referenceToFlowDataSet?.['@refObjectId'] ?? '-') ===
                 ids[0].toUpperCase() + ':' + (ids[ids.length - 1] ?? '-')
               );
             });
@@ -956,7 +945,7 @@ const ToolbarEdit: FC<Props> = ({
         onData={updateTargetAmount}
       />
 
-      <ModelToolbarAdd buttonType={'icon'} lang={lang} onData={addProcessNodes} />
+      <ModelToolbarAdd buttonType={'icon'} lang={lang} onData={addProcessNode} />
       {/* <Tooltip
             title={
               <FormattedMessage
@@ -1028,7 +1017,7 @@ const ToolbarEdit: FC<Props> = ({
         lang={lang}
         buttonType={'tool'}
         actionRef={undefined}
-        setViewDrawerVisible={() => { }}
+        setViewDrawerVisible={() => {}}
       />
       <Control items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin']} />
       <Spin spinning={spinning} fullscreen />
