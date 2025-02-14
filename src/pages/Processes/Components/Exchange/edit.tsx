@@ -21,6 +21,8 @@ import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { DataDerivationTypeStatusOptions } from '../optiondata';
+import { UnitsContext } from '@/contexts/unitContext';
+import UnitConvert from '@/components/UnitConvert'
 
 type Props = {
   id: string;
@@ -46,6 +48,18 @@ const ProcessExchangeEdit: FC<Props> = ({
   const [initData, setInitData] = useState<any>({});
   const [asInput, setAsInput] = useState(false);
   const [functionalUnitOrOther, setFunctionalUnitOrOther] = useState(false);
+  const [units, setUnits] = useState([]);
+  const [unitConvertVisible, setUnitConvertVisible] = useState(false);
+  const [unitConvertName, setUnitConvertName] = useState('');
+
+  // useEffect(() => {
+  //   console.log('units', units)
+  // }, [units]);
+  useEffect(() => {
+    if (!unitConvertVisible) {
+      setUnitConvertName('');
+    }
+  }, [unitConvertVisible]);
 
   const handletFromData = () => {
     setFromData(formRefEdit.current?.getFieldsValue() ?? {});
@@ -83,6 +97,16 @@ const ProcessExchangeEdit: FC<Props> = ({
           </Button>
         )}
       </Tooltip>
+      <UnitConvert
+        visible={unitConvertVisible}
+        onCancel={() => setUnitConvertVisible(false)}
+        onOk={(result) => {
+          formRefEdit.current?.setFieldValue(unitConvertName, result);
+          setFromData({ ...fromData, [unitConvertName]: result })
+        }}
+        units={units}
+        value={undefined}
+      />
       <Drawer
         title={
           <FormattedMessage
@@ -170,20 +194,22 @@ const ProcessExchangeEdit: FC<Props> = ({
                 }}
               />
             </Form.Item>
-            <FlowsSelectForm
-              name={['referenceToFlowDataSet']}
-              label={
-                <FormattedMessage
-                  id="pages.process.view.exchange.referenceToFlowDataSet"
-                  defaultMessage="Flow"
-                />
-              }
-              lang={lang}
-              formRef={formRefEdit}
-              drawerVisible={drawerVisible}
-              asInput={asInput}
-              onData={handletFromData}
-            />
+            <UnitsContext.Provider value={{ units, setUnits }}>
+              <FlowsSelectForm
+                name={['referenceToFlowDataSet']}
+                label={
+                  <FormattedMessage
+                    id="pages.process.view.exchange.referenceToFlowDataSet"
+                    defaultMessage="Flow"
+                  />
+                }
+                lang={lang}
+                formRef={formRefEdit}
+                drawerVisible={drawerVisible}
+                asInput={asInput}
+                onData={handletFromData}
+              />
+            </UnitsContext.Provider>
             <Form.Item
               label={
                 <FormattedMessage
@@ -193,7 +219,7 @@ const ProcessExchangeEdit: FC<Props> = ({
               }
               name={'meanAmount'}
             >
-              <Input />
+              <Input onClick={() => { setUnitConvertVisible(true); setUnitConvertName('meanAmount') }} />
             </Form.Item>
             <Form.Item
               label={
@@ -204,7 +230,7 @@ const ProcessExchangeEdit: FC<Props> = ({
               }
               name={'resultingAmount'}
             >
-              <Input />
+              <Input onClick={() => { setUnitConvertVisible(true); setUnitConvertName('resultingAmount') }} />
             </Form.Item>
 
             <Form.Item
@@ -227,7 +253,7 @@ const ProcessExchangeEdit: FC<Props> = ({
               />
             </Form.Item>
             {formRefEdit.current?.getFieldValue('uncertaintyDistributionType') === 'triangular' ||
-            formRefEdit.current?.getFieldValue('uncertaintyDistributionType') === 'uniform' ? (
+              formRefEdit.current?.getFieldValue('uncertaintyDistributionType') === 'uniform' ? (
               <>
                 <Form.Item
                   label={
@@ -257,7 +283,7 @@ const ProcessExchangeEdit: FC<Props> = ({
             )}
 
             {formRefEdit.current?.getFieldValue('uncertaintyDistributionType') === 'log-normal' ||
-            formRefEdit.current?.getFieldValue('uncertaintyDistributionType') === 'log-normal' ? (
+              formRefEdit.current?.getFieldValue('uncertaintyDistributionType') === 'log-normal' ? (
               <>
                 <Form.Item
                   label={
