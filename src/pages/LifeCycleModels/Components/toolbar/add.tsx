@@ -15,7 +15,7 @@ import { FormattedMessage, useIntl } from 'umi';
 type Props = {
   buttonType: string;
   lang: string;
-  onData: (processes:{id:string,version:string}[]) => void;
+  onData: (id: string, version: string) => void;
 };
 
 const { Search } = Input;
@@ -173,9 +173,6 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
-            onChange: () => {  
-              setSelectedRowKeys([]);
-            }
           }}
           request={async (
             params: {
@@ -191,7 +188,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
           }}
           columns={processColumns}
           rowSelection={{
-            type: 'checkbox',
+            type: 'radio',
             alwaysShowAlert: true,
             selectedRowKeys,
             onChange: onSelectChange,
@@ -218,9 +215,6 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
-            onChange: () => {  
-              setSelectedRowKeys([]);
-            }
           }}
           toolBarRender={() => {
             return [<ProcessCreate key={0} lang={lang} actionRef={myActionRefSelect} />];
@@ -239,7 +233,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
           }}
           columns={processColumns}
           rowSelection={{
-            type: 'checkbox',
+            type: 'radio',
             alwaysShowAlert: true,
             selectedRowKeys,
             onChange: onSelectChange,
@@ -301,12 +295,9 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
             </Button>
             <Button
               onClick={() => {
-                const keys = selectedRowKeys as string[];
-                const selectedRowSplit = keys.map((key)=>{
-                  const [id,version] = key.split(':');
-                  return {id,version};
-                })
-                onData(selectedRowSplit);
+                const selectedRowKey = selectedRowKeys[0] as string;
+                const selectedRowSplit = selectedRowKey.split(':');
+                onData(selectedRowSplit[0], selectedRowSplit[1]);
                 setDrawerVisible(false);
               }}
               type="primary"
