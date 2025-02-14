@@ -15,7 +15,7 @@ import { FormattedMessage, useIntl } from 'umi';
 type Props = {
   buttonType: string;
   lang: string;
-  onData: (processes:{id:string,version:string}[]) => void;
+  onData: (processes: { id: string; version: string }[]) => void;
 };
 
 const { Search } = Input;
@@ -173,9 +173,9 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
-            onChange: () => {  
+            onChange: () => {
               setSelectedRowKeys([]);
-            }
+            },
           }}
           request={async (
             params: {
@@ -218,9 +218,9 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
-            onChange: () => {  
+            onChange: () => {
               setSelectedRowKeys([]);
-            }
+            },
           }}
           toolBarRender={() => {
             return [<ProcessCreate key={0} lang={lang} actionRef={myActionRefSelect} />];
@@ -302,10 +302,10 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
             <Button
               onClick={() => {
                 const keys = selectedRowKeys as string[];
-                const selectedRowSplit = keys.map((key)=>{
-                  const [id,version] = key.split(':');
-                  return {id,version};
-                })
+                const selectedRowSplit = keys.map((key) => {
+                  const [id, version] = key.split(':');
+                  return { id, version };
+                });
                 onData(selectedRowSplit);
                 setDrawerVisible(false);
               }}

@@ -538,12 +538,12 @@ const ToolbarEdit: FC<Props> = ({
   //   }
   // };
 
-  type  TAddProcessNodesParams={ id: string, version: string }
+  type TAddProcessNodesParams = { id: string; version: string };
 
   const addProcessNodes = (processes: TAddProcessNodesParams[]) => {
     setSpinning(true);
-    getProcessDetailByIdAndVersion(processes).then(async(result: any) => {
-      const dealData = (data:any) => {
+    getProcessDetailByIdAndVersion(processes).then(async (result: any) => {
+      const dealData = (data: any) => {
         const exchange =
           genProcessFromData(data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? [];
         const refExchange = exchange.find((i: any) => i?.quantitativeReference === true);
@@ -565,13 +565,14 @@ const ToolbarEdit: FC<Props> = ({
             },
           },
           group:
-            refExchange?.exchangeDirection.toUpperCase() === 'OUTPUT' ? 'groupOutput' : 'groupInput',
+            refExchange?.exchangeDirection.toUpperCase() === 'OUTPUT'
+              ? 'groupOutput'
+              : 'groupInput',
           data: {
             textLang: refExchange?.referenceToFlowDataSet?.['common:shortDescription'],
           },
         };
-        const name =
-          data?.json?.processDataSet?.processInformation?.dataSetInformation?.name ?? {};
+        const name = data?.json?.processDataSet?.processInformation?.dataSetInformation?.name ?? {};
         addNodes([
           {
             ...nodeTemplate,
@@ -589,12 +590,12 @@ const ToolbarEdit: FC<Props> = ({
             },
           },
         ]);
-      }
+      };
 
-      if(result&&result.data){
-        result?.data.forEach((item:TAddProcessNodesParams) => {
+      if (result && result.data) {
+        result?.data.forEach((item: TAddProcessNodesParams) => {
           dealData(item);
-        })
+        });
       }
 
       setNodeCount(nodeCount + 1);

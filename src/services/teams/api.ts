@@ -1,4 +1,5 @@
-import { supabase, supabaseAuth } from '@/services/supabase';
+import { supabase } from '@/services/supabase';
+import { SortOrder } from 'antd/lib/table/interface';
 
 export async function getTeams() {
   const result = await supabase
@@ -19,7 +20,7 @@ export async function getTeams() {
 }
 
 export async function getTeamById(id: string) {
-  if(!id){
+  if (!id) {
     return Promise.resolve({
       data: [],
       success: false,
@@ -41,22 +42,13 @@ export async function getTeamById(id: string) {
   });
 }
 
-
-
 export async function editTeamMessage(id: string, data: any) {
-  const result = await supabase
-    .from('teams')
-    .update({ json: data })
-    .eq('id', id)
-    .select();
+  const result = await supabase.from('teams').update({ json: data }).eq('id', id).select();
   return result;
 }
 
 export async function getTeamMessageApi(id: string) {
-  const result = await supabase
-    .from('teams')
-    .select("*")
-    .eq('id', id);
+  const result = await supabase.from('teams').select('*').eq('id', id);
   return result;
 }
 
@@ -66,101 +58,107 @@ export async function updateRoleApi(teamId: string, userId: string, role: 'admin
     .update({ role })
     .eq('team_id', teamId)
     .eq('user_id', userId)
-    .select()
+    .select();
   return result;
 }
 
-export async function delRoleApi(teamId: string, userId: string,) {
-  const result = await supabase
-    .from('roles')
-    .delete()
-    .eq('team_id', teamId)
-    .eq('user_id', userId)
+export async function delRoleApi(teamId: string, userId: string) {
+  const result = await supabase.from('roles').delete().eq('team_id', teamId).eq('user_id', userId);
   return result;
 }
 
-export async function getTeamMembersApi(teamId: string) {
-  const { error, data: rolesResult } = await supabase
-    .from('roles')
-    .select(`
+export async function getTeamMembersApi(
+  params: { pageSize: number; current: number },
+  sort: Record<string, SortOrder>,
+  teamId: string,
+) {
+  const sortBy = Object.keys(sort)[0] ?? 'created_at';
+  const orderBy = sort[sortBy] ?? 'descend';
+  try {
+    const { error, data: rolesResult } = await supabase
+      .from('roles')
+      .select(
+        `
       user_id,
       team_id,
       role
-      `)
-    .eq('team_id', teamId);
-  // console.log('rolesResult', rolesResult);
-  if (error) {
+      `,
+      )
+      .eq('team_id', teamId)
+      .order(sortBy, { ascending: orderBy === 'ascend' })
+      .range(
+        ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
+        (params.current ?? 1) * (params.pageSize ?? 10) - 1,
+      );
+
+    if (!error) {
+      const ids = rolesResult.map((item) => item.user_id);
+
+      const { error, data: usersResult } = await supabase
+        .from('users')
+        .select('id, raw_user_meta_data->email')
+        .in('id', ids);
+
+      if (!error) {
+        const result = rolesResult.map((role) => {
+          const user = usersResult?.find((u) => u.id === role.user_id);
+          return {
+            user_id: role.user_id,
+            team_id: role.team_id,
+            email: user?.email,
+            role: role.role,
+          };
+        });
+
+        return {
+          success: true,
+          data: result,
+        };
+      }
+    }
     return {
       success: false,
-    }
-  } else {
-    try {
-      const userIds = rolesResult.map((role: { user_id: string }) => role.user_id);
-      // console.log('用户id', userIds)
-      const batchSize = 20; // 设置并发限制为20
-      const batches = [];
-      for (let i = 0; i < userIds.length; i += batchSize) {
-        const batch = userIds.slice(i, i + batchSize);
-        const batchPromises = batch.map(async (id) => {
-          const { data: userResult } = await supabaseAuth.auth.admin.getUserById(id);
-          return userResult.user;
-        });
-        batches.push(await Promise.all(batchPromises));
-      }
-      const usersResult = batches.flat();
-      const result = rolesResult.map((role: { user_id: string }) => {
-        const user = usersResult.find((user: any) => user.id === role.user_id);
-        return {
-          ...role,
-          email: user?.email,
-        }
-      });
-
-      return {
-        success: true,
-        data: result
-      };
-    } catch (error) {
-      console.error('获取用户信息失败', error);
-      return {
-        success: false,
-      };;
-    }
+      data: null,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      data: null,
+    };
   }
-
 }
 
 export async function addTeamMemberApi(teamId: string, email: string) {
   const { data: userResult } = await supabase
     .from('users')
     .select('id')
-    .eq('email', email)
+    .eq('raw_user_meta_data->>email', email)
     .single();
-  // console.log('用户信息--->', userResult)
-  const id = userResult?.id
 
-  // 检查用户是否已在团队中
-  const { data: existingRole, error: roleCheckError } = await supabase
+  const id = userResult?.id;
+
+  // Check if the user is already on the team
+  const { data: existingUser, error: roleCheckError } = await supabase
     .from('roles')
     .select('*')
-    .eq('user_id', id)
+    .eq('user_id', id);
 
-  if (!roleCheckError && existingRole.length === 0) {
-    // 用户不在团队中,添加邀请记录
-    const result = await supabase
-      .from('roles')
-      .insert({
+  if (!roleCheckError) {
+    if (existingUser.length === 0) {
+      // The user is not on the team, add an invitation record
+      const result = await supabase.from('roles').insert({
         team_id: teamId,
         user_id: id,
-        role: 'is_invited'
+        role: 'is_invited',
       });
-    return result;
-  } else {
-    return {
-      error: {
-        message: 'exists'
-      }
-    };
+      return result;
+    } else {
+      return {
+        error: {
+          message: 'exists',
+        },
+      };
+    }
   }
 }
 
@@ -174,14 +172,14 @@ export async function acceptTeamInvitationApi(teamId: string, userId: string) {
   if (error) {
     return {
       success: false,
-      error
-    }
+      error,
+    };
   }
 
   return {
     success: true,
-    data
-  }
+    data,
+  };
 }
 
 export async function rejectTeamInvitationApi(teamId: string, userId: string) {
@@ -189,17 +187,17 @@ export async function rejectTeamInvitationApi(teamId: string, userId: string) {
     .from('roles')
     .delete()
     .eq('user_id', userId)
-    .eq('team_id', teamId)
+    .eq('team_id', teamId);
 
   if (deleteError) {
     return {
       success: false,
-      error: deleteError
-    }
+      error: deleteError,
+    };
   }
   return {
-    success: true
-  }
+    success: true,
+  };
 }
 
 export async function getTeamInvitationStatusApi() {
@@ -207,8 +205,8 @@ export async function getTeamInvitationStatusApi() {
   if (error) {
     return {
       success: false,
-      data: null
-    }
+      data: null,
+    };
   } else {
     const { data: roleResult, error: roleError } = await supabase
       .from('roles')
@@ -219,36 +217,24 @@ export async function getTeamInvitationStatusApi() {
     if (roleError) {
       return {
         success: false,
-        data: null
-      }
+        data: null,
+      };
     }
     return {
       success: true,
-      data: roleResult
-    }
+      data: roleResult,
+    };
   }
-
 }
 
 export async function uploadLogoApi(name: string, file: File) {
-  const res = await supabase
-    .storage
+  const res = await supabase.storage
     .from('sys-files')
     .upload(`logo/${Date.now()}-${encodeURIComponent(name)}`, file);
 
-  console.log(res);
   if (res.error) {
     throw res.error;
   } else {
-    return res
+    return res;
   }
 }
-
-// export async function deleteLogoApi(path: string) {
-//   const res = await supabase
-//     .storage
-//     .from('sys-files')
-//     .remove([path]);
-
-//   return res
-// }

@@ -8,6 +8,7 @@ export default {
   'teams.members.deleteConfirm': 'Are you sure to remove this member?',
   'teams.members.role.admin': 'Admin',
   'teams.members.role.member': 'Member',
+  'pages.team.members.getError': 'Failed to get team members!',
   'teams.members.role.owner': 'Owner',
   'teams.members.setMember': 'Set as Member',
   'teams.members.actionError': 'Action failed!',

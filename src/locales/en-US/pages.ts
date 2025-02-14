@@ -153,5 +153,5 @@ export default {
   'pages.team.info.description.required': 'Please input team description!',
   'pages.team.info.lightLogo': 'Light Logo',
   'pages.team.info.darkLogo': 'Dark Logo',
-  'pages.team.getDetailError':'Failed to get details, please refresh!'
+  'pages.team.getDetailError': 'Failed to get details, please refresh!',
 };
