@@ -1,4 +1,3 @@
-import { useUnitsContext } from '@/contexts/unitContext';
 import { getReferenceUnitGroup } from '@/services/flowproperties/api';
 import { getReferenceProperty } from '@/services/flows/api';
 import { jsonToList } from '@/services/general/util';
@@ -24,18 +23,19 @@ type Props = {
 const UnitGroupFromMini: FC<Props> = ({ id, version, idType, name, formRef, drawerVisible }) => {
   const [spinning, setSpinning] = useState<boolean>(false);
   const { token } = theme.useToken();
-  const { setUnits } = useUnitsContext() as { setUnits: (units: any) => void };
+  const { units, setUnits } = useUnitsContext();
 
   useEffect(() => {
     if (id && drawerVisible) {
       if (idType === 'flow') {
-        // Get unit group information based on flow ID
+        // 根据流id获取单位组相关信息
         setSpinning(true);
         getReferenceProperty(id, version ?? '').then((res1: any) => {
           getReferenceUnitGroup(res1?.data?.refFlowPropertytId, res1?.data?.version).then(
             (res2: any) => {
               getReferenceUnit(res2?.data?.refUnitGroupId, res2?.data?.version).then(
                 (res3: any) => {
+                  // console.log('根据流id获取单位组-单位转换', res3)
                   setUnits(res3?.data.unit);
                   formRef.current?.setFieldValue([...name, 'refUnitGroup'], {
                     shortDescription: jsonToList(res3?.data?.refUnitGroupShortDescription),

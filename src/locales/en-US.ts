@@ -11,13 +11,13 @@ import pages_model from './en-US/pages_model';
 import pages_process from './en-US/pages_process';
 import pages_product from './en-US/pages_product';
 import pages_source from './en-US/pages_source';
-import teams from './en-US/pages_teams';
 import pages_unitgroup from './en-US/pages_unitgroup';
 import prompts from './en-US/prompts';
 import pwa from './en-US/pwa';
 import settingDrawer from './en-US/settingDrawer';
 import settings from './en-US/settings';
 import validator from './en-US/validator';
+import teams from './en-US/pages_teams'
 
 export default {
   'navBar.lang': 'Languages',
@@ -45,6 +45,5 @@ export default {
   ...pages_source,
   ...pages_product,
   ...validator,
-  ...teams,
   ...prompts
 };

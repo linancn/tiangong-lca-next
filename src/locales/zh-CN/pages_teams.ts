@@ -8,7 +8,6 @@ export default {
   'teams.members.deleteConfirm': '确定要移除该成员吗？',
   'teams.members.role.admin': '管理员',
   'teams.members.role.member': '成员',
-  'pages.team.members.getError': '获取成员失败!',
   'teams.members.role.owner': '所有者',
   'teams.members.setMember': '设为成员',
   'teams.members.actionError': '操作失败!',

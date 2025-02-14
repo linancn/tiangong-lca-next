@@ -1,12 +1,4 @@
-import {
-  AvatarDropdown,
-  AvatarName,
-  DarkMode,
-  Footer,
-  Notification,
-  Question,
-  SelectLang,
-} from '@/components';
+import { AvatarDropdown, AvatarName, DarkMode, Footer, Question, SelectLang, Notification } from '@/components';
 import { Link, history } from '@umijs/max';
 
 import { currentUser as queryCurrentUser } from '@/services/ant-design-pro/api';
@@ -111,6 +103,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
             <AvatarDropdown>{avatarChildren}</AvatarDropdown>
           </>
         );
+
       },
     },
     waterMarkProps: {

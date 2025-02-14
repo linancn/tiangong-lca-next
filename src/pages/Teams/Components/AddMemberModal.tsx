@@ -1,106 +1,109 @@
+import { Modal, Form, Input, message } from 'antd';
+import { useIntl } from '@umijs/max';
+import { useState } from 'react';
 import { addTeamMemberApi } from '@/services/teams/api';
-import { FormattedMessage, useIntl } from '@umijs/max';
-import { Form, Input, message, Modal } from 'antd';
-import { useEffect, useState } from 'react';
 
 interface AddMemberModalProps {
-  open: boolean;
-  onCancel: () => void;
-  teamId: string | null;
-  onSuccess: () => void;
+    open: boolean;
+    onCancel: () => void;
+    teamId: string | null;
+    onSuccess: () => void;
 }
 
-const AddMemberModal: React.FC<AddMemberModalProps> = ({ open, onCancel, teamId, onSuccess }) => {
-  const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
-  const intl = useIntl();
+const AddMemberModal: React.FC<AddMemberModalProps> = ({
+    open,
+    onCancel,
+    teamId,
+    onSuccess,
+}) => {
+    const [form] = Form.useForm();
+    const [loading, setLoading] = useState(false);
+    const intl = useIntl();
 
-  useEffect(() => {
-    if (!open) {
-      form.resetFields();
-    }
-  }, [open]);
+    const handleOk = async () => {
 
-  const handleOk = async () => {
-    try {
-      const values = await form.validateFields();
-      if (!teamId) return;
+        try {
+            const values = await form.validateFields();
+            if (!teamId) return;
 
-      setLoading(true);
-      const result = await addTeamMemberApi(teamId, values.email);
+            setLoading(true);
+            const { error } = await addTeamMemberApi(teamId, values.email);
 
-      if (result && result.error) {
-        if (result.error.message === 'exists') {
-          message.error(
-            intl.formatMessage({
-              id: 'teams.members.add.exists',
-              defaultMessage: 'User already exists in the team!',
-            }),
-          );
-        } else {
-          message.error(
-            intl.formatMessage({
-              id: 'teams.members.add.error',
-              defaultMessage: 'Failed to add member!',
-            }),
-          );
+            if (error) {
+                console.log('添加成员失败', error)
+                if (error.message === 'exists') {
+                    message.error(
+                        intl.formatMessage({
+                            id: 'teams.members.add.exists',
+                            defaultMessage: '该用户已在团队中！'
+                        })
+                    );
+                } else {
+                    message.error(
+                        intl.formatMessage({
+                            id: 'teams.members.add.error',
+                            defaultMessage: '添加成员失败！'
+                        })
+                    );
+                }
+            } else {
+                message.success(
+                    intl.formatMessage({
+                        id: 'teams.members.add.success',
+                        defaultMessage: '添加成员成功！'
+                    })
+                );
+                form.resetFields();
+                onSuccess();
+                onCancel();
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
         }
-      } else {
-        message.success(
-          intl.formatMessage({
-            id: 'teams.members.add.success',
-            defaultMessage: 'Member added successfully!',
-          }),
-        );
-        form.resetFields();
-        onSuccess();
-        onCancel();
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  return (
-    <Modal
-      title={<FormattedMessage id="teams.members.add.title" defaultMessage="Add Team Member" />}
-      open={open}
-      onCancel={onCancel}
-      onOk={handleOk}
-      confirmLoading={loading}
-    >
-      <Form form={form} layout="vertical">
-        <Form.Item
-          name="email"
-          label={<FormattedMessage id="teams.members.email" defaultMessage="Email" />}
-          rules={[
-            {
-              required: true,
-              message: (
-                <FormattedMessage
-                  id="teams.members.email.required"
-                  defaultMessage="Please enter an email address!"
-                />
-              ),
-            },
-            {
-              type: 'email',
-              message: (
-                <FormattedMessage
-                  id="teams.members.email.invalid"
-                  defaultMessage="Please enter a valid email address!"
-                />
-              ),
-            },
-          ]}
+    return (
+        <Modal
+            title={intl.formatMessage({
+                id: 'teams.members.add.title',
+                defaultMessage: '添加团队成员'
+            })}
+            open={open}
+            onCancel={onCancel}
+            onOk={handleOk}
+            confirmLoading={loading}
         >
-          <Input />
-        </Form.Item>
-      </Form>
-    </Modal>
-  );
+            <Form form={form} layout="vertical">
+                <Form.Item
+                    name="email"
+                    label={intl.formatMessage({
+                        id: 'teams.members.email',
+                        defaultMessage: '邮箱'
+                    })}
+                    rules={[
+                        {
+                            required: true,
+                            message: intl.formatMessage({
+                                id: 'teams.members.email.required',
+                                defaultMessage: '请输入邮箱！'
+                            })
+                        },
+                        {
+                            type: 'email',
+                            message: intl.formatMessage({
+                                id: 'teams.members.email.invalid',
+                                defaultMessage: '请输入有效的邮箱地址！'
+                            })
+                        }
+                    ]}
+                >
+                    <Input />
+                </Form.Item>
+            </Form>
+        </Modal>
+    );
 };
 
-export default AddMemberModal;
+export default AddMemberModal; 
