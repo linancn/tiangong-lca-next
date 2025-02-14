@@ -106,7 +106,6 @@ export default {
   'pages.process.view.exchange.refObjectId': '引用对象标识符',
   'pages.process.view.exchange.type': '类型',
   'pages.process.view.exchange.uri': '统一资源标识符',
-  'pages.process.veiw.exchange.version': '版本',
   'pages.process.view.exchange.shortDescription': '简述',
   'pages.process.view.exchange.meanAmount': '平均量',
   'pages.process.view.exchange.resultingAmount': '结果量',
@@ -270,9 +269,4 @@ export default {
   'pages.process.modellingAndValidation.dataQualityIndicatorValue.veryPoor': '非常差',
   'pages.process.modellingAndValidation.dataQualityIndicatorValue.notEvaluatedUnknown': '未评估 / 未知',
   'pages.process.modellingAndValidation.dataQualityIndicatorValue.notApplicable': '不适用',
-
-  'pages.process.unitConvert.title': '单位转换',
-  'pages.process.unitConvert.value': '值',
-  'pages.process.unitConvert.unit': '单位',
-  'pages.process.unitConvert.result': '结果',
 };

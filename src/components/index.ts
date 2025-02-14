@@ -6,8 +6,7 @@
  * 布局组件
  */
 import Footer from './Footer';
-import Notification from './Notification';
 import { DarkMode, Question, SelectLang } from './RightContent';
 import { AvatarDropdown, AvatarName } from './RightContent/AvatarDropdown';
 
-export { AvatarDropdown, AvatarName, DarkMode, Footer, Notification, Question, SelectLang };
+export { AvatarDropdown, AvatarName, DarkMode, Footer, Question, SelectLang };

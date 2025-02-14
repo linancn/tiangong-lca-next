@@ -109,7 +109,6 @@ export default {
   'pages.process.view.exchange.refObjectId': 'Ref object id',
   'pages.process.view.exchange.type': 'Type',
   'pages.process.view.exchange.uri': 'URI',
-  'pages.process.veiw.exchange.version': 'Version',
   'pages.process.view.exchange.shortDescription': 'Short description',
   'pages.process.view.exchange.meanAmount': 'Mean amount',
   'pages.process.view.exchange.resultingAmount': 'Resulting amount',
@@ -272,9 +271,4 @@ export default {
   'pages.process.modellingAndValidation.dataQualityIndicatorValue.veryPoor': 'Very poor',
   'pages.process.modellingAndValidation.dataQualityIndicatorValue.notEvaluatedUnknown': 'Not evaluated / unknown',
   'pages.process.modellingAndValidation.dataQualityIndicatorValue.notApplicable': 'Not applicable',
-
-  'pages.process.unitConvert.title': 'Unit Conversion',
-  'pages.process.unitConvert.value': 'Value',
-  'pages.process.unitConvert.unit': 'Unit',
-  'pages.process.unitConvert.result': 'Result',
 };
