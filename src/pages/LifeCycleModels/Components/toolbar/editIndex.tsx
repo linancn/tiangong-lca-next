@@ -538,12 +538,12 @@ const ToolbarEdit: FC<Props> = ({
   //   }
   // };
 
-  type  TAddProcessNodesParams={ id: string, version: string }
+  type TAddProcessNodesParams = { id: string; version: string };
 
   const addProcessNodes = (processes: TAddProcessNodesParams[]) => {
     setSpinning(true);
-    getProcessDetailByIdAndVersion(processes).then(async(result: any) => {
-      const dealData = (data:any) => {
+    getProcessDetailByIdAndVersion(processes).then(async (result: any) => {
+      const dealData = (data: any) => {
         const exchange =
           genProcessFromData(data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? [];
         const refExchange = exchange.find((i: any) => i?.quantitativeReference === true);
@@ -565,13 +565,14 @@ const ToolbarEdit: FC<Props> = ({
             },
           },
           group:
-            refExchange?.exchangeDirection.toUpperCase() === 'OUTPUT' ? 'groupOutput' : 'groupInput',
+            refExchange?.exchangeDirection.toUpperCase() === 'OUTPUT'
+              ? 'groupOutput'
+              : 'groupInput',
           data: {
             textLang: refExchange?.referenceToFlowDataSet?.['common:shortDescription'],
           },
         };
-        const name =
-          data?.json?.processDataSet?.processInformation?.dataSetInformation?.name ?? {};
+        const name = data?.json?.processDataSet?.processInformation?.dataSetInformation?.name ?? {};
         addNodes([
           {
             ...nodeTemplate,
@@ -589,17 +590,17 @@ const ToolbarEdit: FC<Props> = ({
             },
           },
         ]);
-      }
+      };
 
-      if(result&&result.data){
-        result?.data.forEach((item:TAddProcessNodesParams) => {
+      if (result && result.data) {
+        result?.data.forEach((item: TAddProcessNodesParams) => {
           dealData(item);
-        })
+        });
       }
 
       setNodeCount(nodeCount + 1);
       setSpinning(false);
-    })
+    });
   };
 
   const updateReference = async () => {
@@ -621,8 +622,8 @@ const ToolbarEdit: FC<Props> = ({
               if (ids.length < 2) return false;
               return (
                 (i?.exchangeDirection ?? '-').toUpperCase() +
-                ':' +
-                (i?.referenceToFlowDataSet?.['@refObjectId'] ?? '-') ===
+                  ':' +
+                  (i?.referenceToFlowDataSet?.['@refObjectId'] ?? '-') ===
                 ids[0].toUpperCase() + ':' + (ids[ids.length - 1] ?? '-')
               );
             });
@@ -1028,7 +1029,7 @@ const ToolbarEdit: FC<Props> = ({
         lang={lang}
         buttonType={'tool'}
         actionRef={undefined}
-        setViewDrawerVisible={() => { }}
+        setViewDrawerVisible={() => {}}
       />
       <Control items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin']} />
       <Spin spinning={spinning} fullscreen />

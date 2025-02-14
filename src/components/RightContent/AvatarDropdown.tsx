@@ -1,8 +1,8 @@
-import { LogoutOutlined, UserOutlined, TeamOutlined } from '@ant-design/icons';
+import { LogoutOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
 import { history, useModel } from '@umijs/max';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { outLogin, } from '@/services/ant-design-pro/api';
+import { outLogin } from '@/services/ant-design-pro/api';
 import { getUserRoles } from '@/services/roles/api';
 import { Spin } from 'antd';
 import { createStyles } from 'antd-style';
@@ -49,7 +49,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
     if (success && data.length) {
       setUserRole(data[0].role);
     }
-  }
+  };
 
   useEffect(() => {
     initialUserRole();
@@ -90,7 +90,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
       if (key === 'team') {
         history.push(`/team`);
         return;
-      };
+      }
       history.push(`/account`);
     },
     [setInitialState],
@@ -134,12 +134,12 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
     },
   ];
 
-  if (userRole === "owner" || userRole === 'admin') {
+  if (userRole === 'owner' || userRole === 'admin') {
     menuItems.splice(1, 0, {
       key: 'team',
       icon: <TeamOutlined />,
       label: <FormattedMessage id="menu.account.team" defaultMessage="Team Management" />,
-    })
+    });
   }
 
   return (

@@ -141,7 +141,6 @@ export default {
 
   'pages.login.passwordForgot.tab': '账户',
 
-  // 团队管理
   'pages.team.editsuccess': '修改成功！',
   'pages.team.updateError': '更新团队信息失败。',
   'pages.team.tabs.info': '团队信息',
@@ -152,5 +151,5 @@ export default {
   'pages.team.info.description.required': '请输入团队描述！',
   'pages.team.info.lightLogo': '亮色标志',
   'pages.team.info.darkLogo': '暗色标志',
-  'pages.team.getDetailError':'获取详情失败，请刷新！'
+  'pages.team.getDetailError': '获取详情失败，请刷新！',
 };

@@ -1,4 +1,6 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
+import UnitConvert from '@/components/UnitConvert';
+import { UnitsContext } from '@/contexts/unitContext';
 import FlowsSelectForm from '@/pages/Flows/Components/select/form';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
@@ -21,8 +23,6 @@ import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { DataDerivationTypeStatusOptions } from '../optiondata';
-import { UnitsContext } from '@/contexts/unitContext';
-import UnitConvert from '@/components/UnitConvert'
 
 type Props = {
   id: string;
@@ -52,9 +52,6 @@ const ProcessExchangeEdit: FC<Props> = ({
   const [unitConvertVisible, setUnitConvertVisible] = useState(false);
   const [unitConvertName, setUnitConvertName] = useState('');
 
-  // useEffect(() => {
-  //   console.log('units', units)
-  // }, [units]);
   useEffect(() => {
     if (!unitConvertVisible) {
       setUnitConvertName('');
@@ -102,7 +99,7 @@ const ProcessExchangeEdit: FC<Props> = ({
         onCancel={() => setUnitConvertVisible(false)}
         onOk={(result) => {
           formRefEdit.current?.setFieldValue(unitConvertName, result);
-          setFromData({ ...fromData, [unitConvertName]: result })
+          setFromData({ ...fromData, [unitConvertName]: result });
         }}
         units={units}
         value={undefined}
@@ -219,7 +216,12 @@ const ProcessExchangeEdit: FC<Props> = ({
               }
               name={'meanAmount'}
             >
-              <Input onClick={() => { setUnitConvertVisible(true); setUnitConvertName('meanAmount') }} />
+              <Input
+                onClick={() => {
+                  setUnitConvertVisible(true);
+                  setUnitConvertName('meanAmount');
+                }}
+              />
             </Form.Item>
             <Form.Item
               label={
@@ -230,7 +232,12 @@ const ProcessExchangeEdit: FC<Props> = ({
               }
               name={'resultingAmount'}
             >
-              <Input onClick={() => { setUnitConvertVisible(true); setUnitConvertName('resultingAmount') }} />
+              <Input
+                onClick={() => {
+                  setUnitConvertVisible(true);
+                  setUnitConvertName('resultingAmount');
+                }}
+              />
             </Form.Item>
 
             <Form.Item
@@ -253,7 +260,7 @@ const ProcessExchangeEdit: FC<Props> = ({
               />
             </Form.Item>
             {formRefEdit.current?.getFieldValue('uncertaintyDistributionType') === 'triangular' ||
-              formRefEdit.current?.getFieldValue('uncertaintyDistributionType') === 'uniform' ? (
+            formRefEdit.current?.getFieldValue('uncertaintyDistributionType') === 'uniform' ? (
               <>
                 <Form.Item
                   label={
@@ -283,7 +290,7 @@ const ProcessExchangeEdit: FC<Props> = ({
             )}
 
             {formRefEdit.current?.getFieldValue('uncertaintyDistributionType') === 'log-normal' ||
-              formRefEdit.current?.getFieldValue('uncertaintyDistributionType') === 'log-normal' ? (
+            formRefEdit.current?.getFieldValue('uncertaintyDistributionType') === 'log-normal' ? (
               <>
                 <Form.Item
                   label={

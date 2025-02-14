@@ -391,7 +391,7 @@ export async function getProcessTablePgroongaSearch(
 
             const classifications = jsonToList(
               dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-              'common:class'
+                'common:class'
               ],
             );
             const classificationZH = genClassificationZH(classifications, res?.data);
@@ -443,7 +443,7 @@ export async function getProcessTablePgroongaSearch(
             ),
             classification: classificationToString(
               dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-              'common:class'
+                'common:class'
               ],
             ),
             referenceYear: dataInfo?.time?.['common:referenceYear'] ?? '-',
@@ -471,9 +471,9 @@ export async function getProcessTablePgroongaSearch(
   return result;
 }
 
-export async function getProcessDetailByIdAndVersion(data: { id: string, version: string }[]) {
+export async function getProcessDetailByIdAndVersion(data: { id: string; version: string }[]) {
   if (data && data.length) {
-    const ids = data.map(item => item.id);
+    const ids = data.map((item) => item.id);
 
     const resultByIds = await supabase
       .from('processes')
@@ -491,7 +491,7 @@ export async function getProcessDetailByIdAndVersion(data: { id: string, version
         success: true,
       });
     }
-  };
+  }
   return Promise.resolve({
     data: null,
     success: true,

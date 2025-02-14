@@ -11,12 +11,12 @@ import pages_model from './zh-CN/pages_model';
 import pages_process from './zh-CN/pages_process';
 import pages_product from './zh-CN/pages_product';
 import pages_source from './zh-CN/pages_source';
+import teams from './zh-CN/pages_teams';
 import pages_unitgroup from './zh-CN/pages_unitgroup';
 import pwa from './zh-CN/pwa';
 import settingDrawer from './zh-CN/settingDrawer';
 import settings from './zh-CN/settings';
 import validator from './zh-CN/validator';
-import teams from './zh-CN/pages_teams';
 
 export default {
   'navBar.lang': '语言',
@@ -44,5 +44,5 @@ export default {
   ...pages_source,
   ...pages_product,
   ...validator,
-  ...teams
+  ...teams,
 };

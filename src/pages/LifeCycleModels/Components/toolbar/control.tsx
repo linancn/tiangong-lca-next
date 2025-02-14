@@ -172,16 +172,16 @@ const Control = (props: ControlIProps) => {
           );
         } else if (ControlActionList.includes(tool)) {
           return (
-              <Tooltip key={tool} title={ControlToolMap[tool].label} placement="left">
-                <Button
-                  type="primary"
-                  size="small"
-                  style={{ boxShadow: 'none' }}
-                  icon={ControlToolMap[tool].icon}
-                  onClick={() => changeZoom(tool)}
-                  disabled={!isToolButtonEnabled(tool as ControlEnum)}
-                />
-              </Tooltip>
+            <Tooltip key={tool} title={ControlToolMap[tool].label} placement="left">
+              <Button
+                type="primary"
+                size="small"
+                style={{ boxShadow: 'none' }}
+                icon={ControlToolMap[tool].icon}
+                onClick={() => changeZoom(tool)}
+                disabled={!isToolButtonEnabled(tool as ControlEnum)}
+              />
+            </Tooltip>
           );
         } else {
           return null;
