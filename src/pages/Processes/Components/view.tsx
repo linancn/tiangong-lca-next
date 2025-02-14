@@ -70,7 +70,6 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
   const [activeTabKey, setActiveTabKey] = useState<string>('processInformation');
   const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
   const [spinning, setSpinning] = useState(false);
-  const [actionSpinning, setActionSpinning] = useState(true);
   const [initData, setInitData] = useState<any>({});
 
   const tabList = [
@@ -162,12 +161,6 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
       sorter: false,
       search: false,
       render: (_, row) => {
-        const updateRowRefUnit = (value: string) => {
-          console.log('调用更新-查看', value)
-          row.refUnit = value
-          console.log('row', row);
-          setActionSpinning(false)
-        }
         return [
           <ReferenceUnit
             key={0}
@@ -175,7 +168,6 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
             version={row.referenceToFlowDataSetVersion}
             idType={'flow'}
             lang={lang}
-            updateRowRefUnit={updateRowRefUnit}
           />,
         ];
       },
@@ -230,17 +222,15 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
       search: false,
       render: (_, row) => {
         return [
-          <Spin spinning={actionSpinning}>
-            <Space size={'small'} key={0}>
-              <ProcessExchangeView
-                id={row.dataSetInternalID}
-                data={exchangeDataSource}
-                // dataSource={'my'}
-                buttonType={'icon'}
-                lang={lang}
-                getRefUnit={() => row.refUnit}
-              />
-              {/* <ProcessEdit
+          <Space size={'small'} key={0}>
+            <ProcessExchangeView
+              id={row.dataSetInternalID}
+              data={exchangeDataSource}
+              // dataSource={'my'}
+              buttonType={'icon'}
+              lang={lang}
+            />
+            {/* <ProcessEdit
                 id={row.id}
                 lang={lang}
                 buttonType={'icon'}
@@ -253,8 +243,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
                 actionRef={actionRef}
                 setViewDrawerVisible={() => { }}
               /> */}
-            </Space>
-          </Spin>,
+          </Space>,
         ];
       },
     },
@@ -346,7 +335,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
         <LevelTextItemDescription
           data={
             initData.processInformation?.dataSetInformation?.classificationInformation?.[
-            'common:classification'
+              'common:classification'
             ]?.['common:class']?.['value']
           }
           lang={lang}
@@ -362,7 +351,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
           }
           data={
             initData.processInformation?.dataSetInformation?.[
-            'common:referenceToExternalDocumentation'
+              'common:referenceToExternalDocumentation'
             ]
           }
           lang={lang}
@@ -439,7 +428,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
             lang={lang}
             data={
               initData.processInformation?.geography?.locationOfOperationSupplyOrProduction?.[
-              '@location'
+                '@location'
               ] ?? '-'
             }
             label={
@@ -784,7 +773,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
             lang={lang}
             data={
               initData.modellingAndValidation?.validation?.review?.[
-              'common:referenceToNameOfReviewerAndInstitution'
+                'common:referenceToNameOfReviewerAndInstitution'
               ]
             }
           />
@@ -803,7 +792,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
           lang={lang}
           data={
             initData.administrativeInformation?.commissionerAndGoal?.[
-            'common:referenceToCommissioner'
+              'common:referenceToCommissioner'
             ]
           }
         />
@@ -830,7 +819,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
           lang={lang}
           data={
             initData.administrativeInformation?.dataGenerator?.[
-            'common:referenceToPersonOrEntityGeneratingTheDataSet'
+              'common:referenceToPersonOrEntityGeneratingTheDataSet'
             ]
           }
         />
@@ -876,7 +865,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
           <SourceSelectDescription
             data={
               initData?.administrativeInformation?.dataEntryBy?.[
-              'common:referenceToConvertedOriginalDataSetFrom'
+                'common:referenceToConvertedOriginalDataSetFrom'
               ]
             }
             title={
@@ -891,7 +880,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
           <ContactSelectDescription
             data={
               initData?.administrativeInformation?.dataEntryBy?.[
-              'common:referenceToPersonOrEntityEnteringTheData'
+                'common:referenceToPersonOrEntityEnteringTheData'
               ]
             }
             title={
@@ -906,7 +895,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
           <SourceSelectDescription
             data={
               initData?.administrativeInformation?.dataEntryBy?.[
-              'common:referenceToDataSetUseApproval'
+                'common:referenceToDataSetUseApproval'
               ]
             }
             title={
@@ -1007,7 +996,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
             lang={lang}
             data={
               initData.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToOwnershipOfDataSet'
+                'common:referenceToOwnershipOfDataSet'
               ]
             }
           />
@@ -1025,7 +1014,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
             >
               {getCopyrightOptions(
                 initData.administrativeInformation?.publicationAndOwnership?.['common:copyright'] ??
-                '-',
+                  '-',
               )}
             </Descriptions.Item>
           </Descriptions>
@@ -1043,7 +1032,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
             >
               {getLicenseTypeOptions(
                 initData.administrativeInformation?.publicationAndOwnership?.[
-                'common:licenseType'
+                  'common:licenseType'
                 ] ?? '-',
               )}
             </Descriptions.Item>

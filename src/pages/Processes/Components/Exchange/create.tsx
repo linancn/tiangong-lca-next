@@ -11,7 +11,6 @@ import {
   Drawer,
   Form,
   Input,
-  message,
   Select,
   Space,
   Switch,
@@ -22,7 +21,6 @@ import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { DataDerivationTypeStatusOptions } from '../optiondata';
-import { convertUnit } from '@/utils/index';
 
 type Props = {
   direction: string;
@@ -103,23 +101,7 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
             },
           }}
           onFinish={async () => {
-            const resultUnit = fromData?.referenceToFlowDataSet?.refUnitGroup?.refUnit?.name;
-            if (resultUnit) {
-              const resMeanAmount = convertUnit(fromData?.meanAmount, fromData?.meanAmountUnit, resultUnit);
-              if (resMeanAmount.status === 'success') {
-                fromData.meanAmount = resMeanAmount.value
-              } else {
-                return false
-              };
-              const resResoultingAmount = convertUnit(fromData?.resultingAmount, fromData?.resultingAmountUnit, resultUnit);
-              if (resResoultingAmount.status === 'success') {
-                fromData.resultingAmount = resResoultingAmount.value
-              } else {
-                return false
-              };
-            };
             onData({ ...fromData });
-            console.log('fromDataaaaaaaaaaaa', fromData);
             formRefCreate.current?.resetFields();
             setDrawerVisible(false);
             return true;
@@ -161,54 +143,28 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
               asInput={asInput}
               onData={handletFromData}
             />
-            <Card>
-              <Form.Item
-                label={
-                  <FormattedMessage
-                    id="pages.process.view.exchange.meanAmount"
-                    defaultMessage="Mean amount"
-                  />
-                }
-                name={'meanAmount'}
-              >
-                <Input />
-              </Form.Item>
-              <Form.Item
-                label={
-                  <FormattedMessage
-                    id="pages.process.view.exchange.unitName"
-                    defaultMessage="Name of unit"
-                  />
-                }
-                name={'meanAmountUnit'}
-              >
-                <Input />
-              </Form.Item>
-            </Card>
-            <Card>
-              <Form.Item
-                label={
-                  <FormattedMessage
-                    id="pages.process.view.exchange.resultingAmount"
-                    defaultMessage="Resulting amount"
-                  />
-                }
-                name={'resultingAmount'}
-              >
-                <Input />
-              </Form.Item>
-              <Form.Item
-                label={
-                  <FormattedMessage
-                    id="pages.process.view.exchange.unitName"
-                    defaultMessage="Name of unit"
-                  />
-                }
-                name={'resultingAmountUnit'}
-              >
-                <Input />
-              </Form.Item>
-            </Card>
+            <Form.Item
+              label={
+                <FormattedMessage
+                  id="pages.process.view.exchange.meanAmount"
+                  defaultMessage="Mean amount"
+                />
+              }
+              name={'meanAmount'}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              label={
+                <FormattedMessage
+                  id="pages.process.view.exchange.resultingAmount"
+                  defaultMessage="Resulting amount"
+                />
+              }
+              name={'resultingAmount'}
+            >
+              <Input />
+            </Form.Item>
             <Form.Item
               label={
                 <FormattedMessage

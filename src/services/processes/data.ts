@@ -25,5 +25,4 @@ export type ProcessExchangeTable = {
   generalComment: string;
   quantitativeReference: boolean;
   functionalUnitOrOther: any;
-  refUnit?:string
 };

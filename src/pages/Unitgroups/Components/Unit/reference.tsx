@@ -10,9 +10,8 @@ type Props = {
   version: string;
   idType: string;
   lang: string;
-  updateRowRefUnit?: (data: any) => void;//process中idType === 'flow'时，需要更新row中的refUnit用于后续编辑
 };
-const ReferenceUnit: FC<Props> = ({ id, version, idType, lang,updateRowRefUnit }) => {
+const ReferenceUnit: FC<Props> = ({ id, version, idType, lang }) => {
   const [refUnit, setRefUnit] = useState<any>({});
   const [spinning, setSpinning] = useState<boolean>(false);
 
@@ -25,7 +24,6 @@ const ReferenceUnit: FC<Props> = ({ id, version, idType, lang,updateRowRefUnit }
             (res2: any) => {
               getReferenceUnit(res2?.data?.refUnitGroupId, res2?.data?.version).then((res3) => {
                 setRefUnit(res3?.data);
-                updateRowRefUnit&&updateRowRefUnit(res3?.data?.refUnitName)
                 setSpinning(false);
               });
             },

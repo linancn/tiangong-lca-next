@@ -17,8 +17,8 @@ import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData } from '@/services/processes/util';
 import { CheckCircleOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
-import { Card, Collapse, Divider, Form, Input, Select, Space, Spin, theme, Tooltip } from 'antd';
-import { useEffect, useRef, useState, type FC } from 'react';
+import { Card, Collapse, Divider, Form, Input, Select, Space, theme, Tooltip } from 'antd';
+import { useEffect, useRef, type FC } from 'react';
 import { FormattedMessage } from 'umi';
 import ComplianceItemForm from './Compliance/form';
 import ProcessExchangeCreate from './Exchange/create';
@@ -58,7 +58,6 @@ export const ProcessForm: FC<Props> = ({
 }) => {
   const actionRefExchangeTableInput = useRef<ActionType>();
   const actionRefExchangeTableOutput = useRef<ActionType>();
-  const [actionSpinning, setActionSpinning] = useState(true);
   const { token } = theme.useToken();
   const tabList = [
     {
@@ -176,12 +175,6 @@ export const ProcessForm: FC<Props> = ({
       sorter: false,
       search: false,
       render: (_, row) => {
-        const updateRowRefUnit = (value: string) => {
-          console.log('调用更新', value)
-          row.refUnit = value
-          console.log('row', row);
-          setActionSpinning(false)
-        }
         return [
           <ReferenceUnit
             key={0}
@@ -189,7 +182,6 @@ export const ProcessForm: FC<Props> = ({
             version={row.referenceToFlowDataSetVersion}
             idType={'flow'}
             lang={lang}
-            updateRowRefUnit={updateRowRefUnit}
           />,
         ];
       },
@@ -227,34 +219,30 @@ export const ProcessForm: FC<Props> = ({
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
-        console.log('row', row);
         return [
-          <Spin spinning={actionSpinning}>
-            <Space size={'small'} key={0}>
-              <ProcessExchangeView
-                id={row.dataSetInternalID}
-                data={exchangeDataSource}
-                lang={lang}
-                buttonType={'icon'}
-              />
-              <ProcessExchangeEdit
-                id={row.dataSetInternalID}
-                data={exchangeDataSource}
-                lang={lang}
-                buttonType={'icon'}
-                onData={onExchangeData}
-                setViewDrawerVisible={() => { }}
-                getRefUnit={() => row.refUnit}
-              />
-              <ProcessExchangeDelete
-                id={row.dataSetInternalID}
-                data={exchangeDataSource}
-                buttonType={'icon'}
-                setViewDrawerVisible={() => { }}
-                onData={onExchangeData}
-              />
-            </Space>
-          </Spin>,
+          <Space size={'small'} key={0}>
+            <ProcessExchangeView
+              id={row.dataSetInternalID}
+              data={exchangeDataSource}
+              lang={lang}
+              buttonType={'icon'}
+            />
+            <ProcessExchangeEdit
+              id={row.dataSetInternalID}
+              data={exchangeDataSource}
+              lang={lang}
+              buttonType={'icon'}
+              onData={onExchangeData}
+              setViewDrawerVisible={() => {}}
+            />
+            <ProcessExchangeDelete
+              id={row.dataSetInternalID}
+              data={exchangeDataSource}
+              buttonType={'icon'}
+              setViewDrawerVisible={() => {}}
+              onData={onExchangeData}
+            />
+          </Space>,
         ];
       },
     },

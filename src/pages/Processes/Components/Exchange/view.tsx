@@ -11,7 +11,6 @@ import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { DataDerivationTypeStatusOptions } from '../optiondata';
-import { convertUnit } from '@/utils/index';
 
 type Props = {
   id: string;
@@ -20,7 +19,6 @@ type Props = {
   // dataSource: string;
   buttonType: string;
   // actionRef: React.MutableRefObject<ActionType | undefined>;
-  getRefUnit?: () => string | undefined // 获取参考单位值
 };
 
 const getDataDerivationTypeStatusOptions = (value: string) => {
@@ -28,32 +26,15 @@ const getDataDerivationTypeStatusOptions = (value: string) => {
   return option ? option.label : '-';
 };
 
-const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType, getRefUnit }) => {
+const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   // const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [viewData, setViewData] = useState<any>({});
   // const [spinning, setSpinning] = useState(false);
-  const [isConverted, setIsConverted] = useState(false);//只需要在第一次展示的时候转换一次
 
   const onView = () => {
     setDrawerVisible(true);
     const filteredData = data?.find((item: any) => item['@dataSetInternalID'] === id) ?? {};
-    if (!isConverted && getRefUnit) {
-      const resMeanAmount = convertUnit(filteredData?.meanAmount, getRefUnit(), filteredData?.meanAmountUnit,);
-      if (resMeanAmount.status === 'success') {
-        filteredData.meanAmount = resMeanAmount.value
-      } else {
-        return false
-      };
-      const resResoultingAmount = convertUnit(filteredData?.resultingAmount, getRefUnit(), filteredData?.resultingAmountUnit);
-      if (resResoultingAmount.status === 'success') {
-        filteredData.resultingAmount = resResoultingAmount.value
-      } else {
-        return false
-      };
-      setIsConverted(true)
-
-    };
     setViewData(filteredData);
     // setSpinning(true);
     // if (dataSource === 'my') {
@@ -152,7 +133,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType, getRefUnit
             }
             labelStyle={{ width: '220px' }}
           >
-            {viewData.meanAmount ?? '-'}{viewData.meanAmountUnit ?? ''}
+            {viewData.meanAmount ?? '-'}
           </Descriptions.Item>
         </Descriptions>
         <br />
@@ -167,7 +148,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType, getRefUnit
             }
             labelStyle={{ width: '220px' }}
           >
-            {viewData.resultingAmount ?? '-'}{viewData.resultingAmountUnit ?? ''}
+            {viewData.resultingAmount ?? '-'}
           </Descriptions.Item>
         </Descriptions>
         <br />
@@ -186,7 +167,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType, getRefUnit
           </Descriptions.Item>
         </Descriptions>
         {viewData.uncertaintyDistributionType === 'triangular' ||
-          viewData.uncertaintyDistributionType === 'uniform' ? (
+        viewData.uncertaintyDistributionType === 'uniform' ? (
           <>
             <br />
             <Descriptions bordered size={'small'} column={1}>
@@ -223,7 +204,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType, getRefUnit
           <></>
         )}
         {viewData.uncertaintyDistributionType === 'normal' ||
-          viewData.uncertaintyDistributionType === 'log-normal' ? (
+        viewData.uncertaintyDistributionType === 'log-normal' ? (
           <>
             <br />
             <Descriptions bordered size={'small'} column={1}>

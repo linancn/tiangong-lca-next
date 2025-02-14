@@ -111,12 +111,10 @@ const ProcessEdit: FC<Props> = ({
   const onReset = () => {
     setSpinning(true);
     getProcessDetail(id, version).then(async (result: any) => {
-      console.log('获取编辑数据result', result);
       const dataSet = genProcessFromData(result.data?.json?.processDataSet ?? {});
       setInitData({ ...dataSet, id: id });
       setFromData({ ...dataSet, id: id });
       setExchangeDataSource(dataSet?.exchanges?.exchange ?? []);
-      console.log('exchange', dataSet?.exchanges?.exchange);
       formRefEdit.current?.resetFields();
       formRefEdit.current?.setFieldsValue({
         ...dataSet,
