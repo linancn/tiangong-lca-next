@@ -1,4 +1,6 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
+import UnitConvert from '@/components/UnitConvert';
+import { UnitsContext } from '@/contexts/unitContext';
 import FlowsSelectForm from '@/pages/Flows/Components/select/form';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
@@ -33,6 +35,15 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
   const [fromData, setFromData] = useState<any>({});
   const [asInput, setAsInput] = useState(false);
   const [functionalUnitOrOther, setFunctionalUnitOrOther] = useState(false);
+  const [units, setUnits] = useState([]);
+  const [unitConvertVisible, setUnitConvertVisible] = useState(false);
+  const [unitConvertName, setUnitConvertName] = useState('');
+
+  useEffect(() => {
+    if (!unitConvertVisible) {
+      setUnitConvertName('');
+    }
+  }, [unitConvertVisible]);
 
   const handletFromData = () => {
     setFromData(formRefCreate.current?.getFieldsValue() ?? {});
@@ -59,6 +70,16 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
           }}
         />
       </Tooltip>
+      <UnitConvert
+        visible={unitConvertVisible}
+        onCancel={() => setUnitConvertVisible(false)}
+        onOk={(result) => {
+          formRefCreate.current?.setFieldValue(unitConvertName, result);
+          setFromData({ ...fromData, [unitConvertName]: result });
+        }}
+        units={units}
+        value={undefined}
+      />
       <Drawer
         title={
           <FormattedMessage
@@ -129,20 +150,22 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
                 }}
               />
             </Form.Item>
-            <FlowsSelectForm
-              name={['referenceToFlowDataSet']}
-              label={
-                <FormattedMessage
-                  id="pages.process.view.exchange.referenceToFlowDataSet"
-                  defaultMessage="Flow"
-                />
-              }
-              lang={lang}
-              drawerVisible={drawerVisible}
-              formRef={formRefCreate}
-              asInput={asInput}
-              onData={handletFromData}
-            />
+            <UnitsContext.Provider value={{ units, setUnits }}>
+              <FlowsSelectForm
+                name={['referenceToFlowDataSet']}
+                label={
+                  <FormattedMessage
+                    id="pages.process.view.exchange.referenceToFlowDataSet"
+                    defaultMessage="Flow"
+                  />
+                }
+                lang={lang}
+                drawerVisible={drawerVisible}
+                formRef={formRefCreate}
+                asInput={asInput}
+                onData={handletFromData}
+              />
+            </UnitsContext.Provider>
             <Form.Item
               label={
                 <FormattedMessage
@@ -152,7 +175,12 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
               }
               name={'meanAmount'}
             >
-              <Input />
+              <Input
+                onClick={() => {
+                  setUnitConvertVisible(true);
+                  setUnitConvertName('meanAmount');
+                }}
+              />
             </Form.Item>
             <Form.Item
               label={
@@ -163,7 +191,12 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
               }
               name={'resultingAmount'}
             >
-              <Input />
+              <Input
+                onClick={() => {
+                  setUnitConvertVisible(true);
+                  setUnitConvertName('resultingAmount');
+                }}
+              />
             </Form.Item>
             <Form.Item
               label={

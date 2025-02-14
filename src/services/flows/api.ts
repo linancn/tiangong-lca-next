@@ -45,7 +45,7 @@ export async function getFlowTableAll(
   sort: Record<string, SortOrder>,
   lang: string,
   dataSource: string,
-  tid: string,
+  tid: string | [],
   filters?: {
     flowType?: string;
     asInput?: boolean;

@@ -141,4 +141,17 @@ export default {
   'pages.account.confirmNewEmail.placeholder': 'Confirm New Email',
 
   'pages.login.passwordForgot.tab': 'Account',
+
+  // Team Management
+  'pages.team.editsuccess': 'Edit Successfully!',
+  'pages.team.updateError': 'Failed to update team information.',
+  'pages.team.tabs.info': 'Team Information',
+  'pages.team.tabs.members': 'Team Members',
+  'pages.team.info.title': 'Team Name',
+  'pages.team.info.title.required': 'Please input team name!',
+  'pages.team.info.description': 'Team Description',
+  'pages.team.info.description.required': 'Please input team description!',
+  'pages.team.info.lightLogo': 'Light Logo',
+  'pages.team.info.darkLogo': 'Dark Logo',
+  'pages.team.getDetailError': 'Failed to get details, please refresh!',
 };
