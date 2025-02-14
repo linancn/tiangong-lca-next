@@ -22,8 +22,7 @@ import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { DataDerivationTypeStatusOptions } from '../optiondata';
-import { UnitsContext } from '@/contexts/unitContext';
-import UnitConvert from '@/components/UnitConvert';
+import { convertUnit } from '@/utils/index';
 
 type Props = {
   direction: string;
@@ -36,18 +35,6 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
   const [fromData, setFromData] = useState<any>({});
   const [asInput, setAsInput] = useState(false);
   const [functionalUnitOrOther, setFunctionalUnitOrOther] = useState(false);
-  const [units, setUnits] = useState([]);
-  const [unitConvertVisible, setUnitConvertVisible] = useState(false);
-  const [unitConvertName, setUnitConvertName] = useState('');
-
-  // useEffect(() => {
-  //   console.log('units', units)
-  // }, [units]);
-  useEffect(() => {
-    if (!unitConvertVisible) {
-      setUnitConvertName('');
-    }
-  }, [unitConvertVisible]);
 
   const handletFromData = () => {
     setFromData(formRefCreate.current?.getFieldsValue() ?? {});
@@ -74,16 +61,6 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
           }}
         />
       </Tooltip>
-      <UnitConvert
-        visible={unitConvertVisible}
-        onCancel={() => setUnitConvertVisible(false)}
-        onOk={(result) => {
-          formRefCreate.current?.setFieldValue(unitConvertName, result);
-          setFromData({...fromData, [unitConvertName]: result})
-        }}
-        units={units}
-        value={undefined}
-      />
       <Drawer
         title={
           <FormattedMessage
@@ -170,44 +147,68 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
                 }}
               />
             </Form.Item>
-            <UnitsContext.Provider value={{ units, setUnits }}>
-              <FlowsSelectForm
-                name={['referenceToFlowDataSet']}
+            <FlowsSelectForm
+              name={['referenceToFlowDataSet']}
+              label={
+                <FormattedMessage
+                  id="pages.process.view.exchange.referenceToFlowDataSet"
+                  defaultMessage="Flow"
+                />
+              }
+              lang={lang}
+              drawerVisible={drawerVisible}
+              formRef={formRefCreate}
+              asInput={asInput}
+              onData={handletFromData}
+            />
+            <Card>
+              <Form.Item
                 label={
                   <FormattedMessage
-                    id="pages.process.view.exchange.referenceToFlowDataSet"
-                    defaultMessage="Flow"
+                    id="pages.process.view.exchange.meanAmount"
+                    defaultMessage="Mean amount"
                   />
                 }
-                lang={lang}
-                drawerVisible={drawerVisible}
-                formRef={formRefCreate}
-                asInput={asInput}
-                onData={handletFromData}
-              />
-            </UnitsContext.Provider>
-            <Form.Item
-              label={
-                <FormattedMessage
-                  id="pages.process.view.exchange.meanAmount"
-                  defaultMessage="Mean amount"
-                />
-              }
-              name={'meanAmount'}
-            >
-              <Input onClick={() => {setUnitConvertVisible(true);setUnitConvertName('meanAmount')}} />
-            </Form.Item>
-            <Form.Item
-              label={
-                <FormattedMessage
-                  id="pages.process.view.exchange.resultingAmount"
-                  defaultMessage="Resulting amount"
-                />
-              }
-              name={'resultingAmount'}
-            >
-              <Input onClick={() => {setUnitConvertVisible(true);setUnitConvertName('resultingAmount')}} />
-            </Form.Item>
+                name={'meanAmount'}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
+                label={
+                  <FormattedMessage
+                    id="pages.process.view.exchange.unitName"
+                    defaultMessage="Name of unit"
+                  />
+                }
+                name={'meanAmountUnit'}
+              >
+                <Input />
+              </Form.Item>
+            </Card>
+            <Card>
+              <Form.Item
+                label={
+                  <FormattedMessage
+                    id="pages.process.view.exchange.resultingAmount"
+                    defaultMessage="Resulting amount"
+                  />
+                }
+                name={'resultingAmount'}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
+                label={
+                  <FormattedMessage
+                    id="pages.process.view.exchange.unitName"
+                    defaultMessage="Name of unit"
+                  />
+                }
+                name={'resultingAmountUnit'}
+              >
+                <Input />
+              </Form.Item>
+            </Card>
             <Form.Item
               label={
                 <FormattedMessage
