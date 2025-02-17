@@ -5,7 +5,7 @@ import { getLang, getLangText } from '@/services/general/util';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Card, Tooltip, Input, Modal, message } from 'antd';
 import type { FC } from 'react';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 import { SearchProps } from 'antd/es/input/Search';
 
