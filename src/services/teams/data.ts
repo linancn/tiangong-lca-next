@@ -2,10 +2,7 @@ export type TeamMemberTable = {
   user_id: string;
   team_id: string;
   role: string;
-  team_title: {
-    '#text': string;
-    '@xml:lang': string;
-  }[];
+  team_title?: any;
 };
 
 export type TeamTable = {
