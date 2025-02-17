@@ -1,16 +1,17 @@
 import { LogoutOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
-import { history, useModel } from '@umijs/max';
+import { history, useModel, useIntl } from '@umijs/max';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { outLogin } from '@/services/ant-design-pro/api';
 import { getUserRoles } from '@/services/roles/api';
-import { Spin } from 'antd';
+import {Modal, Spin } from 'antd';
 import { createStyles } from 'antd-style';
 import { stringify } from 'querystring';
 import type { MenuInfo } from 'rc-menu/lib/interface';
 import { flushSync } from 'react-dom';
 import { FormattedMessage } from 'umi';
 import HeaderDropdown from '../HeaderDropdown';
+import AllTeams from '../AllTeams';
 
 export type GlobalHeaderRightProps = {
   menu?: boolean;
@@ -42,12 +43,16 @@ const useStyles = createStyles(({ token }) => {
 });
 
 export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) => {
-  const [userRole, setUserRole] = useState('');
-
+  const intl = useIntl();
+  const [isUserInTeam, setIsUserInTeam] = useState(false);
+  const [showAllTeamsModal, setShowAllTeamsModal] = useState(false);
   const initialUserRole = async () => {
-    const { data, success } = await getUserRoles();
-    if (success && data.length) {
-      setUserRole(data[0].role);
+    const { data } = await getUserRoles();
+
+    if (data?.length) {
+      setIsUserInTeam(true);
+    } else {
+      setIsUserInTeam(false);
     }
   };
 
@@ -88,12 +93,28 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
         return;
       }
       if (key === 'team') {
-        history.push(`/team`);
+        if (isUserInTeam) {
+          history.push(`/team?action=edit`);
+        } else {
+          Modal.confirm({
+            title: intl.formatMessage({ id: 'teams.modal.noTeam.title', defaultMessage: 'You are not in any team' }),
+            content: intl.formatMessage({ id: 'teams.modal.noTeam.content', defaultMessage: 'You can create a team or join an existing team' }),
+            okText: intl.formatMessage({ id: 'teams.modal.noTeam.create', defaultMessage: 'Create Team' }),
+            cancelText: intl.formatMessage({ id: 'teams.modal.noTeam.join', defaultMessage: 'Join Team' }),
+            closable: true,
+            onOk: () => {
+              history.push('/team?action=create');
+            },
+            onCancel: () => {
+              setShowAllTeamsModal(true);
+            }
+          });
+        }
         return;
       }
       history.push(`/account`);
     },
-    [setInitialState],
+    [setInitialState,isUserInTeam],
   );
 
   const loading = (
@@ -125,6 +146,11 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
       label: <FormattedMessage id="menu.account.profile" defaultMessage="Account Profile" />,
     },
     {
+      key: 'team',
+      icon: <TeamOutlined />,
+      label: <FormattedMessage id="menu.account.team" defaultMessage="Team Management" />,
+    },
+    {
       type: 'divider' as const,
     },
     {
@@ -134,15 +160,8 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
     },
   ];
 
-  if (userRole === 'owner' || userRole === 'admin') {
-    menuItems.splice(1, 0, {
-      key: 'team',
-      icon: <TeamOutlined />,
-      label: <FormattedMessage id="menu.account.team" defaultMessage="Team Management" />,
-    });
-  }
-
   return (
+    <>
     <HeaderDropdown
       menu={{
         selectedKeys: [],
@@ -152,5 +171,14 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
     >
       {children}
     </HeaderDropdown>
+    <Modal
+      width={'90%'}
+      open={showAllTeamsModal}
+      onCancel={() => setShowAllTeamsModal(false)}
+      footer={null}
+    >
+      <AllTeams />
+    </Modal>
+    </>
   );
 };

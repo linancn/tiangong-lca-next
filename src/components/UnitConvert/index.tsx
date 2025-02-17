@@ -8,9 +8,10 @@ interface UnitConvertProps {
   onOk: (value: number) => void;
   units: { name: string; meanValue: number }[];
   value?: number;
+  targetUnit: string;
 }
 
-const UnitConvert: React.FC<UnitConvertProps> = ({ visible, onCancel, onOk, units, value }) => {
+const UnitConvert: React.FC<UnitConvertProps> = ({ visible, onCancel, onOk, units, value, targetUnit }) => {
   const [form] = Form.useForm();
   const [result, setResult] = useState<number>();
 
@@ -87,7 +88,7 @@ const UnitConvert: React.FC<UnitConvertProps> = ({ visible, onCancel, onOk, unit
         <Form.Item
           label={<FormattedMessage id="pages.process.unitConvert.result" defaultMessage="Result" />}
         >
-          <Input value={result} disabled />
+          <Input addonAfter={targetUnit} value={result} disabled />
         </Form.Item>
       </Form>
     </Modal>

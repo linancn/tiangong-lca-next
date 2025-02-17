@@ -17,6 +17,7 @@ import pwa from './en-US/pwa';
 import settingDrawer from './en-US/settingDrawer';
 import settings from './en-US/settings';
 import validator from './en-US/validator';
+import component_allTeams from './en-US/component_allTeams';
 
 export default {
   'navBar.lang': 'Languages',
@@ -45,4 +46,5 @@ export default {
   ...pages_product,
   ...validator,
   ...teams,
+  ...component_allTeams,
 };

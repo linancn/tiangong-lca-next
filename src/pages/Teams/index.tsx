@@ -3,6 +3,7 @@ import { getUserRoles } from '@/services/roles/api';
 import {
   delRoleApi,
   editTeamMessage,
+  createTeamMessage,
   getTeamMembersApi,
   getTeamMessageApi,
   updateRoleApi,
@@ -17,7 +18,7 @@ import {
   ProFormInstance,
   ProTable,
 } from '@ant-design/pro-components';
-import { FormattedMessage, useIntl } from '@umijs/max';
+import { FormattedMessage, useIntl,history } from '@umijs/max';
 import {
   Button,
   Flex,
@@ -34,6 +35,8 @@ import {
 import type { UploadFile } from 'antd/es/upload/interface';
 import { useEffect, useRef, useState } from 'react';
 import AddMemberModal from './Components/AddMemberModal';
+import { v4 } from 'uuid';
+
 const LogoBaseUrl = 'https://qgzvkongdjqiiamzbbts.supabase.co/storage/v1/object/public/sys-files/';
 
 const Team = () => {
@@ -51,6 +54,8 @@ const Team = () => {
   const [membersLoading, setMembersLoading] = useState(false);
   const [addModalVisible, setAddModalVisible] = useState(false);
   const actionRef = useRef<any>(null);
+  const [searchParams] = useState(new URLSearchParams(window.location.search));
+  const action = searchParams.get('action');
 
   const intl = useIntl();
 
@@ -63,7 +68,12 @@ const Team = () => {
   };
 
   useEffect(() => {
-    initialUseTeamId();
+    if (action === 'create') {
+
+    }
+    if (action === 'edit') {
+      initialUseTeamId();
+    }
   }, []);
 
   const getTeamInfo = async (id: string) => {
@@ -187,6 +197,65 @@ const Team = () => {
         }
       }
     };
+
+    const editTeamInfo = async (values: any) => {
+      const params = getParams(values);
+      const { error } = await editTeamMessage(teamId, { ...params, darkLogo, lightLogo });
+      if (error) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.team.updateError',
+            defaultMessage: 'Failed to update team information.',
+          }),
+        );
+      } else {
+        message.success(
+          intl.formatMessage({
+            id: 'pages.team.editsuccess',
+            defaultMessage: 'Edit Successfully!',
+          }),
+        );
+      }
+    };
+
+    const createTeamInfo = async (values: any) => {
+      const params = getParams(values);
+      const error = await createTeamMessage(v4(), { ...params, darkLogo, lightLogo });
+      if (error) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.team.updateError',
+            defaultMessage: 'Failed to update team information.',
+          }),
+        );
+      } else {
+        message.success(
+          intl.formatMessage({
+            id: 'pages.team.createSuccess',
+            defaultMessage: 'Edit Successfully!',
+          }),
+        );
+        history.replace(`/team?action=edit`);
+        window.location.reload();
+      }
+    };
+
+    const submitTeamInfo = async (values: any) => {
+      try {
+        setTeamInfoSpinning(true);
+        if (action === 'edit') {
+          if (!teamId) return;
+          await editTeamInfo(values);
+        }
+        if (action === 'create') {
+          await createTeamInfo(values);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+      setTeamInfoSpinning(false);
+    };
+
     return (
       <Flex gap="middle" vertical style={{ maxWidth: '50%', minWidth: '200px' }}>
         <Spin spinning={teamInfoSpinning}>
@@ -198,31 +267,7 @@ const Team = () => {
                 <div style={{ display: 'flex', justifyContent: 'center' }}>{dom}</div>
               ),
             }}
-            onFinish={async (values) => {
-              try {
-                if (!teamId) return;
-                const params = getParams(values);
-                const { error } = await editTeamMessage(teamId, { ...params, darkLogo, lightLogo });
-                if (error) {
-                  message.error(
-                    intl.formatMessage({
-                      id: 'pages.team.updateError',
-                      defaultMessage: 'Failed to update team information.',
-                    }),
-                  );
-                } else {
-                  message.success(
-                    intl.formatMessage({
-                      id: 'pages.team.editsuccess',
-                      defaultMessage: 'Edit Successfully!',
-                    }),
-                  );
-                }
-              } catch (error) {
-                console.log(error);
-              }
-              setTeamInfoSpinning(false);
-            }}
+            onFinish={(values) => submitTeamInfo(values)}
           >
             <Form.Item
               label={<FormattedMessage id="pages.team.info.title" defaultMessage="Team Name" />}
@@ -339,13 +384,13 @@ const Team = () => {
                 fileList={
                   lightLogo
                     ? [
-                        {
-                          uid: '-1',
-                          name: 'logo',
-                          status: 'done',
-                          url: LogoBaseUrl + lightLogo,
-                        },
-                      ]
+                      {
+                        uid: '-1',
+                        name: 'logo',
+                        status: 'done',
+                        url: LogoBaseUrl + lightLogo,
+                      },
+                    ]
                     : []
                 }
                 onChange={({ fileList }) => uploadLogo(fileList, 'lightLogo')}
@@ -373,13 +418,13 @@ const Team = () => {
                 fileList={
                   darkLogo
                     ? [
-                        {
-                          uid: '-1',
-                          name: 'logo',
-                          status: 'done',
-                          url: LogoBaseUrl + darkLogo,
-                        },
-                      ]
+                      {
+                        uid: '-1',
+                        name: 'logo',
+                        status: 'done',
+                        url: LogoBaseUrl + darkLogo,
+                      },
+                    ]
                     : []
                 }
                 onChange={({ fileList }) => uploadLogo(fileList, 'darkLogo')}
@@ -427,6 +472,17 @@ const Team = () => {
         title: <FormattedMessage id="teams.members.email" defaultMessage="Email" />,
         dataIndex: 'email',
         key: 'email',
+      },
+      {
+        title: <FormattedMessage id="teams.members.teamName" defaultMessage="Team Name" />,
+        dataIndex: 'team_title',
+        key: 'team_title',
+        render: (_, record) => {
+          const titles = record.team_title;
+          const currentLang = intl.locale === 'zh-CN' ? 'zh' : 'en';
+          const title = titles.find((t: any) => t['@xml:lang'] === currentLang);
+          return title ? title['#text'] : '';
+        }
       },
       {
         title: <FormattedMessage id="teams.members.role" defaultMessage="Role" />,
@@ -594,6 +650,22 @@ const Team = () => {
         />
       </div>
     );
+
+  };
+
+  const tabs = [
+    {
+      key: 'info',
+      label: <FormattedMessage id="pages.team.tabs.info" defaultMessage="Team Information" />,
+      children: renderTeamInfoForm(),
+    }
+  ]
+  if (action === 'edit') {
+    tabs.splice(1, 0, {
+      key: 'members',
+      label: <FormattedMessage id="pages.team.tabs.members" defaultMessage="Team Members" />,
+      children: renderTeamMembersForm(),
+    });
   };
 
   return (
@@ -604,18 +676,7 @@ const Team = () => {
         activeKey={activeTabKey}
         onChange={onTabChange}
         tabPosition="left"
-        items={[
-          {
-            key: 'info',
-            label: <FormattedMessage id="pages.team.tabs.info" defaultMessage="Team Information" />,
-            children: renderTeamInfoForm(),
-          },
-          {
-            key: 'members',
-            label: <FormattedMessage id="pages.team.tabs.members" defaultMessage="Team Members" />,
-            children: renderTeamMembersForm(),
-          },
-        ]}
+        items={tabs}
       />
     </PageContainer>
   );

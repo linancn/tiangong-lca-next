@@ -51,7 +51,7 @@ const ProcessExchangeEdit: FC<Props> = ({
   const [units, setUnits] = useState([]);
   const [unitConvertVisible, setUnitConvertVisible] = useState(false);
   const [unitConvertName, setUnitConvertName] = useState('');
-
+  const [targetUnit, setTargetUnit] = useState('');
   useEffect(() => {
     if (!unitConvertVisible) {
       setUnitConvertName('');
@@ -103,6 +103,7 @@ const ProcessExchangeEdit: FC<Props> = ({
         }}
         units={units}
         value={undefined}
+        targetUnit={targetUnit}
       />
       <Drawer
         title={
@@ -191,7 +192,7 @@ const ProcessExchangeEdit: FC<Props> = ({
                 }}
               />
             </Form.Item>
-            <UnitsContext.Provider value={{ units, setUnits }}>
+            <UnitsContext.Provider value={{ units, setUnits,setTargetUnit }}>
               <FlowsSelectForm
                 name={['referenceToFlowDataSet']}
                 label={

@@ -5,7 +5,7 @@ const UnitsContext: any = createContext(null);
 const useUnitsContext = () => {
   const context = useContext(UnitsContext);
   if (!context) {
-    return { units: [], setUnits: () => {} };
+    return { units: [], setUnits: () => {}, setTargetUnit: () => {} };
   }
   return context;
 };

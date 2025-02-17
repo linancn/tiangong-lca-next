@@ -143,6 +143,8 @@ export default {
 
   'pages.team.editsuccess': '修改成功！',
   'pages.team.updateError': '更新团队信息失败。',
+  'pages.team.createSuccess': '创建成功！',
+  'pages.team.createError': '创建团队失败。',
   'pages.team.tabs.info': '团队信息',
   'pages.team.tabs.members': '成员管理',
   'pages.team.info.title': '团队名称',
