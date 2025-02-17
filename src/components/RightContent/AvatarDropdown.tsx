@@ -1,17 +1,17 @@
 import { LogoutOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
-import { history, useModel, useIntl } from '@umijs/max';
+import { history, useIntl, useModel } from '@umijs/max';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { outLogin } from '@/services/ant-design-pro/api';
 import { getUserRoles } from '@/services/roles/api';
-import {Modal, Spin } from 'antd';
+import { Modal, Spin } from 'antd';
 import { createStyles } from 'antd-style';
 import { stringify } from 'querystring';
 import type { MenuInfo } from 'rc-menu/lib/interface';
 import { flushSync } from 'react-dom';
 import { FormattedMessage } from 'umi';
-import HeaderDropdown from '../HeaderDropdown';
 import AllTeams from '../AllTeams';
+import HeaderDropdown from '../HeaderDropdown';
 
 export type GlobalHeaderRightProps = {
   menu?: boolean;
@@ -97,24 +97,36 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
           history.push(`/team?action=edit`);
         } else {
           Modal.confirm({
-            title: intl.formatMessage({ id: 'teams.modal.noTeam.title', defaultMessage: 'You are not in any team' }),
-            content: intl.formatMessage({ id: 'teams.modal.noTeam.content', defaultMessage: 'You can create a team or join an existing team' }),
-            okText: intl.formatMessage({ id: 'teams.modal.noTeam.create', defaultMessage: 'Create Team' }),
-            cancelText: intl.formatMessage({ id: 'teams.modal.noTeam.join', defaultMessage: 'Join Team' }),
+            title: intl.formatMessage({
+              id: 'teams.modal.noTeam.title',
+              defaultMessage: 'You are not in any team',
+            }),
+            content: intl.formatMessage({
+              id: 'teams.modal.noTeam.content',
+              defaultMessage: 'You can create a team or join an existing team',
+            }),
+            okText: intl.formatMessage({
+              id: 'teams.modal.noTeam.create',
+              defaultMessage: 'Create Team',
+            }),
+            cancelText: intl.formatMessage({
+              id: 'teams.modal.noTeam.join',
+              defaultMessage: 'Join Team',
+            }),
             closable: true,
             onOk: () => {
               history.push('/team?action=create');
             },
             onCancel: () => {
               setShowAllTeamsModal(true);
-            }
+            },
           });
         }
         return;
       }
       history.push(`/account`);
     },
-    [setInitialState,isUserInTeam],
+    [setInitialState, isUserInTeam],
   );
 
   const loading = (
@@ -162,23 +174,23 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
 
   return (
     <>
-    <HeaderDropdown
-      menu={{
-        selectedKeys: [],
-        onClick: onMenuClick,
-        items: menuItems,
-      }}
-    >
-      {children}
-    </HeaderDropdown>
-    <Modal
-      width={'90%'}
-      open={showAllTeamsModal}
-      onCancel={() => setShowAllTeamsModal(false)}
-      footer={null}
-    >
-      <AllTeams />
-    </Modal>
+      <HeaderDropdown
+        menu={{
+          selectedKeys: [],
+          onClick: onMenuClick,
+          items: menuItems,
+        }}
+      >
+        {children}
+      </HeaderDropdown>
+      <Modal
+        width={'90%'}
+        open={showAllTeamsModal}
+        onCancel={() => setShowAllTeamsModal(false)}
+        footer={null}
+      >
+        <AllTeams />
+      </Modal>
     </>
   );
 };

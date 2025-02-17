@@ -6,7 +6,7 @@ interface TeamMember {
   team_id: string;
   email: any;
   role: 'admin' | 'member' | 'is_invited';
-  team_title?: string
+  team_title?: string;
 }
 
 export async function getTeams() {
@@ -36,23 +36,20 @@ export async function getTeamsByKeyword(keyword: string) {
   if (result.error) {
     return Promise.resolve({
       data: [],
-      success: false
+      success: false,
     });
   }
 
   return Promise.resolve({
     data: result.data ?? [],
-    success: true
+    success: true,
   });
 }
 
 const getUserIdsByTeamIds = async (teamIds: string[]) => {
-  const result = await supabase
-    .from('roles')
-    .select('user_id,team_id')
-    .in('team_id', teamIds);
+  const result = await supabase.from('roles').select('user_id,team_id').in('team_id', teamIds);
   return result.data ?? [];
-}
+};
 
 const getUserEmailByUserIds = async (userIds: string[]) => {
   const result = await supabase
@@ -60,9 +57,12 @@ const getUserEmailByUserIds = async (userIds: string[]) => {
     .select('id,raw_user_meta_data->email')
     .in('id', userIds);
   return result.data ?? [];
-}
+};
 
-export async function getAllTableTeams(params: { pageSize: number; current: number }, sort: Record<string, SortOrder>) {
+export async function getAllTableTeams(
+  params: { pageSize: number; current: number },
+  sort: Record<string, SortOrder>,
+) {
   try {
     const sortBy = Object.keys(sort)[0] ?? 'created_at';
     const orderBy = sort[sortBy] ?? 'descend';
@@ -85,14 +85,14 @@ export async function getAllTableTeams(params: { pageSize: number; current: numb
         if (team) {
           team.user_id = user.user_id;
         }
-      })
+      });
       const userEmails = await getUserEmailByUserIds(users.map((item) => item.user_id));
       userEmails.forEach((user) => {
         const team = teams.find((item) => item.user_id === user.id);
         if (team) {
           team.ownerEmail = user.email;
         }
-      })
+      });
     }
     return Promise.resolve({
       data: teams ?? [],
@@ -148,10 +148,10 @@ export async function createTeamMessage(id: string, data: any) {
     const { error: roleError } = await supabase.from('roles').insert({
       team_id: id,
       user_id: session?.data?.session?.user?.id,
-      role: 'owner'
+      role: 'owner',
     });
     return roleError;
-  };
+  }
   return error;
 }
 
@@ -177,18 +177,15 @@ export async function delRoleApi(teamId: string, userId: string) {
 
 const getTeamsByIds = async (teamIds: string[]) => {
   try {
-    const { error, data: result } = await supabase
-      .from('teams')
-      .select('*')
-      .in('id', teamIds);
+    const { error, data: result } = await supabase.from('teams').select('*').in('id', teamIds);
     if (error) {
       throw error;
     }
     return result;
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
-}
+};
 
 export async function getTeamMembersApi(
   params: { pageSize: number; current: number },
@@ -242,16 +239,14 @@ export async function getTeamMembersApi(
               r.team_title = team.json?.title;
             }
           });
-        };
+        }
 
         return {
           success: true,
           data: result,
         };
       }
-    };
-
-
+    }
 
     return {
       success: false,
@@ -273,7 +268,7 @@ export async function addTeamMemberApi(teamId: string, email: string) {
     .single();
 
   const id = userResult?.id;
-  if(!userResult ){
+  if (!userResult) {
     return {
       error: {
         message: 'notRegistered',

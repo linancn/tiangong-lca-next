@@ -22,7 +22,10 @@ type Props = {
 const UnitGroupFromMini: FC<Props> = ({ id, version, idType, name, formRef, drawerVisible }) => {
   const [spinning, setSpinning] = useState<boolean>(false);
   const { token } = theme.useToken();
-  const { setUnits, setTargetUnit } = useUnitsContext() as { setUnits: (units: any) => void, setTargetUnit: (targetUnit: string) => void };
+  const { setUnits, setTargetUnit } = useUnitsContext() as {
+    setUnits: (units: any) => void;
+    setTargetUnit: (targetUnit: string) => void;
+  };
 
   useEffect(() => {
     if (id && drawerVisible) {

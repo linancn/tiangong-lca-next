@@ -1,9 +1,9 @@
 import { ListPagination } from '@/services/general/data';
 import { getUserRoles } from '@/services/roles/api';
 import {
+  createTeamMessage,
   delRoleApi,
   editTeamMessage,
-  createTeamMessage,
   getTeamMembersApi,
   getTeamMessageApi,
   updateRoleApi,
@@ -18,7 +18,7 @@ import {
   ProFormInstance,
   ProTable,
 } from '@ant-design/pro-components';
-import { FormattedMessage, useIntl,history } from '@umijs/max';
+import { FormattedMessage, history, useIntl } from '@umijs/max';
 import {
   Button,
   Flex,
@@ -34,8 +34,8 @@ import {
 } from 'antd';
 import type { UploadFile } from 'antd/es/upload/interface';
 import { useEffect, useRef, useState } from 'react';
-import AddMemberModal from './Components/AddMemberModal';
 import { v4 } from 'uuid';
+import AddMemberModal from './Components/AddMemberModal';
 
 const LogoBaseUrl = 'https://qgzvkongdjqiiamzbbts.supabase.co/storage/v1/object/public/sys-files/';
 
@@ -69,7 +69,6 @@ const Team = () => {
 
   useEffect(() => {
     if (action === 'create') {
-
     }
     if (action === 'edit') {
       initialUseTeamId();
@@ -384,13 +383,13 @@ const Team = () => {
                 fileList={
                   lightLogo
                     ? [
-                      {
-                        uid: '-1',
-                        name: 'logo',
-                        status: 'done',
-                        url: LogoBaseUrl + lightLogo,
-                      },
-                    ]
+                        {
+                          uid: '-1',
+                          name: 'logo',
+                          status: 'done',
+                          url: LogoBaseUrl + lightLogo,
+                        },
+                      ]
                     : []
                 }
                 onChange={({ fileList }) => uploadLogo(fileList, 'lightLogo')}
@@ -418,13 +417,13 @@ const Team = () => {
                 fileList={
                   darkLogo
                     ? [
-                      {
-                        uid: '-1',
-                        name: 'logo',
-                        status: 'done',
-                        url: LogoBaseUrl + darkLogo,
-                      },
-                    ]
+                        {
+                          uid: '-1',
+                          name: 'logo',
+                          status: 'done',
+                          url: LogoBaseUrl + darkLogo,
+                        },
+                      ]
                     : []
                 }
                 onChange={({ fileList }) => uploadLogo(fileList, 'darkLogo')}
@@ -482,7 +481,7 @@ const Team = () => {
           const currentLang = intl.locale === 'zh-CN' ? 'zh' : 'en';
           const title = titles.find((t: any) => t['@xml:lang'] === currentLang);
           return title ? title['#text'] : '';
-        }
+        },
       },
       {
         title: <FormattedMessage id="teams.members.role" defaultMessage="Role" />,
@@ -650,7 +649,6 @@ const Team = () => {
         />
       </div>
     );
-
   };
 
   const tabs = [
@@ -658,26 +656,21 @@ const Team = () => {
       key: 'info',
       label: <FormattedMessage id="pages.team.tabs.info" defaultMessage="Team Information" />,
       children: renderTeamInfoForm(),
-    }
-  ]
+    },
+  ];
   if (action === 'edit') {
     tabs.splice(1, 0, {
       key: 'members',
       label: <FormattedMessage id="pages.team.tabs.members" defaultMessage="Team Members" />,
       children: renderTeamMembersForm(),
     });
-  };
+  }
 
   return (
     <PageContainer
       title={<FormattedMessage id="menu.account.team" defaultMessage="Team Management" />}
     >
-      <Tabs
-        activeKey={activeTabKey}
-        onChange={onTabChange}
-        tabPosition="left"
-        items={tabs}
-      />
+      <Tabs activeKey={activeTabKey} onChange={onTabChange} tabPosition="left" items={tabs} />
     </PageContainer>
   );
 };

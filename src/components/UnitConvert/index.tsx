@@ -11,7 +11,14 @@ interface UnitConvertProps {
   targetUnit: string;
 }
 
-const UnitConvert: React.FC<UnitConvertProps> = ({ visible, onCancel, onOk, units, value, targetUnit }) => {
+const UnitConvert: React.FC<UnitConvertProps> = ({
+  visible,
+  onCancel,
+  onOk,
+  units,
+  value,
+  targetUnit,
+}) => {
   const [form] = Form.useForm();
   const [result, setResult] = useState<number>();
 
