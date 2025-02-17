@@ -7,4 +7,5 @@ export default {
   'component.allTeams.table.rank': 'Rank',
   'component.allTeams.table.confirm': 'Confirm to modify the rank?',
   'component.allTeams.table.success': 'Sorting modified successfully',
+  'component.allTeams.table.failed': 'Sorting modified failed',
 };

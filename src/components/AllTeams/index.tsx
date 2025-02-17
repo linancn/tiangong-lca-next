@@ -80,7 +80,7 @@ const TableList: FC = () => {
                                     }
 
                                 } catch (err) {
-                                    message.error('排序修改失败');
+                                    message.success(intl.formatMessage({ id: 'component.allTeams.table.fail', defaultMessage: 'Sorting modified failed' }));
                                     console.error(err);
                                 }
                             }

@@ -7,4 +7,5 @@ export default {
   'component.allTeams.table.rank': '排序',
   'component.allTeams.table.confirm': '确认修改排序?',
   'component.allTeams.table.success': '排序修改成功',
+  'component.allTeams.table.failed': '排序修改失败',
 };
