@@ -1,4 +1,5 @@
 import component from './en-US/component';
+import component_allTeams from './en-US/component_allTeams';
 import globalHeader from './en-US/globalHeader';
 import menu from './en-US/menu';
 import pages from './en-US/pages';
@@ -45,4 +46,5 @@ export default {
   ...pages_product,
   ...validator,
   ...teams,
+  ...component_allTeams,
 };

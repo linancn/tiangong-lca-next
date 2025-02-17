@@ -1,6 +1,14 @@
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
 
+interface TeamMember {
+  user_id: string;
+  team_id: string;
+  email: any;
+  role: 'admin' | 'member' | 'is_invited';
+  team_title?: string;
+}
+
 export async function getTeams() {
   const result = await supabase
     .from('teams')
@@ -17,6 +25,92 @@ export async function getTeams() {
     data: result.data ?? [],
     success: true,
   });
+}
+
+export async function getTeamsByKeyword(keyword: string) {
+  const result = await supabase
+    .from('teams')
+    .select('*')
+    .or(`json->title->0->>#text.ilike.%${keyword}%,json->title->1->>#text.ilike.%${keyword}%`);
+
+  if (result.error) {
+    return Promise.resolve({
+      data: [],
+      success: false,
+    });
+  }
+
+  return Promise.resolve({
+    data: result.data ?? [],
+    success: true,
+  });
+}
+
+const getUserIdsByTeamIds = async (teamIds: string[]) => {
+  const result = await supabase.from('roles').select('user_id,team_id').in('team_id', teamIds);
+  return result.data ?? [];
+};
+
+const getUserEmailByUserIds = async (userIds: string[]) => {
+  const result = await supabase
+    .from('users')
+    .select('id,raw_user_meta_data->email')
+    .in('id', userIds);
+  return result.data ?? [];
+};
+
+export async function getAllTableTeams(
+  params: { pageSize: number; current: number },
+  sort: Record<string, SortOrder>,
+) {
+  try {
+    const sortBy = Object.keys(sort)[0] ?? 'created_at';
+    const orderBy = sort[sortBy] ?? 'descend';
+
+    const { data: teams, count } = await supabase
+      .from('teams')
+      .select('*', { count: 'exact' })
+      .gte('rank', 0)
+      .order(sortBy, { ascending: orderBy === 'ascend' })
+      .range(
+        ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
+        (params.current ?? 1) * (params.pageSize ?? 10) - 1,
+      );
+
+    if (teams && teams.length > 0) {
+      const teamIds = teams.map((item) => item.id);
+      const users = await getUserIdsByTeamIds(teamIds);
+      users.forEach((user) => {
+        const team = teams.find((item) => item.id === user.team_id);
+        if (team) {
+          team.user_id = user.user_id;
+        }
+      });
+      const userEmails = await getUserEmailByUserIds(users.map((item) => item.user_id));
+      userEmails.forEach((user) => {
+        const team = teams.find((item) => item.user_id === user.id);
+        if (team) {
+          team.ownerEmail = user.email;
+        }
+      });
+    }
+    return Promise.resolve({
+      data: teams ?? [],
+      success: true,
+      total: count ?? 0,
+    });
+  } catch (error) {
+    return Promise.resolve({
+      data: [],
+      success: false,
+      total: 0,
+    });
+  }
+}
+
+export async function updateTeamRank(id: string, rank: number) {
+  const result = await supabase.from('teams').update({ rank }).eq('id', id);
+  return result;
 }
 
 export async function getTeamById(id: string) {
@@ -47,6 +141,20 @@ export async function editTeamMessage(id: string, data: any) {
   return result;
 }
 
+export async function createTeamMessage(id: string, data: any) {
+  const { error } = await supabase.from('teams').insert({ id, json: data });
+  if (!error) {
+    const session = await supabase.auth.getSession();
+    const { error: roleError } = await supabase.from('roles').insert({
+      team_id: id,
+      user_id: session?.data?.session?.user?.id,
+      role: 'owner',
+    });
+    return roleError;
+  }
+  return error;
+}
+
 export async function getTeamMessageApi(id: string) {
   const result = await supabase.from('teams').select('*').eq('id', id);
   return result;
@@ -66,6 +174,18 @@ export async function delRoleApi(teamId: string, userId: string) {
   const result = await supabase.from('roles').delete().eq('team_id', teamId).eq('user_id', userId);
   return result;
 }
+
+const getTeamsByIds = async (teamIds: string[]) => {
+  try {
+    const { error, data: result } = await supabase.from('teams').select('*').in('id', teamIds);
+    if (error) {
+      throw error;
+    }
+    return result;
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 export async function getTeamMembersApi(
   params: { pageSize: number; current: number },
@@ -100,15 +220,26 @@ export async function getTeamMembersApi(
         .in('id', ids);
 
       if (!error) {
-        const result = rolesResult.map((role) => {
+        const result: TeamMember[] = rolesResult.map((role) => {
           const user = usersResult?.find((u) => u.id === role.user_id);
           return {
             user_id: role.user_id,
             team_id: role.team_id,
-            email: user?.email,
+            email: user?.email ?? '',
             role: role.role,
           };
         });
+
+        // get team title
+        const teams = await getTeamsByIds(rolesResult.map((r) => r.team_id));
+        if (teams) {
+          result.forEach((r) => {
+            const team = teams.find((t) => t.id === r.team_id);
+            if (team) {
+              r.team_title = team.json?.title;
+            }
+          });
+        }
 
         return {
           success: true,
@@ -116,6 +247,7 @@ export async function getTeamMembersApi(
         };
       }
     }
+
     return {
       success: false,
       data: null,
@@ -136,6 +268,13 @@ export async function addTeamMemberApi(teamId: string, email: string) {
     .single();
 
   const id = userResult?.id;
+  if (!userResult) {
+    return {
+      error: {
+        message: 'notRegistered',
+      },
+    };
+  }
 
   // Check if the user is already on the team
   const { data: existingUser, error: roleCheckError } = await supabase

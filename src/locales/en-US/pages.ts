@@ -145,6 +145,8 @@ export default {
   // Team Management
   'pages.team.editsuccess': 'Edit Successfully!',
   'pages.team.updateError': 'Failed to update team information.',
+  'pages.team.createSuccess': 'Create Successfully!',
+  'pages.team.createError': 'Failed to create team.',
   'pages.team.tabs.info': 'Team Information',
   'pages.team.tabs.members': 'Team Members',
   'pages.team.info.title': 'Team Name',

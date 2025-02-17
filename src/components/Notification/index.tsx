@@ -23,7 +23,7 @@ const Notification: React.FC = () => {
         setInvitedInfo(res.data);
         getTeamById(res.data?.team_id).then(({ success, data }) => {
           if (success) {
-            setTeamTitle(data[0].json.title);
+            setTeamTitle(data[0]?.json?.title);
           }
         });
       } else {

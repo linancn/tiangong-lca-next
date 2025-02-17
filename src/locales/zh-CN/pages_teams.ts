@@ -19,6 +19,7 @@ export default {
   'teams.members.email.required': '请输入邮箱！',
   'teams.members.email.invalid': '请输入有效的邮箱地址！',
   'teams.members.add.exists': '该用户已在团队中！',
+  'teams.members.add.notRegistered': '该用户未注册！',
   'teams.notification.team.invite.title': '团队邀请',
   'teams.notification.team.invite.content': '团队邀请您进入，是否进入？',
   'teams.notification.team.invite.accept': '同意',
@@ -28,4 +29,9 @@ export default {
   'teams.logo.uploadSuccess': '上传成功!',
   'teams.logo.uploadError': '上传失败!',
   'teams.logo.nameError': '文件名不能包含中文字符!',
+  'teams.members.teamName': '团队名称',
+  'teams.modal.noTeam.title': '您目前不属于任何一个团队',
+  'teams.modal.noTeam.content': '您可以创建团队或者加入已有团队',
+  'teams.modal.noTeam.create': '创建团队',
+  'teams.modal.noTeam.join': '加入团队',
 };

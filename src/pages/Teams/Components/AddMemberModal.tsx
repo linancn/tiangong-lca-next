@@ -37,6 +37,13 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ open, onCancel, teamId,
               defaultMessage: 'User already exists in the team!',
             }),
           );
+        } else if (result.error.message === 'notRegistered') {
+          message.error(
+            intl.formatMessage({
+              id: 'teams.members.add.notRegistered',
+              defaultMessage: 'User is not registered!',
+            }),
+          );
         } else {
           message.error(
             intl.formatMessage({
