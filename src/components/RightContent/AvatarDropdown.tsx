@@ -118,7 +118,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
               history.push('/team?action=create');
             },
             onCancel: () => {
-              setShowAllTeamsModal(true);
+              setShowAllTeamsModal(false);
             },
           });
         }
