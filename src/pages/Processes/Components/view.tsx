@@ -746,7 +746,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
                   defaultMessage="Type of review"
                 />
               }
-              labelStyle={{ width: '100px' }}
+              styles={{ label: {width:'130px'} }} 
             >
               {getReviewTypeOptions(
                 initData.modellingAndValidation?.validation?.review?.['@type'] ?? '-',
@@ -843,7 +843,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
                   defaultMessage="Time stamp (last saved)"
                 />
               }
-              labelStyle={{ width: '150px' }}
+              styles={{ label: {width:'200px'} }}
             >
               {initData?.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-'}
             </Descriptions.Item>
@@ -961,7 +961,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
                   defaultMessage="Permanent data set URI"
                 />
               }
-              labelStyle={{ width: '200px' }}
+              styles={{ label: {width:'220px'} }}
             >
               {initData.administrativeInformation?.publicationAndOwnership?.[
                 'common:permanentDataSetURI'
@@ -978,7 +978,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
                   defaultMessage="Workflow and publication status	"
                 />
               }
-              labelStyle={{ width: '200px' }}
+              styles={{ label: {width:'240px'} }}
             >
               {initData.administrativeInformation?.publicationAndOwnership?.[
                 'common:workflowAndPublicationStatus'

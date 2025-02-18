@@ -276,7 +276,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
                 defaultMessage="Approval of Overall Compliance"
               />
             }
-            labelStyle={{ width: '180px' }}
+            styles={{ label: {width:'240px'} }} 
           >
             {getapprovalOfOverallComplianceOptions(
               data.modellingAndValidation?.complianceDeclarations?.compliance?.[
@@ -295,7 +295,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
                 defaultMessage="Nomenclature Compliance"
               />
             }
-            labelStyle={{ width: '180px' }}
+            styles={{ label: {width:'200px'} }} 
           >
             {getnomenclatureComplianceOptions(
               data.modellingAndValidation?.complianceDeclarations?.compliance?.[
@@ -314,7 +314,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
                 defaultMessage="Methodological Compliance"
               />
             }
-            labelStyle={{ width: '180px' }}
+            styles={{ label: {width:'210px'} }} 
           >
             {getmethodologicalComplianceOptions(
               data.modellingAndValidation?.complianceDeclarations?.compliance?.[
@@ -352,7 +352,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
                 defaultMessage="Documentation Compliance"
               />
             }
-            labelStyle={{ width: '180px' }}
+            styles={{ label: {width:'210px'} }} 
           >
             {getdocumentationComplianceOptions(
               data.modellingAndValidation?.complianceDeclarations?.compliance?.[

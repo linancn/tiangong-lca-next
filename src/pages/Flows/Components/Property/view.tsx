@@ -78,7 +78,7 @@ const PropertyView: FC<Props> = ({ id, data, lang, buttonType }) => {
                 defaultMessage="Mean value (of flow property)"
               />
             }
-            labelStyle={{ width: '150px' }}
+            styles={{ label: {width:'230px'} }} 
           >
             {viewData?.['meanValue'] ?? '-'}
           </Descriptions.Item>
