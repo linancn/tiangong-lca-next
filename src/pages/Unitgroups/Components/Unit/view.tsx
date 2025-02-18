@@ -65,7 +65,7 @@ const UnitView: FC<Props> = ({ id, data, buttonType }) => {
             label={
               <FormattedMessage id="pages.unitgroup.name" defaultMessage="Name of unit group" />
             }
-            styles={{ label: {width:'160px'} }}
+            styles={{ label: { width: '160px' } }}
           >
             {viewData.name ?? '-'}
           </Descriptions.Item>

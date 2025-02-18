@@ -78,7 +78,7 @@ const UnitGroupDescriptionMini: FC<Props> = ({ id, version, idType }) => {
               label={
                 <FormattedMessage id="pages.unitgroup.unitName" defaultMessage="Name of unit" />
               }
-              styles={{ label: {width:'120px'} }} 
+              styles={{ label: { width: '120px' } }}
             >
               {refUnit?.refUnitName ?? '-'}
             </Descriptions.Item>

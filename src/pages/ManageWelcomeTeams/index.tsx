@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 export default function ManageWelcomeTeams() {
   const [userRole, setUserRole] = useState<string | undefined>(undefined);
   useEffect(() => {
-    getAuth().then(( data ) => {
+    getAuth().then((data) => {
       setUserRole(data.user?.role);
     });
   }, []);

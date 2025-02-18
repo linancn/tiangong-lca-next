@@ -439,7 +439,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
                 defaultMessage="Approval of overall compliance"
               />
             }
-            styles={{ label: {width:'260px'} }} 
+            styles={{ label: { width: '260px' } }}
           >
             {getComplianceLabel(
               initData?.modellingAndValidation?.complianceDeclarations?.compliance?.[
@@ -472,7 +472,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
                   defaultMessage="Time stamp (last saved)"
                 />
               }
-              styles={{ label: {width:'200px'} }}
+              styles={{ label: { width: '200px' } }}
             >
               {initData?.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-'}
             </Descriptions.Item>
@@ -542,7 +542,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
                   defaultMessage="Permanent data set URI"
                 />
               }
-              styles={{ label: {width:'220px'} }}
+              styles={{ label: { width: '220px' } }}
             >
               {initData?.administrativeInformation?.publicationAndOwnership?.[
                 'common:permanentDataSetURI'
