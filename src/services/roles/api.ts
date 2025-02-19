@@ -37,4 +37,3 @@ export async function getTeamIdByUserId() {
   }
   return null;
 }
-

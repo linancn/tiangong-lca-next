@@ -385,13 +385,13 @@ const Team = () => {
                 fileList={
                   lightLogo
                     ? [
-                      {
-                        uid: '-1',
-                        name: 'logo',
-                        status: 'done',
-                        url: LogoBaseUrl + lightLogo,
-                      },
-                    ]
+                        {
+                          uid: '-1',
+                          name: 'logo',
+                          status: 'done',
+                          url: LogoBaseUrl + lightLogo,
+                        },
+                      ]
                     : []
                 }
                 onChange={({ fileList }) => uploadLogo(fileList, 'lightLogo')}
@@ -420,13 +420,13 @@ const Team = () => {
                 fileList={
                   darkLogo
                     ? [
-                      {
-                        uid: '-1',
-                        name: 'logo',
-                        status: 'done',
-                        url: LogoBaseUrl + darkLogo,
-                      },
-                    ]
+                        {
+                          uid: '-1',
+                          name: 'logo',
+                          status: 'done',
+                          url: LogoBaseUrl + darkLogo,
+                        },
+                      ]
                     : []
                 }
                 onChange={({ fileList }) => uploadLogo(fileList, 'darkLogo')}
@@ -478,7 +478,7 @@ const Team = () => {
       {
         title: <FormattedMessage id="teams.members.memberName" defaultMessage="Member Name" />,
         dataIndex: 'display_name',
-        key: 'display_name'
+        key: 'display_name',
       },
       {
         title: <FormattedMessage id="teams.members.role" defaultMessage="Role" />,
@@ -508,7 +508,9 @@ const Team = () => {
                 title={<FormattedMessage id="teams.members.delete" defaultMessage="Delete" />}
               >
                 <Button
-                  disabled={!(record.role !== 'owner'&&(userRole === 'owner' || userRole === 'admin'))}
+                  disabled={
+                    !(record.role !== 'owner' && (userRole === 'owner' || userRole === 'admin'))
+                  }
                   type="text"
                   icon={<DeleteOutlined />}
                   onClick={() => {
@@ -547,7 +549,7 @@ const Team = () => {
                 title={<FormattedMessage id="teams.members.setAdmin" defaultMessage="Set Admin" />}
               >
                 <Button
-                  disabled={!(record.role === 'member'&&(userRole === 'owner'))}
+                  disabled={!(record.role === 'member' && userRole === 'owner')}
                   type="text"
                   icon={<CrownOutlined />}
                   onClick={() => updateRole(record?.team_id, record?.user_id, 'admin')}
@@ -561,7 +563,7 @@ const Team = () => {
                 }
               >
                 <Button
-                  disabled={!(record.role === 'admin'&&(userRole === 'owner'))}
+                  disabled={!(record.role === 'admin' && userRole === 'owner')}
                   type="text"
                   icon={<UserOutlined />}
                   onClick={() => updateRole(record?.team_id, record?.user_id, 'member')}

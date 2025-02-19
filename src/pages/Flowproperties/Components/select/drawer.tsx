@@ -22,12 +22,12 @@ type Props = {
   buttonType: string;
   lang: string;
   onData: (rowKey: string, version: string) => void;
-  buttonText?:any
+  buttonText?: any;
 };
 
 const { Search } = Input;
 
-const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData,buttonText }) => {
+const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, buttonText }) => {
   const [tgKeyWord, setTgKeyWord] = useState<any>('');
   const [myKeyWord, setMyKeyWord] = useState<any>('');
 

@@ -9,15 +9,15 @@ import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getDataDetail } from '../general/api';
 import { getILCDClassification } from '../ilcd/api';
-import { genContactJsonOrdered } from './util';
 import { getTeamIdByUserId } from '../roles/api';
+import { genContactJsonOrdered } from './util';
 
 export async function createContact(id: string, data: any) {
   const newData = genContactJsonOrdered(id, data);
   const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('contacts')
-    .insert([{ id: id, json_ordered: newData,team_id:teamId }])
+    .insert([{ id: id, json_ordered: newData, team_id: teamId }])
     .select();
   return result;
 }

@@ -94,7 +94,10 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }
       tab: <FormattedMessage id="pages.tab.title.tgdata" defaultMessage="TianGong Data" />,
     },
     { key: 'my', tab: <FormattedMessage id="pages.tab.title.mydata" defaultMessage="My Data" /> },
-    { key: 'team', tab: <FormattedMessage id="pages.tab.title.teamdata" defaultMessage="Team Data" /> },
+    {
+      key: 'team',
+      tab: <FormattedMessage id="pages.tab.title.teamdata" defaultMessage="Team Data" />,
+    },
   ];
 
   const contactColumns: ProColumns<ContactTable>[] = [
@@ -281,7 +284,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }
         />
       </>
     ),
-  team: (
+    team: (
       <>
         <Card>
           <Search
@@ -289,7 +292,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }
             size={'large'}
             placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
             value={teamKeyWord}
-            onChange={handleTeamKeyWordChange} 
+            onChange={handleTeamKeyWordChange}
             onSearch={onTeamSearch}
             enterButton
           />
