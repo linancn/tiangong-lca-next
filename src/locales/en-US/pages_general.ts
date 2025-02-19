@@ -53,6 +53,7 @@ export default {
   'pages.button.item.label': 'Item',
 
   'pages.tab.title.mydata': 'My Data',
+  'pages.tab.title.teamdata': 'Team Data',
   'pages.tab.title.tgdata': 'TianGong Data',
 
   'pages.search.openAI': 'AI Recommendation',
