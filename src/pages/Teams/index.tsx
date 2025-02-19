@@ -106,7 +106,7 @@ const Team = () => {
   };
 
   useEffect(() => {
-    if ((userRole === 'admin' || userRole === 'owner') && teamId) {
+    if (teamId) {
       getTeamInfo(teamId);
       actionRef.current?.reload();
     }
@@ -259,6 +259,7 @@ const Team = () => {
       <Flex gap="middle" vertical style={{ maxWidth: '50%', minWidth: '200px' }}>
         <Spin spinning={teamInfoSpinning}>
           <ProForm
+            disabled={userRole !== 'admin' && userRole !== 'owner'}
             formRef={formRefEdit}
             submitter={{
               resetButtonProps: false,
@@ -373,6 +374,7 @@ const Team = () => {
               }
             >
               <Upload
+                disabled={userRole !== 'admin' && userRole !== 'owner'}
                 beforeUpload={() => {
                   setLightLogoSpinning(true);
                   return true;
@@ -383,13 +385,13 @@ const Team = () => {
                 fileList={
                   lightLogo
                     ? [
-                        {
-                          uid: '-1',
-                          name: 'logo',
-                          status: 'done',
-                          url: LogoBaseUrl + lightLogo,
-                        },
-                      ]
+                      {
+                        uid: '-1',
+                        name: 'logo',
+                        status: 'done',
+                        url: LogoBaseUrl + lightLogo,
+                      },
+                    ]
                     : []
                 }
                 onChange={({ fileList }) => uploadLogo(fileList, 'lightLogo')}
@@ -407,6 +409,7 @@ const Team = () => {
               label={<FormattedMessage id="pages.team.info.darkLogo" defaultMessage="Dark Logo" />}
             >
               <Upload
+                disabled={userRole !== 'admin' && userRole !== 'owner'}
                 beforeUpload={() => {
                   setDarkLogoSpinning(true);
                   return true;
@@ -417,13 +420,13 @@ const Team = () => {
                 fileList={
                   darkLogo
                     ? [
-                        {
-                          uid: '-1',
-                          name: 'logo',
-                          status: 'done',
-                          url: LogoBaseUrl + darkLogo,
-                        },
-                      ]
+                      {
+                        uid: '-1',
+                        name: 'logo',
+                        status: 'done',
+                        url: LogoBaseUrl + darkLogo,
+                      },
+                    ]
                     : []
                 }
                 onChange={({ fileList }) => uploadLogo(fileList, 'darkLogo')}
@@ -473,15 +476,9 @@ const Team = () => {
         key: 'email',
       },
       {
-        title: <FormattedMessage id="teams.members.teamName" defaultMessage="Team Name" />,
-        dataIndex: 'team_title',
-        key: 'team_title',
-        render: (_, record) => {
-          const titles = record.team_title;
-          const currentLang = intl.locale === 'zh-CN' ? 'zh' : 'en';
-          const title = titles.find((t: any) => t['@xml:lang'] === currentLang);
-          return title ? title['#text'] : '';
-        },
+        title: <FormattedMessage id="teams.members.memberName" defaultMessage="Member Name" />,
+        dataIndex: 'display_name',
+        key: 'display_name'
       },
       {
         title: <FormattedMessage id="teams.members.role" defaultMessage="Role" />,
@@ -511,7 +508,7 @@ const Team = () => {
                 title={<FormattedMessage id="teams.members.delete" defaultMessage="Delete" />}
               >
                 <Button
-                  disabled={record.role === 'owner' || record.role === 'admin'}
+                  disabled={!(record.role !== 'owner'&&(userRole === 'owner' || userRole === 'admin'))}
                   type="text"
                   icon={<DeleteOutlined />}
                   onClick={() => {
@@ -550,12 +547,7 @@ const Team = () => {
                 title={<FormattedMessage id="teams.members.setAdmin" defaultMessage="Set Admin" />}
               >
                 <Button
-                  disabled={
-                    record.role === 'is_invited' ||
-                    record.role === 'admin' ||
-                    userRole !== 'owner' ||
-                    record.role === 'owner'
-                  }
+                  disabled={!(record.role === 'member'&&(userRole === 'owner'))}
                   type="text"
                   icon={<CrownOutlined />}
                   onClick={() => updateRole(record?.team_id, record?.user_id, 'admin')}
@@ -569,7 +561,7 @@ const Team = () => {
                 }
               >
                 <Button
-                  disabled={record.role !== 'admin' || userRole === 'admin'}
+                  disabled={!(record.role === 'admin'&&(userRole === 'owner'))}
                   type="text"
                   icon={<UserOutlined />}
                   onClick={() => updateRole(record?.team_id, record?.user_id, 'member')}
@@ -611,7 +603,7 @@ const Team = () => {
             sort,
           ) => {
             try {
-              if (userRole === 'member' || userRole === 'is_invited' || !teamId) {
+              if (!teamId) {
                 return {
                   data: [],
                   success: true,

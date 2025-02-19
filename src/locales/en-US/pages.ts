@@ -148,7 +148,7 @@ export default {
   'pages.team.createSuccess': 'Create Successfully!',
   'pages.team.createError': 'Failed to create team.',
   'pages.team.tabs.info': 'Team Information',
-  'pages.team.tabs.members': 'Team Members',
+  'pages.team.tabs.members': 'Members Message',
   'pages.team.info.title': 'Team Name',
   'pages.team.info.title.required': 'Please input team name!',
   'pages.team.info.description': 'Team Description',

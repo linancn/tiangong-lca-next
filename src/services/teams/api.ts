@@ -175,17 +175,17 @@ export async function delRoleApi(teamId: string, userId: string) {
   return result;
 }
 
-const getTeamsByIds = async (teamIds: string[]) => {
-  try {
-    const { error, data: result } = await supabase.from('teams').select('*').in('id', teamIds);
-    if (error) {
-      throw error;
-    }
-    return result;
-  } catch (error) {
-    console.log(error);
-  }
-};
+// const getTeamsByIds = async (teamIds: string[]) => {
+//   try {
+//     const { error, data: result } = await supabase.from('teams').select('*').in('id', teamIds);
+//     if (error) {
+//       throw error;
+//     }
+//     return result;
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
 
 export async function getTeamMembersApi(
   params: { pageSize: number; current: number },
@@ -216,7 +216,7 @@ export async function getTeamMembersApi(
 
       const { error, data: usersResult } = await supabase
         .from('users')
-        .select('id, raw_user_meta_data->email')
+        .select('id, raw_user_meta_data->email,raw_user_meta_data->display_name')
         .in('id', ids);
 
       if (!error) {
@@ -227,19 +227,20 @@ export async function getTeamMembersApi(
             team_id: role.team_id,
             email: user?.email ?? '',
             role: role.role,
+            display_name: user?.display_name ?? '-',
           };
         });
 
         // get team title
-        const teams = await getTeamsByIds(rolesResult.map((r) => r.team_id));
-        if (teams) {
-          result.forEach((r) => {
-            const team = teams.find((t) => t.id === r.team_id);
-            if (team) {
-              r.team_title = team.json?.title;
-            }
-          });
-        }
+        // const teams = await getTeamsByIds(rolesResult.map((r) => r.team_id));
+        // if (teams) {
+        //   result.forEach((r) => {
+        //     const team = teams.find((t) => t.id === r.team_id);
+        //     if (team) {
+        //       r.team_title = team.json?.title;
+        //     }
+        //   });
+        // }
 
         return {
           success: true,

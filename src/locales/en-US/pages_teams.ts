@@ -29,7 +29,7 @@ export default {
   'teams.logo.uploadSuccess': 'Upload successful!',
   'teams.logo.uploadError': 'Upload failed!',
   'teams.logo.nameError': 'File name cannot contain Chinese characters!',
-  'teams.members.teamName': 'Team Name',
+  'teams.members.memberName': 'Member Name',
   'teams.modal.noTeam.title': 'You are not in any team',
   'team.modal.noTeam.content': 'You can create a team or join an existing team',
   'teams.modal.noTeam.create': 'Create Team',
