@@ -70,11 +70,33 @@ const FlowpropertiesSelectForm: FC<Props> = ({
           <Input disabled={true} style={{ width: '350px', color: token.colorTextDescription }} />
         </Form.Item>
         <Space direction="horizontal" style={{ marginTop: '6px' }}>
-          <FlowpropertiesSelectDrawer
-            buttonType="text"
-            lang={lang}
-            onData={handletFlowpropertyData}
-          />
+          {!id && (
+            <FlowpropertiesSelectDrawer
+              buttonType="text"
+              lang={lang}
+              onData={handletFlowpropertyData}
+            />
+          )}
+          {id && (
+            <FlowpropertiesSelectDrawer
+              buttonType="text"
+              buttonText={<FormattedMessage id="pages.button.reselect" defaultMessage="Reselect" />}
+              lang={lang}
+              onData={handletFlowpropertyData}
+            />
+          )}
+          {id && (
+            <Button
+              onClick={() => {
+                handletFlowpropertyData(id, version ?? '');
+              }}
+            >
+              <FormattedMessage
+                id="pages.button.updateReference"
+                defaultMessage="Update reference"
+              />
+            </Button>
+          )}
           {id && <FlowpropertyView lang={lang} id={id} version={version ?? ''} buttonType="text" />}
           {id && (
             <Button

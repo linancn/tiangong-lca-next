@@ -9,13 +9,15 @@ import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getDataDetail } from '../general/api';
 import { getILCDClassification } from '../ilcd/api';
+import { getTeamIdByUserId } from '../roles/api';
 import { genContactJsonOrdered } from './util';
 
 export async function createContact(id: string, data: any) {
   const newData = genContactJsonOrdered(id, data);
+  const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('contacts')
-    .insert([{ id: id, json_ordered: newData }])
+    .insert([{ id: id, json_ordered: newData, team_id: teamId }])
     .select();
   return result;
 }
@@ -91,8 +93,7 @@ export async function getContactTableAll(
       });
     }
   } else if (dataSource === 'te') {
-    const userData = await supabase.auth.getUser();
-    const teamId = userData.data.user?.user_metadata?.team_id;
+    const teamId = await getTeamIdByUserId();
     if (teamId) {
       query = query.eq('team_id', teamId);
     } else {

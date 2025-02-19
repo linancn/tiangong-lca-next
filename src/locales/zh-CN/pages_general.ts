@@ -53,6 +53,7 @@ export default {
   'pages.button.item.label': '项目',
 
   'pages.tab.title.mydata': '我的数据',
+  'pages.tab.title.teamdata': '团队数据',
   'pages.tab.title.tgdata': '天工数据',
 
   'pages.search.openAI': '智能推荐',
