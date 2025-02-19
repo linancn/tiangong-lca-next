@@ -22,11 +22,12 @@ type Props = {
   buttonType: string;
   lang: string;
   onData: (rowKey: string, version: string) => void;
+  buttonText?:any
 };
 
 const { Search } = Input;
 
-const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => {
+const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData,buttonText }) => {
   const [tgKeyWord, setTgKeyWord] = useState<any>('');
   const [myKeyWord, setMyKeyWord] = useState<any>('');
 
@@ -280,7 +281,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData }) => 
         </Tooltip>
       ) : (
         <Button onClick={onSelect}>
-          <FormattedMessage id="pages.button.select" defaultMessage="Select" />
+          {buttonText ?? <FormattedMessage id="pages.button.select" defaultMessage="Select" />}
         </Button>
       )}
 
