@@ -1,5 +1,5 @@
 import { getProcessTableAll, getProcessTablePgroongaSearch } from '@/services/processes/api';
-import { Card, Input, Space, Tooltip } from 'antd';
+import { Card, Input, Space, Tooltip, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 
@@ -15,6 +15,8 @@ import ProcessCreate from './Components/create';
 import ProcessDelete from './Components/delete';
 import ProcessEdit from './Components/edit';
 import ProcessView from './Components/view';
+import ContributeData from '@/components/ContributeData';
+import { contributeSource } from '@/services/general/api';
 
 const { Search } = Input;
 
@@ -117,6 +119,15 @@ const TableList: FC = () => {
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
               />
+              <ContributeData onOk={async () => {
+                const { error } = await contributeSource('processes',row.id, row.version);
+                if (error) {
+                  console.log(error);
+                } else {
+                  message.success(intl.formatMessage({ id: 'component.contributeData.success', defaultMessage: 'Contribute successfully' }));
+                  actionRef.current?.reload();
+                }
+              }} disabled={!!(row.teamId)} />
             </Space>,
           ];
         }

@@ -10,7 +10,7 @@ import { SortOrder } from 'antd/lib/table/interface';
 import { getDataDetail } from '../general/api';
 import { getILCDClassification } from '../ilcd/api';
 import { genSourceJsonOrdered } from './util';
-
+import { getTeamIdByUserId } from '../general/api';
 export async function createSource(id: string, data: any) {
   const newData = genSourceJsonOrdered(id, data);
   const result = await supabase
@@ -56,7 +56,8 @@ export async function getSourceTableAll(
     json->sourceDataSet->sourceInformation->dataSetInformation->>sourceCitation,
     json->sourceDataSet->sourceInformation->dataSetInformation->>publicationType,
     version,
-    modified_at
+    modified_at,
+    team_id
   `;
 
   const tableName = 'sources';
@@ -91,8 +92,7 @@ export async function getSourceTableAll(
       });
     }
   } else if (dataSource === 'te') {
-    const userData = await supabase.auth.getUser();
-    const teamId = userData.data.user?.user_metadata?.team_id;
+    const teamId = await getTeamIdByUserId();
     if (teamId) {
       query = query.eq('team_id', teamId);
     } else {
@@ -133,6 +133,7 @@ export async function getSourceTableAll(
               publicationType: i.publicationType ?? '-',
               version: i.version,
               modifiedAt: new Date(i.modified_at),
+              teamId: i.team_id,
             };
           } catch (e) {
             console.error(e);
@@ -154,6 +155,7 @@ export async function getSourceTableAll(
             publicationType: i?.publicationType ?? '-',
             version: i.version,
             modifiedAt: new Date(i?.modified_at),
+            teamId: i.team_id,
           };
         } catch (e) {
           console.error(e);
@@ -233,6 +235,7 @@ export async function getSourceTablePgroongaSearch(
               publicationType: dataInfo?.publicationType ?? '-',
               version: i.version,
               modifiedAt: new Date(i?.modified_at),
+              teamId: i.team_id,
             };
           } catch (e) {
             console.error(e);
@@ -257,6 +260,7 @@ export async function getSourceTablePgroongaSearch(
             publicationType: dataInfo?.publicationType ?? '-',
             version: i.version,
             modifiedAt: new Date(dataInfo?.modified_at),
+            teamId: i.team_id,
           };
         } catch (e) {
           console.error(e);

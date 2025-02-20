@@ -8,7 +8,8 @@ export type FlowTable = {
   CASNumber: string;
   locationOfSupply: string;
   refFlowPropertyId: string;
-  modifiedAt: Date;
+  modifiedAt: Date; 
+  teamId: string;
 };
 
 export type FlowModelTable = {

@@ -9,7 +9,7 @@ import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getDataDetail } from '../general/api';
 import { getILCDClassification } from '../ilcd/api';
-import { getTeamIdByUserId } from '../roles/api';
+import { getTeamIdByUserId } from '../general/api';
 import { genContactJsonOrdered } from './util';
 
 export async function createContact(id: string, data: any) {
@@ -58,7 +58,8 @@ export async function getContactTableAll(
     json->contactDataSet->contactInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
     json->contactDataSet->contactInformation->dataSetInformation->>email,
     version,
-    modified_at
+    modified_at,
+    team_id
   `;
 
   const tableName = 'contacts';
@@ -140,6 +141,7 @@ export async function getContactTableAll(
             email: i?.email ?? '-',
             version: i.version,
             modifiedAt: new Date(i?.modified_at),
+            teamId: i?.team_id,
           };
         } catch (e) {
           console.error(e);
@@ -217,6 +219,7 @@ export async function getContactTablePgroongaSearch(
             email: dataInfo?.email ?? '-',
             version: i.version,
             modifiedAt: new Date(i?.modified_at),
+            teamId: i?.team_id,
           };
         } catch (e) {
           console.error(e);

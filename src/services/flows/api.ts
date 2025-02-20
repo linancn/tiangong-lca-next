@@ -8,7 +8,7 @@ import {
 import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/lib/table/interface';
-import { getDataDetail } from '../general/api';
+import { getDataDetail, getTeamIdByUserId } from '../general/api';
 import { getILCDFlowCategorizationAll, getILCDLocationByValues } from '../ilcd/api';
 import { genFlowJsonOrdered, genFlowName } from './util';
 
@@ -64,7 +64,8 @@ export async function getFlowTableAll(
     json->flowDataSet->modellingAndValidation->LCIMethod->>typeOfDataSet,
     json->flowDataSet->flowProperties->flowProperty->referenceToFlowPropertyDataSet,
     version,
-    modified_at
+    modified_at,
+    team_id
   `;
 
   const tableName = 'flows';
@@ -121,8 +122,7 @@ export async function getFlowTableAll(
       });
     }
   } else if (dataSource === 'te') {
-    const userData = await supabase.auth.getUser();
-    const teamId = userData.data.user?.user_metadata?.team_id;
+    const teamId = await getTeamIdByUserId();
     if (teamId) {
       query = query.eq('team_id', teamId);
     } else {
@@ -189,6 +189,7 @@ export async function getFlowTableAll(
               locationOfSupply: locationOfSupply ?? '-',
               version: i.version,
               modifiedAt: new Date(i?.modified_at),
+              teamId: i?.team_id,
             };
           } catch (e) {
             console.error(e);
@@ -218,6 +219,7 @@ export async function getFlowTableAll(
             locationOfSupply: locationOfSupply,
             version: i.version,
             modifiedAt: new Date(i.modified_at),
+            teamId: i?.team_id,
           };
         } catch (e) {
           console.error(e);
@@ -336,6 +338,7 @@ export async function getFlowTablePgroongaSearch(
               locationOfSupply: locationOfSupply ?? '-',
               version: i.version,
               modifiedAt: new Date(i?.modified_at),
+              teamId: i?.team_id,
             };
           } catch (e) {
             console.error(e);
@@ -373,6 +376,7 @@ export async function getFlowTablePgroongaSearch(
             locationOfSupply: locationOfSupply ?? '-',
             version: i.version,
             modifiedAt: new Date(i?.modified_at),
+            teamId: i?.team_id,
           };
         } catch (e) {
           console.error(e);

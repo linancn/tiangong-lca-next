@@ -1,5 +1,6 @@
 import { getSourceTableAll, getSourceTablePgroongaSearch } from '@/services/sources/api';
-import { Card, Input, Space, Tooltip } from 'antd';
+import { contributeSource } from '@/services/general/api';
+import { Card, Input, Space, Tooltip, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 
@@ -15,7 +16,7 @@ import SourceCreate from './Components/create';
 import SourceDelete from './Components/delete';
 import SourceEdit from './Components/edit';
 import SourceView from './Components/view';
-
+import ContributeData from '@/components/ContributeData';
 const { Search } = Input;
 
 const TableList: FC = () => {
@@ -95,15 +96,24 @@ const TableList: FC = () => {
                 lang={lang}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
+                setViewDrawerVisible={() => { }}
               />
               <SourceDelete
                 id={row.id}
                 version={row.version}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
+                setViewDrawerVisible={() => { }}
               />
+              <ContributeData onOk={async () => {
+                const { error } = await contributeSource('sources',row.id, row.version);
+                if (error) {
+                  console.log(error);
+                } else {
+                  message.success(intl.formatMessage({ id: 'component.contributeData.success', defaultMessage: 'Contribute successfully' }));
+                  actionRef.current?.reload();
+                }
+              }} disabled={!!(row.teamId)} />
             </Space>,
           ];
         }

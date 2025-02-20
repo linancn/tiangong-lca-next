@@ -5,7 +5,7 @@ import {
   jsonToList,
 } from '../general/util';
 import { getILCDClassification, getILCDLocationByValues } from '../ilcd/api';
-
+import { getTeamIdByUserId } from '../general/api';
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/es/table/interface';
 import { genProcessJsonOrdered, genProcessName } from './util';
@@ -51,7 +51,8 @@ export async function getProcessTableAll(
     json->processDataSet->processInformation->time->>"common:referenceYear",
     json->processDataSet->processInformation->geography->locationOfOperationSupplyOrProduction->>"@location",
     version,
-    modified_at
+    modified_at,
+    team_id
   `;
 
   const tableName = 'processes';
@@ -86,8 +87,7 @@ export async function getProcessTableAll(
       });
     }
   } else if (dataSource === 'te') {
-    const userData = await supabase.auth.getUser();
-    const teamId = userData.data.user?.user_metadata?.team_id;
+    const teamId = await getTeamIdByUserId();
     if (teamId) {
       query = query.eq('team_id', teamId);
     } else {
@@ -143,6 +143,7 @@ export async function getProcessTableAll(
               referenceYear: i['common:referenceYear'] ?? '-',
               location: location ?? '-',
               modifiedAt: new Date(i.modified_at),
+              teamId: i?.team_id,
             };
           } catch (e) {
             console.error(e);
@@ -171,6 +172,7 @@ export async function getProcessTableAll(
             referenceYear: i['common:referenceYear'] ?? '-',
             location: location,
             modifiedAt: new Date(i.modified_at),
+            teamId: i?.team_id,
           };
         } catch (e) {
           console.error(e);
@@ -409,6 +411,7 @@ export async function getProcessTablePgroongaSearch(
               location: location ?? '-',
               version: i.version,
               modifiedAt: new Date(i?.modified_at),
+              teamId: i?.team_id,
             };
           } catch (e) {
             console.error(e);
@@ -450,6 +453,7 @@ export async function getProcessTablePgroongaSearch(
             location: location ?? '-',
             version: i.version,
             modifiedAt: new Date(i?.modified_at),
+            teamId: i?.team_id,
           };
         } catch (e) {
           console.error(e);

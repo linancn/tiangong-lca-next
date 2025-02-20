@@ -9,7 +9,7 @@ import {
 import { getILCDClassification } from '../ilcd/api';
 import { genProcessName } from '../processes/util';
 import { genLifeCycleModelJsonOrdered, genLifeCycleModelProcess } from './util';
-
+import { getTeamIdByUserId } from '../general/api';
 const updateLifeCycleModelProcess = async (
   id: string,
   version: string,
@@ -137,7 +137,8 @@ export async function getLifeCycleModelTableAll(
     json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
     json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->"common:generalComment",
     version,
-    modified_at
+    modified_at,
+    team_id
   `;
 
   const tableName = 'lifecyclemodels';
@@ -172,8 +173,7 @@ export async function getLifeCycleModelTableAll(
       });
     }
   } else if (dataSource === 'te') {
-    const userData = await supabase.auth.getUser();
-    const teamId = userData.data.user?.user_metadata?.team_id;
+    const teamId = await getTeamIdByUserId();
     if (teamId) {
       query = query.eq('team_id', teamId);
     } else {
@@ -214,6 +214,7 @@ export async function getLifeCycleModelTableAll(
               classification: classificationToString(classificationZH ?? {}),
               version: i?.version,
               modifiedAt: new Date(i?.modified_at),
+              teamId: i?.team_id,
             };
           } catch (e) {
             console.error(e);
@@ -233,7 +234,8 @@ export async function getLifeCycleModelTableAll(
             generalComment: getLangText(i?.['common:generalComment'], lang),
             classification: classificationToString(i['common:class'] ?? {}),
             version: i?.version,
-            modifiedAt: new Date(i?.modified_at),
+            modifiedAt: new Date(i?.modified_at), 
+            teamId: i?.team_id,
           };
         } catch (e) {
           console.error(e);
@@ -316,7 +318,8 @@ export async function getLifeCycleModelTablePgroongaSearch(
               ),
               classification: classificationToString(classificationZH),
               version: i?.version,
-              modifiedAt: new Date(i?.modified_at),
+              modifiedAt: new Date(i?.modified_at), 
+              teamId: i?.team_id,
             };
           } catch (e) {
             console.error(e);
@@ -345,7 +348,8 @@ export async function getLifeCycleModelTablePgroongaSearch(
               ],
             ),
             version: i?.version,
-            modifiedAt: new Date(i?.modified_at),
+            modifiedAt: new Date(i?.modified_at), 
+            teamId: i?.team_id,
           };
         } catch (e) {
           console.error(e);

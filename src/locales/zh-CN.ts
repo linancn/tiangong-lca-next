@@ -18,6 +18,7 @@ import pwa from './zh-CN/pwa';
 import settingDrawer from './zh-CN/settingDrawer';
 import settings from './zh-CN/settings';
 import validator from './zh-CN/validator';
+import component_contributeData from './zh-CN/component_contributeData';
 
 export default {
   'navBar.lang': '语言',
@@ -47,4 +48,5 @@ export default {
   ...validator,
   ...teams,
   ...component_allTeams,
+  ...component_contributeData
 };

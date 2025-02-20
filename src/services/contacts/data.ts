@@ -8,4 +8,5 @@ export type ContactTable = {
   classification: string;
   email: string;
   modifiedAt: Date;
+  teamId: string;
 };

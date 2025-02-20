@@ -1,5 +1,5 @@
 import { getUnitGroupTableAll, getUnitGroupTablePgroongaSearch } from '@/services/unitgroups/api';
-import { Card, Input, Space, Tooltip } from 'antd';
+import { Card, Input, Space, Tooltip, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 
@@ -15,6 +15,8 @@ import UnitGroupCreate from './Components/create';
 import UnitGroupDelete from './Components/delete';
 import UnitGroupEdit from './Components/edit';
 import UnitGroupView from './Components/view';
+import ContributeData from '@/components/ContributeData';
+import { contributeSource } from '@/services/general/api';
 
 const { Search } = Input;
 
@@ -119,6 +121,15 @@ const TableList: FC = () => {
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
               ></UnitGroupDelete>
+               <ContributeData onOk={async () => {
+                const { error } = await contributeSource('unitgroups',row.id, row.version);
+                if (error) {
+                  console.log(error);
+                } else {
+                  message.success(intl.formatMessage({ id: 'component.contributeData.success', defaultMessage: 'Contribute successfully' }));
+                  actionRef.current?.reload();
+                }
+              }} disabled={!!(row.teamId)} />
             </Space>,
           ];
         }

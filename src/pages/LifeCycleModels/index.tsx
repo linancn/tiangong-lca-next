@@ -7,7 +7,7 @@ import {
 import { LifeCycleModelTable } from '@/services/lifeCycleModels/data';
 import { getTeamById } from '@/services/teams/api';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Card, Input, Space, Tooltip } from 'antd';
+import { Card, Input, Space, Tooltip, message } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
@@ -17,6 +17,8 @@ import LifeCycleModelCreate from './Components/create';
 import LifeCycleModelDelete from './Components/delete';
 import LifeCycleModelEdit from './Components/edit';
 import LifeCycleModelView from './Components/view';
+import ContributeData from '@/components/ContributeData';
+import { contributeSource } from '@/services/general/api';
 
 const { Search } = Input;
 
@@ -104,6 +106,15 @@ const TableList: FC = () => {
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
               />
+              <ContributeData onOk={async () => {
+                const { error } = await contributeSource('lifecyclemodels',row.id, row.version);
+                if (error) {
+                  console.log(error);
+                } else {
+                  message.success(intl.formatMessage({ id: 'component.contributeData.success', defaultMessage: 'Contribute successfully' }));
+                  actionRef.current?.reload();
+                }
+              }} disabled={!!(row.teamId)} />
             </Space>,
           ];
         }
