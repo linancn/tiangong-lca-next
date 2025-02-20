@@ -12,9 +12,10 @@ import { genProcessJsonOrdered, genProcessName } from './util';
 
 export async function createProcess(id: string, data: any) {
   const newData = genProcessJsonOrdered(id, data);
+  const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('processes')
-    .insert([{ id: id, json_ordered: newData }])
+    .insert([{ id: id, json_ordered: newData, team_id: teamId }])
     .select();
   return result;
 }

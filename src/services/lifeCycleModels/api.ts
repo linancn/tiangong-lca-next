@@ -76,9 +76,10 @@ export async function createLifeCycleModel(data: any) {
     },
   };
   const newData = genLifeCycleModelJsonOrdered(data.id, data, oldData);
+  const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('lifecyclemodels')
-    .insert([{ id: data.id, json_ordered: newData, json_tg: { xflow: data?.model } }])
+    .insert([{ id: data.id, json_ordered: newData, json_tg: { xflow: data?.model }, team_id: teamId }])
     .select();
   if (result.data && result.data.length === 1) {
     const refNode = data?.model?.nodes.find((i: any) => i?.data?.quantitativeReference === '1');

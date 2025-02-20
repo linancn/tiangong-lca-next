@@ -11,11 +11,12 @@ import { getDataDetail } from '../general/api';
 import { getILCDClassification } from '../ilcd/api';
 import { genSourceJsonOrdered } from './util';
 import { getTeamIdByUserId } from '../general/api';
-export async function createSource(id: string, data: any) {
+export async function createSource(id: string, data: any) { 
   const newData = genSourceJsonOrdered(id, data);
+  const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('sources')
-    .insert([{ id: id, json_ordered: newData }])
+    .insert([{ id: id, json_ordered: newData, team_id: teamId }])
     .select();
   return result;
 }

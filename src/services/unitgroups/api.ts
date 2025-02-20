@@ -14,9 +14,10 @@ import { getTeamIdByUserId } from '../general/api';
 
 export async function createUnitGroup(id: string, data: any) {
   const newData = genUnitGroupJsonOrdered(id, data);
+  const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('unitgroups')
-    .insert([{ id: id, json_ordered: newData }])
+    .insert([{ id: id, json_ordered: newData, team_id: teamId }])
     .select();
   return result;
 }

@@ -14,9 +14,10 @@ import { getTeamIdByUserId } from '../general/api';
 
 export async function createFlowproperties(id: string, data: any) {
   const newData = genFlowpropertyJsonOrdered(id, data);
+  const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('flowproperties')
-    .insert([{ id: id, json_ordered: newData }])
+    .insert([{ id: id, json_ordered: newData, team_id: teamId }])
     .select();
   return result;
 }
