@@ -7,10 +7,9 @@ import {
 
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
-import { getDataDetail } from '../general/api';
+import { getDataDetail, getTeamIdByUserId } from '../general/api';
 import { getILCDClassification } from '../ilcd/api';
 import { genFlowpropertyJsonOrdered } from './util';
-import { getTeamIdByUserId } from '../general/api';
 
 export async function createFlowproperties(id: string, data: any) {
   const newData = genFlowpropertyJsonOrdered(id, data);
@@ -254,7 +253,7 @@ export async function getFlowpropertyTablePgroongaSearch(
                 lang,
               ),
               version: i.version,
-              modifiedAt: new Date(i?.modified_at), 
+              modifiedAt: new Date(i?.modified_at),
               teamId: i?.team_id,
             };
           } catch (e) {

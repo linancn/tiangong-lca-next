@@ -7,9 +7,8 @@ import {
 
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
-import { getDataDetail } from '../general/api';
+import { getDataDetail, getTeamIdByUserId } from '../general/api';
 import { getILCDClassification } from '../ilcd/api';
-import { getTeamIdByUserId } from '../general/api';
 import { genContactJsonOrdered } from './util';
 
 export async function createContact(id: string, data: any) {

@@ -1,5 +1,7 @@
+import ContributeData from '@/components/ContributeData';
 import { getContactTableAll, getContactTablePgroongaSearch } from '@/services/contacts/api';
 import { ContactTable } from '@/services/contacts/data';
+import { contributeSource } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
 import { getDataSource, getLang, getLangText } from '@/services/general/util';
 import { getTeamById } from '@/services/teams/api';
@@ -14,8 +16,6 @@ import ContactCreate from './Components/create';
 import ContactDelete from './Components/delete';
 import ContactEdit from './Components/edit';
 import ContactView from './Components/view';
-import ContributeData from '@/components/ContributeData';
-import { contributeSource } from '@/services/general/api';
 
 const { Search } = Input;
 
@@ -109,15 +109,23 @@ const TableList: FC = () => {
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
               />
-            <ContributeData onOk={async () => {
-                const { error } = await contributeSource('contacts',row.id, row.version);
-                if (error) {
-                  console.log(error);
-                } else {
-                  message.success(intl.formatMessage({ id: 'component.contributeData.success', defaultMessage: 'Contribute successfully' }));
-                  actionRef.current?.reload();
-                }
-              }} disabled={!!(row.teamId)} />
+              <ContributeData
+                onOk={async () => {
+                  const { error } = await contributeSource('contacts', row.id, row.version);
+                  if (error) {
+                    console.log(error);
+                  } else {
+                    message.success(
+                      intl.formatMessage({
+                        id: 'component.contributeData.success',
+                        defaultMessage: 'Contribute successfully',
+                      }),
+                    );
+                    actionRef.current?.reload();
+                  }
+                }}
+                disabled={!!row.teamId}
+              />
             </Space>,
           ];
         }

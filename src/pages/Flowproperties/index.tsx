@@ -10,6 +10,8 @@ import { Card, Input, Space, Tooltip, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 
+import ContributeData from '@/components/ContributeData';
+import { contributeSource } from '@/services/general/api';
 import { getTeamById } from '@/services/teams/api';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
@@ -19,8 +21,6 @@ import FlowpropertiesCreate from './Components/create';
 import FlowpropertiesDelete from './Components/delete';
 import FlowpropertiesEdit from './Components/edit';
 import FlowpropertyView from './Components/view';
-import ContributeData from '@/components/ContributeData';
-import { contributeSource } from '@/services/general/api';
 
 const { Search } = Input;
 
@@ -122,15 +122,23 @@ const TableList: FC = () => {
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
               />
-              <ContributeData onOk={async () => {
-                const { error } = await contributeSource('flowproperties',row.id, row.version);
-                if (error) {
-                  console.log(error);
-                } else {
-                  message.success(intl.formatMessage({ id: 'component.contributeData.success', defaultMessage: 'Contribute successfully' }));
-                  actionRef.current?.reload();
-                }
-              }} disabled={!!(row.teamId)} />
+              <ContributeData
+                onOk={async () => {
+                  const { error } = await contributeSource('flowproperties', row.id, row.version);
+                  if (error) {
+                    console.log(error);
+                  } else {
+                    message.success(
+                      intl.formatMessage({
+                        id: 'component.contributeData.success',
+                        defaultMessage: 'Contribute successfully',
+                      }),
+                    );
+                    actionRef.current?.reload();
+                  }
+                }}
+                disabled={!!row.teamId}
+              />
             </Space>,
           ];
         }

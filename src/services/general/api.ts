@@ -64,7 +64,7 @@ export async function getTeamIdByUserId() {
   return null;
 }
 
-export async function contributeSource(tableName: string, id: string, version: string,) {
+export async function contributeSource(tableName: string, id: string, version: string) {
   const teamId = await getTeamIdByUserId();
   if (teamId) {
     const result = await supabase
@@ -73,10 +73,10 @@ export async function contributeSource(tableName: string, id: string, version: s
       .eq('id', id)
       .eq('version', version);
 
-    return result
+    return result;
   }
   return {
     error: true,
     message: 'Contribute failed',
-  }
+  };
 }

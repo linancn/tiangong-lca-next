@@ -1,6 +1,5 @@
-import { Button, Tooltip, Modal } from 'antd';
+import { Button, Modal, Tooltip } from 'antd';
 import { FormattedMessage, useIntl } from 'umi';
-
 
 import type { FC } from 'react';
 
@@ -11,37 +10,41 @@ interface ContributeDataProps {
   disabled: boolean;
 }
 
-const ContributeData: FC<ContributeDataProps> = ({onOk, disabled}) => {
-    const intl = useIntl();
-  return <Tooltip title={<FormattedMessage id="pages.button.contribute" defaultMessage="Contribute to team" />}>
-  <Button
-    disabled={disabled}
-    shape="circle"
-    icon={<ShareAltOutlined />}
-    size="small"
-    onClick={() => {
-      Modal.confirm({
-        title: intl.formatMessage({
-          id: 'component.contributeData.confirm',
-          defaultMessage: 'Contribute data',
-        }),
-        content: intl.formatMessage({
-          id: 'component.contributeData.confirmContent',
-          defaultMessage: 'Are you sure you want to contribute this data?',
-        }),
-        okText: intl.formatMessage({
-          id: 'component.contributeData.confirm.ok',
-          defaultMessage: 'Confirm',
-        }),
-        cancelText: intl.formatMessage({
-          id: 'component.contributeData.confirm.cancel',
-          defaultMessage: 'Cancel',
-        }),
-        onOk: onOk
-      });
-    }}
-  />
-</Tooltip>;
+const ContributeData: FC<ContributeDataProps> = ({ onOk, disabled }) => {
+  const intl = useIntl();
+  return (
+    <Tooltip
+      title={<FormattedMessage id="pages.button.contribute" defaultMessage="Contribute to team" />}
+    >
+      <Button
+        disabled={disabled}
+        shape="circle"
+        icon={<ShareAltOutlined />}
+        size="small"
+        onClick={() => {
+          Modal.confirm({
+            title: intl.formatMessage({
+              id: 'component.contributeData.confirm',
+              defaultMessage: 'Contribute data',
+            }),
+            content: intl.formatMessage({
+              id: 'component.contributeData.confirmContent',
+              defaultMessage: 'Are you sure you want to contribute this data?',
+            }),
+            okText: intl.formatMessage({
+              id: 'component.contributeData.confirm.ok',
+              defaultMessage: 'Confirm',
+            }),
+            cancelText: intl.formatMessage({
+              id: 'component.contributeData.confirm.cancel',
+              defaultMessage: 'Cancel',
+            }),
+            onOk: onOk,
+          });
+        }}
+      />
+    </Tooltip>
+  );
 };
 
 export default ContributeData;

@@ -54,7 +54,7 @@ const SourceSelectForm: FC<Props> = ({ parentName, name, label, lang, formRef, o
   // const id = formRef.current?.getFieldValue([...name, '@refObjectId']);
 
   useEffect(() => {
-    setId(undefined)
+    setId(undefined);
     if (parentName) {
       setId(formRef.current?.getFieldValue([...parentName, ...name, '@refObjectId']));
       setVersion(formRef.current?.getFieldValue([...parentName, ...name, '@version']));

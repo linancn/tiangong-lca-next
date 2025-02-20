@@ -1,5 +1,6 @@
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
+import { getTeamIdByUserId } from '../general/api';
 import {
   classificationToString,
   genClassificationZH,
@@ -9,7 +10,6 @@ import {
 import { getILCDClassification } from '../ilcd/api';
 import { genProcessName } from '../processes/util';
 import { genLifeCycleModelJsonOrdered, genLifeCycleModelProcess } from './util';
-import { getTeamIdByUserId } from '../general/api';
 const updateLifeCycleModelProcess = async (
   id: string,
   version: string,
@@ -79,7 +79,9 @@ export async function createLifeCycleModel(data: any) {
   const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('lifecyclemodels')
-    .insert([{ id: data.id, json_ordered: newData, json_tg: { xflow: data?.model }, team_id: teamId }])
+    .insert([
+      { id: data.id, json_ordered: newData, json_tg: { xflow: data?.model }, team_id: teamId },
+    ])
     .select();
   if (result.data && result.data.length === 1) {
     const refNode = data?.model?.nodes.find((i: any) => i?.data?.quantitativeReference === '1');
@@ -235,7 +237,7 @@ export async function getLifeCycleModelTableAll(
             generalComment: getLangText(i?.['common:generalComment'], lang),
             classification: classificationToString(i['common:class'] ?? {}),
             version: i?.version,
-            modifiedAt: new Date(i?.modified_at), 
+            modifiedAt: new Date(i?.modified_at),
             teamId: i?.team_id,
           };
         } catch (e) {
@@ -319,7 +321,7 @@ export async function getLifeCycleModelTablePgroongaSearch(
               ),
               classification: classificationToString(classificationZH),
               version: i?.version,
-              modifiedAt: new Date(i?.modified_at), 
+              modifiedAt: new Date(i?.modified_at),
               teamId: i?.team_id,
             };
           } catch (e) {
@@ -349,7 +351,7 @@ export async function getLifeCycleModelTablePgroongaSearch(
               ],
             ),
             version: i?.version,
-            modifiedAt: new Date(i?.modified_at), 
+            modifiedAt: new Date(i?.modified_at),
             teamId: i?.team_id,
           };
         } catch (e) {

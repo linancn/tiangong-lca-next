@@ -1,5 +1,6 @@
 import component from './zh-CN/component';
 import component_allTeams from './zh-CN/component_allTeams';
+import component_contributeData from './zh-CN/component_contributeData';
 import globalHeader from './zh-CN/globalHeader';
 import menu from './zh-CN/menu';
 import pages from './zh-CN/pages';
@@ -18,7 +19,6 @@ import pwa from './zh-CN/pwa';
 import settingDrawer from './zh-CN/settingDrawer';
 import settings from './zh-CN/settings';
 import validator from './zh-CN/validator';
-import component_contributeData from './zh-CN/component_contributeData';
 
 export default {
   'navBar.lang': '语言',
@@ -48,5 +48,5 @@ export default {
   ...validator,
   ...teams,
   ...component_allTeams,
-  ...component_contributeData
+  ...component_contributeData,
 };

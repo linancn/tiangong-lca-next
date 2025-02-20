@@ -281,7 +281,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData })
             size={'large'}
             placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
             value={teKeyWord}
-            onChange={handleTeKeyWordChange} 
+            onChange={handleTeKeyWordChange}
             onSearch={onTeSearch}
             enterButton
           />

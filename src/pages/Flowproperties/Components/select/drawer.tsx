@@ -241,7 +241,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
       <>
         <Card>
           <Search
-            name={'te'} 
+            name={'te'}
             size={'large'}
             placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
             value={teKeyWord}

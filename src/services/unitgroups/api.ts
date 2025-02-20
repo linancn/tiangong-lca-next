@@ -7,10 +7,9 @@ import {
 
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
-import { getDataDetail } from '../general/api';
+import { getDataDetail, getTeamIdByUserId } from '../general/api';
 import { getILCDClassification } from '../ilcd/api';
 import { genUnitGroupJsonOrdered } from './util';
-import { getTeamIdByUserId } from '../general/api';
 
 export async function createUnitGroup(id: string, data: any) {
   const newData = genUnitGroupJsonOrdered(id, data);
