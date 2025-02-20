@@ -24,12 +24,13 @@ const { Search } = Input;
 const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }) => {
   const [tgKeyWord, setTgKeyWord] = useState<any>('');
   const [myKeyWord, setMyKeyWord] = useState<any>('');
-
+  const [teKeyWord, setTeKeyWord] = useState<any>('');
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [activeTabKey, setActiveTabKey] = useState<string>('tg');
   const tgActionRefSelect = useRef<ActionType>();
   const myActionRefSelect = useRef<ActionType>();
+  const teActionRefSelect = useRef<ActionType>();
 
   const intl = useIntl();
 
@@ -51,12 +52,22 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData })
       myActionRefSelect.current?.setPageInfo?.({ current: 1 });
       myActionRefSelect.current?.reload();
     }
+    if (key === 'te') {
+      teActionRefSelect.current?.setPageInfo?.({ current: 1 });
+      teActionRefSelect.current?.reload();
+    }
   };
 
   const onTgSearch: SearchProps['onSearch'] = async (value) => {
     await setTgKeyWord(value);
     tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
     tgActionRefSelect.current?.reload();
+  };
+
+  const onTeSearch: SearchProps['onSearch'] = async (value) => {
+    await setTeKeyWord(value);
+    teActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    teActionRefSelect.current?.reload();
   };
 
   const onMySearch: SearchProps['onSearch'] = async (value) => {
@@ -67,6 +78,10 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData })
 
   const handleTgKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTgKeyWord(e.target.value);
+  };
+
+  const handleTeKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTeKeyWord(e.target.value);
   };
 
   const handleMyKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -167,6 +182,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData })
       tab: <FormattedMessage id="pages.tab.title.tgdata" defaultMessage="TianGong Data" />,
     },
     { key: 'my', tab: <FormattedMessage id="pages.tab.title.mydata" defaultMessage="My Data" /> },
+    { key: 'te', tab: <FormattedMessage id="pages.tab.title.tedata" defaultMessage="TE Data" /> },
   ];
 
   const databaseList: Record<string, React.ReactNode> = {
@@ -246,6 +262,48 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData })
               return getSourceTablePgroongaSearch(params, lang, 'tg', tgKeyWord, {});
             }
             return getSourceTableAll(params, sort, lang, 'tg', []);
+          }}
+          columns={sourceColumns}
+          rowSelection={{
+            type: 'radio',
+            alwaysShowAlert: true,
+            selectedRowKeys,
+            onChange: onSelectChange,
+          }}
+        />
+      </>
+    ),
+    te: (
+      <>
+        <Card>
+          <Search
+            name={'te'}
+            size={'large'}
+            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+            value={teKeyWord}
+            onChange={handleTeKeyWordChange} 
+            onSearch={onTeSearch}
+            enterButton
+          />
+        </Card>
+        <ProTable<SourceTable, ListPagination>
+          actionRef={teActionRefSelect}
+          search={false}
+          pagination={{
+            showSizeChanger: false,
+            pageSize: 10,
+          }}
+          request={async (
+            params: {
+              pageSize: number;
+              current: number;
+            },
+            sort,
+          ) => {
+            if (teKeyWord.length > 0) {
+              return getSourceTablePgroongaSearch(params, lang, 'te', teKeyWord, {});
+            }
+            return getSourceTableAll(params, sort, lang, 'te', []);
           }}
           columns={sourceColumns}
           rowSelection={{

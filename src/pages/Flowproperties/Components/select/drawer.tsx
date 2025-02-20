@@ -30,12 +30,13 @@ const { Search } = Input;
 const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, buttonText }) => {
   const [tgKeyWord, setTgKeyWord] = useState<any>('');
   const [myKeyWord, setMyKeyWord] = useState<any>('');
-
+  const [teKeyWord, setTeKeyWord] = useState<any>('');
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [activeTabKey, setActiveTabKey] = useState<string>('tg');
   const tgActionRefSelect = useRef<ActionType>();
   const myActionRefSelect = useRef<ActionType>();
+  const teActionRefSelect = useRef<ActionType>();
 
   const intl = useIntl();
 
@@ -57,12 +58,22 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
       myActionRefSelect.current?.setPageInfo?.({ current: 1 });
       myActionRefSelect.current?.reload();
     }
+    if (key === 'te') {
+      teActionRefSelect.current?.setPageInfo?.({ current: 1 });
+      teActionRefSelect.current?.reload();
+    }
   };
 
   const onTgSearch: SearchProps['onSearch'] = async (value) => {
     await setTgKeyWord(value);
     tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
     tgActionRefSelect.current?.reload();
+  };
+
+  const onTeSearch: SearchProps['onSearch'] = async (value) => {
+    await setTeKeyWord(value);
+    teActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    teActionRefSelect.current?.reload();
   };
 
   const onMySearch: SearchProps['onSearch'] = async (value) => {
@@ -77,6 +88,10 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
 
   const handleMyKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMyKeyWord(e.target.value);
+  };
+
+  const handleTeKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTeKeyWord(e.target.value);
   };
 
   const FlowpropertyColumns: ProColumns<FlowpropertyTable>[] = [
@@ -176,6 +191,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
       tab: <FormattedMessage id="pages.tab.title.tgdata" defaultMessage="TianGong Data" />,
     },
     { key: 'my', tab: <FormattedMessage id="pages.tab.title.mydata" defaultMessage="My Data" /> },
+    { key: 'te', tab: <FormattedMessage id="pages.tab.title.tedata" defaultMessage="TE Data" /> },
   ];
 
   const databaseList: Record<string, React.ReactNode> = {
@@ -210,6 +226,48 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
               return getFlowpropertyTablePgroongaSearch(params, lang, 'tg', tgKeyWord, {});
             }
             return getFlowpropertyTableAll(params, sort, lang, 'tg', []);
+          }}
+          columns={FlowpropertyColumns}
+          rowSelection={{
+            type: 'radio',
+            alwaysShowAlert: true,
+            selectedRowKeys,
+            onChange: onSelectChange,
+          }}
+        />
+      </>
+    ),
+    te: (
+      <>
+        <Card>
+          <Search
+            name={'te'} 
+            size={'large'}
+            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+            value={teKeyWord}
+            onChange={handleTeKeyWordChange}
+            onSearch={onTeSearch}
+            enterButton
+          />
+        </Card>
+        <ProTable<FlowpropertyTable, ListPagination>
+          actionRef={teActionRefSelect}
+          search={false}
+          pagination={{
+            showSizeChanger: false,
+            pageSize: 10,
+          }}
+          request={async (
+            params: {
+              pageSize: number;
+              current: number;
+            },
+            sort,
+          ) => {
+            if (teKeyWord.length > 0) {
+              return getFlowpropertyTablePgroongaSearch(params, lang, 'te', teKeyWord, {});
+            }
+            return getFlowpropertyTableAll(params, sort, lang, 'te', []);
           }}
           columns={FlowpropertyColumns}
           rowSelection={{

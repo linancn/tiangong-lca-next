@@ -97,7 +97,7 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
         )}
       </Tooltip>
       <Drawer
-        title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}
+        title={<FormattedMessage id="pages.flowproperty.drawer.title.edit" defaultMessage="Edit Flow property" />}
         width="90%"
         closable={false}
         extra={

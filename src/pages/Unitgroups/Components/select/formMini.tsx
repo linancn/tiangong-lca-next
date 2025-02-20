@@ -40,7 +40,7 @@ const UnitGroupFromMini: FC<Props> = ({ id, version, idType, name, formRef, draw
                   setUnits(res3?.data.unit);
                   setTargetUnit(res3?.data?.refUnitName);
                   formRef.current?.setFieldValue([...name, 'refUnitGroup'], {
-                    shortDescription: jsonToList(res3?.data?.refUnitGroupShortDescription),
+                    shortDescription: jsonToList(res2?.data?.refUnitGroupShortDescription),
                     refUnit: {
                       name: res3?.data?.refUnitName ?? '',
                       generalComment: jsonToList(res3?.data?.refUnitGeneralComment),
@@ -57,7 +57,7 @@ const UnitGroupFromMini: FC<Props> = ({ id, version, idType, name, formRef, draw
         getReferenceUnitGroup(id, version ?? '').then((res1: any) => {
           getReferenceUnit(res1?.data?.refUnitGroupId, res1.data?.version).then((res2: any) => {
             formRef.current?.setFieldValue([...name, 'refUnitGroup'], {
-              shortDescription: jsonToList(res2.data?.refUnitGroupShortDescription),
+              shortDescription: jsonToList(res2?.data?.refUnitGroupShortDescription),
               refUnit: {
                 name: res2.data?.refUnitName ?? '',
                 generalComment: jsonToList(res2.data?.refUnitGeneralComment),
