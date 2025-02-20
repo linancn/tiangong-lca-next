@@ -17,6 +17,7 @@ export default {
   'pages.button.delete': '删除',
   'pages.button.delete.confirm': '确认要删除这条数据吗?',
   'pages.button.delete.success': '所选记录已被删除。',
+  'pages.button.contribute': '贡献给团队',
   'pages.button.create': '创建',
   'pages.button.reset': '重置',
   'pages.button.cancel': '取消',
@@ -53,7 +54,7 @@ export default {
   'pages.button.item.label': '项目',
 
   'pages.tab.title.mydata': '我的数据',
-  'pages.tab.title.teamdata': '团队数据',
+  'pages.tab.title.tedata': '团队数据',
   'pages.tab.title.tgdata': '天工数据',
 
   'pages.search.openAI': '智能推荐',

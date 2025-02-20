@@ -9,6 +9,7 @@ export type ProcessTable = {
   referenceYear: string;
   location: string;
   modifiedAt: Date;
+  teamId: string;
 };
 
 export type ProcessExchangeTable = {

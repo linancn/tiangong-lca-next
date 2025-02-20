@@ -52,7 +52,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }
       myActionRefSelect.current?.setPageInfo?.({ current: 1 });
       myActionRefSelect.current?.reload();
     }
-    if (key === 'team') {
+    if (key === 'te') {
       teamActionRefSelect.current?.setPageInfo?.({ current: 1 });
       teamActionRefSelect.current?.reload();
     }
@@ -95,8 +95,8 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }
     },
     { key: 'my', tab: <FormattedMessage id="pages.tab.title.mydata" defaultMessage="My Data" /> },
     {
-      key: 'team',
-      tab: <FormattedMessage id="pages.tab.title.teamdata" defaultMessage="Team Data" />,
+      key: 'te',
+      tab: <FormattedMessage id="pages.tab.title.tedata" defaultMessage="Team Data" />,
     },
   ];
 
@@ -284,11 +284,11 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }
         />
       </>
     ),
-    team: (
+    te: (
       <>
         <Card>
           <Search
-            name={'team'}
+            name={'te'}
             size={'large'}
             placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
             value={teamKeyWord}

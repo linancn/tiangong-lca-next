@@ -49,6 +49,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
   };
 
   useEffect(() => {
+    setId(undefined);
     if (formRef.current?.getFieldValue(name)) {
       setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
       setVersion(formRef.current?.getFieldValue([...name, '@version']));

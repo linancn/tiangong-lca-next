@@ -19,6 +19,7 @@ export default {
   'pages.button.delete': 'Delete',
   'pages.button.delete.confirm': 'Are you sure want to delete this data?',
   'pages.button.delete.success': 'Selected record has been deleted.',
+  'pages.button.contribute': 'Contribute to team',
   'pages.button.cancel': 'Cancel',
   'pages.button.submit': 'Submit',
   'pages.button.save': 'Save',
@@ -53,7 +54,7 @@ export default {
   'pages.button.item.label': 'Item',
 
   'pages.tab.title.mydata': 'My Data',
-  'pages.tab.title.teamdata': 'Team Data',
+  'pages.tab.title.tedata': 'Team Data',
   'pages.tab.title.tgdata': 'TianGong Data',
 
   'pages.search.openAI': 'AI Recommendation',

@@ -8,6 +8,7 @@ export type UnitGroupTable = {
   refUnitGeneralComment: string;
   version: string;
   modifiedAt: Date;
+  teamId: string;
 };
 
 export type UnitTable = {

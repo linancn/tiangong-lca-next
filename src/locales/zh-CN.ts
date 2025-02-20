@@ -1,5 +1,6 @@
 import component from './zh-CN/component';
 import component_allTeams from './zh-CN/component_allTeams';
+import component_contributeData from './zh-CN/component_contributeData';
 import globalHeader from './zh-CN/globalHeader';
 import menu from './zh-CN/menu';
 import pages from './zh-CN/pages';
@@ -47,4 +48,5 @@ export default {
   ...validator,
   ...teams,
   ...component_allTeams,
+  ...component_contributeData,
 };
