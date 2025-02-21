@@ -6,11 +6,18 @@ import {
   editTeamMessage,
   getTeamMembersApi,
   getTeamMessageApi,
+  reInvitedApi,
   updateRoleApi,
   uploadLogoApi,
 } from '@/services/teams/api';
 import { TeamMemberTable } from '@/services/teams/data';
-import { CrownOutlined, DeleteOutlined, PlusOutlined, UserOutlined } from '@ant-design/icons';
+import {
+  CrownOutlined,
+  DeleteOutlined,
+  PlusOutlined,
+  UserAddOutlined,
+  UserOutlined,
+} from '@ant-design/icons';
 import {
   PageContainer,
   ProColumns,
@@ -106,7 +113,7 @@ const Team = () => {
   };
 
   useEffect(() => {
-    if (teamId) {
+    if (teamId && userRole !== 'rejected') {
       getTeamInfo(teamId);
       actionRef.current?.reload();
     }
@@ -259,7 +266,7 @@ const Team = () => {
       <Flex gap="middle" vertical style={{ maxWidth: '50%', minWidth: '200px' }}>
         <Spin spinning={teamInfoSpinning}>
           <ProForm
-            disabled={userRole !== 'admin' && userRole !== 'owner'}
+            disabled={userRole !== 'admin' && userRole !== 'owner' && action !== 'create'}
             formRef={formRefEdit}
             submitter={{
               resetButtonProps: false,
@@ -374,7 +381,7 @@ const Team = () => {
               }
             >
               <Upload
-                disabled={userRole !== 'admin' && userRole !== 'owner'}
+                disabled={userRole !== 'admin' && userRole !== 'owner' && action !== 'create'}
                 beforeUpload={() => {
                   setLightLogoSpinning(true);
                   return true;
@@ -409,7 +416,7 @@ const Team = () => {
               label={<FormattedMessage id="pages.team.info.darkLogo" defaultMessage="Dark Logo" />}
             >
               <Upload
-                disabled={userRole !== 'admin' && userRole !== 'owner'}
+                disabled={userRole !== 'admin' && userRole !== 'owner' && action !== 'create'}
                 beforeUpload={() => {
                   setDarkLogoSpinning(true);
                   return true;
@@ -492,6 +499,8 @@ const Team = () => {
               <FormattedMessage id="teams.members.role.invited" defaultMessage="Invited" />
             ) : record.role === 'owner' ? (
               <FormattedMessage id="teams.members.role.owner" defaultMessage="Owner" />
+            ) : record.role === 'rejected' ? (
+              <FormattedMessage id="teams.members.role.rejected" defaultMessage="Rejected" />
             ) : (
               <FormattedMessage id="teams.members.role.member" defaultMessage="Member" />
             )}
@@ -515,6 +524,13 @@ const Team = () => {
                   icon={<DeleteOutlined />}
                   onClick={() => {
                     Modal.confirm({
+                      okButtonProps: {
+                        type: 'primary',
+                        style: { backgroundColor: '#5C246A' },
+                      },
+                      cancelButtonProps: {
+                        style: { borderColor: '#5C246A', color: '#5C246A' },
+                      },
                       title: intl.formatMessage({ id: 'teams.members.deleteConfirm' }),
                       onOk: async () => {
                         try {
@@ -570,6 +586,38 @@ const Team = () => {
                 />
               </Tooltip>
             }
+            {
+              <Tooltip
+                title={<FormattedMessage id="teams.members.reInvite" defaultMessage="re-invite" />}
+              >
+                <Button
+                  disabled={
+                    !(record.role === 'rejected' && (userRole === 'admin' || userRole === 'owner'))
+                  }
+                  type="text"
+                  icon={<UserAddOutlined />}
+                  onClick={async () => {
+                    const error = await reInvitedApi(record?.user_id, record?.team_id);
+                    if (error) {
+                      message.error(
+                        intl.formatMessage({
+                          id: 'teams.members.actionError',
+                          defaultMessage: 'Action failed!',
+                        }),
+                      );
+                    } else {
+                      actionRef.current?.reload();
+                      message.success(
+                        intl.formatMessage({
+                          id: 'teams.members.actionSuccess',
+                          defaultMessage: 'Action success!',
+                        }),
+                      );
+                    }
+                  }}
+                />
+              </Tooltip>
+            }
           </Flex>
         ),
       },
@@ -580,6 +628,7 @@ const Team = () => {
         <div style={{ marginBottom: 16, textAlign: 'right' }}>
           <Tooltip title={<FormattedMessage id="teams.members.add" defaultMessage="Add" />}>
             <Button
+              disabled={!(userRole === 'admin' || userRole === 'owner')}
               type="primary"
               icon={<PlusOutlined />}
               onClick={() => setAddModalVisible(true)}
@@ -605,7 +654,7 @@ const Team = () => {
             sort,
           ) => {
             try {
-              if (!teamId) {
+              if (!teamId || userRole === 'rejected') {
                 return {
                   data: [],
                   success: true,

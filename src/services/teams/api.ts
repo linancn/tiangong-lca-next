@@ -142,6 +142,13 @@ export async function editTeamMessage(id: string, data: any) {
 }
 
 export async function createTeamMessage(id: string, data: any) {
+  const session = await supabase.auth.getSession();
+  await supabase
+    .from('roles')
+    .delete()
+    .eq('user_id', session?.data?.session?.user?.id)
+    .eq('role', 'rejected');
+
   const { error } = await supabase.from('teams').insert({ id, json: data });
   if (!error) {
     const session = await supabase.auth.getSession();
@@ -302,6 +309,15 @@ export async function addTeamMemberApi(teamId: string, email: string) {
   }
 }
 
+export async function reInvitedApi(userId: string, teamId: string) {
+  const { error } = await supabase
+    .from('roles')
+    .update({ role: 'is_invited' })
+    .eq('user_id', userId)
+    .eq('team_id', teamId);
+  return error;
+}
+
 export async function acceptTeamInvitationApi(teamId: string, userId: string) {
   const { data, error } = await supabase
     .from('roles')
@@ -323,16 +339,16 @@ export async function acceptTeamInvitationApi(teamId: string, userId: string) {
 }
 
 export async function rejectTeamInvitationApi(teamId: string, userId: string) {
-  const { error: deleteError } = await supabase
+  const { error } = await supabase
     .from('roles')
-    .delete()
+    .update({ role: 'rejected' })
     .eq('user_id', userId)
     .eq('team_id', teamId);
 
-  if (deleteError) {
+  if (error) {
     return {
       success: false,
-      error: deleteError,
+      error,
     };
   }
   return {

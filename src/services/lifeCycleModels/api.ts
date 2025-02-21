@@ -182,7 +182,7 @@ export async function getLifeCycleModelTableAll(
     } else {
       return Promise.resolve({
         data: [],
-        success: false,
+        success: true,
       });
     }
   }

@@ -10,6 +10,8 @@ export default {
   'teams.members.role.member': '成员',
   'pages.team.members.getError': '获取成员失败!',
   'teams.members.role.owner': '所有者',
+  'teams.members.role.rejected': '已拒绝',
+  'teams.members.reInvite': '重新邀请',
   'teams.members.setMember': '设为成员',
   'teams.members.actionError': '操作失败!',
   'teams.members.actionSuccess': '操作成功!',

@@ -1,4 +1,6 @@
 import { supabase } from '@/services/supabase';
+import { message } from 'antd';
+import { getLocale } from 'umi';
 
 export async function getDataDetail(id: string, version: string, table: string) {
   let result: any = {};
@@ -44,7 +46,7 @@ export async function getDataDetail(id: string, version: string, table: string) 
   });
 }
 
-// Get the team id of the user when the user is not an invited user
+// Get the team id of the user when the user is not an invited user and  is not a rejected user
 export async function getTeamIdByUserId() {
   const session = await supabase.auth.getSession();
   const { data } = await supabase
@@ -58,7 +60,7 @@ export async function getTeamIdByUserId() {
     )
     .eq('user_id', session?.data?.session?.user?.id);
 
-  if (data && data.length > 0 && data[0].role !== 'is_invited') {
+  if (data && data.length > 0 && data[0].role !== 'is_invited' && data[0].role !== 'rejected') {
     return data[0].team_id;
   }
   return null;
@@ -74,6 +76,10 @@ export async function contributeSource(tableName: string, id: string, version: s
       .eq('version', version);
 
     return result;
+  } else {
+    message.error(
+      getLocale() === 'zh-CN' ? '您不是任何团队的成员' : 'You are not a member of any team',
+    );
   }
   return {
     error: true,

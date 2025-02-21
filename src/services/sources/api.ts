@@ -98,7 +98,7 @@ export async function getSourceTableAll(
     } else {
       return Promise.resolve({
         data: [],
-        success: false,
+        success: true,
       });
     }
   }
