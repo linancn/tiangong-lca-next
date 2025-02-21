@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 
 import { outLogin } from '@/services/ant-design-pro/api';
 import { getUserRoles } from '@/services/roles/api';
-import { Modal, Spin, Button } from 'antd';
+import { Button, Modal, Spin } from 'antd';
 import { createStyles } from 'antd-style';
 import { stringify } from 'querystring';
 import type { MenuInfo } from 'rc-menu/lib/interface';
@@ -49,7 +49,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
   const initialUserRole = async () => {
     const { data } = await getUserRoles();
 
-    if (data&&data?.length&&data[0].role!=='rejected') {
+    if (data && data?.length && data[0].role !== 'rejected') {
       setIsUserInTeam(true);
     } else {
       setIsUserInTeam(false);
@@ -107,7 +107,14 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
             }),
             closable: true,
             footer: (
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '20px' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  gap: '8px',
+                  marginTop: '20px',
+                }}
+              >
                 <Button
                   style={{ borderColor: '#5C246A', color: '#5C246A' }}
                   onClick={() => {
@@ -131,7 +138,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
                       searchParams.set('action', 'create');
                       history.replace({
                         pathname: location.pathname,
-                        search: searchParams.toString()
+                        search: searchParams.toString(),
                       });
                       window.location.reload();
                     } else {
@@ -140,12 +147,10 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
                   }}
                 >
                   {/* <FormattedMessage id="teams.modal.noTeam.create" defaultMessage="Create Team" /> */}
-                  {
-                    intl.formatMessage({
-                      id: 'teams.modal.noTeam.create',
-                      defaultMessage: 'Create Team',
-                    })
-                  }
+                  {intl.formatMessage({
+                    id: 'teams.modal.noTeam.create',
+                    defaultMessage: 'Create Team',
+                  })}
                 </Button>
               </div>
             ),

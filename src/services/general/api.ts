@@ -60,7 +60,7 @@ export async function getTeamIdByUserId() {
     )
     .eq('user_id', session?.data?.session?.user?.id);
 
-  if (data && data.length > 0 && data[0].role !== 'is_invited'&&data[0].role !== 'rejected') {
+  if (data && data.length > 0 && data[0].role !== 'is_invited' && data[0].role !== 'rejected') {
     return data[0].team_id;
   }
   return null;
@@ -77,7 +77,9 @@ export async function contributeSource(tableName: string, id: string, version: s
 
     return result;
   } else {
-    message.error(getLocale() === 'zh-CN' ? '您不是任何团队的成员' : 'You are not a member of any team');
+    message.error(
+      getLocale() === 'zh-CN' ? '您不是任何团队的成员' : 'You are not a member of any team',
+    );
   }
   return {
     error: true,

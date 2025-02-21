@@ -143,7 +143,11 @@ export async function editTeamMessage(id: string, data: any) {
 
 export async function createTeamMessage(id: string, data: any) {
   const session = await supabase.auth.getSession();
-  await supabase.from('roles').delete().eq('user_id', session?.data?.session?.user?.id).eq('role', 'rejected');
+  await supabase
+    .from('roles')
+    .delete()
+    .eq('user_id', session?.data?.session?.user?.id)
+    .eq('role', 'rejected');
 
   const { error } = await supabase.from('teams').insert({ id, json: data });
   if (!error) {
@@ -311,7 +315,7 @@ export async function reInvitedApi(userId: string, teamId: string) {
     .update({ role: 'is_invited' })
     .eq('user_id', userId)
     .eq('team_id', teamId);
-  return  error ;
+  return error;
 }
 
 export async function acceptTeamInvitationApi(teamId: string, userId: string) {

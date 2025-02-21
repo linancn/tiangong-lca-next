@@ -6,12 +6,18 @@ import {
   editTeamMessage,
   getTeamMembersApi,
   getTeamMessageApi,
+  reInvitedApi,
   updateRoleApi,
   uploadLogoApi,
-  reInvitedApi
 } from '@/services/teams/api';
 import { TeamMemberTable } from '@/services/teams/data';
-import { CrownOutlined, DeleteOutlined, PlusOutlined, UserAddOutlined, UserOutlined } from '@ant-design/icons';
+import {
+  CrownOutlined,
+  DeleteOutlined,
+  PlusOutlined,
+  UserAddOutlined,
+  UserOutlined,
+} from '@ant-design/icons';
 import {
   PageContainer,
   ProColumns,
@@ -386,13 +392,13 @@ const Team = () => {
                 fileList={
                   lightLogo
                     ? [
-                      {
-                        uid: '-1',
-                        name: 'logo',
-                        status: 'done',
-                        url: LogoBaseUrl + lightLogo,
-                      },
-                    ]
+                        {
+                          uid: '-1',
+                          name: 'logo',
+                          status: 'done',
+                          url: LogoBaseUrl + lightLogo,
+                        },
+                      ]
                     : []
                 }
                 onChange={({ fileList }) => uploadLogo(fileList, 'lightLogo')}
@@ -421,13 +427,13 @@ const Team = () => {
                 fileList={
                   darkLogo
                     ? [
-                      {
-                        uid: '-1',
-                        name: 'logo',
-                        status: 'done',
-                        url: LogoBaseUrl + darkLogo,
-                      },
-                    ]
+                        {
+                          uid: '-1',
+                          name: 'logo',
+                          status: 'done',
+                          url: LogoBaseUrl + darkLogo,
+                        },
+                      ]
                     : []
                 }
                 onChange={({ fileList }) => uploadLogo(fileList, 'darkLogo')}
@@ -520,10 +526,10 @@ const Team = () => {
                     Modal.confirm({
                       okButtonProps: {
                         type: 'primary',
-                        style: { backgroundColor: '#5C246A' }
+                        style: { backgroundColor: '#5C246A' },
                       },
                       cancelButtonProps: {
-                        style: { borderColor: '#5C246A', color: '#5C246A' }
+                        style: { borderColor: '#5C246A', color: '#5C246A' },
                       },
                       title: intl.formatMessage({ id: 'teams.members.deleteConfirm' }),
                       onOk: async () => {
@@ -582,12 +588,12 @@ const Team = () => {
             }
             {
               <Tooltip
-                title={
-                  <FormattedMessage id="teams.members.reInvite" defaultMessage="re-invite" />
-                }
+                title={<FormattedMessage id="teams.members.reInvite" defaultMessage="re-invite" />}
               >
                 <Button
-                  disabled={!(record.role === 'rejected' && (userRole === 'admin' || userRole === 'owner'))}
+                  disabled={
+                    !(record.role === 'rejected' && (userRole === 'admin' || userRole === 'owner'))
+                  }
                   type="text"
                   icon={<UserAddOutlined />}
                   onClick={async () => {
