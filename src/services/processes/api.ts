@@ -94,7 +94,7 @@ export async function getProcessTableAll(
     } else {
       return Promise.resolve({
         data: [],
-        success: false,
+        success: true,
       });
     }
   }

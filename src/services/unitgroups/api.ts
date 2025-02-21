@@ -99,7 +99,7 @@ export async function getUnitGroupTableAll(
     } else {
       return Promise.resolve({
         data: [],
-        success: false,
+        success: true,
       });
     }
   }

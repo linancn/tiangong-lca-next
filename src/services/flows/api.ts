@@ -129,7 +129,7 @@ export async function getFlowTableAll(
     } else {
       return Promise.resolve({
         data: [],
-        success: false,
+        success: true,
       });
     }
   }

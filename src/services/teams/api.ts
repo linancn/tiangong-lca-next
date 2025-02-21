@@ -142,6 +142,9 @@ export async function editTeamMessage(id: string, data: any) {
 }
 
 export async function createTeamMessage(id: string, data: any) {
+  const session = await supabase.auth.getSession();
+  await supabase.from('roles').delete().eq('user_id', session?.data?.session?.user?.id).eq('role', 'rejected');
+
   const { error } = await supabase.from('teams').insert({ id, json: data });
   if (!error) {
     const session = await supabase.auth.getSession();

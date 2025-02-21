@@ -100,7 +100,7 @@ export async function getFlowpropertyTableAll(
     } else {
       return Promise.resolve({
         data: [],
-        success: false,
+        success: true,
       });
     }
   }
