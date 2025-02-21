@@ -213,7 +213,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
               }
               name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
             >
-              <Input disabled={true} style={{ color: '#000' }} />
+              <Input disabled={true}  />
             </Form.Item>
             <br />
             <SourceSelectForm

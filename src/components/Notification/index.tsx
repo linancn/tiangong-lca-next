@@ -66,6 +66,13 @@ const Notification: React.FC = () => {
         onClick={() => {
           if (isBeInvited) {
             Modal.confirm({
+              okButtonProps: {
+                type: 'primary',
+                style: { backgroundColor: '#5C246A' }
+              },
+              cancelButtonProps: {
+                style: { borderColor: '#5C246A', color: '#5C246A' }
+              },
               title: intl.formatMessage({
                 id: 'teams.notification.team.invite.title',
                 defaultMessage: 'Team Invitation',

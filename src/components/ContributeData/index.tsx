@@ -23,6 +23,13 @@ const ContributeData: FC<ContributeDataProps> = ({ onOk, disabled }) => {
         size="small"
         onClick={() => {
           Modal.confirm({
+            okButtonProps: {
+              type: 'primary',
+              style: { backgroundColor: '#5C246A' }
+            },
+            cancelButtonProps: {
+              style: { borderColor: '#5C246A', color: '#5C246A' }
+            },
             title: intl.formatMessage({
               id: 'component.contributeData.confirm',
               defaultMessage: 'Contribute data',

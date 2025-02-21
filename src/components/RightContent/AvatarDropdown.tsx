@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 
 import { outLogin } from '@/services/ant-design-pro/api';
 import { getUserRoles } from '@/services/roles/api';
-import { Modal, Spin } from 'antd';
+import { Modal, Spin, Button } from 'antd';
 import { createStyles } from 'antd-style';
 import { stringify } from 'querystring';
 import type { MenuInfo } from 'rc-menu/lib/interface';
@@ -49,7 +49,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
   const initialUserRole = async () => {
     const { data } = await getUserRoles();
 
-    if (data?.length) {
+    if (data&&data?.length&&data[0].role!=='rejected') {
       setIsUserInTeam(true);
     } else {
       setIsUserInTeam(false);
@@ -105,21 +105,50 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
               id: 'teams.modal.noTeam.content',
               defaultMessage: 'You can create a team or join an existing team',
             }),
-            okText: intl.formatMessage({
-              id: 'teams.modal.noTeam.create',
-              defaultMessage: 'Create Team',
-            }),
-            cancelText: intl.formatMessage({
-              id: 'teams.modal.noTeam.join',
-              defaultMessage: 'Join Team',
-            }),
             closable: true,
-            onOk: () => {
-              history.push('/team?action=create');
-            },
-            onCancel: () => {
-              setShowAllTeamsModal(false);
-            },
+            footer: (
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '20px' }}>
+                <Button
+                  style={{ borderColor: '#5C246A', color: '#5C246A' }}
+                  onClick={() => {
+                    setShowAllTeamsModal(true);
+                    Modal.destroyAll();
+                  }}
+                >
+                  {intl.formatMessage({
+                    id: 'teams.modal.noTeam.join',
+                    defaultMessage: 'Join Team',
+                  })}
+                  {/* <FormattedMessage id="" defaultMessage="" /> */}
+                </Button>
+                <Button
+                  type="primary"
+                  style={{ backgroundColor: '#5C246A' }}
+                  onClick={() => {
+                    Modal.destroyAll();
+                    if (location.pathname === '/team') {
+                      const searchParams = new URLSearchParams(location.search);
+                      searchParams.set('action', 'create');
+                      history.replace({
+                        pathname: location.pathname,
+                        search: searchParams.toString()
+                      });
+                      window.location.reload();
+                    } else {
+                      history.push('/team?action=create');
+                    }
+                  }}
+                >
+                  {/* <FormattedMessage id="teams.modal.noTeam.create" defaultMessage="Create Team" /> */}
+                  {
+                    intl.formatMessage({
+                      id: 'teams.modal.noTeam.create',
+                      defaultMessage: 'Create Team',
+                    })
+                  }
+                </Button>
+              </div>
+            ),
           });
         }
         return;
