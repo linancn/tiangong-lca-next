@@ -24,13 +24,13 @@ const { Search } = Input;
 const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }) => {
   const [tgKeyWord, setTgKeyWord] = useState<any>('');
   const [myKeyWord, setMyKeyWord] = useState<any>('');
-
+  const [teKeyWord, setTeKeyWord] = useState<any>('');
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [activeTabKey, setActiveTabKey] = useState<string>('tg');
   const tgActionRefSelect = useRef<ActionType>();
   const myActionRefSelect = useRef<ActionType>();
-
+  const teActionRefSelect = useRef<ActionType>();
   const intl = useIntl();
 
   const onSelect = () => {
@@ -51,6 +51,10 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
       myActionRefSelect.current?.setPageInfo?.({ current: 1 });
       myActionRefSelect.current?.reload();
     }
+    if (key === 'te') {
+      teActionRefSelect.current?.setPageInfo?.({ current: 1 });
+      teActionRefSelect.current?.reload();
+    }
   };
 
   const onTgSearch: SearchProps['onSearch'] = async (value) => {
@@ -65,12 +69,22 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
     myActionRefSelect.current?.reload();
   };
 
+  const onTeSearch: SearchProps['onSearch'] = async (value) => {
+    await setTeKeyWord(value);
+    teActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    teActionRefSelect.current?.reload();
+  };
+
   const handleTgKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTgKeyWord(e.target.value);
   };
 
   const handleMyKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMyKeyWord(e.target.value);
+  };
+
+  const handleTeKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTeKeyWord(e.target.value);
   };
 
   const unitGroupColumns: ProColumns<UnitGroupTable>[] = [
@@ -196,6 +210,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
       tab: <FormattedMessage id="pages.tab.title.tgdata" defaultMessage="TianGong Data" />,
     },
     { key: 'my', tab: <FormattedMessage id="pages.tab.title.mydata" defaultMessage="My Data" /> },
+    { key: 'te', tab: <FormattedMessage id="pages.tab.title.tedata" defaultMessage="TE Data" /> },
   ];
 
   const databaseList: Record<string, React.ReactNode> = {
@@ -275,6 +290,51 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
               return getUnitGroupTablePgroongaSearch(params, lang, 'tg', tgKeyWord, {});
             }
             return getUnitGroupTableAll(params, sort, lang, 'tg', []);
+          }}
+          columns={unitGroupColumns}
+          rowSelection={{
+            type: 'radio',
+            alwaysShowAlert: true,
+            selectedRowKeys,
+            onChange: onSelectChange,
+          }}
+        />
+      </>
+    ),
+    te: (
+      <>
+        <Card>
+          <Search
+            name={'te'}
+            size={'large'}
+            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+            value={teKeyWord}
+            onChange={handleTeKeyWordChange}
+            onSearch={onTeSearch}
+            enterButton
+          />
+        </Card>
+        <ProTable<UnitGroupTable, ListPagination>
+          actionRef={teActionRefSelect}
+          search={false}
+          toolBarRender={() => {
+            return [<UnitGroupCreate key={0} lang={lang} actionRef={teActionRefSelect} />];
+          }}
+          pagination={{
+            showSizeChanger: false,
+            pageSize: 10,
+          }}
+          request={async (
+            params: {
+              pageSize: number;
+              current: number;
+            },
+            sort,
+          ) => {
+            if (teKeyWord.length > 0) {
+              return getUnitGroupTablePgroongaSearch(params, lang, 'te', teKeyWord, {});
+            }
+            return getUnitGroupTableAll(params, sort, lang, 'te', '');
           }}
           columns={unitGroupColumns}
           rowSelection={{

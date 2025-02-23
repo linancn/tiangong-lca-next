@@ -51,6 +51,7 @@ const FlowsSelectForm: FC<Props> = ({
   };
 
   useEffect(() => {
+    setId(undefined);
     if (drawerVisible) {
       if (formRef.current?.getFieldValue([...name, '@refObjectId'])) {
         setId(formRef.current?.getFieldValue([...name, '@refObjectId']));

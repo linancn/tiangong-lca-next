@@ -1,5 +1,6 @@
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
+import { getTeamIdByUserId } from '../general/api';
 import {
   classificationToString,
   genClassificationZH,
@@ -9,7 +10,6 @@ import {
 import { getILCDClassification } from '../ilcd/api';
 import { genProcessName } from '../processes/util';
 import { genLifeCycleModelJsonOrdered, genLifeCycleModelProcess } from './util';
-
 const updateLifeCycleModelProcess = async (
   id: string,
   version: string,
@@ -76,9 +76,12 @@ export async function createLifeCycleModel(data: any) {
     },
   };
   const newData = genLifeCycleModelJsonOrdered(data.id, data, oldData);
+  const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('lifecyclemodels')
-    .insert([{ id: data.id, json_ordered: newData, json_tg: { xflow: data?.model } }])
+    .insert([
+      { id: data.id, json_ordered: newData, json_tg: { xflow: data?.model }, team_id: teamId },
+    ])
     .select();
   if (result.data && result.data.length === 1) {
     const refNode = data?.model?.nodes.find((i: any) => i?.data?.quantitativeReference === '1');
@@ -137,7 +140,8 @@ export async function getLifeCycleModelTableAll(
     json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
     json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->"common:generalComment",
     version,
-    modified_at
+    modified_at,
+    team_id
   `;
 
   const tableName = 'lifecyclemodels';
@@ -172,14 +176,13 @@ export async function getLifeCycleModelTableAll(
       });
     }
   } else if (dataSource === 'te') {
-    const userData = await supabase.auth.getUser();
-    const teamId = userData.data.user?.user_metadata?.team_id;
+    const teamId = await getTeamIdByUserId();
     if (teamId) {
       query = query.eq('team_id', teamId);
     } else {
       return Promise.resolve({
         data: [],
-        success: false,
+        success: true,
       });
     }
   }
@@ -214,6 +217,7 @@ export async function getLifeCycleModelTableAll(
               classification: classificationToString(classificationZH ?? {}),
               version: i?.version,
               modifiedAt: new Date(i?.modified_at),
+              teamId: i?.team_id,
             };
           } catch (e) {
             console.error(e);
@@ -234,6 +238,7 @@ export async function getLifeCycleModelTableAll(
             classification: classificationToString(i['common:class'] ?? {}),
             version: i?.version,
             modifiedAt: new Date(i?.modified_at),
+            teamId: i?.team_id,
           };
         } catch (e) {
           console.error(e);
@@ -317,6 +322,7 @@ export async function getLifeCycleModelTablePgroongaSearch(
               classification: classificationToString(classificationZH),
               version: i?.version,
               modifiedAt: new Date(i?.modified_at),
+              teamId: i?.team_id,
             };
           } catch (e) {
             console.error(e);
@@ -346,6 +352,7 @@ export async function getLifeCycleModelTablePgroongaSearch(
             ),
             version: i?.version,
             modifiedAt: new Date(i?.modified_at),
+            teamId: i?.team_id,
           };
         } catch (e) {
           console.error(e);

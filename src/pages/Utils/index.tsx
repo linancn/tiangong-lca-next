@@ -7,6 +7,8 @@ export function getDataTitle(dataSource: string) {
     return <FormattedMessage id="menu.tgdata" defaultMessage="Open Data" />;
   } else if (dataSource === 'co') {
     return <FormattedMessage id="menu.codata" defaultMessage="Commercial Data" />;
+  } else if (dataSource === 'te') {
+    return <FormattedMessage id="menu.tedata" defaultMessage="Team Data" />;
   }
   return '';
 }

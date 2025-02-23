@@ -1,8 +1,10 @@
 import { getProcessTableAll, getProcessTablePgroongaSearch } from '@/services/processes/api';
-import { Card, Input, Space, Tooltip } from 'antd';
+import { Card, Input, Space, Tooltip, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 
+import ContributeData from '@/components/ContributeData';
+import { contributeSource } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
 import { getDataSource, getLang, getLangText } from '@/services/general/util';
 import { ProcessTable } from '@/services/processes/data';
@@ -116,6 +118,23 @@ const TableList: FC = () => {
                 buttonType={'icon'}
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
+              />
+              <ContributeData
+                onOk={async () => {
+                  const { error } = await contributeSource('processes', row.id, row.version);
+                  if (error) {
+                    console.log(error);
+                  } else {
+                    message.success(
+                      intl.formatMessage({
+                        id: 'component.contributeData.success',
+                        defaultMessage: 'Contribute successfully',
+                      }),
+                    );
+                    actionRef.current?.reload();
+                  }
+                }}
+                disabled={!!row.teamId}
               />
             </Space>,
           ];

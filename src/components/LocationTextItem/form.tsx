@@ -41,7 +41,7 @@ const LocationTextItemForm: FC<Props> = ({ name, label, lang, onData, rules }) =
       <Form.Item label={label} name={name} rules={rules}>
         <Select
           showSearch
-          defaultValue={null}
+          // defaultValue={null} defaultValue报错
           onChange={handleLChange}
           options={locationData}
           filterOption={(input: any, option: any) =>

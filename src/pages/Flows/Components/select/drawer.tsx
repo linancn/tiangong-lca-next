@@ -32,7 +32,7 @@ const { Search } = Input;
 const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, onData }) => {
   const [tgKeyWord, setTgKeyWord] = useState<any>('');
   const [myKeyWord, setMyKeyWord] = useState<any>('');
-
+  const [teKeyWord, setTeKeyWord] = useState<any>('');
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [activeTabKey, setActiveTabKey] = useState<string>('tg');
@@ -41,6 +41,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
   // const [tableLoading, setTableLoading] = useState<boolean>(false);
   const tgActionRefSelect = useRef<ActionType>();
   const myActionRefSelect = useRef<ActionType>();
+  const teActionRefSelect = useRef<ActionType>();
 
   const intl = useIntl();
 
@@ -58,6 +59,10 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
       await tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
       tgActionRefSelect.current?.reload();
     }
+    if (key === 'te') {
+      await teActionRefSelect.current?.setPageInfo?.({ current: 1 });
+      teActionRefSelect.current?.reload();
+    }
     if (key === 'my') {
       myActionRefSelect.current?.setPageInfo?.({ current: 1 });
       myActionRefSelect.current?.reload();
@@ -68,6 +73,12 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
     await setTgKeyWord(value);
     tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
     tgActionRefSelect.current?.reload();
+  };
+
+  const onTeSearch: SearchProps['onSearch'] = async (value) => {
+    await setTeKeyWord(value);
+    teActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    teActionRefSelect.current?.reload();
   };
 
   // const onTgSearch: SearchProps['onSearch'] = async (value) => {
@@ -84,6 +95,10 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
 
   const handleTgKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTgKeyWord(e.target.value);
+  };
+
+  const handleTeKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTeKeyWord(e.target.value);
   };
 
   const handleMyKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -193,6 +208,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
       tab: <FormattedMessage id="pages.tab.title.tgdata" defaultMessage="TianGong Data" />,
     },
     { key: 'my', tab: <FormattedMessage id="pages.tab.title.mydata" defaultMessage="My Data" /> },
+    { key: 'te', tab: <FormattedMessage id="pages.tab.title.tedata" defaultMessage="TE Data" /> },
   ];
 
   const databaseList: Record<string, React.ReactNode> = {
@@ -261,6 +277,59 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
             });
           }}
           columns={FlowsColumns}
+          rowSelection={{
+            type: 'radio',
+            alwaysShowAlert: true,
+            selectedRowKeys,
+            onChange: onSelectChange,
+          }}
+        />
+      </>
+    ),
+    te: (
+      <>
+        <Card>
+          <Search
+            name={'te'}
+            size={'large'}
+            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+            value={teKeyWord}
+            onChange={handleTeKeyWordChange}
+            onSearch={onTeSearch}
+            enterButton
+          />
+        </Card>
+        <ProTable<FlowTable, ListPagination>
+          actionRef={teActionRefSelect}
+          search={false}
+          pagination={{
+            showSizeChanger: false,
+            pageSize: 10,
+          }}
+          request={async (
+            params: {
+              pageSize: number;
+              current: number;
+            },
+            sort,
+            filter,
+          ) => {
+            const flowTypeFilter = filter?.flowType ? filter.flowType.join(',') : '';
+            if (teKeyWord.length > 0) {
+              return getFlowTablePgroongaSearch(params, lang, 'te', teKeyWord, {
+                flowType: flowTypeFilter,
+                asInput: asInput,
+              });
+            }
+            return getFlowTableAll(params, sort, lang, 'te', [], {
+              flowType: flowTypeFilter,
+              asInput: asInput,
+            });
+          }}
+          columns={FlowsColumns}
+          toolBarRender={() => {
+            return [<FlowsCreate key={0} lang={lang} actionRef={teActionRefSelect} />];
+          }}
           rowSelection={{
             type: 'radio',
             alwaysShowAlert: true,

@@ -1,3 +1,4 @@
+import { useUnitsContext } from '@/contexts/unitContext';
 import { getReferenceUnitGroup } from '@/services/flowproperties/api';
 import { getReferenceProperty } from '@/services/flows/api';
 import { jsonToList } from '@/services/general/util';
@@ -21,18 +22,25 @@ type Props = {
 const UnitGroupFromMini: FC<Props> = ({ id, version, idType, name, formRef, drawerVisible }) => {
   const [spinning, setSpinning] = useState<boolean>(false);
   const { token } = theme.useToken();
+  const { setUnits, setTargetUnit } = useUnitsContext() as {
+    setUnits: (units: any) => void;
+    setTargetUnit: (targetUnit: string) => void;
+  };
 
   useEffect(() => {
     if (id && drawerVisible) {
       if (idType === 'flow') {
+        // Get unit group information based on flow ID
         setSpinning(true);
         getReferenceProperty(id, version ?? '').then((res1: any) => {
           getReferenceUnitGroup(res1?.data?.refFlowPropertytId, res1?.data?.version).then(
             (res2: any) => {
               getReferenceUnit(res2?.data?.refUnitGroupId, res2?.data?.version).then(
                 (res3: any) => {
+                  setUnits(res3?.data.unit);
+                  setTargetUnit(res3?.data?.refUnitName);
                   formRef.current?.setFieldValue([...name, 'refUnitGroup'], {
-                    shortDescription: jsonToList(res3?.data?.refUnitGroupShortDescription),
+                    shortDescription: jsonToList(res2?.data?.refUnitGroupShortDescription),
                     refUnit: {
                       name: res3?.data?.refUnitName ?? '',
                       generalComment: jsonToList(res3?.data?.refUnitGeneralComment),
@@ -49,7 +57,7 @@ const UnitGroupFromMini: FC<Props> = ({ id, version, idType, name, formRef, draw
         getReferenceUnitGroup(id, version ?? '').then((res1: any) => {
           getReferenceUnit(res1?.data?.refUnitGroupId, res1.data?.version).then((res2: any) => {
             formRef.current?.setFieldValue([...name, 'refUnitGroup'], {
-              shortDescription: jsonToList(res2.data?.refUnitGroupShortDescription),
+              shortDescription: jsonToList(res2?.data?.refUnitGroupShortDescription),
               refUnit: {
                 name: res2.data?.refUnitName ?? '',
                 generalComment: jsonToList(res2.data?.refUnitGeneralComment),

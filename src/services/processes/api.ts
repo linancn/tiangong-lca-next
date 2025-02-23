@@ -1,3 +1,6 @@
+import { supabase } from '@/services/supabase';
+import { SortOrder } from 'antd/es/table/interface';
+import { getTeamIdByUserId } from '../general/api';
 import {
   classificationToString,
   genClassificationZH,
@@ -5,16 +8,14 @@ import {
   jsonToList,
 } from '../general/util';
 import { getILCDClassification, getILCDLocationByValues } from '../ilcd/api';
-
-import { supabase } from '@/services/supabase';
-import { SortOrder } from 'antd/es/table/interface';
 import { genProcessJsonOrdered, genProcessName } from './util';
 
 export async function createProcess(id: string, data: any) {
   const newData = genProcessJsonOrdered(id, data);
+  const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('processes')
-    .insert([{ id: id, json_ordered: newData }])
+    .insert([{ id: id, json_ordered: newData, team_id: teamId }])
     .select();
   return result;
 }
@@ -38,7 +39,7 @@ export async function getProcessTableAll(
   sort: Record<string, SortOrder>,
   lang: string,
   dataSource: string,
-  tid: string,
+  tid: string | [],
 ) {
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
   const orderBy = sort[sortBy] ?? 'descend';
@@ -51,7 +52,8 @@ export async function getProcessTableAll(
     json->processDataSet->processInformation->time->>"common:referenceYear",
     json->processDataSet->processInformation->geography->locationOfOperationSupplyOrProduction->>"@location",
     version,
-    modified_at
+    modified_at,
+    team_id
   `;
 
   const tableName = 'processes';
@@ -86,14 +88,13 @@ export async function getProcessTableAll(
       });
     }
   } else if (dataSource === 'te') {
-    const userData = await supabase.auth.getUser();
-    const teamId = userData.data.user?.user_metadata?.team_id;
+    const teamId = await getTeamIdByUserId();
     if (teamId) {
       query = query.eq('team_id', teamId);
     } else {
       return Promise.resolve({
         data: [],
-        success: false,
+        success: true,
       });
     }
   }
@@ -143,6 +144,7 @@ export async function getProcessTableAll(
               referenceYear: i['common:referenceYear'] ?? '-',
               location: location ?? '-',
               modifiedAt: new Date(i.modified_at),
+              teamId: i?.team_id,
             };
           } catch (e) {
             console.error(e);
@@ -171,6 +173,7 @@ export async function getProcessTableAll(
             referenceYear: i['common:referenceYear'] ?? '-',
             location: location,
             modifiedAt: new Date(i.modified_at),
+            teamId: i?.team_id,
           };
         } catch (e) {
           console.error(e);
@@ -409,6 +412,7 @@ export async function getProcessTablePgroongaSearch(
               location: location ?? '-',
               version: i.version,
               modifiedAt: new Date(i?.modified_at),
+              teamId: i?.team_id,
             };
           } catch (e) {
             console.error(e);
@@ -450,6 +454,7 @@ export async function getProcessTablePgroongaSearch(
             location: location ?? '-',
             version: i.version,
             modifiedAt: new Date(i?.modified_at),
+            teamId: i?.team_id,
           };
         } catch (e) {
           console.error(e);
@@ -469,6 +474,33 @@ export async function getProcessTablePgroongaSearch(
   }
 
   return result;
+}
+
+export async function getProcessDetailByIdAndVersion(data: { id: string; version: string }[]) {
+  if (data && data.length) {
+    const ids = data.map((item) => item.id);
+
+    const resultByIds = await supabase
+      .from('processes')
+      .select('id,json,version, modified_at')
+      .in('id', ids);
+
+    if (resultByIds?.data && resultByIds.data.length > 0) {
+      const result = resultByIds.data.filter((i) => {
+        const target = data.find((j) => j.id === i.id) || { id: '', version: '' };
+        return target.version === i.version;
+      });
+
+      return Promise.resolve({
+        data: result,
+        success: true,
+      });
+    }
+  }
+  return Promise.resolve({
+    data: null,
+    success: true,
+  });
 }
 
 export async function getProcessDetail(id: string, version: string) {

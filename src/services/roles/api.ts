@@ -12,6 +12,7 @@ export async function getUserRoles() {
       `,
     )
     .eq('user_id', session?.data?.session?.user?.id);
+
   return Promise.resolve({
     data: result.data ?? [],
     success: true,

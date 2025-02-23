@@ -53,6 +53,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData })
   };
 
   useEffect(() => {
+    setId(undefined);
     if (formRef.current?.getFieldValue([...name, '@refObjectId'])) {
       setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
       setVersion(formRef.current?.getFieldValue([...name, '@version']));

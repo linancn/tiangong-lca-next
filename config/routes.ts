@@ -12,6 +12,13 @@
  */
 export default [
   {
+    path: '/manageWelcomeTeams',
+    name: 'manageWelcomeTeams',
+    icon: 'TeamOutlined',
+    component: './ManageWelcomeTeams',
+    hideInMenu: true,
+  },
+  {
     path: '/tgdata',
     name: 'tgdata',
     icon: 'FolderOpenOutlined',
@@ -229,6 +236,13 @@ export default [
     menu: false,
     icon: 'UserOutlined',
     component: './Account',
+  },
+  {
+    path: '/team',
+    name: 'team',
+    menu: false,
+    icon: 'UserOutlined',
+    component: './Teams',
   },
   {
     path: '/user',

@@ -1,10 +1,12 @@
+import ContributeData from '@/components/ContributeData';
 import { getContactTableAll, getContactTablePgroongaSearch } from '@/services/contacts/api';
 import { ContactTable } from '@/services/contacts/data';
+import { contributeSource } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
 import { getDataSource, getLang, getLangText } from '@/services/general/util';
 import { getTeamById } from '@/services/teams/api';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Card, Input, Space, Tooltip } from 'antd';
+import { Card, Input, Space, Tooltip, message } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
@@ -106,6 +108,23 @@ const TableList: FC = () => {
                 buttonType={'icon'}
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
+              />
+              <ContributeData
+                onOk={async () => {
+                  const { error } = await contributeSource('contacts', row.id, row.version);
+                  if (error) {
+                    console.log(error);
+                  } else {
+                    message.success(
+                      intl.formatMessage({
+                        id: 'component.contributeData.success',
+                        defaultMessage: 'Contribute successfully',
+                      }),
+                    );
+                    actionRef.current?.reload();
+                  }
+                }}
+                disabled={!!row.teamId}
               />
             </Space>,
           ];

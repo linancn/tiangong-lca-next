@@ -69,6 +69,7 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData }) => {
         ></Button>
       </Tooltip>
       <Drawer
+        destroyOnClose
         title={
           <FormattedMessage
             id="pages.flow.model.drawer.title.info"
