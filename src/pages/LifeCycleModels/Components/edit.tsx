@@ -69,7 +69,10 @@ const LifeCycleModelEdit: FC<Props> = ({
         )
       ) : (
         <Button onClick={onEdit}>
-          <FormattedMessage id={buttonType?buttonType:"pages.button.edit"} defaultMessage="Edit" />
+          <FormattedMessage
+            id={buttonType ? buttonType : 'pages.button.edit'}
+            defaultMessage="Edit"
+          />
         </Button>
       )}
       <Drawer
@@ -79,10 +82,16 @@ const LifeCycleModelEdit: FC<Props> = ({
               type === 'copy'
                 ? 'pages.flow.model.drawer.title.copy'
                 : type === 'createVersion'
-                ? 'pages.flow.model.drawer.title.createVersion'
-                : 'pages.flow.model.drawer.title.edit'
+                  ? 'pages.flow.model.drawer.title.createVersion'
+                  : 'pages.flow.model.drawer.title.edit'
             }
-            defaultMessage={type === 'copy' ? 'Copy Model' : type === 'createVersion' ? 'Create Version' : 'Edit Model'}
+            defaultMessage={
+              type === 'copy'
+                ? 'Copy Model'
+                : type === 'createVersion'
+                  ? 'Create Version'
+                  : 'Edit Model'
+            }
           />
         }
         width="100%"

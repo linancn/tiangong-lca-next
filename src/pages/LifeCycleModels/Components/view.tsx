@@ -1,11 +1,11 @@
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
+import type { ActionType } from '@ant-design/pro-table';
 import { Grid, XFlow, XFlowGraph } from '@antv/xflow';
 import { Button, Drawer, Layout, theme, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import ToolbarView from './toolbar/viewIndex';
-import type { ActionType } from '@ant-design/pro-table';
 type Props = {
   id: string;
   version: string;
@@ -99,7 +99,13 @@ const LifeCycleModelView: FC<Props> = ({ id, version, buttonType, lang, actionRe
               </Content>
             </Layout>
             <Sider width="50px" style={siderStyle}>
-              <ToolbarView id={id} version={version} lang={lang} drawerVisible={drawerVisible} actionRef={actionRef} />
+              <ToolbarView
+                id={id}
+                version={version}
+                lang={lang}
+                drawerVisible={drawerVisible}
+                actionRef={actionRef}
+              />
             </Sider>
           </Layout>
         </XFlow>

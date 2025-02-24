@@ -1,8 +1,11 @@
+import AllVersionsList from '@/components/AllVersions';
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
+import LifeCycleModelEdit from '@/pages/LifeCycleModels/Components/edit';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 import { CloseOutlined, InfoOutlined } from '@ant-design/icons';
+import type { ActionType } from '@ant-design/pro-table';
 import { Button, Card, Descriptions, Divider, Drawer, Modal, Space, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
@@ -16,9 +19,6 @@ import {
   qualityComplianceOptions,
   reviewComplianceOptions,
 } from '../optiondata';
-import LifeCycleModelEdit from '@/pages/LifeCycleModels/Components/edit';
-import type { ActionType } from '@ant-design/pro-table';
-import AllVersionsList from '@/components/AllVersions';
 
 type Props = {
   lang: string;
@@ -465,7 +465,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, actionRef, id, version }) => {
             />
           }
         >
-           <Descriptions bordered size={'small'} column={1}>
+          <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item
               key={0}
               label={
@@ -477,20 +477,20 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, actionRef, id, version }) => {
               labelStyle={{ width: '180px' }}
             >
               <Space>
-              {data.administrativeInformation?.publicationAndOwnership?.[
-                'common:dataSetVersion'
-              ] ?? '-'}
-              
-              <LifeCycleModelEdit
-                 type="createVersion"
-                 id={id}
-                 version={version}
-                 lang={lang}
-                 buttonType={'pages.button.createVersion'}
-                 actionRef={actionRef}
-                //  setViewDrawerVisible={() => {}}
-              />
-              <Button onClick={() => setShowAllVersionsModal(true)}>
+                {data.administrativeInformation?.publicationAndOwnership?.[
+                  'common:dataSetVersion'
+                ] ?? '-'}
+
+                <LifeCycleModelEdit
+                  type="createVersion"
+                  id={id}
+                  version={version}
+                  lang={lang}
+                  buttonType={'pages.button.createVersion'}
+                  actionRef={actionRef}
+                  //  setViewDrawerVisible={() => {}}
+                />
+                <Button onClick={() => setShowAllVersionsModal(true)}>
                   <FormattedMessage id="pages.button.allVersion" defaultMessage="All version" />
                 </Button>
                 <Modal

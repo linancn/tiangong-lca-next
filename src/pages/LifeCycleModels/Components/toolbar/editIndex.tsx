@@ -733,30 +733,32 @@ const ToolbarEdit: FC<Props> = ({
     if (thisAction === 'edit') {
       if (type === 'copy' || type === 'createVersion') {
         const newId = v4();
-        createLifeCycleModel({ ...newData, id:type === 'copy' ?newId: thisId}).then((result: any) => {
-          if (result.data) {
-            message.success(
-              intl.formatMessage({
-                id: 'pages.button.create.success',
-                defaultMessage: 'Created successfully!',
-              }),
-            );
-            setThisAction('edit');
-            setThisId(result.data?.[0]?.id);
-            setThisVersion(result.data?.[0]?.version);
-            saveCallback();
-          } else if (result?.error?.code === '23505') {
-            message.error(
-              intl.formatMessage({
-                id: 'pages.button.createVersion.fail',
-                defaultMessage: 'Please change the version and submit',
-              }),
-            );
-          } else {
-            message.error(result.error.message);
-          }
-          setSpinning(false);
-        });
+        createLifeCycleModel({ ...newData, id: type === 'copy' ? newId : thisId }).then(
+          (result: any) => {
+            if (result.data) {
+              message.success(
+                intl.formatMessage({
+                  id: 'pages.button.create.success',
+                  defaultMessage: 'Created successfully!',
+                }),
+              );
+              setThisAction('edit');
+              setThisId(result.data?.[0]?.id);
+              setThisVersion(result.data?.[0]?.version);
+              saveCallback();
+            } else if (result?.error?.code === '23505') {
+              message.error(
+                intl.formatMessage({
+                  id: 'pages.button.createVersion.fail',
+                  defaultMessage: 'Please change the version and submit',
+                }),
+              );
+            } else {
+              message.error(result.error.message);
+            }
+            setSpinning(false);
+          },
+        );
         return;
       }
       updateLifeCycleModel({ ...newData, id: thisId, version: thisVersion }).then((result: any) => {

@@ -8,6 +8,7 @@ import {
   genNodeLabel,
 } from '@/services/lifeCycleModels/util';
 import { genProcessName } from '@/services/processes/util';
+import type { ActionType } from '@ant-design/pro-table';
 import { useGraphEvent, useGraphStore } from '@antv/xflow';
 import { Space, Spin, theme } from 'antd';
 import { FC, useEffect, useState } from 'react';
@@ -17,7 +18,6 @@ import EdgeExhange from './Exchange/index';
 import IoPortView from './Exchange/ioPortView';
 import ToolbarViewInfo from './viewInfo';
 import TargetAmount from './viewTargetAmount';
-import type { ActionType } from '@ant-design/pro-table';
 type Props = {
   id: string;
   version: string;
@@ -387,7 +387,13 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible, actionRef })
 
   return (
     <Space direction="vertical" size={'middle'}>
-      <ToolbarViewInfo actionRef={actionRef} id={id} version={version} lang={lang} data={infoData} />
+      <ToolbarViewInfo
+        actionRef={actionRef}
+        id={id}
+        version={version}
+        lang={lang}
+        data={infoData}
+      />
       <ProcessView
         id={nodes.find((node) => node.selected)?.data?.id ?? ''}
         version={nodes.find((node) => node.selected)?.data?.version ?? ''}
