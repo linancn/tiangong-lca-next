@@ -197,6 +197,7 @@ const TableList: FC = () => {
         />
       </Card>
       <ProTable<UnitGroupTable, ListPagination>
+        rowKey={(record) => `${record.id}-${record.version}`}
         headerTitle={
           <>
             {getDataTitle(dataSource)} /{' '}
