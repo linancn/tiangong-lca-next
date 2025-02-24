@@ -1,19 +1,19 @@
-import { getContactDetail, updateContact, createContact } from '@/services/contacts/api';
+import { createContact, getContactDetail, updateContact } from '@/services/contacts/api';
 import { genContactFromData } from '@/services/contacts/util';
 import styles from '@/style/custom.less';
-import { CloseOutlined, FormOutlined, CopyOutlined } from '@ant-design/icons';
+import { CloseOutlined, CopyOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { Button, Collapse, Drawer, Space, Spin, Tooltip, Typography, message } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
-import { ContactForm } from './form';
 import { v4 } from 'uuid';
+import { ContactForm } from './form';
 type Props = {
   id: string;
   version: string;
   buttonType: string;
-  actionRef: React.MutableRefObject<ActionType | undefined>;
+  actionRef?: React.MutableRefObject<ActionType | undefined>;
   lang: string;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
   type?: 'edit' | 'copy' | 'createVersion';
@@ -83,7 +83,10 @@ const ContactEdit: FC<Props> = ({
         )
       ) : (
         <Button onClick={onEdit}>
-          <FormattedMessage id={buttonType.trim().length > 0 ? buttonType : 'pages.button.edit'} defaultMessage="Edit" />
+          <FormattedMessage
+            id={buttonType.trim().length > 0 ? buttonType : 'pages.button.edit'}
+            defaultMessage="Edit"
+          />
         </Button>
       )}
 
@@ -91,11 +94,13 @@ const ContactEdit: FC<Props> = ({
         title={
           type === 'edit' ? (
             <FormattedMessage id="pages.contact.drawer.title.edit" defaultMessage="Edit Contact" />
-          ) : 
-          type === 'copy' ? (
+          ) : type === 'copy' ? (
             <FormattedMessage id="pages.contact.drawer.title.copy" defaultMessage="Copy Contact" />
           ) : (
-            <FormattedMessage id="pages.contact.drawer.title.createVersion" defaultMessage="Create Version" />
+            <FormattedMessage
+              id="pages.contact.drawer.title.createVersion"
+              defaultMessage="Create Version"
+            />
           )
         }
         width="90%"
@@ -149,7 +154,7 @@ const ContactEdit: FC<Props> = ({
                   );
                   setDrawerVisible(false);
                   setViewDrawerVisible(false);
-                  actionRef.current?.reload();
+                  actionRef?.current?.reload();
                 } else {
                   if (createResult?.error?.code === '23505') {
                     message.error(
@@ -158,7 +163,7 @@ const ContactEdit: FC<Props> = ({
                         defaultMessage: 'Please change the version and submit',
                       }),
                     );
-                  }else{
+                  } else {
                     message.error(createResult?.error?.message);
                   }
                 }
@@ -175,7 +180,7 @@ const ContactEdit: FC<Props> = ({
                   );
                   setDrawerVisible(false);
                   setViewDrawerVisible(false);
-                  actionRef.current?.reload();
+                  actionRef?.current?.reload();
                 } else {
                   message.error(updateResult?.error?.message);
                 }

@@ -2,10 +2,10 @@ import { ListPagination } from '@/services/general/data';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Card } from 'antd';
 // import { SearchProps } from 'antd/es/input/Search';
-import type { FC } from 'react';
-import { useRef, useEffect } from 'react';
-import { FormattedMessage,  } from 'umi';
 import { getVersionsById } from '@/services/general/api';
+import type { FC } from 'react';
+import { useEffect, useRef } from 'react';
+import { FormattedMessage } from 'umi';
 // const { Search } = Input;
 
 interface AllVersionsListProps {
@@ -14,9 +14,9 @@ interface AllVersionsListProps {
 }
 
 const AllVersionsList: FC<AllVersionsListProps> = ({ searchTableName, id }) => {
-//   const intl = useIntl();
+  //   const intl = useIntl();
   const actionRef = useRef<ActionType>();
-//   const [keyWord, setKeyWord] = useState<any>('');
+  //   const [keyWord, setKeyWord] = useState<any>('');
 
   const versionColumns: ProColumns<any>[] = [
     {
@@ -32,22 +32,24 @@ const AllVersionsList: FC<AllVersionsListProps> = ({ searchTableName, id }) => {
       search: false,
     },
     {
-      title: <FormattedMessage id="component.allVersions.table.date" defaultMessage="Release Date" />,
+      title: (
+        <FormattedMessage id="component.allVersions.table.date" defaultMessage="Release Date" />
+      ),
       dataIndex: 'created_at',
       sorter: true,
       search: false,
       render: (text: any) => {
         const date = new Date(text);
         return date.toLocaleString();
-      }
+      },
     },
   ];
 
-//   const onSearch: SearchProps['onSearch'] = (value) => {
-//     setKeyWord(value);
-//     actionRef.current?.setPageInfo?.({ current: 1 });
-//     actionRef.current?.reload();
-//   };
+  //   const onSearch: SearchProps['onSearch'] = (value) => {
+  //     setKeyWord(value);
+  //     actionRef.current?.setPageInfo?.({ current: 1 });
+  //     actionRef.current?.reload();
+  //   };
 
   useEffect(() => {
     actionRef.current?.reload();
@@ -67,9 +69,9 @@ const AllVersionsList: FC<AllVersionsListProps> = ({ searchTableName, id }) => {
         <ProTable<any, ListPagination>
           rowKey="version"
           headerTitle={
-            <FormattedMessage 
-              id="component.allVersions.table.title" 
-              defaultMessage="All Versions" 
+            <FormattedMessage
+              id="component.allVersions.table.title"
+              defaultMessage="All Versions"
             />
           }
           actionRef={actionRef}
@@ -80,7 +82,7 @@ const AllVersionsList: FC<AllVersionsListProps> = ({ searchTableName, id }) => {
             pageSize: 10,
           }}
           request={async (params: { pageSize: number; current: number }, sort) => {
-            return getVersionsById(searchTableName,id,params,sort);
+            return getVersionsById(searchTableName, id, params, sort);
           }}
           columns={versionColumns}
         />

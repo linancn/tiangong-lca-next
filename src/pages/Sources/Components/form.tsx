@@ -9,10 +9,10 @@ import LevelTextItemForm from '@/components/LevelTextItem/form';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { ProFormInstance } from '@ant-design/pro-components';
+import { theme } from 'antd';
 import { RcFile } from 'antd/es/upload';
 import { FormattedMessage } from 'umi';
 import { publicationTypeOptions } from './optiondata';
-import { theme } from 'antd';
 type Props = {
   lang: string;
   activeTabKey: string;

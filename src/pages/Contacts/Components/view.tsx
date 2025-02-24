@@ -1,23 +1,23 @@
+import AllVersionsList from '@/components/AllVersions';
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 import { getContactDetail } from '@/services/contacts/api';
 import { genContactFromData } from '@/services/contacts/util';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
-import { Button, Card, Descriptions, Divider, Drawer, Modal, Space, Spin, Tooltip } from 'antd';
 import type { ActionType } from '@ant-design/pro-table';
+import { Button, Card, Descriptions, Divider, Drawer, Modal, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
-import ContractDescription from './select/description';
 import ContactEdit from './edit';
-import AllVersionsList from '@/components/AllVersions';
+import ContractDescription from './select/description';
 type Props = {
   id: string;
   version: string;
   lang: string;
   buttonType: string;
-  actionRef: React.MutableRefObject<ActionType | undefined>;
+  actionRef?: React.MutableRefObject<ActionType | undefined>;
 };
 const ContactView: FC<Props> = ({ id, version, lang, buttonType, actionRef }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -217,9 +217,9 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType, actionRef }) =>
               labelStyle={{ width: '160px' }}
             >
               <Space>
-              {initData.administrativeInformation?.publicationAndOwnership?.[
-                'common:dataSetVersion'
-              ] ?? '-'}
+                {initData.administrativeInformation?.publicationAndOwnership?.[
+                  'common:dataSetVersion'
+                ] ?? '-'}
                 <ContactEdit
                   type="createVersion"
                   id={id}

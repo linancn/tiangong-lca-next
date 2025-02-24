@@ -1,6 +1,10 @@
-import { getFlowpropertyDetail, updateFlowproperties, createFlowproperties } from '@/services/flowproperties/api';
+import {
+  createFlowproperties,
+  getFlowpropertyDetail,
+  updateFlowproperties,
+} from '@/services/flowproperties/api';
 import styles from '@/style/custom.less';
-import { CloseOutlined, FormOutlined, CopyOutlined } from '@ant-design/icons';
+import { CloseOutlined, CopyOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 
 import {
@@ -25,18 +29,25 @@ import {
 import { FormattedMessage, useIntl } from 'umi';
 
 import { genFlowpropertyFromData } from '@/services/flowproperties/util';
-import { FlowpropertyForm } from './form';
 import { v4 } from 'uuid';
+import { FlowpropertyForm } from './form';
 
 type Props = {
   id: string;
   version: string;
   buttonType: string;
-  actionRef: React.MutableRefObject<ActionType | undefined>;
+  actionRef?: React.MutableRefObject<ActionType | undefined>;
   lang: string;
   type?: 'edit' | 'copy' | 'createVersion';
 };
-const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang, type = 'edit' }) => {
+const FlowpropertiesEdit: FC<Props> = ({
+  id,
+  version,
+  buttonType,
+  actionRef,
+  lang,
+  type = 'edit',
+}) => {
   const formRefEdit = useRef<ProFormInstance>();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('flowPropertiesInformation');
@@ -90,7 +101,14 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id={type === 'copy' ? 'pages.button.copy' : 'pages.button.edit'} defaultMessage={type === 'copy' ? 'Copy' : 'Edit'} />}>
+      <Tooltip
+        title={
+          <FormattedMessage
+            id={type === 'copy' ? 'pages.button.copy' : 'pages.button.edit'}
+            defaultMessage={type === 'copy' ? 'Copy' : 'Edit'}
+          />
+        }
+      >
         {buttonType === 'icon' ? (
           type === 'edit' ? (
             <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
@@ -99,7 +117,10 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
           )
         ) : (
           <Button onClick={onEdit}>
-            <FormattedMessage id={buttonType?buttonType:"pages.button.edit"} defaultMessage="Edit" />
+            <FormattedMessage
+              id={buttonType ? buttonType : 'pages.button.edit'}
+              defaultMessage="Edit"
+            />
           </Button>
         )}
       </Tooltip>
@@ -161,7 +182,10 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
             }}
             onFinish={async () => {
               if (type === 'copy' || type === 'createVersion') {
-                const createResult = await createFlowproperties(type === 'copy' ? v4() : id, fromData);
+                const createResult = await createFlowproperties(
+                  type === 'copy' ? v4() : id,
+                  fromData,
+                );
                 if (createResult?.data) {
                   message.success(
                     intl.formatMessage({
@@ -171,7 +195,7 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
                   );
                   setDrawerVisible(false);
                   setActiveTabKey('flowPropertiesInformation');
-                  actionRef.current?.reload();
+                  actionRef?.current?.reload();
                 } else if (createResult?.error?.code === '23505') {
                   message.error(
                     intl.formatMessage({
@@ -184,7 +208,7 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
                 }
                 return true;
               }
-              
+
               const updateResult = await updateFlowproperties(id, version, fromData);
               if (updateResult?.data) {
                 message.success(
@@ -196,7 +220,7 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
                 setDrawerVisible(false);
                 // setViewDrawerVisible(false);
                 setActiveTabKey('flowPropertiesInformation');
-                actionRef.current?.reload();
+                actionRef?.current?.reload();
               } else {
                 message.error(updateResult?.error?.message);
               }

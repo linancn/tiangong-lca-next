@@ -1,21 +1,21 @@
 import { createFlows, getFlowDetail, updateFlows } from '@/services/flows/api';
 import { genFlowFromData } from '@/services/flows/util';
 import styles from '@/style/custom.less';
-import { CloseOutlined, FormOutlined, CopyOutlined } from '@ant-design/icons';
+import { CloseOutlined, CopyOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { Button, Collapse, Drawer, Space, Spin, Tooltip, Typography, message } from 'antd';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
-import { FlowForm } from './form';
 import { v4 } from 'uuid';
+import { FlowForm } from './form';
 
 type Props = {
   id: string;
   version: string;
   buttonType: string;
   lang: string;
-  actionRef: React.MutableRefObject<ActionType | undefined>;
+  actionRef?: React.MutableRefObject<ActionType | undefined>;
   type?: 'edit' | 'copy' | 'createVersion';
 };
 const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang, type = 'edit' }) => {
@@ -90,7 +90,14 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang, type =
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id={type === 'copy' ? 'pages.button.copy' : 'pages.button.edit'} defaultMessage={type === 'copy' ? 'Copy' : 'Edit'} />}>
+      <Tooltip
+        title={
+          <FormattedMessage
+            id={type === 'copy' ? 'pages.button.copy' : 'pages.button.edit'}
+            defaultMessage={type === 'copy' ? 'Copy' : 'Edit'}
+          />
+        }
+      >
         {buttonType === 'icon' ? (
           type === 'edit' ? (
             <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
@@ -99,12 +106,28 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang, type =
           )
         ) : (
           <Button onClick={onEdit}>
-            <FormattedMessage id={buttonType?buttonType:"pages.button.edit"} defaultMessage="Edit" />
+            <FormattedMessage
+              id={buttonType ? buttonType : 'pages.button.edit'}
+              defaultMessage="Edit"
+            />
           </Button>
         )}
       </Tooltip>
       <Drawer
-        title={<FormattedMessage id={type === 'copy' ? 'pages.button.copy' : type === 'createVersion' ? 'pages.button.createVersion' : 'pages.button.edit'} defaultMessage={type === 'copy' ? 'Copy' : type === 'createVersion' ? 'Create Version' : 'Edit'} />}
+        title={
+          <FormattedMessage
+            id={
+              type === 'copy'
+                ? 'pages.button.copy'
+                : type === 'createVersion'
+                  ? 'pages.button.createVersion'
+                  : 'pages.button.edit'
+            }
+            defaultMessage={
+              type === 'copy' ? 'Copy' : type === 'createVersion' ? 'Create Version' : 'Edit'
+            }
+          />
+        }
         width="90%"
         closable={false}
         extra={
@@ -143,7 +166,7 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang, type =
               },
             }}
             onFinish={async () => {
-              if(type === 'copy' || type === 'createVersion') {
+              if (type === 'copy' || type === 'createVersion') {
                 setSpinning(true);
                 const createResult = await createFlows(type === 'copy' ? v4() : id, fromData);
                 if (createResult?.data) {
@@ -155,7 +178,7 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang, type =
                   );
                   setDrawerVisible(false);
                   setActiveTabKey('flowInformation');
-                  actionRef.current?.reload();
+                  actionRef?.current?.reload();
                 } else if (createResult?.error?.code === '23505') {
                   message.error(
                     intl.formatMessage({
@@ -179,7 +202,7 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang, type =
                 );
                 setDrawerVisible(false);
                 setActiveTabKey('flowInformation');
-                actionRef.current?.reload();
+                actionRef?.current?.reload();
               } else {
                 message.error(updateResult?.error?.message);
               }

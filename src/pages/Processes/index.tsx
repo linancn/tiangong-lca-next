@@ -161,14 +161,14 @@ const TableList: FC = () => {
               actionRef={actionRef}
             />
             <ProcessEdit
-                type="copy"
-                id={row.id}
-                version={row.version}
-                lang={lang}
-                buttonType={'icon'}
-                actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
-              />
+              type="copy"
+              id={row.id}
+              version={row.version}
+              lang={lang}
+              buttonType={'icon'}
+              actionRef={actionRef}
+              setViewDrawerVisible={() => {}}
+            />
           </Space>,
         ];
       },

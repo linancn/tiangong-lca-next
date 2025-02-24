@@ -1,8 +1,7 @@
 import { supabase } from '@/services/supabase';
 import { message } from 'antd';
-import { getLocale } from 'umi';
 import { SortOrder } from 'antd/lib/table/interface';
-
+import { getLocale } from 'umi';
 
 export async function getDataDetail(id: string, version: string, table: string) {
   let result: any = {};
@@ -89,13 +88,16 @@ export async function contributeSource(tableName: string, id: string, version: s
   };
 }
 
-export async function getVersionsById(tableName: string, id: string, params: { pageSize: number; current: number },
-  sort: Record<string, SortOrder>,) {
-
+export async function getVersionsById(
+  tableName: string,
+  id: string,
+  params: { pageSize: number; current: number },
+  sort: Record<string, SortOrder>,
+) {
   const sortBy = Object.keys(sort)[0] ?? 'created_at';
   const orderBy = sort[sortBy] ?? 'descend';
 
-  const {error,data,count} = await supabase
+  const { error, data, count } = await supabase
     .from(tableName)
     .select('version, created_at, modified_at', { count: 'exact' })
     .eq('id', id)
@@ -104,18 +106,17 @@ export async function getVersionsById(tableName: string, id: string, params: { p
       ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
       (params.current ?? 1) * (params.pageSize ?? 10) - 1,
     );
-    if(!error){
-      return Promise.resolve({
-        data: data ?? [],
-        success: true,
-        total: count ?? 0,
-      });
-    }else{
-      return Promise.resolve({
-        data: [],
-        success: false,
-        total: 0,
-      });
-    }
-
+  if (!error) {
+    return Promise.resolve({
+      data: data ?? [],
+      success: true,
+      total: count ?? 0,
+    });
+  } else {
+    return Promise.resolve({
+      data: [],
+      success: false,
+      total: 0,
+    });
+  }
 }

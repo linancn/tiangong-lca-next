@@ -1,3 +1,4 @@
+import AllVersionsList from '@/components/AllVersions';
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
@@ -8,20 +9,19 @@ import { genUnitGroupFromData, genUnitTableData } from '@/services/unitgroups/ut
 import { CheckCircleOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import type { ActionType } from '@ant-design/pro-table';
-import { Button, Card, Descriptions, Divider, Drawer, Modal, Spin, Tooltip, Space } from 'antd';
+import { Button, Card, Descriptions, Divider, Drawer, Modal, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import UnitView from './Unit/view';
-import { complianceOptions } from './optiondata';
 import UnitGroupEdit from './edit';
-import AllVersionsList from '@/components/AllVersions';
+import { complianceOptions } from './optiondata';
 type Props = {
   id: string;
   version: string;
   lang: string;
   buttonType: string;
-  actionRef: React.MutableRefObject<ActionType | undefined>;
+  actionRef?: React.MutableRefObject<ActionType | undefined>;
 };
 
 const getComplianceLabel = (value: string) => {
@@ -292,10 +292,10 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType, actionRef }) =>
             labelStyle={{ width: '140px' }}
           >
             <Space>
-            {initData.administrativeInformation?.publicationAndOwnership?.[
-              'common:dataSetVersion'
-            ] ?? '-'}
-            <UnitGroupEdit
+              {initData.administrativeInformation?.publicationAndOwnership?.[
+                'common:dataSetVersion'
+              ] ?? '-'}
+              <UnitGroupEdit
                 type="createVersion"
                 id={id}
                 version={version}

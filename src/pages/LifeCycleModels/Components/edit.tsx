@@ -1,4 +1,4 @@
-import { CloseOutlined, FormOutlined, CopyOutlined } from '@ant-design/icons';
+import { CloseOutlined, CopyOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
 import { Grid, Transform, XFlow, XFlowGraph } from '@antv/xflow';
 import { Button, Drawer, Layout, theme, Tooltip } from 'antd';
@@ -15,7 +15,14 @@ type Props = {
   actionRef: React.MutableRefObject<ActionType | undefined>;
   type?: 'edit' | 'copy';
 };
-const LifeCycleModelEdit: FC<Props> = ({ id, version, buttonType, lang, actionRef, type = 'edit' }) => {
+const LifeCycleModelEdit: FC<Props> = ({
+  id,
+  version,
+  buttonType,
+  lang,
+  actionRef,
+  type = 'edit',
+}) => {
   const [isSave, setIsSave] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
 
@@ -67,7 +74,14 @@ const LifeCycleModelEdit: FC<Props> = ({ id, version, buttonType, lang, actionRe
       )}
       <Drawer
         title={
-          <FormattedMessage id={type === 'copy' ? 'pages.flow.model.drawer.title.copy' : 'pages.flow.model.drawer.title.edit'} defaultMessage={type === 'copy' ? 'Copy Model' : 'Edit Model'} />
+          <FormattedMessage
+            id={
+              type === 'copy'
+                ? 'pages.flow.model.drawer.title.copy'
+                : 'pages.flow.model.drawer.title.edit'
+            }
+            defaultMessage={type === 'copy' ? 'Copy Model' : 'Edit Model'}
+          />
         }
         width="100%"
         closable={false}

@@ -1,3 +1,4 @@
+import AllVersionsList from '@/components/AllVersions';
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import LocationTextItemDescription from '@/components/LocationTextItem/description';
@@ -17,10 +18,22 @@ import {
 } from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import type { ActionType } from '@ant-design/pro-table';
-import { Button, Card, Collapse, Descriptions, Divider, Drawer, Modal,  Space, Spin, Tooltip } from 'antd';
+import {
+  Button,
+  Card,
+  Collapse,
+  Descriptions,
+  Divider,
+  Drawer,
+  Modal,
+  Space,
+  Spin,
+  Tooltip,
+} from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
+import ProcessEdit from './edit';
 import ProcessExchangeView from './Exchange/view';
 import {
   copyrightOptions,
@@ -30,8 +43,6 @@ import {
   processtypeOfDataSetOptions,
   reviewTypeOptions,
 } from './optiondata';
-import ProcessEdit from './edit';   
-import AllVersionsList from '@/components/AllVersions';
 type Props = {
   id: string;
   version: string;
@@ -949,19 +960,19 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled, actio
               labelStyle={{ width: '180px' }}
             >
               <Space>
-              {initData.administrativeInformation?.publicationAndOwnership?.[
-                'common:dataSetVersion'
-              ] ?? '-'}
-              <ProcessEdit
-                type="createVersion"
-                id={id}
-                version={version}
-                lang={lang}
-                buttonType={'pages.button.createVersion'}
-                actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
-              />
-              <Button onClick={() => setShowAllVersionsModal(true)}>
+                {initData.administrativeInformation?.publicationAndOwnership?.[
+                  'common:dataSetVersion'
+                ] ?? '-'}
+                <ProcessEdit
+                  type="createVersion"
+                  id={id}
+                  version={version}
+                  lang={lang}
+                  buttonType={'pages.button.createVersion'}
+                  actionRef={actionRef}
+                  setViewDrawerVisible={() => {}}
+                />
+                <Button onClick={() => setShowAllVersionsModal(true)}>
                   <FormattedMessage id="pages.button.allVersion" defaultMessage="All version" />
                 </Button>
                 <Modal

@@ -89,7 +89,13 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <SourceView actionRef={actionRef} lang={lang} id={row.id} version={row.version} buttonType={'icon'} />
+              <SourceView
+                actionRef={actionRef}
+                lang={lang}
+                id={row.id}
+                version={row.version}
+                buttonType={'icon'}
+              />
               <SourceEdit
                 id={row.id}
                 version={row.version}
@@ -136,16 +142,22 @@ const TableList: FC = () => {
         }
         return [
           <Space size={'small'} key={0}>
-            <SourceView actionRef={actionRef} lang={lang} id={row.id} version={row.version} buttonType={'icon'} />
+            <SourceView
+              actionRef={actionRef}
+              lang={lang}
+              id={row.id}
+              version={row.version}
+              buttonType={'icon'}
+            />
             <SourceEdit
-                type="copy"
-                id={row.id}
-                version={row.version}
-                lang={lang}
-                buttonType={'icon'}
-                actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
-              />
+              type="copy"
+              id={row.id}
+              version={row.version}
+              lang={lang}
+              buttonType={'icon'}
+              actionRef={actionRef}
+              setViewDrawerVisible={() => {}}
+            />
           </Space>,
         ];
       },

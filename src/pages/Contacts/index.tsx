@@ -155,7 +155,7 @@ const TableList: FC = () => {
               buttonType={'icon'}
               actionRef={actionRef}
               setViewDrawerVisible={() => {}}
-              />
+            />
           </Space>,
         ];
       },

@@ -731,7 +731,7 @@ const ToolbarEdit: FC<Props> = ({
     };
 
     if (thisAction === 'edit') {
-      if(type === 'copy') {
+      if (type === 'copy') {
         const newId = v4();
         createLifeCycleModel({ ...newData, id: newId }).then((result: any) => {
           if (result.data) {

@@ -138,13 +138,13 @@ const TableList: FC = () => {
           <Space size={'small'} key={0}>
             <LifeCycleModelView id={row.id} version={row.version} lang={lang} buttonType={'icon'} />
             <LifeCycleModelEdit
-                type="copy"
-                id={row.id}
-                version={row.version}
-                lang={lang}
-                actionRef={actionRef}
-                buttonType={'icon'}
-              />
+              type="copy"
+              id={row.id}
+              version={row.version}
+              lang={lang}
+              actionRef={actionRef}
+              buttonType={'icon'}
+            />
           </Space>,
         ];
       },

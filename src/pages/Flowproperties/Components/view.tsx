@@ -1,3 +1,4 @@
+import AllVersionsList from '@/components/AllVersions';
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import SourcesDescription from '@/pages/Sources/Components/select/description';
@@ -5,19 +6,18 @@ import UnitGroupDescription from '@/pages/Unitgroups/Components/select/descripti
 import { getFlowpropertyDetail } from '@/services/flowproperties/api';
 import { genFlowpropertyFromData } from '@/services/flowproperties/util';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
-import { Button, Card, Descriptions, Divider, Drawer, Modal, Spin, Tooltip, Space } from 'antd';
+import type { ActionType } from '@ant-design/pro-table';
+import { Button, Card, Descriptions, Divider, Drawer, Modal, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
+import FlowpropertiesEdit from './edit';
 import { complianceOptions } from './optiondata';
 import FlowpropertiesSelectDescription from './select/description';
-import type { ActionType } from '@ant-design/pro-table';
-import AllVersionsList from '@/components/AllVersions';
-import FlowpropertiesEdit from './edit';
 type Props = {
   id: string;
   version: string;
-  actionRef: React.MutableRefObject<ActionType | undefined>;
+  actionRef?: React.MutableRefObject<ActionType | undefined>;
   buttonType: string;
   lang: string;
 };
@@ -227,28 +227,28 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang, actionRef 
               labelStyle={{ width: '140px' }}
             >
               <Space>
-              {initData?.administrativeInformation?.publicationAndOwnership?.[
-                'common:dataSetVersion'
-              ] ?? '-'}
-              <FlowpropertiesEdit
-                type="createVersion"
-                id={id}
-                version={version}
-                lang={lang}
-                buttonType={'pages.button.createVersion'}
-                actionRef={actionRef}
-              />
-              <Button onClick={() => setShowAllVersionsModal(true)}>
-                <FormattedMessage id="pages.button.allVersion" defaultMessage="All version" />
-              </Button>
-              <Modal
-                width={'90%'}
-                open={showAllVersionsModal}
-                onCancel={() => setShowAllVersionsModal(false)}
-                footer={null}
-              >
-                <AllVersionsList searchTableName="flowproperties" id={id} />
-              </Modal>
+                {initData?.administrativeInformation?.publicationAndOwnership?.[
+                  'common:dataSetVersion'
+                ] ?? '-'}
+                <FlowpropertiesEdit
+                  type="createVersion"
+                  id={id}
+                  version={version}
+                  lang={lang}
+                  buttonType={'pages.button.createVersion'}
+                  actionRef={actionRef}
+                />
+                <Button onClick={() => setShowAllVersionsModal(true)}>
+                  <FormattedMessage id="pages.button.allVersion" defaultMessage="All version" />
+                </Button>
+                <Modal
+                  width={'90%'}
+                  open={showAllVersionsModal}
+                  onCancel={() => setShowAllVersionsModal(false)}
+                  footer={null}
+                >
+                  <AllVersionsList searchTableName="flowproperties" id={id} />
+                </Modal>
               </Space>
             </Descriptions.Item>
           </Descriptions>

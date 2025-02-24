@@ -1,5 +1,6 @@
 import component from './en-US/component';
 import component_allTeams from './en-US/component_allTeams';
+import component_allVersions from './en-US/component_allVersions';
 import component_contributeData from './en-US/component_contributeData';
 import globalHeader from './en-US/globalHeader';
 import menu from './en-US/menu';
@@ -19,7 +20,6 @@ import pwa from './en-US/pwa';
 import settingDrawer from './en-US/settingDrawer';
 import settings from './en-US/settings';
 import validator from './en-US/validator';
-import component_allVersions from './en-US/component_allVersions';
 
 export default {
   'navBar.lang': 'Languages',

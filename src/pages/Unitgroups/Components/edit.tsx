@@ -1,22 +1,22 @@
-import { getUnitGroupDetail, updateUnitGroup, createUnitGroup } from '@/services/unitgroups/api';
+import { createUnitGroup, getUnitGroupDetail, updateUnitGroup } from '@/services/unitgroups/api';
 import { UnitTable } from '@/services/unitgroups/data';
 import { genUnitGroupFromData } from '@/services/unitgroups/util';
 import styles from '@/style/custom.less';
-import { CloseOutlined, FormOutlined, CopyOutlined } from '@ant-design/icons';
+import { CloseOutlined, CopyOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { Button, Collapse, Drawer, Space, Spin, Tooltip, Typography, message } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
-import { UnitGroupForm } from './form';
 import { v4 } from 'uuid';
+import { UnitGroupForm } from './form';
 
 type Props = {
   id: string;
   version: string;
   buttonType: string;
   lang: string;
-  actionRef: React.MutableRefObject<ActionType | undefined>;
+  actionRef?: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
   type?: 'edit' | 'copy' | 'createVersion';
 };
@@ -104,28 +104,41 @@ const UnitGroupEdit: FC<Props> = ({
     <>
       {buttonType === 'icon' ? (
         type === 'edit' ? (
-        <Tooltip
-          title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit"></FormattedMessage>}
-        >
+          <Tooltip
+            title={
+              <FormattedMessage id="pages.button.edit" defaultMessage="Edit"></FormattedMessage>
+            }
+          >
             <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit}></Button>
           </Tooltip>
         ) : (
           <Tooltip
-            title={<FormattedMessage id="pages.button.copy" defaultMessage="Copy"></FormattedMessage>}
+            title={
+              <FormattedMessage id="pages.button.copy" defaultMessage="Copy"></FormattedMessage>
+            }
           >
             <Button shape="circle" icon={<CopyOutlined />} size="small" onClick={onEdit}></Button>
           </Tooltip>
         )
       ) : (
         <Button size="small" onClick={onEdit}>
-          <FormattedMessage id={buttonType?buttonType:"pages.button.edit"} defaultMessage="Edit"></FormattedMessage>
+          <FormattedMessage
+            id={buttonType ? buttonType : 'pages.button.edit'}
+            defaultMessage="Edit"
+          ></FormattedMessage>
         </Button>
       )}
 
       <Drawer
         title={
           <FormattedMessage
-            id={type === 'createVersion' ? "pages.unitgroup.drawer.title.createVersion" :type === 'copy' ? "pages.unitgroup.drawer.title.copy" : "pages.unitgroup.drawer.title.edit"}
+            id={
+              type === 'createVersion'
+                ? 'pages.unitgroup.drawer.title.createVersion'
+                : type === 'copy'
+                  ? 'pages.unitgroup.drawer.title.copy'
+                  : 'pages.unitgroup.drawer.title.edit'
+            }
             defaultMessage="Edit"
           ></FormattedMessage>
         }
@@ -193,19 +206,19 @@ const UnitGroupEdit: FC<Props> = ({
                   setDrawerVisible(false);
                   setViewDrawerVisible(false);
                   setActiveTabKey('unitGroupInformation');
-                  actionRef.current?.reload();
-                }else if (createResult?.error?.code === '23505') {
+                  actionRef?.current?.reload();
+                } else if (createResult?.error?.code === '23505') {
                   message.error(
                     intl.formatMessage({
                       id: 'pages.button.createVersion.fail',
                       defaultMessage: 'Please change the version and submit',
                     }),
                   );
-                }else{
+                } else {
                   message.error(createResult?.error?.message);
                 }
                 return true;
-              };
+              }
               const updateResult = await updateUnitGroup(id, version, fromData);
               if (updateResult?.data) {
                 message.success(
@@ -217,7 +230,7 @@ const UnitGroupEdit: FC<Props> = ({
                 setDrawerVisible(false);
                 setViewDrawerVisible(false);
                 setActiveTabKey('unitGroupInformation');
-                actionRef.current?.reload();
+                actionRef?.current?.reload();
               } else {
                 message.error(updateResult?.error?.message);
               }

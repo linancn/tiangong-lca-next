@@ -1,9 +1,9 @@
-import { getSourceDetail, updateSource, createSource } from '@/services/sources/api';
+import { createSource, getSourceDetail, updateSource } from '@/services/sources/api';
 import { genSourceFromData } from '@/services/sources/util';
 import { supabaseStorageBucket } from '@/services/supabase/key';
 import { getThumbFileUrls, removeFile, uploadFile } from '@/services/supabase/storage';
 import styles from '@/style/custom.less';
-import { CloseOutlined, FormOutlined, CopyOutlined } from '@ant-design/icons';
+import { CloseOutlined, CopyOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { Button, Collapse, Drawer, Space, Spin, Tooltip, Typography, message } from 'antd';
 import path from 'path';
@@ -18,7 +18,7 @@ type Props = {
   version: string;
   lang: string;
   buttonType: string;
-  actionRef: React.MutableRefObject<ActionType | undefined>;
+  actionRef?: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
   type?: 'edit' | 'copy' | 'createVersion';
 };
@@ -52,7 +52,7 @@ const SourceEdit: FC<Props> = ({
   };
 
   const reload = useCallback(() => {
-    actionRef.current?.reload();
+    actionRef?.current?.reload();
   }, [actionRef]);
 
   const onTabChange = (key: string) => {
@@ -133,14 +133,14 @@ const SourceEdit: FC<Props> = ({
         formRefEdit.current?.resetFields();
         setDrawerVisible(false);
         reload();
-      }else if (createResult?.error?.code === '23505') {
+      } else if (createResult?.error?.code === '23505') {
         message.error(
           intl.formatMessage({
             id: 'pages.button.createVersion.fail',
             defaultMessage: 'Please change the version and submit',
           }),
         );
-      }else{
+      } else {
         message.error(createResult?.error?.message);
       }
       setSpinning(false);
@@ -197,13 +197,20 @@ const SourceEdit: FC<Props> = ({
             <Button shape="circle" icon={<CopyOutlined />} size="small" onClick={onEdit} />
           </Tooltip>
         ) : (
-          <Tooltip title={<FormattedMessage id="pages.button.createVersion" defaultMessage="Create Version" />}>
+          <Tooltip
+            title={
+              <FormattedMessage id="pages.button.createVersion" defaultMessage="Create Version" />
+            }
+          >
             <Button shape="circle" icon={<CopyOutlined />} size="small" onClick={onEdit} />
           </Tooltip>
         )
       ) : (
         <Button onClick={onEdit}>
-          <FormattedMessage id={buttonType?buttonType:"pages.button.edit"} defaultMessage="Edit" />
+          <FormattedMessage
+            id={buttonType ? buttonType : 'pages.button.edit'}
+            defaultMessage="Edit"
+          />
         </Button>
       )}
 
@@ -214,7 +221,10 @@ const SourceEdit: FC<Props> = ({
           ) : type === 'copy' ? (
             <FormattedMessage id="pages.source.drawer.title.copy" defaultMessage="Copy Source" />
           ) : (
-            <FormattedMessage id="pages.source.drawer.title.createVersion" defaultMessage="Create Version" />
+            <FormattedMessage
+              id="pages.source.drawer.title.createVersion"
+              defaultMessage="Create Version"
+            />
           )
         }
         width="90%"
