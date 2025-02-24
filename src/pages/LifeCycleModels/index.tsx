@@ -91,6 +91,7 @@ const TableList: FC = () => {
                 version={row.version}
                 lang={lang}
                 buttonType={'icon'}
+                actionRef={actionRef}
               />
               <LifeCycleModelEdit
                 id={row.id}

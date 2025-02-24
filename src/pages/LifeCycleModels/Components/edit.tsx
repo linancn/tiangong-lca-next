@@ -12,8 +12,8 @@ type Props = {
   version: string | undefined;
   buttonType: string;
   lang: string;
-  actionRef: React.MutableRefObject<ActionType | undefined>;
-  type?: 'edit' | 'copy';
+  actionRef?: React.MutableRefObject<ActionType | undefined>;
+  type?: 'edit' | 'copy' | 'createVersion';
 };
 const LifeCycleModelEdit: FC<Props> = ({
   id,
@@ -52,7 +52,7 @@ const LifeCycleModelEdit: FC<Props> = ({
   };
 
   const reload = useCallback(() => {
-    actionRef.current?.reload();
+    actionRef?.current?.reload();
   }, [actionRef]);
 
   return (
@@ -69,7 +69,7 @@ const LifeCycleModelEdit: FC<Props> = ({
         )
       ) : (
         <Button onClick={onEdit}>
-          <FormattedMessage id="pages.button.edit" defaultMessage="Edit" />
+          <FormattedMessage id={buttonType?buttonType:"pages.button.edit"} defaultMessage="Edit" />
         </Button>
       )}
       <Drawer
@@ -78,9 +78,11 @@ const LifeCycleModelEdit: FC<Props> = ({
             id={
               type === 'copy'
                 ? 'pages.flow.model.drawer.title.copy'
+                : type === 'createVersion'
+                ? 'pages.flow.model.drawer.title.createVersion'
                 : 'pages.flow.model.drawer.title.edit'
             }
-            defaultMessage={type === 'copy' ? 'Copy Model' : 'Edit Model'}
+            defaultMessage={type === 'copy' ? 'Copy Model' : type === 'createVersion' ? 'Create Version' : 'Edit Model'}
           />
         }
         width="100%"

@@ -36,7 +36,7 @@ type Props = {
   isSave: boolean;
   action: string;
   setIsSave: (isSave: boolean) => void;
-  type?: 'edit' | 'copy';
+  type?: 'edit' | 'copy' | 'createVersion';
 };
 
 const ToolbarEdit: FC<Props> = ({
@@ -731,9 +731,9 @@ const ToolbarEdit: FC<Props> = ({
     };
 
     if (thisAction === 'edit') {
-      if (type === 'copy') {
+      if (type === 'copy' || type === 'createVersion') {
         const newId = v4();
-        createLifeCycleModel({ ...newData, id: newId }).then((result: any) => {
+        createLifeCycleModel({ ...newData, id:type === 'copy' ?newId: thisId}).then((result: any) => {
           if (result.data) {
             message.success(
               intl.formatMessage({
@@ -745,6 +745,13 @@ const ToolbarEdit: FC<Props> = ({
             setThisId(result.data?.[0]?.id);
             setThisVersion(result.data?.[0]?.version);
             saveCallback();
+          } else if (result?.error?.code === '23505') {
+            message.error(
+              intl.formatMessage({
+                id: 'pages.button.createVersion.fail',
+                defaultMessage: 'Please change the version and submit',
+              }),
+            );
           } else {
             message.error(result.error.message);
           }

@@ -5,14 +5,15 @@ import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import ToolbarView from './toolbar/viewIndex';
-
+import type { ActionType } from '@ant-design/pro-table';
 type Props = {
   id: string;
   version: string;
   buttonType: string;
   lang: string;
+  actionRef?: React.MutableRefObject<ActionType | undefined>;
 };
-const LifeCycleModelView: FC<Props> = ({ id, version, buttonType, lang }) => {
+const LifeCycleModelView: FC<Props> = ({ id, version, buttonType, lang, actionRef }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const { token } = theme.useToken();
 
@@ -98,7 +99,7 @@ const LifeCycleModelView: FC<Props> = ({ id, version, buttonType, lang }) => {
               </Content>
             </Layout>
             <Sider width="50px" style={siderStyle}>
-              <ToolbarView id={id} version={version} lang={lang} drawerVisible={drawerVisible} />
+              <ToolbarView id={id} version={version} lang={lang} drawerVisible={drawerVisible} actionRef={actionRef} />
             </Sider>
           </Layout>
         </XFlow>

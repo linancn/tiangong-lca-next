@@ -17,15 +17,16 @@ import EdgeExhange from './Exchange/index';
 import IoPortView from './Exchange/ioPortView';
 import ToolbarViewInfo from './viewInfo';
 import TargetAmount from './viewTargetAmount';
-
+import type { ActionType } from '@ant-design/pro-table';
 type Props = {
   id: string;
   version: string;
   lang: string;
   drawerVisible: boolean;
+  actionRef?: React.MutableRefObject<ActionType | undefined>;
 };
 
-const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
+const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible, actionRef }) => {
   const [spinning, setSpinning] = useState(false);
   const [infoData, setInfoData] = useState<any>({});
 
@@ -386,7 +387,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
 
   return (
     <Space direction="vertical" size={'middle'}>
-      <ToolbarViewInfo lang={lang} data={infoData} />
+      <ToolbarViewInfo actionRef={actionRef} id={id} version={version} lang={lang} data={infoData} />
       <ProcessView
         id={nodes.find((node) => node.selected)?.data?.id ?? ''}
         version={nodes.find((node) => node.selected)?.data?.version ?? ''}
