@@ -1,4 +1,4 @@
-import { CloseOutlined, FormOutlined } from '@ant-design/icons';
+import { CloseOutlined, CopyOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
 import { Grid, Transform, XFlow, XFlowGraph } from '@antv/xflow';
 import { Button, Drawer, Layout, theme, Tooltip } from 'antd';
@@ -12,9 +12,17 @@ type Props = {
   version: string | undefined;
   buttonType: string;
   lang: string;
-  actionRef: React.MutableRefObject<ActionType | undefined>;
+  actionRef?: React.MutableRefObject<ActionType | undefined>;
+  type?: 'edit' | 'copy' | 'createVersion';
 };
-const LifeCycleModelEdit: FC<Props> = ({ id, version, buttonType, lang, actionRef }) => {
+const LifeCycleModelEdit: FC<Props> = ({
+  id,
+  version,
+  buttonType,
+  lang,
+  actionRef,
+  type = 'edit',
+}) => {
   const [isSave, setIsSave] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
 
@@ -44,23 +52,47 @@ const LifeCycleModelEdit: FC<Props> = ({ id, version, buttonType, lang, actionRe
   };
 
   const reload = useCallback(() => {
-    actionRef.current?.reload();
+    actionRef?.current?.reload();
   }, [actionRef]);
 
   return (
     <>
       {buttonType === 'icon' ? (
-        <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
-          <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
-        </Tooltip>
+        type === 'edit' ? (
+          <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
+            <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
+          </Tooltip>
+        ) : (
+          <Tooltip title={<FormattedMessage id="pages.button.copy" defaultMessage="Copy" />}>
+            <Button shape="circle" icon={<CopyOutlined />} size="small" onClick={onEdit} />
+          </Tooltip>
+        )
       ) : (
         <Button onClick={onEdit}>
-          <FormattedMessage id="pages.button.edit" defaultMessage="Edit" />
+          <FormattedMessage
+            id={buttonType ? buttonType : 'pages.button.edit'}
+            defaultMessage="Edit"
+          />
         </Button>
       )}
       <Drawer
         title={
-          <FormattedMessage id="pages.flow.model.drawer.title.edit" defaultMessage="Edit Model" />
+          <FormattedMessage
+            id={
+              type === 'copy'
+                ? 'pages.flow.model.drawer.title.copy'
+                : type === 'createVersion'
+                  ? 'pages.flow.model.drawer.title.createVersion'
+                  : 'pages.flow.model.drawer.title.edit'
+            }
+            defaultMessage={
+              type === 'copy'
+                ? 'Copy Model'
+                : type === 'createVersion'
+                  ? 'Create Version'
+                  : 'Edit Model'
+            }
+          />
         }
         width="100%"
         closable={false}
@@ -116,6 +148,7 @@ const LifeCycleModelEdit: FC<Props> = ({ id, version, buttonType, lang, actionRe
             </Layout>
             <Sider width="50px" style={siderStyle}>
               <ToolbarEdit
+                type={type}
                 id={id ?? ''}
                 version={version ?? ''}
                 lang={lang}

@@ -7,7 +7,7 @@ import { UnitTable } from '@/services/unitgroups/data';
 import { genUnitTableData } from '@/services/unitgroups/util';
 import { CheckCircleOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
-import { Card, Form, Input, Select, Space } from 'antd';
+import { Card, Form, Input, Select, Space, theme } from 'antd';
 import { FC, useRef } from 'react';
 import { FormattedMessage } from 'umi';
 import UnitCreate from './Unit/create';
@@ -37,6 +37,7 @@ export const UnitGroupForm: FC<Props> = ({
   onTabChange,
   unitDataSource,
 }) => {
+  const { token } = theme.useToken();
   const actionRefUnitTable = useRef<ActionType>();
   const tabList = [
     {
@@ -253,7 +254,7 @@ export const UnitGroupForm: FC<Props> = ({
           }
           name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
         >
-          <Input disabled={true} style={{ color: '#000' }} />
+          <Input disabled={true} style={{ color: token.colorTextDescription }} />
         </Form.Item>
         <SourceSelectForm
           name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}

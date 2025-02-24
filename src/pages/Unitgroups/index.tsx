@@ -105,8 +105,23 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <UnitGroupView buttonType={'icon'} lang={lang} id={row.id} version={row.version} />
+              <UnitGroupView
+                actionRef={actionRef}
+                lang={lang}
+                id={row.id}
+                version={row.version}
+                buttonType={'icon'}
+              />
               <UnitGroupEdit
+                id={row.id}
+                version={row.version}
+                buttonType={'icon'}
+                lang={lang}
+                actionRef={actionRef}
+                setViewDrawerVisible={() => {}}
+              ></UnitGroupEdit>
+              <UnitGroupEdit
+                type="copy"
                 id={row.id}
                 version={row.version}
                 buttonType={'icon'}
@@ -143,7 +158,22 @@ const TableList: FC = () => {
         }
         return [
           <Space size={'small'} key={0}>
-            <UnitGroupView buttonType={'icon'} lang={lang} id={row.id} version={row.version} />
+            <UnitGroupView
+              actionRef={actionRef}
+              lang={lang}
+              id={row.id}
+              version={row.version}
+              buttonType={'icon'}
+            />
+            <UnitGroupEdit
+              type="copy"
+              id={row.id}
+              version={row.version}
+              buttonType={'icon'}
+              lang={lang}
+              actionRef={actionRef}
+              setViewDrawerVisible={() => {}}
+            ></UnitGroupEdit>
           </Space>,
         ];
       },
@@ -179,6 +209,7 @@ const TableList: FC = () => {
         />
       </Card>
       <ProTable<UnitGroupTable, ListPagination>
+        rowKey={(record) => `${record.id}-${record.version}`}
         headerTitle={
           <>
             {getDataTitle(dataSource)} /{' '}

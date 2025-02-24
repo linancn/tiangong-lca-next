@@ -5,6 +5,8 @@ export default {
 
   'pages.contact.drawer.title.create': 'Create Contact',
   'pages.contact.drawer.title.view': 'View Contact',
+  'pages.contact.drawer.title.copy': 'Copy Contact',
+  'pages.contact.drawer.title.createVersion': 'Create Version',
   'pages.contact.drawer.title.edit': 'Edit Contact',
   'pages.contact.drawer.title.delete': 'Delete Contact',
   'pages.contact.drawer.title.select': 'Select Contact',

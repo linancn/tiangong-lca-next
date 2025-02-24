@@ -15,7 +15,7 @@ import { genFlowPropertyTabTableData } from '@/services/flows/util';
 import { ListPagination } from '@/services/general/data';
 import { CheckCircleOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
-import { Card, Divider, Form, Input, Select, Space } from 'antd';
+import { Card, Divider, Form, Input, Select, Space, theme } from 'antd';
 import type { FC } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -51,7 +51,7 @@ export const FlowForm: FC<Props> = ({
 }) => {
   const [thisFlowType, setThisFlowType] = useState<string | undefined>(flowType);
   const actionRefPropertyTable = useRef<ActionType>();
-
+  const { token } = theme.useToken();
   const tabList = [
     {
       key: 'flowInformation',
@@ -555,7 +555,7 @@ export const FlowForm: FC<Props> = ({
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
           >
-            <Input disabled={true} style={{ color: '#000' }} />
+            <Input disabled={true} style={{ color: token.colorTextDescription }} />
           </Form.Item>
           <SourceSelectForm
             lang={lang}

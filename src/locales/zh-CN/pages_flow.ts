@@ -14,6 +14,8 @@ export default {
   'pages.flow.model.drawer.title.refFlow': '参考流',
   'pages.flow.model.drawer.title.list': '模型列表',
   'pages.flow.model.drawer.title.edit': '编辑模型',
+  'pages.flow.model.drawer.title.copy': '复制模型',
+  'pages.flow.model.drawer.title.createVersion': '创建版本',
   'pages.flow.model.drawer.title.view': '查看模型',
   'pages.flow.model.drawer.title.info': '模型基本信息',
   'pages.flow.model.drawer.title.edge.port.select': '选择流连接桩',

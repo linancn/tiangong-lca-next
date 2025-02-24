@@ -2,6 +2,8 @@ export default {
   'pages.unitgroup.drawer.title.create': '创建单位组',
   'pages.unitgroup.drawer.title.view': '查看单位组',
   'pages.unitgroup.drawer.title.edit': '编辑单位组',
+  'pages.unitgroup.drawer.title.copy': '复制单位组',
+  'pages.unitgroup.drawer.title.createVersion': '创建版本',
   'pages.unitgroup.drawer.title.delete': '删除单位组',
   'pages.unitgroup.drawer.title.select': '选择单位组',
 
