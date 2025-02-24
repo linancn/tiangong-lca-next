@@ -16,7 +16,7 @@ type Props = {
   buttonType: string;
   lang: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
-  type?: 'edit' | 'copy';
+  type?: 'edit' | 'copy' | 'createVersion';
 };
 const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang, type = 'edit' }) => {
   const formRefEdit = useRef<ProFormInstance>();
@@ -99,12 +99,12 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang, type =
           )
         ) : (
           <Button onClick={onEdit}>
-            <FormattedMessage id="pages.button.edit" defaultMessage="Edit" />
+            <FormattedMessage id={buttonType?buttonType:"pages.button.edit"} defaultMessage="Edit" />
           </Button>
         )}
       </Tooltip>
       <Drawer
-        title={<FormattedMessage id={type === 'copy' ? 'pages.button.copy' : 'pages.button.edit'} defaultMessage={type === 'copy' ? 'Copy' : 'Edit'} />}
+        title={<FormattedMessage id={type === 'copy' ? 'pages.button.copy' : type === 'createVersion' ? 'pages.button.createVersion' : 'pages.button.edit'} defaultMessage={type === 'copy' ? 'Copy' : type === 'createVersion' ? 'Create Version' : 'Edit'} />}
         width="90%"
         closable={false}
         extra={
@@ -143,8 +143,9 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang, type =
               },
             }}
             onFinish={async () => {
-              if(type === 'copy') {
-                const createResult = await createFlows(v4(), fromData);
+              if(type === 'copy' || type === 'createVersion') {
+                setSpinning(true);
+                const createResult = await createFlows(type === 'copy' ? v4() : id, fromData);
                 if (createResult?.data) {
                   message.success(
                     intl.formatMessage({
@@ -155,9 +156,17 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang, type =
                   setDrawerVisible(false);
                   setActiveTabKey('flowInformation');
                   actionRef.current?.reload();
+                } else if (createResult?.error?.code === '23505') {
+                  message.error(
+                    intl.formatMessage({
+                      id: 'pages.button.createVersion.fail',
+                      defaultMessage: 'Please change the version and submit',
+                    }),
+                  );
                 } else {
                   message.error(createResult?.error?.message);
                 }
+                setSpinning(false);
                 return true;
               }
               const updateResult = await updateFlows(id, version, fromData);

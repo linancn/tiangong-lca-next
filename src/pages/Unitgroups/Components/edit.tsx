@@ -18,7 +18,7 @@ type Props = {
   lang: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  type?: 'edit' | 'copy';
+  type?: 'edit' | 'copy' | 'createVersion';
 };
 const UnitGroupEdit: FC<Props> = ({
   id,
@@ -118,14 +118,14 @@ const UnitGroupEdit: FC<Props> = ({
         )
       ) : (
         <Button size="small" onClick={onEdit}>
-          <FormattedMessage id="pages.button.edit" defaultMessage="Edit"></FormattedMessage>
+          <FormattedMessage id={buttonType?buttonType:"pages.button.edit"} defaultMessage="Edit"></FormattedMessage>
         </Button>
       )}
 
       <Drawer
         title={
           <FormattedMessage
-            id="pages.unitgroup.drawer.title.edit"
+            id={type === 'createVersion' ? "pages.unitgroup.drawer.title.createVersion" :type === 'copy' ? "pages.unitgroup.drawer.title.copy" : "pages.unitgroup.drawer.title.edit"}
             defaultMessage="Edit"
           ></FormattedMessage>
         }
@@ -181,8 +181,8 @@ const UnitGroupEdit: FC<Props> = ({
               },
             }}
             onFinish={async () => {
-              if (type === 'copy') {
-                const createResult = await createUnitGroup(v4(), fromData);
+              if (type === 'copy' || type === 'createVersion') {
+                const createResult = await createUnitGroup(type === 'copy' ? v4() : id, fromData);
                 if (createResult?.data) {
                   message.success(
                     intl.formatMessage({
@@ -194,7 +194,14 @@ const UnitGroupEdit: FC<Props> = ({
                   setViewDrawerVisible(false);
                   setActiveTabKey('unitGroupInformation');
                   actionRef.current?.reload();
-                } else {
+                }else if (createResult?.error?.code === '23505') {
+                  message.error(
+                    intl.formatMessage({
+                      id: 'pages.button.createVersion.fail',
+                      defaultMessage: 'Please change the version and submit',
+                    }),
+                  );
+                }else{
                   message.error(createResult?.error?.message);
                 }
                 return true;

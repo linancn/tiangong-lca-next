@@ -6,18 +6,22 @@ import { isValidURL } from '@/services/general/util';
 import { getSourceDetail } from '@/services/sources/api';
 import { genSourceFromData } from '@/services/sources/util';
 import { CloseOutlined, LinkOutlined, ProfileOutlined } from '@ant-design/icons';
-import { Button, Card, Descriptions, Divider, Drawer, Spin, Tooltip } from 'antd';
+import { Button, Card, Descriptions, Divider, Drawer, Modal, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { publicationTypeOptions } from './optiondata';
 import SourceSelectDescription from './select/description';
+import AllVersionsList from '@/components/AllVersions';
+import SourceEdit from './edit';
+import type { ActionType } from '@ant-design/pro-table';
+
 type Props = {
   id: string;
   version: string;
   // dataSource: string;
   buttonType: string;
-  // actionRef: React.MutableRefObject<ActionType | undefined>;
+  actionRef: React.MutableRefObject<ActionType | undefined>;
   lang: string;
 };
 
@@ -26,13 +30,13 @@ const getPublicationTypeLabel = (value: string) => {
   return option ? option.label : '-';
 };
 
-const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
+const SourceView: FC<Props> = ({ id, version, buttonType, lang, actionRef }) => {
   const [activeTabKey, setActiveTabKey] = useState<string>('sourceInformation');
   const [drawerVisible, setDrawerVisible] = useState(false);
   // const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<any>({});
-
+  const [showAllVersionsModal, setShowAllVersionsModal] = useState(false);
   const tabList = [
     {
       key: 'sourceInformation',
@@ -236,9 +240,31 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
               }
               labelStyle={{ width: '160px' }}
             >
-              {initData.administrativeInformation?.publicationAndOwnership?.[
-                'common:dataSetVersion'
-              ] ?? '-'}
+              <Space>
+                {initData.administrativeInformation?.publicationAndOwnership?.[
+                  'common:dataSetVersion'
+                ] ?? '-'}
+              <SourceEdit
+                 type="createVersion"
+                 id={id}
+                 version={version}
+                 lang={lang}
+                 buttonType={'pages.button.createVersion'}
+                 actionRef={actionRef}
+                 setViewDrawerVisible={() => {}}
+              />
+              <Button onClick={() => setShowAllVersionsModal(true)}>
+                  <FormattedMessage id="pages.button.allVersion" defaultMessage="All version" />
+                </Button>
+                <Modal
+                  width={'90%'}
+                  open={showAllVersionsModal}
+                  onCancel={() => setShowAllVersionsModal(false)}
+                  footer={null}
+                >
+                  <AllVersionsList searchTableName="sources" id={id} />
+                </Modal>
+              </Space>
             </Descriptions.Item>
           </Descriptions>
           <br />

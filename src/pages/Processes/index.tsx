@@ -103,6 +103,7 @@ const TableList: FC = () => {
                 buttonType={'icon'}
                 lang={lang}
                 disabled={false}
+                actionRef={actionRef}
               />
               <ProcessEdit
                 id={row.id}
@@ -157,6 +158,7 @@ const TableList: FC = () => {
               buttonType={'icon'}
               lang={lang}
               disabled={false}
+              actionRef={actionRef}
             />
             <ProcessEdit
                 type="copy"

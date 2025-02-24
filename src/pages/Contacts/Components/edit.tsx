@@ -16,7 +16,7 @@ type Props = {
   actionRef: React.MutableRefObject<ActionType | undefined>;
   lang: string;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  type?: 'edit' | 'copy';
+  type?: 'edit' | 'copy' | 'createVersion';
 };
 
 const ContactEdit: FC<Props> = ({
@@ -83,7 +83,7 @@ const ContactEdit: FC<Props> = ({
         )
       ) : (
         <Button onClick={onEdit}>
-          <FormattedMessage id="pages.button.edit" defaultMessage="Edit" />
+          <FormattedMessage id={buttonType.trim().length > 0 ? buttonType : 'pages.button.edit'} defaultMessage="Edit" />
         </Button>
       )}
 
@@ -91,8 +91,11 @@ const ContactEdit: FC<Props> = ({
         title={
           type === 'edit' ? (
             <FormattedMessage id="pages.contact.drawer.title.edit" defaultMessage="Edit Contact" />
-          ) : (
+          ) : 
+          type === 'copy' ? (
             <FormattedMessage id="pages.contact.drawer.title.copy" defaultMessage="Copy Contact" />
+          ) : (
+            <FormattedMessage id="pages.contact.drawer.title.createVersion" defaultMessage="Create Version" />
           )
         }
         width="90%"
@@ -135,8 +138,8 @@ const ContactEdit: FC<Props> = ({
             initialValues={initData}
             onFinish={async () => {
               setSpinning(true);
-              if (type === 'copy') {
-                const createResult = await createContact(v4(), fromData);
+              if (type === 'copy' || type === 'createVersion') {
+                const createResult = await createContact(type === 'copy' ? v4() : id, fromData);
                 if (createResult?.data) {
                   message.success(
                     intl.formatMessage({
@@ -148,8 +151,18 @@ const ContactEdit: FC<Props> = ({
                   setViewDrawerVisible(false);
                   actionRef.current?.reload();
                 } else {
-                  message.error(createResult?.error?.message);
+                  if (createResult?.error?.code === '23505') {
+                    message.error(
+                      intl.formatMessage({
+                        id: 'pages.button.createVersion.fail',
+                        defaultMessage: 'Please change the version and submit',
+                      }),
+                    );
+                  }else{
+                    message.error(createResult?.error?.message);
+                  }
                 }
+                setSpinning(false);
                 return true;
               } else {
                 const updateResult = await updateContact(id, version, fromData);

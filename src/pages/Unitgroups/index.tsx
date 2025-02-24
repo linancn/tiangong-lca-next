@@ -105,7 +105,7 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <UnitGroupView buttonType={'icon'} lang={lang} id={row.id} version={row.version} />
+              <UnitGroupView actionRef={actionRef} lang={lang} id={row.id} version={row.version} buttonType={'icon'} />
               <UnitGroupEdit
                 id={row.id}
                 version={row.version}
@@ -152,7 +152,7 @@ const TableList: FC = () => {
         }
         return [
           <Space size={'small'} key={0}>
-            <UnitGroupView buttonType={'icon'} lang={lang} id={row.id} version={row.version} />
+            <UnitGroupView actionRef={actionRef} lang={lang} id={row.id} version={row.version} buttonType={'icon'} />
             <UnitGroupEdit
                 type="copy"
                 id={row.id}

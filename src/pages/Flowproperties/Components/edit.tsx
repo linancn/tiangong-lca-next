@@ -34,7 +34,7 @@ type Props = {
   buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
   lang: string;
-  type?: 'edit' | 'copy';
+  type?: 'edit' | 'copy' | 'createVersion';
 };
 const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang, type = 'edit' }) => {
   const formRefEdit = useRef<ProFormInstance>();
@@ -99,7 +99,7 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
           )
         ) : (
           <Button onClick={onEdit}>
-            <FormattedMessage id="pages.button.edit" defaultMessage="Edit" />
+            <FormattedMessage id={buttonType?buttonType:"pages.button.edit"} defaultMessage="Edit" />
           </Button>
         )}
       </Tooltip>
@@ -109,6 +109,11 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
             <FormattedMessage
               id="pages.flowproperty.drawer.title.edit"
               defaultMessage="Edit Flow property"
+            />
+          ) : type === 'createVersion' ? (
+            <FormattedMessage
+              id="pages.flowproperty.drawer.title.createVersion"
+              defaultMessage="Create Flow property"
             />
           ) : (
             <FormattedMessage
@@ -155,8 +160,8 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
               },
             }}
             onFinish={async () => {
-              if (type === 'copy') {
-                const createResult = await createFlowproperties(v4(), fromData);
+              if (type === 'copy' || type === 'createVersion') {
+                const createResult = await createFlowproperties(type === 'copy' ? v4() : id, fromData);
                 if (createResult?.data) {
                   message.success(
                     intl.formatMessage({
@@ -167,6 +172,13 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
                   setDrawerVisible(false);
                   setActiveTabKey('flowPropertiesInformation');
                   actionRef.current?.reload();
+                } else if (createResult?.error?.code === '23505') {
+                  message.error(
+                    intl.formatMessage({
+                      id: 'pages.button.createVersion.fail',
+                      defaultMessage: 'Please change the version and submit',
+                    }),
+                  );
                 } else {
                   message.error(createResult?.error?.message);
                 }

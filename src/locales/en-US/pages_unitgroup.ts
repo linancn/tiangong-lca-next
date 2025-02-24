@@ -2,6 +2,8 @@ export default {
   'pages.unitgroup.drawer.title.create': 'Create Unit group',
   'pages.unitgroup.drawer.title.view': 'View Unit group',
   'pages.unitgroup.drawer.title.edit': 'Edit Unit group',
+  'pages.unitgroup.drawer.title.createVersion': 'Create version',
+  'pages.unitgroup.drawer.title.copy': 'Copy Unit group',
   'pages.unitgroup.drawer.title.delete': 'Delete Unit group',
 
   'pages.unitgroup.unit.generalComment': 'Comment',

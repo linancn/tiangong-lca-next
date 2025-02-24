@@ -107,7 +107,7 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <FlowpropertyView lang={lang} buttonType={'icon'} id={row.id} version={row.version} />
+              <FlowpropertyView actionRef={actionRef} lang={lang} buttonType={'icon'} id={row.id} version={row.version} />
               <FlowpropertiesEdit
                 id={row.id}
                 version={row.version}
@@ -152,7 +152,7 @@ const TableList: FC = () => {
         }
         return [
           <Space size={'small'} key={0}>
-            <FlowpropertyView lang={lang} buttonType={'icon'} id={row.id} version={row.version} />
+            <FlowpropertyView actionRef={actionRef} lang={lang} buttonType={'icon'} id={row.id} version={row.version} />
             <FlowpropertiesEdit
                 type="copy"
                 id={row.id}

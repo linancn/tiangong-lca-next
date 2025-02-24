@@ -20,7 +20,7 @@ type Props = {
   buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  type?: 'edit' | 'copy';
+  type?: 'edit' | 'copy' | 'createVersion';
 };
 
 const SourceEdit: FC<Props> = ({
@@ -111,8 +111,9 @@ const SourceEdit: FC<Props> = ({
       });
     }
 
-    if (type === 'copy') {
-      const createResult = await createSource(v4(), {
+    if (type === 'copy' || type === 'createVersion') {
+      setSpinning(true);
+      const createResult = await createSource(type === 'copy' ? v4() : id, {
         ...fromData,
         sourceInformation: {
           ...fromData.sourceInformation,
@@ -132,7 +133,17 @@ const SourceEdit: FC<Props> = ({
         formRefEdit.current?.resetFields();
         setDrawerVisible(false);
         reload();
+      }else if (createResult?.error?.code === '23505') {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.button.createVersion.fail',
+            defaultMessage: 'Please change the version and submit',
+          }),
+        );
+      }else{
+        message.error(createResult?.error?.message);
       }
+      setSpinning(false);
       return true;
     }
 
@@ -181,14 +192,18 @@ const SourceEdit: FC<Props> = ({
           <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
             <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
           </Tooltip>
-        ) : (
+        ) : type === 'copy' ? (
           <Tooltip title={<FormattedMessage id="pages.button.copy" defaultMessage="Copy" />}>
+            <Button shape="circle" icon={<CopyOutlined />} size="small" onClick={onEdit} />
+          </Tooltip>
+        ) : (
+          <Tooltip title={<FormattedMessage id="pages.button.createVersion" defaultMessage="Create Version" />}>
             <Button shape="circle" icon={<CopyOutlined />} size="small" onClick={onEdit} />
           </Tooltip>
         )
       ) : (
         <Button onClick={onEdit}>
-          <FormattedMessage id="pages.button.edit" defaultMessage="Edit" />
+          <FormattedMessage id={buttonType?buttonType:"pages.button.edit"} defaultMessage="Edit" />
         </Button>
       )}
 
@@ -196,8 +211,10 @@ const SourceEdit: FC<Props> = ({
         title={
           type === 'edit' ? (
             <FormattedMessage id="pages.source.drawer.title.edit" defaultMessage="Edit Source" />
-          ) : (
+          ) : type === 'copy' ? (
             <FormattedMessage id="pages.source.drawer.title.copy" defaultMessage="Copy Source" />
+          ) : (
+            <FormattedMessage id="pages.source.drawer.title.createVersion" defaultMessage="Create Version" />
           )
         }
         width="90%"

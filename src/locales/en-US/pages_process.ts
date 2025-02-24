@@ -6,6 +6,7 @@ export default {
   'pages.process.drawer.title.view': 'View process',
   'pages.process.drawer.title.edit': 'Edit process',
   'pages.process.drawer.title.copy': 'Copy process',
+  'pages.process.drawer.title.createVersion': 'Create Version',
   'pages.process.exchange.exchangeDirection': 'Direction',
   'pages.process.exchange.resultingAmount': 'Resulting amount',
   'pages.process.exchange.meanAmount': 'Mean amount',

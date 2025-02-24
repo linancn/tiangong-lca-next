@@ -30,7 +30,7 @@ type Props = {
   buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined> | undefined;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  type?:'edit' | 'copy';
+  type?:'edit' | 'copy' | 'createVersion';
 };
 const ProcessEdit: FC<Props> = ({
   id,
@@ -167,14 +167,14 @@ const ProcessEdit: FC<Props> = ({
             )
           ) : (
             <Button onClick={onEdit}>
-              <FormattedMessage id="pages.button.edit" defaultMessage="Edit" />
+              <FormattedMessage id={type === 'createVersion' ? 'pages.button.createVersion' : 'pages.button.edit'} defaultMessage={type === 'createVersion' ? 'Create Version' : 'Edit'} />
             </Button>
           )}
         </Tooltip>
       )}
       <Drawer
         title={
-          <FormattedMessage id={type === 'copy' ? 'pages.process.drawer.title.copy' : 'pages.process.drawer.title.edit'} defaultMessage={type === 'copy' ? 'Copy process' : 'Edit process'} />
+          <FormattedMessage id={type === 'copy' ? 'pages.process.drawer.title.copy' : type === 'createVersion' ? 'pages.process.drawer.title.createVersion' : 'pages.process.drawer.title.edit'} defaultMessage={type === 'copy' ? 'Copy process' : type === 'createVersion' ? 'Create Version' : 'Edit process'} />
         }
         width="90%"
         closable={false}
@@ -233,8 +233,8 @@ const ProcessEdit: FC<Props> = ({
             }}
             onFinish={async () => {
               setSpinning(true);
-              if(type === 'copy') {
-                const createResult = await createProcess(v4(), fromData);
+              if(type === 'copy' || type === 'createVersion') {
+                const createResult = await createProcess(type === 'copy' ? v4() : id, fromData);
                 if (createResult?.data) {
                   message.success(
                     intl.formatMessage({
@@ -246,10 +246,17 @@ const ProcessEdit: FC<Props> = ({
                   setDrawerVisible(false);
                   setViewDrawerVisible(false);
                   actionRef?.current?.reload();
+                } else if (createResult?.error?.code === '23505') {
+                  message.error(
+                    intl.formatMessage({
+                      id: 'pages.button.createVersion.fail',
+                      defaultMessage: 'Please change the version and submit',
+                    }),
+                  );
                 } else {
-                  setSpinning(false);
                   message.error(createResult?.error?.message);
                 }
+                setSpinning(false);
                 return true;
               }
               const updateResult = await updateProcess(id, version, {

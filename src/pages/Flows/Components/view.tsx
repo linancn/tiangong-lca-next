@@ -10,19 +10,22 @@ import { genFlowFromData, genFlowPropertyTabTableData } from '@/services/flows/u
 import { ListPagination } from '@/services/general/data';
 import { CheckCircleOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
-import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
+import { Button, Card, Descriptions, Divider, Drawer, Modal, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { complianceOptions, flowTypeOptions } from './optiondata';
 import PropertyView from './Property/view';
+import type { ActionType } from '@ant-design/pro-table';
+import FlowsEdit from './edit';
+import AllVersionsList from '@/components/AllVersions';
 
 type Props = {
   id: string;
   version: string;
   lang: string;
   buttonType: string;
-  data?: any;
+  actionRef: React.MutableRefObject<ActionType | undefined>;
 };
 
 const getComplianceLabel = (value: string) => {
@@ -30,9 +33,10 @@ const getComplianceLabel = (value: string) => {
   return option ? option.label : '-';
 };
 
-const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
+const FlowsView: FC<Props> = ({ id, version, buttonType, lang, actionRef }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('flowInformation');
+  const [showAllVersionsModal, setShowAllVersionsModal] = useState(false);
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<any>({});
   const [propertyDataSource, setPropertyDataSource] = useState<any>([]);
@@ -277,7 +281,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
           <LevelTextItemDescription
             data={
               initData?.flowInformation?.dataSetInformation?.classificationInformation?.[
-                'common:elementaryFlowCategorization'
+              'common:elementaryFlowCategorization'
               ]?.['common:category']?.['value']
             }
             lang={lang}
@@ -418,7 +422,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
         <SourceSelectDescription
           data={
             initData?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-              'common:referenceToComplianceSystem'
+            'common:referenceToComplianceSystem'
             ]
           }
           title={
@@ -443,7 +447,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
           >
             {getComplianceLabel(
               initData?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                'common:approvalOfOverallCompliance'
+              'common:approvalOfOverallCompliance'
               ] ?? '-',
             )}
           </Descriptions.Item>
@@ -494,7 +498,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
           <ContactSelectDescription
             data={
               initData?.administrativeInformation?.dataEntryBy?.[
-                'common:referenceToPersonOrEntityEnteringTheData'
+              'common:referenceToPersonOrEntityEnteringTheData'
               ]
             }
             title={
@@ -527,9 +531,30 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
               }
               labelStyle={{ width: '160px' }}
             >
-              {initData?.administrativeInformation?.publicationAndOwnership?.[
-                'common:dataSetVersion'
-              ] ?? '-'}
+              <Space>
+                {initData?.administrativeInformation?.publicationAndOwnership?.[
+                  'common:dataSetVersion'
+                ] ?? '-'}
+                <FlowsEdit
+                  buttonType={'pages.button.createVersion'}
+                  type="createVersion"
+                  id={id}
+                  version={version}
+                  lang={lang}
+                  actionRef={actionRef}
+                />
+                <Button onClick={() => setShowAllVersionsModal(true)}>
+                  <FormattedMessage id="pages.button.allVersion" defaultMessage="All version" />
+                </Button>
+                <Modal
+                  width={'90%'}
+                  open={showAllVersionsModal}
+                  onCancel={() => setShowAllVersionsModal(false)}
+                  footer={null}
+                >
+                  <AllVersionsList searchTableName="flows" id={id} />
+                </Modal>
+              </Space>
             </Descriptions.Item>
           </Descriptions>
           <br />
@@ -553,7 +578,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
           <ContactSelectDescription
             data={
               initData?.administrativeInformation?.publicationAndOwnership?.[
-                'common:referenceToOwnershipOfDataSet'
+              'common:referenceToOwnershipOfDataSet'
               ]
             }
             title={

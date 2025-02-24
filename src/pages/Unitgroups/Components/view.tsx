@@ -7,18 +7,21 @@ import { UnitTable } from '@/services/unitgroups/data';
 import { genUnitGroupFromData, genUnitTableData } from '@/services/unitgroups/util';
 import { CheckCircleOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
-import { Button, Card, Descriptions, Divider, Drawer, Spin, Tooltip } from 'antd';
+import type { ActionType } from '@ant-design/pro-table';
+import { Button, Card, Descriptions, Divider, Drawer, Modal, Spin, Tooltip, Space } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import UnitView from './Unit/view';
 import { complianceOptions } from './optiondata';
-
+import UnitGroupEdit from './edit';
+import AllVersionsList from '@/components/AllVersions';
 type Props = {
   id: string;
   version: string;
   lang: string;
   buttonType: string;
+  actionRef: React.MutableRefObject<ActionType | undefined>;
 };
 
 const getComplianceLabel = (value: string) => {
@@ -26,7 +29,7 @@ const getComplianceLabel = (value: string) => {
   return option ? option.label : '-';
 };
 
-const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
+const ContactView: FC<Props> = ({ id, version, lang, buttonType, actionRef }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   // const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [spinning, setSpinning] = useState(false);
@@ -34,7 +37,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
   const [unitDataSource, setUnitDataSource] = useState<any>([]);
 
   const [activeTabKey, setActiveTabKey] = useState<string>('unitGroupInformation');
-
+  const [showAllVersionsModal, setShowAllVersionsModal] = useState(false);
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
   };
@@ -288,9 +291,31 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
             }
             labelStyle={{ width: '140px' }}
           >
+            <Space>
             {initData.administrativeInformation?.publicationAndOwnership?.[
               'common:dataSetVersion'
             ] ?? '-'}
+            <UnitGroupEdit
+                type="createVersion"
+                id={id}
+                version={version}
+                lang={lang}
+                buttonType={'pages.button.createVersion'}
+                actionRef={actionRef}
+                setViewDrawerVisible={() => {}}
+              />
+              <Button size="small" onClick={() => setShowAllVersionsModal(true)}>
+                <FormattedMessage id="pages.button.allVersion" defaultMessage="All version" />
+              </Button>
+              <Modal
+                width={'90%'}
+                open={showAllVersionsModal}
+                onCancel={() => setShowAllVersionsModal(false)}
+                footer={null}
+              >
+                <AllVersionsList searchTableName="unitgroups" id={id} />
+              </Modal>
+            </Space>
           </Descriptions.Item>
         </Descriptions>
       </>

@@ -92,7 +92,7 @@ const TableList: FC = () => {
                 version={row.version}
                 lang={lang}
                 buttonType="icon"
-                // actionRef={actionRef}
+                actionRef={actionRef}
               />
               <ContactEdit
                 id={row.id}
@@ -145,7 +145,7 @@ const TableList: FC = () => {
               version={row.version}
               lang={lang}
               buttonType="icon"
-              // actionRef={actionRef}
+              actionRef={actionRef}
             />
             <ContactEdit
               type="copy"

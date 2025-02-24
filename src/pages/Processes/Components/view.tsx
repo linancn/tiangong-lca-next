@@ -16,7 +16,8 @@ import {
   ProfileOutlined,
 } from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
-import { Button, Card, Collapse, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
+import type { ActionType } from '@ant-design/pro-table';
+import { Button, Card, Collapse, Descriptions, Divider, Drawer, Modal,  Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -29,14 +30,15 @@ import {
   processtypeOfDataSetOptions,
   reviewTypeOptions,
 } from './optiondata';
-
+import ProcessEdit from './edit';   
+import AllVersionsList from '@/components/AllVersions';
 type Props = {
   id: string;
   version: string;
   lang: string;
   buttonType: string;
   disabled: boolean;
-  // actionRef: React.MutableRefObject<ActionType | undefined>;
+  actionRef?: React.MutableRefObject<ActionType | undefined>;
 };
 
 const getProcesstypeOfDataSetOptions = (value: string) => {
@@ -64,14 +66,14 @@ const getLicenseTypeOptions = (value: string) => {
   return option ? option.label : '-';
 };
 
-const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => {
+const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled, actionRef }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   // const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [activeTabKey, setActiveTabKey] = useState<string>('processInformation');
   const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<any>({});
-
+  const [showAllVersionsModal, setShowAllVersionsModal] = useState(false);
   const tabList = [
     {
       key: 'processInformation',
@@ -946,9 +948,31 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
               }
               labelStyle={{ width: '180px' }}
             >
+              <Space>
               {initData.administrativeInformation?.publicationAndOwnership?.[
                 'common:dataSetVersion'
               ] ?? '-'}
+              <ProcessEdit
+                type="createVersion"
+                id={id}
+                version={version}
+                lang={lang}
+                buttonType={'pages.button.createVersion'}
+                actionRef={actionRef}
+                setViewDrawerVisible={() => {}}
+              />
+              <Button onClick={() => setShowAllVersionsModal(true)}>
+                  <FormattedMessage id="pages.button.allVersion" defaultMessage="All version" />
+                </Button>
+                <Modal
+                  width={'90%'}
+                  open={showAllVersionsModal}
+                  onCancel={() => setShowAllVersionsModal(false)}
+                  footer={null}
+                >
+                  <AllVersionsList searchTableName="processes" id={id} />
+                </Modal>
+              </Space>
             </Descriptions.Item>
           </Descriptions>
           <br />

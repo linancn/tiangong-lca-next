@@ -19,6 +19,8 @@ import pwa from './en-US/pwa';
 import settingDrawer from './en-US/settingDrawer';
 import settings from './en-US/settings';
 import validator from './en-US/validator';
+import component_allVersions from './en-US/component_allVersions';
+
 export default {
   'navBar.lang': 'Languages',
   'layout.user.link.help': 'Help',
@@ -48,4 +50,5 @@ export default {
   ...teams,
   ...component_allTeams,
   ...component_contributeData,
+  ...component_allVersions,
 };

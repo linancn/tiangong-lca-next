@@ -5,6 +5,7 @@ export default {
   'pages.source.drawer.title.view': 'View Source',
   'pages.source.drawer.title.edit': 'Edit Source',
   'pages.source.drawer.title.copy': 'Copy Source',
+  'pages.source.drawer.title.createVersion': 'Create Version',
   'pages.source.drawer.title.delete': 'Delete Source',
   'pages.source.drawer.title.select': 'Select Source',
 

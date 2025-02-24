@@ -10,6 +10,9 @@ export default {
   'pages.table.title.option': 'Option',
   'pages.table.title.version': 'Version',
 
+  'pages.button.createVersion': 'Create Version',
+  'pages.button.createVersion.fail': 'Please change the data version and submit',
+  'pages.button.allVersion': 'All Versions',
   'pages.button.create': 'Create',
   'pages.button.create.success': 'Created successfully!',
   'pages.button.reset': 'Reset',
