@@ -5,6 +5,7 @@ export default {
   'pages.process.drawer.title.create': '创建过程',
   'pages.process.drawer.title.view': '查看过程',
   'pages.process.drawer.title.edit': '编辑过程',
+  'pages.process.drawer.title.copy': '复制过程',
 
   'pages.process.exchange.exchangeDirection': '输入/输出方向',
   'pages.process.exchange.resultingAmount': '结果量',

@@ -1,13 +1,14 @@
-import { getContactDetail, updateContact } from '@/services/contacts/api';
+import { getContactDetail, updateContact, createContact } from '@/services/contacts/api';
 import { genContactFromData } from '@/services/contacts/util';
 import styles from '@/style/custom.less';
-import { CloseOutlined, FormOutlined } from '@ant-design/icons';
+import { CloseOutlined, FormOutlined, CopyOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { Button, Collapse, Drawer, Space, Spin, Tooltip, Typography, message } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { ContactForm } from './form';
+import { v4 } from 'uuid';
 type Props = {
   id: string;
   version: string;
@@ -15,7 +16,9 @@ type Props = {
   actionRef: React.MutableRefObject<ActionType | undefined>;
   lang: string;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  type?: 'edit' | 'copy';
 };
+
 const ContactEdit: FC<Props> = ({
   id,
   version,
@@ -23,6 +26,7 @@ const ContactEdit: FC<Props> = ({
   actionRef,
   lang,
   setViewDrawerVisible,
+  type = 'edit',
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
@@ -68,9 +72,15 @@ const ContactEdit: FC<Props> = ({
   return (
     <>
       {buttonType === 'icon' ? (
-        <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
-          <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
-        </Tooltip>
+        type === 'edit' ? (
+          <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
+            <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
+          </Tooltip>
+        ) : (
+          <Tooltip title={<FormattedMessage id="pages.button.copy" defaultMessage="Copy" />}>
+            <Button shape="circle" icon={<CopyOutlined />} size="small" onClick={onEdit} />
+          </Tooltip>
+        )
       ) : (
         <Button onClick={onEdit}>
           <FormattedMessage id="pages.button.edit" defaultMessage="Edit" />
@@ -79,7 +89,11 @@ const ContactEdit: FC<Props> = ({
 
       <Drawer
         title={
-          <FormattedMessage id="pages.contact.drawer.title.edit" defaultMessage="Edit Contact" />
+          type === 'edit' ? (
+            <FormattedMessage id="pages.contact.drawer.title.edit" defaultMessage="Edit Contact" />
+          ) : (
+            <FormattedMessage id="pages.contact.drawer.title.copy" defaultMessage="Copy Contact" />
+          )
         }
         width="90%"
         closable={false}
@@ -121,22 +135,40 @@ const ContactEdit: FC<Props> = ({
             initialValues={initData}
             onFinish={async () => {
               setSpinning(true);
-              const updateResult = await updateContact(id, version, fromData);
-              if (updateResult?.data) {
-                message.success(
-                  intl.formatMessage({
-                    id: 'pages.button.create.success',
-                    defaultMessage: 'Created successfully!',
-                  }),
-                );
-                setDrawerVisible(false);
-                setViewDrawerVisible(false);
-                actionRef.current?.reload();
+              if (type === 'copy') {
+                const createResult = await createContact(v4(), fromData);
+                if (createResult?.data) {
+                  message.success(
+                    intl.formatMessage({
+                      id: 'pages.button.create.success',
+                      defaultMessage: 'Created successfully!',
+                    }),
+                  );
+                  setDrawerVisible(false);
+                  setViewDrawerVisible(false);
+                  actionRef.current?.reload();
+                } else {
+                  message.error(createResult?.error?.message);
+                }
+                return true;
               } else {
-                message.error(updateResult?.error?.message);
+                const updateResult = await updateContact(id, version, fromData);
+                if (updateResult?.data) {
+                  message.success(
+                    intl.formatMessage({
+                      id: 'pages.button.create.success',
+                      defaultMessage: 'Created successfully!',
+                    }),
+                  );
+                  setDrawerVisible(false);
+                  setViewDrawerVisible(false);
+                  actionRef.current?.reload();
+                } else {
+                  message.error(updateResult?.error?.message);
+                }
+                setSpinning(true);
+                return true;
               }
-              setSpinning(true);
-              return true;
             }}
           >
             <ContactForm

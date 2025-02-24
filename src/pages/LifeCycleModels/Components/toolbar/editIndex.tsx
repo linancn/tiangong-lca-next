@@ -36,6 +36,7 @@ type Props = {
   isSave: boolean;
   action: string;
   setIsSave: (isSave: boolean) => void;
+  type?: 'edit' | 'copy';
 };
 
 const ToolbarEdit: FC<Props> = ({
@@ -46,6 +47,7 @@ const ToolbarEdit: FC<Props> = ({
   isSave,
   action,
   setIsSave,
+  type = 'edit',
 }) => {
   const [thisId, setThisId] = useState(id);
   const [thisVersion, setThisVersion] = useState(version);
@@ -729,6 +731,27 @@ const ToolbarEdit: FC<Props> = ({
     };
 
     if (thisAction === 'edit') {
+      if(type === 'copy') {
+        const newId = v4();
+        createLifeCycleModel({ ...newData, id: newId }).then((result: any) => {
+          if (result.data) {
+            message.success(
+              intl.formatMessage({
+                id: 'pages.button.create.success',
+                defaultMessage: 'Created successfully!',
+              }),
+            );
+            setThisAction('edit');
+            setThisId(result.data?.[0]?.id);
+            setThisVersion(result.data?.[0]?.version);
+            saveCallback();
+          } else {
+            message.error(result.error.message);
+          }
+          setSpinning(false);
+        });
+        return;
+      }
       updateLifeCycleModel({ ...newData, id: thisId, version: thisVersion }).then((result: any) => {
         if (result.data) {
           message.success(

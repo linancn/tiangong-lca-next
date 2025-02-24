@@ -1,14 +1,15 @@
-import { getUnitGroupDetail, updateUnitGroup } from '@/services/unitgroups/api';
+import { getUnitGroupDetail, updateUnitGroup, createUnitGroup } from '@/services/unitgroups/api';
 import { UnitTable } from '@/services/unitgroups/data';
 import { genUnitGroupFromData } from '@/services/unitgroups/util';
 import styles from '@/style/custom.less';
-import { CloseOutlined, FormOutlined } from '@ant-design/icons';
+import { CloseOutlined, FormOutlined, CopyOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { Button, Collapse, Drawer, Space, Spin, Tooltip, Typography, message } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { UnitGroupForm } from './form';
+import { v4 } from 'uuid';
 
 type Props = {
   id: string;
@@ -17,6 +18,7 @@ type Props = {
   lang: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  type?: 'edit' | 'copy';
 };
 const UnitGroupEdit: FC<Props> = ({
   id,
@@ -25,6 +27,7 @@ const UnitGroupEdit: FC<Props> = ({
   lang,
   actionRef,
   setViewDrawerVisible,
+  type = 'edit',
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
@@ -100,11 +103,19 @@ const UnitGroupEdit: FC<Props> = ({
   return (
     <>
       {buttonType === 'icon' ? (
+        type === 'edit' ? (
         <Tooltip
           title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit"></FormattedMessage>}
         >
-          <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit}></Button>
-        </Tooltip>
+            <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit}></Button>
+          </Tooltip>
+        ) : (
+          <Tooltip
+            title={<FormattedMessage id="pages.button.copy" defaultMessage="Copy"></FormattedMessage>}
+          >
+            <Button shape="circle" icon={<CopyOutlined />} size="small" onClick={onEdit}></Button>
+          </Tooltip>
+        )
       ) : (
         <Button size="small" onClick={onEdit}>
           <FormattedMessage id="pages.button.edit" defaultMessage="Edit"></FormattedMessage>
@@ -170,6 +181,24 @@ const UnitGroupEdit: FC<Props> = ({
               },
             }}
             onFinish={async () => {
+              if (type === 'copy') {
+                const createResult = await createUnitGroup(v4(), fromData);
+                if (createResult?.data) {
+                  message.success(
+                    intl.formatMessage({
+                      id: 'pages.button.create.success',
+                      defaultMessage: 'Created successfully!',
+                    }),
+                  );
+                  setDrawerVisible(false);
+                  setViewDrawerVisible(false);
+                  setActiveTabKey('unitGroupInformation');
+                  actionRef.current?.reload();
+                } else {
+                  message.error(createResult?.error?.message);
+                }
+                return true;
+              };
               const updateResult = await updateUnitGroup(id, version, fromData);
               if (updateResult?.data) {
                 message.success(

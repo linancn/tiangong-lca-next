@@ -1,15 +1,15 @@
-import { getSourceDetail, updateSource } from '@/services/sources/api';
+import { getSourceDetail, updateSource, createSource } from '@/services/sources/api';
 import { genSourceFromData } from '@/services/sources/util';
 import { supabaseStorageBucket } from '@/services/supabase/key';
 import { getThumbFileUrls, removeFile, uploadFile } from '@/services/supabase/storage';
 import styles from '@/style/custom.less';
-import { CloseOutlined, FormOutlined } from '@ant-design/icons';
+import { CloseOutlined, FormOutlined, CopyOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { Button, Collapse, Drawer, Space, Spin, Tooltip, Typography, message } from 'antd';
 import path from 'path';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
 import { SourceForm } from './form';
 
@@ -20,6 +20,7 @@ type Props = {
   buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  type?: 'edit' | 'copy';
 };
 
 const SourceEdit: FC<Props> = ({
@@ -29,7 +30,9 @@ const SourceEdit: FC<Props> = ({
   actionRef,
   lang,
   setViewDrawerVisible,
+  type = 'edit',
 }) => {
+  const intl = useIntl();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
   const [activeTabKey, setActiveTabKey] = useState<string>('sourceInformation');
@@ -108,6 +111,31 @@ const SourceEdit: FC<Props> = ({
       });
     }
 
+    if (type === 'copy') {
+      const createResult = await createSource(v4(), {
+        ...fromData,
+        sourceInformation: {
+          ...fromData.sourceInformation,
+          dataSetInformation: {
+            ...fromData.sourceInformation.dataSetInformation,
+            referenceToDigitalFile: filePaths,
+          },
+        },
+      });
+      if (createResult?.data) {
+        message.success(
+          intl.formatMessage({
+            id: 'pages.button.create.success',
+            defaultMessage: 'Created successfully!',
+          }),
+        );
+        formRefEdit.current?.resetFields();
+        setDrawerVisible(false);
+        reload();
+      }
+      return true;
+    }
+
     const result = await updateSource(id, version, {
       ...fromData,
       sourceInformation: {
@@ -149,9 +177,15 @@ const SourceEdit: FC<Props> = ({
   return (
     <>
       {buttonType === 'icon' ? (
-        <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
-          <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
-        </Tooltip>
+        type === 'edit' ? (
+          <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
+            <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
+          </Tooltip>
+        ) : (
+          <Tooltip title={<FormattedMessage id="pages.button.copy" defaultMessage="Copy" />}>
+            <Button shape="circle" icon={<CopyOutlined />} size="small" onClick={onEdit} />
+          </Tooltip>
+        )
       ) : (
         <Button onClick={onEdit}>
           <FormattedMessage id="pages.button.edit" defaultMessage="Edit" />
@@ -160,7 +194,11 @@ const SourceEdit: FC<Props> = ({
 
       <Drawer
         title={
-          <FormattedMessage id="pages.source.drawer.title.edit" defaultMessage="Edit Source" />
+          type === 'edit' ? (
+            <FormattedMessage id="pages.source.drawer.title.edit" defaultMessage="Edit Source" />
+          ) : (
+            <FormattedMessage id="pages.source.drawer.title.copy" defaultMessage="Copy Source" />
+          )
         }
         width="90%"
         closable={false}

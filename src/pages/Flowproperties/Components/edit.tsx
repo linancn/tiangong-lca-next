@@ -1,6 +1,6 @@
-import { getFlowpropertyDetail, updateFlowproperties } from '@/services/flowproperties/api';
+import { getFlowpropertyDetail, updateFlowproperties, createFlowproperties } from '@/services/flowproperties/api';
 import styles from '@/style/custom.less';
-import { CloseOutlined, FormOutlined } from '@ant-design/icons';
+import { CloseOutlined, FormOutlined, CopyOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 
 import {
@@ -22,10 +22,11 @@ import {
   useRef,
   useState,
 } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 
 import { genFlowpropertyFromData } from '@/services/flowproperties/util';
 import { FlowpropertyForm } from './form';
+import { v4 } from 'uuid';
 
 type Props = {
   id: string;
@@ -33,14 +34,16 @@ type Props = {
   buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
   lang: string;
+  type?: 'edit' | 'copy';
 };
-const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
+const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang, type = 'edit' }) => {
   const formRefEdit = useRef<ProFormInstance>();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('flowPropertiesInformation');
   const [fromData, setFromData] = useState<any>({});
   const [initData, setInitData] = useState<any>({});
   const [spinning, setSpinning] = useState(false);
+  const intl = useIntl();
 
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
@@ -87,9 +90,13 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
+      <Tooltip title={<FormattedMessage id={type === 'copy' ? 'pages.button.copy' : 'pages.button.edit'} defaultMessage={type === 'copy' ? 'Copy' : 'Edit'} />}>
         {buttonType === 'icon' ? (
-          <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
+          type === 'edit' ? (
+            <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
+          ) : (
+            <Button shape="circle" icon={<CopyOutlined />} size="small" onClick={onEdit} />
+          )
         ) : (
           <Button onClick={onEdit}>
             <FormattedMessage id="pages.button.edit" defaultMessage="Edit" />
@@ -98,10 +105,17 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
       </Tooltip>
       <Drawer
         title={
-          <FormattedMessage
-            id="pages.flowproperty.drawer.title.edit"
-            defaultMessage="Edit Flow property"
-          />
+          type === 'edit' ? (
+            <FormattedMessage
+              id="pages.flowproperty.drawer.title.edit"
+              defaultMessage="Edit Flow property"
+            />
+          ) : (
+            <FormattedMessage
+              id="pages.flowproperty.drawer.title.copy"
+              defaultMessage="Copy Flow property"
+            />
+          )
         }
         width="90%"
         closable={false}
@@ -141,6 +155,24 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
               },
             }}
             onFinish={async () => {
+              if (type === 'copy') {
+                const createResult = await createFlowproperties(v4(), fromData);
+                if (createResult?.data) {
+                  message.success(
+                    intl.formatMessage({
+                      id: 'pages.button.create.success',
+                      defaultMessage: 'Created successfully!',
+                    }),
+                  );
+                  setDrawerVisible(false);
+                  setActiveTabKey('flowPropertiesInformation');
+                  actionRef.current?.reload();
+                } else {
+                  message.error(createResult?.error?.message);
+                }
+                return true;
+              }
+              
               const updateResult = await updateFlowproperties(id, version, fromData);
               if (updateResult?.data) {
                 message.success(

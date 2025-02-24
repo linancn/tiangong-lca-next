@@ -98,6 +98,15 @@ const TableList: FC = () => {
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
               />
+              <SourceEdit
+                type="copy"
+                id={row.id}
+                version={row.version}
+                lang={lang}
+                buttonType={'icon'}
+                actionRef={actionRef}
+                setViewDrawerVisible={() => {}}
+              />
               <SourceDelete
                 id={row.id}
                 version={row.version}
@@ -128,6 +137,15 @@ const TableList: FC = () => {
         return [
           <Space size={'small'} key={0}>
             <SourceView lang={lang} id={row.id} version={row.version} buttonType={'icon'} />
+            <SourceEdit
+                type="copy"
+                id={row.id}
+                version={row.version}
+                lang={lang}
+                buttonType={'icon'}
+                actionRef={actionRef}
+                setViewDrawerVisible={() => {}}
+              />
           </Space>,
         ];
       },

@@ -102,6 +102,15 @@ const TableList: FC = () => {
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
               />
+              <ContactEdit
+                type="copy"
+                id={row.id}
+                version={row.version}
+                lang={lang}
+                buttonType={'icon'}
+                actionRef={actionRef}
+                setViewDrawerVisible={() => {}}
+              />
               <ContactDelete
                 id={row.id}
                 version={row.version}
@@ -138,6 +147,15 @@ const TableList: FC = () => {
               buttonType="icon"
               // actionRef={actionRef}
             />
+            <ContactEdit
+              type="copy"
+              id={row.id}
+              version={row.version}
+              lang={lang}
+              buttonType={'icon'}
+              actionRef={actionRef}
+              setViewDrawerVisible={() => {}}
+              />
           </Space>,
         ];
       },

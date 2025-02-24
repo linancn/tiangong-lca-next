@@ -13,6 +13,7 @@ export default {
   'pages.button.view': '查看',
   'pages.button.create.success': '创建成功!',
   'pages.button.edit': '编辑',
+  'pages.button.copy': '复制',
   'pages.button.refresh': '刷新',
   'pages.button.delete': '删除',
   'pages.button.delete.confirm': '确认要删除这条数据吗?',

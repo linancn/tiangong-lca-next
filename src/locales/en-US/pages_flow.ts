@@ -14,6 +14,7 @@ export default {
   'pages.flow.model.drawer.title.refFlow': 'Ref Flow',
   'pages.flow.model.drawer.title.list': 'Model List',
   'pages.flow.model.drawer.title.edit': 'Edit Model',
+  'pages.flow.model.drawer.title.copy': 'Copy Model',
   'pages.flow.model.drawer.title.view': 'View Model',
   'pages.flow.model.drawer.title.info': 'Model base information',
   'pages.flow.model.drawer.title.edge.port.select': 'Select flow port',

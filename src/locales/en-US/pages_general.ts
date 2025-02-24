@@ -15,6 +15,7 @@ export default {
   'pages.button.reset': 'Reset',
   'pages.button.view': 'View',
   'pages.button.edit': 'Edit',
+  'pages.button.copy': 'Copy',
   'pages.button.refresh': 'Refresh',
   'pages.button.delete': 'Delete',
   'pages.button.delete.confirm': 'Are you sure want to delete this data?',

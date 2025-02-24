@@ -1,13 +1,14 @@
-import { getFlowDetail, updateFlows } from '@/services/flows/api';
+import { createFlows, getFlowDetail, updateFlows } from '@/services/flows/api';
 import { genFlowFromData } from '@/services/flows/util';
 import styles from '@/style/custom.less';
-import { CloseOutlined, FormOutlined } from '@ant-design/icons';
+import { CloseOutlined, FormOutlined, CopyOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { Button, Collapse, Drawer, Space, Spin, Tooltip, Typography, message } from 'antd';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { FlowForm } from './form';
+import { v4 } from 'uuid';
 
 type Props = {
   id: string;
@@ -15,8 +16,9 @@ type Props = {
   buttonType: string;
   lang: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
+  type?: 'edit' | 'copy';
 };
-const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
+const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang, type = 'edit' }) => {
   const formRefEdit = useRef<ProFormInstance>();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('flowInformation');
@@ -88,9 +90,13 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
+      <Tooltip title={<FormattedMessage id={type === 'copy' ? 'pages.button.copy' : 'pages.button.edit'} defaultMessage={type === 'copy' ? 'Copy' : 'Edit'} />}>
         {buttonType === 'icon' ? (
-          <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
+          type === 'edit' ? (
+            <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
+          ) : (
+            <Button shape="circle" icon={<CopyOutlined />} size="small" onClick={onEdit} />
+          )
         ) : (
           <Button onClick={onEdit}>
             <FormattedMessage id="pages.button.edit" defaultMessage="Edit" />
@@ -98,7 +104,7 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
         )}
       </Tooltip>
       <Drawer
-        title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}
+        title={<FormattedMessage id={type === 'copy' ? 'pages.button.copy' : 'pages.button.edit'} defaultMessage={type === 'copy' ? 'Copy' : 'Edit'} />}
         width="90%"
         closable={false}
         extra={
@@ -137,6 +143,23 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
               },
             }}
             onFinish={async () => {
+              if(type === 'copy') {
+                const createResult = await createFlows(v4(), fromData);
+                if (createResult?.data) {
+                  message.success(
+                    intl.formatMessage({
+                      id: 'pages.button.create.success',
+                      defaultMessage: 'Created successfully!',
+                    }),
+                  );
+                  setDrawerVisible(false);
+                  setActiveTabKey('flowInformation');
+                  actionRef.current?.reload();
+                } else {
+                  message.error(createResult?.error?.message);
+                }
+                return true;
+              }
               const updateResult = await updateFlows(id, version, fromData);
               if (updateResult?.data) {
                 message.success(

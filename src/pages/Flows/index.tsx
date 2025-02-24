@@ -122,6 +122,14 @@ const TableList: FC = () => {
                 buttonType={'icon'}
                 actionRef={actionRef}
               />
+              <FlowsEdit
+                type="copy"
+                id={row.id}
+                version={row.version}
+                lang={lang}
+                buttonType={'icon'}
+                actionRef={actionRef}
+              />
               <FlowsDelete
                 id={row.id}
                 version={row.version}
@@ -152,6 +160,14 @@ const TableList: FC = () => {
         return [
           <Space size={'small'} key={0}>
             <FlowsView buttonType={'icon'} id={row.id} version={row.version} lang={lang} />
+            <FlowsEdit
+                type="copy"
+                id={row.id}
+                version={row.version}
+                lang={lang}
+                buttonType={'icon'}
+                actionRef={actionRef}
+              />
           </Space>,
         ];
       },

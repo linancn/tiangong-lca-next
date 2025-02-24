@@ -112,6 +112,15 @@ const TableList: FC = () => {
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
               />
+              <ProcessEdit
+                type="copy"
+                id={row.id}
+                version={row.version}
+                lang={lang}
+                buttonType={'icon'}
+                actionRef={actionRef}
+                setViewDrawerVisible={() => {}}
+              />
               <ProcessDelete
                 id={row.id}
                 version={row.version}
@@ -149,6 +158,15 @@ const TableList: FC = () => {
               lang={lang}
               disabled={false}
             />
+            <ProcessEdit
+                type="copy"
+                id={row.id}
+                version={row.version}
+                lang={lang}
+                buttonType={'icon'}
+                actionRef={actionRef}
+                setViewDrawerVisible={() => {}}
+              />
           </Space>,
         ];
       },

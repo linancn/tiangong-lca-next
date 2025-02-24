@@ -4,6 +4,7 @@ export default {
   'pages.flowproperty.drawer.title.view': 'View Flow property',
   'pages.flowproperty.drawer.title.create': 'Create Flow property',
   'pages.flowproperty.drawer.title.edit': 'Edit Flow property',
+  'pages.flowproperty.drawer.title.copy': 'Copy Flow property',
   'pages.flowproperty.drawer.title.select': 'Select Flow property',
 
   'pages.flowpropertiy.generalComment': 'General comment on data set',

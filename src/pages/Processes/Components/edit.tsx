@@ -1,9 +1,9 @@
 import { getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
-import { getProcessDetail, updateProcess } from '@/services/processes/api';
+import { createProcess, getProcessDetail, updateProcess } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
 import styles from '@/style/custom.less';
-import { CloseOutlined, FormOutlined, ProductOutlined } from '@ant-design/icons';
+import { CloseOutlined, FormOutlined, ProductOutlined, CopyOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import {
   Button,
@@ -21,6 +21,7 @@ import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { ProcessForm } from './form';
+import { v4 } from 'uuid';
 
 type Props = {
   id: string;
@@ -29,6 +30,7 @@ type Props = {
   buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined> | undefined;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  type?:'edit' | 'copy';
 };
 const ProcessEdit: FC<Props> = ({
   id,
@@ -37,6 +39,7 @@ const ProcessEdit: FC<Props> = ({
   buttonType,
   actionRef,
   setViewDrawerVisible,
+  type='edit'
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
@@ -155,9 +158,13 @@ const ProcessEdit: FC<Props> = ({
           />
         </Tooltip>
       ) : (
-        <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
+        <Tooltip title={<FormattedMessage id={type === 'copy' ? 'pages.button.copy' : 'pages.button.edit'} defaultMessage={type === 'copy' ? 'Copy' : 'Edit'} />}>
           {buttonType === 'icon' ? (
-            <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
+            type === 'edit' ? (
+              <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
+            ) : (
+              <Button shape="circle" icon={<CopyOutlined />} size="small" onClick={onEdit} />
+            )
           ) : (
             <Button onClick={onEdit}>
               <FormattedMessage id="pages.button.edit" defaultMessage="Edit" />
@@ -167,7 +174,7 @@ const ProcessEdit: FC<Props> = ({
       )}
       <Drawer
         title={
-          <FormattedMessage id="pages.process.drawer.title.edit" defaultMessage="Edit process" />
+          <FormattedMessage id={type === 'copy' ? 'pages.process.drawer.title.copy' : 'pages.process.drawer.title.edit'} defaultMessage={type === 'copy' ? 'Copy process' : 'Edit process'} />
         }
         width="90%"
         closable={false}
@@ -226,6 +233,25 @@ const ProcessEdit: FC<Props> = ({
             }}
             onFinish={async () => {
               setSpinning(true);
+              if(type === 'copy') {
+                const createResult = await createProcess(v4(), fromData);
+                if (createResult?.data) {
+                  message.success(
+                    intl.formatMessage({
+                      id: 'pages.button.create.success',
+                      defaultMessage: 'Created successfully!',
+                    }),
+                  );
+                  setSpinning(false);
+                  setDrawerVisible(false);
+                  setViewDrawerVisible(false);
+                  actionRef?.current?.reload();
+                } else {
+                  setSpinning(false);
+                  message.error(createResult?.error?.message);
+                }
+                return true;
+              }
               const updateResult = await updateProcess(id, version, {
                 ...fromData,
                 exchanges: { exchange: [...exchangeDataSource] },
