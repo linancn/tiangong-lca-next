@@ -173,7 +173,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
                   defaultMessage="Time stamp (last saved)"
                 />
               }
-              labelStyle={{ width: '120px' }}
+              styles={{ label: { width: '200px' } }}
             >
               {initData.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-'}
             </Descriptions.Item>

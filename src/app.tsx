@@ -1,4 +1,12 @@
-import { AvatarDropdown, AvatarName, DarkMode, Footer, Question, SelectLang } from '@/components';
+import {
+  AvatarDropdown,
+  AvatarName,
+  DarkMode,
+  Footer,
+  Notification,
+  Question,
+  SelectLang,
+} from '@/components';
 import { Link, history } from '@umijs/max';
 
 import { currentUser as queryCurrentUser } from '@/services/ant-design-pro/api';
@@ -97,7 +105,12 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       src: initialState?.currentUser?.avatar,
       title: <AvatarName />,
       render: (_, avatarChildren) => {
-        return <AvatarDropdown>{avatarChildren}</AvatarDropdown>;
+        return (
+          <>
+            <Notification></Notification>
+            <AvatarDropdown>{avatarChildren}</AvatarDropdown>
+          </>
+        );
       },
     },
     waterMarkProps: {

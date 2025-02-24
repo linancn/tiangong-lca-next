@@ -196,7 +196,7 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
                   defaultMessage="Time stamp (last saved)"
                 />
               }
-              labelStyle={{ width: '220px' }}
+              styles={{ label: { width: '200px' } }}
             >
               {initData.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-'}
             </Descriptions.Item>
@@ -266,7 +266,7 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
                   defaultMessage="Permanent data set URI"
                 />
               }
-              labelStyle={{ width: '200px' }}
+              styles={{ label: { width: '210px' } }}
             >
               {initData.administrativeInformation?.publicationAndOwnership?.[
                 'common:permanentDataSetURI'

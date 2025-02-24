@@ -9,6 +9,7 @@ export type FlowTable = {
   locationOfSupply: string;
   refFlowPropertyId: string;
   modifiedAt: Date;
+  teamId: string;
 };
 
 export type FlowModelTable = {

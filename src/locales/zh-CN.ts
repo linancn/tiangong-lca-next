@@ -1,4 +1,6 @@
 import component from './zh-CN/component';
+import component_allTeams from './zh-CN/component_allTeams';
+import component_contributeData from './zh-CN/component_contributeData';
 import globalHeader from './zh-CN/globalHeader';
 import menu from './zh-CN/menu';
 import pages from './zh-CN/pages';
@@ -11,6 +13,7 @@ import pages_model from './zh-CN/pages_model';
 import pages_process from './zh-CN/pages_process';
 import pages_product from './zh-CN/pages_product';
 import pages_source from './zh-CN/pages_source';
+import teams from './zh-CN/pages_teams';
 import pages_unitgroup from './zh-CN/pages_unitgroup';
 import pwa from './zh-CN/pwa';
 import settingDrawer from './zh-CN/settingDrawer';
@@ -43,4 +46,7 @@ export default {
   ...pages_source,
   ...pages_product,
   ...validator,
+  ...teams,
+  ...component_allTeams,
+  ...component_contributeData,
 };

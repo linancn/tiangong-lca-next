@@ -1,14 +1,16 @@
-import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
-import { history, useModel } from '@umijs/max';
-import React, { useCallback } from 'react';
+import { LogoutOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
+import { history, useIntl, useModel } from '@umijs/max';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { outLogin } from '@/services/ant-design-pro/api';
-import { Spin } from 'antd';
+import { getUserRoles } from '@/services/roles/api';
+import { Button, Modal, Spin } from 'antd';
 import { createStyles } from 'antd-style';
 import { stringify } from 'querystring';
 import type { MenuInfo } from 'rc-menu/lib/interface';
 import { flushSync } from 'react-dom';
 import { FormattedMessage } from 'umi';
+import AllTeams from '../AllTeams';
 import HeaderDropdown from '../HeaderDropdown';
 
 export type GlobalHeaderRightProps = {
@@ -41,6 +43,22 @@ const useStyles = createStyles(({ token }) => {
 });
 
 export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) => {
+  const intl = useIntl();
+  const [isUserInTeam, setIsUserInTeam] = useState(false);
+  const [showAllTeamsModal, setShowAllTeamsModal] = useState(false);
+  const initialUserRole = async () => {
+    const { data } = await getUserRoles();
+
+    if (data && data?.length && data[0].role !== 'rejected') {
+      setIsUserInTeam(true);
+    } else {
+      setIsUserInTeam(false);
+    }
+  };
+
+  useEffect(() => {
+    initialUserRole();
+  }, []);
   /**
    * 退出登录，并且将当前的 url 保存
    */
@@ -74,9 +92,75 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
         loginOut();
         return;
       }
+      if (key === 'team') {
+        if (isUserInTeam) {
+          history.push(`/team?action=edit`);
+        } else {
+          Modal.confirm({
+            title: intl.formatMessage({
+              id: 'teams.modal.noTeam.title',
+              defaultMessage: 'You are not in any team',
+            }),
+            content: intl.formatMessage({
+              id: 'teams.modal.noTeam.content',
+              defaultMessage: 'You can create a team or join an existing team',
+            }),
+            closable: true,
+            footer: (
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  gap: '8px',
+                  marginTop: '20px',
+                }}
+              >
+                <Button
+                  style={{ borderColor: '#5C246A', color: '#5C246A' }}
+                  onClick={() => {
+                    setShowAllTeamsModal(true);
+                    Modal.destroyAll();
+                  }}
+                >
+                  {intl.formatMessage({
+                    id: 'teams.modal.noTeam.join',
+                    defaultMessage: 'Join Team',
+                  })}
+                  {/* <FormattedMessage id="" defaultMessage="" /> */}
+                </Button>
+                <Button
+                  type="primary"
+                  style={{ backgroundColor: '#5C246A' }}
+                  onClick={() => {
+                    Modal.destroyAll();
+                    if (location.pathname === '/team') {
+                      const searchParams = new URLSearchParams(location.search);
+                      searchParams.set('action', 'create');
+                      history.replace({
+                        pathname: location.pathname,
+                        search: searchParams.toString(),
+                      });
+                      window.location.reload();
+                    } else {
+                      history.push('/team?action=create');
+                    }
+                  }}
+                >
+                  {/* <FormattedMessage id="teams.modal.noTeam.create" defaultMessage="Create Team" /> */}
+                  {intl.formatMessage({
+                    id: 'teams.modal.noTeam.create',
+                    defaultMessage: 'Create Team',
+                  })}
+                </Button>
+              </div>
+            ),
+          });
+        }
+        return;
+      }
       history.push(`/account`);
     },
-    [setInitialState],
+    [setInitialState, isUserInTeam],
   );
 
   const loading = (
@@ -108,6 +192,11 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
       label: <FormattedMessage id="menu.account.profile" defaultMessage="Account Profile" />,
     },
     {
+      key: 'team',
+      icon: <TeamOutlined />,
+      label: <FormattedMessage id="menu.account.team" defaultMessage="Team Management" />,
+    },
+    {
       type: 'divider' as const,
     },
     {
@@ -118,14 +207,24 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
   ];
 
   return (
-    <HeaderDropdown
-      menu={{
-        selectedKeys: [],
-        onClick: onMenuClick,
-        items: menuItems,
-      }}
-    >
-      {children}
-    </HeaderDropdown>
+    <>
+      <HeaderDropdown
+        menu={{
+          selectedKeys: [],
+          onClick: onMenuClick,
+          items: menuItems,
+        }}
+      >
+        {children}
+      </HeaderDropdown>
+      <Modal
+        width={'90%'}
+        open={showAllTeamsModal}
+        onCancel={() => setShowAllTeamsModal(false)}
+        footer={null}
+      >
+        <AllTeams />
+      </Modal>
+    </>
   );
 };
