@@ -114,8 +114,22 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <FlowsView buttonType={'icon'} id={row.id} version={row.version} lang={lang} />
+              <FlowsView
+                actionRef={actionRef}
+                buttonType={'icon'}
+                id={row.id}
+                version={row.version}
+                lang={lang}
+              />
               <FlowsEdit
+                id={row.id}
+                version={row.version}
+                lang={lang}
+                buttonType={'icon'}
+                actionRef={actionRef}
+              />
+              <FlowsEdit
+                type="copy"
                 id={row.id}
                 version={row.version}
                 lang={lang}
@@ -151,7 +165,21 @@ const TableList: FC = () => {
         }
         return [
           <Space size={'small'} key={0}>
-            <FlowsView buttonType={'icon'} id={row.id} version={row.version} lang={lang} />
+            <FlowsView
+              actionRef={actionRef}
+              buttonType={'icon'}
+              id={row.id}
+              version={row.version}
+              lang={lang}
+            />
+            <FlowsEdit
+              type="copy"
+              id={row.id}
+              version={row.version}
+              lang={lang}
+              buttonType={'icon'}
+              actionRef={actionRef}
+            />
           </Space>,
         ];
       },

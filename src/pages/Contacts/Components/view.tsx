@@ -1,27 +1,30 @@
+import AllVersionsList from '@/components/AllVersions';
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 import { getContactDetail } from '@/services/contacts/api';
 import { genContactFromData } from '@/services/contacts/util';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
-import { Button, Card, Descriptions, Divider, Drawer, Spin, Tooltip } from 'antd';
+import type { ActionType } from '@ant-design/pro-table';
+import { Button, Card, Descriptions, Divider, Drawer, Modal, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
+import ContactEdit from './edit';
 import ContractDescription from './select/description';
-
 type Props = {
   id: string;
   version: string;
   lang: string;
   buttonType: string;
+  actionRef?: React.MutableRefObject<ActionType | undefined>;
 };
-const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
+const ContactView: FC<Props> = ({ id, version, lang, buttonType, actionRef }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<any>({});
   const [activeTabKey, setActiveTabKey] = useState<string>('contactInformation');
-
+  const [showAllVersionsModal, setShowAllVersionsModal] = useState(false);
   const tabList = [
     {
       key: 'contactInformation',
@@ -213,9 +216,31 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
               }
               labelStyle={{ width: '160px' }}
             >
-              {initData.administrativeInformation?.publicationAndOwnership?.[
-                'common:dataSetVersion'
-              ] ?? '-'}
+              <Space>
+                {initData.administrativeInformation?.publicationAndOwnership?.[
+                  'common:dataSetVersion'
+                ] ?? '-'}
+                <ContactEdit
+                  type="createVersion"
+                  id={id}
+                  version={version}
+                  lang={lang}
+                  buttonType={'pages.button.createVersion'}
+                  actionRef={actionRef}
+                  setViewDrawerVisible={() => {}}
+                />
+                <Button onClick={() => setShowAllVersionsModal(true)}>
+                  <FormattedMessage id="pages.button.allVersion" defaultMessage="All version" />
+                </Button>
+                <Modal
+                  width={'90%'}
+                  open={showAllVersionsModal}
+                  onCancel={() => setShowAllVersionsModal(false)}
+                  footer={null}
+                >
+                  <AllVersionsList searchTableName="contacts" id={id} />
+                </Modal>
+              </Space>
             </Descriptions.Item>
           </Descriptions>
           <br />

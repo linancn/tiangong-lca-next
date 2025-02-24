@@ -92,9 +92,18 @@ const TableList: FC = () => {
                 version={row.version}
                 lang={lang}
                 buttonType="icon"
-                // actionRef={actionRef}
+                actionRef={actionRef}
               />
               <ContactEdit
+                id={row.id}
+                version={row.version}
+                lang={lang}
+                buttonType={'icon'}
+                actionRef={actionRef}
+                setViewDrawerVisible={() => {}}
+              />
+              <ContactEdit
+                type="copy"
                 id={row.id}
                 version={row.version}
                 lang={lang}
@@ -136,7 +145,16 @@ const TableList: FC = () => {
               version={row.version}
               lang={lang}
               buttonType="icon"
-              // actionRef={actionRef}
+              actionRef={actionRef}
+            />
+            <ContactEdit
+              type="copy"
+              id={row.id}
+              version={row.version}
+              lang={lang}
+              buttonType={'icon'}
+              actionRef={actionRef}
+              setViewDrawerVisible={() => {}}
             />
           </Space>,
         ];

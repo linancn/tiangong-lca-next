@@ -103,8 +103,18 @@ const TableList: FC = () => {
                 buttonType={'icon'}
                 lang={lang}
                 disabled={false}
+                actionRef={actionRef}
               />
               <ProcessEdit
+                id={row.id}
+                version={row.version}
+                lang={lang}
+                buttonType={'icon'}
+                actionRef={actionRef}
+                setViewDrawerVisible={() => {}}
+              />
+              <ProcessEdit
+                type="copy"
                 id={row.id}
                 version={row.version}
                 lang={lang}
@@ -148,6 +158,16 @@ const TableList: FC = () => {
               buttonType={'icon'}
               lang={lang}
               disabled={false}
+              actionRef={actionRef}
+            />
+            <ProcessEdit
+              type="copy"
+              id={row.id}
+              version={row.version}
+              lang={lang}
+              buttonType={'icon'}
+              actionRef={actionRef}
+              setViewDrawerVisible={() => {}}
             />
           </Space>,
         ];

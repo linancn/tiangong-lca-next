@@ -9,10 +9,10 @@ import LevelTextItemForm from '@/components/LevelTextItem/form';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { ProFormInstance } from '@ant-design/pro-components';
+import { theme } from 'antd';
 import { RcFile } from 'antd/es/upload';
 import { FormattedMessage } from 'umi';
 import { publicationTypeOptions } from './optiondata';
-
 type Props = {
   lang: string;
   activeTabKey: string;
@@ -38,7 +38,7 @@ export const SourceForm: FC<Props> = ({
 }) => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
-
+  const { token } = theme.useToken();
   const handlePreview = async (file: UploadFile) => {
     if (isImage(file)) {
       if (!file.url && !file.preview) {
@@ -240,7 +240,7 @@ export const SourceForm: FC<Props> = ({
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
           >
-            <Input disabled={true} style={{ color: '#000' }} />
+            <Input disabled={true} style={{ color: token.colorTextDescription }} />
           </Form.Item>
           <SourceSelectForm
             name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
