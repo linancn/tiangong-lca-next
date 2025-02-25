@@ -74,7 +74,11 @@ const TableList: FC = () => {
         return (
           <Space size={'small'}>
             {row.version}
-            <AllVersionsList searchTableName="lifecyclemodels" id={row.id}>
+            <AllVersionsList
+              nameColume={`json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->name`}
+              searchTableName="lifecyclemodels"
+              id={row.id}
+            >
               <LifeCycleModelEdit
                 type="createVersion"
                 id={row.id}
@@ -200,6 +204,7 @@ const TableList: FC = () => {
         />
       </Card>
       <ProTable<LifeCycleModelTable, ListPagination>
+        rowKey={(record) => `${record.id}-${record.version}`}
         headerTitle={
           <>
             {getDataTitle(dataSource)} /{' '}

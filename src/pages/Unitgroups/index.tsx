@@ -86,7 +86,11 @@ const TableList: FC = () => {
         return (
           <Space size={'small'}>
             {row.version}
-            <AllVersionsList searchTableName="unitgroups" id={row.id}>
+            <AllVersionsList
+              nameColume={`json->unitGroupDataSet->unitGroupInformation->dataSetInformation->"common:name"`}
+              searchTableName="unitgroups"
+              id={row.id}
+            >
               <UnitGroupEdit
                 type="createVersion"
                 id={row.id}

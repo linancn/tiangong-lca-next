@@ -89,6 +89,7 @@ export async function contributeSource(tableName: string, id: string, version: s
 }
 
 export async function getVersionsById(
+  nameColume:string,
   tableName: string,
   id: string,
   params: { pageSize: number; current: number },
@@ -99,7 +100,12 @@ export async function getVersionsById(
 
   const { error, data, count } = await supabase
     .from(tableName)
-    .select('version, created_at, modified_at', { count: 'exact' })
+    .select(`
+      name: ${nameColume}, 
+      version, 
+      created_at, 
+      modified_at`, 
+      { count: 'exact' })
     .eq('id', id)
     .order(sortBy, { ascending: orderBy === 'ascend' })
     .range(

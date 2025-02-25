@@ -78,7 +78,11 @@ const TableList: FC = () => {
         return (
           <Space size={'small'}>
             {row.version}
-            <AllVersionsList searchTableName="sources" id={row.id}>
+            <AllVersionsList
+              nameColume={`json->sourceDataSet->sourceInformation->dataSetInformation->"common:shortName"`}
+              searchTableName="sources"
+              id={row.id}
+            >
               <SourceEdit
                 type="createVersion"
                 id={row.id}
@@ -212,6 +216,7 @@ const TableList: FC = () => {
         />
       </Card>
       <ProTable<SourceTable, ListPagination>
+        rowKey={(record) => `${record.id}-${record.version}`}
         headerTitle={
           <>
             {getDataTitle(dataSource)} /{' '}

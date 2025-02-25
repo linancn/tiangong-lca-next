@@ -84,7 +84,11 @@ const TableList: FC = () => {
         return (
           <Space size={'small'}>
             {row.version}
-            <AllVersionsList searchTableName="processes" id={row.id}>
+            <AllVersionsList
+              nameColume={`json->processDataSet->processInformation->dataSetInformation->name`}
+              searchTableName="processes"
+              id={row.id}
+            >
               <ProcessEdit
                 type="createVersion"
                 id={row.id}
@@ -224,6 +228,7 @@ const TableList: FC = () => {
         />
       </Card>
       <ProTable<ProcessTable, ListPagination>
+        rowKey={(record) => `${record.id}-${record.version}`}
         headerTitle={
           <>
             {getDataTitle(dataSource)} /{' '}

@@ -95,7 +95,11 @@ const TableList: FC = () => {
         return (
           <Space size={'small'}>
             {row.version}
-            <AllVersionsList searchTableName="flowproperties" id={row.id}>
+            <AllVersionsList
+              nameColume={`json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->"common:name"`}
+              searchTableName="flowproperties"
+              id={row.id}
+            >
               <FlowpropertiesEdit
                 type="createVersion"
                 id={row.id}
@@ -227,6 +231,7 @@ const TableList: FC = () => {
         />
       </Card>
       <ProTable<FlowpropertyTable, ListPagination>
+        rowKey={(record) => `${record.id}-${record.version}`}
         headerTitle={
           <>
             {getDataTitle(dataSource)} /{' '}
