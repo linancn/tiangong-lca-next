@@ -26,7 +26,7 @@ type Props = {
   actionRef?: React.MutableRefObject<ActionType | undefined>;
 };
 
-const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible, actionRef }) => {
+const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
   const [spinning, setSpinning] = useState(false);
   const [infoData, setInfoData] = useState<any>({});
 
@@ -387,13 +387,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible, actionRef })
 
   return (
     <Space direction="vertical" size={'middle'}>
-      <ToolbarViewInfo
-        actionRef={actionRef}
-        id={id}
-        version={version}
-        lang={lang}
-        data={infoData}
-      />
+      <ToolbarViewInfo lang={lang} data={infoData} />
       <ProcessView
         id={nodes.find((node) => node.selected)?.data?.id ?? ''}
         version={nodes.find((node) => node.selected)?.data?.version ?? ''}

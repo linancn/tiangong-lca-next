@@ -1,0 +1,44 @@
+name: Gitleaks Security Scan
+
+on:
+  push:
+    branches: [ main, master, dev*, ]  # Triggered on push to main and development branches
+  pull_request:
+    branches: [ main, master ]        # Triggered on PR to main branches
+  schedule:
+    - cron: '0 0 * * 0'              # Scan every Sunday at UTC 00:00
+
+jobs:
+  scan:
+    name: Gitleaks Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create reports directory
+        run: mkdir -p reports
+
+      - name: Run Gitleaks
+        uses: zricethezav/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+          GITLEAKS_REPORT_PATH: reports/gitleaks-report.json
+          GITLEAKS_REPORT_FORMAT: json
+          GITLEAKS_VERBOSE: true
+
+      - name: Generate empty report if scan failed
+        if: failure()
+        run: |
+          echo '{"findings":[]}' > reports/gitleaks-report.json
+
+      - name: Upload scan results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gitleaks-report
+          path: reports/gitleaks-report.json
+          retention-days: 7

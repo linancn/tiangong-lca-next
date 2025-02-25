@@ -4,7 +4,7 @@ import {
   updateFlowproperties,
 } from '@/services/flowproperties/api';
 import styles from '@/style/custom.less';
-import { CloseOutlined, CopyOutlined, FormOutlined } from '@ant-design/icons';
+import { CloseOutlined, CopyOutlined, FormOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 
 import {
@@ -104,14 +104,24 @@ const FlowpropertiesEdit: FC<Props> = ({
       <Tooltip
         title={
           <FormattedMessage
-            id={type === 'copy' ? 'pages.button.copy' : 'pages.button.edit'}
-            defaultMessage={type === 'copy' ? 'Copy' : 'Edit'}
+            id={
+              type === 'copy'
+                ? 'pages.button.copy'
+                : type === 'createVersion'
+                  ? 'pages.button.createVersion'
+                  : 'pages.button.edit'
+            }
+            defaultMessage={
+              type === 'copy' ? 'Copy' : type === 'createVersion' ? 'Create Version' : 'Edit'
+            }
           />
         }
       >
         {buttonType === 'icon' ? (
           type === 'edit' ? (
             <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
+          ) : type === 'createVersion' ? (
+            <Button type="text" icon={<PlusOutlined />} size="small" onClick={onEdit} />
           ) : (
             <Button shape="circle" icon={<CopyOutlined />} size="small" onClick={onEdit} />
           )
@@ -125,6 +135,7 @@ const FlowpropertiesEdit: FC<Props> = ({
         )}
       </Tooltip>
       <Drawer
+        getContainer={() => document.body}
         title={
           type === 'edit' ? (
             <FormattedMessage

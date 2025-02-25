@@ -1,3 +1,4 @@
+import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
 import { contributeSource } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
@@ -19,7 +20,6 @@ import LifeCycleModelCreate from './Components/create';
 import LifeCycleModelDelete from './Components/delete';
 import LifeCycleModelEdit from './Components/edit';
 import LifeCycleModelView from './Components/view';
-
 const { Search } = Input;
 
 const TableList: FC = () => {
@@ -70,6 +70,27 @@ const TableList: FC = () => {
       dataIndex: 'version',
       sorter: false,
       search: false,
+      render: (_, row) => {
+        return (
+          <Space size={'small'}>
+            {row.version}
+            <AllVersionsList
+              nameColume={`json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->name`}
+              searchTableName="lifecyclemodels"
+              id={row.id}
+            >
+              <LifeCycleModelEdit
+                type="createVersion"
+                id={row.id}
+                version={row.version}
+                lang={lang}
+                buttonType={'icon'}
+                actionRef={actionRef}
+              />
+            </AllVersionsList>
+          </Space>
+        );
+      },
     },
     {
       title: <FormattedMessage id="pages.table.title.updatedAt" defaultMessage="Updated at" />,
@@ -183,6 +204,7 @@ const TableList: FC = () => {
         />
       </Card>
       <ProTable<LifeCycleModelTable, ListPagination>
+        rowKey={(record) => `${record.id}-${record.version}`}
         headerTitle={
           <>
             {getDataTitle(dataSource)} /{' '}

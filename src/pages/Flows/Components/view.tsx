@@ -1,4 +1,3 @@
-import AllVersionsList from '@/components/AllVersions';
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import LocationTextItemDescription from '@/components/LocationTextItem/description';
@@ -12,11 +11,10 @@ import { ListPagination } from '@/services/general/data';
 import { CheckCircleOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import type { ActionType } from '@ant-design/pro-table';
-import { Button, Card, Descriptions, Divider, Drawer, Modal, Space, Spin, Tooltip } from 'antd';
+import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
-import FlowsEdit from './edit';
 import { complianceOptions, flowTypeOptions } from './optiondata';
 import PropertyView from './Property/view';
 
@@ -33,10 +31,9 @@ const getComplianceLabel = (value: string) => {
   return option ? option.label : '-';
 };
 
-const FlowsView: FC<Props> = ({ id, version, buttonType, lang, actionRef }) => {
+const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('flowInformation');
-  const [showAllVersionsModal, setShowAllVersionsModal] = useState(false);
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<any>({});
   const [propertyDataSource, setPropertyDataSource] = useState<any>([]);
@@ -539,25 +536,6 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang, actionRef }) => {
                 {initData?.administrativeInformation?.publicationAndOwnership?.[
                   'common:dataSetVersion'
                 ] ?? '-'}
-                <FlowsEdit
-                  buttonType={'pages.button.createVersion'}
-                  type="createVersion"
-                  id={id}
-                  version={version}
-                  lang={lang}
-                  actionRef={actionRef}
-                />
-                <Button onClick={() => setShowAllVersionsModal(true)}>
-                  <FormattedMessage id="pages.button.allVersion" defaultMessage="All version" />
-                </Button>
-                <Modal
-                  width={'90%'}
-                  open={showAllVersionsModal}
-                  onCancel={() => setShowAllVersionsModal(false)}
-                  footer={null}
-                >
-                  <AllVersionsList searchTableName="flows" id={id} />
-                </Modal>
               </Space>
             </Descriptions.Item>
           </Descriptions>

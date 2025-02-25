@@ -2,7 +2,7 @@ import { createUnitGroup, getUnitGroupDetail, updateUnitGroup } from '@/services
 import { UnitTable } from '@/services/unitgroups/data';
 import { genUnitGroupFromData } from '@/services/unitgroups/util';
 import styles from '@/style/custom.less';
-import { CloseOutlined, CopyOutlined, FormOutlined } from '@ant-design/icons';
+import { CloseOutlined, CopyOutlined, FormOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { Button, Collapse, Drawer, Space, Spin, Tooltip, Typography, message } from 'antd';
 import type { FC } from 'react';
@@ -111,6 +111,17 @@ const UnitGroupEdit: FC<Props> = ({
           >
             <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit}></Button>
           </Tooltip>
+        ) : type === 'createVersion' ? (
+          <Tooltip
+            title={
+              <FormattedMessage
+                id="pages.button.createVersion"
+                defaultMessage="Create Version"
+              ></FormattedMessage>
+            }
+          >
+            <Button type="text" icon={<PlusOutlined />} size="small" onClick={onEdit}></Button>
+          </Tooltip>
         ) : (
           <Tooltip
             title={
@@ -130,6 +141,7 @@ const UnitGroupEdit: FC<Props> = ({
       )}
 
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage
             id={

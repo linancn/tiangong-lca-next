@@ -1,3 +1,4 @@
+import { useUpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import { getContactDetail } from '@/services/contacts/api';
 import { genContactFromData } from '@/services/contacts/util';
 import { jsonToList } from '@/services/general/util';
@@ -7,7 +8,6 @@ import React, { FC, ReactNode, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import ContactView from '../view';
 import ContactSelectDrawer from './drawer';
-
 const { TextArea } = Input;
 
 type Props = {
@@ -23,6 +23,7 @@ const ContactSelectForm: FC<Props> = ({ parentName, name, label, lang, formRef, 
   const [id, setId] = useState<string | undefined>(undefined);
   const [version, setVersion] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
+  const { referenceValue } = useUpdateReferenceContext() as { referenceValue: number };
 
   const handletContactData = (rowId: string, rowVersion: string) => {
     getContactDetail(rowId, rowVersion).then(async (result: any) => {
@@ -55,6 +56,12 @@ const ContactSelectForm: FC<Props> = ({ parentName, name, label, lang, formRef, 
       onData();
     });
   };
+
+  useEffect(() => {
+    if (id) {
+      handletContactData(id, version ?? '');
+    }
+  }, [referenceValue]);
 
   useEffect(() => {
     if (parentName) {

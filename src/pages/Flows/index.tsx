@@ -3,6 +3,7 @@ import { Card, Input, Space, Tooltip, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 
+import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
 import { FlowTable } from '@/services/flows/data';
 import { contributeSource } from '@/services/general/api';
@@ -18,7 +19,6 @@ import FlowsDelete from './Components/delete';
 import FlowsEdit from './Components/edit';
 import { flowTypeOptions } from './Components/optiondata';
 import FlowsView from './Components/view';
-
 const { Search } = Input;
 
 const TableList: FC = () => {
@@ -98,6 +98,27 @@ const TableList: FC = () => {
       dataIndex: 'version',
       sorter: false,
       search: false,
+      render: (_, row) => {
+        return (
+          <Space size={'small'}>
+            {row.version}
+            <AllVersionsList
+              nameColume={`json->flowDataSet->flowInformation->dataSetInformation->name`}
+              searchTableName="flows"
+              id={row.id}
+            >
+              <FlowsEdit
+                type="createVersion"
+                id={row.id}
+                version={row.version}
+                lang={lang}
+                buttonType={'icon'}
+                actionRef={actionRef}
+              />
+            </AllVersionsList>
+          </Space>
+        );
+      },
     },
     {
       title: <FormattedMessage id="pages.table.title.updatedAt" defaultMessage="Updated at" />,
@@ -217,6 +238,7 @@ const TableList: FC = () => {
         />
       </Card>
       <ProTable<FlowTable, ListPagination>
+        rowKey={(record) => `${record.id}-${record.version}`}
         headerTitle={
           <>
             {getDataTitle(dataSource)} /{' '}

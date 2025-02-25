@@ -1,4 +1,4 @@
-import { CloseOutlined, CopyOutlined, FormOutlined } from '@ant-design/icons';
+import { CloseOutlined, CopyOutlined, FormOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
 import { Grid, Transform, XFlow, XFlowGraph } from '@antv/xflow';
 import { Button, Drawer, Layout, theme, Tooltip } from 'antd';
@@ -62,6 +62,14 @@ const LifeCycleModelEdit: FC<Props> = ({
           <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
             <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
           </Tooltip>
+        ) : type === 'createVersion' ? (
+          <Tooltip
+            title={
+              <FormattedMessage id="pages.button.createVersion" defaultMessage="Create Version" />
+            }
+          >
+            <Button type="text" icon={<PlusOutlined />} size="small" onClick={onEdit} />
+          </Tooltip>
         ) : (
           <Tooltip title={<FormattedMessage id="pages.button.copy" defaultMessage="Copy" />}>
             <Button shape="circle" icon={<CopyOutlined />} size="small" onClick={onEdit} />
@@ -76,6 +84,7 @@ const LifeCycleModelEdit: FC<Props> = ({
         </Button>
       )}
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage
             id={

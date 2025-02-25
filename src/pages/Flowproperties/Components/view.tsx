@@ -1,4 +1,3 @@
-import AllVersionsList from '@/components/AllVersions';
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import SourcesDescription from '@/pages/Sources/Components/select/description';
@@ -7,11 +6,10 @@ import { getFlowpropertyDetail } from '@/services/flowproperties/api';
 import { genFlowpropertyFromData } from '@/services/flowproperties/util';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
-import { Button, Card, Descriptions, Divider, Drawer, Modal, Space, Spin, Tooltip } from 'antd';
+import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
-import FlowpropertiesEdit from './edit';
 import { complianceOptions } from './optiondata';
 import FlowpropertiesSelectDescription from './select/description';
 type Props = {
@@ -27,12 +25,11 @@ const getComplianceLabel = (value: string) => {
   return option ? option.label : '-';
 };
 
-const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang, actionRef }) => {
+const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('flowPropertiesInformation');
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<any>({});
-  const [showAllVersionsModal, setShowAllVersionsModal] = useState(false);
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
   };
@@ -230,25 +227,6 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang, actionRef 
                 {initData?.administrativeInformation?.publicationAndOwnership?.[
                   'common:dataSetVersion'
                 ] ?? '-'}
-                <FlowpropertiesEdit
-                  type="createVersion"
-                  id={id}
-                  version={version}
-                  lang={lang}
-                  buttonType={'pages.button.createVersion'}
-                  actionRef={actionRef}
-                />
-                <Button onClick={() => setShowAllVersionsModal(true)}>
-                  <FormattedMessage id="pages.button.allVersion" defaultMessage="All version" />
-                </Button>
-                <Modal
-                  width={'90%'}
-                  open={showAllVersionsModal}
-                  onCancel={() => setShowAllVersionsModal(false)}
-                  footer={null}
-                >
-                  <AllVersionsList searchTableName="flowproperties" id={id} />
-                </Modal>
               </Space>
             </Descriptions.Item>
           </Descriptions>
