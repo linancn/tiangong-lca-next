@@ -16,6 +16,7 @@ import ContactCreate from './Components/create';
 import ContactDelete from './Components/delete';
 import ContactEdit from './Components/edit';
 import ContactView from './Components/view';
+import AllVersionsList from '@/components/AllVersions';
 
 const { Search } = Input;
 
@@ -71,6 +72,25 @@ const TableList: FC = () => {
       dataIndex: 'version',
       sorter: false,
       search: false,
+      render: (_, row) => {
+        return <Space size={'small'}>
+          {row.version}
+          <AllVersionsList
+            searchTableName="contacts"
+            id={row.id}
+          >
+            <ContactEdit
+              type="createVersion"
+              id={row.id}
+              version={row.version}
+              lang={lang}
+              buttonType={'icon'}
+              actionRef={actionRef}
+              setViewDrawerVisible={() => { }}
+            />
+          </AllVersionsList>
+        </Space>
+      },
     },
     {
       title: <FormattedMessage id="pages.table.title.updatedAt" defaultMessage="Updated at" />,
@@ -100,7 +120,7 @@ const TableList: FC = () => {
                 lang={lang}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
+                setViewDrawerVisible={() => { }}
               />
               <ContactEdit
                 type="copy"
@@ -109,14 +129,14 @@ const TableList: FC = () => {
                 lang={lang}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
+                setViewDrawerVisible={() => { }}
               />
               <ContactDelete
                 id={row.id}
                 version={row.version}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
+                setViewDrawerVisible={() => { }}
               />
               <ContributeData
                 onOk={async () => {
@@ -154,7 +174,7 @@ const TableList: FC = () => {
               lang={lang}
               buttonType={'icon'}
               actionRef={actionRef}
-              setViewDrawerVisible={() => {}}
+              setViewDrawerVisible={() => { }}
             />
           </Space>,
         ];

@@ -1,4 +1,3 @@
-import AllVersionsList from '@/components/AllVersions';
 import FileGallery from '@/components/FileViewer/gallery';
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
@@ -8,11 +7,10 @@ import { getSourceDetail } from '@/services/sources/api';
 import { genSourceFromData } from '@/services/sources/util';
 import { CloseOutlined, LinkOutlined, ProfileOutlined } from '@ant-design/icons';
 import type { ActionType } from '@ant-design/pro-table';
-import { Button, Card, Descriptions, Divider, Drawer, Modal, Space, Spin, Tooltip } from 'antd';
+import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
-import SourceEdit from './edit';
 import { publicationTypeOptions } from './optiondata';
 import SourceSelectDescription from './select/description';
 
@@ -30,13 +28,12 @@ const getPublicationTypeLabel = (value: string) => {
   return option ? option.label : '-';
 };
 
-const SourceView: FC<Props> = ({ id, version, buttonType, lang, actionRef }) => {
+const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
   const [activeTabKey, setActiveTabKey] = useState<string>('sourceInformation');
   const [drawerVisible, setDrawerVisible] = useState(false);
   // const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<any>({});
-  const [showAllVersionsModal, setShowAllVersionsModal] = useState(false);
   const tabList = [
     {
       key: 'sourceInformation',
@@ -244,26 +241,6 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang, actionRef }) => 
                 {initData.administrativeInformation?.publicationAndOwnership?.[
                   'common:dataSetVersion'
                 ] ?? '-'}
-                <SourceEdit
-                  type="createVersion"
-                  id={id}
-                  version={version}
-                  lang={lang}
-                  buttonType={'pages.button.createVersion'}
-                  actionRef={actionRef}
-                  setViewDrawerVisible={() => {}}
-                />
-                <Button onClick={() => setShowAllVersionsModal(true)}>
-                  <FormattedMessage id="pages.button.allVersion" defaultMessage="All version" />
-                </Button>
-                <Modal
-                  width={'90%'}
-                  open={showAllVersionsModal}
-                  onCancel={() => setShowAllVersionsModal(false)}
-                  footer={null}
-                >
-                  <AllVersionsList searchTableName="sources" id={id} />
-                </Modal>
               </Space>
             </Descriptions.Item>
           </Descriptions>

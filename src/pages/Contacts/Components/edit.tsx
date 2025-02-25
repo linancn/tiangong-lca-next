@@ -1,7 +1,7 @@
 import { createContact, getContactDetail, updateContact } from '@/services/contacts/api';
 import { genContactFromData } from '@/services/contacts/util';
 import styles from '@/style/custom.less';
-import { CloseOutlined, CopyOutlined, FormOutlined } from '@ant-design/icons';
+import { CloseOutlined, CopyOutlined, FormOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { Button, Collapse, Drawer, Space, Spin, Tooltip, Typography, message } from 'antd';
 import type { FC } from 'react';
@@ -76,9 +76,13 @@ const ContactEdit: FC<Props> = ({
           <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
             <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
           </Tooltip>
+        ) : type === 'createVersion' ? (
+          <Tooltip title={<FormattedMessage id="pages.button.createVersion" defaultMessage="Create Version" />}>
+            <Button type="text" icon={<PlusOutlined />} size="small" onClick={onEdit} />
+          </Tooltip>
         ) : (
           <Tooltip title={<FormattedMessage id="pages.button.copy" defaultMessage="Copy" />}>
-            <Button shape="circle" icon={<CopyOutlined />} size="small" onClick={onEdit} />
+            <Button shape="circle" icon={<CopyOutlined />} onClick={onEdit} />
           </Tooltip>
         )
       ) : (
@@ -91,6 +95,7 @@ const ContactEdit: FC<Props> = ({
       )}
 
       <Drawer
+        getContainer={() => document.body} 
         title={
           type === 'edit' ? (
             <FormattedMessage id="pages.contact.drawer.title.edit" defaultMessage="Edit Contact" />
