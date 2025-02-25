@@ -1,13 +1,12 @@
 import { getVersionsById } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
+import { getLang, getLangText } from '@/services/general/util';
 import { CloseOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Drawer, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
-import { FormattedMessage } from 'umi';
-import { getLangText, getLang } from '@/services/general/util';
-import { useIntl } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 
 interface AllVersionsListProps {
   searchTableName: string;
@@ -16,7 +15,12 @@ interface AllVersionsListProps {
   children: React.ReactNode;
 }
 
-const AllVersionsList: FC<AllVersionsListProps> = ({ searchTableName, nameColume, id, children }) => {
+const AllVersionsList: FC<AllVersionsListProps> = ({
+  searchTableName,
+  nameColume,
+  id,
+  children,
+}) => {
   const actionRef = useRef<ActionType>();
   const [showAllVersionsModal, setShowAllVersionsModal] = useState(false);
   const intl = useIntl();
@@ -33,10 +37,16 @@ const AllVersionsList: FC<AllVersionsListProps> = ({ searchTableName, nameColume
       dataIndex: 'name',
       sorter: false,
       search: false,
-      render:(t:any)=>{
-        const baseNames = ['json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->name','json->processDataSet->processInformation->dataSetInformation->name',`json->flowDataSet->flowInformation->dataSetInformation->name`]
-        return baseNames.includes(nameColume)? getLangText(t?.baseName, getLang(intl.locale)) : getLangText(t, getLang(intl.locale))
-      }
+      render: (t: any) => {
+        const baseNames = [
+          'json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->name',
+          'json->processDataSet->processInformation->dataSetInformation->name',
+          `json->flowDataSet->flowInformation->dataSetInformation->name`,
+        ];
+        return baseNames.includes(nameColume)
+          ? getLangText(t?.baseName, getLang(intl.locale))
+          : getLangText(t, getLang(intl.locale));
+      },
     },
     {
       title: <FormattedMessage id="component.allVersions.table.version" defaultMessage="Version" />,
@@ -126,7 +136,7 @@ const AllVersionsList: FC<AllVersionsListProps> = ({ searchTableName, nameColume
               return [children];
             }}
             request={async (params: { pageSize: number; current: number }, sort) => {
-              return getVersionsById(nameColume,searchTableName, id, params, sort);
+              return getVersionsById(nameColume, searchTableName, id, params, sort);
             }}
             columns={versionColumns}
           />

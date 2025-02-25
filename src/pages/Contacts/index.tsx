@@ -76,7 +76,11 @@ const TableList: FC = () => {
         return (
           <Space size={'small'}>
             {row.version}
-            <AllVersionsList searchTableName="contacts" nameColume={`json->contactDataSet->contactInformation->dataSetInformation->"common:shortName"`} id={row.id}>
+            <AllVersionsList
+              searchTableName="contacts"
+              nameColume={`json->contactDataSet->contactInformation->dataSetInformation->"common:shortName"`}
+              id={row.id}
+            >
               <ContactEdit
                 type="createVersion"
                 id={row.id}
