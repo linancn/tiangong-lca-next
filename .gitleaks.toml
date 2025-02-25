@@ -1,7 +1,7 @@
-title = "Gitleaks配置"
+title = "Gitleaks Configuration"
 
 [allowlist]
-description = "全局允许列表"
+description = "Global Allowlist"
 paths = [
     '''node_modules''',
     '''dist''',
@@ -11,10 +11,10 @@ paths = [
     '''.gitleaks.toml'''
 ]
 
-# 通用密码和密钥模式
+# Common password and key patterns
 [[rules]]
 id = "generic-api-key"
-description = "检测通用API密钥"
+description = "Detect Generic API Keys"
 regex = '''(?i)(['"]?[a-z0-9_-]*(?:key|token|secret|password|passwd|pwd|auth)['"]?\s*[:=]\s*['"][a-z0-9._\-+/=]{8,}['"])'''
 tags = ["key", "API", "generic"]
 severity = "HIGH"
@@ -42,7 +42,7 @@ severity = "HIGH"
 
 [[rules]]
 id = "private-key"
-description = "私钥文件"
+description = "Private Key File"
 regex = '''-----BEGIN ((EC|PGP|DSA|RSA|OPENSSH) )?PRIVATE KEY( BLOCK)?-----'''
 tags = ["key", "private"]
 severity = "CRITICAL"

@@ -2,11 +2,11 @@ name: Gitleaks Security Scan
 
 on:
   push:
-    branches: [ main, master, dev*, ]  # 在主分支和开发分支的push时触发
+    branches: [ main, master, dev*, ]  # Triggered on push to main and development branches
   pull_request:
-    branches: [ main, master ]        # 向主分支提交PR时触发
+    branches: [ main, master ]        # Triggered on PR to main branches
   schedule:
-    - cron: '0 0 * * 0'              # 每周日UTC 00:00进行一次扫描
+    - cron: '0 0 * * 0'              # Scan every Sunday at UTC 00:00
 
 jobs:
   scan:
@@ -41,4 +41,4 @@ jobs:
         with:
           name: gitleaks-report
           path: reports/gitleaks-report.json
-          retention-days: 7 
+          retention-days: 7
