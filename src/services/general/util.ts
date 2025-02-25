@@ -154,7 +154,7 @@ export function classificationToString(classifications: any[]) {
   return classificationStr;
 }
 
-export function classificationToStringList(classifications: any) {
+export function classificationToStringList(classifications: any, elementaryFlow: boolean = false) {
   let idStrList = [];
   let valueStrList = [];
   try {
@@ -162,13 +162,23 @@ export function classificationToStringList(classifications: any) {
       for (let i = 0; i < classifications.length; i++) {
         const filterList = classifications.find((c) => c['@level'] === i.toString());
         if (filterList) {
-          idStrList.push(filterList?.['@catId']);
-          valueStrList.push(filterList?.['#text']);
+          if (elementaryFlow) {
+            idStrList.push(filterList?.['@catId']);
+            valueStrList.push(filterList?.['#text']);
+          } else {
+            idStrList.push(filterList?.['@classId']);
+            valueStrList.push(filterList?.['#text']);
+          }
         }
       }
     } else {
-      idStrList = [classifications?.['@catId']];
-      valueStrList = [classifications?.['#text']];
+      if (elementaryFlow) {
+        idStrList = [classifications?.['@catId']];
+        valueStrList = [classifications?.['#text']];
+      } else {
+        idStrList = [classifications?.['@classId']];
+        valueStrList = [classifications?.['#text']];
+      }
     }
   } catch (e) {
     console.log(e);
@@ -219,85 +229,85 @@ export function classificationToJsonList(classifications: any, elementaryFlow: b
   return removeEmptyObjects(common_class);
 }
 
-export function classificationToJson(classifications: any) {
-  let classificationJson = {};
-  if (Array.isArray(classifications)) {
-    const filterList0 = classifications.filter((i) => i['@level'].toString() === '0');
-    if (filterList0.length > 0) {
-      classificationJson = {
-        '@level_0': filterList0[0]?.['#text'],
-        '@catId_0': filterList0[0]?.['@catId'],
-      };
-      const filterList1 = classifications.filter((i) => i['@level'].toString() === '1');
-      if (filterList1.length > 0) {
-        classificationJson = {
-          ...classificationJson,
-          '@level_1': filterList1[0]?.['#text'],
-          '@catId_1': filterList1[0]?.['@catId'],
-        };
-        const filterList2 = classifications.filter((i) => i['@level'].toString() === '2');
-        if (filterList2.length > 0) {
-          classificationJson = {
-            ...classificationJson,
-            '@level_2': filterList2[0]?.['#text'],
-            '@catId_2': filterList2[0]?.['@catId'],
-          };
-        }
-      }
-    }
-  } else {
-    classificationJson = {
-      '@level_0': classifications?.['#text'],
-      '@catId_0': classifications?.['@catId'],
-    };
-  }
-  return removeEmptyObjects(classificationJson);
-}
+// export function classificationToJson(classifications: any) {
+//   let classificationJson = {};
+//   if (Array.isArray(classifications)) {
+//     const filterList0 = classifications.filter((i) => i['@level'].toString() === '0');
+//     if (filterList0.length > 0) {
+//       classificationJson = {
+//         '@level_0': filterList0[0]?.['#text'],
+//         '@catId_0': filterList0[0]?.['@catId'],
+//       };
+//       const filterList1 = classifications.filter((i) => i['@level'].toString() === '1');
+//       if (filterList1.length > 0) {
+//         classificationJson = {
+//           ...classificationJson,
+//           '@level_1': filterList1[0]?.['#text'],
+//           '@catId_1': filterList1[0]?.['@catId'],
+//         };
+//         const filterList2 = classifications.filter((i) => i['@level'].toString() === '2');
+//         if (filterList2.length > 0) {
+//           classificationJson = {
+//             ...classificationJson,
+//             '@level_2': filterList2[0]?.['#text'],
+//             '@catId_2': filterList2[0]?.['@catId'],
+//           };
+//         }
+//       }
+//     }
+//   } else {
+//     classificationJson = {
+//       '@level_0': classifications?.['#text'],
+//       '@catId_0': classifications?.['@catId'],
+//     };
+//   }
+//   return removeEmptyObjects(classificationJson);
+// }
 
-export function classificationToList(classifications: any) {
-  let common_class = {};
-  if ((classifications?.['@level_0'] ?? '').trim() !== '') {
-    common_class = {
-      '@level': '0',
-      '@catId': classifications?.['@catId_0'],
-      '#text': classifications['@level_0'],
-    };
-    if ((classifications?.['@level_1'] ?? '').trim() !== '') {
-      common_class = [
-        {
-          '@level': '0',
-          '@catId': classifications?.['@catId_0'],
-          '#text': classifications['@level_0'],
-        },
-        {
-          '@level': '1',
-          '@catId': classifications?.['@catId_1'],
-          '#text': classifications['@level_1'],
-        },
-      ];
-      if ((classifications?.['@level_2'] ?? '').trim() !== '') {
-        common_class = [
-          {
-            '@level': '0',
-            '@catId': classifications?.['@catId_0'],
-            '#text': classifications['@level_0'],
-          },
-          {
-            '@level': '1',
-            '@catId': classifications?.['@catId_1'],
-            '#text': classifications['@level_1'],
-          },
-          {
-            '@level': '2',
-            '@catId': classifications?.['@catId_2'],
-            '#text': classifications['@level_2'],
-          },
-        ];
-      }
-    }
-  }
-  return removeEmptyObjects(common_class);
-}
+// export function classificationToList(classifications: any) {
+//   let common_class = {};
+//   if ((classifications?.['@level_0'] ?? '').trim() !== '') {
+//     common_class = {
+//       '@level': '0',
+//       '@catId': classifications?.['@catId_0'],
+//       '#text': classifications['@level_0'],
+//     };
+//     if ((classifications?.['@level_1'] ?? '').trim() !== '') {
+//       common_class = [
+//         {
+//           '@level': '0',
+//           '@catId': classifications?.['@catId_0'],
+//           '#text': classifications['@level_0'],
+//         },
+//         {
+//           '@level': '1',
+//           '@catId': classifications?.['@catId_1'],
+//           '#text': classifications['@level_1'],
+//         },
+//       ];
+//       if ((classifications?.['@level_2'] ?? '').trim() !== '') {
+//         common_class = [
+//           {
+//             '@level': '0',
+//             '@catId': classifications?.['@catId_0'],
+//             '#text': classifications['@level_0'],
+//           },
+//           {
+//             '@level': '1',
+//             '@catId': classifications?.['@catId_1'],
+//             '#text': classifications['@level_1'],
+//           },
+//           {
+//             '@level': '2',
+//             '@catId': classifications?.['@catId_2'],
+//             '#text': classifications['@level_2'],
+//           },
+//         ];
+//       }
+//     }
+//   }
+//   return removeEmptyObjects(common_class);
+// }
 
 export function genClassificationZH(classifications: any[], categoryData: any[]) {
   if (classifications.length > 0) {
