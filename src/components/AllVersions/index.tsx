@@ -1,22 +1,29 @@
-import { ListPagination } from '@/services/general/data';
-import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Card } from 'antd';
-// import { SearchProps } from 'antd/es/input/Search';
 import { getVersionsById } from '@/services/general/api';
+import { ListPagination } from '@/services/general/data';
+import { getLang, getLangText } from '@/services/general/util';
+import { CloseOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
+import { Button, Card, Drawer, Tooltip } from 'antd';
 import type { FC } from 'react';
-import { useEffect, useRef } from 'react';
-import { FormattedMessage } from 'umi';
-// const { Search } = Input;
+import { useEffect, useRef, useState } from 'react';
+import { FormattedMessage, useIntl } from 'umi';
 
 interface AllVersionsListProps {
   searchTableName: string;
+  nameColume: string;
   id: string;
+  children: React.ReactNode;
 }
 
-const AllVersionsList: FC<AllVersionsListProps> = ({ searchTableName, id }) => {
-  //   const intl = useIntl();
+const AllVersionsList: FC<AllVersionsListProps> = ({
+  searchTableName,
+  nameColume,
+  id,
+  children,
+}) => {
   const actionRef = useRef<ActionType>();
-  //   const [keyWord, setKeyWord] = useState<any>('');
+  const [showAllVersionsModal, setShowAllVersionsModal] = useState(false);
+  const intl = useIntl();
 
   const versionColumns: ProColumns<any>[] = [
     {
@@ -24,6 +31,22 @@ const AllVersionsList: FC<AllVersionsListProps> = ({ searchTableName, id }) => {
       dataIndex: 'index',
       valueType: 'index',
       search: false,
+    },
+    {
+      title: <FormattedMessage id="component.allVersions.table.name" defaultMessage="Name" />,
+      dataIndex: 'name',
+      sorter: false,
+      search: false,
+      render: (t: any) => {
+        const baseNames = [
+          'json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->name',
+          'json->processDataSet->processInformation->dataSetInformation->name',
+          `json->flowDataSet->flowInformation->dataSetInformation->name`,
+        ];
+        return baseNames.includes(nameColume)
+          ? getLangText(t?.baseName, getLang(intl.locale))
+          : getLangText(t, getLang(intl.locale));
+      },
     },
     {
       title: <FormattedMessage id="component.allVersions.table.version" defaultMessage="Version" />,
@@ -65,28 +88,60 @@ const AllVersionsList: FC<AllVersionsListProps> = ({ searchTableName, id }) => {
           enterButton
         />
       </Card> */}
-      <Card>
-        <ProTable<any, ListPagination>
-          rowKey="version"
-          headerTitle={
-            <FormattedMessage
-              id="component.allVersions.table.title"
-              defaultMessage="All Versions"
-            />
-          }
-          actionRef={actionRef}
-          search={false}
-          options={{ fullScreen: true }}
-          pagination={{
-            showSizeChanger: false,
-            pageSize: 10,
-          }}
-          request={async (params: { pageSize: number; current: number }, sort) => {
-            return getVersionsById(searchTableName, id, params, sort);
-          }}
-          columns={versionColumns}
-        />
-      </Card>
+
+      <Tooltip
+        title={<FormattedMessage id="pages.button.allVersion" defaultMessage="All version" />}
+      >
+        <Button
+          size="small"
+          shape="circle"
+          icon={<UnorderedListOutlined />}
+          onClick={() => setShowAllVersionsModal(true)}
+        ></Button>
+      </Tooltip>
+
+      <Drawer
+        title={<FormattedMessage id="pages.button.allVersion" defaultMessage="All version" />}
+        width={'90%'}
+        open={showAllVersionsModal}
+        onClose={() => setShowAllVersionsModal(false)}
+        footer={null}
+        closable={false}
+        extra={
+          <Button
+            icon={<CloseOutlined />}
+            style={{ border: 0 }}
+            onClick={() => setShowAllVersionsModal(false)}
+          />
+        }
+        maskClosable={true}
+      >
+        <Card>
+          <ProTable<any, ListPagination>
+            rowKey="version"
+            // headerTitle={
+            //     <FormattedMessage
+            //         id="component.allVersions.table.title"
+            //         defaultMessage="All Versions"
+            //     />
+            // }
+            actionRef={actionRef}
+            search={false}
+            options={{ fullScreen: true }}
+            pagination={{
+              showSizeChanger: false,
+              pageSize: 10,
+            }}
+            toolBarRender={() => {
+              return [children];
+            }}
+            request={async (params: { pageSize: number; current: number }, sort) => {
+              return getVersionsById(nameColume, searchTableName, id, params, sort);
+            }}
+            columns={versionColumns}
+          />
+        </Card>
+      </Drawer>
     </>
   );
 };

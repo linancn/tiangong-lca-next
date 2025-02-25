@@ -1,12 +1,9 @@
-import AllVersionsList from '@/components/AllVersions';
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
-import LifeCycleModelEdit from '@/pages/LifeCycleModels/Components/edit';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 import { CloseOutlined, InfoOutlined } from '@ant-design/icons';
-import type { ActionType } from '@ant-design/pro-table';
-import { Button, Card, Descriptions, Divider, Drawer, Modal, Space, Tooltip } from 'antd';
+import { Button, Card, Descriptions, Divider, Drawer, Space, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -23,9 +20,6 @@ import {
 type Props = {
   lang: string;
   data: any;
-  actionRef?: React.MutableRefObject<ActionType | undefined>;
-  id: string;
-  version: string;
 };
 
 const getapprovalOfOverallComplianceOptions = (value: string) => {
@@ -57,10 +51,9 @@ const getLicenseTypeOptions = (value: string) => {
   return option ? option.label : '-';
 };
 
-const ToolbarViewInfo: FC<Props> = ({ lang, data, actionRef, id, version }) => {
+const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('lifeCycleModelInformation');
-  const [showAllVersionsModal, setShowAllVersionsModal] = useState(false);
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
   };
@@ -480,27 +473,6 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, actionRef, id, version }) => {
                 {data.administrativeInformation?.publicationAndOwnership?.[
                   'common:dataSetVersion'
                 ] ?? '-'}
-
-                <LifeCycleModelEdit
-                  type="createVersion"
-                  id={id}
-                  version={version}
-                  lang={lang}
-                  buttonType={'pages.button.createVersion'}
-                  actionRef={actionRef}
-                  //  setViewDrawerVisible={() => {}}
-                />
-                <Button onClick={() => setShowAllVersionsModal(true)}>
-                  <FormattedMessage id="pages.button.allVersion" defaultMessage="All version" />
-                </Button>
-                <Modal
-                  width={'90%'}
-                  open={showAllVersionsModal}
-                  onCancel={() => setShowAllVersionsModal(false)}
-                  footer={null}
-                >
-                  <AllVersionsList searchTableName="lifecyclemodels" id={id} />
-                </Modal>
               </Space>
             </Descriptions.Item>
           </Descriptions>

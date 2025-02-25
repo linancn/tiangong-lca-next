@@ -3,6 +3,7 @@ import { Card, Input, Space, Tooltip, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 
+import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
 import { contributeSource } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
@@ -17,7 +18,6 @@ import UnitGroupCreate from './Components/create';
 import UnitGroupDelete from './Components/delete';
 import UnitGroupEdit from './Components/edit';
 import UnitGroupView from './Components/view';
-
 const { Search } = Input;
 
 const TableList: FC = () => {
@@ -82,6 +82,28 @@ const TableList: FC = () => {
       dataIndex: 'version',
       sorter: false,
       search: false,
+      render: (_, row) => {
+        return (
+          <Space size={'small'}>
+            {row.version}
+            <AllVersionsList
+              nameColume={`json->unitGroupDataSet->unitGroupInformation->dataSetInformation->"common:name"`}
+              searchTableName="unitgroups"
+              id={row.id}
+            >
+              <UnitGroupEdit
+                type="createVersion"
+                id={row.id}
+                version={row.version}
+                lang={lang}
+                buttonType={'icon'}
+                actionRef={actionRef}
+                setViewDrawerVisible={() => {}}
+              />
+            </AllVersionsList>
+          </Space>
+        );
+      },
     },
     {
       title: (
