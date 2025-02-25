@@ -1,0 +1,83 @@
+title = "Gitleaks配置"
+
+[allowlist]
+description = "全局允许列表"
+paths = [
+    '''node_modules''',
+    '''dist''',
+    '''package-lock.json''',
+    '''yarn.lock''',
+    '''go.sum''',
+    '''.gitleaks.toml'''
+]
+
+# 通用密码和密钥模式
+[[rules]]
+id = "generic-api-key"
+description = "检测通用API密钥"
+regex = '''(?i)(['"]?[a-z0-9_-]*(?:key|token|secret|password|passwd|pwd|auth)['"]?\s*[:=]\s*['"][a-z0-9._\-+/=]{8,}['"])'''
+tags = ["key", "API", "generic"]
+severity = "HIGH"
+
+[[rules]]
+id = "aws-access-key"
+description = "AWS Access Key"
+regex = '''(A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}'''
+tags = ["key", "AWS"]
+severity = "HIGH"
+
+[[rules]]
+id = "aws-secret-key"
+description = "AWS Secret Key"
+regex = '''(?i)aws(.{0,20})?(?-i)['\"][0-9a-zA-Z\/+]{40}['\"]'''
+tags = ["key", "AWS"]
+severity = "HIGH"
+
+[[rules]]
+id = "github-pat"
+description = "GitHub Personal Access Token"
+regex = '''ghp_[0-9a-zA-Z]{36}'''
+tags = ["key", "GitHub"]
+severity = "HIGH"
+
+[[rules]]
+id = "private-key"
+description = "私钥文件"
+regex = '''-----BEGIN ((EC|PGP|DSA|RSA|OPENSSH) )?PRIVATE KEY( BLOCK)?-----'''
+tags = ["key", "private"]
+severity = "CRITICAL"
+
+[[rules]]
+id = "google-api-key"
+description = "Google API Key"
+regex = '''AIza[0-9A-Za-z\\-_]{35}'''
+tags = ["key", "Google"]
+severity = "HIGH"
+
+[[rules]]
+id = "slack-webhook"
+description = "Slack Webhook"
+regex = '''https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}'''
+tags = ["key", "Slack"]
+severity = "HIGH"
+
+[[rules]]
+id = "basic-auth"
+description = "Basic Authentication Header"
+regex = '''(?i)basic [a-z0-9=:_\+\/-]{5,100}'''
+tags = ["auth", "credentials"]
+severity = "HIGH"
+
+[[rules]]
+id = "password-in-url"
+description = "Password in URL"
+regex = '''[a-zA-Z]{3,10}:\/\/[^\/\s:@]*?:[^\/\s:@]*?@[^\/\s:@]*'''
+tags = ["auth", "credentials"]
+severity = "HIGH"
+
+[rules.allowlist]
+regexes = [
+    '''example\.com''',
+    '''dummy''',
+    '''placeholder'''
+] 
