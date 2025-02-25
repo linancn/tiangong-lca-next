@@ -104,8 +104,16 @@ const FlowpropertiesEdit: FC<Props> = ({
       <Tooltip
         title={
           <FormattedMessage
-            id={type === 'copy' ? 'pages.button.copy' : type === 'createVersion' ? 'pages.button.createVersion' : 'pages.button.edit'}
-            defaultMessage={type === 'copy' ? 'Copy' : type === 'createVersion' ? 'Create Version' : 'Edit'}
+            id={
+              type === 'copy'
+                ? 'pages.button.copy'
+                : type === 'createVersion'
+                  ? 'pages.button.createVersion'
+                  : 'pages.button.edit'
+            }
+            defaultMessage={
+              type === 'copy' ? 'Copy' : type === 'createVersion' ? 'Create Version' : 'Edit'
+            }
           />
         }
       >

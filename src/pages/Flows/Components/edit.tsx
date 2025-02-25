@@ -93,8 +93,16 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang, type =
       <Tooltip
         title={
           <FormattedMessage
-            id={type === 'copy' ? 'pages.button.copy' : type === 'createVersion' ? 'pages.button.createVersion' : 'pages.button.edit'}
-            defaultMessage={type === 'copy' ? 'Copy' : type === 'createVersion' ? 'Create Version' : 'Edit'}
+            id={
+              type === 'copy'
+                ? 'pages.button.copy'
+                : type === 'createVersion'
+                  ? 'pages.button.createVersion'
+                  : 'pages.button.edit'
+            }
+            defaultMessage={
+              type === 'copy' ? 'Copy' : type === 'createVersion' ? 'Create Version' : 'Edit'
+            }
           />
         }
       >

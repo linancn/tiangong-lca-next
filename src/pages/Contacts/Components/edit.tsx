@@ -1,3 +1,4 @@
+import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import { createContact, getContactDetail, updateContact } from '@/services/contacts/api';
 import { genContactFromData } from '@/services/contacts/util';
 import styles from '@/style/custom.less';
@@ -9,7 +10,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
 import { ContactForm } from './form';
-import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 
 type Props = {
   id: string;
@@ -84,7 +84,11 @@ const ContactEdit: FC<Props> = ({
             <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
           </Tooltip>
         ) : type === 'createVersion' ? (
-          <Tooltip title={<FormattedMessage id="pages.button.createVersion" defaultMessage="Create Version" />}>
+          <Tooltip
+            title={
+              <FormattedMessage id="pages.button.createVersion" defaultMessage="Create Version" />
+            }
+          >
             <Button type="text" icon={<PlusOutlined />} size="small" onClick={onEdit} />
           </Tooltip>
         ) : (
@@ -152,76 +156,75 @@ const ContactEdit: FC<Props> = ({
         }
       >
         <Spin spinning={spinning}>
-        <UpdateReferenceContext.Provider value={{ referenceValue }}>
-          <ProForm
-            formRef={formRefEdit}
-            onValuesChange={(_, allValues) => {
-              setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
-            }}
-            submitter={{
-              render: () => {
-                return [];
-              },
-            }}
-            initialValues={initData}
-            onFinish={async () => {
-              setSpinning(true);
-              if (type === 'copy' || type === 'createVersion') {
-                const createResult = await createContact(type === 'copy' ? v4() : id, fromData);
-                if (createResult?.data) {
-                  message.success(
-                    intl.formatMessage({
-                      id: 'pages.button.create.success',
-                      defaultMessage: 'Created successfully!',
-                    }),
-                  );
-                  setDrawerVisible(false);
-                  setViewDrawerVisible(false);
-                  actionRef?.current?.reload();
-                } else {
-                  if (createResult?.error?.code === '23505') {
-                    message.error(
+          <UpdateReferenceContext.Provider value={{ referenceValue }}>
+            <ProForm
+              formRef={formRefEdit}
+              onValuesChange={(_, allValues) => {
+                setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+              }}
+              submitter={{
+                render: () => {
+                  return [];
+                },
+              }}
+              initialValues={initData}
+              onFinish={async () => {
+                setSpinning(true);
+                if (type === 'copy' || type === 'createVersion') {
+                  const createResult = await createContact(type === 'copy' ? v4() : id, fromData);
+                  if (createResult?.data) {
+                    message.success(
                       intl.formatMessage({
-                        id: 'pages.button.createVersion.fail',
-                        defaultMessage: 'Please change the version and submit',
+                        id: 'pages.button.create.success',
+                        defaultMessage: 'Created successfully!',
                       }),
                     );
+                    setDrawerVisible(false);
+                    setViewDrawerVisible(false);
+                    actionRef?.current?.reload();
                   } else {
-                    message.error(createResult?.error?.message);
+                    if (createResult?.error?.code === '23505') {
+                      message.error(
+                        intl.formatMessage({
+                          id: 'pages.button.createVersion.fail',
+                          defaultMessage: 'Please change the version and submit',
+                        }),
+                      );
+                    } else {
+                      message.error(createResult?.error?.message);
+                    }
                   }
-                }
-                setSpinning(false);
-                return true;
-              } else {
-                const updateResult = await updateContact(id, version, fromData);
-                if (updateResult?.data) {
-                  message.success(
-                    intl.formatMessage({
-                      id: 'pages.button.create.success',
-                      defaultMessage: 'Created successfully!',
-                    }),
-                  );
-                  setDrawerVisible(false);
-                  setViewDrawerVisible(false);
-                  actionRef?.current?.reload();
+                  setSpinning(false);
+                  return true;
                 } else {
-                  message.error(updateResult?.error?.message);
+                  const updateResult = await updateContact(id, version, fromData);
+                  if (updateResult?.data) {
+                    message.success(
+                      intl.formatMessage({
+                        id: 'pages.button.create.success',
+                        defaultMessage: 'Created successfully!',
+                      }),
+                    );
+                    setDrawerVisible(false);
+                    setViewDrawerVisible(false);
+                    actionRef?.current?.reload();
+                  } else {
+                    message.error(updateResult?.error?.message);
+                  }
+                  setSpinning(true);
+                  return true;
                 }
-                setSpinning(true);
-                return true;
-              }
-            }}
-          >
-            <ContactForm
-              lang={lang}
-              activeTabKey={activeTabKey}
-              formRef={formRefEdit}
-              onData={handletFromData}
-              onTabChange={onTabChange}
-
-            />
-          </ProForm>
-        </UpdateReferenceContext.Provider>
+              }}
+            >
+              <ContactForm
+                lang={lang}
+                activeTabKey={activeTabKey}
+                formRef={formRefEdit}
+                onData={handletFromData}
+                onTabChange={onTabChange}
+              />
+            </ProForm>
+          </UpdateReferenceContext.Provider>
           <Collapse
             items={[
               {

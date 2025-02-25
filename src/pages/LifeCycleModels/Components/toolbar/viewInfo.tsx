@@ -3,7 +3,7 @@ import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 import { CloseOutlined, InfoOutlined } from '@ant-design/icons';
-import { Button, Card, Descriptions, Divider, Drawer,  Space, Tooltip } from 'antd';
+import { Button, Card, Descriptions, Divider, Drawer, Space, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';

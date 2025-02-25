@@ -1,3 +1,4 @@
+import { useUpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import { getSourceDetail } from '@/services/sources/api';
 import { genSourceFromData } from '@/services/sources/util';
 import { ProFormInstance } from '@ant-design/pro-components';
@@ -6,7 +7,6 @@ import { Button, Card, Col, Divider, Form, Input, Row, Space, theme } from 'antd
 import React, { FC, ReactNode, useEffect, useState } from 'react';
 import SourceView from '../view';
 import SourceSelectDrawer from './drawer';
-import { useUpdateReferenceContext } from '@/contexts/updateReferenceContext';
 const { TextArea } = Input;
 
 type Props = {
@@ -22,7 +22,7 @@ const SourceSelectForm: FC<Props> = ({ parentName, name, label, lang, formRef, o
   const [id, setId] = useState<string | undefined>(undefined);
   const [version, setVersion] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
-  const {referenceValue}  = useUpdateReferenceContext() as {referenceValue:number};
+  const { referenceValue } = useUpdateReferenceContext() as { referenceValue: number };
 
   const handletSourceData = (rowId: string, rowVersion: string) => {
     getSourceDetail(rowId, rowVersion).then(async (result: any) => {

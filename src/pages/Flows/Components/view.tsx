@@ -31,7 +31,7 @@ const getComplianceLabel = (value: string) => {
   return option ? option.label : '-';
 };
 
-const FlowsView: FC<Props> = ({ id, version, buttonType, lang}) => {
+const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('flowInformation');
   const [spinning, setSpinning] = useState(false);

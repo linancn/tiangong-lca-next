@@ -10,6 +10,7 @@ import { Card, Input, Space, Tooltip, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 
+import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
 import { contributeSource } from '@/services/general/api';
 import { getTeamById } from '@/services/teams/api';
@@ -21,7 +22,6 @@ import FlowpropertiesCreate from './Components/create';
 import FlowpropertiesDelete from './Components/delete';
 import FlowpropertiesEdit from './Components/edit';
 import FlowpropertyView from './Components/view';
-import AllVersionsList from '@/components/AllVersions';
 const { Search } = Input;
 
 const TableList: FC = () => {
@@ -92,22 +92,21 @@ const TableList: FC = () => {
       sorter: false,
       search: false,
       render: (_, row) => {
-        return <Space size={'small'}>
-          {row.version}
-          <AllVersionsList
-            searchTableName="flowproperties"
-            id={row.id}
-          >
-            <FlowpropertiesEdit
-              type="createVersion"
-              id={row.id}
-              version={row.version}
-              lang={lang}
-              buttonType={'icon'}
-              actionRef={actionRef}
-            />
-          </AllVersionsList>
-        </Space>
+        return (
+          <Space size={'small'}>
+            {row.version}
+            <AllVersionsList searchTableName="flowproperties" id={row.id}>
+              <FlowpropertiesEdit
+                type="createVersion"
+                id={row.id}
+                version={row.version}
+                lang={lang}
+                buttonType={'icon'}
+                actionRef={actionRef}
+              />
+            </AllVersionsList>
+          </Space>
+        );
       },
     },
     {

@@ -3,7 +3,13 @@ import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
 import { createProcess, getProcessDetail, updateProcess } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
 import styles from '@/style/custom.less';
-import { CloseOutlined, CopyOutlined, FormOutlined, PlusOutlined, ProductOutlined } from '@ant-design/icons';
+import {
+  CloseOutlined,
+  CopyOutlined,
+  FormOutlined,
+  PlusOutlined,
+  ProductOutlined,
+} from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import {
   Button,
@@ -161,8 +167,16 @@ const ProcessEdit: FC<Props> = ({
         <Tooltip
           title={
             <FormattedMessage
-              id={type === 'copy' ? 'pages.button.copy' : type === 'createVersion' ? 'pages.button.createVersion' : 'pages.button.edit'}
-              defaultMessage={type === 'copy' ? 'Copy' : type === 'createVersion' ? 'Create Version' : 'Edit'}
+              id={
+                type === 'copy'
+                  ? 'pages.button.copy'
+                  : type === 'createVersion'
+                    ? 'pages.button.createVersion'
+                    : 'pages.button.edit'
+              }
+              defaultMessage={
+                type === 'copy' ? 'Copy' : type === 'createVersion' ? 'Create Version' : 'Edit'
+              }
             />
           }
         >

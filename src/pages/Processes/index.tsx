@@ -3,6 +3,7 @@ import { Card, Input, Space, Tooltip, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 
+import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
 import { contributeSource } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
@@ -17,7 +18,6 @@ import ProcessCreate from './Components/create';
 import ProcessDelete from './Components/delete';
 import ProcessEdit from './Components/edit';
 import ProcessView from './Components/view';
-import AllVersionsList from '@/components/AllVersions';
 const { Search } = Input;
 
 const TableList: FC = () => {
@@ -81,24 +81,23 @@ const TableList: FC = () => {
       sorter: false,
       search: false,
       render: (_, row) => {
-        return <Space size={'small'}>
-          {row.version}
-          <AllVersionsList
-            searchTableName="processes"
-            id={row.id}
-          >
-            <ProcessEdit
-              type="createVersion"
-              id={row.id}
-              version={row.version}
-              lang={lang}
-              buttonType={'icon'}
-              actionRef={actionRef}
-              setViewDrawerVisible={() => {}}
-            />
-          </AllVersionsList>
-        </Space>
-      },  
+        return (
+          <Space size={'small'}>
+            {row.version}
+            <AllVersionsList searchTableName="processes" id={row.id}>
+              <ProcessEdit
+                type="createVersion"
+                id={row.id}
+                version={row.version}
+                lang={lang}
+                buttonType={'icon'}
+                actionRef={actionRef}
+                setViewDrawerVisible={() => {}}
+              />
+            </AllVersionsList>
+          </Space>
+        );
+      },
     },
     {
       title: <FormattedMessage id="pages.table.title.updatedAt" defaultMessage="Updated at" />,

@@ -63,7 +63,11 @@ const LifeCycleModelEdit: FC<Props> = ({
             <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
           </Tooltip>
         ) : type === 'createVersion' ? (
-          <Tooltip title={<FormattedMessage id="pages.button.createVersion" defaultMessage="Create Version" />}>
+          <Tooltip
+            title={
+              <FormattedMessage id="pages.button.createVersion" defaultMessage="Create Version" />
+            }
+          >
             <Button type="text" icon={<PlusOutlined />} size="small" onClick={onEdit} />
           </Tooltip>
         ) : (

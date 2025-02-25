@@ -1,3 +1,4 @@
+import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
 import { getContactTableAll, getContactTablePgroongaSearch } from '@/services/contacts/api';
 import { ContactTable } from '@/services/contacts/data';
@@ -16,7 +17,6 @@ import ContactCreate from './Components/create';
 import ContactDelete from './Components/delete';
 import ContactEdit from './Components/edit';
 import ContactView from './Components/view';
-import AllVersionsList from '@/components/AllVersions';
 
 const { Search } = Input;
 
@@ -73,23 +73,22 @@ const TableList: FC = () => {
       sorter: false,
       search: false,
       render: (_, row) => {
-        return <Space size={'small'}>
-          {row.version}
-          <AllVersionsList
-            searchTableName="contacts"
-            id={row.id}
-          >
-            <ContactEdit
-              type="createVersion"
-              id={row.id}
-              version={row.version}
-              lang={lang}
-              buttonType={'icon'}
-              actionRef={actionRef}
-              setViewDrawerVisible={() => { }}
-            />
-          </AllVersionsList>
-        </Space>
+        return (
+          <Space size={'small'}>
+            {row.version}
+            <AllVersionsList searchTableName="contacts" id={row.id}>
+              <ContactEdit
+                type="createVersion"
+                id={row.id}
+                version={row.version}
+                lang={lang}
+                buttonType={'icon'}
+                actionRef={actionRef}
+                setViewDrawerVisible={() => {}}
+              />
+            </AllVersionsList>
+          </Space>
+        );
       },
     },
     {
@@ -120,7 +119,7 @@ const TableList: FC = () => {
                 lang={lang}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => { }}
+                setViewDrawerVisible={() => {}}
               />
               <ContactEdit
                 type="copy"
@@ -129,14 +128,14 @@ const TableList: FC = () => {
                 lang={lang}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => { }}
+                setViewDrawerVisible={() => {}}
               />
               <ContactDelete
                 id={row.id}
                 version={row.version}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => { }}
+                setViewDrawerVisible={() => {}}
               />
               <ContributeData
                 onOk={async () => {
@@ -174,7 +173,7 @@ const TableList: FC = () => {
               lang={lang}
               buttonType={'icon'}
               actionRef={actionRef}
-              setViewDrawerVisible={() => { }}
+              setViewDrawerVisible={() => {}}
             />
           </Space>,
         ];

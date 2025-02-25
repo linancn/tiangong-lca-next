@@ -114,21 +114,23 @@ const UnitGroupEdit: FC<Props> = ({
         ) : type === 'createVersion' ? (
           <Tooltip
             title={
-              <FormattedMessage id="pages.button.createVersion" defaultMessage="Create Version"></FormattedMessage>
+              <FormattedMessage
+                id="pages.button.createVersion"
+                defaultMessage="Create Version"
+              ></FormattedMessage>
             }
           >
             <Button type="text" icon={<PlusOutlined />} size="small" onClick={onEdit}></Button>
           </Tooltip>
-        ) :
-          (
-            <Tooltip
-              title={
-                <FormattedMessage id="pages.button.copy" defaultMessage="Copy"></FormattedMessage>
-              }
-            >
-              <Button shape="circle" icon={<CopyOutlined />} size="small" onClick={onEdit}></Button>
-            </Tooltip>
-          )
+        ) : (
+          <Tooltip
+            title={
+              <FormattedMessage id="pages.button.copy" defaultMessage="Copy"></FormattedMessage>
+            }
+          >
+            <Button shape="circle" icon={<CopyOutlined />} size="small" onClick={onEdit}></Button>
+          </Tooltip>
+        )
       ) : (
         <Button size="small" onClick={onEdit}>
           <FormattedMessage
