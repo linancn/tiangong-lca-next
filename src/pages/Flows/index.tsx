@@ -115,7 +115,7 @@ const TableList: FC = () => {
           return [
             <Space size={'small'} key={0}>
               <FlowsView
-                actionRef={actionRef}
+                // actionRef={actionRef}
                 buttonType={'icon'}
                 id={row.id}
                 version={row.version}
@@ -166,7 +166,7 @@ const TableList: FC = () => {
         return [
           <Space size={'small'} key={0}>
             <FlowsView
-              actionRef={actionRef}
+              // actionRef={actionRef}
               buttonType={'icon'}
               id={row.id}
               version={row.version}

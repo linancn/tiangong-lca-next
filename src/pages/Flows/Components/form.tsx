@@ -330,14 +330,22 @@ export const FlowForm: FC<Props> = ({
               options={myFlowTypeOptions}
               onChange={(value) => {
                 if (thisFlowType === 'Elementary flow' || value === 'Elementary flow') {
-                  const nameList = [
+                  const nameElementaryFlow = [
                     'flowInformation',
                     'dataSetInformation',
                     'classificationInformation',
                     'common:elementaryFlowCategorization',
                     'common:category',
                   ];
-                  formRef.current?.setFieldValue([...nameList], null);
+                  const nameFlow = [
+                    'flowInformation',
+                    'dataSetInformation',
+                    'classificationInformation',
+                    'common:classification',
+                    'common:class',
+                  ];
+                  formRef.current?.setFieldValue([...nameElementaryFlow], null);
+                  formRef.current?.setFieldValue([...nameFlow], null);
                 }
                 setThisFlowType(value);
               }}
@@ -345,6 +353,7 @@ export const FlowForm: FC<Props> = ({
           </Form.Item>
           <br />
           <LevelTextItemForm
+            hidden={thisFlowType !== 'Elementary flow'}
             dataType={'Flow'}
             lang={lang}
             flowType={thisFlowType}
@@ -356,6 +365,21 @@ export const FlowForm: FC<Props> = ({
               'classificationInformation',
               'common:elementaryFlowCategorization',
               'common:category',
+            ]}
+          />
+          <LevelTextItemForm
+            hidden={thisFlowType === 'Elementary flow'}
+            dataType={'Flow'}
+            lang={lang}
+            flowType={thisFlowType}
+            formRef={formRef}
+            onData={onData}
+            name={[
+              'flowInformation',
+              'dataSetInformation',
+              'classificationInformation',
+              'common:classification',
+              'common:class',
             ]}
           />
         </Card>

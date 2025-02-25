@@ -10,10 +10,19 @@ type Props = {
   dataType: string;
   flowType?: string;
   formRef: React.MutableRefObject<any | undefined>;
+  hidden?: boolean;
   onData: () => void;
 };
 
-const LevelTextItemForm: FC<Props> = ({ name, lang, dataType, flowType, formRef, onData }) => {
+const LevelTextItemForm: FC<Props> = ({
+  name,
+  lang,
+  dataType,
+  flowType,
+  formRef,
+  hidden,
+  onData,
+}) => {
   const [selectOptions, setSelectOptions] = useState<any>([]);
   useEffect(() => {
     const fetchClassification = async (dt: string, ft: string | undefined) => {
@@ -48,6 +57,7 @@ const LevelTextItemForm: FC<Props> = ({ name, lang, dataType, flowType, formRef,
   return (
     <>
       <Form.Item
+        hidden={hidden}
         label={
           <FormattedMessage id="pages.contact.classification" defaultMessage="Classification" />
         }
@@ -60,7 +70,7 @@ const LevelTextItemForm: FC<Props> = ({ name, lang, dataType, flowType, formRef,
           showSearch={{ filter }}
         />
       </Form.Item>
-      <Form.Item name={[...name, 'id']} hidden>
+      <Form.Item name={[...name, 'id']} hidden={true}>
         <Input />
       </Form.Item>
     </>

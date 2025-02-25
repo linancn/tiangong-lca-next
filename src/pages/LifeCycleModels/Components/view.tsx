@@ -1,5 +1,5 @@
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
-import type { ActionType } from '@ant-design/pro-table';
+import { ActionType } from '@ant-design/pro-components';
 import { Grid, XFlow, XFlowGraph } from '@antv/xflow';
 import { Button, Drawer, Layout, theme, Tooltip } from 'antd';
 import type { FC } from 'react';

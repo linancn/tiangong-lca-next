@@ -7,7 +7,7 @@ import { isValidURL } from '@/services/general/util';
 import { getSourceDetail } from '@/services/sources/api';
 import { genSourceFromData } from '@/services/sources/util';
 import { CloseOutlined, LinkOutlined, ProfileOutlined } from '@ant-design/icons';
-import type { ActionType } from '@ant-design/pro-table';
+import { ActionType } from '@ant-design/pro-components';
 import { Button, Card, Descriptions, Divider, Drawer, Modal, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';

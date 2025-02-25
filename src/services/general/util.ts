@@ -176,7 +176,7 @@ export function classificationToStringList(classifications: any) {
   return { id: idStrList, value: valueStrList };
 }
 
-export function classificationToJsonList(classifications: any) {
+export function classificationToJsonList(classifications: any, elementaryFlow: boolean = false) {
   let common_class = {};
   if (
     classifications &&
@@ -185,18 +185,34 @@ export function classificationToJsonList(classifications: any) {
     classifications?.value.length > 0
   ) {
     if (classifications.value.length === 1) {
-      common_class = {
-        '@level': '0',
-        '@catId': classifications?.id?.[0] ?? '',
-        '#text': classifications.value[0],
-      };
+      if (elementaryFlow) {
+        common_class = {
+          '@level': '0',
+          '@catId': classifications?.id?.[0] ?? '',
+          '#text': classifications.value[0],
+        };
+      } else {
+        common_class = {
+          '@level': '0',
+          '@classId': classifications?.id?.[0] ?? '',
+          '#text': classifications.value[0],
+        };
+      }
     } else {
       common_class = classifications?.value.map((value: any, index: number) => {
-        return {
-          '@level': index.toString(),
-          '@catId': classifications?.id?.[index] ?? '',
-          '#text': value,
-        };
+        if (elementaryFlow) {
+          return {
+            '@level': index.toString(),
+            '@catId': classifications?.id?.[index] ?? '',
+            '#text': value,
+          };
+        } else {
+          return {
+            '@level': index.toString(),
+            '@classId': classifications?.id?.[index] ?? '',
+            '#text': value,
+          };
+        }
       });
     }
   }

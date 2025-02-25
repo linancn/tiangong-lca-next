@@ -5,7 +5,7 @@ import SourceSelectDescription from '@/pages/Sources/Components/select/descripti
 import { getContactDetail } from '@/services/contacts/api';
 import { genContactFromData } from '@/services/contacts/util';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
-import type { ActionType } from '@ant-design/pro-table';
+import { ActionType } from '@ant-design/pro-components';
 import { Button, Card, Descriptions, Divider, Drawer, Modal, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';

@@ -8,7 +8,7 @@ import {
   genNodeLabel,
 } from '@/services/lifeCycleModels/util';
 import { genProcessName } from '@/services/processes/util';
-import type { ActionType } from '@ant-design/pro-table';
+import { ActionType } from '@ant-design/pro-components';
 import { useGraphEvent, useGraphStore } from '@antv/xflow';
 import { Space, Spin, theme } from 'antd';
 import { FC, useEffect, useState } from 'react';

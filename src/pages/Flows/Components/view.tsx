@@ -280,9 +280,13 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang, actionRef }) => {
           <br />
           <LevelTextItemDescription
             data={
-              initData?.flowInformation?.dataSetInformation?.classificationInformation?.[
-                'common:elementaryFlowCategorization'
-              ]?.['common:category']?.['value']
+              initData?.flowInformation?.LCIMethod?.typeOfDataSet === 'Elementary flow'
+                ? initData?.flowInformation?.dataSetInformation?.classificationInformation?.[
+                    'common:elementaryFlowCategorization'
+                  ]?.['common:category']?.['value']
+                : initData?.flowInformation?.dataSetInformation?.classificationInformation?.[
+                    'common:classification'
+                  ]?.['common:class']?.['value']
             }
             lang={lang}
             categoryType={'Flow'}

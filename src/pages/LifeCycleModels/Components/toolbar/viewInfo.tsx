@@ -5,7 +5,7 @@ import ContactSelectDescription from '@/pages/Contacts/Components/select/descrip
 import LifeCycleModelEdit from '@/pages/LifeCycleModels/Components/edit';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 import { CloseOutlined, InfoOutlined } from '@ant-design/icons';
-import type { ActionType } from '@ant-design/pro-table';
+import { ActionType } from '@ant-design/pro-components';
 import { Button, Card, Descriptions, Divider, Drawer, Modal, Space, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';

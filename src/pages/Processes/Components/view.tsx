@@ -16,8 +16,8 @@ import {
   ProductOutlined,
   ProfileOutlined,
 } from '@ant-design/icons';
-import { ProColumns, ProTable } from '@ant-design/pro-components';
-import type { ActionType } from '@ant-design/pro-table';
+import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
+
 import {
   Button,
   Card,
