@@ -9,6 +9,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
 import { ContactForm } from './form';
+import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
+
 type Props = {
   id: string;
   version: string;
@@ -34,6 +36,7 @@ const ContactEdit: FC<Props> = ({
   const [initData, setInitData] = useState<any>({});
   const [fromData, setFromData] = useState<any>(undefined);
   const [activeTabKey, setActiveTabKey] = useState<string>('contactInformation');
+  const [referenceValue, setReferenceValue] = useState<number>(0);
   const intl = useIntl();
 
   const onEdit = useCallback(() => {
@@ -62,6 +65,10 @@ const ContactEdit: FC<Props> = ({
       setFromData(contactFromData);
       setSpinning(false);
     });
+  };
+
+  const updateReference = async () => {
+    setReferenceValue(referenceValue + 1);
   };
 
   useEffect(() => {
@@ -95,7 +102,7 @@ const ContactEdit: FC<Props> = ({
       )}
 
       <Drawer
-        getContainer={() => document.body} 
+        getContainer={() => document.body}
         title={
           type === 'edit' ? (
             <FormattedMessage id="pages.contact.drawer.title.edit" defaultMessage="Edit Contact" />
@@ -122,6 +129,16 @@ const ContactEdit: FC<Props> = ({
         onClose={() => setDrawerVisible(false)}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
+            <Button
+              onClick={() => {
+                updateReference();
+              }}
+            >
+              <FormattedMessage
+                id="pages.button.updateReference"
+                defaultMessage="Update reference"
+              />
+            </Button>
             <Button onClick={() => setDrawerVisible(false)}>
               <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
             </Button>
@@ -135,6 +152,7 @@ const ContactEdit: FC<Props> = ({
         }
       >
         <Spin spinning={spinning}>
+        <UpdateReferenceContext.Provider value={{ referenceValue }}>
           <ProForm
             formRef={formRefEdit}
             onValuesChange={(_, allValues) => {
@@ -200,8 +218,10 @@ const ContactEdit: FC<Props> = ({
               formRef={formRefEdit}
               onData={handletFromData}
               onTabChange={onTabChange}
+
             />
           </ProForm>
+        </UpdateReferenceContext.Provider>
           <Collapse
             items={[
               {
