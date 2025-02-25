@@ -18,7 +18,7 @@ import FlowsDelete from './Components/delete';
 import FlowsEdit from './Components/edit';
 import { flowTypeOptions } from './Components/optiondata';
 import FlowsView from './Components/view';
-
+import AllVersionsList from '@/components/AllVersions'; 
 const { Search } = Input;
 
 const TableList: FC = () => {
@@ -98,6 +98,24 @@ const TableList: FC = () => {
       dataIndex: 'version',
       sorter: false,
       search: false,
+      render: (_, row) => {
+        return <Space size={'small'}>
+          {row.version}
+          <AllVersionsList
+            searchTableName="flows"
+            id={row.id}
+          >
+            <FlowsEdit
+              type="createVersion"
+              id={row.id}
+              version={row.version}
+              lang={lang}
+              buttonType={'icon'}
+              actionRef={actionRef}
+            />
+          </AllVersionsList>
+        </Space>
+      },
     },
     {
       title: <FormattedMessage id="pages.table.title.updatedAt" defaultMessage="Updated at" />,

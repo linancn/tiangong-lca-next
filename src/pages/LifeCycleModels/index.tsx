@@ -19,7 +19,7 @@ import LifeCycleModelCreate from './Components/create';
 import LifeCycleModelDelete from './Components/delete';
 import LifeCycleModelEdit from './Components/edit';
 import LifeCycleModelView from './Components/view';
-
+import AllVersionsList from '@/components/AllVersions';
 const { Search } = Input;
 
 const TableList: FC = () => {
@@ -70,6 +70,24 @@ const TableList: FC = () => {
       dataIndex: 'version',
       sorter: false,
       search: false,
+      render: (_, row) => {
+        return <Space size={'small'}>
+          {row.version}
+          <AllVersionsList
+            searchTableName="lifecyclemodels"
+            id={row.id}
+          >
+            <LifeCycleModelEdit
+              type="createVersion"
+              id={row.id}
+              version={row.version}
+              lang={lang}
+              buttonType={'icon'}
+              actionRef={actionRef}
+            />
+          </AllVersionsList>
+        </Space>
+      },  
     },
     {
       title: <FormattedMessage id="pages.table.title.updatedAt" defaultMessage="Updated at" />,

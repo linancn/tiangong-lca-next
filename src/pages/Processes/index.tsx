@@ -17,7 +17,7 @@ import ProcessCreate from './Components/create';
 import ProcessDelete from './Components/delete';
 import ProcessEdit from './Components/edit';
 import ProcessView from './Components/view';
-
+import AllVersionsList from '@/components/AllVersions';
 const { Search } = Input;
 
 const TableList: FC = () => {
@@ -80,6 +80,25 @@ const TableList: FC = () => {
       dataIndex: 'version',
       sorter: false,
       search: false,
+      render: (_, row) => {
+        return <Space size={'small'}>
+          {row.version}
+          <AllVersionsList
+            searchTableName="processes"
+            id={row.id}
+          >
+            <ProcessEdit
+              type="createVersion"
+              id={row.id}
+              version={row.version}
+              lang={lang}
+              buttonType={'icon'}
+              actionRef={actionRef}
+              setViewDrawerVisible={() => {}}
+            />
+          </AllVersionsList>
+        </Space>
+      },  
     },
     {
       title: <FormattedMessage id="pages.table.title.updatedAt" defaultMessage="Updated at" />,

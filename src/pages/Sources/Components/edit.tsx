@@ -3,7 +3,7 @@ import { genSourceFromData } from '@/services/sources/util';
 import { supabaseStorageBucket } from '@/services/supabase/key';
 import { getThumbFileUrls, removeFile, uploadFile } from '@/services/supabase/storage';
 import styles from '@/style/custom.less';
-import { CloseOutlined, CopyOutlined, FormOutlined } from '@ant-design/icons';
+import { CloseOutlined, CopyOutlined, FormOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { Button, Collapse, Drawer, Space, Spin, Tooltip, Typography, message } from 'antd';
 import path from 'path';
@@ -202,7 +202,7 @@ const SourceEdit: FC<Props> = ({
               <FormattedMessage id="pages.button.createVersion" defaultMessage="Create Version" />
             }
           >
-            <Button shape="circle" icon={<CopyOutlined />} size="small" onClick={onEdit} />
+            <Button type="text" icon={<PlusOutlined />} onClick={onEdit} />
           </Tooltip>
         )
       ) : (
@@ -215,6 +215,7 @@ const SourceEdit: FC<Props> = ({
       )}
 
       <Drawer
+        getContainer={() => document.body}
         title={
           type === 'edit' ? (
             <FormattedMessage id="pages.source.drawer.title.edit" defaultMessage="Edit Source" />

@@ -69,6 +69,7 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData }) => {
         ></Button>
       </Tooltip>
       <Drawer
+        getContainer={() => document.body}
         destroyOnClose
         title={
           <FormattedMessage

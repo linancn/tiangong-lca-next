@@ -21,7 +21,7 @@ import FlowpropertiesCreate from './Components/create';
 import FlowpropertiesDelete from './Components/delete';
 import FlowpropertiesEdit from './Components/edit';
 import FlowpropertyView from './Components/view';
-
+import AllVersionsList from '@/components/AllVersions';
 const { Search } = Input;
 
 const TableList: FC = () => {
@@ -91,6 +91,24 @@ const TableList: FC = () => {
       dataIndex: 'version',
       sorter: false,
       search: false,
+      render: (_, row) => {
+        return <Space size={'small'}>
+          {row.version}
+          <AllVersionsList
+            searchTableName="flowproperties"
+            id={row.id}
+          >
+            <FlowpropertiesEdit
+              type="createVersion"
+              id={row.id}
+              version={row.version}
+              lang={lang}
+              buttonType={'icon'}
+              actionRef={actionRef}
+            />
+          </AllVersionsList>
+        </Space>
+      },
     },
     {
       title: <FormattedMessage id="pages.table.title.updatedAt" defaultMessage="Updated at" />,
