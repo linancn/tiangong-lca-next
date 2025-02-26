@@ -48,3 +48,9 @@ build
 supabase/*
 
 dev_docs/*
+
+# docker
+docker/volumes/db/data
+docker/volumes/storage
+docker/.env
+docker/test.http
