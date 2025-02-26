@@ -7,15 +7,16 @@ import {
 
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
-import { getDataDetail } from '../general/api';
+import { getDataDetail, getTeamIdByUserId } from '../general/api';
 import { getILCDClassification } from '../ilcd/api';
 import { genUnitGroupJsonOrdered } from './util';
 
 export async function createUnitGroup(id: string, data: any) {
   const newData = genUnitGroupJsonOrdered(id, data);
+  const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('unitgroups')
-    .insert([{ id: id, json_ordered: newData }])
+    .insert([{ id: id, json_ordered: newData, team_id: teamId }])
     .select();
   return result;
 }
@@ -44,7 +45,7 @@ export async function getUnitGroupTableAll(
   sort: Record<string, SortOrder>,
   lang: string,
   dataSource: string,
-  tid: string,
+  tid: string | [],
 ) {
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
   const orderBy = sort[sortBy] ?? 'descend';
@@ -56,7 +57,8 @@ export async function getUnitGroupTableAll(
         json->unitGroupDataSet->unitGroupInformation->quantitativeReference->>referenceToReferenceUnit,
         json->unitGroupDataSet->units->unit,
         version,
-        modified_at
+        modified_at,
+        team_id
     `;
 
   const tableName = 'unitgroups';
@@ -91,14 +93,13 @@ export async function getUnitGroupTableAll(
       });
     }
   } else if (dataSource === 'te') {
-    const userData = await supabase.auth.getUser();
-    const teamId = userData.data.user?.user_metadata?.team_id;
+    const teamId = await getTeamIdByUserId();
     if (teamId) {
       query = query.eq('team_id', teamId);
     } else {
       return Promise.resolve({
         data: [],
-        success: false,
+        success: true,
       });
     }
   }
@@ -140,6 +141,7 @@ export async function getUnitGroupTableAll(
               refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
               version: i.version,
               modifiedAt: new Date(i?.modified_at),
+              teamId: i?.team_id,
             };
           } catch (e) {
             console.error(e);
@@ -166,6 +168,7 @@ export async function getUnitGroupTableAll(
             refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
             version: i.version,
             modifiedAt: new Date(i?.modified_at),
+            teamId: i?.team_id,
           };
         } catch (e) {
           console.error(e);
@@ -252,6 +255,7 @@ export async function getUnitGroupTablePgroongaSearch(
               refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
               version: i.version,
               modifiedAt: new Date(i?.modified_at),
+              teamId: i?.team_id,
             };
           } catch (e) {
             console.error(e);
@@ -284,6 +288,7 @@ export async function getUnitGroupTablePgroongaSearch(
             refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
             version: i.version,
             modifiedAt: new Date(i?.modified_at),
+            teamId: i?.team_id,
           };
         } catch (e) {
           console.error(e);
@@ -355,6 +360,7 @@ export async function getReferenceUnit(id: string, version: string) {
           refUnitId: data?.referenceToReferenceUnit ?? '-',
           refUnitName: refData?.name ?? '-',
           refUnitGeneralComment: refData?.generalComment,
+          unit: dataList,
         },
         success: true,
       });

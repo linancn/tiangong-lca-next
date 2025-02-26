@@ -24,12 +24,13 @@ const { Search } = Input;
 const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }) => {
   const [tgKeyWord, setTgKeyWord] = useState<any>('');
   const [myKeyWord, setMyKeyWord] = useState<any>('');
-
+  const [teamKeyWord, setTeamKeyWord] = useState<any>('');
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [activeTabKey, setActiveTabKey] = useState<string>('tg');
   const tgActionRefSelect = useRef<ActionType>();
   const myActionRefSelect = useRef<ActionType>();
+  const teamActionRefSelect = useRef<ActionType>();
 
   const intl = useIntl();
 
@@ -51,12 +52,22 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }
       myActionRefSelect.current?.setPageInfo?.({ current: 1 });
       myActionRefSelect.current?.reload();
     }
+    if (key === 'te') {
+      teamActionRefSelect.current?.setPageInfo?.({ current: 1 });
+      teamActionRefSelect.current?.reload();
+    }
   };
 
   const onTgSearch: SearchProps['onSearch'] = async (value) => {
     await setTgKeyWord(value);
     tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
     tgActionRefSelect.current?.reload();
+  };
+
+  const onTeamSearch: SearchProps['onSearch'] = async (value) => {
+    await setTeamKeyWord(value);
+    teamActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    teamActionRefSelect.current?.reload();
   };
 
   const onMySearch: SearchProps['onSearch'] = async (value) => {
@@ -73,12 +84,20 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }
     setMyKeyWord(e.target.value);
   };
 
+  const handleTeamKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTeamKeyWord(e.target.value);
+  };
+
   const tabList = [
     {
       key: 'tg',
       tab: <FormattedMessage id="pages.tab.title.tgdata" defaultMessage="TianGong Data" />,
     },
     { key: 'my', tab: <FormattedMessage id="pages.tab.title.mydata" defaultMessage="My Data" /> },
+    {
+      key: 'te',
+      tab: <FormattedMessage id="pages.tab.title.tedata" defaultMessage="Team Data" />,
+    },
   ];
 
   const contactColumns: ProColumns<ContactTable>[] = [
@@ -254,6 +273,48 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }
           }}
           toolBarRender={() => {
             return [<ContactCreate lang={lang} key={0} actionRef={myActionRefSelect} />];
+          }}
+          columns={contactColumns}
+          rowSelection={{
+            type: 'radio',
+            alwaysShowAlert: true,
+            selectedRowKeys,
+            onChange: onSelectChange,
+          }}
+        />
+      </>
+    ),
+    te: (
+      <>
+        <Card>
+          <Search
+            name={'te'}
+            size={'large'}
+            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+            value={teamKeyWord}
+            onChange={handleTeamKeyWordChange}
+            onSearch={onTeamSearch}
+            enterButton
+          />
+        </Card>
+        <ProTable<ContactTable, ListPagination>
+          actionRef={teamActionRefSelect}
+          search={false}
+          pagination={{
+            showSizeChanger: false,
+            pageSize: 10,
+          }}
+          request={async (
+            params: {
+              pageSize: number;
+              current: number;
+            },
+            sort,
+          ) => {
+            if (teamKeyWord.length > 0) {
+              return getContactTablePgroongaSearch(params, lang, 'te', teamKeyWord, {});
+            }
+            return getContactTableAll(params, sort, lang, 'te', '');
           }}
           columns={contactColumns}
           rowSelection={{

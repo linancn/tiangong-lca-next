@@ -1,8 +1,10 @@
+import { contributeSource } from '@/services/general/api';
 import { getSourceTableAll, getSourceTablePgroongaSearch } from '@/services/sources/api';
-import { Card, Input, Space, Tooltip } from 'antd';
+import { Card, Input, Space, Tooltip, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 
+import ContributeData from '@/components/ContributeData';
 import { ListPagination } from '@/services/general/data';
 import { getDataSource, getLang, getLangText } from '@/services/general/util';
 import { SourceTable } from '@/services/sources/data';
@@ -15,7 +17,6 @@ import SourceCreate from './Components/create';
 import SourceDelete from './Components/delete';
 import SourceEdit from './Components/edit';
 import SourceView from './Components/view';
-
 const { Search } = Input;
 
 const TableList: FC = () => {
@@ -103,6 +104,23 @@ const TableList: FC = () => {
                 buttonType={'icon'}
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
+              />
+              <ContributeData
+                onOk={async () => {
+                  const { error } = await contributeSource('sources', row.id, row.version);
+                  if (error) {
+                    console.log(error);
+                  } else {
+                    message.success(
+                      intl.formatMessage({
+                        id: 'component.contributeData.success',
+                        defaultMessage: 'Contribute successfully',
+                      }),
+                    );
+                    actionRef.current?.reload();
+                  }
+                }}
+                disabled={!!row.teamId}
               />
             </Space>,
           ];

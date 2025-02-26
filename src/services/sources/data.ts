@@ -8,4 +8,5 @@ export type SourceTable = {
   sourceCitation: string;
   publicationType: string;
   modifiedAt: Date;
+  teamId: string;
 };

@@ -7,15 +7,16 @@ import {
 
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
-import { getDataDetail } from '../general/api';
+import { getDataDetail, getTeamIdByUserId } from '../general/api';
 import { getILCDClassification } from '../ilcd/api';
 import { genFlowpropertyJsonOrdered } from './util';
 
 export async function createFlowproperties(id: string, data: any) {
   const newData = genFlowpropertyJsonOrdered(id, data);
+  const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('flowproperties')
-    .insert([{ id: id, json_ordered: newData }])
+    .insert([{ id: id, json_ordered: newData, team_id: teamId }])
     .select();
   return result;
 }
@@ -44,7 +45,7 @@ export async function getFlowpropertyTableAll(
   sort: Record<string, SortOrder>,
   lang: string,
   dataSource: string,
-  tid: string,
+  tid: string | [],
 ) {
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
   const orderBy = sort[sortBy] ?? 'descend';
@@ -57,7 +58,8 @@ export async function getFlowpropertyTableAll(
     json->flowPropertyDataSet->flowPropertiesInformation->quantitativeReference->referenceToReferenceUnitGroup->>"@refObjectId",
     json->flowPropertyDataSet->flowPropertiesInformation->quantitativeReference->referenceToReferenceUnitGroup->"common:shortDescription",
     version,
-    modified_at
+    modified_at,
+    team_id
   `;
 
   const tableName = 'flowproperties';
@@ -92,14 +94,13 @@ export async function getFlowpropertyTableAll(
       });
     }
   } else if (dataSource === 'te') {
-    const userData = await supabase.auth.getUser();
-    const teamId = userData.data.user?.user_metadata?.team_id;
+    const teamId = await getTeamIdByUserId();
     if (teamId) {
       query = query.eq('team_id', teamId);
     } else {
       return Promise.resolve({
         data: [],
-        success: false,
+        success: true,
       });
     }
   }
@@ -137,6 +138,7 @@ export async function getFlowpropertyTableAll(
               refUnitGroup: getLangText(i?.['common:shortDescription'], lang),
               version: i.version,
               modifiedAt: new Date(i?.modified_at),
+              teamId: i?.team_id,
             };
           } catch (e) {
             console.error(e);
@@ -159,6 +161,7 @@ export async function getFlowpropertyTableAll(
             refUnitGroup: getLangText(i?.['common:shortDescription'], lang),
             version: i.version,
             modifiedAt: new Date(i?.modified_at),
+            teamId: i?.team_id,
           };
         } catch (e) {
           console.error(e);
@@ -251,6 +254,7 @@ export async function getFlowpropertyTablePgroongaSearch(
               ),
               version: i.version,
               modifiedAt: new Date(i?.modified_at),
+              teamId: i?.team_id,
             };
           } catch (e) {
             console.error(e);
@@ -288,6 +292,7 @@ export async function getFlowpropertyTablePgroongaSearch(
             ),
             version: i.version,
             modifiedAt: new Date(i?.modified_at),
+            teamId: i?.team_id,
           };
         } catch (e) {
           console.error(e);

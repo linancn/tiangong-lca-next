@@ -7,15 +7,16 @@ import {
 
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
-import { getDataDetail } from '../general/api';
+import { getDataDetail, getTeamIdByUserId } from '../general/api';
 import { getILCDClassification } from '../ilcd/api';
 import { genContactJsonOrdered } from './util';
 
 export async function createContact(id: string, data: any) {
   const newData = genContactJsonOrdered(id, data);
+  const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('contacts')
-    .insert([{ id: id, json_ordered: newData }])
+    .insert([{ id: id, json_ordered: newData, team_id: teamId }])
     .select();
   return result;
 }
@@ -44,7 +45,7 @@ export async function getContactTableAll(
   sort: Record<string, SortOrder>,
   lang: string,
   dataSource: string,
-  tid: string,
+  tid: string | [],
 ) {
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
   const orderBy = sort[sortBy] ?? 'descend';
@@ -56,7 +57,8 @@ export async function getContactTableAll(
     json->contactDataSet->contactInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
     json->contactDataSet->contactInformation->dataSetInformation->>email,
     version,
-    modified_at
+    modified_at,
+    team_id
   `;
 
   const tableName = 'contacts';
@@ -91,14 +93,13 @@ export async function getContactTableAll(
       });
     }
   } else if (dataSource === 'te') {
-    const userData = await supabase.auth.getUser();
-    const teamId = userData.data.user?.user_metadata?.team_id;
+    const teamId = await getTeamIdByUserId();
     if (teamId) {
       query = query.eq('team_id', teamId);
     } else {
       return Promise.resolve({
         data: [],
-        success: false,
+        success: true,
       });
     }
   }
@@ -139,6 +140,7 @@ export async function getContactTableAll(
             email: i?.email ?? '-',
             version: i.version,
             modifiedAt: new Date(i?.modified_at),
+            teamId: i?.team_id,
           };
         } catch (e) {
           console.error(e);
@@ -216,6 +218,7 @@ export async function getContactTablePgroongaSearch(
             email: dataInfo?.email ?? '-',
             version: i.version,
             modifiedAt: new Date(i?.modified_at),
+            teamId: i?.team_id,
           };
         } catch (e) {
           console.error(e);

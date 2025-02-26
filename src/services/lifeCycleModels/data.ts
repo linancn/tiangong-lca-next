@@ -5,4 +5,5 @@ export type LifeCycleModelTable = {
   classification: string;
   version: string;
   modifiedAt: Date;
+  teamId: string;
 };
