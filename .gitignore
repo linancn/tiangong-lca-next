@@ -41,3 +41,10 @@ screenshot
 .eslintcache
 
 build
+.env.local
+.env
+
+# supabase
+supabase/*
+
+dev_docs/*
