@@ -9,6 +9,3 @@ export const supabaseAnonKey =
   '';
 
 export const supabaseStorageBucket = 'external_docs';
-
-console.log('supabaseUrl', supabaseUrl);
-console.log('supabaseAnonKey', supabaseAnonKey);
