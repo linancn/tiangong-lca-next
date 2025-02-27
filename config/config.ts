@@ -1,9 +1,15 @@
 import defaultSettings from './defaultSettings';
 // https://umijs.org/config/
 import { defineConfig } from '@umijs/max';
-// import { join } from 'path';
+import { join } from 'path';
 import proxy from './proxy';
 import routes from './routes';
+
+// 导入 dotenv 来读取 .env.public 文件
+import * as dotenv from 'dotenv';
+
+// 使用绝对路径读取 .env.public 文件
+dotenv.config({ path: join(__dirname, '..', '.env.public') });
 
 const { REACT_APP_ENV = 'dev' } = process.env;
 
@@ -159,4 +165,23 @@ export default defineConfig({
   // history: { type: 'hash' },
   // history: { type: 'memory' },
   history: { type: 'browser' },
+  define: {
+    'process.env.NEXT_PUBLIC_SUPABASE_URL': process.env.NEXT_PUBLIC_SUPABASE_URL,
+    'process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    'process.env.NEXT_PUBLIC_SUPABASE_URL_SELF_HOSTING':
+      process.env.NEXT_PUBLIC_SUPABASE_URL_SELF_HOSTING,
+    'process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY_SELF_HOSTING':
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY_SELF_HOSTING,
+  },
 });
+
+console.log('NEXT_PUBLIC_SUPABASE_URL', process.env.NEXT_PUBLIC_SUPABASE_URL);
+console.log('NEXT_PUBLIC_SUPABASE_ANON_KEY', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+console.log(
+  'NEXT_PUBLIC_SUPABASE_URL_SELF_HOSTING',
+  process.env.NEXT_PUBLIC_SUPABASE_URL_SELF_HOSTING,
+);
+console.log(
+  'NEXT_PUBLIC_SUPABASE_ANON_KEY_SELF_HOSTING',
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY_SELF_HOSTING,
+);
