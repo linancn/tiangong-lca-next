@@ -300,7 +300,11 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
         activeTabKey={activeTabKey}
         onTabChange={onTabChange}
       >
-        {tabContent[activeTabKey]}
+        {Object.keys(tabContent).map(key => (
+          <div key={key} style={{ display: key === activeTabKey ? 'block' : 'none' }}>
+            {tabContent[key]}
+          </div>
+        ))}
       </Card>
       {/* <Form.Item name="id" hidden>
         <Input />
