@@ -1,3 +1,4 @@
+import { useUpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import { jsonToList } from '@/services/general/util';
 import { getReferenceUnit, getUnitGroupDetail } from '@/services/unitgroups/api';
 import { genUnitGroupFromData } from '@/services/unitgroups/util';
@@ -22,6 +23,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData })
   const [id, setId] = useState<string | undefined>(undefined);
   const [version, setVersion] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
+  const { referenceValue } = useUpdateReferenceContext() as { referenceValue: number };
 
   const handletUnitgroupsData = (rowId: string, rowVersion: string) => {
     getUnitGroupDetail(rowId, rowVersion).then(async (result: any) => {
@@ -51,7 +53,11 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData })
       onData();
     });
   };
-
+  useEffect(() => {
+    if (id) {
+      handletUnitgroupsData(id, version ?? '');
+    }
+  }, [referenceValue]);
   useEffect(() => {
     setId(undefined);
     if (formRef.current?.getFieldValue([...name, '@refObjectId'])) {

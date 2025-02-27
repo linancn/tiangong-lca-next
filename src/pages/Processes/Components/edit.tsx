@@ -1,3 +1,4 @@
+import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import { getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
 import { createProcess, getProcessDetail, updateProcess } from '@/services/processes/api';
@@ -55,6 +56,7 @@ const ProcessEdit: FC<Props> = ({
   const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
   const [spinning, setSpinning] = useState(false);
   const intl = useIntl();
+  const [referenceValue, setReferenceValue] = useState(0);
 
   const handletFromData = () => {
     if (fromData?.id) {
@@ -106,6 +108,7 @@ const ProcessEdit: FC<Props> = ({
     );
 
     setExchangeDataSource(newExchangeDataSource);
+    setReferenceValue(referenceValue + 1);
   };
 
   const onTabChange = (key: string) => {
@@ -262,6 +265,7 @@ const ProcessEdit: FC<Props> = ({
         }
       >
         <Spin spinning={spinning}>
+          <UpdateReferenceContext.Provider value={{ referenceValue }}>
           <ProForm
             formRef={formRefEdit}
             initialValues={initData}
@@ -337,6 +341,7 @@ const ProcessEdit: FC<Props> = ({
               <Input />
             </Form.Item>
           </ProForm>
+          </UpdateReferenceContext.Provider>
           <Collapse
             items={[
               {

@@ -10,6 +10,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
 import { UnitGroupForm } from './form';
+import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 
 type Props = {
   id: string;
@@ -37,6 +38,10 @@ const UnitGroupEdit: FC<Props> = ({
   const [unitDataSource, setUnitDataSource] = useState<UnitTable[]>([]);
   const [spinning, setSpinning] = useState(false);
   const intl = useIntl();
+  const [referenceValue, setReferenceValue] = useState(0);
+  const updateReference = async () => {
+    setReferenceValue(referenceValue + 1);
+  };
 
   const handletFromData = () => {
     if (fromData)
@@ -174,6 +179,16 @@ const UnitGroupEdit: FC<Props> = ({
           <Space size={'middle'} className={styles.footer_right}>
             <Button
               onClick={() => {
+                updateReference();
+              }}
+            >
+              <FormattedMessage
+                id="pages.button.updateReference"
+                defaultMessage="Update reference"
+              />
+            </Button>
+            <Button
+              onClick={() => {
                 setDrawerVisible(false);
               }}
             >
@@ -194,6 +209,7 @@ const UnitGroupEdit: FC<Props> = ({
         }
       >
         <Spin spinning={spinning}>
+        <UpdateReferenceContext.Provider value={{ referenceValue }}>
           <ProForm
             formRef={formRefEdit}
             initialValues={initData}
@@ -260,6 +276,7 @@ const UnitGroupEdit: FC<Props> = ({
               unitDataSource={unitDataSource}
             />
           </ProForm>
+          </UpdateReferenceContext.Provider>
           <Collapse
             items={[
               {

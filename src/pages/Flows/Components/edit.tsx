@@ -9,7 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
 import { FlowForm } from './form';
-
+import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 type Props = {
   id: string;
   version: string;
@@ -28,6 +28,11 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang, type =
   const [spinning, setSpinning] = useState(false);
   const [propertyDataSource, setPropertyDataSource] = useState<any>([]);
   const intl = useIntl();
+  const [referenceValue, setReferenceValue] = useState(0);
+  
+  const updateReference = async () => {
+    setReferenceValue(referenceValue + 1);
+  };
 
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
@@ -153,6 +158,16 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang, type =
         onClose={() => setDrawerVisible(false)}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
+             <Button
+              onClick={() => {
+                updateReference();
+              }}
+            >
+              <FormattedMessage
+                id="pages.button.updateReference"
+                defaultMessage="Update reference"
+              />
+            </Button>
             <Button onClick={() => setDrawerVisible(false)}>
               {' '}
               <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
@@ -168,6 +183,7 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang, type =
         }
       >
         <Spin spinning={spinning}>
+          <UpdateReferenceContext.Provider value={{ referenceValue }}>
           <ProForm
             formRef={formRefEdit}
             initialValues={initData}
@@ -236,6 +252,7 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang, type =
               onPropertyDataCreate={handletPropertyDataCreate}
             />
           </ProForm>
+          </UpdateReferenceContext.Provider>
           <Collapse
             items={[
               {

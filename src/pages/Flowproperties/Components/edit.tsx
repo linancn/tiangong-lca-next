@@ -31,7 +31,7 @@ import { FormattedMessage, useIntl } from 'umi';
 import { genFlowpropertyFromData } from '@/services/flowproperties/util';
 import { v4 } from 'uuid';
 import { FlowpropertyForm } from './form';
-
+import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 type Props = {
   id: string;
   version: string;
@@ -55,7 +55,11 @@ const FlowpropertiesEdit: FC<Props> = ({
   const [initData, setInitData] = useState<any>({});
   const [spinning, setSpinning] = useState(false);
   const intl = useIntl();
-
+  const [referenceValue, setReferenceValue] = useState(0);
+  
+  const updateReference = async () => {
+    setReferenceValue(referenceValue + 1);
+  };
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
   };
@@ -168,6 +172,16 @@ const FlowpropertiesEdit: FC<Props> = ({
         onClose={() => setDrawerVisible(false)}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
+            <Button
+              onClick={() => {
+                updateReference();
+              }}
+            >
+              <FormattedMessage
+                id="pages.button.updateReference"
+                defaultMessage="Update reference"
+              />
+            </Button>
             <Button onClick={() => setDrawerVisible(false)}>
               {' '}
               <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
@@ -183,6 +197,7 @@ const FlowpropertiesEdit: FC<Props> = ({
         }
       >
         <Spin spinning={spinning}>
+          <UpdateReferenceContext.Provider value={{ referenceValue }}>
           <ProForm
             formRef={formRefEdit}
             initialValues={initData}
@@ -250,6 +265,7 @@ const FlowpropertiesEdit: FC<Props> = ({
               onTabChange={onTabChange}
             />
           </ProForm>
+          </UpdateReferenceContext.Provider>
           <Collapse
             items={[
               {

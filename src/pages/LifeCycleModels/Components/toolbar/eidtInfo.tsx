@@ -14,7 +14,7 @@ import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { LifeCycleModelForm } from '../form';
-
+import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 // const { TextArea } = Input;
 
 type Props = {
@@ -27,7 +27,11 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData }) => {
   const [activeTabKey, setActiveTabKey] = useState<string>('lifeCycleModelInformation');
   const formRefEdit = useRef<ProFormInstance>();
   const [fromData, setFromData] = useState<any>({});
-
+  const [referenceValue, setReferenceValue] = useState(0);
+  
+  const updateReference = async () => {
+    setReferenceValue(referenceValue + 1);
+  };
   const handletFromData = () => {
     if (fromData?.id) {
       setFromData({
@@ -95,6 +99,16 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData }) => {
         }}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
+              <Button
+              onClick={() => {
+                updateReference();
+              }}
+            >
+              <FormattedMessage
+                id="pages.button.updateReference"
+                defaultMessage="Update reference"
+              />
+            </Button>
             <Button
               onClick={() => {
                 setDrawerVisible(false);
@@ -113,6 +127,7 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData }) => {
           </Space>
         }
       >
+        <UpdateReferenceContext.Provider value={{ referenceValue }}>
         <ProForm
           formRef={formRefEdit}
           initialValues={data}
@@ -139,6 +154,7 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData }) => {
             onData={handletFromData}
           />
         </ProForm>
+        </UpdateReferenceContext.Provider>
         <Collapse
           items={[
             {
