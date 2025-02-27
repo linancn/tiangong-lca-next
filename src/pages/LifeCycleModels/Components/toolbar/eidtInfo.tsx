@@ -1,3 +1,4 @@
+import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import styles from '@/style/custom.less';
 import { CloseOutlined, InfoOutlined } from '@ant-design/icons';
 import { ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -14,7 +15,6 @@ import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { LifeCycleModelForm } from '../form';
-import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 // const { TextArea } = Input;
 
 type Props = {
@@ -28,7 +28,7 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData }) => {
   const formRefEdit = useRef<ProFormInstance>();
   const [fromData, setFromData] = useState<any>({});
   const [referenceValue, setReferenceValue] = useState(0);
-  
+
   const updateReference = async () => {
     setReferenceValue(referenceValue + 1);
   };
@@ -99,7 +99,7 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData }) => {
         }}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
-              <Button
+            <Button
               onClick={() => {
                 updateReference();
               }}
@@ -128,32 +128,32 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData }) => {
         }
       >
         <UpdateReferenceContext.Provider value={{ referenceValue }}>
-        <ProForm
-          formRef={formRefEdit}
-          initialValues={data}
-          onValuesChange={(_, allValues) => {
-            setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
-          }}
-          submitter={{
-            render: () => {
-              return [];
-            },
-          }}
-          onFinish={async () => {
-            onData({ ...fromData });
-            formRefEdit.current?.resetFields();
-            setDrawerVisible(false);
-            return true;
-          }}
-        >
-          <LifeCycleModelForm
-            lang={lang}
-            activeTabKey={activeTabKey}
+          <ProForm
             formRef={formRefEdit}
-            onTabChange={onTabChange}
-            onData={handletFromData}
-          />
-        </ProForm>
+            initialValues={data}
+            onValuesChange={(_, allValues) => {
+              setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+            }}
+            submitter={{
+              render: () => {
+                return [];
+              },
+            }}
+            onFinish={async () => {
+              onData({ ...fromData });
+              formRefEdit.current?.resetFields();
+              setDrawerVisible(false);
+              return true;
+            }}
+          >
+            <LifeCycleModelForm
+              lang={lang}
+              activeTabKey={activeTabKey}
+              formRef={formRefEdit}
+              onTabChange={onTabChange}
+              onData={handletFromData}
+            />
+          </ProForm>
         </UpdateReferenceContext.Provider>
         <Collapse
           items={[

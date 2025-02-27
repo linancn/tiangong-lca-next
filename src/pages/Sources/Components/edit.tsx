@@ -1,3 +1,4 @@
+import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import { createSource, getSourceDetail, updateSource } from '@/services/sources/api';
 import { genSourceFromData } from '@/services/sources/util';
 import { supabaseStorageBucket } from '@/services/supabase/key';
@@ -12,7 +13,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
 import { SourceForm } from './form';
-import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 
 type Props = {
   id: string;
@@ -269,32 +269,32 @@ const SourceEdit: FC<Props> = ({
         }
       >
         <Spin spinning={spinning}>
-        <UpdateReferenceContext.Provider value={{ referenceValue }}>
-          <ProForm
-            formRef={formRefEdit}
-            initialValues={initData}
-            onValuesChange={(_, allValues) => {
-              setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
-            }}
-            submitter={{
-              render: () => {
-                return [];
-              },
-            }}
-            onFinish={onSubmit}
-          >
-            <SourceForm
-              lang={lang}
-              activeTabKey={activeTabKey}
+          <UpdateReferenceContext.Provider value={{ referenceValue }}>
+            <ProForm
               formRef={formRefEdit}
-              onData={handletFromData}
-              onTabChange={onTabChange}
-              loadFiles={loadFiles}
-              setLoadFiles={setLoadFiles}
-              fileList={fileList}
-              setFileList={setFileList}
-            />
-          </ProForm>
+              initialValues={initData}
+              onValuesChange={(_, allValues) => {
+                setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+              }}
+              submitter={{
+                render: () => {
+                  return [];
+                },
+              }}
+              onFinish={onSubmit}
+            >
+              <SourceForm
+                lang={lang}
+                activeTabKey={activeTabKey}
+                formRef={formRefEdit}
+                onData={handletFromData}
+                onTabChange={onTabChange}
+                loadFiles={loadFiles}
+                setLoadFiles={setLoadFiles}
+                fileList={fileList}
+                setFileList={setFileList}
+              />
+            </ProForm>
           </UpdateReferenceContext.Provider>
           <Collapse
             items={[

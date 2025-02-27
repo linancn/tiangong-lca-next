@@ -28,10 +28,10 @@ import {
 } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 
+import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import { genFlowpropertyFromData } from '@/services/flowproperties/util';
 import { v4 } from 'uuid';
 import { FlowpropertyForm } from './form';
-import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 type Props = {
   id: string;
   version: string;
@@ -56,7 +56,7 @@ const FlowpropertiesEdit: FC<Props> = ({
   const [spinning, setSpinning] = useState(false);
   const intl = useIntl();
   const [referenceValue, setReferenceValue] = useState(0);
-  
+
   const updateReference = async () => {
     setReferenceValue(referenceValue + 1);
   };
@@ -198,73 +198,73 @@ const FlowpropertiesEdit: FC<Props> = ({
       >
         <Spin spinning={spinning}>
           <UpdateReferenceContext.Provider value={{ referenceValue }}>
-          <ProForm
-            formRef={formRefEdit}
-            initialValues={initData}
-            submitter={{
-              render: () => {
-                return [];
-              },
-            }}
-            onFinish={async () => {
-              if (type === 'copy' || type === 'createVersion') {
-                const createResult = await createFlowproperties(
-                  type === 'copy' ? v4() : id,
-                  fromData,
-                );
-                if (createResult?.data) {
+            <ProForm
+              formRef={formRefEdit}
+              initialValues={initData}
+              submitter={{
+                render: () => {
+                  return [];
+                },
+              }}
+              onFinish={async () => {
+                if (type === 'copy' || type === 'createVersion') {
+                  const createResult = await createFlowproperties(
+                    type === 'copy' ? v4() : id,
+                    fromData,
+                  );
+                  if (createResult?.data) {
+                    message.success(
+                      intl.formatMessage({
+                        id: 'pages.button.create.success',
+                        defaultMessage: 'Created successfully!',
+                      }),
+                    );
+                    setDrawerVisible(false);
+                    setActiveTabKey('flowPropertiesInformation');
+                    actionRef?.current?.reload();
+                  } else if (createResult?.error?.code === '23505') {
+                    message.error(
+                      intl.formatMessage({
+                        id: 'pages.button.createVersion.fail',
+                        defaultMessage: 'Please change the version and submit',
+                      }),
+                    );
+                  } else {
+                    message.error(createResult?.error?.message);
+                  }
+                  return true;
+                }
+
+                const updateResult = await updateFlowproperties(id, version, fromData);
+                if (updateResult?.data) {
                   message.success(
-                    intl.formatMessage({
-                      id: 'pages.button.create.success',
-                      defaultMessage: 'Created successfully!',
-                    }),
+                    <FormattedMessage
+                      id="pages.flowproperties.editsuccess"
+                      defaultMessage="Edit flowproperties successfully!"
+                    />,
                   );
                   setDrawerVisible(false);
+                  // setViewDrawerVisible(false);
                   setActiveTabKey('flowPropertiesInformation');
                   actionRef?.current?.reload();
-                } else if (createResult?.error?.code === '23505') {
-                  message.error(
-                    intl.formatMessage({
-                      id: 'pages.button.createVersion.fail',
-                      defaultMessage: 'Please change the version and submit',
-                    }),
-                  );
                 } else {
-                  message.error(createResult?.error?.message);
+                  message.error(updateResult?.error?.message);
                 }
                 return true;
-              }
-
-              const updateResult = await updateFlowproperties(id, version, fromData);
-              if (updateResult?.data) {
-                message.success(
-                  <FormattedMessage
-                    id="pages.flowproperties.editsuccess"
-                    defaultMessage="Edit flowproperties successfully!"
-                  />,
-                );
-                setDrawerVisible(false);
-                // setViewDrawerVisible(false);
-                setActiveTabKey('flowPropertiesInformation');
-                actionRef?.current?.reload();
-              } else {
-                message.error(updateResult?.error?.message);
-              }
-              return true;
-            }}
-            onValuesChange={(_, allValues) => {
-              setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
-            }}
-          >
-            <FlowpropertyForm
-              lang={lang}
-              activeTabKey={activeTabKey}
-              drawerVisible={drawerVisible}
-              formRef={formRefEdit}
-              onData={handletFromData}
-              onTabChange={onTabChange}
-            />
-          </ProForm>
+              }}
+              onValuesChange={(_, allValues) => {
+                setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+              }}
+            >
+              <FlowpropertyForm
+                lang={lang}
+                activeTabKey={activeTabKey}
+                drawerVisible={drawerVisible}
+                formRef={formRefEdit}
+                onData={handletFromData}
+                onTabChange={onTabChange}
+              />
+            </ProForm>
           </UpdateReferenceContext.Provider>
           <Collapse
             items={[

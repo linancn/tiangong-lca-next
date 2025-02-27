@@ -1,3 +1,4 @@
+import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import { createUnitGroup, getUnitGroupDetail, updateUnitGroup } from '@/services/unitgroups/api';
 import { UnitTable } from '@/services/unitgroups/data';
 import { genUnitGroupFromData } from '@/services/unitgroups/util';
@@ -10,7 +11,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
 import { UnitGroupForm } from './form';
-import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 
 type Props = {
   id: string;
@@ -209,22 +209,46 @@ const UnitGroupEdit: FC<Props> = ({
         }
       >
         <Spin spinning={spinning}>
-        <UpdateReferenceContext.Provider value={{ referenceValue }}>
-          <ProForm
-            formRef={formRefEdit}
-            initialValues={initData}
-            onValuesChange={(_, allValues) => {
-              setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
-            }}
-            submitter={{
-              render: () => {
-                return [];
-              },
-            }}
-            onFinish={async () => {
-              if (type === 'copy' || type === 'createVersion') {
-                const createResult = await createUnitGroup(type === 'copy' ? v4() : id, fromData);
-                if (createResult?.data) {
+          <UpdateReferenceContext.Provider value={{ referenceValue }}>
+            <ProForm
+              formRef={formRefEdit}
+              initialValues={initData}
+              onValuesChange={(_, allValues) => {
+                setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+              }}
+              submitter={{
+                render: () => {
+                  return [];
+                },
+              }}
+              onFinish={async () => {
+                if (type === 'copy' || type === 'createVersion') {
+                  const createResult = await createUnitGroup(type === 'copy' ? v4() : id, fromData);
+                  if (createResult?.data) {
+                    message.success(
+                      intl.formatMessage({
+                        id: 'pages.button.create.success',
+                        defaultMessage: 'Created successfully!',
+                      }),
+                    );
+                    setDrawerVisible(false);
+                    setViewDrawerVisible(false);
+                    setActiveTabKey('unitGroupInformation');
+                    actionRef?.current?.reload();
+                  } else if (createResult?.error?.code === '23505') {
+                    message.error(
+                      intl.formatMessage({
+                        id: 'pages.button.createVersion.fail',
+                        defaultMessage: 'Please change the version and submit',
+                      }),
+                    );
+                  } else {
+                    message.error(createResult?.error?.message);
+                  }
+                  return true;
+                }
+                const updateResult = await updateUnitGroup(id, version, fromData);
+                if (updateResult?.data) {
                   message.success(
                     intl.formatMessage({
                       id: 'pages.button.create.success',
@@ -235,47 +259,23 @@ const UnitGroupEdit: FC<Props> = ({
                   setViewDrawerVisible(false);
                   setActiveTabKey('unitGroupInformation');
                   actionRef?.current?.reload();
-                } else if (createResult?.error?.code === '23505') {
-                  message.error(
-                    intl.formatMessage({
-                      id: 'pages.button.createVersion.fail',
-                      defaultMessage: 'Please change the version and submit',
-                    }),
-                  );
                 } else {
-                  message.error(createResult?.error?.message);
+                  message.error(updateResult?.error?.message);
                 }
                 return true;
-              }
-              const updateResult = await updateUnitGroup(id, version, fromData);
-              if (updateResult?.data) {
-                message.success(
-                  intl.formatMessage({
-                    id: 'pages.button.create.success',
-                    defaultMessage: 'Created successfully!',
-                  }),
-                );
-                setDrawerVisible(false);
-                setViewDrawerVisible(false);
-                setActiveTabKey('unitGroupInformation');
-                actionRef?.current?.reload();
-              } else {
-                message.error(updateResult?.error?.message);
-              }
-              return true;
-            }}
-          >
-            <UnitGroupForm
-              lang={lang}
-              activeTabKey={activeTabKey}
-              formRef={formRefEdit}
-              onData={handletFromData}
-              onUnitData={handletUnitData}
-              onUnitDataCreate={handletUnitDataCreate}
-              onTabChange={onTabChange}
-              unitDataSource={unitDataSource}
-            />
-          </ProForm>
+              }}
+            >
+              <UnitGroupForm
+                lang={lang}
+                activeTabKey={activeTabKey}
+                formRef={formRefEdit}
+                onData={handletFromData}
+                onUnitData={handletUnitData}
+                onUnitDataCreate={handletUnitDataCreate}
+                onTabChange={onTabChange}
+                unitDataSource={unitDataSource}
+              />
+            </ProForm>
           </UpdateReferenceContext.Provider>
           <Collapse
             items={[

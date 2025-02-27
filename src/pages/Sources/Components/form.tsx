@@ -321,11 +321,11 @@ export const SourceForm: FC<Props> = ({
       activeTabKey={activeTabKey}
       onTabChange={onTabChange}
     >
-      {Object.keys(tabContent).map(key => (
-          <div key={key} style={{ display: key === activeTabKey ? 'block' : 'none' }}>
-            {tabContent[key]}
-          </div>
-        ))}
+      {Object.keys(tabContent).map((key) => (
+        <div key={key} style={{ display: key === activeTabKey ? 'block' : 'none' }}>
+          {tabContent[key]}
+        </div>
+      ))}
     </Card>
   );
 };

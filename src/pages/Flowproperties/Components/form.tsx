@@ -282,7 +282,7 @@ export const FlowpropertyForm: FC<Props> = ({
         activeTabKey={activeTabKey}
         onTabChange={onTabChange}
       >
-        {Object.keys(tabContent).map(key => (
+        {Object.keys(tabContent).map((key) => (
           <div key={key} style={{ display: key === activeTabKey ? 'block' : 'none' }}>
             {tabContent[key]}
           </div>

@@ -300,7 +300,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
         activeTabKey={activeTabKey}
         onTabChange={onTabChange}
       >
-        {Object.keys(tabContent).map(key => (
+        {Object.keys(tabContent).map((key) => (
           <div key={key} style={{ display: key === activeTabKey ? 'block' : 'none' }}>
             {tabContent[key]}
           </div>
