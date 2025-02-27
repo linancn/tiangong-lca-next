@@ -1,64 +1,19 @@
-# TianGong LCA NEXT
+# Tiangong LCA Data Platform
 
-## Install dependencies
+[English](./README.md) | [中文](./README_CN.md)
 
-```bash
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+**Tiangong LCA Data Platform** is the world’s first **fully open-source** Life Cycle Assessment (LCA) data management platform, offering **completely free** cloud services as well as private deployment options. With Tiangong, you can:
 
-nvm install
-nvm alias default 20
-nvm use
+🌐 **Start Using Our Online Platform Right Away**  
+Begin your LCA journey now: [https://lca.tiangong.earth](https://lca.tiangong.earth)
 
-npm install
-```
+🐳 **Deploy Privately with Ease**  
+Deploy locally using Docker. For detailed instructions, see our [Private Deployment Guide](https://docs.tiangong.earth/docs/deploy/local-deploy).
 
-## Provided Scripts
+## 📖 [Documentation](https://docs.tiangong.earth/en/)
 
-Scripts provided in `package.json`. It's safe to modify or add additional script:
-
-### Start project
-
-```bash
-npm start
-```
-
-### Build project
-
-```bash
-npm run build
-```
-
-### Check code style
-
-```bash
-npm run lint
-```
-
-You can also use script to auto fix some lint error:
-
-```bash
-npm run lint:fix
-```
-
-### Test code
-
-```bash
-npm test
-```
-
-### Publish
-
-```bash
-#list existing tags
-git tag
-#creat a new tag
-git tag v0.0.1
-#push this tag to origin
-git push origin v0.0.1
-```
-
-## You can now run the Next.js local development server
-
-🚀 **Use VSCode Launch Program configuration to Debug!** 🚀
-
-The app should now be running on [localhost:8000](http://localhost:8000/).
+- [Get Started in 5 Minutes](https://docs.tiangong.earth/en/docs/category/quick-start)
+- [User Guide](https://docs.tiangong.earth/en/docs/category/user-guide)
+- [FAQ](https://docs.tiangong.earth/en/docs/category/faq)
+- [Comprehensive Deployment Options](https://docs.tiangong.earth/en/docs/category/deloyment)
+- [Contributor Guide](https://docs.tiangong.earth/en/docs/category/contributing--development)
