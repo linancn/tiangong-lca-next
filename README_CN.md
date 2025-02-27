@@ -2,7 +2,7 @@
 
 [English](./README.md) | [中文](./README_CN.md)
 
-天工LCA数据平台是首个**完全开源🚀**的生命周期评估(LCA)数据管理平台，提供**永久免费💰**的云端服务与私有化部署方案。通过本平台，您可以：
+天工LCA数据平台是**完全开源🚀**的生命周期评估(LCA)数据管理平台，提供**免费💰**的云端服务与私有化部署方案。通过本平台，您可以：
 
 🌐 **即刻访问在线系统**  
 立即开启您的LCA之旅：<a href="https://lca.tiangong.earth" target="_blank">https://lca.tiangong.earth</a>
