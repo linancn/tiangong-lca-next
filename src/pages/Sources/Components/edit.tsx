@@ -12,6 +12,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
 import { SourceForm } from './form';
+import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 
 type Props = {
   id: string;
@@ -42,7 +43,10 @@ const SourceEdit: FC<Props> = ({
   const [fileList0, setFileList0] = useState<any[]>([]);
   const [fileList, setFileList] = useState<any[]>([]);
   const [loadFiles, setLoadFiles] = useState<any[]>([]);
-
+  const [referenceValue, setReferenceValue] = useState(0);
+  const updateReference = async () => {
+    setReferenceValue(referenceValue + 1);
+  };
   const handletFromData = () => {
     if (fromData)
       setFromData({
@@ -242,6 +246,16 @@ const SourceEdit: FC<Props> = ({
         onClose={() => setDrawerVisible(false)}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
+            <Button
+              onClick={() => {
+                updateReference();
+              }}
+            >
+              <FormattedMessage
+                id="pages.button.updateReference"
+                defaultMessage="Update reference"
+              />
+            </Button>
             <Button onClick={() => setDrawerVisible(false)}>
               <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
             </Button>
@@ -255,6 +269,7 @@ const SourceEdit: FC<Props> = ({
         }
       >
         <Spin spinning={spinning}>
+        <UpdateReferenceContext.Provider value={{ referenceValue }}>
           <ProForm
             formRef={formRefEdit}
             initialValues={initData}
@@ -280,6 +295,7 @@ const SourceEdit: FC<Props> = ({
               setFileList={setFileList}
             />
           </ProForm>
+          </UpdateReferenceContext.Provider>
           <Collapse
             items={[
               {
