@@ -126,9 +126,8 @@ export async function getVersionsById(
     );
   let data: any[] = result?.data ?? [];
   if (!result.error) {
-
     switch (tableName) {
-      case 'contacts':
+      case 'contacts':{
         await getILCDClassification('Contact', lang, ['all']).then((res) => {
           data = result.data.map((i: any) => {
             try {
@@ -154,7 +153,7 @@ export async function getVersionsById(
             }
           });
         });
-
+      }
       case 'sources':
         if (lang === 'zh') {
           await getILCDClassification('Source', lang, ['all']).then((res) => {

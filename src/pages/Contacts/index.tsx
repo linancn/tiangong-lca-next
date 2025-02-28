@@ -83,7 +83,7 @@ const TableList: FC = () => {
               searchTableName="contacts"
               columns={getAllVersionsColumns(contactColumns, 4)}
               searchColume={`
-                id,
+                 id,
                 json->contactDataSet->contactInformation->dataSetInformation->"common:shortName",
                 json->contactDataSet->contactInformation->dataSetInformation->"common:name",
                 json->contactDataSet->contactInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",

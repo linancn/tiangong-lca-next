@@ -46,7 +46,6 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
     dataIndex: 'option',
     search: false,
     render: (_: any, row: any) => {
-      console.log('row', row)
       switch (searchTableName) {
         case 'lifecyclemodels':
           return <LifeCycleModelView id={row.id} version={row.version} lang={lang} buttonType="icon" />
