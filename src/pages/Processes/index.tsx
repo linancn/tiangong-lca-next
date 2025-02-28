@@ -13,7 +13,7 @@ import { getTeamById } from '@/services/teams/api';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
-import { getDataTitle, getAllVersionsColumns } from '../Utils';
+import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import ProcessCreate from './Components/create';
 import ProcessDelete from './Components/delete';
 import ProcessEdit from './Components/edit';

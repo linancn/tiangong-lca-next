@@ -15,7 +15,7 @@ import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
-import { getDataTitle, getAllVersionsColumns } from '../Utils';
+import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import LifeCycleModelCreate from './Components/create';
 import LifeCycleModelDelete from './Components/delete';
 import LifeCycleModelEdit from './Components/edit';

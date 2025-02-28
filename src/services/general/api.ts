@@ -2,14 +2,18 @@ import { supabase } from '@/services/supabase';
 import { message } from 'antd';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getLocale } from 'umi';
-import { getILCDClassification, getILCDFlowCategorizationAll, getILCDLocationByValues } from '../ilcd/api';
+import { genFlowName } from '../flows/util';
 import {
   classificationToString,
   genClassificationZH,
   getLangText,
   jsonToList,
 } from '../general/util';
-import { genFlowName } from '../flows/util';
+import {
+  getILCDClassification,
+  getILCDFlowCategorizationAll,
+  getILCDLocationByValues,
+} from '../ilcd/api';
 import { genProcessName } from '../processes/util';
 export async function getDataDetail(id: string, version: string, table: string) {
   let result: any = {};
@@ -127,7 +131,7 @@ export async function getVersionsById(
   let data: any[] = result?.data ?? [];
   if (!result.error) {
     switch (tableName) {
-      case 'contacts':{
+      case 'contacts': {
         await getILCDClassification('Contact', lang, ['all']).then((res) => {
           data = result.data.map((i: any) => {
             try {
@@ -337,7 +341,7 @@ export async function getVersionsById(
                 if (i?.typeOfDataSet === 'Elementary flow') {
                   classificationData =
                     i?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-                    'common:category'
+                      'common:category'
                     ];
                   thisClass = res?.data?.categoryElementaryFlow;
                 } else {
@@ -349,7 +353,9 @@ export async function getVersionsById(
                 const classifications = jsonToList(classificationData);
                 const classificationZH = genClassificationZH(classifications, thisClass);
 
-                const thisLocation = locationData.find((l) => l['@value'] === i['locationOfSupply']);
+                const thisLocation = locationData.find(
+                  (l) => l['@value'] === i['locationOfSupply'],
+                );
                 let locationOfSupply = i['locationOfSupply'];
                 if (thisLocation?.['#text']) {
                   locationOfSupply = thisLocation['#text'];
@@ -411,7 +417,9 @@ export async function getVersionsById(
       }
 
       case 'processes': {
-        const locations: string[] = Array.from(new Set(result?.data.map((i: any) => i['@location'])));
+        const locations: string[] = Array.from(
+          new Set(result?.data.map((i: any) => i['@location'])),
+        );
         let locationData: any[] = [];
         await getILCDLocationByValues(lang, locations).then((res) => {
           locationData = res.data;
@@ -489,7 +497,7 @@ export async function getVersionsById(
               try {
                 const classifications = jsonToList(i['common:class']);
                 const classificationZH = genClassificationZH(classifications, res?.data);
-    
+
                 return {
                   key: i.id,
                   id: i.id,
@@ -529,7 +537,7 @@ export async function getVersionsById(
             }
           });
         }
-    
+
         break;
       }
     }
@@ -540,7 +548,6 @@ export async function getVersionsById(
       success: true,
       total: result.count ?? 0,
     });
-
   } else {
     return Promise.resolve({
       data: [],

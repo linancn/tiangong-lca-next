@@ -1,3 +1,10 @@
+import ContactView from '@/pages/Contacts/Components/view';
+import FlowpropertyView from '@/pages/Flowproperties/Components/view';
+import FlowView from '@/pages/Flows/Components/view';
+import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
+import ProcessView from '@/pages/Processes/Components/view';
+import SourceView from '@/pages/Sources/Components/view';
+import UnitGroupView from '@/pages/Unitgroups/Components/view';
 import { getVersionsById } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
 import { CloseOutlined, UnorderedListOutlined } from '@ant-design/icons';
@@ -6,13 +13,6 @@ import { Button, Card, Drawer, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import UnitGroupView from '@/pages/Unitgroups/Components/view';
-import FlowpropertyView from '@/pages/Flowproperties/Components/view';
-import ProcessView from '@/pages/Processes/Components/view';
-import SourceView from '@/pages/Sources/Components/view';
-import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
-import FlowView from '@/pages/Flows/Components/view';
-import ContactView from '@/pages/Contacts/Components/view';
 interface AllVersionsListProps {
   searchTableName: string;
   searchColume: string;
@@ -37,43 +37,58 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
     actionRef.current?.reload();
   });
 
-  const allVersionsColumns = [...columns,
+  const allVersionsColumns = [
+    ...columns,
 
-  {
-    title: (
-      <FormattedMessage id="pages.table.title.option" defaultMessage="Option"></FormattedMessage>
-    ),
-    dataIndex: 'option',
-    search: false,
-    render: (_: any, row: any) => {
-      switch (searchTableName) {
-        case 'lifecyclemodels':
-          return <LifeCycleModelView id={row.id} version={row.version} lang={lang} buttonType="icon" />
+    {
+      title: (
+        <FormattedMessage id="pages.table.title.option" defaultMessage="Option"></FormattedMessage>
+      ),
+      dataIndex: 'option',
+      search: false,
+      render: (_: any, row: any) => {
+        switch (searchTableName) {
+          case 'lifecyclemodels':
+            return (
+              <LifeCycleModelView id={row.id} version={row.version} lang={lang} buttonType="icon" />
+            );
 
-        case 'processes':
-          return <ProcessView disabled={false} id={row.id} version={row.version} lang={lang} buttonType="icon" />
+          case 'processes':
+            return (
+              <ProcessView
+                disabled={false}
+                id={row.id}
+                version={row.version}
+                lang={lang}
+                buttonType="icon"
+              />
+            );
 
-        case 'flows':
-          return <FlowView id={row.id} version={row.version} lang={lang} buttonType="icon" />
+          case 'flows':
+            return <FlowView id={row.id} version={row.version} lang={lang} buttonType="icon" />;
 
-        case 'flowproperties':
-          return <FlowpropertyView id={row.id} version={row.version} lang={lang} buttonType="icon" />
+          case 'flowproperties':
+            return (
+              <FlowpropertyView id={row.id} version={row.version} lang={lang} buttonType="icon" />
+            );
 
-        case 'unitgroups':
-          return <UnitGroupView id={row.id} version={row.version} lang={lang} buttonType="icon" />
+          case 'unitgroups':
+            return (
+              <UnitGroupView id={row.id} version={row.version} lang={lang} buttonType="icon" />
+            );
 
-        case 'sources':
-          return <SourceView id={row.id} version={row.version} lang={lang} buttonType="icon" />
+          case 'sources':
+            return <SourceView id={row.id} version={row.version} lang={lang} buttonType="icon" />;
 
-        case 'contacts':
-          return <ContactView id={row.id} version={row.version} lang={lang} buttonType="icon" />
+          case 'contacts':
+            return <ContactView id={row.id} version={row.version} lang={lang} buttonType="icon" />;
 
-        default:
-          return null
-      }
-    }
-  }
-  ]
+          default:
+            return null;
+        }
+      },
+    },
+  ];
 
   return (
     <>

@@ -315,7 +315,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
   };
 
   const onView = () => {
-    console.log('onView', id, version)
+    console.log('onView', id, version);
     setDrawerVisible(true);
     setSpinning(true);
     getUnitGroupDetail(id, version).then(async (result: any) => {

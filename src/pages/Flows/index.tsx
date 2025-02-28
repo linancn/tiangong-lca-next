@@ -13,7 +13,7 @@ import { getTeamById } from '@/services/teams/api';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
-import { getDataTitle, getAllVersionsColumns } from '../Utils';
+import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import FlowsCreate from './Components/create';
 import FlowsDelete from './Components/delete';
 import FlowsEdit from './Components/edit';
@@ -176,7 +176,7 @@ const TableList: FC = () => {
                 version={row.version}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => { }}
+                setViewDrawerVisible={() => {}}
               />
               <ContributeData
                 onOk={async () => {

@@ -17,7 +17,7 @@ import { getTeamById } from '@/services/teams/api';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import ReferenceUnit from '../Unitgroups/Components/Unit/reference';
-import { getDataTitle, getAllVersionsColumns } from '../Utils';
+import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import FlowpropertiesCreate from './Components/create';
 import FlowpropertiesDelete from './Components/delete';
 import FlowpropertiesEdit from './Components/edit';

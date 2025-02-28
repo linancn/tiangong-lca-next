@@ -1,5 +1,5 @@
-import { FormattedMessage } from 'umi';
 import { ProColumns } from '@ant-design/pro-components';
+import { FormattedMessage } from 'umi';
 export function getDataTitle(dataSource: string) {
   if (dataSource === 'my') {
     return <FormattedMessage id="menu.mydata" defaultMessage="My Data" />;
@@ -13,11 +13,11 @@ export function getDataTitle(dataSource: string) {
   return '';
 }
 
-export function getAllVersionsColumns(columns: ProColumns<any>[], versionIndex: number,) {
+export function getAllVersionsColumns(columns: ProColumns<any>[], versionIndex: number) {
   const newColumns = [...columns];
   newColumns[versionIndex] = {
     ...newColumns[versionIndex],
-    render: undefined
+    render: undefined,
   };
 
   newColumns.pop();

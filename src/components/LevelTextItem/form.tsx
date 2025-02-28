@@ -1,5 +1,5 @@
 import { getILCDClassification, getILCDFlowCategorization } from '@/services/ilcd/api';
-import { Form, Input, TreeSelect, Cascader } from 'antd';
+import { Cascader, Form, Input, TreeSelect } from 'antd';
 import { FC, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 type Props = {
@@ -23,8 +23,16 @@ const LevelTextItemForm: FC<Props> = ({
 }) => {
   const [selectOptions, setSelectOptions] = useState<any>([]);
 
-  const getNodePath = (targetValue: string, nodes: any[]): { ids: string[], values: string[], labels: string[] } => {
-    const findPath = (currentNodes: any[], pathIds: string[], pathValues: string[], pathLabels: string[]): { ids: string[], values: string[], labels: string[] } | null => {
+  const getNodePath = (
+    targetValue: string,
+    nodes: any[],
+  ): { ids: string[]; values: string[]; labels: string[] } => {
+    const findPath = (
+      currentNodes: any[],
+      pathIds: string[],
+      pathValues: string[],
+      pathLabels: string[],
+    ): { ids: string[]; values: string[]; labels: string[] } | null => {
       for (const node of currentNodes) {
         const currentId = node.id;
         const currentValue = node.value || node.title;
@@ -34,12 +42,17 @@ const LevelTextItemForm: FC<Props> = ({
           return {
             ids: [...pathIds, currentId],
             values: [...pathValues, currentValue],
-            labels: [...pathLabels, currentLabel]
+            labels: [...pathLabels, currentLabel],
           };
         }
 
         if (node.children && node.children.length > 0) {
-          const result = findPath(node.children, [...pathIds, currentId], [...pathValues, currentValue], [...pathLabels, currentLabel]);
+          const result = findPath(
+            node.children,
+            [...pathIds, currentId],
+            [...pathValues, currentValue],
+            [...pathLabels, currentLabel],
+          );
           if (result) {
             return result;
           }
@@ -54,7 +67,7 @@ const LevelTextItemForm: FC<Props> = ({
 
   const processTreeData = (treeData: any[]): any[] => {
     const addFullPath = (nodes: any[], parentPath: string[] = []): any[] => {
-      return nodes.map(node => {
+      return nodes.map((node) => {
         const newNode = { ...node };
         const currentPath = [...parentPath, node.label];
         newNode.title = currentPath.join('/');
@@ -73,10 +86,13 @@ const LevelTextItemForm: FC<Props> = ({
 
   const setShowValue = async () => {
     const field = formRef.current?.getFieldValue(name);
-    if(field && field.value&&field.value.length>0){
-      await formRef.current?.setFieldValue([...name, 'showValue'], field.value[field.value.length - 1]);
+    if (field && field.value && field.value.length > 0) {
+      await formRef.current?.setFieldValue(
+        [...name, 'showValue'],
+        field.value[field.value.length - 1],
+      );
     }
-  }
+  };
 
   useEffect(() => {
     const fetchClassification = async (dt: string, ft: string | undefined) => {
@@ -103,7 +119,11 @@ const LevelTextItemForm: FC<Props> = ({
 
   const handleValueChange = async (value: any) => {
     const fullPath = getNodePath(value, selectOptions);
-    await formRef.current?.setFieldValue(name, { id: fullPath.ids, value: fullPath.values,showValue:value });
+    await formRef.current?.setFieldValue(name, {
+      id: fullPath.ids,
+      value: fullPath.values,
+      showValue: value,
+    });
     onData();
   };
 

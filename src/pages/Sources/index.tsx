@@ -13,12 +13,11 @@ import { getTeamById } from '@/services/teams/api';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
-import { getDataTitle } from '../Utils';
+import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import SourceCreate from './Components/create';
 import SourceDelete from './Components/delete';
 import SourceEdit from './Components/edit';
 import SourceView from './Components/view';
-import { getAllVersionsColumns } from '../Utils';
 const { Search } = Input;
 
 const TableList: FC = () => {

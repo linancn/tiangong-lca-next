@@ -178,17 +178,19 @@ const UnitGroupEdit: FC<Props> = ({
         footer={
           <Space size={'middle'} className={styles.footer_right}>
             {type === 'edit' ? (
-            <Button
-              onClick={() => {
-                updateReference();
-              }}
-            >
-              <FormattedMessage
-                id="pages.button.updateReference"
-                defaultMessage="Update reference"
-              />
-            </Button>
-            ):<></>}
+              <Button
+                onClick={() => {
+                  updateReference();
+                }}
+              >
+                <FormattedMessage
+                  id="pages.button.updateReference"
+                  defaultMessage="Update reference"
+                />
+              </Button>
+            ) : (
+              <></>
+            )}
             <Button
               onClick={() => {
                 setDrawerVisible(false);
