@@ -968,7 +968,7 @@ const ToolbarEdit: FC<Props> = ({
 
   return (
     <Space direction="vertical" size={'middle'}>
-      <ToolbarEditInfo data={infoData} onData={updateInfoData} lang={lang} />
+      <ToolbarEditInfo type={type} data={infoData} onData={updateInfoData} lang={lang} />
       <ProcessView
         id={nodes.find((node) => node.selected)?.data?.id ?? ''}
         version={nodes.find((node) => node.selected)?.data?.version ?? ''}

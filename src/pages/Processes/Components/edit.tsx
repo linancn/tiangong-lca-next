@@ -235,6 +235,7 @@ const ProcessEdit: FC<Props> = ({
         onClose={() => setDrawerVisible(false)}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
+            {type === 'edit' ? (<>
             <Button onClick={() => {}}>
               <FormattedMessage id="pages.button.review" defaultMessage="Submit for review" />
             </Button>
@@ -248,8 +249,8 @@ const ProcessEdit: FC<Props> = ({
                 defaultMessage="Update reference"
               />
             </Button>
-            <> </>
-            <> </>
+            </>
+            ):<></>}
             <Button onClick={() => setDrawerVisible(false)}>
               <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
             </Button>

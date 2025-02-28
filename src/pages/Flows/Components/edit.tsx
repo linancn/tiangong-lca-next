@@ -158,6 +158,7 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang, type =
         onClose={() => setDrawerVisible(false)}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
+            {type === 'edit' ? (
             <Button
               onClick={() => {
                 updateReference();
@@ -168,6 +169,7 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang, type =
                 defaultMessage="Update reference"
               />
             </Button>
+            ):<></>}
             <Button onClick={() => setDrawerVisible(false)}>
               {' '}
               <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
