@@ -23,14 +23,14 @@ const LevelTextItemForm: FC<Props> = ({
 }) => {
   const [selectOptions, setSelectOptions] = useState<any>([]);
 
-  const getNodePath = (targetId: string, nodes: any[]): { ids: string[], values: string[], labels: string[] } => {
+  const getNodePath = (targetValue: string, nodes: any[]): { ids: string[], values: string[], labels: string[] } => {
     const findPath = (currentNodes: any[], pathIds: string[], pathValues: string[], pathLabels: string[]): { ids: string[], values: string[], labels: string[] } | null => {
       for (const node of currentNodes) {
         const currentId = node.id;
         const currentValue = node.value || node.title;
         const currentLabel = node.label || node.title;
 
-        if (node.id === targetId) {
+        if (node.value === targetValue) {
           return {
             ids: [...pathIds, currentId],
             values: [...pathValues, currentValue],
@@ -72,10 +72,9 @@ const LevelTextItemForm: FC<Props> = ({
   };
 
   const setShowValue = async () => {
-    const value = formRef.current?.getFieldValue(name);
-    if (value && value.id) {
-      const id = value.id[value.id.length - 1];
-      await formRef.current?.setFieldValue([...name, 'showValue'], id);
+    const field = formRef.current?.getFieldValue(name);
+    if(field && field.value&&field.value.length>0){
+      await formRef.current?.setFieldValue([...name, 'showValue'], field.value[field.value.length - 1]);
     }
   }
 
@@ -102,9 +101,9 @@ const LevelTextItemForm: FC<Props> = ({
     });
   });
 
-  const handleValueChange = async (item: any) => {
-    const fullPath = getNodePath(item, selectOptions);
-    await formRef.current?.setFieldValue(name, { id: fullPath.ids, value: fullPath.values });
+  const handleValueChange = async (value: any) => {
+    const fullPath = getNodePath(value, selectOptions);
+    await formRef.current?.setFieldValue(name, { id: fullPath.ids, value: fullPath.values,showValue:value });
     onData();
   };
 
@@ -119,7 +118,7 @@ const LevelTextItemForm: FC<Props> = ({
       >
         <TreeSelect
           onChange={handleValueChange}
-          fieldNames={{ label: 'label', value: 'id', children: 'children' }}
+          fieldNames={{ label: 'label', value: 'value', children: 'children' }}
           style={{ width: '100%' }}
           treeData={selectOptions}
           showSearch
