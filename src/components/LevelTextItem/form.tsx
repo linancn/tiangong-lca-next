@@ -1,7 +1,5 @@
-import { Classification } from '@/services/general/data';
-import { genClassIdList } from '@/services/general/util';
 import { getILCDClassification, getILCDFlowCategorization } from '@/services/ilcd/api';
-import { Cascader, CascaderProps, Form, Input } from 'antd';
+import { Cascader, Form, Input, TreeSelect } from 'antd';
 import { FC, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 type Props = {
@@ -24,6 +22,78 @@ const LevelTextItemForm: FC<Props> = ({
   onData,
 }) => {
   const [selectOptions, setSelectOptions] = useState<any>([]);
+
+  const getNodePath = (
+    targetValue: string,
+    nodes: any[],
+  ): { ids: string[]; values: string[]; labels: string[] } => {
+    const findPath = (
+      currentNodes: any[],
+      pathIds: string[],
+      pathValues: string[],
+      pathLabels: string[],
+    ): { ids: string[]; values: string[]; labels: string[] } | null => {
+      for (const node of currentNodes) {
+        const currentId = node.id;
+        const currentValue = node.value || node.title;
+        const currentLabel = node.label || node.title;
+
+        if (node.value === targetValue) {
+          return {
+            ids: [...pathIds, currentId],
+            values: [...pathValues, currentValue],
+            labels: [...pathLabels, currentLabel],
+          };
+        }
+
+        if (node.children && node.children.length > 0) {
+          const result = findPath(
+            node.children,
+            [...pathIds, currentId],
+            [...pathValues, currentValue],
+            [...pathLabels, currentLabel],
+          );
+          if (result) {
+            return result;
+          }
+        }
+      }
+      return null;
+    };
+
+    const result = findPath(nodes, [], [], []);
+    return result || { ids: [], values: [], labels: [] };
+  };
+
+  const processTreeData = (treeData: any[]): any[] => {
+    const addFullPath = (nodes: any[], parentPath: string[] = []): any[] => {
+      return nodes.map((node) => {
+        const newNode = { ...node };
+        const currentPath = [...parentPath, node.label];
+        newNode.title = currentPath.join('/');
+
+        if (node.children && node.children.length > 0) {
+          newNode.selectable = false;
+          newNode.children = addFullPath(node.children, currentPath);
+        } else {
+          newNode.selectable = true;
+        }
+        return newNode;
+      });
+    };
+    return addFullPath(treeData);
+  };
+
+  const setShowValue = async () => {
+    const field = formRef.current?.getFieldValue(name);
+    if (field && field.value && field.value.length > 0) {
+      await formRef.current?.setFieldValue(
+        [...name, 'showValue'],
+        field.value[field.value.length - 1],
+      );
+    }
+  };
+
   useEffect(() => {
     const fetchClassification = async (dt: string, ft: string | undefined) => {
       let result: any = {};
@@ -35,24 +105,27 @@ const LevelTextItemForm: FC<Props> = ({
       } else {
         result = await getILCDClassification(dt, lang, ['all']);
       }
-      setSelectOptions(result?.data);
+      setSelectOptions(processTreeData(result?.data));
     };
 
     fetchClassification(dataType, flowType);
   }, [dataType, flowType]);
 
-  const onChange: CascaderProps<Classification>['onChange'] = async (value) => {
-    const ids = genClassIdList(value, 0, selectOptions);
-    await formRef.current?.setFieldValue(name, { id: ids, value: value });
+  useEffect(() => {
+    setTimeout(() => {
+      setShowValue();
+    });
+  });
+
+  const handleValueChange = async (value: any) => {
+    const fullPath = getNodePath(value, selectOptions);
+    await formRef.current?.setFieldValue(name, {
+      id: fullPath.ids,
+      value: fullPath.values,
+      showValue: value,
+    });
     onData();
   };
-
-  const filter = (inputValue: string, path: any[]) =>
-    path.some(
-      (option) =>
-        typeof option.label === 'string' &&
-        option.label.toLowerCase().includes(inputValue.toLowerCase()),
-    );
 
   return (
     <>
@@ -61,17 +134,28 @@ const LevelTextItemForm: FC<Props> = ({
         label={
           <FormattedMessage id="pages.contact.classification" defaultMessage="Classification" />
         }
-        name={[...name, 'value']}
+        name={[...name, 'showValue']}
       >
-        <Cascader
+        <TreeSelect
+          onChange={handleValueChange}
+          fieldNames={{ label: 'label', value: 'value', children: 'children' }}
           style={{ width: '100%' }}
-          options={selectOptions}
-          onChange={onChange}
-          showSearch={{ filter }}
+          treeData={selectOptions}
+          showSearch
+          filterTreeNode={(inputValue, treeNode) => {
+            return (treeNode?.title as string)?.toLowerCase().includes(inputValue.toLowerCase());
+          }}
+          treeNodeFilterProp="title"
+          treeExpandAction="click"
+          // labelInValue={true}
+          treeNodeLabelProp="title"
         />
       </Form.Item>
       <Form.Item name={[...name, 'id']} hidden={true}>
         <Input />
+      </Form.Item>
+      <Form.Item name={[...name, 'value']} hidden={true}>
+        <Cascader options={selectOptions} />
       </Form.Item>
     </>
   );

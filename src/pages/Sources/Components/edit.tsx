@@ -1,3 +1,4 @@
+import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import { createSource, getSourceDetail, updateSource } from '@/services/sources/api';
 import { genSourceFromData } from '@/services/sources/util';
 import { supabaseStorageBucket } from '@/services/supabase/key';
@@ -42,7 +43,10 @@ const SourceEdit: FC<Props> = ({
   const [fileList0, setFileList0] = useState<any[]>([]);
   const [fileList, setFileList] = useState<any[]>([]);
   const [loadFiles, setLoadFiles] = useState<any[]>([]);
-
+  const [referenceValue, setReferenceValue] = useState(0);
+  const updateReference = async () => {
+    setReferenceValue(referenceValue + 1);
+  };
   const handletFromData = () => {
     if (fromData)
       setFromData({
@@ -237,11 +241,25 @@ const SourceEdit: FC<Props> = ({
             onClick={() => setDrawerVisible(false)}
           />
         }
-        maskClosable={true}
+        maskClosable={false}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
+            {type === 'edit' ? (
+              <Button
+                onClick={() => {
+                  updateReference();
+                }}
+              >
+                <FormattedMessage
+                  id="pages.button.updateReference"
+                  defaultMessage="Update reference"
+                />
+              </Button>
+            ) : (
+              <></>
+            )}
             <Button onClick={() => setDrawerVisible(false)}>
               <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
             </Button>
@@ -255,31 +273,33 @@ const SourceEdit: FC<Props> = ({
         }
       >
         <Spin spinning={spinning}>
-          <ProForm
-            formRef={formRefEdit}
-            initialValues={initData}
-            onValuesChange={(_, allValues) => {
-              setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
-            }}
-            submitter={{
-              render: () => {
-                return [];
-              },
-            }}
-            onFinish={onSubmit}
-          >
-            <SourceForm
-              lang={lang}
-              activeTabKey={activeTabKey}
+          <UpdateReferenceContext.Provider value={{ referenceValue }}>
+            <ProForm
               formRef={formRefEdit}
-              onData={handletFromData}
-              onTabChange={onTabChange}
-              loadFiles={loadFiles}
-              setLoadFiles={setLoadFiles}
-              fileList={fileList}
-              setFileList={setFileList}
-            />
-          </ProForm>
+              initialValues={initData}
+              onValuesChange={(_, allValues) => {
+                setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+              }}
+              submitter={{
+                render: () => {
+                  return [];
+                },
+              }}
+              onFinish={onSubmit}
+            >
+              <SourceForm
+                lang={lang}
+                activeTabKey={activeTabKey}
+                formRef={formRefEdit}
+                onData={handletFromData}
+                onTabChange={onTabChange}
+                loadFiles={loadFiles}
+                setLoadFiles={setLoadFiles}
+                fileList={fileList}
+                setFileList={setFileList}
+              />
+            </ProForm>
+          </UpdateReferenceContext.Provider>
           <Collapse
             items={[
               {

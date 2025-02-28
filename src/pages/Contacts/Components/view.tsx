@@ -278,6 +278,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
       )}
 
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage id="pages.contact.drawer.title.view" defaultMessage="View Contact" />
         }

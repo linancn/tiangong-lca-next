@@ -75,7 +75,7 @@ const LifeCycleModelCreate: FC<Props> = ({ buttonType, lang, actionRef }) => {
             }}
           />
         }
-        maskClosable={true}
+        maskClosable={false}
         open={drawerVisible}
         onClose={() => {
           if (isSave) reload();

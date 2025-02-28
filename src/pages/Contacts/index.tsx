@@ -12,12 +12,11 @@ import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
-import { getDataTitle } from '../Utils';
+import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import ContactCreate from './Components/create';
 import ContactDelete from './Components/delete';
 import ContactEdit from './Components/edit';
 import ContactView from './Components/view';
-
 const { Search } = Input;
 
 const TableList: FC = () => {
@@ -35,6 +34,7 @@ const TableList: FC = () => {
   const lang = getLang(intl.locale);
 
   const actionRef = useRef<ActionType>();
+
   const contactColumns: ProColumns<ContactTable>[] = [
     {
       title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
@@ -77,8 +77,19 @@ const TableList: FC = () => {
           <Space size={'small'}>
             {row.version}
             <AllVersionsList
+              lang={lang}
               searchTableName="contacts"
-              nameColume={`json->contactDataSet->contactInformation->dataSetInformation->"common:shortName"`}
+              columns={getAllVersionsColumns(contactColumns, 4)}
+              searchColume={`
+                 id,
+                json->contactDataSet->contactInformation->dataSetInformation->"common:shortName",
+                json->contactDataSet->contactInformation->dataSetInformation->"common:name",
+                json->contactDataSet->contactInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
+                json->contactDataSet->contactInformation->dataSetInformation->>email,
+                version,
+                modified_at,
+                team_id
+              `}
               id={row.id}
             >
               <ContactEdit

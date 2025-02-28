@@ -1,19 +1,18 @@
-import { getUnitGroupTableAll, getUnitGroupTablePgroongaSearch } from '@/services/unitgroups/api';
-import { Card, Input, Space, Tooltip, message } from 'antd';
-import { useEffect, useRef, useState } from 'react';
-import { FormattedMessage, useIntl, useLocation } from 'umi';
-
 import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
 import { contributeSource } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
 import { getDataSource, getLang, getLangText } from '@/services/general/util';
 import { getTeamById } from '@/services/teams/api';
+import { getUnitGroupTableAll, getUnitGroupTablePgroongaSearch } from '@/services/unitgroups/api';
 import { UnitGroupTable } from '@/services/unitgroups/data';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
+import { Card, Input, Space, Tooltip, message } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
-import { getDataTitle } from '../Utils';
+import { useEffect, useRef, useState } from 'react';
+import { FormattedMessage, useIntl, useLocation } from 'umi';
+import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import UnitGroupCreate from './Components/create';
 import UnitGroupDelete from './Components/delete';
 import UnitGroupEdit from './Components/edit';
@@ -87,8 +86,19 @@ const TableList: FC = () => {
           <Space size={'small'}>
             {row.version}
             <AllVersionsList
-              nameColume={`json->unitGroupDataSet->unitGroupInformation->dataSetInformation->"common:name"`}
+              lang={lang}
               searchTableName="unitgroups"
+              columns={getAllVersionsColumns(unitGroupColumns, 4)}
+              searchColume={`
+                id,
+                json->unitGroupDataSet->unitGroupInformation->dataSetInformation->"common:name",
+                json->unitGroupDataSet->unitGroupInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
+                json->unitGroupDataSet->unitGroupInformation->quantitativeReference->>referenceToReferenceUnit,
+                json->unitGroupDataSet->units->unit,
+                version,
+                modified_at,
+                team_id
+              `}
               id={row.id}
             >
               <UnitGroupEdit

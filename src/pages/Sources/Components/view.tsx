@@ -321,6 +321,7 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
         </Button>
       )}
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage id="pages.source.drawer.title.view" defaultMessage="View Source" />
         }

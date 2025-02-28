@@ -1,3 +1,4 @@
+import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import { getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
 import { createProcess, getProcessDetail, updateProcess } from '@/services/processes/api';
@@ -55,6 +56,7 @@ const ProcessEdit: FC<Props> = ({
   const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
   const [spinning, setSpinning] = useState(false);
   const intl = useIntl();
+  const [referenceValue, setReferenceValue] = useState(0);
 
   const handletFromData = () => {
     if (fromData?.id) {
@@ -106,6 +108,7 @@ const ProcessEdit: FC<Props> = ({
     );
 
     setExchangeDataSource(newExchangeDataSource);
+    setReferenceValue(referenceValue + 1);
   };
 
   const onTabChange = (key: string) => {
@@ -227,26 +230,30 @@ const ProcessEdit: FC<Props> = ({
             onClick={() => setDrawerVisible(false)}
           />
         }
-        maskClosable={true}
+        maskClosable={false}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
-            <Button onClick={() => {}}>
-              <FormattedMessage id="pages.button.review" defaultMessage="Submit for review" />
-            </Button>
-            <Button
-              onClick={() => {
-                updateReference();
-              }}
-            >
-              <FormattedMessage
-                id="pages.button.updateReference"
-                defaultMessage="Update reference"
-              />
-            </Button>
-            <> </>
-            <> </>
+            {type === 'edit' ? (
+              <>
+                <Button onClick={() => {}}>
+                  <FormattedMessage id="pages.button.review" defaultMessage="Submit for review" />
+                </Button>
+                <Button
+                  onClick={() => {
+                    updateReference();
+                  }}
+                >
+                  <FormattedMessage
+                    id="pages.button.updateReference"
+                    defaultMessage="Update reference"
+                  />
+                </Button>
+              </>
+            ) : (
+              <></>
+            )}
             <Button onClick={() => setDrawerVisible(false)}>
               <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
             </Button>
@@ -262,22 +269,51 @@ const ProcessEdit: FC<Props> = ({
         }
       >
         <Spin spinning={spinning}>
-          <ProForm
-            formRef={formRefEdit}
-            initialValues={initData}
-            onValuesChange={(_, allValues) => {
-              setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
-            }}
-            submitter={{
-              render: () => {
-                return [];
-              },
-            }}
-            onFinish={async () => {
-              setSpinning(true);
-              if (type === 'copy' || type === 'createVersion') {
-                const createResult = await createProcess(type === 'copy' ? v4() : id, fromData);
-                if (createResult?.data) {
+          <UpdateReferenceContext.Provider value={{ referenceValue }}>
+            <ProForm
+              formRef={formRefEdit}
+              initialValues={initData}
+              onValuesChange={(_, allValues) => {
+                setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+              }}
+              submitter={{
+                render: () => {
+                  return [];
+                },
+              }}
+              onFinish={async () => {
+                setSpinning(true);
+                if (type === 'copy' || type === 'createVersion') {
+                  const createResult = await createProcess(type === 'copy' ? v4() : id, fromData);
+                  if (createResult?.data) {
+                    message.success(
+                      intl.formatMessage({
+                        id: 'pages.button.create.success',
+                        defaultMessage: 'Created successfully!',
+                      }),
+                    );
+                    setSpinning(false);
+                    setDrawerVisible(false);
+                    setViewDrawerVisible(false);
+                    actionRef?.current?.reload();
+                  } else if (createResult?.error?.code === '23505') {
+                    message.error(
+                      intl.formatMessage({
+                        id: 'pages.button.createVersion.fail',
+                        defaultMessage: 'Please change the version and submit',
+                      }),
+                    );
+                  } else {
+                    message.error(createResult?.error?.message);
+                  }
+                  setSpinning(false);
+                  return true;
+                }
+                const updateResult = await updateProcess(id, version, {
+                  ...fromData,
+                  exchanges: { exchange: [...exchangeDataSource] },
+                });
+                if (updateResult?.data) {
                   message.success(
                     intl.formatMessage({
                       id: 'pages.button.create.success',
@@ -288,55 +324,28 @@ const ProcessEdit: FC<Props> = ({
                   setDrawerVisible(false);
                   setViewDrawerVisible(false);
                   actionRef?.current?.reload();
-                } else if (createResult?.error?.code === '23505') {
-                  message.error(
-                    intl.formatMessage({
-                      id: 'pages.button.createVersion.fail',
-                      defaultMessage: 'Please change the version and submit',
-                    }),
-                  );
                 } else {
-                  message.error(createResult?.error?.message);
+                  setSpinning(false);
+                  message.error(updateResult?.error?.message);
                 }
-                setSpinning(false);
                 return true;
-              }
-              const updateResult = await updateProcess(id, version, {
-                ...fromData,
-                exchanges: { exchange: [...exchangeDataSource] },
-              });
-              if (updateResult?.data) {
-                message.success(
-                  intl.formatMessage({
-                    id: 'pages.button.create.success',
-                    defaultMessage: 'Created successfully!',
-                  }),
-                );
-                setSpinning(false);
-                setDrawerVisible(false);
-                setViewDrawerVisible(false);
-                actionRef?.current?.reload();
-              } else {
-                setSpinning(false);
-                message.error(updateResult?.error?.message);
-              }
-              return true;
-            }}
-          >
-            <ProcessForm
-              lang={lang}
-              activeTabKey={activeTabKey}
-              formRef={formRefEdit}
-              onData={handletFromData}
-              onExchangeData={handletExchangeData}
-              onExchangeDataCreate={handletExchangeDataCreate}
-              onTabChange={onTabChange}
-              exchangeDataSource={exchangeDataSource}
-            />
-            <Form.Item name="id" hidden>
-              <Input />
-            </Form.Item>
-          </ProForm>
+              }}
+            >
+              <ProcessForm
+                lang={lang}
+                activeTabKey={activeTabKey}
+                formRef={formRefEdit}
+                onData={handletFromData}
+                onExchangeData={handletExchangeData}
+                onExchangeDataCreate={handletExchangeDataCreate}
+                onTabChange={onTabChange}
+                exchangeDataSource={exchangeDataSource}
+              />
+              <Form.Item name="id" hidden>
+                <Input />
+              </Form.Item>
+            </ProForm>
+          </UpdateReferenceContext.Provider>
           <Collapse
             items={[
               {

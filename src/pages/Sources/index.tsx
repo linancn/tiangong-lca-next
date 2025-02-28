@@ -13,7 +13,7 @@ import { getTeamById } from '@/services/teams/api';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
-import { getDataTitle } from '../Utils';
+import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import SourceCreate from './Components/create';
 import SourceDelete from './Components/delete';
 import SourceEdit from './Components/edit';
@@ -79,8 +79,19 @@ const TableList: FC = () => {
           <Space size={'small'}>
             {row.version}
             <AllVersionsList
-              nameColume={`json->sourceDataSet->sourceInformation->dataSetInformation->"common:shortName"`}
+              lang={lang}
               searchTableName="sources"
+              columns={getAllVersionsColumns(sourceColumns, 4)}
+              searchColume={`
+                 id,
+                json->sourceDataSet->sourceInformation->dataSetInformation->"common:shortName",
+                json->sourceDataSet->sourceInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
+                json->sourceDataSet->sourceInformation->dataSetInformation->>sourceCitation,
+                json->sourceDataSet->sourceInformation->dataSetInformation->>publicationType,
+                version,
+                modified_at,
+                team_id
+              `}
               id={row.id}
             >
               <SourceEdit

@@ -1,3 +1,4 @@
+import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import { createFlows, getFlowDetail, updateFlows } from '@/services/flows/api';
 import { genFlowFromData } from '@/services/flows/util';
 import styles from '@/style/custom.less';
@@ -9,7 +10,6 @@ import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
 import { FlowForm } from './form';
-
 type Props = {
   id: string;
   version: string;
@@ -28,6 +28,11 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang, type =
   const [spinning, setSpinning] = useState(false);
   const [propertyDataSource, setPropertyDataSource] = useState<any>([]);
   const intl = useIntl();
+  const [referenceValue, setReferenceValue] = useState(0);
+
+  const updateReference = async () => {
+    setReferenceValue(referenceValue + 1);
+  };
 
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
@@ -148,11 +153,25 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang, type =
             onClick={() => setDrawerVisible(false)}
           />
         }
-        maskClosable={true}
+        maskClosable={false}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
+            {type === 'edit' ? (
+              <Button
+                onClick={() => {
+                  updateReference();
+                }}
+              >
+                <FormattedMessage
+                  id="pages.button.updateReference"
+                  defaultMessage="Update reference"
+                />
+              </Button>
+            ) : (
+              <></>
+            )}
             <Button onClick={() => setDrawerVisible(false)}>
               {' '}
               <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
@@ -168,74 +187,76 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang, type =
         }
       >
         <Spin spinning={spinning}>
-          <ProForm
-            formRef={formRefEdit}
-            initialValues={initData}
-            submitter={{
-              render: () => {
-                return [];
-              },
-            }}
-            onFinish={async () => {
-              if (type === 'copy' || type === 'createVersion') {
-                setSpinning(true);
-                const createResult = await createFlows(type === 'copy' ? v4() : id, fromData);
-                if (createResult?.data) {
+          <UpdateReferenceContext.Provider value={{ referenceValue }}>
+            <ProForm
+              formRef={formRefEdit}
+              initialValues={initData}
+              submitter={{
+                render: () => {
+                  return [];
+                },
+              }}
+              onFinish={async () => {
+                if (type === 'copy' || type === 'createVersion') {
+                  setSpinning(true);
+                  const createResult = await createFlows(type === 'copy' ? v4() : id, fromData);
+                  if (createResult?.data) {
+                    message.success(
+                      intl.formatMessage({
+                        id: 'pages.button.create.success',
+                        defaultMessage: 'Created successfully!',
+                      }),
+                    );
+                    setDrawerVisible(false);
+                    setActiveTabKey('flowInformation');
+                    actionRef?.current?.reload();
+                  } else if (createResult?.error?.code === '23505') {
+                    message.error(
+                      intl.formatMessage({
+                        id: 'pages.button.createVersion.fail',
+                        defaultMessage: 'Please change the version and submit',
+                      }),
+                    );
+                  } else {
+                    message.error(createResult?.error?.message);
+                  }
+                  setSpinning(false);
+                  return true;
+                }
+                const updateResult = await updateFlows(id, version, fromData);
+                if (updateResult?.data) {
                   message.success(
                     intl.formatMessage({
-                      id: 'pages.button.create.success',
-                      defaultMessage: 'Created successfully!',
+                      id: 'pages.flows.editsuccess',
+                      defaultMessage: 'Edit successfully!',
                     }),
                   );
                   setDrawerVisible(false);
                   setActiveTabKey('flowInformation');
                   actionRef?.current?.reload();
-                } else if (createResult?.error?.code === '23505') {
-                  message.error(
-                    intl.formatMessage({
-                      id: 'pages.button.createVersion.fail',
-                      defaultMessage: 'Please change the version and submit',
-                    }),
-                  );
                 } else {
-                  message.error(createResult?.error?.message);
+                  message.error(updateResult?.error?.message);
                 }
-                setSpinning(false);
                 return true;
-              }
-              const updateResult = await updateFlows(id, version, fromData);
-              if (updateResult?.data) {
-                message.success(
-                  intl.formatMessage({
-                    id: 'pages.flows.editsuccess',
-                    defaultMessage: 'Edit successfully!',
-                  }),
-                );
-                setDrawerVisible(false);
-                setActiveTabKey('flowInformation');
-                actionRef?.current?.reload();
-              } else {
-                message.error(updateResult?.error?.message);
-              }
-              return true;
-            }}
-            onValuesChange={(_, allValues) => {
-              setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
-            }}
-          >
-            <FlowForm
-              lang={lang}
-              activeTabKey={activeTabKey}
-              drawerVisible={drawerVisible}
-              formRef={formRefEdit}
-              onData={handletFromData}
-              flowType={flowType}
-              onTabChange={onTabChange}
-              propertyDataSource={propertyDataSource}
-              onPropertyData={handletPropertyData}
-              onPropertyDataCreate={handletPropertyDataCreate}
-            />
-          </ProForm>
+              }}
+              onValuesChange={(_, allValues) => {
+                setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+              }}
+            >
+              <FlowForm
+                lang={lang}
+                activeTabKey={activeTabKey}
+                drawerVisible={drawerVisible}
+                formRef={formRefEdit}
+                onData={handletFromData}
+                flowType={flowType}
+                onTabChange={onTabChange}
+                propertyDataSource={propertyDataSource}
+                onPropertyData={handletPropertyData}
+                onPropertyDataCreate={handletPropertyDataCreate}
+              />
+            </ProForm>
+          </UpdateReferenceContext.Provider>
           <Collapse
             items={[
               {

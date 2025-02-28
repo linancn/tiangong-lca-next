@@ -1,3 +1,4 @@
+import { useUpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import UnitGroupFromMini from '@/pages/Unitgroups/Components/select/formMini';
 import { getFlowpropertyDetail } from '@/services/flowproperties/api';
 import { genFlowpropertyFromData } from '@/services/flowproperties/util';
@@ -30,7 +31,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
   const [id, setId] = useState<string | undefined>(undefined);
   const [version, setVersion] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
-
+  const { referenceValue } = useUpdateReferenceContext() as { referenceValue: number };
   const handletFlowpropertyData = (rowId: string, rowVersion: string) => {
     getFlowpropertyDetail(rowId, rowVersion ?? '').then(async (result: any) => {
       const selectedData = genFlowpropertyFromData(result.data?.json?.flowPropertyDataSet ?? {});
@@ -47,6 +48,11 @@ const FlowpropertiesSelectForm: FC<Props> = ({
       onData();
     });
   };
+  useEffect(() => {
+    if (id) {
+      handletFlowpropertyData(id, version ?? '');
+    }
+  }, [referenceValue]);
 
   useEffect(() => {
     setId(undefined);

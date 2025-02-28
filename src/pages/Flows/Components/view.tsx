@@ -612,6 +612,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
       )}
 
       <Drawer
+        getContainer={() => document.body}
         title={<FormattedMessage id="pages.flow.drawer.title.view" defaultMessage="View Flow" />}
         width="90%"
         closable={false}
