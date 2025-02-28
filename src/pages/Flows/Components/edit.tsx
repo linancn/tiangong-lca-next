@@ -153,7 +153,7 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang, type =
             onClick={() => setDrawerVisible(false)}
           />
         }
-        maskClosable={true}
+        maskClosable={false}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         footer={

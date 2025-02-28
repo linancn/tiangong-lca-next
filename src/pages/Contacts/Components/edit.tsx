@@ -128,7 +128,7 @@ const ContactEdit: FC<Props> = ({
             onClick={() => setDrawerVisible(false)}
           />
         }
-        maskClosable={true}
+        maskClosable={false}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         footer={

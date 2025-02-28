@@ -115,7 +115,7 @@ const LifeCycleModelEdit: FC<Props> = ({
             }}
           />
         }
-        maskClosable={true}
+        maskClosable={false}
         open={drawerVisible}
         onClose={() => {
           if (isSave) reload();

@@ -99,7 +99,7 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
             </Button>
           </Space>
         }
-        maskClosable={true}
+        maskClosable={false}
         open={drawerVisible}
         onClose={onDrawerClose}
       >

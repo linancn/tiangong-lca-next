@@ -170,7 +170,7 @@ const UnitGroupEdit: FC<Props> = ({
             }}
           ></Button>
         }
-        maskClosable={true}
+        maskClosable={false}
         open={drawerVisible}
         onClose={() => {
           setDrawerVisible(false);

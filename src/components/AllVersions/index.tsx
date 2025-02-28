@@ -114,7 +114,7 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
             onClick={() => setShowAllVersionsModal(false)}
           />
         }
-        maskClosable={true}
+        maskClosable={false}
       >
         <Card>
           <ProTable<any, ListPagination>
