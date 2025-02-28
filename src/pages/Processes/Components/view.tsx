@@ -1178,6 +1178,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
       )}
 
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage id="pages.process.drawer.title.view" defaultMessage="View process" />
         }

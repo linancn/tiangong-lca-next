@@ -13,7 +13,7 @@ import { getTeamById } from '@/services/teams/api';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
-import { getDataTitle } from '../Utils';
+import { getDataTitle, getAllVersionsColumns } from '../Utils';
 import FlowsCreate from './Components/create';
 import FlowsDelete from './Components/delete';
 import FlowsEdit from './Components/edit';
@@ -103,8 +103,22 @@ const TableList: FC = () => {
           <Space size={'small'}>
             {row.version}
             <AllVersionsList
-              nameColume={`json->flowDataSet->flowInformation->dataSetInformation->name`}
+              lang={lang}
               searchTableName="flows"
+              columns={getAllVersionsColumns(flowsColumns, 6)}
+              searchColume={`
+                id,
+                json->flowDataSet->flowInformation->dataSetInformation->name,
+                json->flowDataSet->flowInformation->dataSetInformation->classificationInformation,
+                json->flowDataSet->flowInformation->dataSetInformation->"common:synonyms",
+                json->flowDataSet->flowInformation->dataSetInformation->>CASNumber,
+                json->flowDataSet->flowInformation->geography->>locationOfSupply,
+                json->flowDataSet->modellingAndValidation->LCIMethod->>typeOfDataSet,
+                json->flowDataSet->flowProperties->flowProperty->referenceToFlowPropertyDataSet,
+                version,
+                modified_at,
+                team_id
+              `}
               id={row.id}
             >
               <FlowsEdit
@@ -162,7 +176,7 @@ const TableList: FC = () => {
                 version={row.version}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
+                setViewDrawerVisible={() => { }}
               />
               <ContributeData
                 onOk={async () => {

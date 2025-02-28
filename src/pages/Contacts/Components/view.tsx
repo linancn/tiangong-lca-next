@@ -75,7 +75,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
         <LevelTextItemDescription
           data={
             initData.contactInformation?.dataSetInformation?.classificationInformation?.[
-              'common:classification'
+            'common:classification'
             ]?.['common:class']?.['value']
           }
           lang={lang}
@@ -224,7 +224,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
           <ContractDescription
             data={
               initData.administrativeInformation?.publicationAndOwnership?.[
-                'common:referenceToPrecedingDataSetVersion'
+              'common:referenceToPrecedingDataSetVersion'
               ]
             }
             lang={lang}
@@ -278,6 +278,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
       )}
 
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage id="pages.contact.drawer.title.view" defaultMessage="View Contact" />
         }

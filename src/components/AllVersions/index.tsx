@@ -1,94 +1,83 @@
 import { getVersionsById } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
-import { getLang, getLangText } from '@/services/general/util';
 import { CloseOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Drawer, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
-import { FormattedMessage, useIntl } from 'umi';
-
+import { FormattedMessage } from 'umi';
+import UnitGroupView from '@/pages/Unitgroups/Components/view';
+import FlowpropertyView from '@/pages/Flowproperties/Components/view';
+import ProcessView from '@/pages/Processes/Components/view';
+import SourceView from '@/pages/Sources/Components/view';
+import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
+import FlowView from '@/pages/Flows/Components/view';
+import ContactView from '@/pages/Contacts/Components/view';
 interface AllVersionsListProps {
   searchTableName: string;
-  nameColume: string;
+  searchColume: string;
   id: string;
   children: React.ReactNode;
+  columns: ProColumns<any>[];
+  lang: string;
 }
 
 const AllVersionsList: FC<AllVersionsListProps> = ({
   searchTableName,
-  nameColume,
+  searchColume,
   id,
   children,
+  columns,
+  lang,
 }) => {
   const actionRef = useRef<ActionType>();
   const [showAllVersionsModal, setShowAllVersionsModal] = useState(false);
-  const intl = useIntl();
-
-  const versionColumns: ProColumns<any>[] = [
-    {
-      title: <FormattedMessage id="component.allVersions.table.index" defaultMessage="Index" />,
-      dataIndex: 'index',
-      valueType: 'index',
-      search: false,
-    },
-    {
-      title: <FormattedMessage id="component.allVersions.table.name" defaultMessage="Name" />,
-      dataIndex: 'name',
-      sorter: false,
-      search: false,
-      render: (t: any) => {
-        const baseNames = [
-          'json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->name',
-          'json->processDataSet->processInformation->dataSetInformation->name',
-          `json->flowDataSet->flowInformation->dataSetInformation->name`,
-        ];
-        return baseNames.includes(nameColume)
-          ? getLangText(t?.baseName, getLang(intl.locale))
-          : getLangText(t, getLang(intl.locale));
-      },
-    },
-    {
-      title: <FormattedMessage id="component.allVersions.table.version" defaultMessage="Version" />,
-      dataIndex: 'version',
-      sorter: false,
-      search: false,
-    },
-    {
-      title: (
-        <FormattedMessage id="component.allVersions.table.date" defaultMessage="Release Date" />
-      ),
-      dataIndex: 'created_at',
-      sorter: true,
-      search: false,
-      render: (text: any) => {
-        const date = new Date(text);
-        return date.toLocaleString();
-      },
-    },
-  ];
-
-  //   const onSearch: SearchProps['onSearch'] = (value) => {
-  //     setKeyWord(value);
-  //     actionRef.current?.setPageInfo?.({ current: 1 });
-  //     actionRef.current?.reload();
-  //   };
 
   useEffect(() => {
     actionRef.current?.reload();
   });
 
+  const allVersionsColumns = [...columns,
+
+  {
+    title: (
+      <FormattedMessage id="pages.table.title.option" defaultMessage="Option"></FormattedMessage>
+    ),
+    dataIndex: 'option',
+    search: false,
+    render: (_: any, row: any) => {
+      console.log('row', row)
+      switch (searchTableName) {
+        case 'lifecyclemodels':
+          return <LifeCycleModelView id={row.id} version={row.version} lang={lang} buttonType="icon" />
+
+        case 'processes':
+          return <ProcessView disabled={false} id={row.id} version={row.version} lang={lang} buttonType="icon" />
+
+        case 'flows':
+          return <FlowView id={row.id} version={row.version} lang={lang} buttonType="icon" />
+
+        case 'flowproperties':
+          return <FlowpropertyView id={row.id} version={row.version} lang={lang} buttonType="icon" />
+
+        case 'unitgroups':
+          return <UnitGroupView id={row.id} version={row.version} lang={lang} buttonType="icon" />
+
+        case 'sources':
+          return <SourceView id={row.id} version={row.version} lang={lang} buttonType="icon" />
+
+        case 'contacts':
+          return <ContactView id={row.id} version={row.version} lang={lang} buttonType="icon" />
+
+        default:
+          return null
+      }
+    }
+  }
+  ]
+
   return (
     <>
-      {/* <Card>
-        <Search
-          size={'large'}
-          placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
-          onSearch={onSearch}
-          enterButton
-        />
-      </Card> */}
-
       <Tooltip
         title={<FormattedMessage id="pages.button.allVersion" defaultMessage="All version" />}
       >
@@ -119,12 +108,6 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
         <Card>
           <ProTable<any, ListPagination>
             rowKey="version"
-            // headerTitle={
-            //     <FormattedMessage
-            //         id="component.allVersions.table.title"
-            //         defaultMessage="All Versions"
-            //     />
-            // }
             actionRef={actionRef}
             search={false}
             options={{ fullScreen: true }}
@@ -136,9 +119,9 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
               return [children];
             }}
             request={async (params: { pageSize: number; current: number }, sort) => {
-              return getVersionsById(nameColume, searchTableName, id, params, sort);
+              return getVersionsById(searchColume, searchTableName, id, params, sort, lang);
             }}
-            columns={versionColumns}
+            columns={allVersionsColumns}
           />
         </Card>
       </Drawer>

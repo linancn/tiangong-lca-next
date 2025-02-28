@@ -17,7 +17,7 @@ import { getTeamById } from '@/services/teams/api';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import ReferenceUnit from '../Unitgroups/Components/Unit/reference';
-import { getDataTitle } from '../Utils';
+import { getDataTitle, getAllVersionsColumns } from '../Utils';
 import FlowpropertiesCreate from './Components/create';
 import FlowpropertiesDelete from './Components/delete';
 import FlowpropertiesEdit from './Components/edit';
@@ -96,8 +96,20 @@ const TableList: FC = () => {
           <Space size={'small'}>
             {row.version}
             <AllVersionsList
-              nameColume={`json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->"common:name"`}
+              lang={lang}
               searchTableName="flowproperties"
+              columns={getAllVersionsColumns(flowpropertiesColumns, 4)}
+              searchColume={`
+                  id,
+                  json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->"common:name",
+                  json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
+                  json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->"common:generalComment",
+                  json->flowPropertyDataSet->flowPropertiesInformation->quantitativeReference->referenceToReferenceUnitGroup->>"@refObjectId",
+                  json->flowPropertyDataSet->flowPropertiesInformation->quantitativeReference->referenceToReferenceUnitGroup->"common:shortDescription",
+                  version,
+                  modified_at,
+                  team_id
+              `}
               id={row.id}
             >
               <FlowpropertiesEdit

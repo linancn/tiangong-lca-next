@@ -315,6 +315,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
   };
 
   const onView = () => {
+    console.log('onView', id, version)
     setDrawerVisible(true);
     setSpinning(true);
     getUnitGroupDetail(id, version).then(async (result: any) => {
@@ -361,6 +362,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
       )}
 
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage
             id="pages.unitgroup.drawer.title.view"

@@ -13,7 +13,7 @@ import { getTeamById } from '@/services/teams/api';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
-import { getDataTitle } from '../Utils';
+import { getDataTitle, getAllVersionsColumns } from '../Utils';
 import ProcessCreate from './Components/create';
 import ProcessDelete from './Components/delete';
 import ProcessEdit from './Components/edit';
@@ -85,8 +85,20 @@ const TableList: FC = () => {
           <Space size={'small'}>
             {row.version}
             <AllVersionsList
-              nameColume={`json->processDataSet->processInformation->dataSetInformation->name`}
+              lang={lang}
               searchTableName="processes"
+              columns={getAllVersionsColumns(processColumns, 5)}
+              searchColume={`
+                id,
+                json->processDataSet->processInformation->dataSetInformation->name,
+                json->processDataSet->processInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
+                json->processDataSet->processInformation->dataSetInformation->"common:generalComment",
+                json->processDataSet->processInformation->time->>"common:referenceYear",
+                json->processDataSet->processInformation->geography->locationOfOperationSupplyOrProduction->>"@location",
+                version,
+                modified_at,
+                team_id
+              `}
               id={row.id}
             >
               <ProcessEdit

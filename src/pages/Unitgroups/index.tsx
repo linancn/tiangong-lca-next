@@ -2,7 +2,7 @@ import { getUnitGroupTableAll, getUnitGroupTablePgroongaSearch } from '@/service
 import { Card, Input, Space, Tooltip, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
-
+import { getAllVersionsColumns } from '../Utils';
 import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
 import { contributeSource } from '@/services/general/api';
@@ -87,8 +87,19 @@ const TableList: FC = () => {
           <Space size={'small'}>
             {row.version}
             <AllVersionsList
-              nameColume={`json->unitGroupDataSet->unitGroupInformation->dataSetInformation->"common:name"`}
+              lang={lang}
               searchTableName="unitgroups"
+              columns={getAllVersionsColumns(unitGroupColumns, 4)}
+              searchColume={`
+                id,
+                json->unitGroupDataSet->unitGroupInformation->dataSetInformation->"common:name",
+                json->unitGroupDataSet->unitGroupInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
+                json->unitGroupDataSet->unitGroupInformation->quantitativeReference->>referenceToReferenceUnit,
+                json->unitGroupDataSet->units->unit,
+                version,
+                modified_at,
+                team_id
+              `}
               id={row.id}
             >
               <UnitGroupEdit

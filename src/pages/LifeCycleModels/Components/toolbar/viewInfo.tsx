@@ -569,6 +569,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
         />
       </Tooltip>
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage
             id="pages.flow.model.drawer.title.info"

@@ -18,6 +18,7 @@ import SourceCreate from './Components/create';
 import SourceDelete from './Components/delete';
 import SourceEdit from './Components/edit';
 import SourceView from './Components/view';
+import { getAllVersionsColumns } from '../Utils';
 const { Search } = Input;
 
 const TableList: FC = () => {
@@ -79,8 +80,19 @@ const TableList: FC = () => {
           <Space size={'small'}>
             {row.version}
             <AllVersionsList
-              nameColume={`json->sourceDataSet->sourceInformation->dataSetInformation->"common:shortName"`}
+              lang={lang}
               searchTableName="sources"
+              columns={getAllVersionsColumns(sourceColumns, 4)}
+              searchColume={`
+                 id,
+                json->sourceDataSet->sourceInformation->dataSetInformation->"common:shortName",
+                json->sourceDataSet->sourceInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
+                json->sourceDataSet->sourceInformation->dataSetInformation->>sourceCitation,
+                json->sourceDataSet->sourceInformation->dataSetInformation->>publicationType,
+                version,
+                modified_at,
+                team_id
+              `}
               id={row.id}
             >
               <SourceEdit

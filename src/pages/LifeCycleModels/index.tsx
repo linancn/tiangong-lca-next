@@ -15,7 +15,7 @@ import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
-import { getDataTitle } from '../Utils';
+import { getDataTitle, getAllVersionsColumns } from '../Utils';
 import LifeCycleModelCreate from './Components/create';
 import LifeCycleModelDelete from './Components/delete';
 import LifeCycleModelEdit from './Components/edit';
@@ -75,8 +75,18 @@ const TableList: FC = () => {
           <Space size={'small'}>
             {row.version}
             <AllVersionsList
-              nameColume={`json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->name`}
+              lang={lang}
               searchTableName="lifecyclemodels"
+              columns={getAllVersionsColumns(processColumns, 3)}
+              searchColume={`
+                id,
+                json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->name,
+                json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
+                json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->"common:generalComment",
+                version,
+                modified_at,
+                team_id
+              `}
               id={row.id}
             >
               <LifeCycleModelEdit

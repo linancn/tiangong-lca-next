@@ -17,7 +17,7 @@ import ContactCreate from './Components/create';
 import ContactDelete from './Components/delete';
 import ContactEdit from './Components/edit';
 import ContactView from './Components/view';
-
+import { getAllVersionsColumns } from '../Utils';
 const { Search } = Input;
 
 const TableList: FC = () => {
@@ -35,6 +35,8 @@ const TableList: FC = () => {
   const lang = getLang(intl.locale);
 
   const actionRef = useRef<ActionType>();
+
+
   const contactColumns: ProColumns<ContactTable>[] = [
     {
       title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
@@ -77,8 +79,19 @@ const TableList: FC = () => {
           <Space size={'small'}>
             {row.version}
             <AllVersionsList
+              lang={lang}
               searchTableName="contacts"
-              nameColume={`json->contactDataSet->contactInformation->dataSetInformation->"common:shortName"`}
+              columns={getAllVersionsColumns(contactColumns, 4)}
+              searchColume={`
+                id,
+                json->contactDataSet->contactInformation->dataSetInformation->"common:shortName",
+                json->contactDataSet->contactInformation->dataSetInformation->"common:name",
+                json->contactDataSet->contactInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
+                json->contactDataSet->contactInformation->dataSetInformation->>email,
+                version,
+                modified_at,
+                team_id
+              `}
               id={row.id}
             >
               <ContactEdit
@@ -88,7 +101,7 @@ const TableList: FC = () => {
                 lang={lang}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
+                setViewDrawerVisible={() => { }}
               />
             </AllVersionsList>
           </Space>
@@ -123,7 +136,7 @@ const TableList: FC = () => {
                 lang={lang}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
+                setViewDrawerVisible={() => { }}
               />
               <ContactEdit
                 type="copy"
@@ -132,14 +145,14 @@ const TableList: FC = () => {
                 lang={lang}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
+                setViewDrawerVisible={() => { }}
               />
               <ContactDelete
                 id={row.id}
                 version={row.version}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
+                setViewDrawerVisible={() => { }}
               />
               <ContributeData
                 onOk={async () => {
@@ -177,7 +190,7 @@ const TableList: FC = () => {
               lang={lang}
               buttonType={'icon'}
               actionRef={actionRef}
-              setViewDrawerVisible={() => {}}
+              setViewDrawerVisible={() => { }}
             />
           </Space>,
         ];
