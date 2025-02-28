@@ -1,64 +1,19 @@
-# TianGong LCA NEXT
+# TianGong LCA Data Platform
 
-## Install dependencies
+[English](./README.md) | [中文](./README_CN.md)
 
-```bash
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+**TianGong LCA Data Platform** is a **fully open-source** Life Cycle Assessment (LCA) data management platform, offering **free** cloud services as well as private deployment options. With TianGong, you can:
 
-nvm install
-nvm alias default 20
-nvm use
+🌐 **Start Using Our Online Platform Right Away**  
+Begin your LCA journey now: <a href="https://lca.tiangong.earth" target="_blank">https://lca.tiangong.earth</a>
 
-npm install
-```
+🐳 **Deploy Privately with Ease**  
+Deploy locally using Docker. For detailed instructions, see our <a href="https://docs.tiangong.earth/docs/deploy/local-deploy" target="_blank">Private Deployment Guide</a>.
 
-## Provided Scripts
+## 📖 <a href="https://docs.tiangong.earth/en/" target="_blank">Documentation</a>
 
-Scripts provided in `package.json`. It's safe to modify or add additional script:
-
-### Start project
-
-```bash
-npm start
-```
-
-### Build project
-
-```bash
-npm run build
-```
-
-### Check code style
-
-```bash
-npm run lint
-```
-
-You can also use script to auto fix some lint error:
-
-```bash
-npm run lint:fix
-```
-
-### Test code
-
-```bash
-npm test
-```
-
-### Publish
-
-```bash
-#list existing tags
-git tag
-#creat a new tag
-git tag v0.0.1
-#push this tag to origin
-git push origin v0.0.1
-```
-
-## You can now run the Next.js local development server
-
-🚀 **Use VSCode Launch Program configuration to Debug!** 🚀
-
-The app should now be running on [localhost:8000](http://localhost:8000/).
+- <a href="https://docs.tiangong.earth/en/docs/category/quick-start" target="_blank">Get Started in 5 Minutes</a>
+- <a href="https://docs.tiangong.earth/en/docs/category/user-guide" target="_blank">User Guide</a>
+- <a href="https://docs.tiangong.earth/en/docs/category/faq" target="_blank">FAQ</a>
+- <a href="https://docs.tiangong.earth/en/docs/category/deloyment" target="_blank">Comprehensive Deployment Options</a>
+- <a href="https://docs.tiangong.earth/en/docs/category/contributing--development" target="_blank">Contributor Guide</a>
