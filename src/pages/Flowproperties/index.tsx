@@ -16,12 +16,13 @@ import { contributeSource } from '@/services/general/api';
 import { getTeamById } from '@/services/teams/api';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
-import ReferenceUnit from '../Unitgroups/Components/Unit/reference';
+// import ReferenceUnit from '../Unitgroups/Components/Unit/reference';
 import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import FlowpropertiesCreate from './Components/create';
 import FlowpropertiesDelete from './Components/delete';
 import FlowpropertiesEdit from './Components/edit';
 import FlowpropertyView from './Components/view';
+import { getReferenceUnitByIdsAndVersion } from '@/services/unitgroups/api';
 const { Search } = Input;
 
 const TableList: FC = () => {
@@ -76,13 +77,20 @@ const TableList: FC = () => {
       search: false,
       render: (_, row) => {
         return [
-          <ReferenceUnit
-            key={0}
-            id={row.refUnitGroupId}
-            version={row.version}
-            idType={'unitgroup'}
-            lang={lang}
-          />,
+          <span key={0}>
+          {getLangText(row.refUnitRes?.name, lang)} (
+          <Tooltip placement="topLeft" title={getLangText(row.refUnitRes?.refUnitGeneralComment, lang)}>
+            {row.refUnitRes?.refUnitName}
+          </Tooltip>
+          )
+        </span>
+          // <ReferenceUnit
+          //   key={0}
+          //   id={row.refUnitGroupId}
+          //   version={row.version}
+          //   idType={'unitgroup'}
+          //   lang={lang}
+          // />,
         ];
       },
     },
@@ -273,7 +281,14 @@ const TableList: FC = () => {
           if (keyWord.length > 0) {
             return getFlowpropertyTablePgroongaSearch(params, lang, dataSource, keyWord, {});
           }
-          return getFlowpropertyTableAll(params, sort, lang, dataSource, tid ?? '');
+          return getFlowpropertyTableAll(params, sort, lang, dataSource, tid ?? '').then((res) => {
+            return getReferenceUnitByIdsAndVersion(res?.data??[]).then((refUnitGroupResp) => {
+              return {
+                ...res,
+                data:refUnitGroupResp,
+              }
+            });
+          });
         }}
         columns={flowpropertiesColumns}
       />
