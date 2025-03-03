@@ -71,7 +71,8 @@ export async function getTeamIdByUserId() {
       role
       `,
     )
-    .eq('user_id', session?.data?.session?.user?.id);
+    .eq('user_id', session?.data?.session?.user?.id)
+    .neq('team_id', '00000000-0000-0000-0000-000000000000');
 
   if (data && data.length > 0 && data[0].role !== 'is_invited' && data[0].role !== 'rejected') {
     return data[0].team_id;
