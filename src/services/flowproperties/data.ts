@@ -8,5 +8,5 @@ export type FlowpropertyTable = {
   refUnitGroup: string;
   modifiedAt: Date;
   teamId: string;
-  refUnitRes:{[key:string]:any};
+  refUnitRes: { [key: string]: any };
 };

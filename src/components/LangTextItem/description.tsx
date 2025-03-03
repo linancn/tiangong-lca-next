@@ -22,7 +22,13 @@ const LangTextItemDescription: FC<Props> = ({ data }) => {
       {items?.map((name: any, index: number) => (
         <Descriptions.Item
           key={index}
-          label={name?.['@xml:lang'] === 'en' ? 'English' : name?.['@xml:lang'] === 'zh' ? '简体中文' : '-'}
+          label={
+            name?.['@xml:lang'] === 'en'
+              ? 'English'
+              : name?.['@xml:lang'] === 'zh'
+                ? '简体中文'
+                : '-'
+          }
           labelStyle={{ width: '100px' }}
         >
           {name?.['#text'] ?? '-'}
