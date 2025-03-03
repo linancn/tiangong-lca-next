@@ -68,4 +68,5 @@ export default {
   'pages.lifeCycleModel.drawer.title.create': 'Create Model',
 
   'pages.version': 'Version',
+  'pages.lang.select': 'Select a lang',
 };

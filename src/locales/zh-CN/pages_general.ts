@@ -67,4 +67,5 @@ export default {
   'pages.lifeCycleModel.drawer.title.create': '创建模型',
 
   'pages.version': '版本',
+  'pages.lang.select': '请选择语言',
 };

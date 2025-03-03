@@ -283,7 +283,7 @@ const Team = () => {
               style={{ marginBottom: 0 }}
             >
               <Form.Item style={{ display: 'inline-block', width: '120px', marginRight: '8px' }}>
-                <Input value="zh" disabled style={{ color: token.colorTextBase }} />
+                <Input value="简体中文" disabled style={{ color: token.colorTextBase }} />
               </Form.Item>
 
               <Form.Item
@@ -305,7 +305,7 @@ const Team = () => {
               </Form.Item>
               <br />
               <Form.Item style={{ display: 'inline-block', width: '120px', marginRight: '8px' }}>
-                <Input value="en" disabled style={{ color: token.colorTextBase }} />
+                <Input value="English" disabled style={{ color: token.colorTextBase }} />
               </Form.Item>
               <Form.Item
                 name="title-en"
@@ -336,7 +336,7 @@ const Team = () => {
               style={{ marginBottom: 0 }}
             >
               <Form.Item style={{ display: 'inline-block', width: '120px', marginRight: '8px' }}>
-                <Input value="zh" disabled style={{ color: token.colorTextBase }} />
+                <Input value="简体中文" disabled style={{ color: token.colorTextBase }} />
               </Form.Item>
               <Form.Item
                 name="description-zh"
@@ -357,7 +357,7 @@ const Team = () => {
               </Form.Item>
               <br />
               <Form.Item style={{ display: 'inline-block', width: '120px', marginRight: '8px' }}>
-                <Input value="en" disabled style={{ color: token.colorTextBase }} />
+                <Input value="English" disabled style={{ color: token.colorTextBase }} />
               </Form.Item>
               <Form.Item
                 name="description-en"
