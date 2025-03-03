@@ -23,7 +23,7 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
   const intl = useIntl();
 
   const handletFromData = () => {
-    if (fromData?.id)
+    if (fromData)
       setFromData({
         ...fromData,
         [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
