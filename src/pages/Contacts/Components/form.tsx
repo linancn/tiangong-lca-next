@@ -12,7 +12,7 @@ import {
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { ProFormInstance } from '@ant-design/pro-components';
-import { Card, Form, Input, Space } from 'antd';
+import { Card, Form, Input, Space, theme } from 'antd';
 import { FC } from 'react';
 import { FormattedMessage } from 'umi';
 
@@ -25,6 +25,7 @@ type Props = {
 };
 
 export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, onTabChange }) => {
+  const { token } = theme.useToken();
   const tabList = [
     {
       key: 'contactInformation',
@@ -213,7 +214,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
               }
               name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
             >
-              <Input disabled={true} />
+              <Input disabled={true} style={{ color: token.colorTextDescription }} />
             </Form.Item>
             <br />
             <SourceSelectForm
@@ -299,7 +300,11 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
         activeTabKey={activeTabKey}
         onTabChange={onTabChange}
       >
-        {tabContent[activeTabKey]}
+        {Object.keys(tabContent).map((key) => (
+          <div key={key} style={{ display: key === activeTabKey ? 'block' : 'none' }}>
+            {tabContent[key]}
+          </div>
+        ))}
       </Card>
       {/* <Form.Item name="id" hidden>
         <Input />

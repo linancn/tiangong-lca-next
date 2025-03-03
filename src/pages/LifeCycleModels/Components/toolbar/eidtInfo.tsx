@@ -1,3 +1,4 @@
+import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import styles from '@/style/custom.less';
 import { CloseOutlined, InfoOutlined } from '@ant-design/icons';
 import { ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -14,20 +15,24 @@ import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { LifeCycleModelForm } from '../form';
-
 // const { TextArea } = Input;
 
 type Props = {
   lang: string;
   data: any;
   onData: (data: any) => void;
+  type?: 'edit' | 'copy' | 'createVersion';
 };
-const ToolbarEditInfo: FC<Props> = ({ lang, data, onData }) => {
+const ToolbarEditInfo: FC<Props> = ({ lang, data, onData, type = 'edit' }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('lifeCycleModelInformation');
   const formRefEdit = useRef<ProFormInstance>();
   const [fromData, setFromData] = useState<any>({});
+  const [referenceValue, setReferenceValue] = useState(0);
 
+  const updateReference = async () => {
+    setReferenceValue(referenceValue + 1);
+  };
   const handletFromData = () => {
     if (fromData?.id) {
       setFromData({
@@ -69,6 +74,7 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData }) => {
         ></Button>
       </Tooltip>
       <Drawer
+        getContainer={() => document.body}
         destroyOnClose
         title={
           <FormattedMessage
@@ -94,6 +100,20 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData }) => {
         }}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
+            {type === 'edit' ? (
+              <Button
+                onClick={() => {
+                  updateReference();
+                }}
+              >
+                <FormattedMessage
+                  id="pages.button.updateReference"
+                  defaultMessage="Update reference"
+                />
+              </Button>
+            ) : (
+              <></>
+            )}
             <Button
               onClick={() => {
                 setDrawerVisible(false);
@@ -112,32 +132,34 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData }) => {
           </Space>
         }
       >
-        <ProForm
-          formRef={formRefEdit}
-          initialValues={data}
-          onValuesChange={(_, allValues) => {
-            setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
-          }}
-          submitter={{
-            render: () => {
-              return [];
-            },
-          }}
-          onFinish={async () => {
-            onData({ ...fromData });
-            formRefEdit.current?.resetFields();
-            setDrawerVisible(false);
-            return true;
-          }}
-        >
-          <LifeCycleModelForm
-            lang={lang}
-            activeTabKey={activeTabKey}
+        <UpdateReferenceContext.Provider value={{ referenceValue }}>
+          <ProForm
             formRef={formRefEdit}
-            onTabChange={onTabChange}
-            onData={handletFromData}
-          />
-        </ProForm>
+            initialValues={data}
+            onValuesChange={(_, allValues) => {
+              setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+            }}
+            submitter={{
+              render: () => {
+                return [];
+              },
+            }}
+            onFinish={async () => {
+              onData({ ...fromData });
+              formRefEdit.current?.resetFields();
+              setDrawerVisible(false);
+              return true;
+            }}
+          >
+            <LifeCycleModelForm
+              lang={lang}
+              activeTabKey={activeTabKey}
+              formRef={formRefEdit}
+              onTabChange={onTabChange}
+              onData={handletFromData}
+            />
+          </ProForm>
+        </UpdateReferenceContext.Provider>
         <Collapse
           items={[
             {

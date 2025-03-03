@@ -3,6 +3,7 @@ import { Card, Input, Space, Tooltip, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 
+import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
 import { contributeSource } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
@@ -12,12 +13,11 @@ import { getTeamById } from '@/services/teams/api';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
-import { getDataTitle } from '../Utils';
+import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import ProcessCreate from './Components/create';
 import ProcessDelete from './Components/delete';
 import ProcessEdit from './Components/edit';
 import ProcessView from './Components/view';
-
 const { Search } = Input;
 
 const TableList: FC = () => {
@@ -80,6 +80,40 @@ const TableList: FC = () => {
       dataIndex: 'version',
       sorter: false,
       search: false,
+      render: (_, row) => {
+        return (
+          <Space size={'small'}>
+            {row.version}
+            <AllVersionsList
+              lang={lang}
+              searchTableName="processes"
+              columns={getAllVersionsColumns(processColumns, 5)}
+              searchColume={`
+                id,
+                json->processDataSet->processInformation->dataSetInformation->name,
+                json->processDataSet->processInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
+                json->processDataSet->processInformation->dataSetInformation->"common:generalComment",
+                json->processDataSet->processInformation->time->>"common:referenceYear",
+                json->processDataSet->processInformation->geography->locationOfOperationSupplyOrProduction->>"@location",
+                version,
+                modified_at,
+                team_id
+              `}
+              id={row.id}
+            >
+              <ProcessEdit
+                type="createVersion"
+                id={row.id}
+                version={row.version}
+                lang={lang}
+                buttonType={'icon'}
+                actionRef={actionRef}
+                setViewDrawerVisible={() => {}}
+              />
+            </AllVersionsList>
+          </Space>
+        );
+      },
     },
     {
       title: <FormattedMessage id="pages.table.title.updatedAt" defaultMessage="Updated at" />,
@@ -103,8 +137,18 @@ const TableList: FC = () => {
                 buttonType={'icon'}
                 lang={lang}
                 disabled={false}
+                actionRef={actionRef}
               />
               <ProcessEdit
+                id={row.id}
+                version={row.version}
+                lang={lang}
+                buttonType={'icon'}
+                actionRef={actionRef}
+                setViewDrawerVisible={() => {}}
+              />
+              <ProcessEdit
+                type="copy"
                 id={row.id}
                 version={row.version}
                 lang={lang}
@@ -148,6 +192,16 @@ const TableList: FC = () => {
               buttonType={'icon'}
               lang={lang}
               disabled={false}
+              actionRef={actionRef}
+            />
+            <ProcessEdit
+              type="copy"
+              id={row.id}
+              version={row.version}
+              lang={lang}
+              buttonType={'icon'}
+              actionRef={actionRef}
+              setViewDrawerVisible={() => {}}
             />
           </Space>,
         ];
@@ -186,6 +240,7 @@ const TableList: FC = () => {
         />
       </Card>
       <ProTable<ProcessTable, ListPagination>
+        rowKey={(record) => `${record.id}-${record.version}`}
         headerTitle={
           <>
             {getDataTitle(dataSource)} /{' '}

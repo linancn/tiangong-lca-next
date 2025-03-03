@@ -10,6 +10,7 @@ import { genFlowFromData, genFlowPropertyTabTableData } from '@/services/flows/u
 import { ListPagination } from '@/services/general/data';
 import { CheckCircleOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
+import type { ActionType } from '@ant-design/pro-table';
 import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
@@ -22,7 +23,7 @@ type Props = {
   version: string;
   lang: string;
   buttonType: string;
-  data?: any;
+  actionRef?: React.MutableRefObject<ActionType | undefined>;
 };
 
 const getComplianceLabel = (value: string) => {
@@ -276,9 +277,13 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
           <br />
           <LevelTextItemDescription
             data={
-              initData?.flowInformation?.dataSetInformation?.classificationInformation?.[
-                'common:elementaryFlowCategorization'
-              ]?.['common:category']?.['value']
+              initData?.flowInformation?.LCIMethod?.typeOfDataSet === 'Elementary flow'
+                ? initData?.flowInformation?.dataSetInformation?.classificationInformation?.[
+                    'common:elementaryFlowCategorization'
+                  ]?.['common:category']?.['value']
+                : initData?.flowInformation?.dataSetInformation?.classificationInformation?.[
+                    'common:classification'
+                  ]?.['common:class']?.['value']
             }
             lang={lang}
             categoryType={'Flow'}
@@ -527,9 +532,11 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
               }
               labelStyle={{ width: '160px' }}
             >
-              {initData?.administrativeInformation?.publicationAndOwnership?.[
-                'common:dataSetVersion'
-              ] ?? '-'}
+              <Space>
+                {initData?.administrativeInformation?.publicationAndOwnership?.[
+                  'common:dataSetVersion'
+                ] ?? '-'}
+              </Space>
             </Descriptions.Item>
           </Descriptions>
           <br />
@@ -605,6 +612,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
       )}
 
       <Drawer
+        getContainer={() => document.body}
         title={<FormattedMessage id="pages.flow.drawer.title.view" defaultMessage="View Flow" />}
         width="90%"
         closable={false}

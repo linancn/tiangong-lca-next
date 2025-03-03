@@ -1,7 +1,7 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
 import { StringMultiLang_r, dataSetVersion } from '@/components/Validator/index';
-import { Card, Form, Input, Select, Space } from 'antd';
+import { Card, Form, Input, Select, Space, theme } from 'antd';
 import type { FC } from 'react';
 import { FormattedMessage } from 'umi';
 
@@ -27,6 +27,7 @@ export const FlowpropertyForm: FC<Props> = ({
   onData,
   onTabChange,
 }) => {
+  const { token } = theme.useToken();
   const tabList = [
     {
       key: 'flowPropertiesInformation',
@@ -199,7 +200,7 @@ export const FlowpropertyForm: FC<Props> = ({
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
           >
-            <Input disabled={true} style={{ color: '#000' }} />
+            <Input disabled={true} style={{ color: token.colorTextDescription }} />
           </Form.Item>
           <SourceSelectForm
             name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
@@ -281,7 +282,11 @@ export const FlowpropertyForm: FC<Props> = ({
         activeTabKey={activeTabKey}
         onTabChange={onTabChange}
       >
-        {tabContent[activeTabKey]}
+        {Object.keys(tabContent).map((key) => (
+          <div key={key} style={{ display: key === activeTabKey ? 'block' : 'none' }}>
+            {tabContent[key]}
+          </div>
+        ))}
       </Card>
     </>
   );

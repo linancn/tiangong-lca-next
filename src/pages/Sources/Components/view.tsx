@@ -6,18 +6,20 @@ import { isValidURL } from '@/services/general/util';
 import { getSourceDetail } from '@/services/sources/api';
 import { genSourceFromData } from '@/services/sources/util';
 import { CloseOutlined, LinkOutlined, ProfileOutlined } from '@ant-design/icons';
-import { Button, Card, Descriptions, Divider, Drawer, Spin, Tooltip } from 'antd';
+import { ActionType } from '@ant-design/pro-components';
+import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { publicationTypeOptions } from './optiondata';
 import SourceSelectDescription from './select/description';
+
 type Props = {
   id: string;
   version: string;
   // dataSource: string;
   buttonType: string;
-  // actionRef: React.MutableRefObject<ActionType | undefined>;
+  actionRef?: React.MutableRefObject<ActionType | undefined>;
   lang: string;
 };
 
@@ -32,7 +34,6 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
   // const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<any>({});
-
   const tabList = [
     {
       key: 'sourceInformation',
@@ -236,9 +237,11 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
               }
               labelStyle={{ width: '160px' }}
             >
-              {initData.administrativeInformation?.publicationAndOwnership?.[
-                'common:dataSetVersion'
-              ] ?? '-'}
+              <Space>
+                {initData.administrativeInformation?.publicationAndOwnership?.[
+                  'common:dataSetVersion'
+                ] ?? '-'}
+              </Space>
             </Descriptions.Item>
           </Descriptions>
           <br />
@@ -318,6 +321,7 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
         </Button>
       )}
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage id="pages.source.drawer.title.view" defaultMessage="View Source" />
         }

@@ -1,3 +1,4 @@
+import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
 import { contributeSource } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
@@ -14,12 +15,11 @@ import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
-import { getDataTitle } from '../Utils';
+import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import LifeCycleModelCreate from './Components/create';
 import LifeCycleModelDelete from './Components/delete';
 import LifeCycleModelEdit from './Components/edit';
 import LifeCycleModelView from './Components/view';
-
 const { Search } = Input;
 
 const TableList: FC = () => {
@@ -70,6 +70,37 @@ const TableList: FC = () => {
       dataIndex: 'version',
       sorter: false,
       search: false,
+      render: (_, row) => {
+        return (
+          <Space size={'small'}>
+            {row.version}
+            <AllVersionsList
+              lang={lang}
+              searchTableName="lifecyclemodels"
+              columns={getAllVersionsColumns(processColumns, 3)}
+              searchColume={`
+                id,
+                json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->name,
+                json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
+                json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->"common:generalComment",
+                version,
+                modified_at,
+                team_id
+              `}
+              id={row.id}
+            >
+              <LifeCycleModelEdit
+                type="createVersion"
+                id={row.id}
+                version={row.version}
+                lang={lang}
+                buttonType={'icon'}
+                actionRef={actionRef}
+              />
+            </AllVersionsList>
+          </Space>
+        );
+      },
     },
     {
       title: <FormattedMessage id="pages.table.title.updatedAt" defaultMessage="Updated at" />,
@@ -91,8 +122,17 @@ const TableList: FC = () => {
                 version={row.version}
                 lang={lang}
                 buttonType={'icon'}
+                actionRef={actionRef}
               />
               <LifeCycleModelEdit
+                id={row.id}
+                version={row.version}
+                lang={lang}
+                actionRef={actionRef}
+                buttonType={'icon'}
+              />
+              <LifeCycleModelEdit
+                type="copy"
                 id={row.id}
                 version={row.version}
                 lang={lang}
@@ -129,6 +169,14 @@ const TableList: FC = () => {
         return [
           <Space size={'small'} key={0}>
             <LifeCycleModelView id={row.id} version={row.version} lang={lang} buttonType={'icon'} />
+            <LifeCycleModelEdit
+              type="copy"
+              id={row.id}
+              version={row.version}
+              lang={lang}
+              actionRef={actionRef}
+              buttonType={'icon'}
+            />
           </Space>,
         ];
       },
@@ -166,6 +214,7 @@ const TableList: FC = () => {
         />
       </Card>
       <ProTable<LifeCycleModelTable, ListPagination>
+        rowKey={(record) => `${record.id}-${record.version}`}
         headerTitle={
           <>
             {getDataTitle(dataSource)} /{' '}

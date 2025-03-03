@@ -1,3 +1,4 @@
+import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
 import { getContactTableAll, getContactTablePgroongaSearch } from '@/services/contacts/api';
 import { ContactTable } from '@/services/contacts/data';
@@ -11,12 +12,11 @@ import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
-import { getDataTitle } from '../Utils';
+import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import ContactCreate from './Components/create';
 import ContactDelete from './Components/delete';
 import ContactEdit from './Components/edit';
 import ContactView from './Components/view';
-
 const { Search } = Input;
 
 const TableList: FC = () => {
@@ -34,6 +34,7 @@ const TableList: FC = () => {
   const lang = getLang(intl.locale);
 
   const actionRef = useRef<ActionType>();
+
   const contactColumns: ProColumns<ContactTable>[] = [
     {
       title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
@@ -71,6 +72,39 @@ const TableList: FC = () => {
       dataIndex: 'version',
       sorter: false,
       search: false,
+      render: (_, row) => {
+        return (
+          <Space size={'small'}>
+            {row.version}
+            <AllVersionsList
+              lang={lang}
+              searchTableName="contacts"
+              columns={getAllVersionsColumns(contactColumns, 4)}
+              searchColume={`
+                 id,
+                json->contactDataSet->contactInformation->dataSetInformation->"common:shortName",
+                json->contactDataSet->contactInformation->dataSetInformation->"common:name",
+                json->contactDataSet->contactInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
+                json->contactDataSet->contactInformation->dataSetInformation->>email,
+                version,
+                modified_at,
+                team_id
+              `}
+              id={row.id}
+            >
+              <ContactEdit
+                type="createVersion"
+                id={row.id}
+                version={row.version}
+                lang={lang}
+                buttonType={'icon'}
+                actionRef={actionRef}
+                setViewDrawerVisible={() => {}}
+              />
+            </AllVersionsList>
+          </Space>
+        );
+      },
     },
     {
       title: <FormattedMessage id="pages.table.title.updatedAt" defaultMessage="Updated at" />,
@@ -92,9 +126,18 @@ const TableList: FC = () => {
                 version={row.version}
                 lang={lang}
                 buttonType="icon"
-                // actionRef={actionRef}
+                actionRef={actionRef}
               />
               <ContactEdit
+                id={row.id}
+                version={row.version}
+                lang={lang}
+                buttonType={'icon'}
+                actionRef={actionRef}
+                setViewDrawerVisible={() => {}}
+              />
+              <ContactEdit
+                type="copy"
                 id={row.id}
                 version={row.version}
                 lang={lang}
@@ -136,7 +179,16 @@ const TableList: FC = () => {
               version={row.version}
               lang={lang}
               buttonType="icon"
-              // actionRef={actionRef}
+              actionRef={actionRef}
+            />
+            <ContactEdit
+              type="copy"
+              id={row.id}
+              version={row.version}
+              lang={lang}
+              buttonType={'icon'}
+              actionRef={actionRef}
+              setViewDrawerVisible={() => {}}
             />
           </Space>,
         ];
@@ -175,6 +227,7 @@ const TableList: FC = () => {
         />
       </Card>
       <ProTable<ContactTable, ListPagination>
+        rowKey={(record) => `${record.id}-${record.version}`}
         headerTitle={
           <>
             {getDataTitle(dataSource)} /{' '}

@@ -6,19 +6,19 @@ import { getUnitGroupDetail } from '@/services/unitgroups/api';
 import { UnitTable } from '@/services/unitgroups/data';
 import { genUnitGroupFromData, genUnitTableData } from '@/services/unitgroups/util';
 import { CheckCircleOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
-import { ProColumns, ProTable } from '@ant-design/pro-components';
-import { Button, Card, Descriptions, Divider, Drawer, Spin, Tooltip } from 'antd';
+import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
+import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import UnitView from './Unit/view';
 import { complianceOptions } from './optiondata';
-
 type Props = {
   id: string;
   version: string;
   lang: string;
   buttonType: string;
+  actionRef?: React.MutableRefObject<ActionType | undefined>;
 };
 
 const getComplianceLabel = (value: string) => {
@@ -34,7 +34,6 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
   const [unitDataSource, setUnitDataSource] = useState<any>([]);
 
   const [activeTabKey, setActiveTabKey] = useState<string>('unitGroupInformation');
-
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
   };
@@ -288,9 +287,11 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
             }
             labelStyle={{ width: '140px' }}
           >
-            {initData.administrativeInformation?.publicationAndOwnership?.[
-              'common:dataSetVersion'
-            ] ?? '-'}
+            <Space>
+              {initData.administrativeInformation?.publicationAndOwnership?.[
+                'common:dataSetVersion'
+              ] ?? '-'}
+            </Space>
           </Descriptions.Item>
         </Descriptions>
       </>
@@ -314,6 +315,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
   };
 
   const onView = () => {
+    console.log('onView', id, version);
     setDrawerVisible(true);
     setSpinning(true);
     getUnitGroupDetail(id, version).then(async (result: any) => {
@@ -360,6 +362,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
       )}
 
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage
             id="pages.unitgroup.drawer.title.view"

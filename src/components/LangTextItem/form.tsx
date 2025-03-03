@@ -23,7 +23,9 @@ const LangTextItemForm: FC<Props> = ({ name, label, rules }) => {
                 <Col flex="120px" style={{ marginRight: '10px' }}>
                   <Form.Item noStyle name={[subField.name, '@xml:lang']}>
                     <Select
-                      placeholder="Select a lang"
+                      placeholder={
+                        <FormattedMessage id="pages.lang.select" defaultMessage="Select a lang" />
+                      }
                       optionFilterProp="lang"
                       options={langOptions}
                     />
@@ -31,7 +33,7 @@ const LangTextItemForm: FC<Props> = ({ name, label, rules }) => {
                 </Col>
                 <Col flex="auto" style={{ marginRight: '10px' }}>
                   <Form.Item noStyle name={[subField.name, '#text']} rules={rules ?? []}>
-                    <TextArea placeholder="text" rows={1} />
+                    <TextArea rows={1} />
                   </Form.Item>
                 </Col>
                 <Col flex="20px">

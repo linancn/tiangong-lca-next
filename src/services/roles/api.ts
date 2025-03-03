@@ -11,7 +11,8 @@ export async function getUserRoles() {
       role
       `,
     )
-    .eq('user_id', session?.data?.session?.user?.id);
+    .eq('user_id', session?.data?.session?.user?.id)
+    .neq('team_id', '00000000-0000-0000-0000-000000000000');
 
   return Promise.resolve({
     data: result.data ?? [],

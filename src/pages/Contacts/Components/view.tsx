@@ -4,24 +4,24 @@ import SourceSelectDescription from '@/pages/Sources/Components/select/descripti
 import { getContactDetail } from '@/services/contacts/api';
 import { genContactFromData } from '@/services/contacts/util';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
-import { Button, Card, Descriptions, Divider, Drawer, Spin, Tooltip } from 'antd';
+import { ActionType } from '@ant-design/pro-components';
+import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import ContractDescription from './select/description';
-
 type Props = {
   id: string;
   version: string;
   lang: string;
   buttonType: string;
+  actionRef?: React.MutableRefObject<ActionType | undefined>;
 };
 const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<any>({});
   const [activeTabKey, setActiveTabKey] = useState<string>('contactInformation');
-
   const tabList = [
     {
       key: 'contactInformation',
@@ -213,9 +213,11 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
               }
               labelStyle={{ width: '160px' }}
             >
-              {initData.administrativeInformation?.publicationAndOwnership?.[
-                'common:dataSetVersion'
-              ] ?? '-'}
+              <Space>
+                {initData.administrativeInformation?.publicationAndOwnership?.[
+                  'common:dataSetVersion'
+                ] ?? '-'}
+              </Space>
             </Descriptions.Item>
           </Descriptions>
           <br />
@@ -276,6 +278,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
       )}
 
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage id="pages.contact.drawer.title.view" defaultMessage="View Contact" />
         }

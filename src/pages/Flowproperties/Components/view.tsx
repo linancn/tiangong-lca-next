@@ -5,17 +5,17 @@ import UnitGroupDescription from '@/pages/Unitgroups/Components/select/descripti
 import { getFlowpropertyDetail } from '@/services/flowproperties/api';
 import { genFlowpropertyFromData } from '@/services/flowproperties/util';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
-import { Button, Card, Descriptions, Divider, Drawer, Spin, Tooltip } from 'antd';
+import { ActionType } from '@ant-design/pro-components';
+import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { complianceOptions } from './optiondata';
 import FlowpropertiesSelectDescription from './select/description';
-
 type Props = {
   id: string;
   version: string;
-  // actionRef: React.MutableRefObject<ActionType | undefined>;
+  actionRef?: React.MutableRefObject<ActionType | undefined>;
   buttonType: string;
   lang: string;
 };
@@ -30,7 +30,6 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
   const [activeTabKey, setActiveTabKey] = useState<string>('flowPropertiesInformation');
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<any>({});
-
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
   };
@@ -224,9 +223,11 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
               }
               labelStyle={{ width: '140px' }}
             >
-              {initData?.administrativeInformation?.publicationAndOwnership?.[
-                'common:dataSetVersion'
-              ] ?? '-'}
+              <Space>
+                {initData?.administrativeInformation?.publicationAndOwnership?.[
+                  'common:dataSetVersion'
+                ] ?? '-'}
+              </Space>
             </Descriptions.Item>
           </Descriptions>
           <br />

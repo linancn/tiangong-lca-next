@@ -15,7 +15,7 @@ import { genFlowPropertyTabTableData } from '@/services/flows/util';
 import { ListPagination } from '@/services/general/data';
 import { CheckCircleOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
-import { Card, Divider, Form, Input, Select, Space } from 'antd';
+import { Card, Divider, Form, Input, Select, Space, theme } from 'antd';
 import type { FC } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -51,7 +51,7 @@ export const FlowForm: FC<Props> = ({
 }) => {
   const [thisFlowType, setThisFlowType] = useState<string | undefined>(flowType);
   const actionRefPropertyTable = useRef<ActionType>();
-
+  const { token } = theme.useToken();
   const tabList = [
     {
       key: 'flowInformation',
@@ -330,14 +330,22 @@ export const FlowForm: FC<Props> = ({
               options={myFlowTypeOptions}
               onChange={(value) => {
                 if (thisFlowType === 'Elementary flow' || value === 'Elementary flow') {
-                  const nameList = [
+                  const nameElementaryFlow = [
                     'flowInformation',
                     'dataSetInformation',
                     'classificationInformation',
                     'common:elementaryFlowCategorization',
                     'common:category',
                   ];
-                  formRef.current?.setFieldValue([...nameList], null);
+                  const nameFlow = [
+                    'flowInformation',
+                    'dataSetInformation',
+                    'classificationInformation',
+                    'common:classification',
+                    'common:class',
+                  ];
+                  formRef.current?.setFieldValue([...nameElementaryFlow], null);
+                  formRef.current?.setFieldValue([...nameFlow], null);
                 }
                 setThisFlowType(value);
               }}
@@ -345,6 +353,7 @@ export const FlowForm: FC<Props> = ({
           </Form.Item>
           <br />
           <LevelTextItemForm
+            hidden={thisFlowType !== 'Elementary flow'}
             dataType={'Flow'}
             lang={lang}
             flowType={thisFlowType}
@@ -356,6 +365,21 @@ export const FlowForm: FC<Props> = ({
               'classificationInformation',
               'common:elementaryFlowCategorization',
               'common:category',
+            ]}
+          />
+          <LevelTextItemForm
+            hidden={thisFlowType === 'Elementary flow'}
+            dataType={'Flow'}
+            lang={lang}
+            flowType={thisFlowType}
+            formRef={formRef}
+            onData={onData}
+            name={[
+              'flowInformation',
+              'dataSetInformation',
+              'classificationInformation',
+              'common:classification',
+              'common:class',
             ]}
           />
         </Card>
@@ -555,7 +579,7 @@ export const FlowForm: FC<Props> = ({
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
           >
-            <Input disabled={true} style={{ color: '#000' }} />
+            <Input disabled={true} style={{ color: token.colorTextDescription }} />
           </Form.Item>
           <SourceSelectForm
             lang={lang}
@@ -674,7 +698,11 @@ export const FlowForm: FC<Props> = ({
       activeTabKey={activeTabKey}
       onTabChange={onTabChange}
     >
-      {tabContent[activeTabKey]}
+      {Object.keys(tabContent).map((key) => (
+        <div key={key} style={{ display: key === activeTabKey ? 'block' : 'none' }}>
+          {tabContent[key]}
+        </div>
+      ))}
     </Card>
   );
 };

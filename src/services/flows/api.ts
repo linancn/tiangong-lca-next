@@ -58,7 +58,7 @@ export async function getFlowTableAll(
   const selectStr = `
     id,
     json->flowDataSet->flowInformation->dataSetInformation->name,
-    json->flowDataSet->flowInformation->dataSetInformation->classificationInformation->"common:elementaryFlowCategorization"->"common:category",
+    json->flowDataSet->flowInformation->dataSetInformation->classificationInformation,
     json->flowDataSet->flowInformation->dataSetInformation->"common:synonyms",
     json->flowDataSet->flowInformation->dataSetInformation->>CASNumber,
     json->flowDataSet->flowInformation->geography->>locationOfSupply,
@@ -162,15 +162,22 @@ export async function getFlowTableAll(
       await getILCDFlowCategorizationAll(lang).then((res) => {
         data = result.data.map((i: any) => {
           try {
-            let thisCategory: any[] = [];
+            let classificationData: any = {};
+            let thisClass: any[] = [];
             if (i?.typeOfDataSet === 'Elementary flow') {
-              thisCategory = res?.data?.categoryElementaryFlow;
+              classificationData =
+                i?.classificationInformation?.['common:elementaryFlowCategorization']?.[
+                  'common:category'
+                ];
+              thisClass = res?.data?.categoryElementaryFlow;
             } else {
-              thisCategory = res?.data?.category;
+              classificationData =
+                i?.classificationInformation?.['common:classification']?.['common:class'];
+              thisClass = res?.data?.category;
             }
 
-            const classifications = jsonToList(i?.['common:category']);
-            const classificationZH = genClassificationZH(classifications, thisCategory);
+            const classifications = jsonToList(classificationData);
+            const classificationZH = genClassificationZH(classifications, thisClass);
 
             const thisLocation = locationData.find((l) => l['@value'] === i['locationOfSupply']);
             let locationOfSupply = i['locationOfSupply'];

@@ -3,6 +3,7 @@ import { Card, Input, Space, Tooltip, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 
+import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
 import { FlowTable } from '@/services/flows/data';
 import { contributeSource } from '@/services/general/api';
@@ -12,13 +13,12 @@ import { getTeamById } from '@/services/teams/api';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
-import { getDataTitle } from '../Utils';
+import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import FlowsCreate from './Components/create';
 import FlowsDelete from './Components/delete';
 import FlowsEdit from './Components/edit';
 import { flowTypeOptions } from './Components/optiondata';
 import FlowsView from './Components/view';
-
 const { Search } = Input;
 
 const TableList: FC = () => {
@@ -98,6 +98,41 @@ const TableList: FC = () => {
       dataIndex: 'version',
       sorter: false,
       search: false,
+      render: (_, row) => {
+        return (
+          <Space size={'small'}>
+            {row.version}
+            <AllVersionsList
+              lang={lang}
+              searchTableName="flows"
+              columns={getAllVersionsColumns(flowsColumns, 6)}
+              searchColume={`
+                id,
+                json->flowDataSet->flowInformation->dataSetInformation->name,
+                json->flowDataSet->flowInformation->dataSetInformation->classificationInformation,
+                json->flowDataSet->flowInformation->dataSetInformation->"common:synonyms",
+                json->flowDataSet->flowInformation->dataSetInformation->>CASNumber,
+                json->flowDataSet->flowInformation->geography->>locationOfSupply,
+                json->flowDataSet->modellingAndValidation->LCIMethod->>typeOfDataSet,
+                json->flowDataSet->flowProperties->flowProperty->referenceToFlowPropertyDataSet,
+                version,
+                modified_at,
+                team_id
+              `}
+              id={row.id}
+            >
+              <FlowsEdit
+                type="createVersion"
+                id={row.id}
+                version={row.version}
+                lang={lang}
+                buttonType={'icon'}
+                actionRef={actionRef}
+              />
+            </AllVersionsList>
+          </Space>
+        );
+      },
     },
     {
       title: <FormattedMessage id="pages.table.title.updatedAt" defaultMessage="Updated at" />,
@@ -114,8 +149,22 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <FlowsView buttonType={'icon'} id={row.id} version={row.version} lang={lang} />
+              <FlowsView
+                // actionRef={actionRef}
+                buttonType={'icon'}
+                id={row.id}
+                version={row.version}
+                lang={lang}
+              />
               <FlowsEdit
+                id={row.id}
+                version={row.version}
+                lang={lang}
+                buttonType={'icon'}
+                actionRef={actionRef}
+              />
+              <FlowsEdit
+                type="copy"
                 id={row.id}
                 version={row.version}
                 lang={lang}
@@ -151,7 +200,21 @@ const TableList: FC = () => {
         }
         return [
           <Space size={'small'} key={0}>
-            <FlowsView buttonType={'icon'} id={row.id} version={row.version} lang={lang} />
+            <FlowsView
+              // actionRef={actionRef}
+              buttonType={'icon'}
+              id={row.id}
+              version={row.version}
+              lang={lang}
+            />
+            <FlowsEdit
+              type="copy"
+              id={row.id}
+              version={row.version}
+              lang={lang}
+              buttonType={'icon'}
+              actionRef={actionRef}
+            />
           </Space>,
         ];
       },
@@ -189,6 +252,7 @@ const TableList: FC = () => {
         />
       </Card>
       <ProTable<FlowTable, ListPagination>
+        rowKey={(record) => `${record.id}-${record.version}`}
         headerTitle={
           <>
             {getDataTitle(dataSource)} /{' '}

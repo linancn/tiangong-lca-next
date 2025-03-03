@@ -3,7 +3,7 @@ import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 import { CloseOutlined, InfoOutlined } from '@ant-design/icons';
-import { Button, Card, Descriptions, Divider, Drawer, Tooltip } from 'antd';
+import { Button, Card, Descriptions, Divider, Drawer, Space, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -54,7 +54,6 @@ const getLicenseTypeOptions = (value: string) => {
 const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('lifeCycleModelInformation');
-
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
   };
@@ -459,7 +458,25 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             />
           }
         >
-          <Divider orientationMargin="0" orientation="left" plain>
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id="pages.flow.view.administrativeInformation.dataSetVersion"
+                  defaultMessage="Data set version"
+                />
+              }
+              labelStyle={{ width: '180px' }}
+            >
+              <Space>
+                {data.administrativeInformation?.publicationAndOwnership?.[
+                  'common:dataSetVersion'
+                ] ?? '-'}
+              </Space>
+            </Descriptions.Item>
+          </Descriptions>
+          {/* <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
               id="pages.flow.view.administrativeInformation.dataSetVersion"
               defaultMessage="Data set version"
@@ -469,7 +486,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             data={
               data.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion']
             }
-          />
+          /> */}
           <br />
           <Divider orientationMargin="0" orientation="left" plain>
             <FormattedMessage
@@ -552,6 +569,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
         />
       </Tooltip>
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage
             id="pages.flow.model.drawer.title.info"

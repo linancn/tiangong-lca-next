@@ -8,6 +8,7 @@ import {
   genNodeLabel,
 } from '@/services/lifeCycleModels/util';
 import { genProcessName } from '@/services/processes/util';
+import { ActionType } from '@ant-design/pro-components';
 import { useGraphEvent, useGraphStore } from '@antv/xflow';
 import { Space, Spin, theme } from 'antd';
 import { FC, useEffect, useState } from 'react';
@@ -17,12 +18,12 @@ import EdgeExhange from './Exchange/index';
 import IoPortView from './Exchange/ioPortView';
 import ToolbarViewInfo from './viewInfo';
 import TargetAmount from './viewTargetAmount';
-
 type Props = {
   id: string;
   version: string;
   lang: string;
   drawerVisible: boolean;
+  actionRef?: React.MutableRefObject<ActionType | undefined>;
 };
 
 const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {

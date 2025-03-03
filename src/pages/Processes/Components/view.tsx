@@ -15,7 +15,8 @@ import {
   ProductOutlined,
   ProfileOutlined,
 } from '@ant-design/icons';
-import { ProColumns, ProTable } from '@ant-design/pro-components';
+import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
+
 import { Button, Card, Collapse, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
@@ -29,14 +30,13 @@ import {
   processtypeOfDataSetOptions,
   reviewTypeOptions,
 } from './optiondata';
-
 type Props = {
   id: string;
   version: string;
   lang: string;
   buttonType: string;
   disabled: boolean;
-  // actionRef: React.MutableRefObject<ActionType | undefined>;
+  actionRef?: React.MutableRefObject<ActionType | undefined>;
 };
 
 const getProcesstypeOfDataSetOptions = (value: string) => {
@@ -71,7 +71,6 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
   const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<any>({});
-
   const tabList = [
     {
       key: 'processInformation',
@@ -946,9 +945,11 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
               }
               labelStyle={{ width: '180px' }}
             >
-              {initData.administrativeInformation?.publicationAndOwnership?.[
-                'common:dataSetVersion'
-              ] ?? '-'}
+              <Space>
+                {initData.administrativeInformation?.publicationAndOwnership?.[
+                  'common:dataSetVersion'
+                ] ?? '-'}
+              </Space>
             </Descriptions.Item>
           </Descriptions>
           <br />
@@ -1177,6 +1178,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
       )}
 
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage id="pages.process.drawer.title.view" defaultMessage="View process" />
         }

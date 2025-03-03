@@ -212,6 +212,7 @@ export async function getTeamMembersApi(
       `,
       )
       .eq('team_id', teamId)
+      .neq('team_id', '00000000-0000-0000-0000-000000000000')
       .order(sortBy, { ascending: orderBy === 'ascend' })
       .range(
         ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
@@ -288,7 +289,8 @@ export async function addTeamMemberApi(teamId: string, email: string) {
   const { data: existingUser, error: roleCheckError } = await supabase
     .from('roles')
     .select('*')
-    .eq('user_id', id);
+    .eq('user_id', id)
+    .neq('team_id', '00000000-0000-0000-0000-000000000000');
 
   if (!roleCheckError) {
     if (existingUser.length === 0) {
@@ -368,6 +370,7 @@ export async function getTeamInvitationStatusApi() {
       .from('roles')
       .select('*')
       .eq('user_id', userResult.user.id)
+      .neq('team_id', '00000000-0000-0000-0000-000000000000')
       .single();
 
     if (roleError) {

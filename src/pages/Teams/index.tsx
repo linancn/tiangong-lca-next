@@ -33,9 +33,9 @@ import {
   Input,
   message,
   Modal,
-  Select,
   Spin,
   Tabs,
+  theme,
   Tooltip,
   Upload,
 } from 'antd';
@@ -65,6 +65,8 @@ const Team = () => {
   const action = searchParams.get('action');
 
   const intl = useIntl();
+
+  const { token } = theme.useToken();
 
   const initialUseTeamId = async () => {
     const { data, success } = await getUserRoles();
@@ -263,7 +265,7 @@ const Team = () => {
     };
 
     return (
-      <Flex gap="middle" vertical style={{ maxWidth: '50%', minWidth: '200px' }}>
+      <Flex gap="middle" vertical style={{ maxWidth: '100%', minWidth: '600px' }}>
         <Spin spinning={teamInfoSpinning}>
           <ProForm
             disabled={userRole !== 'admin' && userRole !== 'owner' && action !== 'create'}
@@ -280,13 +282,13 @@ const Team = () => {
               label={<FormattedMessage id="pages.team.info.title" defaultMessage="Team Name" />}
               style={{ marginBottom: 0 }}
             >
-              <Form.Item style={{ display: 'inline-block', width: '30%', marginRight: '8px' }}>
-                <Select value="zh" disabled />
+              <Form.Item style={{ display: 'inline-block', width: '120px', marginRight: '8px' }}>
+                <Input value="简体中文" disabled style={{ color: token.colorTextBase }} />
               </Form.Item>
 
               <Form.Item
                 name="title-zh"
-                style={{ display: 'inline-block', width: 'calc(70% - 8px)' }}
+                style={{ display: 'inline-block', width: 'calc(70%)' }}
                 rules={[
                   {
                     required: true,
@@ -301,12 +303,13 @@ const Team = () => {
               >
                 <Input />
               </Form.Item>
-              <Form.Item style={{ display: 'inline-block', width: '30%', marginRight: '8px' }}>
-                <Select value="en" disabled />
+              <br />
+              <Form.Item style={{ display: 'inline-block', width: '120px', marginRight: '8px' }}>
+                <Input value="English" disabled style={{ color: token.colorTextBase }} />
               </Form.Item>
               <Form.Item
                 name="title-en"
-                style={{ display: 'inline-block', width: 'calc(70% - 8px)' }}
+                style={{ display: 'inline-block', width: 'calc(70%)' }}
                 rules={[
                   {
                     required: true,
@@ -332,12 +335,12 @@ const Team = () => {
               }
               style={{ marginBottom: 0 }}
             >
-              <Form.Item style={{ display: 'inline-block', width: '30%', marginRight: '8px' }}>
-                <Select value="zh" disabled />
+              <Form.Item style={{ display: 'inline-block', width: '120px', marginRight: '8px' }}>
+                <Input value="简体中文" disabled style={{ color: token.colorTextBase }} />
               </Form.Item>
               <Form.Item
                 name="description-zh"
-                style={{ display: 'inline-block', width: 'calc(70% - 8px)' }}
+                style={{ display: 'inline-block', width: 'calc(70%)' }}
                 rules={[
                   {
                     required: true,
@@ -352,12 +355,13 @@ const Team = () => {
               >
                 <Input.TextArea rows={1} />
               </Form.Item>
-              <Form.Item style={{ display: 'inline-block', width: '30%', marginRight: '8px' }}>
-                <Select value="en" disabled />
+              <br />
+              <Form.Item style={{ display: 'inline-block', width: '120px', marginRight: '8px' }}>
+                <Input value="English" disabled style={{ color: token.colorTextBase }} />
               </Form.Item>
               <Form.Item
                 name="description-en"
-                style={{ display: 'inline-block', width: 'calc(70% - 8px)' }}
+                style={{ display: 'inline-block', width: 'calc(70%)' }}
                 rules={[
                   {
                     required: true,

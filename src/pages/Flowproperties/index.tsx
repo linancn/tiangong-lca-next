@@ -10,18 +10,19 @@ import { Card, Input, Space, Tooltip, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 
+import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
 import { contributeSource } from '@/services/general/api';
 import { getTeamById } from '@/services/teams/api';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
-import ReferenceUnit from '../Unitgroups/Components/Unit/reference';
-import { getDataTitle } from '../Utils';
+// import ReferenceUnit from '../Unitgroups/Components/Unit/reference';
+import { getReferenceUnitByIdsAndVersion } from '@/services/unitgroups/api';
+import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import FlowpropertiesCreate from './Components/create';
 import FlowpropertiesDelete from './Components/delete';
 import FlowpropertiesEdit from './Components/edit';
 import FlowpropertyView from './Components/view';
-
 const { Search } = Input;
 
 const TableList: FC = () => {
@@ -76,13 +77,23 @@ const TableList: FC = () => {
       search: false,
       render: (_, row) => {
         return [
-          <ReferenceUnit
-            key={0}
-            id={row.refUnitGroupId}
-            version={row.version}
-            idType={'unitgroup'}
-            lang={lang}
-          />,
+          <span key={0}>
+            {getLangText(row.refUnitRes?.name, lang)} (
+            <Tooltip
+              placement="topLeft"
+              title={getLangText(row.refUnitRes?.refUnitGeneralComment, lang)}
+            >
+              {row.refUnitRes?.refUnitName}
+            </Tooltip>
+            )
+          </span>,
+          // <ReferenceUnit
+          //   key={0}
+          //   id={row.refUnitGroupId}
+          //   version={row.version}
+          //   idType={'unitgroup'}
+          //   lang={lang}
+          // />,
         ];
       },
     },
@@ -91,6 +102,39 @@ const TableList: FC = () => {
       dataIndex: 'version',
       sorter: false,
       search: false,
+      render: (_, row) => {
+        return (
+          <Space size={'small'}>
+            {row.version}
+            <AllVersionsList
+              lang={lang}
+              searchTableName="flowproperties"
+              columns={getAllVersionsColumns(flowpropertiesColumns, 4)}
+              searchColume={`
+                  id,
+                  json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->"common:name",
+                  json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
+                  json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->"common:generalComment",
+                  json->flowPropertyDataSet->flowPropertiesInformation->quantitativeReference->referenceToReferenceUnitGroup->>"@refObjectId",
+                  json->flowPropertyDataSet->flowPropertiesInformation->quantitativeReference->referenceToReferenceUnitGroup->"common:shortDescription",
+                  version,
+                  modified_at,
+                  team_id
+              `}
+              id={row.id}
+            >
+              <FlowpropertiesEdit
+                type="createVersion"
+                id={row.id}
+                version={row.version}
+                lang={lang}
+                buttonType={'icon'}
+                actionRef={actionRef}
+              />
+            </AllVersionsList>
+          </Space>
+        );
+      },
     },
     {
       title: <FormattedMessage id="pages.table.title.updatedAt" defaultMessage="Updated at" />,
@@ -107,8 +151,22 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <FlowpropertyView lang={lang} buttonType={'icon'} id={row.id} version={row.version} />
+              <FlowpropertyView
+                actionRef={actionRef}
+                lang={lang}
+                buttonType={'icon'}
+                id={row.id}
+                version={row.version}
+              />
               <FlowpropertiesEdit
+                id={row.id}
+                version={row.version}
+                buttonType={'icon'}
+                actionRef={actionRef}
+                lang={lang}
+              />
+              <FlowpropertiesEdit
+                type="copy"
                 id={row.id}
                 version={row.version}
                 buttonType={'icon'}
@@ -144,7 +202,21 @@ const TableList: FC = () => {
         }
         return [
           <Space size={'small'} key={0}>
-            <FlowpropertyView lang={lang} buttonType={'icon'} id={row.id} version={row.version} />
+            <FlowpropertyView
+              actionRef={actionRef}
+              lang={lang}
+              buttonType={'icon'}
+              id={row.id}
+              version={row.version}
+            />
+            <FlowpropertiesEdit
+              type="copy"
+              id={row.id}
+              version={row.version}
+              buttonType={'icon'}
+              actionRef={actionRef}
+              lang={lang}
+            />
           </Space>,
         ];
       },
@@ -182,6 +254,7 @@ const TableList: FC = () => {
         />
       </Card>
       <ProTable<FlowpropertyTable, ListPagination>
+        rowKey={(record) => `${record.id}-${record.version}`}
         headerTitle={
           <>
             {getDataTitle(dataSource)} /{' '}
@@ -211,7 +284,14 @@ const TableList: FC = () => {
           if (keyWord.length > 0) {
             return getFlowpropertyTablePgroongaSearch(params, lang, dataSource, keyWord, {});
           }
-          return getFlowpropertyTableAll(params, sort, lang, dataSource, tid ?? '');
+          return getFlowpropertyTableAll(params, sort, lang, dataSource, tid ?? '').then((res) => {
+            return getReferenceUnitByIdsAndVersion(res?.data ?? []).then((refUnitGroupResp) => {
+              return {
+                ...res,
+                data: refUnitGroupResp,
+              };
+            });
+          });
         }}
         columns={flowpropertiesColumns}
       />

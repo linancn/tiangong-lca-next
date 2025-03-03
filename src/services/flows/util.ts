@@ -40,6 +40,29 @@ export function genFlowJsonOrdered(id: string, data: any) {
     flowPropertyJson = {};
   }
 
+  let classificationInformation = {};
+  if (data?.flowInformation?.LCIMethod?.typeOfDataSet === 'Elementary flow') {
+    classificationInformation = {
+      'common:elementaryFlowCategorization': {
+        'common:category': classificationToJsonList(
+          data?.flowInformation?.dataSetInformation?.classificationInformation?.[
+            'common:elementaryFlowCategorization'
+          ]?.['common:category'],
+        ),
+      },
+    };
+  } else {
+    classificationInformation = {
+      'common:classification': {
+        'common:class': classificationToJsonList(
+          data?.flowInformation?.dataSetInformation?.classificationInformation?.[
+            'common:classification'
+          ]?.['common:class'],
+        ),
+      },
+    };
+  }
+
   return removeEmptyObjects({
     flowDataSet: {
       // '@xmlns': oldData.flowDataSet?.['@xmlns'],
@@ -77,15 +100,7 @@ export function genFlowJsonOrdered(id: string, data: any) {
           'common:synonyms': getLangJson(
             data?.flowInformation?.dataSetInformation?.['common:synonyms'],
           ),
-          classificationInformation: {
-            'common:elementaryFlowCategorization': {
-              'common:category': classificationToJsonList(
-                data?.flowInformation?.dataSetInformation?.classificationInformation?.[
-                  'common:elementaryFlowCategorization'
-                ]?.['common:category'],
-              ),
-            },
-          },
+          classificationInformation: classificationInformation,
           CASNumber: data?.flowInformation?.dataSetInformation?.['CASNumber'],
           'common:generalComment': getLangJson(
             data?.flowInformation?.dataSetInformation?.['common:generalComment'],
@@ -249,6 +264,29 @@ export function genFlowFromData(data: any) {
     flowPropertyList = flowProperty;
   }
 
+  let classificationInformation = {};
+  if (data?.modellingAndValidation?.LCIMethod?.typeOfDataSet === 'Elementary flow') {
+    classificationInformation = {
+      'common:elementaryFlowCategorization': {
+        'common:category': classificationToStringList(
+          data?.flowInformation?.dataSetInformation?.classificationInformation?.[
+            'common:elementaryFlowCategorization'
+          ]?.['common:category'],
+        ),
+      },
+    };
+  } else {
+    classificationInformation = {
+      'common:classification': {
+        'common:class': classificationToStringList(
+          data?.flowInformation?.dataSetInformation?.classificationInformation?.[
+            'common:classification'
+          ]?.['common:class'],
+        ),
+      },
+    };
+  }
+
   return removeEmptyObjects({
     flowInformation: {
       dataSetInformation: {
@@ -268,15 +306,7 @@ export function genFlowFromData(data: any) {
         'common:synonyms': getLangList(
           data?.flowInformation?.dataSetInformation?.['common:synonyms'],
         ),
-        classificationInformation: {
-          'common:elementaryFlowCategorization': {
-            'common:category': classificationToStringList(
-              data?.flowInformation?.dataSetInformation?.classificationInformation?.[
-                'common:elementaryFlowCategorization'
-              ]?.['common:category'],
-            ),
-          },
-        },
+        classificationInformation: classificationInformation,
         CASNumber: data?.flowInformation?.dataSetInformation?.['CASNumber'],
         'common:generalComment': getLangList(
           data?.flowInformation?.dataSetInformation?.['common:generalComment'],
