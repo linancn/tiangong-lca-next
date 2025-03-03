@@ -151,11 +151,12 @@ export async function getFlowpropertyTableAll(
     } else {
       data = result.data.map((i: any) => {
         try {
+          const classifications = jsonToList(i?.['common:class']);
           return {
             key: i.id + ':' + i.version,
             id: i.id,
             name: getLangText(i?.['common:name'], lang),
-            classification: classificationToString(i?.['common:class']),
+            classification: classificationToString(classifications),
             generalComment: getLangText(i?.['common:generalComment'], lang),
             refUnitGroupId: i?.['@refObjectId'] ?? '-',
             refUnitGroup: getLangText(i?.['common:shortDescription'], lang),
@@ -268,15 +269,16 @@ export async function getFlowpropertyTablePgroongaSearch(
       data = result.data.map((i: any) => {
         try {
           const dataInfo = i.json?.flowPropertyDataSet?.flowPropertiesInformation;
+          const classifications = jsonToList(
+            dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
+              'common:class'
+            ],
+          );
           return {
             key: i.id + ':' + i.version,
             id: i.id,
             name: getLangText(dataInfo?.dataSetInformation?.['common:name'] ?? {}, lang),
-            classification: classificationToString(
-              dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-                'common:class'
-              ],
-            ),
+            classification: classificationToString(classifications),
             generalComment: getLangText(
               dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
               lang,

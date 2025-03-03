@@ -215,12 +215,26 @@ export async function getFlowTableAll(
           if (thisLocation?.['#text']) {
             locationOfSupply = thisLocation['#text'];
           }
+
+          let classificationData: any = {};
+          if (i?.typeOfDataSet === 'Elementary flow') {
+            classificationData =
+              i?.classificationInformation?.['common:elementaryFlowCategorization']?.[
+                'common:category'
+              ];
+          } else {
+            classificationData =
+              i?.classificationInformation?.['common:classification']?.['common:class'];
+          }
+
+          const classifications = jsonToList(classificationData);
+
           return {
             key: i.id + ':' + i.version,
             id: i.id,
             name: genFlowName(i?.name ?? {}, lang),
             flowType: i.typeOfDataSet ?? '-',
-            classification: classificationToString(i['common:category']),
+            classification: classificationToString(classifications),
             synonyms: getLangText(i['common:synonyms'], lang),
             CASNumber: i.CASNumber ?? '-',
             refFlowPropertyId: i.referenceToFlowPropertyDataSet?.['@refObjectId'] ?? '-',
@@ -307,22 +321,23 @@ export async function getFlowTablePgroongaSearch(
           try {
             const dataInfo = i.json?.flowDataSet?.flowInformation?.dataSetInformation;
 
-            let thisCategory: any[] = [];
-            if (
-              i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet ===
-              'Elementary flow'
-            ) {
-              thisCategory = res?.data?.categoryElementaryFlow;
+            let classificationData: any = {};
+            let thisClass: any[] = [];
+            if (i?.typeOfDataSet === 'Elementary flow') {
+              classificationData =
+                dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[
+                  'common:category'
+                ];
+              thisClass = res?.data?.categoryElementaryFlow;
             } else {
-              thisCategory = res?.data?.category;
+              classificationData =
+                dataInfo?.classificationInformation?.['common:classification']?.['common:class'];
+              thisClass = res?.data?.category;
             }
 
-            const classifications = jsonToList(
-              dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-                'common:category'
-              ],
-            );
-            const classificationZH = genClassificationZH(classifications, thisCategory);
+            const classifications = jsonToList(classificationData);
+
+            const classificationZH = genClassificationZH(classifications, thisClass);
 
             const thisLocation = locationData.find(
               (l) =>
@@ -360,6 +375,11 @@ export async function getFlowTablePgroongaSearch(
       data = result.data.map((i: any) => {
         try {
           const dataInfo = i.json?.flowDataSet?.flowInformation?.dataSetInformation;
+          const classifications = jsonToList(
+            dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[
+              'common:category'
+            ],
+          );
           const thisLocation = locationData.find(
             (l) =>
               l['@value'] === i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply,
@@ -374,11 +394,7 @@ export async function getFlowTablePgroongaSearch(
             id: i.id,
             name: genFlowName(dataInfo?.name ?? {}, lang),
             synonyms: getLangText(dataInfo?.['common:synonyms'] ?? {}, lang),
-            classification: classificationToString(
-              dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-                'common:category'
-              ],
-            ),
+            classification: classificationToString(classifications),
             flowType: i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet ?? '-',
             CASNumber: dataInfo?.CASNumber ?? '-',
             locationOfSupply: locationOfSupply ?? '-',

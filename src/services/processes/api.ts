@@ -157,6 +157,7 @@ export async function getProcessTableAll(
     } else {
       data = result?.data?.map((i: any) => {
         try {
+          const classifications = jsonToList(i['common:class']);
           const thisLocation = locationData.find((l) => l['@value'] === i['@location']);
           let location = i['@location'];
           if (thisLocation?.['#text']) {
@@ -169,7 +170,7 @@ export async function getProcessTableAll(
             lang: lang,
             name: genProcessName(i.name ?? {}, lang),
             generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
-            classification: classificationToString(i['common:class'] ?? {}),
+            classification: classificationToString(classifications),
             referenceYear: i['common:referenceYear'] ?? '-',
             location: location,
             modifiedAt: new Date(i.modified_at),
@@ -197,134 +198,134 @@ export async function getProcessTableAll(
   });
 }
 
-export async function getProcessTableAllByTeam(
-  params: {
-    current?: number;
-    pageSize?: number;
-  },
-  sort: Record<string, SortOrder>,
-  lang: string,
-  teamId: string[],
-) {
-  console.log('teamId', teamId);
-  const sortBy = Object.keys(sort)[0] ?? 'modified_at';
-  const orderBy = sort[sortBy] ?? 'descend';
+// export async function getProcessTableAllByTeam(
+//   params: {
+//     current?: number;
+//     pageSize?: number;
+//   },
+//   sort: Record<string, SortOrder>,
+//   lang: string,
+//   teamId: string[],
+// ) {
+//   console.log('teamId', teamId);
+//   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
+//   const orderBy = sort[sortBy] ?? 'descend';
 
-  const selectStr = `
-    id,
-    json->processDataSet->processInformation->dataSetInformation->name,
-    json->processDataSet->processInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
-    json->processDataSet->processInformation->dataSetInformation->"common:generalComment",
-    json->processDataSet->processInformation->time->>"common:referenceYear",
-    json->processDataSet->processInformation->geography->locationOfOperationSupplyOrProduction->>"@location",
-    version,
-    modified_at
-  `;
+//   const selectStr = `
+//     id,
+//     json->processDataSet->processInformation->dataSetInformation->name,
+//     json->processDataSet->processInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
+//     json->processDataSet->processInformation->dataSetInformation->"common:generalComment",
+//     json->processDataSet->processInformation->time->>"common:referenceYear",
+//     json->processDataSet->processInformation->geography->locationOfOperationSupplyOrProduction->>"@location",
+//     version,
+//     modified_at
+//   `;
 
-  const result = await supabase
-    .from('processes')
-    .select(selectStr, { count: 'exact' })
-    .eq('state_code', 100)
-    .in('user_id', teamId)
-    .order(sortBy, { ascending: orderBy === 'ascend' })
-    .range(
-      ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-      (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-    );
+//   const result = await supabase
+//     .from('processes')
+//     .select(selectStr, { count: 'exact' })
+//     .eq('state_code', 100)
+//     .in('user_id', teamId)
+//     .order(sortBy, { ascending: orderBy === 'ascend' })
+//     .range(
+//       ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
+//       (params.current ?? 1) * (params.pageSize ?? 10) - 1,
+//     );
 
-  if (result.error) {
-    console.log('error', result.error);
-  }
+//   if (result.error) {
+//     console.log('error', result.error);
+//   }
 
-  if (result.data) {
-    if (result.data.length === 0) {
-      return Promise.resolve({
-        data: [],
-        success: true,
-      });
-    }
+//   if (result.data) {
+//     if (result.data.length === 0) {
+//       return Promise.resolve({
+//         data: [],
+//         success: true,
+//       });
+//     }
 
-    const locations: string[] = Array.from(new Set(result.data.map((i: any) => i['@location'])));
-    let locationData: any[] = [];
-    await getILCDLocationByValues(lang, locations).then((res) => {
-      locationData = res.data;
-    });
+//     const locations: string[] = Array.from(new Set(result.data.map((i: any) => i['@location'])));
+//     let locationData: any[] = [];
+//     await getILCDLocationByValues(lang, locations).then((res) => {
+//       locationData = res.data;
+//     });
 
-    let data: any[] = [];
-    if (lang === 'zh') {
-      await getILCDClassification('Process', lang, ['all']).then((res) => {
-        data = result.data.map((i: any) => {
-          try {
-            const classifications = jsonToList(i['common:class']);
-            const classificationZH = genClassificationZH(classifications, res?.data);
+//     let data: any[] = [];
+//     if (lang === 'zh') {
+//       await getILCDClassification('Process', lang, ['all']).then((res) => {
+//         data = result.data.map((i: any) => {
+//           try {
+//             const classifications = jsonToList(i['common:class']);
+//             const classificationZH = genClassificationZH(classifications, res?.data);
 
-            const thisLocation = locationData.find((l) => l['@value'] === i['@location']);
-            let location = i['@location'];
-            if (thisLocation?.['#text']) {
-              location = thisLocation['#text'];
-            }
+//             const thisLocation = locationData.find((l) => l['@value'] === i['@location']);
+//             let location = i['@location'];
+//             if (thisLocation?.['#text']) {
+//               location = thisLocation['#text'];
+//             }
 
-            return {
-              key: i.id + ':' + i.version,
-              id: i.id,
-              version: i.version,
-              lang: lang,
-              name: genProcessName(i.name ?? {}, lang),
-              generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
-              classification: classificationToString(classificationZH ?? {}),
-              referenceYear: i['common:referenceYear'] ?? '-',
-              location: location ?? '-',
-              modifiedAt: new Date(i.modified_at),
-            };
-          } catch (e) {
-            console.error(e);
-            return {
-              id: i.id,
-            };
-          }
-        });
-      });
-    } else {
-      data = result.data.map((i: any) => {
-        try {
-          const thisLocation = locationData.find((l) => l['@value'] === i['@location']);
-          let location = i['@location'];
-          if (thisLocation?.['#text']) {
-            location = thisLocation['#text'];
-          }
-          return {
-            key: i.id + ':' + i.version,
-            id: i.id,
-            version: i.version,
-            lang: lang,
-            name: genProcessName(i.name ?? {}, lang),
-            generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
-            classification: classificationToString(i['common:class'] ?? {}),
-            referenceYear: i['common:referenceYear'] ?? '-',
-            location: location,
-            modifiedAt: new Date(i.modified_at),
-          };
-        } catch (e) {
-          console.error(e);
-          return {
-            id: i.id,
-          };
-        }
-      });
-    }
+//             return {
+//               key: i.id + ':' + i.version,
+//               id: i.id,
+//               version: i.version,
+//               lang: lang,
+//               name: genProcessName(i.name ?? {}, lang),
+//               generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
+//               classification: classificationToString(classificationZH ?? {}),
+//               referenceYear: i['common:referenceYear'] ?? '-',
+//               location: location ?? '-',
+//               modifiedAt: new Date(i.modified_at),
+//             };
+//           } catch (e) {
+//             console.error(e);
+//             return {
+//               id: i.id,
+//             };
+//           }
+//         });
+//       });
+//     } else {
+//       data = result.data.map((i: any) => {
+//         try {
+//           const thisLocation = locationData.find((l) => l['@value'] === i['@location']);
+//           let location = i['@location'];
+//           if (thisLocation?.['#text']) {
+//             location = thisLocation['#text'];
+//           }
+//           return {
+//             key: i.id + ':' + i.version,
+//             id: i.id,
+//             version: i.version,
+//             lang: lang,
+//             name: genProcessName(i.name ?? {}, lang),
+//             generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
+//             classification: classificationToString(i['common:class'] ?? {}),
+//             referenceYear: i['common:referenceYear'] ?? '-',
+//             location: location,
+//             modifiedAt: new Date(i.modified_at),
+//           };
+//         } catch (e) {
+//           console.error(e);
+//           return {
+//             id: i.id,
+//           };
+//         }
+//       });
+//     }
 
-    return Promise.resolve({
-      data: data,
-      page: params.current ?? 1,
-      success: true,
-      total: result.count ?? 0,
-    });
-  }
-  return Promise.resolve({
-    data: [],
-    success: false,
-  });
-}
+//     return Promise.resolve({
+//       data: data,
+//       page: params.current ?? 1,
+//       success: true,
+//       total: result.count ?? 0,
+//     });
+//   }
+//   return Promise.resolve({
+//     data: [],
+//     success: false,
+//   });
+// }
 
 export async function getProcessTablePgroongaSearch(
   params: {
@@ -426,7 +427,11 @@ export async function getProcessTablePgroongaSearch(
       data = result.data.map((i: any) => {
         try {
           const dataInfo = i.json?.processDataSet?.processInformation;
-
+          const classifications = jsonToList(
+            dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
+              'common:class'
+            ],
+          );
           const thisLocation = locationData.find(
             (l) =>
               l['@value'] ===
@@ -445,11 +450,7 @@ export async function getProcessTablePgroongaSearch(
               dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
               lang,
             ),
-            classification: classificationToString(
-              dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-                'common:class'
-              ],
-            ),
+            classification: classificationToString(classifications),
             referenceYear: dataInfo?.time?.['common:referenceYear'] ?? '-',
             location: location ?? '-',
             version: i.version,

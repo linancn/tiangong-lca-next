@@ -154,6 +154,7 @@ export async function getUnitGroupTableAll(
     } else {
       data = result.data.map((i: any) => {
         try {
+          const classifications = jsonToList(i?.['common:class']);
           const unitList = jsonToList(i?.unit);
           const refUnit = unitList.find(
             (item) => item?.['@dataSetInternalID'] === i?.referenceToReferenceUnit,
@@ -162,7 +163,7 @@ export async function getUnitGroupTableAll(
             key: i.id,
             id: i.id,
             name: getLangText(i?.['common:name'], lang),
-            classification: classificationToString(i?.['common:class']),
+            classification: classificationToString(classifications),
             refUnitId: i?.referenceToReferenceUnit ?? '-',
             refUnitName: refUnit?.name ?? '-',
             refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
@@ -269,7 +270,11 @@ export async function getUnitGroupTablePgroongaSearch(
       data = result.data.map((i: any) => {
         try {
           const dataInfo = i.json?.unitGroupDataSet?.unitGroupInformation;
-
+          const classifications = jsonToList(
+            dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
+              'common:class'
+            ],
+          );
           const refUnitId = dataInfo?.quantitativeReference?.referenceToReferenceUnit ?? '-';
           const unitList = jsonToList(i.json?.unitGroupDataSet?.units?.unit);
           const refUnit = unitList.find((item) => item?.['@dataSetInternalID'] === refUnitId);
@@ -278,11 +283,7 @@ export async function getUnitGroupTablePgroongaSearch(
             key: i.id + ':' + i.version,
             id: i.id,
             name: getLangText(dataInfo?.dataSetInformation?.['common:name'] ?? {}, lang),
-            classification: classificationToString(
-              dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-                'common:class'
-              ],
-            ),
+            classification: classificationToString(classifications),
             refUnitId: refUnitId,
             refUnitName: refUnit?.name ?? '-',
             refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),

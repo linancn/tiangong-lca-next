@@ -146,11 +146,12 @@ export async function getSourceTableAll(
     } else {
       data = result?.data?.map((i: any) => {
         try {
+          const classifications = jsonToList(i['common:class']);
           return {
             key: i.id + ':' + i.version,
             id: i.id,
             shortName: getLangText(i?.['common:shortName'], lang),
-            classification: classificationToString(i?.['common:class']),
+            classification: classificationToString(classifications),
             sourceCitation: i?.sourceCitation ?? '-',
             publicationType: i?.publicationType ?? '-',
             version: i.version,
@@ -247,15 +248,16 @@ export async function getSourceTablePgroongaSearch(
       });
     } else {
       data = result.data.map((i: any) => {
-        const dataInfo = i.json?.sourceDataSet?.sourceInformation?.dataSetInformation;
         try {
+          const dataInfo = i.json?.sourceDataSet?.sourceInformation?.dataSetInformation;
+          const classifications = jsonToList(
+            dataInfo?.classificationInformation?.['common:classification']?.['common:class'],
+          );
           return {
             key: i.id + ':' + i.version,
             id: i.id,
             shortName: getLangText(dataInfo?.['common:shortName'], lang),
-            classification: classificationToString(
-              dataInfo?.classificationInformation?.['common:classification']?.['common:class'],
-            ),
+            classification: classificationToString(classifications),
             sourceCitation: dataInfo?.sourceCitation ?? '-',
             publicationType: dataInfo?.publicationType ?? '-',
             version: i.version,

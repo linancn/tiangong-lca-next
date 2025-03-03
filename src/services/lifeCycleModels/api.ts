@@ -230,12 +230,13 @@ export async function getLifeCycleModelTableAll(
     } else {
       data = result.data.map((i: any) => {
         try {
+          const classifications = jsonToList(i['common:class']);
           return {
             key: i.id,
             id: i.id,
             name: genProcessName(i.name ?? {}, lang),
             generalComment: getLangText(i?.['common:generalComment'], lang),
-            classification: classificationToString(i['common:class'] ?? {}),
+            classification: classificationToString(classifications),
             version: i?.version,
             modifiedAt: new Date(i?.modified_at),
             teamId: i?.team_id,
@@ -336,7 +337,11 @@ export async function getLifeCycleModelTablePgroongaSearch(
       data = result.data.map((i: any) => {
         try {
           const dataInfo = i.json?.lifeCycleModelDataSet?.lifeCycleModelInformation;
-
+          const classifications = jsonToList(
+            dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
+              'common:class'
+            ],
+          );
           return {
             key: i.id,
             id: i.id,
@@ -345,11 +350,7 @@ export async function getLifeCycleModelTablePgroongaSearch(
               dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
               lang,
             ),
-            classification: classificationToString(
-              dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-                'common:class'
-              ],
-            ),
+            classification: classificationToString(classifications),
             version: i?.version,
             modifiedAt: new Date(i?.modified_at),
             teamId: i?.team_id,
