@@ -314,6 +314,61 @@ export async function getUnitGroupDetail(id: string, version: string) {
   return getDataDetail(id, version, 'unitgroups');
 }
 
+// Replace the query function for idType === 'unitgroup' in the <ReferenceUnit/> component.
+export async function getReferenceUnitByIdsAndVersion(tableData: { [key: string]: any }[]) {
+  const unitGroupIds = tableData
+    .filter((item) => item.refUnitGroupId && item.refUnitGroupId.length === 36)
+    .map((item) => item.refUnitGroupId);
+  const result = await supabase
+    .from('unitgroups')
+    .select(
+      `
+      id,
+      version,
+      json->unitGroupDataSet->unitGroupInformation->dataSetInformation->"common:name",
+      json->unitGroupDataSet->unitGroupInformation->quantitativeReference->referenceToReferenceUnit,
+      json->unitGroupDataSet->units->unit
+  `,
+    )
+    .in('id', unitGroupIds)
+    .order('version', { ascending: false });
+
+  if (result.data && result.data.length > 0) {
+    let data = tableData.map((row) => {
+      const unitGroups = result.data.filter((unitGroup) => unitGroup.id === row.refUnitGroupId);
+      let unitGroup = unitGroups?.find(
+        (unitGroup) => unitGroup.version === row.refUnitGroupVersion,
+      );
+
+      if (!unitGroup) {
+        unitGroup = unitGroups[0];
+      }
+      const dataList = jsonToList(unitGroup?.unit);
+      const refData = dataList.find(
+        (item) => item?.['@dataSetInternalID'] === unitGroup?.referenceToReferenceUnit,
+      );
+      return {
+        ...row,
+        refUnitRes: {
+          id: unitGroup?.id,
+          version: unitGroup?.version,
+          name: unitGroup?.['common:name'],
+          refUnitId: unitGroup?.referenceToReferenceUnit ?? '-',
+          refUnitName: refData?.name ?? '-',
+          refUnitGeneralComment: refData?.generalComment,
+          unit: dataList,
+        },
+      };
+    });
+
+    return data;
+  }
+  return Promise.resolve({
+    data: null,
+    success: false,
+  });
+}
+
 export async function getReferenceUnit(id: string, version: string) {
   let result: any = {};
   const selectStr = `

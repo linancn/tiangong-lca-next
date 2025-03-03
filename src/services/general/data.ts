@@ -14,11 +14,11 @@ export type Classification = {
 export const langOptions = [
   {
     value: 'en',
-    label: 'en',
+    label: 'English',
   },
   {
     value: 'zh',
-    label: 'zh',
+    label: '简体中文',
   },
 ];
 

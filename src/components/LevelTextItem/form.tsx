@@ -24,7 +24,7 @@ const LevelTextItemForm: FC<Props> = ({
   const [selectOptions, setSelectOptions] = useState<any>([]);
 
   const getNodePath = (
-    targetValue: string,
+    targetId: string,
     nodes: any[],
   ): { ids: string[]; values: string[]; labels: string[] } => {
     const findPath = (
@@ -38,7 +38,7 @@ const LevelTextItemForm: FC<Props> = ({
         const currentValue = node.value || node.title;
         const currentLabel = node.label || node.title;
 
-        if (node.value === targetValue) {
+        if (node.id === targetId) {
           return {
             ids: [...pathIds, currentId],
             values: [...pathValues, currentValue],
@@ -65,6 +65,24 @@ const LevelTextItemForm: FC<Props> = ({
     return result || { ids: [], values: [], labels: [] };
   };
 
+  const getIdByValue = (value: string, nodes: any[]): string => {
+    const findId = (currentNodes: any[]): string | null => {
+      for (const node of currentNodes) {
+        if (!node.children && (node.value === value || node.title === value)) {
+          return node.id;
+        }
+        if (node.children && node.children.length > 0) {
+          const result = findId(node.children);
+          if (result) {
+            return result;
+          }
+        }
+      }
+      return null;
+    };
+    return findId(nodes) || '';
+  };
+
   const processTreeData = (treeData: any[]): any[] => {
     const addFullPath = (nodes: any[], parentPath: string[] = []): any[] => {
       return nodes.map((node) => {
@@ -86,11 +104,13 @@ const LevelTextItemForm: FC<Props> = ({
 
   const setShowValue = async () => {
     const field = formRef.current?.getFieldValue(name);
-    if (field && field.value && field.value.length > 0) {
-      await formRef.current?.setFieldValue(
-        [...name, 'showValue'],
-        field.value[field.value.length - 1],
-      );
+    if (field && field.id && field.id?.length) {
+      const id = field.id[field.id.length - 1];
+      await formRef.current?.setFieldValue([...name, 'showValue'], id);
+    } else if (field && field.value && field.value?.length) {
+      const value = field.value[field.value.length - 1];
+      const id = getIdByValue(value, selectOptions);
+      await formRef.current?.setFieldValue([...name, 'showValue'], id);
     }
   };
 
@@ -117,13 +137,14 @@ const LevelTextItemForm: FC<Props> = ({
     });
   });
 
-  const handleValueChange = async (value: any) => {
-    const fullPath = getNodePath(value, selectOptions);
-    await formRef.current?.setFieldValue(name, {
-      id: fullPath.ids,
-      value: fullPath.values,
-      showValue: value,
-    });
+  const handleValueChange = async (item: any) => {
+    const fullPath = getNodePath(item, selectOptions);
+    await formRef.current?.setFieldValue([...name, 'id'], fullPath.ids);
+    await formRef.current?.setFieldValue([...name, 'value'], fullPath.values);
+    await formRef.current?.setFieldValue(
+      [...name, 'showValue'],
+      fullPath.ids[fullPath.ids.length - 1],
+    );
     onData();
   };
 
@@ -137,8 +158,13 @@ const LevelTextItemForm: FC<Props> = ({
         name={[...name, 'showValue']}
       >
         <TreeSelect
+          treeDefaultExpandedKeys={
+            formRef.current?.getFieldValue([...name, 'showValue'])
+              ? [formRef.current?.getFieldValue([...name, 'showValue'])]
+              : []
+          }
           onChange={handleValueChange}
-          fieldNames={{ label: 'label', value: 'value', children: 'children' }}
+          fieldNames={{ label: 'label', value: 'id', children: 'children' }}
           style={{ width: '100%' }}
           treeData={selectOptions}
           showSearch
