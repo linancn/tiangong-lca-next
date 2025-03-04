@@ -158,6 +158,7 @@ export async function getVersionsById(
             }
           });
         });
+        break;
       }
       case 'sources':
         if (lang === 'zh') {
