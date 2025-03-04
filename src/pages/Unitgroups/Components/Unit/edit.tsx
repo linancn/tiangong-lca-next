@@ -66,6 +66,7 @@ const UnitEdit: FC<Props> = ({ id, data, buttonType, actionRef, setViewDrawerVis
       )}
 
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage
             id="pages.unitgroup.unit.drawer.title.edit"

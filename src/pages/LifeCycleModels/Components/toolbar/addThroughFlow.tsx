@@ -280,6 +280,7 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
       )}
 
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage id="pages.flow.drawer.title.select" defaultMessage="Selete flow" />
         }

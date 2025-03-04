@@ -50,6 +50,7 @@ const UnitCreate: FC<Props> = ({ onData }) => {
         ></Button>
       </Tooltip>
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage
             id="pages.unitgroup.unit.drawer.title.create"

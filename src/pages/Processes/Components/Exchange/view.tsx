@@ -73,6 +73,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
         )}
       </Tooltip>
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage
             id="pages.process.exchange.drawer.title.view"

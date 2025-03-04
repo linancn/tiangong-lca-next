@@ -173,6 +173,7 @@ const IoPortSelect: FC<Props> = ({
   return (
     <>
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage
             id="pages.flow.model.drawer.title.edge.port.select"

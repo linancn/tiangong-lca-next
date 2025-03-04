@@ -276,6 +276,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
       )}
 
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage
             id="pages.process.drawer.title.addProcess"

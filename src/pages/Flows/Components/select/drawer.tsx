@@ -423,6 +423,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
         </Button>
       )}
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage id="pages.flow.drawer.title.select" defaultMessage="Selete Flow" />
         }

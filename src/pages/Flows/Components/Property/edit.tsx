@@ -63,6 +63,7 @@ const PropertyEdit: FC<Props> = ({
         )}
       </Tooltip>
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage
             id="pages.process.exchange.drawer.title.edit"

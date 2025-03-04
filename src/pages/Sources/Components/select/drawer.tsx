@@ -339,6 +339,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData })
       )}
 
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage id="pages.source.drawer.title.select" defaultMessage="Select Source" />
         }
