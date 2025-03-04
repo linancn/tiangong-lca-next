@@ -213,6 +213,7 @@ const ExchangeSelect: FC<Props> = ({
       )}
 
       <Drawer
+        getContainer={() => document.body}
         title={
           optionType === 'create' ? (
             <FormattedMessage

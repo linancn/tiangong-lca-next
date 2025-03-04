@@ -71,6 +71,7 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
         />
       </Tooltip>
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage
             id="pages.contact.drawer.title.create"

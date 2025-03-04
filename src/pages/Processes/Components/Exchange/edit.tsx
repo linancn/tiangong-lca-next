@@ -106,6 +106,7 @@ const ProcessExchangeEdit: FC<Props> = ({
         targetUnit={targetUnit}
       />
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage
             id="pages.process.exchange.drawer.title.edit"

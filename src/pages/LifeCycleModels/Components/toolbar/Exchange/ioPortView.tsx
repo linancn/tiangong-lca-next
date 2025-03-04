@@ -158,6 +158,7 @@ const IoPortSelector: FC<Props> = ({ node, lang, direction, drawerVisible, onDra
   return (
     <>
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage
             id="pages.flow.model.drawer.title.edge.port.view"

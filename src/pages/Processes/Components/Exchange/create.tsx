@@ -82,6 +82,7 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
         targetUnit={targetUnit}
       />
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage
             id="pages.process.exchange.drawer.title.create"

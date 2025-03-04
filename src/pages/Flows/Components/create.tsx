@@ -140,6 +140,7 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
         />
       </Tooltip>
       <Drawer
+        getContainer={() => document.body}
         title={<FormattedMessage id="pages.button.create" defaultMessage="Flows Create" />}
         width="90%"
         closable={false}

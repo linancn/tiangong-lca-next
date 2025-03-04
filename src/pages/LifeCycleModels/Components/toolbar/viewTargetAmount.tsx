@@ -65,6 +65,7 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
         />
       </Tooltip>
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage id="pages.lifeCycleModel.targetAmount" defaultMessage="Target amount" />
         }

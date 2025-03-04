@@ -39,6 +39,7 @@ const UnitView: FC<Props> = ({ id, data, buttonType }) => {
       )}
 
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage
             id="pages.unitgroup.unit.drawer.title.view"
