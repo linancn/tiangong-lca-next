@@ -33,10 +33,10 @@ export async function getUserIdByEmail(email: string) {
   }
 }
 
-export async function getUserEmailByUserIds(email: string[]) {
+export async function getUserEmailByUserIds(userIds: string[]) {
   const result = await supabase
     .from('users')
     .select('id,raw_user_meta_data->email')
-    .eq('raw_user_meta_data->email', email);
+    .in('id', userIds);
   return result.data ?? [];
 };
