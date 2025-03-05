@@ -11,7 +11,7 @@ import { FormattedMessage, useIntl, useLocation } from 'umi';
 
 const { Search } = Input;
 
-const TableList: FC = () => {
+const TableList: FC<{ disabled?: boolean }> = ({ disabled=false }) => {
   const intl = useIntl();
   const lang = getLang(intl.locale);
   const actionRef = useRef<ActionType>();
@@ -56,7 +56,7 @@ const TableList: FC = () => {
     },
   ];
 
-  if (pathname === '/manageWelcomeTeams') {
+  if (pathname === '/manageSystem') {
     // Manage teams on homepage
     teamColumns.push({
       title: <FormattedMessage id="component.allTeams.table.rank" defaultMessage="Rank" />,
@@ -65,6 +65,7 @@ const TableList: FC = () => {
       search: false,
       render: (_, record) => (
         <Input
+          disabled={disabled}
           type="number"
           defaultValue={record.rank}
           min={0}

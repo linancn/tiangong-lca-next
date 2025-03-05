@@ -1,6 +1,7 @@
-import { LogoutOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
+import { LogoutOutlined, TeamOutlined, UserOutlined, SettingOutlined } from '@ant-design/icons';
 import { history, useIntl, useModel } from '@umijs/max';
 import React, { useCallback, useEffect, useState } from 'react';
+import { getSystemUserRoleApi } from '@/services/roles/api';
 
 import { outLogin } from '@/services/ant-design-pro/api';
 import { getUserRoles } from '@/services/roles/api';
@@ -46,6 +47,8 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
   const intl = useIntl();
   const [isUserInTeam, setIsUserInTeam] = useState(false);
   const [showAllTeamsModal, setShowAllTeamsModal] = useState(false);
+  const [userData, setUserData] = useState<{ user_id: string, role: string } | null>(null);
+
   const initialUserRole = async () => {
     const { data } = await getUserRoles();
 
@@ -56,8 +59,14 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
     }
   };
 
+  const getSystemUserRole = async () => {
+    const userData = await getSystemUserRoleApi();
+    setUserData(userData);
+  }
+
   useEffect(() => {
     initialUserRole();
+    getSystemUserRole();
   }, []);
   /**
    * 退出登录，并且将当前的 url 保存
@@ -90,6 +99,11 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
           setInitialState((s) => ({ ...s, currentUser: undefined }));
         });
         loginOut();
+        return;
+      }
+      if (key === 'system') {
+        history.push(`/manageSystem`);
+
         return;
       }
       if (key === 'team') {
@@ -197,6 +211,12 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
       label: <FormattedMessage id="menu.account.team" defaultMessage="Team Management" />,
     },
     {
+      key: 'system',
+      icon: <SettingOutlined />,
+      label: <FormattedMessage id="menu.manageSystem" defaultMessage="System Settings" />,
+      hidden: userData?.role !== 'admin' && userData?.role !== 'owner' && userData?.role !== 'member',
+    },
+    {
       type: 'divider' as const,
     },
     {
@@ -205,6 +225,8 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
       label: <FormattedMessage id="menu.account.logout" defaultMessage="Logout" />,
     },
   ];
+
+
 
   return (
     <>

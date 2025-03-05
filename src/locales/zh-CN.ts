@@ -20,6 +20,7 @@ import pwa from './zh-CN/pwa';
 import settingDrawer from './zh-CN/settingDrawer';
 import settings from './zh-CN/settings';
 import validator from './zh-CN/validator';
+import pages_manageSystem from './zh-CN/pages_manageSystem';
 
 export default {
   'navBar.lang': '语言',
@@ -51,4 +52,5 @@ export default {
   ...component_allTeams,
   ...component_contributeData,
   ...component_allVersions,
+  ...pages_manageSystem,
 };

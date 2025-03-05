@@ -20,6 +20,7 @@ import pwa from './en-US/pwa';
 import settingDrawer from './en-US/settingDrawer';
 import settings from './en-US/settings';
 import validator from './en-US/validator';
+import pages_manageSystem from './en-US/pages_manageSystem';
 
 export default {
   'navBar.lang': 'Languages',
@@ -51,4 +52,5 @@ export default {
   ...component_allTeams,
   ...component_contributeData,
   ...component_allVersions,
+  ...pages_manageSystem,
 };

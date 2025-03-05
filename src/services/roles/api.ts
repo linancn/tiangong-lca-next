@@ -1,4 +1,6 @@
 import { supabase } from '@/services/supabase';
+import { getUsersByIds } from '@/services/users/api';
+import { getUserIdByEmail } from '@/services/users/api';
 
 export async function getUserRoles() {
   const session = await supabase.auth.getSession();
@@ -59,11 +61,11 @@ export async function createTeamMessage(id: string, data: any) {
     .from('roles')
     .delete()
     .eq('user_id', session?.data?.session?.user?.id)
-    .eq('role', 'rejected');
+    .eq('role', 'rejected')
+    .neq('team_id', '00000000-0000-0000-0000-000000000000');
 
   const { error } = await supabase.from('teams').insert({ id, json: data });
   if (!error) {
-    const session = await supabase.auth.getSession();
     const { error: roleError } = await supabase.from('roles').insert({
       team_id: id,
       user_id: session?.data?.session?.user?.id,
@@ -134,4 +136,109 @@ export async function acceptTeamInvitationApi(teamId: string, userId: string) {
     success: true,
     data,
   };
+}
+
+const addRoleApi = async (userId: string, teamId: string, role: string) => {
+  const { error } = await supabase.from('roles').insert({
+    user_id: userId,
+    role,
+    team_id: teamId,
+  });
+  return error;
+}
+
+
+// system api
+export async function getSystemUserRoleApi() {
+  try {
+    const session = await supabase.auth.getSession();
+    const { data, error } = await supabase.from('roles')
+      .select('user_id,role')
+      .eq('user_id', session?.data?.session?.user?.id)
+      .eq('team_id', '00000000-0000-0000-0000-000000000000')
+      .single();
+
+    if (error) {
+      throw error;
+    };
+    return data;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+}
+
+
+export async function getSystemMembersApi(params: any, sort: any) {
+  try {
+    const sortBy = Object.keys(sort)[0] ?? 'created_at';
+    const orderBy = sort[sortBy] ?? 'descend';
+
+    let res: any[] = [];
+
+    const { data, error, count } = await supabase.from('roles')
+      .select('user_id,role', { count: 'exact' })
+      .eq('team_id', '00000000-0000-0000-0000-000000000000')
+      .order(sortBy, { ascending: orderBy === 'ascend' })
+      .range(
+        ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
+        (params.current ?? 1) * (params.pageSize ?? 10) - 1,
+      );
+
+    if (!error) {
+      const users = await getUsersByIds(data.map((item) => item.user_id));
+      if (users) {
+        res = data.map((roleItem: any) => {
+          const user = users.find((user) => user.id === roleItem.user_id);
+          return {
+            user_id: roleItem.user_id,
+            role: roleItem.role,
+            email: user?.email,
+            display_name: user?.display_name,
+            team_id: '00000000-0000-0000-0000-000000000000',
+          }
+        });
+      }
+    };
+
+    return {
+      data: res || [],
+      success: true,
+      total: count || 0,
+    };
+
+  } catch (error) {
+    console.log(error);
+    return {
+      data: [],
+      total: 0,
+      success: true,
+    };
+  }
+}
+
+export async function addSystemMemberApi(email: string) {
+  try {
+    const userId = await getUserIdByEmail(email);
+    if (userId) {
+      const addRoleError = await addRoleApi(userId, '00000000-0000-0000-0000-000000000000', 'member');
+      if (addRoleError) {
+        throw addRoleError;
+      }
+      return {
+        success: true,
+      };
+    }else{
+      return {
+        success: false,
+        error: 'notRegistered',
+      };
+    }
+  } catch (error) {
+    console.log(error);
+    return {
+      success: false,
+    };
+  }
+
 }
