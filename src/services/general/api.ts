@@ -396,7 +396,7 @@ export async function getVersionsById(
               if (thisLocation?.['#text']) {
                 locationOfSupply = thisLocation['#text'];
               }
-    
+
               let classificationData: any = {};
               if (i?.typeOfDataSet === 'Elementary flow') {
                 classificationData =
@@ -408,7 +408,7 @@ export async function getVersionsById(
                   i?.classificationInformation?.['common:classification']?.['common:class'];
               }
               const classifications = jsonToList(classificationData);
-    
+
               return {
                 key: i.id + ':' + i.version,
                 id: i.id,

@@ -10,6 +10,7 @@ import pages_flow from './en-US/pages_flow';
 import pages_flowproperty from './en-US/pages_flowproperty';
 import pages_general from './en-US/pages_general';
 import pages_home from './en-US/pages_home';
+import pages_manageSystem from './en-US/pages_manageSystem';
 import pages_model from './en-US/pages_model';
 import pages_process from './en-US/pages_process';
 import pages_product from './en-US/pages_product';
@@ -51,4 +52,5 @@ export default {
   ...component_allTeams,
   ...component_contributeData,
   ...component_allVersions,
+  ...pages_manageSystem,
 };

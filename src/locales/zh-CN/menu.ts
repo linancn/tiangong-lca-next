@@ -49,7 +49,7 @@ export default {
   'menu.account.trigger': '触发报错',
   'menu.account.logout': '退出登录',
   'menu.account.team': '我的团队',
-  'menu.manageWelcomeTeams': '首页团队管理',
+  'menu.manageSystem': '系统管理',
   'menu.editor': '图形编辑器',
   'menu.editor.flow': '流程编辑器',
   'menu.editor.mind': '脑图编辑器',
