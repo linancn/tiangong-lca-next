@@ -1,6 +1,7 @@
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
-import { getUserIdsByTeamIds } from '../roles/api';
+import { getUserIdsByTeamIds, getTeamRoles, getRoleByuserId, addRoleApi } from '../roles/api';
+import { getUserEmailByUserIds, getUserIdByEmail, getUsersByIds } from '../users/api';
 
 interface TeamMember {
   user_id: string;
@@ -47,13 +48,7 @@ export async function getTeamsByKeyword(keyword: string) {
   });
 }
 
-const getUserEmailByUserIds = async (userIds: string[]) => {
-  const result = await supabase
-    .from('users')
-    .select('id,raw_user_meta_data->email')
-    .in('id', userIds);
-  return result.data ?? [];
-};
+
 
 export async function getAllTableTeams(
   params: { pageSize: number; current: number },
@@ -159,35 +154,15 @@ export async function getTeamMembersApi(
   sort: Record<string, SortOrder>,
   teamId: string,
 ) {
-  const sortBy = Object.keys(sort)[0] ?? 'created_at';
-  const orderBy = sort[sortBy] ?? 'descend';
   try {
-    const { error, data: rolesResult } = await supabase
-      .from('roles')
-      .select(
-        `
-      user_id,
-      team_id,
-      role
-      `,
-      )
-      .eq('team_id', teamId)
-      .neq('team_id', '00000000-0000-0000-0000-000000000000')
-      .order(sortBy, { ascending: orderBy === 'ascend' })
-      .range(
-        ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-        (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-      );
+    const { error, data: rolesResult } = await getTeamRoles(params, sort, teamId);
 
     if (!error) {
       const ids = rolesResult.map((item) => item.user_id);
 
-      const { error, data: usersResult } = await supabase
-        .from('users')
-        .select('id, raw_user_meta_data->email,raw_user_meta_data->display_name')
-        .in('id', ids);
+      const usersResult = await getUsersByIds(ids)
 
-      if (!error) {
+      if (usersResult) {
         const result: TeamMember[] = rolesResult.map((role) => {
           const user = usersResult?.find((u) => u.id === role.user_id);
           return {
@@ -230,14 +205,9 @@ export async function getTeamMembersApi(
 }
 
 export async function addTeamMemberApi(teamId: string, email: string) {
-  const { data: userResult } = await supabase
-    .from('users')
-    .select('id')
-    .eq('raw_user_meta_data->>email', email)
-    .single();
+  const id = await getUserIdByEmail(email);
 
-  const id = userResult?.id;
-  if (!userResult) {
+  if (!id) {
     return {
       error: {
         message: 'notRegistered',
@@ -246,21 +216,13 @@ export async function addTeamMemberApi(teamId: string, email: string) {
   }
 
   // Check if the user is already on the team
-  const { data: existingUser, error: roleCheckError } = await supabase
-    .from('roles')
-    .select('*')
-    .eq('user_id', id)
-    .neq('team_id', '00000000-0000-0000-0000-000000000000');
-
+  const { data: existingUser, error: roleCheckError } = await getRoleByuserId(id);
   if (!roleCheckError) {
     if (existingUser.length === 0) {
       // The user is not on the team, add an invitation record
-      const result = await supabase.from('roles').insert({
-        team_id: teamId,
-        user_id: id,
-        role: 'is_invited',
-      });
-      return result;
+      const adderror = await addRoleApi(id, teamId, 'is_invited')
+
+      return { error: adderror };
     } else {
       return {
         error: {
@@ -284,7 +246,7 @@ export async function uploadLogoApi(name: string, file: File) {
 }
 
 
-export async function addTeam (id: string, data: any) {
+export async function addTeam(id: string, data: any) {
   const { error } = await supabase.from('teams').insert({ id, json: data });
   return error
 }

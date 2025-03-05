@@ -32,3 +32,11 @@ export async function getUserIdByEmail(email: string) {
     return null;
   }
 }
+
+export async function getUserEmailByUserIds(email: string[]) {
+  const result = await supabase
+    .from('users')
+    .select('id,raw_user_meta_data->email')
+    .eq('raw_user_meta_data->email', email);
+  return result.data ?? [];
+};
