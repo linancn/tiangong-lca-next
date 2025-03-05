@@ -1,6 +1,5 @@
 import { supabase } from '@/services/supabase';
-import { getUsersByIds } from '@/services/users/api';
-import { getUserIdByEmail } from '@/services/users/api';
+import { getUserIdByEmail, getUsersByIds } from '@/services/users/api';
 
 export async function getUserRoles() {
   const session = await supabase.auth.getSession();
@@ -145,14 +144,14 @@ const addRoleApi = async (userId: string, teamId: string, role: string) => {
     team_id: teamId,
   });
   return error;
-}
-
+};
 
 // system api
 export async function getSystemUserRoleApi() {
   try {
     const session = await supabase.auth.getSession();
-    const { data, error } = await supabase.from('roles')
+    const { data, error } = await supabase
+      .from('roles')
       .select('user_id,role')
       .eq('user_id', session?.data?.session?.user?.id)
       .eq('team_id', '00000000-0000-0000-0000-000000000000')
@@ -160,14 +159,13 @@ export async function getSystemUserRoleApi() {
 
     if (error) {
       throw error;
-    };
+    }
     return data;
   } catch (error) {
     console.log(error);
     return null;
   }
 }
-
 
 export async function getSystemMembersApi(params: any, sort: any) {
   try {
@@ -176,7 +174,8 @@ export async function getSystemMembersApi(params: any, sort: any) {
 
     let res: any[] = [];
 
-    const { data, error, count } = await supabase.from('roles')
+    const { data, error, count } = await supabase
+      .from('roles')
       .select('user_id,role', { count: 'exact' })
       .eq('team_id', '00000000-0000-0000-0000-000000000000')
       .order(sortBy, { ascending: orderBy === 'ascend' })
@@ -196,17 +195,16 @@ export async function getSystemMembersApi(params: any, sort: any) {
             email: user?.email,
             display_name: user?.display_name,
             team_id: '00000000-0000-0000-0000-000000000000',
-          }
+          };
         });
       }
-    };
+    }
 
     return {
       data: res || [],
       success: true,
       total: count || 0,
     };
-
   } catch (error) {
     console.log(error);
     return {
@@ -221,14 +219,18 @@ export async function addSystemMemberApi(email: string) {
   try {
     const userId = await getUserIdByEmail(email);
     if (userId) {
-      const addRoleError = await addRoleApi(userId, '00000000-0000-0000-0000-000000000000', 'member');
+      const addRoleError = await addRoleApi(
+        userId,
+        '00000000-0000-0000-0000-000000000000',
+        'member',
+      );
       if (addRoleError) {
         throw addRoleError;
       }
       return {
         success: true,
       };
-    }else{
+    } else {
       return {
         success: false,
         error: 'notRegistered',
@@ -240,5 +242,4 @@ export async function addSystemMemberApi(email: string) {
       success: false,
     };
   }
-
 }

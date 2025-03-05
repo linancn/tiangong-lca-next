@@ -1,7 +1,7 @@
+import { addSystemMemberApi } from '@/services/roles/api';
 import { FormattedMessage, useIntl } from '@umijs/max';
 import { Form, Input, message, Modal } from 'antd';
 import { useEffect, useState } from 'react';
-import { addSystemMemberApi } from '@/services/roles/api';
 interface AddMemberModalProps {
   open: boolean;
   onCancel: () => void;

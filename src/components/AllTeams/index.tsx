@@ -11,7 +11,7 @@ import { FormattedMessage, useIntl, useLocation } from 'umi';
 
 const { Search } = Input;
 
-const TableList: FC<{ disabled?: boolean }> = ({ disabled=false }) => {
+const TableList: FC<{ disabled?: boolean }> = ({ disabled = false }) => {
   const intl = useIntl();
   const lang = getLang(intl.locale);
   const actionRef = useRef<ActionType>();

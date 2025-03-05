@@ -1,37 +1,24 @@
 import AllTeams from '@/components/AllTeams';
-import { FormattedMessage, useIntl } from '@umijs/max';
-import { useEffect, useState, useRef } from 'react';
-import {
-  CrownOutlined,
-  DeleteOutlined,
-  PlusOutlined,
-  UserOutlined,
-} from '@ant-design/icons';
-import {
-  PageContainer,
-  ProColumns,
-  ProTable,
-} from '@ant-design/pro-components';
-import {
-  Button,
-  Flex,
-  message,
-  Modal,
-  Spin,
-  Tabs,
-  Tooltip,
-} from 'antd';
-import { TeamMemberTable } from '@/services/teams/data';
 import { ListPagination } from '@/services/general/data';
-import { getSystemUserRoleApi, getSystemMembersApi, delRoleApi, updateRoleApi } from '@/services/roles/api';
+import {
+  delRoleApi,
+  getSystemMembersApi,
+  getSystemUserRoleApi,
+  updateRoleApi,
+} from '@/services/roles/api';
+import { TeamMemberTable } from '@/services/teams/data';
+import { CrownOutlined, DeleteOutlined, PlusOutlined, UserOutlined } from '@ant-design/icons';
+import { PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
+import { FormattedMessage, useIntl } from '@umijs/max';
+import { Button, Flex, message, Modal, Spin, Tabs, Tooltip } from 'antd';
+import { useEffect, useRef, useState } from 'react';
 import AddMemberModal from './Components/AddMemberModal';
-
 
 const ManageSystem = () => {
   const [activeTabKey, setActiveTabKey] = useState('teams');
   const [loading, setLoading] = useState(false);
   const [membersLoading, setMembersLoading] = useState(false);
-  const [userData, setUserData] = useState<{ user_id: string, role: string } | null>(null);
+  const [userData, setUserData] = useState<{ user_id: string; role: string } | null>(null);
   const actionRef = useRef<any>();
   const [addModalVisible, setAddModalVisible] = useState(false);
   const intl = useIntl();
@@ -59,7 +46,15 @@ const ManageSystem = () => {
   const renderTeamsRange = () => {
     return (
       <Spin spinning={loading}>
-        <AllTeams disabled={!(userData?.role === 'member' || userData?.role === 'admin' || userData?.role === 'owner')} />
+        <AllTeams
+          disabled={
+            !(
+              userData?.role === 'member' ||
+              userData?.role === 'admin' ||
+              userData?.role === 'owner'
+            )
+          }
+        />
       </Spin>
     );
   };
@@ -112,7 +107,9 @@ const ManageSystem = () => {
               <FormattedMessage id="teams.members.role.owner" defaultMessage="Owner" />
             ) : record.role === 'member' ? (
               <FormattedMessage id="teams.members.role.member" defaultMessage="Member" />
-            ) : <></>}
+            ) : (
+              <></>
+            )}
           </span>
         ),
       },
@@ -127,7 +124,10 @@ const ManageSystem = () => {
               >
                 <Button
                   disabled={
-                    !(record.role !== 'owner' && (userData?.role === 'owner' || userData?.role === 'admin'))
+                    !(
+                      record.role !== 'owner' &&
+                      (userData?.role === 'owner' || userData?.role === 'admin')
+                    )
                   }
                   type="text"
                   icon={<DeleteOutlined />}
@@ -280,9 +280,7 @@ const ManageSystem = () => {
   ];
 
   return (
-    <PageContainer
-      title={<FormattedMessage id="menu.manageSystem" />}
-    >
+    <PageContainer title={<FormattedMessage id="menu.manageSystem" />}>
       <Tabs activeKey={activeTabKey} onChange={onTabChange} tabPosition="left" items={tabs} />
     </PageContainer>
   );

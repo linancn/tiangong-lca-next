@@ -1,7 +1,7 @@
-import { LogoutOutlined, TeamOutlined, UserOutlined, SettingOutlined } from '@ant-design/icons';
+import { getSystemUserRoleApi } from '@/services/roles/api';
+import { LogoutOutlined, SettingOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
 import { history, useIntl, useModel } from '@umijs/max';
 import React, { useCallback, useEffect, useState } from 'react';
-import { getSystemUserRoleApi } from '@/services/roles/api';
 
 import { outLogin } from '@/services/ant-design-pro/api';
 import { getUserRoles } from '@/services/roles/api';
@@ -47,7 +47,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
   const intl = useIntl();
   const [isUserInTeam, setIsUserInTeam] = useState(false);
   const [showAllTeamsModal, setShowAllTeamsModal] = useState(false);
-  const [userData, setUserData] = useState<{ user_id: string, role: string } | null>(null);
+  const [userData, setUserData] = useState<{ user_id: string; role: string } | null>(null);
 
   const initialUserRole = async () => {
     const { data } = await getUserRoles();
@@ -62,7 +62,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
   const getSystemUserRole = async () => {
     const userData = await getSystemUserRoleApi();
     setUserData(userData);
-  }
+  };
 
   useEffect(() => {
     initialUserRole();
@@ -214,7 +214,8 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
       key: 'system',
       icon: <SettingOutlined />,
       label: <FormattedMessage id="menu.manageSystem" defaultMessage="System Settings" />,
-      hidden: userData?.role !== 'admin' && userData?.role !== 'owner' && userData?.role !== 'member',
+      hidden:
+        userData?.role !== 'admin' && userData?.role !== 'owner' && userData?.role !== 'member',
     },
     {
       type: 'divider' as const,
@@ -225,8 +226,6 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
       label: <FormattedMessage id="menu.account.logout" defaultMessage="Logout" />,
     },
   ];
-
-
 
   return (
     <>

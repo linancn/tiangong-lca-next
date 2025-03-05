@@ -10,6 +10,7 @@ import pages_flow from './en-US/pages_flow';
 import pages_flowproperty from './en-US/pages_flowproperty';
 import pages_general from './en-US/pages_general';
 import pages_home from './en-US/pages_home';
+import pages_manageSystem from './en-US/pages_manageSystem';
 import pages_model from './en-US/pages_model';
 import pages_process from './en-US/pages_process';
 import pages_product from './en-US/pages_product';
@@ -20,7 +21,6 @@ import pwa from './en-US/pwa';
 import settingDrawer from './en-US/settingDrawer';
 import settings from './en-US/settings';
 import validator from './en-US/validator';
-import pages_manageSystem from './en-US/pages_manageSystem';
 
 export default {
   'navBar.lang': 'Languages',
