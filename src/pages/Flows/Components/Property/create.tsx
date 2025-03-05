@@ -41,6 +41,7 @@ const PropertyCreate: FC<Props> = ({ lang, onData }) => {
         />
       </Tooltip>
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage
             id="pages.flowproperty.drawer.title.create"

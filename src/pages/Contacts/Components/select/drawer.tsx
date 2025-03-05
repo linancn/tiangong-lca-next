@@ -350,6 +350,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }
       )}
 
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage
             id="pages.contact.drawer.title.select"

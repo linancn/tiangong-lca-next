@@ -104,6 +104,7 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
       </Tooltip>
 
       <Drawer
+        getContainer={() => document.body}
         title={<FormattedMessage id="pages.button.allVersion" defaultMessage="All version" />}
         width={'90%'}
         open={showAllVersionsModal}

@@ -370,6 +370,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
       )}
 
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage
             id="pages.unitgroup.drawer.title.select"

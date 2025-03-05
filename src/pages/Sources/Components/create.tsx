@@ -176,6 +176,7 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
                 )} */}
       </Tooltip>
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage id="pages.source.drawer.title.create" defaultMessage="Create Source" />
         }

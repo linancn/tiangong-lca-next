@@ -93,6 +93,7 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
         ></Button>
       </Tooltip>
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage
             id="pages.unitgroup.drawer.title.create"

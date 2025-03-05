@@ -57,6 +57,7 @@ const LifeCycleModelCreate: FC<Props> = ({ buttonType, lang, actionRef }) => {
         </Button>
       )}
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage
             id="pages.lifeCycleModel.drawer.title.create"

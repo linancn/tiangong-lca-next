@@ -158,6 +158,7 @@ export async function getVersionsById(
             }
           });
         });
+        break;
       }
       case 'sources':
         if (lang === 'zh') {
@@ -188,11 +189,12 @@ export async function getVersionsById(
         } else {
           data = result?.data?.map((i: any) => {
             try {
+              const classifications = jsonToList(i['common:class']);
               return {
                 key: i.id + ':' + i.version,
                 id: i.id,
                 shortName: getLangText(i?.['common:shortName'], lang),
-                classification: classificationToString(i?.['common:class']),
+                classification: classificationToString(classifications),
                 sourceCitation: i?.sourceCitation ?? '-',
                 publicationType: i?.publicationType ?? '-',
                 version: i.version,
@@ -245,6 +247,7 @@ export async function getVersionsById(
         } else {
           data = result.data.map((i: any) => {
             try {
+              const classifications = jsonToList(i?.['common:class']);
               const unitList = jsonToList(i?.unit);
               const refUnit = unitList.find(
                 (item) => item?.['@dataSetInternalID'] === i?.referenceToReferenceUnit,
@@ -253,7 +256,7 @@ export async function getVersionsById(
                 key: i.id,
                 id: i.id,
                 name: getLangText(i?.['common:name'], lang),
-                classification: classificationToString(i?.['common:class']),
+                classification: classificationToString(classifications),
                 refUnitId: i?.referenceToReferenceUnit ?? '-',
                 refUnitName: refUnit?.name ?? '-',
                 refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
@@ -302,11 +305,12 @@ export async function getVersionsById(
         } else {
           data = result.data.map((i: any) => {
             try {
+              const classifications = jsonToList(i?.['common:class']);
               return {
                 key: i.id + ':' + i.version,
                 id: i.id,
                 name: getLangText(i?.['common:name'], lang),
-                classification: classificationToString(i?.['common:class']),
+                classification: classificationToString(classifications),
                 generalComment: getLangText(i?.['common:generalComment'], lang),
                 refUnitGroupId: i?.['@refObjectId'] ?? '-',
                 refUnitGroup: getLangText(i?.['common:shortDescription'], lang),
@@ -392,12 +396,25 @@ export async function getVersionsById(
               if (thisLocation?.['#text']) {
                 locationOfSupply = thisLocation['#text'];
               }
+    
+              let classificationData: any = {};
+              if (i?.typeOfDataSet === 'Elementary flow') {
+                classificationData =
+                  i?.classificationInformation?.['common:elementaryFlowCategorization']?.[
+                    'common:category'
+                  ];
+              } else {
+                classificationData =
+                  i?.classificationInformation?.['common:classification']?.['common:class'];
+              }
+              const classifications = jsonToList(classificationData);
+    
               return {
                 key: i.id + ':' + i.version,
                 id: i.id,
                 name: genFlowName(i?.name ?? {}, lang),
                 flowType: i.typeOfDataSet ?? '-',
-                classification: classificationToString(i['common:category']),
+                classification: classificationToString(classifications),
                 synonyms: getLangText(i['common:synonyms'], lang),
                 CASNumber: i.CASNumber ?? '-',
                 refFlowPropertyId: i.referenceToFlowPropertyDataSet?.['@refObjectId'] ?? '-',
@@ -462,6 +479,7 @@ export async function getVersionsById(
         } else {
           data = result?.data?.map((i: any) => {
             try {
+              const classifications = jsonToList(i['common:class']);
               const thisLocation = locationData.find((l) => l['@value'] === i['@location']);
               let location = i['@location'];
               if (thisLocation?.['#text']) {
@@ -474,7 +492,7 @@ export async function getVersionsById(
                 lang: lang,
                 name: genProcessName(i.name ?? {}, lang),
                 generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
-                classification: classificationToString(i['common:class'] ?? {}),
+                classification: classificationToString(classifications),
                 referenceYear: i['common:referenceYear'] ?? '-',
                 location: location,
                 modifiedAt: new Date(i.modified_at),
@@ -520,12 +538,13 @@ export async function getVersionsById(
         } else {
           data = result.data.map((i: any) => {
             try {
+              const classifications = jsonToList(i['common:class']);
               return {
                 key: i.id,
                 id: i.id,
                 name: genProcessName(i.name ?? {}, lang),
                 generalComment: getLangText(i?.['common:generalComment'], lang),
-                classification: classificationToString(i['common:class'] ?? {}),
+                classification: classificationToString(classifications),
                 version: i?.version,
                 modifiedAt: new Date(i?.modified_at),
                 teamId: i?.team_id,

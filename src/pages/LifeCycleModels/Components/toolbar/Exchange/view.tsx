@@ -67,6 +67,7 @@ const EdgeExchangeView: FC<Props> = ({
   return (
     <>
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage
             id="pages.flow.model.drawer.title.edge.exchange.view"

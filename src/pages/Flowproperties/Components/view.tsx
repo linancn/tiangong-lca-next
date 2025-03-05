@@ -290,6 +290,7 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
       )}
 
       <Drawer
+        getContainer={() => document.body}
         title={
           <FormattedMessage
             id="pages.flowproperty.drawer.title.view"
