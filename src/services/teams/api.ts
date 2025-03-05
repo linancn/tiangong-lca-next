@@ -282,3 +282,9 @@ export async function uploadLogoApi(name: string, file: File) {
     return res;
   }
 }
+
+
+export async function addTeam (id: string, data: any) {
+  const { error } = await supabase.from('teams').insert({ id, json: data });
+  return error
+}

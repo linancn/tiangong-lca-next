@@ -1,5 +1,6 @@
 import { supabase } from '@/services/supabase';
 import { getUserIdByEmail, getUsersByIds } from '@/services/users/api';
+import { addTeam } from '@/services/teams/api';
 
 export async function getUserRoles() {
   const session = await supabase.auth.getSession();
@@ -62,8 +63,8 @@ export async function createTeamMessage(id: string, data: any) {
     .eq('user_id', session?.data?.session?.user?.id)
     .eq('role', 'rejected')
     .neq('team_id', '00000000-0000-0000-0000-000000000000');
-
-  const { error } = await supabase.from('teams').insert({ id, json: data });
+    
+    const error = await addTeam(id, data);
   if (!error) {
     const { error: roleError } = await supabase.from('roles').insert({
       team_id: id,
