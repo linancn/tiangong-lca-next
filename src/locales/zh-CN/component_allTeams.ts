@@ -23,7 +23,7 @@ export default {
   'component.allTeams.confirm.cancel': '取消',
   'component.allTeams.table.select.confirm.title': '确认展示团队',
   'component.allTeams.table.select.confirm.content': '团队将在首页展示，是否继续？',
-  'component.allTeams.drawer.title.view': '查看团队', 
+  'component.allTeams.drawer.title.view': '查看团队',
   'component.allTeams.drawer.public': '公开展示',
   'component.allTeams.drawer.notPublic': '不公开展示',
   'component.allTeams.logo.title': '团队Logo',

@@ -109,7 +109,7 @@ const Team = () => {
       description?.forEach((d: { '#text': string; '@xml:lang': string }) => {
         _formData[`description-${d['@xml:lang']}`] = d['#text'];
       });
-      _formData.rank = data[0]?.rank 
+      _formData.rank = data[0]?.rank;
       setLightLogo(data[0]?.json.lightLogo);
       setDarkLogo(data[0]?.json.darkLogo);
       formRefEdit.current?.setFieldsValue({
@@ -149,7 +149,7 @@ const Team = () => {
         });
       });
 
-      console.log('result',result);
+      console.log('result', result);
       return result;
     };
 
@@ -215,10 +215,10 @@ const Team = () => {
     };
 
     const editTeamInfo = async (values: any) => {
-      const {rank} = values;
+      const { rank } = values;
       delete values.rank;
       const params = getParams(values);
-      const { error } = await editTeamMessage(teamId, { ...params, darkLogo, lightLogo },rank);
+      const { error } = await editTeamMessage(teamId, { ...params, darkLogo, lightLogo }, rank);
       if (error) {
         message.error(
           intl.formatMessage({
@@ -237,10 +237,10 @@ const Team = () => {
     };
 
     const createTeamInfo = async (values: any) => {
-      const {rank} = values;
+      const { rank } = values;
       delete values.rank;
       const params = getParams(values);
-      const error = await createTeamMessage(v4(), { ...params, darkLogo, lightLogo },rank);
+      const error = await createTeamMessage(v4(), { ...params, darkLogo, lightLogo }, rank);
       if (error) {
         message.error(
           intl.formatMessage({
@@ -391,20 +391,20 @@ const Team = () => {
             </Form.Item>
             <Form.Item
               name="rank"
-              label={
-                <FormattedMessage id="pages.team.info.public" defaultMessage="Public" />
-              }
+              label={<FormattedMessage id="pages.team.info.public" defaultMessage="Public" />}
               valuePropName="checked"
               getValueProps={(value) => ({
-                  checked: value !== -1
+                checked: value !== -1,
               })}
               normalize={(value) => {
                 console.log(value);
-                  return value ? 0 : -1;
+                return value ? 0 : -1;
               }}
             >
               <Switch
-                disabled={(userRole !== 'admin' && userRole !== 'owner' && action !== 'create')||rank>0}
+                disabled={
+                  (userRole !== 'admin' && userRole !== 'owner' && action !== 'create') || rank > 0
+                }
               />
             </Form.Item>
 

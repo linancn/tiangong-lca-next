@@ -2,20 +2,22 @@ import { ListPagination } from '@/services/general/data';
 import { getLang, getLangText } from '@/services/general/util';
 import { getAllTableTeams, getTeamsByKeyword, updateTeamRank } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
-import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Card, Input, Tooltip, message, Space, Button, Tag, Modal } from 'antd';
+import { DeleteOutlined, SelectOutlined } from '@ant-design/icons';
+import { ActionType, DragSortTable, ProColumns, ProTable } from '@ant-design/pro-components';
+import { Button, Card, Input, message, Modal, Space, Tag, Tooltip } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
-import { DragSortTable } from '@ant-design/pro-components';
-import {  DeleteOutlined, SelectOutlined } from '@ant-design/icons';
-import TeamView from './view';
 import TeamEdit from './edit';
+import TeamView from './view';
 
 const { Search } = Input;
 
-const TableList: FC<{ disabled?: boolean, showDragSort: boolean }> = ({ disabled = false, showDragSort = false }) => {
+const TableList: FC<{ disabled?: boolean; showDragSort: boolean }> = ({
+  disabled = false,
+  showDragSort = false,
+}) => {
   const intl = useIntl();
   const lang = getLang(intl.locale);
   const actionRef = useRef<ActionType>();
@@ -33,36 +35,41 @@ const TableList: FC<{ disabled?: boolean, showDragSort: boolean }> = ({ disabled
       },
       title: intl.formatMessage({
         id: 'component.allTeams.table.remove.confirm.title',
-        defaultMessage: 'Confirm Remove Team'
+        defaultMessage: 'Confirm Remove Team',
       }),
       content: intl.formatMessage({
         id: 'component.allTeams.table.remove.confirm.content',
-        defaultMessage: 'The removal will not be displayed on the homepage, do you want to continue?'
+        defaultMessage:
+          'The removal will not be displayed on the homepage, do you want to continue?',
       }),
       okText: intl.formatMessage({
         id: 'component.allTeams.confirm.ok',
-        defaultMessage: 'OK'
+        defaultMessage: 'OK',
       }),
       cancelText: intl.formatMessage({
         id: 'component.allTeams.confirm.cancel',
-        defaultMessage: 'Cancel'
+        defaultMessage: 'Cancel',
       }),
       onOk: () => {
         updateTeamRank(record.id, 0).then(({ error }) => {
           if (error) {
-            message.error(intl.formatMessage({
-              id: 'component.allTeams.action.fail',
-              defaultMessage: 'Failed to remove team'
-            }))
+            message.error(
+              intl.formatMessage({
+                id: 'component.allTeams.action.fail',
+                defaultMessage: 'Failed to remove team',
+              }),
+            );
           } else {
-            message.success(intl.formatMessage({
-              id: 'component.allTeams.action.success',
-              defaultMessage: 'Team removed successfully'
-            }))
+            message.success(
+              intl.formatMessage({
+                id: 'component.allTeams.action.success',
+                defaultMessage: 'Team removed successfully',
+              }),
+            );
             actionRef.current?.reload();
           }
-        })
-      }
+        });
+      },
     });
   };
 
@@ -77,36 +84,40 @@ const TableList: FC<{ disabled?: boolean, showDragSort: boolean }> = ({ disabled
       },
       title: intl.formatMessage({
         id: 'component.allTeams.table.select.confirm.title',
-        defaultMessage: 'Confirm Display Team'
+        defaultMessage: 'Confirm Display Team',
       }),
       content: intl.formatMessage({
         id: 'component.allTeams.table.select.confirm.content',
-        defaultMessage: 'The team will be displayed on the homepage, do you want to continue?'
+        defaultMessage: 'The team will be displayed on the homepage, do you want to continue?',
       }),
       okText: intl.formatMessage({
         id: 'component.allTeams.confirm.ok',
-        defaultMessage: 'OK'
+        defaultMessage: 'OK',
       }),
       cancelText: intl.formatMessage({
         id: 'component.allTeams.confirm.cancel',
-        defaultMessage: 'Cancel'
+        defaultMessage: 'Cancel',
       }),
       onOk: () => {
         updateTeamRank(record.id, 1).then(({ error }) => {
           if (error) {
-            message.error(intl.formatMessage({
-              id: 'component.allTeams.action.fail',
-              defaultMessage: 'Failed to select team'
-            }))
+            message.error(
+              intl.formatMessage({
+                id: 'component.allTeams.action.fail',
+                defaultMessage: 'Failed to select team',
+              }),
+            );
           } else {
-            message.success(intl.formatMessage({
-              id: 'component.allTeams.action.success',
-              defaultMessage: 'Team selected successfully'
-            }))
+            message.success(
+              intl.formatMessage({
+                id: 'component.allTeams.action.success',
+                defaultMessage: 'Team selected successfully',
+              }),
+            );
             actionRef.current?.reload();
           }
-        })
-      }
+        });
+      },
     });
   };
 
@@ -150,47 +161,49 @@ const TableList: FC<{ disabled?: boolean, showDragSort: boolean }> = ({ disabled
 
   if (showDragSort) {
     // Manage teams on homepage
-    teamColumns.push({
-      title: <FormattedMessage id="component.allTeams.table.rank" defaultMessage="Rank" />,
-      dataIndex: 'rankColumn',
-      search: false,
-      render: (_, record) => (
-        <>
-          <Tag color={record.rank <= 0 ? 'red' : 'green'}>{record.rank}</Tag>
-          {
-            record.rank <= 0 ? (
+    teamColumns.push(
+      {
+        title: <FormattedMessage id="component.allTeams.table.rank" defaultMessage="Rank" />,
+        dataIndex: 'rankColumn',
+        search: false,
+        render: (_, record) => (
+          <>
+            <Tag color={record.rank <= 0 ? 'red' : 'green'}>{record.rank}</Tag>
+            {record.rank <= 0 ? (
               <Button
                 shape="circle"
                 icon={<SelectOutlined />}
                 size="small"
                 onClick={() => handleSelectTeam(record)}
               />
-            ) : null
-          }
-        </>
-      ),
-    },
-    {
-      title: <FormattedMessage id="component.allTeams.table.option" defaultMessage="Option" />,
-      dataIndex: 'option',
-      search: false,
-      render: (_, record) => (
-        <Space size="small">
-          <TeamView id={record.id} buttonType="icon" />
-          <TeamEdit actionRef={actionRef} id={record.id} buttonType="icon" />
-          <Tooltip
-            title={<FormattedMessage id="component.allTeams.table.remove" defaultMessage="Remove" />}
-          >
-            <Button
-              shape="circle"
-              icon={<DeleteOutlined />}
-              size="small"
-              onClick={() => handleRemoveTeam(record)}
-            />
-          </Tooltip>
-        </Space>
-      ),
-    });
+            ) : null}
+          </>
+        ),
+      },
+      {
+        title: <FormattedMessage id="component.allTeams.table.option" defaultMessage="Option" />,
+        dataIndex: 'option',
+        search: false,
+        render: (_, record) => (
+          <Space size="small">
+            <TeamView id={record.id} buttonType="icon" />
+            <TeamEdit actionRef={actionRef} id={record.id} buttonType="icon" />
+            <Tooltip
+              title={
+                <FormattedMessage id="component.allTeams.table.remove" defaultMessage="Remove" />
+              }
+            >
+              <Button
+                shape="circle"
+                icon={<DeleteOutlined />}
+                size="small"
+                onClick={() => handleRemoveTeam(record)}
+              />
+            </Tooltip>
+          </Space>
+        ),
+      },
+    );
   }
 
   const onSearch: SearchProps['onSearch'] = (value) => {
@@ -212,7 +225,7 @@ const TableList: FC<{ disabled?: boolean, showDragSort: boolean }> = ({ disabled
           defaultMessage: 'No permission to operate',
         }),
       );
-      return
+      return;
     }
     setTableData(newDataSource);
 

@@ -19,55 +19,84 @@ const TeamView: FC<Props> = ({ id, buttonType }) => {
 
   const teamContent: React.ReactNode = (
     <>
-      <Card size="small" title={<FormattedMessage id="pages.team.info.title" defaultMessage="Team Name" />}>
+      <Card
+        size="small"
+        title={<FormattedMessage id="pages.team.info.title" defaultMessage="Team Name" />}
+      >
         <Descriptions bordered size={'small'} column={1}>
-          {initData?.json?.title?.map((item: { '#text': string; '@xml:lang': string }, index: number) => (
-            <Descriptions.Item
-              key={index}
-              label={item['@xml:lang'] === 'zh' ? '简体中文' : 'English'}
-              labelStyle={{ width: '120px' }}
-            >
-              {item['#text'] || '-'}
-            </Descriptions.Item>
-          ))}
+          {initData?.json?.title?.map(
+            (item: { '#text': string; '@xml:lang': string }, index: number) => (
+              <Descriptions.Item
+                key={index}
+                label={item['@xml:lang'] === 'zh' ? '简体中文' : 'English'}
+                labelStyle={{ width: '120px' }}
+              >
+                {item['#text'] || '-'}
+              </Descriptions.Item>
+            ),
+          )}
         </Descriptions>
       </Card>
       <br />
-      <Card size="small" title={<FormattedMessage id="pages.team.info.description" defaultMessage="Team Description" />}>
+      <Card
+        size="small"
+        title={
+          <FormattedMessage id="pages.team.info.description" defaultMessage="Team Description" />
+        }
+      >
         <Descriptions bordered size={'small'} column={1}>
-          {initData?.json?.description?.map((item: { '#text': string; '@xml:lang': string }, index: number) => (
-            <Descriptions.Item
-              key={index}
-              label={item['@xml:lang'] === 'zh' ? '简体中文' : 'English'}
-              labelStyle={{ width: '120px' }}
-            >
-              {item['#text'] || '-'}
-            </Descriptions.Item>
-          ))}
+          {initData?.json?.description?.map(
+            (item: { '#text': string; '@xml:lang': string }, index: number) => (
+              <Descriptions.Item
+                key={index}
+                label={item['@xml:lang'] === 'zh' ? '简体中文' : 'English'}
+                labelStyle={{ width: '120px' }}
+              >
+                {item['#text'] || '-'}
+              </Descriptions.Item>
+            ),
+          )}
         </Descriptions>
       </Card>
       <br />
-      <Card size="small" title={<FormattedMessage id="pages.team.info.public" defaultMessage="Public Display" />}>
+      <Card
+        size="small"
+        title={<FormattedMessage id="pages.team.info.public" defaultMessage="Public Display" />}
+      >
         <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item  label={<FormattedMessage id="pages.team.info.public" defaultMessage="Public Display" />} labelStyle={{ width: '120px' }}>
-            {initData?.rank === -1 ? <FormattedMessage id="component.allTeams.drawer.public" defaultMessage="Public Display" /> : <FormattedMessage id="component.allTeams.drawer.public" defaultMessage="Not Public Display" />}
+          <Descriptions.Item
+            label={<FormattedMessage id="pages.team.info.public" defaultMessage="Public Display" />}
+            labelStyle={{ width: '120px' }}
+          >
+            {initData?.rank === -1 ? (
+              <FormattedMessage
+                id="component.allTeams.drawer.public"
+                defaultMessage="Public Display"
+              />
+            ) : (
+              <FormattedMessage
+                id="component.allTeams.drawer.public"
+                defaultMessage="Not Public Display"
+              />
+            )}
           </Descriptions.Item>
         </Descriptions>
       </Card>
       <br />
-      <Card size="small" title={<FormattedMessage id="component.allTeams.logo.title" defaultMessage="Team Logo" />}>
+      <Card
+        size="small"
+        title={<FormattedMessage id="component.allTeams.logo.title" defaultMessage="Team Logo" />}
+      >
         <Space direction="vertical" size="middle">
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item
-              label={<FormattedMessage id="pages.team.info.lightLogo" defaultMessage="Light Logo" />}
+              label={
+                <FormattedMessage id="pages.team.info.lightLogo" defaultMessage="Light Logo" />
+              }
               labelStyle={{ width: '120px' }}
             >
               {initData?.json?.lightLogo ? (
-                <Image
-                  width={100}
-                  src={LogoBaseUrl + initData?.json?.lightLogo}
-                  alt="Light Logo"
-                />
+                <Image width={100} src={LogoBaseUrl + initData?.json?.lightLogo} alt="Light Logo" />
               ) : (
                 '-'
               )}
@@ -79,11 +108,7 @@ const TeamView: FC<Props> = ({ id, buttonType }) => {
               labelStyle={{ width: '120px' }}
             >
               {initData?.json?.darkLogo ? (
-                <Image
-                  width={100}
-                  src={LogoBaseUrl + initData?.json?.darkLogo}
-                  alt="Dark Logo"
-                />
+                <Image width={100} src={LogoBaseUrl + initData?.json?.darkLogo} alt="Dark Logo" />
               ) : (
                 '-'
               )}
@@ -108,7 +133,9 @@ const TeamView: FC<Props> = ({ id, buttonType }) => {
   return (
     <>
       {buttonType === 'icon' ? (
-        <Tooltip title={<FormattedMessage id="component.allTeams.table.view" defaultMessage="View" />}>
+        <Tooltip
+          title={<FormattedMessage id="component.allTeams.table.view" defaultMessage="View" />}
+        >
           <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
         </Tooltip>
       ) : (
@@ -135,9 +162,7 @@ const TeamView: FC<Props> = ({ id, buttonType }) => {
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
       >
-        <Spin spinning={spinning}>
-          {teamContent}
-        </Spin>
+        <Spin spinning={spinning}>{teamContent}</Spin>
       </Drawer>
     </>
   );
