@@ -9,11 +9,11 @@ import type { FC } from 'react';
 import { useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { DragSortTable } from '@ant-design/pro-components';
-import { FormOutlined, DeleteOutlined, SelectOutlined } from '@ant-design/icons';
+import {  DeleteOutlined, SelectOutlined } from '@ant-design/icons';
 import TeamView from './view';
+import TeamEdit from './edit';
 
 const { Search } = Input;
-
 
 const TableList: FC<{ disabled?: boolean, showDragSort: boolean }> = ({ disabled = false, showDragSort = false }) => {
   const intl = useIntl();
@@ -21,12 +21,6 @@ const TableList: FC<{ disabled?: boolean, showDragSort: boolean }> = ({ disabled
   const actionRef = useRef<ActionType>();
   const [keyWord, setKeyWord] = useState<any>('');
   const [tableData, setTableData] = useState<TeamTable[]>([]);
-
-  // Handle edit team
-  const handleEditTeam = (record: TeamTable) => {
-    console.log('Edit team', record);
-    // Add edit team logic here
-  };
 
   const handleRemoveTeam = (record: TeamTable) => {
     Modal.confirm({
@@ -183,16 +177,7 @@ const TableList: FC<{ disabled?: boolean, showDragSort: boolean }> = ({ disabled
       render: (_, record) => (
         <Space size="small">
           <TeamView id={record.id} buttonType="icon" />
-          <Tooltip
-            title={<FormattedMessage id="component.allTeams.table.edit" defaultMessage="Edit" />}
-          >
-            <Button
-              shape="circle"
-              icon={<FormOutlined />}
-              size="small"
-              onClick={() => handleEditTeam(record)}
-            />
-          </Tooltip>
+          <TeamEdit id={record.id} buttonType="icon" />
           <Tooltip
             title={<FormattedMessage id="component.allTeams.table.remove" defaultMessage="Remove" />}
           >
