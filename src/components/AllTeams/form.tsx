@@ -180,7 +180,6 @@ const TeamForm: FC<Props> = ({ onData, lightLogoProps, darkLogoProps }) => {
                         checked: value !== -1
                     })}
                     normalize={(value) => {
-                        console.log('value', value);
                         return value ? 0 : -1;
                     }}>
                     <Switch />
