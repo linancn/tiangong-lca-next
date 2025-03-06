@@ -94,7 +94,6 @@ export async function getAllTableTeams(
     });
   }
 }
-
 export async function updateTeamRank(id: string, rank: number) {
   const result = await supabase.from('teams').update({ rank }).eq('id', id);
   return result;
