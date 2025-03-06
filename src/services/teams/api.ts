@@ -127,8 +127,8 @@ export async function getTeamById(id: string) {
   });
 }
 
-export async function editTeamMessage(id: string, data: any) {
-  const result = await supabase.from('teams').update({ json: data }).eq('id', id).select();
+export async function editTeamMessage(id: string, data: any,rank:number) {
+  const result = await supabase.from('teams').update({ json: data,rank }).eq('id', id).select();
   return result;
 }
 
@@ -246,7 +246,7 @@ export async function uploadLogoApi(name: string, file: File) {
 }
 
 
-export async function addTeam(id: string, data: any) {
-  const { error } = await supabase.from('teams').insert({ id, json: data });
+export async function addTeam(id: string, data: any,rank:number) {
+  const { error } = await supabase.from('teams').insert({ id, json: data ,rank});
   return error
 }

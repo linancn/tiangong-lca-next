@@ -36,4 +36,5 @@ export default {
   'team.modal.noTeam.content': 'You can create a team or join an existing team',
   'teams.modal.noTeam.create': 'Create Team',
   'teams.modal.noTeam.join': 'Join Team',
+  'pages.team.info.public': 'Public Display',
 };
