@@ -23,4 +23,7 @@ export default {
   'component.allTeams.confirm.cancel': 'Cancel',
   'component.allTeams.table.select.confirm.title': 'Confirm Display Team',
   'component.allTeams.table.select.confirm.content': 'The team will be displayed on the homepage, do you want to continue?',
+  'component.allTeams.drawer.public': 'Public Display',
+  'component.allTeams.drawer.notPublic': 'Not Public Display',
+  'component.allTeams.logo.title': 'Team Logo',
 };

@@ -9,7 +9,8 @@ import type { FC } from 'react';
 import { useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { DragSortTable } from '@ant-design/pro-components';
-import { ProfileOutlined, FormOutlined, DeleteOutlined, SelectOutlined } from '@ant-design/icons';
+import { FormOutlined, DeleteOutlined, SelectOutlined } from '@ant-design/icons';
+import TeamView from './view';
 
 const { Search } = Input;
 
@@ -20,12 +21,6 @@ const TableList: FC<{ disabled?: boolean, showDragSort: boolean }> = ({ disabled
   const actionRef = useRef<ActionType>();
   const [keyWord, setKeyWord] = useState<any>('');
   const [tableData, setTableData] = useState<TeamTable[]>([]);
-
-  // Handle view team
-  const handleViewTeam = (record: TeamTable) => {
-    console.log('View team', record);
-    // Add view team logic here
-  };
 
   // Handle edit team
   const handleEditTeam = (record: TeamTable) => {
@@ -187,17 +182,7 @@ const TableList: FC<{ disabled?: boolean, showDragSort: boolean }> = ({ disabled
       search: false,
       render: (_, record) => (
         <Space size="small">
-          <Tooltip
-            title={<FormattedMessage id="component.allTeams.table.view" defaultMessage="View" />}
-          >
-            <Button
-              shape="circle"
-              icon={<ProfileOutlined />}
-              size="small"
-              onClick={() => handleViewTeam(record)}
-            />
-          </Tooltip>
-
+          <TeamView id={record.id} buttonType="icon" />
           <Tooltip
             title={<FormattedMessage id="component.allTeams.table.edit" defaultMessage="Edit" />}
           >
