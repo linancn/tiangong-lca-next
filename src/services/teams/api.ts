@@ -52,17 +52,13 @@ export async function getTeamsByKeyword(keyword: string) {
 
 export async function getAllTableTeams(
   params: { pageSize: number; current: number },
-  sort: Record<string, SortOrder>,
 ) {
   try {
-    const sortBy = Object.keys(sort)[0] ?? 'created_at';
-    const orderBy = sort[sortBy] ?? 'descend';
-
     const { data: teams, count } = await supabase
       .from('teams')
       .select('*', { count: 'exact' })
       .gte('rank', 0)
-      .order(sortBy, { ascending: orderBy === 'ascend' })
+      .order('rank', { ascending: true })
       .range(
         ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
         (params.current ?? 1) * (params.pageSize ?? 10) - 1,

@@ -3,20 +3,22 @@ import { getLang, getLangText } from '@/services/general/util';
 import { getAllTableTeams, getTeamsByKeyword, updateTeamRank } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Card, Input, Modal, Tooltip, message } from 'antd';
+import { Card, Input, Tooltip, message } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { useRef, useState } from 'react';
-import { FormattedMessage, useIntl, useLocation } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
+import { DragSortTable } from '@ant-design/pro-components';
 
 const { Search } = Input;
 
-const TableList: FC<{ disabled?: boolean }> = ({ disabled = false }) => {
+
+const TableList: FC<{ disabled?: boolean,showDragSort:boolean }> = ({ disabled = false,showDragSort  = false }) => {
   const intl = useIntl();
   const lang = getLang(intl.locale);
   const actionRef = useRef<ActionType>();
   const [keyWord, setKeyWord] = useState<any>('');
-  const { pathname } = useLocation();
+  const [tableData, setTableData] = useState<TeamTable[]>([]);
 
   const teamColumns: ProColumns<TeamTable>[] = [
     {
@@ -56,67 +58,60 @@ const TableList: FC<{ disabled?: boolean }> = ({ disabled = false }) => {
     },
   ];
 
-  if (pathname === '/manageSystem') {
+  if (showDragSort) {
     // Manage teams on homepage
     teamColumns.push({
       title: <FormattedMessage id="component.allTeams.table.rank" defaultMessage="Rank" />,
-      dataIndex: 'rank',
-      sorter: true,
+      dataIndex: 'rankColumn',
       search: false,
       render: (_, record) => (
-        <Input
-          disabled={disabled}
-          type="number"
-          defaultValue={record.rank}
-          min={0}
-          onPressEnter={(e: any) => {
-            const value = parseInt(e.target.value);
-            Modal.confirm({
-              okButtonProps: {
-                type: 'primary',
-                style: { backgroundColor: '#5C246A' },
-              },
-              cancelButtonProps: {
-                style: { borderColor: '#5C246A', color: '#5C246A' },
-              },
-              title: intl.formatMessage({
-                id: 'component.allTeams.table.confirm',
-                defaultMessage: 'Confirm to modify the rank?',
-              }),
-              onOk: async () => {
-                try {
-                  const { error } = await updateTeamRank(record.id, value);
-                  if (error) {
-                    throw error;
-                  } else {
-                    message.success(
-                      intl.formatMessage({
-                        id: 'component.allTeams.table.success',
-                        defaultMessage: 'Sorting modified successfully',
-                      }),
-                    );
-                  }
-                } catch (err) {
-                  message.success(
-                    intl.formatMessage({
-                      id: 'component.allTeams.table.fail',
-                      defaultMessage: 'Sorting modified failed',
-                    }),
-                  );
-                  console.error(err);
-                }
-              },
-            });
-          }}
-        />
+        <span>{record.rank}</span>
       ),
     });
+    
   }
 
   const onSearch: SearchProps['onSearch'] = (value) => {
     setKeyWord(value);
     actionRef.current?.setPageInfo?.({ current: 1 });
     actionRef.current?.reload();
+  };
+
+  // 处理拖拽排序后的数据更新
+  const handleDragSortEnd = async (
+    beforeIndex: number,
+    afterIndex: number,
+    newDataSource: TeamTable[],
+  ) => {
+    setTableData(newDataSource);
+    
+    // 获取被拖拽的团队
+    const draggedTeam = newDataSource[afterIndex];
+    
+    try {
+      // 更新团队排序
+      const { error } = await updateTeamRank(draggedTeam.id, afterIndex + 1);
+      if (error) {
+        throw error;
+      } else {
+        message.success(
+          intl.formatMessage({
+            id: 'component.allTeams.table.success',
+            defaultMessage: 'Sorting modified successfully',
+          }),
+        );
+        // 刷新表格数据
+        actionRef.current?.reload();
+      }
+    } catch (err) {
+      message.error(
+        intl.formatMessage({
+          id: 'component.allTeams.table.fail',
+          defaultMessage: 'Sorting modified failed',
+        }),
+      );
+      console.error(err);
+    }
   };
 
   return (
@@ -130,26 +125,56 @@ const TableList: FC<{ disabled?: boolean }> = ({ disabled = false }) => {
         />
       </Card>
       <Card>
-        <ProTable<TeamTable, ListPagination>
-          rowKey="id"
-          headerTitle={
-            <FormattedMessage id="component.allTeams.table.title" defaultMessage="All Teams" />
-          }
-          actionRef={actionRef}
-          search={false}
-          options={{ fullScreen: true }}
-          pagination={{
-            showSizeChanger: false,
-            pageSize: 10,
-          }}
-          request={async (params: { pageSize: number; current: number }, sort) => {
-            if (keyWord.length > 0) {
-              return getTeamsByKeyword(keyWord);
+        {showDragSort ? (
+          <DragSortTable<TeamTable, ListPagination>
+            rowKey="id"
+            headerTitle={
+              <FormattedMessage id="component.allTeams.table.title" defaultMessage="All Teams" />
             }
-            return getAllTableTeams(params, sort);
-          }}
-          columns={teamColumns}
-        />
+            actionRef={actionRef}
+            search={false}
+            options={{ fullScreen: true }}
+            pagination={{
+              showSizeChanger: false,
+              pageSize: 10,
+            }}
+            dataSource={tableData}
+            request={async (params: { pageSize: number; current: number }) => {
+              if (keyWord.length > 0) {
+                const result = await getTeamsByKeyword(keyWord);
+                setTableData(result.data || []);
+                return result;
+              }
+              const result = await getAllTableTeams(params);
+              setTableData(result.data || []);
+              return result;
+            }}
+            columns={teamColumns}
+            dragSortKey="rankColumn"
+            onDragSortEnd={handleDragSortEnd}
+          />
+        ) : (
+          <ProTable<TeamTable, ListPagination>
+            rowKey="id"
+            headerTitle={
+              <FormattedMessage id="component.allTeams.table.title" defaultMessage="All Teams" />
+            }
+            actionRef={actionRef}
+            search={false}
+            options={{ fullScreen: true }}
+            pagination={{
+              showSizeChanger: false,
+              pageSize: 10,
+            }}
+            request={async (params: { pageSize: number; current: number }) => {
+              if (keyWord.length > 0) {
+                return getTeamsByKeyword(keyWord);
+              }
+              return getAllTableTeams(params);
+            }}
+            columns={teamColumns}
+          />
+        )}
       </Card>
     </>
   );
