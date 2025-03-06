@@ -15,7 +15,7 @@ type Props = {
     darkLogoProps: string;
 };
 
-const TeamForm: FC<Props> = ({ onData, lightLogoProps, darkLogoProps }) => {
+const TeamForm: FC<Props> = ({formRef, onData, lightLogoProps, darkLogoProps }) => {
     const [lightLogo, setLightLogo] = useState<string>('');
     const [darkLogo, setDarkLogo] = useState<string>('');
     const [lightLogoSpinning, setLightLogoSpinning] = useState<boolean>(false);
@@ -27,13 +27,19 @@ const TeamForm: FC<Props> = ({ onData, lightLogoProps, darkLogoProps }) => {
         setDarkLogo(darkLogoProps);
     }, [lightLogoProps, darkLogoProps]);
 
+    useEffect(() => {
+        formRef.current?.setFieldsValue({
+             lightLogo,darkLogo
+        });
+        onData();
+    }, [lightLogo, darkLogo]);
+
     const removeLogo = async (type: 'lightLogo' | 'darkLogo') => {
         if (type === 'lightLogo') {
             setLightLogo('');
         } else {
             setDarkLogo('');
         }
-        onData();
     };
 
     const uploadLogo = async (fileList: UploadFile[], type: 'lightLogo' | 'darkLogo') => {

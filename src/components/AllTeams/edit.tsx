@@ -50,7 +50,7 @@ const TeamEdit: FC<Props> = ({
         const result = await getTeamMessageApi(id);
         if (result.data && result.data.length > 0) {
             const teamData = result.data[0];
-            setInitData({...teamData});
+            setInitData({ ...teamData });
             const formValues = {
                 title: teamData.json?.title || [
                     { '#text': '', '@xml:lang': 'zh' },
@@ -61,6 +61,8 @@ const TeamEdit: FC<Props> = ({
                     { '#text': '', '@xml:lang': 'en' },
                 ],
                 rank: teamData.rank,
+                darkLogo: teamData.json?.darkLogo || '',
+                lightLogo: teamData.json?.lightLogo || '',
             };
 
             formRefEdit.current?.setFieldsValue({ ...formValues });
@@ -148,9 +150,6 @@ const TeamEdit: FC<Props> = ({
                 <Spin spinning={spinning}>
                     <ProForm
                         formRef={formRefEdit}
-                        onValuesChange={(_, allValues) => {
-                            setFromData({ ...fromData, ...allValues });
-                        }}
                         submitter={{
                             render: () => {
                                 return [];
@@ -164,8 +163,8 @@ const TeamEdit: FC<Props> = ({
                             const jsonData = {
                                 title: formValues.title,
                                 description: formValues.description,
-                                lightLogo: fromData?.json?.lightLogo || '',
-                                darkLogo: fromData?.json?.darkLogo || '',
+                                lightLogo: fromData?.lightLogo || '',
+                                darkLogo: fromData?.darkLogo || '',
                             };
                             const updateResult = await editTeamMessage(id, jsonData, rank);
                             if (updateResult?.data) {
@@ -175,9 +174,9 @@ const TeamEdit: FC<Props> = ({
                                         defaultMessage: 'Team updated successfully!',
                                     }),
                                 );
+                                actionRef?.current?.reload();
                                 setDrawerVisible(false);
                                 if (setViewDrawerVisible) setViewDrawerVisible(false);
-                                if (actionRef?.current) actionRef.current.reload();
                             } else {
                                 message.error(
                                     intl.formatMessage({
