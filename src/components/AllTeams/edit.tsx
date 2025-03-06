@@ -11,7 +11,7 @@ import TeamForm from './form';
 type Props = {
     id: string;
     buttonType: string;
-    actionRef?: React.MutableRefObject<ActionType | undefined>;
+    actionRef: React.MutableRefObject<ActionType | undefined>;
     setViewDrawerVisible?: React.Dispatch<React.SetStateAction<boolean>>;
     type?: 'edit'
 };
@@ -168,6 +168,7 @@ const TeamEdit: FC<Props> = ({
                             };
                             const updateResult = await editTeamMessage(id, jsonData, rank);
                             if (updateResult?.data) {
+                                console.log('updateResult', updateResult);
                                 message.success(
                                     intl.formatMessage({
                                         id: 'component.allTeams.form.updateSuccess',

@@ -177,7 +177,7 @@ const TableList: FC<{ disabled?: boolean, showDragSort: boolean }> = ({ disabled
       render: (_, record) => (
         <Space size="small">
           <TeamView id={record.id} buttonType="icon" />
-          <TeamEdit id={record.id} buttonType="icon" />
+          <TeamEdit actionRef={actionRef} id={record.id} buttonType="icon" />
           <Tooltip
             title={<FormattedMessage id="component.allTeams.table.remove" defaultMessage="Remove" />}
           >
