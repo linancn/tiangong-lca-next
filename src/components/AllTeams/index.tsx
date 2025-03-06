@@ -83,14 +83,21 @@ const TableList: FC<{ disabled?: boolean,showDragSort:boolean }> = ({ disabled =
     afterIndex: number,
     newDataSource: TeamTable[],
   ) => {
+    if(disabled){
+      message.error(
+        intl.formatMessage({
+          id: 'component.allTeams.table.fail.disabled',
+          defaultMessage: 'No permission to operate',
+        }),
+      );
+      return
+    }
     setTableData(newDataSource);
     
-    // 获取被拖拽的团队
     const draggedTeam = newDataSource[afterIndex];
-    
+    const resultRank = afterIndex === 0 ? 0: newDataSource[afterIndex-1]?.rank +1;
     try {
-      // 更新团队排序
-      const { error } = await updateTeamRank(draggedTeam.id, afterIndex + 1);
+      const { error } = await updateTeamRank(draggedTeam.id, resultRank );
       if (error) {
         throw error;
       } else {
@@ -100,7 +107,6 @@ const TableList: FC<{ disabled?: boolean,showDragSort:boolean }> = ({ disabled =
             defaultMessage: 'Sorting modified successfully',
           }),
         );
-        // 刷新表格数据
         actionRef.current?.reload();
       }
     } catch (err) {
