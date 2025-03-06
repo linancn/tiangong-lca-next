@@ -1,9 +1,9 @@
 import {
   acceptTeamInvitationApi,
-  getTeamById,
   getTeamInvitationStatusApi,
   rejectTeamInvitationApi,
-} from '@/services/teams/api';
+} from '@/services/roles/api';
+import { getTeamById } from '@/services/teams/api';
 import { BellOutlined } from '@ant-design/icons';
 import { Badge, message, Modal } from 'antd';
 import React, { useEffect, useState } from 'react';

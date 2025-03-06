@@ -1,5 +1,7 @@
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
+import { getUserIdsByTeamIds, getTeamRoles, getRoleByuserId, addRoleApi } from '../roles/api';
+import { getUserEmailByUserIds, getUserIdByEmail, getUsersByIds } from '../users/api';
 
 interface TeamMember {
   user_id: string;
@@ -46,18 +48,7 @@ export async function getTeamsByKeyword(keyword: string) {
   });
 }
 
-const getUserIdsByTeamIds = async (teamIds: string[]) => {
-  const result = await supabase.from('roles').select('user_id,team_id').in('team_id', teamIds);
-  return result.data ?? [];
-};
 
-const getUserEmailByUserIds = async (userIds: string[]) => {
-  const result = await supabase
-    .from('users')
-    .select('id,raw_user_meta_data->email')
-    .in('id', userIds);
-  return result.data ?? [];
-};
 
 export async function getAllTableTeams(
   params: { pageSize: number; current: number },
@@ -141,44 +132,8 @@ export async function editTeamMessage(id: string, data: any) {
   return result;
 }
 
-export async function createTeamMessage(id: string, data: any) {
-  const session = await supabase.auth.getSession();
-  await supabase
-    .from('roles')
-    .delete()
-    .eq('user_id', session?.data?.session?.user?.id)
-    .eq('role', 'rejected');
-
-  const { error } = await supabase.from('teams').insert({ id, json: data });
-  if (!error) {
-    const session = await supabase.auth.getSession();
-    const { error: roleError } = await supabase.from('roles').insert({
-      team_id: id,
-      user_id: session?.data?.session?.user?.id,
-      role: 'owner',
-    });
-    return roleError;
-  }
-  return error;
-}
-
 export async function getTeamMessageApi(id: string) {
   const result = await supabase.from('teams').select('*').eq('id', id);
-  return result;
-}
-
-export async function updateRoleApi(teamId: string, userId: string, role: 'admin' | 'member') {
-  const result = await supabase
-    .from('roles')
-    .update({ role })
-    .eq('team_id', teamId)
-    .eq('user_id', userId)
-    .select();
-  return result;
-}
-
-export async function delRoleApi(teamId: string, userId: string) {
-  const result = await supabase.from('roles').delete().eq('team_id', teamId).eq('user_id', userId);
   return result;
 }
 
@@ -199,35 +154,15 @@ export async function getTeamMembersApi(
   sort: Record<string, SortOrder>,
   teamId: string,
 ) {
-  const sortBy = Object.keys(sort)[0] ?? 'created_at';
-  const orderBy = sort[sortBy] ?? 'descend';
   try {
-    const { error, data: rolesResult } = await supabase
-      .from('roles')
-      .select(
-        `
-      user_id,
-      team_id,
-      role
-      `,
-      )
-      .eq('team_id', teamId)
-      .neq('team_id', '00000000-0000-0000-0000-000000000000')
-      .order(sortBy, { ascending: orderBy === 'ascend' })
-      .range(
-        ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-        (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-      );
+    const { error, data: rolesResult } = await getTeamRoles(params, sort, teamId);
 
     if (!error) {
       const ids = rolesResult.map((item) => item.user_id);
 
-      const { error, data: usersResult } = await supabase
-        .from('users')
-        .select('id, raw_user_meta_data->email,raw_user_meta_data->display_name')
-        .in('id', ids);
+      const usersResult = await getUsersByIds(ids)
 
-      if (!error) {
+      if (usersResult) {
         const result: TeamMember[] = rolesResult.map((role) => {
           const user = usersResult?.find((u) => u.id === role.user_id);
           return {
@@ -270,14 +205,9 @@ export async function getTeamMembersApi(
 }
 
 export async function addTeamMemberApi(teamId: string, email: string) {
-  const { data: userResult } = await supabase
-    .from('users')
-    .select('id')
-    .eq('raw_user_meta_data->>email', email)
-    .single();
+  const id = await getUserIdByEmail(email);
 
-  const id = userResult?.id;
-  if (!userResult) {
+  if (!id) {
     return {
       error: {
         message: 'notRegistered',
@@ -286,21 +216,13 @@ export async function addTeamMemberApi(teamId: string, email: string) {
   }
 
   // Check if the user is already on the team
-  const { data: existingUser, error: roleCheckError } = await supabase
-    .from('roles')
-    .select('*')
-    .eq('user_id', id)
-    .neq('team_id', '00000000-0000-0000-0000-000000000000');
-
+  const { data: existingUser, error: roleCheckError } = await getRoleByuserId(id);
   if (!roleCheckError) {
     if (existingUser.length === 0) {
       // The user is not on the team, add an invitation record
-      const result = await supabase.from('roles').insert({
-        team_id: teamId,
-        user_id: id,
-        role: 'is_invited',
-      });
-      return result;
+      const adderror = await addRoleApi(id, teamId, 'is_invited')
+
+      return { error: adderror };
     } else {
       return {
         error: {
@@ -308,81 +230,6 @@ export async function addTeamMemberApi(teamId: string, email: string) {
         },
       };
     }
-  }
-}
-
-export async function reInvitedApi(userId: string, teamId: string) {
-  const { error } = await supabase
-    .from('roles')
-    .update({ role: 'is_invited' })
-    .eq('user_id', userId)
-    .eq('team_id', teamId);
-  return error;
-}
-
-export async function acceptTeamInvitationApi(teamId: string, userId: string) {
-  const { data, error } = await supabase
-    .from('roles')
-    .update({ role: 'member' })
-    .eq('team_id', teamId)
-    .eq('user_id', userId);
-
-  if (error) {
-    return {
-      success: false,
-      error,
-    };
-  }
-
-  return {
-    success: true,
-    data,
-  };
-}
-
-export async function rejectTeamInvitationApi(teamId: string, userId: string) {
-  const { error } = await supabase
-    .from('roles')
-    .update({ role: 'rejected' })
-    .eq('user_id', userId)
-    .eq('team_id', teamId);
-
-  if (error) {
-    return {
-      success: false,
-      error,
-    };
-  }
-  return {
-    success: true,
-  };
-}
-
-export async function getTeamInvitationStatusApi() {
-  const { error, data: userResult } = await supabase.auth.getUser();
-  if (error) {
-    return {
-      success: false,
-      data: null,
-    };
-  } else {
-    const { data: roleResult, error: roleError } = await supabase
-      .from('roles')
-      .select('*')
-      .eq('user_id', userResult.user.id)
-      .neq('team_id', '00000000-0000-0000-0000-000000000000')
-      .single();
-
-    if (roleError) {
-      return {
-        success: false,
-        data: null,
-      };
-    }
-    return {
-      success: true,
-      data: roleResult,
-    };
   }
 }
 
@@ -396,4 +243,10 @@ export async function uploadLogoApi(name: string, file: File) {
   } else {
     return res;
   }
+}
+
+
+export async function addTeam(id: string, data: any) {
+  const { error } = await supabase.from('teams').insert({ id, json: data });
+  return error
 }

@@ -12,10 +12,10 @@
  */
 export default [
   {
-    path: '/manageWelcomeTeams',
-    name: 'manageWelcomeTeams',
+    path: '/manageSystem',
+    name: 'manageSystem',
     icon: 'TeamOutlined',
-    component: './ManageWelcomeTeams',
+    component: './ManageSystem',
     hideInMenu: true,
   },
   {
