@@ -36,4 +36,5 @@ export default {
   'teams.modal.noTeam.content': '您可以创建团队或者加入已有团队',
   'teams.modal.noTeam.create': '创建团队',
   'teams.modal.noTeam.join': '加入团队',
+  'pages.team.info.public': '公开展示',
 };

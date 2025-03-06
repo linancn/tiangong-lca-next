@@ -1,17 +1,18 @@
 import { supabase } from '@/services/supabase';
-import { SortOrder } from 'antd/lib/table/interface';
-import { getUserIdByEmail, getUsersByIds } from '@/services/users/api';
 import { addTeam } from '@/services/teams/api';
+import { getUserIdByEmail, getUsersByIds } from '@/services/users/api';
+import { SortOrder } from 'antd/lib/table/interface';
 
-export async function getTeamRoles(params: { pageSize: number; current: number },
+export async function getTeamRoles(
+  params: { pageSize: number; current: number },
   sort: Record<string, SortOrder>,
-  teamId: string,) {
-
+  teamId: string,
+) {
   const sortBy = Object.keys(sort)[0] ?? 'created_at';
   const orderBy = sort[sortBy] ?? 'descend';
 
   return await supabase
-    .from('roles') 
+    .from('roles')
     .select(
       `
   user_id,
@@ -26,7 +27,7 @@ export async function getTeamRoles(params: { pageSize: number; current: number }
       ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
       (params.current ?? 1) * (params.pageSize ?? 10) - 1,
     );
-};
+}
 export async function addRoleApi(userId: string, teamId: string, role: string) {
   const { error } = await supabase.from('roles').insert({
     user_id: userId,
@@ -34,16 +35,14 @@ export async function addRoleApi(userId: string, teamId: string, role: string) {
     team_id: teamId,
   });
   return error;
-};
+}
 export async function getRoleByuserId(userId: string) {
   return await supabase
     .from('roles')
     .select('*')
     .eq('user_id', userId)
     .neq('team_id', '00000000-0000-0000-0000-000000000000');
-
 }
-
 
 export async function getUserRoles() {
   const session = await supabase.auth.getSession();
@@ -98,7 +97,7 @@ export async function getTeamInvitationStatusApi() {
   }
 }
 
-export async function createTeamMessage(id: string, data: any) {
+export async function createTeamMessage(id: string, data: any, rank: number) {
   const session = await supabase.auth.getSession();
   await supabase
     .from('roles')
@@ -107,9 +106,9 @@ export async function createTeamMessage(id: string, data: any) {
     .eq('role', 'rejected')
     .neq('team_id', '00000000-0000-0000-0000-000000000000');
 
-  const error = await addTeam(id, data);
+  const error = await addTeam(id, data, rank);
   if (!error) {
-    const roleError = await addRoleApi(session?.data?.session?.user?.id || '', id, 'owner')
+    const roleError = await addRoleApi(session?.data?.session?.user?.id || '', id, 'owner');
     return roleError;
   }
   return error;
@@ -176,8 +175,6 @@ export async function acceptTeamInvitationApi(teamId: string, userId: string) {
     data,
   };
 }
-
-
 
 // system api
 export async function getSystemUserRoleApi() {

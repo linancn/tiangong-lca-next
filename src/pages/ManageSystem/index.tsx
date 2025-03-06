@@ -47,6 +47,7 @@ const ManageSystem = () => {
     return (
       <Spin spinning={loading}>
         <AllTeams
+          showDragSort={true}
           disabled={
             !(
               userData?.role === 'member' ||

@@ -36,6 +36,7 @@ import {
   message,
   Modal,
   Spin,
+  Switch,
   Tabs,
   theme,
   Tooltip,
@@ -62,6 +63,8 @@ const Team = () => {
 
   const [membersLoading, setMembersLoading] = useState(false);
   const [addModalVisible, setAddModalVisible] = useState(false);
+
+  const [rank, setRank] = useState(-1);
   const actionRef = useRef<any>(null);
   const [searchParams] = useState(new URLSearchParams(window.location.search));
   const action = searchParams.get('action');
@@ -98,6 +101,7 @@ const Team = () => {
       );
     } else {
       const { title, description } = data[0]?.json;
+      setRank(data[0]?.rank);
       let _formData: any = {};
       title?.forEach((t: { '#text': string; '@xml:lang': string }) => {
         _formData[`title-${t['@xml:lang']}`] = t['#text'];
@@ -105,6 +109,7 @@ const Team = () => {
       description?.forEach((d: { '#text': string; '@xml:lang': string }) => {
         _formData[`description-${d['@xml:lang']}`] = d['#text'];
       });
+      _formData.rank = data[0]?.rank;
       setLightLogo(data[0]?.json.lightLogo);
       setDarkLogo(data[0]?.json.darkLogo);
       formRefEdit.current?.setFieldsValue({
@@ -144,6 +149,7 @@ const Team = () => {
         });
       });
 
+      console.log('result', result);
       return result;
     };
 
@@ -209,8 +215,10 @@ const Team = () => {
     };
 
     const editTeamInfo = async (values: any) => {
+      const { rank } = values;
+      delete values.rank;
       const params = getParams(values);
-      const { error } = await editTeamMessage(teamId, { ...params, darkLogo, lightLogo });
+      const { error } = await editTeamMessage(teamId, { ...params, darkLogo, lightLogo }, rank);
       if (error) {
         message.error(
           intl.formatMessage({
@@ -229,8 +237,10 @@ const Team = () => {
     };
 
     const createTeamInfo = async (values: any) => {
+      const { rank } = values;
+      delete values.rank;
       const params = getParams(values);
-      const error = await createTeamMessage(v4(), { ...params, darkLogo, lightLogo });
+      const error = await createTeamMessage(v4(), { ...params, darkLogo, lightLogo }, rank);
       if (error) {
         message.error(
           intl.formatMessage({
@@ -378,6 +388,24 @@ const Team = () => {
               >
                 <Input.TextArea rows={1} />
               </Form.Item>
+            </Form.Item>
+            <Form.Item
+              name="rank"
+              label={<FormattedMessage id="pages.team.info.public" defaultMessage="Public" />}
+              valuePropName="checked"
+              getValueProps={(value) => ({
+                checked: value !== -1,
+              })}
+              normalize={(value) => {
+                console.log(value);
+                return value ? 0 : -1;
+              }}
+            >
+              <Switch
+                disabled={
+                  (userRole !== 'admin' && userRole !== 'owner' && action !== 'create') || rank > 0
+                }
+              />
             </Form.Item>
 
             <Form.Item
