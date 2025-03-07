@@ -174,9 +174,14 @@ const TableList: FC<{ disabled?: boolean; showDragSort: boolean }> = ({
       return;
     }
     try {
+      const currentPage = actionRef.current?.pageInfo?.current || 1;
+      const pageSize = actionRef.current?.pageInfo?.pageSize || 10;
+      
+      const startIndex = (currentPage - 1) * pageSize;
+      
       const updates = tableData.map((team, index) => ({
         id: team.id,
-        rank: index + 1,
+        rank: startIndex + index + 1,
       }));
       const {error} = await updateSort(updates);
       if (error) {
