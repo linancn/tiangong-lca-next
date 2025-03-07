@@ -96,7 +96,7 @@ const Team = () => {
           defaultMessage: 'Failed to get details, please refresh!',
         }),
       );
-    } else {
+    } else if (data.length > 0) {
       const { title, description } = data[0]?.json;
       let _formData: any = {};
       title?.forEach((t: { '#text': string; '@xml:lang': string }) => {
