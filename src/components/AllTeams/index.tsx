@@ -1,8 +1,8 @@
 import { ListPagination } from '@/services/general/data';
 import { getLang, getLangText } from '@/services/general/util';
-import { getAllTableTeams, getTeamsByKeyword, updateTeamRank } from '@/services/teams/api';
+import { getAllTableTeams, getTeamsByKeyword, updateTeamRank,updateSort } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
-import { DeleteOutlined, SelectOutlined } from '@ant-design/icons';
+import { DeleteOutlined, SaveOutlined, SelectOutlined } from '@ant-design/icons';
 import { ActionType, DragSortTable, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Input, message, Modal, Space, Tag, Tooltip } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
@@ -23,6 +23,7 @@ const TableList: FC<{ disabled?: boolean; showDragSort: boolean }> = ({
   const actionRef = useRef<ActionType>();
   const [keyWord, setKeyWord] = useState<any>('');
   const [tableData, setTableData] = useState<TeamTable[]>([]);
+  const [isDragged, setIsDragged] = useState<boolean>(false);
 
   const handleRemoveTeam = (record: TeamTable) => {
     Modal.confirm({
@@ -127,6 +128,7 @@ const TableList: FC<{ disabled?: boolean; showDragSort: boolean }> = ({
       dataIndex: 'index',
       valueType: 'index',
       search: false,
+      render: (_) => <span>{_}</span>,
     },
     {
       title: <FormattedMessage id="component.allTeams.table.name" defaultMessage="Team Name" />,
@@ -164,7 +166,7 @@ const TableList: FC<{ disabled?: boolean; showDragSort: boolean }> = ({
     teamColumns.push(
       {
         title: <FormattedMessage id="component.allTeams.table.rank" defaultMessage="Rank" />,
-        dataIndex: 'rankColumn',
+        dataIndex: 'rank',
         search: false,
         render: (_, record) => (
           <>
@@ -227,30 +229,29 @@ const TableList: FC<{ disabled?: boolean; showDragSort: boolean }> = ({
       );
       return;
     }
+    
     setTableData(newDataSource);
+    setIsDragged(true);
+  };
 
-    const draggedTeam = newDataSource[afterIndex];
-    const resultRank = afterIndex === 0 ? 0 : newDataSource[afterIndex - 1]?.rank + 1;
+  const handleSaveRanks = async () => {
+    if (disabled) {
+      return;
+    }
     try {
-      const { error } = await updateTeamRank(draggedTeam.id, resultRank);
+      const updates = tableData.map((team, index) => ({
+        id: team.id,
+        rank: index + 1,
+      }));
+      const {error} = await updateSort(updates);
       if (error) {
-        throw error;
+        message.error(intl.formatMessage({ id: 'component.allTeams.table.fail', defaultMessage: 'Sorting modified failed' }));
       } else {
-        message.success(
-          intl.formatMessage({
-            id: 'component.allTeams.table.success',
-            defaultMessage: 'Sorting modified successfully',
-          }),
-        );
+        message.success(intl.formatMessage({ id: 'component.allTeams.table.success', defaultMessage: 'Sorting modified successfully' }));
+        setIsDragged(false);
         actionRef.current?.reload();
       }
     } catch (err) {
-      message.error(
-        intl.formatMessage({
-          id: 'component.allTeams.table.fail',
-          defaultMessage: 'Sorting modified failed',
-        }),
-      );
       console.error(err);
     }
   };
@@ -267,33 +268,50 @@ const TableList: FC<{ disabled?: boolean; showDragSort: boolean }> = ({
       </Card>
       <Card>
         {showDragSort ? (
-          <DragSortTable<TeamTable, ListPagination>
-            rowKey="id"
-            headerTitle={
-              <FormattedMessage id="component.allTeams.table.title" defaultMessage="All Teams" />
-            }
-            actionRef={actionRef}
-            search={false}
-            options={{ fullScreen: true }}
-            pagination={{
-              showSizeChanger: false,
-              pageSize: 10,
-            }}
-            dataSource={tableData}
-            request={async (params: { pageSize: number; current: number }) => {
-              if (keyWord.length > 0) {
-                const result = await getTeamsByKeyword(keyWord);
+          <>
+            <DragSortTable<TeamTable, ListPagination>
+              rowKey="id"
+              headerTitle={
+                <FormattedMessage id="component.allTeams.table.title" defaultMessage="All Teams" />
+              }
+              actionRef={actionRef}
+              search={false}
+              options={{ fullScreen: true }}
+              pagination={{
+                showSizeChanger: false,
+                pageSize: 10,
+              }}
+              dataSource={tableData}
+              request={async (params: { pageSize: number; current: number }) => {
+                if (keyWord.length > 0) {
+                  const result = await getTeamsByKeyword(keyWord);
+                  setTableData(result.data || []);
+                  return result;
+                }
+                const result = await getAllTableTeams(params);
                 setTableData(result.data || []);
                 return result;
-              }
-              const result = await getAllTableTeams(params);
-              setTableData(result.data || []);
-              return result;
-            }}
-            columns={teamColumns}
-            dragSortKey="rankColumn"
-            onDragSortEnd={handleDragSortEnd}
-          />
+              }}
+              columns={teamColumns}
+              dragSortKey="index"
+              onDragSortEnd={handleDragSortEnd}
+              toolBarRender={() => [
+                isDragged && (
+                  <Tooltip title={
+                    <FormattedMessage id="component.allTeams.table.saveRanks.tooltip" defaultMessage="Save Ranks" />
+                  }>
+                    <Button 
+                      type="text" 
+                      icon={<SaveOutlined />} 
+                      shape="circle"
+                      size="large"
+                      onClick={handleSaveRanks}
+                    />
+                  </Tooltip>
+                ),
+              ]}
+            />
+          </>
         ) : (
           <ProTable<TeamTable, ListPagination>
             rowKey="id"

@@ -40,4 +40,5 @@ export default {
   'component.allTeams.form.updateSuccess': '团队更新成功！',
   'component.allTeams.form.updateError': '团队信息更新失败。',
   'component.allTeams.form.createSuccess': '团队创建成功！',
+  'component.allTeams.table.saveRanks.tooltip': '保存排序',
 };

@@ -95,6 +95,15 @@ export async function updateTeamRank(id: string, rank: number) {
   return result;
 }
 
+export async function updateSort(params: { id: string, rank: number }[]) {
+  const result = await supabase
+    .from('teams')
+    .upsert(params, {
+      onConflict: 'id', //A record with the same ID value already exists, update the record, or insert a new record
+    });
+  return result;
+}
+
 export async function getTeamById(id: string) {
   if (!id) {
     return Promise.resolve({

@@ -39,4 +39,5 @@ export default {
   'component.allTeams.form.updateSuccess': 'Team updated successfully!',
   'component.allTeams.form.updateError': 'Failed to update team information.',
   'component.allTeams.form.createSuccess': 'Team created successfully!',
+  'component.allTeams.table.saveRanks.tooltip': 'Save Ranks',
 };
