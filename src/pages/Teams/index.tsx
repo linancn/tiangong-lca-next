@@ -99,7 +99,7 @@ const Team = () => {
           defaultMessage: 'Failed to get details, please refresh!',
         }),
       );
-    } else {
+    } else if (data.length > 0) {
       const { title, description } = data[0]?.json;
       setRank(data[0]?.rank);
       let _formData: any = {};
