@@ -217,7 +217,8 @@ const PasswordSet: FC = () => {
                         ),
                       },
                       {
-                        pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/,
+                        pattern:
+                          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?])[a-zA-Z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]{8,}$/,
                         message: (
                           <FormattedMessage
                             id="pages.login.password.validation"

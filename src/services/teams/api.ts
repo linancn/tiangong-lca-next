@@ -48,7 +48,10 @@ export async function getTeamsByKeyword(keyword: string) {
   });
 }
 
-export async function getAllTableTeams(params: { pageSize: number; current: number }) {
+export async function getAllTableTeams(
+  params: { pageSize: number; current: number },
+  // sort: Record<string, SortOrder>,
+) {
   try {
     const { data: teams, count } = await supabase
       .from('teams')
