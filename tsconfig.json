@@ -20,5 +20,6 @@
     },
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["./**/*.d.ts", "./**/*.ts", "./**/*.tsx"]
+  "include": ["./**/*.d.ts", "./**/*.ts", "./**/*.tsx"],
+  "exclude": ["docker"]
 }

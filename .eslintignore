@@ -8,3 +8,4 @@ dist-electron
 dist-package
 .umi
 mock
+docker/

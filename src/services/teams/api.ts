@@ -1,6 +1,6 @@
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
-import { getUserIdsByTeamIds, getTeamRoles, getRoleByuserId, addRoleApi } from '../roles/api';
+import { addRoleApi, getRoleByuserId, getTeamRoles, getUserIdsByTeamIds } from '../roles/api';
 import { getUserEmailByUserIds, getUserIdByEmail, getUsersByIds } from '../users/api';
 
 interface TeamMember {
@@ -47,8 +47,6 @@ export async function getTeamsByKeyword(keyword: string) {
     success: true,
   });
 }
-
-
 
 export async function getAllTableTeams(
   params: { pageSize: number; current: number },
@@ -160,7 +158,7 @@ export async function getTeamMembersApi(
     if (!error) {
       const ids = rolesResult.map((item) => item.user_id);
 
-      const usersResult = await getUsersByIds(ids)
+      const usersResult = await getUsersByIds(ids);
 
       if (usersResult) {
         const result: TeamMember[] = rolesResult.map((role) => {
@@ -220,7 +218,7 @@ export async function addTeamMemberApi(teamId: string, email: string) {
   if (!roleCheckError) {
     if (existingUser.length === 0) {
       // The user is not on the team, add an invitation record
-      const adderror = await addRoleApi(id, teamId, 'is_invited')
+      const adderror = await addRoleApi(id, teamId, 'is_invited');
 
       return { error: adderror };
     } else {
@@ -245,8 +243,7 @@ export async function uploadLogoApi(name: string, file: File) {
   }
 }
 
-
 export async function addTeam(id: string, data: any) {
   const { error } = await supabase.from('teams').insert({ id, json: data });
-  return error
+  return error;
 }

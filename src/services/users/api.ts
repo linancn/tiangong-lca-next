@@ -39,4 +39,4 @@ export async function getUserEmailByUserIds(userIds: string[]) {
     .select('id,raw_user_meta_data->email')
     .in('id', userIds);
   return result.data ?? [];
-};
+}
