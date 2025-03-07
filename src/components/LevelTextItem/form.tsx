@@ -104,7 +104,12 @@ const LevelTextItemForm: FC<Props> = ({
 
   const setShowValue = async () => {
     const field = formRef.current?.getFieldValue(name);
-    if (field && field.id && field.id?.length && (field.id.every((item: string) => (typeof item === 'string' && item.length !== 0)))) {
+    if (
+      field &&
+      field.id &&
+      field.id?.length &&
+      field.id.every((item: string) => typeof item === 'string' && item.length !== 0)
+    ) {
       const id = field.id[field.id.length - 1];
       await formRef.current?.setFieldValue([...name, 'showValue'], id);
     } else if (field && field.value && field.value?.length) {

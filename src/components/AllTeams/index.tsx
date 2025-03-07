@@ -1,15 +1,21 @@
 import { ListPagination } from '@/services/general/data';
 import { getLang, getLangText } from '@/services/general/util';
-import { getAllTableTeams, getTeamsByKeyword, updateTeamRank } from '@/services/teams/api';
+import {
+  getAllTableTeams,
+  getTeamsByKeyword,
+  updateSort,
+  updateTeamRank,
+} from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
-import { DeleteOutlined, SelectOutlined } from '@ant-design/icons';
+import { DeleteOutlined, SaveOutlined } from '@ant-design/icons';
 import { ActionType, DragSortTable, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Button, Card, Input, message, Modal, Space, Tag, Tooltip } from 'antd';
+import { Button, Card, Input, message, Modal, Space, Tooltip } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import TeamEdit from './edit';
+import SelectTeams from './select';
 import TeamView from './view';
 
 const { Search } = Input;
@@ -23,6 +29,7 @@ const TableList: FC<{ disabled?: boolean; showDragSort: boolean }> = ({
   const actionRef = useRef<ActionType>();
   const [keyWord, setKeyWord] = useState<any>('');
   const [tableData, setTableData] = useState<TeamTable[]>([]);
+  const [isDragged, setIsDragged] = useState<boolean>(false);
 
   const handleRemoveTeam = (record: TeamTable) => {
     Modal.confirm({
@@ -73,60 +80,13 @@ const TableList: FC<{ disabled?: boolean; showDragSort: boolean }> = ({
     });
   };
 
-  const handleSelectTeam = (record: TeamTable) => {
-    Modal.confirm({
-      okButtonProps: {
-        type: 'primary',
-        style: { backgroundColor: '#5C246A' },
-      },
-      cancelButtonProps: {
-        style: { borderColor: '#5C246A', color: '#5C246A' },
-      },
-      title: intl.formatMessage({
-        id: 'component.allTeams.table.select.confirm.title',
-        defaultMessage: 'Confirm Display Team',
-      }),
-      content: intl.formatMessage({
-        id: 'component.allTeams.table.select.confirm.content',
-        defaultMessage: 'The team will be displayed on the homepage, do you want to continue?',
-      }),
-      okText: intl.formatMessage({
-        id: 'component.allTeams.confirm.ok',
-        defaultMessage: 'OK',
-      }),
-      cancelText: intl.formatMessage({
-        id: 'component.allTeams.confirm.cancel',
-        defaultMessage: 'Cancel',
-      }),
-      onOk: () => {
-        updateTeamRank(record.id, 1).then(({ error }) => {
-          if (error) {
-            message.error(
-              intl.formatMessage({
-                id: 'component.allTeams.action.fail',
-                defaultMessage: 'Failed to select team',
-              }),
-            );
-          } else {
-            message.success(
-              intl.formatMessage({
-                id: 'component.allTeams.action.success',
-                defaultMessage: 'Team selected successfully',
-              }),
-            );
-            actionRef.current?.reload();
-          }
-        });
-      },
-    });
-  };
-
   const teamColumns: ProColumns<TeamTable>[] = [
     {
       title: <FormattedMessage id="component.allTeams.table.index" defaultMessage="Index" />,
       dataIndex: 'index',
       valueType: 'index',
       search: false,
+      render: (_) => <span>{_}</span>,
     },
     {
       title: <FormattedMessage id="component.allTeams.table.name" defaultMessage="Team Name" />,
@@ -161,49 +121,29 @@ const TableList: FC<{ disabled?: boolean; showDragSort: boolean }> = ({
 
   if (showDragSort) {
     // Manage teams on homepage
-    teamColumns.push(
-      {
-        title: <FormattedMessage id="component.allTeams.table.rank" defaultMessage="Rank" />,
-        dataIndex: 'rankColumn',
-        search: false,
-        render: (_, record) => (
-          <>
-            <Tag color={record.rank <= 0 ? 'red' : 'green'}>{record.rank}</Tag>
-            {record.rank <= 0 ? (
-              <Button
-                shape="circle"
-                icon={<SelectOutlined />}
-                size="small"
-                onClick={() => handleSelectTeam(record)}
-              />
-            ) : null}
-          </>
-        ),
-      },
-      {
-        title: <FormattedMessage id="component.allTeams.table.option" defaultMessage="Option" />,
-        dataIndex: 'option',
-        search: false,
-        render: (_, record) => (
-          <Space size="small">
-            <TeamView id={record.id} buttonType="icon" />
-            <TeamEdit actionRef={actionRef} id={record.id} buttonType="icon" />
-            <Tooltip
-              title={
-                <FormattedMessage id="component.allTeams.table.remove" defaultMessage="Remove" />
-              }
-            >
-              <Button
-                shape="circle"
-                icon={<DeleteOutlined />}
-                size="small"
-                onClick={() => handleRemoveTeam(record)}
-              />
-            </Tooltip>
-          </Space>
-        ),
-      },
-    );
+    teamColumns.push({
+      title: <FormattedMessage id="component.allTeams.table.option" defaultMessage="Option" />,
+      dataIndex: 'option',
+      search: false,
+      render: (_, record) => (
+        <Space size="small">
+          <TeamView id={record.id} buttonType="icon" />
+          <TeamEdit actionRef={actionRef} id={record.id} buttonType="icon" />
+          <Tooltip
+            title={
+              <FormattedMessage id="component.allTeams.table.remove" defaultMessage="Remove" />
+            }
+          >
+            <Button
+              shape="circle"
+              icon={<DeleteOutlined />}
+              size="small"
+              onClick={() => handleRemoveTeam(record)}
+            />
+          </Tooltip>
+        </Space>
+      ),
+    });
   }
 
   const onSearch: SearchProps['onSearch'] = (value) => {
@@ -227,14 +167,33 @@ const TableList: FC<{ disabled?: boolean; showDragSort: boolean }> = ({
       );
       return;
     }
-    setTableData(newDataSource);
 
-    const draggedTeam = newDataSource[afterIndex];
-    const resultRank = afterIndex === 0 ? 0 : newDataSource[afterIndex - 1]?.rank + 1;
+    setTableData(newDataSource);
+    setIsDragged(true);
+  };
+
+  const handleSaveRanks = async () => {
+    if (disabled) {
+      return;
+    }
     try {
-      const { error } = await updateTeamRank(draggedTeam.id, resultRank);
+      const currentPage = actionRef.current?.pageInfo?.current || 1;
+      const pageSize = actionRef.current?.pageInfo?.pageSize || 10;
+
+      const startIndex = (currentPage - 1) * pageSize;
+
+      const updates = tableData.map((team, index) => ({
+        id: team.id,
+        rank: startIndex + index + 1,
+      }));
+      const { error } = await updateSort(updates);
       if (error) {
-        throw error;
+        message.error(
+          intl.formatMessage({
+            id: 'component.allTeams.table.fail',
+            defaultMessage: 'Sorting modified failed',
+          }),
+        );
       } else {
         message.success(
           intl.formatMessage({
@@ -242,15 +201,10 @@ const TableList: FC<{ disabled?: boolean; showDragSort: boolean }> = ({
             defaultMessage: 'Sorting modified successfully',
           }),
         );
+        setIsDragged(false);
         actionRef.current?.reload();
       }
     } catch (err) {
-      message.error(
-        intl.formatMessage({
-          id: 'component.allTeams.table.fail',
-          defaultMessage: 'Sorting modified failed',
-        }),
-      );
       console.error(err);
     }
   };
@@ -267,33 +221,67 @@ const TableList: FC<{ disabled?: boolean; showDragSort: boolean }> = ({
       </Card>
       <Card>
         {showDragSort ? (
-          <DragSortTable<TeamTable, ListPagination>
-            rowKey="id"
-            headerTitle={
-              <FormattedMessage id="component.allTeams.table.title" defaultMessage="All Teams" />
-            }
-            actionRef={actionRef}
-            search={false}
-            options={{ fullScreen: true }}
-            pagination={{
-              showSizeChanger: false,
-              pageSize: 10,
-            }}
-            dataSource={tableData}
-            request={async (params: { pageSize: number; current: number }) => {
-              if (keyWord.length > 0) {
-                const result = await getTeamsByKeyword(keyWord);
+          <>
+            <DragSortTable<TeamTable, ListPagination>
+              rowKey="id"
+              headerTitle={
+                <FormattedMessage id="component.allTeams.table.title" defaultMessage="All Teams" />
+              }
+              actionRef={actionRef}
+              search={false}
+              options={{ fullScreen: true }}
+              pagination={{
+                showSizeChanger: false,
+                pageSize: 10,
+              }}
+              dataSource={tableData}
+              request={async (params: { pageSize: number; current: number }) => {
+                if (keyWord.length > 0) {
+                  const result = await getTeamsByKeyword(keyWord);
+                  setTableData(result.data || []);
+                  return result;
+                }
+                const result = await getAllTableTeams(params);
                 setTableData(result.data || []);
                 return result;
-              }
-              const result = await getAllTableTeams(params);
-              setTableData(result.data || []);
-              return result;
-            }}
-            columns={teamColumns}
-            dragSortKey="rankColumn"
-            onDragSortEnd={handleDragSortEnd}
-          />
+              }}
+              columns={teamColumns}
+              dragSortKey="index"
+              onDragSortEnd={handleDragSortEnd}
+              toolBarRender={() => [
+                isDragged && (
+                  <Tooltip
+                    key="saveRanks"
+                    title={
+                      <FormattedMessage
+                        id="component.allTeams.table.saveRanks.tooltip"
+                        defaultMessage="Save Ranks"
+                      />
+                    }
+                  >
+                    <Button
+                      type="text"
+                      icon={<SaveOutlined />}
+                      shape="circle"
+                      size="small"
+                      onClick={handleSaveRanks}
+                    />
+                  </Tooltip>
+                ),
+                <Tooltip
+                  key="select"
+                  title={
+                    <FormattedMessage
+                      id="component.allTeams.table.select.tooltip"
+                      defaultMessage="Select Team"
+                    />
+                  }
+                >
+                  <SelectTeams actionRef={actionRef} buttonType="icon" />
+                </Tooltip>,
+              ]}
+            />
+          </>
         ) : (
           <ProTable<TeamTable, ListPagination>
             rowKey="id"

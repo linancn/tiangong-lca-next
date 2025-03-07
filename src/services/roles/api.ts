@@ -65,7 +65,7 @@ export async function getUserRoles() {
 }
 
 export const getUserIdsByTeamIds = async (teamIds: string[]) => {
-  const result = await supabase.from('roles').select('user_id,team_id').in('team_id', teamIds);
+  const result = await supabase.from('roles').select('user_id,team_id,role').in('team_id', teamIds);
   return result.data ?? [];
 };
 

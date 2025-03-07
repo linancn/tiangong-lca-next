@@ -288,7 +288,7 @@ const TableList: FC = () => {
             return getReferenceUnitByIdsAndVersion(res?.data ?? []).then((refUnitGroupResp) => {
               return {
                 ...res,
-                data: refUnitGroupResp??[],
+                data: refUnitGroupResp ?? [],
               };
             });
           });

@@ -397,3 +397,21 @@ export async function getLifeCycleModelDetail(id: string, version: string) {
     success: true,
   });
 }
+
+export async function getLifeCyclesByIds(ids: string[]) {
+  const result = await supabase
+    .from('lifecyclemodels')
+    .select(
+      `
+      id,
+    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->name,
+    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
+    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->"common:generalComment",
+    version,
+    modified_at,
+    team_id
+    `,
+    )
+    .in('id', ids);
+  return result;
+}

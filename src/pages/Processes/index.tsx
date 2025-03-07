@@ -5,6 +5,8 @@ import { FormattedMessage, useIntl, useLocation } from 'umi';
 
 import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
+import LifeCycleModelEdit from '@/pages/LifeCycleModels/Components/edit';
+import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
 import { contributeSource } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
 import { getDataSource, getLang, getLangText } from '@/services/general/util';
@@ -130,32 +132,63 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <ProcessView
-                id={row.id}
-                version={row.version}
-                // dataSource={dataSource}
-                buttonType={'icon'}
-                lang={lang}
-                disabled={false}
-                actionRef={actionRef}
-              />
-              <ProcessEdit
-                id={row.id}
-                version={row.version}
-                lang={lang}
-                buttonType={'icon'}
-                actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
-              />
-              <ProcessEdit
-                type="copy"
-                id={row.id}
-                version={row.version}
-                lang={lang}
-                buttonType={'icon'}
-                actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
-              />
+              {row.isFromLifeCycle ? (
+                <LifeCycleModelView
+                  id={row.id}
+                  version={row.version}
+                  lang={lang}
+                  buttonType={'icon'}
+                  actionRef={actionRef}
+                />
+              ) : (
+                <ProcessView
+                  id={row.id}
+                  version={row.version}
+                  // dataSource={dataSource}
+                  buttonType={'icon'}
+                  lang={lang}
+                  disabled={false}
+                  actionRef={actionRef}
+                />
+              )}
+              {row.isFromLifeCycle ? (
+                <LifeCycleModelEdit
+                  id={row.id}
+                  version={row.version}
+                  lang={lang}
+                  actionRef={actionRef}
+                  buttonType={'icon'}
+                />
+              ) : (
+                <ProcessEdit
+                  id={row.id}
+                  version={row.version}
+                  lang={lang}
+                  buttonType={'icon'}
+                  actionRef={actionRef}
+                  setViewDrawerVisible={() => {}}
+                />
+              )}
+              {row.isFromLifeCycle ? (
+                <LifeCycleModelEdit
+                  type="copy"
+                  id={row.id}
+                  version={row.version}
+                  lang={lang}
+                  actionRef={actionRef}
+                  buttonType={'icon'}
+                />
+              ) : (
+                <ProcessEdit
+                  type="copy"
+                  id={row.id}
+                  version={row.version}
+                  lang={lang}
+                  buttonType={'icon'}
+                  actionRef={actionRef}
+                  setViewDrawerVisible={() => {}}
+                />
+              )}
               <ProcessDelete
                 id={row.id}
                 version={row.version}
@@ -166,17 +199,35 @@ const TableList: FC = () => {
               <ContributeData
                 onOk={async () => {
                   const { error } = await contributeSource('processes', row.id, row.version);
-                  if (error) {
-                    console.log(error);
-                  } else {
-                    message.success(
-                      intl.formatMessage({
-                        id: 'component.contributeData.success',
-                        defaultMessage: 'Contribute successfully',
-                      }),
+                  if (row.isFromLifeCycle) {
+                    const { error: lifeCycleError } = await contributeSource(
+                      'lifecyclemodels',
+                      row.id,
+                      row.version,
                     );
-                    actionRef.current?.reload();
+                    if (lifeCycleError || error) {
+                      console.log(lifeCycleError);
+                    } else {
+                      message.success(
+                        intl.formatMessage({
+                          id: 'component.contributeData.success',
+                          defaultMessage: 'Contribute successfully',
+                        }),
+                      );
+                    }
+                  } else {
+                    if (error) {
+                      console.log(error);
+                    } else {
+                      message.success(
+                        intl.formatMessage({
+                          id: 'component.contributeData.success',
+                          defaultMessage: 'Contribute successfully',
+                        }),
+                      );
+                    }
                   }
+                  actionRef.current?.reload();
                 }}
                 disabled={!!row.teamId}
               />
