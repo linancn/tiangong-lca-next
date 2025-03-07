@@ -10,6 +10,7 @@ export type ProcessTable = {
   location: string;
   modifiedAt: Date;
   teamId: string;
+  isFromLifeCycle?: boolean;
 };
 
 export type ProcessExchangeTable = {

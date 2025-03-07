@@ -307,7 +307,7 @@ export async function getLifeCycleModelTablePgroongaSearch(
 
             const classifications = jsonToList(
               dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-                'common:class'
+              'common:class'
               ],
             );
             const classificationZH = genClassificationZH(classifications, res?.data);
@@ -339,7 +339,7 @@ export async function getLifeCycleModelTablePgroongaSearch(
           const dataInfo = i.json?.lifeCycleModelDataSet?.lifeCycleModelInformation;
           const classifications = jsonToList(
             dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-              'common:class'
+            'common:class'
             ],
           );
           return {
@@ -396,4 +396,20 @@ export async function getLifeCycleModelDetail(id: string, version: string) {
     data: {},
     success: true,
   });
+}
+
+export async function getLifeCyclesByIds(ids: string[]) {
+  const result = await supabase
+    .from('lifecyclemodels')
+    .select(`
+      id,
+    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->name,
+    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
+    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->"common:generalComment",
+    version,
+    modified_at,
+    team_id
+    `)
+    .in('id', ids);
+  return result;
 }

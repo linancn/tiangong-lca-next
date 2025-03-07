@@ -18,6 +18,8 @@ import ProcessCreate from './Components/create';
 import ProcessDelete from './Components/delete';
 import ProcessEdit from './Components/edit';
 import ProcessView from './Components/view';
+import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
+import LifeCycleModelEdit from '@/pages/LifeCycleModels/Components/edit';
 const { Search } = Input;
 
 const TableList: FC = () => {
@@ -108,7 +110,7 @@ const TableList: FC = () => {
                 lang={lang}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
+                setViewDrawerVisible={() => { }}
               />
             </AllVersionsList>
           </Space>
@@ -130,53 +132,82 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              <ProcessView
+              {row.isFromLifeCycle ?
+                <LifeCycleModelView
+                  id={row.id}
+                  version={row.version}
+                  lang={lang}
+                  buttonType={'icon'}
+                  actionRef={actionRef}
+                /> : <ProcessView
+                  id={row.id}
+                  version={row.version}
+                  // dataSource={dataSource}
+                  buttonType={'icon'}
+                  lang={lang}
+                  disabled={false}
+                  actionRef={actionRef}
+                />}
+              {row.isFromLifeCycle ? <LifeCycleModelEdit
                 id={row.id}
                 version={row.version}
-                // dataSource={dataSource}
-                buttonType={'icon'}
                 lang={lang}
-                disabled={false}
                 actionRef={actionRef}
-              />
-              <ProcessEdit
+                buttonType={'icon'}
+              /> : <ProcessEdit
                 id={row.id}
                 version={row.version}
                 lang={lang}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
-              />
-              <ProcessEdit
+                setViewDrawerVisible={() => { }}
+              />}
+              {row.isFromLifeCycle ? <LifeCycleModelEdit
+                type="copy"
+                id={row.id}
+                version={row.version}
+                lang={lang}
+                actionRef={actionRef}
+                buttonType={'icon'}
+              /> : <ProcessEdit
                 type="copy"
                 id={row.id}
                 version={row.version}
                 lang={lang}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
-              />
+                setViewDrawerVisible={() => { }}
+              />}
               <ProcessDelete
                 id={row.id}
                 version={row.version}
                 buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
+                setViewDrawerVisible={() => { }}
               />
               <ContributeData
                 onOk={async () => {
                   const { error } = await contributeSource('processes', row.id, row.version);
-                  if (error) {
-                    console.log(error);
+                  if (row.isFromLifeCycle) {
+                    const { error: lifeCycleError } = await contributeSource('lifecyclemodels', row.id, row.version);
+                    if (lifeCycleError || error) {
+                      console.log(lifeCycleError);
+                    } else {
+                      message.success(intl.formatMessage({ id: 'component.contributeData.success', defaultMessage: 'Contribute successfully', }));
+                    }
                   } else {
-                    message.success(
-                      intl.formatMessage({
-                        id: 'component.contributeData.success',
-                        defaultMessage: 'Contribute successfully',
-                      }),
-                    );
-                    actionRef.current?.reload();
+                    if (error) {  
+                      console.log(error);
+                    } else {
+                      message.success(
+                        intl.formatMessage({
+                          id: 'component.contributeData.success',
+                          defaultMessage: 'Contribute successfully',
+                        }),
+                      );
+                    }
                   }
+                  actionRef.current?.reload();
                 }}
                 disabled={!!row.teamId}
               />
@@ -201,7 +232,7 @@ const TableList: FC = () => {
               lang={lang}
               buttonType={'icon'}
               actionRef={actionRef}
-              setViewDrawerVisible={() => {}}
+              setViewDrawerVisible={() => { }}
             />
           </Space>,
         ];
