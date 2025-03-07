@@ -1,7 +1,7 @@
+import { getLifeCyclesByIds } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/es/table/interface';
 import { getTeamIdByUserId } from '../general/api';
-import { getLifeCyclesByIds } from '@/services/lifeCycleModels/api';
 import {
   classificationToString,
   genClassificationZH,
@@ -189,14 +189,14 @@ export async function getProcessTableAll(
     const processIds = data.map((i) => i.id);
 
     const lifeCycleResult = await getLifeCyclesByIds(processIds);
-    if(lifeCycleResult.data&&lifeCycleResult.data.length>0){
+    if (lifeCycleResult.data && lifeCycleResult.data.length > 0) {
       lifeCycleResult.data.forEach((i) => {
         const process = data.find((j) => j.id === i.id && j.version === i.version);
         if (process) {
           process.isFromLifeCycle = true;
         }
       });
-    };
+    }
 
     return Promise.resolve({
       data: data,

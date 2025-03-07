@@ -240,7 +240,7 @@ export async function getUnitGroupTablePgroongaSearch(
 
             const classifications = jsonToList(
               dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-              'common:class'
+                'common:class'
               ],
             );
 
@@ -272,7 +272,7 @@ export async function getUnitGroupTablePgroongaSearch(
           const dataInfo = i.json?.unitGroupDataSet?.unitGroupInformation;
           const classifications = jsonToList(
             dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-            'common:class'
+              'common:class'
             ],
           );
           const refUnitId = dataInfo?.quantitativeReference?.referenceToReferenceUnit ?? '-';
@@ -322,8 +322,8 @@ export async function getReferenceUnitByIdsAndVersion(tableData: { [key: string]
     .map((item) => item.refUnitGroupId);
 
   if (unitGroupIds.length === 0) {
-    return tableData
-  };
+    return tableData;
+  }
   const result = await supabase
     .from('unitgroups')
     .select(
