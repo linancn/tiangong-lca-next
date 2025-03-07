@@ -2,9 +2,9 @@ import { ListPagination } from '@/services/general/data';
 import { getLang, getLangText } from '@/services/general/util';
 import { getAllTableTeams, getTeamsByKeyword, updateTeamRank,updateSort } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
-import { DeleteOutlined, SaveOutlined, SelectOutlined } from '@ant-design/icons';
+import { DeleteOutlined, SaveOutlined } from '@ant-design/icons';
 import { ActionType, DragSortTable, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Button, Card, Input, message, Modal, Space, Tag, Tooltip } from 'antd';
+import { Button, Card, Input, message, Modal, Space, Tooltip } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { useRef, useState } from 'react';
@@ -74,54 +74,6 @@ const TableList: FC<{ disabled?: boolean; showDragSort: boolean }> = ({
     });
   };
 
-  const handleSelectTeam = (record: TeamTable) => {
-    Modal.confirm({
-      okButtonProps: {
-        type: 'primary',
-        style: { backgroundColor: '#5C246A' },
-      },
-      cancelButtonProps: {
-        style: { borderColor: '#5C246A', color: '#5C246A' },
-      },
-      title: intl.formatMessage({
-        id: 'component.allTeams.table.select.confirm.title',
-        defaultMessage: 'Confirm Display Team',
-      }),
-      content: intl.formatMessage({
-        id: 'component.allTeams.table.select.confirm.content',
-        defaultMessage: 'The team will be displayed on the homepage, do you want to continue?',
-      }),
-      okText: intl.formatMessage({
-        id: 'component.allTeams.confirm.ok',
-        defaultMessage: 'OK',
-      }),
-      cancelText: intl.formatMessage({
-        id: 'component.allTeams.confirm.cancel',
-        defaultMessage: 'Cancel',
-      }),
-      onOk: () => {
-        updateTeamRank(record.id, 1).then(({ error }) => {
-          if (error) {
-            message.error(
-              intl.formatMessage({
-                id: 'component.allTeams.action.fail',
-                defaultMessage: 'Failed to select team',
-              }),
-            );
-          } else {
-            message.success(
-              intl.formatMessage({
-                id: 'component.allTeams.action.success',
-                defaultMessage: 'Team selected successfully',
-              }),
-            );
-            actionRef.current?.reload();
-          }
-        });
-      },
-    });
-  };
-
   const teamColumns: ProColumns<TeamTable>[] = [
     {
       title: <FormattedMessage id="component.allTeams.table.index" defaultMessage="Index" />,
@@ -164,24 +116,6 @@ const TableList: FC<{ disabled?: boolean; showDragSort: boolean }> = ({
   if (showDragSort) {
     // Manage teams on homepage
     teamColumns.push(
-      {
-        title: <FormattedMessage id="component.allTeams.table.rank" defaultMessage="Rank" />,
-        dataIndex: 'rank',
-        search: false,
-        render: (_, record) => (
-          <>
-            <Tag color={record.rank <= 0 ? 'red' : 'green'}>{record.rank}</Tag>
-            {record.rank <= 0 ? (
-              <Button
-                shape="circle"
-                icon={<SelectOutlined />}
-                size="small"
-                onClick={() => handleSelectTeam(record)}
-              />
-            ) : null}
-          </>
-        ),
-      },
       {
         title: <FormattedMessage id="component.allTeams.table.option" defaultMessage="Option" />,
         dataIndex: 'option',
