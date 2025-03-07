@@ -11,6 +11,7 @@ import { useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import TeamEdit from './edit';
 import TeamView from './view';
+import SelectTeams from './select';
 
 const { Search } = Input;
 
@@ -231,18 +232,23 @@ const TableList: FC<{ disabled?: boolean; showDragSort: boolean }> = ({
               onDragSortEnd={handleDragSortEnd}
               toolBarRender={() => [
                 isDragged && (
-                  <Tooltip title={
+                  <Tooltip key="saveRanks" title={
                     <FormattedMessage id="component.allTeams.table.saveRanks.tooltip" defaultMessage="Save Ranks" />
                   }>
                     <Button 
                       type="text" 
                       icon={<SaveOutlined />} 
                       shape="circle"
-                      size="large"
+                      size="small"
                       onClick={handleSaveRanks}
                     />
                   </Tooltip>
                 ),
+                <Tooltip key="select" title={
+                  <FormattedMessage id="component.allTeams.table.select.tooltip" defaultMessage="Select Team" />
+                }>
+                  <SelectTeams actionRef={actionRef} buttonType="icon" />
+                </Tooltip>
               ]}
             />
           </>

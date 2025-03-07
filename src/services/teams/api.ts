@@ -53,7 +53,7 @@ export async function getAllTableTeams(params: { pageSize: number; current: numb
     const { data: teams, count } = await supabase
       .from('teams')
       .select('*', { count: 'exact' })
-      .gte('rank', 0)
+      .gte('rank', 1)
       .order('rank', { ascending: true })
       .range(
         ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
@@ -65,7 +65,7 @@ export async function getAllTableTeams(params: { pageSize: number; current: numb
       const users = await getUserIdsByTeamIds(teamIds);
       users.forEach((user) => {
         const team = teams.find((item) => item.id === user.team_id);
-        if (team) {
+        if (team && user.role === 'owner') {
           team.user_id = user.user_id;
         }
       });
@@ -248,4 +248,51 @@ export async function uploadLogoApi(name: string, file: File) {
 export async function addTeam(id: string, data: any, rank: number) {
   const { error } = await supabase.from('teams').insert({ id, json: data, rank });
   return error;
+}
+
+export async function getUnrankedTeams(params: { pageSize?: number; current?: number }) {
+  try {
+    const { data: teams, count } = await supabase
+      .from('teams')
+      .select('*', { count: 'exact' })
+      .eq('rank', 0)
+      .order('created_at', { ascending: false })
+      .range(
+        ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
+        (params.current ?? 1) * (params.pageSize ?? 10) - 1,
+      );
+
+    if (teams && teams.length > 0) {
+      const teamIds = teams.map((item) => item.id);
+      const users = await getUserIdsByTeamIds(teamIds);
+      users.forEach((user) => {
+        const team = teams.find((item) => item.id === user.team_id);
+        if (team && user.role === 'owner') {
+          team.user_id = user.user_id;
+        }
+      });
+      const userEmails = await getUserEmailByUserIds(users.map((item) => item.user_id));
+
+      userEmails.forEach((user) => {
+        const team = teams.find((item) => item.user_id === user.id);
+        if (team) {
+          team.ownerEmail = user.email;
+        }
+      });
+    } else {
+      throw new Error('No teams found');
+    }
+
+    return Promise.resolve({
+      data: teams ?? [],
+      success: true,
+      total: count || 0,
+    });
+  } catch (error) {
+    return Promise.resolve({
+      data: [],
+      success: true,
+      total: 0,
+    });
+  }
 }
