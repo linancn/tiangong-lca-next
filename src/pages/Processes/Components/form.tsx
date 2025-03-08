@@ -975,7 +975,7 @@ export const ProcessForm: FC<Props> = ({
             label={
               <FormattedMessage
                 id="pages.process.view.administrativeInformation.referenceToPersonOrEntityEnteringTheData"
-                defaultMessage="Data entry by:"
+                defaultMessage="Reference to Person or Entity Entering The Data"
               />
             }
             name={[
