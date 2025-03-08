@@ -80,7 +80,7 @@ export default {
   'pages.process.view.administrativeInformation.timeStamp': 'Time stamp (last saved)',
   'pages.process.view.administrativeInformation.referenceToDataSetFormat': 'Data set format(s)',
   'pages.process.view.administrativeInformation.referenceToConvertedOriginalDataSetFrom': 'Converted original data set from:',
-  'pages.process.view.administrativeInformation.referenceToPersonOrEntityEnteringTheData': 'Data entry by:',
+  'pages.process.view.administrativeInformation.referenceToPersonOrEntityEnteringTheData': 'Reference to Person or Entity Entering The Data:',
   'pages.process.view.administrativeInformation.referenceToDataSetUseApproval': 'Official approval of data set by producer/operator:',
   'pages.process.view.administrativeInformation.publicationAndOwnership': 'Publication and ownership',
   'pages.process.view.administrativeInformation.dateOfLastRevision': 'Date of last revision',

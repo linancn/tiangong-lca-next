@@ -50,17 +50,14 @@ export async function getTeamsByKeyword(keyword: string) {
 
 export async function getAllTableTeams(
   params: { pageSize: number; current: number },
-  sort: Record<string, SortOrder>,
+  // sort: Record<string, SortOrder>,
 ) {
   try {
-    const sortBy = Object.keys(sort)[0] ?? 'created_at';
-    const orderBy = sort[sortBy] ?? 'descend';
-
     const { data: teams, count } = await supabase
       .from('teams')
       .select('*', { count: 'exact' })
-      .gte('rank', 0)
-      .order(sortBy, { ascending: orderBy === 'ascend' })
+      .gte('rank', 1)
+      .order('rank', { ascending: true })
       .range(
         ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
         (params.current ?? 1) * (params.pageSize ?? 10) - 1,
@@ -71,7 +68,7 @@ export async function getAllTableTeams(
       const users = await getUserIdsByTeamIds(teamIds);
       users.forEach((user) => {
         const team = teams.find((item) => item.id === user.team_id);
-        if (team) {
+        if (team && user.role === 'owner') {
           team.user_id = user.user_id;
         }
       });
@@ -96,9 +93,15 @@ export async function getAllTableTeams(
     });
   }
 }
-
 export async function updateTeamRank(id: string, rank: number) {
   const result = await supabase.from('teams').update({ rank }).eq('id', id);
+  return result;
+}
+
+export async function updateSort(params: { id: string; rank: number }[]) {
+  const result = await supabase.from('teams').upsert(params, {
+    onConflict: 'id', //A record with the same ID value already exists, update the record, or insert a new record
+  });
   return result;
 }
 
@@ -125,8 +128,8 @@ export async function getTeamById(id: string) {
   });
 }
 
-export async function editTeamMessage(id: string, data: any) {
-  const result = await supabase.from('teams').update({ json: data }).eq('id', id).select();
+export async function editTeamMessage(id: string, data: any, rank: number) {
+  const result = await supabase.from('teams').update({ json: data, rank }).eq('id', id).select();
   return result;
 }
 
@@ -243,7 +246,54 @@ export async function uploadLogoApi(name: string, file: File) {
   }
 }
 
-export async function addTeam(id: string, data: any) {
-  const { error } = await supabase.from('teams').insert({ id, json: data });
+export async function addTeam(id: string, data: any, rank: number) {
+  const { error } = await supabase.from('teams').insert({ id, json: data, rank });
   return error;
+}
+
+export async function getUnrankedTeams(params: { pageSize?: number; current?: number }) {
+  try {
+    const { data: teams, count } = await supabase
+      .from('teams')
+      .select('*', { count: 'exact' })
+      .eq('rank', 0)
+      .order('created_at', { ascending: false })
+      .range(
+        ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
+        (params.current ?? 1) * (params.pageSize ?? 10) - 1,
+      );
+
+    if (teams && teams.length > 0) {
+      const teamIds = teams.map((item) => item.id);
+      const users = await getUserIdsByTeamIds(teamIds);
+      users.forEach((user) => {
+        const team = teams.find((item) => item.id === user.team_id);
+        if (team && user.role === 'owner') {
+          team.user_id = user.user_id;
+        }
+      });
+      const userEmails = await getUserEmailByUserIds(users.map((item) => item.user_id));
+
+      userEmails.forEach((user) => {
+        const team = teams.find((item) => item.user_id === user.id);
+        if (team) {
+          team.ownerEmail = user.email;
+        }
+      });
+    } else {
+      throw new Error('No teams found');
+    }
+
+    return Promise.resolve({
+      data: teams ?? [],
+      success: true,
+      total: count || 0,
+    });
+  } catch (error) {
+    return Promise.resolve({
+      data: [],
+      success: true,
+      total: 0,
+    });
+  }
 }

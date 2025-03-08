@@ -65,7 +65,7 @@ export async function getUserRoles() {
 }
 
 export const getUserIdsByTeamIds = async (teamIds: string[]) => {
-  const result = await supabase.from('roles').select('user_id,team_id').in('team_id', teamIds);
+  const result = await supabase.from('roles').select('user_id,team_id,role').in('team_id', teamIds);
   return result.data ?? [];
 };
 
@@ -97,7 +97,7 @@ export async function getTeamInvitationStatusApi() {
   }
 }
 
-export async function createTeamMessage(id: string, data: any) {
+export async function createTeamMessage(id: string, data: any, rank: number) {
   const session = await supabase.auth.getSession();
   await supabase
     .from('roles')
@@ -106,7 +106,7 @@ export async function createTeamMessage(id: string, data: any) {
     .eq('role', 'rejected')
     .neq('team_id', '00000000-0000-0000-0000-000000000000');
 
-  const error = await addTeam(id, data);
+  const error = await addTeam(id, data, rank);
   if (!error) {
     const roleError = await addRoleApi(session?.data?.session?.user?.id || '', id, 'owner');
     return roleError;

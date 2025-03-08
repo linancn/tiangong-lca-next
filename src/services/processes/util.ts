@@ -390,6 +390,10 @@ export function genProcessJsonOrdered(id: string, data: any) {
               data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
                 '@uri'
               ],
+            '@version':
+              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
+                '@version'
+              ] ?? {},
             'common:shortDescription': getLangJson(
               data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
                 'common:shortDescription'
@@ -398,59 +402,71 @@ export function genProcessJsonOrdered(id: string, data: any) {
           },
           'common:referenceToConvertedOriginalDataSetFrom': {
             '@refObjectId':
-              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-                '@refObjectId'
-              ],
+              data?.administrativeInformation?.dataEntryBy?.[
+                'common:referenceToConvertedOriginalDataSetFrom'
+              ]?.['@refObjectId'],
             '@type':
-              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-                '@type'
-              ],
+              data?.administrativeInformation?.dataEntryBy?.[
+                'common:referenceToConvertedOriginalDataSetFrom'
+              ]?.['@type'],
             '@uri':
-              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-                '@uri'
-              ],
+              data?.administrativeInformation?.dataEntryBy?.[
+                'common:referenceToConvertedOriginalDataSetFrom'
+              ]?.['@uri'],
+            '@version':
+              data?.administrativeInformation?.dataEntryBy?.[
+                'common:referenceToConvertedOriginalDataSetFrom'
+              ]?.['@version'] ?? {},
             'common:shortDescription': getLangJson(
-              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-                'common:shortDescription'
-              ],
+              data?.administrativeInformation?.dataEntryBy?.[
+                'common:referenceToConvertedOriginalDataSetFrom'
+              ]?.['common:shortDescription'],
             ),
           },
           'common:referenceToPersonOrEntityEnteringTheData': {
             '@refObjectId':
-              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-                '@refObjectId'
-              ],
+              data?.administrativeInformation?.dataEntryBy?.[
+                'common:referenceToPersonOrEntityEnteringTheData'
+              ]?.['@refObjectId'],
             '@type':
-              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-                '@type'
-              ],
+              data?.administrativeInformation?.dataEntryBy?.[
+                'common:referenceToPersonOrEntityEnteringTheData'
+              ]?.['@type'],
             '@uri':
-              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-                '@uri'
-              ],
+              data?.administrativeInformation?.dataEntryBy?.[
+                'common:referenceToPersonOrEntityEnteringTheData'
+              ]?.['@uri'],
+            '@version':
+              data?.administrativeInformation?.dataEntryBy?.[
+                'common:referenceToPersonOrEntityEnteringTheData'
+              ]?.['@version'] ?? {},
             'common:shortDescription': getLangJson(
-              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-                'common:shortDescription'
-              ],
+              data?.administrativeInformation?.dataEntryBy?.[
+                'common:referenceToPersonOrEntityEnteringTheData'
+              ]?.['common:shortDescription'],
             ),
           },
           'common:referenceToDataSetUseApproval': {
             '@refObjectId':
-              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-                '@refObjectId'
-              ],
+              data?.administrativeInformation?.dataEntryBy?.[
+                'common:referenceToDataSetUseApproval'
+              ]?.['@refObjectId'],
             '@type':
-              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-                '@type'
-              ],
+              data?.administrativeInformation?.dataEntryBy?.[
+                'common:referenceToDataSetUseApproval'
+              ]?.['@type'],
             '@uri':
-              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-                '@uri'
-              ],
+              data?.administrativeInformation?.dataEntryBy?.[
+                'common:referenceToDataSetUseApproval'
+              ]?.['@uri'],
+            '@version':
+              data?.administrativeInformation?.dataEntryBy?.[
+                'common:referenceToDataSetUseApproval'
+              ]?.['@version'] ?? {},
             'common:shortDescription': getLangJson(
-              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-                'common:shortDescription'
-              ],
+              data?.administrativeInformation?.dataEntryBy?.[
+                'common:referenceToDataSetUseApproval'
+              ]?.['common:shortDescription'],
             ),
           },
         },
@@ -792,6 +808,10 @@ export function genProcessFromData(data: any) {
             data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
               '@uri'
             ],
+          '@version':
+            data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
+              '@version'
+            ] ?? {},
           'common:shortDescription': getLangList(
             data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
               'common:shortDescription'
@@ -800,59 +820,71 @@ export function genProcessFromData(data: any) {
         },
         'common:referenceToConvertedOriginalDataSetFrom': {
           '@refObjectId':
-            data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-              '@refObjectId'
-            ],
+            data?.administrativeInformation?.dataEntryBy?.[
+              'common:referenceToConvertedOriginalDataSetFrom'
+            ]?.['@refObjectId'],
           '@type':
-            data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-              '@type'
-            ],
+            data?.administrativeInformation?.dataEntryBy?.[
+              'common:referenceToConvertedOriginalDataSetFrom'
+            ]?.['@type'],
           '@uri':
-            data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-              '@uri'
-            ],
+            data?.administrativeInformation?.dataEntryBy?.[
+              'common:referenceToConvertedOriginalDataSetFrom'
+            ]?.['@uri'],
+          '@version':
+            data?.administrativeInformation?.dataEntryBy?.[
+              'common:referenceToConvertedOriginalDataSetFrom'
+            ]?.['@version'] ?? {},
           'common:shortDescription': getLangList(
-            data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-              'common:shortDescription'
-            ],
+            data?.administrativeInformation?.dataEntryBy?.[
+              'common:referenceToConvertedOriginalDataSetFrom'
+            ]?.['common:shortDescription'],
           ),
         },
         'common:referenceToPersonOrEntityEnteringTheData': {
           '@refObjectId':
-            data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-              '@refObjectId'
-            ],
+            data?.administrativeInformation?.dataEntryBy?.[
+              'common:referenceToPersonOrEntityEnteringTheData'
+            ]?.['@refObjectId'],
           '@type':
-            data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-              '@type'
-            ],
+            data?.administrativeInformation?.dataEntryBy?.[
+              'common:referenceToPersonOrEntityEnteringTheData'
+            ]?.['@type'],
           '@uri':
-            data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-              '@uri'
-            ],
+            data?.administrativeInformation?.dataEntryBy?.[
+              'common:referenceToPersonOrEntityEnteringTheData'
+            ]?.['@uri'],
+          '@version':
+            data?.administrativeInformation?.dataEntryBy?.[
+              'common:referenceToPersonOrEntityEnteringTheData'
+            ]?.['@version'] ?? {},
           'common:shortDescription': getLangList(
-            data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-              'common:shortDescription'
-            ],
+            data?.administrativeInformation?.dataEntryBy?.[
+              'common:referenceToPersonOrEntityEnteringTheData'
+            ]?.['common:shortDescription'],
           ),
         },
         'common:referenceToDataSetUseApproval': {
           '@refObjectId':
-            data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-              '@refObjectId'
-            ],
+            data?.administrativeInformation?.dataEntryBy?.[
+              'common:referenceToDataSetUseApproval'
+            ]?.['@refObjectId'],
           '@type':
-            data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-              '@type'
-            ],
+            data?.administrativeInformation?.dataEntryBy?.[
+              'common:referenceToDataSetUseApproval'
+            ]?.['@type'],
           '@uri':
-            data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-              '@uri'
-            ],
+            data?.administrativeInformation?.dataEntryBy?.[
+              'common:referenceToDataSetUseApproval'
+            ]?.['@uri'],
+          '@version':
+            data?.administrativeInformation?.dataEntryBy?.[
+              'common:referenceToDataSetUseApproval'
+            ]?.['@version'] ?? {},
           'common:shortDescription': getLangList(
-            data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-              'common:shortDescription'
-            ],
+            data?.administrativeInformation?.dataEntryBy?.[
+              'common:referenceToDataSetUseApproval'
+            ]?.['common:shortDescription'],
           ),
         },
       },
