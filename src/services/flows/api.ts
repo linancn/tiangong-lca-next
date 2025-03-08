@@ -319,11 +319,13 @@ export async function getFlowTablePgroongaSearch(
       await getILCDFlowCategorizationAll(lang).then((res) => {
         data = result.data.map((i: any) => {
           try {
+            const typeOfDataSet =
+              i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet;
             const dataInfo = i.json?.flowDataSet?.flowInformation?.dataSetInformation;
 
             let classificationData: any = {};
             let thisClass: any[] = [];
-            if (i?.typeOfDataSet === 'Elementary flow') {
+            if (typeOfDataSet === 'Elementary flow') {
               classificationData =
                 dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[
                   'common:category'
@@ -354,8 +356,7 @@ export async function getFlowTablePgroongaSearch(
               id: i.id,
               name: genFlowName(dataInfo?.name ?? {}, lang),
               synonyms: getLangText(dataInfo?.['common:synonyms'] ?? {}, lang),
-              flowType:
-                i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet ?? '-',
+              flowType: typeOfDataSet ?? '-',
               classification: classificationToString(classificationZH),
               CASNumber: dataInfo?.CASNumber ?? '-',
               locationOfSupply: locationOfSupply ?? '-',
