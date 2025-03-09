@@ -544,8 +544,10 @@ const ToolbarEdit: FC<Props> = ({
 
   const addProcessNodes = (processes: TAddProcessNodesParams[]) => {
     setSpinning(true);
+    if (processes.length > 1) {
+    }
     getProcessDetailByIdAndVersion(processes).then(async (result: any) => {
-      const dealData = (data: any) => {
+      const dealData = (data: any, index: number) => {
         const exchange =
           genProcessFromData(data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? [];
         const refExchange = exchange.find((i: any) => i?.quantitativeReference === true);
@@ -584,7 +586,7 @@ const ToolbarEdit: FC<Props> = ({
               version: data?.version,
               label: name,
               shortDescription: genProcessNameJson(name),
-              quantitativeReference: nodeCount === 0 ? '1' : '0',
+              quantitativeReference: nodeCount === 0 && index === 0 ? '1' : '0',
             },
             ports: {
               ...ports,
@@ -595,8 +597,8 @@ const ToolbarEdit: FC<Props> = ({
       };
 
       if (result && result.data) {
-        result?.data.forEach((item: TAddProcessNodesParams) => {
-          dealData(item);
+        result?.data.forEach((item: TAddProcessNodesParams, index: number) => {
+          dealData(item, index);
         });
       }
 
