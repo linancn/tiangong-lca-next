@@ -64,6 +64,7 @@ const UnitConvert: React.FC<UnitConvertProps> = ({
         <FormattedMessage id="pages.process.unitConvert.title" defaultMessage="Unit Conversion" />
       }
       open={visible}
+      zIndex={2000}
       onCancel={handleClose}
       onOk={handleOk}
     >
