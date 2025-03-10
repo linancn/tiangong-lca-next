@@ -1127,7 +1127,7 @@ export const ProcessForm: FC<Props> = ({
           items={[
             {
               key: '1',
-              label: 'Input',
+              label: <FormattedMessage id="pages.process.exchange.input" defaultMessage="Input" />,
               children: (
                 <ProTable<ProcessExchangeTable, ListPagination>
                   actionRef={actionRefExchangeTableInput}
@@ -1164,7 +1164,7 @@ export const ProcessForm: FC<Props> = ({
           items={[
             {
               key: '1',
-              label: 'Output',
+              label: <FormattedMessage id="pages.process.exchange.output" defaultMessage="Output" />,
               children: (
                 <ProTable<ProcessExchangeTable, ListPagination>
                   actionRef={actionRefExchangeTableOutput}

@@ -1,6 +1,9 @@
 export default {
   'pages.process.referenceYear': '参考年份',
   'pages.process.location': '地理位置',
+  
+  'pages.process.exchange.input': '输入',
+  'pages.process.exchange.output': '输出',
 
   'pages.process.drawer.title.create': '创建过程',
   'pages.process.drawer.title.view': '查看过程',
