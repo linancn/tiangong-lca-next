@@ -17,9 +17,8 @@ import { useState, useEffect } from 'react';
 import { FormattedMessage } from 'umi';
 import { complianceOptions, flowTypeOptions } from './optiondata';
 import PropertyView from './Property/view';
-import { getReferenceUnitGroups } from '@/services/flowproperties/api';
-import { getReferenceUnits } from '@/services/unitgroups/api'
 import { getLangText } from '@/services/general/util';
+import { getUnitData } from '@/services/general/util';
 
 type Props = {
   id: string;
@@ -77,40 +76,14 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
     setActiveTabKey(key);
   };
 
-  const getUnitData = (data: any) => {
-    const params = data?.map((item: any) => {
-      return {
-        id: item?.referenceToFlowPropertyDataSetId,
-        version: item?.referenceToFlowPropertyDataSetVersion,
-      };
-    });
-    getReferenceUnitGroups(params).then((unitGroupsRes: any) => {
-      const unitParams = unitGroupsRes?.data?.map((item: any) => {
-        return {
-          id: item?.refUnitGroupId,
-          version: item?.version,
-        };
-      });
-      getReferenceUnits(unitParams).then((unitsRes: any) => {
-        unitsRes?.data?.forEach((unit: any) => {
-          const unitGroup = unitGroupsRes?.data.find((group: any) => group?.refUnitGroupId === unit?.id)
-          if (unitGroup) {
-            const tableIndex = data?.findIndex((e: any) => e?.referenceToFlowPropertyDataSetId === unitGroup?.id)
-            if (tableIndex !== -1) {
-              data[tableIndex]['refUnitRes'] = unit
-            }
-          }
-        })
-        setDataSource(data)
-      });
-    });
-    setDataSource([])
-  };
-
   useEffect(() => {
-    if (propertyDataSource && propertyDataSource.length) {
-      getUnitData(genFlowPropertyTabTableData(propertyDataSource, lang))
-    }
+      getUnitData('flowproperty',genFlowPropertyTabTableData(propertyDataSource, lang)).then((res:any)=>{
+        if(res&&res?.length){
+          setDataSource(res)
+        }else{
+          setDataSource([])
+        }
+      })
   }, [propertyDataSource])
 
   const propertyColumns: ProColumns<FlowpropertyTabTable>[] = [

@@ -1,4 +1,6 @@
 import { Classification } from './data';
+import { getReferenceUnitGroups } from '@/services/flowproperties/api';
+import { getReferenceUnits } from '@/services/unitgroups/api'
 
 export function removeEmptyObjects(obj: any) {
   Object.keys(obj).forEach((key) => {
@@ -11,6 +13,66 @@ export function removeEmptyObjects(obj: any) {
   });
   return obj;
 }
+
+export async function getUnitData(idType: string, data: any) {
+  return new Promise((resolve,) => {
+    if (idType === 'unitgroup') {
+      const unitParams = data?.map((item: any) => {
+        return {
+          id: item?.refUnitGroupId,
+          version: item?.version,
+        };
+      });
+      getReferenceUnits(unitParams).then((unitsRes: any) => {
+        data.forEach((item: any) => {
+          let unit = unitsRes?.data?.find((e: any) => e?.id === item?.refUnitGroupId&&e?.version===item?.version)
+          if(!unit){
+             unit = unitsRes?.data?.find((e: any) => e?.id === item?.refUnitGroupId)
+          }
+          if (unit) {
+            item['refUnitRes'] = unit
+          }
+        })
+        resolve(data)
+      })
+    }
+    if (idType === 'flowproperty') {
+      const params = data?.map((item: any) => {
+        return {
+          id: item?.referenceToFlowPropertyDataSetId,
+          version: item?.referenceToFlowPropertyDataSetVersion,
+        };
+      });
+      getReferenceUnitGroups(params).then((unitGroupsRes: any) => {
+        const unitParams = unitGroupsRes?.data?.map((item: any) => {
+          return {
+            id: item?.refUnitGroupId,
+            version: item?.version,
+          };
+        });
+        getReferenceUnits(unitParams).then((unitsRes: any) => {
+          data.forEach((item: any) => {
+            let unitGroup = unitGroupsRes?.data.find((group: any) => group?.id === item?.referenceToFlowPropertyDataSetId && group?.version === item?.referenceToFlowPropertyDataSetVersion)
+            if(!unitGroup){
+              unitGroup = unitGroupsRes?.data.find((group: any) => group?.id === item?.referenceToFlowPropertyDataSetId)
+            };
+            if(unitGroup){
+              let unit = unitsRes?.data.find((unit: any) => unit?.id === unitGroup?.refUnitGroupId && unit?.version === unitGroup?.version)
+              if(!unit){
+                unit = unitsRes?.data.find((unit: any) => unit?.id === unitGroup?.refUnitGroupId)
+              }
+              if(unit){
+                item['refUnitRes'] = unit
+              }
+            }
+          })
+          resolve(data)
+        });
+      });
+    }
+  })
+};
+
 
 export function genClassStr(
   data: string[],
@@ -324,11 +386,11 @@ export function isValidURL(url: string): boolean {
   }
   const urlPattern = new RegExp(
     '^(https?:\\/\\/)?' +
-      '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|' +
-      '((\\d{1,3}\\.){3}\\d{1,3}))' +
-      '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' +
-      '(\\?[;&a-z\\d%_.~+=-]*)?' +
-      '(\\#[-a-z\\d_]*)?$',
+    '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|' +
+    '((\\d{1,3}\\.){3}\\d{1,3}))' +
+    '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' +
+    '(\\?[;&a-z\\d%_.~+=-]*)?' +
+    '(\\#[-a-z\\d_]*)?$',
     'i',
   );
   return !!urlPattern.test(url);
