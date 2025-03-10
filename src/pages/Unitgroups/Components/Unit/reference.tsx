@@ -17,6 +17,7 @@ const ReferenceUnit: FC<Props> = ({ id, version, idType, lang }) => {
 
   useEffect(() => {
     if (id) {
+      console.log('idType--ReferenceUnit',idType);
       if (idType === 'flow') {
         setSpinning(true);
         getReferenceProperty(id, version).then((res1: any) => {

@@ -315,64 +315,7 @@ export async function getUnitGroupDetail(id: string, version: string) {
   return getDataDetail(id, version, 'unitgroups');
 }
 
-// Replace the query function for idType === 'unitgroup' in the <ReferenceUnit/> component.
-export async function getReferenceUnitByIdsAndVersion(tableData: { [key: string]: any }[]) {
-  const unitGroupIds = tableData
-    .filter((item) => item.refUnitGroupId && item.refUnitGroupId.length === 36)
-    .map((item) => item.refUnitGroupId);
 
-  if (unitGroupIds.length === 0) {
-    return tableData;
-  }
-  const result = await supabase
-    .from('unitgroups')
-    .select(
-      `
-      id,
-      version,
-      json->unitGroupDataSet->unitGroupInformation->dataSetInformation->"common:name",
-      json->unitGroupDataSet->unitGroupInformation->quantitativeReference->referenceToReferenceUnit,
-      json->unitGroupDataSet->units->unit
-  `,
-    )
-    .in('id', unitGroupIds)
-    .order('version', { ascending: false });
-
-  if (result.data && result.data.length > 0) {
-    let data = tableData.map((row) => {
-      const unitGroups = result.data.filter((unitGroup) => unitGroup.id === row.refUnitGroupId);
-      let unitGroup = unitGroups?.find(
-        (unitGroup) => unitGroup.version === row.refUnitGroupVersion,
-      );
-
-      if (!unitGroup) {
-        unitGroup = unitGroups[0];
-      }
-      const dataList = jsonToList(unitGroup?.unit);
-      const refData = dataList.find(
-        (item) => item?.['@dataSetInternalID'] === unitGroup?.referenceToReferenceUnit,
-      );
-      return {
-        ...row,
-        refUnitRes: {
-          id: unitGroup?.id,
-          version: unitGroup?.version,
-          name: unitGroup?.['common:name'],
-          refUnitId: unitGroup?.referenceToReferenceUnit ?? '-',
-          refUnitName: refData?.name ?? '-',
-          refUnitGeneralComment: refData?.generalComment,
-          unit: dataList,
-        },
-      };
-    });
-
-    return data;
-  }
-  return Promise.resolve({
-    data: null,
-    success: false,
-  });
-}
 // Same function as getReferenceUnit function, imported parameter and return value are different
 export async function getReferenceUnits(params: { id: string, version: string }[]) {
   let result: any = [];
@@ -383,11 +326,12 @@ export async function getReferenceUnits(params: { id: string, version: string }[
         json->unitGroupDataSet->unitGroupInformation->quantitativeReference->referenceToReferenceUnit,
         json->unitGroupDataSet->units->unit
     `;
-  const ids = params.map((item: any) => {
+  const _ids = params.map((item: any) => {
     return item.id;
   });
 
-  if (ids.every((id) => id && id.length === 36)) {
+  const ids = _ids.filter((id) => id && id.length === 36);
+  if (ids.length > 0) {
     const { data } = await supabase
       .from('unitgroups')
       .select(selectStr)

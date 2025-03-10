@@ -323,9 +323,10 @@ export async function getFlowpropertyDetail(id: string, version: string) {
 // Same function as getReferenceUnitGroup function, imported parameter and return value are different
 
 export async function getReferenceUnitGroups(params: { id: string, version: string }[]) {
-  const ids = params.map((item: any) => {
+  const _ids = params.map((item: any) => {
     return item.id;
   });
+  const ids = _ids.filter((id) => id && id.length === 36);
 
   let result: any = [];
   const selectStr = `
@@ -334,7 +335,7 @@ export async function getReferenceUnitGroups(params: { id: string, version: stri
         json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->"common:name",
         json->flowPropertyDataSet->flowPropertiesInformation->quantitativeReference->referenceToReferenceUnitGroup
     `;
-  if (ids.every((id) => id && id.length === 36)) {
+  if (ids.length) {
     const { data } = await supabase
       .from('flowproperties')
       .select(selectStr)

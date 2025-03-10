@@ -1,7 +1,7 @@
 import { Classification } from './data';
 import { getReferenceUnitGroups } from '@/services/flowproperties/api';
 import { getReferenceUnits } from '@/services/unitgroups/api'
-
+import { getFlowProperties } from '@/services/flows/api';
 export function removeEmptyObjects(obj: any) {
   Object.keys(obj).forEach((key) => {
     if (obj[key] && typeof obj[key] === 'object') {
@@ -16,6 +16,56 @@ export function removeEmptyObjects(obj: any) {
 
 export async function getUnitData(idType: string, data: any) {
   return new Promise((resolve,) => {
+    if (idType === 'flow') {
+      const flowPropertiesParams = data?.map((item: any) => {
+        return {
+          id: item?.referenceToFlowDataSetId,
+          version: item?.referenceToFlowDataSetVersion,
+        };
+      });
+      getFlowProperties(flowPropertiesParams).then((flowPropertiesRes: any) => {
+        const params = flowPropertiesRes?.data?.map((item: any) => {
+          return {
+            id: item?.refFlowPropertytId,
+            version: item?.version,
+          };
+        });
+        getReferenceUnitGroups(params).then((unitGroupsRes: any) => {
+          const unitParams = unitGroupsRes?.data?.map((item: any) => {
+            return {
+              id: item?.refUnitGroupId,
+              version: item?.version,
+            };
+          });
+          getReferenceUnits(unitParams).then((unitsRes: any) => {
+            data.forEach((item: any) => {
+              let flowProperty = flowPropertiesRes?.data.find((flowProperty: any) => flowProperty?.id === item?.referenceToFlowDataSetId && flowProperty?.version === item?.referenceToFlowDataSetVersion)
+              if (!flowProperty) {
+                flowProperty = flowPropertiesRes?.data.find((flowProperty: any) => flowProperty?.id === item?.referenceToFlowDataSetId)
+              };
+
+              let unitGroup = unitGroupsRes?.data.find((group: any) => group?.id === flowProperty?.refFlowPropertytId && group?.version === flowProperty?.version)
+              if (!unitGroup) {
+                unitGroup = unitGroupsRes?.data.find((group: any) => group?.id === flowProperty?.refFlowPropertytId)
+              };
+
+              if (unitGroup) {
+                let unit = unitsRes?.data.find((unit: any) => unit?.id === unitGroup?.refUnitGroupId && unit?.version === unitGroup?.version)
+                if (!unit) {
+                  unit = unitsRes?.data.find((unit: any) => unit?.id === unitGroup?.refUnitGroupId)
+                }
+                
+                if (unit) {
+                  item['refUnitRes'] = unit
+                }
+              }
+            })
+            resolve(data)
+          });
+        });
+      })
+    };
+
     if (idType === 'unitgroup') {
       const unitParams = data?.map((item: any) => {
         return {
@@ -25,9 +75,9 @@ export async function getUnitData(idType: string, data: any) {
       });
       getReferenceUnits(unitParams).then((unitsRes: any) => {
         data.forEach((item: any) => {
-          let unit = unitsRes?.data?.find((e: any) => e?.id === item?.refUnitGroupId&&e?.version===item?.version)
-          if(!unit){
-             unit = unitsRes?.data?.find((e: any) => e?.id === item?.refUnitGroupId)
+          let unit = unitsRes?.data?.find((e: any) => e?.id === item?.refUnitGroupId && e?.version === item?.version)
+          if (!unit) {
+            unit = unitsRes?.data?.find((e: any) => e?.id === item?.refUnitGroupId)
           }
           if (unit) {
             item['refUnitRes'] = unit
@@ -53,15 +103,15 @@ export async function getUnitData(idType: string, data: any) {
         getReferenceUnits(unitParams).then((unitsRes: any) => {
           data.forEach((item: any) => {
             let unitGroup = unitGroupsRes?.data.find((group: any) => group?.id === item?.referenceToFlowPropertyDataSetId && group?.version === item?.referenceToFlowPropertyDataSetVersion)
-            if(!unitGroup){
+            if (!unitGroup) {
               unitGroup = unitGroupsRes?.data.find((group: any) => group?.id === item?.referenceToFlowPropertyDataSetId)
             };
-            if(unitGroup){
+            if (unitGroup) {
               let unit = unitsRes?.data.find((unit: any) => unit?.id === unitGroup?.refUnitGroupId && unit?.version === unitGroup?.version)
-              if(!unit){
+              if (!unit) {
                 unit = unitsRes?.data.find((unit: any) => unit?.id === unitGroup?.refUnitGroupId)
               }
-              if(unit){
+              if (unit) {
                 item['refUnitRes'] = unit
               }
             }
