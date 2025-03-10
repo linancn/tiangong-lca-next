@@ -77,6 +77,9 @@ const TableList: FC = () => {
       dataIndex: 'classification',
       sorter: false,
       search: false,
+      render: (_, row) => {
+        return row?.classification&&row?.classification!=='undefined'?row.classification:'-';
+      },
     },
 
     {
