@@ -128,8 +128,8 @@ export async function getTeamById(id: string) {
   });
 }
 
-export async function editTeamMessage(id: string, data: any, rank: number) {
-  const result = await supabase.from('teams').update({ json: data, rank }).eq('id', id).select();
+export async function editTeamMessage(id: string, data: any) {
+  const result = await supabase.from('teams').update({ json: data }).eq('id', id).select();
   return result;
 }
 

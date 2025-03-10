@@ -60,7 +60,7 @@ const TeamEdit: FC<Props> = ({
           { '#text': '', '@xml:lang': 'zh' },
           { '#text': '', '@xml:lang': 'en' },
         ],
-        rank: teamData.rank,
+        // rank: teamData.rank,
         darkLogo: teamData.json?.darkLogo || '',
         lightLogo: teamData.json?.lightLogo || '',
       };
@@ -165,14 +165,14 @@ const TeamEdit: FC<Props> = ({
             onFinish={async () => {
               setSpinning(true);
               const formValues = formRefEdit.current?.getFieldsValue() ?? {};
-              const rank = formValues.rank ? -1 : 0;
+              // const rank = formValues.rank ? 0 : -1;
               const jsonData = {
                 title: formValues.title,
                 description: formValues.description,
                 lightLogo: fromData?.lightLogo || '',
                 darkLogo: fromData?.darkLogo || '',
               };
-              const updateResult = await editTeamMessage(id, jsonData, rank);
+              const updateResult = await editTeamMessage(id, jsonData);
               if (updateResult?.data) {
                 console.log('updateResult', updateResult);
                 message.success(

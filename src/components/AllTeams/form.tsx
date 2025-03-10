@@ -1,10 +1,11 @@
 import { uploadLogoApi } from '@/services/teams/api';
 import { PlusOutlined } from '@ant-design/icons';
 import { ProFormInstance } from '@ant-design/pro-components';
-import { Card, Form, Input, Space, Spin, Switch, Upload, message } from 'antd';
+import { Card, Form, Space, Spin, Upload, message } from 'antd';
 import type { UploadFile } from 'antd/es/upload/interface';
 import { FC, useEffect, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
+import LangTextItemForm from '@/components/LangTextItem/form';
 
 const LogoBaseUrl = 'https://qgzvkongdjqiiamzbbts.supabase.co/storage/v1/object/public/sys-files/';
 
@@ -86,60 +87,26 @@ const TeamForm: FC<Props> = ({ formRef, onData, lightLogoProps, darkLogoProps })
   };
 
   return (
-    <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+    <Space direction="vertical" style={{ width: '100%' }}>
       <Card
         size="small"
         title={<FormattedMessage id="component.allTeams.form.title" defaultMessage="Team Name" />}
       >
-        <Form.Item style={{ marginBottom: 0 }}>
-          <Form.Item
-            name={['title', 0, '@xml:lang']}
-            style={{ display: 'inline-block', width: '120px', marginRight: '8px' }}
-          >
-            <Input value="简体中文" disabled />
-          </Form.Item>
-          <Form.Item
-            name={['title', 0, '#text']}
-            style={{ display: 'inline-block', width: 'calc(70%)' }}
-            rules={[
-              {
-                required: true,
-                message: (
-                  <FormattedMessage
-                    id="component.allTeams.form.title.required"
-                    defaultMessage="Please input team name!"
-                  />
-                ),
-              },
-            ]}
-          >
-            <Input />
-          </Form.Item>
-          <br />
-          <Form.Item
-            name={['title', 1, '@xml:lang']}
-            style={{ display: 'inline-block', width: '120px', marginRight: '8px' }}
-          >
-            <Input value="English" disabled />
-          </Form.Item>
-          <Form.Item
-            name={['title', 1, '#text']}
-            style={{ display: 'inline-block', width: 'calc(70%)' }}
-            rules={[
-              {
-                required: true,
-                message: (
-                  <FormattedMessage
-                    id="component.allTeams.form.title.required"
-                    defaultMessage="Please input team name!"
-                  />
-                ),
-              },
-            ]}
-          >
-            <Input />
-          </Form.Item>
-        </Form.Item>
+        <LangTextItemForm
+          name="title"
+          label={<FormattedMessage id="component.allTeams.form.title" defaultMessage="Team Name" />}
+          rules={[
+            {
+              required: true,
+              message: (
+                <FormattedMessage
+                  id="component.allTeams.form.title.required"
+                  defaultMessage="Please input team name!"
+                />
+              ),
+            },
+          ]}
+        />
       </Card>
 
       <Card
@@ -151,58 +118,29 @@ const TeamForm: FC<Props> = ({ formRef, onData, lightLogoProps, darkLogoProps })
           />
         }
       >
-        <Form.Item style={{ marginBottom: 0 }}>
-          <Form.Item
-            name={['description', 0, '@xml:lang']}
-            style={{ display: 'inline-block', width: '120px', marginRight: '8px' }}
-          >
-            <Input value="简体中文" disabled />
-          </Form.Item>
-          <Form.Item
-            name={['description', 0, '#text']}
-            style={{ display: 'inline-block', width: 'calc(70%)' }}
-            rules={[
-              {
-                required: true,
-                message: (
-                  <FormattedMessage
-                    id="component.allTeams.form.description.required"
-                    defaultMessage="Please input team description!"
-                  />
-                ),
-              },
-            ]}
-          >
-            <Input.TextArea rows={2} />
-          </Form.Item>
-          <br />
-          <Form.Item
-            name={['description', 1, '@xml:lang']}
-            style={{ display: 'inline-block', width: '120px', marginRight: '8px' }}
-          >
-            <Input value="English" disabled />
-          </Form.Item>
-          <Form.Item
-            name={['description', 1, '#text']}
-            style={{ display: 'inline-block', width: 'calc(70%)' }}
-            rules={[
-              {
-                required: true,
-                message: (
-                  <FormattedMessage
-                    id="component.allTeams.form.description.required"
-                    defaultMessage="Please input team description!"
-                  />
-                ),
-              },
-            ]}
-          >
-            <Input.TextArea rows={2} />
-          </Form.Item>
-        </Form.Item>
+        <LangTextItemForm
+          name="description"
+          label={
+            <FormattedMessage
+              id="component.allTeams.form.description"
+              defaultMessage="Team Description"
+            />
+          }
+          rules={[
+            {
+              required: true,
+              message: (
+                <FormattedMessage
+                  id="component.allTeams.form.description.required"
+                  defaultMessage="Please input team description!"
+                />
+              ),
+            },
+          ]}
+        />
       </Card>
 
-      <Card
+      {/* <Card
         size="small"
         title={
           <FormattedMessage id="component.allTeams.form.public" defaultMessage="Public Display" />
@@ -217,10 +155,16 @@ const TeamForm: FC<Props> = ({ formRef, onData, lightLogoProps, darkLogoProps })
           normalize={(value) => {
             return value ? 0 : -1;
           }}
+          label={
+            <FormattedMessage
+              id="component.allTeams.form.public"
+              defaultMessage="Public Display"
+            />
+          }
         >
           <Switch />
         </Form.Item>
-      </Card>
+      </Card> */}
 
       <Card
         size="small"
