@@ -93,7 +93,7 @@ const ContactEdit: FC<Props> = ({
           </Tooltip>
         ) : (
           <Tooltip title={<FormattedMessage id="pages.button.copy" defaultMessage="Copy" />}>
-            <Button shape="circle" icon={<CopyOutlined />} onClick={onEdit} />
+            <Button size="small" shape="circle" icon={<CopyOutlined />} onClick={onEdit} />
           </Tooltip>
         )
       ) : (
