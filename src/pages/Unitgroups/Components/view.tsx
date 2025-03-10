@@ -5,7 +5,12 @@ import { ListPagination } from '@/services/general/data';
 import { getUnitGroupDetail } from '@/services/unitgroups/api';
 import { UnitTable } from '@/services/unitgroups/data';
 import { genUnitGroupFromData, genUnitTableData } from '@/services/unitgroups/util';
-import { CheckCircleOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
+import {
+  CheckCircleTwoTone,
+  CloseCircleOutlined,
+  CloseOutlined,
+  ProfileOutlined,
+} from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
@@ -90,9 +95,9 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
       search: false,
       render: (_, row) => {
         if (row.quantitativeReference) {
-          return <CheckCircleOutlined />;
+          return <CheckCircleTwoTone twoToneColor="#5C246A" />;
         }
-        // return <CloseCircleOutlined />;
+        return <CloseCircleOutlined />;
       },
     },
     {

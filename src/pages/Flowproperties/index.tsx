@@ -17,12 +17,13 @@ import { getTeamById } from '@/services/teams/api';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 // import ReferenceUnit from '../Unitgroups/Components/Unit/reference';
-import { getReferenceUnitByIdsAndVersion } from '@/services/unitgroups/api';
+import { getUnitData } from '@/services/general/util';
 import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import FlowpropertiesCreate from './Components/create';
 import FlowpropertiesDelete from './Components/delete';
 import FlowpropertiesEdit from './Components/edit';
 import FlowpropertyView from './Components/view';
+
 const { Search } = Input;
 
 const TableList: FC = () => {
@@ -88,7 +89,7 @@ const TableList: FC = () => {
             )
           </span>,
           // <ReferenceUnit
-          //   key={0}
+          //   key={1}
           //   id={row.refUnitGroupId}
           //   version={row.version}
           //   idType={'unitgroup'}
@@ -285,7 +286,7 @@ const TableList: FC = () => {
             return getFlowpropertyTablePgroongaSearch(params, lang, dataSource, keyWord, {});
           }
           return getFlowpropertyTableAll(params, sort, lang, dataSource, tid ?? '').then((res) => {
-            return getReferenceUnitByIdsAndVersion(res?.data ?? []).then((refUnitGroupResp) => {
+            return getUnitData('unitgroup', res?.data ?? []).then((refUnitGroupResp: any) => {
               return {
                 ...res,
                 data: refUnitGroupResp ?? [],

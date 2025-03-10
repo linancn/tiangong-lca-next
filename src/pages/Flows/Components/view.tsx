@@ -3,17 +3,23 @@ import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import LocationTextItemDescription from '@/components/LocationTextItem/description';
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
-import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
+// import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import { getFlowDetail } from '@/services/flows/api';
 import { FlowpropertyTabTable } from '@/services/flows/data';
 import { genFlowFromData, genFlowPropertyTabTableData } from '@/services/flows/util';
 import { ListPagination } from '@/services/general/data';
-import { CheckCircleOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
+import { getLangText, getUnitData } from '@/services/general/util';
+import {
+  CheckCircleTwoTone,
+  CloseCircleOutlined,
+  CloseOutlined,
+  ProfileOutlined,
+} from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import type { ActionType } from '@ant-design/pro-table';
 import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { complianceOptions, flowTypeOptions } from './optiondata';
 import PropertyView from './Property/view';
@@ -37,6 +43,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<any>({});
   const [propertyDataSource, setPropertyDataSource] = useState<any>([]);
+  const [dataSource, setDataSource] = useState<any>([]);
 
   const tabList = [
     {
@@ -72,6 +79,18 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
   };
+
+  useEffect(() => {
+    getUnitData('flowproperty', genFlowPropertyTabTableData(propertyDataSource, lang)).then(
+      (res: any) => {
+        if (res && res?.length) {
+          setDataSource(res);
+        } else {
+          setDataSource([]);
+        }
+      },
+    );
+  }, [propertyDataSource]);
 
   const propertyColumns: ProColumns<FlowpropertyTabTable>[] = [
     {
@@ -114,13 +133,23 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
       search: false,
       render: (_, row) => {
         return [
-          <ReferenceUnit
-            key={0}
-            id={row.referenceToFlowPropertyDataSetId}
-            version={row.referenceToFlowPropertyDataSetVersion}
-            idType={'flowproperty'}
-            lang={lang}
-          />,
+          // <ReferenceUnit
+          //   key={0}
+          //   id={row.referenceToFlowPropertyDataSetId}
+          //   version={row.referenceToFlowPropertyDataSetVersion}
+          //   idType={'flowproperty'}
+          //   lang={lang}
+          // />,
+          <span key={1}>
+            {getLangText(row.refUnitRes?.name, lang)} (
+            <Tooltip
+              placement="topLeft"
+              title={getLangText(row.refUnitRes?.refUnitGeneralComment, lang)}
+            >
+              {row.refUnitRes?.refUnitName}
+            </Tooltip>
+            )
+          </span>,
         ];
       },
     },
@@ -136,9 +165,9 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
       search: false,
       render: (_, row) => {
         if (row.quantitativeReference) {
-          return <CheckCircleOutlined />;
+          return <CheckCircleTwoTone twoToneColor="#5C246A" />;
         }
-        // return <CloseCircleOutlined />;
+        return <CloseCircleOutlined />;
       },
     },
     {
@@ -582,7 +611,8 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
           pageSize: 10,
         }}
         columns={propertyColumns}
-        dataSource={genFlowPropertyTabTableData(propertyDataSource, lang)}
+        // dataSource={genFlowPropertyTabTableData(propertyDataSource, lang)}
+        dataSource={dataSource}
       />
     ),
   };

@@ -104,7 +104,7 @@ const UnitView: FC<Props> = ({ id, data, buttonType }) => {
             labelStyle={{ width: '180px' }}
           >
             {viewData.quantitativeReference ? (
-              <CheckCircleTwoTone twoToneColor="#52c41a" />
+              <CheckCircleTwoTone twoToneColor="#5C246A" />
             ) : (
               <CloseCircleOutlined />
             )}

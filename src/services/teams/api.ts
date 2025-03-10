@@ -128,9 +128,14 @@ export async function getTeamById(id: string) {
   });
 }
 
-export async function editTeamMessage(id: string, data: any, rank: number) {
-  const result = await supabase.from('teams').update({ json: data, rank }).eq('id', id).select();
-  return result;
+export async function editTeamMessage(id: string, data: any, rank?: number) {
+  if (typeof rank !== 'undefined') {
+    const result = await supabase.from('teams').update({ json: data, rank }).eq('id', id).select();
+    return result;
+  } else {
+    const result = await supabase.from('teams').update({ json: data }).eq('id', id).select();
+    return result;
+  }
 }
 
 export async function getTeamMessageApi(id: string) {

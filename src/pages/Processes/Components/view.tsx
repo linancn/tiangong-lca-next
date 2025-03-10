@@ -3,8 +3,9 @@ import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import LocationTextItemDescription from '@/components/LocationTextItem/description';
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
-import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
+// import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import { ListPagination } from '@/services/general/data';
+import { getLangText, getUnitData } from '@/services/general/util';
 import { getProcessDetail, getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData, genProcessFromData } from '@/services/processes/util';
@@ -16,7 +17,6 @@ import {
   ProfileOutlined,
 } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
-
 import { Button, Card, Collapse, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
@@ -161,13 +161,23 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
       search: false,
       render: (_, row) => {
         return [
-          <ReferenceUnit
-            key={0}
-            id={row.referenceToFlowDataSetId}
-            version={row.referenceToFlowDataSetVersion}
-            idType={'flow'}
-            lang={lang}
-          />,
+          // <ReferenceUnit
+          //   key={0}
+          //   id={row.referenceToFlowDataSetId}
+          //   version={row.referenceToFlowDataSetVersion}
+          //   idType={'flow'}
+          //   lang={lang}
+          // />,
+          <span key={1}>
+            {getLangText(row.refUnitRes?.name, lang)} (
+            <Tooltip
+              placement="topLeft"
+              title={getLangText(row.refUnitRes?.refUnitGeneralComment, lang)}
+            >
+              {row.refUnitRes?.refUnitName}
+            </Tooltip>
+            )
+          </span>,
         ];
       },
     },
@@ -208,7 +218,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
         if (row.quantitativeReference) {
           return (
             <Tooltip title={row.functionalUnitOrOther}>
-              <CheckCircleTwoTone twoToneColor="#52c41a" />
+              <CheckCircleTwoTone twoToneColor="#5C246A" />
             </Tooltip>
           );
         }
@@ -1048,7 +1058,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
           items={[
             {
               key: '1',
-              label: 'Input',
+              label: <FormattedMessage id="pages.process.exchange.input" defaultMessage="Input" />,
               children: (
                 <ProTable<ProcessExchangeTable, ListPagination>
                   search={false}
@@ -1061,7 +1071,15 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
                       genProcessExchangeTableData(exchangeDataSource, lang),
                       'Input',
                       params,
-                    );
+                    ).then((res: any) => {
+                      return getUnitData('flow', res?.data).then((unitRes: any) => {
+                        return {
+                          ...res,
+                          data: unitRes,
+                          success: true,
+                        };
+                      });
+                    });
                   }}
                   columns={processExchangeColumns}
                 />
@@ -1074,7 +1092,9 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
           items={[
             {
               key: '1',
-              label: 'Output',
+              label: (
+                <FormattedMessage id="pages.process.exchange.output" defaultMessage="Output" />
+              ),
               children: (
                 <ProTable<ProcessExchangeTable, ListPagination>
                   search={false}
@@ -1087,7 +1107,15 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
                       genProcessExchangeTableData(exchangeDataSource, lang),
                       'Output',
                       params,
-                    );
+                    ).then((res: any) => {
+                      return getUnitData('flow', res?.data).then((unitRes: any) => {
+                        return {
+                          ...res,
+                          data: unitRes,
+                          success: true,
+                        };
+                      });
+                    });
                   }}
                   columns={processExchangeColumns}
                 />

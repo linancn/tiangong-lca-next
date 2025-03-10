@@ -28,4 +28,5 @@ export type FlowpropertyTabTable = {
   referenceToFlowPropertyDataSetVersion: string;
   referenceToFlowPropertyDataSet: string;
   quantitativeReference: boolean;
+  refUnitRes?: any;
 };

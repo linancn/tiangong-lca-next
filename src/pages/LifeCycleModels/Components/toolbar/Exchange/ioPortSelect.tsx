@@ -122,7 +122,7 @@ const IoPortSelect: FC<Props> = ({
         if (row.quantitativeReference) {
           return (
             <Tooltip title={row.functionalUnitOrOther}>
-              <CheckCircleTwoTone twoToneColor="#52c41a" />
+              <CheckCircleTwoTone twoToneColor="#5C246A" />
             </Tooltip>
           );
         }

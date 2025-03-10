@@ -503,6 +503,59 @@ export async function getFlowDetail(id: string, version: string) {
   return getDataDetail(id, version, 'flows');
 }
 
+export async function getFlowProperties(params: { id: string; version: string }[]) {
+  let result: any = [];
+  const selectStr = `
+        id,
+        version,
+        json->flowDataSet->flowInformation->dataSetInformation->name,
+        json->flowDataSet->flowInformation->quantitativeReference->referenceToReferenceFlowProperty,
+        json->flowDataSet->flowProperties->flowProperty
+    `;
+
+  let _ids = params.map((item) => item.id);
+  let ids = _ids.filter((id) => id && id.length === 36);
+
+  if (ids.length > 0) {
+    const { data } = await supabase
+      .from('flows')
+      .select(selectStr)
+      .in('id', ids)
+      .order('version', { ascending: false });
+
+    if (data && data.length > 0) {
+      result = params.map((item: any) => {
+        let property: any = data.find((i: any) => i.id === item.id && i.version === item.version);
+        if (!property) {
+          property = data.find((i: any) => i.id === item.id);
+        }
+
+        const dataList = jsonToList(property?.flowProperty);
+        const refData = dataList.find(
+          (item) => item?.['@dataSetInternalID'] === property?.referenceToReferenceFlowProperty,
+        );
+
+        return {
+          id: property?.id,
+          version: property?.version,
+          name: property?.name ?? '-',
+          refFlowPropertytId: refData?.referenceToFlowPropertyDataSet?.['@refObjectId'] ?? '-',
+          refFlowPropertyShortDescription:
+            refData?.referenceToFlowPropertyDataSet?.['shortDescription'] ?? {},
+        };
+      });
+      return Promise.resolve({
+        data: result,
+        success: true,
+      });
+    }
+  }
+  return Promise.resolve({
+    data: [],
+    success: false,
+  });
+}
+
 export async function getReferenceProperty(id: string, version: string) {
   let result: any = {};
   const selectStr = `

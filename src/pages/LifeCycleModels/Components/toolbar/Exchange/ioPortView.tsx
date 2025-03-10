@@ -112,7 +112,7 @@ const IoPortSelector: FC<Props> = ({ node, lang, direction, drawerVisible, onDra
         if (row.quantitativeReference) {
           return (
             <Tooltip title={row.functionalUnitOrOther}>
-              <CheckCircleTwoTone twoToneColor="#52c41a" />
+              <CheckCircleTwoTone twoToneColor="#5C246A" />
             </Tooltip>
           );
         }
