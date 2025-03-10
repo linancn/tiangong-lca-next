@@ -13,9 +13,10 @@ import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { FlowpropertyTabTable } from '@/services/flows/data';
 import { genFlowPropertyTabTableData } from '@/services/flows/util';
 import { ListPagination } from '@/services/general/data';
+import { getLangText, getUnitData } from '@/services/general/util';
 import { CheckCircleTwoTone, CloseCircleOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
-import { Card, Divider, Form, Input, Select, Space, theme,Tooltip } from 'antd';
+import { Card, Divider, Form, Input, Select, Space, theme, Tooltip } from 'antd';
 import type { FC } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -24,8 +25,6 @@ import PropertyCreate from './Property/create';
 import PropertyDelete from './Property/delete';
 import PropertyEdit from './Property/edit';
 import PropertyView from './Property/view';
-import { getLangText } from '@/services/general/util';
-import { getUnitData } from '@/services/general/util';
 
 type Props = {
   lang: string;
@@ -57,14 +56,16 @@ export const FlowForm: FC<Props> = ({
   const [dataSource, setDataSource] = useState<any>([]);
 
   useEffect(() => {
-      getUnitData('flowproperty',genFlowPropertyTabTableData(propertyDataSource, lang)).then((res:any)=>{
-        if(res&&res?.length){
-          setDataSource(res)
-        }else{
-          setDataSource([])
+    getUnitData('flowproperty', genFlowPropertyTabTableData(propertyDataSource, lang)).then(
+      (res: any) => {
+        if (res && res?.length) {
+          setDataSource(res);
+        } else {
+          setDataSource([]);
         }
-      })
-  }, [propertyDataSource])
+      },
+    );
+  }, [propertyDataSource]);
 
   const tabList = [
     {
@@ -152,12 +153,15 @@ export const FlowForm: FC<Props> = ({
           //   lang={lang}
           // />,
           <span key={1}>
-          {getLangText(row.refUnitRes?.name, lang)} (
-          <Tooltip placement="topLeft" title={getLangText(row.refUnitRes?.refUnitGeneralComment, lang)}>
-            {row.refUnitRes?.refUnitName}
-          </Tooltip>
-          )
-        </span>
+            {getLangText(row.refUnitRes?.name, lang)} (
+            <Tooltip
+              placement="topLeft"
+              title={getLangText(row.refUnitRes?.refUnitGeneralComment, lang)}
+            >
+              {row.refUnitRes?.refUnitName}
+            </Tooltip>
+            )
+          </span>,
         ];
       },
     },

@@ -1,7 +1,7 @@
 export default {
   'pages.process.referenceYear': '参考年份',
   'pages.process.location': '地理位置',
-  
+
   'pages.process.exchange.input': '输入',
   'pages.process.exchange.output': '输出',
 

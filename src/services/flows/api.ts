@@ -167,7 +167,7 @@ export async function getFlowTableAll(
             if (i?.typeOfDataSet === 'Elementary flow') {
               classificationData =
                 i?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-                'common:category'
+                  'common:category'
                 ];
               thisClass = res?.data?.categoryElementaryFlow;
             } else {
@@ -220,7 +220,7 @@ export async function getFlowTableAll(
           if (i?.typeOfDataSet === 'Elementary flow') {
             classificationData =
               i?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-              'common:category'
+                'common:category'
               ];
           } else {
             classificationData =
@@ -328,7 +328,7 @@ export async function getFlowTablePgroongaSearch(
             if (typeOfDataSet === 'Elementary flow') {
               classificationData =
                 dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-                'common:category'
+                  'common:category'
                 ];
               thisClass = res?.data?.categoryElementaryFlow;
             } else {
@@ -378,7 +378,7 @@ export async function getFlowTablePgroongaSearch(
           const dataInfo = i.json?.flowDataSet?.flowInformation?.dataSetInformation;
           const classifications = jsonToList(
             dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-            'common:category'
+              'common:category'
             ],
           );
           const thisLocation = locationData.find(
@@ -469,7 +469,7 @@ export async function flow_hybrid_search(
             ),
             classification: classificationToString(
               i.json?.flowDataSet?.flowInformation?.dataSetInformation?.classificationInformation?.[
-              'common:classification'
+                'common:classification'
               ]?.['common:class'],
             ),
             synonyms: getLangText(
@@ -503,7 +503,7 @@ export async function getFlowDetail(id: string, version: string) {
   return getDataDetail(id, version, 'flows');
 }
 
-export async function getFlowProperties(params: { id: string, version: string }[]) {
+export async function getFlowProperties(params: { id: string; version: string }[]) {
   let result: any = [];
   const selectStr = `
         id,
@@ -542,7 +542,7 @@ export async function getFlowProperties(params: { id: string, version: string }[
           refFlowPropertytId: refData?.referenceToFlowPropertyDataSet?.['@refObjectId'] ?? '-',
           refFlowPropertyShortDescription:
             refData?.referenceToFlowPropertyDataSet?.['shortDescription'] ?? {},
-        }
+        };
       });
       return Promise.resolve({
         data: result,

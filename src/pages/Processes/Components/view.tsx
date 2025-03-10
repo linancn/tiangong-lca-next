@@ -5,6 +5,7 @@ import ContactSelectDescription from '@/pages/Contacts/Components/select/descrip
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import { ListPagination } from '@/services/general/data';
+import { getLangText, getUnitData } from '@/services/general/util';
 import { getProcessDetail, getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData, genProcessFromData } from '@/services/processes/util';
@@ -16,13 +17,11 @@ import {
   ProfileOutlined,
 } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
-import { getUnitData } from '@/services/general/util';
 import { Button, Card, Collapse, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import ProcessExchangeView from './Exchange/view';
-import { getLangText } from '@/services/general/util';
 import {
   copyrightOptions,
   LCIMethodApproachOptions,
@@ -170,12 +169,15 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
           //   lang={lang}
           // />,
           <span key={1}>
-          {getLangText(row.refUnitRes?.name, lang)} (
-          <Tooltip placement="topLeft" title={getLangText(row.refUnitRes?.refUnitGeneralComment, lang)}>
-            {row.refUnitRes?.refUnitName}
-          </Tooltip>
-          )
-        </span>
+            {getLangText(row.refUnitRes?.name, lang)} (
+            <Tooltip
+              placement="topLeft"
+              title={getLangText(row.refUnitRes?.refUnitGeneralComment, lang)}
+            >
+              {row.refUnitRes?.refUnitName}
+            </Tooltip>
+            )
+          </span>,
         ];
       },
     },
@@ -1069,15 +1071,15 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
                       genProcessExchangeTableData(exchangeDataSource, lang),
                       'Input',
                       params,
-                    ).then((res:any)=>{
-                      return getUnitData('flow',res?.data).then((unitRes:any)=>{
-                        return ({
+                    ).then((res: any) => {
+                      return getUnitData('flow', res?.data).then((unitRes: any) => {
+                        return {
                           ...res,
                           data: unitRes,
                           success: true,
-                        })
-                      })
-                    })
+                        };
+                      });
+                    });
                   }}
                   columns={processExchangeColumns}
                 />
@@ -1090,7 +1092,9 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
           items={[
             {
               key: '1',
-              label: <FormattedMessage id="pages.process.exchange.output" defaultMessage="Output" />,
+              label: (
+                <FormattedMessage id="pages.process.exchange.output" defaultMessage="Output" />
+              ),
               children: (
                 <ProTable<ProcessExchangeTable, ListPagination>
                   search={false}
@@ -1103,15 +1107,15 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
                       genProcessExchangeTableData(exchangeDataSource, lang),
                       'Output',
                       params,
-                    ).then((res:any)=>{
-                      return getUnitData('flow',res?.data).then((unitRes:any)=>{
-                        return ({
+                    ).then((res: any) => {
+                      return getUnitData('flow', res?.data).then((unitRes: any) => {
+                        return {
                           ...res,
                           data: unitRes,
                           success: true,
-                        })
-                      })
-                    })
+                        };
+                      });
+                    });
                   }}
                   columns={processExchangeColumns}
                 />

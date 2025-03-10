@@ -4,7 +4,7 @@ export default {
 
   'pages.process.exchange.input': 'Input',
   'pages.process.exchange.output': 'Output',
-  
+
   'pages.process.drawer.title.create': 'Create process',
   'pages.process.drawer.title.view': 'View process',
   'pages.process.drawer.title.edit': 'Edit process',

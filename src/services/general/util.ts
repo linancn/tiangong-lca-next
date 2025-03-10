@@ -1,7 +1,7 @@
-import { Classification } from './data';
 import { getReferenceUnitGroups } from '@/services/flowproperties/api';
-import { getReferenceUnits } from '@/services/unitgroups/api'
 import { getFlowProperties } from '@/services/flows/api';
+import { getReferenceUnits } from '@/services/unitgroups/api';
+import { Classification } from './data';
 export function removeEmptyObjects(obj: any) {
   Object.keys(obj).forEach((key) => {
     if (obj[key] && typeof obj[key] === 'object') {
@@ -15,7 +15,7 @@ export function removeEmptyObjects(obj: any) {
 }
 
 export async function getUnitData(idType: string, data: any) {
-  return new Promise((resolve,) => {
+  return new Promise((resolve) => {
     if (idType === 'flow') {
       const flowPropertiesParams = data?.map((item: any) => {
         return {
@@ -39,32 +39,47 @@ export async function getUnitData(idType: string, data: any) {
           });
           getReferenceUnits(unitParams).then((unitsRes: any) => {
             data.forEach((item: any) => {
-              let flowProperty = flowPropertiesRes?.data.find((flowProperty: any) => flowProperty?.id === item?.referenceToFlowDataSetId && flowProperty?.version === item?.referenceToFlowDataSetVersion)
+              let flowProperty = flowPropertiesRes?.data.find(
+                (flowProperty: any) =>
+                  flowProperty?.id === item?.referenceToFlowDataSetId &&
+                  flowProperty?.version === item?.referenceToFlowDataSetVersion,
+              );
               if (!flowProperty) {
-                flowProperty = flowPropertiesRes?.data.find((flowProperty: any) => flowProperty?.id === item?.referenceToFlowDataSetId)
-              };
+                flowProperty = flowPropertiesRes?.data.find(
+                  (flowProperty: any) => flowProperty?.id === item?.referenceToFlowDataSetId,
+                );
+              }
 
-              let unitGroup = unitGroupsRes?.data.find((group: any) => group?.id === flowProperty?.refFlowPropertytId && group?.version === flowProperty?.version)
+              let unitGroup = unitGroupsRes?.data.find(
+                (group: any) =>
+                  group?.id === flowProperty?.refFlowPropertytId &&
+                  group?.version === flowProperty?.version,
+              );
               if (!unitGroup) {
-                unitGroup = unitGroupsRes?.data.find((group: any) => group?.id === flowProperty?.refFlowPropertytId)
-              };
+                unitGroup = unitGroupsRes?.data.find(
+                  (group: any) => group?.id === flowProperty?.refFlowPropertytId,
+                );
+              }
 
               if (unitGroup) {
-                let unit = unitsRes?.data.find((unit: any) => unit?.id === unitGroup?.refUnitGroupId && unit?.version === unitGroup?.version)
+                let unit = unitsRes?.data.find(
+                  (unit: any) =>
+                    unit?.id === unitGroup?.refUnitGroupId && unit?.version === unitGroup?.version,
+                );
                 if (!unit) {
-                  unit = unitsRes?.data.find((unit: any) => unit?.id === unitGroup?.refUnitGroupId)
+                  unit = unitsRes?.data.find((unit: any) => unit?.id === unitGroup?.refUnitGroupId);
                 }
-                
+
                 if (unit) {
-                  item['refUnitRes'] = unit
+                  item['refUnitRes'] = unit;
                 }
               }
-            })
-            resolve(data)
+            });
+            resolve(data);
           });
         });
-      })
-    };
+      });
+    }
 
     if (idType === 'unitgroup') {
       const unitParams = data?.map((item: any) => {
@@ -75,16 +90,18 @@ export async function getUnitData(idType: string, data: any) {
       });
       getReferenceUnits(unitParams).then((unitsRes: any) => {
         data.forEach((item: any) => {
-          let unit = unitsRes?.data?.find((e: any) => e?.id === item?.refUnitGroupId && e?.version === item?.version)
+          let unit = unitsRes?.data?.find(
+            (e: any) => e?.id === item?.refUnitGroupId && e?.version === item?.version,
+          );
           if (!unit) {
-            unit = unitsRes?.data?.find((e: any) => e?.id === item?.refUnitGroupId)
+            unit = unitsRes?.data?.find((e: any) => e?.id === item?.refUnitGroupId);
           }
           if (unit) {
-            item['refUnitRes'] = unit
+            item['refUnitRes'] = unit;
           }
-        })
-        resolve(data)
-      })
+        });
+        resolve(data);
+      });
     }
     if (idType === 'flowproperty') {
       const params = data?.map((item: any) => {
@@ -102,27 +119,35 @@ export async function getUnitData(idType: string, data: any) {
         });
         getReferenceUnits(unitParams).then((unitsRes: any) => {
           data.forEach((item: any) => {
-            let unitGroup = unitGroupsRes?.data.find((group: any) => group?.id === item?.referenceToFlowPropertyDataSetId && group?.version === item?.referenceToFlowPropertyDataSetVersion)
+            let unitGroup = unitGroupsRes?.data.find(
+              (group: any) =>
+                group?.id === item?.referenceToFlowPropertyDataSetId &&
+                group?.version === item?.referenceToFlowPropertyDataSetVersion,
+            );
             if (!unitGroup) {
-              unitGroup = unitGroupsRes?.data.find((group: any) => group?.id === item?.referenceToFlowPropertyDataSetId)
-            };
+              unitGroup = unitGroupsRes?.data.find(
+                (group: any) => group?.id === item?.referenceToFlowPropertyDataSetId,
+              );
+            }
             if (unitGroup) {
-              let unit = unitsRes?.data.find((unit: any) => unit?.id === unitGroup?.refUnitGroupId && unit?.version === unitGroup?.version)
+              let unit = unitsRes?.data.find(
+                (unit: any) =>
+                  unit?.id === unitGroup?.refUnitGroupId && unit?.version === unitGroup?.version,
+              );
               if (!unit) {
-                unit = unitsRes?.data.find((unit: any) => unit?.id === unitGroup?.refUnitGroupId)
+                unit = unitsRes?.data.find((unit: any) => unit?.id === unitGroup?.refUnitGroupId);
               }
               if (unit) {
-                item['refUnitRes'] = unit
+                item['refUnitRes'] = unit;
               }
             }
-          })
-          resolve(data)
+          });
+          resolve(data);
         });
       });
     }
-  })
-};
-
+  });
+}
 
 export function genClassStr(
   data: string[],
@@ -436,11 +461,11 @@ export function isValidURL(url: string): boolean {
   }
   const urlPattern = new RegExp(
     '^(https?:\\/\\/)?' +
-    '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|' +
-    '((\\d{1,3}\\.){3}\\d{1,3}))' +
-    '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' +
-    '(\\?[;&a-z\\d%_.~+=-]*)?' +
-    '(\\#[-a-z\\d_]*)?$',
+      '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|' +
+      '((\\d{1,3}\\.){3}\\d{1,3}))' +
+      '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' +
+      '(\\?[;&a-z\\d%_.~+=-]*)?' +
+      '(\\#[-a-z\\d_]*)?$',
     'i',
   );
   return !!urlPattern.test(url);

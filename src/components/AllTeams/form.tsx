@@ -1,3 +1,4 @@
+import LangTextItemForm from '@/components/LangTextItem/form';
 import { uploadLogoApi } from '@/services/teams/api';
 import { PlusOutlined } from '@ant-design/icons';
 import { ProFormInstance } from '@ant-design/pro-components';
@@ -5,7 +6,6 @@ import { Card, Form, Space, Spin, Upload, message } from 'antd';
 import type { UploadFile } from 'antd/es/upload/interface';
 import { FC, useEffect, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
-import LangTextItemForm from '@/components/LangTextItem/form';
 
 const LogoBaseUrl = 'https://qgzvkongdjqiiamzbbts.supabase.co/storage/v1/object/public/sys-files/';
 

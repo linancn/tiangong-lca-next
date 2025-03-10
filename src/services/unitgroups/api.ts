@@ -240,7 +240,7 @@ export async function getUnitGroupTablePgroongaSearch(
 
             const classifications = jsonToList(
               dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-              'common:class'
+                'common:class'
               ],
             );
 
@@ -272,7 +272,7 @@ export async function getUnitGroupTablePgroongaSearch(
           const dataInfo = i.json?.unitGroupDataSet?.unitGroupInformation;
           const classifications = jsonToList(
             dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-            'common:class'
+              'common:class'
             ],
           );
           const refUnitId = dataInfo?.quantitativeReference?.referenceToReferenceUnit ?? '-';
@@ -315,9 +315,8 @@ export async function getUnitGroupDetail(id: string, version: string) {
   return getDataDetail(id, version, 'unitgroups');
 }
 
-
 // Same function as getReferenceUnit function, imported parameter and return value are different
-export async function getReferenceUnits(params: { id: string, version: string }[]) {
+export async function getReferenceUnits(params: { id: string; version: string }[]) {
   let result: any = [];
   const selectStr = `
         id,
@@ -340,7 +339,7 @@ export async function getReferenceUnits(params: { id: string, version: string }[
 
     if (data && data.length > 0) {
       result = params.map((item: any) => {
-        let unitRes:any = data.find((i: any) => i.id === item.id && i.version === item.version);
+        let unitRes: any = data.find((i: any) => i.id === item.id && i.version === item.version);
         if (!unitRes) {
           unitRes = data.find((i: any) => i.id === item.id);
         }
@@ -350,14 +349,14 @@ export async function getReferenceUnits(params: { id: string, version: string }[
         );
 
         return {
-            id: unitRes?.id,
-            version: unitRes?.version,
-            name: unitRes?.['common:name'],
-            refUnitId: unitRes?.referenceToReferenceUnit ?? '-',
-            refUnitName: refData?.name ?? '-',
-            refUnitGeneralComment: refData?.generalComment,
-            unit: dataList,
-        }
+          id: unitRes?.id,
+          version: unitRes?.version,
+          name: unitRes?.['common:name'],
+          refUnitId: unitRes?.referenceToReferenceUnit ?? '-',
+          refUnitName: refData?.name ?? '-',
+          refUnitGeneralComment: refData?.generalComment,
+          unit: dataList,
+        };
       });
       return Promise.resolve({
         data: result,

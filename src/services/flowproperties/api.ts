@@ -230,7 +230,7 @@ export async function getFlowpropertyTablePgroongaSearch(
             const dataInfo = i.json?.flowPropertyDataSet?.flowPropertiesInformation;
             const classifications = jsonToList(
               dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-              'common:class'
+                'common:class'
               ],
             );
             const classificationZH = genClassificationZH(classifications, res?.data);
@@ -249,7 +249,7 @@ export async function getFlowpropertyTablePgroongaSearch(
                 '-',
               refUnitGroup: getLangText(
                 dataInfo?.quantitativeReference?.referenceToReferenceUnitGroup?.[
-                'common:shortDescription'
+                  'common:shortDescription'
                 ] ?? {},
                 lang,
               ),
@@ -271,7 +271,7 @@ export async function getFlowpropertyTablePgroongaSearch(
           const dataInfo = i.json?.flowPropertyDataSet?.flowPropertiesInformation;
           const classifications = jsonToList(
             dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-            'common:class'
+              'common:class'
             ],
           );
           return {
@@ -288,7 +288,7 @@ export async function getFlowpropertyTablePgroongaSearch(
               '-',
             refUnitGroup: getLangText(
               dataInfo?.quantitativeReference?.referenceToReferenceUnitGroup?.[
-              'common:shortDescription'
+                'common:shortDescription'
               ] ?? {},
               lang,
             ),
@@ -322,7 +322,7 @@ export async function getFlowpropertyDetail(id: string, version: string) {
 
 // Same function as getReferenceUnitGroup function, imported parameter and return value are different
 
-export async function getReferenceUnitGroups(params: { id: string, version: string }[]) {
+export async function getReferenceUnitGroups(params: { id: string; version: string }[]) {
   const _ids = params.map((item: any) => {
     return item.id;
   });
@@ -344,19 +344,19 @@ export async function getReferenceUnitGroups(params: { id: string, version: stri
 
     if (data && data.length > 0) {
       result = params.map((item: any) => {
-        let unitGroup:any = data.find((i: any) => i.id === item.id && i.version === item.version);
+        let unitGroup: any = data.find((i: any) => i.id === item.id && i.version === item.version);
         if (!unitGroup) {
           unitGroup = data.find((i: any) => i.id === item.id);
         }
 
         return {
-          id: unitGroup?.id ,
+          id: unitGroup?.id,
           version: unitGroup?.version,
           name: unitGroup?.['common:name'] ?? '-',
           refUnitGroupId: unitGroup?.referenceToReferenceUnitGroup?.['@refObjectId'] ?? '-',
           refUnitGroupShortDescription:
-          unitGroup?.referenceToReferenceUnitGroup?.['common:shortDescription'] ?? {},
-        }
+            unitGroup?.referenceToReferenceUnitGroup?.['common:shortDescription'] ?? {},
+        };
       });
       return Promise.resolve({
         data: result,

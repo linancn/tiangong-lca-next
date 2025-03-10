@@ -8,17 +8,21 @@ import { getFlowDetail } from '@/services/flows/api';
 import { FlowpropertyTabTable } from '@/services/flows/data';
 import { genFlowFromData, genFlowPropertyTabTableData } from '@/services/flows/util';
 import { ListPagination } from '@/services/general/data';
-import { CheckCircleTwoTone, CloseCircleOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
+import { getLangText, getUnitData } from '@/services/general/util';
+import {
+  CheckCircleTwoTone,
+  CloseCircleOutlined,
+  CloseOutlined,
+  ProfileOutlined,
+} from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import type { ActionType } from '@ant-design/pro-table';
 import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { complianceOptions, flowTypeOptions } from './optiondata';
 import PropertyView from './Property/view';
-import { getLangText } from '@/services/general/util';
-import { getUnitData } from '@/services/general/util';
 
 type Props = {
   id: string;
@@ -77,14 +81,16 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
   };
 
   useEffect(() => {
-      getUnitData('flowproperty',genFlowPropertyTabTableData(propertyDataSource, lang)).then((res:any)=>{
-        if(res&&res?.length){
-          setDataSource(res)
-        }else{
-          setDataSource([])
+    getUnitData('flowproperty', genFlowPropertyTabTableData(propertyDataSource, lang)).then(
+      (res: any) => {
+        if (res && res?.length) {
+          setDataSource(res);
+        } else {
+          setDataSource([]);
         }
-      })
-  }, [propertyDataSource])
+      },
+    );
+  }, [propertyDataSource]);
 
   const propertyColumns: ProColumns<FlowpropertyTabTable>[] = [
     {
@@ -136,11 +142,14 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
           // />,
           <span key={1}>
             {getLangText(row.refUnitRes?.name, lang)} (
-            <Tooltip placement="topLeft" title={getLangText(row.refUnitRes?.refUnitGeneralComment, lang)}>
+            <Tooltip
+              placement="topLeft"
+              title={getLangText(row.refUnitRes?.refUnitGeneralComment, lang)}
+            >
               {row.refUnitRes?.refUnitName}
             </Tooltip>
             )
-          </span>
+          </span>,
         ];
       },
     },
@@ -299,11 +308,11 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
             data={
               initData?.flowInformation?.LCIMethod?.typeOfDataSet === 'Elementary flow'
                 ? initData?.flowInformation?.dataSetInformation?.classificationInformation?.[
-                'common:elementaryFlowCategorization'
-                ]?.['common:category']?.['value']
+                    'common:elementaryFlowCategorization'
+                  ]?.['common:category']?.['value']
                 : initData?.flowInformation?.dataSetInformation?.classificationInformation?.[
-                'common:classification'
-                ]?.['common:class']?.['value']
+                    'common:classification'
+                  ]?.['common:class']?.['value']
             }
             lang={lang}
             categoryType={'Flow'}
@@ -443,7 +452,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
         <SourceSelectDescription
           data={
             initData?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-            'common:referenceToComplianceSystem'
+              'common:referenceToComplianceSystem'
             ]
           }
           title={
@@ -468,7 +477,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
           >
             {getComplianceLabel(
               initData?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-              'common:approvalOfOverallCompliance'
+                'common:approvalOfOverallCompliance'
               ] ?? '-',
             )}
           </Descriptions.Item>
@@ -519,7 +528,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
           <ContactSelectDescription
             data={
               initData?.administrativeInformation?.dataEntryBy?.[
-              'common:referenceToPersonOrEntityEnteringTheData'
+                'common:referenceToPersonOrEntityEnteringTheData'
               ]
             }
             title={
@@ -580,7 +589,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
           <ContactSelectDescription
             data={
               initData?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToOwnershipOfDataSet'
+                'common:referenceToOwnershipOfDataSet'
               ]
             }
             title={
