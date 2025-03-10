@@ -240,7 +240,7 @@ export async function getUnitGroupTablePgroongaSearch(
 
             const classifications = jsonToList(
               dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-                'common:class'
+              'common:class'
               ],
             );
 
@@ -272,7 +272,7 @@ export async function getUnitGroupTablePgroongaSearch(
           const dataInfo = i.json?.unitGroupDataSet?.unitGroupInformation;
           const classifications = jsonToList(
             dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-              'common:class'
+            'common:class'
             ],
           );
           const refUnitId = dataInfo?.quantitativeReference?.referenceToReferenceUnit ?? '-';
@@ -370,6 +370,59 @@ export async function getReferenceUnitByIdsAndVersion(tableData: { [key: string]
   }
   return Promise.resolve({
     data: null,
+    success: false,
+  });
+}
+// Same function as getReferenceUnit function, imported parameter and return value are different
+export async function getReferenceUnits(params: { id: string, version: string }[]) {
+  let result: any = [];
+  const selectStr = `
+        id,
+        version,
+        json->unitGroupDataSet->unitGroupInformation->dataSetInformation->"common:name",
+        json->unitGroupDataSet->unitGroupInformation->quantitativeReference->referenceToReferenceUnit,
+        json->unitGroupDataSet->units->unit
+    `;
+  const ids = params.map((item: any) => {
+    return item.id;
+  });
+
+  if (ids.every((id) => id && id.length === 36)) {
+    const { data } = await supabase
+      .from('unitgroups')
+      .select(selectStr)
+      .in('id', ids)
+      .order('version', { ascending: false });
+
+    if (data && data.length > 0) {
+      result = params.map((item: any) => {
+        let unitRes:any = data.find((i: any) => i.id === item.id && i.version === item.version);
+        if (!unitRes) {
+          unitRes = data.find((i: any) => i.id === item.id);
+        }
+        const dataList = jsonToList(unitRes?.unit);
+        const refData = dataList.find(
+          (item) => item?.['@dataSetInternalID'] === unitRes?.referenceToReferenceUnit,
+        );
+
+        return {
+            id: unitRes?.id,
+            version: unitRes?.version,
+            name: unitRes?.['common:name'],
+            refUnitId: unitRes?.referenceToReferenceUnit ?? '-',
+            refUnitName: refData?.name ?? '-',
+            refUnitGeneralComment: refData?.generalComment,
+            unit: dataList,
+        }
+      });
+      return Promise.resolve({
+        data: result,
+        success: true,
+      });
+    }
+  }
+  return Promise.resolve({
+    data: [],
     success: false,
   });
 }

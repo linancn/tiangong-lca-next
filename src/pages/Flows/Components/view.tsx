@@ -3,20 +3,23 @@ import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import LocationTextItemDescription from '@/components/LocationTextItem/description';
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
-import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
+// import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import { getFlowDetail } from '@/services/flows/api';
 import { FlowpropertyTabTable } from '@/services/flows/data';
 import { genFlowFromData, genFlowPropertyTabTableData } from '@/services/flows/util';
 import { ListPagination } from '@/services/general/data';
-import { CheckCircleTwoTone,CloseCircleOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
+import { CheckCircleTwoTone, CloseCircleOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import type { ActionType } from '@ant-design/pro-table';
 import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FormattedMessage } from 'umi';
 import { complianceOptions, flowTypeOptions } from './optiondata';
 import PropertyView from './Property/view';
+import { getReferenceUnitGroups } from '@/services/flowproperties/api';
+import { getReferenceUnits } from '@/services/unitgroups/api'
+import { getLangText } from '@/services/general/util';
 
 type Props = {
   id: string;
@@ -37,6 +40,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<any>({});
   const [propertyDataSource, setPropertyDataSource] = useState<any>([]);
+  const [dataSource, setDataSource] = useState<any>([]);
 
   const tabList = [
     {
@@ -72,6 +76,42 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
   };
+
+  const getUnitData = (data: any) => {
+    const params = data?.map((item: any) => {
+      return {
+        id: item?.referenceToFlowPropertyDataSetId,
+        version: item?.referenceToFlowPropertyDataSetVersion,
+      };
+    });
+    getReferenceUnitGroups(params).then((unitGroupsRes: any) => {
+      const unitParams = unitGroupsRes?.data?.map((item: any) => {
+        return {
+          id: item?.refUnitGroupId,
+          version: item?.version,
+        };
+      });
+      getReferenceUnits(unitParams).then((unitsRes: any) => {
+        unitsRes?.data?.forEach((unit: any) => {
+          const unitGroup = unitGroupsRes?.data.find((group: any) => group?.refUnitGroupId === unit?.id)
+          if (unitGroup) {
+            const tableIndex = data?.findIndex((e: any) => e?.referenceToFlowPropertyDataSetId === unitGroup?.id)
+            if (tableIndex !== -1) {
+              data[tableIndex]['refUnitRes'] = unit
+            }
+          }
+        })
+        setDataSource(data)
+      });
+    });
+    setDataSource([])
+  };
+
+  useEffect(() => {
+    if (propertyDataSource && propertyDataSource.length) {
+      getUnitData(genFlowPropertyTabTableData(propertyDataSource, lang))
+    }
+  }, [propertyDataSource])
 
   const propertyColumns: ProColumns<FlowpropertyTabTable>[] = [
     {
@@ -114,13 +154,20 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
       search: false,
       render: (_, row) => {
         return [
-          <ReferenceUnit
-            key={0}
-            id={row.referenceToFlowPropertyDataSetId}
-            version={row.referenceToFlowPropertyDataSetVersion}
-            idType={'flowproperty'}
-            lang={lang}
-          />,
+          // <ReferenceUnit
+          //   key={0}
+          //   id={row.referenceToFlowPropertyDataSetId}
+          //   version={row.referenceToFlowPropertyDataSetVersion}
+          //   idType={'flowproperty'}
+          //   lang={lang}
+          // />,
+          <span key={1}>
+            {getLangText(row.refUnitRes?.name, lang)} (
+            <Tooltip placement="topLeft" title={getLangText(row.refUnitRes?.refUnitGeneralComment, lang)}>
+              {row.refUnitRes?.refUnitName}
+            </Tooltip>
+            )
+          </span>
         ];
       },
     },
@@ -279,11 +326,11 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
             data={
               initData?.flowInformation?.LCIMethod?.typeOfDataSet === 'Elementary flow'
                 ? initData?.flowInformation?.dataSetInformation?.classificationInformation?.[
-                    'common:elementaryFlowCategorization'
-                  ]?.['common:category']?.['value']
+                'common:elementaryFlowCategorization'
+                ]?.['common:category']?.['value']
                 : initData?.flowInformation?.dataSetInformation?.classificationInformation?.[
-                    'common:classification'
-                  ]?.['common:class']?.['value']
+                'common:classification'
+                ]?.['common:class']?.['value']
             }
             lang={lang}
             categoryType={'Flow'}
@@ -423,7 +470,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
         <SourceSelectDescription
           data={
             initData?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-              'common:referenceToComplianceSystem'
+            'common:referenceToComplianceSystem'
             ]
           }
           title={
@@ -448,7 +495,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
           >
             {getComplianceLabel(
               initData?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                'common:approvalOfOverallCompliance'
+              'common:approvalOfOverallCompliance'
               ] ?? '-',
             )}
           </Descriptions.Item>
@@ -499,7 +546,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
           <ContactSelectDescription
             data={
               initData?.administrativeInformation?.dataEntryBy?.[
-                'common:referenceToPersonOrEntityEnteringTheData'
+              'common:referenceToPersonOrEntityEnteringTheData'
               ]
             }
             title={
@@ -560,7 +607,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
           <ContactSelectDescription
             data={
               initData?.administrativeInformation?.publicationAndOwnership?.[
-                'common:referenceToOwnershipOfDataSet'
+              'common:referenceToOwnershipOfDataSet'
               ]
             }
             title={
@@ -582,7 +629,8 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
           pageSize: 10,
         }}
         columns={propertyColumns}
-        dataSource={genFlowPropertyTabTableData(propertyDataSource, lang)}
+        // dataSource={genFlowPropertyTabTableData(propertyDataSource, lang)}
+        dataSource={dataSource}
       />
     ),
   };
