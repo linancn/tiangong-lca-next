@@ -13,7 +13,7 @@ import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import { FlowpropertyTabTable } from '@/services/flows/data';
 import { genFlowPropertyTabTableData } from '@/services/flows/util';
 import { ListPagination } from '@/services/general/data';
-import { CheckCircleOutlined } from '@ant-design/icons';
+import { CheckCircleTwoTone, CloseCircleOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
 import { Card, Divider, Form, Input, Select, Space, theme } from 'antd';
 import type { FC } from 'react';
@@ -152,9 +152,10 @@ export const FlowForm: FC<Props> = ({
       search: false,
       render: (_, row) => {
         if (row.quantitativeReference) {
-          return <CheckCircleOutlined />;
+          return <CheckCircleTwoTone twoToneColor="#5C246A" />;
+        } else {
+          return <CloseCircleOutlined />;
         }
-        // return <CloseCircleOutlined />;
       },
     },
     {

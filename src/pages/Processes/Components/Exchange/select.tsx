@@ -3,7 +3,7 @@ import { getProcessDetail } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData, genProcessFromData } from '@/services/processes/util';
 import styles from '@/style/custom.less';
-import { CheckCircleTwoTone, CloseOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
+import { CheckCircleTwoTone, CloseOutlined, CloseCircleOutlined,EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Col, Drawer, Row, Space, Tooltip } from 'antd';
 import type { FC, Key } from 'react';
@@ -85,9 +85,9 @@ const ExchangeSelect: FC<Props> = ({
               {row?.referenceToFlowDataSet ?? '-'}
             </Tooltip>
             {(row?.quantitativeReference ?? false) ? (
-              <CheckCircleTwoTone twoToneColor="#52c41a" />
+              <CheckCircleTwoTone twoToneColor="#5C246A" />
             ) : (
-              ''
+              <CloseCircleOutlined />
             )}
           </Space>
         );

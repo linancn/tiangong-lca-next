@@ -194,7 +194,7 @@ const EdgeExchangeView: FC<Props> = ({
                       labelStyle={{ width: '220px' }}
                     >
                       {exchangeDataSource?.quantitativeReference ? (
-                        <CheckCircleTwoTone twoToneColor="#52c41a" />
+                        <CheckCircleTwoTone twoToneColor="#5C246A" />
                       ) : (
                         <CloseCircleOutlined />
                       )}
@@ -322,7 +322,7 @@ const EdgeExchangeView: FC<Props> = ({
                       labelStyle={{ width: '220px' }}
                     >
                       {exchangeDataTarget?.quantitativeReference ? (
-                        <CheckCircleTwoTone twoToneColor="#52c41a" />
+                        <CheckCircleTwoTone twoToneColor="#5C246A" />
                       ) : (
                         <CloseCircleOutlined />
                       )}

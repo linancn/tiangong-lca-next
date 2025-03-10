@@ -208,7 +208,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
         if (row.quantitativeReference) {
           return (
             <Tooltip title={row.functionalUnitOrOther}>
-              <CheckCircleTwoTone twoToneColor="#52c41a" />
+              <CheckCircleTwoTone twoToneColor="#5C246A" />
             </Tooltip>
           );
         }

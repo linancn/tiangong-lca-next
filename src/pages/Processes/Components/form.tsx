@@ -15,7 +15,7 @@ import { ListPagination } from '@/services/general/data';
 import { getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData } from '@/services/processes/util';
-import { CheckCircleOutlined } from '@ant-design/icons';
+import { CheckCircleTwoTone,CloseCircleOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
 import { Card, Collapse, Divider, Form, Input, Select, Space, theme, Tooltip } from 'antd';
 import { useEffect, useRef, type FC } from 'react';
@@ -210,7 +210,9 @@ export const ProcessForm: FC<Props> = ({
       search: false,
       render: (_, row) => {
         if (row.quantitativeReference) {
-          return <CheckCircleOutlined />;
+          return <CheckCircleTwoTone twoToneColor="#5C246A" />;
+        }else{
+          return  <CloseCircleOutlined />
         }
       },
     },
