@@ -1,5 +1,6 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
+import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import { StringMultiLang_r, dataSetVersion } from '@/components/Validator/index';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { ListPagination } from '@/services/general/data';
@@ -14,7 +15,6 @@ import UnitDelete from './Unit/delete';
 import UnitEdit from './Unit/edit';
 import UnitView from './Unit/view';
 import { complianceOptions } from './optiondata';
-import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 
 type Props = {
   lang: string;
@@ -123,7 +123,7 @@ export const UnitGroupForm: FC<Props> = ({
       sorter: false,
       search: false,
       render: (_, row) => {
-        return <QuantitativeReferenceIcon value={row.quantitativeReference}/>
+        return <QuantitativeReferenceIcon value={row.quantitativeReference} />;
       },
     },
     {

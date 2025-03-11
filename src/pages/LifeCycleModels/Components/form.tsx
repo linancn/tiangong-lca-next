@@ -234,11 +234,7 @@ export const LifeCycleModelForm: FC<Props> = ({
               defaultMessage="Life cycle model diagramm(s) or screenshot(s)"
             />
           }
-          name={[
-            'lifeCycleModelInformation',
-            'technology',
-            'referenceToDiagram',
-          ]}
+          name={['lifeCycleModelInformation', 'technology', 'referenceToDiagram']}
           onData={onData}
         />
       </Space>

@@ -1,20 +1,16 @@
+import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import { ListPagination } from '@/services/general/data';
 import { getProcessDetail } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData, genProcessFromData } from '@/services/processes/util';
 import styles from '@/style/custom.less';
-import {
-  CloseOutlined,
-  EditOutlined,
-  PlusOutlined,
-} from '@ant-design/icons';
+import { CloseOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Col, Drawer, Row, Space, Tooltip } from 'antd';
 import type { FC, Key } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import ProcessExchangeView from './view';
-import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 type Props = {
   id: string;
   buttonType: string;
@@ -89,7 +85,10 @@ const ExchangeSelect: FC<Props> = ({
               {row?.referenceToFlowDataSet ?? '-'}
             </Tooltip>
             {
-              <QuantitativeReferenceIcon tooltipTitle={row.functionalUnitOrOther} value={row?.quantitativeReference}/>
+              <QuantitativeReferenceIcon
+                tooltipTitle={row.functionalUnitOrOther}
+                value={row?.quantitativeReference}
+              />
             }
           </Space>
         );

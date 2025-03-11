@@ -4,16 +4,13 @@ import LocationTextItemDescription from '@/components/LocationTextItem/descripti
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
+import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import { ListPagination } from '@/services/general/data';
 import { getLangText, getUnitData } from '@/services/general/util';
 import { getProcessDetail, getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData, genProcessFromData } from '@/services/processes/util';
-import {
-  CloseOutlined,
-  ProductOutlined,
-  ProfileOutlined,
-} from '@ant-design/icons';
+import { CloseOutlined, ProductOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Collapse, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
@@ -28,7 +25,6 @@ import {
   processtypeOfDataSetOptions,
   reviewTypeOptions,
 } from './optiondata';
-import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 
 type Props = {
   id: string;
@@ -215,7 +211,12 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
       sorter: false,
       search: false,
       render: (_, row) => {
-        return <QuantitativeReferenceIcon tooltipTitle={row.functionalUnitOrOther} value={row.quantitativeReference}/>
+        return (
+          <QuantitativeReferenceIcon
+            tooltipTitle={row.functionalUnitOrOther}
+            value={row.quantitativeReference}
+          />
+        );
       },
     },
     {

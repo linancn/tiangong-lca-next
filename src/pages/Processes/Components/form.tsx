@@ -11,6 +11,7 @@ import {
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
+import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import { ListPagination } from '@/services/general/data';
 import { getLangText, getUnitData } from '@/services/general/util';
 import { getProcessExchange } from '@/services/processes/api';
@@ -34,7 +35,6 @@ import {
   workflowAndPublicationStatusOptions,
 } from './optiondata';
 import ReveiwItemForm from './Review/form';
-import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 type Props = {
   lang: string;
   activeTabKey: string;
@@ -219,7 +219,7 @@ export const ProcessForm: FC<Props> = ({
       sorter: false,
       search: false,
       render: (_, row) => {
-        return <QuantitativeReferenceIcon value={row.quantitativeReference}/>
+        return <QuantitativeReferenceIcon value={row.quantitativeReference} />;
       },
     },
     {

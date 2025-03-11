@@ -10,6 +10,7 @@ import {
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
+import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import { FlowpropertyTabTable } from '@/services/flows/data';
 import { genFlowPropertyTabTableData } from '@/services/flows/util';
 import { ListPagination } from '@/services/general/data';
@@ -24,7 +25,6 @@ import PropertyCreate from './Property/create';
 import PropertyDelete from './Property/delete';
 import PropertyEdit from './Property/edit';
 import PropertyView from './Property/view';
-import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 
 type Props = {
   lang: string;
@@ -176,7 +176,7 @@ export const FlowForm: FC<Props> = ({
       sorter: false,
       search: false,
       render: (_, row) => {
-        return <QuantitativeReferenceIcon value={row.quantitativeReference}/>
+        return <QuantitativeReferenceIcon value={row.quantitativeReference} />;
       },
     },
     {

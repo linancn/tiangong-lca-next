@@ -4,15 +4,13 @@ import LocationTextItemDescription from '@/components/LocationTextItem/descripti
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
+import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import { getFlowDetail } from '@/services/flows/api';
 import { FlowpropertyTabTable } from '@/services/flows/data';
 import { genFlowFromData, genFlowPropertyTabTableData } from '@/services/flows/util';
 import { ListPagination } from '@/services/general/data';
 import { getLangText, getUnitData } from '@/services/general/util';
-import {
-  CloseOutlined,
-  ProfileOutlined,
-} from '@ant-design/icons';
+import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import type { ActionType } from '@ant-design/pro-table';
 import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
@@ -21,7 +19,6 @@ import { useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { complianceOptions, flowTypeOptions } from './optiondata';
 import PropertyView from './Property/view';
-import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 type Props = {
   id: string;
   version: string;
@@ -162,7 +159,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
       sorter: false,
       search: false,
       render: (_, row) => {
-        return <QuantitativeReferenceIcon value={row.quantitativeReference}/>
+        return <QuantitativeReferenceIcon value={row.quantitativeReference} />;
       },
     },
     {

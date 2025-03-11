@@ -1,15 +1,12 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
+import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import FlowsSelectDescription from '@/pages/Flows/Components/select/description';
-import {
-  CloseOutlined,
-  ProfileOutlined,
-} from '@ant-design/icons';
+import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { Button, Card, Descriptions, Divider, Drawer, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { DataDerivationTypeStatusOptions } from '../optiondata';
-import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 
 type Props = {
   id: string;
@@ -269,9 +266,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
               }
               labelStyle={{ width: '220px' }}
             >
-              {
-                <QuantitativeReferenceIcon value={viewData.quantitativeReference}/>
-              }
+              {<QuantitativeReferenceIcon value={viewData.quantitativeReference} />}
             </Descriptions.Item>
           </Descriptions>
           <Divider orientationMargin="0" orientation="left" plain>

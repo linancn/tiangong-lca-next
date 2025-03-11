@@ -1,3 +1,4 @@
+import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import ProcessExchangeView from '@/pages/Processes/Components/Exchange/view';
 import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import { ListPagination } from '@/services/general/data';
@@ -5,13 +6,12 @@ import { getProcessDetail, getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData, genProcessFromData } from '@/services/processes/util';
 import styles from '@/style/custom.less';
-import {  CloseOutlined } from '@ant-design/icons';
+import { CloseOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Drawer, Space, Tooltip } from 'antd';
 import type { FC, Key } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 
 type Props = {
   node: any;
@@ -120,7 +120,12 @@ const IoPortSelect: FC<Props> = ({
       sorter: false,
       search: false,
       render: (_, row) => {
-        return <QuantitativeReferenceIcon tooltipTitle={row.functionalUnitOrOther} value={row.quantitativeReference}/>
+        return (
+          <QuantitativeReferenceIcon
+            tooltipTitle={row.functionalUnitOrOther}
+            value={row.quantitativeReference}
+          />
+        );
       },
     },
     {

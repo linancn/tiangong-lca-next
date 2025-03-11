@@ -100,15 +100,13 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       />,
       <SelectLang key="SelectLang" />,
       <Question key="doc" />,
-      <Notification key="Notification"></Notification>
+      <Notification key="Notification"></Notification>,
     ],
     avatarProps: {
       src: initialState?.currentUser?.avatar,
       title: <AvatarName />,
       render: (_, avatarChildren) => {
-        return (
-            <AvatarDropdown>{avatarChildren}</AvatarDropdown>
-        );
+        return <AvatarDropdown>{avatarChildren}</AvatarDropdown>;
       },
     },
     waterMarkProps: {

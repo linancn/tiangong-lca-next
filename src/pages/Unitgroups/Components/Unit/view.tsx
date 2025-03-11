@@ -1,13 +1,10 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
-import {
-  CloseOutlined,
-  ProfileOutlined,
-} from '@ant-design/icons';
+import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
+import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { Button, Descriptions, Divider, Drawer, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
-import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 
 type Props = {
   id: string;
@@ -102,9 +99,7 @@ const UnitView: FC<Props> = ({ id, data, buttonType }) => {
             }
             labelStyle={{ width: '180px' }}
           >
-            {
-              <QuantitativeReferenceIcon value={viewData.quantitativeReference}/>
-            }
+            {<QuantitativeReferenceIcon value={viewData.quantitativeReference} />}
           </Descriptions.Item>
         </Descriptions>
         <br />

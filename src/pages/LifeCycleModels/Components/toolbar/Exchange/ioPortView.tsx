@@ -1,3 +1,4 @@
+import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import ProcessExchangeView from '@/pages/Processes/Components/Exchange/view';
 import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import { ListPagination } from '@/services/general/data';
@@ -10,7 +11,6 @@ import { Button, Drawer, Space, Tooltip } from 'antd';
 import type { FC, Key } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 type Props = {
   node: any;
   lang: string;
@@ -109,7 +109,12 @@ const IoPortSelector: FC<Props> = ({ node, lang, direction, drawerVisible, onDra
       sorter: false,
       search: false,
       render: (_, row) => {
-        return <QuantitativeReferenceIcon tooltipTitle={row.functionalUnitOrOther} value={row.quantitativeReference}/>
+        return (
+          <QuantitativeReferenceIcon
+            tooltipTitle={row.functionalUnitOrOther}
+            value={row.quantitativeReference}
+          />
+        );
       },
     },
     {

@@ -1,4 +1,5 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
+import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import FlowsSelectDescription from '@/pages/Flows/Components/select/description';
 import { getProcessDetail } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
@@ -7,7 +8,6 @@ import { Button, Card, Col, Descriptions, Divider, Drawer, Row, Spin } from 'ant
 import type { FC } from 'react';
 import { useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 
 type Props = {
   lang: string;
@@ -195,7 +195,9 @@ const EdgeExchangeView: FC<Props> = ({
                       labelStyle={{ width: '220px' }}
                     >
                       {
-                        <QuantitativeReferenceIcon value={exchangeDataSource?.quantitativeReference}/>
+                        <QuantitativeReferenceIcon
+                          value={exchangeDataSource?.quantitativeReference}
+                        />
                       }
                     </Descriptions.Item>
                   </Descriptions>
@@ -321,7 +323,9 @@ const EdgeExchangeView: FC<Props> = ({
                       labelStyle={{ width: '220px' }}
                     >
                       {
-                        <QuantitativeReferenceIcon value={exchangeDataTarget?.quantitativeReference}/>
+                        <QuantitativeReferenceIcon
+                          value={exchangeDataTarget?.quantitativeReference}
+                        />
                       }
                     </Descriptions.Item>
                   </Descriptions>
