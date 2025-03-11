@@ -236,7 +236,6 @@ export const LifeCycleModelForm: FC<Props> = ({
           }
           name={[
             'lifeCycleModelInformation',
-            'dataSetInformation',
             'technology',
             'referenceToDiagram',
           ]}

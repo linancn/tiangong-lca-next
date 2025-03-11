@@ -201,7 +201,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
               defaultMessage="Reference to Diagram"
             />
           }
-          data={data.lifeCycleModelInformation?.dataSetInformation?.referenceToDiagram ?? {}}
+          data={data.lifeCycleModelInformation?.technology?.referenceToDiagram ?? {}}
           lang={lang}
         />
       </>

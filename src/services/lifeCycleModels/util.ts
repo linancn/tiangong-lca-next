@@ -440,7 +440,7 @@ export function genLifeCycleModelJsonOrdered(id: string, data: any, oldData: any
           },
           'common:copyright':
             data?.administrativeInformation?.publicationAndOwnership?.['common:copyright'],
-          referenceToEntitiesWithExclusiveAccess: {
+          'common:referenceToEntitiesWithExclusiveAccess': {
             '@refObjectId':
               data?.administrativeInformation?.publicationAndOwnership
                 ?.referenceToEntitiesWithExclusiveAccess?.['@refObjectId'],
