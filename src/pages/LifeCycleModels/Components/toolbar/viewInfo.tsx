@@ -511,7 +511,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             }
             lang={lang}
             data={
-              data.administrativeInformation?.dataGenerator?.[
+              data.administrativeInformation?.publicationAndOwnership?.[
                 'common:referenceToEntitiesWithExclusiveAccess'
               ]
             }

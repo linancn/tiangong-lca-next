@@ -34,7 +34,7 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData, type = 'edit' }) => {
     setReferenceValue(referenceValue + 1);
   };
   const handletFromData = () => {
-    if (fromData?.id) {
+    if (fromData) {
       setFromData({
         ...fromData,
         [activeTabKey]: formRefEdit.current?.getFieldsValue()?.[activeTabKey] ?? {},
