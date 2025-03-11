@@ -4,7 +4,7 @@ import {
   rejectTeamInvitationApi,
 } from '@/services/roles/api';
 import { getTeamById } from '@/services/teams/api';
-import { BellOutlined } from '@ant-design/icons';
+import { MessageOutlined } from '@ant-design/icons';
 import { Badge, message, Modal } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useIntl } from 'umi';
@@ -61,8 +61,9 @@ const Notification: React.FC = () => {
   };
 
   return (
-    <Badge dot={isBeInvited}>
-      <BellOutlined
+    <Badge dot={isBeInvited} offset={[-5, 6]} size="small">
+      <MessageOutlined
+        style={{ fontSize: 16, opacity: 0.5 }}
         onClick={() => {
           if (isBeInvited) {
             Modal.confirm({
