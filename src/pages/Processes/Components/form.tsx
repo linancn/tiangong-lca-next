@@ -16,7 +16,6 @@ import { getLangText, getUnitData } from '@/services/general/util';
 import { getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData } from '@/services/processes/util';
-import { CheckCircleTwoTone, CloseCircleOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
 import { Card, Collapse, Divider, Form, Input, Select, Space, theme, Tooltip } from 'antd';
 import { useEffect, useRef, type FC } from 'react';
@@ -35,7 +34,7 @@ import {
   workflowAndPublicationStatusOptions,
 } from './optiondata';
 import ReveiwItemForm from './Review/form';
-
+import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 type Props = {
   lang: string;
   activeTabKey: string;
@@ -220,11 +219,7 @@ export const ProcessForm: FC<Props> = ({
       sorter: false,
       search: false,
       render: (_, row) => {
-        if (row.quantitativeReference) {
-          return <CheckCircleTwoTone twoToneColor="#5C246A" />;
-        } else {
-          return <CloseCircleOutlined />;
-        }
+        return <QuantitativeReferenceIcon value={row.quantitativeReference}/>
       },
     },
     {

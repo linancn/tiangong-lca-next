@@ -5,12 +5,13 @@ import { getProcessDetail, getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData, genProcessFromData } from '@/services/processes/util';
 import styles from '@/style/custom.less';
-import { CheckCircleTwoTone, CloseCircleOutlined, CloseOutlined } from '@ant-design/icons';
+import {  CloseOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Drawer, Space, Tooltip } from 'antd';
 import type { FC, Key } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
+import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 
 type Props = {
   node: any;
@@ -119,14 +120,7 @@ const IoPortSelect: FC<Props> = ({
       sorter: false,
       search: false,
       render: (_, row) => {
-        if (row.quantitativeReference) {
-          return (
-            <Tooltip title={row.functionalUnitOrOther}>
-              <CheckCircleTwoTone twoToneColor="#5C246A" />
-            </Tooltip>
-          );
-        }
-        return <CloseCircleOutlined />;
+        return <QuantitativeReferenceIcon tooltipTitle={row.functionalUnitOrOther} value={row.quantitativeReference}/>
       },
     },
     {

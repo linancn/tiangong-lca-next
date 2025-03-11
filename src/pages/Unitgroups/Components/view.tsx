@@ -6,8 +6,6 @@ import { getUnitGroupDetail } from '@/services/unitgroups/api';
 import { UnitTable } from '@/services/unitgroups/data';
 import { genUnitGroupFromData, genUnitTableData } from '@/services/unitgroups/util';
 import {
-  CheckCircleTwoTone,
-  CloseCircleOutlined,
   CloseOutlined,
   ProfileOutlined,
 } from '@ant-design/icons';
@@ -18,6 +16,8 @@ import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import UnitView from './Unit/view';
 import { complianceOptions } from './optiondata';
+import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
+
 type Props = {
   id: string;
   version: string;
@@ -94,10 +94,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
       sorter: false,
       search: false,
       render: (_, row) => {
-        if (row.quantitativeReference) {
-          return <CheckCircleTwoTone twoToneColor="#5C246A" />;
-        }
-        return <CloseCircleOutlined />;
+        return <QuantitativeReferenceIcon value={row.quantitativeReference}/>
       },
     },
     {

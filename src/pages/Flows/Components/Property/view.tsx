@@ -1,7 +1,5 @@
 import FlowpropertiesSelectDescription from '@/pages/Flowproperties/Components/select/description';
 import {
-  CheckCircleTwoTone,
-  CloseCircleOutlined,
   CloseOutlined,
   ProfileOutlined,
 } from '@ant-design/icons';
@@ -9,6 +7,7 @@ import { Button, Descriptions, Drawer, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
+import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 
 type Props = {
   id: string;
@@ -96,11 +95,9 @@ const PropertyView: FC<Props> = ({ id, data, lang, buttonType }) => {
             }
             labelStyle={{ width: '220px' }}
           >
-            {viewData.quantitativeReference ? (
-              <CheckCircleTwoTone twoToneColor="#5C246A" />
-            ) : (
-              <CloseCircleOutlined />
-            )}
+            {
+             <QuantitativeReferenceIcon value={viewData.quantitativeReference}/>
+            }
           </Descriptions.Item>
         </Descriptions>
       </Drawer>

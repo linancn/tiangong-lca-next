@@ -1,8 +1,6 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import FlowsSelectDescription from '@/pages/Flows/Components/select/description';
 import {
-  CheckCircleTwoTone,
-  CloseCircleOutlined,
   CloseOutlined,
   ProfileOutlined,
 } from '@ant-design/icons';
@@ -11,6 +9,7 @@ import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { DataDerivationTypeStatusOptions } from '../optiondata';
+import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 
 type Props = {
   id: string;
@@ -270,11 +269,9 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
               }
               labelStyle={{ width: '220px' }}
             >
-              {viewData.quantitativeReference ? (
-                <CheckCircleTwoTone twoToneColor="#5C246A" />
-              ) : (
-                <CloseCircleOutlined />
-              )}
+              {
+                <QuantitativeReferenceIcon value={viewData.quantitativeReference}/>
+              }
             </Descriptions.Item>
           </Descriptions>
           <Divider orientationMargin="0" orientation="left" plain>

@@ -5,7 +5,6 @@ import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { ListPagination } from '@/services/general/data';
 import { UnitTable } from '@/services/unitgroups/data';
 import { genUnitTableData } from '@/services/unitgroups/util';
-import { CheckCircleTwoTone, CloseCircleOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
 import { Card, Form, Input, Select, Space, theme } from 'antd';
 import { FC, useRef } from 'react';
@@ -15,6 +14,7 @@ import UnitDelete from './Unit/delete';
 import UnitEdit from './Unit/edit';
 import UnitView from './Unit/view';
 import { complianceOptions } from './optiondata';
+import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 
 type Props = {
   lang: string;
@@ -123,10 +123,7 @@ export const UnitGroupForm: FC<Props> = ({
       sorter: false,
       search: false,
       render: (_, row) => {
-        if (row.quantitativeReference) {
-          return <CheckCircleTwoTone twoToneColor="#5C246A" />;
-        }
-        return <CloseCircleOutlined />;
+        return <QuantitativeReferenceIcon value={row.quantitativeReference}/>
       },
     },
     {

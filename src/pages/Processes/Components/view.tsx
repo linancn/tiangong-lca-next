@@ -10,8 +10,6 @@ import { getProcessDetail, getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData, genProcessFromData } from '@/services/processes/util';
 import {
-  CheckCircleTwoTone,
-  CloseCircleOutlined,
   CloseOutlined,
   ProductOutlined,
   ProfileOutlined,
@@ -30,6 +28,8 @@ import {
   processtypeOfDataSetOptions,
   reviewTypeOptions,
 } from './optiondata';
+import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
+
 type Props = {
   id: string;
   version: string;
@@ -215,14 +215,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
       sorter: false,
       search: false,
       render: (_, row) => {
-        if (row.quantitativeReference) {
-          return (
-            <Tooltip title={row.functionalUnitOrOther}>
-              <CheckCircleTwoTone twoToneColor="#5C246A" />
-            </Tooltip>
-          );
-        }
-        return <CloseCircleOutlined />;
+        return <QuantitativeReferenceIcon tooltipTitle={row.functionalUnitOrOther} value={row.quantitativeReference}/>
       },
     },
     {

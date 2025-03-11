@@ -1,7 +1,5 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import {
-  CheckCircleTwoTone,
-  CloseCircleOutlined,
   CloseOutlined,
   ProfileOutlined,
 } from '@ant-design/icons';
@@ -9,6 +7,7 @@ import { Button, Descriptions, Divider, Drawer, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
+import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 
 type Props = {
   id: string;
@@ -103,11 +102,9 @@ const UnitView: FC<Props> = ({ id, data, buttonType }) => {
             }
             labelStyle={{ width: '180px' }}
           >
-            {viewData.quantitativeReference ? (
-              <CheckCircleTwoTone twoToneColor="#5C246A" />
-            ) : (
-              <CloseCircleOutlined />
-            )}
+            {
+              <QuantitativeReferenceIcon value={viewData.quantitativeReference}/>
+            }
           </Descriptions.Item>
         </Descriptions>
         <br />

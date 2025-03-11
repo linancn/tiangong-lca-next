@@ -9,5 +9,6 @@ import Footer from './Footer';
 import Notification from './Notification';
 import { DarkMode, Question, SelectLang } from './RightContent';
 import { AvatarDropdown, AvatarName } from './RightContent/AvatarDropdown';
+import QuantitativeReferenceIcon from './QuantitativeReferenceIcon';
 
-export { AvatarDropdown, AvatarName, DarkMode, Footer, Notification, Question, SelectLang };
+export { AvatarDropdown, AvatarName, DarkMode, Footer, Notification, Question, SelectLang, QuantitativeReferenceIcon };

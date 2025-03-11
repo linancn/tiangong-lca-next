@@ -10,8 +10,6 @@ import { genFlowFromData, genFlowPropertyTabTableData } from '@/services/flows/u
 import { ListPagination } from '@/services/general/data';
 import { getLangText, getUnitData } from '@/services/general/util';
 import {
-  CheckCircleTwoTone,
-  CloseCircleOutlined,
   CloseOutlined,
   ProfileOutlined,
 } from '@ant-design/icons';
@@ -23,7 +21,7 @@ import { useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { complianceOptions, flowTypeOptions } from './optiondata';
 import PropertyView from './Property/view';
-
+import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 type Props = {
   id: string;
   version: string;
@@ -164,10 +162,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
       sorter: false,
       search: false,
       render: (_, row) => {
-        if (row.quantitativeReference) {
-          return <CheckCircleTwoTone twoToneColor="#5C246A" />;
-        }
-        return <CloseCircleOutlined />;
+        return <QuantitativeReferenceIcon value={row.quantitativeReference}/>
       },
     },
     {
