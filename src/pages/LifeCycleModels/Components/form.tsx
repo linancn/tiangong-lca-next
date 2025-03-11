@@ -667,7 +667,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             <LangTextItemForm
               name={[
                 'administrativeInformation',
-                'common:commissionerAndGoal',
+                'publicationAndOwnership',
                 'common:accessRestrictions',
               ]}
               label={

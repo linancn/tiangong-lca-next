@@ -543,7 +543,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           </Divider>
           <LangTextItemDescription
             data={
-              data.administrativeInformation?.['common:commissionerAndGoal']?.[
+              data.administrativeInformation?.['publicationAndOwnership']?.[
                 'common:accessRestrictions'
               ]
             }
