@@ -78,13 +78,17 @@ const LangTextItemForm: FC<Props> = ({ name, label, rules }) => {
                     </Form.Item>
                   </Col>
                   <Col flex="20px" style={{ paddingTop: '8px' }}>
-                    {(index !== 0 || !isRequired) && (
+                    {/* {(index !== 0 || !isRequired) && ( */}
                       <CloseOutlined
+                        style={{cursor: index === 0 && isRequired ? 'not-allowed' : 'pointer'}}
                         onClick={() => {
+                          if(index === 0 && isRequired){
+                            return
+                          }
                           subOpt.remove(subField.name);
                         }}
                       />
-                    )}
+                    {/* )} */}
                   </Col>
                 </Row>
               ))}
