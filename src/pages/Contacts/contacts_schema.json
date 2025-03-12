@@ -5,29 +5,57 @@
     "@xmlns:xsi": "str",
     "@version": "str",
     "@xsi:schemaLocation": "str",
-    "contactInformation": {
+   "contactInformation": {
       "dataSetInformation": {
         "common:UUID": "str",
-        "common:shortName": [
-          {
-            "@xml:lang": "str",
-            "#text": "str"
-          }
-        ],
-        "common:name": [
-          {
-            "@xml:lang": "str",
-            "#text": "str"
-          }
-        ],
+        "common:shortName":{
+          "value": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ],
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "validator.field.shortName.required",
+              "defaultMessage": "shortName is required"
+            }
+          ]
+        },
+        "common:name": {
+          "value":[
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ],
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "validator.field.name.required",
+              "defaultMessage": "Name is required"
+            }
+          ]
+        },
         "classificationInformation": {
           "common:classification": {
-            "common:class": {
-              "@level": "str",
-              "#text": "str"
+            "value":{
+              "common:class": {
+                "@level": "str",
+                "#text": "str",
+                "@classId": "str"
+              },
+              "@name": "str",
+              "@classes": "str"
             },
-            "@name": "str",
-            "@classes": "str"
+            "rules": [
+              {
+                "required": true,
+                "messageKey": "validator.field.classification.required",
+                "defaultMessage": "Classification is required"
+              }
+            ]
           }
         },
         "email": "str",
@@ -71,8 +99,35 @@
     },
     "administrativeInformation": {
       "publicationAndOwnership": {
-        "common:dataSetVersion": "str",
+        "common:dataSetVersion": {
+          "value":"str",
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "validator.field.dataSetVersion.required",
+              "defaultMessage": "Data set version is required"
+            }
+          ]
+        },
         "common:permanentDataSetURI": "str",
+        "common:referenceToOwnershipOfDataSet":{
+          "value":{
+            "@type": "str",
+            "@refObjectId": "str",
+            "@uri": "str",
+            "common:shortDescription": {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          },
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "validator.field.referenceToOwnershipOfDataSet.required",
+              "defaultMessage": "Reference to ownership of data set is required"
+            }
+          ]
+        },
         "common:referenceToPrecedingDataSetVersion": {
           "@type": "str",
           "@refObjectId": "str",
@@ -84,16 +139,34 @@
         }
       },
       "dataEntryBy": {
-        "common:timeStamp": "str",
+        "common:timeStamp":{
+          "value": "str",
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "validator.field.timeStamp.required",
+              "defaultMessage": "Time stamp is required"
+            }
+          ]
+        },
         "common:referenceToDataSetFormat": {
-          "@refObjectId": "str",
-          "@type": "str",
-          "@uri": "str",
-          "common:shortDescription": {
-            "@xml:lang": "str",
-            "#text": "str"
+          "value":{
+            "@refObjectId": "str",
+            "@type": "str",
+            "@uri": "str",
+            "common:shortDescription": {
+              "@xml:lang": "str",
+              "#text": "str"
+            },
+            "@version": "str"
           },
-          "@version": "str"
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "validator.field.referenceToDataSetFormat.required",
+              "defaultMessage": "Time stamp is required"
+            }
+          ]
         }
       }
     }

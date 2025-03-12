@@ -42,5 +42,6 @@ export default {
   'pages.contact.dataSetVersion': '数据集版本',
   'pages.contact.referenceToPrecedingDataSetVersion': '数据集前一版本',
   'pages.contact.permanentDataSetURI': '永久数据集统一资源标识符',
+  'pages.contact.referenceToOwnershipOfDataSet': '数据集拥有者',
   //管理信息
 };

@@ -18,4 +18,15 @@ export default {
 
   'validator.Year.empty': '建议填写，以增强数据详细性和可用性！',
   'validator.Year.pattern': '请输入有效的年份（例如：2023）',
+
+  'validator.field.shortName.required': '名称是必填项！',
+  'validator.language.mustBeEnglish': '语言必须是英语！',
+  'validator.dataSetVersion.required': '数据集版本是必填项！',
+  'validator.lang.select': '请选择语言！',
+  'validator.field.classification.required': '分类是必填项！',
+  'validator.field.name.required': '名称是必填项！',
+  'validator.field.timeStamp.required': '时间戳是必填项！',
+  'validator.field.referenceToDataSetFormat.required': '数据集格式是必填项！',
+  'validator.field.dataSetVersion.required': '数据集版本是必填项！',
+  'validator.field.referenceToOwnershipOfDataSet.required': '数据集所有权是必填项！',
 };

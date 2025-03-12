@@ -42,4 +42,5 @@ export default {
   'pages.contact.dataSetVersion': 'Data set version',
   'pages.contact.referenceToPrecedingDataSetVersion': 'Preceding data set version',
   'pages.contact.permanentDataSetURI': 'Permanent data set URI',
+  'pages.contact.referenceToOwnershipOfDataSet': 'Owner of data set',
 };

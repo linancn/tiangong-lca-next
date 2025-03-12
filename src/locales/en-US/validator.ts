@@ -15,4 +15,15 @@ export default {
   'validator.pages.contact.email.pattern': 'The input is not valid E-mail!',
 
   'validator.NullableString.pattern': 'Length cannot exceed 500 characters characters and may be empty!',
+
+  'validator.field.shortName.required': 'Name is required!',
+  'validator.language.mustBeEnglish': 'Language must be English!',
+  'validator.dataSetVersion.required': 'Data set version is required!',
+  'validator.lang.select': 'Please select a language!',
+  'validator.field.name.required': 'Name is required!',
+  'validator.field.classification.required': 'Classification is required!',
+  'validator.field.timeStamp.required': 'Time stamp is required!',
+  'validator.field.referenceToDataSetFormat.required': 'Data set format is required!',
+  'validator.field.dataSetVersion.required': 'Data set version is required!',
+  'validator.field.referenceToOwnershipOfDataSet.required': 'Reference to ownership of data set is required!',
 };

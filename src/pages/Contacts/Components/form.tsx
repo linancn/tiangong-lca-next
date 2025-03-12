@@ -3,10 +3,8 @@ import LevelTextItemForm from '@/components/LevelTextItem/form';
 import {
   STMultiLang_o,
   STMultiLang_r,
-  StringMultiLang_r,
   String_o,
   WWWAddress,
-  dataSetVersion,
   emailvalidation,
 } from '@/components/Validator/index';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
@@ -15,6 +13,8 @@ import { ProFormInstance } from '@ant-design/pro-components';
 import { Card, Form, Input, Space, theme } from 'antd';
 import { FC } from 'react';
 import { FormattedMessage } from 'umi';
+import schema from '@/pages/Contacts/contacts_schema.json';
+import { getRules } from '@/pages/Utils';
 
 type Props = {
   lang: string;
@@ -67,7 +67,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
                   defaultMessage="Short name for contact"
                 />
               }
-              rules={StringMultiLang_r}
+              rules={getRules(schema['contactDataSet']['contactInformation']['dataSetInformation']['common:shortName']['rules']??[])}
             />
           </Card>
           <Card
@@ -77,7 +77,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             <LangTextItemForm
               name={['contactInformation', 'dataSetInformation', 'common:name']}
               label={<FormattedMessage id="pages.contact.name" defaultMessage="Name of contact" />}
-              rules={StringMultiLang_r}
+              rules={getRules(schema['contactDataSet']['contactInformation']['dataSetInformation']['common:name']['rules']??[])}
             />
           </Card>
           <LevelTextItemForm
@@ -92,6 +92,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             dataType={'Contact'}
             formRef={formRef}
             onData={onData}
+            rules={getRules(schema['contactDataSet']['contactInformation']['dataSetInformation']['classificationInformation']['common:classification']['rules']??[])}
           />
           <Card
             size="small"
@@ -212,6 +213,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
                   defaultMessage="Time stamp (last saved)"
                 />
               }
+              rules={getRules(schema['contactDataSet']['administrativeInformation']['dataEntryBy']['common:timeStamp']['rules']??[])}
               name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
             >
               <Input disabled={true} style={{ color: token.colorTextDescription }} />
@@ -224,6 +226,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
                   defaultMessage="Data set format(s)"
                 />
               }
+              rules={getRules(schema['contactDataSet']['administrativeInformation']['dataEntryBy']['common:referenceToDataSetFormat']['rules']??[])}
               name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
               lang={lang}
               formRef={formRef}
@@ -251,7 +254,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
                 'publicationAndOwnership',
                 'common:dataSetVersion',
               ]}
-              rules={dataSetVersion}
+              rules={getRules(schema['contactDataSet']['administrativeInformation']['publicationAndOwnership']['common:dataSetVersion']['rules']??[])}
             >
               <Input />
             </Form.Item>
@@ -267,6 +270,23 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
                 'publicationAndOwnership',
                 'common:referenceToPrecedingDataSetVersion',
               ]}
+              lang={lang}
+              formRef={formRef}
+              onData={onData}
+            />
+            <ContactSelectForm
+             label={
+              <FormattedMessage
+                id="pages.contact.referenceToOwnershipOfDataSet"
+                defaultMessage="Owner of data set"
+              />
+            }
+            rules={getRules(schema['contactDataSet']['administrativeInformation']['publicationAndOwnership']['common:referenceToOwnershipOfDataSet']['rules']??[])}
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:referenceToOwnershipOfDataSet',
+            ]}
               lang={lang}
               formRef={formRef}
               onData={onData}

@@ -10,6 +10,7 @@ type Props = {
   formRef: React.MutableRefObject<any | undefined>;
   hidden?: boolean;
   onData: () => void;
+  rules?:any[]
 };
 
 const LevelTextItemForm: FC<Props> = ({
@@ -20,6 +21,7 @@ const LevelTextItemForm: FC<Props> = ({
   formRef,
   hidden,
   onData,
+  rules=[],
 }) => {
   const [selectOptions, setSelectOptions] = useState<any>([]);
 
@@ -161,6 +163,7 @@ const LevelTextItemForm: FC<Props> = ({
           <FormattedMessage id="pages.contact.classification" defaultMessage="Classification" />
         }
         name={[...name, 'showValue']}
+        rules={rules}
       >
         <TreeSelect
           treeDefaultExpandedKeys={
