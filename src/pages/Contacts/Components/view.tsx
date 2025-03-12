@@ -156,6 +156,20 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
             <FormattedMessage id="pages.contact.referenceToContact" defaultMessage="Belongs to:" />
           }
         ></ContractDescription>
+        <br />
+
+        <SourceSelectDescription
+            title={
+              <FormattedMessage
+                id="pages.contact.referenceToLogo"
+                defaultMessage="Logo of organisation or source"
+              />
+            }
+            data={
+              initData.contactInformation?.dataSetInformation?.referenceToLogo
+            }
+            lang={lang}
+          />
       </>
     ),
     administrativeInformation: (
@@ -220,6 +234,21 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
               </Space>
             </Descriptions.Item>
           </Descriptions>
+          <br />
+          <ContractDescription
+            data={
+              initData.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]
+            }
+            lang={lang}
+            title={
+              <FormattedMessage
+                id="pages.contact.referenceToOwnershipOfDataSet"
+                defaultMessage="Owner of data set"
+              />
+            }
+          ></ContractDescription>
           <br />
           <ContractDescription
             data={

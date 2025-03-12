@@ -268,22 +268,6 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
               <Input />
             </Form.Item>
             <ContactSelectForm
-              label={
-                <FormattedMessage
-                  id="pages.contact.referenceToPrecedingDataSetVersion"
-                  defaultMessage="Preceding data set version"
-                />
-              }
-              name={[
-                'administrativeInformation',
-                'publicationAndOwnership',
-                'common:referenceToPrecedingDataSetVersion',
-              ]}
-              lang={lang}
-              formRef={formRef}
-              onData={onData}
-            />
-            <ContactSelectForm
              label={
               <FormattedMessage
                 id="pages.contact.referenceToOwnershipOfDataSet"
@@ -300,6 +284,24 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
               formRef={formRef}
               onData={onData}
             />
+            <br/>
+            <ContactSelectForm
+              label={
+                <FormattedMessage
+                  id="pages.contact.referenceToPrecedingDataSetVersion"
+                  defaultMessage="Preceding data set version"
+                />
+              }
+              name={[
+                'administrativeInformation',
+                'publicationAndOwnership',
+                'common:referenceToPrecedingDataSetVersion',
+              ]}
+              lang={lang}
+              formRef={formRef}
+              onData={onData}
+            />
+            <br/>
             <Form.Item
               label={
                 <FormattedMessage
