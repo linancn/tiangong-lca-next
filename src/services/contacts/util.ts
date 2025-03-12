@@ -60,6 +60,19 @@ export function genContactJsonOrdered(id: string, data: any) {
             '@version':
               data?.contactInformation?.dataSetInformation?.referenceToContact?.['@version'],
           },
+          referenceToLogo: {
+            '@refObjectId':
+              data?.contactInformation?.dataSetInformation?.referenceToLogo?.['@refObjectId'],
+            '@type': data?.contactInformation?.dataSetInformation?.referenceToLogo?.['@type'],
+            '@uri': data?.contactInformation?.dataSetInformation?.referenceToLogo?.['@uri'],
+            'common:shortDescription': getLangJson(
+              data?.contactInformation?.dataSetInformation?.referenceToLogo?.[
+                'common:shortDescription'
+              ],
+            ),
+            '@version':
+              data?.contactInformation?.dataSetInformation?.referenceToLogo?.['@version'],
+          },
         },
       },
       administrativeInformation: {

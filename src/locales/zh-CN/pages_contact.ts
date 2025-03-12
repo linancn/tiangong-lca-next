@@ -43,6 +43,7 @@ export default {
   'pages.contact.referenceToPrecedingDataSetVersion': '数据集前一版本',
   'pages.contact.permanentDataSetURI': '永久数据集统一资源标识符',
   'pages.contact.referenceToOwnershipOfDataSet': '数据集拥有者',
+  'pages.contact.referenceToLogo': '组织或来源的logo',
   //管理信息
 
   // rules

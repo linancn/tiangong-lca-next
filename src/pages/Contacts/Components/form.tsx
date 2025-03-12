@@ -191,6 +191,18 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             formRef={formRef}
             onData={onData}
           />
+          <SourceSelectForm
+            label={
+              <FormattedMessage
+                id="pages.contact.referenceToLogo"
+                defaultMessage="Logo of organisation or source"
+              />
+            }
+            name={['contactInformation', 'dataSetInformation', 'referenceToLogo']}
+            lang={lang}
+            formRef={formRef}
+            onData={onData}
+          />
         </Space>
       </>
     ),

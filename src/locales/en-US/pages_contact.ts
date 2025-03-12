@@ -43,6 +43,7 @@ export default {
   'pages.contact.referenceToPrecedingDataSetVersion': 'Preceding data set version',
   'pages.contact.permanentDataSetURI': 'Permanent data set URI',
   'pages.contact.referenceToOwnershipOfDataSet': 'Owner of data set',
+  'pages.contact.referenceToLogo': 'Logo of organisation or source',
 
   // rules
     // rules
