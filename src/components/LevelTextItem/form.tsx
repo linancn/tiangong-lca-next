@@ -10,7 +10,7 @@ type Props = {
   formRef: React.MutableRefObject<any | undefined>;
   hidden?: boolean;
   onData: () => void;
-  rules?:any[]
+  rules?: any[];
 };
 
 const LevelTextItemForm: FC<Props> = ({
@@ -21,7 +21,7 @@ const LevelTextItemForm: FC<Props> = ({
   formRef,
   hidden,
   onData,
-  rules=[],
+  rules = [],
 }) => {
   const [selectOptions, setSelectOptions] = useState<any>([]);
 

@@ -24,7 +24,6 @@ export function getAllVersionsColumns(columns: ProColumns<any>[], versionIndex: 
   return newColumns;
 }
 
-
 export function getRules(rules: any[]) {
   return rules.map((rule) => ({
     ...rule,

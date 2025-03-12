@@ -5,10 +5,10 @@
     "@xmlns:xsi": "str",
     "@version": "str",
     "@xsi:schemaLocation": "str",
-   "contactInformation": {
+    "contactInformation": {
       "dataSetInformation": {
         "common:UUID": "str",
-        "common:shortName":{
+        "common:shortName": {
           "value": [
             {
               "@xml:lang": "str",
@@ -24,7 +24,7 @@
           ]
         },
         "common:name": {
-          "value":[
+          "value": [
             {
               "@xml:lang": "str",
               "#text": "str"
@@ -40,7 +40,7 @@
         },
         "classificationInformation": {
           "common:classification": {
-            "value":{
+            "value": {
               "common:class": {
                 "@level": "str",
                 "#text": "str",
@@ -100,7 +100,7 @@
     "administrativeInformation": {
       "publicationAndOwnership": {
         "common:dataSetVersion": {
-          "value":"str",
+          "value": "str",
           "rules": [
             {
               "required": true,
@@ -110,8 +110,8 @@
           ]
         },
         "common:permanentDataSetURI": "str",
-        "common:referenceToOwnershipOfDataSet":{
-          "value":{
+        "common:referenceToOwnershipOfDataSet": {
+          "value": {
             "@type": "str",
             "@refObjectId": "str",
             "@uri": "str",
@@ -139,7 +139,7 @@
         }
       },
       "dataEntryBy": {
-        "common:timeStamp":{
+        "common:timeStamp": {
           "value": "str",
           "rules": [
             {
@@ -150,7 +150,7 @@
           ]
         },
         "common:referenceToDataSetFormat": {
-          "value":{
+          "value": {
             "@refObjectId": "str",
             "@type": "str",
             "@uri": "str",

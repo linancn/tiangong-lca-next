@@ -159,17 +159,15 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
         <br />
 
         <SourceSelectDescription
-            title={
-              <FormattedMessage
-                id="pages.contact.referenceToLogo"
-                defaultMessage="Logo of organisation or source"
-              />
-            }
-            data={
-              initData.contactInformation?.dataSetInformation?.referenceToLogo
-            }
-            lang={lang}
-          />
+          title={
+            <FormattedMessage
+              id="pages.contact.referenceToLogo"
+              defaultMessage="Logo of organisation or source"
+            />
+          }
+          data={initData.contactInformation?.dataSetInformation?.referenceToLogo}
+          lang={lang}
+        />
       </>
     ),
     administrativeInformation: (

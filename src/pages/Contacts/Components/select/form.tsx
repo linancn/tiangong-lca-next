@@ -20,7 +20,15 @@ type Props = {
   rules?: any;
 };
 
-const ContactSelectForm: FC<Props> = ({ parentName, name, label, lang, formRef, onData, rules=[] }) => {
+const ContactSelectForm: FC<Props> = ({
+  parentName,
+  name,
+  label,
+  lang,
+  formRef,
+  onData,
+  rules = [],
+}) => {
   const [id, setId] = useState<string | undefined>(undefined);
   const [version, setVersion] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();

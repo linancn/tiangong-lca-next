@@ -14,36 +14,49 @@ type Props = {
 
 const LangTextItemForm: FC<Props> = ({ name, label, rules }) => {
   const intl = useIntl();
-  const isRequired = rules?.some(rule => rule.required);
+  const isRequired = rules?.some((rule) => rule.required);
 
   return (
     <Form.Item>
-      <Form.List
-        name={name}
-        initialValue={isRequired ? [{}] : []}
-      >
+      <Form.List name={name} initialValue={isRequired ? [{}] : []}>
         {(subFields, subOpt) => {
           return (
             <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
               {subFields.map((subField, index) => (
                 <Row key={subField.key} gutter={[10, 0]} align="top">
                   <Col flex="180px">
-                    <Form.Item 
+                    <Form.Item
                       name={[subField.name, '@xml:lang']}
-                      rules={index === 0 && isRequired ? [{
-                        required: true,
-                        message: <FormattedMessage id="validator.lang.select" defaultMessage="Please select a language!" />
-                      }, {
-                        validator: (_, value) => {
-                          if (value === 'en') {
-                            return Promise.resolve();
-                          }
-                          return Promise.reject(new Error(intl.formatMessage({
-                            id: 'validator.lang.mustBeEnglish',
-                            defaultMessage: 'Language must be English!'
-                          })));
-                        }
-                      }] : []}
+                      rules={
+                        index === 0 && isRequired
+                          ? [
+                              {
+                                required: true,
+                                message: (
+                                  <FormattedMessage
+                                    id="validator.lang.select"
+                                    defaultMessage="Please select a language!"
+                                  />
+                                ),
+                              },
+                              {
+                                validator: (_, value) => {
+                                  if (value === 'en') {
+                                    return Promise.resolve();
+                                  }
+                                  return Promise.reject(
+                                    new Error(
+                                      intl.formatMessage({
+                                        id: 'validator.lang.mustBeEnglish',
+                                        defaultMessage: 'Language must be English!',
+                                      }),
+                                    ),
+                                  );
+                                },
+                              },
+                            ]
+                          : []
+                      }
                       style={{ marginBottom: 0 }}
                     >
                       <Select
@@ -56,9 +69,9 @@ const LangTextItemForm: FC<Props> = ({ name, label, rules }) => {
                     </Form.Item>
                   </Col>
                   <Col flex="auto">
-                    <Form.Item 
-                      name={[subField.name, '#text']} 
-                      rules={index === 0 ? rules ?? [] : []}
+                    <Form.Item
+                      name={[subField.name, '#text']}
+                      rules={index === 0 ? (rules ?? []) : []}
                       style={{ marginBottom: 0 }}
                     >
                       <TextArea rows={1} />
@@ -80,7 +93,7 @@ const LangTextItemForm: FC<Props> = ({ name, label, rules }) => {
                 <FormattedMessage id="pages.button.item.label" defaultMessage="Item" />
               </Button>
             </div>
-          )
+          );
         }}
       </Form.List>
     </Form.Item>

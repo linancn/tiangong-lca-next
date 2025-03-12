@@ -16,10 +16,18 @@ type Props = {
   lang: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;
-  rules?:any[]
+  rules?: any[];
 };
 
-const SourceSelectForm: FC<Props> = ({ parentName, name, label, lang, formRef, onData, rules=[] }) => {
+const SourceSelectForm: FC<Props> = ({
+  parentName,
+  name,
+  label,
+  lang,
+  formRef,
+  onData,
+  rules = [],
+}) => {
   const [id, setId] = useState<string | undefined>(undefined);
   const [version, setVersion] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();

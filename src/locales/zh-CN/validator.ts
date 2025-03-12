@@ -21,5 +21,4 @@ export default {
 
   'validator.lang.select': '请选择语言！',
   'validator.lang.mustBeEnglish': '语言必须是英语！',
-  
 };

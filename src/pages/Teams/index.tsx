@@ -1,3 +1,4 @@
+import LangTextItemForm from '@/components/LangTextItem/form';
 import { ListPagination } from '@/services/general/data';
 import {
   createTeamMessage,
@@ -28,23 +29,11 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { FormattedMessage, history, useIntl } from '@umijs/max';
-import {
-  Button,
-  Flex,
-  Form,
-  message,
-  Modal,
-  Spin,
-  Switch,
-  Tabs,
-  Tooltip,
-  Upload,
-} from 'antd';
+import { Button, Flex, Form, message, Modal, Spin, Switch, Tabs, Tooltip, Upload } from 'antd';
 import type { UploadFile } from 'antd/es/upload/interface';
 import { useEffect, useRef, useState } from 'react';
 import { v4 } from 'uuid';
 import AddMemberModal from './Components/AddMemberModal';
-import LangTextItemForm from '@/components/LangTextItem/form';
 
 const LogoBaseUrl = 'https://qgzvkongdjqiiamzbbts.supabase.co/storage/v1/object/public/sys-files/';
 
@@ -99,13 +88,13 @@ const Team = () => {
     } else if (data.length > 0) {
       const { title, description } = data[0]?.json;
       setRank(data[0]?.rank);
-      
+
       const formData: any = {
         title: title || [],
         description: description || [],
-        rank: data[0]?.rank
+        rank: data[0]?.rank,
       };
-      
+
       setLightLogo(data[0]?.json.lightLogo);
       setDarkLogo(data[0]?.json.darkLogo);
       formRefEdit.current?.setFieldsValue({
@@ -131,17 +120,17 @@ const Team = () => {
   const renderTeamInfoForm = () => {
     const getParams = (input: Record<string, any>) => {
       const result: Record<string, any> = {};
-      
+
       Object.entries(input).forEach(([key, value]) => {
         if (Array.isArray(value)) {
           result[key] = value;
         } else if (key !== 'rank' && key !== 'lightLogo' && key !== 'darkLogo') {
           const [field, lang] = key.split('-');
-          
+
           if (!result[field]) {
             result[field] = [];
           }
-          
+
           result[field].push({
             '#text': value,
             '@xml:lang': lang,
@@ -150,7 +139,7 @@ const Team = () => {
           result[key] = value;
         }
       });
-      
+
       return result;
     };
 
@@ -278,7 +267,7 @@ const Team = () => {
     };
 
     return (
-      <Flex gap="middle" vertical  style={{ maxWidth: '50%', minWidth: '200px' }}>
+      <Flex gap="middle" vertical style={{ maxWidth: '50%', minWidth: '200px' }}>
         <Spin spinning={teamInfoSpinning}>
           <ProForm
             disabled={userRole !== 'admin' && userRole !== 'owner' && action !== 'create'}

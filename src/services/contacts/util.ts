@@ -70,8 +70,7 @@ export function genContactJsonOrdered(id: string, data: any) {
                 'common:shortDescription'
               ],
             ),
-            '@version':
-              data?.contactInformation?.dataSetInformation?.referenceToLogo?.['@version'],
+            '@version': data?.contactInformation?.dataSetInformation?.referenceToLogo?.['@version'],
           },
         },
       },
@@ -214,8 +213,7 @@ export function genContactFromData(data: any) {
               'common:shortDescription'
             ],
           ),
-          '@version':
-            data?.contactInformation?.dataSetInformation?.referenceToLogo?.['@version'],
+          '@version': data?.contactInformation?.dataSetInformation?.referenceToLogo?.['@version'],
         },
       },
     },
