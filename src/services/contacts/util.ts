@@ -204,6 +204,19 @@ export function genContactFromData(data: any) {
           '@version':
             data?.contactInformation?.dataSetInformation?.referenceToContact?.['@version'],
         },
+        referenceToLogo: {
+          '@refObjectId':
+            data?.contactInformation?.dataSetInformation?.referenceToLogo?.['@refObjectId'],
+          '@type': data?.contactInformation?.dataSetInformation?.referenceToLogo?.['@type'],
+          '@uri': data?.contactInformation?.dataSetInformation?.referenceToLogo?.['@uri'],
+          'common:shortDescription': getLangList(
+            data?.contactInformation?.dataSetInformation?.referenceToLogo?.[
+              'common:shortDescription'
+            ],
+          ),
+          '@version':
+            data?.contactInformation?.dataSetInformation?.referenceToLogo?.['@version'],
+        },
       },
     },
     administrativeInformation: {
@@ -238,6 +251,29 @@ export function genContactFromData(data: any) {
       publicationAndOwnership: {
         'common:dataSetVersion':
           data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'],
+        'common:referenceToOwnershipOfDataSet': {
+          '@refObjectId':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToOwnershipOfDataSet'
+            ]?.['@refObjectId'],
+          '@type':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToOwnershipOfDataSet'
+            ]?.['@type'],
+          '@uri':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToOwnershipOfDataSet'
+            ]?.['@uri'],
+          '@version':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToOwnershipOfDataSet'
+            ]?.['@version'],
+          'common:shortDescription': getLangList(
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToOwnershipOfDataSet'
+            ]?.['common:shortDescription'],
+          ),
+        },
         'common:referenceToPrecedingDataSetVersion': {
           '@refObjectId':
             data?.administrativeInformation?.publicationAndOwnership?.[
