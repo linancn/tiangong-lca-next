@@ -4,18 +4,13 @@ import LocationTextItemDescription from '@/components/LocationTextItem/descripti
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
+import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import { ListPagination } from '@/services/general/data';
 import { getLangText, getUnitData } from '@/services/general/util';
 import { getProcessDetail, getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData, genProcessFromData } from '@/services/processes/util';
-import {
-  CheckCircleTwoTone,
-  CloseCircleOutlined,
-  CloseOutlined,
-  ProductOutlined,
-  ProfileOutlined,
-} from '@ant-design/icons';
+import { CloseOutlined, ProductOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Collapse, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
@@ -30,6 +25,7 @@ import {
   processtypeOfDataSetOptions,
   reviewTypeOptions,
 } from './optiondata';
+
 type Props = {
   id: string;
   version: string;
@@ -215,14 +211,12 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
       sorter: false,
       search: false,
       render: (_, row) => {
-        if (row.quantitativeReference) {
-          return (
-            <Tooltip title={row.functionalUnitOrOther}>
-              <CheckCircleTwoTone twoToneColor="#5C246A" />
-            </Tooltip>
-          );
-        }
-        return <CloseCircleOutlined />;
+        return (
+          <QuantitativeReferenceIcon
+            tooltipTitle={row.functionalUnitOrOther}
+            value={row.quantitativeReference}
+          />
+        );
       },
     },
     {

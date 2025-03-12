@@ -234,12 +234,7 @@ export const LifeCycleModelForm: FC<Props> = ({
               defaultMessage="Life cycle model diagramm(s) or screenshot(s)"
             />
           }
-          name={[
-            'lifeCycleModelInformation',
-            'dataSetInformation',
-            'technology',
-            'referenceToDiagram',
-          ]}
+          name={['lifeCycleModelInformation', 'technology', 'referenceToDiagram']}
           onData={onData}
         />
       </Space>
@@ -668,7 +663,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             <LangTextItemForm
               name={[
                 'administrativeInformation',
-                'common:commissionerAndGoal',
+                'publicationAndOwnership',
                 'common:accessRestrictions',
               ]}
               label={

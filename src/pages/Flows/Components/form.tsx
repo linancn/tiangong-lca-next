@@ -10,11 +10,11 @@ import {
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
+import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import { FlowpropertyTabTable } from '@/services/flows/data';
 import { genFlowPropertyTabTableData } from '@/services/flows/util';
 import { ListPagination } from '@/services/general/data';
 import { getLangText, getUnitData } from '@/services/general/util';
-import { CheckCircleTwoTone, CloseCircleOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
 import { Card, Divider, Form, Input, Select, Space, theme, Tooltip } from 'antd';
 import type { FC } from 'react';
@@ -176,11 +176,7 @@ export const FlowForm: FC<Props> = ({
       sorter: false,
       search: false,
       render: (_, row) => {
-        if (row.quantitativeReference) {
-          return <CheckCircleTwoTone twoToneColor="#5C246A" />;
-        } else {
-          return <CloseCircleOutlined />;
-        }
+        return <QuantitativeReferenceIcon value={row.quantitativeReference} />;
       },
     },
     {

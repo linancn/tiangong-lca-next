@@ -1,16 +1,12 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
+import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 import { ListPagination } from '@/services/general/data';
 import { getUnitGroupDetail } from '@/services/unitgroups/api';
 import { UnitTable } from '@/services/unitgroups/data';
 import { genUnitGroupFromData, genUnitTableData } from '@/services/unitgroups/util';
-import {
-  CheckCircleTwoTone,
-  CloseCircleOutlined,
-  CloseOutlined,
-  ProfileOutlined,
-} from '@ant-design/icons';
+import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
@@ -18,6 +14,7 @@ import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import UnitView from './Unit/view';
 import { complianceOptions } from './optiondata';
+
 type Props = {
   id: string;
   version: string;
@@ -94,10 +91,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
       sorter: false,
       search: false,
       render: (_, row) => {
-        if (row.quantitativeReference) {
-          return <CheckCircleTwoTone twoToneColor="#5C246A" />;
-        }
-        return <CloseCircleOutlined />;
+        return <QuantitativeReferenceIcon value={row.quantitativeReference} />;
       },
     },
     {
