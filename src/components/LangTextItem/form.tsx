@@ -27,7 +27,7 @@ const LangTextItemForm: FC<Props> = ({ name, label, rules }) => {
             <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
               {subFields.map((subField, index) => (
                 <Row key={subField.key} gutter={[10, 0]} align="top">
-                  <Col flex="130px">
+                  <Col flex="180px">
                     <Form.Item 
                       name={[subField.name, '@xml:lang']}
                       rules={index === 0 && isRequired ? [{
@@ -39,7 +39,7 @@ const LangTextItemForm: FC<Props> = ({ name, label, rules }) => {
                             return Promise.resolve();
                           }
                           return Promise.reject(new Error(intl.formatMessage({
-                            id: 'validator.language.mustBeEnglish',
+                            id: 'validator.lang.mustBeEnglish',
                             defaultMessage: 'Language must be English!'
                           })));
                         }

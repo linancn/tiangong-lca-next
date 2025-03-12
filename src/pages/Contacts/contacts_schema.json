@@ -18,7 +18,7 @@
           "rules": [
             {
               "required": true,
-              "messageKey": "validator.field.shortName.required",
+              "messageKey": "pages.contact.validator.shortName.required",
               "defaultMessage": "shortName is required"
             }
           ]
@@ -33,7 +33,7 @@
           "rules": [
             {
               "required": true,
-              "messageKey": "validator.field.name.required",
+              "messageKey": "pages.contact.validator.name.required",
               "defaultMessage": "Name is required"
             }
           ]
@@ -52,7 +52,7 @@
             "rules": [
               {
                 "required": true,
-                "messageKey": "validator.field.classification.required",
+                "messageKey": "pages.contact.validator.classification.required",
                 "defaultMessage": "Classification is required"
               }
             ]
@@ -104,7 +104,7 @@
           "rules": [
             {
               "required": true,
-              "messageKey": "validator.field.dataSetVersion.required",
+              "messageKey": "pages.contact.validator.dataSetVersion.required",
               "defaultMessage": "Data set version is required"
             }
           ]
@@ -123,7 +123,7 @@
           "rules": [
             {
               "required": true,
-              "messageKey": "validator.field.referenceToOwnershipOfDataSet.required",
+              "messageKey": "pages.contact.validator.referenceToOwnershipOfDataSet.required",
               "defaultMessage": "Reference to ownership of data set is required"
             }
           ]
@@ -144,7 +144,7 @@
           "rules": [
             {
               "required": true,
-              "messageKey": "validator.field.timeStamp.required",
+              "messageKey": "pages.contact.validator.timeStamp.required",
               "defaultMessage": "Time stamp is required"
             }
           ]
@@ -163,7 +163,7 @@
           "rules": [
             {
               "required": true,
-              "messageKey": "validator.field.referenceToDataSetFormat.required",
+              "messageKey": "pages.contact.validator.referenceToDataSetFormat.required",
               "defaultMessage": "Time stamp is required"
             }
           ]

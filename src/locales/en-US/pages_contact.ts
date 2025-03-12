@@ -43,4 +43,14 @@ export default {
   'pages.contact.referenceToPrecedingDataSetVersion': 'Preceding data set version',
   'pages.contact.permanentDataSetURI': 'Permanent data set URI',
   'pages.contact.referenceToOwnershipOfDataSet': 'Owner of data set',
+
+  // rules
+    // rules
+    'pages.contact.validator.shortName.required': 'Short name for contact is required!',
+    'pages.contact.validator.name.required': 'Name of contact is required!',
+    'pages.contact.validator.classification.required': 'Classification is required!',
+    'pages.contact.validator.dataSetVersion.required': 'Data set version is required!',
+    'pages.contact.validator.referenceToOwnershipOfDataSet.required': 'Owner of data set is required!',
+    'pages.contact.validator.timeStamp.required': 'Time stamp is required!',
+    'pages.contact.validator.referenceToDataSetFormat.required': 'Data set format(s) is required!',
 };

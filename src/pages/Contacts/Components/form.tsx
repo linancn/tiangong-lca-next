@@ -15,7 +15,7 @@ import { FC } from 'react';
 import { FormattedMessage } from 'umi';
 import schema from '@/pages/Contacts/contacts_schema.json';
 import { getRules } from '@/pages/Utils';
-
+import RequiredMark from '@/components/RequiredMark';
 type Props = {
   lang: string;
   activeTabKey: string;
@@ -53,10 +53,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
           <Card
             size="small"
             title={
-              <FormattedMessage
-                id="pages.contact.shortName"
-                defaultMessage="Short name for contact"
-              />
+              <RequiredMark id="pages.contact.shortName" defaultMessage="Short name for contact" />
             }
           >
             <LangTextItemForm
@@ -72,7 +69,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
           </Card>
           <Card
             size="small"
-            title={<FormattedMessage id="pages.contact.name" defaultMessage="Name of contact" />}
+            title={<RequiredMark id="pages.contact.name" defaultMessage="Name of contact" />}
           >
             <LangTextItemForm
               name={['contactInformation', 'dataSetInformation', 'common:name']}
