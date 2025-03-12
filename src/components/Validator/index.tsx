@@ -45,7 +45,7 @@ export const StringMultiLang_o = [
 
 export const STMultiLang_r = [
   {
-    required: true,
+    // required: true,
     warningOnly: true,
     message: (
       <FormattedMessage

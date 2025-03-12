@@ -16,9 +16,18 @@ type Props = {
   lang: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;
+  rules?: any[];
 };
 
-const SourceSelectForm: FC<Props> = ({ parentName, name, label, lang, formRef, onData }) => {
+const SourceSelectForm: FC<Props> = ({
+  parentName,
+  name,
+  label,
+  lang,
+  formRef,
+  onData,
+  rules = [],
+}) => {
   const [id, setId] = useState<string | undefined>(undefined);
   const [version, setVersion] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
@@ -60,6 +69,10 @@ const SourceSelectForm: FC<Props> = ({ parentName, name, label, lang, formRef, o
   }, [referenceValue]);
 
   useEffect(() => {
+    formRef.current?.validateFields();
+  }, [id]);
+
+  useEffect(() => {
     setId(undefined);
     if (parentName) {
       setId(formRef.current?.getFieldValue([...parentName, ...name, '@refObjectId']));
@@ -76,6 +89,7 @@ const SourceSelectForm: FC<Props> = ({ parentName, name, label, lang, formRef, o
         <Form.Item
           label={<FormattedMessage id="pages.contact.refObjectId" defaultMessage="Ref object id" />}
           name={[...name, '@refObjectId']}
+          rules={rules}
         >
           <Input disabled={true} style={{ width: '350px', color: token.colorTextDescription }} />
         </Form.Item>

@@ -1,3 +1,4 @@
+import LangTextItemForm from '@/components/LangTextItem/form';
 import { ListPagination } from '@/services/general/data';
 import {
   createTeamMessage,
@@ -28,20 +29,7 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { FormattedMessage, history, useIntl } from '@umijs/max';
-import {
-  Button,
-  Flex,
-  Form,
-  Input,
-  message,
-  Modal,
-  Spin,
-  Switch,
-  Tabs,
-  theme,
-  Tooltip,
-  Upload,
-} from 'antd';
+import { Button, Flex, Form, message, Modal, Spin, Switch, Tabs, Tooltip, Upload } from 'antd';
 import type { UploadFile } from 'antd/es/upload/interface';
 import { useEffect, useRef, useState } from 'react';
 import { v4 } from 'uuid';
@@ -70,8 +58,6 @@ const Team = () => {
   const action = searchParams.get('action');
 
   const intl = useIntl();
-
-  const { token } = theme.useToken();
 
   const initialUseTeamId = async () => {
     const { data, success } = await getUserRoles();
@@ -102,18 +88,17 @@ const Team = () => {
     } else if (data.length > 0) {
       const { title, description } = data[0]?.json;
       setRank(data[0]?.rank);
-      let _formData: any = {};
-      title?.forEach((t: { '#text': string; '@xml:lang': string }) => {
-        _formData[`title-${t['@xml:lang']}`] = t['#text'];
-      });
-      description?.forEach((d: { '#text': string; '@xml:lang': string }) => {
-        _formData[`description-${d['@xml:lang']}`] = d['#text'];
-      });
-      _formData.rank = data[0]?.rank;
+
+      const formData: any = {
+        title: title || [],
+        description: description || [],
+        rank: data[0]?.rank,
+      };
+
       setLightLogo(data[0]?.json.lightLogo);
       setDarkLogo(data[0]?.json.darkLogo);
       formRefEdit.current?.setFieldsValue({
-        ..._formData,
+        ...formData,
         darkLogo: LogoBaseUrl + data[0]?.json.darkLogo,
         lightLogo: LogoBaseUrl + data[0]?.json.lightLogo,
       });
@@ -133,23 +118,28 @@ const Team = () => {
   };
 
   const renderTeamInfoForm = () => {
-    const getParams = (input: Record<string, string>) => {
-      const result: Record<string, Array<{ '#text': string; '@xml:lang': string }>> = {};
+    const getParams = (input: Record<string, any>) => {
+      const result: Record<string, any> = {};
 
       Object.entries(input).forEach(([key, value]) => {
-        const [field, lang] = key.split('-');
+        if (Array.isArray(value)) {
+          result[key] = value;
+        } else if (key !== 'rank' && key !== 'lightLogo' && key !== 'darkLogo') {
+          const [field, lang] = key.split('-');
 
-        if (!result[field]) {
-          result[field] = [];
+          if (!result[field]) {
+            result[field] = [];
+          }
+
+          result[field].push({
+            '#text': value,
+            '@xml:lang': lang,
+          });
+        } else {
+          result[key] = value;
         }
-
-        result[field].push({
-          '#text': value,
-          '@xml:lang': lang,
-        });
       });
 
-      console.log('result', result);
       return result;
     };
 
@@ -277,7 +267,7 @@ const Team = () => {
     };
 
     return (
-      <Flex gap="middle" vertical style={{ maxWidth: '100%', minWidth: '600px' }}>
+      <Flex gap="middle" vertical style={{ maxWidth: '50%', minWidth: '200px' }}>
         <Spin spinning={teamInfoSpinning}>
           <ProForm
             disabled={userRole !== 'admin' && userRole !== 'owner' && action !== 'create'}
@@ -292,15 +282,10 @@ const Team = () => {
           >
             <Form.Item
               label={<FormattedMessage id="pages.team.info.title" defaultMessage="Team Name" />}
-              style={{ marginBottom: 0 }}
             >
-              <Form.Item style={{ display: 'inline-block', width: '120px', marginRight: '8px' }}>
-                <Input value="简体中文" disabled style={{ color: token.colorTextBase }} />
-              </Form.Item>
-
-              <Form.Item
-                name="title-zh"
-                style={{ display: 'inline-block', width: 'calc(70%)' }}
+              <LangTextItemForm
+                name="title"
+                label={<FormattedMessage id="pages.team.info.title" defaultMessage="Team Name" />}
                 rules={[
                   {
                     required: true,
@@ -312,30 +297,7 @@ const Team = () => {
                     ),
                   },
                 ]}
-              >
-                <Input />
-              </Form.Item>
-              <br />
-              <Form.Item style={{ display: 'inline-block', width: '120px', marginRight: '8px' }}>
-                <Input value="English" disabled style={{ color: token.colorTextBase }} />
-              </Form.Item>
-              <Form.Item
-                name="title-en"
-                style={{ display: 'inline-block', width: 'calc(70%)' }}
-                rules={[
-                  {
-                    required: true,
-                    message: (
-                      <FormattedMessage
-                        id="pages.team.info.title.required"
-                        defaultMessage="Please input team name!"
-                      />
-                    ),
-                  },
-                ]}
-              >
-                <Input />
-              </Form.Item>
+              />
             </Form.Item>
 
             <Form.Item
@@ -345,14 +307,15 @@ const Team = () => {
                   defaultMessage="Team Description"
                 />
               }
-              style={{ marginBottom: 0 }}
             >
-              <Form.Item style={{ display: 'inline-block', width: '120px', marginRight: '8px' }}>
-                <Input value="简体中文" disabled style={{ color: token.colorTextBase }} />
-              </Form.Item>
-              <Form.Item
-                name="description-zh"
-                style={{ display: 'inline-block', width: 'calc(70%)' }}
+              <LangTextItemForm
+                name="description"
+                label={
+                  <FormattedMessage
+                    id="pages.team.info.description"
+                    defaultMessage="Team Description"
+                  />
+                }
                 rules={[
                   {
                     required: true,
@@ -364,30 +327,7 @@ const Team = () => {
                     ),
                   },
                 ]}
-              >
-                <Input.TextArea rows={1} />
-              </Form.Item>
-              <br />
-              <Form.Item style={{ display: 'inline-block', width: '120px', marginRight: '8px' }}>
-                <Input value="English" disabled style={{ color: token.colorTextBase }} />
-              </Form.Item>
-              <Form.Item
-                name="description-en"
-                style={{ display: 'inline-block', width: 'calc(70%)' }}
-                rules={[
-                  {
-                    required: true,
-                    message: (
-                      <FormattedMessage
-                        id="pages.team.info.description.required"
-                        defaultMessage="Please input team description!"
-                      />
-                    ),
-                  },
-                ]}
-              >
-                <Input.TextArea rows={1} />
-              </Form.Item>
+              />
             </Form.Item>
             <Form.Item
               name="rank"
@@ -407,7 +347,7 @@ const Team = () => {
                 }
               />
             </Form.Item>
-
+            {/* <Flex gap="middle" > */}
             <Form.Item
               name="lightLogo"
               label={
@@ -479,6 +419,7 @@ const Team = () => {
                 )}
               </Upload>
             </Form.Item>
+            {/* </Flex> */}
           </ProForm>
         </Spin>
       </Flex>

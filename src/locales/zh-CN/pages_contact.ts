@@ -42,5 +42,16 @@ export default {
   'pages.contact.dataSetVersion': '数据集版本',
   'pages.contact.referenceToPrecedingDataSetVersion': '数据集前一版本',
   'pages.contact.permanentDataSetURI': '永久数据集统一资源标识符',
+  'pages.contact.referenceToOwnershipOfDataSet': '数据集拥有者',
+  'pages.contact.referenceToLogo': '组织或来源的logo',
   //管理信息
+
+  // rules
+  'pages.contact.validator.shortName.required': '联系人的简称是必填项！',
+  'pages.contact.validator.name.required': '联系人姓名是必填项！',
+  'pages.contact.validator.classification.required': '分类是必填项！',
+  'pages.contact.validator.dataSetVersion.required': '数据集版本是必填项！',
+  'pages.contact.validator.referenceToOwnershipOfDataSet.required': '数据集拥有者是必填项！',
+  'pages.contact.validator.timeStamp.required': '时间戳是必填项！',
+  'pages.contact.validator.referenceToDataSetFormat.required': '数据集格式是必填项！',
 };

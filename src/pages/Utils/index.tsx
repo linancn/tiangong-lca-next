@@ -23,3 +23,10 @@ export function getAllVersionsColumns(columns: ProColumns<any>[], versionIndex: 
   newColumns.pop();
   return newColumns;
 }
+
+export function getRules(rules: any[]) {
+  return rules.map((rule) => ({
+    ...rule,
+    message: <FormattedMessage id={rule.messageKey} defaultMessage={rule.defaultMessage} />,
+  }));
+}

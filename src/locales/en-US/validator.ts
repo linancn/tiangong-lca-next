@@ -15,4 +15,7 @@ export default {
   'validator.pages.contact.email.pattern': 'The input is not valid E-mail!',
 
   'validator.NullableString.pattern': 'Length cannot exceed 500 characters characters and may be empty!',
+
+  'validator.lang.select': 'Please select a language!',
+  'validator.lang.mustBeEnglish': 'Language must be English!',
 };
