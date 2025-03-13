@@ -7,6 +7,7 @@ import { Button, Card, Col, Divider, Form, Input, Row, Space, theme } from 'antd
 import React, { FC, ReactNode, useEffect, useState } from 'react';
 import SourceView from '../view';
 import SourceSelectDrawer from './drawer';
+import { validateRefObjectId } from '@/pages/Utils';
 const { TextArea } = Input;
 
 type Props = {
@@ -57,6 +58,7 @@ const SourceSelectForm: FC<Props> = ({
       }
       setId(rowId);
       setVersion(result.data?.version);
+      validateRefObjectId(formRef, parentName, name);
       onData();
     });
   };
@@ -67,10 +69,6 @@ const SourceSelectForm: FC<Props> = ({
       handletSourceData(id, version ?? '');
     }
   }, [referenceValue]);
-
-  useEffect(() => {
-    formRef.current?.validateFields();
-  }, [id]);
 
   useEffect(() => {
     setId(undefined);
@@ -121,6 +119,7 @@ const SourceSelectForm: FC<Props> = ({
               onClick={() => {
                 formRef.current?.setFieldValue([...name], {});
                 onData();
+                validateRefObjectId(formRef, parentName, name);
               }}
             >
               <FormattedMessage id="pages.button.clear" defaultMessage="Clear" />

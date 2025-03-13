@@ -8,6 +8,7 @@ import React, { FC, ReactNode, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import ContactView from '../view';
 import ContactSelectDrawer from './drawer';
+import { validateRefObjectId } from '@/pages/Utils';
 const { TextArea } = Input;
 
 type Props = {
@@ -62,6 +63,7 @@ const ContactSelectForm: FC<Props> = ({
       }
       setId(rowId);
       setVersion(result.data?.version);
+      validateRefObjectId(formRef, parentName, name);
       onData();
     });
   };
@@ -71,10 +73,6 @@ const ContactSelectForm: FC<Props> = ({
       handletContactData(id, version ?? '');
     }
   }, [referenceValue]);
-
-  useEffect(() => {
-    formRef.current?.validateFields();
-  }, [id]);
 
   useEffect(() => {
     if (parentName) {
@@ -123,6 +121,7 @@ const ContactSelectForm: FC<Props> = ({
             <Button
               onClick={() => {
                 formRef.current?.setFieldValue([...name], {});
+                validateRefObjectId(formRef, parentName, name);
                 onData();
               }}
             >
