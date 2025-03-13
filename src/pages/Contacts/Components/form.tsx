@@ -22,9 +22,10 @@ type Props = {
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;
   onTabChange: (key: string) => void;
+  defaultSourceName?: string;
 };
 
-export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, onTabChange }) => {
+export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, onTabChange, defaultSourceName }) => {
   const { token } = theme.useToken();
   const tabList = [
     {
@@ -204,6 +205,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             onData={onData}
           />
           <SourceSelectForm
+            defaultSourceName={defaultSourceName}
             label={
               <FormattedMessage
                 id="pages.contact.referenceToLogo"

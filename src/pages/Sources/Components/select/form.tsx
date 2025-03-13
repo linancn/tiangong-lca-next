@@ -18,6 +18,7 @@ type Props = {
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;
   rules?: any[];
+  defaultSourceName?: string;
 };
 
 const SourceSelectForm: FC<Props> = ({
@@ -28,6 +29,7 @@ const SourceSelectForm: FC<Props> = ({
   formRef,
   onData,
   rules = [],
+  defaultSourceName
 }) => {
   const [id, setId] = useState<string | undefined>(undefined);
   const [version, setVersion] = useState<string | undefined>(undefined);
@@ -69,6 +71,44 @@ const SourceSelectForm: FC<Props> = ({
       handletSourceData(id, version ?? '');
     }
   }, [referenceValue]);
+
+  const getDefaultValue = () => {
+    if (defaultSourceName === 'ILCD') {
+      console.log('ILCD')
+      const referenceToDataSetFormatId = 'a97a0155-0234-4b87-b4ce-a45da52f2a40';
+      getSourceDetail(referenceToDataSetFormatId, '').then(async (result2: any) => {
+        const referenceToDataSetFormatData = genSourceFromData(
+          result2.data?.json?.sourceDataSet ?? {},
+        );
+        const referenceToDataSetFormat = {
+          '@refObjectId': referenceToDataSetFormatId,
+          '@type': 'source data set',
+          '@uri': `../sources/${referenceToDataSetFormatId}.xml`,
+          '@version': result2.data?.version,
+          'common:shortDescription':
+            referenceToDataSetFormatData?.sourceInformation?.dataSetInformation?.[
+            'common:shortName'
+            ] ?? [],
+        };
+        const newData = {
+          administrativeInformation: {
+            dataEntryBy: {
+              'common:referenceToDataSetFormat': referenceToDataSetFormat,
+            },
+          },
+        };
+        // formRef.current?.resetFields();
+        const currentData = formRef.current?.getFieldsValue();
+        formRef.current?.setFieldsValue({...currentData, ...newData});
+      });
+    }
+  }
+
+  useEffect(() => {
+    if (defaultSourceName) {
+      getDefaultValue()
+    }
+  },[defaultSourceName]);
 
   useEffect(() => {
     setId(undefined);

@@ -106,6 +106,7 @@ const ContactEdit: FC<Props> = ({
       )}
 
       <Drawer
+        destroyOnClose={true}
         getContainer={() => document.body}
         title={
           type === 'edit' ? (

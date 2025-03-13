@@ -37,6 +37,7 @@ type Props = {
   onPropertyData: (data: any) => void;
   onPropertyDataCreate: (data: any) => void;
   onTabChange: (key: string) => void;
+  defaultSourceName?: string;
 };
 export const FlowForm: FC<Props> = ({
   lang,
@@ -49,6 +50,7 @@ export const FlowForm: FC<Props> = ({
   onPropertyData,
   onPropertyDataCreate,
   onTabChange,
+  defaultSourceName
 }) => {
   const [thisFlowType, setThisFlowType] = useState<string | undefined>(flowType);
   const actionRefPropertyTable = useRef<ActionType>();
@@ -505,6 +507,7 @@ export const FlowForm: FC<Props> = ({
             }
           />
           <SourceSelectForm
+            defaultSourceName={defaultSourceName}
             name={['flowInformation', 'technology', 'referenceToTechnicalSpecification']}
             label={
               <FormattedMessage

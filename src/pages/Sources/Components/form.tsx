@@ -23,6 +23,7 @@ type Props = {
   setLoadFiles: React.Dispatch<React.SetStateAction<RcFile[]>>;
   fileList: UploadFile[];
   setFileList: React.Dispatch<React.SetStateAction<UploadFile[]>>;
+  defaultSourceName?: string;
 };
 
 export const SourceForm: FC<Props> = ({
@@ -35,6 +36,7 @@ export const SourceForm: FC<Props> = ({
   setLoadFiles,
   fileList,
   setFileList,
+  defaultSourceName
 }) => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
@@ -243,6 +245,7 @@ export const SourceForm: FC<Props> = ({
             <Input disabled={true} style={{ color: token.colorTextDescription }} />
           </Form.Item>
           <SourceSelectForm
+            defaultSourceName={defaultSourceName}
             name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
             label={
               <FormattedMessage
