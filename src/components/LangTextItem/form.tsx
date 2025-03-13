@@ -29,15 +29,15 @@ const LangTextItemForm: FC<Props> = ({ name, label, rules=[], setRuleErrorState=
 
   return (
     <Form.Item>
-      <Form.List name={name} initialValue={isRequired ? [undefined] : []}
-       rules={[
+      <Form.List name={name}
+       rules={isRequired?[
         {
           // When adding or deleting items, check whether the language meets the requirements
           validator: async (_, value) => {
             const lists= value.filter((item:any)=>item&&item.hasOwnProperty('@xml:lang'));
             const langs = lists.map((item:any)=>item['@xml:lang']);
             const enIndex = langs.indexOf('en');
-            if (isRequired&&langs&&langs.length&&enIndex === -1) {
+            if (langs&&langs.length&&enIndex === -1) {
               setRuleErrorState(true);
               console.log('langs verify error');
               return Promise.reject(new Error());
@@ -46,9 +46,15 @@ const LangTextItemForm: FC<Props> = ({ name, label, rules=[], setRuleErrorState=
             return Promise.resolve();
           }
         }
-      ]}
+      ]:[]}
       >
         {(subFields, subOpt) => {
+          if (isRequired && subFields.length === 0) {
+            setTimeout(() => {
+              subOpt.add();
+            }, 0);
+          }
+          
           return (
             <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
               {subFields.map((subField) => {
