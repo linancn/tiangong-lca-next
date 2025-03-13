@@ -20,5 +20,5 @@ export default {
   'validator.Year.pattern': '请输入有效的年份（例如：2023）',
 
   'validator.lang.select': '请选择语言！',
-  'validator.lang.mustBeEnglish': '语言必须是英语！',
+  'validator.lang.mustBeEnglish': '英语是必选语言！',
 };

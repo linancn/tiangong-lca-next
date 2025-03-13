@@ -65,7 +65,7 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
   useEffect(() => {
     if (!drawerVisible) return;
     const referenceToComplianceSystemId = '9ba3ac1e-6797-4cc0-afd5-1b8f7bf28c6a';
-    const referenceToDataSetFormatId = 'a97a0155-0234-4b87-b4ce-a45da52f2a40';
+    // const referenceToDataSetFormatId = 'a97a0155-0234-4b87-b4ce-a45da52f2a40';
 
     getSourceDetail(referenceToComplianceSystemId, '').then(async (result1: any) => {
       const referenceToComplianceSystemData = genSourceFromData(
@@ -82,20 +82,20 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
           ] ?? [],
       };
 
-      getSourceDetail(referenceToDataSetFormatId, '').then(async (result2: any) => {
-        const referenceToDataSetFormatData = genSourceFromData(
-          result2.data?.json?.sourceDataSet ?? {},
-        );
-        const referenceToDataSetFormat = {
-          '@refObjectId': referenceToDataSetFormatId,
-          '@type': 'source data set',
-          '@uri': `../sources/${referenceToDataSetFormatId}.xml`,
-          '@version': result2.data?.version,
-          'common:shortDescription':
-            referenceToDataSetFormatData?.sourceInformation?.dataSetInformation?.[
-              'common:shortName'
-            ] ?? [],
-        };
+      // getSourceDetail(referenceToDataSetFormatId, '').then(async (result2: any) => {
+        // const referenceToDataSetFormatData = genSourceFromData(
+        //   result2.data?.json?.sourceDataSet ?? {},
+        // );
+        // const referenceToDataSetFormat = {
+        //   '@refObjectId': referenceToDataSetFormatId,
+        //   '@type': 'source data set',
+        //   '@uri': `../sources/${referenceToDataSetFormatId}.xml`,
+        //   '@version': result2.data?.version,
+        //   'common:shortDescription':
+        //     referenceToDataSetFormatData?.sourceInformation?.dataSetInformation?.[
+        //       'common:shortName'
+        //     ] ?? [],
+        // };
 
         const currentDateTime = formatDateTime(new Date());
         const newData = {
@@ -109,7 +109,7 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
           administrativeInformation: {
             dataEntryBy: {
               'common:timeStamp': currentDateTime,
-              'common:referenceToDataSetFormat': referenceToDataSetFormat,
+              // 'common:referenceToDataSetFormat': referenceToDataSetFormat,
             },
             publicationAndOwnership: {
               'common:dataSetVersion': '01.01.000',
@@ -120,10 +120,11 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
         setInitData(newData);
 
         setPropertyDataSource([]);
-        formRefCreate.current?.resetFields();
-        formRefCreate.current?.setFieldsValue(newData);
+        // formRefCreate.current?.resetFields();
+        const currentData = formRefCreate.current?.getFieldsValue();
+        formRefCreate.current?.setFieldsValue({...currentData, ...newData});
         setFromData(newData);
-      });
+      // });
     });
   }, [drawerVisible]);
 
@@ -140,6 +141,7 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
         />
       </Tooltip>
       <Drawer
+        destroyOnClose={true}
         getContainer={() => document.body}
         title={<FormattedMessage id="pages.button.create" defaultMessage="Flows Create" />}
         width="90%"
@@ -208,6 +210,7 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
             propertyDataSource={propertyDataSource}
             onPropertyData={handletPropertyData}
             onPropertyDataCreate={handletPropertyDataCreate}
+            defaultSourceName='ILCD'
           />
         </ProForm>
         <Collapse

@@ -129,6 +129,7 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang, type =
         )}
       </Tooltip>
       <Drawer
+        destroyOnClose={true}
         getContainer={() => document.body}
         title={
           <FormattedMessage

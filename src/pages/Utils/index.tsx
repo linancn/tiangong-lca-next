@@ -1,4 +1,4 @@
-import { ProColumns } from '@ant-design/pro-components';
+import { ProColumns, ProFormInstance } from '@ant-design/pro-components';
 import { FormattedMessage } from 'umi';
 export function getDataTitle(dataSource: string) {
   if (dataSource === 'my') {
@@ -30,3 +30,11 @@ export function getRules(rules: any[]) {
     message: <FormattedMessage id={rule.messageKey} defaultMessage={rule.defaultMessage} />,
   }));
 }
+
+export const validateRefObjectId = (formRef: React.MutableRefObject<ProFormInstance | undefined>, parentName: string[],name: string[] ) => {
+  if (parentName) {
+    formRef.current?.validateFields([[...parentName, ...name, '@refObjectId']]);
+  } else {
+    formRef.current?.validateFields([[...name, '@refObjectId']]);
+  }
+};

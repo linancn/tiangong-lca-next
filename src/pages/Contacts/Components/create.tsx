@@ -53,8 +53,9 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
     };
     // const newId = v4();
     setInitData(newData);
-    formRefCreate.current?.resetFields();
-    formRefCreate.current?.setFieldsValue(newData);
+    // formRefCreate.current?.resetFields();
+    const currentData = formRefCreate.current?.getFieldsValue();
+    formRefCreate.current?.setFieldsValue({...currentData, ...newData});
     setFromData(newData);
   }, [drawerVisible]);
 
@@ -71,6 +72,7 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
         />
       </Tooltip>
       <Drawer
+        destroyOnClose={true}
         getContainer={() => document.body}
         title={
           <FormattedMessage
@@ -131,6 +133,7 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
           }}
         >
           <ContactForm
+            defaultSourceName='ILCD'
             lang={lang}
             activeTabKey={activeTabKey}
             formRef={formRefCreate}

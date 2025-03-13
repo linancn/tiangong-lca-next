@@ -1,4 +1,5 @@
 export default {
+  'pages.contact.reference.tooltip': '引用联系人数据集',
   'pages.contact.id': '编号',
   'pages.contact.contactInformation': '联系人信息',
   'pages.contact.administrativeInformation': '管理信息',

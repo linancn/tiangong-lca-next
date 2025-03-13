@@ -3,7 +3,7 @@ import { FormattedMessage, useIntl } from 'umi';
 
 import type { FC } from 'react';
 
-import { ShareAltOutlined } from '@ant-design/icons';
+import { CloudUploadOutlined } from '@ant-design/icons';
 
 interface ContributeDataProps {
   onOk: () => void;
@@ -19,7 +19,7 @@ const ContributeData: FC<ContributeDataProps> = ({ onOk, disabled }) => {
       <Button
         disabled={disabled}
         shape="circle"
-        icon={<ShareAltOutlined />}
+        icon={<CloudUploadOutlined />}
         size="small"
         onClick={() => {
           Modal.confirm({
