@@ -29,7 +29,7 @@ const LangTextItemForm: FC<Props> = ({ name, label, rules=[], setRuleErrorState=
 
   return (
     <Form.Item>
-      <Form.List name={name}
+      <Form.List name={name} initialValue={isRequired ? [undefined] : []}
        rules={[
         {
           // When adding or deleting items, check whether the language meets the requirements
