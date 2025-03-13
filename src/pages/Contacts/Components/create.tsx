@@ -50,6 +50,12 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
           'common:dataSetVersion': initVersion,
         },
       },
+      contactInformation: {
+        dataSetInformation: {
+          'common:shortName': [undefined],
+          'common:name': [undefined]
+        }
+      }
     };
     // const newId = v4();
     setInitData(newData);
