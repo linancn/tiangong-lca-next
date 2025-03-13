@@ -53,8 +53,9 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
     };
     // const newId = v4();
     setInitData(newData);
-    formRefCreate.current?.resetFields();
-    formRefCreate.current?.setFieldsValue(newData);
+    // formRefCreate.current?.resetFields();
+    const currentData = formRefCreate.current?.getFieldsValue();
+    formRefCreate.current?.setFieldsValue({...currentData, ...newData});
     setFromData(newData);
   }, [drawerVisible]);
 
