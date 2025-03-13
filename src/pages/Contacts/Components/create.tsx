@@ -1,6 +1,8 @@
 import { createContact } from '@/services/contacts/api';
 import { initVersion } from '@/services/general/data';
 import { formatDateTime } from '@/services/general/util';
+import { genSourceFromData } from '@/services/sources/util';
+import {  getSourceDetail } from '@/services/sources/api';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -40,22 +42,39 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
 
   useEffect(() => {
     if (!drawerVisible) return;
-    const currentDateTime = formatDateTime(new Date());
-    const newData = {
-      administrativeInformation: {
-        dataEntryBy: {
-          'common:timeStamp': currentDateTime,
+    const referenceToDataSetFormatId = 'a97a0155-0234-4b87-b4ce-a45da52f2a40';
+    getSourceDetail(referenceToDataSetFormatId, '').then(async (result2: any) => { 
+      const referenceToDataSetFormatData = genSourceFromData(
+        result2.data?.json?.sourceDataSet ?? {},
+      );
+      const referenceToDataSetFormat = {
+        '@refObjectId': referenceToDataSetFormatId,
+        '@type': 'source data set',
+        '@uri': `../sources/${referenceToDataSetFormatId}.xml`,
+        '@version': result2.data?.version,
+        'common:shortDescription':
+          referenceToDataSetFormatData?.sourceInformation?.dataSetInformation?.[
+            'common:shortName'
+          ] ?? [],
+      };
+      const currentDateTime = formatDateTime(new Date());
+      const newData = {
+        administrativeInformation: {
+          dataEntryBy: {
+            'common:timeStamp': currentDateTime,
+            'common:referenceToDataSetFormat': referenceToDataSetFormat,
+          },
+          publicationAndOwnership: {
+            'common:dataSetVersion': initVersion,
+          },
         },
-        publicationAndOwnership: {
-          'common:dataSetVersion': initVersion,
-        },
-      },
-    };
-    // const newId = v4();
-    setInitData(newData);
-    formRefCreate.current?.resetFields();
-    formRefCreate.current?.setFieldsValue(newData);
-    setFromData(newData);
+      };
+      // const newId = v4();
+      setInitData(newData);
+      formRefCreate.current?.resetFields();
+      formRefCreate.current?.setFieldsValue(newData);
+      setFromData(newData);
+    });
   }, [drawerVisible]);
 
   return (
