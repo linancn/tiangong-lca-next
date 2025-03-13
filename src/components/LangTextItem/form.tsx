@@ -37,8 +37,9 @@ const LangTextItemForm: FC<Props> = ({ name, label, rules=[], setRuleErrorState=
             const lists= value.filter((item:any)=>item&&item.hasOwnProperty('@xml:lang'));
             const langs = lists.map((item:any)=>item['@xml:lang']);
             const enIndex = langs.indexOf('en');
-            if (langs&&langs.length&&enIndex === -1) {
+            if (isRequired&&langs&&langs.length&&enIndex === -1) {
               setRuleErrorState(true);
+              console.log('langs verify error');
               return Promise.reject(new Error());
             }
             setRuleErrorState(false);

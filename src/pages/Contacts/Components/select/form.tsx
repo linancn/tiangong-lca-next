@@ -3,12 +3,13 @@ import { getContactDetail } from '@/services/contacts/api';
 import { genContactFromData } from '@/services/contacts/util';
 import { jsonToList } from '@/services/general/util';
 import { ProFormInstance } from '@ant-design/pro-components';
-import { Button, Card, Col, Divider, Form, Input, Row, Space, theme } from 'antd';
+import { Button, Card, Col, Divider, Form, Input, Row, Space, theme,Tooltip } from 'antd';
 import React, { FC, ReactNode, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import ContactView from '../view';
 import ContactSelectDrawer from './drawer';
 import { validateRefObjectId } from '@/pages/Utils';
+import { QuestionCircleOutlined } from '@ant-design/icons';
 const { TextArea } = Input;
 
 type Props = {
@@ -85,7 +86,18 @@ const ContactSelectForm: FC<Props> = ({
   });
 
   return (
-    <Card size="small" title={label}>
+    <Card size="small" title={<>
+    {label}
+    <Tooltip title={<FormattedMessage id="pages.contact.reference.tooltip" defaultMessage="Reference contact data set" />}>
+      <QuestionCircleOutlined 
+        style={{ 
+          marginLeft: '5px',
+          color: token.colorTextDescription,
+          cursor: 'pointer'
+        }}
+      />
+    </Tooltip>
+    </>}>
       <Space direction="horizontal">
         <Form.Item
           label={<FormattedMessage id="pages.contact.refObjectId" defaultMessage="Ref object id" />}
@@ -131,12 +143,14 @@ const ContactSelectForm: FC<Props> = ({
         </Space>
       </Space>
       <Form.Item
+        hidden={true}
         label={<FormattedMessage id="pages.contact.type" defaultMessage="Type" />}
         name={[...name, '@type']}
       >
         <Input disabled={true} style={{ color: token.colorTextDescription }} />
       </Form.Item>
       <Form.Item
+        hidden={true}
         label={<FormattedMessage id="pages.contact.uri" defaultMessage="URI" />}
         name={[...name, '@uri']}
       >
@@ -158,7 +172,9 @@ const ContactSelectForm: FC<Props> = ({
               {subFields.map((subField) => (
                 <Row key={subField.key}>
                   <Col flex="100px" style={{ marginRight: '10px' }}>
-                    <Form.Item noStyle name={[subField.name, '@xml:lang']}>
+                    <Form.Item noStyle name={[subField.name, '@xml:lang']} getValueProps={(value) => ({
+                      value: value === 'en' ? 'English' : value === 'zh' ? '简体中文' : value,
+                    })}>
                       <Input
                         disabled={true}
                         style={{ width: '100px', color: token.colorTextDescription }}

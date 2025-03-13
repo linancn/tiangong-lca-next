@@ -38,7 +38,7 @@ const ContactSelectDescription: FC<Props> = ({ title, data, lang }) => {
       </Space>
       <br />
       <br />
-      <Descriptions bordered size={'small'} column={1}>
+      {/* <Descriptions bordered size={'small'} column={1}>
         <Descriptions.Item
           key={0}
           label={<FormattedMessage id="pages.contact.type" defaultMessage="Type" />}
@@ -57,7 +57,7 @@ const ContactSelectDescription: FC<Props> = ({ title, data, lang }) => {
           {data?.['@uri'] ?? '-'}
         </Descriptions.Item>
       </Descriptions>
-      <br />
+      <br /> */}
       <Descriptions bordered size={'small'} column={1}>
         <Descriptions.Item
           key={0}

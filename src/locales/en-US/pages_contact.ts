@@ -1,4 +1,5 @@
 export default {
+  'pages.contact.reference.tooltip': 'Reference contact data set',
   'pages.contact.id': 'ID',
   'pages.contact.contactInformation': 'Contact information',
   'pages.contact.administrativeInformation': 'Administrative information',
