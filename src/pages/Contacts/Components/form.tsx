@@ -14,7 +14,7 @@ import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { getRules } from '@/pages/Utils';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Card, Form, Input, Space, theme } from 'antd';
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { FormattedMessage } from 'umi';
 type Props = {
   lang: string;
@@ -27,6 +27,9 @@ type Props = {
 
 export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, onTabChange, defaultSourceName }) => {
   const { token } = theme.useToken();
+  const [showShortNameError,setShowShortNameError] = useState(false);
+  const [showNameError,setShowNameError] = useState(false);
+
   const tabList = [
     {
       key: 'contactInformation',
@@ -54,10 +57,12 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
           <Card
             size="small"
             title={
-              <RequiredMark id="pages.contact.shortName" defaultMessage="Short name for contact" />
+              <RequiredMark showError={showShortNameError} errorId='validator.lang.mustBeEnglish' errorMessage='English is a required language!' id="pages.contact.shortName" defaultMessage="Short name for contact" />
             }
           >
             <LangTextItemForm
+              formRef={formRef}
+              setRuleErrorState={setShowShortNameError}
               name={['contactInformation', 'dataSetInformation', 'common:shortName']}
               label={
                 <FormattedMessage
@@ -74,9 +79,12 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
           </Card>
           <Card
             size="small"
-            title={<RequiredMark id="pages.contact.name" defaultMessage="Name of contact" />}
+            title={
+            <RequiredMark  showError={showNameError} errorId='validator.lang.mustBeEnglish' errorMessage='English is a required language!' id="pages.contact.name" defaultMessage="Name of contact" />}
           >
             <LangTextItemForm
+              formRef={formRef}
+              setRuleErrorState={setShowNameError}
               name={['contactInformation', 'dataSetInformation', 'common:name']}
               label={<FormattedMessage id="pages.contact.name" defaultMessage="Name of contact" />}
               rules={getRules(
