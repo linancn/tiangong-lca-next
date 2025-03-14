@@ -1,4 +1,5 @@
 export default {
+  'pages.unitgroup.refObjectId': 'Reference unit dataset identifier',
   'pages.unitgroup.drawer.title.create': 'Create Unit group',
   'pages.unitgroup.drawer.title.view': 'View Unit group',
   'pages.unitgroup.drawer.title.edit': 'Edit Unit group',

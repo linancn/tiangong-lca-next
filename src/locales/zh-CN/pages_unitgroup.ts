@@ -1,4 +1,5 @@
 export default {
+  'pages.unitgroup.refObjectId': '引用参考单位数据集标识符',
   'pages.unitgroup.drawer.title.create': '创建单位组',
   'pages.unitgroup.drawer.title.view': '查看单位组',
   'pages.unitgroup.drawer.title.edit': '编辑单位组',

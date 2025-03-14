@@ -2,7 +2,7 @@ import LangTextItemDescription from '@/components/LangTextItem/description';
 import { getReferenceUnit } from '@/services/unitgroups/api';
 import { Card, Descriptions, Divider, Space } from 'antd';
 import { FC, ReactNode, useEffect, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage,getLocale } from 'umi';
 import UnitGroupView from '../view';
 type Props = {
   title: ReactNode | string;
@@ -12,7 +12,7 @@ type Props = {
 
 const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
   const [refUnit, setRefUnit] = useState<any>({});
-
+  const locale = getLocale();
   useEffect(() => {
     if (data?.['@refObjectId']) {
       getReferenceUnit(data?.['@refObjectId'], data?.['@version']).then((res) => {
@@ -24,16 +24,16 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
   return (
     <Card size="small" title={title}>
       <Space direction="horizontal">
-        <Descriptions bordered size={'small'} column={1} style={{ width: '450px' }}>
+        <Descriptions bordered size={'small'} column={1} style={{ width: locale === 'zh-CN' ? '520px' : '540px' }}>
           <Descriptions.Item
             key={0}
             label={
               <FormattedMessage
-                id="pages.FlowProperties.view.flowPropertiesInformation.refObjectId"
+                id="pages.unitgroup.refObjectId"
                 defaultMessage="Ref object id"
               />
             }
-            labelStyle={{ width: '140px' }}
+            labelStyle={{ width: locale === 'zh-CN' ? '210px' : '230px' }}
           >
             {data?.['@refObjectId'] ?? '-'}
           </Descriptions.Item>
@@ -48,8 +48,8 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
         )}
       </Space>
       <br />
-      <br />
-      <Descriptions bordered size={'small'} column={1}>
+      {/* <br /> */}
+      {/* <Descriptions bordered size={'small'} column={1}>
         <Descriptions.Item
           key={0}
           label={
@@ -78,7 +78,7 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
           {data?.['@uri'] ?? '-'}
         </Descriptions.Item>
       </Descriptions>
-      <br />
+      <br /> */}
       {/* <Descriptions bordered size={'small'} column={1}>
         <Descriptions.Item key={0} label="Version" labelStyle={{ width: '120px' }}>
           {data?.['@version'] ?? '-'}
