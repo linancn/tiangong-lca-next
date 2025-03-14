@@ -288,6 +288,7 @@ const Team = () => {
               label={<RequiredMark label={<FormattedMessage id="pages.team.info.title" defaultMessage="Team Name" />}
                 showError={titleError}
               />}
+              style={{ marginBottom: 0 }}
             >
               <LangTextItemForm
                 name="title"
@@ -311,6 +312,7 @@ const Team = () => {
                 <RequiredMark label={<FormattedMessage id="pages.team.info.description" defaultMessage="Team Description" />}
                   showError={descriptionError}
                 />}
+              style={{ marginBottom: 0 }}
             >
               <LangTextItemForm
                 name="description"
