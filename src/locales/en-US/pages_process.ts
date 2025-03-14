@@ -110,7 +110,7 @@ export default {
   //exchange查看创建编辑
   'pages.process.view.exchange.exchangeDirection': 'Exchange direction',
   'pages.process.view.exchange.referenceToFlowDataSet': 'Flow',
-  'pages.process.view.exchange.refObjectId': 'Ref object id',
+  'pages.process.view.exchange.refObjectId': 'Reference flow dataset identifier',
   'pages.process.view.exchange.type': 'Type',
   'pages.process.view.exchange.uri': 'URI',
   'pages.process.veiw.exchange.version': 'Version',
