@@ -72,7 +72,12 @@
           "value":"str",
           "rules":[
             {
-              "warningOnly": true,
+              "type": "url",
+              "messageKey": "validator.pages.contact.WWWAddress.invalid",
+              "defaultMessage": "Please enter a valid WWWAddress!"
+            },
+            {
+              "warn": true,
               "messageKey": "validator.recommended.empty",
               "defaultMessage": "Recommended to fill in, providing additional information without affecting completeness!"
             }
