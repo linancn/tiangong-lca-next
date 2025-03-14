@@ -5,7 +5,7 @@ interface IProps  { label:ReactNode,errorLabel?:ReactNode,showError:boolean }
 
 const RequiredMark = ({ label,errorLabel,showError=false }: IProps) => {
   return (
-    <Form.Item style={{ display: 'inline' }} required>
+    <Form.Item style={{ display: 'inline' ,margin:0}} required>
       <span className="ant-form-item-label">
         <label className="ant-form-item-required">
           {label}

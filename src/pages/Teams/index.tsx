@@ -271,7 +271,7 @@ const Team = () => {
     };
 
     return (
-      <Flex gap="middle" vertical style={{ maxWidth: '50%', minWidth: '200px' }}>
+      <Flex gap="small" vertical style={{ maxWidth: '50%', minWidth: '200px' }}>
         <Spin spinning={teamInfoSpinning}>
           <ProForm
             disabled={userRole !== 'admin' && userRole !== 'owner' && action !== 'create'}
