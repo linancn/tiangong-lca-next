@@ -3,7 +3,7 @@ import { FormattedMessage } from 'umi';
 
 export const StringMultiLang_r = [
   {
-    required: true,
+    // required: true,
     warningOnly: true,
     message: (
       <FormattedMessage
@@ -45,7 +45,7 @@ export const StringMultiLang_o = [
 
 export const STMultiLang_r = [
   {
-    // required: true,
+    // // required: true,
     warningOnly: true,
     message: (
       <FormattedMessage
@@ -87,7 +87,7 @@ export const STMultiLang_o = [
 
 export const FTMultiLang_r = [
   {
-    required: true,
+    // required: true,
     warningOnly: true,
     message: (
       <FormattedMessage
@@ -100,7 +100,7 @@ export const FTMultiLang_r = [
 
 export const String_m = [
   {
-    required: true,
+    // required: true,
     warningOnly: true,
     message: (
       <FormattedMessage
@@ -124,7 +124,7 @@ export const String_m = [
 
 export const String_r = [
   {
-    required: true,
+    // required: true,
     warningOnly: true,
     message: (
       <FormattedMessage
@@ -170,7 +170,7 @@ export const String_o = [
 
 export const ST_r = [
   {
-    required: true,
+    // required: true,
     warningOnly: true,
     message: (
       <FormattedMessage
@@ -192,7 +192,7 @@ export const ST_r = [
 
 export const dataSetVersion = [
   {
-    required: true,
+    // required: true,
     message: (
       <FormattedMessage
         id="validator.dataSetVersion.empty"
@@ -227,7 +227,7 @@ export const emailvalidation: Rule[] = [
 export const WWWAddress: Rule[] = [
   // ...STMultiLang_r,
   {
-    required: true,
+    // required: true,
     warningOnly: true,
     message: (
       <FormattedMessage
@@ -249,7 +249,7 @@ export const WWWAddress: Rule[] = [
 
 export const CASNumber = [
   {
-    required: true,
+    // required: true,
     warningOnly: true,
     message: (
       <FormattedMessage
@@ -271,7 +271,7 @@ export const CASNumber = [
 
 export const NullableString = [
   {
-    required: true,
+    // required: true,
     warningOnly: true,
     message: (
       <FormattedMessage
@@ -294,7 +294,7 @@ export const NullableString = [
 
 export const Yearvalidation_r = [
   {
-    required: true,
+    // required: true,
     warningOnly: true,
     message: (
       <FormattedMessage
