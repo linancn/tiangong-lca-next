@@ -3,13 +3,13 @@ import { getContactDetail } from '@/services/contacts/api';
 import { genContactFromData } from '@/services/contacts/util';
 import { jsonToList } from '@/services/general/util';
 import { ProFormInstance } from '@ant-design/pro-components';
-import { Button, Card, Col, Divider, Form, Input, Row, Space, theme,Tooltip } from 'antd';
+import { Button, Card, Col, Divider, Form, Input, Row, Space, theme } from 'antd';
 import React, { FC, ReactNode, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import ContactView from '../view';
 import ContactSelectDrawer from './drawer';
 import { validateRefObjectId } from '@/pages/Utils';
-import { QuestionCircleOutlined } from '@ant-design/icons';
+import RequiredSelectFormTitle from '@/components/RequiredSelectFormTitle';
 const { TextArea } = Input;
 
 type Props = {
@@ -35,6 +35,7 @@ const ContactSelectForm: FC<Props> = ({
   const [version, setVersion] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
   const { referenceValue } = useUpdateReferenceContext() as { referenceValue: number };
+  const [ruleErrorState, setRuleErrorState] = useState(false);
 
   const handletContactData = (rowId: string, rowVersion: string) => {
     getContactDetail(rowId, rowVersion).then(async (result: any) => {
@@ -85,24 +86,30 @@ const ContactSelectForm: FC<Props> = ({
     }
   });
 
+  const requiredRules = rules.filter((rule: any) => rule.required);
+  const isRequired = requiredRules && requiredRules.length;
+  const notRequiredRules = rules.filter((rule: any) => !rule.required) ?? [];
+
   return (
-    <Card size="small" title={<>
-    {label}
-    <Tooltip title={<FormattedMessage id="pages.contact.reference.tooltip" defaultMessage="Reference contact data set" />}>
-      <QuestionCircleOutlined 
-        style={{ 
-          marginLeft: '5px',
-          color: token.colorTextDescription,
-          cursor: 'pointer'
-        }}
-      />
-    </Tooltip>
-    </>}>
+    <Card size="small" title={isRequired ? <RequiredSelectFormTitle label={label} ruleErrorState={ruleErrorState} requiredRules={requiredRules} /> : label}>
       <Space direction="horizontal">
         <Form.Item
           label={<FormattedMessage id="pages.contact.refObjectId" defaultMessage="Ref object id" />}
           name={[...name, '@refObjectId']}
-          rules={rules}
+          rules={[
+            ...notRequiredRules,
+            (isRequired && { 
+              validator: (rule, value) => {
+                if (!value) {
+                  setRuleErrorState(true);
+                  console.log('form rules check error');
+                  return Promise.reject(new Error());
+                }
+                setRuleErrorState(false);
+                return Promise.resolve();
+              }
+             })
+          ]}
         >
           <Input disabled={true} style={{ width: '350px', color: token.colorTextDescription }} />
         </Form.Item>
