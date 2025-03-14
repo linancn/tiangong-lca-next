@@ -1,7 +1,7 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import { Card, Descriptions, Divider, Space } from 'antd';
 import { FC, ReactNode } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage,getLocale } from 'umi';
 import SourceView from '../view';
 type Props = {
   title: ReactNode | string;
@@ -10,16 +10,17 @@ type Props = {
 };
 
 const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
+  const locale = getLocale();
   return (
     <Card size="small" title={title}>
       <Space direction="horizontal">
-        <Descriptions bordered size={'small'} column={1} style={{ width: '450px' }}>
+        <Descriptions bordered size={'small'} column={1} style={{ width: locale === 'zh-CN' ? '460px' : '560px' }}>
           <Descriptions.Item
             key={0}
             label={
               <FormattedMessage id="pages.source.refObjectId" defaultMessage="Ref object id" />
             }
-            labelStyle={{ width: '140px' }}
+            labelStyle={{ width: locale === 'zh-CN' ? '150px' : '250px' }}
           >
             {data?.['@refObjectId'] ?? '-'}
           </Descriptions.Item>
@@ -35,7 +36,7 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
       </Space>
       <br />
       <br />
-      <Descriptions bordered size={'small'} column={1}>
+      {/* <Descriptions bordered size={'small'} column={1}>
         <Descriptions.Item
           key={0}
           label={<FormattedMessage id="pages.contact.type" defaultMessage="Type" />}
@@ -54,7 +55,7 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
           {data?.['@uri'] ?? '-'}
         </Descriptions.Item>
       </Descriptions>
-      <br />
+      <br /> */}
       <Descriptions bordered size={'small'} column={1}>
         <Descriptions.Item
           key={0}
