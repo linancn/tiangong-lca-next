@@ -210,7 +210,7 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
             propertyDataSource={propertyDataSource}
             onPropertyData={handletPropertyData}
             onPropertyDataCreate={handletPropertyDataCreate}
-            defaultSourceName='ILCD'
+            formType='create'
           />
         </ProForm>
         <Collapse

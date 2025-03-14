@@ -133,7 +133,7 @@ const ContactCreate: FC<Props> = ({ lang, actionRef }) => {
           }}
         >
           <ContactForm
-            defaultSourceName='ILCD'
+            formType='create'
             lang={lang}
             activeTabKey={activeTabKey}
             formRef={formRefCreate}

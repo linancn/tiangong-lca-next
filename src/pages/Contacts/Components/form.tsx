@@ -22,10 +22,10 @@ type Props = {
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;
   onTabChange: (key: string) => void;
-  defaultSourceName?: string;
+  formType?: string;
 };
 
-export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, onTabChange, defaultSourceName }) => {
+export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, onTabChange, formType }) => {
   const { token } = theme.useToken();
   const [showShortNameError,setShowShortNameError] = useState(false);
   const [showNameError,setShowNameError] = useState(false);
@@ -213,7 +213,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             onData={onData}
           />
           <SourceSelectForm
-            defaultSourceName={defaultSourceName}
+            defaultSourceName={formType === 'create' ? 'ILCD format' : undefined}
             label={
               <FormattedMessage
                 id="pages.contact.referenceToLogo"

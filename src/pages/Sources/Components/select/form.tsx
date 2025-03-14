@@ -74,8 +74,7 @@ const SourceSelectForm: FC<Props> = ({
   }, [referenceValue]);
 
   const getDefaultValue = () => {
-    if (defaultSourceName === 'ILCD') {
-      console.log('ILCD')
+    if (defaultSourceName === 'ILCD format') {
       const referenceToDataSetFormatId = 'a97a0155-0234-4b87-b4ce-a45da52f2a40';
       getSourceDetail(referenceToDataSetFormatId, '').then(async (result2: any) => {
         const referenceToDataSetFormatData = genSourceFromData(

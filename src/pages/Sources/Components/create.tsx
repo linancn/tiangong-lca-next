@@ -218,7 +218,7 @@ const SourceCreate: FC<Props> = ({ actionRef, lang }) => {
           onFinish={onSubmit}
         >
           <SourceForm
-            defaultSourceName='ILCD'
+            formType='create'
             lang={lang}
             activeTabKey={activeTabKey}
             formRef={formRefCreate}
