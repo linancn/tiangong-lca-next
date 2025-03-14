@@ -7,7 +7,7 @@ import SourceView from '@/pages/Sources/Components/view';
 import UnitGroupView from '@/pages/Unitgroups/Components/view';
 import { getVersionsById } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
-import { CloseOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import { CloseOutlined, BarsOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Drawer, Tooltip } from 'antd';
 import type { FC } from 'react';
@@ -98,7 +98,7 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
         <Button
           size="small"
           shape="circle"
-          icon={<UnorderedListOutlined />}
+          icon={<BarsOutlined />}
           onClick={() => setShowAllVersionsModal(true)}
         ></Button>
       </Tooltip>
