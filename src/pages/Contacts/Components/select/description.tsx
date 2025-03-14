@@ -16,13 +16,13 @@ const ContactSelectDescription: FC<Props> = ({ title, data, lang }) => {
   return (
     <Card size="small" title={title}>
       <Space direction="horizontal">
-        <Descriptions bordered size={'small'} column={1} style={{ width: '450px' }}>
+        <Descriptions bordered size={'small'} column={1} style={{ width: '580px' }}>
           <Descriptions.Item
             key={0}
             label={
-              <FormattedMessage id="pages.contact.refObjectId" defaultMessage="Ref object id" />
+              <FormattedMessage id="pages.contact.refObjectId" defaultMessage="Reference contact data set identifier" />
             }
-            labelStyle={{ width: '140px' }}
+            labelStyle={{ width: '260px' }}
           >
             {data?.['@refObjectId'] ?? '-'}
           </Descriptions.Item>

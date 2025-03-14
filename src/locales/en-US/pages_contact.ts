@@ -29,7 +29,7 @@ export default {
   'pages.contact.centralContactPoint': 'Central contact point',
   'pages.contact.contactDescriptionOrComment': 'Contact description or comment',
   'pages.contact.referenceToContact': 'Belongs to:',
-  'pages.contact.refObjectId': 'Ref object id',
+  'pages.contact.refObjectId': 'Reference contact data set identifier',
   'pages.contact.type': 'Type',
   'pages.contact.uri': 'URI',
   'pages.contact.version': 'Version',

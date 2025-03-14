@@ -125,7 +125,7 @@ const SourceSelectForm: FC<Props> = ({
     <Card size="small" title={label}>
       <Space direction="horizontal">
         <Form.Item
-          label={<FormattedMessage id="pages.contact.refObjectId" defaultMessage="Ref object id" />}
+          label={<FormattedMessage id="pages.source.refObjectId" defaultMessage="Ref object id" />}
           name={[...name, '@refObjectId']}
           rules={rules}
         >

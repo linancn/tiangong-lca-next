@@ -29,7 +29,7 @@ export default {
   'pages.contact.centralContactPoint': '中心联络人',
   'pages.contact.contactDescriptionOrComment': '联系人描述或备注',
   'pages.contact.referenceToContact': '属于：',
-  'pages.contact.refObjectId': '引用对象标识符',
+  'pages.contact.refObjectId': '引用联系人数据集标识符',
   'pages.contact.type': '类型',
   'pages.contact.uri': '统一资源标识符',
   'pages.contact.version': '版本',

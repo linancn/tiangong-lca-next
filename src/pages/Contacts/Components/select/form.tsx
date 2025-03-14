@@ -94,7 +94,7 @@ const ContactSelectForm: FC<Props> = ({
     <Card size="small" title={isRequired ? <RequiredSelectFormTitle label={label} ruleErrorState={ruleErrorState} requiredRules={requiredRules} /> : label}>
       <Space direction="horizontal">
         <Form.Item
-          label={<FormattedMessage id="pages.contact.refObjectId" defaultMessage="Ref object id" />}
+          label={<FormattedMessage id="pages.contact.refObjectId" defaultMessage="Reference contact data set identifier" />}
           name={[...name, '@refObjectId']}
           rules={[
             ...notRequiredRules,
