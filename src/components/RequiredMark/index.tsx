@@ -1,18 +1,18 @@
 import { Form } from 'antd';
+import { ReactNode } from 'react';
 import { FormattedMessage } from 'umi';
+interface IProps  { label:ReactNode,errorLabel?:ReactNode,showError:boolean }
 
-interface IProps  { id: string; defaultMessage: string,errorId?:string,errorMessage?:string,showError?:boolean }
-
-const RequiredMark = ({ id, defaultMessage,errorId='',errorMessage='',showError=false }: IProps) => {
+const RequiredMark = ({ label,errorLabel,showError=false }: IProps) => {
   return (
     <Form.Item style={{ display: 'inline' }} required>
       <span className="ant-form-item-label">
         <label className="ant-form-item-required">
-          <FormattedMessage id={id} defaultMessage={defaultMessage} />
+          {label}
           {
-            showError&&errorId && errorMessage && (
+            showError && (
               <span className='ant-form-item-explain-error' style={{ fontWeight:'normal',marginLeft:'5px' }}>
-                <FormattedMessage id={errorId} defaultMessage={errorMessage} />
+                {errorLabel?errorLabel:<FormattedMessage id="validator.lang.mustBeEnglish" defaultMessage="English is a required language!" />}
               </span>
             )
           }

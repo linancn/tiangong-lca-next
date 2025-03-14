@@ -1,8 +1,8 @@
 import { langOptions } from '@/services/general/data';
 import { CloseOutlined } from '@ant-design/icons';
-import { Button, Col, Form, Input, Row, Select } from 'antd';
+import { Button, Col, Form, Input, Row, Select,message } from 'antd';
 import { FC, ReactNode } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage,useIntl } from 'umi';
 
 const { TextArea } = Input;
 
@@ -14,7 +14,8 @@ type Props = {
   formRef?: any;
 }
 
-const LangTextItemForm: FC<Props> = ({ name, label, rules=[], setRuleErrorState=()=>{},formRef }) => {
+const LangTextItemForm: FC<Props> = ({ name, label, rules=[], setRuleErrorState,formRef }) => {
+  const intl = useIntl();
   const isRequired = rules?.some((rule) => rule.required);
   
   const formContext = Form.useFormInstance();
@@ -38,11 +39,14 @@ const LangTextItemForm: FC<Props> = ({ name, label, rules=[], setRuleErrorState=
             const langs = lists.map((item:any)=>item['@xml:lang']);
             const enIndex = langs.indexOf('en');
             if (langs&&langs.length&&enIndex === -1) {
-              setRuleErrorState(true);
-              console.log('langs verify error');
+              if(setRuleErrorState){
+                setRuleErrorState(true);
+              }else{
+                message.error(intl.formatMessage({id:'validator.lang.mustBeEnglish',defaultMessage:'English is a required language!'}));
+              }
               return Promise.reject(new Error());
             }
-            setRuleErrorState(false);
+            if(setRuleErrorState)setRuleErrorState(false);
             return Promise.resolve();
           }
         }
@@ -84,7 +88,7 @@ const LangTextItemForm: FC<Props> = ({ name, label, rules=[], setRuleErrorState=
                                 },
                                 {
                                   validator: async (_, value) => {
-                                    if(value==='en'){
+                                    if(value==='en'&&setRuleErrorState){
                                       setRuleErrorState(false);
                                     };
                                     return Promise.resolve();

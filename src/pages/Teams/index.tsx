@@ -34,6 +34,7 @@ import type { UploadFile } from 'antd/es/upload/interface';
 import { useEffect, useRef, useState } from 'react';
 import { v4 } from 'uuid';
 import AddMemberModal from './Components/AddMemberModal';
+import RequiredMark from '@/components/RequiredMark';
 
 const LogoBaseUrl = 'https://qgzvkongdjqiiamzbbts.supabase.co/storage/v1/object/public/sys-files/';
 
@@ -51,6 +52,9 @@ const Team = () => {
 
   const [membersLoading, setMembersLoading] = useState(false);
   const [addModalVisible, setAddModalVisible] = useState(false);
+
+  const [titleError, setTitleError] = useState(false);
+  const [descriptionError, setDescriptionError] = useState(false);
 
   const [rank, setRank] = useState(-1);
   const actionRef = useRef<any>(null);
@@ -86,7 +90,7 @@ const Team = () => {
         }),
       );
     } else if (data.length > 0) {
-      const { title, description } = data[0]?.json;
+      const { title, description } = data[0]?.json ?? {};
       setRank(data[0]?.rank);
 
       const formData: any = {
@@ -95,12 +99,12 @@ const Team = () => {
         rank: data[0]?.rank,
       };
 
-      setLightLogo(data[0]?.json.lightLogo);
-      setDarkLogo(data[0]?.json.darkLogo);
+      setLightLogo(data[0]?.json?.lightLogo);
+      setDarkLogo(data[0]?.json?.darkLogo);
       formRefEdit.current?.setFieldsValue({
         ...formData,
-        darkLogo: LogoBaseUrl + data[0]?.json.darkLogo,
-        lightLogo: LogoBaseUrl + data[0]?.json.lightLogo,
+        darkLogo: LogoBaseUrl + data[0]?.json?.darkLogo,
+        lightLogo: LogoBaseUrl + data[0]?.json?.lightLogo,
       });
     }
     setTeamInfoSpinning(false);
@@ -281,7 +285,9 @@ const Team = () => {
             onFinish={(values) => submitTeamInfo(values)}
           >
             <Form.Item
-              label={<FormattedMessage id="pages.team.info.title" defaultMessage="Team Name" />}
+              label={<RequiredMark label={<FormattedMessage id="pages.team.info.title" defaultMessage="Team Name" />}
+                showError={titleError}
+              />}
             >
               <LangTextItemForm
                 name="title"
@@ -297,16 +303,14 @@ const Team = () => {
                     ),
                   },
                 ]}
+                setRuleErrorState={setTitleError}
               />
             </Form.Item>
-
             <Form.Item
               label={
-                <FormattedMessage
-                  id="pages.team.info.description"
-                  defaultMessage="Team Description"
-                />
-              }
+                <RequiredMark label={<FormattedMessage id="pages.team.info.description" defaultMessage="Team Description" />}
+                  showError={descriptionError}
+                />}
             >
               <LangTextItemForm
                 name="description"
@@ -327,6 +331,7 @@ const Team = () => {
                     ),
                   },
                 ]}
+                setRuleErrorState={setDescriptionError}
               />
             </Form.Item>
             <Form.Item
@@ -366,13 +371,13 @@ const Team = () => {
                 fileList={
                   lightLogo
                     ? [
-                        {
-                          uid: '-1',
-                          name: 'logo',
-                          status: 'done',
-                          url: LogoBaseUrl + lightLogo,
-                        },
-                      ]
+                      {
+                        uid: '-1',
+                        name: 'logo',
+                        status: 'done',
+                        url: LogoBaseUrl + lightLogo,
+                      },
+                    ]
                     : []
                 }
                 onChange={({ fileList }) => uploadLogo(fileList, 'lightLogo')}
@@ -401,13 +406,13 @@ const Team = () => {
                 fileList={
                   darkLogo
                     ? [
-                        {
-                          uid: '-1',
-                          name: 'logo',
-                          status: 'done',
-                          url: LogoBaseUrl + darkLogo,
-                        },
-                      ]
+                      {
+                        uid: '-1',
+                        name: 'logo',
+                        status: 'done',
+                        url: LogoBaseUrl + darkLogo,
+                      },
+                    ]
                     : []
                 }
                 onChange={({ fileList }) => uploadLogo(fileList, 'darkLogo')}

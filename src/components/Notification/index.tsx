@@ -80,8 +80,8 @@ const Notification: React.FC = () => {
               }),
               content:
                 (intl.locale === 'zh-CN'
-                  ? teamTitle.find((item: any) => item['@xml:lang'] === 'zh')?.['#text']
-                  : teamTitle.find((item: any) => item['@xml:lang'] === 'en')?.['#text']) +
+                  ? teamTitle?.find((item: any) => item['@xml:lang'] === 'zh')?.['#text']
+                  : teamTitle?.find((item: any) => item['@xml:lang'] === 'en')?.['#text']) +
                 ' ' +
                 intl.formatMessage({
                   id: 'teams.notification.team.invite.content',
