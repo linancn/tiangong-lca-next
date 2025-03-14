@@ -192,7 +192,7 @@ export const ST_r = [
 
 export const dataSetVersion = [
   {
-    // required: true,
+    required: true,
     message: (
       <FormattedMessage
         id="validator.dataSetVersion.empty"
