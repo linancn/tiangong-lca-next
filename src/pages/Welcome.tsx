@@ -16,7 +16,7 @@ const Welcome: React.FC = () => {
   const lang = getLang(locale);
 
   const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
-  const [color3, setColor3] = useState('#5C246A');
+  const [color3, setColor3] = useState(token.colorPrimary);
 
   const [teams, setTeams] = React.useState<any>(null);
 
@@ -34,7 +34,7 @@ const Welcome: React.FC = () => {
     if (isDarkMode) {
       setColor3('#9e3ffd');
     } else {
-      setColor3('#5C246A');
+      setColor3(token.colorPrimary);
     }
   }, [isDarkMode]);
 

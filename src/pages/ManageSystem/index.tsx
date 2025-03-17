@@ -10,7 +10,7 @@ import { TeamMemberTable } from '@/services/teams/data';
 import { CrownOutlined, DeleteOutlined, PlusOutlined, UserOutlined } from '@ant-design/icons';
 import { PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
-import { Button, Flex, message, Modal, Spin, Tabs, Tooltip } from 'antd';
+import { Button, Flex, message, Modal, Spin, Tabs, Tooltip,theme } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import AddMemberModal from './Components/AddMemberModal';
 
@@ -22,6 +22,7 @@ const ManageSystem = () => {
   const actionRef = useRef<any>();
   const [addModalVisible, setAddModalVisible] = useState(false);
   const intl = useIntl();
+  const { token } = theme.useToken();
 
   const checkUserAuth = async () => {
     setLoading(true);
@@ -136,12 +137,13 @@ const ManageSystem = () => {
                     Modal.confirm({
                       okButtonProps: {
                         type: 'primary',
-                        style: { backgroundColor: '#5C246A' },
+                        style: { backgroundColor: token.colorPrimary },
                       },
                       cancelButtonProps: {
-                        style: { borderColor: '#5C246A', color: '#5C246A' },
+                        style: { borderColor: token.colorPrimary, color: token.colorPrimary },
                       },
-                      title: intl.formatMessage({ id: 'teams.members.deleteConfirm' }),
+                      title: intl.formatMessage({ id: 'teams.members.deleteConfirm.title' }),
+                      content: intl.formatMessage({ id: 'teams.members.deleteConfirm.content' }),
                       onOk: async () => {
                         try {
                           const { error } = await delRoleApi(record.team_id, record.user_id);

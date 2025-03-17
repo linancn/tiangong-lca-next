@@ -1,6 +1,6 @@
 export default {
   'pages.source.publicationType': '出版类型',
-
+  'pages.source.refObjectId': '引用数据源标识符',
   'pages.source.drawer.title.create': '创建数据源',
   'pages.source.drawer.title.view': '查看数据源',
   'pages.source.drawer.title.edit': '编辑数据源',

@@ -103,14 +103,12 @@ const TableList: FC = () => {
               `}
               id={row.id}
             >
-              <ProcessEdit
-                type="createVersion"
+              <ProcessCreate
+                actionType="createVersion"
                 id={row.id}
                 version={row.version}
                 lang={lang}
-                buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
               />
             </AllVersionsList>
           </Space>
@@ -179,14 +177,12 @@ const TableList: FC = () => {
                   buttonType={'icon'}
                 />
               ) : (
-                <ProcessEdit
-                  type="copy"
+                <ProcessCreate
+                  actionType="copy"
                   id={row.id}
                   version={row.version}
                   lang={lang}
-                  buttonType={'icon'}
                   actionRef={actionRef}
-                  setViewDrawerVisible={() => {}}
                 />
               )}
               <ProcessDelete
@@ -245,14 +241,12 @@ const TableList: FC = () => {
               disabled={false}
               actionRef={actionRef}
             />
-            <ProcessEdit
-              type="copy"
+            <ProcessCreate
+              actionType="copy"
               id={row.id}
               version={row.version}
               lang={lang}
-              buttonType={'icon'}
               actionRef={actionRef}
-              setViewDrawerVisible={() => {}}
             />
           </Space>,
         ];

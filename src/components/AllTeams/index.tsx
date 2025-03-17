@@ -9,7 +9,7 @@ import {
 import { TeamTable } from '@/services/teams/data';
 import { DeleteOutlined, SaveOutlined } from '@ant-design/icons';
 import { ActionType, DragSortTable, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Button, Card, Input, message, Modal, Space, Tooltip } from 'antd';
+import { Button, Card, Input, message, Modal, Space, Tooltip, theme } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { useRef, useState } from 'react';
@@ -30,15 +30,16 @@ const TableList: FC<{ disabled?: boolean; showDragSort: boolean }> = ({
   const [keyWord, setKeyWord] = useState<any>('');
   const [tableData, setTableData] = useState<TeamTable[]>([]);
   const [isDragged, setIsDragged] = useState<boolean>(false);
+  const { token } = theme.useToken();
 
   const handleRemoveTeam = (record: TeamTable) => {
     Modal.confirm({
       okButtonProps: {
         type: 'primary',
-        style: { backgroundColor: '#5C246A' },
+        style: { backgroundColor:token.colorPrimary },
       },
       cancelButtonProps: {
-        style: { borderColor: '#5C246A', color: '#5C246A' },
+        style: { borderColor: token.colorPrimary, color: token.colorPrimary },
       },
       title: intl.formatMessage({
         id: 'component.allTeams.table.remove.confirm.title',

@@ -2,7 +2,7 @@ import LangTextItemDescription from '@/components/LangTextItem/description';
 import UnitGroupDescriptionMini from '@/pages/Unitgroups/Components/select/descriptionMini';
 import { Card, Descriptions, Divider, Space } from 'antd';
 import { FC, ReactNode } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage ,getLocale} from 'umi';
 import FlowsView from '../view';
 type Props = {
   title: ReactNode | string;
@@ -11,10 +11,11 @@ type Props = {
 };
 
 const FlowsSelectDescription: FC<Props> = ({ title, data, lang }) => {
+  const locale = getLocale();
   return (
     <Card size="small" title={title}>
       <Space direction="horizontal">
-        <Descriptions bordered size={'small'} column={1} style={{ width: '450px' }}>
+        <Descriptions bordered size={'small'} column={1} style={{ width:locale === 'zh-CN' ? '470px' : '550px' }}>
           <Descriptions.Item
             key={0}
             label={
@@ -23,7 +24,7 @@ const FlowsSelectDescription: FC<Props> = ({ title, data, lang }) => {
                 defaultMessage="Ref object id"
               />
             }
-            labelStyle={{ width: '140px' }}
+            labelStyle={{ width: locale === 'zh-CN' ? '160px' : '240px' }}
           >
             {data?.['@refObjectId'] ?? '-'}
           </Descriptions.Item>
@@ -38,7 +39,7 @@ const FlowsSelectDescription: FC<Props> = ({ title, data, lang }) => {
         )}
       </Space>
       <br />
-      <br />
+      {/* <br />
       <Descriptions bordered size={'small'} column={1}>
         <Descriptions.Item
           key={0}
@@ -58,7 +59,7 @@ const FlowsSelectDescription: FC<Props> = ({ title, data, lang }) => {
           {data?.['@uri'] ?? '-'}
         </Descriptions.Item>
       </Descriptions>
-      <br />
+      <br /> */}
       {/* <Descriptions bordered size={'small'} column={1}>
         <Descriptions.Item key={0} label="Version" labelStyle={{ width: '120px' }}>
           {data?.['@version'] ?? '-'}

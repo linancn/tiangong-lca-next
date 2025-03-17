@@ -15,7 +15,7 @@
               "#text": "str"
             }
           ],
-          "rules": [
+          "rules": [ 
             {
               "required": true,
               "messageKey": "pages.contact.validator.shortName.required",
@@ -58,22 +58,102 @@
             ]
           }
         },
-        "email": "str",
-        "WWWAddress": "str",
+        "email": {
+          "value":"str",
+          "rules":[
+            {
+              "type": "email",
+              "messageKey": "validator.pages.contact.email.pattern",
+              "defaultMessage": "The input is not valid E-mail!"
+            }
+          ]
+        },
+        "WWWAddress": {
+          "value":"str",
+          "rules":[
+            {
+              "type": "url",
+              "messageKey": "validator.pages.contact.WWWAddress.invalid",
+              "defaultMessage": "Please enter a valid WWWAddress!"
+            },
+            {
+              "warn": true,
+              "messageKey": "validator.recommended.empty",
+              "defaultMessage": "Recommended to fill in, providing additional information without affecting completeness!"
+            }
+          ]
+        },
         "centralContactPoint": {
-          "@xml:lang": "str",
-          "#text": "str"
+          "value":{
+            "@xml:lang": "str",
+            "#text": "str"
+          },
+          "rules":[
+            {
+              "warningOnly": true,
+              "messageKey": "validator.recommended.empty",
+              "defaultMessage": "Recommended to fill in, providing additional information without affecting completeness!"
+            },
+            {
+              "max": 1000,
+              "messageKey": "validator.STMultiLang.pattern",
+              "defaultMessage": "Length cannot exceed 1000 characters!"
+            }
+          ]
         },
         "contactDescriptionOrComment": {
-          "@xml:lang": "str",
-          "#text": "str"
+          "value":{
+            "@xml:lang": "str",
+            "#text": "str"
+          },
+          "rules":[
+            {
+              "warningOnly": true,
+              "messageKey": "validator.recommended.empty",
+              "defaultMessage": "Optional to fill in, providing additional information without affecting completeness!"
+            },
+            {
+              "max": 1000,
+              "messageKey": "validator.STMultiLang.pattern",
+              "defaultMessage": "Length cannot exceed 1000 characters!"
+            }
+          ]
         },
         "contactAddress": {
-          "@xml:lang": "str",
-          "#text": "str"
+          "value":{
+            "@xml:lang": "str",
+            "#text": "str"
+          },
+          "rules":[
+            {
+              "messageKey": "validator.optional.empty",
+              "defaultMessage": "Optional to fill in, providing additional information without affecting completeness!"
+            },
+            {
+              "max": 1000,
+              "messageKey": "validator.STMultiLang.pattern",
+              "defaultMessage": "Length cannot exceed 1000 characters!"
+            }
+          ]
         },
-        "telephone": "str",
-        "telefax": "str",
+        "telephone": {
+          "value":"str",
+          "rules":[
+            {
+              "messageKey": "validator.optional.empty",
+              "defaultMessage": "Optional to fill in, providing additional information without affecting completeness!"
+            }
+          ]
+        },
+        "telefax": {
+          "value":"str",
+          "rules":[
+            {
+              "messageKey": "validator.optional.empty",
+              "defaultMessage": "Optional to fill in, providing additional information without affecting completeness!"
+            }
+          ]
+        },
         "referenceToContact": [
           {
             "@refObjectId": "str",

@@ -1,4 +1,5 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
+import RequiredMark from '@/components/RequiredMark';
 import { ListPagination } from '@/services/general/data';
 import {
   createTeamMessage,
@@ -29,7 +30,7 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { FormattedMessage, history, useIntl } from '@umijs/max';
-import { Button, Flex, Form, message, Modal, Spin, Switch, Tabs, Tooltip, Upload } from 'antd';
+import { Button, Flex, Form, message, Modal, Spin, Switch, Tabs, Tooltip, Upload,theme } from 'antd';
 import type { UploadFile } from 'antd/es/upload/interface';
 import { useEffect, useRef, useState } from 'react';
 import { v4 } from 'uuid';
@@ -38,6 +39,7 @@ import AddMemberModal from './Components/AddMemberModal';
 const LogoBaseUrl = 'https://qgzvkongdjqiiamzbbts.supabase.co/storage/v1/object/public/sys-files/';
 
 const Team = () => {
+  const { token } = theme.useToken();
   const [activeTabKey, setActiveTabKey] = useState('info');
   const [teamId, setTeamId] = useState('');
   const [userRole, setUserRole] = useState('');
@@ -51,6 +53,9 @@ const Team = () => {
 
   const [membersLoading, setMembersLoading] = useState(false);
   const [addModalVisible, setAddModalVisible] = useState(false);
+
+  const [titleError, setTitleError] = useState(false);
+  const [descriptionError, setDescriptionError] = useState(false);
 
   const [rank, setRank] = useState(-1);
   const actionRef = useRef<any>(null);
@@ -86,7 +91,7 @@ const Team = () => {
         }),
       );
     } else if (data.length > 0) {
-      const { title, description } = data[0]?.json;
+      const { title, description } = data[0]?.json ?? {};
       setRank(data[0]?.rank);
 
       const formData: any = {
@@ -95,12 +100,12 @@ const Team = () => {
         rank: data[0]?.rank,
       };
 
-      setLightLogo(data[0]?.json.lightLogo);
-      setDarkLogo(data[0]?.json.darkLogo);
+      setLightLogo(data[0]?.json?.lightLogo);
+      setDarkLogo(data[0]?.json?.darkLogo);
       formRefEdit.current?.setFieldsValue({
         ...formData,
-        darkLogo: LogoBaseUrl + data[0]?.json.darkLogo,
-        lightLogo: LogoBaseUrl + data[0]?.json.lightLogo,
+        darkLogo: LogoBaseUrl + data[0]?.json?.darkLogo,
+        lightLogo: LogoBaseUrl + data[0]?.json?.lightLogo,
       });
     }
     setTeamInfoSpinning(false);
@@ -267,7 +272,7 @@ const Team = () => {
     };
 
     return (
-      <Flex gap="middle" vertical style={{ maxWidth: '50%', minWidth: '200px' }}>
+      <Flex gap="small" vertical style={{ maxWidth: '50%', minWidth: '200px' }}>
         <Spin spinning={teamInfoSpinning}>
           <ProForm
             disabled={userRole !== 'admin' && userRole !== 'owner' && action !== 'create'}
@@ -281,7 +286,13 @@ const Team = () => {
             onFinish={(values) => submitTeamInfo(values)}
           >
             <Form.Item
-              label={<FormattedMessage id="pages.team.info.title" defaultMessage="Team Name" />}
+              label={
+                <RequiredMark
+                  label={<FormattedMessage id="pages.team.info.title" defaultMessage="Team Name" />}
+                  showError={titleError}
+                />
+              }
+              style={{ marginBottom: 0 }}
             >
               <LangTextItemForm
                 name="title"
@@ -297,16 +308,22 @@ const Team = () => {
                     ),
                   },
                 ]}
+                setRuleErrorState={setTitleError}
               />
             </Form.Item>
-
             <Form.Item
               label={
-                <FormattedMessage
-                  id="pages.team.info.description"
-                  defaultMessage="Team Description"
+                <RequiredMark
+                  label={
+                    <FormattedMessage
+                      id="pages.team.info.description"
+                      defaultMessage="Team Description"
+                    />
+                  }
+                  showError={descriptionError}
                 />
               }
+              style={{ marginBottom: 0 }}
             >
               <LangTextItemForm
                 name="description"
@@ -327,6 +344,7 @@ const Team = () => {
                     ),
                   },
                 ]}
+                setRuleErrorState={setDescriptionError}
               />
             </Form.Item>
             <Form.Item
@@ -501,12 +519,13 @@ const Team = () => {
                     Modal.confirm({
                       okButtonProps: {
                         type: 'primary',
-                        style: { backgroundColor: '#5C246A' },
+                        style: { backgroundColor: token.colorPrimary },
                       },
                       cancelButtonProps: {
-                        style: { borderColor: '#5C246A', color: '#5C246A' },
+                        style: { borderColor: token.colorPrimary, color: token.colorPrimary },
                       },
-                      title: intl.formatMessage({ id: 'teams.members.deleteConfirm' }),
+                      title: intl.formatMessage({ id: 'teams.members.deleteConfirm.title' }),
+                      content: intl.formatMessage({ id: 'teams.members.deleteConfirm.content' }),
                       onOk: async () => {
                         try {
                           const { error } = await delRoleApi(record.team_id, record.user_id);

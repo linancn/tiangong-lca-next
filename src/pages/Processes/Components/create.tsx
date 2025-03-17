@@ -1,9 +1,10 @@
 import { formatDateTime } from '@/services/general/util';
-import { createProcess } from '@/services/processes/api';
+import { createProcess ,getProcessDetail} from '@/services/processes/api';
+import { genProcessFromData } from '@/services/processes/util';
 import styles from '@/style/custom.less';
-import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
+import { CloseOutlined, PlusOutlined,CopyOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
-import { Button, Collapse, Drawer, Space, Tooltip, Typography, message } from 'antd';
+import { Button, Collapse, Drawer, Space, Tooltip, Typography, message,Spin } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
@@ -13,14 +14,33 @@ import { ProcessForm } from './form';
 type Props = {
   lang: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
+  actionType?: 'create' | 'copy' | 'createVersion';
+  id?: string;
+  version?: string;
 };
-const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
+
+// When type is 'copy' or 'createVersion', id and version are required parameters
+type CreateProps = 
+  | (Omit<Props, 'type'> & { actionType?: 'create' })
+  | (Omit<Props, 'type' | 'id' | 'version'> & { 
+      actionType: 'copy'; 
+      id: string; 
+      version: string;
+    })
+  | (Omit<Props, 'type' | 'id' | 'version'> & { 
+      actionType: 'createVersion'; 
+      id: string; 
+      version: string;
+    });
+
+const ProcessCreate: FC<CreateProps> = ({ lang, actionRef,actionType='create',id,version }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
   const [activeTabKey, setActiveTabKey] = useState<string>('processInformation');
   const [fromData, setFromData] = useState<any>({});
   const [initData, setInitData] = useState<any>({});
   const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
+  const [spinning, setSpinning] = useState<boolean>(false);
   const intl = useIntl();
 
   const handletFromData = () => {
@@ -51,8 +71,30 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
     setActiveTabKey(key);
   };
 
+  const getFormDetail = () => {
+    if(!id||!version)return;
+    setSpinning(true);
+    getProcessDetail(id, version).then(async (result: any) => {
+      const dataSet = genProcessFromData(result.data?.json?.processDataSet ?? {});
+      setInitData({ ...dataSet, id: id });
+      setFromData({ ...dataSet, id: id });
+      setExchangeDataSource(dataSet?.exchanges?.exchange ?? []);
+      formRefCreate.current?.resetFields();
+      formRefCreate.current?.setFieldsValue({
+        ...dataSet,
+        id: id,
+      });
+      setSpinning(false);
+    });
+  };
+
   useEffect(() => {
     if (!drawerVisible) return;
+
+    if(actionType==='copy'||actionType==='createVersion'){
+      getFormDetail();
+      return;
+    }
 
     const currentDateTime = formatDateTime(new Date());
     const newData = {
@@ -76,21 +118,23 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="pages.button.create" defaultMessage="Create" />}>
-        <Button
+      <Tooltip title={<FormattedMessage id={actionType==='copy'?'pages.button.copy':actionType==='createVersion'?"pages.button.createVersion":"pages.button.create"} defaultMessage="Create" />}>
+        {actionType==='copy'?(<Button shape="circle" icon={<CopyOutlined />} size="small" onClick={() => {
+            setDrawerVisible(true);
+          }}></Button>):(<Button
           size={'middle'}
           type="text"
           icon={<PlusOutlined />}
           onClick={() => {
             setDrawerVisible(true);
           }}
-        />
+        />)}
       </Tooltip>
       <Drawer
         getContainer={() => document.body}
         title={
           <FormattedMessage
-            id="pages.process.drawer.title.create"
+            id={actionType==='copy'?'pages.button.copy':actionType==='createVersion'?"pages.button.createVersion":"pages.button.create"}
             defaultMessage="Create process"
           />
         }
@@ -118,6 +162,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
           </Space>
         }
       >
+        <Spin spinning={spinning}>
         <ProForm
           formRef={formRefCreate}
           initialValues={initData}
@@ -130,7 +175,8 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             },
           }}
           onFinish={async () => {
-            const result = await createProcess(v4(), fromData);
+            const paramsId = (actionType === 'createVersion' ? id : v4())??'';
+            const result = await createProcess(paramsId, fromData);
             if (result.data) {
               message.success(
                 intl.formatMessage({
@@ -158,6 +204,7 @@ const ProcessCreate: FC<Props> = ({ lang, actionRef }) => {
             exchangeDataSource={exchangeDataSource}
           />
         </ProForm>
+        </Spin>
         <Collapse
           items={[
             {

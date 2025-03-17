@@ -23,7 +23,7 @@ type Props = {
   setLoadFiles: React.Dispatch<React.SetStateAction<RcFile[]>>;
   fileList: UploadFile[];
   setFileList: React.Dispatch<React.SetStateAction<UploadFile[]>>;
-  defaultSourceName?: string;
+  formType?: string;
 };
 
 export const SourceForm: FC<Props> = ({
@@ -36,7 +36,7 @@ export const SourceForm: FC<Props> = ({
   setLoadFiles,
   fileList,
   setFileList,
-  defaultSourceName
+  formType
 }) => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
@@ -245,7 +245,7 @@ export const SourceForm: FC<Props> = ({
             <Input disabled={true} style={{ color: token.colorTextDescription }} />
           </Form.Item>
           <SourceSelectForm
-            defaultSourceName={defaultSourceName}
+            defaultSourceName={formType === 'create' ? 'ILCD format' : undefined}
             name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
             label={
               <FormattedMessage
