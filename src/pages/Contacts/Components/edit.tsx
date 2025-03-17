@@ -1,8 +1,8 @@
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
-import {  getContactDetail, updateContact } from '@/services/contacts/api';
+import { getContactDetail, updateContact } from '@/services/contacts/api';
 import { genContactFromData } from '@/services/contacts/util';
 import styles from '@/style/custom.less';
-import { CloseOutlined,  FormOutlined } from '@ant-design/icons';
+import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { Button, Collapse, Drawer, Space, Spin, Tooltip, Typography, message } from 'antd';
 import type { FC } from 'react';
@@ -76,9 +76,9 @@ const ContactEdit: FC<Props> = ({
   return (
     <>
       {buttonType === 'icon' ? (
-          <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
-            <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
-          </Tooltip>
+        <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
+          <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
+        </Tooltip>
       ) : (
         <Button onClick={onEdit}>
           <FormattedMessage
@@ -92,7 +92,7 @@ const ContactEdit: FC<Props> = ({
         destroyOnClose={true}
         getContainer={() => document.body}
         title={
-            <FormattedMessage id="pages.contact.drawer.title.edit" defaultMessage="Edit Contact" />
+          <FormattedMessage id="pages.contact.drawer.title.edit" defaultMessage="Edit Contact" />
         }
         width="90%"
         closable={false}
@@ -108,16 +108,16 @@ const ContactEdit: FC<Props> = ({
         onClose={() => setDrawerVisible(false)}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
-              <Button
-                onClick={() => {
-                  updateReference();
-                }}
-              >
-                <FormattedMessage
-                  id="pages.button.updateReference"
-                  defaultMessage="Update reference"
-                />
-              </Button>
+            <Button
+              onClick={() => {
+                updateReference();
+              }}
+            >
+              <FormattedMessage
+                id="pages.button.updateReference"
+                defaultMessage="Update reference"
+              />
+            </Button>
             <Button onClick={() => setDrawerVisible(false)}>
               <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
             </Button>
@@ -145,22 +145,22 @@ const ContactEdit: FC<Props> = ({
               initialValues={initData}
               onFinish={async () => {
                 setSpinning(true);
-                  const updateResult = await updateContact(id, version, fromData);
-                  if (updateResult?.data) {
-                    message.success(
-                      intl.formatMessage({
-                        id: 'pages.button.create.success',
-                        defaultMessage: 'Created successfully!',
-                      }),
-                    );
-                    setDrawerVisible(false);
-                    setViewDrawerVisible(false);
-                    actionRef?.current?.reload();
-                  } else {
-                    message.error(updateResult?.error?.message);
-                  }
-                  setSpinning(true);
-                  return true;
+                const updateResult = await updateContact(id, version, fromData);
+                if (updateResult?.data) {
+                  message.success(
+                    intl.formatMessage({
+                      id: 'pages.button.create.success',
+                      defaultMessage: 'Created successfully!',
+                    }),
+                  );
+                  setDrawerVisible(false);
+                  setViewDrawerVisible(false);
+                  actionRef?.current?.reload();
+                } else {
+                  message.error(updateResult?.error?.message);
+                }
+                setSpinning(true);
+                return true;
               }}
             >
               <ContactForm

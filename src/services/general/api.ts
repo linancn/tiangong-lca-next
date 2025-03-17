@@ -114,22 +114,22 @@ export async function getAllVersions(
   const orderBy = sort[sortBy] ?? 'descend';
 
   let query = supabase
-  .from(tableName)
-  .select(
-    `
+    .from(tableName)
+    .select(
+      `
     id,
     ${nameColume}, 
     version, 
     created_at, 
     modified_at`,
-    { count: 'exact' },
-  )
-  .eq('id', id)
-  .order(sortBy, { ascending: orderBy === 'ascend' })
-  .range(
-    ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-    (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-  );
+      { count: 'exact' },
+    )
+    .eq('id', id)
+    .order(sortBy, { ascending: orderBy === 'ascend' })
+    .range(
+      ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
+      (params.current ?? 1) * (params.pageSize ?? 10) - 1,
+    );
 
   if (dataSource === 'tg') {
     query = query.eq('state_code', 100);

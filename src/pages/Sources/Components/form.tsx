@@ -36,7 +36,7 @@ export const SourceForm: FC<Props> = ({
   setLoadFiles,
   fileList,
   setFileList,
-  formType
+  formType,
 }) => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');

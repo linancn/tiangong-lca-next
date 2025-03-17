@@ -18,7 +18,14 @@ type Props = {
   formType?: string;
 };
 
-export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, onTabChange, formType }) => {
+export const ContactForm: FC<Props> = ({
+  lang,
+  activeTabKey,
+  formRef,
+  onData,
+  onTabChange,
+  formType,
+}) => {
   const { token } = theme.useToken();
   const [showShortNameError, setShowShortNameError] = useState(false);
   const [showNameError, setShowNameError] = useState(false);
@@ -52,7 +59,12 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             title={
               <RequiredMark
                 showError={showShortNameError}
-                label={<FormattedMessage id="pages.contact.shortName" defaultMessage="Short name for contact" />}
+                label={
+                  <FormattedMessage
+                    id="pages.contact.shortName"
+                    defaultMessage="Short name for contact"
+                  />
+                }
               />
             }
           >
@@ -68,7 +80,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
               }
               rules={getRules(
                 schema['contactDataSet']['contactInformation']['dataSetInformation'][
-                'common:shortName'
+                  'common:shortName'
                 ]['rules'] ?? [],
               )}
             />
@@ -78,7 +90,11 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             title={
               <RequiredMark
                 showError={showNameError}
-                label={<FormattedMessage id="pages.contact.name" defaultMessage="Name of contact" />} />}
+                label={
+                  <FormattedMessage id="pages.contact.name" defaultMessage="Name of contact" />
+                }
+              />
+            }
           >
             <LangTextItemForm
               formRef={formRef}
@@ -87,7 +103,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
               label={<FormattedMessage id="pages.contact.name" defaultMessage="Name of contact" />}
               rules={getRules(
                 schema['contactDataSet']['contactInformation']['dataSetInformation']['common:name'][
-                'rules'
+                  'rules'
                 ] ?? [],
               )}
             />
@@ -106,7 +122,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             onData={onData}
             rules={getRules(
               schema['contactDataSet']['contactInformation']['dataSetInformation'][
-              'classificationInformation'
+                'classificationInformation'
               ]['common:classification']['rules'] ?? [],
             )}
           />
@@ -128,7 +144,9 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
                 />
               }
               rules={getRules(
-                schema['contactDataSet']['contactInformation']['dataSetInformation']['contactAddress']['rules'] ?? [],
+                schema['contactDataSet']['contactInformation']['dataSetInformation'][
+                  'contactAddress'
+                ]['rules'] ?? [],
               )}
             />
           </Card>
@@ -136,7 +154,9 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             label={<FormattedMessage id="pages.contact.telephone" defaultMessage="Telephone" />}
             name={['contactInformation', 'dataSetInformation', 'telephone']}
             rules={getRules(
-              schema['contactDataSet']['contactInformation']['dataSetInformation']['telephone']['rules'] ?? [],
+              schema['contactDataSet']['contactInformation']['dataSetInformation']['telephone'][
+                'rules'
+              ] ?? [],
             )}
           >
             <Input />
@@ -145,7 +165,9 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             label={<FormattedMessage id="pages.contact.telefax" defaultMessage="Telefax" />}
             name={['contactInformation', 'dataSetInformation', 'telefax']}
             rules={getRules(
-              schema['contactDataSet']['contactInformation']['dataSetInformation']['telefax']['rules'] ?? [],
+              schema['contactDataSet']['contactInformation']['dataSetInformation']['telefax'][
+                'rules'
+              ] ?? [],
             )}
           >
             <Input />
@@ -154,7 +176,9 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             label={<FormattedMessage id="pages.contact.email" defaultMessage="E-mail" />}
             name={['contactInformation', 'dataSetInformation', 'email']}
             rules={getRules(
-              schema['contactDataSet']['contactInformation']['dataSetInformation']['email']['rules'] ?? [],
+              schema['contactDataSet']['contactInformation']['dataSetInformation']['email'][
+                'rules'
+              ] ?? [],
             )}
           >
             <Input />
@@ -163,7 +187,9 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             label={<FormattedMessage id="pages.contact.WWWAddress" defaultMessage="WWW-Address" />}
             name={['contactInformation', 'dataSetInformation', 'WWWAddress']}
             rules={getRules(
-              schema['contactDataSet']['contactInformation']['dataSetInformation']['WWWAddress']['rules'] ?? [],
+              schema['contactDataSet']['contactInformation']['dataSetInformation']['WWWAddress'][
+                'rules'
+              ] ?? [],
             )}
           >
             <Input />
@@ -186,7 +212,9 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
                 />
               }
               rules={getRules(
-                schema['contactDataSet']['contactInformation']['dataSetInformation']['centralContactPoint']['rules'] ?? [],
+                schema['contactDataSet']['contactInformation']['dataSetInformation'][
+                  'centralContactPoint'
+                ]['rules'] ?? [],
               )}
             />
           </Card>
@@ -208,7 +236,9 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
                 />
               }
               rules={getRules(
-                schema['contactDataSet']['contactInformation']['dataSetInformation']['contactDescriptionOrComment']['rules'] ?? [],
+                schema['contactDataSet']['contactInformation']['dataSetInformation'][
+                  'contactDescriptionOrComment'
+                ]['rules'] ?? [],
               )}
             />
           </Card>
@@ -258,7 +288,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
               }
               rules={getRules(
                 schema['contactDataSet']['administrativeInformation']['dataEntryBy'][
-                'common:timeStamp'
+                  'common:timeStamp'
                 ]['rules'] ?? [],
               )}
               name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
@@ -275,7 +305,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
               }
               rules={getRules(
                 schema['contactDataSet']['administrativeInformation']['dataEntryBy'][
-                'common:referenceToDataSetFormat'
+                  'common:referenceToDataSetFormat'
                 ]['rules'] ?? [],
               )}
               name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
@@ -307,7 +337,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
               ]}
               rules={getRules(
                 schema['contactDataSet']['administrativeInformation']['publicationAndOwnership'][
-                'common:dataSetVersion'
+                  'common:dataSetVersion'
                 ]['rules'] ?? [],
               )}
             >
@@ -322,7 +352,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
               }
               rules={getRules(
                 schema['contactDataSet']['administrativeInformation']['publicationAndOwnership'][
-                'common:referenceToOwnershipOfDataSet'
+                  'common:referenceToOwnershipOfDataSet'
                 ]['rules'] ?? [],
               )}
               name={[

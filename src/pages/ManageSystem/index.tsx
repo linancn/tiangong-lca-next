@@ -10,7 +10,7 @@ import { TeamMemberTable } from '@/services/teams/data';
 import { CrownOutlined, DeleteOutlined, PlusOutlined, UserOutlined } from '@ant-design/icons';
 import { PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
-import { Button, Flex, message, Modal, Spin, Tabs, Tooltip,theme } from 'antd';
+import { Button, Flex, message, Modal, Spin, Tabs, theme, Tooltip } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import AddMemberModal from './Components/AddMemberModal';
 

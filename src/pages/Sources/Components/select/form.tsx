@@ -1,4 +1,6 @@
+import RequiredSelectFormTitle from '@/components/RequiredSelectFormTitle';
 import { useUpdateReferenceContext } from '@/contexts/updateReferenceContext';
+import { getLocalValueProps, validateRefObjectId } from '@/pages/Utils';
 import { getSourceDetail } from '@/services/sources/api';
 import { genSourceFromData } from '@/services/sources/util';
 import { ProFormInstance } from '@ant-design/pro-components';
@@ -7,8 +9,6 @@ import { Button, Card, Col, Divider, Form, Input, Row, Space, theme } from 'antd
 import React, { FC, ReactNode, useEffect, useState } from 'react';
 import SourceView from '../view';
 import SourceSelectDrawer from './drawer';
-import { validateRefObjectId, getLocalValueProps } from '@/pages/Utils';
-import RequiredSelectFormTitle from '@/components/RequiredSelectFormTitle';
 const { TextArea } = Input;
 
 type Props = {
@@ -30,7 +30,7 @@ const SourceSelectForm: FC<Props> = ({
   formRef,
   onData,
   rules = [],
-  defaultSourceName
+  defaultSourceName,
 }) => {
   const [id, setId] = useState<string | undefined>(undefined);
   const [version, setVersion] = useState<string | undefined>(undefined);
@@ -87,7 +87,7 @@ const SourceSelectForm: FC<Props> = ({
           '@version': result2.data?.version,
           'common:shortDescription':
             referenceToDataSetFormatData?.sourceInformation?.dataSetInformation?.[
-            'common:shortName'
+              'common:shortName'
             ] ?? [],
         };
         const newData = {
@@ -99,16 +99,16 @@ const SourceSelectForm: FC<Props> = ({
         };
         // formRef.current?.resetFields();
         const currentData = formRef.current?.getFieldsValue();
-        formRef.current?.setFieldsValue({...currentData, ...newData});
+        formRef.current?.setFieldsValue({ ...currentData, ...newData });
       });
     }
-  }
+  };
 
   useEffect(() => {
     if (defaultSourceName) {
-      getDefaultValue()
+      getDefaultValue();
     }
-  },[defaultSourceName]);
+  }, [defaultSourceName]);
 
   useEffect(() => {
     setId(undefined);
@@ -121,21 +121,32 @@ const SourceSelectForm: FC<Props> = ({
     }
   });
 
-  
   const requiredRules = rules.filter((rule: any) => rule.required);
   const isRequired = requiredRules && requiredRules.length;
   const notRequiredRules = rules.filter((rule: any) => !rule.required) ?? [];
 
-
   return (
-    <Card size="small" title={isRequired ? <RequiredSelectFormTitle label={label} ruleErrorState={ruleErrorState} requiredRules={requiredRules} /> : label}>
+    <Card
+      size="small"
+      title={
+        isRequired ? (
+          <RequiredSelectFormTitle
+            label={label}
+            ruleErrorState={ruleErrorState}
+            requiredRules={requiredRules}
+          />
+        ) : (
+          label
+        )
+      }
+    >
       <Space direction="horizontal">
         <Form.Item
           label={<FormattedMessage id="pages.source.refObjectId" defaultMessage="Ref object id" />}
           name={[...name, '@refObjectId']}
           rules={[
             ...notRequiredRules,
-            (isRequired && { 
+            isRequired && {
               validator: (rule, value) => {
                 if (!value) {
                   setRuleErrorState(true);
@@ -144,8 +155,8 @@ const SourceSelectForm: FC<Props> = ({
                 }
                 setRuleErrorState(false);
                 return Promise.resolve();
-              }
-             })
+              },
+            },
           ]}
         >
           <Input disabled={true} style={{ width: '350px', color: token.colorTextDescription }} />
@@ -216,7 +227,11 @@ const SourceSelectForm: FC<Props> = ({
               {subFields.map((subField) => (
                 <Row key={subField.key}>
                   <Col flex="100px" style={{ marginRight: '10px' }}>
-                    <Form.Item getValueProps={(value)=>getLocalValueProps(value)} noStyle name={[subField.name, '@xml:lang']}>
+                    <Form.Item
+                      getValueProps={(value) => getLocalValueProps(value)}
+                      noStyle
+                      name={[subField.name, '@xml:lang']}
+                    >
                       <Input
                         disabled={true}
                         style={{ width: '100px', color: token.colorTextDescription }}

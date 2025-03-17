@@ -128,7 +128,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
               defaultMessage: 'You can create a team or join an existing team',
             }),
             closable: true,
-            footer: ()=>(
+            footer: () => (
               <>
                 <Button
                   style={{ borderColor: token.colorPrimary, color: token.colorPrimary }}

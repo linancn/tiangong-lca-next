@@ -5,6 +5,7 @@ import { FormattedMessage, useIntl, useLocation } from 'umi';
 
 import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
+import LifeCycleModelCreate from '@/pages/LifeCycleModels/Components/create';
 import LifeCycleModelEdit from '@/pages/LifeCycleModels/Components/edit';
 import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
 import { contributeSource } from '@/services/general/api';
@@ -168,8 +169,8 @@ const TableList: FC = () => {
                 />
               )}
               {row.isFromLifeCycle ? (
-                <LifeCycleModelEdit
-                  type="copy"
+                <LifeCycleModelCreate
+                  actionType="copy"
                   id={row.id}
                   version={row.version}
                   lang={lang}

@@ -7,13 +7,13 @@ import SourceView from '@/pages/Sources/Components/view';
 import UnitGroupView from '@/pages/Unitgroups/Components/view';
 import { getAllVersions } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
-import { CloseOutlined, BarsOutlined } from '@ant-design/icons';
+import { getDataSource } from '@/services/general/util';
+import { BarsOutlined, CloseOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Drawer, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useLocation } from 'umi';
-import { getDataSource } from '@/services/general/util';
 interface AllVersionsListProps {
   searchTableName: string;
   searchColume: string;
@@ -137,7 +137,15 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
               return [children];
             }}
             request={async (params: { pageSize: number; current: number }, sort) => {
-              return getAllVersions(searchColume, searchTableName, id, params, sort, lang,dataSource);
+              return getAllVersions(
+                searchColume,
+                searchTableName,
+                id,
+                params,
+                sort,
+                lang,
+                dataSource,
+              );
             }}
             columns={allVersionsColumns}
           />

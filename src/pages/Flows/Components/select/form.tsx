@@ -1,4 +1,6 @@
+import RequiredSelectFormTitle from '@/components/RequiredSelectFormTitle';
 import UnitGroupFromMini from '@/pages/Unitgroups/Components/select/formMini';
+import { getLocalValueProps } from '@/pages/Utils';
 import { getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
 import { ProFormInstance } from '@ant-design/pro-components';
@@ -7,8 +9,6 @@ import React, { FC, ReactNode, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import FlowsView from '../view';
 import FlowsSelectDrawer from './drawer';
-import RequiredSelectFormTitle from '@/components/RequiredSelectFormTitle';
-import { getLocalValueProps } from '@/pages/Utils';
 const { TextArea } = Input;
 
 type Props = {
@@ -30,7 +30,7 @@ const FlowsSelectForm: FC<Props> = ({
   drawerVisible,
   asInput,
   onData,
-  rules=[],
+  rules = [],
 }) => {
   const [id, setId] = useState<string | undefined>(undefined);
   const [version, setVersion] = useState<string | undefined>(undefined);
@@ -67,7 +67,20 @@ const FlowsSelectForm: FC<Props> = ({
   const isRequired = requiredRules && requiredRules.length;
   const notRequiredRules = rules.filter((rule: any) => !rule.required) ?? [];
   return (
-    <Card size="small" title={isRequired ? <RequiredSelectFormTitle label={label} ruleErrorState={ruleErrorState} requiredRules={requiredRules} /> : label}>
+    <Card
+      size="small"
+      title={
+        isRequired ? (
+          <RequiredSelectFormTitle
+            label={label}
+            ruleErrorState={ruleErrorState}
+            requiredRules={requiredRules}
+          />
+        ) : (
+          label
+        )
+      }
+    >
       <Space direction="horizontal">
         <Form.Item
           label={
@@ -79,7 +92,7 @@ const FlowsSelectForm: FC<Props> = ({
           name={[...name, '@refObjectId']}
           rules={[
             ...notRequiredRules,
-            (isRequired && {
+            isRequired && {
               validator: (rule, value) => {
                 if (!value) {
                   setRuleErrorState(true);
@@ -88,8 +101,8 @@ const FlowsSelectForm: FC<Props> = ({
                 }
                 setRuleErrorState(false);
                 return Promise.resolve();
-              }
-             })
+              },
+            },
           ]}
         >
           <Input disabled={true} style={{ width: '350px', color: token.colorTextDescription }} />
@@ -172,7 +185,11 @@ const FlowsSelectForm: FC<Props> = ({
               {subFields.map((subField) => (
                 <Row key={subField.key}>
                   <Col flex="100px" style={{ marginRight: '10px' }}>
-                    <Form.Item  getValueProps={(value)=>getLocalValueProps(value)} noStyle name={[subField.name, '@xml:lang']}>
+                    <Form.Item
+                      getValueProps={(value) => getLocalValueProps(value)}
+                      noStyle
+                      name={[subField.name, '@xml:lang']}
+                    >
                       <Input
                         disabled={true}
                         style={{ width: '100px', color: token.colorTextDescription }}

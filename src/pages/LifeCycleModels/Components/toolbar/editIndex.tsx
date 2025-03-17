@@ -36,7 +36,7 @@ type Props = {
   isSave: boolean;
   action: string;
   setIsSave: (isSave: boolean) => void;
-  type?: 'edit' | 'copy' | 'createVersion';
+  actionType?: 'create' | 'copy' | 'createVersion';
 };
 
 const ToolbarEdit: FC<Props> = ({
@@ -47,7 +47,7 @@ const ToolbarEdit: FC<Props> = ({
   isSave,
   action,
   setIsSave,
-  type = 'edit',
+  actionType,
 }) => {
   const [thisId, setThisId] = useState(id);
   const [thisVersion, setThisVersion] = useState(version);
@@ -740,36 +740,6 @@ const ToolbarEdit: FC<Props> = ({
     };
 
     if (thisAction === 'edit') {
-      if (type === 'copy' || type === 'createVersion') {
-        const newId = v4();
-        createLifeCycleModel({ ...newData, id: type === 'copy' ? newId : thisId }).then(
-          (result: any) => {
-            if (result.data) {
-              message.success(
-                intl.formatMessage({
-                  id: 'pages.button.create.success',
-                  defaultMessage: 'Created successfully!',
-                }),
-              );
-              setThisAction('edit');
-              setThisId(result.data?.[0]?.id);
-              setThisVersion(result.data?.[0]?.version);
-              saveCallback();
-            } else if (result?.error?.code === '23505') {
-              message.error(
-                intl.formatMessage({
-                  id: 'pages.button.createVersion.fail',
-                  defaultMessage: 'Please change the version and submit',
-                }),
-              );
-            } else {
-              message.error(result.error.message);
-            }
-            setSpinning(false);
-          },
-        );
-        return;
-      }
       updateLifeCycleModel({ ...newData, id: thisId, version: thisVersion }).then((result: any) => {
         if (result.data) {
           message.success(
@@ -787,7 +757,7 @@ const ToolbarEdit: FC<Props> = ({
         setSpinning(false);
       });
     } else if (thisAction === 'create') {
-      const newId = v4();
+      const newId = actionType === 'createVersion' ? thisId : v4();
       createLifeCycleModel({ ...newData, id: newId }).then((result: any) => {
         if (result.data) {
           message.success(
@@ -982,7 +952,7 @@ const ToolbarEdit: FC<Props> = ({
 
   return (
     <Space direction="vertical" size={'middle'}>
-      <ToolbarEditInfo type={type} data={infoData} onData={updateInfoData} lang={lang} />
+      <ToolbarEditInfo action={thisAction} data={infoData} onData={updateInfoData} lang={lang} />
       <ProcessView
         id={nodes.find((node) => node.selected)?.data?.id ?? ''}
         version={nodes.find((node) => node.selected)?.data?.version ?? ''}

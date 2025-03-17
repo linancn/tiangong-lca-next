@@ -1,9 +1,9 @@
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
-import {  getUnitGroupDetail, updateUnitGroup } from '@/services/unitgroups/api';
+import { getUnitGroupDetail, updateUnitGroup } from '@/services/unitgroups/api';
 import { UnitTable } from '@/services/unitgroups/data';
 import { genUnitGroupFromData } from '@/services/unitgroups/util';
 import styles from '@/style/custom.less';
-import { CloseOutlined,  FormOutlined } from '@ant-design/icons';
+import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { Button, Collapse, Drawer, Space, Spin, Tooltip, Typography, message } from 'antd';
 import type { FC } from 'react';
@@ -105,13 +105,11 @@ const UnitGroupEdit: FC<Props> = ({
   return (
     <>
       {buttonType === 'icon' ? (
-          <Tooltip
-            title={
-              <FormattedMessage id="pages.button.edit" defaultMessage="Edit"></FormattedMessage>
-            }
-          >
-            <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit}></Button>
-          </Tooltip>
+        <Tooltip
+          title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit"></FormattedMessage>}
+        >
+          <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit}></Button>
+        </Tooltip>
       ) : (
         <Button size="small" onClick={onEdit}>
           <FormattedMessage
@@ -147,16 +145,16 @@ const UnitGroupEdit: FC<Props> = ({
         }}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
-              <Button
-                onClick={() => {
-                  updateReference();
-                }}
-              >
-                <FormattedMessage
-                  id="pages.button.updateReference"
-                  defaultMessage="Update reference"
-                />
-              </Button>
+            <Button
+              onClick={() => {
+                updateReference();
+              }}
+            >
+              <FormattedMessage
+                id="pages.button.updateReference"
+                defaultMessage="Update reference"
+              />
+            </Button>
             <Button
               onClick={() => {
                 setDrawerVisible(false);

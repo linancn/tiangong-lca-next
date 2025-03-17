@@ -1,4 +1,6 @@
+import RequiredSelectFormTitle from '@/components/RequiredSelectFormTitle';
 import { useUpdateReferenceContext } from '@/contexts/updateReferenceContext';
+import { getLocalValueProps } from '@/pages/Utils';
 import { jsonToList } from '@/services/general/util';
 import { getReferenceUnit, getUnitGroupDetail } from '@/services/unitgroups/api';
 import { genUnitGroupFromData } from '@/services/unitgroups/util';
@@ -8,8 +10,6 @@ import React, { FC, ReactNode, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import UnitgroupsView from '../view';
 import UnitgroupsSelectDrawer from './drawer';
-import RequiredSelectFormTitle from '@/components/RequiredSelectFormTitle';
-import { getLocalValueProps } from '@/pages/Utils';
 // import LangTextItemForm from '@/components/LangTextItem/form';
 const { TextArea } = Input;
 
@@ -81,19 +81,29 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
   const isRequired = requiredRules && requiredRules.length;
   const notRequiredRules = rules.filter((rule: any) => !rule.required) ?? [];
   return (
-    <Card size="small" title={isRequired ? <RequiredSelectFormTitle label={label} ruleErrorState={ruleErrorState} requiredRules={requiredRules} /> : label}>
+    <Card
+      size="small"
+      title={
+        isRequired ? (
+          <RequiredSelectFormTitle
+            label={label}
+            ruleErrorState={ruleErrorState}
+            requiredRules={requiredRules}
+          />
+        ) : (
+          label
+        )
+      }
+    >
       <Space direction="horizontal">
         <Form.Item
           label={
-            <FormattedMessage
-              id="pages.unitgroup.refObjectId"
-              defaultMessage="Ref object id"
-            />
+            <FormattedMessage id="pages.unitgroup.refObjectId" defaultMessage="Ref object id" />
           }
           name={[...name, '@refObjectId']}
           rules={[
             ...notRequiredRules,
-            (isRequired && { 
+            isRequired && {
               validator: (rule, value) => {
                 if (!value) {
                   setRuleErrorState(true);
@@ -102,8 +112,8 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
                 }
                 setRuleErrorState(false);
                 return Promise.resolve();
-              }
-             })
+              },
+            },
           ]}
         >
           <Input disabled={true} style={{ width: '350px', color: token.colorTextDescription }} />
@@ -181,7 +191,11 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
               {subFields.map((subField) => (
                 <Row key={subField.key}>
                   <Col flex="100px" style={{ marginRight: '10px' }}>
-                    <Form.Item getValueProps={(value)=>getLocalValueProps(value)} noStyle name={[subField.name, '@xml:lang']}>
+                    <Form.Item
+                      getValueProps={(value) => getLocalValueProps(value)}
+                      noStyle
+                      name={[subField.name, '@xml:lang']}
+                    >
                       <Input
                         disabled={true}
                         style={{ width: '100px', color: token.colorTextDescription }}

@@ -1,7 +1,7 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import { Card, Descriptions, Divider, Space } from 'antd';
 import { FC, ReactNode } from 'react';
-import { FormattedMessage,getLocale } from 'umi';
+import { FormattedMessage, getLocale } from 'umi';
 import SourceView from '../view';
 type Props = {
   title: ReactNode | string;
@@ -14,7 +14,12 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
   return (
     <Card size="small" title={title}>
       <Space direction="horizontal">
-        <Descriptions bordered size={'small'} column={1} style={{ width: locale === 'zh-CN' ? '460px' : '560px' }}>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          style={{ width: locale === 'zh-CN' ? '460px' : '560px' }}
+        >
           <Descriptions.Item
             key={0}
             label={

@@ -50,7 +50,7 @@ export const FlowForm: FC<Props> = ({
   onPropertyData,
   onPropertyDataCreate,
   onTabChange,
-  formType
+  formType,
 }) => {
   const [thisFlowType, setThisFlowType] = useState<string | undefined>(flowType);
   const actionRefPropertyTable = useRef<ActionType>();

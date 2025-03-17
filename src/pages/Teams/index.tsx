@@ -30,7 +30,19 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { FormattedMessage, history, useIntl } from '@umijs/max';
-import { Button, Flex, Form, message, Modal, Spin, Switch, Tabs, Tooltip, Upload,theme } from 'antd';
+import {
+  Button,
+  Flex,
+  Form,
+  message,
+  Modal,
+  Spin,
+  Switch,
+  Tabs,
+  theme,
+  Tooltip,
+  Upload,
+} from 'antd';
 import type { UploadFile } from 'antd/es/upload/interface';
 import { useEffect, useRef, useState } from 'react';
 import { v4 } from 'uuid';

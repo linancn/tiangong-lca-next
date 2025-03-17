@@ -7,6 +7,7 @@ export default {
   'pages.flowproperty.drawer.title.createVersion': '创建版本',
   'pages.flowproperty.drawer.title.copy': '复制流属性',
   'pages.flowproperty.drawer.title.select': '选择流属性',
+  'pages.flowproperty.editsuccess': '流属性编辑成功',
 
   'pages.flowproperty.generalComment': '数据集一般性说明',
   'pages.FlowProperties.view.flowPropertiesInformation': '流属性信息',
