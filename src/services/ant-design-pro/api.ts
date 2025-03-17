@@ -78,7 +78,7 @@ export async function reauthenticate(options?: { [key: string]: any }) {
 export async function changePassword(body: any, options?: { [key: string]: any }) {
   const { data } = await supabase.auth.signInWithPassword({
     email: body.email ?? '',
-    password: body.current ?? '',
+    password: body.currentPassword ?? '',
   });
 
   if (data.user !== null) {
