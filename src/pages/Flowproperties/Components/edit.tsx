@@ -22,7 +22,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage,useIntl } from 'umi';
 
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import { genFlowpropertyFromData } from '@/services/flowproperties/util';
@@ -42,6 +42,7 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
   const [fromData, setFromData] = useState<any>({});
   const [initData, setInitData] = useState<any>({});
   const [spinning, setSpinning] = useState(false);
+  const intl = useIntl();
 
   const [referenceValue, setReferenceValue] = useState(0);
 
@@ -165,10 +166,10 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
                 const updateResult = await updateFlowproperties(id, version, fromData);
                 if (updateResult?.data) {
                   message.success(
-                    <FormattedMessage
-                      id="pages.flowproperties.editsuccess"
-                      defaultMessage="Edit flowproperties successfully!"
-                    />,
+                    intl.formatMessage({
+                      id: 'pages.flowproperty.editsuccess',
+                      defaultMessage: 'Edit flowproperties successfully!',
+                    }),
                   );
                   setDrawerVisible(false);
                   // setViewDrawerVisible(false);
