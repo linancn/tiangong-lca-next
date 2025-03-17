@@ -1,28 +1,51 @@
-import { createFlows } from '@/services/flows/api';
+import { createFlows,getFlowDetail } from '@/services/flows/api';
 import { formatDateTime } from '@/services/general/util';
 import { getSourceDetail } from '@/services/sources/api';
 import { genSourceFromData } from '@/services/sources/util';
+import { genFlowFromData } from '@/services/flows/util';
 import styles from '@/style/custom.less';
-import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
+import { CloseOutlined, PlusOutlined ,CopyOutlined} from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
-import { Button, Collapse, Drawer, Space, Tooltip, Typography, message } from 'antd';
-import type { FC } from 'react';
+import { Button, Collapse, Drawer, Space, Tooltip, Typography, message,Spin } from 'antd';
+import type { FC } from 'react';  
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
 import { FlowForm } from './form';
 
+
 type Props = {
   lang: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
+  actionType?: 'create' | 'copy' | 'createVersion';
+  id?: string;
+  version?: string;
 };
-const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
+
+// When type is 'copy' or 'createVersion', id and version are required parameters
+type CreateProps = 
+  | (Omit<Props, 'type'> & { actionType?: 'create' })
+  | (Omit<Props, 'type' | 'id' | 'version'> & { 
+      actionType: 'copy'; 
+      id: string; 
+      version: string;
+    })
+  | (Omit<Props, 'type' | 'id' | 'version'> & { 
+      actionType: 'createVersion'; 
+      id: string; 
+      version: string;
+    });
+
+const FlowsCreate: FC<CreateProps> = ({ lang, actionRef,actionType='create',id,version }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
   const [activeTabKey, setActiveTabKey] = useState<string>('flowInformation');
   const [initData, setInitData] = useState<any>(undefined);
   const [fromData, setFromData] = useState<any>(undefined);
   const [propertyDataSource, setPropertyDataSource] = useState<any>([]);
+  const [spinning, setSpinning] = useState<boolean>(false);
+  const [flowType, setFlowType] = useState<string|undefined>(undefined);
+
   const intl = useIntl();
 
   const reload = useCallback(() => {
@@ -62,8 +85,32 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
     });
   }, [propertyDataSource]);
 
+  const getFormDetail = () => {
+    if(!id||!version)return;
+    setSpinning(true);
+    getFlowDetail(id, version).then(async (result: any) => {
+      const fromData0 = await genFlowFromData(result.data?.json?.flowDataSet ?? {});
+      setInitData({ ...fromData0, id: id });
+      setPropertyDataSource(fromData0?.flowProperties?.flowProperty ?? []);
+      setFromData({ ...fromData0, id: id });
+      setFlowType(fromData0?.flowInformation?.LCIMethod?.typeOfDataSet);
+      formRefCreate.current?.resetFields();
+      formRefCreate.current?.setFieldsValue({
+        ...fromData0,
+        id: id,
+      });
+      setSpinning(false);
+    });
+  };
+
   useEffect(() => {
     if (!drawerVisible) return;
+
+    if(actionType==='copy'||actionType==='createVersion'){
+      getFormDetail();
+      return;
+    }
+
     const referenceToComplianceSystemId = '9ba3ac1e-6797-4cc0-afd5-1b8f7bf28c6a';
     // const referenceToDataSetFormatId = 'a97a0155-0234-4b87-b4ce-a45da52f2a40';
 
@@ -130,20 +177,22 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="pages.button.create" defaultMessage="Create" />}>
-        <Button
+      <Tooltip title={<FormattedMessage id={actionType==='copy'?'pages.button.copy':actionType==='createVersion'?"pages.button.createVersion":"pages.button.create"} defaultMessage="Create" />}>
+        {actionType==='copy'?(<Button shape="circle" icon={<CopyOutlined />} size="small" onClick={() => {
+            setDrawerVisible(true);
+          }}></Button>):(<Button
           size={'middle'}
           type="text"
           icon={<PlusOutlined />}
           onClick={() => {
             setDrawerVisible(true);
           }}
-        />
+        />)}
       </Tooltip>
       <Drawer
         destroyOnClose={true}
         getContainer={() => document.body}
-        title={<FormattedMessage id="pages.button.create" defaultMessage="Flows Create" />}
+        title={<FormattedMessage id={actionType==='copy'?'pages.button.copy':actionType==='createVersion'?"pages.button.createVersion":"pages.button.create"} defaultMessage="Flows Create" />}
         width="90%"
         closable={false}
         extra={
@@ -168,6 +217,7 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
           </Space>
         }
       >
+        <Spin spinning={spinning}>
         <ProForm
           formRef={formRefCreate}
           initialValues={initData}
@@ -180,7 +230,8 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
             setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
           }}
           onFinish={async () => {
-            const result = await createFlows(v4(), fromData);
+            const paramsId = (actionType === 'createVersion' ? id : v4())??'';
+            const result = await createFlows(paramsId, fromData);
             if (result.data) {
               message.success(
                 intl.formatMessage({
@@ -205,7 +256,7 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
             drawerVisible={drawerVisible}
             formRef={formRefCreate}
             onData={handletFromData}
-            flowType={undefined}
+            flowType={flowType}
             onTabChange={onTabChange}
             propertyDataSource={propertyDataSource}
             onPropertyData={handletPropertyData}
@@ -213,6 +264,7 @@ const FlowsCreate: FC<Props> = ({ lang, actionRef }) => {
             formType='create'
           />
         </ProForm>
+        </Spin>
         <Collapse
           items={[
             {

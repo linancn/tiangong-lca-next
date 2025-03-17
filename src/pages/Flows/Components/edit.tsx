@@ -1,14 +1,13 @@
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
-import { createFlows, getFlowDetail, updateFlows } from '@/services/flows/api';
+import { getFlowDetail, updateFlows } from '@/services/flows/api';
 import { genFlowFromData } from '@/services/flows/util';
 import styles from '@/style/custom.less';
-import { CloseOutlined, CopyOutlined, FormOutlined, PlusOutlined } from '@ant-design/icons';
+import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { Button, Collapse, Drawer, Space, Spin, Tooltip, Typography, message } from 'antd';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
-import { v4 } from 'uuid';
 import { FlowForm } from './form';
 type Props = {
   id: string;
@@ -16,9 +15,8 @@ type Props = {
   buttonType: string;
   lang: string;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
-  type?: 'edit' | 'copy' | 'createVersion';
 };
-const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang, type = 'edit' }) => {
+const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
   const formRefEdit = useRef<ProFormInstance>();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('flowInformation');
@@ -98,27 +96,13 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang, type =
       <Tooltip
         title={
           <FormattedMessage
-            id={
-              type === 'copy'
-                ? 'pages.button.copy'
-                : type === 'createVersion'
-                  ? 'pages.button.createVersion'
-                  : 'pages.button.edit'
-            }
-            defaultMessage={
-              type === 'copy' ? 'Copy' : type === 'createVersion' ? 'Create Version' : 'Edit'
-            }
+            id={'pages.button.edit'}
+            defaultMessage={'Edit'}
           />
         }
       >
         {buttonType === 'icon' ? (
-          type === 'edit' ? (
             <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
-          ) : type === 'createVersion' ? (
-            <Button type="text" icon={<PlusOutlined />} size="small" onClick={onEdit} />
-          ) : (
-            <Button shape="circle" icon={<CopyOutlined />} size="small" onClick={onEdit} />
-          )
         ) : (
           <Button onClick={onEdit}>
             <FormattedMessage
@@ -133,16 +117,8 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang, type =
         getContainer={() => document.body}
         title={
           <FormattedMessage
-            id={
-              type === 'copy'
-                ? 'pages.button.copy'
-                : type === 'createVersion'
-                  ? 'pages.button.createVersion'
-                  : 'pages.button.edit'
-            }
-            defaultMessage={
-              type === 'copy' ? 'Copy' : type === 'createVersion' ? 'Create Version' : 'Edit'
-            }
+            id={'pages.button.edit'}
+            defaultMessage={'Edit'}
           />
         }
         width="90%"
@@ -159,7 +135,6 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang, type =
         onClose={() => setDrawerVisible(false)}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
-            {type === 'edit' ? (
               <Button
                 onClick={() => {
                   updateReference();
@@ -170,9 +145,6 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang, type =
                   defaultMessage="Update reference"
                 />
               </Button>
-            ) : (
-              <></>
-            )}
             <Button onClick={() => setDrawerVisible(false)}>
               {' '}
               <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
@@ -198,32 +170,6 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang, type =
                 },
               }}
               onFinish={async () => {
-                if (type === 'copy' || type === 'createVersion') {
-                  setSpinning(true);
-                  const createResult = await createFlows(type === 'copy' ? v4() : id, fromData);
-                  if (createResult?.data) {
-                    message.success(
-                      intl.formatMessage({
-                        id: 'pages.button.create.success',
-                        defaultMessage: 'Created successfully!',
-                      }),
-                    );
-                    setDrawerVisible(false);
-                    setActiveTabKey('flowInformation');
-                    actionRef?.current?.reload();
-                  } else if (createResult?.error?.code === '23505') {
-                    message.error(
-                      intl.formatMessage({
-                        id: 'pages.button.createVersion.fail',
-                        defaultMessage: 'Please change the version and submit',
-                      }),
-                    );
-                  } else {
-                    message.error(createResult?.error?.message);
-                  }
-                  setSpinning(false);
-                  return true;
-                }
                 const updateResult = await updateFlows(id, version, fromData);
                 if (updateResult?.data) {
                   message.success(
