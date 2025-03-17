@@ -1,4 +1,4 @@
-import { Button, Modal, Tooltip } from 'antd';
+import { Button, Modal, Tooltip, theme } from 'antd';
 import { FormattedMessage, useIntl } from 'umi';
 
 import type { FC } from 'react';
@@ -12,6 +12,7 @@ interface ContributeDataProps {
 
 const ContributeData: FC<ContributeDataProps> = ({ onOk, disabled }) => {
   const intl = useIntl();
+  const { token } = theme.useToken();
   return (
     <Tooltip
       title={<FormattedMessage id="pages.button.contribute" defaultMessage="Contribute to team" />}
@@ -25,10 +26,10 @@ const ContributeData: FC<ContributeDataProps> = ({ onOk, disabled }) => {
           Modal.confirm({
             okButtonProps: {
               type: 'primary',
-              style: { backgroundColor: '#5C246A' },
+              style: { backgroundColor: token.colorPrimary },
             },
             cancelButtonProps: {
-              style: { borderColor: '#5C246A', color: '#5C246A' },
+              style: { borderColor: token.colorPrimary, color: token.colorPrimary },
             },
             title: intl.formatMessage({
               id: 'component.contributeData.confirm',

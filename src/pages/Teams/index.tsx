@@ -30,7 +30,7 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { FormattedMessage, history, useIntl } from '@umijs/max';
-import { Button, Flex, Form, message, Modal, Spin, Switch, Tabs, Tooltip, Upload } from 'antd';
+import { Button, Flex, Form, message, Modal, Spin, Switch, Tabs, Tooltip, Upload,theme } from 'antd';
 import type { UploadFile } from 'antd/es/upload/interface';
 import { useEffect, useRef, useState } from 'react';
 import { v4 } from 'uuid';
@@ -39,6 +39,7 @@ import AddMemberModal from './Components/AddMemberModal';
 const LogoBaseUrl = 'https://qgzvkongdjqiiamzbbts.supabase.co/storage/v1/object/public/sys-files/';
 
 const Team = () => {
+  const { token } = theme.useToken();
   const [activeTabKey, setActiveTabKey] = useState('info');
   const [teamId, setTeamId] = useState('');
   const [userRole, setUserRole] = useState('');
@@ -518,12 +519,13 @@ const Team = () => {
                     Modal.confirm({
                       okButtonProps: {
                         type: 'primary',
-                        style: { backgroundColor: '#5C246A' },
+                        style: { backgroundColor: token.colorPrimary },
                       },
                       cancelButtonProps: {
-                        style: { borderColor: '#5C246A', color: '#5C246A' },
+                        style: { borderColor: token.colorPrimary, color: token.colorPrimary },
                       },
-                      title: intl.formatMessage({ id: 'teams.members.deleteConfirm' }),
+                      title: intl.formatMessage({ id: 'teams.members.deleteConfirm.title' }),
+                      content: intl.formatMessage({ id: 'teams.members.deleteConfirm.content' }),
                       onOk: async () => {
                         try {
                           const { error } = await delRoleApi(record.team_id, record.user_id);
