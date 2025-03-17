@@ -1,4 +1,5 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
+import RequiredMark from '@/components/RequiredMark';
 import { ListPagination } from '@/services/general/data';
 import {
   createTeamMessage,
@@ -34,7 +35,6 @@ import type { UploadFile } from 'antd/es/upload/interface';
 import { useEffect, useRef, useState } from 'react';
 import { v4 } from 'uuid';
 import AddMemberModal from './Components/AddMemberModal';
-import RequiredMark from '@/components/RequiredMark';
 
 const LogoBaseUrl = 'https://qgzvkongdjqiiamzbbts.supabase.co/storage/v1/object/public/sys-files/';
 
@@ -271,7 +271,7 @@ const Team = () => {
     };
 
     return (
-      <Flex gap="middle" vertical style={{ maxWidth: '50%', minWidth: '200px' }}>
+      <Flex gap="small" vertical style={{ maxWidth: '50%', minWidth: '200px' }}>
         <Spin spinning={teamInfoSpinning}>
           <ProForm
             disabled={userRole !== 'admin' && userRole !== 'owner' && action !== 'create'}
@@ -285,9 +285,13 @@ const Team = () => {
             onFinish={(values) => submitTeamInfo(values)}
           >
             <Form.Item
-              label={<RequiredMark label={<FormattedMessage id="pages.team.info.title" defaultMessage="Team Name" />}
-                showError={titleError}
-              />}
+              label={
+                <RequiredMark
+                  label={<FormattedMessage id="pages.team.info.title" defaultMessage="Team Name" />}
+                  showError={titleError}
+                />
+              }
+              style={{ marginBottom: 0 }}
             >
               <LangTextItemForm
                 name="title"
@@ -308,9 +312,17 @@ const Team = () => {
             </Form.Item>
             <Form.Item
               label={
-                <RequiredMark label={<FormattedMessage id="pages.team.info.description" defaultMessage="Team Description" />}
+                <RequiredMark
+                  label={
+                    <FormattedMessage
+                      id="pages.team.info.description"
+                      defaultMessage="Team Description"
+                    />
+                  }
                   showError={descriptionError}
-                />}
+                />
+              }
+              style={{ marginBottom: 0 }}
             >
               <LangTextItemForm
                 name="description"
@@ -371,13 +383,13 @@ const Team = () => {
                 fileList={
                   lightLogo
                     ? [
-                      {
-                        uid: '-1',
-                        name: 'logo',
-                        status: 'done',
-                        url: LogoBaseUrl + lightLogo,
-                      },
-                    ]
+                        {
+                          uid: '-1',
+                          name: 'logo',
+                          status: 'done',
+                          url: LogoBaseUrl + lightLogo,
+                        },
+                      ]
                     : []
                 }
                 onChange={({ fileList }) => uploadLogo(fileList, 'lightLogo')}
@@ -406,13 +418,13 @@ const Team = () => {
                 fileList={
                   darkLogo
                     ? [
-                      {
-                        uid: '-1',
-                        name: 'logo',
-                        status: 'done',
-                        url: LogoBaseUrl + darkLogo,
-                      },
-                    ]
+                        {
+                          uid: '-1',
+                          name: 'logo',
+                          status: 'done',
+                          url: LogoBaseUrl + darkLogo,
+                        },
+                      ]
                     : []
                 }
                 onChange={({ fileList }) => uploadLogo(fileList, 'darkLogo')}
