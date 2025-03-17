@@ -577,6 +577,7 @@ const ToolbarEdit: FC<Props> = ({
           },
         };
         const name = data?.json?.processDataSet?.processInformation?.dataSetInformation?.name ?? {};
+        const quantitativeReference = nodeCount === 0 && index === 0 ? '1' : '0';
         addNodes([
           {
             ...nodeTemplate,
@@ -586,8 +587,14 @@ const ToolbarEdit: FC<Props> = ({
               version: data?.version,
               label: name,
               shortDescription: genProcessNameJson(name),
-              quantitativeReference: nodeCount === 0 && index === 0 ? '1' : '0',
+              quantitativeReference: quantitativeReference,
             },
+            tools: [
+              nodeTitleTool(nodeTemplate.width, genProcessName(name, lang) ?? ''),
+              quantitativeReference === '1' ? refTool : nonRefTool,
+              inputFlowTool,
+              outputFlowTool,
+            ],
             ports: {
               ...ports,
               items: [refPortItem],
@@ -597,12 +604,12 @@ const ToolbarEdit: FC<Props> = ({
       };
 
       if (result && result.data) {
-        result?.data.forEach((item: TAddProcessNodesParams, index: number) => {
-          dealData(item, index);
+        result?.data.forEach(async (item: TAddProcessNodesParams, index: number) => {
+          await dealData(item, index);
+          await setNodeCount(nodeCount + 1);
         });
       }
 
-      setNodeCount(nodeCount + 1);
       setSpinning(false);
     });
   };
@@ -889,7 +896,7 @@ const ToolbarEdit: FC<Props> = ({
 
   useEffect(() => {
     if (!drawerVisible) return;
-    if (id && version) {
+    if (id !== '') {
       setIsSave(false);
       setSpinning(true);
       getLifeCycleModelDetail(id, version).then(async (result: any) => {
@@ -952,6 +959,11 @@ const ToolbarEdit: FC<Props> = ({
         },
       };
       setInfoData({ ...newData, id: thisId });
+      modelData({
+        nodes: [],
+        edges: [],
+      });
+      setNodeCount(0);
     }
   }, [drawerVisible]);
 
