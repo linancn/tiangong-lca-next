@@ -2,13 +2,12 @@ import { initVersion } from '@/services/general/data';
 import { formatDateTime } from '@/services/general/util';
 import { createSource, getSourceDetail } from '@/services/sources/api';
 import { genSourceFromData } from '@/services/sources/util';
-import { getThumbFileUrls } from '@/services/supabase/storage';
 import { supabaseStorageBucket } from '@/services/supabase/key';
-import { removeFile, uploadFile } from '@/services/supabase/storage';
+import { getThumbFileUrls, removeFile, uploadFile } from '@/services/supabase/storage';
 import styles from '@/style/custom.less';
-import { CloseOutlined, PlusOutlined , CopyOutlined } from '@ant-design/icons';
+import { CloseOutlined, CopyOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
-import { Button, Collapse, Drawer, Space, Tooltip, Typography, message,Spin } from 'antd';
+import { Button, Collapse, Drawer, message, Space, Spin, Tooltip, Typography } from 'antd';
 import path from 'path';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -25,20 +24,20 @@ type Props = {
 };
 
 // When type is 'copy' or 'createVersion', id and version are required parameters
-type CreateProps = 
+type CreateProps =
   | (Omit<Props, 'type'> & { actionType?: 'create' })
-  | (Omit<Props, 'type' | 'id' | 'version'> & { 
-      actionType: 'copy'; 
-      id: string; 
+  | (Omit<Props, 'type' | 'id' | 'version'> & {
+      actionType: 'copy';
+      id: string;
       version: string;
     })
-  | (Omit<Props, 'type' | 'id' | 'version'> & { 
-      actionType: 'createVersion'; 
-      id: string; 
+  | (Omit<Props, 'type' | 'id' | 'version'> & {
+      actionType: 'createVersion';
+      id: string;
       version: string;
     });
 
-const SourceCreate: FC<CreateProps> = ({ actionRef, lang, actionType='create', id, version }) => {
+const SourceCreate: FC<CreateProps> = ({ actionRef, lang, actionType = 'create', id, version }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
   const [fromData, setFromData] = useState<any>({});
@@ -98,7 +97,7 @@ const SourceCreate: FC<CreateProps> = ({ actionRef, lang, actionType='create', i
       });
     }
 
-    const paramsId = (actionType === 'createVersion' ? id : v4())??'';
+    const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
 
     const result = await createSource(paramsId, {
       ...fromData,
@@ -137,16 +136,16 @@ const SourceCreate: FC<CreateProps> = ({ actionRef, lang, actionType='create', i
     return true;
   };
 
-  const getFormDetail =async () => {
-    if(!id||!version)return;
+  const getFormDetail = async () => {
+    if (!id || !version) return;
     setSpinning(true);
     getSourceDetail(id, version).then(async (result: any) => {
       const dataSet = genSourceFromData(result.data?.json?.sourceDataSet ?? {});
       setInitData(dataSet);
       setFromData(dataSet);
-      
+
       const currentData = formRefCreate.current?.getFieldsValue();
-      formRefCreate.current?.setFieldsValue({...currentData, ...dataSet});
+      formRefCreate.current?.setFieldsValue({ ...currentData, ...dataSet });
 
       const initFile = await getThumbFileUrls(
         dataSet.sourceInformation?.dataSetInformation?.referenceToDigitalFile,
@@ -159,65 +158,84 @@ const SourceCreate: FC<CreateProps> = ({ actionRef, lang, actionType='create', i
 
   useEffect(() => {
     if (!drawerVisible) return;
-    if(actionType === 'copy'||actionType === 'createVersion'){
+    if (actionType === 'copy' || actionType === 'createVersion') {
       getFormDetail();
       return;
-    };
+    }
 
     // const referenceToDataSetFormatId = 'a97a0155-0234-4b87-b4ce-a45da52f2a40';
     // getSourceDetail(referenceToDataSetFormatId, '').then(async (result2: any) => {
-      // const referenceToDataSetFormatData = genSourceFromData(
-      //   result2.data?.json?.sourceDataSet ?? {},
-      // );
-      // const referenceToDataSetFormat = {
-      //   '@refObjectId': referenceToDataSetFormatId,
-      //   '@type': 'source data set',
-      //   '@uri': `../sources/${referenceToDataSetFormatId}.xml`,
-      //   '@version': result2.data?.version,
-      //   'common:shortDescription':
-      //     referenceToDataSetFormatData?.sourceInformation?.dataSetInformation?.[
-      //       'common:shortName'
-      //     ] ?? [],
-      // };
+    // const referenceToDataSetFormatData = genSourceFromData(
+    //   result2.data?.json?.sourceDataSet ?? {},
+    // );
+    // const referenceToDataSetFormat = {
+    //   '@refObjectId': referenceToDataSetFormatId,
+    //   '@type': 'source data set',
+    //   '@uri': `../sources/${referenceToDataSetFormatId}.xml`,
+    //   '@version': result2.data?.version,
+    //   'common:shortDescription':
+    //     referenceToDataSetFormatData?.sourceInformation?.dataSetInformation?.[
+    //       'common:shortName'
+    //     ] ?? [],
+    // };
 
-      const currentDateTime = formatDateTime(new Date());
-      const newData = {
-        administrativeInformation: {
-          dataEntryBy: {
-            'common:timeStamp': currentDateTime,
-            // 'common:referenceToDataSetFormat': referenceToDataSetFormat,
-          },
-          publicationAndOwnership: {
-            'common:dataSetVersion': initVersion,
-          },
+    const currentDateTime = formatDateTime(new Date());
+    const newData = {
+      administrativeInformation: {
+        dataEntryBy: {
+          'common:timeStamp': currentDateTime,
+          // 'common:referenceToDataSetFormat': referenceToDataSetFormat,
         },
-      };
-      setInitData(newData);
-      // formRefCreate.current?.resetFields();
-      const currentData = formRefCreate.current?.getFieldsValue();
-      formRefCreate.current?.setFieldsValue({...currentData, ...newData});
-      setFromData(newData);
-      setFileList0([]);
-      setFileList([]);
+        publicationAndOwnership: {
+          'common:dataSetVersion': initVersion,
+        },
+      },
+    };
+    setInitData(newData);
+    // formRefCreate.current?.resetFields();
+    const currentData = formRefCreate.current?.getFieldsValue();
+    formRefCreate.current?.setFieldsValue({ ...currentData, ...newData });
+    setFromData(newData);
+    setFileList0([]);
+    setFileList([]);
     // });
   }, [drawerVisible]);
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id={actionType === 'copy' ? 'pages.button.copy' : actionType === 'createVersion' ? 'pages.button.createVersion' : 'pages.button.create'} defaultMessage="Create" />}>
-        {
-          actionType === 'copy' ? (<Button shape="circle" icon={<CopyOutlined />} size="small" 
+      <Tooltip
+        title={
+          <FormattedMessage
+            id={
+              actionType === 'copy'
+                ? 'pages.button.copy'
+                : actionType === 'createVersion'
+                  ? 'pages.button.createVersion'
+                  : 'pages.button.create'
+            }
+            defaultMessage="Create"
+          />
+        }
+      >
+        {actionType === 'copy' ? (
+          <Button
+            shape="circle"
+            icon={<CopyOutlined />}
+            size="small"
             onClick={() => {
-            setDrawerVisible(true);
-          }} />):
-          (<Button
-          size={'middle'}
-          type="text"
-          icon={<PlusOutlined />}
-          onClick={() => {
-            setDrawerVisible(true);
-          }}
-        />)}
+              setDrawerVisible(true);
+            }}
+          />
+        ) : (
+          <Button
+            size={'middle'}
+            type="text"
+            icon={<PlusOutlined />}
+            onClick={() => {
+              setDrawerVisible(true);
+            }}
+          />
+        )}
         {/* {buttonType === 'icon' ? (
                     <Button shape="circle" icon={<PlusOutlined />} size="small" onClick={() => setDrawerVisible(true)} />
                 ) : (
@@ -230,7 +248,16 @@ const SourceCreate: FC<CreateProps> = ({ actionRef, lang, actionType='create', i
         destroyOnClose={true}
         getContainer={() => document.body}
         title={
-          <FormattedMessage id={actionType === 'copy' ? 'pages.source.drawer.title.copy' : actionType === 'createVersion' ? 'pages.source.drawer.title.createVersion' : 'pages.source.drawer.title.create'} defaultMessage="Create Source" />
+          <FormattedMessage
+            id={
+              actionType === 'copy'
+                ? 'pages.source.drawer.title.copy'
+                : actionType === 'createVersion'
+                  ? 'pages.source.drawer.title.createVersion'
+                  : 'pages.source.drawer.title.create'
+            }
+            defaultMessage="Create Source"
+          />
         }
         width="90%"
         closable={false}
@@ -256,32 +283,32 @@ const SourceCreate: FC<CreateProps> = ({ actionRef, lang, actionType='create', i
         }
       >
         <Spin spinning={spinning}>
-        <ProForm
-          formRef={formRefCreate}
-          initialValues={initData}
-          onValuesChange={(_, allValues) => {
-            setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
-          }}
-          submitter={{
-            render: () => {
-              return [];
-            },
-          }}
-          onFinish={onSubmit}
-        >
-          <SourceForm
-            formType='create'
-            lang={lang}
-            activeTabKey={activeTabKey}
+          <ProForm
             formRef={formRefCreate}
-            onData={handletFromData}
-            onTabChange={onTabChange}
-            loadFiles={loadFiles}
-            setLoadFiles={setLoadFiles}
-            fileList={fileList}
-            setFileList={setFileList}
-          />
-        </ProForm>
+            initialValues={initData}
+            onValuesChange={(_, allValues) => {
+              setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+            }}
+            submitter={{
+              render: () => {
+                return [];
+              },
+            }}
+            onFinish={onSubmit}
+          >
+            <SourceForm
+              formType="create"
+              lang={lang}
+              activeTabKey={activeTabKey}
+              formRef={formRefCreate}
+              onData={handletFromData}
+              onTabChange={onTabChange}
+              loadFiles={loadFiles}
+              setLoadFiles={setLoadFiles}
+              fileList={fileList}
+              setFileList={setFileList}
+            />
+          </ProForm>
         </Spin>
         <Collapse
           items={[

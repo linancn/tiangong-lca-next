@@ -31,7 +31,11 @@ export function getRules(rules: any[]) {
   }));
 }
 
-export const validateRefObjectId = (formRef: React.MutableRefObject<ProFormInstance | undefined>, parentName: string[],name: string[] ) => {
+export const validateRefObjectId = (
+  formRef: React.MutableRefObject<ProFormInstance | undefined>,
+  parentName: string[],
+  name: string[],
+) => {
   if (parentName) {
     formRef.current?.validateFields([[...parentName, ...name, '@refObjectId']]);
   } else {
@@ -41,4 +45,4 @@ export const validateRefObjectId = (formRef: React.MutableRefObject<ProFormInsta
 
 export const getLocalValueProps = (value: string) => ({
   value: value === 'en' ? 'English' : value === 'zh' ? '简体中文' : value,
-})
+});

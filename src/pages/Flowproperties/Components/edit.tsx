@@ -1,7 +1,4 @@
-import {
-  getFlowpropertyDetail,
-  updateFlowproperties,
-} from '@/services/flowproperties/api';
+import { getFlowpropertyDetail, updateFlowproperties } from '@/services/flowproperties/api';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -38,13 +35,7 @@ type Props = {
   actionRef?: React.MutableRefObject<ActionType | undefined>;
   lang: string;
 };
-const FlowpropertiesEdit: FC<Props> = ({
-  id,
-  version,
-  buttonType,
-  actionRef,
-  lang,
-}) => {
+const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
   const formRefEdit = useRef<ProFormInstance>();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('flowPropertiesInformation');
@@ -102,16 +93,9 @@ const FlowpropertiesEdit: FC<Props> = ({
 
   return (
     <>
-      <Tooltip
-        title={
-          <FormattedMessage
-            id={'pages.button.edit'}
-            defaultMessage={'Edit'}
-          />
-        }
-      >
+      <Tooltip title={<FormattedMessage id={'pages.button.edit'} defaultMessage={'Edit'} />}>
         {buttonType === 'icon' ? (
-            <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
+          <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
         ) : (
           <Button onClick={onEdit}>
             <FormattedMessage
@@ -124,10 +108,10 @@ const FlowpropertiesEdit: FC<Props> = ({
       <Drawer
         getContainer={() => document.body}
         title={
-            <FormattedMessage
-              id="pages.flowproperty.drawer.title.edit"
-              defaultMessage="Edit Flow property"
-            />
+          <FormattedMessage
+            id="pages.flowproperty.drawer.title.edit"
+            defaultMessage="Edit Flow property"
+          />
         }
         width="90%"
         closable={false}
@@ -143,16 +127,16 @@ const FlowpropertiesEdit: FC<Props> = ({
         onClose={() => setDrawerVisible(false)}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
-              <Button
-                onClick={() => {
-                  updateReference();
-                }}
-              >
-                <FormattedMessage
-                  id="pages.button.updateReference"
-                  defaultMessage="Update reference"
-                />
-              </Button>
+            <Button
+              onClick={() => {
+                updateReference();
+              }}
+            >
+              <FormattedMessage
+                id="pages.button.updateReference"
+                defaultMessage="Update reference"
+              />
+            </Button>
             <Button onClick={() => setDrawerVisible(false)}>
               {' '}
               <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />

@@ -1,7 +1,7 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import { Card, Descriptions, Divider, Space } from 'antd';
 import { FC, ReactNode } from 'react';
-import { FormattedMessage,getLocale } from 'umi';
+import { FormattedMessage, getLocale } from 'umi';
 import ContactView from '../view';
 
 type Props = {
@@ -17,11 +17,19 @@ const ContactSelectDescription: FC<Props> = ({ title, data, lang }) => {
   return (
     <Card size="small" title={title}>
       <Space direction="horizontal">
-        <Descriptions bordered size={'small'} column={1} style={{ width: locale === 'zh-CN' ? '500px' : '570px' }}>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          style={{ width: locale === 'zh-CN' ? '500px' : '570px' }}
+        >
           <Descriptions.Item
             key={0}
             label={
-              <FormattedMessage id="pages.contact.refObjectId" defaultMessage="Reference contact data set identifier" />
+              <FormattedMessage
+                id="pages.contact.refObjectId"
+                defaultMessage="Reference contact data set identifier"
+              />
             }
             labelStyle={{ width: locale === 'zh-CN' ? '190px' : '260px' }}
           >

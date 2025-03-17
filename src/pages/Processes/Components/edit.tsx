@@ -4,11 +4,7 @@ import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
 import { getProcessDetail, updateProcess } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
 import styles from '@/style/custom.less';
-import {
-  CloseOutlined,
-  FormOutlined,
-  ProductOutlined,
-} from '@ant-design/icons';
+import { CloseOutlined, FormOutlined, ProductOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import {
   Button,
@@ -162,22 +158,12 @@ const ProcessEdit: FC<Props> = ({
           />
         </Tooltip>
       ) : (
-        <Tooltip
-          title={
-            <FormattedMessage
-              id={'pages.button.edit'}
-              defaultMessage={'Edit'}
-            />
-          }
-        >
+        <Tooltip title={<FormattedMessage id={'pages.button.edit'} defaultMessage={'Edit'} />}>
           {buttonType === 'icon' ? (
-              <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
+            <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
           ) : (
             <Button onClick={onEdit}>
-              <FormattedMessage
-                id={'pages.button.edit'}
-                defaultMessage={'Edit'}
-              />
+              <FormattedMessage id={'pages.button.edit'} defaultMessage={'Edit'} />
             </Button>
           )}
         </Tooltip>
@@ -204,21 +190,21 @@ const ProcessEdit: FC<Props> = ({
         onClose={() => setDrawerVisible(false)}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
-              <>
-                <Button onClick={() => {}}>
-                  <FormattedMessage id="pages.button.review" defaultMessage="Submit for review" />
-                </Button>
-                <Button
-                  onClick={() => {
-                    updateReference();
-                  }}
-                >
-                  <FormattedMessage
-                    id="pages.button.updateReference"
-                    defaultMessage="Update reference"
-                  />
-                </Button>
-              </>
+            <>
+              <Button onClick={() => {}}>
+                <FormattedMessage id="pages.button.review" defaultMessage="Submit for review" />
+              </Button>
+              <Button
+                onClick={() => {
+                  updateReference();
+                }}
+              >
+                <FormattedMessage
+                  id="pages.button.updateReference"
+                  defaultMessage="Update reference"
+                />
+              </Button>
+            </>
             <Button onClick={() => setDrawerVisible(false)}>
               <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
             </Button>

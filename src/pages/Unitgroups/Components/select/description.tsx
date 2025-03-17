@@ -2,7 +2,7 @@ import LangTextItemDescription from '@/components/LangTextItem/description';
 import { getReferenceUnit } from '@/services/unitgroups/api';
 import { Card, Descriptions, Divider, Space } from 'antd';
 import { FC, ReactNode, useEffect, useState } from 'react';
-import { FormattedMessage,getLocale } from 'umi';
+import { FormattedMessage, getLocale } from 'umi';
 import UnitGroupView from '../view';
 type Props = {
   title: ReactNode | string;
@@ -24,14 +24,16 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
   return (
     <Card size="small" title={title}>
       <Space direction="horizontal">
-        <Descriptions bordered size={'small'} column={1} style={{ width: locale === 'zh-CN' ? '520px' : '540px' }}>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          style={{ width: locale === 'zh-CN' ? '520px' : '540px' }}
+        >
           <Descriptions.Item
             key={0}
             label={
-              <FormattedMessage
-                id="pages.unitgroup.refObjectId"
-                defaultMessage="Ref object id"
-              />
+              <FormattedMessage id="pages.unitgroup.refObjectId" defaultMessage="Ref object id" />
             }
             labelStyle={{ width: locale === 'zh-CN' ? '210px' : '230px' }}
           >

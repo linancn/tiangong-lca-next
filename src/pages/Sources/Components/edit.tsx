@@ -4,7 +4,7 @@ import { genSourceFromData } from '@/services/sources/util';
 import { supabaseStorageBucket } from '@/services/supabase/key';
 import { getThumbFileUrls, removeFile, uploadFile } from '@/services/supabase/storage';
 import styles from '@/style/custom.less';
-import { CloseOutlined, FormOutlined,  } from '@ant-design/icons';
+import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { Button, Collapse, Drawer, Space, Spin, Tooltip, Typography, message } from 'antd';
 import path from 'path';
@@ -153,9 +153,9 @@ const SourceEdit: FC<Props> = ({
   return (
     <>
       {buttonType === 'icon' ? (
-          <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
-            <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
-          </Tooltip>
+        <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
+          <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
+        </Tooltip>
       ) : (
         <Button onClick={onEdit}>
           <FormattedMessage
@@ -168,7 +168,7 @@ const SourceEdit: FC<Props> = ({
       <Drawer
         getContainer={() => document.body}
         title={
-            <FormattedMessage id="pages.source.drawer.title.edit" defaultMessage="Edit Source" />
+          <FormattedMessage id="pages.source.drawer.title.edit" defaultMessage="Edit Source" />
         }
         width="90%"
         closable={false}
@@ -184,16 +184,16 @@ const SourceEdit: FC<Props> = ({
         onClose={() => setDrawerVisible(false)}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
-              <Button
-                onClick={() => {
-                  updateReference();
-                }}
-              >
-                <FormattedMessage
-                  id="pages.button.updateReference"
-                  defaultMessage="Update reference"
-                />
-              </Button>
+            <Button
+              onClick={() => {
+                updateReference();
+              }}
+            >
+              <FormattedMessage
+                id="pages.button.updateReference"
+                defaultMessage="Update reference"
+              />
+            </Button>
             <Button onClick={() => setDrawerVisible(false)}>
               <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
             </Button>

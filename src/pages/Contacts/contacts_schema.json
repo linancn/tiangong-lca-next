@@ -15,7 +15,7 @@
               "#text": "str"
             }
           ],
-          "rules": [ 
+          "rules": [
             {
               "required": true,
               "messageKey": "pages.contact.validator.shortName.required",
@@ -59,8 +59,8 @@
           }
         },
         "email": {
-          "value":"str",
-          "rules":[
+          "value": "str",
+          "rules": [
             {
               "type": "email",
               "messageKey": "validator.pages.contact.email.pattern",
@@ -69,8 +69,8 @@
           ]
         },
         "WWWAddress": {
-          "value":"str",
-          "rules":[
+          "value": "str",
+          "rules": [
             {
               "type": "url",
               "messageKey": "validator.pages.contact.WWWAddress.invalid",
@@ -84,11 +84,11 @@
           ]
         },
         "centralContactPoint": {
-          "value":{
+          "value": {
             "@xml:lang": "str",
             "#text": "str"
           },
-          "rules":[
+          "rules": [
             {
               "warningOnly": true,
               "messageKey": "validator.recommended.empty",
@@ -102,11 +102,11 @@
           ]
         },
         "contactDescriptionOrComment": {
-          "value":{
+          "value": {
             "@xml:lang": "str",
             "#text": "str"
           },
-          "rules":[
+          "rules": [
             {
               "warningOnly": true,
               "messageKey": "validator.recommended.empty",
@@ -120,11 +120,11 @@
           ]
         },
         "contactAddress": {
-          "value":{
+          "value": {
             "@xml:lang": "str",
             "#text": "str"
           },
-          "rules":[
+          "rules": [
             {
               "messageKey": "validator.optional.empty",
               "defaultMessage": "Optional to fill in, providing additional information without affecting completeness!"
@@ -137,8 +137,8 @@
           ]
         },
         "telephone": {
-          "value":"str",
-          "rules":[
+          "value": "str",
+          "rules": [
             {
               "messageKey": "validator.optional.empty",
               "defaultMessage": "Optional to fill in, providing additional information without affecting completeness!"
@@ -146,8 +146,8 @@
           ]
         },
         "telefax": {
-          "value":"str",
-          "rules":[
+          "value": "str",
+          "rules": [
             {
               "messageKey": "validator.optional.empty",
               "defaultMessage": "Optional to fill in, providing additional information without affecting completeness!"

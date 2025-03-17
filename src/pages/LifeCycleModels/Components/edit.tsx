@@ -1,4 +1,4 @@
-import { CloseOutlined, FormOutlined, } from '@ant-design/icons';
+import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
 import { Grid, Transform, XFlow, XFlowGraph } from '@antv/xflow';
 import { Button, Drawer, Layout, theme, Tooltip } from 'antd';
@@ -14,13 +14,7 @@ type Props = {
   lang: string;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
 };
-const LifeCycleModelEdit: FC<Props> = ({
-  id,
-  version,
-  buttonType,
-  lang,
-  actionRef,
-}) => {
+const LifeCycleModelEdit: FC<Props> = ({ id, version, buttonType, lang, actionRef }) => {
   const [isSave, setIsSave] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
 
@@ -56,9 +50,9 @@ const LifeCycleModelEdit: FC<Props> = ({
   return (
     <>
       {buttonType === 'icon' ? (
-          <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
-            <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
-          </Tooltip>
+        <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
+          <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
+        </Tooltip>
       ) : (
         <Button onClick={onEdit}>
           <FormattedMessage

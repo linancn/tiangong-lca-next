@@ -23,7 +23,7 @@ type Props = {
   onData: (data: any) => void;
   action: string;
 };
-const ToolbarEditInfo: FC<Props> = ({ lang, data, onData,action }) => {
+const ToolbarEditInfo: FC<Props> = ({ lang, data, onData, action }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('lifeCycleModelInformation');
   const formRefEdit = useRef<ProFormInstance>();
@@ -100,7 +100,7 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData,action }) => {
         }}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
-            {action==='edit' ? (
+            {action === 'edit' ? (
               <Button
                 onClick={() => {
                   updateReference();

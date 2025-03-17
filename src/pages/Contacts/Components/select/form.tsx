@@ -1,4 +1,6 @@
+import RequiredSelectFormTitle from '@/components/RequiredSelectFormTitle';
 import { useUpdateReferenceContext } from '@/contexts/updateReferenceContext';
+import { validateRefObjectId } from '@/pages/Utils';
 import { getContactDetail } from '@/services/contacts/api';
 import { genContactFromData } from '@/services/contacts/util';
 import { jsonToList } from '@/services/general/util';
@@ -8,8 +10,6 @@ import React, { FC, ReactNode, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import ContactView from '../view';
 import ContactSelectDrawer from './drawer';
-import { validateRefObjectId } from '@/pages/Utils';
-import RequiredSelectFormTitle from '@/components/RequiredSelectFormTitle';
 const { TextArea } = Input;
 
 type Props = {
@@ -91,14 +91,32 @@ const ContactSelectForm: FC<Props> = ({
   const notRequiredRules = rules.filter((rule: any) => !rule.required) ?? [];
 
   return (
-    <Card size="small" title={isRequired ? <RequiredSelectFormTitle label={label} ruleErrorState={ruleErrorState} requiredRules={requiredRules} /> : label}>
+    <Card
+      size="small"
+      title={
+        isRequired ? (
+          <RequiredSelectFormTitle
+            label={label}
+            ruleErrorState={ruleErrorState}
+            requiredRules={requiredRules}
+          />
+        ) : (
+          label
+        )
+      }
+    >
       <Space direction="horizontal">
         <Form.Item
-          label={<FormattedMessage id="pages.contact.refObjectId" defaultMessage="Reference contact data set identifier" />}
+          label={
+            <FormattedMessage
+              id="pages.contact.refObjectId"
+              defaultMessage="Reference contact data set identifier"
+            />
+          }
           name={[...name, '@refObjectId']}
           rules={[
             ...notRequiredRules,
-            (isRequired && { 
+            isRequired && {
               validator: (rule, value) => {
                 if (!value) {
                   setRuleErrorState(true);
@@ -107,8 +125,8 @@ const ContactSelectForm: FC<Props> = ({
                 }
                 setRuleErrorState(false);
                 return Promise.resolve();
-              }
-             })
+              },
+            },
           ]}
         >
           <Input disabled={true} style={{ width: '350px', color: token.colorTextDescription }} />
@@ -179,9 +197,13 @@ const ContactSelectForm: FC<Props> = ({
               {subFields.map((subField) => (
                 <Row key={subField.key}>
                   <Col flex="100px" style={{ marginRight: '10px' }}>
-                    <Form.Item noStyle name={[subField.name, '@xml:lang']} getValueProps={(value) => ({
-                      value: value === 'en' ? 'English' : value === 'zh' ? '简体中文' : value,
-                    })}>
+                    <Form.Item
+                      noStyle
+                      name={[subField.name, '@xml:lang']}
+                      getValueProps={(value) => ({
+                        value: value === 'en' ? 'English' : value === 'zh' ? '简体中文' : value,
+                      })}
+                    >
                       <Input
                         disabled={true}
                         style={{ width: '100px', color: token.colorTextDescription }}

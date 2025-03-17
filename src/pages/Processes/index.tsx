@@ -7,6 +7,7 @@ import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
 import LifeCycleModelEdit from '@/pages/LifeCycleModels/Components/edit';
 import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
+import LifeCycleModelCreate from '@/pages/LifeCycleModels/Components/create';
 import { contributeSource } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
 import { getDataSource, getLang, getLangText } from '@/services/general/util';
@@ -168,8 +169,8 @@ const TableList: FC = () => {
                 />
               )}
               {row.isFromLifeCycle ? (
-                <LifeCycleModelEdit
-                  type="copy"
+                <LifeCycleModelCreate
+                  actionType="copy"
                   id={row.id}
                   version={row.version}
                   lang={lang}

@@ -1,4 +1,4 @@
-import { CloseOutlined, PlusOutlined,CopyOutlined } from '@ant-design/icons';
+import { CloseOutlined, CopyOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
 import { Grid, Transform, XFlow, XFlowGraph } from '@antv/xflow';
 import { Button, Drawer, Layout, theme, Tooltip } from 'antd';
@@ -17,21 +17,27 @@ type Props = {
 };
 
 // When type is 'copy' or 'createVersion', id and version are required parameters
-type CreateProps = 
+type CreateProps =
   | (Omit<Props, 'type'> & { actionType?: 'create' })
-  | (Omit<Props, 'type' | 'id' | 'version'> & { 
-      actionType: 'copy'; 
-      id: string; 
+  | (Omit<Props, 'type' | 'id' | 'version'> & {
+      actionType: 'copy';
+      id: string;
       version: string;
     })
-  | (Omit<Props, 'type' | 'id' | 'version'> & { 
-      actionType: 'createVersion'; 
-      id: string; 
+  | (Omit<Props, 'type' | 'id' | 'version'> & {
+      actionType: 'createVersion';
+      id: string;
       version: string;
     });
 
-
-const LifeCycleModelCreate: FC<CreateProps> = ({ buttonType, lang, actionRef,actionType,id,version }) => {
+const LifeCycleModelCreate: FC<CreateProps> = ({
+  buttonType,
+  lang,
+  actionRef,
+  actionType,
+  id,
+  version,
+}) => {
   const [isSave, setIsSave] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
 
@@ -67,13 +73,25 @@ const LifeCycleModelCreate: FC<CreateProps> = ({ buttonType, lang, actionRef,act
   return (
     <>
       {buttonType === 'icon' ? (
-        <Tooltip title={<FormattedMessage id={actionType==='copy'?'pages.button.copy':actionType==='createVersion'?"pages.button.createVersion":"pages.button.create"} defaultMessage="Create" />}>
-          {actionType==='copy'?
-          (<Button shape="circle" icon={<CopyOutlined />} size="small" onClick={onCreate}></Button>)
-          :(<Button
-          size={'middle'}
-          type="text"
-          icon={<PlusOutlined />} onClick={onCreate} />)}
+        <Tooltip
+          title={
+            <FormattedMessage
+              id={
+                actionType === 'copy'
+                  ? 'pages.button.copy'
+                  : actionType === 'createVersion'
+                    ? 'pages.button.createVersion'
+                    : 'pages.button.create'
+              }
+              defaultMessage="Create"
+            />
+          }
+        >
+          {actionType === 'copy' ? (
+            <Button shape="circle" icon={<CopyOutlined />} size="small" onClick={onCreate}></Button>
+          ) : (
+            <Button size={'middle'} type="text" icon={<PlusOutlined />} onClick={onCreate} />
+          )}
         </Tooltip>
       ) : (
         <Button onClick={onCreate}>
@@ -84,7 +102,13 @@ const LifeCycleModelCreate: FC<CreateProps> = ({ buttonType, lang, actionRef,act
         getContainer={() => document.body}
         title={
           <FormattedMessage
-            id={actionType==='copy'?'pages.flow.model.drawer.title.copy':actionType==='createVersion'?"pages.flow.model.drawer.title.createVersion":"pages.lifeCycleModel.drawer.title.create"}
+            id={
+              actionType === 'copy'
+                ? 'pages.flow.model.drawer.title.copy'
+                : actionType === 'createVersion'
+                  ? 'pages.flow.model.drawer.title.createVersion'
+                  : 'pages.lifeCycleModel.drawer.title.create'
+            }
             defaultMessage="Create Model"
           />
         }
@@ -143,8 +167,8 @@ const LifeCycleModelCreate: FC<CreateProps> = ({ buttonType, lang, actionRef,act
             <Sider width="50px" style={siderStyle}>
               <ToolbarEdit
                 actionType={actionType}
-                id={id??''}
-                version={version??''}
+                id={id ?? ''}
+                version={version ?? ''}
                 lang={lang}
                 drawerVisible={drawerVisible}
                 isSave={isSave}

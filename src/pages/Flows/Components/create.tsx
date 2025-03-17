@@ -1,18 +1,17 @@
-import { createFlows,getFlowDetail } from '@/services/flows/api';
+import { createFlows, getFlowDetail } from '@/services/flows/api';
+import { genFlowFromData } from '@/services/flows/util';
 import { formatDateTime } from '@/services/general/util';
 import { getSourceDetail } from '@/services/sources/api';
 import { genSourceFromData } from '@/services/sources/util';
-import { genFlowFromData } from '@/services/flows/util';
 import styles from '@/style/custom.less';
-import { CloseOutlined, PlusOutlined ,CopyOutlined} from '@ant-design/icons';
+import { CloseOutlined, CopyOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
-import { Button, Collapse, Drawer, Space, Tooltip, Typography, message,Spin } from 'antd';
-import type { FC } from 'react';  
+import { Button, Collapse, Drawer, message, Space, Spin, Tooltip, Typography } from 'antd';
+import type { FC } from 'react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
 import { FlowForm } from './form';
-
 
 type Props = {
   lang: string;
@@ -23,20 +22,20 @@ type Props = {
 };
 
 // When type is 'copy' or 'createVersion', id and version are required parameters
-type CreateProps = 
+type CreateProps =
   | (Omit<Props, 'type'> & { actionType?: 'create' })
-  | (Omit<Props, 'type' | 'id' | 'version'> & { 
-      actionType: 'copy'; 
-      id: string; 
+  | (Omit<Props, 'type' | 'id' | 'version'> & {
+      actionType: 'copy';
+      id: string;
       version: string;
     })
-  | (Omit<Props, 'type' | 'id' | 'version'> & { 
-      actionType: 'createVersion'; 
-      id: string; 
+  | (Omit<Props, 'type' | 'id' | 'version'> & {
+      actionType: 'createVersion';
+      id: string;
       version: string;
     });
 
-const FlowsCreate: FC<CreateProps> = ({ lang, actionRef,actionType='create',id,version }) => {
+const FlowsCreate: FC<CreateProps> = ({ lang, actionRef, actionType = 'create', id, version }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
   const [activeTabKey, setActiveTabKey] = useState<string>('flowInformation');
@@ -44,7 +43,7 @@ const FlowsCreate: FC<CreateProps> = ({ lang, actionRef,actionType='create',id,v
   const [fromData, setFromData] = useState<any>(undefined);
   const [propertyDataSource, setPropertyDataSource] = useState<any>([]);
   const [spinning, setSpinning] = useState<boolean>(false);
-  const [flowType, setFlowType] = useState<string|undefined>(undefined);
+  const [flowType, setFlowType] = useState<string | undefined>(undefined);
 
   const intl = useIntl();
 
@@ -86,7 +85,7 @@ const FlowsCreate: FC<CreateProps> = ({ lang, actionRef,actionType='create',id,v
   }, [propertyDataSource]);
 
   const getFormDetail = () => {
-    if(!id||!version)return;
+    if (!id || !version) return;
     setSpinning(true);
     getFlowDetail(id, version).then(async (result: any) => {
       const fromData0 = await genFlowFromData(result.data?.json?.flowDataSet ?? {});
@@ -106,7 +105,7 @@ const FlowsCreate: FC<CreateProps> = ({ lang, actionRef,actionType='create',id,v
   useEffect(() => {
     if (!drawerVisible) return;
 
-    if(actionType==='copy'||actionType==='createVersion'){
+    if (actionType === 'copy' || actionType === 'createVersion') {
       getFormDetail();
       return;
     }
@@ -130,69 +129,102 @@ const FlowsCreate: FC<CreateProps> = ({ lang, actionRef,actionType='create',id,v
       };
 
       // getSourceDetail(referenceToDataSetFormatId, '').then(async (result2: any) => {
-        // const referenceToDataSetFormatData = genSourceFromData(
-        //   result2.data?.json?.sourceDataSet ?? {},
-        // );
-        // const referenceToDataSetFormat = {
-        //   '@refObjectId': referenceToDataSetFormatId,
-        //   '@type': 'source data set',
-        //   '@uri': `../sources/${referenceToDataSetFormatId}.xml`,
-        //   '@version': result2.data?.version,
-        //   'common:shortDescription':
-        //     referenceToDataSetFormatData?.sourceInformation?.dataSetInformation?.[
-        //       'common:shortName'
-        //     ] ?? [],
-        // };
+      // const referenceToDataSetFormatData = genSourceFromData(
+      //   result2.data?.json?.sourceDataSet ?? {},
+      // );
+      // const referenceToDataSetFormat = {
+      //   '@refObjectId': referenceToDataSetFormatId,
+      //   '@type': 'source data set',
+      //   '@uri': `../sources/${referenceToDataSetFormatId}.xml`,
+      //   '@version': result2.data?.version,
+      //   'common:shortDescription':
+      //     referenceToDataSetFormatData?.sourceInformation?.dataSetInformation?.[
+      //       'common:shortName'
+      //     ] ?? [],
+      // };
 
-        const currentDateTime = formatDateTime(new Date());
-        const newData = {
-          modellingAndValidation: {
-            complianceDeclarations: {
-              compliance: {
-                'common:referenceToComplianceSystem': referenceToComplianceSystem,
-              },
+      const currentDateTime = formatDateTime(new Date());
+      const newData = {
+        modellingAndValidation: {
+          complianceDeclarations: {
+            compliance: {
+              'common:referenceToComplianceSystem': referenceToComplianceSystem,
             },
           },
-          administrativeInformation: {
-            dataEntryBy: {
-              'common:timeStamp': currentDateTime,
-              // 'common:referenceToDataSetFormat': referenceToDataSetFormat,
-            },
-            publicationAndOwnership: {
-              'common:dataSetVersion': '01.01.000',
-            },
+        },
+        administrativeInformation: {
+          dataEntryBy: {
+            'common:timeStamp': currentDateTime,
+            // 'common:referenceToDataSetFormat': referenceToDataSetFormat,
           },
-        };
+          publicationAndOwnership: {
+            'common:dataSetVersion': '01.01.000',
+          },
+        },
+      };
 
-        setInitData(newData);
+      setInitData(newData);
 
-        setPropertyDataSource([]);
-        // formRefCreate.current?.resetFields();
-        const currentData = formRefCreate.current?.getFieldsValue();
-        formRefCreate.current?.setFieldsValue({...currentData, ...newData});
-        setFromData(newData);
+      setPropertyDataSource([]);
+      // formRefCreate.current?.resetFields();
+      const currentData = formRefCreate.current?.getFieldsValue();
+      formRefCreate.current?.setFieldsValue({ ...currentData, ...newData });
+      setFromData(newData);
       // });
     });
   }, [drawerVisible]);
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id={actionType==='copy'?'pages.button.copy':actionType==='createVersion'?"pages.button.createVersion":"pages.button.create"} defaultMessage="Create" />}>
-        {actionType==='copy'?(<Button shape="circle" icon={<CopyOutlined />} size="small" onClick={() => {
-            setDrawerVisible(true);
-          }}></Button>):(<Button
-          size={'middle'}
-          type="text"
-          icon={<PlusOutlined />}
-          onClick={() => {
-            setDrawerVisible(true);
-          }}
-        />)}
+      <Tooltip
+        title={
+          <FormattedMessage
+            id={
+              actionType === 'copy'
+                ? 'pages.button.copy'
+                : actionType === 'createVersion'
+                  ? 'pages.button.createVersion'
+                  : 'pages.button.create'
+            }
+            defaultMessage="Create"
+          />
+        }
+      >
+        {actionType === 'copy' ? (
+          <Button
+            shape="circle"
+            icon={<CopyOutlined />}
+            size="small"
+            onClick={() => {
+              setDrawerVisible(true);
+            }}
+          ></Button>
+        ) : (
+          <Button
+            size={'middle'}
+            type="text"
+            icon={<PlusOutlined />}
+            onClick={() => {
+              setDrawerVisible(true);
+            }}
+          />
+        )}
       </Tooltip>
       <Drawer
         destroyOnClose={true}
         getContainer={() => document.body}
-        title={<FormattedMessage id={actionType==='copy'?'pages.button.copy':actionType==='createVersion'?"pages.button.createVersion":"pages.button.create"} defaultMessage="Flows Create" />}
+        title={
+          <FormattedMessage
+            id={
+              actionType === 'copy'
+                ? 'pages.button.copy'
+                : actionType === 'createVersion'
+                  ? 'pages.button.createVersion'
+                  : 'pages.button.create'
+            }
+            defaultMessage="Flows Create"
+          />
+        }
         width="90%"
         closable={false}
         extra={
@@ -218,52 +250,52 @@ const FlowsCreate: FC<CreateProps> = ({ lang, actionRef,actionType='create',id,v
         }
       >
         <Spin spinning={spinning}>
-        <ProForm
-          formRef={formRefCreate}
-          initialValues={initData}
-          submitter={{
-            render: () => {
-              return [];
-            },
-          }}
-          onValuesChange={(_, allValues) => {
-            setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
-          }}
-          onFinish={async () => {
-            const paramsId = (actionType === 'createVersion' ? id : v4())??'';
-            const result = await createFlows(paramsId, fromData);
-            if (result.data) {
-              message.success(
-                intl.formatMessage({
-                  id: 'pages.button.create.success',
-                  defaultMessage: 'Created successfully!',
-                }),
-              );
-              formRefCreate.current?.resetFields();
-              setDrawerVisible(false);
-              setActiveTabKey('flowInformation');
-              setFromData({});
-              reload();
-            } else {
-              message.error(result.error.message);
-            }
-            return true;
-          }}
-        >
-          <FlowForm
-            lang={lang}
-            activeTabKey={activeTabKey}
-            drawerVisible={drawerVisible}
+          <ProForm
             formRef={formRefCreate}
-            onData={handletFromData}
-            flowType={flowType}
-            onTabChange={onTabChange}
-            propertyDataSource={propertyDataSource}
-            onPropertyData={handletPropertyData}
-            onPropertyDataCreate={handletPropertyDataCreate}
-            formType='create'
-          />
-        </ProForm>
+            initialValues={initData}
+            submitter={{
+              render: () => {
+                return [];
+              },
+            }}
+            onValuesChange={(_, allValues) => {
+              setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+            }}
+            onFinish={async () => {
+              const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
+              const result = await createFlows(paramsId, fromData);
+              if (result.data) {
+                message.success(
+                  intl.formatMessage({
+                    id: 'pages.button.create.success',
+                    defaultMessage: 'Created successfully!',
+                  }),
+                );
+                formRefCreate.current?.resetFields();
+                setDrawerVisible(false);
+                setActiveTabKey('flowInformation');
+                setFromData({});
+                reload();
+              } else {
+                message.error(result.error.message);
+              }
+              return true;
+            }}
+          >
+            <FlowForm
+              lang={lang}
+              activeTabKey={activeTabKey}
+              drawerVisible={drawerVisible}
+              formRef={formRefCreate}
+              onData={handletFromData}
+              flowType={flowType}
+              onTabChange={onTabChange}
+              propertyDataSource={propertyDataSource}
+              onPropertyData={handletPropertyData}
+              onPropertyDataCreate={handletPropertyDataCreate}
+              formType="create"
+            />
+          </ProForm>
         </Spin>
         <Collapse
           items={[

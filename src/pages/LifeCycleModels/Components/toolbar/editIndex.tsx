@@ -36,7 +36,7 @@ type Props = {
   isSave: boolean;
   action: string;
   setIsSave: (isSave: boolean) => void;
-  actionType?:  'create'| 'copy' | 'createVersion';
+  actionType?: 'create' | 'copy' | 'createVersion';
 };
 
 const ToolbarEdit: FC<Props> = ({
@@ -47,7 +47,7 @@ const ToolbarEdit: FC<Props> = ({
   isSave,
   action,
   setIsSave,
-  actionType
+  actionType,
 }) => {
   const [thisId, setThisId] = useState(id);
   const [thisVersion, setThisVersion] = useState(version);
@@ -757,7 +757,7 @@ const ToolbarEdit: FC<Props> = ({
         setSpinning(false);
       });
     } else if (thisAction === 'create') {
-      const newId = actionType === 'createVersion' ? thisId:v4();
+      const newId = actionType === 'createVersion' ? thisId : v4();
       createLifeCycleModel({ ...newData, id: newId }).then((result: any) => {
         if (result.data) {
           message.success(

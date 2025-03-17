@@ -9,7 +9,7 @@ import {
 import { TeamTable } from '@/services/teams/data';
 import { DeleteOutlined, SaveOutlined } from '@ant-design/icons';
 import { ActionType, DragSortTable, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Button, Card, Input, message, Modal, Space, Tooltip, theme } from 'antd';
+import { Button, Card, Input, message, Modal, Space, theme, Tooltip } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { useRef, useState } from 'react';
@@ -36,7 +36,7 @@ const TableList: FC<{ disabled?: boolean; showDragSort: boolean }> = ({
     Modal.confirm({
       okButtonProps: {
         type: 'primary',
-        style: { backgroundColor:token.colorPrimary },
+        style: { backgroundColor: token.colorPrimary },
       },
       cancelButtonProps: {
         style: { borderColor: token.colorPrimary, color: token.colorPrimary },

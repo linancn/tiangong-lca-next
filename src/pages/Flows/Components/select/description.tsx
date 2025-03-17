@@ -2,7 +2,7 @@ import LangTextItemDescription from '@/components/LangTextItem/description';
 import UnitGroupDescriptionMini from '@/pages/Unitgroups/Components/select/descriptionMini';
 import { Card, Descriptions, Divider, Space } from 'antd';
 import { FC, ReactNode } from 'react';
-import { FormattedMessage ,getLocale} from 'umi';
+import { FormattedMessage, getLocale } from 'umi';
 import FlowsView from '../view';
 type Props = {
   title: ReactNode | string;
@@ -15,7 +15,12 @@ const FlowsSelectDescription: FC<Props> = ({ title, data, lang }) => {
   return (
     <Card size="small" title={title}>
       <Space direction="horizontal">
-        <Descriptions bordered size={'small'} column={1} style={{ width:locale === 'zh-CN' ? '470px' : '550px' }}>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          style={{ width: locale === 'zh-CN' ? '470px' : '550px' }}
+        >
           <Descriptions.Item
             key={0}
             label={
