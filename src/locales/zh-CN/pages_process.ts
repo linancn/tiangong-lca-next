@@ -107,7 +107,7 @@ export default {
   //exchange查看创建编辑
   'pages.process.view.exchange.exchangeDirection': '输入/输出方向',
   'pages.process.view.exchange.referenceToFlowDataSet': '流',
-  'pages.process.view.exchange.refObjectId': '引用对象标识符',
+  'pages.process.view.exchange.refObjectId': '引用流数据集标识符',
   'pages.process.view.exchange.type': '类型',
   'pages.process.view.exchange.uri': '统一资源标识符',
   'pages.process.veiw.exchange.version': '版本',

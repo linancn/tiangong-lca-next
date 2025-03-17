@@ -8,6 +8,8 @@ import React, { FC, ReactNode, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import FlowpropertyView from '../view';
 import FlowpropertiesSelectDrawer from './drawer';
+import RequiredSelectFormTitle from '@/components/RequiredSelectFormTitle';
+import { getLocalValueProps } from '@/pages/Utils';
 // import LangTextItemForm from '@/components/LangTextItem/form';
 const { TextArea } = Input;
 
@@ -18,6 +20,7 @@ type Props = {
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   drawerVisible: boolean;
   onData: () => void;
+  rules?: any[];
 };
 
 const FlowpropertiesSelectForm: FC<Props> = ({
@@ -27,11 +30,13 @@ const FlowpropertiesSelectForm: FC<Props> = ({
   formRef,
   drawerVisible,
   onData,
+  rules=[],
 }) => {
   const [id, setId] = useState<string | undefined>(undefined);
   const [version, setVersion] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
   const { referenceValue } = useUpdateReferenceContext() as { referenceValue: number };
+  const [ruleErrorState, setRuleErrorState] = useState(false);
   const handletFlowpropertyData = (rowId: string, rowVersion: string) => {
     getFlowpropertyDetail(rowId, rowVersion ?? '').then(async (result: any) => {
       const selectedData = genFlowpropertyFromData(result.data?.json?.flowPropertyDataSet ?? {});
@@ -61,9 +66,12 @@ const FlowpropertiesSelectForm: FC<Props> = ({
       setVersion(formRef.current?.getFieldValue([...name, '@version']));
     }
   });
-
+  const requiredRules = rules.filter((rule: any) => rule.required);
+  const isRequired = requiredRules && requiredRules.length;
+  const notRequiredRules = rules.filter((rule: any) => !rule.required) ?? [];
+ 
   return (
-    <Card size="small" title={label}>
+    <Card size="small" title={isRequired ? <RequiredSelectFormTitle label={label} ruleErrorState={ruleErrorState} requiredRules={requiredRules} /> : label}>
       <Space direction="horizontal">
         <Form.Item
           label={
@@ -73,6 +81,20 @@ const FlowpropertiesSelectForm: FC<Props> = ({
             />
           }
           name={[...name, '@refObjectId']}
+          rules={[
+            ...notRequiredRules,
+            (isRequired && { 
+              validator: (rule, value) => {
+                if (!value) {
+                  setRuleErrorState(true);
+                  console.log('form rules check error');
+                  return Promise.reject(new Error());
+                }
+                setRuleErrorState(false);
+                return Promise.resolve();
+              }
+             })
+          ]}
         >
           <Input disabled={true} style={{ width: '350px', color: token.colorTextDescription }} />
         </Form.Item>
@@ -118,18 +140,20 @@ const FlowpropertiesSelectForm: FC<Props> = ({
         </Space>
       </Space>
       <Form.Item
+        hidden
         label={<FormattedMessage id="pages.flow.view.flowProperties.type" defaultMessage="Type" />}
         name={[...name, '@type']}
       >
         <Input disabled={true} style={{ color: token.colorTextDescription }} />
       </Form.Item>
       <Form.Item
+        hidden
         label={<FormattedMessage id="pages.flow.view.flowProperties.uri" defaultMessage="URI" />}
         name={[...name, '@uri']}
       >
         <Input disabled={true} style={{ color: token.colorTextDescription }} />
       </Form.Item>
-      <Form.Item label="Version" name={[...name, '@version']}>
+      <Form.Item label={<FormattedMessage id="pages.flow.view.flowProperties.version" defaultMessage="Version" />} name={[...name, '@version']}>
         <Input disabled={true} />
       </Form.Item>
       <Divider orientationMargin="0" orientation="left" plain>
@@ -149,7 +173,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
               {subFields.map((subField) => (
                 <Row key={subField.key}>
                   <Col flex="100px" style={{ marginRight: '10px' }}>
-                    <Form.Item noStyle name={[subField.name, '@xml:lang']}>
+                    <Form.Item getValueProps={(value)=>getLocalValueProps(value)} noStyle name={[subField.name, '@xml:lang']}>
                       <Input
                         disabled={true}
                         style={{ width: '100px', color: token.colorTextDescription }}

@@ -124,12 +124,11 @@ const TableList: FC = () => {
               `}
               id={row.id}
             >
-              <FlowpropertiesEdit
-                type="createVersion"
+              <FlowpropertiesCreate
+                actionType="createVersion"
                 id={row.id}
                 version={row.version}
                 lang={lang}
-                buttonType={'icon'}
                 actionRef={actionRef}
               />
             </AllVersionsList>
@@ -166,11 +165,10 @@ const TableList: FC = () => {
                 actionRef={actionRef}
                 lang={lang}
               />
-              <FlowpropertiesEdit
-                type="copy"
+              <FlowpropertiesCreate
+                actionType="copy"
                 id={row.id}
                 version={row.version}
-                buttonType={'icon'}
                 actionRef={actionRef}
                 lang={lang}
               />
@@ -210,11 +208,10 @@ const TableList: FC = () => {
               id={row.id}
               version={row.version}
             />
-            <FlowpropertiesEdit
-              type="copy"
+            <FlowpropertiesCreate
+              actionType="copy"
               id={row.id}
               version={row.version}
-              buttonType={'icon'}
               actionRef={actionRef}
               lang={lang}
             />

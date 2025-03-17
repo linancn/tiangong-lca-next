@@ -38,3 +38,7 @@ export const validateRefObjectId = (formRef: React.MutableRefObject<ProFormInsta
     formRef.current?.validateFields([[...name, '@refObjectId']]);
   }
 };
+
+export const getLocalValueProps = (value: string) => ({
+  value: value === 'en' ? 'English' : value === 'zh' ? '简体中文' : value,
+})

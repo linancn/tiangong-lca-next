@@ -126,12 +126,11 @@ const TableList: FC = () => {
               `}
               id={row.id}
             >
-              <FlowsEdit
-                type="createVersion"
+              <FlowsCreate
+                actionType="createVersion"
                 id={row.id}
                 version={row.version}
                 lang={lang}
-                buttonType={'icon'}
                 actionRef={actionRef}
               />
             </AllVersionsList>
@@ -168,12 +167,11 @@ const TableList: FC = () => {
                 buttonType={'icon'}
                 actionRef={actionRef}
               />
-              <FlowsEdit
-                type="copy"
+              <FlowsCreate
+                actionType="copy"
                 id={row.id}
                 version={row.version}
                 lang={lang}
-                buttonType={'icon'}
                 actionRef={actionRef}
               />
               <FlowsDelete
@@ -212,12 +210,11 @@ const TableList: FC = () => {
               version={row.version}
               lang={lang}
             />
-            <FlowsEdit
-              type="copy"
+            <FlowsCreate
+              actionType="copy"
               id={row.id}
               version={row.version}
               lang={lang}
-              buttonType={'icon'}
               actionRef={actionRef}
             />
           </Space>,

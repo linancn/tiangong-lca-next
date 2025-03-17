@@ -1,13 +1,6 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
 import RequiredMark from '@/components/RequiredMark';
-import {
-  STMultiLang_o,
-  STMultiLang_r,
-  String_o,
-  WWWAddress,
-  emailvalidation,
-} from '@/components/Validator/index';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import schema from '@/pages/Contacts/contacts_schema.json';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
@@ -22,13 +15,13 @@ type Props = {
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;
   onTabChange: (key: string) => void;
-  defaultSourceName?: string;
+  formType?: string;
 };
 
-export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, onTabChange, defaultSourceName }) => {
+export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, onTabChange, formType }) => {
   const { token } = theme.useToken();
-  const [showShortNameError,setShowShortNameError] = useState(false);
-  const [showNameError,setShowNameError] = useState(false);
+  const [showShortNameError, setShowShortNameError] = useState(false);
+  const [showNameError, setShowNameError] = useState(false);
 
   const tabList = [
     {
@@ -57,7 +50,10 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
           <Card
             size="small"
             title={
-              <RequiredMark showError={showShortNameError} errorId='validator.lang.mustBeEnglish' errorMessage='English is a required language!' id="pages.contact.shortName" defaultMessage="Short name for contact" />
+              <RequiredMark
+                showError={showShortNameError}
+                label={<FormattedMessage id="pages.contact.shortName" defaultMessage="Short name for contact" />}
+              />
             }
           >
             <LangTextItemForm
@@ -72,7 +68,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
               }
               rules={getRules(
                 schema['contactDataSet']['contactInformation']['dataSetInformation'][
-                  'common:shortName'
+                'common:shortName'
                 ]['rules'] ?? [],
               )}
             />
@@ -80,7 +76,9 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
           <Card
             size="small"
             title={
-            <RequiredMark  showError={showNameError} errorId='validator.lang.mustBeEnglish' errorMessage='English is a required language!' id="pages.contact.name" defaultMessage="Name of contact" />}
+              <RequiredMark
+                showError={showNameError}
+                label={<FormattedMessage id="pages.contact.name" defaultMessage="Name of contact" />} />}
           >
             <LangTextItemForm
               formRef={formRef}
@@ -89,7 +87,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
               label={<FormattedMessage id="pages.contact.name" defaultMessage="Name of contact" />}
               rules={getRules(
                 schema['contactDataSet']['contactInformation']['dataSetInformation']['common:name'][
-                  'rules'
+                'rules'
                 ] ?? [],
               )}
             />
@@ -108,7 +106,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             onData={onData}
             rules={getRules(
               schema['contactDataSet']['contactInformation']['dataSetInformation'][
-                'classificationInformation'
+              'classificationInformation'
               ]['common:classification']['rules'] ?? [],
             )}
           />
@@ -129,34 +127,44 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
                   defaultMessage="Contact address"
                 />
               }
-              rules={STMultiLang_o}
+              rules={getRules(
+                schema['contactDataSet']['contactInformation']['dataSetInformation']['contactAddress']['rules'] ?? [],
+              )}
             />
           </Card>
           <Form.Item
             label={<FormattedMessage id="pages.contact.telephone" defaultMessage="Telephone" />}
             name={['contactInformation', 'dataSetInformation', 'telephone']}
-            rules={String_o}
+            rules={getRules(
+              schema['contactDataSet']['contactInformation']['dataSetInformation']['telephone']['rules'] ?? [],
+            )}
           >
             <Input />
           </Form.Item>
           <Form.Item
             label={<FormattedMessage id="pages.contact.telefax" defaultMessage="Telefax" />}
             name={['contactInformation', 'dataSetInformation', 'telefax']}
-            rules={String_o}
+            rules={getRules(
+              schema['contactDataSet']['contactInformation']['dataSetInformation']['telefax']['rules'] ?? [],
+            )}
           >
             <Input />
           </Form.Item>
           <Form.Item
             label={<FormattedMessage id="pages.contact.email" defaultMessage="E-mail" />}
             name={['contactInformation', 'dataSetInformation', 'email']}
-            rules={emailvalidation}
+            rules={getRules(
+              schema['contactDataSet']['contactInformation']['dataSetInformation']['email']['rules'] ?? [],
+            )}
           >
             <Input />
           </Form.Item>
           <Form.Item
             label={<FormattedMessage id="pages.contact.WWWAddress" defaultMessage="WWW-Address" />}
             name={['contactInformation', 'dataSetInformation', 'WWWAddress']}
-            rules={WWWAddress}
+            rules={getRules(
+              schema['contactDataSet']['contactInformation']['dataSetInformation']['WWWAddress']['rules'] ?? [],
+            )}
           >
             <Input />
           </Form.Item>
@@ -177,7 +185,9 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
                   defaultMessage="Central contact point"
                 />
               }
-              rules={STMultiLang_r}
+              rules={getRules(
+                schema['contactDataSet']['contactInformation']['dataSetInformation']['centralContactPoint']['rules'] ?? [],
+              )}
             />
           </Card>
           <Card
@@ -197,7 +207,9 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
                   defaultMessage="Contact description or comment"
                 />
               }
-              rules={STMultiLang_o}
+              rules={getRules(
+                schema['contactDataSet']['contactInformation']['dataSetInformation']['contactDescriptionOrComment']['rules'] ?? [],
+              )}
             />
           </Card>
           <ContactSelectForm
@@ -213,7 +225,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
             onData={onData}
           />
           <SourceSelectForm
-            defaultSourceName={defaultSourceName}
+            defaultSourceName={formType === 'create' ? 'ILCD format' : undefined}
             label={
               <FormattedMessage
                 id="pages.contact.referenceToLogo"
@@ -246,7 +258,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
               }
               rules={getRules(
                 schema['contactDataSet']['administrativeInformation']['dataEntryBy'][
-                  'common:timeStamp'
+                'common:timeStamp'
                 ]['rules'] ?? [],
               )}
               name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
@@ -263,7 +275,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
               }
               rules={getRules(
                 schema['contactDataSet']['administrativeInformation']['dataEntryBy'][
-                  'common:referenceToDataSetFormat'
+                'common:referenceToDataSetFormat'
                 ]['rules'] ?? [],
               )}
               name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
@@ -295,7 +307,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
               ]}
               rules={getRules(
                 schema['contactDataSet']['administrativeInformation']['publicationAndOwnership'][
-                  'common:dataSetVersion'
+                'common:dataSetVersion'
                 ]['rules'] ?? [],
               )}
             >
@@ -310,7 +322,7 @@ export const ContactForm: FC<Props> = ({ lang, activeTabKey, formRef, onData, on
               }
               rules={getRules(
                 schema['contactDataSet']['administrativeInformation']['publicationAndOwnership'][
-                  'common:referenceToOwnershipOfDataSet'
+                'common:referenceToOwnershipOfDataSet'
                 ]['rules'] ?? [],
               )}
               name={[
