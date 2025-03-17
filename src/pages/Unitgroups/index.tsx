@@ -101,14 +101,12 @@ const TableList: FC = () => {
               `}
               id={row.id}
             >
-              <UnitGroupEdit
-                type="createVersion"
+              <UnitGroupCreate
+                actionType="createVersion"
                 id={row.id}
                 version={row.version}
                 lang={lang}
-                buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
               />
             </AllVersionsList>
           </Space>
@@ -152,15 +150,13 @@ const TableList: FC = () => {
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
               ></UnitGroupEdit>
-              <UnitGroupEdit
-                type="copy"
+              <UnitGroupCreate
+                actionType="copy"
                 id={row.id}
                 version={row.version}
-                buttonType={'icon'}
                 lang={lang}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
-              ></UnitGroupEdit>
+              ></UnitGroupCreate>
               <UnitGroupDelete
                 id={row.id}
                 version={row.version}
@@ -197,15 +193,13 @@ const TableList: FC = () => {
               version={row.version}
               buttonType={'icon'}
             />
-            <UnitGroupEdit
-              type="copy"
+            <UnitGroupCreate
+              actionType="copy"
               id={row.id}
               version={row.version}
-              buttonType={'icon'}
               lang={lang}
               actionRef={actionRef}
-              setViewDrawerVisible={() => {}}
-            ></UnitGroupEdit>
+            ></UnitGroupCreate>
           </Space>,
         ];
       },

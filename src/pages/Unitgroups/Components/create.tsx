@@ -1,10 +1,11 @@
 import { initVersion } from '@/services/general/data';
 import { formatDateTime } from '@/services/general/util';
-import { createUnitGroup } from '@/services/unitgroups/api';
+import { createUnitGroup,getUnitGroupDetail } from '@/services/unitgroups/api';
+import { genUnitGroupFromData } from '@/services/unitgroups/util';
 import styles from '@/style/custom.less';
-import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
+import { CloseOutlined, PlusOutlined ,CopyOutlined} from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
-import { Button, Collapse, Drawer, Space, Tooltip, Typography, message } from 'antd';
+import { Button, Collapse, Drawer, Space, Tooltip, Typography, message,Spin } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
@@ -14,14 +15,33 @@ import { UnitGroupForm } from './form';
 type Props = {
   lang: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
+  actionType?: 'create' | 'copy' | 'createVersion';
+  id?: string;
+  version?: string;
 };
-const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
+
+// When type is 'copy' or 'createVersion', id and version are required parameters
+type CreateProps = 
+  | (Omit<Props, 'type'> & { actionType?: 'create' })
+  | (Omit<Props, 'type' | 'id' | 'version'> & { 
+      actionType: 'copy'; 
+      id: string; 
+      version: string;
+    })
+  | (Omit<Props, 'type' | 'id' | 'version'> & { 
+      actionType: 'createVersion'; 
+      id: string; 
+      version: string;
+    });
+
+const UnitGroupCreate: FC<CreateProps> = ({ lang, actionRef ,actionType='create',id,version}) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
   const [activeTabKey, setActiveTabKey] = useState<string>('unitGroupInformation');
   const [fromData, setFromData] = useState<any>({});
   const [initData, setInitData] = useState<any>({});
   const [unitDataSource, setUnitDataSource] = useState<any>([]);
+  const [spinning, setSpinning] = useState<boolean>(false);
   const intl = useIntl();
 
   const reload = useCallback(() => {
@@ -52,8 +72,33 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
     setActiveTabKey(key);
   };
 
+  const getFormDetail = () => {
+    if(!id||!version)return;
+    setSpinning(true);
+    getUnitGroupDetail(id, version).then(async (result: any) => {
+      setInitData({ ...genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {}), id: id });
+      setFromData({
+        ...genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {}),
+        id: id,
+      });
+      setUnitDataSource(
+        genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {})?.units?.unit ?? [],
+      );
+      formRefCreate.current?.resetFields();
+      formRefCreate.current?.setFieldsValue({
+        ...genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {}),
+        id: id,
+      });
+      setSpinning(false);
+    });
+  };
+
   useEffect(() => {
     if (drawerVisible === false) return;
+    if(actionType === 'copy'||actionType === 'createVersion'){
+      getFormDetail();
+      return;
+    };
     const currentDateTime = formatDateTime(new Date());
     const newData = {
       administrativeInformation: {
@@ -80,23 +125,25 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
     <>
       <Tooltip
         title={
-          <FormattedMessage id="pages.button.create" defaultMessage="Create"></FormattedMessage>
+          <FormattedMessage id={actionType === 'copy' ? 'pages.button.copy' : actionType === 'createVersion' ? 'pages.button.createVersion' : 'pages.button.create'} defaultMessage="Create"></FormattedMessage>
         }
       >
-        <Button
+        {actionType==='copy'?(<Button shape="circle" icon={<CopyOutlined />} size="small" onClick={() => {
+            setDrawerVisible(true);
+          }}></Button>):(<Button
           size={'middle'}
           type="text"
           icon={<PlusOutlined />}
           onClick={() => {
             setDrawerVisible(true);
           }}
-        ></Button>
+        ></Button>)}
       </Tooltip>
       <Drawer
         getContainer={() => document.body}
         title={
           <FormattedMessage
-            id="pages.unitgroup.drawer.title.create"
+            id={actionType === 'copy' ? 'pages.unitgroup.drawer.title.copy' : actionType === 'createVersion' ? 'pages.unitgroup.drawer.title.createVersion' : 'pages.unitgroup.drawer.title.create'}
             defaultMessage="Create"
           ></FormattedMessage>
         }
@@ -136,6 +183,7 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
           </Space>
         }
       >
+        <Spin spinning={spinning}>
         <ProForm
           formRef={formRefCreate}
           initialValues={initData}
@@ -148,7 +196,8 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
             },
           }}
           onFinish={async () => {
-            const result = await createUnitGroup(v4(), fromData);
+            const paramsId = (actionType === 'createVersion' ? id : v4())??'';
+            const result = await createUnitGroup(paramsId, fromData);
             if (result.data) {
               message.success(
                 intl.formatMessage({
@@ -176,6 +225,7 @@ const UnitGroupCreate: FC<Props> = ({ lang, actionRef }) => {
             unitDataSource={unitDataSource}
           />
         </ProForm>
+        </Spin>
         <Collapse
           items={[
             {
