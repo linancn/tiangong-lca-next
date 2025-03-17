@@ -1,7 +1,8 @@
-import { createFlowproperties } from '@/services/flowproperties/api';
+import { createFlowproperties,getFlowpropertyDetail } from '@/services/flowproperties/api';
+import { genFlowpropertyFromData } from '@/services/flowproperties/util';
 // import { langOptions } from '@/services/general/data';
 import styles from '@/style/custom.less';
-import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
+import { CloseOutlined, PlusOutlined,CopyOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
 import {
   Button,
@@ -13,6 +14,7 @@ import {
   Tooltip,
   Typography,
   message,
+  Spin,
 } from 'antd';
 import type { FC } from 'react';
 import React, {
@@ -29,16 +31,35 @@ import { ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { v4 } from 'uuid';
 import { FlowpropertyForm } from './form';
 
+
 type Props = {
   actionRef: React.MutableRefObject<ActionType | undefined>;
   lang: string;
+  actionType?: 'create' | 'copy' | 'createVersion';
+  id?: string;
+  version?: string;
 };
-const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
+
+// When type is 'copy' or 'createVersion', id and version are required parameters
+type CreateProps = 
+  | (Omit<Props, 'type'> & { actionType?: 'create' })
+  | (Omit<Props, 'type' | 'id' | 'version'> & { 
+      actionType: 'copy'; 
+      id: string; 
+      version: string;
+    })
+  | (Omit<Props, 'type' | 'id' | 'version'> & { 
+      actionType: 'createVersion'; 
+      id: string; 
+      version: string;
+    });
+const FlowpropertiesCreate: FC<CreateProps> = ({ actionRef, lang,actionType='create',id,version }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
   const [activeTabKey, setActiveTabKey] = useState<string>('flowPropertiesInformation');
   const [initData, setInitData] = useState<any>({});
   const [fromData, setFromData] = useState<any>({});
+  const [spinning, setSpinning] = useState<boolean>(false);
   const intl = useIntl();
 
   const reload = useCallback(() => {
@@ -57,8 +78,35 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
     setActiveTabKey(key);
   };
 
+  const getFormDetail = () => {
+    if(!id||!version)return;
+    setSpinning(true);
+    formRefCreate.current?.resetFields();
+    getFlowpropertyDetail(id, version).then(async (result: any) => {
+      const fromData0 = await genFlowpropertyFromData(result.data?.json?.flowPropertyDataSet ?? {});
+      setInitData({
+        ...fromData0,
+        id: id,
+      });
+      formRefCreate.current?.setFieldsValue({
+        ...fromData0,
+        id: id,
+      });
+      setFromData({
+        ...fromData0,
+        id: id,
+      });
+
+      setSpinning(false);
+    });
+  };
+
   useEffect(() => {
     if (drawerVisible === false) return;
+    if(actionType === 'copy'||actionType === 'createVersion'){
+      getFormDetail();
+      return;
+    };
     const currentDateTime = formatDateTime(new Date());
     const newData = {
       administrativeInformation: {
@@ -79,21 +127,23 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="pages.button.create" defaultMessage="Create" />}>
-        <Button
+      <Tooltip title={<FormattedMessage id={actionType === 'copy' ? 'pages.button.copy' : actionType === 'createVersion' ? 'pages.button.createVersion' : 'pages.button.create'} defaultMessage="Create" />}>
+        {actionType==='copy'?(<Button shape="circle" icon={<CopyOutlined />} size="small" onClick={() => {
+            setDrawerVisible(true);
+          }}></Button>):(<Button
           size={'middle'}
           type="text"
           icon={<PlusOutlined />}
           onClick={() => {
             setDrawerVisible(true);
           }}
-        />
+        />)}
       </Tooltip>
       <Drawer
         getContainer={() => document.body}
         title={
           <FormattedMessage
-            id="pages.flowproperty.drawer.title.create"
+            id={actionType === 'copy' ? 'pages.flowproperty.drawer.title.copy' : actionType === 'createVersion' ? 'pages.flowproperty.drawer.title.createVersion' : 'pages.flowproperty.drawer.title.create'}
             defaultMessage="Create Flow property"
           />
         }
@@ -121,6 +171,7 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
           </Space>
         }
       >
+        <Spin spinning={spinning}>
         <ProForm
           formRef={formRefCreate}
           initialValues={initData}
@@ -133,7 +184,8 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
             },
           }}
           onFinish={async () => {
-            const result = await createFlowproperties(v4(), fromData);
+            const paramsId = (actionType === 'createVersion' ? id : v4())??'';
+            const result = await createFlowproperties(paramsId, fromData);
             if (result.data) {
               message.success(
                 intl.formatMessage({
@@ -161,6 +213,7 @@ const FlowpropertiesCreate: FC<Props> = ({ actionRef, lang }) => {
             onTabChange={onTabChange}
           />
         </ProForm>
+        </Spin>
         <Collapse
           items={[
             {
