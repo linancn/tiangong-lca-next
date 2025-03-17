@@ -5,14 +5,15 @@ import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
 import ProcessView from '@/pages/Processes/Components/view';
 import SourceView from '@/pages/Sources/Components/view';
 import UnitGroupView from '@/pages/Unitgroups/Components/view';
-import { getVersionsById } from '@/services/general/api';
+import { getAllVersions } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
 import { CloseOutlined, BarsOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Drawer, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useLocation } from 'umi';
+import { getDataSource } from '@/services/general/util';
 interface AllVersionsListProps {
   searchTableName: string;
   searchColume: string;
@@ -32,6 +33,8 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
 }) => {
   const actionRef = useRef<ActionType>();
   const [showAllVersionsModal, setShowAllVersionsModal] = useState(false);
+  const location = useLocation();
+  const dataSource = getDataSource(location.pathname);
 
   useEffect(() => {
     actionRef.current?.reload();
@@ -134,7 +137,7 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
               return [children];
             }}
             request={async (params: { pageSize: number; current: number }, sort) => {
-              return getVersionsById(searchColume, searchTableName, id, params, sort, lang);
+              return getAllVersions(searchColume, searchTableName, id, params, sort, lang,dataSource);
             }}
             columns={allVersionsColumns}
           />
