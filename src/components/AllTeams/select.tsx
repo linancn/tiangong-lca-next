@@ -10,11 +10,13 @@ import { FormattedMessage, useIntl } from 'umi';
 interface SelectTeamsProps {
   actionRef?: React.MutableRefObject<ActionType | undefined>;
   buttonType?: 'default' | 'icon';
+  disabled?: boolean;
 }
 
 const SelectTeams: FC<SelectTeamsProps> = ({
   actionRef: parentActionRef,
   buttonType = 'default',
+  disabled = false,
 }) => {
   const intl = useIntl();
   const lang = getLang(intl.locale);
@@ -136,6 +138,7 @@ const SelectTeams: FC<SelectTeamsProps> = ({
           }
         >
           <Button
+            disabled={disabled}
             type="text"
             shape="circle"
             size="small"

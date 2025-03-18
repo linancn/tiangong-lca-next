@@ -129,13 +129,14 @@ const TableList: FC<{ disabled?: boolean; showDragSort: boolean }> = ({
       render: (_, record) => (
         <Space size="small">
           <TeamView id={record.id} buttonType="icon" />
-          <TeamEdit actionRef={actionRef} id={record.id} buttonType="icon" />
+          <TeamEdit actionRef={actionRef} id={record.id} buttonType="icon" disabled={disabled} />
           <Tooltip
             title={
               <FormattedMessage id="component.allTeams.table.remove" defaultMessage="Remove" />
             }
           >
             <Button
+              disabled={disabled}
               shape="circle"
               icon={<DeleteOutlined />}
               size="small"
@@ -260,6 +261,7 @@ const TableList: FC<{ disabled?: boolean; showDragSort: boolean }> = ({
                     }
                   >
                     <Button
+                      disabled={disabled}
                       type="text"
                       icon={<SaveOutlined />}
                       shape="circle"
@@ -277,7 +279,7 @@ const TableList: FC<{ disabled?: boolean; showDragSort: boolean }> = ({
                     />
                   }
                 >
-                  <SelectTeams actionRef={actionRef} buttonType="icon" />
+                  <SelectTeams disabled={disabled} actionRef={actionRef} buttonType="icon" />
                 </Tooltip>,
               ]}
             />
