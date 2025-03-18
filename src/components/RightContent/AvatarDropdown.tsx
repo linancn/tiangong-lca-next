@@ -243,6 +243,10 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
         {children}
       </HeaderDropdown>
       <Modal
+        title={
+          <FormattedMessage id="component.allTeams.table.title" defaultMessage="All Teams" />
+        }
+        closable
         width={'90%'}
         open={showAllTeamsModal}
         onCancel={() => setShowAllTeamsModal(false)}
