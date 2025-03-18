@@ -220,7 +220,6 @@ const TableList: FC<{ disabled?: boolean; showDragSort: boolean }> = ({
           enterButton
         />
       </Card>
-      <Card>
         {showDragSort ? (
           <>
             <DragSortTable<TeamTable, ListPagination>
@@ -305,7 +304,6 @@ const TableList: FC<{ disabled?: boolean; showDragSort: boolean }> = ({
             columns={teamColumns}
           />
         )}
-      </Card>
     </>
   );
 };

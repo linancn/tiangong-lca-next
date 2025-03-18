@@ -630,18 +630,24 @@ const Team = () => {
     ];
 
     return (
-      <div>
-        <div style={{ marginBottom: 16, textAlign: 'right' }}>
-          <Tooltip title={<FormattedMessage id="teams.members.add" defaultMessage="Add" />}>
-            <Button
-              disabled={!(userRole === 'admin' || userRole === 'owner')}
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => setAddModalVisible(true)}
-            />
-          </Tooltip>
-        </div>
+      <>
         <ProTable<TeamMemberTable, ListPagination>
+          headerTitle={
+            <>
+              <FormattedMessage id="menu.account.team" defaultMessage="My Team" /> /{' '}
+              <FormattedMessage id="pages.team.tabs.members" defaultMessage="Members Message" />
+            </>
+          }
+          toolBarRender={() => {
+              return [<Tooltip key={0} title={<FormattedMessage id="teams.members.add" defaultMessage="Add" />}>
+                <Button
+                  type="text"
+                  disabled={!(userRole === 'admin' || userRole === 'owner')}
+                  icon={<PlusOutlined />}
+                  onClick={() => setAddModalVisible(true)}
+                />
+              </Tooltip>];
+          }}
           loading={membersLoading}
           columns={columns}
           rowKey="email"
@@ -650,8 +656,7 @@ const Team = () => {
             pageSize: 10,
             showSizeChanger: true,
             showQuickJumper: true,
-          }}
-          toolBarRender={false}
+          }} 
           request={async (
             params: {
               pageSize: number;
@@ -696,7 +701,7 @@ const Team = () => {
             actionRef.current?.reload();
           }}
         />
-      </div>
+      </>
     );
   };
 
