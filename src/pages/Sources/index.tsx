@@ -215,7 +215,7 @@ const TableList: FC = () => {
       <Card>
         <Search
           size={'large'}
-          placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+          placeholder={intl.formatMessage({ id: 'pages.search.keyWord',defaultMessage: 'Full-text search: Enter one or more keywords.' })}
           onSearch={onSearch}
           enterButton
         />
