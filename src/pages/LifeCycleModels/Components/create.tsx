@@ -3,7 +3,7 @@ import { ActionType } from '@ant-design/pro-components';
 import { Grid, Transform, XFlow, XFlowGraph } from '@antv/xflow';
 import { Button, Drawer, Layout, theme, Tooltip } from 'antd';
 import type { FC } from 'react';
-import { useCallback, useState } from 'react';
+import { useCallback, useState,useEffect } from 'react';
 import { FormattedMessage } from 'umi';
 import ToolbarEdit from './toolbar/editIndex';
 
@@ -40,6 +40,15 @@ const LifeCycleModelCreate: FC<CreateProps> = ({
 }) => {
   const [isSave, setIsSave] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
+  const [toolEditAction, setToolEditAction] = useState('create');
+
+  useEffect(() => {
+    if (drawerVisible) {
+      setToolEditAction('create');
+    }else{
+      setToolEditAction('');
+    }
+  }, [drawerVisible]);
 
   const { token } = theme.useToken();
 
@@ -173,7 +182,7 @@ const LifeCycleModelCreate: FC<CreateProps> = ({
                 drawerVisible={drawerVisible}
                 isSave={isSave}
                 setIsSave={setIsSave}
-                action={'create'}
+                action={toolEditAction}
               />
             </Sider>
           </Layout>

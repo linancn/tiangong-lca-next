@@ -281,4 +281,6 @@ export default {
   'pages.process.unitConvert.value': 'Value',
   'pages.process.unitConvert.unit': 'Unit',
   'pages.process.unitConvert.result': 'Result',
+
+  'pages.flow.process.administrativeInformation.referenceToDataSetFormat': 'Data set format(s)',
 };

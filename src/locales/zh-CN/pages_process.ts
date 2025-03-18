@@ -279,4 +279,6 @@ export default {
   'pages.process.unitConvert.value': '值',
   'pages.process.unitConvert.unit': '单位',
   'pages.process.unitConvert.result': '结果',
+
+  'pages.flow.process.administrativeInformation.referenceToDataSetFormat': '数据集格式',
 };
