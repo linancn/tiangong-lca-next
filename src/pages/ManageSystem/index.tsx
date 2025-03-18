@@ -236,7 +236,6 @@ const ManageSystem = () => {
               sort,
             ) => {
               try {
-                console.log('userData', userData);
                 if (!userData?.role) {
                   return {
                     data: [],
