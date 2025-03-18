@@ -146,7 +146,7 @@ const SelectTeams: FC<SelectTeamsProps> = ({
       )}
 
       <Drawer
-        bodyStyle={{ paddingTop: 0 }}
+        styles={{ body: { paddingTop: 0 } }}
         closable={false}
         extra={
           <Button
