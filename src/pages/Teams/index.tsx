@@ -525,7 +525,8 @@ const Team = () => {
                   disabled={
                     !(record.role !== 'owner' && (userRole === 'owner' || userRole === 'admin'))
                   }
-                  type="text"
+                  shape="circle"
+                  size='small'
                   icon={<DeleteOutlined />}
                   onClick={() => {
                     Modal.confirm({
@@ -570,9 +571,10 @@ const Team = () => {
               <Tooltip
                 title={<FormattedMessage id="teams.members.setAdmin" defaultMessage="Set Admin" />}
               >
-                <Button
+                <Button 
+                  shape="circle"
+                  size='small'
                   disabled={!(record.role === 'member' && userRole === 'owner')}
-                  type="text"
                   icon={<CrownOutlined />}
                   onClick={() => updateRole(record?.team_id, record?.user_id, 'admin')}
                 />
@@ -586,7 +588,8 @@ const Team = () => {
               >
                 <Button
                   disabled={!(record.role === 'admin' && userRole === 'owner')}
-                  type="text"
+                  shape="circle"
+                  size='small'
                   icon={<UserOutlined />}
                   onClick={() => updateRole(record?.team_id, record?.user_id, 'member')}
                 />
@@ -600,7 +603,8 @@ const Team = () => {
                   disabled={
                     !(record.role === 'rejected' && (userRole === 'admin' || userRole === 'owner'))
                   }
-                  type="text"
+                  shape="circle"
+                  size='small'
                   icon={<UserAddOutlined />}
                   onClick={async () => {
                     const error = await reInvitedApi(record?.user_id, record?.team_id);
