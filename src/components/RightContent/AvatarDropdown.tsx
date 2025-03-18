@@ -5,7 +5,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 
 import { outLogin } from '@/services/ant-design-pro/api';
 import { getUserRoles } from '@/services/roles/api';
-import { Button, Modal, Spin } from 'antd';
+import { Button, Modal, Spin, theme } from 'antd';
 import { createStyles } from 'antd-style';
 import { stringify } from 'querystring';
 import type { MenuInfo } from 'rc-menu/lib/interface';
@@ -45,17 +45,20 @@ const useStyles = createStyles(({ token }) => {
 
 export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) => {
   const intl = useIntl();
-  const [isUserInTeam, setIsUserInTeam] = useState(false);
+  const { token } = theme.useToken();
+  // const [isUserInTeam, setIsUserInTeam] = useState(false);
   const [showAllTeamsModal, setShowAllTeamsModal] = useState(false);
   const [userData, setUserData] = useState<{ user_id: string; role: string } | null>(null);
 
-  const initialUserRole = async () => {
+  const getUserRole = async () => {
     const { data } = await getUserRoles();
 
     if (data && data?.length && data[0].role !== 'rejected') {
-      setIsUserInTeam(true);
+      // setIsUserInTeam(true);
+      return true
     } else {
-      setIsUserInTeam(false);
+      // setIsUserInTeam(false);
+      return false
     }
   };
 
@@ -65,7 +68,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
   };
 
   useEffect(() => {
-    initialUserRole();
+    // getUserRole();
     getSystemUserRole();
   }, []);
   /**
@@ -92,7 +95,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
   const { initialState, setInitialState } = useModel('@@initialState');
 
   const onMenuClick = useCallback(
-    (event: MenuInfo) => {
+    async (event: MenuInfo) => {
       const { key } = event;
       if (key === 'logout') {
         flushSync(() => {
@@ -107,10 +110,18 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
         return;
       }
       if (key === 'team') {
+        const isUserInTeam = await getUserRole()
         if (isUserInTeam) {
           history.push(`/team?action=edit`);
         } else {
           Modal.confirm({
+            okButtonProps: {
+              type: 'primary',
+              style: { backgroundColor: token.colorPrimary },
+            },
+            cancelButtonProps: {
+              style: { borderColor: token.colorPrimary, color: token.colorPrimary },
+            },
             title: intl.formatMessage({
               id: 'teams.modal.noTeam.title',
               defaultMessage: 'You are not in any team',
@@ -120,17 +131,10 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
               defaultMessage: 'You can create a team or join an existing team',
             }),
             closable: true,
-            footer: (
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                  gap: '8px',
-                  marginTop: '20px',
-                }}
-              >
+            footer: () => (
+              <>
                 <Button
-                  style={{ borderColor: '#5C246A', color: '#5C246A' }}
+                  style={{ borderColor: token.colorPrimary, color: token.colorPrimary }}
                   onClick={() => {
                     setShowAllTeamsModal(true);
                     Modal.destroyAll();
@@ -144,7 +148,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
                 </Button>
                 <Button
                   type="primary"
-                  style={{ backgroundColor: '#5C246A' }}
+                  style={{ backgroundColor: token.colorPrimary }}
                   onClick={() => {
                     Modal.destroyAll();
                     if (location.pathname === '/team') {
@@ -166,7 +170,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
                     defaultMessage: 'Create Team',
                   })}
                 </Button>
-              </div>
+              </>
             ),
           });
         }
@@ -174,7 +178,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
       }
       history.push(`/account`);
     },
-    [setInitialState, isUserInTeam],
+    [setInitialState],
   );
 
   const loading = (
@@ -239,6 +243,10 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
         {children}
       </HeaderDropdown>
       <Modal
+        title={
+          <FormattedMessage id="component.allTeams.table.title" defaultMessage="All Teams" />
+        }
+        closable
         width={'90%'}
         open={showAllTeamsModal}
         onCancel={() => setShowAllTeamsModal(false)}

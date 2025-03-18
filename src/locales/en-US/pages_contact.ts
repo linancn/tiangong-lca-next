@@ -1,4 +1,5 @@
 export default {
+  'pages.contact.reference.tooltip': 'Reference contact data set',
   'pages.contact.id': 'ID',
   'pages.contact.contactInformation': 'Contact information',
   'pages.contact.administrativeInformation': 'Administrative information',
@@ -28,7 +29,7 @@ export default {
   'pages.contact.centralContactPoint': 'Central contact point',
   'pages.contact.contactDescriptionOrComment': 'Contact description or comment',
   'pages.contact.referenceToContact': 'Belongs to:',
-  'pages.contact.refObjectId': 'Ref object id',
+  'pages.contact.refObjectId': 'Reference contact data set identifier',
   'pages.contact.type': 'Type',
   'pages.contact.uri': 'URI',
   'pages.contact.version': 'Version',
@@ -42,4 +43,16 @@ export default {
   'pages.contact.dataSetVersion': 'Data set version',
   'pages.contact.referenceToPrecedingDataSetVersion': 'Preceding data set version',
   'pages.contact.permanentDataSetURI': 'Permanent data set URI',
+  'pages.contact.referenceToOwnershipOfDataSet': 'Owner of data set',
+  'pages.contact.referenceToLogo': 'Logo of organisation or source',
+
+  // rules
+  // rules
+  'pages.contact.validator.shortName.required': 'Short name for contact is required!',
+  'pages.contact.validator.name.required': 'Name of contact is required!',
+  'pages.contact.validator.classification.required': 'Classification is required!',
+  'pages.contact.validator.dataSetVersion.required': 'Data set version is required!',
+  'pages.contact.validator.referenceToOwnershipOfDataSet.required': 'Owner of data set is required!',
+  'pages.contact.validator.timeStamp.required': 'Time stamp is required!',
+  'pages.contact.validator.referenceToDataSetFormat.required': 'Data set format(s) is required!',
 };

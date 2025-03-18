@@ -201,7 +201,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
               defaultMessage="Reference to Diagram"
             />
           }
-          data={data.lifeCycleModelInformation?.dataSetInformation?.referenceToDiagram ?? {}}
+          data={data.lifeCycleModelInformation?.technology?.referenceToDiagram ?? {}}
           lang={lang}
         />
       </>
@@ -511,7 +511,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             }
             lang={lang}
             data={
-              data.administrativeInformation?.dataGenerator?.[
+              data.administrativeInformation?.publicationAndOwnership?.[
                 'common:referenceToEntitiesWithExclusiveAccess'
               ]
             }
@@ -543,7 +543,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           </Divider>
           <LangTextItemDescription
             data={
-              data.administrativeInformation?.['common:commissionerAndGoal']?.[
+              data.administrativeInformation?.['publicationAndOwnership']?.[
                 'common:accessRestrictions'
               ]
             }

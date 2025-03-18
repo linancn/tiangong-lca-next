@@ -89,8 +89,8 @@ const TableList: FC = () => {
               `}
               id={row.id}
             >
-              <LifeCycleModelEdit
-                type="createVersion"
+              <LifeCycleModelCreate
+                actionType="createVersion"
                 id={row.id}
                 version={row.version}
                 lang={lang}
@@ -131,8 +131,8 @@ const TableList: FC = () => {
                 actionRef={actionRef}
                 buttonType={'icon'}
               />
-              <LifeCycleModelEdit
-                type="copy"
+              <LifeCycleModelCreate
+                actionType="copy"
                 id={row.id}
                 version={row.version}
                 lang={lang}
@@ -169,8 +169,8 @@ const TableList: FC = () => {
         return [
           <Space size={'small'} key={0}>
             <LifeCycleModelView id={row.id} version={row.version} lang={lang} buttonType={'icon'} />
-            <LifeCycleModelEdit
-              type="copy"
+            <LifeCycleModelCreate
+              actionType="copy"
               id={row.id}
               version={row.version}
               lang={lang}

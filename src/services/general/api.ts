@@ -101,26 +101,27 @@ export async function contributeSource(tableName: string, id: string, version: s
   };
 }
 
-export async function getVersionsById(
+export async function getAllVersions(
   nameColume: string,
   tableName: string,
   id: string,
   params: { pageSize: number; current: number },
   sort: Record<string, SortOrder>,
   lang: string,
+  dataSource: string,
 ) {
   const sortBy = Object.keys(sort)[0] ?? 'created_at';
   const orderBy = sort[sortBy] ?? 'descend';
 
-  const result = await supabase
+  let query = supabase
     .from(tableName)
     .select(
       `
-      id,
-      ${nameColume}, 
-      version, 
-      created_at, 
-      modified_at`,
+    id,
+    ${nameColume}, 
+    version, 
+    created_at, 
+    modified_at`,
       { count: 'exact' },
     )
     .eq('id', id)
@@ -129,6 +130,36 @@ export async function getVersionsById(
       ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
       (params.current ?? 1) * (params.pageSize ?? 10) - 1,
     );
+
+  if (dataSource === 'tg') {
+    query = query.eq('state_code', 100);
+  } else if (dataSource === 'co') {
+    query = query.eq('state_code', 200);
+  } else if (dataSource === 'my') {
+    const session = await supabase.auth.getSession();
+    if (session.data.session) {
+      query = query.eq('user_id', session?.data?.session?.user?.id);
+    } else {
+      return Promise.resolve({
+        data: [],
+        success: false,
+        total: 0,
+      });
+    }
+  } else if (dataSource === 'te') {
+    const teamId = await getTeamIdByUserId();
+    if (teamId) {
+      query = query.eq('team_id', teamId);
+    } else {
+      return Promise.resolve({
+        data: [],
+        success: false,
+        total: 0,
+      });
+    }
+  }
+
+  const result = await query;
   let data: any[] = result?.data ?? [];
   if (!result.error) {
     switch (tableName) {

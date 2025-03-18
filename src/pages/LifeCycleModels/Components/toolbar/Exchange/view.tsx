@@ -1,8 +1,9 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
+import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import FlowsSelectDescription from '@/pages/Flows/Components/select/description';
 import { getProcessDetail } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
-import { CheckCircleTwoTone, CloseCircleOutlined, CloseOutlined } from '@ant-design/icons';
+import { CloseOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Descriptions, Divider, Drawer, Row, Spin } from 'antd';
 import type { FC } from 'react';
 import { useEffect, useState } from 'react';
@@ -193,11 +194,11 @@ const EdgeExchangeView: FC<Props> = ({
                       }
                       labelStyle={{ width: '220px' }}
                     >
-                      {exchangeDataSource?.quantitativeReference ? (
-                        <CheckCircleTwoTone twoToneColor="#52c41a" />
-                      ) : (
-                        <CloseCircleOutlined />
-                      )}
+                      {
+                        <QuantitativeReferenceIcon
+                          value={exchangeDataSource?.quantitativeReference}
+                        />
+                      }
                     </Descriptions.Item>
                   </Descriptions>
                   <Divider orientationMargin="0" orientation="left" plain>
@@ -321,11 +322,11 @@ const EdgeExchangeView: FC<Props> = ({
                       }
                       labelStyle={{ width: '220px' }}
                     >
-                      {exchangeDataTarget?.quantitativeReference ? (
-                        <CheckCircleTwoTone twoToneColor="#52c41a" />
-                      ) : (
-                        <CloseCircleOutlined />
-                      )}
+                      {
+                        <QuantitativeReferenceIcon
+                          value={exchangeDataTarget?.quantitativeReference}
+                        />
+                      }
                     </Descriptions.Item>
                   </Descriptions>
                   <Divider orientationMargin="0" orientation="left" plain>

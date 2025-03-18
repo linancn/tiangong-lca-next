@@ -1,11 +1,11 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
+import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import { StringMultiLang_r, dataSetVersion } from '@/components/Validator/index';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { ListPagination } from '@/services/general/data';
 import { UnitTable } from '@/services/unitgroups/data';
 import { genUnitTableData } from '@/services/unitgroups/util';
-import { CheckCircleOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
 import { Card, Form, Input, Select, Space, theme } from 'antd';
 import { FC, useRef } from 'react';
@@ -123,10 +123,7 @@ export const UnitGroupForm: FC<Props> = ({
       sorter: false,
       search: false,
       render: (_, row) => {
-        if (row.quantitativeReference) {
-          return <CheckCircleOutlined />;
-        }
-        // return <CloseCircleOutlined />;
+        return <QuantitativeReferenceIcon value={row.quantitativeReference} />;
       },
     },
     {
@@ -284,10 +281,9 @@ export const UnitGroupForm: FC<Props> = ({
     ),
     units: (
       <ProTable<UnitTable, ListPagination>
+        rowKey={(record) => `${record.dataSetInternalID}`}
         actionRef={actionRefUnitTable}
-        search={{
-          defaultCollapsed: false,
-        }}
+        search={false}
         pagination={{
           showSizeChanger: false,
           pageSize: 10,

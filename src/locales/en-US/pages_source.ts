@@ -1,6 +1,6 @@
 export default {
   'pages.source.publicationType': 'Publication type',
-
+  'pages.source.refObjectId': 'Reference source data set identifier',
   'pages.source.drawer.title.create': 'Create Source',
   'pages.source.drawer.title.view': 'View Source',
   'pages.source.drawer.title.edit': 'Edit Source',

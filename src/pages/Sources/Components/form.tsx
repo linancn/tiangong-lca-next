@@ -23,6 +23,7 @@ type Props = {
   setLoadFiles: React.Dispatch<React.SetStateAction<RcFile[]>>;
   fileList: UploadFile[];
   setFileList: React.Dispatch<React.SetStateAction<UploadFile[]>>;
+  formType?: string;
 };
 
 export const SourceForm: FC<Props> = ({
@@ -35,6 +36,7 @@ export const SourceForm: FC<Props> = ({
   setLoadFiles,
   fileList,
   setFileList,
+  formType,
 }) => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
@@ -137,7 +139,7 @@ export const SourceForm: FC<Props> = ({
         >
           <Select options={publicationTypeOptions} />
         </Form.Item>
-        <br />
+        {/* <br /> */}
         <Card
           size="small"
           title={
@@ -243,6 +245,7 @@ export const SourceForm: FC<Props> = ({
             <Input disabled={true} style={{ color: token.colorTextDescription }} />
           </Form.Item>
           <SourceSelectForm
+            defaultSourceName={formType === 'create' ? 'ILCD format' : undefined}
             name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
             label={
               <FormattedMessage
@@ -293,7 +296,7 @@ export const SourceForm: FC<Props> = ({
             formRef={formRef}
             onData={onData}
           />
-
+          <br />
           <Form.Item
             label={
               <FormattedMessage

@@ -1,6 +1,6 @@
 import { editTeamMessage, getTeamMessageApi } from '@/services/teams/api';
 import styles from '@/style/custom.less';
-import { CloseOutlined, CopyOutlined, FormOutlined, PlusOutlined } from '@ant-design/icons';
+import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { Button, Collapse, Drawer, Space, Spin, Tooltip, Typography, message } from 'antd';
 import type { FC } from 'react';
@@ -13,7 +13,7 @@ type Props = {
   buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible?: React.Dispatch<React.SetStateAction<boolean>>;
-  type?: 'edit';
+  disabled?: boolean;
 };
 
 const TeamEdit: FC<Props> = ({
@@ -21,7 +21,7 @@ const TeamEdit: FC<Props> = ({
   buttonType,
   actionRef,
   setViewDrawerVisible,
-  type = 'edit',
+  disabled = false,
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
@@ -60,7 +60,7 @@ const TeamEdit: FC<Props> = ({
           { '#text': '', '@xml:lang': 'zh' },
           { '#text': '', '@xml:lang': 'en' },
         ],
-        rank: teamData.rank,
+        // rank: teamData.rank,
         darkLogo: teamData.json?.darkLogo || '',
         lightLogo: teamData.json?.lightLogo || '',
       };
@@ -84,23 +84,9 @@ const TeamEdit: FC<Props> = ({
   return (
     <>
       {buttonType === 'icon' ? (
-        type === 'edit' ? (
           <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
-            <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
+            <Button disabled={disabled} shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
           </Tooltip>
-        ) : type === 'createVersion' ? (
-          <Tooltip
-            title={
-              <FormattedMessage id="pages.button.createVersion" defaultMessage="Create Version" />
-            }
-          >
-            <Button type="text" icon={<PlusOutlined />} size="small" onClick={onEdit} />
-          </Tooltip>
-        ) : (
-          <Tooltip title={<FormattedMessage id="pages.button.copy" defaultMessage="Copy" />}>
-            <Button shape="circle" icon={<CopyOutlined />} onClick={onEdit} />
-          </Tooltip>
-        )
       ) : (
         <Button onClick={onEdit}>
           <FormattedMessage
@@ -113,22 +99,10 @@ const TeamEdit: FC<Props> = ({
       <Drawer
         getContainer={() => document.body}
         title={
-          type === 'edit' ? (
             <FormattedMessage
               id="component.allTeams.drawer.title.edit"
               defaultMessage="Edit Team"
             />
-          ) : type === 'copy' ? (
-            <FormattedMessage
-              id="component.allTeams.drawer.title.copy"
-              defaultMessage="Copy Team"
-            />
-          ) : (
-            <FormattedMessage
-              id="component.allTeams.drawer.title.createVersion"
-              defaultMessage="Create Version"
-            />
-          )
         }
         width="90%"
         closable={false}
@@ -165,14 +139,14 @@ const TeamEdit: FC<Props> = ({
             onFinish={async () => {
               setSpinning(true);
               const formValues = formRefEdit.current?.getFieldsValue() ?? {};
-              const rank = formValues.rank ? -1 : 0;
+              // const rank = formValues.rank ? 0 : -1;
               const jsonData = {
                 title: formValues.title,
                 description: formValues.description,
                 lightLogo: fromData?.lightLogo || '',
                 darkLogo: fromData?.darkLogo || '',
               };
-              const updateResult = await editTeamMessage(id, jsonData, rank);
+              const updateResult = await editTeamMessage(id, jsonData);
               if (updateResult?.data) {
                 console.log('updateResult', updateResult);
                 message.success(

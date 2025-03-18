@@ -9,13 +9,14 @@ import {
 } from '@/components/Validator/index';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
-import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
+// import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
+import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import { FlowpropertyTabTable } from '@/services/flows/data';
 import { genFlowPropertyTabTableData } from '@/services/flows/util';
 import { ListPagination } from '@/services/general/data';
-import { CheckCircleOutlined } from '@ant-design/icons';
+import { getLangText, getUnitData } from '@/services/general/util';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
-import { Card, Divider, Form, Input, Select, Space, theme } from 'antd';
+import { Card, Divider, Form, Input, Select, Space, theme, Tooltip } from 'antd';
 import type { FC } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -36,6 +37,7 @@ type Props = {
   onPropertyData: (data: any) => void;
   onPropertyDataCreate: (data: any) => void;
   onTabChange: (key: string) => void;
+  formType?: string;
 };
 export const FlowForm: FC<Props> = ({
   lang,
@@ -48,10 +50,25 @@ export const FlowForm: FC<Props> = ({
   onPropertyData,
   onPropertyDataCreate,
   onTabChange,
+  formType,
 }) => {
   const [thisFlowType, setThisFlowType] = useState<string | undefined>(flowType);
   const actionRefPropertyTable = useRef<ActionType>();
   const { token } = theme.useToken();
+  const [dataSource, setDataSource] = useState<any>([]);
+
+  useEffect(() => {
+    getUnitData('flowproperty', genFlowPropertyTabTableData(propertyDataSource, lang)).then(
+      (res: any) => {
+        if (res && res?.length) {
+          setDataSource(res);
+        } else {
+          setDataSource([]);
+        }
+      },
+    );
+  }, [propertyDataSource]);
+
   const tabList = [
     {
       key: 'flowInformation',
@@ -130,13 +147,23 @@ export const FlowForm: FC<Props> = ({
       search: false,
       render: (_, row) => {
         return [
-          <ReferenceUnit
-            key={0}
-            id={row.referenceToFlowPropertyDataSetId}
-            version={row.referenceToFlowPropertyDataSetVersion}
-            idType={'flowproperty'}
-            lang={lang}
-          />,
+          // <ReferenceUnit
+          //   key={0}
+          //   id={row.referenceToFlowPropertyDataSetId}
+          //   version={row.referenceToFlowPropertyDataSetVersion}
+          //   idType={'flowproperty'}
+          //   lang={lang}
+          // />,
+          <span key={1}>
+            {getLangText(row.refUnitRes?.name, lang)} (
+            <Tooltip
+              placement="topLeft"
+              title={getLangText(row.refUnitRes?.refUnitGeneralComment, lang)}
+            >
+              {row.refUnitRes?.refUnitName}
+            </Tooltip>
+            )
+          </span>,
         ];
       },
     },
@@ -151,10 +178,7 @@ export const FlowForm: FC<Props> = ({
       sorter: false,
       search: false,
       render: (_, row) => {
-        if (row.quantitativeReference) {
-          return <CheckCircleOutlined />;
-        }
-        // return <CloseCircleOutlined />;
+        return <QuantitativeReferenceIcon value={row.quantitativeReference} />;
       },
     },
     {
@@ -483,6 +507,7 @@ export const FlowForm: FC<Props> = ({
             }
           />
           <SourceSelectForm
+            defaultSourceName={formType === 'create' ? 'ILCD format' : undefined}
             name={['flowInformation', 'technology', 'referenceToTechnicalSpecification']}
             label={
               <FormattedMessage
@@ -680,7 +705,8 @@ export const FlowForm: FC<Props> = ({
         toolBarRender={() => {
           return [<PropertyCreate key={0} lang={lang} onData={onPropertyDataCreate} />];
         }}
-        dataSource={genFlowPropertyTabTableData(propertyDataSource, lang)}
+        // dataSource={genFlowPropertyTabTableData(propertyDataSource, lang)}
+        dataSource={dataSource}
         columns={propertyColumns}
       />
     ),

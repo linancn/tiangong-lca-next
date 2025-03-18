@@ -2,6 +2,9 @@ export default {
   'pages.process.referenceYear': 'Reference year',
   'pages.process.location': 'Location',
 
+  'pages.process.exchange.input': 'Input',
+  'pages.process.exchange.output': 'Output',
+
   'pages.process.drawer.title.create': 'Create process',
   'pages.process.drawer.title.view': 'View process',
   'pages.process.drawer.title.edit': 'Edit process',
@@ -107,7 +110,7 @@ export default {
   //exchange查看创建编辑
   'pages.process.view.exchange.exchangeDirection': 'Exchange direction',
   'pages.process.view.exchange.referenceToFlowDataSet': 'Flow',
-  'pages.process.view.exchange.refObjectId': 'Ref object id',
+  'pages.process.view.exchange.refObjectId': 'Reference flow dataset identifier',
   'pages.process.view.exchange.type': 'Type',
   'pages.process.view.exchange.uri': 'URI',
   'pages.process.veiw.exchange.version': 'Version',
@@ -278,4 +281,6 @@ export default {
   'pages.process.unitConvert.value': 'Value',
   'pages.process.unitConvert.unit': 'Unit',
   'pages.process.unitConvert.result': 'Result',
+
+  'pages.flow.process.administrativeInformation.referenceToDataSetFormat': 'Data set format(s)',
 };

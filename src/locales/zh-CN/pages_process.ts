@@ -2,6 +2,9 @@ export default {
   'pages.process.referenceYear': '参考年份',
   'pages.process.location': '地理位置',
 
+  'pages.process.exchange.input': '输入',
+  'pages.process.exchange.output': '输出',
+
   'pages.process.drawer.title.create': '创建过程',
   'pages.process.drawer.title.view': '查看过程',
   'pages.process.drawer.title.edit': '编辑过程',
@@ -104,7 +107,7 @@ export default {
   //exchange查看创建编辑
   'pages.process.view.exchange.exchangeDirection': '输入/输出方向',
   'pages.process.view.exchange.referenceToFlowDataSet': '流',
-  'pages.process.view.exchange.refObjectId': '引用对象标识符',
+  'pages.process.view.exchange.refObjectId': '引用流数据集标识符',
   'pages.process.view.exchange.type': '类型',
   'pages.process.view.exchange.uri': '统一资源标识符',
   'pages.process.veiw.exchange.version': '版本',
@@ -276,4 +279,6 @@ export default {
   'pages.process.unitConvert.value': '值',
   'pages.process.unitConvert.unit': '单位',
   'pages.process.unitConvert.result': '结果',
+
+  'pages.flow.process.administrativeInformation.referenceToDataSetFormat': '数据集格式',
 };

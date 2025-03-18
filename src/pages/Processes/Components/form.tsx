@@ -10,12 +10,13 @@ import {
 } from '@/components/Validator/index';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
-import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
+// import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
+import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import { ListPagination } from '@/services/general/data';
+import { getLangText, getUnitData } from '@/services/general/util';
 import { getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData } from '@/services/processes/util';
-import { CheckCircleOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
 import { Card, Collapse, Divider, Form, Input, Select, Space, theme, Tooltip } from 'antd';
 import { useEffect, useRef, type FC } from 'react';
@@ -34,7 +35,6 @@ import {
   workflowAndPublicationStatusOptions,
 } from './optiondata';
 import ReveiwItemForm from './Review/form';
-
 type Props = {
   lang: string;
   activeTabKey: string;
@@ -176,13 +176,23 @@ export const ProcessForm: FC<Props> = ({
       search: false,
       render: (_, row) => {
         return [
-          <ReferenceUnit
-            key={0}
-            id={row.referenceToFlowDataSetId}
-            version={row.referenceToFlowDataSetVersion}
-            idType={'flow'}
-            lang={lang}
-          />,
+          // <ReferenceUnit
+          //   key={0}
+          //   id={row.referenceToFlowDataSetId}
+          //   version={row.referenceToFlowDataSetVersion}
+          //   idType={'flow'}
+          //   lang={lang}
+          // />,
+          <span key={1}>
+            {getLangText(row.refUnitRes?.name, lang)} (
+            <Tooltip
+              placement="topLeft"
+              title={getLangText(row.refUnitRes?.refUnitGeneralComment, lang)}
+            >
+              {row.refUnitRes?.refUnitName}
+            </Tooltip>
+            )
+          </span>,
         ];
       },
     },
@@ -209,9 +219,7 @@ export const ProcessForm: FC<Props> = ({
       sorter: false,
       search: false,
       render: (_, row) => {
-        if (row.quantitativeReference) {
-          return <CheckCircleOutlined />;
-        }
+        return <QuantitativeReferenceIcon value={row.quantitativeReference} />;
       },
     },
     {
@@ -1125,7 +1133,7 @@ export const ProcessForm: FC<Props> = ({
           items={[
             {
               key: '1',
-              label: 'Input',
+              label: <FormattedMessage id="pages.process.exchange.input" defaultMessage="Input" />,
               children: (
                 <ProTable<ProcessExchangeTable, ListPagination>
                   actionRef={actionRefExchangeTableInput}
@@ -1149,7 +1157,15 @@ export const ProcessForm: FC<Props> = ({
                       genProcessExchangeTableData(exchangeDataSource, lang),
                       'Input',
                       params,
-                    );
+                    ).then((res: any) => {
+                      return getUnitData('flow', res?.data).then((unitRes: any) => {
+                        return {
+                          ...res,
+                          data: unitRes,
+                          success: true,
+                        };
+                      });
+                    });
                   }}
                   columns={processExchangeColumns}
                 />
@@ -1162,7 +1178,9 @@ export const ProcessForm: FC<Props> = ({
           items={[
             {
               key: '1',
-              label: 'Output',
+              label: (
+                <FormattedMessage id="pages.process.exchange.output" defaultMessage="Output" />
+              ),
               children: (
                 <ProTable<ProcessExchangeTable, ListPagination>
                   actionRef={actionRefExchangeTableOutput}
@@ -1186,7 +1204,15 @@ export const ProcessForm: FC<Props> = ({
                       genProcessExchangeTableData(exchangeDataSource, lang),
                       'Output',
                       params,
-                    );
+                    ).then((res: any) => {
+                      return getUnitData('flow', res?.data).then((unitRes: any) => {
+                        return {
+                          ...res,
+                          data: unitRes,
+                          success: true,
+                        };
+                      });
+                    });
                   }}
                   columns={processExchangeColumns}
                 />

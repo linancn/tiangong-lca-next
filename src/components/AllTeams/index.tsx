@@ -9,7 +9,7 @@ import {
 import { TeamTable } from '@/services/teams/data';
 import { DeleteOutlined, SaveOutlined } from '@ant-design/icons';
 import { ActionType, DragSortTable, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Button, Card, Input, message, Modal, Space, Tooltip } from 'antd';
+import { Button, Card, Input, message, Modal, Space, theme, Tooltip } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { useRef, useState } from 'react';
@@ -20,8 +20,8 @@ import TeamView from './view';
 
 const { Search } = Input;
 
-const TableList: FC<{ disabled?: boolean; showDragSort: boolean }> = ({
-  disabled = false,
+const TableList: FC<{ systemUserRole?: 'admin' | 'owner' | 'member' ; showDragSort: boolean }> = ({
+  systemUserRole,
   showDragSort = false,
 }) => {
   const intl = useIntl();
@@ -30,15 +30,16 @@ const TableList: FC<{ disabled?: boolean; showDragSort: boolean }> = ({
   const [keyWord, setKeyWord] = useState<any>('');
   const [tableData, setTableData] = useState<TeamTable[]>([]);
   const [isDragged, setIsDragged] = useState<boolean>(false);
+  const { token } = theme.useToken();
 
   const handleRemoveTeam = (record: TeamTable) => {
     Modal.confirm({
       okButtonProps: {
         type: 'primary',
-        style: { backgroundColor: '#5C246A' },
+        style: { backgroundColor: token.colorPrimary },
       },
       cancelButtonProps: {
-        style: { borderColor: '#5C246A', color: '#5C246A' },
+        style: { borderColor: token.colorPrimary, color: token.colorPrimary },
       },
       title: intl.formatMessage({
         id: 'component.allTeams.table.remove.confirm.title',
@@ -128,13 +129,14 @@ const TableList: FC<{ disabled?: boolean; showDragSort: boolean }> = ({
       render: (_, record) => (
         <Space size="small">
           <TeamView id={record.id} buttonType="icon" />
-          <TeamEdit actionRef={actionRef} id={record.id} buttonType="icon" />
+          <TeamEdit actionRef={actionRef} id={record.id} buttonType="icon" disabled={systemUserRole !== 'admin' && systemUserRole !== 'owner'} />
           <Tooltip
             title={
               <FormattedMessage id="component.allTeams.table.remove" defaultMessage="Remove" />
             }
           >
             <Button
+              disabled={systemUserRole !== 'admin' && systemUserRole !== 'owner'}
               shape="circle"
               icon={<DeleteOutlined />}
               size="small"
@@ -158,7 +160,7 @@ const TableList: FC<{ disabled?: boolean; showDragSort: boolean }> = ({
     afterIndex: number,
     newDataSource: TeamTable[],
   ) => {
-    if (disabled) {
+    if (systemUserRole !== 'admin' && systemUserRole !== 'owner' && systemUserRole !== 'member') {
       message.error(
         intl.formatMessage({
           id: 'component.allTeams.table.fail.disabled',
@@ -173,7 +175,7 @@ const TableList: FC<{ disabled?: boolean; showDragSort: boolean }> = ({
   };
 
   const handleSaveRanks = async () => {
-    if (disabled) {
+    if (systemUserRole !== 'admin' && systemUserRole !== 'owner' && systemUserRole !== 'member') {
       return;
     }
     try {
@@ -219,7 +221,6 @@ const TableList: FC<{ disabled?: boolean; showDragSort: boolean }> = ({
           enterButton
         />
       </Card>
-      <Card>
         {showDragSort ? (
           <>
             <DragSortTable<TeamTable, ListPagination>
@@ -260,6 +261,7 @@ const TableList: FC<{ disabled?: boolean; showDragSort: boolean }> = ({
                     }
                   >
                     <Button
+                      disabled={systemUserRole !== 'admin' && systemUserRole !== 'owner' && systemUserRole !== 'member'}
                       type="text"
                       icon={<SaveOutlined />}
                       shape="circle"
@@ -277,7 +279,7 @@ const TableList: FC<{ disabled?: boolean; showDragSort: boolean }> = ({
                     />
                   }
                 >
-                  <SelectTeams actionRef={actionRef} buttonType="icon" />
+                  <SelectTeams disabled={systemUserRole !== 'admin' && systemUserRole !== 'owner'} actionRef={actionRef} buttonType="icon" />
                 </Tooltip>,
               ]}
             />
@@ -304,7 +306,6 @@ const TableList: FC<{ disabled?: boolean; showDragSort: boolean }> = ({
             columns={teamColumns}
           />
         )}
-      </Card>
     </>
   );
 };

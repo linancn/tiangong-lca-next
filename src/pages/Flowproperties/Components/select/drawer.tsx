@@ -1,10 +1,11 @@
-import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
+// import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import {
   getFlowpropertyTableAll,
   getFlowpropertyTablePgroongaSearch,
 } from '@/services/flowproperties/api';
 import { FlowpropertyTable } from '@/services/flowproperties/data';
 import { ListPagination } from '@/services/general/data';
+import { getLangText, getUnitData } from '@/services/general/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, DatabaseOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
@@ -132,13 +133,23 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
       search: false,
       render: (_, row) => {
         return [
-          <ReferenceUnit
-            key={0}
-            id={row.refUnitGroupId}
-            version={row.version}
-            idType={'unitgroup'}
-            lang={lang}
-          />,
+          // <ReferenceUnit
+          //   key={0}
+          //   id={row.refUnitGroupId}
+          //   version={row.version}
+          //   idType={'unitgroup'}
+          //   lang={lang}
+          // />,
+          <span key={1}>
+            {getLangText(row.refUnitRes?.name, lang)} (
+            <Tooltip
+              placement="topLeft"
+              title={getLangText(row.refUnitRes?.refUnitGeneralComment, lang)}
+            >
+              {row.refUnitRes?.refUnitName}
+            </Tooltip>
+            )
+          </span>,
         ];
       },
     },
@@ -225,7 +236,15 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
             if (tgKeyWord.length > 0) {
               return getFlowpropertyTablePgroongaSearch(params, lang, 'tg', tgKeyWord, {});
             }
-            return getFlowpropertyTableAll(params, sort, lang, 'tg', []);
+            return getFlowpropertyTableAll(params, sort, lang, 'tg', []).then((res: any) => {
+              return getUnitData('unitgroup', res?.data).then((unitRes: any) => {
+                return {
+                  ...res,
+                  data: unitRes,
+                  success: true,
+                };
+              });
+            });
           }}
           columns={FlowpropertyColumns}
           rowSelection={{
@@ -267,7 +286,15 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
             if (teKeyWord.length > 0) {
               return getFlowpropertyTablePgroongaSearch(params, lang, 'te', teKeyWord, {});
             }
-            return getFlowpropertyTableAll(params, sort, lang, 'te', []);
+            return getFlowpropertyTableAll(params, sort, lang, 'te', []).then((res: any) => {
+              return getUnitData('unitgroup', res?.data).then((unitRes: any) => {
+                return {
+                  ...res,
+                  data: unitRes,
+                  success: true,
+                };
+              });
+            });
           }}
           columns={FlowpropertyColumns}
           rowSelection={{
@@ -312,7 +339,15 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
             if (myKeyWord.length > 0) {
               return getFlowpropertyTablePgroongaSearch(params, lang, 'my', myKeyWord, {});
             }
-            return getFlowpropertyTableAll(params, sort, lang, 'my', []);
+            return getFlowpropertyTableAll(params, sort, lang, 'my', []).then((res: any) => {
+              return getUnitData('unitgroup', res?.data).then((unitRes: any) => {
+                return {
+                  ...res,
+                  data: unitRes,
+                  success: true,
+                };
+              });
+            });
           }}
           columns={FlowpropertyColumns}
           rowSelection={{

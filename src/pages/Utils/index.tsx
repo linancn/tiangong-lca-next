@@ -1,4 +1,4 @@
-import { ProColumns } from '@ant-design/pro-components';
+import { ProColumns, ProFormInstance } from '@ant-design/pro-components';
 import { FormattedMessage } from 'umi';
 export function getDataTitle(dataSource: string) {
   if (dataSource === 'my') {
@@ -23,3 +23,26 @@ export function getAllVersionsColumns(columns: ProColumns<any>[], versionIndex: 
   newColumns.pop();
   return newColumns;
 }
+
+export function getRules(rules: any[]) {
+  return rules.map((rule) => ({
+    ...rule,
+    message: <FormattedMessage id={rule.messageKey} defaultMessage={rule.defaultMessage} />,
+  }));
+}
+
+export const validateRefObjectId = (
+  formRef: React.MutableRefObject<ProFormInstance | undefined>,
+  parentName: string[],
+  name: string[],
+) => {
+  if (parentName) {
+    formRef.current?.validateFields([[...parentName, ...name, '@refObjectId']]);
+  } else {
+    formRef.current?.validateFields([[...name, '@refObjectId']]);
+  }
+};
+
+export const getLocalValueProps = (value: string) => ({
+  value: value === 'en' ? 'English' : value === 'zh' ? '简体中文' : value,
+});

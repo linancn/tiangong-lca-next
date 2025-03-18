@@ -1,4 +1,5 @@
 export default {
+  'pages.contact.reference.tooltip': '引用联系人数据集',
   'pages.contact.id': '编号',
   'pages.contact.contactInformation': '联系人信息',
   'pages.contact.administrativeInformation': '管理信息',
@@ -28,7 +29,7 @@ export default {
   'pages.contact.centralContactPoint': '中心联络人',
   'pages.contact.contactDescriptionOrComment': '联系人描述或备注',
   'pages.contact.referenceToContact': '属于：',
-  'pages.contact.refObjectId': '引用对象标识符',
+  'pages.contact.refObjectId': '引用联系人数据集标识符',
   'pages.contact.type': '类型',
   'pages.contact.uri': '统一资源标识符',
   'pages.contact.version': '版本',
@@ -42,5 +43,16 @@ export default {
   'pages.contact.dataSetVersion': '数据集版本',
   'pages.contact.referenceToPrecedingDataSetVersion': '数据集前一版本',
   'pages.contact.permanentDataSetURI': '永久数据集统一资源标识符',
+  'pages.contact.referenceToOwnershipOfDataSet': '数据集拥有者',
+  'pages.contact.referenceToLogo': '组织或来源的logo',
   //管理信息
+
+  // rules
+  'pages.contact.validator.shortName.required': '联系人的简称是必填项！',
+  'pages.contact.validator.name.required': '联系人姓名是必填项！',
+  'pages.contact.validator.classification.required': '分类是必填项！',
+  'pages.contact.validator.dataSetVersion.required': '数据集版本是必填项！',
+  'pages.contact.validator.referenceToOwnershipOfDataSet.required': '数据集拥有者是必填项！',
+  'pages.contact.validator.timeStamp.required': '时间戳是必填项！',
+  'pages.contact.validator.referenceToDataSetFormat.required': '数据集格式是必填项！',
 };

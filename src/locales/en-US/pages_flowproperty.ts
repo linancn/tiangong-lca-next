@@ -7,7 +7,7 @@ export default {
   'pages.flowproperty.drawer.title.createVersion': 'Create version',
   'pages.flowproperty.drawer.title.copy': 'Copy Flow property',
   'pages.flowproperty.drawer.title.select': 'Select Flow property',
-
+  'pages.flowproperty.editsuccess': 'Flow property edit successfully!',
   'pages.flowpropertiy.generalComment': 'General comment on data set',
   'pages.FlowProperties.view.flowPropertiesInformation': 'Flow property information',
   'pages.FlowProperties.view.modellingAndValidation': 'Modelling and validation',

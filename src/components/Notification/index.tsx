@@ -4,8 +4,8 @@ import {
   rejectTeamInvitationApi,
 } from '@/services/roles/api';
 import { getTeamById } from '@/services/teams/api';
-import { BellOutlined } from '@ant-design/icons';
-import { Badge, message, Modal } from 'antd';
+import { MessageOutlined } from '@ant-design/icons';
+import { Badge, message, Modal, theme } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useIntl } from 'umi';
 
@@ -13,7 +13,7 @@ const Notification: React.FC = () => {
   const [teamTitle, setTeamTitle] = useState<any>([]);
   const [isBeInvited, setIsBeInvited] = useState<boolean>(false);
   const [invitedInfo, setInvitedInfo] = useState<any>({});
-
+  const { token } = theme.useToken();
   const intl = useIntl();
 
   useEffect(() => {
@@ -61,17 +61,18 @@ const Notification: React.FC = () => {
   };
 
   return (
-    <Badge dot={isBeInvited}>
-      <BellOutlined
+    <Badge dot={isBeInvited} offset={[-5, 6]} size="small">
+      <MessageOutlined
+        style={{ fontSize: 16, opacity: 0.5 }}
         onClick={() => {
           if (isBeInvited) {
             Modal.confirm({
               okButtonProps: {
                 type: 'primary',
-                style: { backgroundColor: '#5C246A' },
+                style: { backgroundColor: token.colorPrimary },
               },
               cancelButtonProps: {
-                style: { borderColor: '#5C246A', color: '#5C246A' },
+                style: { borderColor: token.colorPrimary, color: token.colorPrimary },
               },
               title: intl.formatMessage({
                 id: 'teams.notification.team.invite.title',
@@ -79,8 +80,8 @@ const Notification: React.FC = () => {
               }),
               content:
                 (intl.locale === 'zh-CN'
-                  ? teamTitle.find((item: any) => item['@xml:lang'] === 'zh')?.['#text']
-                  : teamTitle.find((item: any) => item['@xml:lang'] === 'en')?.['#text']) +
+                  ? teamTitle?.find((item: any) => item['@xml:lang'] === 'zh')?.['#text'] ?? teamTitle[0]?.['#text']
+                  : teamTitle?.find((item: any) => item['@xml:lang'] === 'en')?.['#text'] ?? teamTitle[0]?.['#text']) +
                 ' ' +
                 intl.formatMessage({
                   id: 'teams.notification.team.invite.content',

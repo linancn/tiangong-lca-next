@@ -1,4 +1,6 @@
+import RequiredSelectFormTitle from '@/components/RequiredSelectFormTitle';
 import { useUpdateReferenceContext } from '@/contexts/updateReferenceContext';
+import { getLocalValueProps, validateRefObjectId } from '@/pages/Utils';
 import { getSourceDetail } from '@/services/sources/api';
 import { genSourceFromData } from '@/services/sources/util';
 import { ProFormInstance } from '@ant-design/pro-components';
@@ -16,14 +18,25 @@ type Props = {
   lang: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;
+  rules?: any[];
+  defaultSourceName?: string;
 };
 
-const SourceSelectForm: FC<Props> = ({ parentName, name, label, lang, formRef, onData }) => {
+const SourceSelectForm: FC<Props> = ({
+  parentName,
+  name,
+  label,
+  lang,
+  formRef,
+  onData,
+  rules = [],
+  defaultSourceName,
+}) => {
   const [id, setId] = useState<string | undefined>(undefined);
   const [version, setVersion] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
   const { referenceValue } = useUpdateReferenceContext() as { referenceValue: number };
-
+  const [ruleErrorState, setRuleErrorState] = useState(false);
   const handletSourceData = (rowId: string, rowVersion: string) => {
     getSourceDetail(rowId, rowVersion).then(async (result: any) => {
       const selectedData = genSourceFromData(result.data?.json?.sourceDataSet ?? {});
@@ -48,6 +61,7 @@ const SourceSelectForm: FC<Props> = ({ parentName, name, label, lang, formRef, o
       }
       setId(rowId);
       setVersion(result.data?.version);
+      validateRefObjectId(formRef, parentName, name);
       onData();
     });
   };
@@ -58,6 +72,43 @@ const SourceSelectForm: FC<Props> = ({ parentName, name, label, lang, formRef, o
       handletSourceData(id, version ?? '');
     }
   }, [referenceValue]);
+
+  const getDefaultValue = () => {
+    if (defaultSourceName === 'ILCD format') {
+      const referenceToDataSetFormatId = 'a97a0155-0234-4b87-b4ce-a45da52f2a40';
+      getSourceDetail(referenceToDataSetFormatId, '').then(async (result2: any) => {
+        const referenceToDataSetFormatData = genSourceFromData(
+          result2.data?.json?.sourceDataSet ?? {},
+        );
+        const referenceToDataSetFormat = {
+          '@refObjectId': referenceToDataSetFormatId,
+          '@type': 'source data set',
+          '@uri': `../sources/${referenceToDataSetFormatId}.xml`,
+          '@version': result2.data?.version,
+          'common:shortDescription':
+            referenceToDataSetFormatData?.sourceInformation?.dataSetInformation?.[
+              'common:shortName'
+            ] ?? [],
+        };
+        const newData = {
+          administrativeInformation: {
+            dataEntryBy: {
+              'common:referenceToDataSetFormat': referenceToDataSetFormat,
+            },
+          },
+        };
+        // formRef.current?.resetFields();
+        const currentData = formRef.current?.getFieldsValue();
+        formRef.current?.setFieldsValue({ ...currentData, ...newData });
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (defaultSourceName) {
+      getDefaultValue();
+    }
+  }, [defaultSourceName]);
 
   useEffect(() => {
     setId(undefined);
@@ -70,12 +121,43 @@ const SourceSelectForm: FC<Props> = ({ parentName, name, label, lang, formRef, o
     }
   });
 
+  const requiredRules = rules.filter((rule: any) => rule.required);
+  const isRequired = requiredRules && requiredRules.length;
+  const notRequiredRules = rules.filter((rule: any) => !rule.required) ?? [];
+
   return (
-    <Card size="small" title={label}>
+    <Card
+      size="small"
+      title={
+        isRequired ? (
+          <RequiredSelectFormTitle
+            label={label}
+            ruleErrorState={ruleErrorState}
+            requiredRules={requiredRules}
+          />
+        ) : (
+          label
+        )
+      }
+    >
       <Space direction="horizontal">
         <Form.Item
-          label={<FormattedMessage id="pages.contact.refObjectId" defaultMessage="Ref object id" />}
+          label={<FormattedMessage id="pages.source.refObjectId" defaultMessage="Ref object id" />}
           name={[...name, '@refObjectId']}
+          rules={[
+            ...notRequiredRules,
+            isRequired && {
+              validator: (rule, value) => {
+                if (!value) {
+                  setRuleErrorState(true);
+                  console.log('form rules check error');
+                  return Promise.reject(new Error());
+                }
+                setRuleErrorState(false);
+                return Promise.resolve();
+              },
+            },
+          ]}
         >
           <Input disabled={true} style={{ width: '350px', color: token.colorTextDescription }} />
         </Form.Item>
@@ -107,6 +189,7 @@ const SourceSelectForm: FC<Props> = ({ parentName, name, label, lang, formRef, o
               onClick={() => {
                 formRef.current?.setFieldValue([...name], {});
                 onData();
+                validateRefObjectId(formRef, parentName, name);
               }}
             >
               <FormattedMessage id="pages.button.clear" defaultMessage="Clear" />
@@ -115,12 +198,14 @@ const SourceSelectForm: FC<Props> = ({ parentName, name, label, lang, formRef, o
         </Space>
       </Space>
       <Form.Item
+        hidden
         label={<FormattedMessage id="pages.contact.type" defaultMessage="Type" />}
         name={[...name, '@type']}
       >
         <Input disabled={true} style={{ color: token.colorTextDescription }} />
       </Form.Item>
       <Form.Item
+        hidden
         label={<FormattedMessage id="pages.contact.uri" defaultMessage="URI" />}
         name={[...name, '@uri']}
       >
@@ -142,7 +227,11 @@ const SourceSelectForm: FC<Props> = ({ parentName, name, label, lang, formRef, o
               {subFields.map((subField) => (
                 <Row key={subField.key}>
                   <Col flex="100px" style={{ marginRight: '10px' }}>
-                    <Form.Item noStyle name={[subField.name, '@xml:lang']}>
+                    <Form.Item
+                      getValueProps={(value) => getLocalValueProps(value)}
+                      noStyle
+                      name={[subField.name, '@xml:lang']}
+                    >
                       <Input
                         disabled={true}
                         style={{ width: '100px', color: token.colorTextDescription }}

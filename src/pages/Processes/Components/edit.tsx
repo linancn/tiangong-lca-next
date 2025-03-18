@@ -1,16 +1,10 @@
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import { getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
-import { createProcess, getProcessDetail, updateProcess } from '@/services/processes/api';
+import { getProcessDetail, updateProcess } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
 import styles from '@/style/custom.less';
-import {
-  CloseOutlined,
-  CopyOutlined,
-  FormOutlined,
-  PlusOutlined,
-  ProductOutlined,
-} from '@ant-design/icons';
+import { CloseOutlined, FormOutlined, ProductOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import {
   Button,
@@ -27,7 +21,6 @@ import {
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
-import { v4 } from 'uuid';
 import { ProcessForm } from './form';
 
 type Props = {
@@ -37,7 +30,6 @@ type Props = {
   buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined> | undefined;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  type?: 'edit' | 'copy' | 'createVersion';
 };
 const ProcessEdit: FC<Props> = ({
   id,
@@ -46,7 +38,6 @@ const ProcessEdit: FC<Props> = ({
   buttonType,
   actionRef,
   setViewDrawerVisible,
-  type = 'edit',
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
@@ -167,36 +158,12 @@ const ProcessEdit: FC<Props> = ({
           />
         </Tooltip>
       ) : (
-        <Tooltip
-          title={
-            <FormattedMessage
-              id={
-                type === 'copy'
-                  ? 'pages.button.copy'
-                  : type === 'createVersion'
-                    ? 'pages.button.createVersion'
-                    : 'pages.button.edit'
-              }
-              defaultMessage={
-                type === 'copy' ? 'Copy' : type === 'createVersion' ? 'Create Version' : 'Edit'
-              }
-            />
-          }
-        >
+        <Tooltip title={<FormattedMessage id={'pages.button.edit'} defaultMessage={'Edit'} />}>
           {buttonType === 'icon' ? (
-            type === 'edit' ? (
-              <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
-            ) : type === 'createVersion' ? (
-              <Button type="text" icon={<PlusOutlined />} size="small" onClick={onEdit} />
-            ) : (
-              <Button shape="circle" icon={<CopyOutlined />} size="small" onClick={onEdit} />
-            )
+            <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
           ) : (
             <Button onClick={onEdit}>
-              <FormattedMessage
-                id={type === 'createVersion' ? 'pages.button.createVersion' : 'pages.button.edit'}
-                defaultMessage={type === 'createVersion' ? 'Create Version' : 'Edit'}
-              />
+              <FormattedMessage id={'pages.button.edit'} defaultMessage={'Edit'} />
             </Button>
           )}
         </Tooltip>
@@ -205,20 +172,8 @@ const ProcessEdit: FC<Props> = ({
         getContainer={() => document.body}
         title={
           <FormattedMessage
-            id={
-              type === 'copy'
-                ? 'pages.process.drawer.title.copy'
-                : type === 'createVersion'
-                  ? 'pages.process.drawer.title.createVersion'
-                  : 'pages.process.drawer.title.edit'
-            }
-            defaultMessage={
-              type === 'copy'
-                ? 'Copy process'
-                : type === 'createVersion'
-                  ? 'Create Version'
-                  : 'Edit process'
-            }
+            id={'pages.process.drawer.title.edit'}
+            defaultMessage={'Edit process'}
           />
         }
         width="90%"
@@ -235,25 +190,21 @@ const ProcessEdit: FC<Props> = ({
         onClose={() => setDrawerVisible(false)}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
-            {type === 'edit' ? (
-              <>
-                <Button onClick={() => {}}>
-                  <FormattedMessage id="pages.button.review" defaultMessage="Submit for review" />
-                </Button>
-                <Button
-                  onClick={() => {
-                    updateReference();
-                  }}
-                >
-                  <FormattedMessage
-                    id="pages.button.updateReference"
-                    defaultMessage="Update reference"
-                  />
-                </Button>
-              </>
-            ) : (
-              <></>
-            )}
+            <>
+              <Button onClick={() => {}}>
+                <FormattedMessage id="pages.button.review" defaultMessage="Submit for review" />
+              </Button>
+              <Button
+                onClick={() => {
+                  updateReference();
+                }}
+              >
+                <FormattedMessage
+                  id="pages.button.updateReference"
+                  defaultMessage="Update reference"
+                />
+              </Button>
+            </>
             <Button onClick={() => setDrawerVisible(false)}>
               <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
             </Button>
@@ -283,32 +234,6 @@ const ProcessEdit: FC<Props> = ({
               }}
               onFinish={async () => {
                 setSpinning(true);
-                if (type === 'copy' || type === 'createVersion') {
-                  const createResult = await createProcess(type === 'copy' ? v4() : id, fromData);
-                  if (createResult?.data) {
-                    message.success(
-                      intl.formatMessage({
-                        id: 'pages.button.create.success',
-                        defaultMessage: 'Created successfully!',
-                      }),
-                    );
-                    setSpinning(false);
-                    setDrawerVisible(false);
-                    setViewDrawerVisible(false);
-                    actionRef?.current?.reload();
-                  } else if (createResult?.error?.code === '23505') {
-                    message.error(
-                      intl.formatMessage({
-                        id: 'pages.button.createVersion.fail',
-                        defaultMessage: 'Please change the version and submit',
-                      }),
-                    );
-                  } else {
-                    message.error(createResult?.error?.message);
-                  }
-                  setSpinning(false);
-                  return true;
-                }
                 const updateResult = await updateProcess(id, version, {
                   ...fromData,
                   exchanges: { exchange: [...exchangeDataSource] },

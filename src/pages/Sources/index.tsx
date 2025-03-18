@@ -94,14 +94,12 @@ const TableList: FC = () => {
               `}
               id={row.id}
             >
-              <SourceEdit
-                type="createVersion"
+              <SourceCreate
+                actionType="createVersion"
                 id={row.id}
                 version={row.version}
                 lang={lang}
-                buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
               />
             </AllVersionsList>
           </Space>
@@ -138,14 +136,12 @@ const TableList: FC = () => {
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
               />
-              <SourceEdit
-                type="copy"
+              <SourceCreate
+                actionType="copy"
                 id={row.id}
                 version={row.version}
                 lang={lang}
-                buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
               />
               <SourceDelete
                 id={row.id}
@@ -183,14 +179,12 @@ const TableList: FC = () => {
               version={row.version}
               buttonType={'icon'}
             />
-            <SourceEdit
-              type="copy"
+            <SourceCreate
+              actionType="copy"
               id={row.id}
               version={row.version}
               lang={lang}
-              buttonType={'icon'}
               actionRef={actionRef}
-              setViewDrawerVisible={() => {}}
             />
           </Space>,
         ];
@@ -221,7 +215,7 @@ const TableList: FC = () => {
       <Card>
         <Search
           size={'large'}
-          placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+          placeholder={intl.formatMessage({ id: 'pages.search.keyWord',defaultMessage: 'Full-text search: Enter one or more keywords.' })}
           onSearch={onSearch}
           enterButton
         />

@@ -5,6 +5,7 @@ import { FormattedMessage, useIntl, useLocation } from 'umi';
 
 import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
+import LifeCycleModelCreate from '@/pages/LifeCycleModels/Components/create';
 import LifeCycleModelEdit from '@/pages/LifeCycleModels/Components/edit';
 import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
 import { contributeSource } from '@/services/general/api';
@@ -103,14 +104,12 @@ const TableList: FC = () => {
               `}
               id={row.id}
             >
-              <ProcessEdit
-                type="createVersion"
+              <ProcessCreate
+                actionType="createVersion"
                 id={row.id}
                 version={row.version}
                 lang={lang}
-                buttonType={'icon'}
                 actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
               />
             </AllVersionsList>
           </Space>
@@ -170,8 +169,8 @@ const TableList: FC = () => {
                 />
               )}
               {row.isFromLifeCycle ? (
-                <LifeCycleModelEdit
-                  type="copy"
+                <LifeCycleModelCreate
+                  actionType="copy"
                   id={row.id}
                   version={row.version}
                   lang={lang}
@@ -179,14 +178,12 @@ const TableList: FC = () => {
                   buttonType={'icon'}
                 />
               ) : (
-                <ProcessEdit
-                  type="copy"
+                <ProcessCreate
+                  actionType="copy"
                   id={row.id}
                   version={row.version}
                   lang={lang}
-                  buttonType={'icon'}
                   actionRef={actionRef}
-                  setViewDrawerVisible={() => {}}
                 />
               )}
               <ProcessDelete
@@ -245,14 +242,12 @@ const TableList: FC = () => {
               disabled={false}
               actionRef={actionRef}
             />
-            <ProcessEdit
-              type="copy"
+            <ProcessCreate
+              actionType="copy"
               id={row.id}
               version={row.version}
               lang={lang}
-              buttonType={'icon'}
               actionRef={actionRef}
-              setViewDrawerVisible={() => {}}
             />
           </Space>,
         ];

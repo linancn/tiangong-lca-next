@@ -8,44 +8,152 @@
     "contactInformation": {
       "dataSetInformation": {
         "common:UUID": "str",
-        "common:shortName": [
-          {
-            "@xml:lang": "str",
-            "#text": "str"
-          }
-        ],
-        "common:name": [
-          {
-            "@xml:lang": "str",
-            "#text": "str"
-          }
-        ],
+        "common:shortName": {
+          "value": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ],
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.contact.validator.shortName.required",
+              "defaultMessage": "shortName is required"
+            }
+          ]
+        },
+        "common:name": {
+          "value": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ],
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.contact.validator.name.required",
+              "defaultMessage": "Name is required"
+            }
+          ]
+        },
         "classificationInformation": {
           "common:classification": {
-            "common:class": {
-              "@level": "str",
-              "#text": "str"
+            "value": {
+              "common:class": {
+                "@level": "str",
+                "#text": "str",
+                "@classId": "str"
+              },
+              "@name": "str",
+              "@classes": "str"
             },
-            "@name": "str",
-            "@classes": "str"
+            "rules": [
+              {
+                "required": true,
+                "messageKey": "pages.contact.validator.classification.required",
+                "defaultMessage": "Classification is required"
+              }
+            ]
           }
         },
-        "email": "str",
-        "WWWAddress": "str",
+        "email": {
+          "value": "str",
+          "rules": [
+            {
+              "type": "email",
+              "messageKey": "validator.pages.contact.email.pattern",
+              "defaultMessage": "The input is not valid E-mail!"
+            }
+          ]
+        },
+        "WWWAddress": {
+          "value": "str",
+          "rules": [
+            {
+              "type": "url",
+              "messageKey": "validator.pages.contact.WWWAddress.invalid",
+              "defaultMessage": "Please enter a valid WWWAddress!"
+            },
+            {
+              "warn": true,
+              "messageKey": "validator.recommended.empty",
+              "defaultMessage": "Recommended to fill in, providing additional information without affecting completeness!"
+            }
+          ]
+        },
         "centralContactPoint": {
-          "@xml:lang": "str",
-          "#text": "str"
+          "value": {
+            "@xml:lang": "str",
+            "#text": "str"
+          },
+          "rules": [
+            {
+              "warningOnly": true,
+              "messageKey": "validator.recommended.empty",
+              "defaultMessage": "Recommended to fill in, providing additional information without affecting completeness!"
+            },
+            {
+              "max": 1000,
+              "messageKey": "validator.STMultiLang.pattern",
+              "defaultMessage": "Length cannot exceed 1000 characters!"
+            }
+          ]
         },
         "contactDescriptionOrComment": {
-          "@xml:lang": "str",
-          "#text": "str"
+          "value": {
+            "@xml:lang": "str",
+            "#text": "str"
+          },
+          "rules": [
+            {
+              "warningOnly": true,
+              "messageKey": "validator.recommended.empty",
+              "defaultMessage": "Optional to fill in, providing additional information without affecting completeness!"
+            },
+            {
+              "max": 1000,
+              "messageKey": "validator.STMultiLang.pattern",
+              "defaultMessage": "Length cannot exceed 1000 characters!"
+            }
+          ]
         },
         "contactAddress": {
-          "@xml:lang": "str",
-          "#text": "str"
+          "value": {
+            "@xml:lang": "str",
+            "#text": "str"
+          },
+          "rules": [
+            {
+              "messageKey": "validator.optional.empty",
+              "defaultMessage": "Optional to fill in, providing additional information without affecting completeness!"
+            },
+            {
+              "max": 1000,
+              "messageKey": "validator.STMultiLang.pattern",
+              "defaultMessage": "Length cannot exceed 1000 characters!"
+            }
+          ]
         },
-        "telephone": "str",
-        "telefax": "str",
+        "telephone": {
+          "value": "str",
+          "rules": [
+            {
+              "messageKey": "validator.optional.empty",
+              "defaultMessage": "Optional to fill in, providing additional information without affecting completeness!"
+            }
+          ]
+        },
+        "telefax": {
+          "value": "str",
+          "rules": [
+            {
+              "messageKey": "validator.optional.empty",
+              "defaultMessage": "Optional to fill in, providing additional information without affecting completeness!"
+            }
+          ]
+        },
         "referenceToContact": [
           {
             "@refObjectId": "str",
@@ -71,8 +179,35 @@
     },
     "administrativeInformation": {
       "publicationAndOwnership": {
-        "common:dataSetVersion": "str",
+        "common:dataSetVersion": {
+          "value": "str",
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.contact.validator.dataSetVersion.required",
+              "defaultMessage": "Data set version is required"
+            }
+          ]
+        },
         "common:permanentDataSetURI": "str",
+        "common:referenceToOwnershipOfDataSet": {
+          "value": {
+            "@type": "str",
+            "@refObjectId": "str",
+            "@uri": "str",
+            "common:shortDescription": {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          },
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.contact.validator.referenceToOwnershipOfDataSet.required",
+              "defaultMessage": "Reference to ownership of data set is required"
+            }
+          ]
+        },
         "common:referenceToPrecedingDataSetVersion": {
           "@type": "str",
           "@refObjectId": "str",
@@ -84,16 +219,34 @@
         }
       },
       "dataEntryBy": {
-        "common:timeStamp": "str",
+        "common:timeStamp": {
+          "value": "str",
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.contact.validator.timeStamp.required",
+              "defaultMessage": "Time stamp is required"
+            }
+          ]
+        },
         "common:referenceToDataSetFormat": {
-          "@refObjectId": "str",
-          "@type": "str",
-          "@uri": "str",
-          "common:shortDescription": {
-            "@xml:lang": "str",
-            "#text": "str"
+          "value": {
+            "@refObjectId": "str",
+            "@type": "str",
+            "@uri": "str",
+            "common:shortDescription": {
+              "@xml:lang": "str",
+              "#text": "str"
+            },
+            "@version": "str"
           },
-          "@version": "str"
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.contact.validator.referenceToDataSetFormat.required",
+              "defaultMessage": "Time stamp is required"
+            }
+          ]
         }
       }
     }

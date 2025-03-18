@@ -1,3 +1,5 @@
+import LangTextItemForm from '@/components/LangTextItem/form';
+import RequiredMark from '@/components/RequiredMark';
 import { ListPagination } from '@/services/general/data';
 import {
   createTeamMessage,
@@ -32,7 +34,6 @@ import {
   Button,
   Flex,
   Form,
-  Input,
   message,
   Modal,
   Spin,
@@ -50,6 +51,7 @@ import AddMemberModal from './Components/AddMemberModal';
 const LogoBaseUrl = 'https://qgzvkongdjqiiamzbbts.supabase.co/storage/v1/object/public/sys-files/';
 
 const Team = () => {
+  const { token } = theme.useToken();
   const [activeTabKey, setActiveTabKey] = useState('info');
   const [teamId, setTeamId] = useState('');
   const [userRole, setUserRole] = useState('');
@@ -64,14 +66,15 @@ const Team = () => {
   const [membersLoading, setMembersLoading] = useState(false);
   const [addModalVisible, setAddModalVisible] = useState(false);
 
+  const [titleError, setTitleError] = useState(false);
+  const [descriptionError, setDescriptionError] = useState(false);
+
   const [rank, setRank] = useState(-1);
   const actionRef = useRef<any>(null);
   const [searchParams] = useState(new URLSearchParams(window.location.search));
   const action = searchParams.get('action');
 
   const intl = useIntl();
-
-  const { token } = theme.useToken();
 
   const initialUseTeamId = async () => {
     const { data, success } = await getUserRoles();
@@ -100,22 +103,21 @@ const Team = () => {
         }),
       );
     } else if (data.length > 0) {
-      const { title, description } = data[0]?.json;
+      const { title, description } = data[0]?.json ?? {};
       setRank(data[0]?.rank);
-      let _formData: any = {};
-      title?.forEach((t: { '#text': string; '@xml:lang': string }) => {
-        _formData[`title-${t['@xml:lang']}`] = t['#text'];
-      });
-      description?.forEach((d: { '#text': string; '@xml:lang': string }) => {
-        _formData[`description-${d['@xml:lang']}`] = d['#text'];
-      });
-      _formData.rank = data[0]?.rank;
-      setLightLogo(data[0]?.json.lightLogo);
-      setDarkLogo(data[0]?.json.darkLogo);
+
+      const formData: any = {
+        title: title || [],
+        description: description || [],
+        rank: data[0]?.rank,
+      };
+
+      setLightLogo(data[0]?.json?.lightLogo);
+      setDarkLogo(data[0]?.json?.darkLogo);
       formRefEdit.current?.setFieldsValue({
-        ..._formData,
-        darkLogo: LogoBaseUrl + data[0]?.json.darkLogo,
-        lightLogo: LogoBaseUrl + data[0]?.json.lightLogo,
+        ...formData,
+        darkLogo: LogoBaseUrl + data[0]?.json?.darkLogo,
+        lightLogo: LogoBaseUrl + data[0]?.json?.lightLogo,
       });
     }
     setTeamInfoSpinning(false);
@@ -133,23 +135,28 @@ const Team = () => {
   };
 
   const renderTeamInfoForm = () => {
-    const getParams = (input: Record<string, string>) => {
-      const result: Record<string, Array<{ '#text': string; '@xml:lang': string }>> = {};
+    const getParams = (input: Record<string, any>) => {
+      const result: Record<string, any> = {};
 
       Object.entries(input).forEach(([key, value]) => {
-        const [field, lang] = key.split('-');
+        if (Array.isArray(value)) {
+          result[key] = value;
+        } else if (key !== 'rank' && key !== 'lightLogo' && key !== 'darkLogo') {
+          const [field, lang] = key.split('-');
 
-        if (!result[field]) {
-          result[field] = [];
+          if (!result[field]) {
+            result[field] = [];
+          }
+
+          result[field].push({
+            '#text': value,
+            '@xml:lang': lang,
+          });
+        } else {
+          result[key] = value;
         }
-
-        result[field].push({
-          '#text': value,
-          '@xml:lang': lang,
-        });
       });
 
-      console.log('result', result);
       return result;
     };
 
@@ -277,7 +284,7 @@ const Team = () => {
     };
 
     return (
-      <Flex gap="middle" vertical style={{ maxWidth: '100%', minWidth: '600px' }}>
+      <Flex gap="small" vertical style={{ maxWidth: '50%', minWidth: '200px' }}>
         <Spin spinning={teamInfoSpinning}>
           <ProForm
             disabled={userRole !== 'admin' && userRole !== 'owner' && action !== 'create'}
@@ -291,68 +298,53 @@ const Team = () => {
             onFinish={(values) => submitTeamInfo(values)}
           >
             <Form.Item
-              label={<FormattedMessage id="pages.team.info.title" defaultMessage="Team Name" />}
-              style={{ marginBottom: 0 }}
-            >
-              <Form.Item style={{ display: 'inline-block', width: '120px', marginRight: '8px' }}>
-                <Input value="简体中文" disabled style={{ color: token.colorTextBase }} />
-              </Form.Item>
-
-              <Form.Item
-                name="title-zh"
-                style={{ display: 'inline-block', width: 'calc(70%)' }}
-                rules={[
-                  {
-                    required: true,
-                    message: (
-                      <FormattedMessage
-                        id="pages.team.info.title.required"
-                        defaultMessage="Please input team name!"
-                      />
-                    ),
-                  },
-                ]}
-              >
-                <Input />
-              </Form.Item>
-              <br />
-              <Form.Item style={{ display: 'inline-block', width: '120px', marginRight: '8px' }}>
-                <Input value="English" disabled style={{ color: token.colorTextBase }} />
-              </Form.Item>
-              <Form.Item
-                name="title-en"
-                style={{ display: 'inline-block', width: 'calc(70%)' }}
-                rules={[
-                  {
-                    required: true,
-                    message: (
-                      <FormattedMessage
-                        id="pages.team.info.title.required"
-                        defaultMessage="Please input team name!"
-                      />
-                    ),
-                  },
-                ]}
-              >
-                <Input />
-              </Form.Item>
-            </Form.Item>
-
-            <Form.Item
               label={
-                <FormattedMessage
-                  id="pages.team.info.description"
-                  defaultMessage="Team Description"
+                <RequiredMark
+                  label={<FormattedMessage id="pages.team.info.title" defaultMessage="Team Name" />}
+                  showError={titleError}
                 />
               }
               style={{ marginBottom: 0 }}
             >
-              <Form.Item style={{ display: 'inline-block', width: '120px', marginRight: '8px' }}>
-                <Input value="简体中文" disabled style={{ color: token.colorTextBase }} />
-              </Form.Item>
-              <Form.Item
-                name="description-zh"
-                style={{ display: 'inline-block', width: 'calc(70%)' }}
+              <LangTextItemForm
+                name="title"
+                label={<FormattedMessage id="pages.team.info.title" defaultMessage="Team Name" />}
+                rules={[
+                  {
+                    required: true,
+                    message: (
+                      <FormattedMessage
+                        id="pages.team.info.title.required"
+                        defaultMessage="Please input team name!"
+                      />
+                    ),
+                  },
+                ]}
+                setRuleErrorState={setTitleError}
+              />
+            </Form.Item>
+            <Form.Item
+              label={
+                <RequiredMark
+                  label={
+                    <FormattedMessage
+                      id="pages.team.info.description"
+                      defaultMessage="Team Description"
+                    />
+                  }
+                  showError={descriptionError}
+                />
+              }
+              style={{ marginBottom: 0 }}
+            >
+              <LangTextItemForm
+                name="description"
+                label={
+                  <FormattedMessage
+                    id="pages.team.info.description"
+                    defaultMessage="Team Description"
+                  />
+                }
                 rules={[
                   {
                     required: true,
@@ -364,30 +356,8 @@ const Team = () => {
                     ),
                   },
                 ]}
-              >
-                <Input.TextArea rows={1} />
-              </Form.Item>
-              <br />
-              <Form.Item style={{ display: 'inline-block', width: '120px', marginRight: '8px' }}>
-                <Input value="English" disabled style={{ color: token.colorTextBase }} />
-              </Form.Item>
-              <Form.Item
-                name="description-en"
-                style={{ display: 'inline-block', width: 'calc(70%)' }}
-                rules={[
-                  {
-                    required: true,
-                    message: (
-                      <FormattedMessage
-                        id="pages.team.info.description.required"
-                        defaultMessage="Please input team description!"
-                      />
-                    ),
-                  },
-                ]}
-              >
-                <Input.TextArea rows={1} />
-              </Form.Item>
+                setRuleErrorState={setDescriptionError}
+              />
             </Form.Item>
             <Form.Item
               name="rank"
@@ -407,7 +377,7 @@ const Team = () => {
                 }
               />
             </Form.Item>
-
+            {/* <Flex gap="middle" > */}
             <Form.Item
               name="lightLogo"
               label={
@@ -479,6 +449,7 @@ const Team = () => {
                 )}
               </Upload>
             </Form.Item>
+            {/* </Flex> */}
           </ProForm>
         </Spin>
       </Flex>
@@ -554,18 +525,20 @@ const Team = () => {
                   disabled={
                     !(record.role !== 'owner' && (userRole === 'owner' || userRole === 'admin'))
                   }
-                  type="text"
+                  shape="circle"
+                  size='small'
                   icon={<DeleteOutlined />}
                   onClick={() => {
                     Modal.confirm({
                       okButtonProps: {
                         type: 'primary',
-                        style: { backgroundColor: '#5C246A' },
+                        style: { backgroundColor: token.colorPrimary },
                       },
                       cancelButtonProps: {
-                        style: { borderColor: '#5C246A', color: '#5C246A' },
+                        style: { borderColor: token.colorPrimary, color: token.colorPrimary },
                       },
-                      title: intl.formatMessage({ id: 'teams.members.deleteConfirm' }),
+                      title: intl.formatMessage({ id: 'teams.members.deleteConfirm.title' }),
+                      content: intl.formatMessage({ id: 'teams.members.deleteConfirm.content' }),
                       onOk: async () => {
                         try {
                           const { error } = await delRoleApi(record.team_id, record.user_id);
@@ -598,9 +571,10 @@ const Team = () => {
               <Tooltip
                 title={<FormattedMessage id="teams.members.setAdmin" defaultMessage="Set Admin" />}
               >
-                <Button
+                <Button 
+                  shape="circle"
+                  size='small'
                   disabled={!(record.role === 'member' && userRole === 'owner')}
-                  type="text"
                   icon={<CrownOutlined />}
                   onClick={() => updateRole(record?.team_id, record?.user_id, 'admin')}
                 />
@@ -614,7 +588,8 @@ const Team = () => {
               >
                 <Button
                   disabled={!(record.role === 'admin' && userRole === 'owner')}
-                  type="text"
+                  shape="circle"
+                  size='small'
                   icon={<UserOutlined />}
                   onClick={() => updateRole(record?.team_id, record?.user_id, 'member')}
                 />
@@ -628,7 +603,8 @@ const Team = () => {
                   disabled={
                     !(record.role === 'rejected' && (userRole === 'admin' || userRole === 'owner'))
                   }
-                  type="text"
+                  shape="circle"
+                  size='small'
                   icon={<UserAddOutlined />}
                   onClick={async () => {
                     const error = await reInvitedApi(record?.user_id, record?.team_id);
@@ -658,18 +634,24 @@ const Team = () => {
     ];
 
     return (
-      <div>
-        <div style={{ marginBottom: 16, textAlign: 'right' }}>
-          <Tooltip title={<FormattedMessage id="teams.members.add" defaultMessage="Add" />}>
-            <Button
-              disabled={!(userRole === 'admin' || userRole === 'owner')}
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => setAddModalVisible(true)}
-            />
-          </Tooltip>
-        </div>
+      <>
         <ProTable<TeamMemberTable, ListPagination>
+          headerTitle={
+            <>
+              <FormattedMessage id="menu.account.team" defaultMessage="My Team" /> /{' '}
+              <FormattedMessage id="pages.team.tabs.members" defaultMessage="Members Message" />
+            </>
+          }
+          toolBarRender={() => {
+              return [<Tooltip key={0} title={<FormattedMessage id="teams.members.add" defaultMessage="Add" />}>
+                <Button
+                  type="text"
+                  disabled={!(userRole === 'admin' || userRole === 'owner')}
+                  icon={<PlusOutlined />}
+                  onClick={() => setAddModalVisible(true)}
+                />
+              </Tooltip>];
+          }}
           loading={membersLoading}
           columns={columns}
           rowKey="email"
@@ -678,8 +660,7 @@ const Team = () => {
             pageSize: 10,
             showSizeChanger: true,
             showQuickJumper: true,
-          }}
-          toolBarRender={false}
+          }} 
           request={async (
             params: {
               pageSize: number;
@@ -724,7 +705,7 @@ const Team = () => {
             actionRef.current?.reload();
           }}
         />
-      </div>
+      </>
     );
   };
 
