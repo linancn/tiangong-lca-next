@@ -26,6 +26,7 @@ import React, {
 } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 // import UnitgroupsFrom from '@/pages/Unitgroups/Components/Unit/edit';
+import { initVersion } from '@/services/general/data';
 import { formatDateTime } from '@/services/general/util';
 import { ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { v4 } from 'uuid';
@@ -119,7 +120,7 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
           'common:timeStamp': currentDateTime,
         },
         publicationAndOwnership: {
-          'common:dataSetVersion': '01.00.000',
+          'common:dataSetVersion': initVersion,
         },
       },
     };
