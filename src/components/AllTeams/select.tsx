@@ -1,7 +1,7 @@
 import { getLang, getLangText } from '@/services/general/util';
 import { getUnrankedTeams, updateSort } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
-import { SelectOutlined } from '@ant-design/icons';
+import { PlusOutlined, CloseOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Drawer, message, Space, Tooltip } from 'antd';
 import { FC, useRef, useState } from 'react';
@@ -139,17 +139,26 @@ const SelectTeams: FC<SelectTeamsProps> = ({
             type="text"
             shape="circle"
             size="small"
-            icon={<SelectOutlined />}
+            icon={<PlusOutlined />}
             onClick={showDrawer}
           />
         </Tooltip>
       )}
 
       <Drawer
+        bodyStyle={{ paddingTop: 0 }}
+        closable={false}
+        extra={
+          <Button
+            icon={<CloseOutlined />}
+            style={{ border: 0 }}
+            onClick={() => setVisible(false)}
+          />
+        }
         title={
           <FormattedMessage id="component.allTeams.select.title" defaultMessage="Select Team" />
         }
-        width={800}
+        width={1000}
         onClose={onClose}
         open={visible}
         footer={
