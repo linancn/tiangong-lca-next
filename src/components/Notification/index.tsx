@@ -22,7 +22,6 @@ const Notification: React.FC = () => {
         setIsBeInvited(res.data?.role === 'is_invited');
         setInvitedInfo(res.data);
         getTeamById(res.data?.team_id).then(({ success, data }) => {
-          console.log('data', data);
           if (success) {
             setTeamTitle(data[0]?.json?.title);
           }
