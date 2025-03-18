@@ -49,13 +49,7 @@ const ManageSystem = () => {
       <Spin spinning={loading}>
         <AllTeams
           showDragSort={true}
-          disabled={
-            !(
-              userData?.role === 'member' ||
-              userData?.role === 'admin' ||
-              userData?.role === 'owner'
-            )
-          }
+          systemUserRole={userData?.role as 'admin' | 'member' | 'owner'}
         />
       </Spin>
     );
@@ -242,6 +236,7 @@ const ManageSystem = () => {
               sort,
             ) => {
               try {
+                console.log('userData', userData);
                 if (!userData?.role) {
                   return {
                     data: [],
