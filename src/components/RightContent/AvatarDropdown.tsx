@@ -46,17 +46,19 @@ const useStyles = createStyles(({ token }) => {
 export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) => {
   const intl = useIntl();
   const { token } = theme.useToken();
-  const [isUserInTeam, setIsUserInTeam] = useState(false);
+  // const [isUserInTeam, setIsUserInTeam] = useState(false);
   const [showAllTeamsModal, setShowAllTeamsModal] = useState(false);
   const [userData, setUserData] = useState<{ user_id: string; role: string } | null>(null);
 
-  const initialUserRole = async () => {
+  const getUserRole = async () => {
     const { data } = await getUserRoles();
 
     if (data && data?.length && data[0].role !== 'rejected') {
-      setIsUserInTeam(true);
+      // setIsUserInTeam(true);
+      return true
     } else {
-      setIsUserInTeam(false);
+      // setIsUserInTeam(false);
+      return false
     }
   };
 
@@ -66,7 +68,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
   };
 
   useEffect(() => {
-    initialUserRole();
+    // getUserRole();
     getSystemUserRole();
   }, []);
   /**
@@ -93,7 +95,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
   const { initialState, setInitialState } = useModel('@@initialState');
 
   const onMenuClick = useCallback(
-    (event: MenuInfo) => {
+    async (event: MenuInfo) => {
       const { key } = event;
       if (key === 'logout') {
         flushSync(() => {
@@ -108,6 +110,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
         return;
       }
       if (key === 'team') {
+        const isUserInTeam = await getUserRole()
         if (isUserInTeam) {
           history.push(`/team?action=edit`);
         } else {
@@ -175,7 +178,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
       }
       history.push(`/account`);
     },
-    [setInitialState, isUserInTeam],
+    [setInitialState],
   );
 
   const loading = (
