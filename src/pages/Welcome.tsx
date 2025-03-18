@@ -11,6 +11,7 @@ import { FormattedMessage, useIntl } from 'umi';
 
 const Welcome: React.FC = () => {
   const { token } = theme.useToken();
+  const LogoBaseUrl = 'https://qgzvkongdjqiiamzbbts.supabase.co/storage/v1/object/public/sys-files/';
 
   const { locale } = useIntl();
   const lang = getLang(locale);
@@ -166,6 +167,7 @@ const Welcome: React.FC = () => {
         <Row gutter={16}>
           {teams?.map((team: any, index: React.Key | null | undefined) => {
             const logo = isDarkMode ? team.json?.darkLogo : team.json?.lightLogo;
+            const logoUrl = logo.startsWith('logo/') ? LogoBaseUrl + logo : `/images/dataLogo/${logo}`;
             return (
               <Col span={8} key={index}>
                 <Card
@@ -178,7 +180,7 @@ const Welcome: React.FC = () => {
                   }}
                   cover={
                     <div className={styles.team_logo_container}>
-                      <img src={`/images/dataLogo/${logo}`} className={styles.team_logo} />
+                      <img src={logoUrl} className={styles.team_logo} />
                     </div>
                   }
                   onClick={() => {

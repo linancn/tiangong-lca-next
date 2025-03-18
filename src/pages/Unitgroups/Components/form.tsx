@@ -283,9 +283,7 @@ export const UnitGroupForm: FC<Props> = ({
       <ProTable<UnitTable, ListPagination>
         rowKey={(record) => `${record.dataSetInternalID}`}
         actionRef={actionRefUnitTable}
-        search={{
-          defaultCollapsed: false,
-        }}
+        search={false}
         pagination={{
           showSizeChanger: false,
           pageSize: 10,

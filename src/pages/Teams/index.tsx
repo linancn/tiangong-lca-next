@@ -525,7 +525,8 @@ const Team = () => {
                   disabled={
                     !(record.role !== 'owner' && (userRole === 'owner' || userRole === 'admin'))
                   }
-                  type="text"
+                  shape="circle"
+                  size='small'
                   icon={<DeleteOutlined />}
                   onClick={() => {
                     Modal.confirm({
@@ -570,9 +571,10 @@ const Team = () => {
               <Tooltip
                 title={<FormattedMessage id="teams.members.setAdmin" defaultMessage="Set Admin" />}
               >
-                <Button
+                <Button 
+                  shape="circle"
+                  size='small'
                   disabled={!(record.role === 'member' && userRole === 'owner')}
-                  type="text"
                   icon={<CrownOutlined />}
                   onClick={() => updateRole(record?.team_id, record?.user_id, 'admin')}
                 />
@@ -586,7 +588,8 @@ const Team = () => {
               >
                 <Button
                   disabled={!(record.role === 'admin' && userRole === 'owner')}
-                  type="text"
+                  shape="circle"
+                  size='small'
                   icon={<UserOutlined />}
                   onClick={() => updateRole(record?.team_id, record?.user_id, 'member')}
                 />
@@ -600,7 +603,8 @@ const Team = () => {
                   disabled={
                     !(record.role === 'rejected' && (userRole === 'admin' || userRole === 'owner'))
                   }
-                  type="text"
+                  shape="circle"
+                  size='small'
                   icon={<UserAddOutlined />}
                   onClick={async () => {
                     const error = await reInvitedApi(record?.user_id, record?.team_id);
@@ -630,18 +634,24 @@ const Team = () => {
     ];
 
     return (
-      <div>
-        <div style={{ marginBottom: 16, textAlign: 'right' }}>
-          <Tooltip title={<FormattedMessage id="teams.members.add" defaultMessage="Add" />}>
-            <Button
-              disabled={!(userRole === 'admin' || userRole === 'owner')}
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => setAddModalVisible(true)}
-            />
-          </Tooltip>
-        </div>
+      <>
         <ProTable<TeamMemberTable, ListPagination>
+          headerTitle={
+            <>
+              <FormattedMessage id="menu.account.team" defaultMessage="My Team" /> /{' '}
+              <FormattedMessage id="pages.team.tabs.members" defaultMessage="Members Message" />
+            </>
+          }
+          toolBarRender={() => {
+              return [<Tooltip key={0} title={<FormattedMessage id="teams.members.add" defaultMessage="Add" />}>
+                <Button
+                  type="text"
+                  disabled={!(userRole === 'admin' || userRole === 'owner')}
+                  icon={<PlusOutlined />}
+                  onClick={() => setAddModalVisible(true)}
+                />
+              </Tooltip>];
+          }}
           loading={membersLoading}
           columns={columns}
           rowKey="email"
@@ -650,8 +660,7 @@ const Team = () => {
             pageSize: 10,
             showSizeChanger: true,
             showQuickJumper: true,
-          }}
-          toolBarRender={false}
+          }} 
           request={async (
             params: {
               pageSize: number;
@@ -696,7 +705,7 @@ const Team = () => {
             actionRef.current?.reload();
           }}
         />
-      </div>
+      </>
     );
   };
 

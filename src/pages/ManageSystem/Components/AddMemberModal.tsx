@@ -1,7 +1,7 @@
 import { addSystemMemberApi } from '@/services/roles/api';
 import { FormattedMessage, useIntl } from '@umijs/max';
-import { Form, Input, message, Modal } from 'antd';
-import { useEffect, useState } from 'react';
+import { Form, Input, message, Modal, FormInstance } from 'antd';
+import { useEffect, useState, useRef } from 'react';
 interface AddMemberModalProps {
   open: boolean;
   onCancel: () => void;
@@ -9,19 +9,19 @@ interface AddMemberModalProps {
 }
 
 const AddMemberModal: React.FC<AddMemberModalProps> = ({ open, onCancel, onSuccess }) => {
-  const [form] = Form.useForm();
+  const formRef = useRef<FormInstance>(null);
   const [loading, setLoading] = useState(false);
   const intl = useIntl();
 
   useEffect(() => {
     if (!open) {
-      form.resetFields();
+      formRef?.current?.resetFields();
     }
   }, [open]);
 
   const handleOk = async () => {
     try {
-      const values = await form.validateFields();
+      const values = await formRef?.current?.validateFields();
 
       setLoading(true);
       const result = await addSystemMemberApi(values.email);
@@ -49,7 +49,7 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ open, onCancel, onSucce
             defaultMessage: 'Member added successfully!',
           }),
         );
-        form.resetFields();
+        formRef?.current?.resetFields();
         onSuccess();
         onCancel();
       }
@@ -68,7 +68,7 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ open, onCancel, onSucce
       onOk={handleOk}
       confirmLoading={loading}
     >
-      <Form form={form} layout="vertical">
+      <Form ref={formRef} layout="vertical">
         <Form.Item
           name="email"
           label={<FormattedMessage id="teams.members.email" defaultMessage="Email" />}

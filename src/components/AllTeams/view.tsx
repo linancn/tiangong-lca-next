@@ -12,7 +12,7 @@ type Props = {
   buttonType: string;
 };
 
-const TeamView: FC<Props> = ({ id, buttonType }) => {
+const TeamView: FC<Props> = ({ id, buttonType,}) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<any>({});

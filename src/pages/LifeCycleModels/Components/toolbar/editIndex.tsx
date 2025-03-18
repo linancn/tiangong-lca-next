@@ -68,6 +68,10 @@ const ToolbarEdit: FC<Props> = ({
   const updateEdge = useGraphStore((state) => state.updateEdge);
   const intl = useIntl();
 
+  useEffect(() => {
+    setThisAction(action);
+  }, [action]);
+
   const nodes = useGraphStore((state) => state.nodes);
   const edges = useGraphStore((state) => state.edges);
 
@@ -738,6 +742,8 @@ const ToolbarEdit: FC<Props> = ({
         edges: newEdges ?? [],
       },
     };
+
+    console.log(thisAction, 'thisAction',action);
 
     if (thisAction === 'edit') {
       updateLifeCycleModel({ ...newData, id: thisId, version: thisVersion }).then((result: any) => {

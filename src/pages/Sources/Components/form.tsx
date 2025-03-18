@@ -139,7 +139,7 @@ export const SourceForm: FC<Props> = ({
         >
           <Select options={publicationTypeOptions} />
         </Form.Item>
-        <br />
+        {/* <br /> */}
         <Card
           size="small"
           title={
@@ -296,7 +296,7 @@ export const SourceForm: FC<Props> = ({
             formRef={formRef}
             onData={onData}
           />
-
+          <br />
           <Form.Item
             label={
               <FormattedMessage

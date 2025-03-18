@@ -49,13 +49,7 @@ const ManageSystem = () => {
       <Spin spinning={loading}>
         <AllTeams
           showDragSort={true}
-          disabled={
-            !(
-              userData?.role === 'member' ||
-              userData?.role === 'admin' ||
-              userData?.role === 'owner'
-            )
-          }
+          systemUserRole={userData?.role as 'admin' | 'member' | 'owner'}
         />
       </Spin>
     );
@@ -131,7 +125,8 @@ const ManageSystem = () => {
                       (userData?.role === 'owner' || userData?.role === 'admin')
                     )
                   }
-                  type="text"
+                  shape="circle"
+                  size='small'
                   icon={<DeleteOutlined />}
                   onClick={() => {
                     Modal.confirm({
@@ -178,7 +173,8 @@ const ManageSystem = () => {
               >
                 <Button
                   disabled={!(record.role === 'member' && userData?.role === 'owner')}
-                  type="text"
+                  shape="circle"
+                  size='small'
                   icon={<CrownOutlined />}
                   onClick={() => updateRole(record?.team_id, record?.user_id, 'admin')}
                 />
@@ -192,7 +188,8 @@ const ManageSystem = () => {
               >
                 <Button
                   disabled={!(record.role === 'admin' && userData?.role === 'owner')}
-                  type="text"
+                  shape="circle"
+                  size='small'
                   icon={<UserOutlined />}
                   onClick={() => updateRole(record?.team_id, record?.user_id, 'member')}
                 />
@@ -205,17 +202,6 @@ const ManageSystem = () => {
 
     return (
       <Spin spinning={loading}>
-        <div>
-          <div style={{ marginBottom: 16, textAlign: 'right' }}>
-            <Tooltip title={<FormattedMessage id="teams.members.add" defaultMessage="Add" />}>
-              <Button
-                disabled={!(userData?.role === 'admin' || userData?.role === 'owner')}
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => setAddModalVisible(true)}
-              />
-            </Tooltip>
-          </div>
           <ProTable<TeamMemberTable, ListPagination>
             loading={membersLoading}
             columns={columns}
@@ -226,7 +212,22 @@ const ManageSystem = () => {
               showSizeChanger: true,
               showQuickJumper: true,
             }}
-            toolBarRender={false}
+            headerTitle={
+              <>
+                <FormattedMessage id="menu.manageSystem" defaultMessage="System Management" /> /{' '}
+                <FormattedMessage id="pages.manageSystem.tabs.members" defaultMessage="Member Management" />
+              </>
+            }
+            toolBarRender={() => {
+              return [<Tooltip key={0} title={<FormattedMessage id="teams.members.add" defaultMessage="Add" />}>
+                <Button
+                  disabled={!(userData?.role === 'admin' || userData?.role === 'owner')}
+                  type="text"
+                  icon={<PlusOutlined />}
+                  onClick={() => setAddModalVisible(true)}
+                />
+              </Tooltip>];
+          }}
             request={async (
               params: {
                 pageSize: number;
@@ -264,7 +265,6 @@ const ManageSystem = () => {
               actionRef.current?.reload();
             }}
           />
-        </div>
       </Spin>
     );
   };
