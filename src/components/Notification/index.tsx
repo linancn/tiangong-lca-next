@@ -22,6 +22,7 @@ const Notification: React.FC = () => {
         setIsBeInvited(res.data?.role === 'is_invited');
         setInvitedInfo(res.data);
         getTeamById(res.data?.team_id).then(({ success, data }) => {
+          console.log('data', data);
           if (success) {
             setTeamTitle(data[0]?.json?.title);
           }
@@ -80,8 +81,8 @@ const Notification: React.FC = () => {
               }),
               content:
                 (intl.locale === 'zh-CN'
-                  ? teamTitle?.find((item: any) => item['@xml:lang'] === 'zh')?.['#text']
-                  : teamTitle?.find((item: any) => item['@xml:lang'] === 'en')?.['#text']) +
+                  ? teamTitle?.find((item: any) => item['@xml:lang'] === 'zh')?.['#text'] ?? teamTitle[0]?.['#text']
+                  : teamTitle?.find((item: any) => item['@xml:lang'] === 'en')?.['#text'] ?? teamTitle[0]?.['#text']) +
                 ' ' +
                 intl.formatMessage({
                   id: 'teams.notification.team.invite.content',
