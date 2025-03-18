@@ -131,7 +131,8 @@ const ManageSystem = () => {
                       (userData?.role === 'owner' || userData?.role === 'admin')
                     )
                   }
-                  type="text"
+                  shape="circle"
+                  size='small'
                   icon={<DeleteOutlined />}
                   onClick={() => {
                     Modal.confirm({
@@ -178,7 +179,8 @@ const ManageSystem = () => {
               >
                 <Button
                   disabled={!(record.role === 'member' && userData?.role === 'owner')}
-                  type="text"
+                  shape="circle"
+                  size='small'
                   icon={<CrownOutlined />}
                   onClick={() => updateRole(record?.team_id, record?.user_id, 'admin')}
                 />
@@ -192,7 +194,8 @@ const ManageSystem = () => {
               >
                 <Button
                   disabled={!(record.role === 'admin' && userData?.role === 'owner')}
-                  type="text"
+                  shape="circle"
+                  size='small'
                   icon={<UserOutlined />}
                   onClick={() => updateRole(record?.team_id, record?.user_id, 'member')}
                 />
