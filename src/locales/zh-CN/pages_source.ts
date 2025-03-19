@@ -27,6 +27,7 @@ export default {
   'pages.source.view.administrativeInformation.dataSetVersion': '数据集版本',
   'pages.source.view.administrativeInformation.permanentDataSetURI': '永久数据集统一资源标识符',
   'pages.source.view.administrativeInformation.referenceToOwnershipOfDataSet': '数据集拥有者',
+  'pages.source.view.administrativeInformation.referenceToPrecedingDataSetVersion': '数据集前一版本',
 
   //source.edit 编辑
   'pages.source.edit.sourceInformation': '源信息',
@@ -44,6 +45,7 @@ export default {
   'pages.source.edit.administrativeInformation.referenceToDataSetFormat': '数据集格式',
   'pages.source.edit.administrativeInformation.publicationAndOwnership': '出版和所有权',
   'pages.source.edit.administrativeInformation.dataSetVersion': '数据集版本',
+  'pages.source.edit.administrativeInformation.referenceToPrecedingDataSetVersion': '数据集前一版本',
   'pages.source.edit.administrativeInformation.permanentDataSetURI': '永久数据集统一资源标识符',
   'pages.source.edit.administrativeInformation.referenceToOwnershipOfDataSet': '数据集拥有者',
   //source.delete 删除

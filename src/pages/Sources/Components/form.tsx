@@ -323,6 +323,19 @@ export const SourceForm: FC<Props> = ({
             rules={getRules(schema['sourceDataSet']['administrativeInformation']['publicationAndOwnership']['common:referenceToOwnershipOfDataSet']['rules'] ?? [])}
           />
           <br />
+          <SourceSelectForm
+            label={
+              <FormattedMessage
+                id="pages.source.edit.administrativeInformation.referenceToPrecedingDataSetVersion"
+                defaultMessage="Preceding data set version"
+              />
+            }
+            name={['administrativeInformation', 'publicationAndOwnership', 'common:referenceToPrecedingDataSetVersion']}
+            lang={lang}
+            formRef={formRef}
+            onData={onData}
+          />
+          <br />
           <Form.Item
             label={
               <FormattedMessage

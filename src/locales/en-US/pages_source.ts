@@ -28,6 +28,7 @@ export default {
   'pages.source.view.administrativeInformation.dataSetVersion': 'Data set version',
   'pages.source.view.administrativeInformation.permanentDataSetURI': 'Permanent data set URI',
   'pages.source.view.administrativeInformation.referenceToOwnershipOfDataSet': 'Owner of data set',
+  'pages.source.view.administrativeInformation.referenceToPrecedingDataSetVersion': 'Preceding data set version',
 
   //source.edit 编辑
   'pages.source.edit.sourceInformation': 'Source information',
@@ -45,6 +46,7 @@ export default {
   'pages.source.edit.administrativeInformation.referenceToDataSetFormat': 'Data set format(s)',
   'pages.source.edit.administrativeInformation.publicationAndOwnership': 'Publication and ownership',
   'pages.source.edit.administrativeInformation.dataSetVersion': 'Data set version',
+  'pages.source.edit.administrativeInformation.referenceToPrecedingDataSetVersion': 'Preceding data set version',
   'pages.source.edit.administrativeInformation.permanentDataSetURI': 'Permanent data set URI',
   'pages.source.edit.administrativeInformation.referenceToOwnershipOfDataSet': 'Owner of data set',
   //source.delete 删除

@@ -271,6 +271,19 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
             }
           ></ContactSelectDescription>
           <br />
+          <SourceSelectDescription
+            title={
+              <FormattedMessage
+                id="pages.source.view.administrativeInformation.referenceToPrecedingDataSetVersion"
+                defaultMessage="Preceding data set version"
+              />
+            }
+            lang={lang}
+            data={
+              initData.administrativeInformation?.publicationAndOwnership?.['common:referenceToPrecedingDataSetVersion']
+            }
+          />
+          <br />
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item
               key={0}

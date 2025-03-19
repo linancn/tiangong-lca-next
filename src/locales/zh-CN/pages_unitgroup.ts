@@ -70,6 +70,7 @@ export default {
   'pages.unitgroup.edit.administrativeInformation.timeStamp': '时间戳（最后保存）',
   'pages.unitgroup.edit.administrativeInformation.referenceToDataSetFormat': '数据集格式',
   'pages.unitgroup.edit.administrativeInformation.dataSetVersion': '数据集版本',
+  'pages.unitgroup.edit.administrativeInformation.referenceToPrecedingDataSetVersion': '数据集前一版本',
   'pages.unitgroup.edit.administrativeInformation.permanentDataSetURI': '永久数据集统一资源标识符',
   'pages.unitgroup.edit.administrativeInformation.referenceToOwnershipOfDataSet': '数据集拥有者',
   //

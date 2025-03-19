@@ -98,10 +98,8 @@ const SourceSelectForm: FC<Props> = ({
         };
         if (parentName) {
           formRef.current?.setFieldValue([...parentName, ...name], referenceToDataSetFormat);
-          console.log('parentName',[...parentName, ...name]);
         } else {
           formRef.current?.setFieldValue(name, referenceToDataSetFormat); 
-          console.log('name',name);
         }
       });
   };

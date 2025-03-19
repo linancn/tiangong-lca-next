@@ -71,6 +71,7 @@ export default {
   'pages.unitgroup.edit.administrativeInformation.timeStamp': 'Time stamp (last saved)',
   'pages.unitgroup.edit.administrativeInformation.referenceToDataSetFormat': 'Data set format(s)',
   'pages.unitgroup.edit.administrativeInformation.dataSetVersion': 'Data set version',
+  'pages.unitgroup.edit.administrativeInformation.referenceToPrecedingDataSetVersion': 'Preceding data set version',
   'pages.unitgroup.edit.administrativeInformation.permanentDataSetURI': 'Permanent data set URI',
   'pages.unitgroup.edit.administrativeInformation.referenceToOwnershipOfDataSet': 'Owner of data set',
   //
