@@ -16,7 +16,8 @@
           "common:classification": {
             "common:class": {
               "@level": "str",
-              "#text": "str"
+              "#text": "str",
+              "@classId": "str"
             }
           }
         },
@@ -69,9 +70,20 @@
           "common:shortDescription": {
             "@xml:lang": "str",
             "#text": "str"
-          }
+          },
+          "@version": "str"
         },
-        "common:permanentDataSetURI": "str"
+        "common:permanentDataSetURI": "str",
+        "common:referenceToOwnershipOfDataSet": {
+          "@refObjectId": "str",
+          "@type": "str",
+          "@uri": "str",
+          "common:shortDescription": {
+            "@xml:lang": "str",
+            "#text": "str"
+          },
+          "@version": "str"
+        }
       }
     },
     "units": {
