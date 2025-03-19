@@ -7,7 +7,7 @@ import { UnitTable } from '@/services/unitgroups/data';
 import { genUnitTableData } from '@/services/unitgroups/util';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
 import { Card, Form, Input, Select, Space, theme } from 'antd';
-import { FC, useRef } from 'react';
+import { FC, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import UnitCreate from './Unit/create';
 import UnitDelete from './Unit/delete';
@@ -16,6 +16,7 @@ import UnitView from './Unit/view';
 import { complianceOptions } from './optiondata';
 import schema from '../unitgroups_schema.json';
 import { getRules } from '@/pages/Utils';
+import RequiredMark from '@/components/RequiredMark';
 
 type Props = {
   lang: string;
@@ -40,6 +41,7 @@ export const UnitGroupForm: FC<Props> = ({
 }) => {
   const { token } = theme.useToken();
   const actionRefUnitTable = useRef<ActionType>();
+  const [showNameError, setShowNameError] = useState(false);
   const tabList = [
     {
       key: 'unitGroupInformation',
@@ -143,14 +145,14 @@ export const UnitGroupForm: FC<Props> = ({
               buttonType={'icon'}
               actionRef={actionRefUnitTable}
               onData={onUnitData}
-              setViewDrawerVisible={() => {}}
+              setViewDrawerVisible={() => { }}
             />
             <UnitDelete
               id={row.dataSetInternalID}
               data={unitDataSource}
               buttonType={'icon'}
               actionRef={actionRefUnitTable}
-              setViewDrawerVisible={() => {}}
+              setViewDrawerVisible={() => { }}
               onData={onUnitData}
             />
           </Space>,
@@ -164,10 +166,16 @@ export const UnitGroupForm: FC<Props> = ({
         <Card
           size="small"
           title={
-            <FormattedMessage
-              id="pages.unitgroup.edit.unitGroupInformation.name"
-              defaultMessage="Name of unit group"
+            <RequiredMark
+              showError={showNameError}
+              label={
+                <FormattedMessage
+                  id="pages.unitgroup.edit.unitGroupInformation.name"
+                  defaultMessage="Name of unit group"
+                />
+              }
             />
+
           }
         >
           <LangTextItemForm
@@ -178,6 +186,7 @@ export const UnitGroupForm: FC<Props> = ({
                 defaultMessage="Name of unit group"
               />
             }
+            setRuleErrorState={setShowNameError}
             rules={getRules(schema['unitGroupDataSet']['unitGroupInformation']['dataSetInformation']['common:name']['rules'] ?? [])}
           ></LangTextItemForm>
         </Card>
