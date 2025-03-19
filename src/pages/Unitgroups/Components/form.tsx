@@ -28,6 +28,7 @@ type Props = {
   onUnitDataCreate: (data: any) => void;
   onTabChange: (key: string) => void;
   unitDataSource: UnitTable[];
+  formType?: string;
 };
 
 export const UnitGroupForm: FC<Props> = ({
@@ -39,6 +40,7 @@ export const UnitGroupForm: FC<Props> = ({
   onUnitDataCreate,
   onTabChange,
   unitDataSource,
+  formType,
 }) => {
   const { token } = theme.useToken();
   const actionRefUnitTable = useRef<ActionType>();
@@ -237,6 +239,7 @@ export const UnitGroupForm: FC<Props> = ({
     modellingAndValidation: (
       <Space direction="vertical" style={{ width: '100%' }}>
         <SourceSelectForm
+          defaultSourceName={formType === 'create' ? 'ILCD Data Network - compliance (non-Process)' : undefined}
           name={[
             'modellingAndValidation',
             'complianceDeclarations',
@@ -288,6 +291,7 @@ export const UnitGroupForm: FC<Props> = ({
           <Input disabled={true} style={{ color: token.colorTextDescription }} />
         </Form.Item>
         <SourceSelectForm
+          defaultSourceName={formType === 'create' ? 'ILCD format' : undefined}
           name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
           label={
             <FormattedMessage

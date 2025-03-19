@@ -74,8 +74,14 @@ const SourceSelectForm: FC<Props> = ({
   }, [referenceValue]);
 
   const getDefaultValue = () => {
+    let referenceToDataSetFormatId=null;
     if (defaultSourceName === 'ILCD format') {
-      const referenceToDataSetFormatId = 'a97a0155-0234-4b87-b4ce-a45da52f2a40';
+      referenceToDataSetFormatId = 'a97a0155-0234-4b87-b4ce-a45da52f2a40';
+    }
+    if(defaultSourceName==='ILCD Data Network - compliance (non-Process)'){
+      referenceToDataSetFormatId = '9ba3ac1e-6797-4cc0-afd5-1b8f7bf28c6a';
+    }
+    if (!referenceToDataSetFormatId) return;
       getSourceDetail(referenceToDataSetFormatId, '').then(async (result2: any) => {
         const referenceToDataSetFormatData = genSourceFromData(
           result2.data?.json?.sourceDataSet ?? {},
@@ -90,18 +96,14 @@ const SourceSelectForm: FC<Props> = ({
               'common:shortName'
             ] ?? [],
         };
-        const newData = {
-          administrativeInformation: {
-            dataEntryBy: {
-              'common:referenceToDataSetFormat': referenceToDataSetFormat,
-            },
-          },
-        };
-        // formRef.current?.resetFields();
-        const currentData = formRef.current?.getFieldsValue();
-        formRef.current?.setFieldsValue({ ...currentData, ...newData });
+        if (parentName) {
+          formRef.current?.setFieldValue([...parentName, ...name], referenceToDataSetFormat);
+          console.log('parentName',[...parentName, ...name]);
+        } else {
+          formRef.current?.setFieldValue(name, referenceToDataSetFormat); 
+          console.log('name',name);
+        }
       });
-    }
   };
 
   useEffect(() => {

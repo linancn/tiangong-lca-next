@@ -107,6 +107,13 @@ const UnitGroupCreate: FC<CreateProps> = ({
     }
     const currentDateTime = formatDateTime(new Date());
     const newData = {
+      modellingAndValidation:{
+        complianceDeclarations:{
+          compliance:{
+            'common:approvalOfOverallCompliance':'Fully compliant'
+          }
+        }
+      },
       administrativeInformation: {
         dataEntryBy: {
           'common:timeStamp': currentDateTime,
@@ -227,7 +234,8 @@ const UnitGroupCreate: FC<CreateProps> = ({
             }}
             onFinish={async () => {
               const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
-              const result = await createUnitGroup(paramsId, fromData);
+              const _formData = formRefCreate.current?.getFieldsValue();
+              const result = await createUnitGroup(paramsId, _formData);
               if (result.data) {
                 message.success(
                   intl.formatMessage({
@@ -245,6 +253,7 @@ const UnitGroupCreate: FC<CreateProps> = ({
             }}
           >
             <UnitGroupForm
+              formType={'create'}
               lang={lang}
               activeTabKey={activeTabKey}
               formRef={formRefCreate}
