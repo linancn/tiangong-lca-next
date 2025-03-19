@@ -3,24 +3,86 @@
     "@xmlns:common": "str",
     "@xmlns": "str",
     "@xmlns:xsi": "str",
-    "@version": "str",
+    "@version":{
+      "value": "str",
+      "rules":[
+        {
+          "required": true,
+          "messageKey": "pages.source.validator.version.required",
+          "defaultMessage": "version is required"
+        }
+      ]
+    },
     "@xsi:schemaLocation": "str",
     "sourceInformation": {
       "dataSetInformation": {
-        "common:UUID": "str",
+        "common:UUID": {
+          "value":"str",
+          "rules":[
+            {
+              "required": true,
+              "messageKey": "pages.source.validator.uuid.required",
+              "defaultMessage": "uuid is required"
+            }
+          ]
+        },
         "common:shortName": {
-          "@xml:lang": "str",
-          "#text": "str"
+          "value":{
+            "@xml:lang": "str",
+            "#text": "str"
+          },
+          "rules":[
+            {
+              "required": true,
+              "messageKey": "pages.source.validator.shortName.required",
+              "defaultMessage": "shortName is required"
+            },
+            {
+              "warningOnly": true,
+              "messageKey": "validator.recommended.empty",
+              "defaultMessage": "Recommended to fill in to enhance data detail and usability!"
+            },
+            {
+              "max": 500,
+              "messageKey": "validator.StringMultiLang.pattern",
+              "defaultMessage": "Length cannot exceed 500 characters!"
+            }
+          ]
         },
         "classificationInformation": {
           "common:classification": {
-            "common:class": {
-              "@level": "str",
-              "@classId": "str",
-              "#text": "str"
+            "common:class":{
+              "value": {
+                "@level": "str",
+                "@classId": "str",
+                "#text": "str"
+              },
+              "rules":[
+                {
+                  "required": true,
+                  "messageKey": "pages.source.validator.class.required",
+                  "defaultMessage": "class is required"
+                }
+              ]
             }
           }
         },
+        "sourceCitation": {
+          "value": "str",
+          "rules": [
+            {
+              "warningOnly": true,
+              "messageKey": "validator.recommended.empty",
+              "defaultMessage": "Recommended to fill in to enhance data detail and usability!"
+            },
+            {
+              "max": 1000,
+              "messageKey": "validator.STMultiLang.pattern",
+              "defaultMessage": "Length cannot exceed 1000 characters!"
+            }
+          ]
+        },
+        "publicationType": "str",
         "sourceDescriptionOrComment": [
           {
             "@xml:lang": "str",
@@ -28,11 +90,19 @@
           }
         ],
         "referenceToDigitalFile": {
-          "@uri": "str"
+          "@uri": "str" 
         },
-        "sourceCitation": "str",
-        "publicationType": "str",
         "referenceToContact": {
+          "@type": "str",
+          "@refObjectId": "str",
+          "@version": "str",
+          "@uri": "str",
+          "common:shortDescription": {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        },
+        "referenceToLogo": {
           "@type": "str",
           "@refObjectId": "str",
           "@version": "str",
@@ -44,42 +114,83 @@
         }
       }
     },
-    "administrativeInformation": {
-      "dataEntryBy": {
-        "common:timeStamp": "str",
-        "common:referenceToDataSetFormat": {
-          "@type": "str",
-          "@refObjectId": "str",
-          "@uri": "str",
-          "common:shortDescription": {
-            "@xml:lang": "str",
-            "#text": "str"
-          },
-          "@version": "str"
-        }
-      },
-      "publicationAndOwnership": {
-        "common:dataSetVersion": "str",
-        "common:referenceToOwnershipOfDataSet": {
-          "@refObjectId": "str",
-          "@type": "str",
-          "@uri": "str",
-          "common:shortDescription": [
+    "administrativeInformation": { 
+      "dataEntryBy": { 
+        "common:timeStamp": {
+          "value":"str",
+          "rules":[
             {
+              "required": true,
+              "messageKey": "pages.source.validator.timeStamp.required",
+              "defaultMessage": "timeStamp is required"
+            }
+          ]
+        }, 
+        "common:referenceToDataSetFormat": {
+          "value":{
+            "@type": "str",
+            "@refObjectId": "str",
+            "@version": "str",
+            "@uri": "str",
+            "common:shortDescription": {
               "@xml:lang": "str",
               "#text": "str"
             }
+          },
+          "rules":[
+            {
+              "required": true,
+              "messageKey": "pages.source.validator.referenceToDataSetFormat.required",
+              "defaultMessage": "referenceToDataSetFormat is required"
+            }
+          ]
+        }
+      },
+      "publicationAndOwnership": {
+        "common:dataSetVersion": {
+          "value":"str",
+          "rules":[
+            {
+              "required": true,
+              "messageKey": "pages.source.validator.dataSetVersion.required",
+              "defaultMessage": "dataSetVersion is required"
+            },
+            {
+              "pattern": "dataSetVersion",
+              "messageKey": "validator.dataSetVersion.pattern",
+              "defaultMessage": "Version format must be XX.XX.XXX, where X is a digit!"
+            }
           ]
         },
-        "common:permanentDataSetURI": "str",
         "common:referenceToPrecedingDataSetVersion": {
-          "@refObjectId": "str",
           "@type": "str",
+          "@refObjectId": "str",
+          "@version": "str",
           "@uri": "str",
           "common:shortDescription": {
             "@xml:lang": "str",
             "#text": "str"
           }
+        },
+        "common:permanentDataSetURI": "str",
+        "common:referenceToOwnershipOfDataSet":{
+          "value": {
+            "@type": "str",
+            "@refObjectId": "str",
+            "@version": "str",
+            "@uri": "str",
+            "common:shortDescription": {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          },
+          "rules":[
+            {
+              "required": true,
+              "messageKey": "pages.source.validator.referenceToOwnershipOfDataSet.required",
+              "defaultMessage": "referenceToOwnershipOfDataSet is required"
+            }
+          ]
         }
       }
     }

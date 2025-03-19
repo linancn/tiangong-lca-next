@@ -175,6 +175,17 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
           lang={lang}
           data={initData.sourceInformation?.dataSetInformation?.referenceToContact}
         />
+        <br />
+        <SourceSelectDescription
+          title={
+            <FormattedMessage
+              id="pages.source.view.sourceInformation.referenceToLogo"
+              defaultMessage="Logo of organisation or source"
+            />
+          }
+          data={initData.sourceInformation?.dataSetInformation?.referenceToLogo}
+          lang={lang}
+        />
       </>
     ),
     administrativeInformation: (

@@ -57,6 +57,19 @@ export function genSourceJsonOrdered(id: string, data: any) {
               ],
             ),
           },
+          referenceToLogo: {
+            '@refObjectId':
+              data?.sourceInformation?.dataSetInformation?.referenceToLogo?.['@refObjectId'],
+            '@type': data?.sourceInformation?.dataSetInformation?.referenceToLogo?.['@type'],
+            '@uri': data?.sourceInformation?.dataSetInformation?.referenceToLogo?.['@uri'],
+            '@version':
+              data?.sourceInformation?.dataSetInformation?.referenceToLogo?.['@version'],
+            'common:shortDescription': getLangJson(
+              data?.sourceInformation?.dataSetInformation?.referenceToLogo?.[
+                'common:shortDescription'
+              ],
+            ),
+          },
         },
       },
       administrativeInformation: {
@@ -157,6 +170,18 @@ export function genSourceFromData(data: any) {
           '@version': data?.sourceInformation?.dataSetInformation?.referenceToContact?.['@version'],
           'common:shortDescription': getLangList(
             data?.sourceInformation?.dataSetInformation?.referenceToContact?.[
+              'common:shortDescription'
+            ],
+          ),
+        },
+        referenceToLogo: {
+          '@refObjectId':
+            data?.sourceInformation?.dataSetInformation?.referenceToLogo?.['@refObjectId'],
+          '@type': data?.sourceInformation?.dataSetInformation?.referenceToLogo?.['@type'],
+          '@uri': data?.sourceInformation?.dataSetInformation?.referenceToLogo?.['@uri'],
+          '@version': data?.sourceInformation?.dataSetInformation?.referenceToLogo?.['@version'],
+          'common:shortDescription': getLangList(
+            data?.sourceInformation?.dataSetInformation?.referenceToLogo?.[
               'common:shortDescription'
             ],
           ),

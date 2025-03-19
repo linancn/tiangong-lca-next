@@ -25,10 +25,16 @@ export function getAllVersionsColumns(columns: ProColumns<any>[], versionIndex: 
 }
 
 export function getRules(rules: any[]) {
-  return rules.map((rule) => ({
-    ...rule,
-    message: <FormattedMessage id={rule.messageKey} defaultMessage={rule.defaultMessage} />,
-  }));
+  return rules.map((rule) => {
+    let _rule = {...rule};
+    if(rule.hasOwnProperty('pattern')&&rule.pattern === 'dataSetVersion'){
+      _rule.pattern = /^\d{2}\.\d{2}\.\d{3}$/;
+    };
+    return {
+      ..._rule,
+      message: <FormattedMessage id={rule.messageKey} defaultMessage={rule.defaultMessage} />,
+    }
+  });
 }
 
 export const validateRefObjectId = (
