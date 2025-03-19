@@ -28,6 +28,7 @@ export default {
   'pages.unitgroup.name': '单位组名称',
   'pages.unitgroup.unitName': '单位名称',
   'pages.unitgroup.classification': '分类',
+  'pages.unitgroup.unitGroupInformation.generalComment': '概述',
   'pages.unitgroup.meanValue': '单位平均值',
   'pages.unitgroup.quantitativeReference': '量值参考',
   'pages.unitgroup.referenceToComplianceSystem': '合规系统名称', //
@@ -35,6 +36,8 @@ export default {
   'pages.unitgroup.timeStamp': '时间戳（最后保存）',
   'pages.unitgroup.referenceToDataSetFormat': '数据集格式',
   'pages.unitgroup.dataSetVersion': '数据集版本', //基本完成
+  'pages.unitgroup.referenceToOwnershipOfDataSet': '数据集拥有者',
+  'pages.unitgroup.permanentDataSetURI': '永久数据集统一资源标识符',
 
   //
   //unit 创建
@@ -59,6 +62,7 @@ export default {
   'pages.unitgroup.edit.unitGroupInformation': '单位组信息',
   'pages.unitgroup.edit.unitGroupInformation.name': '单位组名称',
   'pages.unitgroup.edit.unitGroupInformation.classification': '分类',
+  'pages.unitgroup.edit.unitGroupInformation.generalComment': '概述',
   'pages.unitgroup.edit.modellingAndValidation': '建模与验证',
   'pages.unitgroup.edit.modellingAndValidation.referenceToComplianceSystem': '合规系统名称',
   'pages.unitgroup.edit.modellingAndValidation.approvalOfOverallCompliance': '整体合规性批准',
@@ -66,6 +70,8 @@ export default {
   'pages.unitgroup.edit.administrativeInformation.timeStamp': '时间戳（最后保存）',
   'pages.unitgroup.edit.administrativeInformation.referenceToDataSetFormat': '数据集格式',
   'pages.unitgroup.edit.administrativeInformation.dataSetVersion': '数据集版本',
+  'pages.unitgroup.edit.administrativeInformation.permanentDataSetURI': '永久数据集统一资源标识符',
+  'pages.unitgroup.edit.administrativeInformation.referenceToOwnershipOfDataSet': '数据集拥有者',
   //
   'pages.unitgroup.edit.units': '单位',
   'pages.unitgroup.edit.id': '身份信息', //
@@ -100,5 +106,5 @@ export default {
   'pages.unitgroup.validator.timeStamp.required': '请输入时间戳',
   'pages.unitgroup.validator.referenceToDataSetFormat.required': '请输入数据集格式',
   'pages.unitgroup.validator.dataSetVersion.required': '请输入数据集版本',
-  'pages.unitgroup.validator.referenceToOwnershipOfDataSet.required': '请输入数据集所有权',
+  'pages.unitgroup.validator.referenceToOwnershipOfDataSet.required': '请输入数据集拥有者',
 };

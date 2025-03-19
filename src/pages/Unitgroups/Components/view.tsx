@@ -14,6 +14,7 @@ import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import UnitView from './Unit/view';
 import { complianceOptions } from './optiondata';
+import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 
 type Props = {
   id: string;
@@ -205,6 +206,15 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
           lang={lang}
           categoryType={'UnitGroup'}
         />
+        <Divider orientationMargin="0" orientation="left" plain>
+          <FormattedMessage
+            id="pages.unitgroup.unitGroupInformation.generalComment"
+            defaultMessage="General comment"
+          />
+        </Divider>
+        <LangTextItemDescription
+          data={initData.unitGroupInformation?.dataSetInformation?.['common:generalComment']}
+        />
       </>
     ),
     modellingAndValidation: (
@@ -293,6 +303,38 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
             </Space>
           </Descriptions.Item>
         </Descriptions>
+        <br />
+        <ContactSelectDescription
+            data={
+              initData.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]
+            }
+            lang={lang}
+            title={
+              <FormattedMessage
+                id="pages.unitgroup.referenceToOwnershipOfDataSet"
+                defaultMessage="Owner of data set"
+              />
+            }
+          ></ContactSelectDescription>
+          <br />
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id="pages.unitgroup.permanentDataSetURI"
+                  defaultMessage="Permanent data set URI"
+                />
+              }
+              labelStyle={{ width: '220px' }}
+            >
+              {initData.administrativeInformation?.publicationAndOwnership?.[
+                'common:permanentDataSetURI'
+              ] ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
       </>
     ),
     units: (

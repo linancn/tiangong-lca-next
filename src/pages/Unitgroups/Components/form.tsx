@@ -17,6 +17,7 @@ import { complianceOptions } from './optiondata';
 import schema from '../unitgroups_schema.json';
 import { getRules } from '@/pages/Utils';
 import RequiredMark from '@/components/RequiredMark';
+import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 
 type Props = {
   lang: string;
@@ -205,6 +206,25 @@ export const UnitGroupForm: FC<Props> = ({
           onData={onData}
           rules={getRules(schema['unitGroupDataSet']['unitGroupInformation']['dataSetInformation']['classificationInformation']['common:classification']['common:class']['rules'] ?? [])}
         />
+        <Card
+            size="small"
+            title={
+              <FormattedMessage
+                id="pages.unitgroup.edit.unitGroupInformation.generalComment"
+                defaultMessage="General comment"
+              />
+            }
+          >
+        <LangTextItemForm
+            name={['unitGroupInformation', 'dataSetInformation', 'common:generalComment']}
+            label={
+              <FormattedMessage
+                id="pages.unitgroup.edit.unitGroupInformation.generalComment"
+                defaultMessage="General comment"
+              />
+            }
+          />
+        </Card>
         <Form.Item
           label="ID"
           name={['unitGroupInformation', 'dataSetInformation', 'common:UUID']}
@@ -292,6 +312,38 @@ export const UnitGroupForm: FC<Props> = ({
         >
           <Input />
         </Form.Item>
+        <ContactSelectForm
+            lang={lang}
+            formRef={formRef}
+            label={
+              <FormattedMessage
+                id="pages.unitgroup.edit.administrativeInformation.referenceToOwnershipOfDataSet"
+                defaultMessage="Owner of data set"
+              />
+            }
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:referenceToOwnershipOfDataSet',
+            ]}
+            onData={onData}
+            rules={getRules(schema['unitGroupDataSet']['administrativeInformation']['publicationAndOwnership']['common:referenceToOwnershipOfDataSet']['rules'] ?? [])}
+          />
+                  <Form.Item
+            label={
+              <FormattedMessage
+                id="pages.unitgroup.edit.administrativeInformation.permanentDataSetURI"
+                defaultMessage="Permanent data set URI"
+              />
+            }
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:permanentDataSetURI',
+            ]}
+          >
+            <Input />
+          </Form.Item>
       </Space>
     ),
     units: (

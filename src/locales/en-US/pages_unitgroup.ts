@@ -29,6 +29,7 @@ export default {
   'pages.unitgroup.name': 'Name of unit group',
   'pages.unitgroup.unitName': 'Name of unit',
   'pages.unitgroup.classification': 'Classification',
+  'pages.unitgroup.unitGroupInformation.generalComment': 'General comment',
   'pages.unitgroup.meanValue': 'Mean value (of unit)',
   'pages.unitgroup.quantitativeReference': 'Quantitative reference',
   'pages.unitgroup.referenceToComplianceSystem': 'Compliance system name',
@@ -36,6 +37,8 @@ export default {
   'pages.unitgroup.timeStamp': 'Time stamp (last saved)',
   'pages.unitgroup.referenceToDataSetFormat': 'Data set format(s)',
   'pages.unitgroup.dataSetVersion': 'Data set version',
+  'pages.unitgroup.referenceToOwnershipOfDataSet': 'Owner of data set',
+  'pages.unitgroup.permanentDataSetURI': 'Permanent data set URI',
 
   //
   //unit 创建
@@ -60,6 +63,7 @@ export default {
   'pages.unitgroup.edit.unitGroupInformation': 'Unit group information',
   'pages.unitgroup.edit.unitGroupInformation.name': 'Name of unit group',
   'pages.unitgroup.edit.unitGroupInformation.classification': 'Classification',
+  'pages.unitgroup.edit.unitGroupInformation.generalComment': 'General comment',
   'pages.unitgroup.edit.modellingAndValidation': 'Modelling and validation',
   'pages.unitgroup.edit.modellingAndValidation.referenceToComplianceSystem': 'Compliance system name',
   'pages.unitgroup.edit.modellingAndValidation.approvalOfOverallCompliance': 'Approval of overall compliance',
@@ -67,6 +71,8 @@ export default {
   'pages.unitgroup.edit.administrativeInformation.timeStamp': 'Time stamp (last saved)',
   'pages.unitgroup.edit.administrativeInformation.referenceToDataSetFormat': 'Data set format(s)',
   'pages.unitgroup.edit.administrativeInformation.dataSetVersion': 'Data set version',
+  'pages.unitgroup.edit.administrativeInformation.permanentDataSetURI': 'Permanent data set URI',
+  'pages.unitgroup.edit.administrativeInformation.referenceToOwnershipOfDataSet': 'Owner of data set',
   //
   'pages.unitgroup.edit.units': 'Units',
   'pages.unitgroup.edit.name': 'Name of unit',
