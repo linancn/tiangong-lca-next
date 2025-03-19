@@ -1060,12 +1060,12 @@ export function genProcessExchangeTableData(data: any, lang: string) {
     } else {
       dataList = data;
     }
-    return dataList?.map((item: any,index) => {
+    return dataList?.map((item: any) => {
       return removeEmptyObjects({
         key:
           (item?.exchangeDirection ?? '-').toUpperCase() +
           ':' +
-          (item?.referenceToFlowDataSet?.['@refObjectId'] ?? '-')+index,
+          (item?.referenceToFlowDataSet?.['@refObjectId'] ?? '-'),
         dataSetInternalID: item?.['@dataSetInternalID'] ?? '-',
         exchangeDirection: item?.exchangeDirection ?? '-',
         referenceToFlowDataSetId: item?.referenceToFlowDataSet?.['@refObjectId'] ?? '-',
