@@ -234,7 +234,7 @@ const UnitGroupCreate: FC<CreateProps> = ({
             }}
             onFinish={async () => {
               const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
-              const _formData = formRefCreate.current?.getFieldsValue();
+              const _formData = {...formRefCreate.current?.getFieldsValue(),units:fromData.units};
               const result = await createUnitGroup(paramsId, _formData);
               if (result.data) {
                 message.success(
