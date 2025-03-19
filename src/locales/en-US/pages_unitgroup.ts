@@ -39,6 +39,7 @@ export default {
   'pages.unitgroup.dataSetVersion': 'Data set version',
   'pages.unitgroup.referenceToOwnershipOfDataSet': 'Owner of data set',
   'pages.unitgroup.permanentDataSetURI': 'Permanent data set URI',
+  'pages.unitgroup.referenceToPrecedingDataSetVersion': 'Preceding data set version',
 
   //
   //unit 创建

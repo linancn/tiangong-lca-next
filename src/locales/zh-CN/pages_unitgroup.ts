@@ -37,6 +37,7 @@ export default {
   'pages.unitgroup.referenceToDataSetFormat': '数据集格式',
   'pages.unitgroup.dataSetVersion': '数据集版本', //基本完成
   'pages.unitgroup.referenceToOwnershipOfDataSet': '数据集拥有者',
+  'pages.unitgroup.referenceToPrecedingDataSetVersion': '数据集前一版本',
   'pages.unitgroup.permanentDataSetURI': '永久数据集统一资源标识符',
 
   //

@@ -15,6 +15,7 @@ import { FormattedMessage } from 'umi';
 import UnitView from './Unit/view';
 import { complianceOptions } from './optiondata';
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
+import UnitGroupDescription from '@/pages/Unitgroups/Components/select/description';
 
 type Props = {
   id: string;
@@ -200,7 +201,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
         <LevelTextItemDescription
           data={
             initData.unitGroupInformation?.dataSetInformation?.classificationInformation?.[
-              'common:classification'
+            'common:classification'
             ]?.['common:class']?.['value']
           }
           lang={lang}
@@ -228,7 +229,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
           }
           data={
             initData.modellingAndValidation?.complianceDeclarations?.compliance?.[
-              'common:referenceToComplianceSystem'
+            'common:referenceToComplianceSystem'
             ] ?? {}
           }
           lang={lang}
@@ -247,7 +248,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
           >
             {getComplianceLabel(
               initData.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                'common:approvalOfOverallCompliance'
+              'common:approvalOfOverallCompliance'
               ] ?? '-',
             )}
           </Descriptions.Item>
@@ -305,36 +306,49 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
         </Descriptions>
         <br />
         <ContactSelectDescription
-            data={
-              initData.administrativeInformation?.publicationAndOwnership?.[
-                'common:referenceToOwnershipOfDataSet'
-              ]
-            }
-            lang={lang}
-            title={
+          data={
+            initData.administrativeInformation?.publicationAndOwnership?.[
+            'common:referenceToOwnershipOfDataSet'
+            ]
+          }
+          lang={lang}
+          title={
+            <FormattedMessage
+              id="pages.unitgroup.referenceToOwnershipOfDataSet"
+              defaultMessage="Owner of data set"
+            />
+          }
+        ></ContactSelectDescription>
+        <br />
+        <UnitGroupDescription
+          lang={lang}
+          title={
+            <FormattedMessage
+              id="pages.unitgroup.referenceToPrecedingDataSetVersion"
+              defaultMessage="Preceding data set version"
+            />
+          }
+          data={
+            initData.administrativeInformation?.publicationAndOwnership?.['common:referenceToPrecedingDataSetVersion']
+          }
+        />
+        <br />
+        <Descriptions bordered size={'small'} column={1}>
+          <Descriptions.Item
+            key={0}
+            label={
               <FormattedMessage
-                id="pages.unitgroup.referenceToOwnershipOfDataSet"
-                defaultMessage="Owner of data set"
+                id="pages.unitgroup.permanentDataSetURI"
+                defaultMessage="Permanent data set URI"
               />
             }
-          ></ContactSelectDescription>
-          <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id="pages.unitgroup.permanentDataSetURI"
-                  defaultMessage="Permanent data set URI"
-                />
-              }
-              labelStyle={{ width: '220px' }}
-            >
-              {initData.administrativeInformation?.publicationAndOwnership?.[
-                'common:permanentDataSetURI'
-              ] ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+            labelStyle={{ width: '220px' }}
+          >
+            {initData.administrativeInformation?.publicationAndOwnership?.[
+              'common:permanentDataSetURI'
+            ] ?? '-'}
+          </Descriptions.Item>
+        </Descriptions>
       </>
     ),
     units: (

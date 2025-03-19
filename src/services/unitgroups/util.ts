@@ -47,7 +47,7 @@ export function genUnitGroupJsonOrdered(id: string, data: any) {
             'common:classification': {
               'common:class': classificationToJsonList(
                 data?.unitGroupInformation?.dataSetInformation?.classificationInformation?.[
-                  'common:classification'
+                'common:classification'
                 ]?.['common:class'],
               ),
             },
@@ -65,29 +65,29 @@ export function genUnitGroupJsonOrdered(id: string, data: any) {
             'common:referenceToComplianceSystem': {
               '@refObjectId':
                 data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                  'common:referenceToComplianceSystem'
+                'common:referenceToComplianceSystem'
                 ]?.['@refObjectId'] ?? {},
               '@type':
                 data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                  'common:referenceToComplianceSystem'
+                'common:referenceToComplianceSystem'
                 ]?.['@type'] ?? {},
               '@uri':
                 data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                  'common:referenceToComplianceSystem'
+                'common:referenceToComplianceSystem'
                 ]?.['@uri'] ?? {},
               '@version':
                 data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                  'common:referenceToComplianceSystem'
+                'common:referenceToComplianceSystem'
                 ]?.['@version'] ?? {},
               'common:shortDescription': getLangJson(
                 data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                  'common:referenceToComplianceSystem'
+                'common:referenceToComplianceSystem'
                 ]?.['common:shortDescription'],
               ),
             },
             'common:approvalOfOverallCompliance':
               data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                'common:approvalOfOverallCompliance'
+              'common:approvalOfOverallCompliance'
               ] ?? {},
           },
         },
@@ -99,23 +99,23 @@ export function genUnitGroupJsonOrdered(id: string, data: any) {
           'common:referenceToDataSetFormat': {
             '@refObjectId':
               data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-                '@refObjectId'
+              '@refObjectId'
               ] ?? {},
             '@type':
               data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-                '@type'
+              '@type'
               ] ?? {},
             '@uri':
               data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-                '@uri'
+              '@uri'
               ] ?? {},
             '@version':
               data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-                '@version'
+              '@version'
               ] ?? {},
             'common:shortDescription': getLangJson(
               data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-                'common:shortDescription'
+              'common:shortDescription'
               ],
             ),
           },
@@ -126,28 +126,51 @@ export function genUnitGroupJsonOrdered(id: string, data: any) {
             {},
           'common:permanentDataSetURI':
             data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:permanentDataSetURI'
+            'common:permanentDataSetURI'
             ],
           'common:referenceToOwnershipOfDataSet': {
             '@refObjectId':
               data?.administrativeInformation?.publicationAndOwnership?.[
-                'common:referenceToOwnershipOfDataSet'
+              'common:referenceToOwnershipOfDataSet'
               ]?.['@refObjectId'],
             '@type':
               data?.administrativeInformation?.publicationAndOwnership?.[
-                'common:referenceToOwnershipOfDataSet'
+              'common:referenceToOwnershipOfDataSet'
               ]?.['@type'],
             '@uri':
               data?.administrativeInformation?.publicationAndOwnership?.[
-                'common:referenceToOwnershipOfDataSet'
+              'common:referenceToOwnershipOfDataSet'
               ]?.['@uri'],
             '@version':
               data?.administrativeInformation?.publicationAndOwnership?.[
-                'common:referenceToOwnershipOfDataSet'
+              'common:referenceToOwnershipOfDataSet'
               ]?.['@version'],
             'common:shortDescription': getLangJson(
               data?.administrativeInformation?.publicationAndOwnership?.[
-                'common:referenceToOwnershipOfDataSet'
+              'common:referenceToOwnershipOfDataSet'
+              ]?.['common:shortDescription'],
+            ),
+          },
+          'common:referenceToPrecedingDataSetVersion': {
+            '@refObjectId':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToPrecedingDataSetVersion'
+              ]?.['@refObjectId'],
+            '@type':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToPrecedingDataSetVersion'
+              ]?.['@type'],
+            '@uri':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToPrecedingDataSetVersion'
+              ]?.['@uri'],
+            '@version':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToPrecedingDataSetVersion'
+              ]?.['@version'],
+            'common:shortDescription': getLangJson(
+              data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToPrecedingDataSetVersion'
               ]?.['common:shortDescription'],
             ),
           },
@@ -174,7 +197,7 @@ export function genUnitGroupFromData(data: any) {
           'common:classification': {
             'common:class': classificationToStringList(
               data?.unitGroupInformation?.dataSetInformation?.classificationInformation?.[
-                'common:classification'
+              'common:classification'
               ]?.['common:class'],
             ),
           },
@@ -195,29 +218,29 @@ export function genUnitGroupFromData(data: any) {
           'common:referenceToComplianceSystem': {
             '@refObjectId':
               data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                'common:referenceToComplianceSystem'
+              'common:referenceToComplianceSystem'
               ]?.['@refObjectId'],
             '@type':
               data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                'common:referenceToComplianceSystem'
+              'common:referenceToComplianceSystem'
               ]?.['@type'],
             '@uri':
               data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                'common:referenceToComplianceSystem'
+              'common:referenceToComplianceSystem'
               ]?.['@uri'],
             '@version':
               data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                'common:referenceToComplianceSystem'
+              'common:referenceToComplianceSystem'
               ]?.['@version'],
             'common:shortDescription': getLangList(
               data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                'common:referenceToComplianceSystem'
+              'common:referenceToComplianceSystem'
               ]?.['common:shortDescription'],
             ),
           },
           'common:approvalOfOverallCompliance':
             data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-              'common:approvalOfOverallCompliance'
+            'common:approvalOfOverallCompliance'
             ],
         },
       },
@@ -228,23 +251,23 @@ export function genUnitGroupFromData(data: any) {
         'common:referenceToDataSetFormat': {
           '@refObjectId':
             data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-              '@refObjectId'
+            '@refObjectId'
             ],
           '@type':
             data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-              '@type'
+            '@type'
             ],
           '@uri':
             data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-              '@uri'
+            '@uri'
             ],
           '@version':
             data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-              '@version'
+            '@version'
             ],
           'common:shortDescription': getLangList(
             data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-              'common:shortDescription'
+            'common:shortDescription'
             ],
           ),
         },
@@ -257,23 +280,46 @@ export function genUnitGroupFromData(data: any) {
         'common:referenceToOwnershipOfDataSet': {
           '@refObjectId':
             data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToOwnershipOfDataSet'
+            'common:referenceToOwnershipOfDataSet'
             ]?.['@refObjectId'],
           '@type':
             data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToOwnershipOfDataSet'
+            'common:referenceToOwnershipOfDataSet'
             ]?.['@type'],
           '@uri':
             data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToOwnershipOfDataSet'
+            'common:referenceToOwnershipOfDataSet'
             ]?.['@uri'],
           '@version':
             data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToOwnershipOfDataSet'
+            'common:referenceToOwnershipOfDataSet'
             ]?.['@version'],
           'common:shortDescription': getLangList(
             data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToOwnershipOfDataSet'
+            'common:referenceToOwnershipOfDataSet'
+            ]?.['common:shortDescription'],
+          ),
+        },
+        'common:referenceToPrecedingDataSetVersion': {
+          '@refObjectId':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+            'common:referenceToPrecedingDataSetVersion'
+            ]?.['@refObjectId'],
+          '@type':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+            'common:referenceToPrecedingDataSetVersion'
+            ]?.['@type'],
+          '@uri':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+            'common:referenceToPrecedingDataSetVersion'
+            ]?.['@uri'],
+          '@version':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+            'common:referenceToPrecedingDataSetVersion'
+            ]?.['@version'],
+          'common:shortDescription': getLangList(
+            data?.administrativeInformation?.publicationAndOwnership?.[
+            'common:referenceToPrecedingDataSetVersion'
             ]?.['common:shortDescription'],
           ),
         },
