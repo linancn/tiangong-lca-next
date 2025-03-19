@@ -89,4 +89,16 @@ export default {
   'pages.unitgroup.view.modellingAndValidation.approvalOfOverallCompliance.fullyCompliant': '完全符合',
   'pages.unitgroup.view.modellingAndValidation.approvalOfOverallCompliance.notCompliant': '不符合',
   'pages.unitgroup.view.modellingAndValidation.approvalOfOverallCompliance.notDefined': '未定义',
+
+  'pages.unitgroup.validator.version.required': '请输入版本',
+  'pages.unitgroup.validator.uuid.required': '请输入UUID',
+  'pages.unitgroup.validator.name.required': '请输入单位组名称',
+  'pages.unitgroup.validator.class.required': '请输入分类',
+  'pages.unitgroup.validator.referenceToReferenceUnit.required': '请输入参考单位',
+  'pages.unitgroup.validator.referenceToComplianceSystem.required': '请输入合规系统名称',
+  'pages.unitgroup.validator.approvalOfOverallCompliance.required': '请输入整体合规性批准',
+  'pages.unitgroup.validator.timeStamp.required': '请输入时间戳',
+  'pages.unitgroup.validator.referenceToDataSetFormat.required': '请输入数据集格式',
+  'pages.unitgroup.validator.dataSetVersion.required': '请输入数据集版本',
+  'pages.unitgroup.validator.referenceToOwnershipOfDataSet.required': '请输入数据集所有权',
 };

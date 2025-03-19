@@ -89,4 +89,16 @@ export default {
   'pages.unitgroup.view.modellingAndValidation.approvalOfOverallCompliance.fullyCompliant': 'Fully compliant',
   'pages.unitgroup.view.modellingAndValidation.approvalOfOverallCompliance.notCompliant': 'Not compliant',
   'pages.unitgroup.view.modellingAndValidation.approvalOfOverallCompliance.notDefined': 'Not defined',
+
+  'pages.unitgroup.validator.version.required': 'Please input version',
+  'pages.unitgroup.validator.uuid.required': 'Please input UUID',
+  'pages.unitgroup.validator.name.required': 'Please input name of unit group',
+  'pages.unitgroup.validator.class.required': 'Please input classification',
+  'pages.unitgroup.validator.referenceToReferenceUnit.required': 'Please input reference to reference unit',
+  'pages.unitgroup.validator.referenceToComplianceSystem.required': 'Please input compliance system name',
+  'pages.unitgroup.validator.approvalOfOverallCompliance.required': 'Please input approval of overall compliance',
+  'pages.unitgroup.validator.timeStamp.required': 'Please input time stamp',
+  'pages.unitgroup.validator.referenceToDataSetFormat.required': 'Please input reference to data set format(s)',
+  'pages.unitgroup.validator.dataSetVersion.required': 'Please input data set version',
+  'pages.unitgroup.validator.referenceToOwnershipOfDataSet.required': 'Please input reference to ownership of data set',
 };
