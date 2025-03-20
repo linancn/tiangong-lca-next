@@ -1,7 +1,7 @@
 import { langOptions } from '@/services/general/data';
 import { CloseOutlined } from '@ant-design/icons';
 import { Button, Col, Form, Input, Row, Select, message } from 'antd';
-import { FC, ReactNode } from 'react';
+import { FC, ReactNode, useRef } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 
 const { TextArea } = Input;
@@ -17,6 +17,7 @@ type Props = {
 const LangTextItemForm: FC<Props> = ({ name, label, rules = [], setRuleErrorState, formRef }) => {
   const intl = useIntl();
   const isRequired = rules?.some((rule) => rule.required);
+  const initialRenderRef = useRef(true);
 
   const formContext = Form.useFormInstance();
   const form = formRef?.current || formContext;
@@ -65,10 +66,11 @@ const LangTextItemForm: FC<Props> = ({ name, label, rules = [], setRuleErrorStat
         }
       >
         {(subFields, subOpt) => {
-          if (isRequired && subFields.length === 0) {
-            setTimeout(() => {
+          if (isRequired && subFields.length === 0 && initialRenderRef.current) {
+            initialRenderRef.current = false;
+            requestAnimationFrame(() => {
               subOpt.add();
-            }, 0);
+            });
           }
 
           return (
