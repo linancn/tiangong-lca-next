@@ -408,7 +408,7 @@ export const FlowForm: FC<Props> = ({
               'common:elementaryFlowCategorization',
               'common:category',
             ]}
-            rules={getRules(schema['flowDataSet']['flowInformation']['dataSetInformation']['classificationInformation']['common:elementaryFlowCategorization']['common:category']['rules'])}
+            rules={thisFlowType !== 'Elementary flow' ? []:getRules(schema['flowDataSet']['flowInformation']['dataSetInformation']['classificationInformation']['common:elementaryFlowCategorization']['common:category']['rules'])}
           />
           <LevelTextItemForm
             hidden={thisFlowType === 'Elementary flow'}
