@@ -227,7 +227,8 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
             }}
             onFinish={async () => {
               const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
-              const result = await createFlowproperties(paramsId, fromData);
+              const formFieldsValue = formRefCreate.current?.getFieldsValue();
+              const result = await createFlowproperties(paramsId, formFieldsValue);
               if (result.data) {
                 message.success(
                   intl.formatMessage({

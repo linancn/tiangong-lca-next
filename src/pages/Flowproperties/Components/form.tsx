@@ -13,6 +13,7 @@ import FlowpropertiesSelectForm from './select/form';
 import { getRules } from '@/pages/Utils';
 import schema from '../flowproperties_schema.json';
 import RequiredMark from '@/components/RequiredMark';
+import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 
 type Props = {
   lang: string;
@@ -101,6 +102,26 @@ export const FlowpropertyForm: FC<Props> = ({
             />
           </Card>
           <br />
+          <Card
+            size="small"
+            title={
+              <FormattedMessage
+                id="pages.FlowProperties.view.flowPropertiesInformation.synonyms"
+                defaultMessage="Synonyms"
+              />
+            }
+          >
+            <LangTextItemForm
+              name={['flowPropertiesInformation', 'dataSetInformation', 'common:synonyms']}
+              label={
+                <FormattedMessage
+                  id="pages.FlowProperties.view.flowPropertiesInformation.synonyms"
+                  defaultMessage="Synonyms"
+                />
+              }
+            />
+          </Card>
+          <br />
           <LevelTextItemForm
             dataType={'FlowProperty'}
             onData={onData}
@@ -135,7 +156,6 @@ export const FlowpropertyForm: FC<Props> = ({
             />
           </Card>
         </Card>
-        <br />
         <UnitGroupSelectFrom
           name={[
             'flowPropertiesInformation',
@@ -157,6 +177,22 @@ export const FlowpropertyForm: FC<Props> = ({
     ),
     modellingAndValidation: (
       <Space direction="vertical" style={{ width: '100%' }}>
+        <SourceSelectForm
+          name={[
+            'modellingAndValidation',
+            'dataSourcesTreatmentAndRepresentativeness',
+            'referenceToDataSource',
+          ]}
+          label={
+            <FormattedMessage
+              id="pages.FlowProperties.view.modellingAndValidation.referenceToDataSource"
+              defaultMessage="Data source"
+            />
+          }
+          lang={lang}
+          formRef={formRef}
+          onData={onData}
+        />
         <SourceSelectForm
           defaultSourceName={formType === 'create' ? 'ILCD Data Network - compliance (non-Process)' : ''}
           name={[
@@ -272,6 +308,24 @@ export const FlowpropertyForm: FC<Props> = ({
             formRef={formRef}
             onData={onData}
           />
+          <br />
+          <ContactSelectForm
+            label={
+              <FormattedMessage
+                id="pages.flowproperty.administrativeInformation.referenceToOwnershipOfDataSet"
+                defaultMessage="Owner of data set"
+              />
+            }
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:referenceToOwnershipOfDataSet',
+            ]}
+            lang={lang}
+            formRef={formRef}
+            onData={onData}
+          />
+          <br />
           <Form.Item
             label={
               <FormattedMessage

@@ -12,6 +12,7 @@ import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { complianceOptions } from './optiondata';
 import FlowpropertiesSelectDescription from './select/description';
+import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 type Props = {
   id: string;
   version: string;
@@ -90,7 +91,10 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
         <LangTextItemDescription
           data={initData?.flowPropertiesInformation?.dataSetInformation?.['common:name']}
         />
-
+        <LangTextItemDescription
+          data={initData?.flowPropertiesInformation?.dataSetInformation?.['common:synonyms']}
+        />
+        <br />
         <Divider orientationMargin="0" orientation="left" plain>
           <FormattedMessage
             id="pages.FlowProperties.view.flowPropertiesInformation.generalComment"
@@ -128,6 +132,19 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
     ),
     modellingAndValidation: (
       <>
+      <SourcesDescription
+          data={
+            initData?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.referenceToDataSource
+          }
+          title={
+            <FormattedMessage
+              id="pages.FlowProperties.view.modellingAndValidation.referenceToDataSource"
+              defaultMessage="Data source"
+            />
+          }
+          lang={lang}
+        />
+        <br />
         <SourcesDescription
           data={
             initData?.modellingAndValidation?.complianceDeclarations?.compliance?.[
@@ -245,6 +262,21 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
               />
             }
           />
+          <br />
+          <ContactSelectDescription
+            data={
+              initData.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]
+            }
+            lang={lang}
+            title={
+              <FormattedMessage
+                id="pages.flowproperties.view.administrativeInformation.referenceToOwnershipOfDataSet"
+                defaultMessage="Owner of data set"
+              />
+            }
+          ></ContactSelectDescription>
           <br />
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item
