@@ -43,20 +43,20 @@ const LifeCycleModelView: FC<Props> = ({ id, version, buttonType, lang, actionRe
   return (
     <>
       {buttonType === 'icon' ? (
-        <Tooltip title={<FormattedMessage id="pages.button.view" defaultMessage="View" />}>
-          <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
+        <Tooltip title={<FormattedMessage id='pages.button.view' defaultMessage='View' />}>
+          <Button shape='circle' icon={<ProfileOutlined />} size='small' onClick={onView} />
         </Tooltip>
       ) : (
         <Button onClick={onView}>
-          <FormattedMessage id="pages.button.view" defaultMessage="View" />
+          <FormattedMessage id='pages.button.view' defaultMessage='View' />
         </Button>
       )}
       <Drawer
         getContainer={() => document.body}
         title={
-          <FormattedMessage id="pages.flow.model.drawer.title.view" defaultMessage="View Model" />
+          <FormattedMessage id='pages.flow.model.drawer.title.view' defaultMessage='View Model' />
         }
-        width="100%"
+        width='100%'
         closable={false}
         extra={
           <Button
@@ -91,7 +91,7 @@ const LifeCycleModelView: FC<Props> = ({ id, version, buttonType, lang, actionRe
                   }}
                 />
                 <Grid
-                  type="dot"
+                  type='dot'
                   options={{
                     color: '#595959',
                     thickness: 1,
@@ -99,7 +99,7 @@ const LifeCycleModelView: FC<Props> = ({ id, version, buttonType, lang, actionRe
                 />
               </Content>
             </Layout>
-            <Sider width="50px" style={siderStyle}>
+            <Sider width='50px' style={siderStyle}>
               <ToolbarView
                 id={id}
                 version={version}

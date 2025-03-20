@@ -7,8 +7,8 @@ export const StringMultiLang_r = [
     warningOnly: true,
     message: (
       <FormattedMessage
-        id="validator.recommended.empty"
-        defaultMessage="Recommended to fill in to enhance data detail and usability!"
+        id='validator.recommended.empty'
+        defaultMessage='Recommended to fill in to enhance data detail and usability!'
       />
     ),
   },
@@ -16,8 +16,8 @@ export const StringMultiLang_r = [
     max: 500,
     message: (
       <FormattedMessage
-        id="validator.StringMultiLang.pattern"
-        defaultMessage="Length cannot exceed 500 characters!"
+        id='validator.StringMultiLang.pattern'
+        defaultMessage='Length cannot exceed 500 characters!'
       />
     ),
   },
@@ -27,8 +27,8 @@ export const StringMultiLang_o = [
   {
     message: (
       <FormattedMessage
-        id="validator.optional.empty"
-        defaultMessage="Optional to fill in, providing additional information without affecting completeness!"
+        id='validator.optional.empty'
+        defaultMessage='Optional to fill in, providing additional information without affecting completeness!'
       />
     ),
   },
@@ -36,8 +36,8 @@ export const StringMultiLang_o = [
     max: 500,
     message: (
       <FormattedMessage
-        id="validator.StringMultiLang.pattern"
-        defaultMessage="Length cannot exceed 500 characters!"
+        id='validator.StringMultiLang.pattern'
+        defaultMessage='Length cannot exceed 500 characters!'
       />
     ),
   },
@@ -49,8 +49,8 @@ export const STMultiLang_r = [
     warningOnly: true,
     message: (
       <FormattedMessage
-        id="validator.recommended.empty"
-        defaultMessage="Recommended to fill in to enhance data detail and usability!"
+        id='validator.recommended.empty'
+        defaultMessage='Recommended to fill in to enhance data detail and usability!'
       />
     ),
   },
@@ -58,8 +58,8 @@ export const STMultiLang_r = [
     max: 1000,
     message: (
       <FormattedMessage
-        id="validator.STMultiLang.pattern"
-        defaultMessage="Length cannot exceed 1000 characters!"
+        id='validator.STMultiLang.pattern'
+        defaultMessage='Length cannot exceed 1000 characters!'
       />
     ),
   },
@@ -69,8 +69,8 @@ export const STMultiLang_o = [
   {
     message: (
       <FormattedMessage
-        id="validator.optional.empty"
-        defaultMessage="Optional to fill in, providing additional information without affecting completeness!"
+        id='validator.optional.empty'
+        defaultMessage='Optional to fill in, providing additional information without affecting completeness!'
       />
     ),
   },
@@ -78,8 +78,8 @@ export const STMultiLang_o = [
     max: 1000,
     message: (
       <FormattedMessage
-        id="validator.STMultiLang.pattern"
-        defaultMessage="Length cannot exceed 1000 characters!"
+        id='validator.STMultiLang.pattern'
+        defaultMessage='Length cannot exceed 1000 characters!'
       />
     ),
   },
@@ -91,8 +91,8 @@ export const FTMultiLang_r = [
     warningOnly: true,
     message: (
       <FormattedMessage
-        id="validator.recommended.empty"
-        defaultMessage="Recommended to fill in to enhance data detail and usability!"
+        id='validator.recommended.empty'
+        defaultMessage='Recommended to fill in to enhance data detail and usability!'
       />
     ),
   },
@@ -104,8 +104,8 @@ export const String_m = [
     warningOnly: true,
     message: (
       <FormattedMessage
-        id="validator.mandatory.empty"
-        defaultMessage="Mandatory to fill in to ensure data set completeness and compliance!"
+        id='validator.mandatory.empty'
+        defaultMessage='Mandatory to fill in to ensure data set completeness and compliance!'
       />
     ),
   },
@@ -115,8 +115,8 @@ export const String_m = [
     max: 500,
     message: (
       <FormattedMessage
-        id="validator.String.pattern"
-        defaultMessage="Length cannot be less than 1 or exceed 500 characters!"
+        id='validator.String.pattern'
+        defaultMessage='Length cannot be less than 1 or exceed 500 characters!'
       />
     ),
   },
@@ -128,8 +128,8 @@ export const String_r = [
     warningOnly: true,
     message: (
       <FormattedMessage
-        id="validator.recommended.empty"
-        defaultMessage="Recommended to fill in to enhance data detail and usability!"
+        id='validator.recommended.empty'
+        defaultMessage='Recommended to fill in to enhance data detail and usability!'
       />
     ),
   },
@@ -139,8 +139,8 @@ export const String_r = [
     max: 500,
     message: (
       <FormattedMessage
-        id="validator.String.pattern"
-        defaultMessage="Length cannot be less than 1 or exceed 500 characters!"
+        id='validator.String.pattern'
+        defaultMessage='Length cannot be less than 1 or exceed 500 characters!'
       />
     ),
   },
@@ -150,8 +150,8 @@ export const String_o = [
   {
     message: (
       <FormattedMessage
-        id="validator.optional.empty"
-        defaultMessage="Optional to fill in, providing additional information without affecting completeness!"
+        id='validator.optional.empty'
+        defaultMessage='Optional to fill in, providing additional information without affecting completeness!'
       />
     ),
   },
@@ -161,8 +161,8 @@ export const String_o = [
     max: 500,
     message: (
       <FormattedMessage
-        id="validator.String.pattern"
-        defaultMessage="Length cannot be less than 1 or exceed 500 characters!"
+        id='validator.String.pattern'
+        defaultMessage='Length cannot be less than 1 or exceed 500 characters!'
       />
     ),
   },
@@ -174,8 +174,8 @@ export const ST_r = [
     warningOnly: true,
     message: (
       <FormattedMessage
-        id="validator.recommended.empty"
-        defaultMessage="Recommended to fill in to enhance data detail and usability!"
+        id='validator.recommended.empty'
+        defaultMessage='Recommended to fill in to enhance data detail and usability!'
       />
     ),
   },
@@ -183,8 +183,8 @@ export const ST_r = [
     max: 1000,
     message: (
       <FormattedMessage
-        id="validator.STMultiLang.pattern"
-        defaultMessage="Length cannot exceed 1000 characters!"
+        id='validator.STMultiLang.pattern'
+        defaultMessage='Length cannot exceed 1000 characters!'
       />
     ),
   },
@@ -195,8 +195,8 @@ export const dataSetVersion = [
     required: true,
     message: (
       <FormattedMessage
-        id="validator.dataSetVersion.empty"
-        defaultMessage="Please input the Data Set Version!"
+        id='validator.dataSetVersion.empty'
+        defaultMessage='Please input the Data Set Version!'
       />
     ),
   },
@@ -204,8 +204,8 @@ export const dataSetVersion = [
     pattern: /^\d{2}\.\d{2}\.\d{3}$/,
     message: (
       <FormattedMessage
-        id="validator.dataSetVersion.pattern"
-        defaultMessage="Version format must be XX.XX.XXX, where X is a digit!"
+        id='validator.dataSetVersion.pattern'
+        defaultMessage='Version format must be XX.XX.XXX, where X is a digit!'
       />
     ),
   },
@@ -217,8 +217,8 @@ export const emailvalidation: Rule[] = [
     type: 'email',
     message: (
       <FormattedMessage
-        id="validator.pages.contact.email.pattern"
-        defaultMessage="The input is not valid E-mail!"
+        id='validator.pages.contact.email.pattern'
+        defaultMessage='The input is not valid E-mail!'
       />
     ),
   },
@@ -231,8 +231,8 @@ export const WWWAddress: Rule[] = [
     warningOnly: true,
     message: (
       <FormattedMessage
-        id="validator.recommended.empty"
-        defaultMessage="Recommended to fill in to enhance data detail and usability!"
+        id='validator.recommended.empty'
+        defaultMessage='Recommended to fill in to enhance data detail and usability!'
       />
     ),
   },
@@ -240,8 +240,8 @@ export const WWWAddress: Rule[] = [
     type: 'url',
     message: (
       <FormattedMessage
-        id="validator.pages.contact.WWWAddress.invalid"
-        defaultMessage="Please enter a valid WWWAddress!"
+        id='validator.pages.contact.WWWAddress.invalid'
+        defaultMessage='Please enter a valid WWWAddress!'
       />
     ),
   },
@@ -253,8 +253,8 @@ export const CASNumber = [
     warningOnly: true,
     message: (
       <FormattedMessage
-        id="validator.CASNumber.empty"
-        defaultMessage="Should only be given for (virtually) pure substances, but NOT also for the main constituent of a material or product etc!"
+        id='validator.CASNumber.empty'
+        defaultMessage='Should only be given for (virtually) pure substances, but NOT also for the main constituent of a material or product etc!'
       />
     ),
   },
@@ -262,8 +262,8 @@ export const CASNumber = [
     pattern: /^\d{2,7}-\d{2}-\d$/,
     message: (
       <FormattedMessage
-        id="validator.CASNumber.pattern"
-        defaultMessage="CAS Number format must be XX-XX-X or XXXXXXX-XX-X, where X is a digit!"
+        id='validator.CASNumber.pattern'
+        defaultMessage='CAS Number format must be XX-XX-X or XXXXXXX-XX-X, where X is a digit!'
       />
     ),
   },
@@ -275,8 +275,8 @@ export const NullableString = [
     warningOnly: true,
     message: (
       <FormattedMessage
-        id="validator.recommended.empty"
-        defaultMessage="Recommended to fill in to enhance data detail and usability!"
+        id='validator.recommended.empty'
+        defaultMessage='Recommended to fill in to enhance data detail and usability!'
       />
     ),
   },
@@ -285,8 +285,8 @@ export const NullableString = [
     max: 500,
     message: (
       <FormattedMessage
-        id="validator.NullableString.pattern"
-        defaultMessage="Length cannot exceed 500 characters characters and may be empty!"
+        id='validator.NullableString.pattern'
+        defaultMessage='Length cannot exceed 500 characters characters and may be empty!'
       />
     ),
   },
@@ -298,8 +298,8 @@ export const Yearvalidation_r = [
     warningOnly: true,
     message: (
       <FormattedMessage
-        id="validator.Year.empty"
-        defaultMessage="Recommended to fill in to enhance data detail and usability!"
+        id='validator.Year.empty'
+        defaultMessage='Recommended to fill in to enhance data detail and usability!'
       />
     ),
   },
@@ -307,8 +307,8 @@ export const Yearvalidation_r = [
     pattern: /^[0-9]{4}$/,
     message: (
       <FormattedMessage
-        id="validator.Year.pattern"
-        defaultMessage="Please enter a valid year (e.g., 2023)"
+        id='validator.Year.pattern'
+        defaultMessage='Please enter a valid year (e.g., 2023)'
       />
     ),
   },

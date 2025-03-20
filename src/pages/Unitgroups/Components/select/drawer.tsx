@@ -90,14 +90,14 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
   const unitGroupColumns: ProColumns<UnitGroupTable>[] = [
     {
       title: (
-        <FormattedMessage id="pages.table.title.index" defaultMessage="Index"></FormattedMessage>
+        <FormattedMessage id='pages.table.title.index' defaultMessage='Index'></FormattedMessage>
       ),
       valueType: 'index',
       search: false,
     },
     {
       title: (
-        <FormattedMessage id="pages.table.title.name" defaultMessage="Name"></FormattedMessage>
+        <FormattedMessage id='pages.table.title.name' defaultMessage='Name'></FormattedMessage>
       ),
       dataIndex: 'name',
       sorter: false,
@@ -107,15 +107,15 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
     {
       title: (
         <FormattedMessage
-          id="pages.unitgroup.unit.quantitativeReference"
-          defaultMessage="Quantitative reference"
+          id='pages.unitgroup.unit.quantitativeReference'
+          defaultMessage='Quantitative reference'
         />
       ),
       dataIndex: 'refUnitName',
       sorter: false,
       search: false,
       render: (_, row) => [
-        <Tooltip key={0} placement="topLeft" title={row.refUnitGeneralComment}>
+        <Tooltip key={0} placement='topLeft' title={row.refUnitGeneralComment}>
           {row.refUnitName}
         </Tooltip>,
       ],
@@ -124,8 +124,8 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
     {
       title: (
         <FormattedMessage
-          id="pages.table.title.classification"
-          defaultMessage="Classification"
+          id='pages.table.title.classification'
+          defaultMessage='Classification'
         ></FormattedMessage>
       ),
       dataIndex: 'classification',
@@ -133,7 +133,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.version" defaultMessage="Version" />,
+      title: <FormattedMessage id='pages.table.title.version' defaultMessage='Version' />,
       dataIndex: 'version',
       sorter: false,
       search: false,
@@ -147,8 +147,8 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
     {
       title: (
         <FormattedMessage
-          id="pages.table.title.modifiedAt"
-          defaultMessage="Updated at"
+          id='pages.table.title.modifiedAt'
+          defaultMessage='Updated at'
         ></FormattedMessage>
       ),
       dataIndex: 'modifiedAt',
@@ -158,7 +158,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
     },
     {
       title: (
-        <FormattedMessage id="pages.table.title.option" defaultMessage="Option"></FormattedMessage>
+        <FormattedMessage id='pages.table.title.option' defaultMessage='Option'></FormattedMessage>
       ),
       dataIndex: 'option',
       search: false,
@@ -207,10 +207,10 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
   const tabList = [
     {
       key: 'tg',
-      tab: <FormattedMessage id="pages.tab.title.tgdata" defaultMessage="TianGong Data" />,
+      tab: <FormattedMessage id='pages.tab.title.tgdata' defaultMessage='TianGong Data' />,
     },
-    { key: 'my', tab: <FormattedMessage id="pages.tab.title.mydata" defaultMessage="My Data" /> },
-    { key: 'te', tab: <FormattedMessage id="pages.tab.title.tedata" defaultMessage="TE Data" /> },
+    { key: 'my', tab: <FormattedMessage id='pages.tab.title.mydata' defaultMessage='My Data' /> },
+    { key: 'te', tab: <FormattedMessage id='pages.tab.title.tedata' defaultMessage='TE Data' /> },
   ];
 
   const databaseList: Record<string, React.ReactNode> = {
@@ -359,14 +359,14 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
       {buttonType === 'icon' ? (
         <Tooltip
           title={
-            buttonText ?? <FormattedMessage id="pages.button.select" defaultMessage="Select" />
+            buttonText ?? <FormattedMessage id='pages.button.select' defaultMessage='Select' />
           }
         >
-          <Button shape="circle" icon={<DatabaseOutlined />} size="small" onClick={onSelect} />
+          <Button shape='circle' icon={<DatabaseOutlined />} size='small' onClick={onSelect} />
         </Tooltip>
       ) : (
         <Button onClick={onSelect}>
-          {buttonText ?? <FormattedMessage id="pages.button.select" defaultMessage="Select" />}
+          {buttonText ?? <FormattedMessage id='pages.button.select' defaultMessage='Select' />}
         </Button>
       )}
 
@@ -374,11 +374,11 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
         getContainer={() => document.body}
         title={
           <FormattedMessage
-            id="pages.unitgroup.drawer.title.select"
-            defaultMessage="Selete Unit group"
+            id='pages.unitgroup.drawer.title.select'
+            defaultMessage='Selete Unit group'
           />
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={
           <Button
@@ -394,7 +394,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
               {' '}
-              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
             </Button>
             <Button
               onClick={() => {
@@ -402,9 +402,9 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
                 onData(keys[0], keys[1]);
                 setDrawerVisible(false);
               }}
-              type="primary"
+              type='primary'
             >
-              <FormattedMessage id="pages.button.submit" defaultMessage="Submit" />
+              <FormattedMessage id='pages.button.submit' defaultMessage='Submit' />
             </Button>
           </Space>
         }

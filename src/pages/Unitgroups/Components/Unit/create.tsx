@@ -37,12 +37,12 @@ const UnitCreate: FC<Props> = ({ onData }) => {
     <>
       <Tooltip
         title={
-          <FormattedMessage id="pages.button.create" defaultMessage="Create"></FormattedMessage>
+          <FormattedMessage id='pages.button.create' defaultMessage='Create'></FormattedMessage>
         }
       >
         <Button
           size={'middle'}
-          type="text"
+          type='text'
           icon={<PlusOutlined />}
           onClick={() => {
             setDrawerVisible(true);
@@ -53,11 +53,11 @@ const UnitCreate: FC<Props> = ({ onData }) => {
         getContainer={() => document.body}
         title={
           <FormattedMessage
-            id="pages.unitgroup.unit.drawer.title.create"
-            defaultMessage="Unit Create"
+            id='pages.unitgroup.unit.drawer.title.create'
+            defaultMessage='Unit Create'
           ></FormattedMessage>
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={
           <Button
@@ -80,15 +80,15 @@ const UnitCreate: FC<Props> = ({ onData }) => {
                 setDrawerVisible(false);
               }}
             >
-              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel"></FormattedMessage>
+              <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel'></FormattedMessage>
             </Button>
             <Button
               onClick={() => {
                 formRefCreate.current?.submit();
               }}
-              type="primary"
+              type='primary'
             >
-              <FormattedMessage id="pages.button.save" defaultMessage="Save"></FormattedMessage>
+              <FormattedMessage id='pages.button.save' defaultMessage='Save'></FormattedMessage>
             </Button>
           </Space>
         }
@@ -110,24 +110,24 @@ const UnitCreate: FC<Props> = ({ onData }) => {
             return true;
           }}
         >
-          <Space direction="vertical" style={{ width: '100%' }}>
+          <Space direction='vertical' style={{ width: '100%' }}>
             <Form.Item name={'@dataSetInternalID'} hidden>
               <Input />
             </Form.Item>
             <Form.Item
               label={
-                <FormattedMessage id="pages.unitgroup.creat.name" defaultMessage="Name of unit" />
+                <FormattedMessage id='pages.unitgroup.creat.name' defaultMessage='Name of unit' />
               }
               name={'name'}
             >
               <Input />
             </Form.Item>
             <Card
-              size="small"
+              size='small'
               title={
                 <FormattedMessage
-                  id="pages.unitgroup.creat.generalComment"
-                  defaultMessage="Comment"
+                  id='pages.unitgroup.creat.generalComment'
+                  defaultMessage='Comment'
                 />
               }
             >
@@ -135,8 +135,8 @@ const UnitCreate: FC<Props> = ({ onData }) => {
                 name={'generalComment'}
                 label={
                   <FormattedMessage
-                    id="pages.unitgroup.creat.generalComment"
-                    defaultMessage="Comment"
+                    id='pages.unitgroup.creat.generalComment'
+                    defaultMessage='Comment'
                   />
                 }
               />
@@ -144,8 +144,8 @@ const UnitCreate: FC<Props> = ({ onData }) => {
             <Form.Item
               label={
                 <FormattedMessage
-                  id="pages.unitgroup.creat.meanValue"
-                  defaultMessage="Mean value (of unit)"
+                  id='pages.unitgroup.creat.meanValue'
+                  defaultMessage='Mean value (of unit)'
                 />
               }
               name={'meanValue'}
@@ -155,8 +155,8 @@ const UnitCreate: FC<Props> = ({ onData }) => {
             <Form.Item
               label={
                 <FormattedMessage
-                  id="pages.unitgroup.creat.quantitativeReference"
-                  defaultMessage="Quantitative reference"
+                  id='pages.unitgroup.creat.quantitativeReference'
+                  defaultMessage='Quantitative reference'
                 />
               }
               name={'quantitativeReference'}

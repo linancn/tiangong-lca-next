@@ -25,7 +25,7 @@ const Profile: FC = () => {
   };
 
   const renderBaseForm = () => (
-    <Flex gap="middle" vertical style={{ maxWidth: '50%', minWidth: '200px' }}>
+    <Flex gap='middle' vertical style={{ maxWidth: '50%', minWidth: '200px' }}>
       <ProForm
         formRef={formRefEdit}
         submitter={{
@@ -68,24 +68,24 @@ const Profile: FC = () => {
         }}
       >
         <Form.Item
-          label={<FormattedMessage id="pages.account.profile.email" defaultMessage="Email" />}
+          label={<FormattedMessage id='pages.account.profile.email' defaultMessage='Email' />}
           name={'email'}
         >
           <Input prefix={<MailOutlined />} disabled={true} />
         </Form.Item>
         <Form.Item
-          label={<FormattedMessage id="pages.account.profile.role" defaultMessage="Role" />}
+          label={<FormattedMessage id='pages.account.profile.role' defaultMessage='Role' />}
           name={'role'}
         >
           <Input prefix={<IdcardOutlined />} value={roleValue} disabled={true} />
         </Form.Item>
         <Form.Item
-          label={<FormattedMessage id="pages.account.profile.nickName" defaultMessage="Nickname" />}
+          label={<FormattedMessage id='pages.account.profile.nickName' defaultMessage='Nickname' />}
           name={'name'}
           tooltip={
             <FormattedMessage
-              id="pages.account.profile.nickName.tooltip"
-              defaultMessage="The name you prefer to be called"
+              id='pages.account.profile.nickName.tooltip'
+              defaultMessage='The name you prefer to be called'
             />
           }
         >
@@ -96,14 +96,14 @@ const Profile: FC = () => {
   );
 
   const renderChangePasswordForm = () => (
-    <Flex gap="middle" vertical style={{ maxWidth: '50%', minWidth: '300px' }}>
+    <Flex gap='middle' vertical style={{ maxWidth: '50%', minWidth: '300px' }}>
       <ProForm
         formRef={formRefEdit}
         submitter={{
           render: (props, doms) => {
             return (
               <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <Flex gap="middle">{doms}</Flex>
+                <Flex gap='middle'>{doms}</Flex>
               </div>
             );
           },
@@ -116,8 +116,8 @@ const Profile: FC = () => {
               formRefEdit.current?.resetFields();
               message.success(
                 <FormattedMessage
-                  id="pages.account.password.changed.success"
-                  defaultMessage="Password changed successfully!"
+                  id='pages.account.password.changed.success'
+                  defaultMessage='Password changed successfully!'
                 />,
               );
             } else {
@@ -135,11 +135,11 @@ const Profile: FC = () => {
         </Form.Item>
 
         <Form.Item
-          name="currentPassword"
+          name='currentPassword'
           label={
             <FormattedMessage
-              id="pages.account.password.currentPassword"
-              defaultMessage="Current Password"
+              id='pages.account.password.currentPassword'
+              defaultMessage='Current Password'
             />
           }
           rules={[
@@ -147,8 +147,8 @@ const Profile: FC = () => {
               required: true,
               message: (
                 <FormattedMessage
-                  id="pages.account.currentPassword.required"
-                  defaultMessage="Please input your current password!"
+                  id='pages.account.currentPassword.required'
+                  defaultMessage='Please input your current password!'
                 />
               ),
             },
@@ -159,11 +159,11 @@ const Profile: FC = () => {
         </Form.Item>
 
         <ProFormText.Password
-          name="newPassword"
+          name='newPassword'
           label={
             <FormattedMessage
-              id="pages.account.password.newPassword"
-              defaultMessage="New Password"
+              id='pages.account.password.newPassword'
+              defaultMessage='New Password'
             />
           }
           fieldProps={{
@@ -171,8 +171,8 @@ const Profile: FC = () => {
             prefix: <LockOutlined />,
             strengthText: (
               <FormattedMessage
-                id="pages.account.newPassword.strengthText"
-                defaultMessage="Password must contain at least 8 characters, including lowercase and uppercase letters, digits, and symbols."
+                id='pages.account.newPassword.strengthText'
+                defaultMessage='Password must contain at least 8 characters, including lowercase and uppercase letters, digits, and symbols.'
               />
             ),
             statusRender: (value) => {
@@ -190,8 +190,8 @@ const Profile: FC = () => {
                 return (
                   <div style={{ color: token.colorWarning }}>
                     <FormattedMessage
-                      id="pages.account.newPassword.strengthMedium"
-                      defaultMessage="Medium"
+                      id='pages.account.newPassword.strengthMedium'
+                      defaultMessage='Medium'
                     />
                   </div>
                 );
@@ -200,8 +200,8 @@ const Profile: FC = () => {
                 return (
                   <div style={{ color: token.colorSuccess }}>
                     <FormattedMessage
-                      id="pages.account.newPassword.strengthStrong"
-                      defaultMessage="Strong"
+                      id='pages.account.newPassword.strengthStrong'
+                      defaultMessage='Strong'
                     />
                   </div>
                 );
@@ -209,8 +209,8 @@ const Profile: FC = () => {
               return (
                 <div style={{ color: token.colorError }}>
                   <FormattedMessage
-                    id="pages.account.newPassword.strengthWeak"
-                    defaultMessage="Weak"
+                    id='pages.account.newPassword.strengthWeak'
+                    defaultMessage='Weak'
                   />
                 </div>
               );
@@ -225,8 +225,8 @@ const Profile: FC = () => {
               required: true,
               message: (
                 <FormattedMessage
-                  id="pages.account.newPassword.required"
-                  defaultMessage="Please input the new password!"
+                  id='pages.account.newPassword.required'
+                  defaultMessage='Please input the new password!'
                 />
               ),
             },
@@ -235,8 +235,8 @@ const Profile: FC = () => {
                 /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?])[a-zA-Z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]{8,}$/,
               message: (
                 <FormattedMessage
-                  id="pages.account.newPassword.validation"
-                  defaultMessage="Password is invalid!"
+                  id='pages.account.newPassword.validation'
+                  defaultMessage='Password is invalid!'
                 />
               ),
             },
@@ -245,11 +245,11 @@ const Profile: FC = () => {
         />
 
         <Form.Item
-          name="confirmNewPassword"
+          name='confirmNewPassword'
           label={
             <FormattedMessage
-              id="pages.account.password.confirmNewPassword"
-              defaultMessage="Confirm New Password"
+              id='pages.account.password.confirmNewPassword'
+              defaultMessage='Confirm New Password'
             />
           }
           rules={[
@@ -257,8 +257,8 @@ const Profile: FC = () => {
               required: true,
               message: (
                 <FormattedMessage
-                  id="pages.account.confirmNewPassword.required"
-                  defaultMessage="Please input the new password again!"
+                  id='pages.account.confirmNewPassword.required'
+                  defaultMessage='Please input the new password again!'
                 />
               ),
             },
@@ -293,14 +293,14 @@ const Profile: FC = () => {
   );
 
   const renderChangeEmailForm = () => (
-    <Flex gap="middle" vertical style={{ maxWidth: '50%', minWidth: '300px' }}>
+    <Flex gap='middle' vertical style={{ maxWidth: '50%', minWidth: '300px' }}>
       <ProForm
         formRef={formRefEdit}
         submitter={{
           render: (props, doms) => {
             return (
               <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <Flex gap="middle">{doms}</Flex>
+                <Flex gap='middle'>{doms}</Flex>
               </div>
             );
           },
@@ -313,8 +313,8 @@ const Profile: FC = () => {
               formRefEdit.current?.resetFields();
               message.success(
                 <FormattedMessage
-                  id="pages.account.email.changed.success"
-                  defaultMessage="Verification email sent successfully! Please update your email via the email link."
+                  id='pages.account.email.changed.success'
+                  defaultMessage='Verification email sent successfully! Please update your email via the email link.'
                 />,
               );
             } else {
@@ -331,8 +331,8 @@ const Profile: FC = () => {
           name={'email'}
           label={
             <FormattedMessage
-              id="pages.account.email.currentEmail"
-              defaultMessage="Current Email"
+              id='pages.account.email.currentEmail'
+              defaultMessage='Current Email'
             />
           }
           initialValue={initData?.email}
@@ -341,8 +341,8 @@ const Profile: FC = () => {
         </Form.Item>
 
         <ProFormText
-          name="newEmail"
-          label={<FormattedMessage id="pages.account.newEmail" defaultMessage="New Email" />}
+          name='newEmail'
+          label={<FormattedMessage id='pages.account.newEmail' defaultMessage='New Email' />}
           fieldProps={{
             size: 'middle',
             prefix: <MailOutlined />,
@@ -356,8 +356,8 @@ const Profile: FC = () => {
               type: 'email',
               message: (
                 <FormattedMessage
-                  id="pages.account.newEmail.wrong-format"
-                  defaultMessage="The email format is incorrect!"
+                  id='pages.account.newEmail.wrong-format'
+                  defaultMessage='The email format is incorrect!'
                 />
               ),
             },
@@ -365,8 +365,8 @@ const Profile: FC = () => {
               required: true,
               message: (
                 <FormattedMessage
-                  id="pages.account.newEmail.required"
-                  defaultMessage="Please input the new email!"
+                  id='pages.account.newEmail.required'
+                  defaultMessage='Please input the new email!'
                 />
               ),
             },
@@ -375,11 +375,11 @@ const Profile: FC = () => {
         />
 
         <Form.Item
-          name="confirmNewEmail"
+          name='confirmNewEmail'
           label={
             <FormattedMessage
-              id="pages.account.email.confirmNewEmail"
-              defaultMessage="Confirm New Email"
+              id='pages.account.email.confirmNewEmail'
+              defaultMessage='Confirm New Email'
             />
           }
           rules={[
@@ -387,8 +387,8 @@ const Profile: FC = () => {
               required: true,
               message: (
                 <FormattedMessage
-                  id="pages.account.confirmNewEmail.required"
-                  defaultMessage="Please input the new email again!"
+                  id='pages.account.confirmNewEmail.required'
+                  defaultMessage='Please input the new email again!'
                 />
               ),
             },
@@ -445,13 +445,13 @@ const Profile: FC = () => {
 
   return (
     <PageContainer
-      title={<FormattedMessage id="menu.account.profile" defaultMessage="Account Profile" />}
+      title={<FormattedMessage id='menu.account.profile' defaultMessage='Account Profile' />}
     >
       <Spin spinning={spinning}>
         <Tabs
           activeKey={activeTabKey}
           onChange={onTabChange}
-          tabPosition="left"
+          tabPosition='left'
           items={[
             {
               key: 'baseInfo',

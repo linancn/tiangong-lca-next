@@ -90,19 +90,19 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData })
 
   const sourceColumns: ProColumns<SourceTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
+      title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
       dataIndex: 'index',
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name" />,
+      title: <FormattedMessage id='pages.table.title.name' defaultMessage='Name' />,
       dataIndex: 'shortName',
       sorter: false,
     },
     {
       title: (
-        <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />
+        <FormattedMessage id='pages.table.title.classification' defaultMessage='Classification' />
       ),
       dataIndex: 'classification',
       sorter: false,
@@ -110,32 +110,32 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData })
     },
     {
       title: (
-        <FormattedMessage id="pages.source.publicationType" defaultMessage="Publication type" />
+        <FormattedMessage id='pages.source.publicationType' defaultMessage='Publication type' />
       ),
       dataIndex: 'publicationType',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.version" defaultMessage="Version" />,
+      title: <FormattedMessage id='pages.table.title.version' defaultMessage='Version' />,
       dataIndex: 'version',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.updatedAt" defaultMessage="Updated at" />,
+      title: <FormattedMessage id='pages.table.title.updatedAt' defaultMessage='Updated at' />,
       dataIndex: 'modifiedAt',
       valueType: 'dateTime',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
+      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
         return [
-          <SourceView key={0} id={row.id} version={row.version} lang={lang} buttonType="icon" />,
+          <SourceView key={0} id={row.id} version={row.version} lang={lang} buttonType='icon' />,
         ];
         //  if (activeTabKey === 'tg') {
         //      <Space size={'small'} key={0}>
@@ -179,10 +179,10 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData })
   const tabList = [
     {
       key: 'tg',
-      tab: <FormattedMessage id="pages.tab.title.tgdata" defaultMessage="TianGong Data" />,
+      tab: <FormattedMessage id='pages.tab.title.tgdata' defaultMessage='TianGong Data' />,
     },
-    { key: 'my', tab: <FormattedMessage id="pages.tab.title.mydata" defaultMessage="My Data" /> },
-    { key: 'te', tab: <FormattedMessage id="pages.tab.title.tedata" defaultMessage="TE Data" /> },
+    { key: 'my', tab: <FormattedMessage id='pages.tab.title.mydata' defaultMessage='My Data' /> },
+    { key: 'te', tab: <FormattedMessage id='pages.tab.title.tedata' defaultMessage='TE Data' /> },
   ];
 
   const databaseList: Record<string, React.ReactNode> = {
@@ -327,23 +327,23 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData })
       {buttonType === 'icon' ? (
         <Tooltip
           title={
-            buttonText ?? <FormattedMessage id="pages.button.select" defaultMessage="Select" />
+            buttonText ?? <FormattedMessage id='pages.button.select' defaultMessage='Select' />
           }
         >
-          <Button shape="circle" icon={<DatabaseOutlined />} size="small" onClick={onSelect} />
+          <Button shape='circle' icon={<DatabaseOutlined />} size='small' onClick={onSelect} />
         </Tooltip>
       ) : (
         <Button onClick={onSelect}>
-          {buttonText ?? <FormattedMessage id="pages.button.select" defaultMessage="Select" />}
+          {buttonText ?? <FormattedMessage id='pages.button.select' defaultMessage='Select' />}
         </Button>
       )}
 
       <Drawer
         getContainer={() => document.body}
         title={
-          <FormattedMessage id="pages.source.drawer.title.select" defaultMessage="Select Source" />
+          <FormattedMessage id='pages.source.drawer.title.select' defaultMessage='Select Source' />
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={
           <Button
@@ -358,7 +358,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData })
         footer={
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
-              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
             </Button>
             <Button
               onClick={() => {
@@ -366,9 +366,9 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData })
                 onData(keys[0], keys[1]);
                 setDrawerVisible(false);
               }}
-              type="primary"
+              type='primary'
             >
-              <FormattedMessage id="pages.button.submit" defaultMessage="Submit" />
+              <FormattedMessage id='pages.button.submit' defaultMessage='Submit' />
             </Button>
           </Space>
         }

@@ -43,7 +43,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
   const unitColumns: ProColumns<UnitTable>[] = [
     {
       title: (
-        <FormattedMessage id="pages.table.title.index" defaultMessage="Index"></FormattedMessage>
+        <FormattedMessage id='pages.table.title.index' defaultMessage='Index'></FormattedMessage>
       ),
       valueType: 'index',
       search: false,
@@ -55,7 +55,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
     // },
     {
       title: (
-        <FormattedMessage id="pages.table.title.name" defaultMessage="Name"></FormattedMessage>
+        <FormattedMessage id='pages.table.title.name' defaultMessage='Name'></FormattedMessage>
       ),
       dataIndex: 'name',
       search: false,
@@ -63,8 +63,8 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
     {
       title: (
         <FormattedMessage
-          id="pages.unitgroup.unit.generalComment"
-          defaultMessage="Comment"
+          id='pages.unitgroup.unit.generalComment'
+          defaultMessage='Comment'
         ></FormattedMessage>
       ),
       dataIndex: 'generalComment',
@@ -73,8 +73,8 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
     {
       title: (
         <FormattedMessage
-          id="pages.unitgroup.unit.meanValue"
-          defaultMessage="Mean value (of unit)"
+          id='pages.unitgroup.unit.meanValue'
+          defaultMessage='Mean value (of unit)'
         ></FormattedMessage>
       ),
       dataIndex: 'meanValue',
@@ -83,8 +83,8 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
     {
       title: (
         <FormattedMessage
-          id="pages.unitgroup.unit.quantitativeReference"
-          defaultMessage="Quantitative reference"
+          id='pages.unitgroup.unit.quantitativeReference'
+          defaultMessage='Quantitative reference'
         />
       ),
       dataIndex: 'quantitativeReference',
@@ -95,7 +95,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
       },
     },
     {
-      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
+      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
@@ -151,8 +151,8 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
       key: 'unitGroupInformation',
       tab: (
         <FormattedMessage
-          id="pages.unitgroup.unitGroupInformation"
-          defaultMessage="Unit group information"
+          id='pages.unitgroup.unitGroupInformation'
+          defaultMessage='Unit group information'
         />
       ),
     },
@@ -160,8 +160,8 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
       key: 'modellingAndValidation',
       tab: (
         <FormattedMessage
-          id="pages.unitgroup.modellingAndValidation"
-          defaultMessage="Modelling and validation"
+          id='pages.unitgroup.modellingAndValidation'
+          defaultMessage='Modelling and validation'
         />
       ),
     },
@@ -169,12 +169,12 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
       key: 'administrativeInformation',
       tab: (
         <FormattedMessage
-          id="pages.unitgroup.administrativeInformation"
-          defaultMessage="Administrative information"
+          id='pages.unitgroup.administrativeInformation'
+          defaultMessage='Administrative information'
         />
       ),
     },
-    { key: 'units', tab: <FormattedMessage id="pages.unitgroup.units" defaultMessage="Units" /> },
+    { key: 'units', tab: <FormattedMessage id='pages.unitgroup.units' defaultMessage='Units' /> },
   ];
 
   const contentList: Record<string, React.ReactNode> = {
@@ -183,14 +183,14 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
             key={0}
-            label={<FormattedMessage id="pages.unitgroup.id" defaultMessage="ID" />}
+            label={<FormattedMessage id='pages.unitgroup.id' defaultMessage='ID' />}
             labelStyle={{ width: '100px' }}
           >
             {initData.unitGroupInformation?.dataSetInformation?.['common:UUID'] ?? '-'}
           </Descriptions.Item>
         </Descriptions>
-        <Divider orientationMargin="0" orientation="left" plain>
-          <FormattedMessage id="pages.unitgroup.name" defaultMessage="Name of unit group" />
+        <Divider orientationMargin='0' orientation='left' plain>
+          <FormattedMessage id='pages.unitgroup.name' defaultMessage='Name of unit group' />
         </Divider>
         <LangTextItemDescription
           data={initData.unitGroupInformation?.dataSetInformation?.['common:name'] ?? {}}
@@ -212,8 +212,8 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
         <SourceSelectDescription
           title={
             <FormattedMessage
-              id="pages.unitgroup.referenceToComplianceSystem"
-              defaultMessage="Compliance system name"
+              id='pages.unitgroup.referenceToComplianceSystem'
+              defaultMessage='Compliance system name'
             />
           }
           data={
@@ -229,8 +229,8 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
             key={0}
             label={
               <FormattedMessage
-                id="pages.unitgroup.approvalOfOverallCompliance"
-                defaultMessage="Approval of overall compliance"
+                id='pages.unitgroup.approvalOfOverallCompliance'
+                defaultMessage='Approval of overall compliance'
               />
             }
             labelStyle={{ width: '240px' }}
@@ -251,8 +251,8 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
             key={0}
             label={
               <FormattedMessage
-                id="pages.unitgroup.timeStamp"
-                defaultMessage="Time stamp (last saved)"
+                id='pages.unitgroup.timeStamp'
+                defaultMessage='Time stamp (last saved)'
               />
             }
             styles={{ label: { width: '200px' } }}
@@ -264,8 +264,8 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
         <SourceSelectDescription
           title={
             <FormattedMessage
-              id="pages.unitgroup.referenceToDataSetFormat"
-              defaultMessage="Data set format(s)"
+              id='pages.unitgroup.referenceToDataSetFormat'
+              defaultMessage='Data set format(s)'
             />
           }
           data={
@@ -280,8 +280,8 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
             key={0}
             label={
               <FormattedMessage
-                id="pages.unitgroup.dataSetVersion"
-                defaultMessage="Data set version"
+                id='pages.unitgroup.dataSetVersion'
+                defaultMessage='Data set version'
               />
             }
             labelStyle={{ width: '140px' }}
@@ -350,13 +350,13 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
     <>
       {buttonType === 'icon' ? (
         <Tooltip
-          title={<FormattedMessage id="pages.button.view" defaultMessage="View"></FormattedMessage>}
+          title={<FormattedMessage id='pages.button.view' defaultMessage='View'></FormattedMessage>}
         >
-          <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
+          <Button shape='circle' icon={<ProfileOutlined />} size='small' onClick={onView} />
         </Tooltip>
       ) : (
         <Button onClick={onView}>
-          <FormattedMessage id="pages.button.view" defaultMessage="View" />
+          <FormattedMessage id='pages.button.view' defaultMessage='View' />
         </Button>
       )}
 
@@ -364,11 +364,11 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
         getContainer={() => document.body}
         title={
           <FormattedMessage
-            id="pages.unitgroup.drawer.title.view"
-            defaultMessage="View Unit group"
+            id='pages.unitgroup.drawer.title.view'
+            defaultMessage='View Unit group'
           ></FormattedMessage>
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={
           <Button

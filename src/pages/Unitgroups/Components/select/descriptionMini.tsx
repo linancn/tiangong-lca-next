@@ -47,28 +47,28 @@ const UnitGroupDescriptionMini: FC<Props> = ({ id, version, idType }) => {
   return (
     <Spin spinning={spinning}>
       <Card
-        size="small"
+        size='small'
         title={
           <FormattedMessage
-            id="pages.flowproperty.referenceToReferenceUnitGroup"
-            defaultMessage="Reference unit"
+            id='pages.flowproperty.referenceToReferenceUnitGroup'
+            defaultMessage='Reference unit'
           />
         }
       >
-        <Divider orientationMargin="0" orientation="left" plain>
+        <Divider orientationMargin='0' orientation='left' plain>
           <FormattedMessage
-            id="pages.FlowProperties.view.flowPropertiesInformation.shortDescription"
-            defaultMessage="Short description" //有问题
+            id='pages.FlowProperties.view.flowPropertiesInformation.shortDescription'
+            defaultMessage='Short description' //有问题
           />
         </Divider>
         <LangTextItemDescription data={refUnitGroup?.refUnitGroupShortDescription} />
         <br />
         <Card
-          size="small"
+          size='small'
           title={
             <FormattedMessage
-              id="pages.unitgroup.unit.quantitativeReference"
-              defaultMessage="Quantitative reference"
+              id='pages.unitgroup.unit.quantitativeReference'
+              defaultMessage='Quantitative reference'
             />
           }
         >
@@ -76,17 +76,17 @@ const UnitGroupDescriptionMini: FC<Props> = ({ id, version, idType }) => {
             <Descriptions.Item
               key={0}
               label={
-                <FormattedMessage id="pages.unitgroup.unitName" defaultMessage="Name of unit" />
+                <FormattedMessage id='pages.unitgroup.unitName' defaultMessage='Name of unit' />
               }
               styles={{ label: { width: '120px' } }}
             >
               {refUnit?.refUnitName ?? '-'}
             </Descriptions.Item>
           </Descriptions>
-          <Divider orientationMargin="0" orientation="left" plain>
+          <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
-              id="pages.unitgroup.generalComment"
-              defaultMessage="General comment"
+              id='pages.unitgroup.generalComment'
+              defaultMessage='General comment'
             />
           </Divider>
           <LangTextItemDescription data={refUnit?.refUnitGeneralComment} />

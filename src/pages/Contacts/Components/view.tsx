@@ -27,8 +27,8 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
       key: 'contactInformation',
       tab: (
         <FormattedMessage
-          id="pages.contact.contactInformation"
-          defaultMessage="Contact information"
+          id='pages.contact.contactInformation'
+          defaultMessage='Contact information'
         />
       ),
     },
@@ -36,8 +36,8 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
       key: 'administrativeInformation',
       tab: (
         <FormattedMessage
-          id="pages.contact.administrativeInformation"
-          defaultMessage="Administrative information"
+          id='pages.contact.administrativeInformation'
+          defaultMessage='Administrative information'
         />
       ),
     },
@@ -53,20 +53,20 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
             key={0}
-            label={<FormattedMessage id="pages.contact.id" defaultMessage="ID" />}
+            label={<FormattedMessage id='pages.contact.id' defaultMessage='ID' />}
             labelStyle={{ width: '100px' }}
           >
             {initData.contactInformation?.dataSetInformation?.['common:UUID'] ?? '-'}
           </Descriptions.Item>
         </Descriptions>
-        <Divider orientationMargin="0" orientation="left" plain>
-          <FormattedMessage id="pages.contact.name" defaultMessage="Name" />
+        <Divider orientationMargin='0' orientation='left' plain>
+          <FormattedMessage id='pages.contact.name' defaultMessage='Name' />
         </Divider>
         <LangTextItemDescription
           data={initData.contactInformation?.dataSetInformation?.['common:name']}
         />
-        <Divider orientationMargin="0" orientation="left" plain>
-          <FormattedMessage id="pages.contact.shortName" defaultMessage="Short name" />
+        <Divider orientationMargin='0' orientation='left' plain>
+          <FormattedMessage id='pages.contact.shortName' defaultMessage='Short name' />
         </Divider>
         <LangTextItemDescription
           data={initData.contactInformation?.dataSetInformation?.['common:shortName']}
@@ -82,8 +82,8 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
           categoryType={'Contact'}
         />
         <br />
-        <Divider orientationMargin="0" orientation="left" plain>
-          <FormattedMessage id="pages.contact.contactAddress" defaultMessage="Contact address" />
+        <Divider orientationMargin='0' orientation='left' plain>
+          <FormattedMessage id='pages.contact.contactAddress' defaultMessage='Contact address' />
         </Divider>
         <LangTextItemDescription
           data={initData.contactInformation?.dataSetInformation?.['contactAddress']}
@@ -92,7 +92,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
             key={0}
-            label={<FormattedMessage id="pages.contact.telephone" defaultMessage="Telephone" />}
+            label={<FormattedMessage id='pages.contact.telephone' defaultMessage='Telephone' />}
             labelStyle={{ width: '100px' }}
           >
             {initData.contactInformation?.dataSetInformation?.telephone ?? '-'}
@@ -102,7 +102,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
             key={0}
-            label={<FormattedMessage id="pages.contact.telefax" defaultMessage="Telefax" />}
+            label={<FormattedMessage id='pages.contact.telefax' defaultMessage='Telefax' />}
             labelStyle={{ width: '100px' }}
           >
             {initData.contactInformation?.dataSetInformation?.telefax ?? '-'}
@@ -112,7 +112,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
             key={0}
-            label={<FormattedMessage id="pages.contact.email" defaultMessage="E-mail" />}
+            label={<FormattedMessage id='pages.contact.email' defaultMessage='E-mail' />}
             labelStyle={{ width: '100px' }}
           >
             {initData.contactInformation?.dataSetInformation?.email ?? '-'}
@@ -122,27 +122,27 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
             key={0}
-            label={<FormattedMessage id="pages.contact.WWWAddress" defaultMessage="WWW-Address" />}
+            label={<FormattedMessage id='pages.contact.WWWAddress' defaultMessage='WWW-Address' />}
             labelStyle={{ width: '140px' }}
           >
             {initData.contactInformation?.dataSetInformation?.WWWAddress ?? '-'}
           </Descriptions.Item>
         </Descriptions>
         <br />
-        <Divider orientationMargin="0" orientation="left" plain>
+        <Divider orientationMargin='0' orientation='left' plain>
           <FormattedMessage
-            id="pages.contact.centralContactPoint"
-            defaultMessage="Central contact point"
+            id='pages.contact.centralContactPoint'
+            defaultMessage='Central contact point'
           />
         </Divider>
         <LangTextItemDescription
           data={initData.contactInformation?.dataSetInformation?.['centralContactPoint']}
         />
         <br />
-        <Divider orientationMargin="0" orientation="left" plain>
+        <Divider orientationMargin='0' orientation='left' plain>
           <FormattedMessage
-            id="pages.contact.contactDescriptionOrComment"
-            defaultMessage="Contact description or comment"
+            id='pages.contact.contactDescriptionOrComment'
+            defaultMessage='Contact description or comment'
           />
         </Divider>
         <LangTextItemDescription
@@ -153,7 +153,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
           data={initData.contactInformation?.dataSetInformation?.referenceToContact}
           lang={lang}
           title={
-            <FormattedMessage id="pages.contact.referenceToContact" defaultMessage="Belongs to:" />
+            <FormattedMessage id='pages.contact.referenceToContact' defaultMessage='Belongs to:' />
           }
         ></ContractDescription>
         <br />
@@ -161,8 +161,8 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
         <SourceSelectDescription
           title={
             <FormattedMessage
-              id="pages.contact.referenceToLogo"
-              defaultMessage="Logo of organisation or source"
+              id='pages.contact.referenceToLogo'
+              defaultMessage='Logo of organisation or source'
             />
           }
           data={initData.contactInformation?.dataSetInformation?.referenceToLogo}
@@ -173,16 +173,16 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
     administrativeInformation: (
       <>
         <Card
-          size="small"
-          title={<FormattedMessage id="pages.contact.dataEntryBy" defaultMessage="Data entry by" />}
+          size='small'
+          title={<FormattedMessage id='pages.contact.dataEntryBy' defaultMessage='Data entry by' />}
         >
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item
               key={0}
               label={
                 <FormattedMessage
-                  id="pages.contact.timeStamp"
-                  defaultMessage="Time stamp (last saved)"
+                  id='pages.contact.timeStamp'
+                  defaultMessage='Time stamp (last saved)'
                 />
               }
               styles={{ label: { width: '200px' } }}
@@ -194,8 +194,8 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
           <SourceSelectDescription
             title={
               <FormattedMessage
-                id="pages.contact.referenceToDataSetFormat"
-                defaultMessage="Data set format(s)"
+                id='pages.contact.referenceToDataSetFormat'
+                defaultMessage='Data set format(s)'
               />
             }
             data={
@@ -206,11 +206,11 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
         </Card>
         <br />
         <Card
-          size="small"
+          size='small'
           title={
             <FormattedMessage
-              id="pages.contact.publicationAndOwnership"
-              defaultMessage="Publication and ownership"
+              id='pages.contact.publicationAndOwnership'
+              defaultMessage='Publication and ownership'
             />
           }
         >
@@ -219,8 +219,8 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
               key={0}
               label={
                 <FormattedMessage
-                  id="pages.contact.dataSetVersion"
-                  defaultMessage="Data set version"
+                  id='pages.contact.dataSetVersion'
+                  defaultMessage='Data set version'
                 />
               }
               labelStyle={{ width: '160px' }}
@@ -242,8 +242,8 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
             lang={lang}
             title={
               <FormattedMessage
-                id="pages.contact.referenceToOwnershipOfDataSet"
-                defaultMessage="Owner of data set"
+                id='pages.contact.referenceToOwnershipOfDataSet'
+                defaultMessage='Owner of data set'
               />
             }
           ></ContractDescription>
@@ -257,8 +257,8 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
             lang={lang}
             title={
               <FormattedMessage
-                id="pages.contact.referenceToPrecedingDataSetVersion"
-                defaultMessage="Preceding data set version"
+                id='pages.contact.referenceToPrecedingDataSetVersion'
+                defaultMessage='Preceding data set version'
               />
             }
           ></ContractDescription>
@@ -268,8 +268,8 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
               key={0}
               label={
                 <FormattedMessage
-                  id="pages.contact.permanentDataSetURI"
-                  defaultMessage="Permanent data set URI"
+                  id='pages.contact.permanentDataSetURI'
+                  defaultMessage='Permanent data set URI'
                 />
               }
               labelStyle={{ width: '220px' }}
@@ -295,21 +295,21 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
   return (
     <>
       {buttonType === 'icon' ? (
-        <Tooltip title={<FormattedMessage id="pages.button.view" defaultMessage="View" />}>
-          <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
+        <Tooltip title={<FormattedMessage id='pages.button.view' defaultMessage='View' />}>
+          <Button shape='circle' icon={<ProfileOutlined />} size='small' onClick={onView} />
         </Tooltip>
       ) : (
         <Button onClick={onView}>
-          <FormattedMessage id="pages.button.view" defaultMessage="View" />
+          <FormattedMessage id='pages.button.view' defaultMessage='View' />
         </Button>
       )}
 
       <Drawer
         getContainer={() => document.body}
         title={
-          <FormattedMessage id="pages.contact.drawer.title.view" defaultMessage="View Contact" />
+          <FormattedMessage id='pages.contact.drawer.title.view' defaultMessage='View Contact' />
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={
           <Button

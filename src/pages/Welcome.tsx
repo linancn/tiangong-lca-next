@@ -11,7 +11,8 @@ import { FormattedMessage, useIntl } from 'umi';
 
 const Welcome: React.FC = () => {
   const { token } = theme.useToken();
-  const LogoBaseUrl = 'https://qgzvkongdjqiiamzbbts.supabase.co/storage/v1/object/public/sys-files/';
+  const LogoBaseUrl =
+    'https://qgzvkongdjqiiamzbbts.supabase.co/storage/v1/object/public/sys-files/';
 
   const { locale } = useIntl();
   const lang = getLang(locale);
@@ -95,7 +96,7 @@ const Welcome: React.FC = () => {
   };
 
   const formatter: StatisticProps['formatter'] = (value) => (
-    <CountUp end={value as number} separator="," />
+    <CountUp end={value as number} separator=',' />
   );
 
   return (
@@ -158,16 +159,18 @@ const Welcome: React.FC = () => {
         </Row>
         <br />
         <Divider
-          orientation="left"
-          orientationMargin="0"
+          orientation='left'
+          orientationMargin='0'
           style={{ fontSize: '1.2em', fontWeight: 'bold', color: token.colorText }}
         >
-          <FormattedMessage id="pages.dataEcosystem" defaultMessage="Data Ecosystem" />
+          <FormattedMessage id='pages.dataEcosystem' defaultMessage='Data Ecosystem' />
         </Divider>
         <Row gutter={16}>
           {teams?.map((team: any, index: React.Key | null | undefined) => {
             const logo = isDarkMode ? team.json?.darkLogo : team.json?.lightLogo;
-            const logoUrl = logo.startsWith('logo/') ? LogoBaseUrl + logo : `/images/dataLogo/${logo}`;
+            const logoUrl = logo.startsWith('logo/')
+              ? LogoBaseUrl + logo
+              : `/images/dataLogo/${logo}`;
             return (
               <Col span={8} key={index}>
                 <Card

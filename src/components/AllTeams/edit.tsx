@@ -84,14 +84,20 @@ const TeamEdit: FC<Props> = ({
   return (
     <>
       {buttonType === 'icon' ? (
-          <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
-            <Button disabled={disabled} shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
-          </Tooltip>
+        <Tooltip title={<FormattedMessage id='pages.button.edit' defaultMessage='Edit' />}>
+          <Button
+            disabled={disabled}
+            shape='circle'
+            icon={<FormOutlined />}
+            size='small'
+            onClick={onEdit}
+          />
+        </Tooltip>
       ) : (
         <Button onClick={onEdit}>
           <FormattedMessage
             id={buttonType.trim().length > 0 ? buttonType : 'component.allTeams.table.edit'}
-            defaultMessage="Edit"
+            defaultMessage='Edit'
           />
         </Button>
       )}
@@ -99,12 +105,9 @@ const TeamEdit: FC<Props> = ({
       <Drawer
         getContainer={() => document.body}
         title={
-            <FormattedMessage
-              id="component.allTeams.drawer.title.edit"
-              defaultMessage="Edit Team"
-            />
+          <FormattedMessage id='component.allTeams.drawer.title.edit' defaultMessage='Edit Team' />
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={
           <Button
@@ -119,10 +122,10 @@ const TeamEdit: FC<Props> = ({
         footer={
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
-              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
             </Button>
-            <Button onClick={() => formRefEdit.current?.submit()} type="primary">
-              <FormattedMessage id="pages.button.save" defaultMessage="Save" />
+            <Button onClick={() => formRefEdit.current?.submit()} type='primary'>
+              <FormattedMessage id='pages.button.save' defaultMessage='Save' />
             </Button>
           </Space>
         }

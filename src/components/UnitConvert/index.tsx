@@ -61,25 +61,25 @@ const UnitConvert: React.FC<UnitConvertProps> = ({
   return (
     <Modal
       title={
-        <FormattedMessage id="pages.process.unitConvert.title" defaultMessage="Unit Conversion" />
+        <FormattedMessage id='pages.process.unitConvert.title' defaultMessage='Unit Conversion' />
       }
       open={visible}
       zIndex={2000}
       onCancel={handleClose}
       onOk={handleOk}
     >
-      <Form form={form} layout="vertical">
+      <Form form={form} layout='vertical'>
         <Form.Item
-          label={<FormattedMessage id="pages.process.unitConvert.value" defaultMessage="Value" />}
-          name="value"
+          label={<FormattedMessage id='pages.process.unitConvert.value' defaultMessage='Value' />}
+          name='value'
           rules={[{ required: true }]}
         >
-          <Input type="number" onChange={handleUnitChange} />
+          <Input type='number' onChange={handleUnitChange} />
         </Form.Item>
 
         <Form.Item
-          label={<FormattedMessage id="pages.process.unitConvert.unit" defaultMessage="Unit" />}
-          name="unit"
+          label={<FormattedMessage id='pages.process.unitConvert.unit' defaultMessage='Unit' />}
+          name='unit'
           rules={[{ required: true }]}
         >
           <Select onChange={handleUnitChange}>
@@ -94,7 +94,7 @@ const UnitConvert: React.FC<UnitConvertProps> = ({
         </Form.Item>
 
         <Form.Item
-          label={<FormattedMessage id="pages.process.unitConvert.result" defaultMessage="Result" />}
+          label={<FormattedMessage id='pages.process.unitConvert.result' defaultMessage='Result' />}
         >
           <Input addonAfter={targetUnit} value={result} disabled />
         </Form.Item>

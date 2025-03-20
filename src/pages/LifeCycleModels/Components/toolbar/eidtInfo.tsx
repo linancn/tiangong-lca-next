@@ -60,12 +60,12 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData, action }) => {
   return (
     <>
       <Tooltip
-        title={<FormattedMessage id="pages.button.model.info" defaultMessage="Base infomation" />}
-        placement="left"
+        title={<FormattedMessage id='pages.button.model.info' defaultMessage='Base infomation' />}
+        placement='left'
       >
         <Button
-          type="primary"
-          size="small"
+          type='primary'
+          size='small'
           icon={<InfoOutlined />}
           style={{ boxShadow: 'none' }}
           onClick={() => {
@@ -78,11 +78,11 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData, action }) => {
         destroyOnClose
         title={
           <FormattedMessage
-            id="pages.flow.model.drawer.title.info"
-            defaultMessage="Model base infomation"
+            id='pages.flow.model.drawer.title.info'
+            defaultMessage='Model base infomation'
           ></FormattedMessage>
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={
           <Button
@@ -107,8 +107,8 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData, action }) => {
                 }}
               >
                 <FormattedMessage
-                  id="pages.button.updateReference"
-                  defaultMessage="Update reference"
+                  id='pages.button.updateReference'
+                  defaultMessage='Update reference'
                 />
               </Button>
             ) : (
@@ -119,15 +119,15 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData, action }) => {
                 setDrawerVisible(false);
               }}
             >
-              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel"></FormattedMessage>
+              <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel'></FormattedMessage>
             </Button>
             <Button
               onClick={() => {
                 formRefEdit.current?.submit();
               }}
-              type="primary"
+              type='primary'
             >
-              <FormattedMessage id="pages.button.save" defaultMessage="Save"></FormattedMessage>
+              <FormattedMessage id='pages.button.save' defaultMessage='Save'></FormattedMessage>
             </Button>
           </Space>
         }

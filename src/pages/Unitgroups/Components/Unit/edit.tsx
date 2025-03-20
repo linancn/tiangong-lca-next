@@ -55,13 +55,13 @@ const UnitEdit: FC<Props> = ({ id, data, buttonType, actionRef, setViewDrawerVis
     <>
       {buttonType === 'icon' ? (
         <Tooltip
-          title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit"></FormattedMessage>}
+          title={<FormattedMessage id='pages.button.edit' defaultMessage='Edit'></FormattedMessage>}
         >
-          <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit}></Button>
+          <Button shape='circle' icon={<FormOutlined />} size='small' onClick={onEdit}></Button>
         </Tooltip>
       ) : (
         <Button onClick={onEdit}>
-          <FormattedMessage id="pages.button.edit" defaultMessage="Edit"></FormattedMessage>
+          <FormattedMessage id='pages.button.edit' defaultMessage='Edit'></FormattedMessage>
         </Button>
       )}
 
@@ -69,11 +69,11 @@ const UnitEdit: FC<Props> = ({ id, data, buttonType, actionRef, setViewDrawerVis
         getContainer={() => document.body}
         title={
           <FormattedMessage
-            id="pages.unitgroup.unit.drawer.title.edit"
-            defaultMessage="Unit Edit"
+            id='pages.unitgroup.unit.drawer.title.edit'
+            defaultMessage='Unit Edit'
           ></FormattedMessage>
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={
           <Button
@@ -93,10 +93,10 @@ const UnitEdit: FC<Props> = ({ id, data, buttonType, actionRef, setViewDrawerVis
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
               {' '}
-              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
             </Button>
-            <Button onClick={() => formRefEdit.current?.submit()} type="primary">
-              <FormattedMessage id="pages.button.save" defaultMessage="Save" />
+            <Button onClick={() => formRefEdit.current?.submit()} type='primary'>
+              <FormattedMessage id='pages.button.save' defaultMessage='Save' />
             </Button>
           </Space>
         }
@@ -127,24 +127,24 @@ const UnitEdit: FC<Props> = ({ id, data, buttonType, actionRef, setViewDrawerVis
             return true;
           }}
         >
-          <Space direction="vertical" style={{ width: '100%' }}>
+          <Space direction='vertical' style={{ width: '100%' }}>
             <Form.Item name={'@dataSetInternalID'} hidden>
               <Input />
             </Form.Item>
             <Form.Item
               label={
-                <FormattedMessage id="pages.unitgroup.edit.name" defaultMessage="Name of unit" />
+                <FormattedMessage id='pages.unitgroup.edit.name' defaultMessage='Name of unit' />
               }
               name={'name'}
             >
               <Input />
             </Form.Item>
             <Card
-              size="small"
+              size='small'
               title={
                 <FormattedMessage
-                  id="pages.unitgroup.edit.generalComment"
-                  defaultMessage="Comment"
+                  id='pages.unitgroup.edit.generalComment'
+                  defaultMessage='Comment'
                 />
               }
             >
@@ -152,8 +152,8 @@ const UnitEdit: FC<Props> = ({ id, data, buttonType, actionRef, setViewDrawerVis
                 name={'generalComment'}
                 label={
                   <FormattedMessage
-                    id="pages.unitgroup.edit.generalComment"
-                    defaultMessage="Comment"
+                    id='pages.unitgroup.edit.generalComment'
+                    defaultMessage='Comment'
                   />
                 }
               />
@@ -161,8 +161,8 @@ const UnitEdit: FC<Props> = ({ id, data, buttonType, actionRef, setViewDrawerVis
             <Form.Item
               label={
                 <FormattedMessage
-                  id="pages.unitgroup.edit.meanValue"
-                  defaultMessage="Mean value (of unit)"
+                  id='pages.unitgroup.edit.meanValue'
+                  defaultMessage='Mean value (of unit)'
                 />
               }
               name={'meanValue'}
@@ -172,8 +172,8 @@ const UnitEdit: FC<Props> = ({ id, data, buttonType, actionRef, setViewDrawerVis
             <Form.Item
               label={
                 <FormattedMessage
-                  id="pages.unitgroup.edit.quantitativeReference"
-                  defaultMessage="Quantitative reference"
+                  id='pages.unitgroup.edit.quantitativeReference'
+                  defaultMessage='Quantitative reference'
                 />
               }
               name={'quantitativeReference'}

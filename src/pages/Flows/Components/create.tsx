@@ -186,15 +186,15 @@ const FlowsCreate: FC<CreateProps> = ({ lang, actionRef, actionType = 'create', 
                   ? 'pages.button.createVersion'
                   : 'pages.button.create'
             }
-            defaultMessage="Create"
+            defaultMessage='Create'
           />
         }
       >
         {actionType === 'copy' ? (
           <Button
-            shape="circle"
+            shape='circle'
             icon={<CopyOutlined />}
-            size="small"
+            size='small'
             onClick={() => {
               setDrawerVisible(true);
             }}
@@ -202,7 +202,7 @@ const FlowsCreate: FC<CreateProps> = ({ lang, actionRef, actionType = 'create', 
         ) : (
           <Button
             size={'middle'}
-            type="text"
+            type='text'
             icon={<PlusOutlined />}
             onClick={() => {
               setDrawerVisible(true);
@@ -222,10 +222,10 @@ const FlowsCreate: FC<CreateProps> = ({ lang, actionRef, actionType = 'create', 
                   ? 'pages.button.createVersion'
                   : 'pages.button.create'
             }
-            defaultMessage="Flows Create"
+            defaultMessage='Flows Create'
           />
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={
           <Button
@@ -241,10 +241,10 @@ const FlowsCreate: FC<CreateProps> = ({ lang, actionRef, actionType = 'create', 
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
               {' '}
-              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
             </Button>
-            <Button onClick={() => formRefCreate.current?.submit()} type="primary">
-              <FormattedMessage id="pages.button.save" defaultMessage="Save" />
+            <Button onClick={() => formRefCreate.current?.submit()} type='primary'>
+              <FormattedMessage id='pages.button.save' defaultMessage='Save' />
             </Button>
           </Space>
         }
@@ -293,7 +293,7 @@ const FlowsCreate: FC<CreateProps> = ({ lang, actionRef, actionType = 'create', 
               propertyDataSource={propertyDataSource}
               onPropertyData={handletPropertyData}
               onPropertyDataCreate={handletPropertyDataCreate}
-              formType="create"
+              formType='create'
             />
           </ProForm>
         </Spin>

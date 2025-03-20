@@ -35,8 +35,8 @@ export const ContactForm: FC<Props> = ({
       key: 'contactInformation',
       tab: (
         <FormattedMessage
-          id="pages.contact.contactInformation"
-          defaultMessage="Contact information"
+          id='pages.contact.contactInformation'
+          defaultMessage='Contact information'
         />
       ),
     },
@@ -44,8 +44,8 @@ export const ContactForm: FC<Props> = ({
       key: 'administrativeInformation',
       tab: (
         <FormattedMessage
-          id="pages.contact.administrativeInformation"
-          defaultMessage="Administrative information"
+          id='pages.contact.administrativeInformation'
+          defaultMessage='Administrative information'
         />
       ),
     },
@@ -53,16 +53,16 @@ export const ContactForm: FC<Props> = ({
   const tabContent: { [key: string]: JSX.Element } = {
     contactInformation: (
       <>
-        <Space direction="vertical" style={{ width: '100%' }}>
+        <Space direction='vertical' style={{ width: '100%' }}>
           <Card
-            size="small"
+            size='small'
             title={
               <RequiredMark
                 showError={showShortNameError}
                 label={
                   <FormattedMessage
-                    id="pages.contact.shortName"
-                    defaultMessage="Short name for contact"
+                    id='pages.contact.shortName'
+                    defaultMessage='Short name for contact'
                   />
                 }
               />
@@ -74,8 +74,8 @@ export const ContactForm: FC<Props> = ({
               name={['contactInformation', 'dataSetInformation', 'common:shortName']}
               label={
                 <FormattedMessage
-                  id="pages.contact.shortName"
-                  defaultMessage="Short name for contact"
+                  id='pages.contact.shortName'
+                  defaultMessage='Short name for contact'
                 />
               }
               rules={getRules(
@@ -86,12 +86,12 @@ export const ContactForm: FC<Props> = ({
             />
           </Card>
           <Card
-            size="small"
+            size='small'
             title={
               <RequiredMark
                 showError={showNameError}
                 label={
-                  <FormattedMessage id="pages.contact.name" defaultMessage="Name of contact" />
+                  <FormattedMessage id='pages.contact.name' defaultMessage='Name of contact' />
                 }
               />
             }
@@ -100,7 +100,7 @@ export const ContactForm: FC<Props> = ({
               formRef={formRef}
               setRuleErrorState={setShowNameError}
               name={['contactInformation', 'dataSetInformation', 'common:name']}
-              label={<FormattedMessage id="pages.contact.name" defaultMessage="Name of contact" />}
+              label={<FormattedMessage id='pages.contact.name' defaultMessage='Name of contact' />}
               rules={getRules(
                 schema['contactDataSet']['contactInformation']['dataSetInformation']['common:name'][
                   'rules'
@@ -127,11 +127,11 @@ export const ContactForm: FC<Props> = ({
             )}
           />
           <Card
-            size="small"
+            size='small'
             title={
               <FormattedMessage
-                id="pages.contact.contactAddress"
-                defaultMessage="Contact address"
+                id='pages.contact.contactAddress'
+                defaultMessage='Contact address'
               />
             }
           >
@@ -139,8 +139,8 @@ export const ContactForm: FC<Props> = ({
               name={['contactInformation', 'dataSetInformation', 'contactAddress']}
               label={
                 <FormattedMessage
-                  id="pages.contact.contactAddress"
-                  defaultMessage="Contact address"
+                  id='pages.contact.contactAddress'
+                  defaultMessage='Contact address'
                 />
               }
               rules={getRules(
@@ -151,7 +151,7 @@ export const ContactForm: FC<Props> = ({
             />
           </Card>
           <Form.Item
-            label={<FormattedMessage id="pages.contact.telephone" defaultMessage="Telephone" />}
+            label={<FormattedMessage id='pages.contact.telephone' defaultMessage='Telephone' />}
             name={['contactInformation', 'dataSetInformation', 'telephone']}
             rules={getRules(
               schema['contactDataSet']['contactInformation']['dataSetInformation']['telephone'][
@@ -162,7 +162,7 @@ export const ContactForm: FC<Props> = ({
             <Input />
           </Form.Item>
           <Form.Item
-            label={<FormattedMessage id="pages.contact.telefax" defaultMessage="Telefax" />}
+            label={<FormattedMessage id='pages.contact.telefax' defaultMessage='Telefax' />}
             name={['contactInformation', 'dataSetInformation', 'telefax']}
             rules={getRules(
               schema['contactDataSet']['contactInformation']['dataSetInformation']['telefax'][
@@ -173,7 +173,7 @@ export const ContactForm: FC<Props> = ({
             <Input />
           </Form.Item>
           <Form.Item
-            label={<FormattedMessage id="pages.contact.email" defaultMessage="E-mail" />}
+            label={<FormattedMessage id='pages.contact.email' defaultMessage='E-mail' />}
             name={['contactInformation', 'dataSetInformation', 'email']}
             rules={getRules(
               schema['contactDataSet']['contactInformation']['dataSetInformation']['email'][
@@ -184,7 +184,7 @@ export const ContactForm: FC<Props> = ({
             <Input />
           </Form.Item>
           <Form.Item
-            label={<FormattedMessage id="pages.contact.WWWAddress" defaultMessage="WWW-Address" />}
+            label={<FormattedMessage id='pages.contact.WWWAddress' defaultMessage='WWW-Address' />}
             name={['contactInformation', 'dataSetInformation', 'WWWAddress']}
             rules={getRules(
               schema['contactDataSet']['contactInformation']['dataSetInformation']['WWWAddress'][
@@ -195,11 +195,11 @@ export const ContactForm: FC<Props> = ({
             <Input />
           </Form.Item>
           <Card
-            size="small"
+            size='small'
             title={
               <FormattedMessage
-                id="pages.contact.centralContactPoint"
-                defaultMessage="Central contact point"
+                id='pages.contact.centralContactPoint'
+                defaultMessage='Central contact point'
               />
             }
           >
@@ -207,8 +207,8 @@ export const ContactForm: FC<Props> = ({
               name={['contactInformation', 'dataSetInformation', 'centralContactPoint']}
               label={
                 <FormattedMessage
-                  id="pages.contact.centralContactPoint"
-                  defaultMessage="Central contact point"
+                  id='pages.contact.centralContactPoint'
+                  defaultMessage='Central contact point'
                 />
               }
               rules={getRules(
@@ -219,11 +219,11 @@ export const ContactForm: FC<Props> = ({
             />
           </Card>
           <Card
-            size="small"
+            size='small'
             title={
               <FormattedMessage
-                id="pages.contact.contactDescriptionOrComment"
-                defaultMessage="Contact description or comment"
+                id='pages.contact.contactDescriptionOrComment'
+                defaultMessage='Contact description or comment'
               />
             }
           >
@@ -231,8 +231,8 @@ export const ContactForm: FC<Props> = ({
               name={['contactInformation', 'dataSetInformation', 'contactDescriptionOrComment']}
               label={
                 <FormattedMessage
-                  id="pages.contact.contactDescriptionOrComment"
-                  defaultMessage="Contact description or comment"
+                  id='pages.contact.contactDescriptionOrComment'
+                  defaultMessage='Contact description or comment'
                 />
               }
               rules={getRules(
@@ -245,8 +245,8 @@ export const ContactForm: FC<Props> = ({
           <ContactSelectForm
             label={
               <FormattedMessage
-                id="pages.contact.referenceToContact"
-                defaultMessage="Belongs to:"
+                id='pages.contact.referenceToContact'
+                defaultMessage='Belongs to:'
               />
             }
             name={['contactInformation', 'dataSetInformation', 'referenceToContact']}
@@ -258,8 +258,8 @@ export const ContactForm: FC<Props> = ({
             defaultSourceName={formType === 'create' ? 'ILCD format' : undefined}
             label={
               <FormattedMessage
-                id="pages.contact.referenceToLogo"
-                defaultMessage="Logo of organisation or source"
+                id='pages.contact.referenceToLogo'
+                defaultMessage='Logo of organisation or source'
               />
             }
             name={['contactInformation', 'dataSetInformation', 'referenceToLogo']}
@@ -272,18 +272,18 @@ export const ContactForm: FC<Props> = ({
     ),
     administrativeInformation: (
       <>
-        <Space direction="vertical" style={{ width: '100%' }}>
+        <Space direction='vertical' style={{ width: '100%' }}>
           <Card
-            size="small"
+            size='small'
             title={
-              <FormattedMessage id="pages.contact.dataEntryBy" defaultMessage="Data entry by" />
+              <FormattedMessage id='pages.contact.dataEntryBy' defaultMessage='Data entry by' />
             }
           >
             <Form.Item
               label={
                 <FormattedMessage
-                  id="pages.contact.timeStamp"
-                  defaultMessage="Time stamp (last saved)"
+                  id='pages.contact.timeStamp'
+                  defaultMessage='Time stamp (last saved)'
                 />
               }
               rules={getRules(
@@ -299,8 +299,8 @@ export const ContactForm: FC<Props> = ({
             <SourceSelectForm
               label={
                 <FormattedMessage
-                  id="pages.contact.referenceToDataSetFormat"
-                  defaultMessage="Data set format(s)"
+                  id='pages.contact.referenceToDataSetFormat'
+                  defaultMessage='Data set format(s)'
                 />
               }
               rules={getRules(
@@ -315,19 +315,19 @@ export const ContactForm: FC<Props> = ({
             />
           </Card>
           <Card
-            size="small"
+            size='small'
             title={
               <FormattedMessage
-                id="pages.contact.publicationAndOwnership"
-                defaultMessage="Publication and ownership"
+                id='pages.contact.publicationAndOwnership'
+                defaultMessage='Publication and ownership'
               />
             }
           >
             <Form.Item
               label={
                 <FormattedMessage
-                  id="pages.contact.dataSetVersion"
-                  defaultMessage="Data set version"
+                  id='pages.contact.dataSetVersion'
+                  defaultMessage='Data set version'
                 />
               }
               name={[
@@ -346,8 +346,8 @@ export const ContactForm: FC<Props> = ({
             <ContactSelectForm
               label={
                 <FormattedMessage
-                  id="pages.contact.referenceToOwnershipOfDataSet"
-                  defaultMessage="Owner of data set"
+                  id='pages.contact.referenceToOwnershipOfDataSet'
+                  defaultMessage='Owner of data set'
                 />
               }
               rules={getRules(
@@ -368,8 +368,8 @@ export const ContactForm: FC<Props> = ({
             <ContactSelectForm
               label={
                 <FormattedMessage
-                  id="pages.contact.referenceToPrecedingDataSetVersion"
-                  defaultMessage="Preceding data set version"
+                  id='pages.contact.referenceToPrecedingDataSetVersion'
+                  defaultMessage='Preceding data set version'
                 />
               }
               name={[
@@ -385,8 +385,8 @@ export const ContactForm: FC<Props> = ({
             <Form.Item
               label={
                 <FormattedMessage
-                  id="pages.contact.permanentDataSetURI"
-                  defaultMessage="Permanent data set URI"
+                  id='pages.contact.permanentDataSetURI'
+                  defaultMessage='Permanent data set URI'
                 />
               }
               name={[

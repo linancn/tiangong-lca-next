@@ -12,7 +12,7 @@ type Props = {
   buttonType: string;
 };
 
-const TeamView: FC<Props> = ({ id, buttonType,}) => {
+const TeamView: FC<Props> = ({ id, buttonType }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<any>({});
@@ -20,8 +20,8 @@ const TeamView: FC<Props> = ({ id, buttonType,}) => {
   const teamContent: React.ReactNode = (
     <>
       <Card
-        size="small"
-        title={<FormattedMessage id="pages.team.info.title" defaultMessage="Team Name" />}
+        size='small'
+        title={<FormattedMessage id='pages.team.info.title' defaultMessage='Team Name' />}
       >
         <Descriptions bordered size={'small'} column={1}>
           {initData?.json?.title?.map(
@@ -39,9 +39,9 @@ const TeamView: FC<Props> = ({ id, buttonType,}) => {
       </Card>
       <br />
       <Card
-        size="small"
+        size='small'
         title={
-          <FormattedMessage id="pages.team.info.description" defaultMessage="Team Description" />
+          <FormattedMessage id='pages.team.info.description' defaultMessage='Team Description' />
         }
       >
         <Descriptions bordered size={'small'} column={1}>
@@ -60,23 +60,23 @@ const TeamView: FC<Props> = ({ id, buttonType,}) => {
       </Card>
       <br />
       <Card
-        size="small"
-        title={<FormattedMessage id="pages.team.info.public" defaultMessage="Public Display" />}
+        size='small'
+        title={<FormattedMessage id='pages.team.info.public' defaultMessage='Public Display' />}
       >
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
-            label={<FormattedMessage id="pages.team.info.public" defaultMessage="Public Display" />}
+            label={<FormattedMessage id='pages.team.info.public' defaultMessage='Public Display' />}
             labelStyle={{ width: '120px' }}
           >
             {initData?.rank === -1 ? (
               <FormattedMessage
-                id="component.allTeams.drawer.public"
-                defaultMessage="Public Display"
+                id='component.allTeams.drawer.public'
+                defaultMessage='Public Display'
               />
             ) : (
               <FormattedMessage
-                id="component.allTeams.drawer.public"
-                defaultMessage="Not Public Display"
+                id='component.allTeams.drawer.public'
+                defaultMessage='Not Public Display'
               />
             )}
           </Descriptions.Item>
@@ -84,19 +84,19 @@ const TeamView: FC<Props> = ({ id, buttonType,}) => {
       </Card>
       <br />
       <Card
-        size="small"
-        title={<FormattedMessage id="component.allTeams.logo.title" defaultMessage="Team Logo" />}
+        size='small'
+        title={<FormattedMessage id='component.allTeams.logo.title' defaultMessage='Team Logo' />}
       >
-        <Space direction="vertical" size="middle">
+        <Space direction='vertical' size='middle'>
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item
               label={
-                <FormattedMessage id="pages.team.info.lightLogo" defaultMessage="Light Logo" />
+                <FormattedMessage id='pages.team.info.lightLogo' defaultMessage='Light Logo' />
               }
               labelStyle={{ width: '120px' }}
             >
               {initData?.json?.lightLogo ? (
-                <Image width={100} src={LogoBaseUrl + initData?.json?.lightLogo} alt="Light Logo" />
+                <Image width={100} src={LogoBaseUrl + initData?.json?.lightLogo} alt='Light Logo' />
               ) : (
                 '-'
               )}
@@ -104,11 +104,11 @@ const TeamView: FC<Props> = ({ id, buttonType,}) => {
           </Descriptions>
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item
-              label={<FormattedMessage id="pages.team.info.darkLogo" defaultMessage="Dark Logo" />}
+              label={<FormattedMessage id='pages.team.info.darkLogo' defaultMessage='Dark Logo' />}
               labelStyle={{ width: '120px' }}
             >
               {initData?.json?.darkLogo ? (
-                <Image width={100} src={LogoBaseUrl + initData?.json?.darkLogo} alt="Dark Logo" />
+                <Image width={100} src={LogoBaseUrl + initData?.json?.darkLogo} alt='Dark Logo' />
               ) : (
                 '-'
               )}
@@ -134,22 +134,22 @@ const TeamView: FC<Props> = ({ id, buttonType,}) => {
     <>
       {buttonType === 'icon' ? (
         <Tooltip
-          title={<FormattedMessage id="component.allTeams.table.view" defaultMessage="View" />}
+          title={<FormattedMessage id='component.allTeams.table.view' defaultMessage='View' />}
         >
-          <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
+          <Button shape='circle' icon={<ProfileOutlined />} size='small' onClick={onView} />
         </Tooltip>
       ) : (
         <Button onClick={onView}>
-          <FormattedMessage id="component.allTeams.table.view" defaultMessage="View" />
+          <FormattedMessage id='component.allTeams.table.view' defaultMessage='View' />
         </Button>
       )}
 
       <Drawer
         getContainer={() => document.body}
         title={
-          <FormattedMessage id="component.allTeams.drawer.title.view" defaultMessage="View Team" />
+          <FormattedMessage id='component.allTeams.drawer.title.view' defaultMessage='View Team' />
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={
           <Button

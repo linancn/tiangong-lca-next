@@ -40,19 +40,19 @@ const TableList: FC = () => {
   const actionRef = useRef<ActionType>();
   const processColumns: ProColumns<ProcessTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
+      title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
       dataIndex: 'index',
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name" />,
+      title: <FormattedMessage id='pages.table.title.name' defaultMessage='Name' />,
       dataIndex: 'name',
       sorter: false,
       search: false,
       render: (_, row) => {
         return [
-          <Tooltip key={0} placement="topLeft" title={row.generalComment}>
+          <Tooltip key={0} placement='topLeft' title={row.generalComment}>
             {row.name}
           </Tooltip>,
         ];
@@ -60,26 +60,26 @@ const TableList: FC = () => {
     },
     {
       title: (
-        <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />
+        <FormattedMessage id='pages.table.title.classification' defaultMessage='Classification' />
       ),
       dataIndex: 'classification',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.process.referenceYear" defaultMessage="Reference year" />,
+      title: <FormattedMessage id='pages.process.referenceYear' defaultMessage='Reference year' />,
       dataIndex: 'referenceYear',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.process.location" defaultMessage="Location" />,
+      title: <FormattedMessage id='pages.process.location' defaultMessage='Location' />,
       dataIndex: 'location',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.version" defaultMessage="Version" />,
+      title: <FormattedMessage id='pages.table.title.version' defaultMessage='Version' />,
       dataIndex: 'version',
       sorter: false,
       search: false,
@@ -89,7 +89,7 @@ const TableList: FC = () => {
             {row.version}
             <AllVersionsList
               lang={lang}
-              searchTableName="processes"
+              searchTableName='processes'
               columns={getAllVersionsColumns(processColumns, 5)}
               searchColume={`
                 id,
@@ -105,7 +105,7 @@ const TableList: FC = () => {
               id={row.id}
             >
               <ProcessCreate
-                actionType="createVersion"
+                actionType='createVersion'
                 id={row.id}
                 version={row.version}
                 lang={lang}
@@ -117,14 +117,14 @@ const TableList: FC = () => {
       },
     },
     {
-      title: <FormattedMessage id="pages.table.title.updatedAt" defaultMessage="Updated at" />,
+      title: <FormattedMessage id='pages.table.title.updatedAt' defaultMessage='Updated at' />,
       dataIndex: 'modifiedAt',
       valueType: 'dateTime',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
+      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
@@ -170,7 +170,7 @@ const TableList: FC = () => {
               )}
               {row.isFromLifeCycle ? (
                 <LifeCycleModelCreate
-                  actionType="copy"
+                  actionType='copy'
                   id={row.id}
                   version={row.version}
                   lang={lang}
@@ -179,7 +179,7 @@ const TableList: FC = () => {
                 />
               ) : (
                 <ProcessCreate
-                  actionType="copy"
+                  actionType='copy'
                   id={row.id}
                   version={row.version}
                   lang={lang}
@@ -243,7 +243,7 @@ const TableList: FC = () => {
               actionRef={actionRef}
             />
             <ProcessCreate
-              actionType="copy"
+              actionType='copy'
               id={row.id}
               version={row.version}
               lang={lang}
@@ -290,7 +290,7 @@ const TableList: FC = () => {
         headerTitle={
           <>
             {getDataTitle(dataSource)} /{' '}
-            <FormattedMessage id="menu.tgdata.processes" defaultMessage="Processes" />
+            <FormattedMessage id='menu.tgdata.processes' defaultMessage='Processes' />
           </>
         }
         actionRef={actionRef}

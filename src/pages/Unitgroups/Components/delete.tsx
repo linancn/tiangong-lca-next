@@ -55,46 +55,46 @@ const UnitGroupDelete: FC<Props> = ({
         <>
           <Tooltip
             title={
-              <FormattedMessage id="pages.button.delete" defaultMessage="Delete"></FormattedMessage>
+              <FormattedMessage id='pages.button.delete' defaultMessage='Delete'></FormattedMessage>
             }
           >
             <Button
-              shape="circle"
+              shape='circle'
               icon={<DeleteOutlined />}
-              size="small"
+              size='small'
               onClick={showModal}
             ></Button>
           </Tooltip>
           <Modal
             title={
-              <FormattedMessage id="pages.button.delete" defaultMessage="Delete"></FormattedMessage>
+              <FormattedMessage id='pages.button.delete' defaultMessage='Delete'></FormattedMessage>
             }
             open={isModalVisible}
             onOk={handleOk}
             onCancel={handleCancel}
           >
             <FormattedMessage
-              id="pages.button.delete.confirm"
-              defaultMessage="Delete"
+              id='pages.button.delete.confirm'
+              defaultMessage='Delete'
             ></FormattedMessage>
           </Modal>
         </>
       ) : (
         <>
-          <Button size="small" onClick={showModal}>
-            <FormattedMessage id="pages.button.delete" defaultMessage="Delete"></FormattedMessage>
+          <Button size='small' onClick={showModal}>
+            <FormattedMessage id='pages.button.delete' defaultMessage='Delete'></FormattedMessage>
           </Button>
           <Modal
             title={
-              <FormattedMessage id="pages.button.delete" defaultMessage="Delete"></FormattedMessage>
+              <FormattedMessage id='pages.button.delete' defaultMessage='Delete'></FormattedMessage>
             }
             open={isModalVisible}
             onOk={handleOk}
             onCancel={handleCancel}
           >
             <FormattedMessage
-              id="pages.button.delete.confirm"
-              defaultMessage="Delete"
+              id='pages.button.delete.confirm'
+              defaultMessage='Delete'
             ></FormattedMessage>
           </Modal>
         </>

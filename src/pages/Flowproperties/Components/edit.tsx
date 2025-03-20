@@ -22,7 +22,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { FormattedMessage,useIntl } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import { genFlowpropertyFromData } from '@/services/flowproperties/util';
@@ -96,12 +96,12 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
     <>
       <Tooltip title={<FormattedMessage id={'pages.button.edit'} defaultMessage={'Edit'} />}>
         {buttonType === 'icon' ? (
-          <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
+          <Button shape='circle' icon={<FormOutlined />} size='small' onClick={onEdit} />
         ) : (
           <Button onClick={onEdit}>
             <FormattedMessage
               id={buttonType ? buttonType : 'pages.button.edit'}
-              defaultMessage="Edit"
+              defaultMessage='Edit'
             />
           </Button>
         )}
@@ -110,11 +110,11 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
         getContainer={() => document.body}
         title={
           <FormattedMessage
-            id="pages.flowproperty.drawer.title.edit"
-            defaultMessage="Edit Flow property"
+            id='pages.flowproperty.drawer.title.edit'
+            defaultMessage='Edit Flow property'
           />
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={
           <Button
@@ -134,20 +134,20 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
               }}
             >
               <FormattedMessage
-                id="pages.button.updateReference"
-                defaultMessage="Update reference"
+                id='pages.button.updateReference'
+                defaultMessage='Update reference'
               />
             </Button>
             <Button onClick={() => setDrawerVisible(false)}>
               {' '}
-              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
             </Button>
             <Button onClick={onReset}>
               {' '}
-              <FormattedMessage id="pages.button.reset" defaultMessage="Reset" />
+              <FormattedMessage id='pages.button.reset' defaultMessage='Reset' />
             </Button>
-            <Button onClick={() => formRefEdit.current?.submit()} type="primary">
-              <FormattedMessage id="pages.button.save" defaultMessage="Save" />
+            <Button onClick={() => formRefEdit.current?.submit()} type='primary'>
+              <FormattedMessage id='pages.button.save' defaultMessage='Save' />
             </Button>
           </Space>
         }

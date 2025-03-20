@@ -94,13 +94,13 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
   return {
     actionsRender: () => [
       <DarkMode
-        key="DarkMode"
+        key='DarkMode'
         handleClick={handleClickFunction}
         isDarkMode={initialState?.isDarkMode}
       />,
-      <SelectLang key="SelectLang" />,
-      <Question key="doc" />,
-      <Notification key="Notification"></Notification>,
+      <SelectLang key='SelectLang' />,
+      <Question key='doc' />,
+      <Notification key='Notification'></Notification>,
     ],
     avatarProps: {
       src: initialState?.currentUser?.avatar,
@@ -142,7 +142,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     ],
     links: isDev
       ? [
-          <Link key="openapi" to="/umi/plugin/openapi" target="_blank">
+          <Link key='openapi' to='/umi/plugin/openapi' target='_blank'>
             <LinkOutlined />
             <span>OpenAPI 文档</span>
           </Link>,

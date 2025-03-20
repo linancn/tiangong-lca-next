@@ -60,10 +60,10 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="pages.button.create" defaultMessage="Create" />}>
+      <Tooltip title={<FormattedMessage id='pages.button.create' defaultMessage='Create' />}>
         <Button
           size={'middle'}
-          type="text"
+          type='text'
           icon={<PlusOutlined />}
           onClick={() => {
             setDrawerVisible(true);
@@ -85,11 +85,11 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
         getContainer={() => document.body}
         title={
           <FormattedMessage
-            id="pages.process.exchange.drawer.title.create"
-            defaultMessage="Create exchange"
+            id='pages.process.exchange.drawer.title.create'
+            defaultMessage='Create exchange'
           />
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={
           <Button
@@ -104,10 +104,10 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
         footer={
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
-              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
             </Button>
-            <Button onClick={() => formRefCreate.current?.submit()} type="primary">
-              <FormattedMessage id="pages.button.save" defaultMessage="Save" />
+            <Button onClick={() => formRefCreate.current?.submit()} type='primary'>
+              <FormattedMessage id='pages.button.save' defaultMessage='Save' />
             </Button>
           </Space>
         }
@@ -130,19 +130,19 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
             return true;
           }}
         >
-          <Space direction="vertical" style={{ width: '100%' }}>
+          <Space direction='vertical' style={{ width: '100%' }}>
             <Form.Item
               label={
                 <FormattedMessage
-                  id="pages.process.view.exchange.exchangeDirection"
-                  defaultMessage="Exchange direction"
+                  id='pages.process.view.exchange.exchangeDirection'
+                  defaultMessage='Exchange direction'
                 />
               }
               name={'exchangeDirection'}
             >
               <Select
                 // placeholder="Select a direction"
-                optionFilterProp="direction"
+                optionFilterProp='direction'
                 options={[
                   { value: 'input', label: 'Input' },
                   { value: 'output', label: 'Output' },
@@ -157,8 +157,8 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
                 name={['referenceToFlowDataSet']}
                 label={
                   <FormattedMessage
-                    id="pages.process.view.exchange.referenceToFlowDataSet"
-                    defaultMessage="Flow"
+                    id='pages.process.view.exchange.referenceToFlowDataSet'
+                    defaultMessage='Flow'
                   />
                 }
                 lang={lang}
@@ -171,8 +171,8 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
             <Form.Item
               label={
                 <FormattedMessage
-                  id="pages.process.view.exchange.meanAmount"
-                  defaultMessage="Mean amount"
+                  id='pages.process.view.exchange.meanAmount'
+                  defaultMessage='Mean amount'
                 />
               }
               name={'meanAmount'}
@@ -187,8 +187,8 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
             <Form.Item
               label={
                 <FormattedMessage
-                  id="pages.process.view.exchange.resultingAmount"
-                  defaultMessage="Resulting amount"
+                  id='pages.process.view.exchange.resultingAmount'
+                  defaultMessage='Resulting amount'
                 />
               }
               name={'resultingAmount'}
@@ -203,44 +203,44 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
             <Form.Item
               label={
                 <FormattedMessage
-                  id="pages.process.view.exchange.dataDerivationTypeStatus"
-                  defaultMessage="Data derivation type / status"
+                  id='pages.process.view.exchange.dataDerivationTypeStatus'
+                  defaultMessage='Data derivation type / status'
                 />
               }
               name={'dataDerivationTypeStatus'}
             >
               <Select options={DataDerivationTypeStatusOptions} />
             </Form.Item>
-            <Divider orientationMargin="0" orientation="left" plain>
+            <Divider orientationMargin='0' orientation='left' plain>
               <FormattedMessage
-                id="pages.process.view.exchange.generalComment"
-                defaultMessage="Comment"
+                id='pages.process.view.exchange.generalComment'
+                defaultMessage='Comment'
               />
             </Divider>
             <LangTextItemForm
-              name="generalComment"
+              name='generalComment'
               label={
                 <FormattedMessage
-                  id="pages.process.view.exchange.generalComment"
-                  defaultMessage="Comment"
+                  id='pages.process.view.exchange.generalComment'
+                  defaultMessage='Comment'
                 />
               }
             />
 
             <Card
-              size="small"
+              size='small'
               title={
                 <FormattedMessage
-                  id="pages.process.view.exchange.quantitativeReference"
-                  defaultMessage="Quantitative reference"
+                  id='pages.process.view.exchange.quantitativeReference'
+                  defaultMessage='Quantitative reference'
                 />
               }
             >
               <Form.Item
                 label={
                   <FormattedMessage
-                    id="pages.process.view.exchange.referenceToReferenceFlow"
-                    defaultMessage="Reference flow(s)"
+                    id='pages.process.view.exchange.referenceToReferenceFlow'
+                    defaultMessage='Reference flow(s)'
                   />
                 }
                 name={'quantitativeReference'}
@@ -249,18 +249,18 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
               </Form.Item>
               {functionalUnitOrOther ? (
                 <>
-                  <Divider orientationMargin="0" orientation="left" plain>
+                  <Divider orientationMargin='0' orientation='left' plain>
                     <FormattedMessage
-                      id="pages.process.view.exchange.functionalUnitOrOther"
-                      defaultMessage="Functional unit, Production period, or Other parameter"
+                      id='pages.process.view.exchange.functionalUnitOrOther'
+                      defaultMessage='Functional unit, Production period, or Other parameter'
                     />
                   </Divider>
                   <LangTextItemForm
-                    name="functionalUnitOrOther"
+                    name='functionalUnitOrOther'
                     label={
                       <FormattedMessage
-                        id="pages.process.view.exchange.functionalUnitOrOther"
-                        defaultMessage="Functional unit, Production period, or Other parameter"
+                        id='pages.process.view.exchange.functionalUnitOrOther'
+                        defaultMessage='Functional unit, Production period, or Other parameter'
                       />
                     }
                   />

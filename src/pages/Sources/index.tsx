@@ -37,25 +37,25 @@ const TableList: FC = () => {
   const actionRef = useRef<ActionType>();
   const sourceColumns: ProColumns<SourceTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
+      title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
       dataIndex: 'index',
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name" />,
+      title: <FormattedMessage id='pages.table.title.name' defaultMessage='Name' />,
       dataIndex: 'shortName',
       sorter: false,
       search: false,
       render: (_, row) => [
-        <Tooltip key={0} placement="topLeft" title={row.shortName}>
+        <Tooltip key={0} placement='topLeft' title={row.shortName}>
           {row.shortName}
         </Tooltip>,
       ],
     },
     {
       title: (
-        <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />
+        <FormattedMessage id='pages.table.title.classification' defaultMessage='Classification' />
       ),
       dataIndex: 'classification',
       sorter: false,
@@ -63,14 +63,14 @@ const TableList: FC = () => {
     },
     {
       title: (
-        <FormattedMessage id="pages.source.publicationType" defaultMessage="Publication type" />
+        <FormattedMessage id='pages.source.publicationType' defaultMessage='Publication type' />
       ),
       dataIndex: 'publicationType',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.version" defaultMessage="Version" />,
+      title: <FormattedMessage id='pages.table.title.version' defaultMessage='Version' />,
       dataIndex: 'version',
       sorter: false,
       search: false,
@@ -80,7 +80,7 @@ const TableList: FC = () => {
             {row.version}
             <AllVersionsList
               lang={lang}
-              searchTableName="sources"
+              searchTableName='sources'
               columns={getAllVersionsColumns(sourceColumns, 4)}
               searchColume={`
                  id,
@@ -95,7 +95,7 @@ const TableList: FC = () => {
               id={row.id}
             >
               <SourceCreate
-                actionType="createVersion"
+                actionType='createVersion'
                 id={row.id}
                 version={row.version}
                 lang={lang}
@@ -107,14 +107,14 @@ const TableList: FC = () => {
       },
     },
     {
-      title: <FormattedMessage id="pages.table.title.updatedAt" defaultMessage="Updated at" />,
+      title: <FormattedMessage id='pages.table.title.updatedAt' defaultMessage='Updated at' />,
       dataIndex: 'modifiedAt',
       valueType: 'dateTime',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
+      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
@@ -137,7 +137,7 @@ const TableList: FC = () => {
                 setViewDrawerVisible={() => {}}
               />
               <SourceCreate
-                actionType="copy"
+                actionType='copy'
                 id={row.id}
                 version={row.version}
                 lang={lang}
@@ -180,7 +180,7 @@ const TableList: FC = () => {
               buttonType={'icon'}
             />
             <SourceCreate
-              actionType="copy"
+              actionType='copy'
               id={row.id}
               version={row.version}
               lang={lang}
@@ -215,7 +215,10 @@ const TableList: FC = () => {
       <Card>
         <Search
           size={'large'}
-          placeholder={intl.formatMessage({ id: 'pages.search.keyWord',defaultMessage: 'Full-text search: Enter one or more keywords.' })}
+          placeholder={intl.formatMessage({
+            id: 'pages.search.keyWord',
+            defaultMessage: 'Full-text search: Enter one or more keywords.',
+          })}
           onSearch={onSearch}
           enterButton
         />
@@ -225,7 +228,7 @@ const TableList: FC = () => {
         headerTitle={
           <>
             {getDataTitle(dataSource)} /{' '}
-            <FormattedMessage id="menu.tgdata.sources" defaultMessage="Sources" />
+            <FormattedMessage id='menu.tgdata.sources' defaultMessage='Sources' />
           </>
         }
         actionRef={actionRef}

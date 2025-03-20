@@ -15,13 +15,13 @@ const ContributeData: FC<ContributeDataProps> = ({ onOk, disabled }) => {
   const { token } = theme.useToken();
   return (
     <Tooltip
-      title={<FormattedMessage id="pages.button.contribute" defaultMessage="Contribute to team" />}
+      title={<FormattedMessage id='pages.button.contribute' defaultMessage='Contribute to team' />}
     >
       <Button
         disabled={disabled}
-        shape="circle"
+        shape='circle'
         icon={<CloudUploadOutlined />}
-        size="small"
+        size='small'
         onClick={() => {
           Modal.confirm({
             okButtonProps: {

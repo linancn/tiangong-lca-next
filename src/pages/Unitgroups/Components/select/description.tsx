@@ -22,8 +22,8 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
   }, [data]);
 
   return (
-    <Card size="small" title={title}>
-      <Space direction="horizontal">
+    <Card size='small' title={title}>
+      <Space direction='horizontal'>
         <Descriptions
           bordered
           size={'small'}
@@ -33,7 +33,7 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
           <Descriptions.Item
             key={0}
             label={
-              <FormattedMessage id="pages.unitgroup.refObjectId" defaultMessage="Ref object id" />
+              <FormattedMessage id='pages.unitgroup.refObjectId' defaultMessage='Ref object id' />
             }
             labelStyle={{ width: locale === 'zh-CN' ? '210px' : '230px' }}
           >
@@ -45,7 +45,7 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
             id={data?.['@refObjectId']}
             version={data?.['@version']}
             lang={lang}
-            buttonType="text"
+            buttonType='text'
           />
         )}
       </Space>
@@ -86,20 +86,20 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
           {data?.['@version'] ?? '-'}
         </Descriptions.Item>
       </Descriptions> */}
-      <Divider orientationMargin="0" orientation="left" plain>
+      <Divider orientationMargin='0' orientation='left' plain>
         <FormattedMessage
-          id="pages.FlowProperties.view.flowPropertiesInformation.shortDescription"
-          defaultMessage="Short description"
+          id='pages.FlowProperties.view.flowPropertiesInformation.shortDescription'
+          defaultMessage='Short description'
         />
       </Divider>
       <LangTextItemDescription data={data?.['common:shortDescription']} />
       <br />
       <Card
-        size="small"
+        size='small'
         title={
           <FormattedMessage
-            id="pages.unitgroup.unit.quantitativeReference"
-            defaultMessage="Quantitative reference"
+            id='pages.unitgroup.unit.quantitativeReference'
+            defaultMessage='Quantitative reference'
           />
         }
       >
@@ -107,7 +107,7 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
           <Descriptions.Item
             key={0}
             label={
-              <FormattedMessage id="pages.unitgroup.name" defaultMessage="Name of unit group" />
+              <FormattedMessage id='pages.unitgroup.name' defaultMessage='Name of unit group' />
             }
             styles={{ label: { width: '160px' } }}
           >
@@ -115,8 +115,8 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
           </Descriptions.Item>
         </Descriptions>
         <br />
-        <Divider orientationMargin="0" orientation="left" plain>
-          <FormattedMessage id="pages.unitgroup.generalComment" defaultMessage="General comment" />
+        <Divider orientationMargin='0' orientation='left' plain>
+          <FormattedMessage id='pages.unitgroup.generalComment' defaultMessage='General comment' />
         </Divider>
         <LangTextItemDescription data={refUnit?.refUnitGeneralComment} />
       </Card>

@@ -26,15 +26,15 @@ const EdgeExhange: FC<Props> = ({ lang, disabled, edge }) => {
       <Tooltip
         title={
           <FormattedMessage
-            id="pages.button.model.connection"
-            defaultMessage="Connection relation"
+            id='pages.button.model.connection'
+            defaultMessage='Connection relation'
           />
         }
-        placement="left"
+        placement='left'
       >
         <Button
-          type="primary"
-          size="small"
+          type='primary'
+          size='small'
           icon={<ArrowRightOutlined />}
           style={{ boxShadow: 'none' }}
           disabled={disabled}

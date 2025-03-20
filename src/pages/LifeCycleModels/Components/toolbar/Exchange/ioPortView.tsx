@@ -28,37 +28,37 @@ const IoPortSelector: FC<Props> = ({ node, lang, direction, drawerVisible, onDra
 
   const processExchangeColumns: ProColumns<ProcessExchangeTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
+      title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
       dataIndex: 'index',
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="processExchange.referenceToFlowDataSet" defaultMessage="Flow" />,
+      title: <FormattedMessage id='processExchange.referenceToFlowDataSet' defaultMessage='Flow' />,
       dataIndex: 'referenceToFlowDataSet',
       sorter: false,
       search: false,
       render: (_, row) => [
-        <Tooltip key={0} placement="topLeft" title={row.generalComment}>
+        <Tooltip key={0} placement='topLeft' title={row.generalComment}>
           {row.referenceToFlowDataSet}
         </Tooltip>,
       ],
     },
     {
-      title: <FormattedMessage id="pages.table.title.version" defaultMessage="Version" />,
+      title: <FormattedMessage id='pages.table.title.version' defaultMessage='Version' />,
       dataIndex: 'referenceToFlowDataSetVersion',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="processExchange.meanAmount" defaultMessage="Mean amount" />,
+      title: <FormattedMessage id='processExchange.meanAmount' defaultMessage='Mean amount' />,
       dataIndex: 'meanAmount',
       sorter: false,
       search: false,
     },
     {
       title: (
-        <FormattedMessage id="processExchange.resultingAmount" defaultMessage="Resulting amount" />
+        <FormattedMessage id='processExchange.resultingAmount' defaultMessage='Resulting amount' />
       ),
       dataIndex: 'resultingAmount',
       sorter: false,
@@ -67,8 +67,8 @@ const IoPortSelector: FC<Props> = ({ node, lang, direction, drawerVisible, onDra
     {
       title: (
         <FormattedMessage
-          id="pages.flowproperty.referenceToReferenceUnitGroup"
-          defaultMessage="Reference unit"
+          id='pages.flowproperty.referenceToReferenceUnitGroup'
+          defaultMessage='Reference unit'
         />
       ),
       dataIndex: 'refUnitGroup',
@@ -90,8 +90,8 @@ const IoPortSelector: FC<Props> = ({ node, lang, direction, drawerVisible, onDra
     {
       title: (
         <FormattedMessage
-          id="processExchange.dataDerivationTypeStatus"
-          defaultMessage="Data derivation type / status"
+          id='processExchange.dataDerivationTypeStatus'
+          defaultMessage='Data derivation type / status'
         />
       ),
       dataIndex: 'dataDerivationTypeStatus',
@@ -101,8 +101,8 @@ const IoPortSelector: FC<Props> = ({ node, lang, direction, drawerVisible, onDra
     {
       title: (
         <FormattedMessage
-          id="processExchange.quantitativeReference"
-          defaultMessage="Quantitative reference"
+          id='processExchange.quantitativeReference'
+          defaultMessage='Quantitative reference'
         />
       ),
       dataIndex: 'quantitativeReference',
@@ -118,7 +118,7 @@ const IoPortSelector: FC<Props> = ({ node, lang, direction, drawerVisible, onDra
       },
     },
     {
-      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
+      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
@@ -159,11 +159,11 @@ const IoPortSelector: FC<Props> = ({ node, lang, direction, drawerVisible, onDra
         getContainer={() => document.body}
         title={
           <FormattedMessage
-            id="pages.flow.model.drawer.title.edge.port.view"
-            defaultMessage="View flow port"
+            id='pages.flow.model.drawer.title.edge.port.view'
+            defaultMessage='View flow port'
           />
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={onDrawerClose} />}
         maskClosable={false}

@@ -5,8 +5,8 @@ export const complianceOptions = [
     value: 'Fully compliant',
     label: (
       <FormattedMessage
-        id="pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance.fullyCompliant"
-        defaultMessage="Fully compliant"
+        id='pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance.fullyCompliant'
+        defaultMessage='Fully compliant'
       />
     ),
   },
@@ -14,8 +14,8 @@ export const complianceOptions = [
     value: 'Not compliant',
     label: (
       <FormattedMessage
-        id="pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance.notCompliant"
-        defaultMessage="Not compliant"
+        id='pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance.notCompliant'
+        defaultMessage='Not compliant'
       />
     ),
   },
@@ -23,8 +23,8 @@ export const complianceOptions = [
     value: 'Not defined',
     label: (
       <FormattedMessage
-        id="pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance.notDefined"
-        defaultMessage="Not defined"
+        id='pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance.notDefined'
+        defaultMessage='Not defined'
       />
     ),
   },

@@ -213,15 +213,15 @@ const SourceCreate: FC<CreateProps> = ({ actionRef, lang, actionType = 'create',
                   ? 'pages.button.createVersion'
                   : 'pages.button.create'
             }
-            defaultMessage="Create"
+            defaultMessage='Create'
           />
         }
       >
         {actionType === 'copy' ? (
           <Button
-            shape="circle"
+            shape='circle'
             icon={<CopyOutlined />}
-            size="small"
+            size='small'
             onClick={() => {
               setDrawerVisible(true);
             }}
@@ -229,7 +229,7 @@ const SourceCreate: FC<CreateProps> = ({ actionRef, lang, actionType = 'create',
         ) : (
           <Button
             size={'middle'}
-            type="text"
+            type='text'
             icon={<PlusOutlined />}
             onClick={() => {
               setDrawerVisible(true);
@@ -256,10 +256,10 @@ const SourceCreate: FC<CreateProps> = ({ actionRef, lang, actionType = 'create',
                   ? 'pages.source.drawer.title.createVersion'
                   : 'pages.source.drawer.title.create'
             }
-            defaultMessage="Create Source"
+            defaultMessage='Create Source'
           />
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={
           <Button
@@ -274,10 +274,10 @@ const SourceCreate: FC<CreateProps> = ({ actionRef, lang, actionType = 'create',
         footer={
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
-              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
             </Button>
-            <Button onClick={() => formRefCreate.current?.submit()} type="primary">
-              <FormattedMessage id="pages.button.save" defaultMessage="Save" />
+            <Button onClick={() => formRefCreate.current?.submit()} type='primary'>
+              <FormattedMessage id='pages.button.save' defaultMessage='Save' />
             </Button>
           </Space>
         }
@@ -297,7 +297,7 @@ const SourceCreate: FC<CreateProps> = ({ actionRef, lang, actionType = 'create',
             onFinish={onSubmit}
           >
             <SourceForm
-              formType="create"
+              formType='create'
               lang={lang}
               activeTabKey={activeTabKey}
               formRef={formRefCreate}

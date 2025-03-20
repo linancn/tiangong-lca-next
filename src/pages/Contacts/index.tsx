@@ -37,38 +37,38 @@ const TableList: FC = () => {
 
   const contactColumns: ProColumns<ContactTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
+      title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
       dataIndex: 'index',
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name" />,
+      title: <FormattedMessage id='pages.table.title.name' defaultMessage='Name' />,
       dataIndex: 'shortName',
       sorter: false,
       search: false,
       render: (_, row) => [
-        <Tooltip key={0} placement="topLeft" title={row.name}>
+        <Tooltip key={0} placement='topLeft' title={row.name}>
           {row.shortName}
         </Tooltip>,
       ],
     },
     {
       title: (
-        <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />
+        <FormattedMessage id='pages.table.title.classification' defaultMessage='Classification' />
       ),
       dataIndex: 'classification',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.contact.email" defaultMessage="E-mail" />,
+      title: <FormattedMessage id='pages.contact.email' defaultMessage='E-mail' />,
       dataIndex: 'email',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.version" defaultMessage="Version" />,
+      title: <FormattedMessage id='pages.table.title.version' defaultMessage='Version' />,
       dataIndex: 'version',
       sorter: false,
       search: false,
@@ -78,7 +78,7 @@ const TableList: FC = () => {
             {row.version}
             <AllVersionsList
               lang={lang}
-              searchTableName="contacts"
+              searchTableName='contacts'
               columns={getAllVersionsColumns(contactColumns, 4)}
               searchColume={`
                  id,
@@ -93,7 +93,7 @@ const TableList: FC = () => {
               id={row.id}
             >
               <ContactCreate
-                actionType="createVersion"
+                actionType='createVersion'
                 id={row.id}
                 version={row.version}
                 lang={lang}
@@ -105,14 +105,14 @@ const TableList: FC = () => {
       },
     },
     {
-      title: <FormattedMessage id="pages.table.title.updatedAt" defaultMessage="Updated at" />,
+      title: <FormattedMessage id='pages.table.title.updatedAt' defaultMessage='Updated at' />,
       dataIndex: 'modifiedAt',
       valueType: 'dateTime',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
+      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
@@ -123,7 +123,7 @@ const TableList: FC = () => {
                 id={row.id}
                 version={row.version}
                 lang={lang}
-                buttonType="icon"
+                buttonType='icon'
                 actionRef={actionRef}
               />
               <ContactEdit
@@ -135,7 +135,7 @@ const TableList: FC = () => {
                 setViewDrawerVisible={() => {}}
               />
               <ContactCreate
-                actionType="copy"
+                actionType='copy'
                 id={row.id}
                 version={row.version}
                 lang={lang}
@@ -174,11 +174,11 @@ const TableList: FC = () => {
               id={row.id}
               version={row.version}
               lang={lang}
-              buttonType="icon"
+              buttonType='icon'
               actionRef={actionRef}
             />
             <ContactCreate
-              actionType="copy"
+              actionType='copy'
               id={row.id}
               version={row.version}
               lang={lang}
@@ -225,7 +225,7 @@ const TableList: FC = () => {
         headerTitle={
           <>
             {getDataTitle(dataSource)} /{' '}
-            <FormattedMessage id="menu.tgdata.contacts" defaultMessage="Contacts" />
+            <FormattedMessage id='menu.tgdata.contacts' defaultMessage='Contacts' />
           </>
         }
         actionRef={actionRef}

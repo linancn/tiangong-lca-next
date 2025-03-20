@@ -115,14 +115,14 @@ const ContactCreate: FC<CreateProps> = ({
                   ? 'pages.button.createVersion'
                   : 'pages.button.create'
             }
-            defaultMessage="Create"
+            defaultMessage='Create'
           />
         }
       >
         {actionType === 'copy' ? (
           <Button
-            size="small"
-            shape="circle"
+            size='small'
+            shape='circle'
             icon={<CopyOutlined />}
             onClick={() => {
               setDrawerVisible(true);
@@ -130,9 +130,9 @@ const ContactCreate: FC<CreateProps> = ({
           />
         ) : actionType === 'createVersion' ? (
           <Button
-            type="text"
+            type='text'
             icon={<PlusOutlined />}
-            size="small"
+            size='small'
             onClick={() => {
               setDrawerVisible(true);
             }}
@@ -140,7 +140,7 @@ const ContactCreate: FC<CreateProps> = ({
         ) : (
           <Button
             size={'middle'}
-            type="text"
+            type='text'
             icon={<PlusOutlined />}
             onClick={() => {
               setDrawerVisible(true);
@@ -153,20 +153,20 @@ const ContactCreate: FC<CreateProps> = ({
         getContainer={() => document.body}
         title={
           actionType === 'copy' ? (
-            <FormattedMessage id="pages.contact.drawer.title.copy" defaultMessage="Copy Contact" />
+            <FormattedMessage id='pages.contact.drawer.title.copy' defaultMessage='Copy Contact' />
           ) : actionType === 'createVersion' ? (
             <FormattedMessage
-              id="pages.contact.drawer.title.createVersion"
-              defaultMessage="Create Version"
+              id='pages.contact.drawer.title.createVersion'
+              defaultMessage='Create Version'
             />
           ) : (
             <FormattedMessage
-              id="pages.contact.drawer.title.create"
-              defaultMessage="Create Contact"
+              id='pages.contact.drawer.title.create'
+              defaultMessage='Create Contact'
             />
           )
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={
           <Button
@@ -181,10 +181,10 @@ const ContactCreate: FC<CreateProps> = ({
         footer={
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
-              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
             </Button>
-            <Button onClick={() => formRefCreate.current?.submit()} type="primary">
-              <FormattedMessage id="pages.button.save" defaultMessage="Save" />
+            <Button onClick={() => formRefCreate.current?.submit()} type='primary'>
+              <FormattedMessage id='pages.button.save' defaultMessage='Save' />
             </Button>
           </Space>
         }
@@ -221,7 +221,7 @@ const ContactCreate: FC<CreateProps> = ({
             }}
           >
             <ContactForm
-              formType="create"
+              formType='create'
               lang={lang}
               activeTabKey={activeTabKey}
               formRef={formRefCreate}

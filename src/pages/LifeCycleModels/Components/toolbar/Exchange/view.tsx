@@ -71,11 +71,11 @@ const EdgeExchangeView: FC<Props> = ({
         getContainer={() => document.body}
         title={
           <FormattedMessage
-            id="pages.flow.model.drawer.title.edge.exchange.view"
-            defaultMessage="View exchange relation"
+            id='pages.flow.model.drawer.title.edge.exchange.view'
+            defaultMessage='View exchange relation'
           />
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={onDrawerClose} />}
         footer={false}
@@ -88,8 +88,8 @@ const EdgeExchangeView: FC<Props> = ({
             <Card
               title={
                 <FormattedMessage
-                  id="pages.flow.model.sourceOutputFlowName"
-                  defaultMessage="Source process output flow"
+                  id='pages.flow.model.sourceOutputFlowName'
+                  defaultMessage='Source process output flow'
                 />
               }
               bordered={false}
@@ -100,8 +100,8 @@ const EdgeExchangeView: FC<Props> = ({
                     key={0}
                     label={
                       <FormattedMessage
-                        id="pages.process.view.exchange.exchangeDirection"
-                        defaultMessage="Exchange direction"
+                        id='pages.process.view.exchange.exchangeDirection'
+                        defaultMessage='Exchange direction'
                       />
                     }
                     labelStyle={{ width: '220px' }}
@@ -113,8 +113,8 @@ const EdgeExchangeView: FC<Props> = ({
                 <FlowsSelectDescription
                   title={
                     <FormattedMessage
-                      id="pages.process.view.exchange.referenceToFlowDataSet"
-                      defaultMessage="Flow"
+                      id='pages.process.view.exchange.referenceToFlowDataSet'
+                      defaultMessage='Flow'
                     />
                   }
                   data={exchangeDataSource?.referenceToFlowDataSet ?? {}}
@@ -126,8 +126,8 @@ const EdgeExchangeView: FC<Props> = ({
                     key={0}
                     label={
                       <FormattedMessage
-                        id="pages.process.view.exchange.meanAmount"
-                        defaultMessage="Mean amount"
+                        id='pages.process.view.exchange.meanAmount'
+                        defaultMessage='Mean amount'
                       />
                     }
                     labelStyle={{ width: '220px' }}
@@ -141,8 +141,8 @@ const EdgeExchangeView: FC<Props> = ({
                     key={0}
                     label={
                       <FormattedMessage
-                        id="pages.process.view.exchange.resultingAmount"
-                        defaultMessage="Resulting amount"
+                        id='pages.process.view.exchange.resultingAmount'
+                        defaultMessage='Resulting amount'
                       />
                     }
                     labelStyle={{ width: '220px' }}
@@ -156,8 +156,8 @@ const EdgeExchangeView: FC<Props> = ({
                     key={0}
                     label={
                       <FormattedMessage
-                        id="pages.process.view.exchange.dataDerivationTypeStatus"
-                        defaultMessage="Data derivation type / status"
+                        id='pages.process.view.exchange.dataDerivationTypeStatus'
+                        defaultMessage='Data derivation type / status'
                       />
                     }
                     labelStyle={{ width: '220px' }}
@@ -166,20 +166,20 @@ const EdgeExchangeView: FC<Props> = ({
                   </Descriptions.Item>
                 </Descriptions>
 
-                <Divider orientationMargin="0" orientation="left" plain>
+                <Divider orientationMargin='0' orientation='left' plain>
                   <FormattedMessage
-                    id="pages.process.view.exchange.generalComment"
-                    defaultMessage="Comment"
+                    id='pages.process.view.exchange.generalComment'
+                    defaultMessage='Comment'
                   />
                 </Divider>
                 <LangTextItemDescription data={exchangeDataSource?.generalComment} />
                 <br />
                 <Card
-                  size="small"
+                  size='small'
                   title={
                     <FormattedMessage
-                      id="pages.process.view.exchange.quantitativeReference"
-                      defaultMessage="Quantitative reference"
+                      id='pages.process.view.exchange.quantitativeReference'
+                      defaultMessage='Quantitative reference'
                     />
                   }
                 >
@@ -188,8 +188,8 @@ const EdgeExchangeView: FC<Props> = ({
                       key={0}
                       label={
                         <FormattedMessage
-                          id="pages.process.view.exchange.referenceToReferenceFlow"
-                          defaultMessage="Reference flow(s)"
+                          id='pages.process.view.exchange.referenceToReferenceFlow'
+                          defaultMessage='Reference flow(s)'
                         />
                       }
                       labelStyle={{ width: '220px' }}
@@ -201,10 +201,10 @@ const EdgeExchangeView: FC<Props> = ({
                       }
                     </Descriptions.Item>
                   </Descriptions>
-                  <Divider orientationMargin="0" orientation="left" plain>
+                  <Divider orientationMargin='0' orientation='left' plain>
                     <FormattedMessage
-                      id="pages.process.view.exchange.functionalUnitOrOther"
-                      defaultMessage="Functional unit, Production period, or Other parameter"
+                      id='pages.process.view.exchange.functionalUnitOrOther'
+                      defaultMessage='Functional unit, Production period, or Other parameter'
                     />
                   </Divider>
                   <LangTextItemDescription data={exchangeDataSource?.functionalUnitOrOther} />
@@ -216,8 +216,8 @@ const EdgeExchangeView: FC<Props> = ({
             <Card
               title={
                 <FormattedMessage
-                  id="pages.flow.model.targetInputFlowName"
-                  defaultMessage="Target process input flow"
+                  id='pages.flow.model.targetInputFlowName'
+                  defaultMessage='Target process input flow'
                 />
               }
               bordered={false}
@@ -228,8 +228,8 @@ const EdgeExchangeView: FC<Props> = ({
                     key={0}
                     label={
                       <FormattedMessage
-                        id="pages.process.view.exchange.exchangeDirection"
-                        defaultMessage="Exchange direction"
+                        id='pages.process.view.exchange.exchangeDirection'
+                        defaultMessage='Exchange direction'
                       />
                     }
                     labelStyle={{ width: '220px' }}
@@ -241,8 +241,8 @@ const EdgeExchangeView: FC<Props> = ({
                 <FlowsSelectDescription
                   title={
                     <FormattedMessage
-                      id="pages.process.view.exchange.referenceToFlowDataSet"
-                      defaultMessage="Flow"
+                      id='pages.process.view.exchange.referenceToFlowDataSet'
+                      defaultMessage='Flow'
                     />
                   }
                   data={exchangeDataTarget?.referenceToFlowDataSet ?? {}}
@@ -254,8 +254,8 @@ const EdgeExchangeView: FC<Props> = ({
                     key={0}
                     label={
                       <FormattedMessage
-                        id="pages.process.view.exchange.meanAmount"
-                        defaultMessage="Mean amount"
+                        id='pages.process.view.exchange.meanAmount'
+                        defaultMessage='Mean amount'
                       />
                     }
                     labelStyle={{ width: '220px' }}
@@ -269,8 +269,8 @@ const EdgeExchangeView: FC<Props> = ({
                     key={0}
                     label={
                       <FormattedMessage
-                        id="pages.process.view.exchange.resultingAmount"
-                        defaultMessage="Resulting amount"
+                        id='pages.process.view.exchange.resultingAmount'
+                        defaultMessage='Resulting amount'
                       />
                     }
                     labelStyle={{ width: '220px' }}
@@ -284,8 +284,8 @@ const EdgeExchangeView: FC<Props> = ({
                     key={0}
                     label={
                       <FormattedMessage
-                        id="pages.process.view.exchange.dataDerivationTypeStatus"
-                        defaultMessage="Data derivation type / status"
+                        id='pages.process.view.exchange.dataDerivationTypeStatus'
+                        defaultMessage='Data derivation type / status'
                       />
                     }
                     labelStyle={{ width: '220px' }}
@@ -294,20 +294,20 @@ const EdgeExchangeView: FC<Props> = ({
                   </Descriptions.Item>
                 </Descriptions>
 
-                <Divider orientationMargin="0" orientation="left" plain>
+                <Divider orientationMargin='0' orientation='left' plain>
                   <FormattedMessage
-                    id="pages.process.view.exchange.generalComment"
-                    defaultMessage="Comment"
+                    id='pages.process.view.exchange.generalComment'
+                    defaultMessage='Comment'
                   />
                 </Divider>
                 <LangTextItemDescription data={exchangeDataTarget?.generalComment} />
                 <br />
                 <Card
-                  size="small"
+                  size='small'
                   title={
                     <FormattedMessage
-                      id="pages.process.view.exchange.quantitativeReference"
-                      defaultMessage="Quantitative reference"
+                      id='pages.process.view.exchange.quantitativeReference'
+                      defaultMessage='Quantitative reference'
                     />
                   }
                 >
@@ -316,8 +316,8 @@ const EdgeExchangeView: FC<Props> = ({
                       key={0}
                       label={
                         <FormattedMessage
-                          id="pages.process.view.exchange.referenceToReferenceFlow"
-                          defaultMessage="Reference flow(s)"
+                          id='pages.process.view.exchange.referenceToReferenceFlow'
+                          defaultMessage='Reference flow(s)'
                         />
                       }
                       labelStyle={{ width: '220px' }}
@@ -329,10 +329,10 @@ const EdgeExchangeView: FC<Props> = ({
                       }
                     </Descriptions.Item>
                   </Descriptions>
-                  <Divider orientationMargin="0" orientation="left" plain>
+                  <Divider orientationMargin='0' orientation='left' plain>
                     <FormattedMessage
-                      id="pages.process.view.exchange.functionalUnitOrOther"
-                      defaultMessage="Functional unit, Production period, or Other parameter"
+                      id='pages.process.view.exchange.functionalUnitOrOther'
+                      defaultMessage='Functional unit, Production period, or Other parameter'
                     />
                   </Divider>
                   <LangTextItemDescription data={exchangeDataTarget?.functionalUnitOrOther} />

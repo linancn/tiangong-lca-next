@@ -85,12 +85,12 @@ const ProcessExchangeEdit: FC<Props> = ({
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
+      <Tooltip title={<FormattedMessage id='pages.button.edit' defaultMessage='Edit' />}>
         {buttonType === 'icon' ? (
-          <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
+          <Button shape='circle' icon={<FormOutlined />} size='small' onClick={onEdit} />
         ) : (
           <Button onClick={onEdit}>
-            <FormattedMessage id="pages.button.edit" defaultMessage="Edit" />
+            <FormattedMessage id='pages.button.edit' defaultMessage='Edit' />
           </Button>
         )}
       </Tooltip>
@@ -109,11 +109,11 @@ const ProcessExchangeEdit: FC<Props> = ({
         getContainer={() => document.body}
         title={
           <FormattedMessage
-            id="pages.process.exchange.drawer.title.edit"
-            defaultMessage="Edit exchange"
+            id='pages.process.exchange.drawer.title.edit'
+            defaultMessage='Edit exchange'
           />
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={
           <Button
@@ -128,10 +128,10 @@ const ProcessExchangeEdit: FC<Props> = ({
         footer={
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
-              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
             </Button>
-            <Button onClick={() => formRefEdit.current?.submit()} type="primary">
-              <FormattedMessage id="pages.button.save" defaultMessage="Save" />
+            <Button onClick={() => formRefEdit.current?.submit()} type='primary'>
+              <FormattedMessage id='pages.button.save' defaultMessage='Save' />
             </Button>
           </Space>
         }
@@ -163,15 +163,15 @@ const ProcessExchangeEdit: FC<Props> = ({
             return true;
           }}
         >
-          <Space direction="vertical" style={{ width: '100%' }}>
+          <Space direction='vertical' style={{ width: '100%' }}>
             <Form.Item name={'@dataSetInternalID'} hidden>
               <Input />
             </Form.Item>
             <Form.Item
               label={
                 <FormattedMessage
-                  id="pages.process.view.exchange.exchangeDirection"
-                  defaultMessage="Exchange direction"
+                  id='pages.process.view.exchange.exchangeDirection'
+                  defaultMessage='Exchange direction'
                 />
               }
               name={'exchangeDirection'}
@@ -179,11 +179,11 @@ const ProcessExchangeEdit: FC<Props> = ({
               <Select
                 placeholder={
                   <FormattedMessage
-                    id="pages.process.view.exchange.selectadirection"
-                    defaultMessage="Select a direction"
+                    id='pages.process.view.exchange.selectadirection'
+                    defaultMessage='Select a direction'
                   />
                 }
-                optionFilterProp="direction"
+                optionFilterProp='direction'
                 options={[
                   { value: 'input', label: 'Input' },
                   { value: 'output', label: 'Output' },
@@ -198,8 +198,8 @@ const ProcessExchangeEdit: FC<Props> = ({
                 name={['referenceToFlowDataSet']}
                 label={
                   <FormattedMessage
-                    id="pages.process.view.exchange.referenceToFlowDataSet"
-                    defaultMessage="Flow"
+                    id='pages.process.view.exchange.referenceToFlowDataSet'
+                    defaultMessage='Flow'
                   />
                 }
                 lang={lang}
@@ -212,8 +212,8 @@ const ProcessExchangeEdit: FC<Props> = ({
             <Form.Item
               label={
                 <FormattedMessage
-                  id="pages.process.view.exchange.meanAmount"
-                  defaultMessage="Mean amount"
+                  id='pages.process.view.exchange.meanAmount'
+                  defaultMessage='Mean amount'
                 />
               }
               name={'meanAmount'}
@@ -228,8 +228,8 @@ const ProcessExchangeEdit: FC<Props> = ({
             <Form.Item
               label={
                 <FormattedMessage
-                  id="pages.process.view.exchange.resultingAmount"
-                  defaultMessage="Resulting amount"
+                  id='pages.process.view.exchange.resultingAmount'
+                  defaultMessage='Resulting amount'
                 />
               }
               name={'resultingAmount'}
@@ -245,8 +245,8 @@ const ProcessExchangeEdit: FC<Props> = ({
             <Form.Item
               label={
                 <FormattedMessage
-                  id="processExchange.uncertaintyDistributionType"
-                  defaultMessage="Uncertainty distribution type"
+                  id='processExchange.uncertaintyDistributionType'
+                  defaultMessage='Uncertainty distribution type'
                 />
               }
               name={'uncertaintyDistributionType'}
@@ -267,8 +267,8 @@ const ProcessExchangeEdit: FC<Props> = ({
                 <Form.Item
                   label={
                     <FormattedMessage
-                      id="processExchange.minimumAmount"
-                      defaultMessage="Minimum amount"
+                      id='processExchange.minimumAmount'
+                      defaultMessage='Minimum amount'
                     />
                   }
                   name={'minimumAmount'}
@@ -278,8 +278,8 @@ const ProcessExchangeEdit: FC<Props> = ({
                 <Form.Item
                   label={
                     <FormattedMessage
-                      id="processExchange.maximumAmount"
-                      defaultMessage="Maximum amount"
+                      id='processExchange.maximumAmount'
+                      defaultMessage='Maximum amount'
                     />
                   }
                   name={'maximumAmount'}
@@ -297,8 +297,8 @@ const ProcessExchangeEdit: FC<Props> = ({
                 <Form.Item
                   label={
                     <FormattedMessage
-                      id="processExchange.relativeStandardDeviation95In"
-                      defaultMessage="Relative standard deviation 95 in"
+                      id='processExchange.relativeStandardDeviation95In'
+                      defaultMessage='Relative standard deviation 95 in'
                     />
                   }
                   name={'relativeStandardDeviation95In'}
@@ -313,43 +313,43 @@ const ProcessExchangeEdit: FC<Props> = ({
             <Form.Item
               label={
                 <FormattedMessage
-                  id="pages.process.view.exchange.dataDerivationTypeStatus"
-                  defaultMessage="Data derivation type / status"
+                  id='pages.process.view.exchange.dataDerivationTypeStatus'
+                  defaultMessage='Data derivation type / status'
                 />
               }
               name={'dataDerivationTypeStatus'}
             >
               <Select options={DataDerivationTypeStatusOptions} />
             </Form.Item>
-            <Divider orientationMargin="0" orientation="left" plain>
+            <Divider orientationMargin='0' orientation='left' plain>
               <FormattedMessage
-                id="pages.process.view.exchange.generalComment"
-                defaultMessage="Comment"
+                id='pages.process.view.exchange.generalComment'
+                defaultMessage='Comment'
               />
             </Divider>
             <LangTextItemForm
-              name="generalComment"
+              name='generalComment'
               label={
                 <FormattedMessage
-                  id="pages.process.view.exchange.generalComment"
-                  defaultMessage="Comment"
+                  id='pages.process.view.exchange.generalComment'
+                  defaultMessage='Comment'
                 />
               }
             />
             <Card
-              size="small"
+              size='small'
               title={
                 <FormattedMessage
-                  id="pages.process.view.exchange.quantitativeReference"
-                  defaultMessage="Quantitative reference"
+                  id='pages.process.view.exchange.quantitativeReference'
+                  defaultMessage='Quantitative reference'
                 />
               }
             >
               <Form.Item
                 label={
                   <FormattedMessage
-                    id="pages.process.view.exchange.referenceToReferenceFlow"
-                    defaultMessage="Reference flow(s)"
+                    id='pages.process.view.exchange.referenceToReferenceFlow'
+                    defaultMessage='Reference flow(s)'
                   />
                 }
                 name={'quantitativeReference'}
@@ -358,18 +358,18 @@ const ProcessExchangeEdit: FC<Props> = ({
               </Form.Item>
               {functionalUnitOrOther ? (
                 <>
-                  <Divider orientationMargin="0" orientation="left" plain>
+                  <Divider orientationMargin='0' orientation='left' plain>
                     <FormattedMessage
-                      id="pages.process.view.exchange.functionalUnitOrOther"
-                      defaultMessage="Functional unit, Production period, or Other parameter"
+                      id='pages.process.view.exchange.functionalUnitOrOther'
+                      defaultMessage='Functional unit, Production period, or Other parameter'
                     />
                   </Divider>
                   <LangTextItemForm
-                    name="functionalUnitOrOther"
+                    name='functionalUnitOrOther'
                     label={
                       <FormattedMessage
-                        id="pages.process.view.exchange.functionalUnitOrOther"
-                        defaultMessage="Functional unit, Production period, or Other parameter"
+                        id='pages.process.view.exchange.functionalUnitOrOther'
+                        defaultMessage='Functional unit, Production period, or Other parameter'
                       />
                     }
                   />

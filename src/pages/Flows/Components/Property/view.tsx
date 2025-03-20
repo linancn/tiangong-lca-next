@@ -24,12 +24,12 @@ const PropertyView: FC<Props> = ({ id, data, lang, buttonType }) => {
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="pages.button.view" defaultMessage="View Exchange" />}>
+      <Tooltip title={<FormattedMessage id='pages.button.view' defaultMessage='View Exchange' />}>
         {buttonType === 'icon' ? (
-          <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
+          <Button shape='circle' icon={<ProfileOutlined />} size='small' onClick={onView} />
         ) : (
           <Button onClick={onView}>
-            <FormattedMessage id="pages.button.view" defaultMessage="View" />
+            <FormattedMessage id='pages.button.view' defaultMessage='View' />
           </Button>
         )}
       </Tooltip>
@@ -37,11 +37,11 @@ const PropertyView: FC<Props> = ({ id, data, lang, buttonType }) => {
         getContainer={() => document.body}
         title={
           <FormattedMessage
-            id="pages.process.exchange.drawer.title.view"
-            defaultMessage="View Exchange"
+            id='pages.process.exchange.drawer.title.view'
+            defaultMessage='View Exchange'
           />
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={
           <Button
@@ -60,8 +60,8 @@ const PropertyView: FC<Props> = ({ id, data, lang, buttonType }) => {
           lang={lang}
           title={
             <FormattedMessage
-              id="pages.flow.view.flowProperties.referenceToFlowPropertyDataSet"
-              defaultMessage="Flow property"
+              id='pages.flow.view.flowProperties.referenceToFlowPropertyDataSet'
+              defaultMessage='Flow property'
             />
           }
         />
@@ -71,8 +71,8 @@ const PropertyView: FC<Props> = ({ id, data, lang, buttonType }) => {
             key={0}
             label={
               <FormattedMessage
-                id="pages.flow.view.flowProperties.meanValue"
-                defaultMessage="Mean value (of flow property)"
+                id='pages.flow.view.flowProperties.meanValue'
+                defaultMessage='Mean value (of flow property)'
               />
             }
             styles={{ label: { width: '230px' } }}
@@ -86,8 +86,8 @@ const PropertyView: FC<Props> = ({ id, data, lang, buttonType }) => {
             key={0}
             label={
               <FormattedMessage
-                id="pages.process.view.exchange.quantitativeReference"
-                defaultMessage="Quantitative reference"
+                id='pages.process.view.exchange.quantitativeReference'
+                defaultMessage='Quantitative reference'
               />
             }
             labelStyle={{ width: '220px' }}

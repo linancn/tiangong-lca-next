@@ -50,14 +50,14 @@ const LifeCycleModelEdit: FC<Props> = ({ id, version, buttonType, lang, actionRe
   return (
     <>
       {buttonType === 'icon' ? (
-        <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
-          <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
+        <Tooltip title={<FormattedMessage id='pages.button.edit' defaultMessage='Edit' />}>
+          <Button shape='circle' icon={<FormOutlined />} size='small' onClick={onEdit} />
         </Tooltip>
       ) : (
         <Button onClick={onEdit}>
           <FormattedMessage
             id={buttonType ? buttonType : 'pages.button.edit'}
-            defaultMessage="Edit"
+            defaultMessage='Edit'
           />
         </Button>
       )}
@@ -69,7 +69,7 @@ const LifeCycleModelEdit: FC<Props> = ({ id, version, buttonType, lang, actionRe
             defaultMessage={'Edit Model'}
           />
         }
-        width="100%"
+        width='100%'
         closable={false}
         extra={
           <Button
@@ -112,7 +112,7 @@ const LifeCycleModelEdit: FC<Props> = ({ id, version, buttonType, lang, actionRe
                   }}
                 />
                 <Grid
-                  type="dot"
+                  type='dot'
                   options={{
                     color: '#595959',
                     thickness: 1,
@@ -121,7 +121,7 @@ const LifeCycleModelEdit: FC<Props> = ({ id, version, buttonType, lang, actionRe
                 <Transform resizing rotating />
               </Content>
             </Layout>
-            <Sider width="50px" style={siderStyle}>
+            <Sider width='50px' style={siderStyle}>
               <ToolbarEdit
                 id={id ?? ''}
                 version={version ?? ''}

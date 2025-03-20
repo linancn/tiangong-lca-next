@@ -5,8 +5,8 @@ export const publicationTypeOptions = [
     value: 'Undefined',
     label: (
       <FormattedMessage
-        id="pages.source.view.sourceInformation.publicationType.undefined"
-        defaultMessage="Undefined"
+        id='pages.source.view.sourceInformation.publicationType.undefined'
+        defaultMessage='Undefined'
       />
     ),
   },
@@ -14,8 +14,8 @@ export const publicationTypeOptions = [
     value: 'Article in periodical',
     label: (
       <FormattedMessage
-        id="pages.source.view.sourceInformation.publicationType.articleInPeriodical"
-        defaultMessage="Article in periodical"
+        id='pages.source.view.sourceInformation.publicationType.articleInPeriodical'
+        defaultMessage='Article in periodical'
       />
     ),
   },
@@ -23,8 +23,8 @@ export const publicationTypeOptions = [
     value: 'Chapter in anthology',
     label: (
       <FormattedMessage
-        id="pages.source.view.sourceInformation.publicationType.chapterInAnthology"
-        defaultMessage="Chapter in anthology"
+        id='pages.source.view.sourceInformation.publicationType.chapterInAnthology'
+        defaultMessage='Chapter in anthology'
       />
     ),
   },
@@ -32,8 +32,8 @@ export const publicationTypeOptions = [
     value: 'Monograph',
     label: (
       <FormattedMessage
-        id="pages.source.view.sourceInformation.publicationType.monograph"
-        defaultMessage="Monograph"
+        id='pages.source.view.sourceInformation.publicationType.monograph'
+        defaultMessage='Monograph'
       />
     ),
   },
@@ -41,8 +41,8 @@ export const publicationTypeOptions = [
     value: 'Direct measurement',
     label: (
       <FormattedMessage
-        id="pages.source.view.sourceInformation.publicationType.directMeasurement"
-        defaultMessage="Direct measurement"
+        id='pages.source.view.sourceInformation.publicationType.directMeasurement'
+        defaultMessage='Direct measurement'
       />
     ),
   },
@@ -50,8 +50,8 @@ export const publicationTypeOptions = [
     value: 'Oral communication',
     label: (
       <FormattedMessage
-        id="pages.source.view.sourceInformation.publicationType.oralCommunication"
-        defaultMessage="Oral communication"
+        id='pages.source.view.sourceInformation.publicationType.oralCommunication'
+        defaultMessage='Oral communication'
       />
     ),
   },
@@ -59,8 +59,8 @@ export const publicationTypeOptions = [
     value: 'Personal written communication',
     label: (
       <FormattedMessage
-        id="pages.source.view.sourceInformation.publicationType.personalWrittenCommunication"
-        defaultMessage="Personal written communication"
+        id='pages.source.view.sourceInformation.publicationType.personalWrittenCommunication'
+        defaultMessage='Personal written communication'
       />
     ),
   },
@@ -68,8 +68,8 @@ export const publicationTypeOptions = [
     value: 'Questionnaire',
     label: (
       <FormattedMessage
-        id="pages.source.view.sourceInformation.publicationType.questionnaire"
-        defaultMessage="Questionnaire"
+        id='pages.source.view.sourceInformation.publicationType.questionnaire'
+        defaultMessage='Questionnaire'
       />
     ),
   },
@@ -77,8 +77,8 @@ export const publicationTypeOptions = [
     value: 'Software or database',
     label: (
       <FormattedMessage
-        id="pages.source.view.sourceInformation.publicationType.softwareOrDatabase"
-        defaultMessage="Software or database"
+        id='pages.source.view.sourceInformation.publicationType.softwareOrDatabase'
+        defaultMessage='Software or database'
       />
     ),
   },
@@ -86,8 +86,8 @@ export const publicationTypeOptions = [
     value: 'Other unpublished and grey literature',
     label: (
       <FormattedMessage
-        id="pages.source.view.sourceInformation.publicationType.otherUnpublishedAndGreyLiterature"
-        defaultMessage="Other unpublished and grey literature"
+        id='pages.source.view.sourceInformation.publicationType.otherUnpublishedAndGreyLiterature'
+        defaultMessage='Other unpublished and grey literature'
       />
     ),
   },

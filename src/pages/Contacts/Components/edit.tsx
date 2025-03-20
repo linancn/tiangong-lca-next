@@ -76,14 +76,14 @@ const ContactEdit: FC<Props> = ({
   return (
     <>
       {buttonType === 'icon' ? (
-        <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
-          <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
+        <Tooltip title={<FormattedMessage id='pages.button.edit' defaultMessage='Edit' />}>
+          <Button shape='circle' icon={<FormOutlined />} size='small' onClick={onEdit} />
         </Tooltip>
       ) : (
         <Button onClick={onEdit}>
           <FormattedMessage
             id={buttonType.trim().length > 0 ? buttonType : 'pages.button.edit'}
-            defaultMessage="Edit"
+            defaultMessage='Edit'
           />
         </Button>
       )}
@@ -92,9 +92,9 @@ const ContactEdit: FC<Props> = ({
         destroyOnClose={true}
         getContainer={() => document.body}
         title={
-          <FormattedMessage id="pages.contact.drawer.title.edit" defaultMessage="Edit Contact" />
+          <FormattedMessage id='pages.contact.drawer.title.edit' defaultMessage='Edit Contact' />
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={
           <Button
@@ -114,18 +114,18 @@ const ContactEdit: FC<Props> = ({
               }}
             >
               <FormattedMessage
-                id="pages.button.updateReference"
-                defaultMessage="Update reference"
+                id='pages.button.updateReference'
+                defaultMessage='Update reference'
               />
             </Button>
             <Button onClick={() => setDrawerVisible(false)}>
-              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
             </Button>
             {/* <Button onClick={onReset}>
               <FormattedMessage id="pages.button.reset" defaultMessage="Reset" />
             </Button> */}
-            <Button onClick={() => formRefEdit.current?.submit()} type="primary">
-              <FormattedMessage id="pages.button.save" defaultMessage="Save" />
+            <Button onClick={() => formRefEdit.current?.submit()} type='primary'>
+              <FormattedMessage id='pages.button.save' defaultMessage='Save' />
             </Button>
           </Space>
         }

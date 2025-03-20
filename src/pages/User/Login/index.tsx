@@ -25,7 +25,7 @@ const LoginMessage: React.FC<{
       marginBottom: 24,
     }}
     message={content}
-    type="error"
+    type='error'
     showIcon
   />
 );
@@ -33,14 +33,14 @@ const LoginMessage: React.FC<{
 const { Link } = Typography;
 
 const termsOfServiceLink = (
-  <Link href="/terms_of_use.html" target="_blank" rel="noopener noreferrer">
-    <FormattedMessage id="pages.login.termsOfUse" defaultMessage="Terms of Use" />
+  <Link href='/terms_of_use.html' target='_blank' rel='noopener noreferrer'>
+    <FormattedMessage id='pages.login.termsOfUse' defaultMessage='Terms of Use' />
   </Link>
 );
 
 const privacyPolicyLink = (
-  <Link href="/privacy_notice.html" target="_blank" rel="noopener noreferrer">
-    <FormattedMessage id="pages.login.privacyNotice" defaultMessage="Privacy Notice" />
+  <Link href='/privacy_notice.html' target='_blank' rel='noopener noreferrer'>
+    <FormattedMessage id='pages.login.privacyNotice' defaultMessage='Privacy Notice' />
   </Link>
 );
 
@@ -176,10 +176,10 @@ const Login: React.FC = () => {
               <LoginForm
                 formRef={formRefLogin}
                 logo={isDarkMode ? '/logo_dark.svg' : Settings.logo}
-                title={<FormattedMessage id="pages.login.title" defaultMessage="TianGong LCA" />}
+                title={<FormattedMessage id='pages.login.title' defaultMessage='TianGong LCA' />}
                 subTitle={
                   <FormattedMessage
-                    id="pages.login.subTitle"
+                    id='pages.login.subTitle'
                     defaultMessage="World\'s Largest Open & Free LCA Database"
                   />
                 }
@@ -239,7 +239,7 @@ const Login: React.FC = () => {
                 {type === 'login' && (
                   <>
                     <ProFormText
-                      name="email"
+                      name='email'
                       fieldProps={{
                         size: 'middle',
                         prefix: <MailOutlined />,
@@ -253,8 +253,8 @@ const Login: React.FC = () => {
                           type: 'email',
                           message: (
                             <FormattedMessage
-                              id="pages.login.email.wrong-format"
-                              defaultMessage="The email format is incorrect!"
+                              id='pages.login.email.wrong-format'
+                              defaultMessage='The email format is incorrect!'
                             />
                           ),
                         },
@@ -262,15 +262,15 @@ const Login: React.FC = () => {
                           required: true,
                           message: (
                             <FormattedMessage
-                              id="pages.login.email.required"
-                              defaultMessage="Please input your email!"
+                              id='pages.login.email.required'
+                              defaultMessage='Please input your email!'
                             />
                           ),
                         },
                       ]}
                     />
                     <ProFormText.Password
-                      name="password"
+                      name='password'
                       fieldProps={{
                         size: 'middle',
                         prefix: <LockOutlined />,
@@ -284,8 +284,8 @@ const Login: React.FC = () => {
                           required: true,
                           message: (
                             <FormattedMessage
-                              id="pages.login.password.required"
-                              defaultMessage="Please input your password!"
+                              id='pages.login.password.required'
+                              defaultMessage='Please input your password!'
                             />
                           ),
                         },
@@ -296,21 +296,21 @@ const Login: React.FC = () => {
                         marginBottom: 24,
                       }}
                     >
-                      <ProFormCheckbox noStyle name="autoLogin">
+                      <ProFormCheckbox noStyle name='autoLogin'>
                         <FormattedMessage
-                          id="pages.login.rememberMe"
-                          defaultMessage="Remember me"
+                          id='pages.login.rememberMe'
+                          defaultMessage='Remember me'
                         />
                       </ProFormCheckbox>
                       <a
                         style={{
                           float: 'right',
                         }}
-                        href="/user/login/password_forgot"
+                        href='/user/login/password_forgot'
                       >
                         <FormattedMessage
-                          id="pages.login.forgotPassword"
-                          defaultMessage="Forgot password"
+                          id='pages.login.forgotPassword'
+                          defaultMessage='Forgot password'
                         />
                       </a>
                     </div>
@@ -319,7 +319,7 @@ const Login: React.FC = () => {
                 {type === 'register' && (
                   <>
                     <ProFormText
-                      name="email"
+                      name='email'
                       fieldProps={{
                         size: 'middle',
                         prefix: <MailOutlined />,
@@ -333,8 +333,8 @@ const Login: React.FC = () => {
                           type: 'email',
                           message: (
                             <FormattedMessage
-                              id="pages.login.email.wrong-format"
-                              defaultMessage="The email format is incorrect!"
+                              id='pages.login.email.wrong-format'
+                              defaultMessage='The email format is incorrect!'
                             />
                           ),
                         },
@@ -342,22 +342,22 @@ const Login: React.FC = () => {
                           required: true,
                           message: (
                             <FormattedMessage
-                              id="pages.login.email.required"
-                              defaultMessage="Please input your email!"
+                              id='pages.login.email.required'
+                              defaultMessage='Please input your email!'
                             />
                           ),
                         },
                       ]}
                     />
                     <ProFormText.Password
-                      name="password"
+                      name='password'
                       fieldProps={{
                         size: 'middle',
                         prefix: <LockOutlined />,
                         strengthText: (
                           <FormattedMessage
-                            id="pages.login.password.strengthText"
-                            defaultMessage="Password must contain at least 8 characters, including lowercase and uppercase letters, digits, and symbols."
+                            id='pages.login.password.strengthText'
+                            defaultMessage='Password must contain at least 8 characters, including lowercase and uppercase letters, digits, and symbols.'
                           />
                         ),
                         statusRender: (value) => {
@@ -375,8 +375,8 @@ const Login: React.FC = () => {
                             return (
                               <div style={{ color: token.colorWarning }}>
                                 <FormattedMessage
-                                  id="pages.login.password.strengthMedium"
-                                  defaultMessage="Medium"
+                                  id='pages.login.password.strengthMedium'
+                                  defaultMessage='Medium'
                                 />
                               </div>
                             );
@@ -385,8 +385,8 @@ const Login: React.FC = () => {
                             return (
                               <div style={{ color: token.colorSuccess }}>
                                 <FormattedMessage
-                                  id="pages.login.password.strengthStrong"
-                                  defaultMessage="Strong"
+                                  id='pages.login.password.strengthStrong'
+                                  defaultMessage='Strong'
                                 />
                               </div>
                             );
@@ -394,8 +394,8 @@ const Login: React.FC = () => {
                           return (
                             <div style={{ color: token.colorError }}>
                               <FormattedMessage
-                                id="pages.login.password.strengthWeak"
-                                defaultMessage="Weak"
+                                id='pages.login.password.strengthWeak'
+                                defaultMessage='Weak'
                               />
                             </div>
                           );
@@ -410,8 +410,8 @@ const Login: React.FC = () => {
                           required: true,
                           message: (
                             <FormattedMessage
-                              id="pages.login.password.required"
-                              defaultMessage="Please input your password!"
+                              id='pages.login.password.required'
+                              defaultMessage='Please input your password!'
                             />
                           ),
                         },
@@ -420,8 +420,8 @@ const Login: React.FC = () => {
                             /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?])[a-zA-Z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]{8,}$/,
                           message: (
                             <FormattedMessage
-                              id="pages.login.password.validation"
-                              defaultMessage="Password is invalid!"
+                              id='pages.login.password.validation'
+                              defaultMessage='Password is invalid!'
                             />
                           ),
                         },
@@ -429,7 +429,7 @@ const Login: React.FC = () => {
                       hasFeedback
                     />
                     <ProFormText.Password
-                      name="confirmPassword"
+                      name='confirmPassword'
                       fieldProps={{
                         size: 'middle',
                         prefix: <LockOutlined />,
@@ -445,8 +445,8 @@ const Login: React.FC = () => {
                           required: true,
                           message: (
                             <FormattedMessage
-                              id="pages.login.confirmPassword.required"
-                              defaultMessage="Please confirm your password!"
+                              id='pages.login.confirmPassword.required'
+                              defaultMessage='Please confirm your password!'
                             />
                           ),
                         },
@@ -475,8 +475,8 @@ const Login: React.FC = () => {
                       }}
                     >
                       <FormattedMessage
-                        id="pages.login.terms"
-                        defaultMessage="By signing up, you agree to our {termsOfService} and {privacyPolicy}."
+                        id='pages.login.terms'
+                        defaultMessage='By signing up, you agree to our {termsOfService} and {privacyPolicy}.'
                         values={{
                           termsOfService: termsOfServiceLink,
                           privacyPolicy: privacyPolicyLink,
@@ -490,8 +490,8 @@ const Login: React.FC = () => {
                     >
                       <Button
                         block
-                        type="primary"
-                        size="large"
+                        type='primary'
+                        size='large'
                         loading={loading}
                         disabled={sendComplete}
                         onClick={async () => {
@@ -500,8 +500,8 @@ const Login: React.FC = () => {
                         }}
                       >
                         <FormattedMessage
-                          id="pages.login.register.submit"
-                          defaultMessage="Sign Up"
+                          id='pages.login.register.submit'
+                          defaultMessage='Sign Up'
                         />
                       </Button>
                     </div>

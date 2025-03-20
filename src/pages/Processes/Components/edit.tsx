@@ -145,14 +145,14 @@ const ProcessEdit: FC<Props> = ({
     <>
       {buttonType === 'tool' ? (
         <Tooltip
-          title={<FormattedMessage id="pages.button.model.result" defaultMessage="Model result" />}
-          placement="left"
+          title={<FormattedMessage id='pages.button.model.result' defaultMessage='Model result' />}
+          placement='left'
         >
           <Button
             disabled={id === ''}
-            type="primary"
+            type='primary'
             icon={<ProductOutlined />}
-            size="small"
+            size='small'
             style={{ boxShadow: 'none' }}
             onClick={onEdit}
           />
@@ -160,7 +160,7 @@ const ProcessEdit: FC<Props> = ({
       ) : (
         <Tooltip title={<FormattedMessage id={'pages.button.edit'} defaultMessage={'Edit'} />}>
           {buttonType === 'icon' ? (
-            <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
+            <Button shape='circle' icon={<FormOutlined />} size='small' onClick={onEdit} />
           ) : (
             <Button onClick={onEdit}>
               <FormattedMessage id={'pages.button.edit'} defaultMessage={'Edit'} />
@@ -176,7 +176,7 @@ const ProcessEdit: FC<Props> = ({
             defaultMessage={'Edit process'}
           />
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={
           <Button
@@ -192,7 +192,7 @@ const ProcessEdit: FC<Props> = ({
           <Space size={'middle'} className={styles.footer_right}>
             <>
               <Button onClick={() => {}}>
-                <FormattedMessage id="pages.button.review" defaultMessage="Submit for review" />
+                <FormattedMessage id='pages.button.review' defaultMessage='Submit for review' />
               </Button>
               <Button
                 onClick={() => {
@@ -200,21 +200,21 @@ const ProcessEdit: FC<Props> = ({
                 }}
               >
                 <FormattedMessage
-                  id="pages.button.updateReference"
-                  defaultMessage="Update reference"
+                  id='pages.button.updateReference'
+                  defaultMessage='Update reference'
                 />
               </Button>
             </>
             <Button onClick={() => setDrawerVisible(false)}>
-              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
             </Button>
             {/* <Button onClick={onReset}>
               {' '}
               <FormattedMessage id="pages.button.reset" defaultMessage="Reset" />
             </Button> */}
 
-            <Button onClick={() => formRefEdit.current?.submit()} type="primary">
-              <FormattedMessage id="pages.button.save" defaultMessage="Save" />
+            <Button onClick={() => formRefEdit.current?.submit()} type='primary'>
+              <FormattedMessage id='pages.button.save' defaultMessage='Save' />
             </Button>
           </Space>
         }
@@ -266,7 +266,7 @@ const ProcessEdit: FC<Props> = ({
                 onTabChange={onTabChange}
                 exchangeDataSource={exchangeDataSource}
               />
-              <Form.Item name="id" hidden>
+              <Form.Item name='id' hidden>
                 <Input />
               </Form.Item>
             </ProForm>

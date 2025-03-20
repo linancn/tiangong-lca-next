@@ -13,8 +13,8 @@ type Props = {
 const FlowsSelectDescription: FC<Props> = ({ title, data, lang }) => {
   const locale = getLocale();
   return (
-    <Card size="small" title={title}>
-      <Space direction="horizontal">
+    <Card size='small' title={title}>
+      <Space direction='horizontal'>
         <Descriptions
           bordered
           size={'small'}
@@ -25,8 +25,8 @@ const FlowsSelectDescription: FC<Props> = ({ title, data, lang }) => {
             key={0}
             label={
               <FormattedMessage
-                id="pages.process.view.exchange.refObjectId"
-                defaultMessage="Ref object id"
+                id='pages.process.view.exchange.refObjectId'
+                defaultMessage='Ref object id'
               />
             }
             labelStyle={{ width: locale === 'zh-CN' ? '160px' : '240px' }}
@@ -39,7 +39,7 @@ const FlowsSelectDescription: FC<Props> = ({ title, data, lang }) => {
             id={data?.['@refObjectId']}
             version={data?.['@version']}
             lang={lang}
-            buttonType="text"
+            buttonType='text'
           />
         )}
       </Space>
@@ -70,10 +70,10 @@ const FlowsSelectDescription: FC<Props> = ({ title, data, lang }) => {
           {data?.['@version'] ?? '-'}
         </Descriptions.Item>
       </Descriptions> */}
-      <Divider orientationMargin="0" orientation="left" plain>
+      <Divider orientationMargin='0' orientation='left' plain>
         <FormattedMessage
-          id="pages.process.view.exchange.shortDescription"
-          defaultMessage="Short description"
+          id='pages.process.view.exchange.shortDescription'
+          defaultMessage='Short description'
         />
       </Divider>
       <LangTextItemDescription data={data?.['common:shortDescription']} />

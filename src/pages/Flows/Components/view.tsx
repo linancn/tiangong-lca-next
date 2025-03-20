@@ -44,15 +44,15 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
     {
       key: 'flowInformation',
       tab: (
-        <FormattedMessage id="pages.flow.view.flowInformation" defaultMessage="Flow information" />
+        <FormattedMessage id='pages.flow.view.flowInformation' defaultMessage='Flow information' />
       ),
     },
     {
       key: 'modellingAndValidation',
       tab: (
         <FormattedMessage
-          id="pages.flow.view.modellingAndValidation"
-          defaultMessage="Modelling and validation"
+          id='pages.flow.view.modellingAndValidation'
+          defaultMessage='Modelling and validation'
         />
       ),
     },
@@ -60,14 +60,14 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
       key: 'administrativeInformation',
       tab: (
         <FormattedMessage
-          id="pages.flow.view.administrativeInformation"
-          defaultMessage="Administrative information"
+          id='pages.flow.view.administrativeInformation'
+          defaultMessage='Administrative information'
         />
       ),
     },
     {
       key: 'flowProperties',
-      tab: <FormattedMessage id="pages.flow.view.flowProperty" defaultMessage="Flow property" />,
+      tab: <FormattedMessage id='pages.flow.view.flowProperty' defaultMessage='Flow property' />,
     },
   ];
 
@@ -89,7 +89,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
 
   const propertyColumns: ProColumns<FlowpropertyTabTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
+      title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
       dataIndex: 'index',
       valueType: 'index',
       search: false,
@@ -97,8 +97,8 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
     {
       title: (
         <FormattedMessage
-          id="pages.flow.view.flowProperties.referenceToFlowPropertyDataSet"
-          defaultMessage="Flow property"
+          id='pages.flow.view.flowProperties.referenceToFlowPropertyDataSet'
+          defaultMessage='Flow property'
         />
       ),
       dataIndex: 'referenceToFlowPropertyDataSet',
@@ -108,8 +108,8 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
     {
       title: (
         <FormattedMessage
-          id="pages.flow.view.flowProperties.meanValue"
-          defaultMessage="Mean value (of flow property)"
+          id='pages.flow.view.flowProperties.meanValue'
+          defaultMessage='Mean value (of flow property)'
         />
       ),
       dataIndex: 'meanValue',
@@ -119,8 +119,8 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
     {
       title: (
         <FormattedMessage
-          id="pages.flowproperty.referenceToReferenceUnitGroup"
-          defaultMessage="Reference unit"
+          id='pages.flowproperty.referenceToReferenceUnitGroup'
+          defaultMessage='Reference unit'
         />
       ),
       dataIndex: 'refUnitGroup',
@@ -138,7 +138,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
           <span key={1}>
             {getLangText(row.refUnitRes?.name, lang)} (
             <Tooltip
-              placement="topLeft"
+              placement='topLeft'
               title={getLangText(row.refUnitRes?.refUnitGeneralComment, lang)}
             >
               {row.refUnitRes?.refUnitName}
@@ -151,8 +151,8 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
     {
       title: (
         <FormattedMessage
-          id="pages.process.exchange.quantitativeReference"
-          defaultMessage="Quantitative reference"
+          id='pages.process.exchange.quantitativeReference'
+          defaultMessage='Quantitative reference'
         />
       ),
       dataIndex: 'quantitativeReference',
@@ -163,7 +163,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
       },
     },
     {
-      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
+      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
@@ -203,7 +203,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
             key={0}
-            label={<FormattedMessage id="pages.flow.view.flowInformation.id" defaultMessage="ID" />}
+            label={<FormattedMessage id='pages.flow.view.flowInformation.id' defaultMessage='ID' />}
             labelStyle={{ width: '100px' }}
           >
             {initData?.flowInformation?.dataSetInformation?.['common:UUID'] ?? '-'}
@@ -211,25 +211,25 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
         </Descriptions>
         <br />
         <Card
-          size="small"
+          size='small'
           title={
-            <FormattedMessage id="pages.flow.view.flowInformation.name" defaultMessage="Name" />
+            <FormattedMessage id='pages.flow.view.flowInformation.name' defaultMessage='Name' />
           }
         >
-          <Divider orientationMargin="0" orientation="left" plain>
+          <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
-              id="pages.flow.view.flowInformation.baseName"
-              defaultMessage="Base name"
+              id='pages.flow.view.flowInformation.baseName'
+              defaultMessage='Base name'
             />
           </Divider>
           <LangTextItemDescription
             data={initData?.flowInformation?.dataSetInformation?.['name']?.['baseName']}
           />
           <br />
-          <Divider orientationMargin="0" orientation="left" plain>
+          <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
-              id="pages.flow.view.flowInformation.treatmentStandardsRoutes"
-              defaultMessage="Treatment, standards, routes"
+              id='pages.flow.view.flowInformation.treatmentStandardsRoutes'
+              defaultMessage='Treatment, standards, routes'
             />
           </Divider>
           <LangTextItemDescription
@@ -238,30 +238,30 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
             }
           />
           <br />
-          <Divider orientationMargin="0" orientation="left" plain>
+          <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
-              id="pages.flow.view.flowInformation.mixAndLocationTypes"
-              defaultMessage="Mix and Location Types"
+              id='pages.flow.view.flowInformation.mixAndLocationTypes'
+              defaultMessage='Mix and Location Types'
             />
           </Divider>
           <LangTextItemDescription
             data={initData?.flowInformation?.dataSetInformation?.name?.mixAndLocationTypes ?? '-'}
           />
           <br />
-          <Divider orientationMargin="0" orientation="left" plain>
+          <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
-              id="pages.flow.view.flowInformation.flowProperties"
-              defaultMessage="Quantitative flow properties"
+              id='pages.flow.view.flowInformation.flowProperties'
+              defaultMessage='Quantitative flow properties'
             />
           </Divider>
           <LangTextItemDescription
             data={initData?.flowInformation?.dataSetInformation?.name?.flowProperties ?? '-'}
           />
         </Card>
-        <Divider orientationMargin="0" orientation="left" plain>
+        <Divider orientationMargin='0' orientation='left' plain>
           <FormattedMessage
-            id="pages.flow.view.flowInformation.synonyms"
-            defaultMessage="Synonyms"
+            id='pages.flow.view.flowInformation.synonyms'
+            defaultMessage='Synonyms'
           />
         </Divider>
         <LangTextItemDescription
@@ -269,11 +269,11 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
         />
         <br />
         <Card
-          size="small"
+          size='small'
           title={
             <FormattedMessage
-              id="pages.flow.view.flowInformation.classificationInformation"
-              defaultMessage="Category and classification information"
+              id='pages.flow.view.flowInformation.classificationInformation'
+              defaultMessage='Category and classification information'
             />
           }
         >
@@ -282,8 +282,8 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
               key={0}
               label={
                 <FormattedMessage
-                  id="pages.flow.view.modellingAndValidation.typeOfDataSet"
-                  defaultMessage="Type of flow"
+                  id='pages.flow.view.modellingAndValidation.typeOfDataSet'
+                  defaultMessage='Type of flow'
                 />
               }
               labelStyle={{ width: '160px' }}
@@ -317,8 +317,8 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
             key={0}
             label={
               <FormattedMessage
-                id="pages.flow.view.flowInformation.CASNumber"
-                defaultMessage="CAS Number"
+                id='pages.flow.view.flowInformation.CASNumber'
+                defaultMessage='CAS Number'
               />
             }
             labelStyle={{ width: '140px' }}
@@ -327,10 +327,10 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
           </Descriptions.Item>
         </Descriptions>
 
-        <Divider orientationMargin="0" orientation="left" plain>
+        <Divider orientationMargin='0' orientation='left' plain>
           <FormattedMessage
-            id="pages.flow.view.flowInformation.generalComment"
-            defaultMessage="General comment on data set"
+            id='pages.flow.view.flowInformation.generalComment'
+            defaultMessage='General comment on data set'
           />
         </Divider>
         <LangTextItemDescription
@@ -342,8 +342,8 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
             key={0}
             label={
               <FormattedMessage
-                id="pages.flow.view.flowInformation.ECNumber"
-                defaultMessage="EC Number"
+                id='pages.flow.view.flowInformation.ECNumber'
+                defaultMessage='EC Number'
               />
             }
             labelStyle={{ width: '140px' }}
@@ -362,11 +362,11 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
                     </Descriptions>
                 </Card> */}
         <Card
-          size="small"
+          size='small'
           title={
             <FormattedMessage
-              id="pages.flow.view.flowInformation.geography"
-              defaultMessage="Geography"
+              id='pages.flow.view.flowInformation.geography'
+              defaultMessage='Geography'
             />
           }
         >
@@ -375,8 +375,8 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
             data={initData?.flowInformation?.geography?.locationOfSupply ?? '-'}
             label={
               <FormattedMessage
-                id="pages.flow.view.flowInformation.locationOfSupply"
-                defaultMessage="Location of supply"
+                id='pages.flow.view.flowInformation.locationOfSupply'
+                defaultMessage='Location of supply'
               />
             }
             labelStyle={{ width: '150px' }}
@@ -384,18 +384,18 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
         </Card>
         <br />
         <Card
-          size="small"
+          size='small'
           title={
             <FormattedMessage
-              id="pages.flow.view.flowInformation.technology"
-              defaultMessage="Technological representativeness"
+              id='pages.flow.view.flowInformation.technology'
+              defaultMessage='Technological representativeness'
             />
           }
         >
-          <Divider orientationMargin="0" orientation="left" plain>
+          <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
-              id="pages.flow.view.flowInformation.technologicalApplicability"
-              defaultMessage="Technical purpose of product or waste"
+              id='pages.flow.view.flowInformation.technologicalApplicability'
+              defaultMessage='Technical purpose of product or waste'
             />
           </Divider>
           <LangTextItemDescription
@@ -405,8 +405,8 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
           <SourceSelectDescription
             title={
               <FormattedMessage
-                id="pages.flow.view.flowInformation.referenceToTechnicalSpecification"
-                defaultMessage="Technical specification"
+                id='pages.flow.view.flowInformation.referenceToTechnicalSpecification'
+                defaultMessage='Technical specification'
               />
             }
             data={initData?.flowInformation?.technology?.referenceToTechnicalSpecification ?? '-'}
@@ -449,8 +449,8 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
           }
           title={
             <FormattedMessage
-              id="pages.flow.view.modellingAndValidation.referenceToComplianceSystem"
-              defaultMessage="Compliance system name"
+              id='pages.flow.view.modellingAndValidation.referenceToComplianceSystem'
+              defaultMessage='Compliance system name'
             />
           }
           lang={lang}
@@ -461,8 +461,8 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
             key={0}
             label={
               <FormattedMessage
-                id="pages.flow.view.modellingAndValidation.approvalOfOverallCompliance"
-                defaultMessage="Approval of overall compliance"
+                id='pages.flow.view.modellingAndValidation.approvalOfOverallCompliance'
+                defaultMessage='Approval of overall compliance'
               />
             }
             styles={{ label: { width: '260px' } }}
@@ -481,11 +481,11 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
     administrativeInformation: (
       <>
         <Card
-          size="small"
+          size='small'
           title={
             <FormattedMessage
-              id="pages.flow.view.administrativeInformation.dataEntryBy"
-              defaultMessage="Data entry by"
+              id='pages.flow.view.administrativeInformation.dataEntryBy'
+              defaultMessage='Data entry by'
             />
           }
         >
@@ -494,8 +494,8 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
               key={0}
               label={
                 <FormattedMessage
-                  id="pages.flow.view.administrativeInformation.timeStamp"
-                  defaultMessage="Time stamp (last saved)"
+                  id='pages.flow.view.administrativeInformation.timeStamp'
+                  defaultMessage='Time stamp (last saved)'
                 />
               }
               styles={{ label: { width: '200px' } }}
@@ -510,8 +510,8 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
             }
             title={
               <FormattedMessage
-                id="pages.flow.view.administrativeInformation.referenceToDataSetFormat"
-                defaultMessage="Data set format(s)"
+                id='pages.flow.view.administrativeInformation.referenceToDataSetFormat'
+                defaultMessage='Data set format(s)'
               />
             }
             lang={lang}
@@ -525,8 +525,8 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
             }
             title={
               <FormattedMessage
-                id="pages.flow.view.administrativeInformation.referenceToPersonOrEntityEnteringTheData"
-                defaultMessage="Data entry by:"
+                id='pages.flow.view.administrativeInformation.referenceToPersonOrEntityEnteringTheData'
+                defaultMessage='Data entry by:'
               />
             }
             lang={lang}
@@ -534,11 +534,11 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
         </Card>
         <br />
         <Card
-          size="small"
+          size='small'
           title={
             <FormattedMessage
-              id="pages.flow.view.administrativeInformation.publicationAndOwnership"
-              defaultMessage="Publication and ownership"
+              id='pages.flow.view.administrativeInformation.publicationAndOwnership'
+              defaultMessage='Publication and ownership'
             />
           }
         >
@@ -547,8 +547,8 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
               key={0}
               label={
                 <FormattedMessage
-                  id="pages.flow.view.administrativeInformation.dataSetVersion"
-                  defaultMessage="Data set version"
+                  id='pages.flow.view.administrativeInformation.dataSetVersion'
+                  defaultMessage='Data set version'
                 />
               }
               labelStyle={{ width: '160px' }}
@@ -566,8 +566,8 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
               key={0}
               label={
                 <FormattedMessage
-                  id="pages.flow.view.administrativeInformation.permanentDataSetURI"
-                  defaultMessage="Permanent data set URI"
+                  id='pages.flow.view.administrativeInformation.permanentDataSetURI'
+                  defaultMessage='Permanent data set URI'
                 />
               }
               styles={{ label: { width: '220px' } }}
@@ -586,8 +586,8 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
             }
             title={
               <FormattedMessage
-                id="pages.flow.view.administrativeInformation.referenceToOwnershipOfDataSet"
-                defaultMessage="Owner of data set"
+                id='pages.flow.view.administrativeInformation.referenceToOwnershipOfDataSet'
+                defaultMessage='Owner of data set'
               />
             }
             lang={lang}
@@ -624,19 +624,19 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
     <>
       {/* <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} /> */}
       {buttonType === 'icon' ? (
-        <Tooltip title={<FormattedMessage id="pages.button.view" defaultMessage="View" />}>
-          <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
+        <Tooltip title={<FormattedMessage id='pages.button.view' defaultMessage='View' />}>
+          <Button shape='circle' icon={<ProfileOutlined />} size='small' onClick={onView} />
         </Tooltip>
       ) : (
         <Button onClick={onView}>
-          <FormattedMessage id="pages.button.view" defaultMessage="View" />
+          <FormattedMessage id='pages.button.view' defaultMessage='View' />
         </Button>
       )}
 
       <Drawer
         getContainer={() => document.body}
-        title={<FormattedMessage id="pages.flow.drawer.title.view" defaultMessage="View Flow" />}
-        width="90%"
+        title={<FormattedMessage id='pages.flow.drawer.title.view' defaultMessage='View Flow' />}
+        width='90%'
         closable={false}
         extra={
           <Button

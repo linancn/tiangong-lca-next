@@ -20,7 +20,7 @@ import TeamView from './view';
 
 const { Search } = Input;
 
-const TableList: FC<{ systemUserRole?: 'admin' | 'owner' | 'member' ; showDragSort: boolean }> = ({
+const TableList: FC<{ systemUserRole?: 'admin' | 'owner' | 'member'; showDragSort: boolean }> = ({
   systemUserRole,
   showDragSort = false,
 }) => {
@@ -83,14 +83,14 @@ const TableList: FC<{ systemUserRole?: 'admin' | 'owner' | 'member' ; showDragSo
 
   const teamColumns: ProColumns<TeamTable>[] = [
     {
-      title: <FormattedMessage id="component.allTeams.table.index" defaultMessage="Index" />,
+      title: <FormattedMessage id='component.allTeams.table.index' defaultMessage='Index' />,
       dataIndex: 'index',
       valueType: 'index',
       search: false,
       render: (_) => <span>{_}</span>,
     },
     {
-      title: <FormattedMessage id="component.allTeams.table.name" defaultMessage="Team Name" />,
+      title: <FormattedMessage id='component.allTeams.table.name' defaultMessage='Team Name' />,
       dataIndex: 'title',
       sorter: false,
       search: false,
@@ -98,7 +98,7 @@ const TableList: FC<{ systemUserRole?: 'admin' | 'owner' | 'member' ; showDragSo
     },
     {
       title: (
-        <FormattedMessage id="component.allTeams.table.description" defaultMessage="Description" />
+        <FormattedMessage id='component.allTeams.table.description' defaultMessage='Description' />
       ),
       dataIndex: 'description',
       sorter: false,
@@ -106,14 +106,14 @@ const TableList: FC<{ systemUserRole?: 'admin' | 'owner' | 'member' ; showDragSo
       render: (_, row) => {
         const description = getLangText(row.json.description, lang);
         return (
-          <Tooltip placement="topLeft" title={description}>
+          <Tooltip placement='topLeft' title={description}>
             {description.length > 20 ? `${description.substring(0, 20)}...` : description}
           </Tooltip>
         );
       },
     },
     {
-      title: <FormattedMessage id="component.allTeams.table.contact" defaultMessage="Contact" />,
+      title: <FormattedMessage id='component.allTeams.table.contact' defaultMessage='Contact' />,
       dataIndex: 'ownerEmail',
       sorter: false,
       search: false,
@@ -123,23 +123,28 @@ const TableList: FC<{ systemUserRole?: 'admin' | 'owner' | 'member' ; showDragSo
   if (showDragSort) {
     // Manage teams on homepage
     teamColumns.push({
-      title: <FormattedMessage id="component.allTeams.table.option" defaultMessage="Option" />,
+      title: <FormattedMessage id='component.allTeams.table.option' defaultMessage='Option' />,
       dataIndex: 'option',
       search: false,
       render: (_, record) => (
-        <Space size="small">
-          <TeamView id={record.id} buttonType="icon" />
-          <TeamEdit actionRef={actionRef} id={record.id} buttonType="icon" disabled={systemUserRole !== 'admin' && systemUserRole !== 'owner'} />
+        <Space size='small'>
+          <TeamView id={record.id} buttonType='icon' />
+          <TeamEdit
+            actionRef={actionRef}
+            id={record.id}
+            buttonType='icon'
+            disabled={systemUserRole !== 'admin' && systemUserRole !== 'owner'}
+          />
           <Tooltip
             title={
-              <FormattedMessage id="component.allTeams.table.remove" defaultMessage="Remove" />
+              <FormattedMessage id='component.allTeams.table.remove' defaultMessage='Remove' />
             }
           >
             <Button
               disabled={systemUserRole !== 'admin' && systemUserRole !== 'owner'}
-              shape="circle"
+              shape='circle'
               icon={<DeleteOutlined />}
-              size="small"
+              size='small'
               onClick={() => handleRemoveTeam(record)}
             />
           </Tooltip>
@@ -221,74 +226,12 @@ const TableList: FC<{ systemUserRole?: 'admin' | 'owner' | 'member' ; showDragSo
           enterButton
         />
       </Card>
-        {showDragSort ? (
-          <>
-            <DragSortTable<TeamTable, ListPagination>
-              rowKey="id"
-              headerTitle={
-                <FormattedMessage id="component.allTeams.table.title" defaultMessage="All Teams" />
-              }
-              actionRef={actionRef}
-              search={false}
-              options={{ fullScreen: true }}
-              pagination={{
-                showSizeChanger: false,
-                pageSize: 10,
-              }}
-              dataSource={tableData}
-              request={async (params: { pageSize: number; current: number }) => {
-                if (keyWord.length > 0) {
-                  const result = await getTeamsByKeyword(keyWord);
-                  setTableData(result.data || []);
-                  return result;
-                }
-                const result = await getAllTableTeams(params);
-                setTableData(result.data || []);
-                return result;
-              }}
-              columns={teamColumns}
-              dragSortKey="index"
-              onDragSortEnd={handleDragSortEnd}
-              toolBarRender={() => [
-                isDragged && (
-                  <Tooltip
-                    key="saveRanks"
-                    title={
-                      <FormattedMessage
-                        id="component.allTeams.table.saveRanks.tooltip"
-                        defaultMessage="Save Ranks"
-                      />
-                    }
-                  >
-                    <Button
-                      disabled={systemUserRole !== 'admin' && systemUserRole !== 'owner' && systemUserRole !== 'member'}
-                      type="text"
-                      icon={<SaveOutlined />}
-                      shape="circle"
-                      size="small"
-                      onClick={handleSaveRanks}
-                    />
-                  </Tooltip>
-                ),
-                <Tooltip
-                  key="select"
-                  title={
-                    <FormattedMessage
-                      id="component.allTeams.table.select.tooltip"
-                      defaultMessage="Select Team"
-                    />
-                  }
-                >
-                  <SelectTeams disabled={systemUserRole !== 'admin' && systemUserRole !== 'owner'} actionRef={actionRef} buttonType="icon" />
-                </Tooltip>,
-              ]}
-            />
-          </>
-        ) : (
-          <ProTable<TeamTable, ListPagination>
-            rowKey="id"
+      {showDragSort ? (
+        <>
+          <DragSortTable<TeamTable, ListPagination>
+            rowKey='id'
             headerTitle={
-              <FormattedMessage id="component.allTeams.table.title" defaultMessage="All Teams" />
+              <FormattedMessage id='component.allTeams.table.title' defaultMessage='All Teams' />
             }
             actionRef={actionRef}
             search={false}
@@ -297,15 +240,85 @@ const TableList: FC<{ systemUserRole?: 'admin' | 'owner' | 'member' ; showDragSo
               showSizeChanger: false,
               pageSize: 10,
             }}
+            dataSource={tableData}
             request={async (params: { pageSize: number; current: number }) => {
               if (keyWord.length > 0) {
-                return getTeamsByKeyword(keyWord);
+                const result = await getTeamsByKeyword(keyWord);
+                setTableData(result.data || []);
+                return result;
               }
-              return getAllTableTeams(params);
+              const result = await getAllTableTeams(params);
+              setTableData(result.data || []);
+              return result;
             }}
             columns={teamColumns}
+            dragSortKey='index'
+            onDragSortEnd={handleDragSortEnd}
+            toolBarRender={() => [
+              isDragged && (
+                <Tooltip
+                  key='saveRanks'
+                  title={
+                    <FormattedMessage
+                      id='component.allTeams.table.saveRanks.tooltip'
+                      defaultMessage='Save Ranks'
+                    />
+                  }
+                >
+                  <Button
+                    disabled={
+                      systemUserRole !== 'admin' &&
+                      systemUserRole !== 'owner' &&
+                      systemUserRole !== 'member'
+                    }
+                    type='text'
+                    icon={<SaveOutlined />}
+                    shape='circle'
+                    size='small'
+                    onClick={handleSaveRanks}
+                  />
+                </Tooltip>
+              ),
+              <Tooltip
+                key='select'
+                title={
+                  <FormattedMessage
+                    id='component.allTeams.table.select.tooltip'
+                    defaultMessage='Select Team'
+                  />
+                }
+              >
+                <SelectTeams
+                  disabled={systemUserRole !== 'admin' && systemUserRole !== 'owner'}
+                  actionRef={actionRef}
+                  buttonType='icon'
+                />
+              </Tooltip>,
+            ]}
           />
-        )}
+        </>
+      ) : (
+        <ProTable<TeamTable, ListPagination>
+          rowKey='id'
+          headerTitle={
+            <FormattedMessage id='component.allTeams.table.title' defaultMessage='All Teams' />
+          }
+          actionRef={actionRef}
+          search={false}
+          options={{ fullScreen: true }}
+          pagination={{
+            showSizeChanger: false,
+            pageSize: 10,
+          }}
+          request={async (params: { pageSize: number; current: number }) => {
+            if (keyWord.length > 0) {
+              return getTeamsByKeyword(keyWord);
+            }
+            return getAllTableTeams(params);
+          }}
+          columns={teamColumns}
+        />
+      )}
     </>
   );
 };

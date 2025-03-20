@@ -5,8 +5,8 @@ export const complianceOptions = [
     value: 'Fully compliant',
     label: (
       <FormattedMessage
-        id="pages.unitgroup.view.modellingAndValidation.approvalOfOverallCompliance.fullyCompliant"
-        defaultMessage="Fully compliant"
+        id='pages.unitgroup.view.modellingAndValidation.approvalOfOverallCompliance.fullyCompliant'
+        defaultMessage='Fully compliant'
       />
     ),
   },
@@ -14,8 +14,8 @@ export const complianceOptions = [
     value: 'Not compliant',
     label: (
       <FormattedMessage
-        id="pages.unitgroup.view.modellingAndValidation.approvalOfOverallCompliance.notCompliant"
-        defaultMessage="Not compliant"
+        id='pages.unitgroup.view.modellingAndValidation.approvalOfOverallCompliance.notCompliant'
+        defaultMessage='Not compliant'
       />
     ),
   },
@@ -23,8 +23,8 @@ export const complianceOptions = [
     value: 'Not defined',
     label: (
       <FormattedMessage
-        id="pages.unitgroup.view.modellingAndValidation.approvalOfOverallCompliance.notDefined"
-        defaultMessage="Not defined"
+        id='pages.unitgroup.view.modellingAndValidation.approvalOfOverallCompliance.notDefined'
+        defaultMessage='Not defined'
       />
     ),
   },

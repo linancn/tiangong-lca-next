@@ -51,7 +51,7 @@ const ReferenceUnit: FC<Props> = ({ id, version, idType, lang }) => {
   return (
     <Spin spinning={spinning}>
       {getLangText(refUnit?.name, lang)} (
-      <Tooltip placement="topLeft" title={getLangText(refUnit?.refUnitGeneralComment, lang)}>
+      <Tooltip placement='topLeft' title={getLangText(refUnit?.refUnitGeneralComment, lang)}>
         {refUnit?.refUnitName}
       </Tooltip>
       )

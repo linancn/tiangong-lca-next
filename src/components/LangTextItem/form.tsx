@@ -83,8 +83,8 @@ const LangTextItemForm: FC<Props> = ({ name, label, rules = [], setRuleErrorStat
                 }));
 
                 return (
-                  <Row key={subField.key} gutter={[10, 0]} align="top">
-                    <Col flex="180px">
+                  <Row key={subField.key} gutter={[10, 0]} align='top'>
+                    <Col flex='180px'>
                       <Form.Item
                         name={[subField.name, '@xml:lang']}
                         rules={
@@ -94,8 +94,8 @@ const LangTextItemForm: FC<Props> = ({ name, label, rules = [], setRuleErrorStat
                                   required: true,
                                   message: (
                                     <FormattedMessage
-                                      id="validator.lang.select"
-                                      defaultMessage="Please select a language!"
+                                      id='validator.lang.select'
+                                      defaultMessage='Please select a language!'
                                     />
                                   ),
                                 },
@@ -115,16 +115,16 @@ const LangTextItemForm: FC<Props> = ({ name, label, rules = [], setRuleErrorStat
                         <Select
                           placeholder={
                             <FormattedMessage
-                              id="pages.lang.select"
-                              defaultMessage="Select a lang"
+                              id='pages.lang.select'
+                              defaultMessage='Select a lang'
                             />
                           }
-                          optionFilterProp="lang"
+                          optionFilterProp='lang'
                           options={optionsWithDisabled}
                         />
                       </Form.Item>
                     </Col>
-                    <Col flex="auto">
+                    <Col flex='auto'>
                       <Form.Item
                         name={[subField.name, '#text']}
                         rules={rules}
@@ -133,7 +133,7 @@ const LangTextItemForm: FC<Props> = ({ name, label, rules = [], setRuleErrorStat
                         <TextArea rows={1} />
                       </Form.Item>
                     </Col>
-                    <Col flex="20px" style={{ paddingTop: '8px' }}>
+                    <Col flex='20px' style={{ paddingTop: '8px' }}>
                       <CloseOutlined
                         style={{
                           cursor: isRequired && subFields.length === 1 ? 'not-allowed' : 'pointer',
@@ -149,9 +149,9 @@ const LangTextItemForm: FC<Props> = ({ name, label, rules = [], setRuleErrorStat
                   </Row>
                 );
               })}
-              <Button type="dashed" onClick={() => subOpt.add()} block style={{ marginTop: '8px' }}>
-                + <FormattedMessage id="pages.button.item.add" defaultMessage="Add" /> {label}{' '}
-                <FormattedMessage id="pages.button.item.label" defaultMessage="Item" />
+              <Button type='dashed' onClick={() => subOpt.add()} block style={{ marginTop: '8px' }}>
+                + <FormattedMessage id='pages.button.item.add' defaultMessage='Add' /> {label}{' '}
+                <FormattedMessage id='pages.button.item.label' defaultMessage='Item' />
               </Button>
             </div>
           );

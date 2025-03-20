@@ -4,8 +4,8 @@ import { Card } from 'antd';
 export const NodeComponentCard = ({ node }: { node: Node }) => {
   const { title, content, width } = node.getData();
   return (
-    <div className="react-node">
-      <Card size="small" title={title} style={{ width: width }}>
+    <div className='react-node'>
+      <Card size='small' title={title} style={{ width: width }}>
         <p>{content}</p>
       </Card>
     </div>

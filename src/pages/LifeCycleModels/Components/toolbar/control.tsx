@@ -68,24 +68,24 @@ const Control = (props: ControlIProps) => {
 
   const ControlToolMap = {
     [ControlEnum.ZoomIn]: {
-      label: <FormattedMessage id="pages.button.model.zoomIn" defaultMessage="Zoom In" />,
+      label: <FormattedMessage id='pages.button.model.zoomIn' defaultMessage='Zoom In' />,
       icon: <Plus size={20} />,
     },
     [ControlEnum.ZoomOut]: {
-      label: <FormattedMessage id="pages.button.model.zoomOut" defaultMessage="Zoom Out" />,
+      label: <FormattedMessage id='pages.button.model.zoomOut' defaultMessage='Zoom Out' />,
       icon: <Minus size={20} />,
     },
     [ControlEnum.ZoomTo]: {
-      label: <FormattedMessage id="pages.button.model.zoomTo" defaultMessage="Zoom To" />,
+      label: <FormattedMessage id='pages.button.model.zoomTo' defaultMessage='Zoom To' />,
       icon: <Plus size={20} />,
     },
     [ControlEnum.ZoomToFit]: {
-      label: <FormattedMessage id="pages.button.model.zoomToFit" defaultMessage="Zoom To Fit" />,
+      label: <FormattedMessage id='pages.button.model.zoomToFit' defaultMessage='Zoom To Fit' />,
       icon: <Minimize />,
     },
     [ControlEnum.ZoomToOrigin]: {
       label: (
-        <FormattedMessage id="pages.button.model.zoomToOrigin" defaultMessage="Zoom To Origin" />
+        <FormattedMessage id='pages.button.model.zoomToOrigin' defaultMessage='Zoom To Origin' />
       ),
       icon: <Dice5 size={20} />,
     },
@@ -132,7 +132,7 @@ const Control = (props: ControlIProps) => {
 
   return (
     <Space
-      direction="vertical"
+      direction='vertical'
       size={'middle'}
       style={{ position: 'absolute', right: 13, bottom: 5 }}
     >
@@ -142,7 +142,7 @@ const Control = (props: ControlIProps) => {
             <Tooltip
               key={tool}
               title={
-                <Space direction="vertical" size={'small'}>
+                <Space direction='vertical' size={'small'}>
                   {dropDownItems.map((item) => {
                     return (
                       <Button
@@ -156,12 +156,12 @@ const Control = (props: ControlIProps) => {
                   })}
                 </Space>
               }
-              placement="left"
+              placement='left'
             >
               {/* <button className="dropDownBtn">{`${Math.floor(zoom * 100)}%`}</button> */}
               <Button
-                type="primary"
-                size="small"
+                type='primary'
+                size='small'
                 onClick={() => changeZoom(tool)}
                 disabled={!isToolButtonEnabled(tool as ControlEnum)}
                 style={{ fontSize: '8px', padding: '0', width: '24px', boxShadow: 'none' }}
@@ -172,10 +172,10 @@ const Control = (props: ControlIProps) => {
           );
         } else if (ControlActionList.includes(tool)) {
           return (
-            <Tooltip key={tool} title={ControlToolMap[tool].label} placement="left">
+            <Tooltip key={tool} title={ControlToolMap[tool].label} placement='left'>
               <Button
-                type="primary"
-                size="small"
+                type='primary'
+                size='small'
                 style={{ boxShadow: 'none' }}
                 icon={ControlToolMap[tool].icon}
                 onClick={() => changeZoom(tool)}

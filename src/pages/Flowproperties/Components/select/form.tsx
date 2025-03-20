@@ -72,7 +72,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
 
   return (
     <Card
-      size="small"
+      size='small'
       title={
         isRequired ? (
           <RequiredSelectFormTitle
@@ -85,12 +85,12 @@ const FlowpropertiesSelectForm: FC<Props> = ({
         )
       }
     >
-      <Space direction="horizontal">
+      <Space direction='horizontal'>
         <Form.Item
           label={
             <FormattedMessage
-              id="pages.flow.view.flowProperties.refObjectId"
-              defaultMessage="Ref object id"
+              id='pages.flow.view.flowProperties.refObjectId'
+              defaultMessage='Ref object id'
             />
           }
           name={[...name, '@refObjectId']}
@@ -111,18 +111,18 @@ const FlowpropertiesSelectForm: FC<Props> = ({
         >
           <Input disabled={true} style={{ width: '350px', color: token.colorTextDescription }} />
         </Form.Item>
-        <Space direction="horizontal" style={{ marginTop: '6px' }}>
+        <Space direction='horizontal' style={{ marginTop: '6px' }}>
           {!id && (
             <FlowpropertiesSelectDrawer
-              buttonType="text"
+              buttonType='text'
               lang={lang}
               onData={handletFlowpropertyData}
             />
           )}
           {id && (
             <FlowpropertiesSelectDrawer
-              buttonType="text"
-              buttonText={<FormattedMessage id="pages.button.reselect" defaultMessage="Reselect" />}
+              buttonType='text'
+              buttonText={<FormattedMessage id='pages.button.reselect' defaultMessage='Reselect' />}
               lang={lang}
               onData={handletFlowpropertyData}
             />
@@ -134,12 +134,12 @@ const FlowpropertiesSelectForm: FC<Props> = ({
               }}
             >
               <FormattedMessage
-                id="pages.button.updateReference"
-                defaultMessage="Update reference"
+                id='pages.button.updateReference'
+                defaultMessage='Update reference'
               />
             </Button>
           )}
-          {id && <FlowpropertyView lang={lang} id={id} version={version ?? ''} buttonType="text" />}
+          {id && <FlowpropertyView lang={lang} id={id} version={version ?? ''} buttonType='text' />}
           {id && (
             <Button
               onClick={() => {
@@ -147,37 +147,37 @@ const FlowpropertiesSelectForm: FC<Props> = ({
                 onData();
               }}
             >
-              <FormattedMessage id="pages.button.clear" defaultMessage="Clear" />
+              <FormattedMessage id='pages.button.clear' defaultMessage='Clear' />
             </Button>
           )}
         </Space>
       </Space>
       <Form.Item
         hidden
-        label={<FormattedMessage id="pages.flow.view.flowProperties.type" defaultMessage="Type" />}
+        label={<FormattedMessage id='pages.flow.view.flowProperties.type' defaultMessage='Type' />}
         name={[...name, '@type']}
       >
         <Input disabled={true} style={{ color: token.colorTextDescription }} />
       </Form.Item>
       <Form.Item
         hidden
-        label={<FormattedMessage id="pages.flow.view.flowProperties.uri" defaultMessage="URI" />}
+        label={<FormattedMessage id='pages.flow.view.flowProperties.uri' defaultMessage='URI' />}
         name={[...name, '@uri']}
       >
         <Input disabled={true} style={{ color: token.colorTextDescription }} />
       </Form.Item>
       <Form.Item
         label={
-          <FormattedMessage id="pages.flow.view.flowProperties.version" defaultMessage="Version" />
+          <FormattedMessage id='pages.flow.view.flowProperties.version' defaultMessage='Version' />
         }
         name={[...name, '@version']}
       >
         <Input disabled={true} />
       </Form.Item>
-      <Divider orientationMargin="0" orientation="left" plain>
+      <Divider orientationMargin='0' orientation='left' plain>
         <FormattedMessage
-          id="pages.flow.view.flowProperties.shortDescription"
-          defaultMessage="Short description"
+          id='pages.flow.view.flowProperties.shortDescription'
+          defaultMessage='Short description'
         />
       </Divider>
       {/* <LangTextItemForm
@@ -190,7 +190,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
             <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
               {subFields.map((subField) => (
                 <Row key={subField.key}>
-                  <Col flex="100px" style={{ marginRight: '10px' }}>
+                  <Col flex='100px' style={{ marginRight: '10px' }}>
                     <Form.Item
                       getValueProps={(value) => getLocalValueProps(value)}
                       noStyle
@@ -202,10 +202,10 @@ const FlowpropertiesSelectForm: FC<Props> = ({
                       />
                     </Form.Item>
                   </Col>
-                  <Col flex="auto" style={{ marginRight: '10px' }}>
+                  <Col flex='auto' style={{ marginRight: '10px' }}>
                     <Form.Item noStyle name={[subField.name, '#text']}>
                       <TextArea
-                        placeholder="text"
+                        placeholder='text'
                         rows={1}
                         disabled={true}
                         style={{ color: token.colorTextDescription }}
