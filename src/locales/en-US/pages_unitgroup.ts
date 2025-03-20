@@ -106,7 +106,7 @@ export default {
   'pages.unitgroup.validator.referenceToComplianceSystem.required': 'Please input compliance system name',
   'pages.unitgroup.validator.approvalOfOverallCompliance.required': 'Please input approval of overall compliance',
   'pages.unitgroup.validator.timeStamp.required': 'Please input time stamp',
-  'pages.unitgroup.validator.referenceToDataSetFormat.required': 'Please input reference to data set format(s)',
+  'pages.unitgroup.validator.referenceToDataSetFormat.required': 'Please input data set format(s)',
   'pages.unitgroup.validator.dataSetVersion.required': 'Please input data set version',
   'pages.unitgroup.validator.referenceToOwnershipOfDataSet.required': 'Please input reference to ownership of data set',
 };

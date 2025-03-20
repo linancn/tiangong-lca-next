@@ -51,8 +51,8 @@ export default {
   'pages.contact.validator.name.required': 'Please input name of contact',
   'pages.contact.validator.classification.required': 'Please input classification',
   'pages.contact.validator.dataSetVersion.required': 'Please input data set version',
-  'pages.contact.validator.referenceToOwnershipOfDataSet.required': 'Please input reference to owner of data set',
+  'pages.contact.validator.referenceToOwnershipOfDataSet.required': 'Please input owner of data set',
   'pages.contact.validator.timeStamp.required': 'Please input time stamp',
-  'pages.contact.validator.referenceToDataSetFormat.required': 'Please input reference to data set format(s)',
+  'pages.contact.validator.referenceToDataSetFormat.required': 'Please input  data set format(s)',
   
 };

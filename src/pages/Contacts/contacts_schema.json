@@ -204,7 +204,7 @@
             {
               "required": true,
               "messageKey": "pages.contact.validator.referenceToOwnershipOfDataSet.required",
-              "defaultMessage": "Please input reference to owner of data set"
+              "defaultMessage": "Please input owner of data set"
             }
           ]
         },
@@ -244,7 +244,7 @@
             {
               "required": true,
               "messageKey": "pages.contact.validator.referenceToDataSetFormat.required",
-              "defaultMessage": "Please input reference to data set format(s)"
+              "defaultMessage": "Please input data set format(s)"
             }
           ]
         }

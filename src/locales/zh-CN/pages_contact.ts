@@ -52,7 +52,7 @@ export default {
   'pages.contact.validator.name.required': '请输入联系人姓名',
   'pages.contact.validator.classification.required': '请输入分类',
   'pages.contact.validator.dataSetVersion.required': '请输入数据集版本',
-  'pages.contact.validator.referenceToOwnershipOfDataSet.required': '请输入数据集拥有者引用',
+  'pages.contact.validator.referenceToOwnershipOfDataSet.required': '请输入数据集拥有者',
   'pages.contact.validator.timeStamp.required': '请输入时间戳',
-  'pages.contact.validator.referenceToDataSetFormat.required': '请输入数据集格式引用',
+  'pages.contact.validator.referenceToDataSetFormat.required': '请输入数据集格式',
 };
