@@ -124,8 +124,8 @@ const UnitGroupCreate: FC<CreateProps> = ({
       },
     };
     setInitData(newData);
-    formRefCreate.current?.resetFields();
-    formRefCreate.current?.setFieldsValue(newData);
+    const currentData = formRefCreate.current?.getFieldsValue();
+    formRefCreate.current?.setFieldsValue({ ...currentData, ...newData });
     setFromData(newData);
     setUnitDataSource([]);
   }, [drawerVisible]);
@@ -171,6 +171,7 @@ const UnitGroupCreate: FC<CreateProps> = ({
         )}
       </Tooltip>
       <Drawer
+        destroyOnClose={true}
         getContainer={() => document.body}
         title={
           <FormattedMessage
@@ -234,8 +235,8 @@ const UnitGroupCreate: FC<CreateProps> = ({
             }}
             onFinish={async () => {
               const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
-              const _formData = {...formRefCreate.current?.getFieldsValue(),units:fromData.units};
-              const result = await createUnitGroup(paramsId, _formData);
+              const formFieldsValue = {...formRefCreate.current?.getFieldsValue(),units:fromData.units};
+              const result = await createUnitGroup(paramsId, formFieldsValue);
               if (result.data) {
                 message.success(
                   intl.formatMessage({
