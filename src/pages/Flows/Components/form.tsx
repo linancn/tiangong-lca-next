@@ -22,6 +22,7 @@ import PropertyView from './Property/view';
 import schema from '../flows_schema.json';
 import { getRules } from '@/pages/Utils';
 import RequiredMark from '@/components/RequiredMark';
+import FlowsSelectForm from './select/form';
 
 type Props = {
   lang: string;
@@ -408,7 +409,7 @@ export const FlowForm: FC<Props> = ({
               'common:elementaryFlowCategorization',
               'common:category',
             ]}
-            rules={thisFlowType !== 'Elementary flow' ? []:getRules(schema['flowDataSet']['flowInformation']['dataSetInformation']['classificationInformation']['common:elementaryFlowCategorization']['common:category']['rules'])}
+            rules={thisFlowType !== 'Elementary flow' ? [] : getRules(schema['flowDataSet']['flowInformation']['dataSetInformation']['classificationInformation']['common:elementaryFlowCategorization']['common:category']['rules'])}
           />
           <LevelTextItemForm
             hidden={thisFlowType === 'Elementary flow'}
@@ -684,6 +685,19 @@ export const FlowForm: FC<Props> = ({
           >
             <Input />
           </Form.Item>
+          <FlowsSelectForm
+            name={['administrativeInformation', 'publicationAndOwnership', 'common:referenceToPrecedingDataSetVersion']}
+            label={
+              <FormattedMessage
+                id="pages.flow.view.administrativeInformation.referenceToPrecedingDataSetVersion"
+                defaultMessage="Preceding data set version"
+              />
+            }
+            lang={lang}
+            formRef={formRef}
+            drawerVisible={drawerVisible}
+            onData={onData}
+          />
           <Form.Item
             label={
               <FormattedMessage

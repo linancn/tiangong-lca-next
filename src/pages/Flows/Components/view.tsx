@@ -19,6 +19,7 @@ import { useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { complianceOptions, flowTypeOptions } from './optiondata';
 import PropertyView from './Property/view';
+import FlowsSelectDescription from './select/description';
 type Props = {
   id: string;
   version: string;
@@ -300,11 +301,11 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
             data={
               initData?.flowInformation?.LCIMethod?.typeOfDataSet === 'Elementary flow'
                 ? initData?.flowInformation?.dataSetInformation?.classificationInformation?.[
-                    'common:elementaryFlowCategorization'
-                  ]?.['common:category']?.['value']
+                'common:elementaryFlowCategorization'
+                ]?.['common:category']?.['value']
                 : initData?.flowInformation?.dataSetInformation?.classificationInformation?.[
-                    'common:classification'
-                  ]?.['common:class']?.['value']
+                'common:classification'
+                ]?.['common:class']?.['value']
             }
             lang={lang}
             categoryType={'Flow'}
@@ -444,7 +445,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
         <SourceSelectDescription
           data={
             initData?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-              'common:referenceToComplianceSystem'
+            'common:referenceToComplianceSystem'
             ]
           }
           title={
@@ -469,7 +470,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
           >
             {getComplianceLabel(
               initData?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                'common:approvalOfOverallCompliance'
+              'common:approvalOfOverallCompliance'
               ] ?? '-',
             )}
           </Descriptions.Item>
@@ -520,7 +521,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
           <ContactSelectDescription
             data={
               initData?.administrativeInformation?.dataEntryBy?.[
-                'common:referenceToPersonOrEntityEnteringTheData'
+              'common:referenceToPersonOrEntityEnteringTheData'
               ]
             }
             title={
@@ -561,6 +562,19 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
             </Descriptions.Item>
           </Descriptions>
           <br />
+          <FlowsSelectDescription
+            title={
+              <FormattedMessage
+                id="pages.flow.view.administrativeInformation.referenceToPrecedingDataSetVersion"
+                defaultMessage="Preceding data set version"
+              />
+            }
+            data={initData?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToPrecedingDataSetVersion'
+            ] ?? {}}
+            lang={lang}
+          />
+          <br />
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item
               key={0}
@@ -581,7 +595,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
           <ContactSelectDescription
             data={
               initData?.administrativeInformation?.publicationAndOwnership?.[
-                'common:referenceToOwnershipOfDataSet'
+              'common:referenceToOwnershipOfDataSet'
               ]
             }
             title={

@@ -128,6 +128,10 @@ export function genFlowJsonOrdered(id: string, data: any) {
               data?.flowInformation?.technology?.referenceToTechnicalSpecification?.[
                 '@refObjectId'
               ] ?? {},
+            '@version':
+              data?.flowInformation?.technology?.referenceToTechnicalSpecification?.[
+                '@version'
+              ] ?? {},
             '@uri':
               data?.flowInformation?.technology?.referenceToTechnicalSpecification?.['@uri'] ?? {},
             'common:shortDescription': getLangJson(
@@ -149,6 +153,10 @@ export function genFlowJsonOrdered(id: string, data: any) {
                 data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
                   'common:referenceToComplianceSystem'
                 ]?.['@refObjectId'],
+              '@version':
+                data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
+                  'common:referenceToComplianceSystem'
+                ]?.['@version'],
               '@type':
                 data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
                   'common:referenceToComplianceSystem'
@@ -177,6 +185,10 @@ export function genFlowJsonOrdered(id: string, data: any) {
             '@refObjectId':
               data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
                 '@refObjectId'
+              ],
+            '@version':
+              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
+                '@version'
               ],
             '@type':
               data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
@@ -243,6 +255,29 @@ export function genFlowJsonOrdered(id: string, data: any) {
             'common:shortDescription': getLangJson(
               data?.administrativeInformation?.publicationAndOwnership?.[
                 'common:referenceToOwnershipOfDataSet'
+              ]?.['common:shortDescription'],
+            ),
+          },
+          'common:referenceToPrecedingDataSetVersion': {
+            '@refObjectId':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToPrecedingDataSetVersion'
+              ]?.['@refObjectId'],
+            '@type':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToPrecedingDataSetVersion'
+              ]?.['@type'],
+            '@uri':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToPrecedingDataSetVersion'
+              ]?.['@uri'],
+            '@version':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToPrecedingDataSetVersion'
+              ]?.['@version'],
+            'common:shortDescription': getLangJson(
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToPrecedingDataSetVersion'
               ]?.['common:shortDescription'],
             ),
           },
@@ -334,6 +369,10 @@ export function genFlowFromData(data: any) {
             data?.flowInformation?.technology?.referenceToTechnicalSpecification?.[
               '@refObjectId'
             ] ?? {},
+          '@version':
+            data?.flowInformation?.technology?.referenceToTechnicalSpecification?.[
+              '@version'
+            ] ?? {},
           '@uri':
             data?.flowInformation?.technology?.referenceToTechnicalSpecification?.['@uri'] ?? {},
           'common:shortDescription': getLangList(
@@ -355,6 +394,10 @@ export function genFlowFromData(data: any) {
               data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
                 'common:referenceToComplianceSystem'
               ]?.['@refObjectId'],
+            '@version':
+              data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
+                'common:referenceToComplianceSystem'
+              ]?.['@version'],
             '@type':
               data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
                 'common:referenceToComplianceSystem'
@@ -383,6 +426,10 @@ export function genFlowFromData(data: any) {
           '@refObjectId':
             data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
               '@refObjectId'
+            ],
+          '@version':
+            data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
+              '@version'
             ],
           '@type':
             data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
@@ -427,7 +474,7 @@ export function genFlowFromData(data: any) {
           data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'],
         'common:permanentDataSetURI':
           data?.administrativeInformation?.publicationAndOwnership?.['common:permanentDataSetURI'],
-        'common:referenceToOwnershipOfDataSet': {
+          'common:referenceToOwnershipOfDataSet': {
           '@refObjectId':
             data?.administrativeInformation?.publicationAndOwnership?.[
               'common:referenceToOwnershipOfDataSet'
@@ -447,6 +494,29 @@ export function genFlowFromData(data: any) {
           'common:shortDescription': getLangList(
             data?.administrativeInformation?.publicationAndOwnership?.[
               'common:referenceToOwnershipOfDataSet'
+            ]?.['common:shortDescription'],
+          ),
+        },
+        'common:referenceToPrecedingDataSetVersion': {
+          '@refObjectId':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToPrecedingDataSetVersion'
+            ]?.['@refObjectId'],
+          '@type':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToPrecedingDataSetVersion'
+            ]?.['@type'],
+          '@uri':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToPrecedingDataSetVersion'
+            ]?.['@uri'],
+          '@version':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToPrecedingDataSetVersion'
+            ]?.['@version'],
+          'common:shortDescription': getLangList(
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToPrecedingDataSetVersion'
             ]?.['common:shortDescription'],
           ),
         },
