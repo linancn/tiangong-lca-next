@@ -21,6 +21,7 @@ type Props = {
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;
   onTabChange: (key: string) => void;
+  formType?: string
 };
 export const FlowpropertyForm: FC<Props> = ({
   lang,
@@ -29,6 +30,7 @@ export const FlowpropertyForm: FC<Props> = ({
   formRef,
   onData,
   onTabChange,
+  formType
 }) => {
   const { token } = theme.useToken();
   const [nameErrorState, setNameErrorState] = useState(false);
@@ -77,12 +79,12 @@ export const FlowpropertyForm: FC<Props> = ({
           <Card
             size="small"
             title={
-              <RequiredMark 
-              label={<FormattedMessage
-                id="pages.FlowProperties.view.flowPropertiesInformation.name"
-                defaultMessage="Name of flow property"
-              />}
-              showError={nameErrorState}
+              <RequiredMark
+                label={<FormattedMessage
+                  id="pages.FlowProperties.view.flowPropertiesInformation.name"
+                  defaultMessage="Name of flow property"
+                />}
+                showError={nameErrorState}
               />
             }
           >
@@ -156,6 +158,7 @@ export const FlowpropertyForm: FC<Props> = ({
     modellingAndValidation: (
       <Space direction="vertical" style={{ width: '100%' }}>
         <SourceSelectForm
+          defaultSourceName={formType === 'create' ? 'ILCD Data Network - compliance (non-Process)' : ''}
           name={[
             'modellingAndValidation',
             'complianceDeclarations',
@@ -216,6 +219,7 @@ export const FlowpropertyForm: FC<Props> = ({
             <Input disabled={true} style={{ color: token.colorTextDescription }} />
           </Form.Item>
           <SourceSelectForm
+            defaultSourceName={formType === 'create' ? 'ILCD format' : ''}
             name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
             lang={lang}
             label={

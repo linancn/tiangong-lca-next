@@ -123,6 +123,13 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
           'common:dataSetVersion': initVersion,
         },
       },
+      modellingAndValidation:{
+        complianceDeclarations:{
+          compliance:{
+            'common:approvalOfOverallCompliance':'Fully compliant'
+          }
+        }
+      },
     };
 
     setInitData(newData);
@@ -245,6 +252,7 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
               formRef={formRefCreate}
               onData={handletFromData}
               onTabChange={onTabChange}
+              formType='create'
             />
           </ProForm>
         </Spin>
