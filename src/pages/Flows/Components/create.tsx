@@ -149,6 +149,7 @@ const FlowsCreate: FC<CreateProps> = ({ lang, actionRef, actionType = 'create', 
           complianceDeclarations: {
             compliance: {
               'common:referenceToComplianceSystem': referenceToComplianceSystem,
+              'common:approvalOfOverallCompliance':'Fully compliant'
             },
           },
         },

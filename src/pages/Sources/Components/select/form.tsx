@@ -81,6 +81,9 @@ const SourceSelectForm: FC<Props> = ({
     if(defaultSourceName==='ILCD Data Network - compliance (non-Process)'){
       referenceToDataSetFormatId = '9ba3ac1e-6797-4cc0-afd5-1b8f7bf28c6a';
     }
+    if(defaultSourceName==='ILCD Data Network - Entry-level'){
+      referenceToDataSetFormatId = 'd92a1a12-2545-49e2-a585-55c259997756';
+    }
     if (!referenceToDataSetFormatId) return;
       getSourceDetail(referenceToDataSetFormatId, '').then(async (result2: any) => {
         const referenceToDataSetFormatData = genSourceFromData(

@@ -527,7 +527,6 @@ export const FlowForm: FC<Props> = ({
             }
           />
           <SourceSelectForm
-            defaultSourceName={formType === 'create' ? 'ILCD format' : undefined}
             name={['flowInformation', 'technology', 'referenceToTechnicalSpecification']}
             label={
               <FormattedMessage
@@ -568,6 +567,7 @@ export const FlowForm: FC<Props> = ({
           }
         > */}
         <SourceSelectForm
+          defaultSourceName={formType === 'create' ? 'ILCD Data Network - Entry-level' : undefined}
           lang={lang}
           formRef={formRef}
           label={
@@ -630,6 +630,7 @@ export const FlowForm: FC<Props> = ({
             <Input disabled={true} style={{ color: token.colorTextDescription }} />
           </Form.Item>
           <SourceSelectForm
+            defaultSourceName={formType === 'create' ? 'ILCD format' : undefined}
             lang={lang}
             formRef={formRef}
             label={
