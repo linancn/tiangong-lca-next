@@ -5,6 +5,7 @@
     "@xmlns:ecn": "str",
     "@xmlns:xsi": "str",
     "@version": "str",
+    "@locations": "str",
     "@xsi:schemaLocation": "str",
     "flowInformation": {
       "dataSetInformation": {
@@ -35,6 +36,7 @@
           "common:elementaryFlowCategorization": {
             "common:category": [
               {
+                "@catId": "str",
                 "@level": "str",
                 "#text": "str"
               }
@@ -46,20 +48,21 @@
             "common:class": [
               {
                 "@level": "str",
+                "@classId": "str",
                 "#text": "str"
               }
             ]
           }
         },
         "CASNumber": "str",
+        "sumFormula": "str",
         "common:generalComment": {
           "@xml:lang": "str",
           "#text": "str"
         },
         "common:other": {
           "ecn:ECNumber": "str"
-        },
-        "sumFormula": "str"
+        }
       },
       "quantitativeReference": {
         "referenceToReferenceFlowProperty": "str"
@@ -117,6 +120,16 @@
             "#text": "str"
           },
           "@version": "str"
+        },
+        "common:referenceToPersonOrEntityEnteringTheData": {
+          "@refObjectId": "str",
+          "@type": "str",
+          "@uri": "str",
+          "@version": "str",
+          "common:shortDescription": {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
         }
       },
       "publicationAndOwnership": {
@@ -156,9 +169,19 @@
           },
           "@version": "str"
         },
-        "meanValue": "str"
+        "meanValue": "str",
+        "minimumValue": "str",
+        "maximumValue": "str",
+        "uncertaintyDistributionType": "str",
+        "relativeStandardDeviation95In": "str",
+        "dataDerivationTypeStatus": "str",
+        "generalComment": [
+          {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        ]
       }
-    },
-    "@locations": "str"
+    }
   }
 }
