@@ -79,4 +79,24 @@ export default {
   'pages.flow.view.modellingAndValidation.approvalOfOverallCompliance.notDefined': 'Not defined',
 
   'pages.flows.deleteMessage': 'Are you sure you want to delete this data?',
+  
+  // Validator messages
+  'pages.flow.validator.version.required': 'Please input version',
+  'pages.flow.validator.uuid.required': 'Please input UUID',
+  'pages.flow.validator.name.required': 'Please input name',
+  'pages.flow.validator.treatmentStandardsRoutes.required': 'Please input treatment,standards,routes',
+  'pages.flow.validator.mixAndLocationTypes.required': 'Please input mix and location types',
+  'pages.flow.validator.category.required': 'Please input elementary flow categorization',
+  'pages.flow.validator.class.required': 'Please input classification',
+  'pages.flow.validator.referenceToReferenceFlowProperty.required': 'Please input reference flow property',
+  'pages.flow.validator.typeOfDataSet.required': 'Please input type of flow',
+  'pages.flow.validator.referenceToComplianceSystem.required': 'Please input compliance system name',
+  'pages.flow.validator.approvalOfOverallCompliance.required': 'Please input approval of overall compliance',
+  'pages.flow.validator.timeStamp.required': 'Please input time stamp',
+  'pages.flow.validator.referenceToDataSetFormat.required': 'Please input data set format(s)',
+  'pages.flow.validator.dataSetVersion.required': 'Please input data set version',
+  'pages.flow.validator.referenceToOwnershipOfDataSet.required': 'Please input ownership of data set',
+  'pages.flow.validator.dataSetInternalID.required': 'Please input data set internal ID',
+  'pages.flow.validator.referenceToFlowPropertyDataSet.required': 'Please input reference flow property',
+  'pages.flow.validator.meanValue.required': 'Please input mean value (of flow property)',
 };

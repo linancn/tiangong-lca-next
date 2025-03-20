@@ -79,4 +79,24 @@ export default {
   'pages.flow.view.modellingAndValidation.approvalOfOverallCompliance.notDefined': '未定义',
 
   'pages.flows.deleteMessage': '您确定要删除此数据吗？',
+  
+  // 验证器消息
+  'pages.flow.validator.version.required': '请输入版本',
+  'pages.flow.validator.uuid.required': '请输入UUID',
+  'pages.flow.validator.name.required': '请输入名称',
+  'pages.flow.validator.treatmentStandardsRoutes.required': '请输入处理、标准、路线',
+  'pages.flow.validator.mixAndLocationTypes.required': '请输入混合和位置类型',
+  'pages.flow.validator.category.required': '请输入基础流分类',
+  'pages.flow.validator.class.required': '请输入分类',
+  'pages.flow.validator.referenceToReferenceFlowProperty.required': '请输入参考流属性',
+  'pages.flow.validator.typeOfDataSet.required': '请输入流类型',
+  'pages.flow.validator.referenceToComplianceSystem.required': '请输入合规系统名称',
+  'pages.flow.validator.approvalOfOverallCompliance.required': '请输入整体合规性批准',
+  'pages.flow.validator.timeStamp.required': '请输入时间戳',
+  'pages.flow.validator.referenceToDataSetFormat.required': '请输入数据集格式',
+  'pages.flow.validator.dataSetVersion.required': '请输入数据集版本',
+  'pages.flow.validator.referenceToOwnershipOfDataSet.required': '请输入数据集拥有者',
+  'pages.flow.validator.dataSetInternalID.required': '请输入数据集内部ID',
+  'pages.flow.validator.referenceToFlowPropertyDataSet.required': '请输入参考流属性',
+  'pages.flow.validator.meanValue.required': '请输入流属性的平均值',
 };
