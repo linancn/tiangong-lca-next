@@ -20,6 +20,7 @@
           "common:classification": {
             "common:class": {
               "@level": "str",
+              "@classId": "str",
               "#text": "str"
             }
           }
@@ -43,6 +44,18 @@
       }
     },
     "modellingAndValidation": {
+      "dataSourcesTreatmentAndRepresentativeness":{
+        "referenceToDataSource":{
+          "@refObjectId": "str",
+          "@type": "str",
+          "@uri": "str",
+          "@version": "str",
+          "common:shortDescription": {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        }
+      },
       "complianceDeclarations": {
         "compliance": {
           "common:referenceToComplianceSystem": {
@@ -76,6 +89,15 @@
         "common:referenceToPrecedingDataSetVersion": {
           "@refObjectId": "str",
           "@type": "str",
+          "@uri": "str",
+          "common:shortDescription": {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        },
+        "common:referenceToOwnershipOfDataSet":{
+          "@type": "str",
+          "@refObjectId": "str",
           "@uri": "str",
           "common:shortDescription": {
             "@xml:lang": "str",
