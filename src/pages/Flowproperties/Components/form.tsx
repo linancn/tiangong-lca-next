@@ -1,8 +1,8 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
-import { StringMultiLang_r, dataSetVersion } from '@/components/Validator/index';
 import { Card, Form, Input, Select, Space, theme } from 'antd';
 import type { FC } from 'react';
+import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
@@ -10,6 +10,9 @@ import UnitGroupSelectFrom from '@/pages/Unitgroups/Components/select/form';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { complianceOptions } from './optiondata';
 import FlowpropertiesSelectForm from './select/form';
+import { getRules } from '@/pages/Utils';
+import schema from '../flowproperties_schema.json';
+import RequiredMark from '@/components/RequiredMark';
 
 type Props = {
   lang: string;
@@ -28,6 +31,7 @@ export const FlowpropertyForm: FC<Props> = ({
   onTabChange,
 }) => {
   const { token } = theme.useToken();
+  const [nameErrorState, setNameErrorState] = useState(false);
   const tabList = [
     {
       key: 'flowPropertiesInformation',
@@ -73,9 +77,12 @@ export const FlowpropertyForm: FC<Props> = ({
           <Card
             size="small"
             title={
-              <FormattedMessage
+              <RequiredMark 
+              label={<FormattedMessage
                 id="pages.FlowProperties.view.flowPropertiesInformation.name"
                 defaultMessage="Name of flow property"
+              />}
+              showError={nameErrorState}
               />
             }
           >
@@ -87,7 +94,8 @@ export const FlowpropertyForm: FC<Props> = ({
                   defaultMessage="Name of flow property"
                 />
               }
-              rules={StringMultiLang_r}
+              setRuleErrorState={setNameErrorState}
+              rules={getRules(schema['flowPropertyDataSet']['flowPropertiesInformation']['dataSetInformation']['common:name']['rules'])}
             />
           </Card>
           <br />
@@ -103,6 +111,7 @@ export const FlowpropertyForm: FC<Props> = ({
             ]}
             formRef={formRef}
             lang={lang}
+            rules={getRules(schema['flowPropertyDataSet']['flowPropertiesInformation']['dataSetInformation']['classificationInformation']['common:classification']['common:class']['rules'])}
           />
           <Card
             size="small"
@@ -137,6 +146,7 @@ export const FlowpropertyForm: FC<Props> = ({
               defaultMessage="Reference unit"
             />
           }
+          rules={getRules(schema['flowPropertyDataSet']['flowPropertiesInformation']['quantitativeReference']['referenceToReferenceUnitGroup']['rules'])}
           lang={lang}
           formRef={formRef}
           onData={onData}
@@ -161,6 +171,7 @@ export const FlowpropertyForm: FC<Props> = ({
           }
           formRef={formRef}
           onData={onData}
+          rules={getRules(schema['flowPropertyDataSet']['modellingAndValidation']['complianceDeclarations']['compliance']['common:referenceToComplianceSystem']['rules'])}
         />
         <Form.Item
           label={
@@ -175,6 +186,7 @@ export const FlowpropertyForm: FC<Props> = ({
             'compliance',
             'common:approvalOfOverallCompliance',
           ]}
+          rules={getRules(schema['flowPropertyDataSet']['modellingAndValidation']['complianceDeclarations']['compliance']['common:approvalOfOverallCompliance']['rules'])}
         >
           <Select options={complianceOptions} />
         </Form.Item>
@@ -199,6 +211,7 @@ export const FlowpropertyForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
+            rules={getRules(schema['flowPropertyDataSet']['administrativeInformation']['dataEntryBy']['common:timeStamp']['rules'])}
           >
             <Input disabled={true} style={{ color: token.colorTextDescription }} />
           </Form.Item>
@@ -213,6 +226,7 @@ export const FlowpropertyForm: FC<Props> = ({
             }
             formRef={formRef}
             onData={onData}
+            rules={getRules(schema['flowPropertyDataSet']['administrativeInformation']['dataEntryBy']['common:referenceToDataSetFormat']['rules'])}
           />
         </Card>
 
@@ -233,7 +247,7 @@ export const FlowpropertyForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
-            rules={dataSetVersion}
+            rules={getRules(schema['flowPropertyDataSet']['administrativeInformation']['publicationAndOwnership']['common:dataSetVersion']['rules'])}
           >
             <Input />
           </Form.Item>

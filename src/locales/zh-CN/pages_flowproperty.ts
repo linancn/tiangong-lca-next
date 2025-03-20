@@ -42,4 +42,17 @@ export default {
   'pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance.fullyCompliant': '完全符合',
   'pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance.notCompliant': '不符合',
   'pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance.notDefined': '未定义',
+  
+  // 验证消息
+  'pages.flowproperties.validator.version.required': '请输入版本',
+  'pages.flowproperties.validator.uuid.required': '请输入UUID',
+  'pages.flowproperties.validator.name.required': '请输入流属性名称',
+  'pages.flowproperties.validator.class.required': '请输入分类',
+  'pages.flowproperties.validator.referenceToReferenceUnitGroup.required': '请输入参考单位',
+  'pages.flowproperties.validator.referenceToComplianceSystem.required': '请输入合规系统名称',
+  'pages.flowproperties.validator.approvalOfOverallCompliance.required': '请输入整体合规性批准',
+  'pages.flowproperties.validator.timeStamp.required': '请输入时间戳',
+  'pages.flowproperties.validator.referenceToDataSetFormat.required': '请输入数据集格式',
+  'pages.flowproperties.validator.dataSetVersion.required': '请输入数据集版本',
+  'pages.flowproperties.validator.referenceToOwnershipOfDataSet.required': '请输入数据集所有者',
 };

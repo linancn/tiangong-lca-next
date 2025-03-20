@@ -41,4 +41,17 @@ export default {
   'pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance.fullyCompliant': 'Fully compliant',
   'pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance.notCompliant': 'Not compliant',
   'pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance.notDefined': 'Not defined',
+  
+  // Validator messages
+  'pages.flowproperties.validator.version.required': 'Please input version',
+  'pages.flowproperties.validator.uuid.required': 'Please input UUID',
+  'pages.flowproperties.validator.name.required': 'Please input name of flow property',
+  'pages.flowproperties.validator.class.required': 'Please input classification',
+  'pages.flowproperties.validator.referenceToReferenceUnitGroup.required': 'Please input reference unit',
+  'pages.flowproperties.validator.referenceToComplianceSystem.required': 'Please input compliance system name',
+  'pages.flowproperties.validator.approvalOfOverallCompliance.required': 'Please input approval of overall compliance',
+  'pages.flowproperties.validator.timeStamp.required': 'Please input time stamp',
+  'pages.flowproperties.validator.referenceToDataSetFormat.required': 'Please input data set format(s)',
+  'pages.flowproperties.validator.dataSetVersion.required': 'Please input dataSetVersion',
+  'pages.flowproperties.validator.referenceToOwnershipOfDataSet.required': 'Please input owner of data set',
 };

@@ -61,7 +61,7 @@ const SourceSelectForm: FC<Props> = ({
       }
       setId(rowId);
       setVersion(result.data?.version);
-      validateRefObjectId(formRef, parentName, name);
+      validateRefObjectId(formRef, name,parentName);
       onData();
     });
   };
@@ -189,7 +189,7 @@ const SourceSelectForm: FC<Props> = ({
               onClick={() => {
                 formRef.current?.setFieldValue([...name], {});
                 onData();
-                validateRefObjectId(formRef, parentName, name);
+                validateRefObjectId(formRef, name,parentName);
               }}
             >
               <FormattedMessage id="pages.button.clear" defaultMessage="Clear" />

@@ -39,8 +39,8 @@ export function getRules(rules: any[]) {
 
 export const validateRefObjectId = (
   formRef: React.MutableRefObject<ProFormInstance | undefined>,
-  parentName: string[],
   name: string[],
+  parentName?: string[],
 ) => {
   if (parentName) {
     formRef.current?.validateFields([[...parentName, ...name, '@refObjectId']]);

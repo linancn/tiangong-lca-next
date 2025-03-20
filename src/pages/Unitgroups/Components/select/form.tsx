@@ -10,7 +10,7 @@ import React, { FC, ReactNode, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import UnitgroupsView from '../view';
 import UnitgroupsSelectDrawer from './drawer';
-// import LangTextItemForm from '@/components/LangTextItem/form';
+import { validateRefObjectId } from '@/pages/Utils';
 const { TextArea } = Input;
 
 type Props = {
@@ -54,6 +54,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
       setId(rowId);
       setVersion(result.data?.version);
       onData();
+      validateRefObjectId(formRef,name);
     });
   };
   useEffect(() => {
@@ -149,6 +150,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
               onClick={() => {
                 formRef.current?.setFieldValue([...name], {});
                 onData();
+                validateRefObjectId(formRef,name);
               }}
             >
               <FormattedMessage id="pages.button.clear" defaultMessage="Clear" />
