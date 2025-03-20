@@ -98,9 +98,9 @@ const SourceCreate: FC<CreateProps> = ({ actionRef, lang, actionType = 'create',
     }
 
     const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
-
+    const formFieldsValue = formRefCreate.current?.getFieldsValue();
     const result = await createSource(paramsId, {
-      ...fromData,
+      ...formFieldsValue,
       sourceInformation: {
         ...fromData?.sourceInformation,
         dataSetInformation: {
@@ -144,8 +144,8 @@ const SourceCreate: FC<CreateProps> = ({ actionRef, lang, actionType = 'create',
       setInitData(dataSet);
       setFromData(dataSet);
 
-      const currentData = formRefCreate.current?.getFieldsValue();
-      formRefCreate.current?.setFieldsValue({ ...currentData, ...dataSet });
+      formRefCreate.current?.validateFields();
+      formRefCreate.current?.setFieldsValue({ ...dataSet });
 
       const initFile = await getThumbFileUrls(
         dataSet.sourceInformation?.dataSetInformation?.referenceToDigitalFile,
