@@ -133,8 +133,8 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
     };
 
     setInitData(newData);
-    formRefCreate.current?.resetFields();
-    formRefCreate.current?.setFieldsValue(newData);
+    const currentData = formRefCreate.current?.getFieldsValue();
+    formRefCreate.current?.setFieldsValue({...currentData, ...newData});
     setFromData(newData);
   }, [drawerVisible]);
 
@@ -175,6 +175,7 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
         )}
       </Tooltip>
       <Drawer
+        destroyOnClose={true}
         getContainer={() => document.body}
         title={
           <FormattedMessage

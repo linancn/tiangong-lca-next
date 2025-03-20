@@ -186,7 +186,7 @@
             },
             {
               "pattern": "dataSetVersion",
-              "messageKey": "pages.flowproperties.validator.dataSetVersion.pattern",
+              "messageKey": "validator.dataSetVersion.pattern",
               "defaultMessage": "Version format must be XX.XX.XXX, where X is a digit!"
             }
           ]
