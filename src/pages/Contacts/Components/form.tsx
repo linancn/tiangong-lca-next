@@ -255,7 +255,6 @@ export const ContactForm: FC<Props> = ({
             onData={onData}
           />
           <SourceSelectForm
-            defaultSourceName={formType === 'create' ? 'ILCD format' : undefined}
             label={
               <FormattedMessage
                 id="pages.contact.referenceToLogo"
@@ -297,6 +296,7 @@ export const ContactForm: FC<Props> = ({
             </Form.Item>
             <br />
             <SourceSelectForm
+              defaultSourceName={formType === 'create' ? 'ILCD format' : undefined}
               label={
                 <FormattedMessage
                   id="pages.contact.referenceToDataSetFormat"
