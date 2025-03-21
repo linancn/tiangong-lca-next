@@ -41,7 +41,7 @@ export function genFlowJsonOrdered(id: string, data: any) {
   }
 
   let classificationInformation = {};
-  if (data?.flowInformation?.LCIMethod?.typeOfDataSet === 'Elementary flow') {
+  if (data?.modellingAndValidation?.LCIMethod?.typeOfDataSet === 'Elementary flow') {
     classificationInformation = {
       'common:elementaryFlowCategorization': {
         'common:category': classificationToJsonList(
@@ -144,7 +144,7 @@ export function genFlowJsonOrdered(id: string, data: any) {
       },
       modellingAndValidation: {
         LCIMethod: {
-          typeOfDataSet: data?.flowInformation?.LCIMethod?.typeOfDataSet,
+          typeOfDataSet: data?.modellingAndValidation?.LCIMethod?.typeOfDataSet,
         },
         complianceDeclarations: {
           compliance: {

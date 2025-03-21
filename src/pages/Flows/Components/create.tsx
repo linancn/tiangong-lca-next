@@ -265,6 +265,13 @@ const FlowsCreate: FC<CreateProps> = ({ lang, actionRef, actionType = 'create', 
             onFinish={async () => {
               const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
               const FieldsValue = formRefCreate.current?.getFieldsValue();
+              if(!fromData?.flowProperties||!fromData?.flowProperties?.flowProperty||fromData?.flowProperties?.flowProperty?.length===0){
+                message.error(intl.formatMessage({
+                  id: 'pages.flow.validator.flowProperties.required',
+                  defaultMessage: 'Please add flow properties',
+                }));
+                return true;
+              }
               const result = await createFlows(paramsId, {...FieldsValue, flowProperties:fromData?.flowProperties});
               if (result.data) {
                 message.success(

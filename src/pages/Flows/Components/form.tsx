@@ -367,7 +367,8 @@ export const FlowForm: FC<Props> = ({
                 defaultMessage="Type of flow"
               />
             }
-            name={['flowInformation', 'LCIMethod', 'typeOfDataSet']}
+            name={['modellingAndValidation', 'LCIMethod', 'typeOfDataSet']}
+            rules={getRules(schema['flowDataSet']['modellingAndValidation']['LCIMethod']['typeOfDataSet']['rules'])}
           >
             <Select
               options={myFlowTypeOptions}
@@ -698,21 +699,7 @@ export const FlowForm: FC<Props> = ({
             drawerVisible={drawerVisible}
             onData={onData}
           />
-          <Form.Item
-            label={
-              <FormattedMessage
-                id="pages.flow.view.administrativeInformation.permanentDataSetURI"
-                defaultMessage="Permanent data set URI"
-              />
-            }
-            name={[
-              'administrativeInformation',
-              'publicationAndOwnership',
-              'common:permanentDataSetURI',
-            ]}
-          >
-            <Input />
-          </Form.Item>
+           <br />
           <ContactSelectForm
             lang={lang}
             formRef={formRef}
@@ -731,6 +718,21 @@ export const FlowForm: FC<Props> = ({
             rules={getRules(schema['flowDataSet']['administrativeInformation']['publicationAndOwnership']['common:referenceToOwnershipOfDataSet']['rules'])}
           />
           <br />
+          <Form.Item
+            label={
+              <FormattedMessage
+                id="pages.flow.view.administrativeInformation.permanentDataSetURI"
+                defaultMessage="Permanent data set URI"
+              />
+            }
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:permanentDataSetURI',
+            ]}
+          >
+            <Input />
+          </Form.Item>
         </Card>
       </Space>
     ),

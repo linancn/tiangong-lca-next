@@ -100,4 +100,5 @@ export default {
   'pages.flow.validator.dataSetInternalID.required': 'Please input data set internal ID',
   'pages.flow.validator.referenceToFlowPropertyDataSet.required': 'Please input reference flow property',
   'pages.flow.validator.meanValue.required': 'Please input mean value (of flow property)',
+  'pages.flow.validator.flowProperties.required': 'Please input flow properties',
 };
