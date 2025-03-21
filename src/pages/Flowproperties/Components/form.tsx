@@ -324,6 +324,7 @@ export const FlowpropertyForm: FC<Props> = ({
             lang={lang}
             formRef={formRef}
             onData={onData}
+            rules={getRules(schema['flowPropertyDataSet']['administrativeInformation']['publicationAndOwnership']['common:referenceToOwnershipOfDataSet']['rules'])}
           />
           <br />
           <Form.Item
