@@ -224,9 +224,7 @@ export function genLifeCycleModelJsonOrdered(id: string, data: any, oldData: any
               ),
             },
             'common:otherReviewDetails': getLangJson(
-              data?.modellingAndValidation?.validation?.review?.[
-                'common:otherReviewDetails'
-              ],
+              data?.modellingAndValidation?.validation?.review?.['common:otherReviewDetails'],
             ),
             'common:referenceToCompleteReviewReport': {
               '@refObjectId':
@@ -612,10 +610,8 @@ export function genLifeCycleModelInfoFromData(data: any) {
             ),
           },
           'common:otherReviewDetails': getLangList(
-              data?.modellingAndValidation?.validation?.review?.[
-                'common:otherReviewDetails'
-              ],
-            ),
+            data?.modellingAndValidation?.validation?.review?.['common:otherReviewDetails'],
+          ),
           'common:referenceToCompleteReviewReport': {
             '@refObjectId':
               data?.modellingAndValidation?.validation?.review?.[

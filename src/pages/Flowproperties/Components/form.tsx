@@ -5,15 +5,15 @@ import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 
-import SourceSelectForm from '@/pages/Sources/Components/select/form';
-import UnitGroupSelectFrom from '@/pages/Unitgroups/Components/select/form';
-import { ProFormInstance } from '@ant-design/pro-components';
-import { complianceOptions } from './optiondata';
-import FlowpropertiesSelectForm from './select/form';
-import { getRules } from '@/pages/Utils';
-import schema from '../flowproperties_schema.json';
 import RequiredMark from '@/components/RequiredMark';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
+import SourceSelectForm from '@/pages/Sources/Components/select/form';
+import UnitGroupSelectFrom from '@/pages/Unitgroups/Components/select/form';
+import { getRules } from '@/pages/Utils';
+import { ProFormInstance } from '@ant-design/pro-components';
+import schema from '../flowproperties_schema.json';
+import { complianceOptions } from './optiondata';
+import FlowpropertiesSelectForm from './select/form';
 
 type Props = {
   lang: string;
@@ -22,7 +22,7 @@ type Props = {
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;
   onTabChange: (key: string) => void;
-  formType?: string
+  formType?: string;
 };
 export const FlowpropertyForm: FC<Props> = ({
   lang,
@@ -31,7 +31,7 @@ export const FlowpropertyForm: FC<Props> = ({
   formRef,
   onData,
   onTabChange,
-  formType
+  formType,
 }) => {
   const { token } = theme.useToken();
   const [nameErrorState, setNameErrorState] = useState(false);
@@ -81,10 +81,12 @@ export const FlowpropertyForm: FC<Props> = ({
             size='small'
             title={
               <RequiredMark
-                label={<FormattedMessage
-                  id="pages.FlowProperties.view.flowPropertiesInformation.name"
-                  defaultMessage="Name of flow property"
-                />}
+                label={
+                  <FormattedMessage
+                    id='pages.FlowProperties.view.flowPropertiesInformation.name'
+                    defaultMessage='Name of flow property'
+                  />
+                }
                 showError={nameErrorState}
               />
             }
@@ -98,16 +100,20 @@ export const FlowpropertyForm: FC<Props> = ({
                 />
               }
               setRuleErrorState={setNameErrorState}
-              rules={getRules(schema['flowPropertyDataSet']['flowPropertiesInformation']['dataSetInformation']['common:name']['rules'])}
+              rules={getRules(
+                schema['flowPropertyDataSet']['flowPropertiesInformation']['dataSetInformation'][
+                  'common:name'
+                ]['rules'],
+              )}
             />
           </Card>
           <br />
           <Card
-            size="small"
+            size='small'
             title={
               <FormattedMessage
-                id="pages.FlowProperties.view.flowPropertiesInformation.synonyms"
-                defaultMessage="Synonyms"
+                id='pages.FlowProperties.view.flowPropertiesInformation.synonyms'
+                defaultMessage='Synonyms'
               />
             }
           >
@@ -115,8 +121,8 @@ export const FlowpropertyForm: FC<Props> = ({
               name={['flowPropertiesInformation', 'dataSetInformation', 'common:synonyms']}
               label={
                 <FormattedMessage
-                  id="pages.FlowProperties.view.flowPropertiesInformation.synonyms"
-                  defaultMessage="Synonyms"
+                  id='pages.FlowProperties.view.flowPropertiesInformation.synonyms'
+                  defaultMessage='Synonyms'
                 />
               }
             />
@@ -134,7 +140,11 @@ export const FlowpropertyForm: FC<Props> = ({
             ]}
             formRef={formRef}
             lang={lang}
-            rules={getRules(schema['flowPropertyDataSet']['flowPropertiesInformation']['dataSetInformation']['classificationInformation']['common:classification']['common:class']['rules'])}
+            rules={getRules(
+              schema['flowPropertyDataSet']['flowPropertiesInformation']['dataSetInformation'][
+                'classificationInformation'
+              ]['common:classification']['common:class']['rules'],
+            )}
           />
           <Card
             size='small'
@@ -168,7 +178,11 @@ export const FlowpropertyForm: FC<Props> = ({
               defaultMessage='Reference unit'
             />
           }
-          rules={getRules(schema['flowPropertyDataSet']['flowPropertiesInformation']['quantitativeReference']['referenceToReferenceUnitGroup']['rules'])}
+          rules={getRules(
+            schema['flowPropertyDataSet']['flowPropertiesInformation']['quantitativeReference'][
+              'referenceToReferenceUnitGroup'
+            ]['rules'],
+          )}
           lang={lang}
           formRef={formRef}
           onData={onData}
@@ -185,8 +199,8 @@ export const FlowpropertyForm: FC<Props> = ({
           ]}
           label={
             <FormattedMessage
-              id="pages.FlowProperties.view.modellingAndValidation.referenceToDataSource"
-              defaultMessage="Data source"
+              id='pages.FlowProperties.view.modellingAndValidation.referenceToDataSource'
+              defaultMessage='Data source'
             />
           }
           lang={lang}
@@ -194,7 +208,9 @@ export const FlowpropertyForm: FC<Props> = ({
           onData={onData}
         />
         <SourceSelectForm
-          defaultSourceName={formType === 'create' ? 'ILCD Data Network - compliance (non-Process)' : ''}
+          defaultSourceName={
+            formType === 'create' ? 'ILCD Data Network - compliance (non-Process)' : ''
+          }
           name={[
             'modellingAndValidation',
             'complianceDeclarations',
@@ -210,7 +226,11 @@ export const FlowpropertyForm: FC<Props> = ({
           }
           formRef={formRef}
           onData={onData}
-          rules={getRules(schema['flowPropertyDataSet']['modellingAndValidation']['complianceDeclarations']['compliance']['common:referenceToComplianceSystem']['rules'])}
+          rules={getRules(
+            schema['flowPropertyDataSet']['modellingAndValidation']['complianceDeclarations'][
+              'compliance'
+            ]['common:referenceToComplianceSystem']['rules'],
+          )}
         />
         <Form.Item
           label={
@@ -225,7 +245,11 @@ export const FlowpropertyForm: FC<Props> = ({
             'compliance',
             'common:approvalOfOverallCompliance',
           ]}
-          rules={getRules(schema['flowPropertyDataSet']['modellingAndValidation']['complianceDeclarations']['compliance']['common:approvalOfOverallCompliance']['rules'])}
+          rules={getRules(
+            schema['flowPropertyDataSet']['modellingAndValidation']['complianceDeclarations'][
+              'compliance'
+            ]['common:approvalOfOverallCompliance']['rules'],
+          )}
         >
           <Select options={complianceOptions} />
         </Form.Item>
@@ -250,7 +274,11 @@ export const FlowpropertyForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
-            rules={getRules(schema['flowPropertyDataSet']['administrativeInformation']['dataEntryBy']['common:timeStamp']['rules'])}
+            rules={getRules(
+              schema['flowPropertyDataSet']['administrativeInformation']['dataEntryBy'][
+                'common:timeStamp'
+              ]['rules'],
+            )}
           >
             <Input disabled={true} style={{ color: token.colorTextDescription }} />
           </Form.Item>
@@ -266,7 +294,11 @@ export const FlowpropertyForm: FC<Props> = ({
             }
             formRef={formRef}
             onData={onData}
-            rules={getRules(schema['flowPropertyDataSet']['administrativeInformation']['dataEntryBy']['common:referenceToDataSetFormat']['rules'])}
+            rules={getRules(
+              schema['flowPropertyDataSet']['administrativeInformation']['dataEntryBy'][
+                'common:referenceToDataSetFormat'
+              ]['rules'],
+            )}
           />
         </Card>
 
@@ -287,7 +319,11 @@ export const FlowpropertyForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
-            rules={getRules(schema['flowPropertyDataSet']['administrativeInformation']['publicationAndOwnership']['common:dataSetVersion']['rules'])}
+            rules={getRules(
+              schema['flowPropertyDataSet']['administrativeInformation']['publicationAndOwnership'][
+                'common:dataSetVersion'
+              ]['rules'],
+            )}
           >
             <Input />
           </Form.Item>
@@ -312,8 +348,8 @@ export const FlowpropertyForm: FC<Props> = ({
           <ContactSelectForm
             label={
               <FormattedMessage
-                id="pages.FlowProperties.view.administrativeInformation.referenceToOwnershipOfDataSet"
-                defaultMessage="Owner of data set"
+                id='pages.FlowProperties.view.administrativeInformation.referenceToOwnershipOfDataSet'
+                defaultMessage='Owner of data set'
               />
             }
             name={[
@@ -324,7 +360,11 @@ export const FlowpropertyForm: FC<Props> = ({
             lang={lang}
             formRef={formRef}
             onData={onData}
-            rules={getRules(schema['flowPropertyDataSet']['administrativeInformation']['publicationAndOwnership']['common:referenceToOwnershipOfDataSet']['rules'])}
+            rules={getRules(
+              schema['flowPropertyDataSet']['administrativeInformation']['publicationAndOwnership'][
+                'common:referenceToOwnershipOfDataSet'
+              ]['rules'],
+            )}
           />
           <br />
           <Form.Item

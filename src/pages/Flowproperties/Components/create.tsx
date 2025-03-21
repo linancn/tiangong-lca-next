@@ -123,18 +123,18 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
           'common:dataSetVersion': initVersion,
         },
       },
-      modellingAndValidation:{
-        complianceDeclarations:{
-          compliance:{
-            'common:approvalOfOverallCompliance':'Fully compliant'
-          }
-        }
+      modellingAndValidation: {
+        complianceDeclarations: {
+          compliance: {
+            'common:approvalOfOverallCompliance': 'Fully compliant',
+          },
+        },
       },
     };
 
     setInitData(newData);
     const currentData = formRefCreate.current?.getFieldsValue();
-    formRefCreate.current?.setFieldsValue({...currentData, ...newData});
+    formRefCreate.current?.setFieldsValue({ ...currentData, ...newData });
     setFromData(newData);
   }, [drawerVisible]);
 

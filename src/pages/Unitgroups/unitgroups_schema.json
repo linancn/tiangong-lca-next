@@ -123,17 +123,17 @@
     "administrativeInformation": {
       "dataEntryBy": {
         "common:timeStamp": {
-          "value":"str",
-          "rules":[
+          "value": "str",
+          "rules": [
             {
-              "required":true,
+              "required": true,
               "messageKey": "pages.unitgroup.validator.timeStamp.required",
               "defaultMessage": "Please input time stamp"
             }
           ]
         },
         "common:referenceToDataSetFormat": {
-          "value":{
+          "value": {
             "@refObjectId": "str",
             "@type": "str",
             "@uri": "str",
@@ -143,9 +143,9 @@
             },
             "@version": "str"
           },
-          "rules":[
+          "rules": [
             {
-              "required":true,
+              "required": true,
               "messageKey": "pages.unitgroup.validator.referenceToDataSetFormat.required",
               "defaultMessage": "Please input reference to data set format"
             }
@@ -154,17 +154,17 @@
       },
       "publicationAndOwnership": {
         "common:dataSetVersion": {
-          "value":"str",
-          "rules":[
+          "value": "str",
+          "rules": [
             {
-              "required":true,
+              "required": true,
               "messageKey": "pages.unitgroup.validator.dataSetVersion.required",
               "defaultMessage": "Please input data set version"
             },
             {
               "pattern": "dataSetVersion",
-              "messageKey":"validator.dataSetVersion.pattern",
-              "defaultMessage":"Version format must be XX.XX.XXX, where X is a digit!"
+              "messageKey": "validator.dataSetVersion.pattern",
+              "defaultMessage": "Version format must be XX.XX.XXX, where X is a digit!"
             }
           ]
         },
@@ -180,7 +180,7 @@
         },
         "common:permanentDataSetURI": "str",
         "common:referenceToOwnershipOfDataSet": {
-          "value":{
+          "value": {
             "@refObjectId": "str",
             "@type": "str",
             "@uri": "str",
@@ -190,9 +190,9 @@
             },
             "@version": "str"
           },
-          "rules":[
+          "rules": [
             {
-              "required":true,
+              "required": true,
               "messageKey": "pages.unitgroup.validator.referenceToOwnershipOfDataSet.required",
               "defaultMessage": "Please input owner of data set"
             }

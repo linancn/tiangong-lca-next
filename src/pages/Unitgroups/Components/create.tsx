@@ -107,12 +107,12 @@ const UnitGroupCreate: FC<CreateProps> = ({
     }
     const currentDateTime = formatDateTime(new Date());
     const newData = {
-      modellingAndValidation:{
-        complianceDeclarations:{
-          compliance:{
-            'common:approvalOfOverallCompliance':'Fully compliant'
-          }
-        }
+      modellingAndValidation: {
+        complianceDeclarations: {
+          compliance: {
+            'common:approvalOfOverallCompliance': 'Fully compliant',
+          },
+        },
       },
       administrativeInformation: {
         dataEntryBy: {
@@ -235,7 +235,10 @@ const UnitGroupCreate: FC<CreateProps> = ({
             }}
             onFinish={async () => {
               const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
-              const formFieldsValue = {...formRefCreate.current?.getFieldsValue(),units:fromData.units};
+              const formFieldsValue = {
+                ...formRefCreate.current?.getFieldsValue(),
+                units: fromData.units,
+              };
               const result = await createUnitGroup(paramsId, formFieldsValue);
               if (result.data) {
                 message.success(

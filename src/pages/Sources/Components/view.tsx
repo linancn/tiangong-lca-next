@@ -179,8 +179,8 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
         <SourceSelectDescription
           title={
             <FormattedMessage
-              id="pages.source.view.sourceInformation.referenceToLogo"
-              defaultMessage="Logo of organisation or source"
+              id='pages.source.view.sourceInformation.referenceToLogo'
+              defaultMessage='Logo of organisation or source'
             />
           }
           data={initData.sourceInformation?.dataSetInformation?.referenceToLogo}
@@ -274,13 +274,15 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
           <SourceSelectDescription
             title={
               <FormattedMessage
-                id="pages.source.view.administrativeInformation.referenceToPrecedingDataSetVersion"
-                defaultMessage="Preceding data set version"
+                id='pages.source.view.administrativeInformation.referenceToPrecedingDataSetVersion'
+                defaultMessage='Preceding data set version'
               />
             }
             lang={lang}
             data={
-              initData.administrativeInformation?.publicationAndOwnership?.['common:referenceToPrecedingDataSetVersion']
+              initData.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToPrecedingDataSetVersion'
+              ]
             }
           />
           <br />

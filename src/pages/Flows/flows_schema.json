@@ -30,7 +30,7 @@
         },
         "name": {
           "baseName": {
-            "value":{
+            "value": {
               "@xml:lang": "str",
               "#text": "str"
             },
@@ -53,7 +53,7 @@
             ]
           },
           "treatmentStandardsRoutes": {
-            "value":{
+            "value": {
               "@xml:lang": "str",
               "#text": "str"
             },
@@ -76,7 +76,7 @@
             ]
           },
           "mixAndLocationTypes": {
-            "value":{
+            "value": {
               "@xml:lang": "str",
               "#text": "str"
             },
@@ -99,7 +99,7 @@
             ]
           },
           "flowProperties": {
-            "value":{
+            "value": {
               "@xml:lang": "str",
               "#text": "str"
             },
@@ -124,7 +124,7 @@
         "classificationInformation": {
           "common:elementaryFlowCategorization": {
             "common:category": {
-              "value":[
+              "value": [
                 {
                   "@catId": "str",
                   "@level": "str",
@@ -143,7 +143,7 @@
           "common:classification": {
             "@name": "str",
             "@classes": "str",
-            "common:class":{
+            "common:class": {
               "value": [
                 {
                   "@level": "str",
@@ -187,7 +187,7 @@
       },
       "quantitativeReference": {
         "referenceToReferenceFlowProperty": {
-          "value":"str",
+          "value": "str",
           "rules": [
             {
               "required": true,
@@ -199,7 +199,7 @@
       },
       "geography": {
         "locationOfSupply": {
-          "value":"str",
+          "value": "str",
           "rules": [
             {
               "messageKey": "validator.optional.empty",
@@ -234,7 +234,7 @@
     "modellingAndValidation": {
       "LCIMethod": {
         "typeOfDataSet": {
-          "value":"str",
+          "value": "str",
           "rules": [
             {
               "required": true,
@@ -247,7 +247,7 @@
       "complianceDeclarations": {
         "compliance": {
           "common:referenceToComplianceSystem": {
-            "value":{
+            "value": {
               "@refObjectId": "str",
               "@type": "str",
               "@uri": "str",
@@ -266,7 +266,7 @@
             ]
           },
           "common:approvalOfOverallCompliance": {
-            "value":"str",
+            "value": "str",
             "rules": [
               {
                 "required": true,
@@ -281,7 +281,7 @@
     "administrativeInformation": {
       "dataEntryBy": {
         "common:timeStamp": {
-          "value":"str",
+          "value": "str",
           "rules": [
             {
               "required": true,
@@ -291,7 +291,7 @@
           ]
         },
         "common:referenceToDataSetFormat": {
-          "value":{
+          "value": {
             "@refObjectId": "str",
             "@type": "str",
             "@uri": "str",
@@ -322,7 +322,7 @@
       },
       "publicationAndOwnership": {
         "common:dataSetVersion": {
-          "value":"str",
+          "value": "str",
           "rules": [
             {
               "required": true,
@@ -347,7 +347,7 @@
           }
         },
         "common:referenceToOwnershipOfDataSet": {
-          "value":{
+          "value": {
             "@refObjectId": "str",
             "@type": "str",
             "@uri": "str",
@@ -369,7 +369,7 @@
     },
     "flowProperties": {
       "flowProperty": {
-        "@dataSetInternalID":{
+        "@dataSetInternalID": {
           "value": "str",
           "rules": [
             {
@@ -380,7 +380,7 @@
           ]
         },
         "referenceToFlowPropertyDataSet": {
-          "value":{
+          "value": {
             "@refObjectId": "str",
             "@type": "str",
             "@uri": "str",
@@ -399,7 +399,7 @@
           ]
         },
         "meanValue": {
-          "value":"str",
+          "value": "str",
           "rules": [
             {
               "required": true,

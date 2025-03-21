@@ -128,50 +128,50 @@ const FlowsCreate: FC<CreateProps> = ({ lang, actionRef, actionType = 'create', 
     //       ] ?? [],
     //   };
 
-      // getSourceDetail(referenceToDataSetFormatId, '').then(async (result2: any) => {
-      // const referenceToDataSetFormatData = genSourceFromData(
-      //   result2.data?.json?.sourceDataSet ?? {},
-      // );
-      // const referenceToDataSetFormat = {
-      //   '@refObjectId': referenceToDataSetFormatId,
-      //   '@type': 'source data set',
-      //   '@uri': `../sources/${referenceToDataSetFormatId}.xml`,
-      //   '@version': result2.data?.version,
-      //   'common:shortDescription':
-      //     referenceToDataSetFormatData?.sourceInformation?.dataSetInformation?.[
-      //       'common:shortName'
-      //     ] ?? [],
-      // };
+    // getSourceDetail(referenceToDataSetFormatId, '').then(async (result2: any) => {
+    // const referenceToDataSetFormatData = genSourceFromData(
+    //   result2.data?.json?.sourceDataSet ?? {},
+    // );
+    // const referenceToDataSetFormat = {
+    //   '@refObjectId': referenceToDataSetFormatId,
+    //   '@type': 'source data set',
+    //   '@uri': `../sources/${referenceToDataSetFormatId}.xml`,
+    //   '@version': result2.data?.version,
+    //   'common:shortDescription':
+    //     referenceToDataSetFormatData?.sourceInformation?.dataSetInformation?.[
+    //       'common:shortName'
+    //     ] ?? [],
+    // };
 
-      const currentDateTime = formatDateTime(new Date());
-      const newData = {
-        modellingAndValidation: {
-          complianceDeclarations: {
-            compliance: {
-              // 'common:referenceToComplianceSystem': referenceToComplianceSystem,
-              'common:approvalOfOverallCompliance':'Fully compliant'
-            },
+    const currentDateTime = formatDateTime(new Date());
+    const newData = {
+      modellingAndValidation: {
+        complianceDeclarations: {
+          compliance: {
+            // 'common:referenceToComplianceSystem': referenceToComplianceSystem,
+            'common:approvalOfOverallCompliance': 'Fully compliant',
           },
         },
-        administrativeInformation: {
-          dataEntryBy: {
-            'common:timeStamp': currentDateTime,
-            // 'common:referenceToDataSetFormat': referenceToDataSetFormat,
-          },
-          publicationAndOwnership: {
-            'common:dataSetVersion': '01.01.000',
-          },
+      },
+      administrativeInformation: {
+        dataEntryBy: {
+          'common:timeStamp': currentDateTime,
+          // 'common:referenceToDataSetFormat': referenceToDataSetFormat,
         },
-      };
+        publicationAndOwnership: {
+          'common:dataSetVersion': '01.01.000',
+        },
+      },
+    };
 
-      setInitData(newData);
+    setInitData(newData);
 
-      setPropertyDataSource([]);
-      // formRefCreate.current?.resetFields();
-      const currentData = formRefCreate.current?.getFieldsValue();
-      formRefCreate.current?.setFieldsValue({ ...currentData, ...newData });
-      setFromData(newData);
-      // });
+    setPropertyDataSource([]);
+    // formRefCreate.current?.resetFields();
+    const currentData = formRefCreate.current?.getFieldsValue();
+    formRefCreate.current?.setFieldsValue({ ...currentData, ...newData });
+    setFromData(newData);
+    // });
     // });
   }, [drawerVisible]);
 
@@ -265,14 +265,23 @@ const FlowsCreate: FC<CreateProps> = ({ lang, actionRef, actionType = 'create', 
             onFinish={async () => {
               const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
               const FieldsValue = formRefCreate.current?.getFieldsValue();
-              if(!fromData?.flowProperties||!fromData?.flowProperties?.flowProperty||fromData?.flowProperties?.flowProperty?.length===0){
-                message.error(intl.formatMessage({
-                  id: 'pages.flow.validator.flowProperties.required',
-                  defaultMessage: 'Please add flow properties',
-                }));
+              if (
+                !fromData?.flowProperties ||
+                !fromData?.flowProperties?.flowProperty ||
+                fromData?.flowProperties?.flowProperty?.length === 0
+              ) {
+                message.error(
+                  intl.formatMessage({
+                    id: 'pages.flow.validator.flowProperties.required',
+                    defaultMessage: 'Please add flow properties',
+                  }),
+                );
                 return true;
               }
-              const result = await createFlows(paramsId, {...FieldsValue, flowProperties:fromData?.flowProperties});
+              const result = await createFlows(paramsId, {
+                ...FieldsValue,
+                flowProperties: fromData?.flowProperties,
+              });
               if (result.data) {
                 message.success(
                   intl.formatMessage({

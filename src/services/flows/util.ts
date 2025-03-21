@@ -129,9 +129,8 @@ export function genFlowJsonOrdered(id: string, data: any) {
                 '@refObjectId'
               ] ?? {},
             '@version':
-              data?.flowInformation?.technology?.referenceToTechnicalSpecification?.[
-                '@version'
-              ] ?? {},
+              data?.flowInformation?.technology?.referenceToTechnicalSpecification?.['@version'] ??
+              {},
             '@uri':
               data?.flowInformation?.technology?.referenceToTechnicalSpecification?.['@uri'] ?? {},
             'common:shortDescription': getLangJson(
@@ -370,9 +369,8 @@ export function genFlowFromData(data: any) {
               '@refObjectId'
             ] ?? {},
           '@version':
-            data?.flowInformation?.technology?.referenceToTechnicalSpecification?.[
-              '@version'
-            ] ?? {},
+            data?.flowInformation?.technology?.referenceToTechnicalSpecification?.['@version'] ??
+            {},
           '@uri':
             data?.flowInformation?.technology?.referenceToTechnicalSpecification?.['@uri'] ?? {},
           'common:shortDescription': getLangList(
@@ -474,7 +472,7 @@ export function genFlowFromData(data: any) {
           data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'],
         'common:permanentDataSetURI':
           data?.administrativeInformation?.publicationAndOwnership?.['common:permanentDataSetURI'],
-          'common:referenceToOwnershipOfDataSet': {
+        'common:referenceToOwnershipOfDataSet': {
           '@refObjectId':
             data?.administrativeInformation?.publicationAndOwnership?.[
               'common:referenceToOwnershipOfDataSet'

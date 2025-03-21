@@ -80,7 +80,7 @@ export default {
   'pages.flow.view.modellingAndValidation.approvalOfOverallCompliance.notDefined': 'Not defined',
 
   'pages.flows.deleteMessage': 'Are you sure you want to delete this data?',
-  
+
   // Validator messages
   'pages.flow.validator.version.required': 'Please input version',
   'pages.flow.validator.uuid.required': 'Please input UUID',

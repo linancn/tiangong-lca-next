@@ -1,5 +1,6 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
+import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 import SourcesDescription from '@/pages/Sources/Components/select/description';
 import UnitGroupDescription from '@/pages/Unitgroups/Components/select/description';
 import { getFlowpropertyDetail } from '@/services/flowproperties/api';
@@ -12,7 +13,6 @@ import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { complianceOptions } from './optiondata';
 import FlowpropertiesSelectDescription from './select/description';
-import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 type Props = {
   id: string;
   version: string;
@@ -95,7 +95,7 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
           data={initData?.flowPropertiesInformation?.dataSetInformation?.['common:synonyms']}
         />
         <br />
-        <Divider orientationMargin="0" orientation="left" plain>
+        <Divider orientationMargin='0' orientation='left' plain>
           <FormattedMessage
             id='pages.FlowProperties.view.flowPropertiesInformation.generalComment'
             defaultMessage='General comment on data set'
@@ -132,14 +132,15 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
     ),
     modellingAndValidation: (
       <>
-      <SourcesDescription
+        <SourcesDescription
           data={
-            initData?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.referenceToDataSource
+            initData?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+              ?.referenceToDataSource
           }
           title={
             <FormattedMessage
-              id="pages.FlowProperties.view.modellingAndValidation.referenceToDataSource"
-              defaultMessage="Data source"
+              id='pages.FlowProperties.view.modellingAndValidation.referenceToDataSource'
+              defaultMessage='Data source'
             />
           }
           lang={lang}
@@ -272,8 +273,8 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
             lang={lang}
             title={
               <FormattedMessage
-                id="pages.flowproperties.view.administrativeInformation.referenceToOwnershipOfDataSet"
-                defaultMessage="Owner of data set"
+                id='pages.flowproperties.view.administrativeInformation.referenceToOwnershipOfDataSet'
+                defaultMessage='Owner of data set'
               />
             }
           ></ContactSelectDescription>

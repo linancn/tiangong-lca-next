@@ -80,7 +80,7 @@ export default {
   'pages.flow.view.modellingAndValidation.approvalOfOverallCompliance.notDefined': '未定义',
 
   'pages.flows.deleteMessage': '您确定要删除此数据吗？',
-  
+
   // 验证器消息
   'pages.flow.validator.version.required': '请输入版本',
   'pages.flow.validator.uuid.required': '请输入UUID',

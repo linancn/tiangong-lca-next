@@ -34,11 +34,11 @@ export function getRules(rules: any[]) {
       if (rule.pattern === 'CASNumber') {
         _rule.pattern = /^\d{2,7}-\d{2}-\d$/;
       }
-    };
+    }
     return {
       ..._rule,
       message: <FormattedMessage id={rule.messageKey} defaultMessage={rule.defaultMessage} />,
-    }
+    };
   });
 }
 

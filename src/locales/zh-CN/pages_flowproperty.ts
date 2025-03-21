@@ -45,7 +45,7 @@ export default {
   'pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance.fullyCompliant': '完全符合',
   'pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance.notCompliant': '不符合',
   'pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance.notDefined': '未定义',
-  
+
   // 验证消息
   'pages.flowproperties.validator.version.required': '请输入版本',
   'pages.flowproperties.validator.uuid.required': '请输入UUID',

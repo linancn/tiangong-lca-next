@@ -44,7 +44,7 @@ export default {
   'pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance.fullyCompliant': 'Fully compliant',
   'pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance.notCompliant': 'Not compliant',
   'pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance.notDefined': 'Not defined',
-  
+
   // Validator messages
   'pages.flowproperties.validator.version.required': 'Please input version',
   'pages.flowproperties.validator.uuid.required': 'Please input UUID',

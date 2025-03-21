@@ -70,7 +70,7 @@ const ContactCreate: FC<CreateProps> = ({
     getContactDetail(id, version).then(async (result) => {
       const contactFromData = genContactFromData(result.data?.json?.contactDataSet ?? {});
       setInitData(contactFromData);
-      formRefCreate.current?.resetFields()
+      formRefCreate.current?.resetFields();
       formRefCreate.current?.setFieldsValue({ ...contactFromData });
       setFromData(contactFromData);
       setSpinning(false);

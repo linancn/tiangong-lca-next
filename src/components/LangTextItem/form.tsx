@@ -25,7 +25,7 @@ const LangTextItemForm: FC<Props> = ({ name, label, rules = [], setRuleErrorStat
   const watchedValues = Form.useWatch(name, form);
   const formValues = watchedValues || [];
 
-  const selectedLangValues = (formValues??[])
+  const selectedLangValues = (formValues ?? [])
     .filter((item: any) => item && item['@xml:lang'])
     .map((item: any) => item['@xml:lang']);
 

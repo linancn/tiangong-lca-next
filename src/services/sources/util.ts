@@ -62,8 +62,7 @@ export function genSourceJsonOrdered(id: string, data: any) {
               data?.sourceInformation?.dataSetInformation?.referenceToLogo?.['@refObjectId'],
             '@type': data?.sourceInformation?.dataSetInformation?.referenceToLogo?.['@type'],
             '@uri': data?.sourceInformation?.dataSetInformation?.referenceToLogo?.['@uri'],
-            '@version':
-              data?.sourceInformation?.dataSetInformation?.referenceToLogo?.['@version'],
+            '@version': data?.sourceInformation?.dataSetInformation?.referenceToLogo?.['@version'],
             'common:shortDescription': getLangJson(
               data?.sourceInformation?.dataSetInformation?.referenceToLogo?.[
                 'common:shortDescription'

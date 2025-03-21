@@ -3,9 +3,9 @@
     "@xmlns:common": "str",
     "@xmlns": "str",
     "@xmlns:xsi": "str",
-    "@version":{
+    "@version": {
       "value": "str",
-      "rules":[
+      "rules": [
         {
           "required": true,
           "messageKey": "pages.source.validator.version.required",
@@ -17,8 +17,8 @@
     "sourceInformation": {
       "dataSetInformation": {
         "common:UUID": {
-          "value":"str",
-          "rules":[
+          "value": "str",
+          "rules": [
             {
               "required": true,
               "messageKey": "pages.source.validator.uuid.required",
@@ -27,11 +27,11 @@
           ]
         },
         "common:shortName": {
-          "value":{
+          "value": {
             "@xml:lang": "str",
             "#text": "str"
           },
-          "rules":[
+          "rules": [
             {
               "required": true,
               "messageKey": "pages.source.validator.shortName.required",
@@ -51,13 +51,13 @@
         },
         "classificationInformation": {
           "common:classification": {
-            "common:class":{
+            "common:class": {
               "value": {
                 "@level": "str",
                 "@classId": "str",
                 "#text": "str"
               },
-              "rules":[
+              "rules": [
                 {
                   "required": true,
                   "messageKey": "pages.source.validator.class.required",
@@ -90,7 +90,7 @@
           }
         ],
         "referenceToDigitalFile": {
-          "@uri": "str" 
+          "@uri": "str"
         },
         "referenceToContact": {
           "@type": "str",
@@ -114,20 +114,20 @@
         }
       }
     },
-    "administrativeInformation": { 
-      "dataEntryBy": { 
+    "administrativeInformation": {
+      "dataEntryBy": {
         "common:timeStamp": {
-          "value":"str",
-          "rules":[
+          "value": "str",
+          "rules": [
             {
               "required": true,
               "messageKey": "pages.source.validator.timeStamp.required",
               "defaultMessage": "timeStamp is required"
             }
           ]
-        }, 
+        },
         "common:referenceToDataSetFormat": {
-          "value":{
+          "value": {
             "@type": "str",
             "@refObjectId": "str",
             "@version": "str",
@@ -137,7 +137,7 @@
               "#text": "str"
             }
           },
-          "rules":[
+          "rules": [
             {
               "required": true,
               "messageKey": "pages.source.validator.referenceToDataSetFormat.required",
@@ -148,8 +148,8 @@
       },
       "publicationAndOwnership": {
         "common:dataSetVersion": {
-          "value":"str",
-          "rules":[
+          "value": "str",
+          "rules": [
             {
               "required": true,
               "messageKey": "pages.source.validator.dataSetVersion.required",
@@ -173,7 +173,7 @@
           }
         },
         "common:permanentDataSetURI": "str",
-        "common:referenceToOwnershipOfDataSet":{
+        "common:referenceToOwnershipOfDataSet": {
           "value": {
             "@type": "str",
             "@refObjectId": "str",
@@ -184,7 +184,7 @@
               "#text": "str"
             }
           },
-          "rules":[
+          "rules": [
             {
               "required": true,
               "messageKey": "pages.source.validator.referenceToOwnershipOfDataSet.required",

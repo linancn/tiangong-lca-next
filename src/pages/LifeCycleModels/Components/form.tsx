@@ -1,13 +1,16 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
+import RequiredMark from '@/components/RequiredMark';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import { copyrightOptions } from '@/pages/Processes/Components/optiondata';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
+import { getRules } from '@/pages/Utils';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Card, Form, Input, Select, Space, theme } from 'antd';
 import type { FC } from 'react';
 import React, { useState } from 'react';
 import { FormattedMessage } from 'umi';
+import schema from '../lifecyclemodels.json';
 import {
   approvalOfOverallComplianceOptions,
   documentationComplianceOptions,
@@ -17,9 +20,6 @@ import {
   qualityComplianceOptions,
   reviewComplianceOptions,
 } from './optiondata';
-import schema from '../lifecyclemodels.json';
-import { getRules } from '@/pages/Utils';
-import RequiredMark from '@/components/RequiredMark';
 
 type Props = {
   lang: string;
@@ -27,7 +27,7 @@ type Props = {
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;
   onTabChange: (key: string) => void;
-  formType?: string
+  formType?: string;
 };
 export const LifeCycleModelForm: FC<Props> = ({
   lang,
@@ -35,7 +35,7 @@ export const LifeCycleModelForm: FC<Props> = ({
   formRef,
   onData,
   onTabChange,
-  formType
+  formType,
 }) => {
   const { token } = theme.useToken();
   const [baseNameError, setBaseNameError] = useState(false);
@@ -85,10 +85,12 @@ export const LifeCycleModelForm: FC<Props> = ({
             size='small'
             title={
               <RequiredMark
-                label={<FormattedMessage
-                  id="pages.lifeCycleModel.information.baseName"
-                  defaultMessage="Base name"
-                />}
+                label={
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.information.baseName'
+                    defaultMessage='Base name'
+                  />
+                }
                 showError={baseNameError}
               />
             }
@@ -102,7 +104,11 @@ export const LifeCycleModelForm: FC<Props> = ({
                 />
               }
               setRuleErrorState={setBaseNameError}
-              rules={getRules(schema['lifeCycleModelDataSet']['lifeCycleModelInformation']['dataSetInformation']['name']['baseName']['rules'])}
+              rules={getRules(
+                schema['lifeCycleModelDataSet']['lifeCycleModelInformation']['dataSetInformation'][
+                  'name'
+                ]['baseName']['rules'],
+              )}
             />
           </Card>
           <br />
@@ -110,10 +116,12 @@ export const LifeCycleModelForm: FC<Props> = ({
             size='small'
             title={
               <RequiredMark
-                label={<FormattedMessage
-                  id="pages.lifeCycleModel.information.treatmentStandardsRoutes"
-                  defaultMessage="Treatment, standards, routes"
-                />}
+                label={
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.information.treatmentStandardsRoutes'
+                    defaultMessage='Treatment, standards, routes'
+                  />
+                }
                 showError={treatmentStandardsRoutesError}
               />
             }
@@ -132,7 +140,11 @@ export const LifeCycleModelForm: FC<Props> = ({
                 />
               }
               setRuleErrorState={setTreatmentStandardsRoutesError}
-              rules={getRules(schema['lifeCycleModelDataSet']['lifeCycleModelInformation']['dataSetInformation']['name']['treatmentStandardsRoutes']['rules'])}
+              rules={getRules(
+                schema['lifeCycleModelDataSet']['lifeCycleModelInformation']['dataSetInformation'][
+                  'name'
+                ]['treatmentStandardsRoutes']['rules'],
+              )}
             />
           </Card>
           <br />
@@ -140,10 +152,12 @@ export const LifeCycleModelForm: FC<Props> = ({
             size='small'
             title={
               <RequiredMark
-                label={<FormattedMessage
-                  id="pages.lifeCycleModel.information.mixAndLocationTypes"
-                  defaultMessage="Mix and location types"
-                />}
+                label={
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.information.mixAndLocationTypes'
+                    defaultMessage='Mix and location types'
+                  />
+                }
                 showError={mixAndLocationTypesError}
               />
             }
@@ -162,7 +176,11 @@ export const LifeCycleModelForm: FC<Props> = ({
                 />
               }
               setRuleErrorState={setMixAndLocationTypesError}
-              rules={getRules(schema['lifeCycleModelDataSet']['lifeCycleModelInformation']['dataSetInformation']['name']['mixAndLocationTypes']['rules'])}
+              rules={getRules(
+                schema['lifeCycleModelDataSet']['lifeCycleModelInformation']['dataSetInformation'][
+                  'name'
+                ]['mixAndLocationTypes']['rules'],
+              )}
             />
           </Card>
           <br />
@@ -188,7 +206,11 @@ export const LifeCycleModelForm: FC<Props> = ({
                   defaultMessage='Quantitative product or process properties'
                 />
               }
-              rules={getRules(schema['lifeCycleModelDataSet']['lifeCycleModelInformation']['dataSetInformation']['name']['functionalUnitFlowProperties']['rules'])}
+              rules={getRules(
+                schema['lifeCycleModelDataSet']['lifeCycleModelInformation']['dataSetInformation'][
+                  'name'
+                ]['functionalUnitFlowProperties']['rules'],
+              )}
             />
           </Card>
         </Card>
@@ -205,7 +227,11 @@ export const LifeCycleModelForm: FC<Props> = ({
           lang={lang}
           dataType={'LifeCycleModel'}
           onData={onData}
-          rules={getRules(schema['lifeCycleModelDataSet']['lifeCycleModelInformation']['dataSetInformation']['classificationInformation']['common:classification']['common:class']['rules'])}
+          rules={getRules(
+            schema['lifeCycleModelDataSet']['lifeCycleModelInformation']['dataSetInformation'][
+              'classificationInformation'
+            ]['common:classification']['common:class']['rules'],
+          )}
         />
         <br />
         <Card
@@ -297,29 +323,28 @@ export const LifeCycleModelForm: FC<Props> = ({
             'common:referenceToNameOfReviewerAndInstitution',
           ]}
           onData={onData}
-          rules={getRules(schema['lifeCycleModelDataSet']['modellingAndValidation']['validation']['review']['common:referenceToNameOfReviewerAndInstitution']['rules'])}
+          rules={getRules(
+            schema['lifeCycleModelDataSet']['modellingAndValidation']['validation']['review'][
+              'common:referenceToNameOfReviewerAndInstitution'
+            ]['rules'],
+          )}
         />
         <br />
         <Card
-          size="small"
+          size='small'
           title={
             <FormattedMessage
-              id="pages.lifeCycleModel.information.otherReviewDetails"
-              defaultMessage="Use advice for data set"
+              id='pages.lifeCycleModel.information.otherReviewDetails'
+              defaultMessage='Use advice for data set'
             />
           }
         >
           <LangTextItemForm
-            name={[
-              'modellingAndValidation',
-              'validation',
-              'review',
-              'common:otherReviewDetails',
-            ]}
+            name={['modellingAndValidation', 'validation', 'review', 'common:otherReviewDetails']}
             label={
               <FormattedMessage
-                id="pages.lifeCycleModel.information.otherReviewDetails"
-                defaultMessage="Subsequent review comments	"
+                id='pages.lifeCycleModel.information.otherReviewDetails'
+                defaultMessage='Subsequent review comments	'
               />
             }
           />
@@ -358,7 +383,11 @@ export const LifeCycleModelForm: FC<Props> = ({
             'common:referenceToComplianceSystem',
           ]}
           onData={onData}
-          rules={getRules(schema['lifeCycleModelDataSet']['modellingAndValidation']['complianceDeclarations']['compliance']['common:referenceToComplianceSystem']['rules'])}
+          rules={getRules(
+            schema['lifeCycleModelDataSet']['modellingAndValidation']['complianceDeclarations'][
+              'compliance'
+            ]['common:referenceToComplianceSystem']['rules'],
+          )}
         />
         <br />
         <Form.Item
@@ -374,7 +403,11 @@ export const LifeCycleModelForm: FC<Props> = ({
             'compliance',
             'common:approvalOfOverallCompliance',
           ]}
-          rules={getRules(schema['lifeCycleModelDataSet']['modellingAndValidation']['complianceDeclarations']['compliance']['common:approvalOfOverallCompliance']['rules'])}
+          rules={getRules(
+            schema['lifeCycleModelDataSet']['modellingAndValidation']['complianceDeclarations'][
+              'compliance'
+            ]['common:approvalOfOverallCompliance']['rules'],
+          )}
         >
           <Select options={approvalOfOverallComplianceOptions} />
         </Form.Item>
@@ -392,7 +425,11 @@ export const LifeCycleModelForm: FC<Props> = ({
             'compliance',
             'common:nomenclatureCompliance',
           ]}
-          rules={getRules(schema['lifeCycleModelDataSet']['modellingAndValidation']['complianceDeclarations']['compliance']['common:nomenclatureCompliance']['rules'])}
+          rules={getRules(
+            schema['lifeCycleModelDataSet']['modellingAndValidation']['complianceDeclarations'][
+              'compliance'
+            ]['common:nomenclatureCompliance']['rules'],
+          )}
         >
           <Select options={nomenclatureComplianceOptions} />
         </Form.Item>
@@ -410,7 +447,11 @@ export const LifeCycleModelForm: FC<Props> = ({
             'compliance',
             'common:methodologicalCompliance',
           ]}
-          rules={getRules(schema['lifeCycleModelDataSet']['modellingAndValidation']['complianceDeclarations']['compliance']['common:methodologicalCompliance']['rules'])}
+          rules={getRules(
+            schema['lifeCycleModelDataSet']['modellingAndValidation']['complianceDeclarations'][
+              'compliance'
+            ]['common:methodologicalCompliance']['rules'],
+          )}
         >
           <Select options={methodologicalComplianceOptions} />
         </Form.Item>
@@ -428,7 +469,11 @@ export const LifeCycleModelForm: FC<Props> = ({
             'compliance',
             'common:reviewCompliance',
           ]}
-          rules={getRules(schema['lifeCycleModelDataSet']['modellingAndValidation']['complianceDeclarations']['compliance']['common:reviewCompliance']['rules'])}
+          rules={getRules(
+            schema['lifeCycleModelDataSet']['modellingAndValidation']['complianceDeclarations'][
+              'compliance'
+            ]['common:reviewCompliance']['rules'],
+          )}
         >
           <Select options={reviewComplianceOptions} />
         </Form.Item>
@@ -446,7 +491,11 @@ export const LifeCycleModelForm: FC<Props> = ({
             'compliance',
             'common:documentationCompliance',
           ]}
-          rules={getRules(schema['lifeCycleModelDataSet']['modellingAndValidation']['complianceDeclarations']['compliance']['common:documentationCompliance']['rules'])}
+          rules={getRules(
+            schema['lifeCycleModelDataSet']['modellingAndValidation']['complianceDeclarations'][
+              'compliance'
+            ]['common:documentationCompliance']['rules'],
+          )}
         >
           <Select options={documentationComplianceOptions} />
         </Form.Item>
@@ -464,7 +513,11 @@ export const LifeCycleModelForm: FC<Props> = ({
             'compliance',
             'common:qualityCompliance',
           ]}
-          rules={getRules(schema['lifeCycleModelDataSet']['modellingAndValidation']['complianceDeclarations']['compliance']['common:qualityCompliance']['rules'])}
+          rules={getRules(
+            schema['lifeCycleModelDataSet']['modellingAndValidation']['complianceDeclarations'][
+              'compliance'
+            ]['common:qualityCompliance']['rules'],
+          )}
         >
           <Select options={qualityComplianceOptions} />
         </Form.Item>
@@ -496,7 +549,11 @@ export const LifeCycleModelForm: FC<Props> = ({
               'common:referenceToCommissioner',
             ]}
             onData={onData}
-            rules={getRules(schema['lifeCycleModelDataSet']['administrativeInformation']['common:commissionerAndGoal']['common:referenceToCommissioner']['rules'])}
+            rules={getRules(
+              schema['lifeCycleModelDataSet']['administrativeInformation'][
+                'common:commissionerAndGoal'
+              ]['common:referenceToCommissioner']['rules'],
+            )}
           />
           <br />
           <Card
@@ -577,7 +634,11 @@ export const LifeCycleModelForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
-            rules={getRules(schema['lifeCycleModelDataSet']['administrativeInformation']['dataEntryBy']['common:timeStamp']['rules'])}
+            rules={getRules(
+              schema['lifeCycleModelDataSet']['administrativeInformation']['dataEntryBy'][
+                'common:timeStamp'
+              ]['rules'],
+            )}
           >
             <Input disabled={true} style={{ color: token.colorTextDescription }} />
           </Form.Item>
@@ -593,7 +654,11 @@ export const LifeCycleModelForm: FC<Props> = ({
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
             onData={onData}
-            rules={getRules(schema['lifeCycleModelDataSet']['administrativeInformation']['dataEntryBy']['common:referenceToDataSetFormat']['rules'])}
+            rules={getRules(
+              schema['lifeCycleModelDataSet']['administrativeInformation']['dataEntryBy'][
+                'common:referenceToDataSetFormat'
+              ]['rules'],
+            )}
           />
           <br />
           <ContactSelectForm
@@ -611,7 +676,11 @@ export const LifeCycleModelForm: FC<Props> = ({
               'common:referenceToPersonOrEntityEnteringTheData',
             ]}
             onData={onData}
-            rules={getRules(schema['lifeCycleModelDataSet']['administrativeInformation']['dataEntryBy']['common:referenceToPersonOrEntityEnteringTheData']['rules'])}
+            rules={getRules(
+              schema['lifeCycleModelDataSet']['administrativeInformation']['dataEntryBy'][
+                'common:referenceToPersonOrEntityEnteringTheData'
+              ]['rules'],
+            )}
           />
         </Card>
         <br />
@@ -632,7 +701,11 @@ export const LifeCycleModelForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
-            rules={getRules(schema['lifeCycleModelDataSet']['administrativeInformation']['publicationAndOwnership']['common:dataSetVersion']['rules'])}
+            rules={getRules(
+              schema['lifeCycleModelDataSet']['administrativeInformation'][
+                'publicationAndOwnership'
+              ]['common:dataSetVersion']['rules'],
+            )}
           >
             <Input />
           </Form.Item>
@@ -648,7 +721,11 @@ export const LifeCycleModelForm: FC<Props> = ({
               'publicationAndOwnership',
               'common:permanentDataSetURI',
             ]}
-            rules={getRules(schema['lifeCycleModelDataSet']['administrativeInformation']['publicationAndOwnership']['common:permanentDataSetURI']['rules'])}
+            rules={getRules(
+              schema['lifeCycleModelDataSet']['administrativeInformation'][
+                'publicationAndOwnership'
+              ]['common:permanentDataSetURI']['rules'],
+            )}
           >
             <Input />
           </Form.Item>
@@ -667,7 +744,11 @@ export const LifeCycleModelForm: FC<Props> = ({
               'common:referenceToOwnershipOfDataSet',
             ]}
             onData={onData}
-            rules={getRules(schema['lifeCycleModelDataSet']['administrativeInformation']['publicationAndOwnership']['common:referenceToOwnershipOfDataSet']['rules'])}
+            rules={getRules(
+              schema['lifeCycleModelDataSet']['administrativeInformation'][
+                'publicationAndOwnership'
+              ]['common:referenceToOwnershipOfDataSet']['rules'],
+            )}
           />
           <br />
           <Form.Item
@@ -678,7 +759,11 @@ export const LifeCycleModelForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:copyright']}
-            rules={getRules(schema['lifeCycleModelDataSet']['administrativeInformation']['publicationAndOwnership']['common:copyright']['rules'])}
+            rules={getRules(
+              schema['lifeCycleModelDataSet']['administrativeInformation'][
+                'publicationAndOwnership'
+              ]['common:copyright']['rules'],
+            )}
           >
             <Select options={copyrightOptions} />
           </Form.Item>
@@ -707,7 +792,11 @@ export const LifeCycleModelForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:licenseType']}
-            rules={getRules(schema['lifeCycleModelDataSet']['administrativeInformation']['publicationAndOwnership']['common:licenseType']['rules'])}
+            rules={getRules(
+              schema['lifeCycleModelDataSet']['administrativeInformation'][
+                'publicationAndOwnership'
+              ]['common:licenseType']['rules'],
+            )}
           >
             <Select options={licenseTypeOptions} />
           </Form.Item>
