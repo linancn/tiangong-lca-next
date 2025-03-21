@@ -361,7 +361,7 @@
             {
               "required": true,
               "messageKey": "pages.flow.validator.referenceToOwnershipOfDataSet.required",
-              "defaultMessage": "Please input ownership of data set"
+              "defaultMessage": "Please input owner of data set"
             }
           ]
         }

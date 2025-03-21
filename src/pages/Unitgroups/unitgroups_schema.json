@@ -194,7 +194,7 @@
             {
               "required":true,
               "messageKey": "pages.unitgroup.validator.referenceToOwnershipOfDataSet.required",
-              "defaultMessage": "Please input reference to ownership of data set"
+              "defaultMessage": "Please input owner of data set"
             }
           ]
         }

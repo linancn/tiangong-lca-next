@@ -96,7 +96,7 @@ export default {
   'pages.flow.validator.timeStamp.required': 'Please input time stamp',
   'pages.flow.validator.referenceToDataSetFormat.required': 'Please input data set format(s)',
   'pages.flow.validator.dataSetVersion.required': 'Please input data set version',
-  'pages.flow.validator.referenceToOwnershipOfDataSet.required': 'Please input ownership of data set',
+  'pages.flow.validator.referenceToOwnershipOfDataSet.required': 'Please input owner of data set',
   'pages.flow.validator.dataSetInternalID.required': 'Please input data set internal ID',
   'pages.flow.validator.referenceToFlowPropertyDataSet.required': 'Please input reference flow property',
   'pages.flow.validator.meanValue.required': 'Please input mean value (of flow property)',
