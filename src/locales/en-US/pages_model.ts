@@ -11,6 +11,7 @@ export default {
   'pages.lifeCycleModel.information.functionalUnitFlowProperties': 'Quantitative product or process properties',
   'pages.lifeCycleModel.information.generalComment': 'General comment',
   'pages.lifeCycleModel.information.referenceToExternalDocumentation': 'Data set report, background info',
+  'pages.lifeCycleModel.information.otherReviewDetails': 'Subsequent review comments',
   'pages.lifeCycleModel.information.technology.referenceToDiagram': 'Life cycle model diagramm(s) or screenshot(s)',
   'pages.lifeCycleModel.information.referenceToCompleteReviewReport': 'Complete review report',
 

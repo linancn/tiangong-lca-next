@@ -11,6 +11,7 @@ export default {
   'pages.lifeCycleModel.information.functionalUnitFlowProperties': '定量产品或过程属性',
   'pages.lifeCycleModel.information.generalComment': '概述',
   'pages.lifeCycleModel.information.referenceToExternalDocumentation': '数据集报告、背景信息',
+  'pages.lifeCycleModel.information.otherReviewDetails': '后续审查评论',
   'pages.lifeCycleModel.information.technology.referenceToDiagram': '生命周期模型图或屏幕截图',
   'pages.lifeCycleModel.information.referenceToCompleteReviewReport': '完整审查报告',
 

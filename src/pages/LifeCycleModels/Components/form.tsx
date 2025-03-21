@@ -300,6 +300,30 @@ export const LifeCycleModelForm: FC<Props> = ({
           rules={getRules(schema['lifeCycleModelDataSet']['modellingAndValidation']['validation']['review']['common:referenceToNameOfReviewerAndInstitution']['rules'])}
         />
         <br />
+        <Card
+          size="small"
+          title={
+            <FormattedMessage
+              id="pages.lifeCycleModel.information.otherReviewDetails"
+              defaultMessage="Use advice for data set"
+            />
+          }
+        >
+          <LangTextItemForm
+            name={[
+              'modellingAndValidation',
+              'validation',
+              'review',
+              'common:otherReviewDetails',
+            ]}
+            label={
+              <FormattedMessage
+                id="pages.lifeCycleModel.information.otherReviewDetails"
+                defaultMessage="Subsequent review comments	"
+              />
+            }
+          />
+        </Card>
         <SourceSelectForm
           lang={lang}
           formRef={formRef}
