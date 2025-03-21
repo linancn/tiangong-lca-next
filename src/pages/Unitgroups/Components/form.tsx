@@ -271,6 +271,7 @@ export const UnitGroupForm: FC<Props> = ({
             ]['common:referenceToComplianceSystem']['rules'] ?? [],
           )}
         />
+        <br />
         <Form.Item
           label={
             <FormattedMessage

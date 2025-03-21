@@ -415,7 +415,6 @@ export const FlowForm: FC<Props> = ({
               }}
             />
           </Form.Item>
-          <br />
           <LevelTextItemForm
             hidden={thisFlowType !== 'Elementary flow'}
             dataType={'Flow'}
@@ -476,7 +475,6 @@ export const FlowForm: FC<Props> = ({
         >
           <Input />
         </Form.Item>
-        <br />
         <Card
           size='small'
           title={

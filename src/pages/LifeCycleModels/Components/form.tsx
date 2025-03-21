@@ -233,7 +233,6 @@ export const LifeCycleModelForm: FC<Props> = ({
             ]['common:classification']['common:class']['rules'],
           )}
         />
-        <br />
         <Card
           size='small'
           title={
@@ -349,6 +348,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             }
           />
         </Card>
+        <br />
         <SourceSelectForm
           lang={lang}
           formRef={formRef}
@@ -411,7 +411,6 @@ export const LifeCycleModelForm: FC<Props> = ({
         >
           <Select options={approvalOfOverallComplianceOptions} />
         </Form.Item>
-        <br />
         <Form.Item
           label={
             <FormattedMessage
@@ -433,7 +432,6 @@ export const LifeCycleModelForm: FC<Props> = ({
         >
           <Select options={nomenclatureComplianceOptions} />
         </Form.Item>
-        <br />
         <Form.Item
           label={
             <FormattedMessage
@@ -455,7 +453,6 @@ export const LifeCycleModelForm: FC<Props> = ({
         >
           <Select options={methodologicalComplianceOptions} />
         </Form.Item>
-        <br />
         <Form.Item
           label={
             <FormattedMessage
@@ -477,7 +474,6 @@ export const LifeCycleModelForm: FC<Props> = ({
         >
           <Select options={reviewComplianceOptions} />
         </Form.Item>
-        <br />
         <Form.Item
           label={
             <FormattedMessage
@@ -499,7 +495,6 @@ export const LifeCycleModelForm: FC<Props> = ({
         >
           <Select options={documentationComplianceOptions} />
         </Form.Item>
-        <br />
         <Form.Item
           label={
             <FormattedMessage
@@ -617,6 +612,7 @@ export const LifeCycleModelForm: FC<Props> = ({
           ]}
           onData={onData}
         />
+        <br />
         <Card
           size='small'
           title={
@@ -800,7 +796,6 @@ export const LifeCycleModelForm: FC<Props> = ({
           >
             <Select options={licenseTypeOptions} />
           </Form.Item>
-          <br />
           <Card
             size='small'
             title={
