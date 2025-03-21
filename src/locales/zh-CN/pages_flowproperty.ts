@@ -31,7 +31,7 @@ export default {
   'pages.FlowProperties.view.flowPropertiesInformation.uri': '统一资源标识符',
   'pages.FlowProperties.view.flowPropertiesInformation.shortDescription': '简述',
   'pages.FlowProperties.view.administrativeInformation.referenceToPrecedingDataSetVersion': '数据集前一版本',
-  'pages.flowproperties.view.administrativeInformation.referenceToOwnershipOfDataSet': '数据集所有者',
+  'pages.FlowProperties.view.administrativeInformation.referenceToOwnershipOfDataSet': '数据集拥有者',
   'pages.FlowProperties.view.administrativeInformation.permanentDataSetURI': '永久数据集统一资源标识符',
   'pages.FlowProperties.view.flowPropertiesInformation.referenceToReferenceUnitGroup': '参考单位',
   'pages.FlowProperties.view.flowPropertiesInformation.dataSetInformation': '数据集信息',
@@ -57,5 +57,5 @@ export default {
   'pages.flowproperties.validator.timeStamp.required': '请输入时间戳',
   'pages.flowproperties.validator.referenceToDataSetFormat.required': '请输入数据集格式',
   'pages.flowproperties.validator.dataSetVersion.required': '请输入数据集版本',
-  'pages.flowproperties.validator.referenceToOwnershipOfDataSet.required': '请输入数据集所有者',
+  'pages.flowproperties.validator.referenceToOwnershipOfDataSet.required': '请输入数据集拥有者',
 };

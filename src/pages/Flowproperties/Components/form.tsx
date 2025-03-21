@@ -312,7 +312,7 @@ export const FlowpropertyForm: FC<Props> = ({
           <ContactSelectForm
             label={
               <FormattedMessage
-                id="pages.flowproperty.administrativeInformation.referenceToOwnershipOfDataSet"
+                id="pages.FlowProperties.view.administrativeInformation.referenceToOwnershipOfDataSet"
                 defaultMessage="Owner of data set"
               />
             }
