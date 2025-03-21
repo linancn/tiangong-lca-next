@@ -1,0 +1,323 @@
+{
+    "lifeCycleModelDataSet": {
+        "@xmlns": "str",
+        "@xmlns:acme": "str",
+        "@xmlns:common": "str",
+        "@xmlns:xsi": "str",
+        "@locations": "str",
+        "@version": "str",
+        "@xsi:schemaLocation": "str",
+        "lifeCycleModelInformation": {
+            "dataSetInformation": {
+                "common:UUID": "str",
+                "name": {
+                    "baseName": [
+                        {
+                            "@xml:lang": "str",
+                            "#text": "str"
+                        }
+                    ],
+                    "treatmentStandardsRoutes": [
+                        {
+                            "@xml:lang": "str",
+                            "#text": "str"
+                        }
+                    ],
+                    "mixAndLocationTypes": [
+                        {
+                            "@xml:lang": "str",
+                            "#text": "str"
+                        }
+                    ],
+                    "functionalUnitFlowProperties": [
+                        {
+                            "@xml:lang": "str",
+                            "#text": "str"
+                        }
+                    ]
+                },
+                "classificationInformation": {
+                    "common:classification": {
+                        "common:class": [
+                            {
+                                "@level": "str",
+                                "@classId": "str",
+                                "#text": "str"
+                            }
+                        ]
+                    }
+                },
+                "referenceToResultingProcess": {
+                    "@refObjectId": "str",
+                    "@type": "str",
+                    "@uri": "str",
+                    "@version": "str",
+                    "common:shortDescription": [
+                        {
+                            "@xml:lang": "str",
+                            "#text": "str"
+                        }
+                    ]
+                },
+                "common:generalComment": [
+                    {
+                        "@xml:lang": "str",
+                        "#text": "str"
+                    }
+                ],
+                "common:referenceToExternalDocumentation": {
+                    "@refObjectId": "str",
+                    "@type": "str",
+                    "@uri": "str",
+                    "@version": "str",
+                    "common:shortDescription": [
+                        {
+                            "@xml:lang": "str",
+                            "#text": "str"
+                        }
+                    ]
+                }
+            },
+            "quantitativeReference": {
+                "referenceToReferenceProcess": "str"
+            },
+            "technology": {
+                "groupDeclarations": {
+                    "group": [
+                        {
+                            "@id": "str",
+                            "groupName": [{
+                                "@xml:lang": "str",
+                                "#text": "str"
+                            }]
+                        }
+                    ]
+                },
+                "processes": {
+                    "processInstance": [
+                        {
+                            "@dataSetInternalID": "str",
+                            "@multiplicationFactor": "str",
+                            "referenceToProcess": {
+                                "@refObjectId": "str",
+                                "@type": "str",
+                                "@uri": "str",
+                                "@version": "str",
+                                "common:shortDescription": [
+                                    {
+                                        "@xml:lang": "str",
+                                        "#text": "str"
+                                    }
+                                ]
+                            },
+                            "scalingFactor": "str",
+                            "groups": {
+                                "memberOf": [
+                                    {
+                                        "@groupId": "str"
+                                    }
+                                ]
+                            },
+                            "parameters": {
+                                "parameter": [
+                                    {
+                                        "@name": "str"
+                                    }
+                                ]
+                            },
+                            "connections": {
+                                "outputExchange": {
+                                    "@dominant": "str",
+                                    "@flowUUID": "str",
+                                    "downstreamProcess": {
+                                        "@id": "str",
+                                        "@flowUUID": "str",
+                                        "@location": "str",
+                                        "@dominant": "str"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                "referenceToDiagram": {
+                    "@refObjectId": "str",
+                    "@type": "str",
+                    "@uri": "str",
+                    "@version": "str",
+                    "common:shortDescription": [
+                        {
+                            "@xml:lang": "str",
+                            "#text": "str"
+                        }
+                    ]
+                }
+            }
+        },
+        "modellingAndValidation": {
+            "dataSourcesTreatmentEtc": {
+                "useAdviceForDataSet": [
+                    {
+                        "@xml:lang": "str",
+                        "#text": "str"
+                    }
+                ]
+            },
+            "validation": {
+                "review": {
+                    "common:referenceToNameOfReviewerAndInstitution": {
+                        "@refObjectId": "str",
+                        "@type": "str",
+                        "@uri": "str",
+                        "@version": "str",
+                        "common:shortDescription": [
+                            {
+                                "@xml:lang": "str",
+                                "#text": "str"
+                            }
+                        ]
+                    },
+                    "common:otherReviewDetails": [
+                        {
+                            "@xml:lang": "str",
+                            "#text": "str"
+                        }
+                    ],
+                    "common:referenceToCompleteReviewReport": {
+                        "@refObjectId": "str",
+                        "@type": "str",
+                        "@uri": "str",
+                        "@version": "str",
+                        "common:shortDescription": [
+                            {
+                                "@xml:lang": "str",
+                                "#text": "str"
+                            }
+                        ]
+                    }
+                }
+            },
+            "complianceDeclarations": {
+                "compliance": {
+                    "common:referenceToComplianceSystem": {
+                        "@refObjectId": "str",
+                        "@type": "str",
+                        "@uri": "str",
+                        "@version": "str",
+                        "common:shortDescription": [
+                            {
+                                "@xml:lang": "str",
+                                "#text": "str"
+                            }
+                        ]
+                    },
+                    "common:approvalOfOverallCompliance": "str",
+                    "common:nomenclatureCompliance": "str",
+                    "common:methodologicalCompliance": "str",
+                    "common:reviewCompliance": "str",
+                    "common:documentationCompliance": "str",
+                    "common:qualityCompliance": "str"
+                }
+            }
+        },
+        "administrativeInformation": {
+            "common:commissionerAndGoal": {
+                "common:referenceToCommissioner": {
+                    "@refObjectId": "str",
+                    "@type": "str",
+                    "@uri": "str",
+                    "@version": "str",
+                    "common:shortDescription": [
+                        {
+                            "@xml:lang": "str",
+                            "#text": "str"
+                        }
+                    ]
+                },
+                "common:project": [{
+                    "@xml:lang": "str",
+                    "#text": "str"
+                }],
+                "common:intendedApplications": [{
+                    "@xml:lang": "str",
+                    "#text": "str"
+                }]
+            },
+            "dataGenerator": {
+                "common:referenceToPersonOrEntityGeneratingTheDataSet": {
+                    "@refObjectId": "str",
+                    "@type": "str",
+                    "@uri": "str",
+                    "@version": "str",
+                    "common:shortDescription": [{
+                        "@xml:lang": "str",
+                        "#text": "str"
+                    }]
+                }
+            },
+            "dataEntryBy": {
+                "common:timeStamp": "str",
+                "common:referenceToDataSetFormat": {
+                    "@refObjectId": "str",
+                    "@type": "str",
+                    "@uri": "str",
+                    "@version": "str",
+                    "common:shortDescription": [{
+                        "@xml:lang": "str",
+                        "#text": "str"
+                    }]
+                },
+                "common:referenceToPersonOrEntityEnteringTheData": {
+                    "@refObjectId": "str",
+                    "@type": "str",
+                    "@uri": "str",
+                    "@version": "str",
+                    "common:shortDescription": [{
+                        "@xml:lang": "str",
+                        "#text": "str"
+                    }]
+                }
+            },
+            "publicationAndOwnership": {
+                "common:dataSetVersion": "str",
+                "common:referenceToPrecedingDataSetVersion": {
+                    "@refObjectId": "str",
+                    "@type": "str",
+                    "@uri": "str",
+                    "@version": "str",
+                    "common:shortDescription": [{
+                        "@xml:lang": "str",
+                        "#text": "str"
+                    }]
+                },
+                "common:permanentDataSetURI": "str",
+                "common:referenceToOwnershipOfDataSet": {
+                    "@refObjectId": "str",
+                    "@type": "str",
+                    "@uri": "str",
+                    "@version": "str",
+                    "common:shortDescription": [{
+                        "@xml:lang": "str",
+                        "#text": "str"
+                    }]
+                },
+                "common:copyright": "str",
+                "common:referenceToEntitiesWithExclusiveAccess": {
+                    "@refObjectId": "str",
+                    "@type": "str",
+                    "@uri": "str",
+                    "@version": "str",
+                    "common:shortDescription": [{
+                        "@xml:lang": "str",
+                        "#text": "str"
+                    }]
+                },
+                "common:licenseType": "str",
+                "common:accessRestrictions": [{
+                    "@xml:lang": "str",
+                    "#text": "str"
+                }]
+            }
+        }
+    }
+}
