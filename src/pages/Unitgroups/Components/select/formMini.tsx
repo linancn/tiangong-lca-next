@@ -73,16 +73,16 @@ const UnitGroupFromMini: FC<Props> = ({ id, version, idType, name, formRef, draw
   return (
     <Spin spinning={spinning}>
       <Card
-        size="small"
+        size='small'
         title={
           <FormattedMessage
-            id="pages.flowproperty.referenceToReferenceUnitGroup"
-            defaultMessage="Reference unit"
+            id='pages.flowproperty.referenceToReferenceUnitGroup'
+            defaultMessage='Reference unit'
           />
         }
       >
-        <Divider orientationMargin="0" orientation="left" plain>
-          <FormattedMessage id="pages.unitgroup.edit.generalComment" defaultMessage="Comment" />
+        <Divider orientationMargin='0' orientation='left' plain>
+          <FormattedMessage id='pages.unitgroup.edit.generalComment' defaultMessage='Comment' />
         </Divider>
         <Form.Item>
           <Form.List name={[...name, 'refUnitGroup', 'shortDescription']}>
@@ -90,7 +90,7 @@ const UnitGroupFromMini: FC<Props> = ({ id, version, idType, name, formRef, draw
               <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
                 {subFields.map((subField) => (
                   <Row key={subField.key}>
-                    <Col flex="100px" style={{ marginRight: '10px' }}>
+                    <Col flex='100px' style={{ marginRight: '10px' }}>
                       <Form.Item noStyle name={[subField.name, '@xml:lang']}>
                         <Input
                           disabled={true}
@@ -98,10 +98,10 @@ const UnitGroupFromMini: FC<Props> = ({ id, version, idType, name, formRef, draw
                         />
                       </Form.Item>
                     </Col>
-                    <Col flex="auto" style={{ marginRight: '10px' }}>
+                    <Col flex='auto' style={{ marginRight: '10px' }}>
                       <Form.Item noStyle name={[subField.name, '#text']}>
                         <TextArea
-                          placeholder="text"
+                          placeholder='text'
                           rows={1}
                           disabled={true}
                           style={{ color: token.colorTextDescription }}
@@ -116,24 +116,24 @@ const UnitGroupFromMini: FC<Props> = ({ id, version, idType, name, formRef, draw
           </Form.List>
         </Form.Item>
         <Card
-          size="small"
+          size='small'
           title={
             <FormattedMessage
-              id="pages.unitgroup.unit.quantitativeReference"
-              defaultMessage="Quantitative reference"
+              id='pages.unitgroup.unit.quantitativeReference'
+              defaultMessage='Quantitative reference'
             />
           }
         >
           <Form.Item
             label={
-              <FormattedMessage id="pages.unitgroup.edit.name" defaultMessage="Name of unit" />
+              <FormattedMessage id='pages.unitgroup.edit.name' defaultMessage='Name of unit' />
             }
             name={[...name, 'refUnitGroup', 'refUnit', 'name']}
           >
             <Input disabled={true} style={{ color: token.colorTextDescription }} />
           </Form.Item>
-          <Divider orientationMargin="0" orientation="left" plain>
-            <FormattedMessage id="pages.unitgroup.edit.generalComment" defaultMessage="Comment" />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage id='pages.unitgroup.edit.generalComment' defaultMessage='Comment' />
           </Divider>
           <Form.Item>
             <Form.List name={[...name, 'refUnitGroup', 'refUnit', 'generalComment']}>
@@ -141,7 +141,7 @@ const UnitGroupFromMini: FC<Props> = ({ id, version, idType, name, formRef, draw
                 <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
                   {subFields.map((subField) => (
                     <Row key={subField.key}>
-                      <Col flex="100px" style={{ marginRight: '10px' }}>
+                      <Col flex='100px' style={{ marginRight: '10px' }}>
                         <Form.Item noStyle name={[subField.name, '@xml:lang']}>
                           <Input
                             disabled={true}
@@ -149,10 +149,10 @@ const UnitGroupFromMini: FC<Props> = ({ id, version, idType, name, formRef, draw
                           />
                         </Form.Item>
                       </Col>
-                      <Col flex="auto" style={{ marginRight: '10px' }}>
+                      <Col flex='auto' style={{ marginRight: '10px' }}>
                         <Form.Item noStyle name={[subField.name, '#text']}>
                           <TextArea
-                            placeholder="text"
+                            placeholder='text'
                             rows={1}
                             disabled={true}
                             style={{ color: token.colorTextDescription }}

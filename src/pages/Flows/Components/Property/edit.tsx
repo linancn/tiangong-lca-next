@@ -53,12 +53,12 @@ const PropertyEdit: FC<Props> = ({
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
+      <Tooltip title={<FormattedMessage id='pages.button.edit' defaultMessage='Edit' />}>
         {buttonType === 'icon' ? (
-          <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
+          <Button shape='circle' icon={<FormOutlined />} size='small' onClick={onEdit} />
         ) : (
           <Button onClick={onEdit}>
-            <FormattedMessage id="pages.button.edit" defaultMessage="Edit" />
+            <FormattedMessage id='pages.button.edit' defaultMessage='Edit' />
           </Button>
         )}
       </Tooltip>
@@ -66,11 +66,11 @@ const PropertyEdit: FC<Props> = ({
         getContainer={() => document.body}
         title={
           <FormattedMessage
-            id="pages.process.exchange.drawer.title.edit"
-            defaultMessage="Edit Exchange"
+            id='pages.process.exchange.drawer.title.edit'
+            defaultMessage='Edit Exchange'
           />
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={
           <Button
@@ -85,10 +85,10 @@ const PropertyEdit: FC<Props> = ({
         footer={
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
-              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
             </Button>
-            <Button onClick={() => formRefEdit.current?.submit()} type="primary">
-              <FormattedMessage id="pages.button.save" defaultMessage="Save" />
+            <Button onClick={() => formRefEdit.current?.submit()} type='primary'>
+              <FormattedMessage id='pages.button.save' defaultMessage='Save' />
             </Button>
           </Space>
         }
@@ -119,15 +119,15 @@ const PropertyEdit: FC<Props> = ({
             return true;
           }}
         >
-          <Space direction="vertical" style={{ width: '100%' }}>
+          <Space direction='vertical' style={{ width: '100%' }}>
             <Form.Item name={'@dataSetInternalID'} hidden>
               <Input />
             </Form.Item>
             <FlowpropertiesSelectForm
               label={
                 <FormattedMessage
-                  id="pages.flow.view.flowProperties.referenceToFlowPropertyDataSet"
-                  defaultMessage="Flow property"
+                  id='pages.flow.view.flowProperties.referenceToFlowPropertyDataSet'
+                  defaultMessage='Flow property'
                 />
               }
               name={['referenceToFlowPropertyDataSet']}
@@ -140,8 +140,8 @@ const PropertyEdit: FC<Props> = ({
             <Form.Item
               label={
                 <FormattedMessage
-                  id="pages.flow.view.flowProperties.meanValue"
-                  defaultMessage="Mean value (of flow property)"
+                  id='pages.flow.view.flowProperties.meanValue'
+                  defaultMessage='Mean value (of flow property)'
                 />
               }
               name={['meanValue']}
@@ -151,8 +151,8 @@ const PropertyEdit: FC<Props> = ({
             <Form.Item
               label={
                 <FormattedMessage
-                  id="pages.process.view.exchange.quantitativeReference"
-                  defaultMessage="Quantitative reference"
+                  id='pages.process.view.exchange.quantitativeReference'
+                  defaultMessage='Quantitative reference'
                 />
               }
               name={['quantitativeReference']}

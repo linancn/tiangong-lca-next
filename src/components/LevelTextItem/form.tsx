@@ -160,7 +160,7 @@ const LevelTextItemForm: FC<Props> = ({
       <Form.Item
         hidden={hidden}
         label={
-          <FormattedMessage id="pages.contact.classification" defaultMessage="Classification" />
+          <FormattedMessage id='pages.contact.classification' defaultMessage='Classification' />
         }
         name={[...name, 'showValue']}
         rules={rules}
@@ -179,10 +179,10 @@ const LevelTextItemForm: FC<Props> = ({
           filterTreeNode={(inputValue, treeNode) => {
             return (treeNode?.title as string)?.toLowerCase().includes(inputValue.toLowerCase());
           }}
-          treeNodeFilterProp="title"
-          treeExpandAction="click"
+          treeNodeFilterProp='title'
+          treeExpandAction='click'
           // labelInValue={true}
-          treeNodeLabelProp="title"
+          treeNodeLabelProp='title'
         />
       </Form.Item>
       <Form.Item name={[...name, 'id']} hidden={true}>

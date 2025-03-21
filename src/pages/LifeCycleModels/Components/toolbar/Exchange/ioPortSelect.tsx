@@ -38,37 +38,37 @@ const IoPortSelect: FC<Props> = ({
 
   const processExchangeColumns: ProColumns<ProcessExchangeTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
+      title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
       dataIndex: 'index',
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="processExchange.referenceToFlowDataSet" defaultMessage="Flow" />,
+      title: <FormattedMessage id='processExchange.referenceToFlowDataSet' defaultMessage='Flow' />,
       dataIndex: 'referenceToFlowDataSet',
       sorter: false,
       search: false,
       render: (_, row) => [
-        <Tooltip key={0} placement="topLeft" title={row.generalComment}>
+        <Tooltip key={0} placement='topLeft' title={row.generalComment}>
           {row.referenceToFlowDataSet}
         </Tooltip>,
       ],
     },
     {
-      title: <FormattedMessage id="pages.table.title.version" defaultMessage="Version" />,
+      title: <FormattedMessage id='pages.table.title.version' defaultMessage='Version' />,
       dataIndex: 'referenceToFlowDataSetVersion',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="processExchange.meanAmount" defaultMessage="Mean amount" />,
+      title: <FormattedMessage id='processExchange.meanAmount' defaultMessage='Mean amount' />,
       dataIndex: 'meanAmount',
       sorter: false,
       search: false,
     },
     {
       title: (
-        <FormattedMessage id="processExchange.resultingAmount" defaultMessage="Resulting amount" />
+        <FormattedMessage id='processExchange.resultingAmount' defaultMessage='Resulting amount' />
       ),
       dataIndex: 'resultingAmount',
       sorter: false,
@@ -78,8 +78,8 @@ const IoPortSelect: FC<Props> = ({
     {
       title: (
         <FormattedMessage
-          id="pages.flowproperty.referenceToReferenceUnitGroup"
-          defaultMessage="Reference unit"
+          id='pages.flowproperty.referenceToReferenceUnitGroup'
+          defaultMessage='Reference unit'
         />
       ),
       dataIndex: 'refUnitGroup',
@@ -101,8 +101,8 @@ const IoPortSelect: FC<Props> = ({
     {
       title: (
         <FormattedMessage
-          id="processExchange.dataDerivationTypeStatus"
-          defaultMessage="Data derivation type / status"
+          id='processExchange.dataDerivationTypeStatus'
+          defaultMessage='Data derivation type / status'
         />
       ),
       dataIndex: 'dataDerivationTypeStatus',
@@ -112,8 +112,8 @@ const IoPortSelect: FC<Props> = ({
     {
       title: (
         <FormattedMessage
-          id="processExchange.quantitativeReference"
-          defaultMessage="Quantitative reference"
+          id='processExchange.quantitativeReference'
+          defaultMessage='Quantitative reference'
         />
       ),
       dataIndex: 'quantitativeReference',
@@ -129,7 +129,7 @@ const IoPortSelect: FC<Props> = ({
       },
     },
     {
-      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
+      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
@@ -175,11 +175,11 @@ const IoPortSelect: FC<Props> = ({
         getContainer={() => document.body}
         title={
           <FormattedMessage
-            id="pages.flow.model.drawer.title.edge.port.select"
-            defaultMessage="Select flow port"
+            id='pages.flow.model.drawer.title.edge.port.select'
+            defaultMessage='Select flow port'
           />
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={onDrawerClose} />}
         maskClosable={false}
@@ -188,7 +188,7 @@ const IoPortSelect: FC<Props> = ({
         footer={
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={onDrawerClose}>
-              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
             </Button>
             <Button
               onClick={() => {
@@ -204,9 +204,9 @@ const IoPortSelect: FC<Props> = ({
                 onData({ selectedRowData: selectedRowData });
                 onDrawerClose();
               }}
-              type="primary"
+              type='primary'
             >
-              <FormattedMessage id="pages.button.submit" defaultMessage="Submit" />
+              <FormattedMessage id='pages.button.submit' defaultMessage='Submit' />
             </Button>
           </Space>
         }

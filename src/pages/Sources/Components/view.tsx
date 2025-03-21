@@ -39,8 +39,8 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
       key: 'sourceInformation',
       tab: (
         <FormattedMessage
-          id="pages.source.view.sourceInformation"
-          defaultMessage="Source information"
+          id='pages.source.view.sourceInformation'
+          defaultMessage='Source information'
         />
       ),
     },
@@ -48,8 +48,8 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
       key: 'administrativeInformation',
       tab: (
         <FormattedMessage
-          id="pages.source.view.administrativeInformation"
-          defaultMessage="Administrative information"
+          id='pages.source.view.administrativeInformation'
+          defaultMessage='Administrative information'
         />
       ),
     },
@@ -66,7 +66,7 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
           <Descriptions.Item
             key={0}
             label={
-              <FormattedMessage id="pages.source.view.sourceInformation.id" defaultMessage="ID" />
+              <FormattedMessage id='pages.source.view.sourceInformation.id' defaultMessage='ID' />
             }
             labelStyle={{ width: '100px' }}
           >
@@ -74,10 +74,10 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
           </Descriptions.Item>
         </Descriptions>
 
-        <Divider orientationMargin="0" orientation="left" plain>
+        <Divider orientationMargin='0' orientation='left' plain>
           <FormattedMessage
-            id="pages.source.view.sourceInformation.shortName"
-            defaultMessage="Short name of source"
+            id='pages.source.view.sourceInformation.shortName'
+            defaultMessage='Short name of source'
           />
         </Divider>
         <LangTextItemDescription
@@ -99,20 +99,20 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
             key={0}
             label={
               <FormattedMessage
-                id="pages.source.view.sourceInformation.sourceCitation"
-                defaultMessage="Source citation"
+                id='pages.source.view.sourceInformation.sourceCitation'
+                defaultMessage='Source citation'
               />
             }
             labelStyle={{ width: '180px' }}
           >
             {isValidURL(initData.sourceInformation?.dataSetInformation?.sourceCitation) ? (
               <Tooltip
-                placement="topLeft"
+                placement='topLeft'
                 title={initData.sourceInformation?.dataSetInformation?.sourceCitation}
               >
                 <Button
-                  type="link"
-                  target="blank"
+                  type='link'
+                  target='blank'
                   href={initData.sourceInformation?.dataSetInformation?.sourceCitation}
                 >
                   <LinkOutlined />
@@ -129,8 +129,8 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
             key={0}
             label={
               <FormattedMessage
-                id="pages.source.view.sourceInformation.publicationType"
-                defaultMessage="Publication type"
+                id='pages.source.view.sourceInformation.publicationType'
+                defaultMessage='Publication type'
               />
             }
             labelStyle={{ width: '180px' }}
@@ -141,10 +141,10 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
           </Descriptions.Item>
         </Descriptions>
         <br />
-        <Divider orientationMargin="0" orientation="left" plain>
+        <Divider orientationMargin='0' orientation='left' plain>
           <FormattedMessage
-            id="pages.source.view.sourceInformation.sourceDescriptionOrComment"
-            defaultMessage="Source description or comment"
+            id='pages.source.view.sourceInformation.sourceDescriptionOrComment'
+            defaultMessage='Source description or comment'
           />
         </Divider>
         <LangTextItemDescription
@@ -152,11 +152,11 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
         />
         <br />
         <Card
-          size="small"
+          size='small'
           title={
             <FormattedMessage
-              id="pages.source.edit.sourceInformation.referenceToDigitalFile"
-              defaultMessage="Link to digital file"
+              id='pages.source.edit.sourceInformation.referenceToDigitalFile'
+              defaultMessage='Link to digital file'
             />
           }
         >
@@ -168,8 +168,8 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
         <ContactSelectDescription
           title={
             <FormattedMessage
-              id="pages.source.view.sourceInformation.referenceToContact"
-              defaultMessage="Belongs to:"
+              id='pages.source.view.sourceInformation.referenceToContact'
+              defaultMessage='Belongs to:'
             />
           }
           lang={lang}
@@ -191,11 +191,11 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
     administrativeInformation: (
       <>
         <Card
-          size="small"
+          size='small'
           title={
             <FormattedMessage
-              id="pages.source.view.administrativeInformation.dataEntryBy"
-              defaultMessage="Data entry by"
+              id='pages.source.view.administrativeInformation.dataEntryBy'
+              defaultMessage='Data entry by'
             />
           }
         >
@@ -204,8 +204,8 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
               key={0}
               label={
                 <FormattedMessage
-                  id="pages.source.view.administrativeInformation.TimeStamp"
-                  defaultMessage="Time stamp (last saved)"
+                  id='pages.source.view.administrativeInformation.TimeStamp'
+                  defaultMessage='Time stamp (last saved)'
                 />
               }
               styles={{ label: { width: '200px' } }}
@@ -217,8 +217,8 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
           <SourceSelectDescription
             title={
               <FormattedMessage
-                id="pages.source.view.administrativeInformation.referenceToDataSetFormat"
-                defaultMessage="Data set format(s)"
+                id='pages.source.view.administrativeInformation.referenceToDataSetFormat'
+                defaultMessage='Data set format(s)'
               />
             }
             lang={lang}
@@ -229,11 +229,11 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
         </Card>
         <br />
         <Card
-          size="small"
+          size='small'
           title={
             <FormattedMessage
-              id="pages.source.view.administrativeInformation.publicationAndOwnership"
-              defaultMessage="Publication and ownership"
+              id='pages.source.view.administrativeInformation.publicationAndOwnership'
+              defaultMessage='Publication and ownership'
             />
           }
         >
@@ -242,8 +242,8 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
               key={0}
               label={
                 <FormattedMessage
-                  id="pages.source.view.administrativeInformation.dataSetVersion"
-                  defaultMessage="Data set version"
+                  id='pages.source.view.administrativeInformation.dataSetVersion'
+                  defaultMessage='Data set version'
                 />
               }
               labelStyle={{ width: '160px' }}
@@ -265,8 +265,8 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
             lang={lang}
             title={
               <FormattedMessage
-                id="pages.source.view.administrativeInformation.referenceToOwnershipOfDataSet"
-                defaultMessage="Owner of data set"
+                id='pages.source.view.administrativeInformation.referenceToOwnershipOfDataSet'
+                defaultMessage='Owner of data set'
               />
             }
           ></ContactSelectDescription>
@@ -289,8 +289,8 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
               key={0}
               label={
                 <FormattedMessage
-                  id="pages.source.view.administrativeInformation.permanentDataSetURI"
-                  defaultMessage="Permanent data set URI"
+                  id='pages.source.view.administrativeInformation.permanentDataSetURI'
+                  defaultMessage='Permanent data set URI'
                 />
               }
               styles={{ label: { width: '210px' } }}
@@ -336,20 +336,20 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
   return (
     <>
       {buttonType === 'icon' ? (
-        <Tooltip title={<FormattedMessage id="pages.button.view" defaultMessage="View" />}>
-          <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
+        <Tooltip title={<FormattedMessage id='pages.button.view' defaultMessage='View' />}>
+          <Button shape='circle' icon={<ProfileOutlined />} size='small' onClick={onView} />
         </Tooltip>
       ) : (
         <Button onClick={onView}>
-          <FormattedMessage id="pages.button.view" defaultMessage="View" />
+          <FormattedMessage id='pages.button.view' defaultMessage='View' />
         </Button>
       )}
       <Drawer
         getContainer={() => document.body}
         title={
-          <FormattedMessage id="pages.source.drawer.title.view" defaultMessage="View Source" />
+          <FormattedMessage id='pages.source.drawer.title.view' defaultMessage='View Source' />
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={
           <Button

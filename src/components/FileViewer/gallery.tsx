@@ -86,7 +86,7 @@ const FileGallery: FC<Props> = ({ data }) => {
             } else {
               return (
                 <a
-                  target="blank"
+                  target='blank'
                   title={intl.formatMessage({
                     id: 'pages.button.downloadFile',
                     defaultMessage: 'Download file',

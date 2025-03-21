@@ -15,8 +15,8 @@ const ContactSelectDescription: FC<Props> = ({ title, data, lang }) => {
   // const actionRef = React.useRef<ActionType | undefined>(undefined);
 
   return (
-    <Card size="small" title={title}>
-      <Space direction="horizontal">
+    <Card size='small' title={title}>
+      <Space direction='horizontal'>
         <Descriptions
           bordered
           size={'small'}
@@ -27,8 +27,8 @@ const ContactSelectDescription: FC<Props> = ({ title, data, lang }) => {
             key={0}
             label={
               <FormattedMessage
-                id="pages.contact.refObjectId"
-                defaultMessage="Reference contact data set identifier"
+                id='pages.contact.refObjectId'
+                defaultMessage='Reference contact data set identifier'
               />
             }
             labelStyle={{ width: locale === 'zh-CN' ? '190px' : '260px' }}
@@ -41,7 +41,7 @@ const ContactSelectDescription: FC<Props> = ({ title, data, lang }) => {
             id={data?.['@refObjectId']}
             version={data?.['@version']}
             lang={lang}
-            buttonType="text"
+            buttonType='text'
           />
         )}
       </Space>
@@ -70,14 +70,14 @@ const ContactSelectDescription: FC<Props> = ({ title, data, lang }) => {
       <Descriptions bordered size={'small'} column={1}>
         <Descriptions.Item
           key={0}
-          label={<FormattedMessage id="pages.contact.version" defaultMessage="Version" />}
+          label={<FormattedMessage id='pages.contact.version' defaultMessage='Version' />}
           labelStyle={{ width: '140px' }}
         >
           {data?.['@version'] ?? '-'}
         </Descriptions.Item>
       </Descriptions>
-      <Divider orientationMargin="0" orientation="left" plain>
-        <FormattedMessage id="pages.contact.shortDescription" defaultMessage="Short description" />
+      <Divider orientationMargin='0' orientation='left' plain>
+        <FormattedMessage id='pages.contact.shortDescription' defaultMessage='Short description' />
       </Divider>
       <LangTextItemDescription data={data?.['common:shortDescription']} />
     </Card>

@@ -22,7 +22,7 @@ export type GlobalHeaderRightProps = {
 export const AvatarName = () => {
   const { initialState } = useModel('@@initialState');
   const { currentUser } = initialState || {};
-  return <span className="anticon">{currentUser?.name}</span>;
+  return <span className='anticon'>{currentUser?.name}</span>;
 };
 
 const useStyles = createStyles(({ token }) => {
@@ -55,10 +55,10 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
 
     if (data && data?.length && data[0].role !== 'rejected') {
       // setIsUserInTeam(true);
-      return true
+      return true;
     } else {
       // setIsUserInTeam(false);
-      return false
+      return false;
     }
   };
 
@@ -110,7 +110,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
         return;
       }
       if (key === 'team') {
-        const isUserInTeam = await getUserRole()
+        const isUserInTeam = await getUserRole();
         if (isUserInTeam) {
           history.push(`/team?action=edit`);
         } else {
@@ -147,7 +147,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
                   {/* <FormattedMessage id="" defaultMessage="" /> */}
                 </Button>
                 <Button
-                  type="primary"
+                  type='primary'
                   style={{ backgroundColor: token.colorPrimary }}
                   onClick={() => {
                     Modal.destroyAll();
@@ -184,7 +184,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
   const loading = (
     <span className={styles.action}>
       <Spin
-        size="small"
+        size='small'
         style={{
           marginLeft: 8,
           marginRight: 8,
@@ -207,17 +207,17 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
     {
       key: 'profile',
       icon: <UserOutlined />,
-      label: <FormattedMessage id="menu.account.profile" defaultMessage="Account Profile" />,
+      label: <FormattedMessage id='menu.account.profile' defaultMessage='Account Profile' />,
     },
     {
       key: 'team',
       icon: <TeamOutlined />,
-      label: <FormattedMessage id="menu.account.team" defaultMessage="Team Management" />,
+      label: <FormattedMessage id='menu.account.team' defaultMessage='Team Management' />,
     },
     {
       key: 'system',
       icon: <SettingOutlined />,
-      label: <FormattedMessage id="menu.manageSystem" defaultMessage="System Settings" />,
+      label: <FormattedMessage id='menu.manageSystem' defaultMessage='System Settings' />,
       hidden:
         userData?.role !== 'admin' && userData?.role !== 'owner' && userData?.role !== 'member',
     },
@@ -227,7 +227,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
     {
       key: 'logout',
       icon: <LogoutOutlined />,
-      label: <FormattedMessage id="menu.account.logout" defaultMessage="Logout" />,
+      label: <FormattedMessage id='menu.account.logout' defaultMessage='Logout' />,
     },
   ];
 
@@ -243,9 +243,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
         {children}
       </HeaderDropdown>
       <Modal
-        title={
-          <FormattedMessage id="component.allTeams.table.title" defaultMessage="All Teams" />
-        }
+        title={<FormattedMessage id='component.allTeams.table.title' defaultMessage='All Teams' />}
         closable
         width={'90%'}
         open={showAllTeamsModal}

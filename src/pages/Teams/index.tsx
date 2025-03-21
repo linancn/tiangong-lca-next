@@ -284,7 +284,7 @@ const Team = () => {
     };
 
     return (
-      <Flex gap="small" vertical style={{ maxWidth: '50%', minWidth: '200px' }}>
+      <Flex gap='small' vertical style={{ maxWidth: '50%', minWidth: '200px' }}>
         <Spin spinning={teamInfoSpinning}>
           <ProForm
             disabled={userRole !== 'admin' && userRole !== 'owner' && action !== 'create'}
@@ -300,22 +300,22 @@ const Team = () => {
             <Form.Item
               label={
                 <RequiredMark
-                  label={<FormattedMessage id="pages.team.info.title" defaultMessage="Team Name" />}
+                  label={<FormattedMessage id='pages.team.info.title' defaultMessage='Team Name' />}
                   showError={titleError}
                 />
               }
               style={{ marginBottom: 0 }}
             >
               <LangTextItemForm
-                name="title"
-                label={<FormattedMessage id="pages.team.info.title" defaultMessage="Team Name" />}
+                name='title'
+                label={<FormattedMessage id='pages.team.info.title' defaultMessage='Team Name' />}
                 rules={[
                   {
                     required: true,
                     message: (
                       <FormattedMessage
-                        id="pages.team.info.title.required"
-                        defaultMessage="Please input team name!"
+                        id='pages.team.info.title.required'
+                        defaultMessage='Please input team name!'
                       />
                     ),
                   },
@@ -328,8 +328,8 @@ const Team = () => {
                 <RequiredMark
                   label={
                     <FormattedMessage
-                      id="pages.team.info.description"
-                      defaultMessage="Team Description"
+                      id='pages.team.info.description'
+                      defaultMessage='Team Description'
                     />
                   }
                   showError={descriptionError}
@@ -338,11 +338,11 @@ const Team = () => {
               style={{ marginBottom: 0 }}
             >
               <LangTextItemForm
-                name="description"
+                name='description'
                 label={
                   <FormattedMessage
-                    id="pages.team.info.description"
-                    defaultMessage="Team Description"
+                    id='pages.team.info.description'
+                    defaultMessage='Team Description'
                   />
                 }
                 rules={[
@@ -350,8 +350,8 @@ const Team = () => {
                     required: true,
                     message: (
                       <FormattedMessage
-                        id="pages.team.info.description.required"
-                        defaultMessage="Please input team description!"
+                        id='pages.team.info.description.required'
+                        defaultMessage='Please input team description!'
                       />
                     ),
                   },
@@ -360,9 +360,9 @@ const Team = () => {
               />
             </Form.Item>
             <Form.Item
-              name="rank"
-              label={<FormattedMessage id="pages.team.info.public" defaultMessage="Public" />}
-              valuePropName="checked"
+              name='rank'
+              label={<FormattedMessage id='pages.team.info.public' defaultMessage='Public' />}
+              valuePropName='checked'
               getValueProps={(value) => ({
                 checked: value !== -1,
               })}
@@ -379,9 +379,9 @@ const Team = () => {
             </Form.Item>
             {/* <Flex gap="middle" > */}
             <Form.Item
-              name="lightLogo"
+              name='lightLogo'
               label={
-                <FormattedMessage id="pages.team.info.lightLogo" defaultMessage="Light Logo" />
+                <FormattedMessage id='pages.team.info.lightLogo' defaultMessage='Light Logo' />
               }
             >
               <Upload
@@ -392,7 +392,7 @@ const Team = () => {
                 }}
                 onRemove={() => removeLogo('lightLogo')}
                 maxCount={1}
-                listType="picture-card"
+                listType='picture-card'
                 fileList={
                   lightLogo
                     ? [
@@ -416,8 +416,8 @@ const Team = () => {
             </Form.Item>
 
             <Form.Item
-              name="darkLogo"
-              label={<FormattedMessage id="pages.team.info.darkLogo" defaultMessage="Dark Logo" />}
+              name='darkLogo'
+              label={<FormattedMessage id='pages.team.info.darkLogo' defaultMessage='Dark Logo' />}
             >
               <Upload
                 disabled={userRole !== 'admin' && userRole !== 'owner' && action !== 'create'}
@@ -427,7 +427,7 @@ const Team = () => {
                 }}
                 onRemove={() => removeLogo('darkLogo')}
                 maxCount={1}
-                listType="picture-card"
+                listType='picture-card'
                 fileList={
                   darkLogo
                     ? [
@@ -483,49 +483,49 @@ const Team = () => {
 
     const columns: ProColumns<TeamMemberTable>[] = [
       {
-        title: <FormattedMessage id="teams.members.email" defaultMessage="Email" />,
+        title: <FormattedMessage id='teams.members.email' defaultMessage='Email' />,
         dataIndex: 'email',
         key: 'email',
       },
       {
-        title: <FormattedMessage id="teams.members.memberName" defaultMessage="Member Name" />,
+        title: <FormattedMessage id='teams.members.memberName' defaultMessage='Member Name' />,
         dataIndex: 'display_name',
         key: 'display_name',
       },
       {
-        title: <FormattedMessage id="teams.members.role" defaultMessage="Role" />,
+        title: <FormattedMessage id='teams.members.role' defaultMessage='Role' />,
         dataIndex: 'role',
         key: 'role',
         render: (_, record) => (
           <span>
             {record.role === 'admin' ? (
-              <FormattedMessage id="teams.members.role.admin" defaultMessage="Admin" />
+              <FormattedMessage id='teams.members.role.admin' defaultMessage='Admin' />
             ) : record.role === 'is_invited' ? (
-              <FormattedMessage id="teams.members.role.invited" defaultMessage="Invited" />
+              <FormattedMessage id='teams.members.role.invited' defaultMessage='Invited' />
             ) : record.role === 'owner' ? (
-              <FormattedMessage id="teams.members.role.owner" defaultMessage="Owner" />
+              <FormattedMessage id='teams.members.role.owner' defaultMessage='Owner' />
             ) : record.role === 'rejected' ? (
-              <FormattedMessage id="teams.members.role.rejected" defaultMessage="Rejected" />
+              <FormattedMessage id='teams.members.role.rejected' defaultMessage='Rejected' />
             ) : (
-              <FormattedMessage id="teams.members.role.member" defaultMessage="Member" />
+              <FormattedMessage id='teams.members.role.member' defaultMessage='Member' />
             )}
           </span>
         ),
       },
       {
-        title: <FormattedMessage id="teams.members.actions" defaultMessage="Actions" />,
+        title: <FormattedMessage id='teams.members.actions' defaultMessage='Actions' />,
         key: 'actions',
         render: (_: any, record: TeamMemberTable) => (
-          <Flex gap="small">
+          <Flex gap='small'>
             {
               <Tooltip
-                title={<FormattedMessage id="teams.members.delete" defaultMessage="Delete" />}
+                title={<FormattedMessage id='teams.members.delete' defaultMessage='Delete' />}
               >
                 <Button
                   disabled={
                     !(record.role !== 'owner' && (userRole === 'owner' || userRole === 'admin'))
                   }
-                  shape="circle"
+                  shape='circle'
                   size='small'
                   icon={<DeleteOutlined />}
                   onClick={() => {
@@ -569,10 +569,10 @@ const Team = () => {
             }
             {
               <Tooltip
-                title={<FormattedMessage id="teams.members.setAdmin" defaultMessage="Set Admin" />}
+                title={<FormattedMessage id='teams.members.setAdmin' defaultMessage='Set Admin' />}
               >
-                <Button 
-                  shape="circle"
+                <Button
+                  shape='circle'
                   size='small'
                   disabled={!(record.role === 'member' && userRole === 'owner')}
                   icon={<CrownOutlined />}
@@ -583,12 +583,12 @@ const Team = () => {
             {
               <Tooltip
                 title={
-                  <FormattedMessage id="teams.members.setMember" defaultMessage="Set Member" />
+                  <FormattedMessage id='teams.members.setMember' defaultMessage='Set Member' />
                 }
               >
                 <Button
                   disabled={!(record.role === 'admin' && userRole === 'owner')}
-                  shape="circle"
+                  shape='circle'
                   size='small'
                   icon={<UserOutlined />}
                   onClick={() => updateRole(record?.team_id, record?.user_id, 'member')}
@@ -597,13 +597,13 @@ const Team = () => {
             }
             {
               <Tooltip
-                title={<FormattedMessage id="teams.members.reInvite" defaultMessage="re-invite" />}
+                title={<FormattedMessage id='teams.members.reInvite' defaultMessage='re-invite' />}
               >
                 <Button
                   disabled={
                     !(record.role === 'rejected' && (userRole === 'admin' || userRole === 'owner'))
                   }
-                  shape="circle"
+                  shape='circle'
                   size='small'
                   icon={<UserAddOutlined />}
                   onClick={async () => {
@@ -638,29 +638,34 @@ const Team = () => {
         <ProTable<TeamMemberTable, ListPagination>
           headerTitle={
             <>
-              <FormattedMessage id="menu.account.team" defaultMessage="My Team" /> /{' '}
-              <FormattedMessage id="pages.team.tabs.members" defaultMessage="Members Message" />
+              <FormattedMessage id='menu.account.team' defaultMessage='My Team' /> /{' '}
+              <FormattedMessage id='pages.team.tabs.members' defaultMessage='Members Message' />
             </>
           }
           toolBarRender={() => {
-              return [<Tooltip key={0} title={<FormattedMessage id="teams.members.add" defaultMessage="Add" />}>
+            return [
+              <Tooltip
+                key={0}
+                title={<FormattedMessage id='teams.members.add' defaultMessage='Add' />}
+              >
                 <Button
-                  type="text"
+                  type='text'
                   disabled={!(userRole === 'admin' || userRole === 'owner')}
                   icon={<PlusOutlined />}
                   onClick={() => setAddModalVisible(true)}
                 />
-              </Tooltip>];
+              </Tooltip>,
+            ];
           }}
           loading={membersLoading}
           columns={columns}
-          rowKey="email"
+          rowKey='email'
           search={false}
           pagination={{
             pageSize: 10,
             showSizeChanger: true,
             showQuickJumper: true,
-          }} 
+          }}
           request={async (
             params: {
               pageSize: number;
@@ -712,23 +717,23 @@ const Team = () => {
   const tabs = [
     {
       key: 'info',
-      label: <FormattedMessage id="pages.team.tabs.info" defaultMessage="Team Information" />,
+      label: <FormattedMessage id='pages.team.tabs.info' defaultMessage='Team Information' />,
       children: renderTeamInfoForm(),
     },
   ];
   if (action === 'edit') {
     tabs.splice(1, 0, {
       key: 'members',
-      label: <FormattedMessage id="pages.team.tabs.members" defaultMessage="Team Members" />,
+      label: <FormattedMessage id='pages.team.tabs.members' defaultMessage='Team Members' />,
       children: renderTeamMembersForm(),
     });
   }
 
   return (
     <PageContainer
-      title={<FormattedMessage id="menu.account.team" defaultMessage="Team Management" />}
+      title={<FormattedMessage id='menu.account.team' defaultMessage='Team Management' />}
     >
-      <Tabs activeKey={activeTabKey} onChange={onTabChange} tabPosition="left" items={tabs} />
+      <Tabs activeKey={activeTabKey} onChange={onTabChange} tabPosition='left' items={tabs} />
     </PageContainer>
   );
 };

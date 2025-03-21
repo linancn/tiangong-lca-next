@@ -29,14 +29,14 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
           <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
             {subFields.map((subField) => (
               <Row key={subField.key}>
-                <Space direction="vertical" style={{ width: '100%' }}>
+                <Space direction='vertical' style={{ width: '100%' }}>
                   <Card
-                    size="small"
+                    size='small'
                     title={
                       <>
                         <FormattedMessage
-                          id="pages.process.modellingAndValidation.compliance"
-                          defaultMessage="Compliance"
+                          id='pages.process.modellingAndValidation.compliance'
+                          defaultMessage='Compliance'
                         />{' '}
                         {` ${subField.key + 1}`}
                       </>
@@ -50,12 +50,12 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                       />
                     }
                   >
-                    <Col flex="auto" style={{ marginRight: '10px' }}>
+                    <Col flex='auto' style={{ marginRight: '10px' }}>
                       <Form.Item
                         label={
                           <FormattedMessage
-                            id="pages.process.validation.modellingAndValidation.compliance.approvalOfOverallCompliance"
-                            defaultMessage="Approval of overall compliance"
+                            id='pages.process.validation.modellingAndValidation.compliance.approvalOfOverallCompliance'
+                            defaultMessage='Approval of overall compliance'
                           />
                         }
                         name={[subField.name, 'common:approvalOfOverallCompliance']}
@@ -63,12 +63,12 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                         <Select options={approvalOfOverallComplianceOptions} />
                       </Form.Item>
                     </Col>
-                    <Col flex="auto" style={{ marginRight: '10px' }}>
+                    <Col flex='auto' style={{ marginRight: '10px' }}>
                       <Form.Item
                         label={
                           <FormattedMessage
-                            id="pages.process.validation.modellingAndValidation.compliance.nomenclatureCompliance"
-                            defaultMessage="Nomenclature compliance"
+                            id='pages.process.validation.modellingAndValidation.compliance.nomenclatureCompliance'
+                            defaultMessage='Nomenclature compliance'
                           />
                         }
                         name={[subField.name, 'common:nomenclatureCompliance']}
@@ -76,12 +76,12 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                         <Select options={nomenclatureComplianceOptions} />
                       </Form.Item>
                     </Col>
-                    <Col flex="auto" style={{ marginRight: '10px' }}>
+                    <Col flex='auto' style={{ marginRight: '10px' }}>
                       <Form.Item
                         label={
                           <FormattedMessage
-                            id="pages.process.validation.modellingAndValidation.compliance.methodologicalCompliance"
-                            defaultMessage="Methodological compliance"
+                            id='pages.process.validation.modellingAndValidation.compliance.methodologicalCompliance'
+                            defaultMessage='Methodological compliance'
                           />
                         }
                         name={[subField.name, 'common:methodologicalCompliance']}
@@ -89,12 +89,12 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                         <Select options={methodologicalComplianceOptions} />
                       </Form.Item>
                     </Col>
-                    <Col flex="auto" style={{ marginRight: '10px' }}>
+                    <Col flex='auto' style={{ marginRight: '10px' }}>
                       <Form.Item
                         label={
                           <FormattedMessage
-                            id="pages.process.validation.modellingAndValidation.compliance.reviewCompliance"
-                            defaultMessage="Review compliance"
+                            id='pages.process.validation.modellingAndValidation.compliance.reviewCompliance'
+                            defaultMessage='Review compliance'
                           />
                         }
                         name={[subField.name, 'common:reviewCompliance']}
@@ -102,12 +102,12 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                         <Select options={reviewComplianceOptions} />
                       </Form.Item>
                     </Col>
-                    <Col flex="auto" style={{ marginRight: '10px' }}>
+                    <Col flex='auto' style={{ marginRight: '10px' }}>
                       <Form.Item
                         label={
                           <FormattedMessage
-                            id="pages.process.validation.modellingAndValidation.compliance.documentationCompliance"
-                            defaultMessage="Documentation compliance"
+                            id='pages.process.validation.modellingAndValidation.compliance.documentationCompliance'
+                            defaultMessage='Documentation compliance'
                           />
                         }
                         name={[subField.name, 'common:documentationCompliance']}
@@ -115,12 +115,12 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                         <Select options={documentationComplianceOptions} />
                       </Form.Item>
                     </Col>
-                    <Col flex="auto" style={{ marginRight: '10px' }}>
+                    <Col flex='auto' style={{ marginRight: '10px' }}>
                       <Form.Item
                         label={
                           <FormattedMessage
-                            id="pages.process.validation.modellingAndValidation.compliance.qualityCompliance"
-                            defaultMessage="Quality compliance"
+                            id='pages.process.validation.modellingAndValidation.compliance.qualityCompliance'
+                            defaultMessage='Quality compliance'
                           />
                         }
                         name={[subField.name, 'common:qualityCompliance']}
@@ -134,8 +134,8 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                       name={[subField.name, 'common:referenceToComplianceSystem']}
                       label={
                         <FormattedMessage
-                          id="pages.process.view.modellingAndValidation.referenceToComplianceSystem"
-                          defaultMessage="Compliance system"
+                          id='pages.process.view.modellingAndValidation.referenceToComplianceSystem'
+                          defaultMessage='Compliance system'
                         />
                       }
                       lang={lang}
@@ -146,10 +146,10 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                 </Space>
               </Row>
             ))}
-            <Button type="dashed" onClick={() => subOpt.add()} block>
-              + <FormattedMessage id="pages.button.item.add" defaultMessage="Add" />{' '}
-              <FormattedMessage id="pages.process.validation.review" defaultMessage="Review" />{' '}
-              <FormattedMessage id="pages.button.item.label" defaultMessage="Item" />
+            <Button type='dashed' onClick={() => subOpt.add()} block>
+              + <FormattedMessage id='pages.button.item.add' defaultMessage='Add' />{' '}
+              <FormattedMessage id='pages.process.validation.review' defaultMessage='Review' />{' '}
+              <FormattedMessage id='pages.button.item.label' defaultMessage='Item' />
             </Button>
           </div>
         )}

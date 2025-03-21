@@ -97,25 +97,25 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
 
   const FlowpropertyColumns: ProColumns<FlowpropertyTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
+      title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
       dataIndex: 'index',
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name" />,
+      title: <FormattedMessage id='pages.table.title.name' defaultMessage='Name' />,
       dataIndex: 'name',
       sorter: false,
       search: false,
       render: (_, row) => [
-        <Tooltip key={0} placement="topLeft" title={row.generalComment}>
+        <Tooltip key={0} placement='topLeft' title={row.generalComment}>
           {row.name}
         </Tooltip>,
       ],
     },
     {
       title: (
-        <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />
+        <FormattedMessage id='pages.table.title.classification' defaultMessage='Classification' />
       ),
       dataIndex: 'classification',
       sorter: false,
@@ -124,8 +124,8 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
     {
       title: (
         <FormattedMessage
-          id="pages.flowproperty.referenceToReferenceUnitGroup"
-          defaultMessage="Reference unit"
+          id='pages.flowproperty.referenceToReferenceUnitGroup'
+          defaultMessage='Reference unit'
         />
       ),
       dataIndex: 'refUnitGroup',
@@ -143,7 +143,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
           <span key={1}>
             {getLangText(row.refUnitRes?.name, lang)} (
             <Tooltip
-              placement="topLeft"
+              placement='topLeft'
               title={getLangText(row.refUnitRes?.refUnitGeneralComment, lang)}
             >
               {row.refUnitRes?.refUnitName}
@@ -154,14 +154,14 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
       },
     },
     {
-      title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created at" />,
+      title: <FormattedMessage id='pages.table.title.createdAt' defaultMessage='Created at' />,
       dataIndex: 'created_at',
       valueType: 'dateTime',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
+      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
@@ -199,10 +199,10 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
   const tabList = [
     {
       key: 'tg',
-      tab: <FormattedMessage id="pages.tab.title.tgdata" defaultMessage="TianGong Data" />,
+      tab: <FormattedMessage id='pages.tab.title.tgdata' defaultMessage='TianGong Data' />,
     },
-    { key: 'my', tab: <FormattedMessage id="pages.tab.title.mydata" defaultMessage="My Data" /> },
-    { key: 'te', tab: <FormattedMessage id="pages.tab.title.tedata" defaultMessage="TE Data" /> },
+    { key: 'my', tab: <FormattedMessage id='pages.tab.title.mydata' defaultMessage='My Data' /> },
+    { key: 'te', tab: <FormattedMessage id='pages.tab.title.tedata' defaultMessage='TE Data' /> },
   ];
 
   const databaseList: Record<string, React.ReactNode> = {
@@ -369,12 +369,12 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
   return (
     <>
       {buttonType === 'icon' ? (
-        <Tooltip title={<FormattedMessage id="pages.button.select" defaultMessage="Select" />}>
-          <Button shape="circle" icon={<DatabaseOutlined />} size="small" onClick={onSelect} />
+        <Tooltip title={<FormattedMessage id='pages.button.select' defaultMessage='Select' />}>
+          <Button shape='circle' icon={<DatabaseOutlined />} size='small' onClick={onSelect} />
         </Tooltip>
       ) : (
         <Button onClick={onSelect}>
-          {buttonText ?? <FormattedMessage id="pages.button.select" defaultMessage="Select" />}
+          {buttonText ?? <FormattedMessage id='pages.button.select' defaultMessage='Select' />}
         </Button>
       )}
 
@@ -382,11 +382,11 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
         getContainer={() => document.body}
         title={
           <FormattedMessage
-            id="pages.flowproperty.drawer.title.select"
-            defaultMessage="Selete Flow property"
+            id='pages.flowproperty.drawer.title.select'
+            defaultMessage='Selete Flow property'
           />
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={
           <Button
@@ -402,7 +402,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
               {' '}
-              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
             </Button>
             <Button
               onClick={() => {
@@ -410,9 +410,9 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
                 onData(keys[0], keys[1]);
                 setDrawerVisible(false);
               }}
-              type="primary"
+              type='primary'
             >
-              <FormattedMessage id="pages.button.submit" defaultMessage="Submit" />
+              <FormattedMessage id='pages.button.submit' defaultMessage='Submit' />
             </Button>
           </Space>
         }

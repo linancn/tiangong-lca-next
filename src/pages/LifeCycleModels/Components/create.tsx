@@ -3,7 +3,7 @@ import { ActionType } from '@ant-design/pro-components';
 import { Grid, Transform, XFlow, XFlowGraph } from '@antv/xflow';
 import { Button, Drawer, Layout, theme, Tooltip } from 'antd';
 import type { FC } from 'react';
-import { useCallback, useState,useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import ToolbarEdit from './toolbar/editIndex';
 
@@ -45,7 +45,7 @@ const LifeCycleModelCreate: FC<CreateProps> = ({
   useEffect(() => {
     if (drawerVisible) {
       setToolEditAction('create');
-    }else{
+    } else {
       setToolEditAction('');
     }
   }, [drawerVisible]);
@@ -92,19 +92,19 @@ const LifeCycleModelCreate: FC<CreateProps> = ({
                     ? 'pages.button.createVersion'
                     : 'pages.button.create'
               }
-              defaultMessage="Create"
+              defaultMessage='Create'
             />
           }
         >
           {actionType === 'copy' ? (
-            <Button shape="circle" icon={<CopyOutlined />} size="small" onClick={onCreate}></Button>
+            <Button shape='circle' icon={<CopyOutlined />} size='small' onClick={onCreate}></Button>
           ) : (
-            <Button size={'middle'} type="text" icon={<PlusOutlined />} onClick={onCreate} />
+            <Button size={'middle'} type='text' icon={<PlusOutlined />} onClick={onCreate} />
           )}
         </Tooltip>
       ) : (
         <Button onClick={onCreate}>
-          <FormattedMessage id="pages.button.create" defaultMessage="Create" />
+          <FormattedMessage id='pages.button.create' defaultMessage='Create' />
         </Button>
       )}
       <Drawer
@@ -118,10 +118,10 @@ const LifeCycleModelCreate: FC<CreateProps> = ({
                   ? 'pages.flow.model.drawer.title.createVersion'
                   : 'pages.lifeCycleModel.drawer.title.create'
             }
-            defaultMessage="Create Model"
+            defaultMessage='Create Model'
           />
         }
-        width="100%"
+        width='100%'
         closable={false}
         extra={
           <Button
@@ -164,7 +164,7 @@ const LifeCycleModelCreate: FC<CreateProps> = ({
                   }}
                 />
                 <Grid
-                  type="dot"
+                  type='dot'
                   options={{
                     color: '#595959',
                     thickness: 1,
@@ -173,7 +173,7 @@ const LifeCycleModelCreate: FC<CreateProps> = ({
                 <Transform resizing rotating />
               </Content>
             </Layout>
-            <Sider width="50px" style={siderStyle}>
+            <Sider width='50px' style={siderStyle}>
               <ToolbarEdit
                 actionType={actionType}
                 id={id ?? ''}

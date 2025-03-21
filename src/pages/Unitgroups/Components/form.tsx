@@ -51,8 +51,8 @@ export const UnitGroupForm: FC<Props> = ({
       key: 'unitGroupInformation',
       tab: (
         <FormattedMessage
-          id="pages.unitgroup.edit.unitGroupInformation"
-          defaultMessage="Unit group information"
+          id='pages.unitgroup.edit.unitGroupInformation'
+          defaultMessage='Unit group information'
         />
       ),
     },
@@ -60,8 +60,8 @@ export const UnitGroupForm: FC<Props> = ({
       key: 'modellingAndValidation',
       tab: (
         <FormattedMessage
-          id="pages.unitgroup.edit.modellingAndValidation"
-          defaultMessage="Modelling and validation"
+          id='pages.unitgroup.edit.modellingAndValidation'
+          defaultMessage='Modelling and validation'
         />
       ),
     },
@@ -69,20 +69,20 @@ export const UnitGroupForm: FC<Props> = ({
       key: 'administrativeInformation',
       tab: (
         <FormattedMessage
-          id="pages.unitgroup.edit.administrativeInformation"
-          defaultMessage="Administrative information"
+          id='pages.unitgroup.edit.administrativeInformation'
+          defaultMessage='Administrative information'
         />
       ),
     },
     {
       key: 'units',
-      tab: <FormattedMessage id="pages.unitgroup.edit.units" defaultMessage="Units" />,
+      tab: <FormattedMessage id='pages.unitgroup.edit.units' defaultMessage='Units' />,
     },
   ];
   const unitColumns: ProColumns<UnitTable>[] = [
     {
       title: (
-        <FormattedMessage id="pages.table.title.index" defaultMessage="Index"></FormattedMessage>
+        <FormattedMessage id='pages.table.title.index' defaultMessage='Index'></FormattedMessage>
       ),
       valueType: 'index',
       search: false,
@@ -94,7 +94,7 @@ export const UnitGroupForm: FC<Props> = ({
     // },
     {
       title: (
-        <FormattedMessage id="pages.table.title.name" defaultMessage="Name"></FormattedMessage>
+        <FormattedMessage id='pages.table.title.name' defaultMessage='Name'></FormattedMessage>
       ),
       dataIndex: 'name',
       search: false,
@@ -102,8 +102,8 @@ export const UnitGroupForm: FC<Props> = ({
     {
       title: (
         <FormattedMessage
-          id="pages.unitgroup.unit.generalComment"
-          defaultMessage="Comment"
+          id='pages.unitgroup.unit.generalComment'
+          defaultMessage='Comment'
         ></FormattedMessage>
       ),
       dataIndex: 'generalComment',
@@ -112,8 +112,8 @@ export const UnitGroupForm: FC<Props> = ({
     {
       title: (
         <FormattedMessage
-          id="pages.unitgroup.unit.meanValue"
-          defaultMessage="Mean value (of unit)"
+          id='pages.unitgroup.unit.meanValue'
+          defaultMessage='Mean value (of unit)'
         ></FormattedMessage>
       ),
       dataIndex: 'meanValue',
@@ -122,8 +122,8 @@ export const UnitGroupForm: FC<Props> = ({
     {
       title: (
         <FormattedMessage
-          id="pages.unitgroup.unit.quantitativeReference"
-          defaultMessage="Quantitative reference"
+          id='pages.unitgroup.unit.quantitativeReference'
+          defaultMessage='Quantitative reference'
         />
       ),
       dataIndex: 'quantitativeReference',
@@ -135,7 +135,7 @@ export const UnitGroupForm: FC<Props> = ({
     },
     {
       title: (
-        <FormattedMessage id="pages.table.title.option" defaultMessage="Option"></FormattedMessage>
+        <FormattedMessage id='pages.table.title.option' defaultMessage='Option'></FormattedMessage>
       ),
       valueType: 'option',
       search: false,
@@ -166,9 +166,9 @@ export const UnitGroupForm: FC<Props> = ({
   ];
   const tabContent: { [key: string]: JSX.Element } = {
     unitGroupInformation: (
-      <Space direction="vertical" style={{ width: '100%' }}>
+      <Space direction='vertical' style={{ width: '100%' }}>
         <Card
-          size="small"
+          size='small'
           title={
             <RequiredMark
               showError={showNameError}
@@ -186,8 +186,8 @@ export const UnitGroupForm: FC<Props> = ({
             name={['unitGroupInformation', 'dataSetInformation', 'common:name']}
             label={
               <FormattedMessage
-                id="pages.unitgroup.edit.unitGroupInformation.name"
-                defaultMessage="Name of unit group"
+                id='pages.unitgroup.edit.unitGroupInformation.name'
+                defaultMessage='Name of unit group'
               />
             }
             setRuleErrorState={setShowNameError}
@@ -229,7 +229,7 @@ export const UnitGroupForm: FC<Props> = ({
           />
         </Card>
         <Form.Item
-          label="ID"
+          label='ID'
           name={['unitGroupInformation', 'dataSetInformation', 'common:UUID']}
           hidden
         >
@@ -238,7 +238,7 @@ export const UnitGroupForm: FC<Props> = ({
       </Space>
     ),
     modellingAndValidation: (
-      <Space direction="vertical" style={{ width: '100%' }}>
+      <Space direction='vertical' style={{ width: '100%' }}>
         <SourceSelectForm
           defaultSourceName={formType === 'create' ? 'ILCD Data Network - compliance (non-Process)' : undefined}
           name={[
@@ -249,8 +249,8 @@ export const UnitGroupForm: FC<Props> = ({
           ]}
           label={
             <FormattedMessage
-              id="pages.unitgroup.edit.modellingAndValidation.referenceToComplianceSystem"
-              defaultMessage="Compliance system name"
+              id='pages.unitgroup.edit.modellingAndValidation.referenceToComplianceSystem'
+              defaultMessage='Compliance system name'
             />
           }
           lang={lang}
@@ -261,8 +261,8 @@ export const UnitGroupForm: FC<Props> = ({
         <Form.Item
           label={
             <FormattedMessage
-              id="pages.unitgroup.edit.modellingAndValidation.approvalOfOverallCompliance"
-              defaultMessage="Approval of overall compliance"
+              id='pages.unitgroup.edit.modellingAndValidation.approvalOfOverallCompliance'
+              defaultMessage='Approval of overall compliance'
             />
           }
           name={[
@@ -278,12 +278,12 @@ export const UnitGroupForm: FC<Props> = ({
       </Space>
     ),
     administrativeInformation: (
-      <Space direction="vertical" style={{ width: '100%' }}>
+      <Space direction='vertical' style={{ width: '100%' }}>
         <Form.Item
           label={
             <FormattedMessage
-              id="pages.unitgroup.edit.administrativeInformation.timeStamp"
-              defaultMessage="Time stamp (last saved)"
+              id='pages.unitgroup.edit.administrativeInformation.timeStamp'
+              defaultMessage='Time stamp (last saved)'
             />
           }
           name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
@@ -296,8 +296,8 @@ export const UnitGroupForm: FC<Props> = ({
           name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
           label={
             <FormattedMessage
-              id="pages.unitgroup.edit.administrativeInformation.referenceToDataSetFormat"
-              defaultMessage="Data set format(s)"
+              id='pages.unitgroup.edit.administrativeInformation.referenceToDataSetFormat'
+              defaultMessage='Data set format(s)'
             />
           }
           lang={lang}
@@ -309,8 +309,8 @@ export const UnitGroupForm: FC<Props> = ({
         <Form.Item
           label={
             <FormattedMessage
-              id="pages.unitgroup.edit.administrativeInformation.dataSetVersion"
-              defaultMessage="Data set version"
+              id='pages.unitgroup.edit.administrativeInformation.dataSetVersion'
+              defaultMessage='Data set version'
             />
           }
           name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}

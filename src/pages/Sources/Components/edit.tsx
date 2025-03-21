@@ -133,7 +133,7 @@ const SourceEdit: FC<Props> = ({
         });
       }
       message.success(
-        <FormattedMessage id="options.savesuccess" defaultMessage="Saved Successfully!" />,
+        <FormattedMessage id='options.savesuccess' defaultMessage='Saved Successfully!' />,
       );
       formRefEdit.current?.resetFields();
       setDrawerVisible(false);
@@ -153,14 +153,14 @@ const SourceEdit: FC<Props> = ({
   return (
     <>
       {buttonType === 'icon' ? (
-        <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
-          <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
+        <Tooltip title={<FormattedMessage id='pages.button.edit' defaultMessage='Edit' />}>
+          <Button shape='circle' icon={<FormOutlined />} size='small' onClick={onEdit} />
         </Tooltip>
       ) : (
         <Button onClick={onEdit}>
           <FormattedMessage
             id={buttonType ? buttonType : 'pages.button.edit'}
-            defaultMessage="Edit"
+            defaultMessage='Edit'
           />
         </Button>
       )}
@@ -168,9 +168,9 @@ const SourceEdit: FC<Props> = ({
       <Drawer
         getContainer={() => document.body}
         title={
-          <FormattedMessage id="pages.source.drawer.title.edit" defaultMessage="Edit Source" />
+          <FormattedMessage id='pages.source.drawer.title.edit' defaultMessage='Edit Source' />
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={
           <Button
@@ -190,18 +190,18 @@ const SourceEdit: FC<Props> = ({
               }}
             >
               <FormattedMessage
-                id="pages.button.updateReference"
-                defaultMessage="Update reference"
+                id='pages.button.updateReference'
+                defaultMessage='Update reference'
               />
             </Button>
             <Button onClick={() => setDrawerVisible(false)}>
-              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
             </Button>
             {/* <Button onClick={onReset}>
               <FormattedMessage id="pages.button.reset" defaultMessage="Reset" />
             </Button> */}
-            <Button onClick={() => formRefEdit.current?.submit()} type="primary">
-              <FormattedMessage id="pages.button.save" defaultMessage="Save" />
+            <Button onClick={() => formRefEdit.current?.submit()} type='primary'>
+              <FormattedMessage id='pages.button.save' defaultMessage='Save' />
             </Button>
           </Space>
         }

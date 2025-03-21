@@ -4,11 +4,11 @@ import React from 'react';
 
 const NoFoundPage: React.FC = () => (
   <Result
-    status="404"
-    title="404"
+    status='404'
+    title='404'
     subTitle={useIntl().formatMessage({ id: 'pages.404.subTitle' })}
     extra={
-      <Button type="primary" onClick={() => history.push('/')}>
+      <Button type='primary' onClick={() => history.push('/')}>
         {useIntl().formatMessage({ id: 'pages.404.buttonText' })}
       </Button>
     }

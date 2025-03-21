@@ -10,20 +10,20 @@ interface IProps {
 const RequiredMark = ({ label, errorLabel, showError = false }: IProps) => {
   return (
     <Form.Item style={{ display: 'inline', margin: 0 }} required>
-      <span className="ant-form-item-label">
-        <label className="ant-form-item-required">
+      <span className='ant-form-item-label'>
+        <label className='ant-form-item-required'>
           {label}
           {showError && (
             <span
-              className="ant-form-item-explain-error"
+              className='ant-form-item-explain-error'
               style={{ fontWeight: 'normal', marginLeft: '5px' }}
             >
               {errorLabel ? (
                 errorLabel
               ) : (
                 <FormattedMessage
-                  id="validator.lang.mustBeEnglish"
-                  defaultMessage="English is a required language!"
+                  id='validator.lang.mustBeEnglish'
+                  defaultMessage='English is a required language!'
                 />
               )}
             </span>

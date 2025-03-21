@@ -93,11 +93,11 @@ const PasswordForgot: React.FC = () => {
             <div style={{ marginTop: '80px' }}>
               <Spin spinning={spinning}>
                 <LoginForm
-                  layout="vertical"
+                  layout='vertical'
                   logo={isDarkMode ? '/logo_dark.svg' : Settings.logo}
-                  title={<FormattedMessage id="pages.login.title" defaultMessage="TianGong LCA" />}
+                  title={<FormattedMessage id='pages.login.title' defaultMessage='TianGong LCA' />}
                   subTitle={
-                    <FormattedMessage id="pages.login.subTitle" defaultMessage="TianGong LCA" />
+                    <FormattedMessage id='pages.login.subTitle' defaultMessage='TianGong LCA' />
                   }
                   initialValues={initData}
                   onFinish={async (values) => {
@@ -132,7 +132,7 @@ const PasswordForgot: React.FC = () => {
                     ]}
                   />
                   <ProFormText
-                    name="email"
+                    name='email'
                     fieldProps={{
                       size: 'middle',
                       prefix: <MailOutlined />,
@@ -146,8 +146,8 @@ const PasswordForgot: React.FC = () => {
                         type: 'email',
                         message: (
                           <FormattedMessage
-                            id="pages.login.email.wrong-format"
-                            defaultMessage="The email format is incorrect!"
+                            id='pages.login.email.wrong-format'
+                            defaultMessage='The email format is incorrect!'
                           />
                         ),
                       },
@@ -155,8 +155,8 @@ const PasswordForgot: React.FC = () => {
                         required: true,
                         message: (
                           <FormattedMessage
-                            id="pages.login.email.required"
-                            defaultMessage="Please input your email!"
+                            id='pages.login.email.required'
+                            defaultMessage='Please input your email!'
                           />
                         ),
                       },
@@ -166,8 +166,8 @@ const PasswordForgot: React.FC = () => {
                 </LoginForm>
                 {sendComplete && (
                   <div style={{ marginTop: 32, display: 'flex', justifyContent: 'center' }}>
-                    <Link to="/">
-                      <Button type="primary" size="large">
+                    <Link to='/'>
+                      <Button type='primary' size='large'>
                         {intl.formatMessage({
                           id: 'pages.login.password.back',
                           defaultMessage: 'Back to Login',

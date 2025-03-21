@@ -40,8 +40,8 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
       key: 'flowPropertiesInformation',
       tab: (
         <FormattedMessage
-          id="pages.FlowProperties.view.flowPropertiesInformation"
-          defaultMessage="Flow property information"
+          id='pages.FlowProperties.view.flowPropertiesInformation'
+          defaultMessage='Flow property information'
         />
       ),
     },
@@ -49,8 +49,8 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
       key: 'modellingAndValidation',
       tab: (
         <FormattedMessage
-          id="pages.FlowProperties.view.modellingAndValidation"
-          defaultMessage="Modelling and validation"
+          id='pages.FlowProperties.view.modellingAndValidation'
+          defaultMessage='Modelling and validation'
         />
       ),
     },
@@ -58,8 +58,8 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
       key: 'administrativeInformation',
       tab: (
         <FormattedMessage
-          id="pages.FlowProperties.view.administrativeInformation"
-          defaultMessage="Administrative information"
+          id='pages.FlowProperties.view.administrativeInformation'
+          defaultMessage='Administrative information'
         />
       ),
     },
@@ -73,8 +73,8 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
             key={0}
             label={
               <FormattedMessage
-                id="pages.FlowProperties.view.flowPropertiesInformation.id"
-                defaultMessage="ID"
+                id='pages.FlowProperties.view.flowPropertiesInformation.id'
+                defaultMessage='ID'
               />
             }
             labelStyle={{ width: '100px' }}
@@ -82,10 +82,10 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
             {initData?.flowPropertiesInformation?.dataSetInformation?.['common:UUID'] ?? '-'}
           </Descriptions.Item>
         </Descriptions>
-        <Divider orientationMargin="0" orientation="left" plain>
+        <Divider orientationMargin='0' orientation='left' plain>
           <FormattedMessage
-            id="pages.FlowProperties.view.flowPropertiesInformation.name"
-            defaultMessage="Name of flow property"
+            id='pages.FlowProperties.view.flowPropertiesInformation.name'
+            defaultMessage='Name of flow property'
           />
         </Divider>
         <LangTextItemDescription
@@ -97,8 +97,8 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
         <br />
         <Divider orientationMargin="0" orientation="left" plain>
           <FormattedMessage
-            id="pages.FlowProperties.view.flowPropertiesInformation.generalComment"
-            defaultMessage="General comment on data set"
+            id='pages.FlowProperties.view.flowPropertiesInformation.generalComment'
+            defaultMessage='General comment on data set'
           />
         </Divider>
         <LangTextItemDescription
@@ -120,8 +120,8 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
           lang={lang}
           title={
             <FormattedMessage
-              id="pages.FlowProperties.view.flowPropertiesInformation.referenceToReferenceUnitGroup"
-              defaultMessage="Reference unit"
+              id='pages.FlowProperties.view.flowPropertiesInformation.referenceToReferenceUnitGroup'
+              defaultMessage='Reference unit'
             />
           }
           data={
@@ -153,8 +153,8 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
           }
           title={
             <FormattedMessage
-              id="pages.FlowProperties.view.modellingAndValidation.referenceToComplianceSystem"
-              defaultMessage="Compliance system name"
+              id='pages.FlowProperties.view.modellingAndValidation.referenceToComplianceSystem'
+              defaultMessage='Compliance system name'
             />
           }
           lang={lang}
@@ -165,8 +165,8 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
             key={0}
             label={
               <FormattedMessage
-                id="pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance"
-                defaultMessage="Approval of overall compliance"
+                id='pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance'
+                defaultMessage='Approval of overall compliance'
               />
             }
             labelStyle={{ width: '240px' }}
@@ -183,11 +183,11 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
     administrativeInformation: (
       <>
         <Card
-          size="small"
+          size='small'
           title={
             <FormattedMessage
-              id="pages.FlowProperties.view.modellingAndValidation.dataEntryBy"
-              defaultMessage="Data entry by"
+              id='pages.FlowProperties.view.modellingAndValidation.dataEntryBy'
+              defaultMessage='Data entry by'
             />
           }
         >
@@ -196,8 +196,8 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
               key={0}
               label={
                 <FormattedMessage
-                  id="pages.FlowProperties.view.modellingAndValidation.timeStamp"
-                  defaultMessage="Time stamp (last saved)"
+                  id='pages.FlowProperties.view.modellingAndValidation.timeStamp'
+                  defaultMessage='Time stamp (last saved)'
                 />
               }
               styles={{ label: { width: '200px' } }}
@@ -212,8 +212,8 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
             }
             title={
               <FormattedMessage
-                id="pages.FlowProperties.view.modellingAndValidation.referenceToDataSetFormat"
-                defaultMessage="Data set format(s)"
+                id='pages.FlowProperties.view.modellingAndValidation.referenceToDataSetFormat'
+                defaultMessage='Data set format(s)'
               />
             }
             lang={lang}
@@ -221,11 +221,11 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
         </Card>
         <br />
         <Card
-          size="small"
+          size='small'
           title={
             <FormattedMessage
-              id="pages.FlowProperties.view.modellingAndValidation.publicationAndOwnership"
-              defaultMessage="Publication and ownership"
+              id='pages.FlowProperties.view.modellingAndValidation.publicationAndOwnership'
+              defaultMessage='Publication and ownership'
             />
           }
         >
@@ -234,8 +234,8 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
               key={0}
               label={
                 <FormattedMessage
-                  id="pages.FlowProperties.view.modellingAndValidation.dataSetVersion"
-                  defaultMessage="Data set version"
+                  id='pages.FlowProperties.view.modellingAndValidation.dataSetVersion'
+                  defaultMessage='Data set version'
                 />
               }
               labelStyle={{ width: '140px' }}
@@ -257,8 +257,8 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
             lang={lang}
             title={
               <FormattedMessage
-                id="pages.FlowProperties.view.administrativeInformation.referenceToPrecedingDataSetVersion"
-                defaultMessage="Preceding data set version"
+                id='pages.FlowProperties.view.administrativeInformation.referenceToPrecedingDataSetVersion'
+                defaultMessage='Preceding data set version'
               />
             }
           />
@@ -283,8 +283,8 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
               key={0}
               label={
                 <FormattedMessage
-                  id="pages.FlowProperties.view.administrativeInformation.permanentDataSetURI"
-                  defaultMessage="Permanent data set URI"
+                  id='pages.FlowProperties.view.administrativeInformation.permanentDataSetURI'
+                  defaultMessage='Permanent data set URI'
                 />
               }
               styles={{ label: { width: '220px' } }}
@@ -312,12 +312,12 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
     <>
       {/* <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} /> */}
       {buttonType === 'icon' ? (
-        <Tooltip title={<FormattedMessage id="pages.button.view" defaultMessage="View" />}>
-          <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
+        <Tooltip title={<FormattedMessage id='pages.button.view' defaultMessage='View' />}>
+          <Button shape='circle' icon={<ProfileOutlined />} size='small' onClick={onView} />
         </Tooltip>
       ) : (
         <Button onClick={onView}>
-          <FormattedMessage id="pages.button.view" defaultMessage="View" />
+          <FormattedMessage id='pages.button.view' defaultMessage='View' />
         </Button>
       )}
 
@@ -325,11 +325,11 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
         getContainer={() => document.body}
         title={
           <FormattedMessage
-            id="pages.flowproperty.drawer.title.view"
-            defaultMessage="View Flow property"
+            id='pages.flowproperty.drawer.title.view'
+            defaultMessage='View Flow property'
           />
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={
           <Button

@@ -40,8 +40,8 @@ export const FlowpropertyForm: FC<Props> = ({
       key: 'flowPropertiesInformation',
       tab: (
         <FormattedMessage
-          id="pages.FlowProperties.view.flowPropertiesInformation"
-          defaultMessage="Flow property information"
+          id='pages.FlowProperties.view.flowPropertiesInformation'
+          defaultMessage='Flow property information'
         />
       ),
     },
@@ -49,8 +49,8 @@ export const FlowpropertyForm: FC<Props> = ({
       key: 'modellingAndValidation',
       tab: (
         <FormattedMessage
-          id="pages.FlowProperties.view.modellingAndValidation"
-          defaultMessage="Modelling and validation"
+          id='pages.FlowProperties.view.modellingAndValidation'
+          defaultMessage='Modelling and validation'
         />
       ),
     },
@@ -58,8 +58,8 @@ export const FlowpropertyForm: FC<Props> = ({
       key: 'administrativeInformation',
       tab: (
         <FormattedMessage
-          id="pages.FlowProperties.view.administrativeInformation"
-          defaultMessage="Administrative information"
+          id='pages.FlowProperties.view.administrativeInformation'
+          defaultMessage='Administrative information'
         />
       ),
     },
@@ -67,18 +67,18 @@ export const FlowpropertyForm: FC<Props> = ({
 
   const tabContent: { [key: string]: JSX.Element } = {
     flowPropertiesInformation: (
-      <Space direction="vertical" style={{ width: '100%' }}>
+      <Space direction='vertical' style={{ width: '100%' }}>
         <Card
-          size="small"
+          size='small'
           title={
             <FormattedMessage
-              id="pages.FlowProperties.view.flowPropertiesInformation.dataSetInformation"
-              defaultMessage="Data set information"
+              id='pages.FlowProperties.view.flowPropertiesInformation.dataSetInformation'
+              defaultMessage='Data set information'
             />
           }
         >
           <Card
-            size="small"
+            size='small'
             title={
               <RequiredMark
                 label={<FormattedMessage
@@ -93,8 +93,8 @@ export const FlowpropertyForm: FC<Props> = ({
               name={['flowPropertiesInformation', 'dataSetInformation', 'common:name']}
               label={
                 <FormattedMessage
-                  id="pages.FlowProperties.view.flowPropertiesInformation.name"
-                  defaultMessage="Name of flow property"
+                  id='pages.FlowProperties.view.flowPropertiesInformation.name'
+                  defaultMessage='Name of flow property'
                 />
               }
               setRuleErrorState={setNameErrorState}
@@ -137,11 +137,11 @@ export const FlowpropertyForm: FC<Props> = ({
             rules={getRules(schema['flowPropertyDataSet']['flowPropertiesInformation']['dataSetInformation']['classificationInformation']['common:classification']['common:class']['rules'])}
           />
           <Card
-            size="small"
+            size='small'
             title={
               <FormattedMessage
-                id="pages.FlowProperties.view.flowPropertiesInformation.generalComment"
-                defaultMessage="General comment on data set"
+                id='pages.FlowProperties.view.flowPropertiesInformation.generalComment'
+                defaultMessage='General comment on data set'
               />
             }
           >
@@ -149,8 +149,8 @@ export const FlowpropertyForm: FC<Props> = ({
               name={['flowPropertiesInformation', 'dataSetInformation', 'common:generalComment']}
               label={
                 <FormattedMessage
-                  id="pages.FlowProperties.view.flowPropertiesInformation.generalComment"
-                  defaultMessage="General comment on data set"
+                  id='pages.FlowProperties.view.flowPropertiesInformation.generalComment'
+                  defaultMessage='General comment on data set'
                 />
               }
             />
@@ -164,8 +164,8 @@ export const FlowpropertyForm: FC<Props> = ({
           ]}
           label={
             <FormattedMessage
-              id="pages.FlowProperties.view.flowPropertiesInformation.referenceToReferenceUnitGroup"
-              defaultMessage="Reference unit"
+              id='pages.FlowProperties.view.flowPropertiesInformation.referenceToReferenceUnitGroup'
+              defaultMessage='Reference unit'
             />
           }
           rules={getRules(schema['flowPropertyDataSet']['flowPropertiesInformation']['quantitativeReference']['referenceToReferenceUnitGroup']['rules'])}
@@ -176,7 +176,7 @@ export const FlowpropertyForm: FC<Props> = ({
       </Space>
     ),
     modellingAndValidation: (
-      <Space direction="vertical" style={{ width: '100%' }}>
+      <Space direction='vertical' style={{ width: '100%' }}>
         <SourceSelectForm
           name={[
             'modellingAndValidation',
@@ -204,8 +204,8 @@ export const FlowpropertyForm: FC<Props> = ({
           lang={lang}
           label={
             <FormattedMessage
-              id="pages.FlowProperties.view.modellingAndValidation.referenceToComplianceSystem"
-              defaultMessage="Compliance system name"
+              id='pages.FlowProperties.view.modellingAndValidation.referenceToComplianceSystem'
+              defaultMessage='Compliance system name'
             />
           }
           formRef={formRef}
@@ -215,8 +215,8 @@ export const FlowpropertyForm: FC<Props> = ({
         <Form.Item
           label={
             <FormattedMessage
-              id="pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance"
-              defaultMessage="Approval of overall compliance"
+              id='pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance'
+              defaultMessage='Approval of overall compliance'
             />
           }
           name={[
@@ -232,21 +232,21 @@ export const FlowpropertyForm: FC<Props> = ({
       </Space>
     ),
     administrativeInformation: (
-      <Space direction="vertical" style={{ width: '100%' }}>
+      <Space direction='vertical' style={{ width: '100%' }}>
         <Card
-          size="small"
+          size='small'
           title={
             <FormattedMessage
-              id="pages.FlowProperties.view.modellingAndValidation.dataEntryBy"
-              defaultMessage="Data entry by"
+              id='pages.FlowProperties.view.modellingAndValidation.dataEntryBy'
+              defaultMessage='Data entry by'
             />
           }
         >
           <Form.Item
             label={
               <FormattedMessage
-                id="pages.FlowProperties.view.modellingAndValidation.timeStamp"
-                defaultMessage="Time stamp (last saved)"
+                id='pages.FlowProperties.view.modellingAndValidation.timeStamp'
+                defaultMessage='Time stamp (last saved)'
               />
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
@@ -260,8 +260,8 @@ export const FlowpropertyForm: FC<Props> = ({
             lang={lang}
             label={
               <FormattedMessage
-                id="pages.FlowProperties.view.modellingAndValidation.referenceToDataSetFormat"
-                defaultMessage="Data set format(s)"
+                id='pages.FlowProperties.view.modellingAndValidation.referenceToDataSetFormat'
+                defaultMessage='Data set format(s)'
               />
             }
             formRef={formRef}
@@ -271,19 +271,19 @@ export const FlowpropertyForm: FC<Props> = ({
         </Card>
 
         <Card
-          size="small"
+          size='small'
           title={
             <FormattedMessage
-              id="pages.FlowProperties.view.modellingAndValidation.publicationAndOwnership"
-              defaultMessage="Publication and ownership"
+              id='pages.FlowProperties.view.modellingAndValidation.publicationAndOwnership'
+              defaultMessage='Publication and ownership'
             />
           }
         >
           <Form.Item
             label={
               <FormattedMessage
-                id="pages.FlowProperties.view.modellingAndValidation.dataSetVersion"
-                defaultMessage="Data set version"
+                id='pages.FlowProperties.view.modellingAndValidation.dataSetVersion'
+                defaultMessage='Data set version'
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
@@ -300,8 +300,8 @@ export const FlowpropertyForm: FC<Props> = ({
             lang={lang}
             label={
               <FormattedMessage
-                id="pages.FlowProperties.view.administrativeInformation.referenceToPrecedingDataSetVersion"
-                defaultMessage="Preceding data set version"
+                id='pages.FlowProperties.view.administrativeInformation.referenceToPrecedingDataSetVersion'
+                defaultMessage='Preceding data set version'
               />
             }
             drawerVisible={drawerVisible}
@@ -330,8 +330,8 @@ export const FlowpropertyForm: FC<Props> = ({
           <Form.Item
             label={
               <FormattedMessage
-                id="pages.FlowProperties.view.administrativeInformation.permanentDataSetURI"
-                defaultMessage="Permanent data set URI"
+                id='pages.FlowProperties.view.administrativeInformation.permanentDataSetURI'
+                defaultMessage='Permanent data set URI'
               />
             }
             name={[

@@ -134,15 +134,15 @@ const ProcessCreate: FC<CreateProps> = ({
                   ? 'pages.button.createVersion'
                   : 'pages.button.create'
             }
-            defaultMessage="Create"
+            defaultMessage='Create'
           />
         }
       >
         {actionType === 'copy' ? (
           <Button
-            shape="circle"
+            shape='circle'
             icon={<CopyOutlined />}
-            size="small"
+            size='small'
             onClick={() => {
               setDrawerVisible(true);
             }}
@@ -150,7 +150,7 @@ const ProcessCreate: FC<CreateProps> = ({
         ) : (
           <Button
             size={'middle'}
-            type="text"
+            type='text'
             icon={<PlusOutlined />}
             onClick={() => {
               setDrawerVisible(true);
@@ -169,10 +169,10 @@ const ProcessCreate: FC<CreateProps> = ({
                   ? 'pages.button.createVersion'
                   : 'pages.button.create'
             }
-            defaultMessage="Create process"
+            defaultMessage='Create process'
           />
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={
           <Button
@@ -188,10 +188,10 @@ const ProcessCreate: FC<CreateProps> = ({
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
               {' '}
-              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
             </Button>
-            <Button onClick={() => formRefCreate.current?.submit()} type="primary">
-              <FormattedMessage id="pages.button.save" defaultMessage="Save" />
+            <Button onClick={() => formRefCreate.current?.submit()} type='primary'>
+              <FormattedMessage id='pages.button.save' defaultMessage='Save' />
             </Button>
           </Space>
         }

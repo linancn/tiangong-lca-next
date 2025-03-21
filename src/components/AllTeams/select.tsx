@@ -1,7 +1,7 @@
 import { getLang, getLangText } from '@/services/general/util';
 import { getUnrankedTeams, updateSort } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
-import { PlusOutlined, CloseOutlined } from '@ant-design/icons';
+import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Drawer, message, Space, Tooltip } from 'antd';
 import { FC, useRef, useState } from 'react';
@@ -86,13 +86,13 @@ const SelectTeams: FC<SelectTeamsProps> = ({
 
   const teamColumns: ProColumns<TeamTable>[] = [
     {
-      title: <FormattedMessage id="component.allTeams.table.index" defaultMessage="Index" />,
+      title: <FormattedMessage id='component.allTeams.table.index' defaultMessage='Index' />,
       dataIndex: 'index',
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="component.allTeams.table.name" defaultMessage="Team Name" />,
+      title: <FormattedMessage id='component.allTeams.table.name' defaultMessage='Team Name' />,
       dataIndex: 'title',
       sorter: false,
       search: false,
@@ -100,7 +100,7 @@ const SelectTeams: FC<SelectTeamsProps> = ({
     },
     {
       title: (
-        <FormattedMessage id="component.allTeams.table.description" defaultMessage="Description" />
+        <FormattedMessage id='component.allTeams.table.description' defaultMessage='Description' />
       ),
       dataIndex: 'description',
       sorter: false,
@@ -108,14 +108,14 @@ const SelectTeams: FC<SelectTeamsProps> = ({
       render: (_, row) => {
         const description = getLangText(row.json.description, lang);
         return (
-          <Tooltip placement="topLeft" title={description}>
+          <Tooltip placement='topLeft' title={description}>
             {description.length > 20 ? `${description.substring(0, 20)}...` : description}
           </Tooltip>
         );
       },
     },
     {
-      title: <FormattedMessage id="component.allTeams.table.contact" defaultMessage="Contact" />,
+      title: <FormattedMessage id='component.allTeams.table.contact' defaultMessage='Contact' />,
       dataIndex: 'ownerEmail',
       sorter: false,
       search: false,
@@ -125,23 +125,23 @@ const SelectTeams: FC<SelectTeamsProps> = ({
   return (
     <>
       {buttonType === 'default' ? (
-        <Button type="primary" onClick={showDrawer}>
-          <FormattedMessage id="component.allTeams.select.button" defaultMessage="Select Team" />
+        <Button type='primary' onClick={showDrawer}>
+          <FormattedMessage id='component.allTeams.select.button' defaultMessage='Select Team' />
         </Button>
       ) : (
         <Tooltip
           title={
             <FormattedMessage
-              id="component.allTeams.table.select.tooltip"
-              defaultMessage="Select Team"
+              id='component.allTeams.table.select.tooltip'
+              defaultMessage='Select Team'
             />
           }
         >
           <Button
             disabled={disabled}
-            type="text"
-            shape="circle"
-            size="small"
+            type='text'
+            shape='circle'
+            size='small'
             icon={<PlusOutlined />}
             onClick={showDrawer}
           />
@@ -159,7 +159,7 @@ const SelectTeams: FC<SelectTeamsProps> = ({
           />
         }
         title={
-          <FormattedMessage id="component.allTeams.select.title" defaultMessage="Select Team" />
+          <FormattedMessage id='component.allTeams.select.title' defaultMessage='Select Team' />
         }
         width={1000}
         onClose={onClose}
@@ -168,21 +168,21 @@ const SelectTeams: FC<SelectTeamsProps> = ({
           <div style={{ textAlign: 'right' }}>
             <Space>
               <Button onClick={onClose}>
-                <FormattedMessage id="component.allTeams.select.calcel" defaultMessage="Cancel" />
+                <FormattedMessage id='component.allTeams.select.calcel' defaultMessage='Cancel' />
               </Button>
-              <Button type="primary" onClick={handleAddTeams} loading={loading}>
-                <FormattedMessage id="component.allTeams.select.confirm" defaultMessage="Confirm" />
+              <Button type='primary' onClick={handleAddTeams} loading={loading}>
+                <FormattedMessage id='component.allTeams.select.confirm' defaultMessage='Confirm' />
               </Button>
             </Space>
           </div>
         }
       >
         <ProTable<TeamTable>
-          rowKey="id"
+          rowKey='id'
           headerTitle={
             <FormattedMessage
-              id="component.allTeams.select.tableTitle"
-              defaultMessage="Unshown Teams"
+              id='component.allTeams.select.tableTitle'
+              defaultMessage='Unshown Teams'
             />
           }
           actionRef={actionRef}

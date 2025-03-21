@@ -59,12 +59,12 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="pages.button.view" defaultMessage="View exchange" />}>
+      <Tooltip title={<FormattedMessage id='pages.button.view' defaultMessage='View exchange' />}>
         {buttonType === 'icon' ? (
-          <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} />
+          <Button shape='circle' icon={<ProfileOutlined />} size='small' onClick={onView} />
         ) : (
           <Button onClick={onView}>
-            <FormattedMessage id="pages.button.view" defaultMessage="View" />
+            <FormattedMessage id='pages.button.view' defaultMessage='View' />
           </Button>
         )}
       </Tooltip>
@@ -72,11 +72,11 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
         getContainer={() => document.body}
         title={
           <FormattedMessage
-            id="pages.process.exchange.drawer.title.view"
-            defaultMessage="View exchange"
+            id='pages.process.exchange.drawer.title.view'
+            defaultMessage='View exchange'
           />
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={
           <Button
@@ -101,8 +101,8 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
             key={0}
             label={
               <FormattedMessage
-                id="pages.process.view.exchange.exchangeDirection"
-                defaultMessage="Exchange direction"
+                id='pages.process.view.exchange.exchangeDirection'
+                defaultMessage='Exchange direction'
               />
             }
             labelStyle={{ width: '180px' }}
@@ -114,8 +114,8 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
         <FlowsSelectDescription
           title={
             <FormattedMessage
-              id="pages.process.view.exchange.referenceToFlowDataSet"
-              defaultMessage="Flow"
+              id='pages.process.view.exchange.referenceToFlowDataSet'
+              defaultMessage='Flow'
             />
           }
           data={viewData.referenceToFlowDataSet ?? {}}
@@ -126,7 +126,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
           <Descriptions.Item
             key={0}
             label={
-              <FormattedMessage id="processExchange.meanAmount" defaultMessage="Mean amount" />
+              <FormattedMessage id='processExchange.meanAmount' defaultMessage='Mean amount' />
             }
             labelStyle={{ width: '220px' }}
           >
@@ -139,8 +139,8 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
             key={0}
             label={
               <FormattedMessage
-                id="processExchange.resultingAmount"
-                defaultMessage="Resulting amount"
+                id='processExchange.resultingAmount'
+                defaultMessage='Resulting amount'
               />
             }
             labelStyle={{ width: '220px' }}
@@ -154,8 +154,8 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
             key={0}
             label={
               <FormattedMessage
-                id="processExchange.uncertaintyDistributionType"
-                defaultMessage="Uncertainty distribution type"
+                id='processExchange.uncertaintyDistributionType'
+                defaultMessage='Uncertainty distribution type'
               />
             }
             labelStyle={{ width: '220px' }}
@@ -172,8 +172,8 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
                 key={0}
                 label={
                   <FormattedMessage
-                    id="processExchange.minimumAmount"
-                    defaultMessage="Minimum amount"
+                    id='processExchange.minimumAmount'
+                    defaultMessage='Minimum amount'
                   />
                 }
                 labelStyle={{ width: '220px' }}
@@ -187,8 +187,8 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
                 key={0}
                 label={
                   <FormattedMessage
-                    id="processExchange.maximumAmount"
-                    defaultMessage="Maximum amount"
+                    id='processExchange.maximumAmount'
+                    defaultMessage='Maximum amount'
                   />
                 }
                 labelStyle={{ width: '220px' }}
@@ -209,8 +209,8 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
                 key={0}
                 label={
                   <FormattedMessage
-                    id="processExchange.relativeStandardDeviation95In"
-                    defaultMessage="Relative standard deviation 95 in"
+                    id='processExchange.relativeStandardDeviation95In'
+                    defaultMessage='Relative standard deviation 95 in'
                   />
                 }
                 labelStyle={{ width: '220px' }}
@@ -228,7 +228,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
             key={0}
             label={
               <FormattedMessage
-                id="pages.process.view.exchange.dataDerivationTypeStatus"
+                id='pages.process.view.exchange.dataDerivationTypeStatus'
                 defaultMessage="'Data derivation type / status"
               />
             }
@@ -238,20 +238,20 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
           </Descriptions.Item>
         </Descriptions>
 
-        <Divider orientationMargin="0" orientation="left" plain>
+        <Divider orientationMargin='0' orientation='left' plain>
           <FormattedMessage
-            id="pages.process.view.exchange.generalComment"
-            defaultMessage="Comment"
+            id='pages.process.view.exchange.generalComment'
+            defaultMessage='Comment'
           />
         </Divider>
         <LangTextItemDescription data={viewData.generalComment} />
         <br />
         <Card
-          size="small"
+          size='small'
           title={
             <FormattedMessage
-              id="pages.process.view.exchange.quantitativeReference"
-              defaultMessage="Quantitative reference"
+              id='pages.process.view.exchange.quantitativeReference'
+              defaultMessage='Quantitative reference'
             />
           }
         >
@@ -260,8 +260,8 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
               key={0}
               label={
                 <FormattedMessage
-                  id="pages.process.view.exchange.referenceToReferenceFlow"
-                  defaultMessage="Reference flow(s)"
+                  id='pages.process.view.exchange.referenceToReferenceFlow'
+                  defaultMessage='Reference flow(s)'
                 />
               }
               labelStyle={{ width: '220px' }}
@@ -269,10 +269,10 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
               {<QuantitativeReferenceIcon value={viewData.quantitativeReference} />}
             </Descriptions.Item>
           </Descriptions>
-          <Divider orientationMargin="0" orientation="left" plain>
+          <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
-              id="pages.process.view.exchange.functionalUnitOrOther"
-              defaultMessage="Functional unit, Production period, or Other parameter"
+              id='pages.process.view.exchange.functionalUnitOrOther'
+              defaultMessage='Functional unit, Production period, or Other parameter'
             />
           </Divider>
           <LangTextItemDescription data={viewData.functionalUnitOrOther} />

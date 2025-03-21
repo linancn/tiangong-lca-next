@@ -106,15 +106,15 @@ const UnitGroupEdit: FC<Props> = ({
     <>
       {buttonType === 'icon' ? (
         <Tooltip
-          title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit"></FormattedMessage>}
+          title={<FormattedMessage id='pages.button.edit' defaultMessage='Edit'></FormattedMessage>}
         >
-          <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit}></Button>
+          <Button shape='circle' icon={<FormOutlined />} size='small' onClick={onEdit}></Button>
         </Tooltip>
       ) : (
-        <Button size="small" onClick={onEdit}>
+        <Button size='small' onClick={onEdit}>
           <FormattedMessage
             id={buttonType ? buttonType : 'pages.button.edit'}
-            defaultMessage="Edit"
+            defaultMessage='Edit'
           ></FormattedMessage>
         </Button>
       )}
@@ -124,10 +124,10 @@ const UnitGroupEdit: FC<Props> = ({
         title={
           <FormattedMessage
             id={'pages.unitgroup.drawer.title.edit'}
-            defaultMessage="Edit"
+            defaultMessage='Edit'
           ></FormattedMessage>
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={
           <Button
@@ -151,8 +151,8 @@ const UnitGroupEdit: FC<Props> = ({
               }}
             >
               <FormattedMessage
-                id="pages.button.updateReference"
-                defaultMessage="Update reference"
+                id='pages.button.updateReference'
+                defaultMessage='Update reference'
               />
             </Button>
             <Button
@@ -160,7 +160,7 @@ const UnitGroupEdit: FC<Props> = ({
                 setDrawerVisible(false);
               }}
             >
-              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel"></FormattedMessage>
+              <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel'></FormattedMessage>
             </Button>
             {/* <Button onClick={onReset}>
               <FormattedMessage id="pages.button.reset" defaultMessage="Reset"></FormattedMessage>
@@ -169,9 +169,9 @@ const UnitGroupEdit: FC<Props> = ({
               onClick={() => {
                 formRefEdit.current?.submit();
               }}
-              type="primary"
+              type='primary'
             >
-              <FormattedMessage id="pages.button.save" defaultMessage="Save"></FormattedMessage>
+              <FormattedMessage id='pages.button.save' defaultMessage='Save'></FormattedMessage>
             </Button>
           </Space>
         }

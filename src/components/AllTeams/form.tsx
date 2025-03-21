@@ -87,21 +87,21 @@ const TeamForm: FC<Props> = ({ formRef, onData, lightLogoProps, darkLogoProps })
   };
 
   return (
-    <Space direction="vertical" style={{ width: '100%' }}>
+    <Space direction='vertical' style={{ width: '100%' }}>
       <Card
-        size="small"
-        title={<FormattedMessage id="component.allTeams.form.title" defaultMessage="Team Name" />}
+        size='small'
+        title={<FormattedMessage id='component.allTeams.form.title' defaultMessage='Team Name' />}
       >
         <LangTextItemForm
-          name="title"
-          label={<FormattedMessage id="component.allTeams.form.title" defaultMessage="Team Name" />}
+          name='title'
+          label={<FormattedMessage id='component.allTeams.form.title' defaultMessage='Team Name' />}
           rules={[
             {
               required: true,
               message: (
                 <FormattedMessage
-                  id="component.allTeams.form.title.required"
-                  defaultMessage="Please input team name!"
+                  id='component.allTeams.form.title.required'
+                  defaultMessage='Please input team name!'
                 />
               ),
             },
@@ -110,20 +110,20 @@ const TeamForm: FC<Props> = ({ formRef, onData, lightLogoProps, darkLogoProps })
       </Card>
 
       <Card
-        size="small"
+        size='small'
         title={
           <FormattedMessage
-            id="component.allTeams.form.description"
-            defaultMessage="Team Description"
+            id='component.allTeams.form.description'
+            defaultMessage='Team Description'
           />
         }
       >
         <LangTextItemForm
-          name="description"
+          name='description'
           label={
             <FormattedMessage
-              id="component.allTeams.form.description"
-              defaultMessage="Team Description"
+              id='component.allTeams.form.description'
+              defaultMessage='Team Description'
             />
           }
           rules={[
@@ -131,8 +131,8 @@ const TeamForm: FC<Props> = ({ formRef, onData, lightLogoProps, darkLogoProps })
               required: true,
               message: (
                 <FormattedMessage
-                  id="component.allTeams.form.description.required"
-                  defaultMessage="Please input team description!"
+                  id='component.allTeams.form.description.required'
+                  defaultMessage='Please input team description!'
                 />
               ),
             },
@@ -167,19 +167,19 @@ const TeamForm: FC<Props> = ({ formRef, onData, lightLogoProps, darkLogoProps })
       </Card> */}
 
       <Card
-        size="small"
-        title={<FormattedMessage id="component.allTeams.logo.title" defaultMessage="Team Logo" />}
+        size='small'
+        title={<FormattedMessage id='component.allTeams.logo.title' defaultMessage='Team Logo' />}
       >
-        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+        <Space direction='vertical' size='middle' style={{ width: '100%' }}>
           <Form.Item
             label={
               <FormattedMessage
-                id="component.allTeams.form.lightLogo"
-                defaultMessage="Light Logo"
+                id='component.allTeams.form.lightLogo'
+                defaultMessage='Light Logo'
               />
             }
             labelCol={{ span: 4 }}
-            name="lightLogo"
+            name='lightLogo'
           >
             <Upload
               beforeUpload={() => {
@@ -188,7 +188,7 @@ const TeamForm: FC<Props> = ({ formRef, onData, lightLogoProps, darkLogoProps })
               }}
               onRemove={() => removeLogo('lightLogo')}
               maxCount={1}
-              listType="picture-card"
+              listType='picture-card'
               fileList={
                 lightLogo
                   ? [
@@ -213,10 +213,10 @@ const TeamForm: FC<Props> = ({ formRef, onData, lightLogoProps, darkLogoProps })
 
           <Form.Item
             label={
-              <FormattedMessage id="component.allTeams.form.darkLogo" defaultMessage="Dark Logo" />
+              <FormattedMessage id='component.allTeams.form.darkLogo' defaultMessage='Dark Logo' />
             }
             labelCol={{ span: 4 }}
-            name="darkLogo"
+            name='darkLogo'
           >
             <Upload
               beforeUpload={() => {
@@ -225,7 +225,7 @@ const TeamForm: FC<Props> = ({ formRef, onData, lightLogoProps, darkLogoProps })
               }}
               onRemove={() => removeLogo('darkLogo')}
               maxCount={1}
-              listType="picture-card"
+              listType='picture-card'
               fileList={
                 darkLogo
                   ? [

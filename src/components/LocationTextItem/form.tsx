@@ -37,7 +37,7 @@ const LocationTextItemForm: FC<Props> = ({ name, label, lang, onData, rules }) =
   }, []);
 
   return (
-    <Space direction="vertical" style={{ width: '100%' }}>
+    <Space direction='vertical' style={{ width: '100%' }}>
       <Form.Item label={label} name={name} rules={rules}>
         <Select
           showSearch

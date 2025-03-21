@@ -37,14 +37,14 @@ const TableList: FC = () => {
   const unitGroupColumns: ProColumns<UnitGroupTable>[] = [
     {
       title: (
-        <FormattedMessage id="pages.table.title.index" defaultMessage="Index"></FormattedMessage>
+        <FormattedMessage id='pages.table.title.index' defaultMessage='Index'></FormattedMessage>
       ),
       valueType: 'index',
       search: false,
     },
     {
       title: (
-        <FormattedMessage id="pages.table.title.name" defaultMessage="Name"></FormattedMessage>
+        <FormattedMessage id='pages.table.title.name' defaultMessage='Name'></FormattedMessage>
       ),
       dataIndex: 'name',
       sorter: false,
@@ -52,15 +52,15 @@ const TableList: FC = () => {
     {
       title: (
         <FormattedMessage
-          id="pages.unitgroup.unit.quantitativeReference"
-          defaultMessage="Quantitative reference"
+          id='pages.unitgroup.unit.quantitativeReference'
+          defaultMessage='Quantitative reference'
         />
       ),
       dataIndex: 'refUnitName',
       sorter: false,
       search: false,
       render: (_, row) => [
-        <Tooltip key={0} placement="topLeft" title={row.refUnitGeneralComment}>
+        <Tooltip key={0} placement='topLeft' title={row.refUnitGeneralComment}>
           {row.refUnitName}
         </Tooltip>,
       ],
@@ -68,8 +68,8 @@ const TableList: FC = () => {
     {
       title: (
         <FormattedMessage
-          id="pages.table.title.classification"
-          defaultMessage="Classification"
+          id='pages.table.title.classification'
+          defaultMessage='Classification'
         ></FormattedMessage>
       ),
       dataIndex: 'classification',
@@ -77,7 +77,7 @@ const TableList: FC = () => {
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.version" defaultMessage="Version" />,
+      title: <FormattedMessage id='pages.table.title.version' defaultMessage='Version' />,
       dataIndex: 'version',
       sorter: false,
       search: false,
@@ -87,7 +87,7 @@ const TableList: FC = () => {
             {row.version}
             <AllVersionsList
               lang={lang}
-              searchTableName="unitgroups"
+              searchTableName='unitgroups'
               columns={getAllVersionsColumns(unitGroupColumns, 4)}
               searchColume={`
                 id,
@@ -102,7 +102,7 @@ const TableList: FC = () => {
               id={row.id}
             >
               <UnitGroupCreate
-                actionType="createVersion"
+                actionType='createVersion'
                 id={row.id}
                 version={row.version}
                 lang={lang}
@@ -116,8 +116,8 @@ const TableList: FC = () => {
     {
       title: (
         <FormattedMessage
-          id="pages.table.title.updatedAt"
-          defaultMessage="Updated at"
+          id='pages.table.title.updatedAt'
+          defaultMessage='Updated at'
         ></FormattedMessage>
       ),
       dataIndex: 'modifiedAt',
@@ -127,7 +127,7 @@ const TableList: FC = () => {
     },
     {
       title: (
-        <FormattedMessage id="pages.table.title.option" defaultMessage="Option"></FormattedMessage>
+        <FormattedMessage id='pages.table.title.option' defaultMessage='Option'></FormattedMessage>
       ),
       dataIndex: 'option',
       search: false,
@@ -151,7 +151,7 @@ const TableList: FC = () => {
                 setViewDrawerVisible={() => {}}
               ></UnitGroupEdit>
               <UnitGroupCreate
-                actionType="copy"
+                actionType='copy'
                 id={row.id}
                 version={row.version}
                 lang={lang}
@@ -194,7 +194,7 @@ const TableList: FC = () => {
               buttonType={'icon'}
             />
             <UnitGroupCreate
-              actionType="copy"
+              actionType='copy'
               id={row.id}
               version={row.version}
               lang={lang}
@@ -239,7 +239,7 @@ const TableList: FC = () => {
         headerTitle={
           <>
             {getDataTitle(dataSource)} /{' '}
-            <FormattedMessage id="menu.tgdata.unitgroups" defaultMessage="Unit Groups" />
+            <FormattedMessage id='menu.tgdata.unitgroups' defaultMessage='Unit Groups' />
           </>
         }
         actionRef={actionRef}

@@ -30,10 +30,10 @@ const PropertyCreate: FC<Props> = ({ lang, onData }) => {
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id="pages.button.create" defaultMessage="Create" />}>
+      <Tooltip title={<FormattedMessage id='pages.button.create' defaultMessage='Create' />}>
         <Button
           size={'middle'}
-          type="text"
+          type='text'
           icon={<PlusOutlined />}
           onClick={() => {
             setDrawerVisible(true);
@@ -44,11 +44,11 @@ const PropertyCreate: FC<Props> = ({ lang, onData }) => {
         getContainer={() => document.body}
         title={
           <FormattedMessage
-            id="pages.flowproperty.drawer.title.create"
-            defaultMessage="Create Flow property"
+            id='pages.flowproperty.drawer.title.create'
+            defaultMessage='Create Flow property'
           />
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={
           <Button
@@ -63,10 +63,10 @@ const PropertyCreate: FC<Props> = ({ lang, onData }) => {
         footer={
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
-              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
             </Button>
-            <Button onClick={() => formRefCreate.current?.submit()} type="primary">
-              <FormattedMessage id="pages.button.save" defaultMessage="Save" />
+            <Button onClick={() => formRefCreate.current?.submit()} type='primary'>
+              <FormattedMessage id='pages.button.save' defaultMessage='Save' />
             </Button>
           </Space>
         }
@@ -88,12 +88,12 @@ const PropertyCreate: FC<Props> = ({ lang, onData }) => {
             return true;
           }}
         >
-          <Space direction="vertical" style={{ width: '100%' }}>
+          <Space direction='vertical' style={{ width: '100%' }}>
             <FlowpropertiesSelectForm
               label={
                 <FormattedMessage
-                  id="pages.flow.view.flowProperties.referenceToDataSetFormat"
-                  defaultMessage="Data set format(s)"
+                  id='pages.flow.view.flowProperties.referenceToDataSetFormat'
+                  defaultMessage='Data set format(s)'
                 />
               }
               name={['referenceToFlowPropertyDataSet']}
@@ -106,8 +106,8 @@ const PropertyCreate: FC<Props> = ({ lang, onData }) => {
             <Form.Item
               label={
                 <FormattedMessage
-                  id="pages.flow.view.flowProperties.meanValue"
-                  defaultMessage="Mean value (of flow property)"
+                  id='pages.flow.view.flowProperties.meanValue'
+                  defaultMessage='Mean value (of flow property)'
                 />
               }
               name={['meanValue']}
@@ -117,8 +117,8 @@ const PropertyCreate: FC<Props> = ({ lang, onData }) => {
             <Form.Item
               label={
                 <FormattedMessage
-                  id="pages.process.view.exchange.quantitativeReference"
-                  defaultMessage="Quantitative reference"
+                  id='pages.process.view.exchange.quantitativeReference'
+                  defaultMessage='Quantitative reference'
                 />
               }
               name={['quantitativeReference']}

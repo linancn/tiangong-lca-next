@@ -4,10 +4,10 @@ import { FormattedMessage } from 'umi';
 
 export const UploadButton: FC = () => {
   return (
-    <button style={{ border: 0, background: 'none' }} type="button">
+    <button style={{ border: 0, background: 'none' }} type='button'>
       {false ? <LoadingOutlined /> : <PlusOutlined />}
       <div style={{ marginTop: 8 }}>
-        <FormattedMessage id="pages.button.upload" defaultMessage="Upload" />
+        <FormattedMessage id='pages.button.upload' defaultMessage='Upload' />
       </div>
     </button>
   );

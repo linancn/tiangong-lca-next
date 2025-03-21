@@ -83,7 +83,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
   const notRequiredRules = rules.filter((rule: any) => !rule.required) ?? [];
   return (
     <Card
-      size="small"
+      size='small'
       title={
         isRequired ? (
           <RequiredSelectFormTitle
@@ -96,10 +96,10 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
         )
       }
     >
-      <Space direction="horizontal">
+      <Space direction='horizontal'>
         <Form.Item
           label={
-            <FormattedMessage id="pages.unitgroup.refObjectId" defaultMessage="Ref object id" />
+            <FormattedMessage id='pages.unitgroup.refObjectId' defaultMessage='Ref object id' />
           }
           name={[...name, '@refObjectId']}
           rules={[
@@ -119,15 +119,15 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
         >
           <Input disabled={true} style={{ width: '350px', color: token.colorTextDescription }} />
         </Form.Item>
-        <Space direction="horizontal" style={{ marginTop: '6px' }}>
+        <Space direction='horizontal' style={{ marginTop: '6px' }}>
           {!id && (
-            <UnitgroupsSelectDrawer buttonType="text" lang={lang} onData={handletUnitgroupsData} />
+            <UnitgroupsSelectDrawer buttonType='text' lang={lang} onData={handletUnitgroupsData} />
           )}
 
           {id && (
             <UnitgroupsSelectDrawer
-              buttonType="text"
-              buttonText={<FormattedMessage id="pages.button.reselect" defaultMessage="Reselect" />}
+              buttonType='text'
+              buttonText={<FormattedMessage id='pages.button.reselect' defaultMessage='Reselect' />}
               lang={lang}
               onData={handletUnitgroupsData}
             />
@@ -139,12 +139,12 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
               }}
             >
               <FormattedMessage
-                id="pages.button.updateReference"
-                defaultMessage="Update reference"
+                id='pages.button.updateReference'
+                defaultMessage='Update reference'
               />
             </Button>
           )}
-          {id && <UnitgroupsView lang={lang} id={id} version={version ?? ''} buttonType="text" />}
+          {id && <UnitgroupsView lang={lang} id={id} version={version ?? ''} buttonType='text' />}
           {id && (
             <Button
               onClick={() => {
@@ -153,37 +153,37 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
                 validateRefObjectId(formRef,name);
               }}
             >
-              <FormattedMessage id="pages.button.clear" defaultMessage="Clear" />
+              <FormattedMessage id='pages.button.clear' defaultMessage='Clear' />
             </Button>
           )}
         </Space>
       </Space>
       <Form.Item
         hidden
-        label={<FormattedMessage id="pages.FlowProperties.view.type" defaultMessage="Type" />}
+        label={<FormattedMessage id='pages.FlowProperties.view.type' defaultMessage='Type' />}
         name={[...name, '@type']}
       >
         <Input disabled={true} style={{ color: token.colorTextDescription }} />
       </Form.Item>
       <Form.Item
         hidden
-        label={<FormattedMessage id="pages.FlowProperties.view.uri" defaultMessage="URI" />}
+        label={<FormattedMessage id='pages.FlowProperties.view.uri' defaultMessage='URI' />}
         name={[...name, '@uri']}
       >
         <Input disabled={true} style={{ color: token.colorTextDescription }} />
       </Form.Item>
 
       <Form.Item
-        label={<FormattedMessage id="pages.contact.version" defaultMessage="Version" />}
+        label={<FormattedMessage id='pages.contact.version' defaultMessage='Version' />}
         name={[...name, '@version']}
       >
         <Input disabled={true} style={{ color: token.colorTextDescription }} />
       </Form.Item>
 
-      <Divider orientationMargin="0" orientation="left" plain>
+      <Divider orientationMargin='0' orientation='left' plain>
         <FormattedMessage
-          id="pages.FlowProperties.view.shortDescription"
-          defaultMessage="Short description"
+          id='pages.FlowProperties.view.shortDescription'
+          defaultMessage='Short description'
         />
       </Divider>
       <Form.Item>
@@ -192,7 +192,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
             <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
               {subFields.map((subField) => (
                 <Row key={subField.key}>
-                  <Col flex="100px" style={{ marginRight: '10px' }}>
+                  <Col flex='100px' style={{ marginRight: '10px' }}>
                     <Form.Item
                       getValueProps={(value) => getLocalValueProps(value)}
                       noStyle
@@ -204,10 +204,10 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
                       />
                     </Form.Item>
                   </Col>
-                  <Col flex="auto" style={{ marginRight: '10px' }}>
+                  <Col flex='auto' style={{ marginRight: '10px' }}>
                     <Form.Item noStyle name={[subField.name, '#text']}>
                       <TextArea
-                        placeholder="text"
+                        placeholder='text'
                         rows={1}
                         disabled={true}
                         style={{ color: token.colorTextDescription }}
@@ -222,22 +222,22 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
         </Form.List>
       </Form.Item>
       <Card
-        size="small"
+        size='small'
         title={
           <FormattedMessage
-            id="pages.unitgroup.unit.quantitativeReference"
-            defaultMessage="Quantitative reference"
+            id='pages.unitgroup.unit.quantitativeReference'
+            defaultMessage='Quantitative reference'
           />
         }
       >
         <Form.Item
-          label={<FormattedMessage id="pages.unitgroup.edit.name" defaultMessage="Name of unit" />}
+          label={<FormattedMessage id='pages.unitgroup.edit.name' defaultMessage='Name of unit' />}
           name={[...name, 'refUnit', 'name']}
         >
           <Input disabled={true} style={{ color: token.colorTextDescription }} />
         </Form.Item>
-        <Divider orientationMargin="0" orientation="left" plain>
-          <FormattedMessage id="pages.unitgroup.edit.generalComment" defaultMessage="Comment" />
+        <Divider orientationMargin='0' orientation='left' plain>
+          <FormattedMessage id='pages.unitgroup.edit.generalComment' defaultMessage='Comment' />
         </Divider>
         <Form.Item>
           <Form.List name={[...name, 'refUnit', 'generalComment']}>
@@ -245,7 +245,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
               <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
                 {subFields.map((subField) => (
                   <Row key={subField.key}>
-                    <Col flex="100px" style={{ marginRight: '10px' }}>
+                    <Col flex='100px' style={{ marginRight: '10px' }}>
                       <Form.Item noStyle name={[subField.name, '@xml:lang']}>
                         <Input
                           disabled={true}
@@ -253,10 +253,10 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
                         />
                       </Form.Item>
                     </Col>
-                    <Col flex="auto" style={{ marginRight: '10px' }}>
+                    <Col flex='auto' style={{ marginRight: '10px' }}>
                       <Form.Item noStyle name={[subField.name, '#text']}>
                         <TextArea
-                          placeholder="text"
+                          placeholder='text'
                           rows={1}
                           disabled={true}
                           style={{ color: token.colorTextDescription }}

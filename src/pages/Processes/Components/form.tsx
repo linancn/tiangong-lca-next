@@ -64,8 +64,8 @@ export const ProcessForm: FC<Props> = ({
       key: 'processInformation',
       tab: (
         <FormattedMessage
-          id="pages.process.view.processInformation"
-          defaultMessage="Process information"
+          id='pages.process.view.processInformation'
+          defaultMessage='Process information'
         />
       ),
     },
@@ -73,8 +73,8 @@ export const ProcessForm: FC<Props> = ({
       key: 'modellingAndValidation',
       tab: (
         <FormattedMessage
-          id="pages.process.view.modellingAndValidation"
-          defaultMessage="Modelling and validation"
+          id='pages.process.view.modellingAndValidation'
+          defaultMessage='Modelling and validation'
         />
       ),
     },
@@ -82,32 +82,32 @@ export const ProcessForm: FC<Props> = ({
       key: 'administrativeInformation',
       tab: (
         <FormattedMessage
-          id="pages.process.view.administrativeInformation"
-          defaultMessage="Administrative information"
+          id='pages.process.view.administrativeInformation'
+          defaultMessage='Administrative information'
         />
       ),
     },
     {
       key: 'exchanges',
-      tab: <FormattedMessage id="pages.process.view.exchanges" defaultMessage="Exchanges" />,
+      tab: <FormattedMessage id='pages.process.view.exchanges' defaultMessage='Exchanges' />,
     },
     {
       key: 'validation',
-      tab: <FormattedMessage id="pages.process.validation" defaultMessage="Validation" />,
+      tab: <FormattedMessage id='pages.process.validation' defaultMessage='Validation' />,
     },
     {
       key: 'complianceDeclarations',
       tab: (
         <FormattedMessage
-          id="pages.process.complianceDeclarations"
-          defaultMessage="Compliance declarations"
+          id='pages.process.complianceDeclarations'
+          defaultMessage='Compliance declarations'
         />
       ),
     },
   ];
   const processExchangeColumns: ProColumns<ProcessExchangeTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
+      title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
       dataIndex: 'index',
       valueType: 'index',
       search: false,
@@ -129,25 +129,25 @@ export const ProcessForm: FC<Props> = ({
     //   search: false,
     // },
     {
-      title: <FormattedMessage id="processExchange.referenceToFlowDataSet" defaultMessage="Flow" />,
+      title: <FormattedMessage id='processExchange.referenceToFlowDataSet' defaultMessage='Flow' />,
       dataIndex: 'referenceToFlowDataSet',
       sorter: false,
       search: false,
       render: (_, row) => [
-        <Tooltip key={0} placement="topLeft" title={row.generalComment}>
+        <Tooltip key={0} placement='topLeft' title={row.generalComment}>
           {row.referenceToFlowDataSet}
         </Tooltip>,
       ],
     },
     {
-      title: <FormattedMessage id="pages.table.title.version" defaultMessage="Version" />,
+      title: <FormattedMessage id='pages.table.title.version' defaultMessage='Version' />,
       dataIndex: 'referenceToFlowDataSetVersion',
       sorter: false,
       search: false,
     },
     {
       title: (
-        <FormattedMessage id="pages.process.exchange.meanAmount" defaultMessage="Mean amount" />
+        <FormattedMessage id='pages.process.exchange.meanAmount' defaultMessage='Mean amount' />
       ),
       dataIndex: 'meanAmount',
       sorter: false,
@@ -156,8 +156,8 @@ export const ProcessForm: FC<Props> = ({
     {
       title: (
         <FormattedMessage
-          id="pages.process.exchange.resultingAmount"
-          defaultMessage="Resulting amount"
+          id='pages.process.exchange.resultingAmount'
+          defaultMessage='Resulting amount'
         />
       ),
       dataIndex: 'resultingAmount',
@@ -167,8 +167,8 @@ export const ProcessForm: FC<Props> = ({
     {
       title: (
         <FormattedMessage
-          id="pages.flowproperty.referenceToReferenceUnitGroup"
-          defaultMessage="Reference unit"
+          id='pages.flowproperty.referenceToReferenceUnitGroup'
+          defaultMessage='Reference unit'
         />
       ),
       dataIndex: 'refUnitGroup',
@@ -186,7 +186,7 @@ export const ProcessForm: FC<Props> = ({
           <span key={1}>
             {getLangText(row.refUnitRes?.name, lang)} (
             <Tooltip
-              placement="topLeft"
+              placement='topLeft'
               title={getLangText(row.refUnitRes?.refUnitGeneralComment, lang)}
             >
               {row.refUnitRes?.refUnitName}
@@ -200,8 +200,8 @@ export const ProcessForm: FC<Props> = ({
     {
       title: (
         <FormattedMessage
-          id="pages.process.exchange.dataDerivationTypeStatus"
-          defaultMessage="Data derivation type / status"
+          id='pages.process.exchange.dataDerivationTypeStatus'
+          defaultMessage='Data derivation type / status'
         />
       ),
       dataIndex: 'dataDerivationTypeStatus',
@@ -211,8 +211,8 @@ export const ProcessForm: FC<Props> = ({
     {
       title: (
         <FormattedMessage
-          id="pages.process.exchange.quantitativeReference"
-          defaultMessage="Quantitative reference"
+          id='pages.process.exchange.quantitativeReference'
+          defaultMessage='Quantitative reference'
         />
       ),
       dataIndex: 'quantitativeReference',
@@ -223,7 +223,7 @@ export const ProcessForm: FC<Props> = ({
       },
     },
     {
-      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
+      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
@@ -257,20 +257,20 @@ export const ProcessForm: FC<Props> = ({
   ];
   const tabContent: { [key: string]: JSX.Element } = {
     processInformation: (
-      <Space direction="vertical" style={{ width: '100%' }}>
+      <Space direction='vertical' style={{ width: '100%' }}>
         {/* <Card size="small" title={'Data Set Information'}> */}
         <Card
-          size="small"
+          size='small'
           title={
-            <FormattedMessage id="pages.lifeCycleModel.information.name" defaultMessage="Name" />
+            <FormattedMessage id='pages.lifeCycleModel.information.name' defaultMessage='Name' />
           }
         >
           <Card
-            size="small"
+            size='small'
             title={
               <FormattedMessage
-                id="pages.process.view.processInformation.baseName"
-                defaultMessage="Base name"
+                id='pages.process.view.processInformation.baseName'
+                defaultMessage='Base name'
               />
             }
           >
@@ -278,8 +278,8 @@ export const ProcessForm: FC<Props> = ({
               name={['processInformation', 'dataSetInformation', 'name', 'baseName']}
               label={
                 <FormattedMessage
-                  id="pages.process.view.processInformation.baseName"
-                  defaultMessage="Base name"
+                  id='pages.process.view.processInformation.baseName'
+                  defaultMessage='Base name'
                 />
               }
               rules={StringMultiLang_r}
@@ -287,11 +287,11 @@ export const ProcessForm: FC<Props> = ({
           </Card>
           <br />
           <Card
-            size="small"
+            size='small'
             title={
               <FormattedMessage
-                id="pages.process.view.processInformation.treatmentStandardsRoutes"
-                defaultMessage="Treatment, standards, routes"
+                id='pages.process.view.processInformation.treatmentStandardsRoutes'
+                defaultMessage='Treatment, standards, routes'
               />
             }
           >
@@ -304,8 +304,8 @@ export const ProcessForm: FC<Props> = ({
               ]}
               label={
                 <FormattedMessage
-                  id="pages.process.view.processInformation.treatmentStandardsRoutes"
-                  defaultMessage="Treatment, standards, routes"
+                  id='pages.process.view.processInformation.treatmentStandardsRoutes'
+                  defaultMessage='Treatment, standards, routes'
                 />
               }
               rules={StringMultiLang_r}
@@ -313,11 +313,11 @@ export const ProcessForm: FC<Props> = ({
           </Card>
           <br />
           <Card
-            size="small"
+            size='small'
             title={
               <FormattedMessage
-                id="pages.process.view.processInformation.mixAndLocationTypes"
-                defaultMessage="Mix and location types"
+                id='pages.process.view.processInformation.mixAndLocationTypes'
+                defaultMessage='Mix and location types'
               />
             }
           >
@@ -325,8 +325,8 @@ export const ProcessForm: FC<Props> = ({
               name={['processInformation', 'dataSetInformation', 'name', 'mixAndLocationTypes']}
               label={
                 <FormattedMessage
-                  id="pages.process.view.processInformation.mixAndLocationTypes"
-                  defaultMessage="Mix and location types"
+                  id='pages.process.view.processInformation.mixAndLocationTypes'
+                  defaultMessage='Mix and location types'
                 />
               }
               rules={StringMultiLang_r}
@@ -334,11 +334,11 @@ export const ProcessForm: FC<Props> = ({
           </Card>
           <br />
           <Card
-            size="small"
+            size='small'
             title={
               <FormattedMessage
-                id="pages.process.view.processInformation.functionalUnitFlowProperties"
-                defaultMessage="Quantitative product or process properties"
+                id='pages.process.view.processInformation.functionalUnitFlowProperties'
+                defaultMessage='Quantitative product or process properties'
               />
             }
           >
@@ -351,8 +351,8 @@ export const ProcessForm: FC<Props> = ({
               ]}
               label={
                 <FormattedMessage
-                  id="pages.process.view.processInformation.functionalUnitFlowProperties"
-                  defaultMessage="Quantitative product or process properties"
+                  id='pages.process.view.processInformation.functionalUnitFlowProperties'
+                  defaultMessage='Quantitative product or process properties'
                 />
               }
               rules={StringMultiLang_r}
@@ -375,11 +375,11 @@ export const ProcessForm: FC<Props> = ({
         />
 
         <Card
-          size="small"
+          size='small'
           title={
             <FormattedMessage
-              id="pages.process.view.processInformation.generalComment"
-              defaultMessage="General comment on data set"
+              id='pages.process.view.processInformation.generalComment'
+              defaultMessage='General comment on data set'
             />
           }
         >
@@ -387,8 +387,8 @@ export const ProcessForm: FC<Props> = ({
             name={['processInformation', 'dataSetInformation', 'common:generalComment']}
             label={
               <FormattedMessage
-                id="pages.process.view.processInformation.generalComment"
-                defaultMessage="General comment on data set"
+                id='pages.process.view.processInformation.generalComment'
+                defaultMessage='General comment on data set'
               />
             }
           />
@@ -402,8 +402,8 @@ export const ProcessForm: FC<Props> = ({
           ]}
           label={
             <FormattedMessage
-              id="pages.process.view.processInformation.referenceToExternalDocumentation"
-              defaultMessage="Data set LCA report, background info"
+              id='pages.process.view.processInformation.referenceToExternalDocumentation'
+              defaultMessage='Data set LCA report, background info'
             />
           }
           lang={lang}
@@ -412,19 +412,19 @@ export const ProcessForm: FC<Props> = ({
         />
 
         <Card
-          size="small"
+          size='small'
           title={
             <FormattedMessage
-              id="pages.process.view.processInformation.time"
-              defaultMessage="Time representativeness"
+              id='pages.process.view.processInformation.time'
+              defaultMessage='Time representativeness'
             />
           }
         >
           <Form.Item
             label={
               <FormattedMessage
-                id="pages.process.view.processInformation.referenceYear"
-                defaultMessage="Reference year"
+                id='pages.process.view.processInformation.referenceYear'
+                defaultMessage='Reference year'
               />
             }
             name={['processInformation', 'time', 'common:referenceYear']}
@@ -432,18 +432,18 @@ export const ProcessForm: FC<Props> = ({
           >
             <Input />
           </Form.Item>
-          <Divider orientationMargin="0" orientation="left" plain>
+          <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
-              id="pages.process.view.processInformation.timeRepresentativenessDescription"
-              defaultMessage="Time representativeness description"
+              id='pages.process.view.processInformation.timeRepresentativenessDescription'
+              defaultMessage='Time representativeness description'
             />
           </Divider>
           <LangTextItemForm
             name={['processInformation', 'time', 'common:timeRepresentativenessDescription']}
             label={
               <FormattedMessage
-                id="pages.process.view.processInformation.timeRepresentativenessDescription"
-                defaultMessage="Time representativeness description"
+                id='pages.process.view.processInformation.timeRepresentativenessDescription'
+                defaultMessage='Time representativeness description'
               />
             }
             rules={FTMultiLang_r}
@@ -451,19 +451,19 @@ export const ProcessForm: FC<Props> = ({
         </Card>
 
         <Card
-          size="small"
+          size='small'
           title={
             <FormattedMessage
-              id="pages.process.view.processInformation.locationOfOperationSupplyOrProduction"
-              defaultMessage="Location"
+              id='pages.process.view.processInformation.locationOfOperationSupplyOrProduction'
+              defaultMessage='Location'
             />
           }
         >
           <LocationTextItemForm
             label={
               <FormattedMessage
-                id="pages.process.view.processInformation.location"
-                defaultMessage="Location"
+                id='pages.process.view.processInformation.location'
+                defaultMessage='Location'
               />
             }
             name={[
@@ -476,10 +476,10 @@ export const ProcessForm: FC<Props> = ({
             onData={onData}
             rules={NullableString}
           />
-          <Divider orientationMargin="0" orientation="left" plain>
+          <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
-              id="pages.process.view.processInformation.descriptionOfRestrictions"
-              defaultMessage="Geographical representativeness description"
+              id='pages.process.view.processInformation.descriptionOfRestrictions'
+              defaultMessage='Geographical representativeness description'
             />
           </Divider>
           <LangTextItemForm
@@ -491,49 +491,49 @@ export const ProcessForm: FC<Props> = ({
             ]}
             label={
               <FormattedMessage
-                id="pages.process.view.processInformation.descriptionOfRestrictions"
-                defaultMessage="Geographical representativeness description"
+                id='pages.process.view.processInformation.descriptionOfRestrictions'
+                defaultMessage='Geographical representativeness description'
               />
             }
           />
         </Card>
 
         <Card
-          size="small"
+          size='small'
           title={
             <FormattedMessage
-              id="pages.process.view.processInformation.technology"
-              defaultMessage="Technological representativeness"
+              id='pages.process.view.processInformation.technology'
+              defaultMessage='Technological representativeness'
             />
           }
         >
-          <Divider orientationMargin="0" orientation="left" plain>
+          <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
-              id="pages.process.view.processInformation.technologyDescriptionAndIncludedProcesses"
-              defaultMessage="Technology description including background system"
+              id='pages.process.view.processInformation.technologyDescriptionAndIncludedProcesses'
+              defaultMessage='Technology description including background system'
             />
           </Divider>
           <LangTextItemForm
             name={['processInformation', 'technology', 'technologyDescriptionAndIncludedProcesses']}
             label={
               <FormattedMessage
-                id="pages.process.view.processInformation.technologyDescriptionAndIncludedProcesses"
-                defaultMessage="Technology description including background system"
+                id='pages.process.view.processInformation.technologyDescriptionAndIncludedProcesses'
+                defaultMessage='Technology description including background system'
               />
             }
           />
-          <Divider orientationMargin="0" orientation="left" plain>
+          <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
-              id="pages.process.view.processInformation.technologicalApplicability"
-              defaultMessage="Technical purpose of product or process"
+              id='pages.process.view.processInformation.technologicalApplicability'
+              defaultMessage='Technical purpose of product or process'
             />
           </Divider>
           <LangTextItemForm
             name={['processInformation', 'technology', 'technologicalApplicability']}
             label={
               <FormattedMessage
-                id="pages.process.view.processInformation.technologicalApplicability"
-                defaultMessage="Technical purpose of product or process"
+                id='pages.process.view.processInformation.technologicalApplicability'
+                defaultMessage='Technical purpose of product or process'
               />
             }
           />
@@ -546,8 +546,8 @@ export const ProcessForm: FC<Props> = ({
             ]}
             label={
               <FormattedMessage
-                id="pages.process.view.processInformation.referenceToTechnologyFlowDiagrammOrPicture"
-                defaultMessage="Flow diagramm(s) or picture(s)"
+                id='pages.process.view.processInformation.referenceToTechnologyFlowDiagrammOrPicture'
+                defaultMessage='Flow diagramm(s) or picture(s)'
               />
             }
             lang={lang}
@@ -557,11 +557,11 @@ export const ProcessForm: FC<Props> = ({
         </Card>
 
         <Card
-          size="small"
+          size='small'
           title={
             <FormattedMessage
-              id="pages.process.view.processInformation.modelDescription"
-              defaultMessage="Model description"
+              id='pages.process.view.processInformation.modelDescription'
+              defaultMessage='Model description'
             />
           }
         >
@@ -569,8 +569,8 @@ export const ProcessForm: FC<Props> = ({
             name={['processInformation', 'mathematicalRelations', 'modelDescription']}
             label={
               <FormattedMessage
-                id="pages.process.view.processInformation.modelDescription"
-                defaultMessage="Model description"
+                id='pages.process.view.processInformation.modelDescription'
+                defaultMessage='Model description'
               />
             }
           />
@@ -578,21 +578,21 @@ export const ProcessForm: FC<Props> = ({
       </Space>
     ),
     modellingAndValidation: (
-      <Space direction="vertical" style={{ width: '100%' }}>
+      <Space direction='vertical' style={{ width: '100%' }}>
         <Card
-          size="small"
+          size='small'
           title={
             <FormattedMessage
-              id="pages.process.view.modellingAndValidation.lCIMethodAndAllocation"
-              defaultMessage="LCI method and allocation"
+              id='pages.process.view.modellingAndValidation.lCIMethodAndAllocation'
+              defaultMessage='LCI method and allocation'
             />
           }
         >
           <Form.Item
             label={
               <FormattedMessage
-                id="pages.process.view.modellingAndValidation.typeOfDataSet"
-                defaultMessage="Type of data set"
+                id='pages.process.view.modellingAndValidation.typeOfDataSet'
+                defaultMessage='Type of data set'
               />
             }
             name={['modellingAndValidation', 'LCIMethodAndAllocation', 'typeOfDataSet']}
@@ -602,18 +602,18 @@ export const ProcessForm: FC<Props> = ({
           <Form.Item
             label={
               <FormattedMessage
-                id="pages.process.view.modellingAndValidation.lCIMethodPrinciple"
-                defaultMessage="LCI method principle"
+                id='pages.process.view.modellingAndValidation.lCIMethodPrinciple'
+                defaultMessage='LCI method principle'
               />
             }
             name={['modellingAndValidation', 'LCIMethodAndAllocation', 'LCIMethodPrinciple']}
           >
             <Select options={LCIMethodPrincipleOptions} />
           </Form.Item>
-          <Divider orientationMargin="0" orientation="left" plain>
+          <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
-              id="pages.process.view.modellingAndValidation.deviationsFromLCIMethodPrinciple"
-              defaultMessage="Deviation from LCI method principle / explanations"
+              id='pages.process.view.modellingAndValidation.deviationsFromLCIMethodPrinciple'
+              defaultMessage='Deviation from LCI method principle / explanations'
             />
           </Divider>
           <LangTextItemForm
@@ -624,8 +624,8 @@ export const ProcessForm: FC<Props> = ({
             ]}
             label={
               <FormattedMessage
-                id="pages.process.view.modellingAndValidation.deviationsFromLCIMethodPrinciple"
-                defaultMessage="Deviation from LCI method principle / explanations"
+                id='pages.process.view.modellingAndValidation.deviationsFromLCIMethodPrinciple'
+                defaultMessage='Deviation from LCI method principle / explanations'
               />
             }
             rules={FTMultiLang_r}
@@ -633,18 +633,18 @@ export const ProcessForm: FC<Props> = ({
           <Form.Item
             label={
               <FormattedMessage
-                id="pages.process.view.modellingAndValidation.lCIMethodApproaches"
-                defaultMessage="LCI method approaches"
+                id='pages.process.view.modellingAndValidation.lCIMethodApproaches'
+                defaultMessage='LCI method approaches'
               />
             }
             name={['modellingAndValidation', 'LCIMethodAndAllocation', 'LCIMethodApproaches']}
           >
             <Select options={LCIMethodApproachOptions} />
           </Form.Item>
-          <Divider orientationMargin="0" orientation="left" plain>
+          <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
-              id="pages.process.view.modellingAndValidation.deviationsFromLCIMethodApproaches"
-              defaultMessage="Deviations from LCI method approaches / explanations"
+              id='pages.process.view.modellingAndValidation.deviationsFromLCIMethodApproaches'
+              defaultMessage='Deviations from LCI method approaches / explanations'
             />
           </Divider>
           <LangTextItemForm
@@ -655,16 +655,16 @@ export const ProcessForm: FC<Props> = ({
             ]}
             label={
               <FormattedMessage
-                id="pages.process.view.modellingAndValidation.deviationsFromLCIMethodApproaches"
-                defaultMessage="Deviations from LCI method approaches / explanations"
+                id='pages.process.view.modellingAndValidation.deviationsFromLCIMethodApproaches'
+                defaultMessage='Deviations from LCI method approaches / explanations'
               />
             }
             rules={FTMultiLang_r}
           />
-          <Divider orientationMargin="0" orientation="left" plain>
+          <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
-              id="pages.process.view.modellingAndValidation.deviationsFromModellingConstants"
-              defaultMessage="Deviation from modelling constants / explanations"
+              id='pages.process.view.modellingAndValidation.deviationsFromModellingConstants'
+              defaultMessage='Deviation from modelling constants / explanations'
             />
           </Divider>
           <LangTextItemForm
@@ -675,8 +675,8 @@ export const ProcessForm: FC<Props> = ({
             ]}
             label={
               <FormattedMessage
-                id="pages.process.view.modellingAndValidation.deviationsFromModellingConstants"
-                defaultMessage="Deviation from modelling constants / explanations"
+                id='pages.process.view.modellingAndValidation.deviationsFromModellingConstants'
+                defaultMessage='Deviation from modelling constants / explanations'
               />
             }
             rules={FTMultiLang_r}
@@ -684,18 +684,18 @@ export const ProcessForm: FC<Props> = ({
         </Card>
 
         <Card
-          size="small"
+          size='small'
           title={
             <FormattedMessage
-              id="pages.process.view.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness"
-              defaultMessage="Data sources, treatment, and representativeness"
+              id='pages.process.view.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness'
+              defaultMessage='Data sources, treatment, and representativeness'
             />
           }
         >
-          <Divider orientationMargin="0" orientation="left" plain>
+          <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
-              id="pages.process.view.modellingAndValidation.dataCutOffAndCompletenessPrinciples"
-              defaultMessage="Data cut-off and completeness principles"
+              id='pages.process.view.modellingAndValidation.dataCutOffAndCompletenessPrinciples'
+              defaultMessage='Data cut-off and completeness principles'
             />
           </Divider>
           <LangTextItemForm
@@ -706,16 +706,16 @@ export const ProcessForm: FC<Props> = ({
             ]}
             label={
               <FormattedMessage
-                id="pages.process.view.modellingAndValidation.dataCutOffAndCompletenessPrinciples"
-                defaultMessage="Data cut-off and completeness principles"
+                id='pages.process.view.modellingAndValidation.dataCutOffAndCompletenessPrinciples'
+                defaultMessage='Data cut-off and completeness principles'
               />
             }
             rules={FTMultiLang_r}
           />
-          <Divider orientationMargin="0" orientation="left" plain>
+          <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
-              id="pages.process.view.modellingAndValidation.deviationsFromCutOffAndCompletenessPrinciples"
-              defaultMessage="Deviation from data cut-off and completeness principles / explanations"
+              id='pages.process.view.modellingAndValidation.deviationsFromCutOffAndCompletenessPrinciples'
+              defaultMessage='Deviation from data cut-off and completeness principles / explanations'
             />
           </Divider>
           <LangTextItemForm
@@ -726,16 +726,16 @@ export const ProcessForm: FC<Props> = ({
             ]}
             label={
               <FormattedMessage
-                id="pages.process.view.modellingAndValidation.deviationsFromCutOffAndCompletenessPrinciples"
-                defaultMessage="Deviation from data cut-off and completeness principles / explanations"
+                id='pages.process.view.modellingAndValidation.deviationsFromCutOffAndCompletenessPrinciples'
+                defaultMessage='Deviation from data cut-off and completeness principles / explanations'
               />
             }
             rules={FTMultiLang_r}
           />
-          <Divider orientationMargin="0" orientation="left" plain>
+          <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
-              id="pages.process.view.modellingAndValidation.dataSelectionAndCombinationPrinciples"
-              defaultMessage="Data selection and combination principles"
+              id='pages.process.view.modellingAndValidation.dataSelectionAndCombinationPrinciples'
+              defaultMessage='Data selection and combination principles'
             />
           </Divider>
           <LangTextItemForm
@@ -746,16 +746,16 @@ export const ProcessForm: FC<Props> = ({
             ]}
             label={
               <FormattedMessage
-                id="pages.process.view.modellingAndValidation.dataSelectionAndCombinationPrinciples"
-                defaultMessage="Data selection and combination principles"
+                id='pages.process.view.modellingAndValidation.dataSelectionAndCombinationPrinciples'
+                defaultMessage='Data selection and combination principles'
               />
             }
             rules={FTMultiLang_r}
           />
-          <Divider orientationMargin="0" orientation="left" plain>
+          <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
-              id="pages.process.view.modellingAndValidation.deviationsFromSelectionAndCombinationPrinciples"
-              defaultMessage="Deviation from data selection and combination principles / explanations"
+              id='pages.process.view.modellingAndValidation.deviationsFromSelectionAndCombinationPrinciples'
+              defaultMessage='Deviation from data selection and combination principles / explanations'
             />
           </Divider>
           <LangTextItemForm
@@ -766,16 +766,16 @@ export const ProcessForm: FC<Props> = ({
             ]}
             label={
               <FormattedMessage
-                id="pages.process.view.modellingAndValidation.deviationsFromSelectionAndCombinationPrinciples"
-                defaultMessage="Deviation from data selection and combination principles / explanations"
+                id='pages.process.view.modellingAndValidation.deviationsFromSelectionAndCombinationPrinciples'
+                defaultMessage='Deviation from data selection and combination principles / explanations'
               />
             }
             rules={FTMultiLang_r}
           />
-          <Divider orientationMargin="0" orientation="left" plain>
+          <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
-              id="pages.process.view.modellingAndValidation.dataTreatmentAndExtrapolationsPrinciples"
-              defaultMessage="Data treatment and extrapolations principles"
+              id='pages.process.view.modellingAndValidation.dataTreatmentAndExtrapolationsPrinciples'
+              defaultMessage='Data treatment and extrapolations principles'
             />
           </Divider>
           <LangTextItemForm
@@ -786,16 +786,16 @@ export const ProcessForm: FC<Props> = ({
             ]}
             label={
               <FormattedMessage
-                id="pages.process.view.modellingAndValidation.dataTreatmentAndExtrapolationsPrinciples"
-                defaultMessage="Data treatment and extrapolations principles"
+                id='pages.process.view.modellingAndValidation.dataTreatmentAndExtrapolationsPrinciples'
+                defaultMessage='Data treatment and extrapolations principles'
               />
             }
             rules={FTMultiLang_r}
           />
-          <Divider orientationMargin="0" orientation="left" plain>
+          <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
-              id="pages.process.view.modellingAndValidation.deviationsFromTreatmentAndExtrapolationPrinciples"
-              defaultMessage="Deviation from data treatment and extrapolations principles / explanations"
+              id='pages.process.view.modellingAndValidation.deviationsFromTreatmentAndExtrapolationPrinciples'
+              defaultMessage='Deviation from data treatment and extrapolations principles / explanations'
             />
           </Divider>
           <LangTextItemForm
@@ -806,8 +806,8 @@ export const ProcessForm: FC<Props> = ({
             ]}
             label={
               <FormattedMessage
-                id="pages.process.view.modellingAndValidation.deviationsFromTreatmentAndExtrapolationPrinciples"
-                defaultMessage="Deviation from data treatment and extrapolations principles / explanations"
+                id='pages.process.view.modellingAndValidation.deviationsFromTreatmentAndExtrapolationPrinciples'
+                defaultMessage='Deviation from data treatment and extrapolations principles / explanations'
               />
             }
             rules={FTMultiLang_r}
@@ -821,8 +821,8 @@ export const ProcessForm: FC<Props> = ({
             ]}
             label={
               <FormattedMessage
-                id="pages.process.view.modellingAndValidation.referenceToDataSource"
-                defaultMessage="Data source(s) used for this data set"
+                id='pages.process.view.modellingAndValidation.referenceToDataSource'
+                defaultMessage='Data source(s) used for this data set'
               />
             }
             lang={lang}
@@ -830,10 +830,10 @@ export const ProcessForm: FC<Props> = ({
             onData={onData}
           />
 
-          <Divider orientationMargin="0" orientation="left" plain>
+          <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
-              id="pages.process.view.modellingAndValidation.useAdviceForDataSet"
-              defaultMessage="Use advice for data set"
+              id='pages.process.view.modellingAndValidation.useAdviceForDataSet'
+              defaultMessage='Use advice for data set'
             />
           </Divider>
           <LangTextItemForm
@@ -844,32 +844,32 @@ export const ProcessForm: FC<Props> = ({
             ]}
             label={
               <FormattedMessage
-                id="pages.process.view.modellingAndValidation.useAdviceForDataSet"
-                defaultMessage="Use advice for data set"
+                id='pages.process.view.modellingAndValidation.useAdviceForDataSet'
+                defaultMessage='Use advice for data set'
               />
             }
             rules={FTMultiLang_r}
           />
         </Card>
-        <Divider orientationMargin="0" orientation="left" plain>
+        <Divider orientationMargin='0' orientation='left' plain>
           <FormattedMessage
-            id="pages.process.view.modellingAndValidation.completeness"
-            defaultMessage="Completeness"
+            id='pages.process.view.modellingAndValidation.completeness'
+            defaultMessage='Completeness'
           />
         </Divider>
         <LangTextItemForm
           name={['modellingAndValidation', 'completeness']}
           label={
             <FormattedMessage
-              id="pages.process.view.modellingAndValidation.completeness"
-              defaultMessage="Completeness"
+              id='pages.process.view.modellingAndValidation.completeness'
+              defaultMessage='Completeness'
             />
           }
         />
       </Space>
     ),
     administrativeInformation: (
-      <Space direction="vertical" style={{ width: '100%' }}>
+      <Space direction='vertical' style={{ width: '100%' }}>
         <ContactSelectForm
           name={[
             'administrativeInformation',
@@ -878,8 +878,8 @@ export const ProcessForm: FC<Props> = ({
           ]}
           label={
             <FormattedMessage
-              id="pages.process.view.administrativeInformation.referenceToCommissioner"
-              defaultMessage="Commissioner of data set"
+              id='pages.process.view.administrativeInformation.referenceToCommissioner'
+              defaultMessage='Commissioner of data set'
             />
           }
           lang={lang}
@@ -887,11 +887,11 @@ export const ProcessForm: FC<Props> = ({
           onData={onData}
         />
         <Card
-          size="small"
+          size='small'
           title={
             <FormattedMessage
-              id="pages.process.view.administrativeInformation.intendedApplications"
-              defaultMessage="Intended applications"
+              id='pages.process.view.administrativeInformation.intendedApplications'
+              defaultMessage='Intended applications'
             />
           }
         >
@@ -903,8 +903,8 @@ export const ProcessForm: FC<Props> = ({
             ]}
             label={
               <FormattedMessage
-                id="pages.process.view.administrativeInformation.intendedApplications"
-                defaultMessage="Intended applications"
+                id='pages.process.view.administrativeInformation.intendedApplications'
+                defaultMessage='Intended applications'
               />
             }
           />
@@ -918,8 +918,8 @@ export const ProcessForm: FC<Props> = ({
           ]}
           label={
             <FormattedMessage
-              id="pages.process.view.administrativeInformation.RreferenceToPersonOrEntityGeneratingTheDataSet"
-              defaultMessage="Data set generator / modeller"
+              id='pages.process.view.administrativeInformation.RreferenceToPersonOrEntityGeneratingTheDataSet'
+              defaultMessage='Data set generator / modeller'
             />
           }
           lang={lang}
@@ -928,19 +928,19 @@ export const ProcessForm: FC<Props> = ({
         />
 
         <Card
-          size="small"
+          size='small'
           title={
             <FormattedMessage
-              id="pages.process.view.administrativeInformation.dataEntryBy"
-              defaultMessage="Data entry by"
+              id='pages.process.view.administrativeInformation.dataEntryBy'
+              defaultMessage='Data entry by'
             />
           }
         >
           <Form.Item
             label={
               <FormattedMessage
-                id="pages.process.view.administrativeInformation.timeStamp"
-                defaultMessage="Time stamp (last saved)"
+                id='pages.process.view.administrativeInformation.timeStamp'
+                defaultMessage='Time stamp (last saved)'
               />
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
@@ -952,8 +952,8 @@ export const ProcessForm: FC<Props> = ({
             formRef={formRef}
             label={
               <FormattedMessage
-                id="pages.process.view.administrativeInformation.referenceToDataSetFormat"
-                defaultMessage="Data set format(s)"
+                id='pages.process.view.administrativeInformation.referenceToDataSetFormat'
+                defaultMessage='Data set format(s)'
               />
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
@@ -965,8 +965,8 @@ export const ProcessForm: FC<Props> = ({
             formRef={formRef}
             label={
               <FormattedMessage
-                id="pages.process.view.administrativeInformation.referenceToConvertedOriginalDataSetFrom"
-                defaultMessage="Converted original data set from:"
+                id='pages.process.view.administrativeInformation.referenceToConvertedOriginalDataSetFrom'
+                defaultMessage='Converted original data set from:'
               />
             }
             name={[
@@ -982,8 +982,8 @@ export const ProcessForm: FC<Props> = ({
             formRef={formRef}
             label={
               <FormattedMessage
-                id="pages.process.view.administrativeInformation.referenceToPersonOrEntityEnteringTheData"
-                defaultMessage="Reference to Person or Entity Entering The Data"
+                id='pages.process.view.administrativeInformation.referenceToPersonOrEntityEnteringTheData'
+                defaultMessage='Reference to Person or Entity Entering The Data'
               />
             }
             name={[
@@ -999,8 +999,8 @@ export const ProcessForm: FC<Props> = ({
             formRef={formRef}
             label={
               <FormattedMessage
-                id="pages.process.view.administrativeInformation.referenceToDataSetUseApproval"
-                defaultMessage="Official approval of data set by producer/operator:"
+                id='pages.process.view.administrativeInformation.referenceToDataSetUseApproval'
+                defaultMessage='Official approval of data set by producer/operator:'
               />
             }
             name={[
@@ -1014,19 +1014,19 @@ export const ProcessForm: FC<Props> = ({
         <br />
 
         <Card
-          size="small"
+          size='small'
           title={
             <FormattedMessage
-              id="pages.process.view.administrativeInformation.publicationAndOwnership"
-              defaultMessage="Publication and ownership"
+              id='pages.process.view.administrativeInformation.publicationAndOwnership'
+              defaultMessage='Publication and ownership'
             />
           }
         >
           <Form.Item
             label={
               <FormattedMessage
-                id="pages.process.view.administrativeInformation.dateOfLastRevision"
-                defaultMessage="Date of last revision"
+                id='pages.process.view.administrativeInformation.dateOfLastRevision'
+                defaultMessage='Date of last revision'
               />
             }
             name={[
@@ -1041,8 +1041,8 @@ export const ProcessForm: FC<Props> = ({
           <Form.Item
             label={
               <FormattedMessage
-                id="pages.process.view.administrativeInformation.dataSetVersion"
-                defaultMessage="Data set version"
+                id='pages.process.view.administrativeInformation.dataSetVersion'
+                defaultMessage='Data set version'
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
@@ -1054,8 +1054,8 @@ export const ProcessForm: FC<Props> = ({
           <Form.Item
             label={
               <FormattedMessage
-                id="pages.process.view.administrativeInformation.permanentDataSetURI"
-                defaultMessage="Permanent data set URI"
+                id='pages.process.view.administrativeInformation.permanentDataSetURI'
+                defaultMessage='Permanent data set URI'
               />
             }
             name={[
@@ -1070,8 +1070,8 @@ export const ProcessForm: FC<Props> = ({
           <Form.Item
             label={
               <FormattedMessage
-                id="pages.process.view.administrativeInformation.workflowAndPublicationStatus"
-                defaultMessage="Workflow and publication status	"
+                id='pages.process.view.administrativeInformation.workflowAndPublicationStatus'
+                defaultMessage='Workflow and publication status	'
               />
             }
             name={[
@@ -1091,8 +1091,8 @@ export const ProcessForm: FC<Props> = ({
             ]}
             label={
               <FormattedMessage
-                id="pages.process.view.administrativeInformation.referenceToOwnershipOfDataSet"
-                defaultMessage="Owner of data set"
+                id='pages.process.view.administrativeInformation.referenceToOwnershipOfDataSet'
+                defaultMessage='Owner of data set'
               />
             }
             lang={lang}
@@ -1103,8 +1103,8 @@ export const ProcessForm: FC<Props> = ({
           <Form.Item
             label={
               <FormattedMessage
-                id="pages.process.view.administrativeInformation.copyright"
-                defaultMessage="Copyright?"
+                id='pages.process.view.administrativeInformation.copyright'
+                defaultMessage='Copyright?'
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:copyright']}
@@ -1115,8 +1115,8 @@ export const ProcessForm: FC<Props> = ({
           <Form.Item
             label={
               <FormattedMessage
-                id="pages.process.view.administrativeInformation.licenseType"
-                defaultMessage="License type"
+                id='pages.process.view.administrativeInformation.licenseType'
+                defaultMessage='License type'
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:licenseType']}
@@ -1133,7 +1133,7 @@ export const ProcessForm: FC<Props> = ({
           items={[
             {
               key: '1',
-              label: <FormattedMessage id="pages.process.exchange.input" defaultMessage="Input" />,
+              label: <FormattedMessage id='pages.process.exchange.input' defaultMessage='Input' />,
               children: (
                 <ProTable<ProcessExchangeTable, ListPagination>
                   actionRef={actionRefExchangeTableInput}
@@ -1179,7 +1179,7 @@ export const ProcessForm: FC<Props> = ({
             {
               key: '1',
               label: (
-                <FormattedMessage id="pages.process.exchange.output" defaultMessage="Output" />
+                <FormattedMessage id='pages.process.exchange.output' defaultMessage='Output' />
               ),
               children: (
                 <ProTable<ProcessExchangeTable, ListPagination>

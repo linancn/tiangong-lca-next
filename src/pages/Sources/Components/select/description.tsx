@@ -12,8 +12,8 @@ type Props = {
 const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
   const locale = getLocale();
   return (
-    <Card size="small" title={title}>
-      <Space direction="horizontal">
+    <Card size='small' title={title}>
+      <Space direction='horizontal'>
         <Descriptions
           bordered
           size={'small'}
@@ -23,7 +23,7 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
           <Descriptions.Item
             key={0}
             label={
-              <FormattedMessage id="pages.source.refObjectId" defaultMessage="Ref object id" />
+              <FormattedMessage id='pages.source.refObjectId' defaultMessage='Ref object id' />
             }
             labelStyle={{ width: locale === 'zh-CN' ? '150px' : '250px' }}
           >
@@ -34,7 +34,7 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
           <SourceView
             id={data?.['@refObjectId']}
             version={data?.['@version']}
-            buttonType="text"
+            buttonType='text'
             lang={lang}
           />
         )}
@@ -64,7 +64,7 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
       <Descriptions bordered size={'small'} column={1}>
         <Descriptions.Item
           key={0}
-          label={<FormattedMessage id="pages.contact.version" defaultMessage="Version" />}
+          label={<FormattedMessage id='pages.contact.version' defaultMessage='Version' />}
           labelStyle={{ width: '140px' }}
         >
           {data?.['@version'] ?? '-'}
@@ -76,8 +76,8 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
           {data?.['@version'] ?? '-'}
         </Descriptions.Item>
       </Descriptions> */}
-      <Divider orientationMargin="0" orientation="left" plain>
-        <FormattedMessage id="pages.contact.shortDescription" defaultMessage="Short description" />
+      <Divider orientationMargin='0' orientation='left' plain>
+        <FormattedMessage id='pages.contact.shortDescription' defaultMessage='Short description' />
       </Divider>
       <LangTextItemDescription data={data?.['common:shortDescription']} />
     </Card>

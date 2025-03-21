@@ -118,7 +118,7 @@ export default {
   'pages.process.view.exchange.dataDerivationTypeStatus': '数据推导类型/状态',
   'pages.process.view.exchange.generalComment': '备注',
   'pages.process.view.exchange.quantitativeReference': '量值参考',
-  'pages.process.view.exchange.referenceToReferenceFlow': '参考流',
+  'pages.process.view.exchange.referenceToReferenceFlow': '基准流',
   'pages.process.view.exchange.functionalUnitOrOther': '功能单位、生产周期或其他参数',
   'pages.process.view.exchange.selectadirection': '请选择方向',
   'processExchange.dataDerivationTypeStatus': '数据推导类型/状态',

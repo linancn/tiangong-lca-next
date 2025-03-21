@@ -5,8 +5,8 @@ export const myFlowTypeOptions = [
     value: 'Product flow',
     label: (
       <FormattedMessage
-        id="pages.flow.view.modellingAndValidation.typeOfDataSet.productFlow"
-        defaultMessage="Product flow"
+        id='pages.flow.view.modellingAndValidation.typeOfDataSet.productFlow'
+        defaultMessage='Product flow'
       />
     ),
   },
@@ -14,8 +14,8 @@ export const myFlowTypeOptions = [
     value: 'Waste flow',
     label: (
       <FormattedMessage
-        id="pages.flow.view.modellingAndValidation.typeOfDataSet.wasteFlow"
-        defaultMessage="Waste flow"
+        id='pages.flow.view.modellingAndValidation.typeOfDataSet.wasteFlow'
+        defaultMessage='Waste flow'
       />
     ),
   },
@@ -26,8 +26,8 @@ export const flowTypeOptions = [
     value: 'Elementary flow',
     label: (
       <FormattedMessage
-        id="pages.flow.view.modellingAndValidation.typeOfDataSet.elementaryFlow"
-        defaultMessage="Elementary flow"
+        id='pages.flow.view.modellingAndValidation.typeOfDataSet.elementaryFlow'
+        defaultMessage='Elementary flow'
       />
     ),
   },
@@ -35,8 +35,8 @@ export const flowTypeOptions = [
     value: 'Product flow',
     label: (
       <FormattedMessage
-        id="pages.flow.view.modellingAndValidation.typeOfDataSet.productFlow"
-        defaultMessage="Product flow"
+        id='pages.flow.view.modellingAndValidation.typeOfDataSet.productFlow'
+        defaultMessage='Product flow'
       />
     ),
   },
@@ -44,8 +44,8 @@ export const flowTypeOptions = [
     value: 'Waste flow',
     label: (
       <FormattedMessage
-        id="pages.flow.view.modellingAndValidation.typeOfDataSet.wasteFlow"
-        defaultMessage="Waste flow"
+        id='pages.flow.view.modellingAndValidation.typeOfDataSet.wasteFlow'
+        defaultMessage='Waste flow'
       />
     ),
   },
@@ -53,8 +53,8 @@ export const flowTypeOptions = [
     value: 'Other flow',
     label: (
       <FormattedMessage
-        id="pages.flow.view.modellingAndValidation.typeOfDataSet.otherFlow"
-        defaultMessage="Other flow"
+        id='pages.flow.view.modellingAndValidation.typeOfDataSet.otherFlow'
+        defaultMessage='Other flow'
       />
     ),
   },
@@ -65,8 +65,8 @@ export const complianceOptions = [
     value: 'Fully compliant',
     label: (
       <FormattedMessage
-        id="pages.flow.view.modellingAndValidation.approvalOfOverallCompliance.fullyCompliant"
-        defaultMessage="Fully compliant"
+        id='pages.flow.view.modellingAndValidation.approvalOfOverallCompliance.fullyCompliant'
+        defaultMessage='Fully compliant'
       />
     ),
   },
@@ -74,8 +74,8 @@ export const complianceOptions = [
     value: 'Not compliant',
     label: (
       <FormattedMessage
-        id="pages.flow.view.modellingAndValidation.approvalOfOverallCompliance.notCompliant"
-        defaultMessage="Not compliant"
+        id='pages.flow.view.modellingAndValidation.approvalOfOverallCompliance.notCompliant'
+        defaultMessage='Not compliant'
       />
     ),
   },
@@ -83,8 +83,8 @@ export const complianceOptions = [
     value: 'Not defined',
     label: (
       <FormattedMessage
-        id="pages.flow.view.modellingAndValidation.approvalOfOverallCompliance.notDefined"
-        defaultMessage="Not defined"
+        id='pages.flow.view.modellingAndValidation.approvalOfOverallCompliance.notDefined'
+        defaultMessage='Not defined'
       />
     ),
   },

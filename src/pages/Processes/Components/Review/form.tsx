@@ -27,14 +27,14 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
           <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
             {subFields.map((subField) => (
               <Row key={subField.key}>
-                <Space direction="vertical" style={{ width: '100%' }}>
+                <Space direction='vertical' style={{ width: '100%' }}>
                   <Card
-                    size="small"
+                    size='small'
                     title={
                       <>
                         <FormattedMessage
-                          id="pages.process.modellingAndValidation.validation.review"
-                          defaultMessage="Review"
+                          id='pages.process.modellingAndValidation.validation.review'
+                          defaultMessage='Review'
                         />{' '}
                         {` ${subField.key + 1}`}
                       </>
@@ -48,12 +48,12 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                       />
                     }
                   >
-                    <Col flex="auto" style={{ marginRight: '10px' }}>
+                    <Col flex='auto' style={{ marginRight: '10px' }}>
                       <Form.Item
                         label={
                           <FormattedMessage
-                            id="pages.process.validation.modellingAndValidation.review.type"
-                            defaultMessage="Type of review"
+                            id='pages.process.validation.modellingAndValidation.review.type'
+                            defaultMessage='Type of review'
                           />
                         }
                         name={[subField.name, '@type']}
@@ -62,11 +62,11 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                       </Form.Item>
                     </Col>
                     <Card
-                      size="small"
+                      size='small'
                       title={
                         <FormattedMessage
-                          id="pages.process.modellingAndValidation.validation.review.scope"
-                          defaultMessage="Scope of review"
+                          id='pages.process.modellingAndValidation.validation.review.scope'
+                          defaultMessage='Scope of review'
                         />
                       }
                     >
@@ -74,11 +74,11 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                     </Card>
                     <br />
                     <Card
-                      size="small"
+                      size='small'
                       title={
                         <FormattedMessage
-                          id="pages.process.modellingAndValidation.validation.review.dataQualityIndicators"
-                          defaultMessage="Data quality indicators"
+                          id='pages.process.modellingAndValidation.validation.review.dataQualityIndicators'
+                          defaultMessage='Data quality indicators'
                         />
                       }
                     >
@@ -90,33 +90,33 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                         ]}
                       />
                     </Card>
-                    <Divider orientationMargin="0" orientation="left" plain>
+                    <Divider orientationMargin='0' orientation='left' plain>
                       <FormattedMessage
-                        id="pages.process.view.modellingAndValidation.validation.reviewDetails"
-                        defaultMessage="Review details"
+                        id='pages.process.view.modellingAndValidation.validation.reviewDetails'
+                        defaultMessage='Review details'
                       />
                     </Divider>
                     <LangTextItemForm
                       name={[subField.name, 'common:reviewDetails']}
                       label={
                         <FormattedMessage
-                          id="pages.process.view.modellingAndValidation.validation.reviewDetails"
-                          defaultMessage="Review details"
+                          id='pages.process.view.modellingAndValidation.validation.reviewDetails'
+                          defaultMessage='Review details'
                         />
                       }
                     />
-                    <Divider orientationMargin="0" orientation="left" plain>
+                    <Divider orientationMargin='0' orientation='left' plain>
                       <FormattedMessage
-                        id="pages.process.view.modellingAndValidation.validation.otherReviewDetails"
-                        defaultMessage="Other review details"
+                        id='pages.process.view.modellingAndValidation.validation.otherReviewDetails'
+                        defaultMessage='Other review details'
                       />
                     </Divider>
                     <LangTextItemForm
                       name={[subField.name, 'common:otherReviewDetails']}
                       label={
                         <FormattedMessage
-                          id="pages.process.view.modellingAndValidation.validation.otherReviewDetails"
-                          defaultMessage="Other review details"
+                          id='pages.process.view.modellingAndValidation.validation.otherReviewDetails'
+                          defaultMessage='Other review details'
                         />
                       }
                     />
@@ -125,8 +125,8 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                       name={[subField.name, 'common:referenceToNameOfReviewerAndInstitution']}
                       label={
                         <FormattedMessage
-                          id="pages.process.view.modellingAndValidation.referenceToNameOfReviewerAndInstitution"
-                          defaultMessage="Reviewer name and institution"
+                          id='pages.process.view.modellingAndValidation.referenceToNameOfReviewerAndInstitution'
+                          defaultMessage='Reviewer name and institution'
                         />
                       }
                       lang={lang}
@@ -139,8 +139,8 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                       name={[subField.name, 'common:referenceToCompleteReviewReport']}
                       label={
                         <FormattedMessage
-                          id="pages.process.view.modellingAndValidation.referenceToCompleteReviewReport"
-                          defaultMessage="Complete review report"
+                          id='pages.process.view.modellingAndValidation.referenceToCompleteReviewReport'
+                          defaultMessage='Complete review report'
                         />
                       }
                       lang={lang}
@@ -151,10 +151,10 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                 </Space>
               </Row>
             ))}
-            <Button type="dashed" onClick={() => subOpt.add()} block>
-              + <FormattedMessage id="pages.button.item.add" defaultMessage="Add" />{' '}
-              <FormattedMessage id="pages.process.validation.review" defaultMessage="Review" />{' '}
-              <FormattedMessage id="pages.button.item.label" defaultMessage="Item" />
+            <Button type='dashed' onClick={() => subOpt.add()} block>
+              + <FormattedMessage id='pages.button.item.add' defaultMessage='Add' />{' '}
+              <FormattedMessage id='pages.process.validation.review' defaultMessage='Review' />{' '}
+              <FormattedMessage id='pages.button.item.label' defaultMessage='Item' />
             </Button>
           </div>
         )}

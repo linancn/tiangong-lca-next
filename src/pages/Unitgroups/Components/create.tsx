@@ -146,15 +146,15 @@ const UnitGroupCreate: FC<CreateProps> = ({
                   ? 'pages.button.createVersion'
                   : 'pages.button.create'
             }
-            defaultMessage="Create"
+            defaultMessage='Create'
           ></FormattedMessage>
         }
       >
         {actionType === 'copy' ? (
           <Button
-            shape="circle"
+            shape='circle'
             icon={<CopyOutlined />}
-            size="small"
+            size='small'
             onClick={() => {
               setDrawerVisible(true);
             }}
@@ -162,7 +162,7 @@ const UnitGroupCreate: FC<CreateProps> = ({
         ) : (
           <Button
             size={'middle'}
-            type="text"
+            type='text'
             icon={<PlusOutlined />}
             onClick={() => {
               setDrawerVisible(true);
@@ -182,10 +182,10 @@ const UnitGroupCreate: FC<CreateProps> = ({
                   ? 'pages.unitgroup.drawer.title.createVersion'
                   : 'pages.unitgroup.drawer.title.create'
             }
-            defaultMessage="Create"
+            defaultMessage='Create'
           ></FormattedMessage>
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={
           <Button
@@ -208,15 +208,15 @@ const UnitGroupCreate: FC<CreateProps> = ({
                 setDrawerVisible(false);
               }}
             >
-              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel"></FormattedMessage>
+              <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel'></FormattedMessage>
             </Button>
             <Button
               onClick={() => {
                 formRefCreate.current?.submit();
               }}
-              type="primary"
+              type='primary'
             >
-              <FormattedMessage id="pages.button.save" defaultMessage="Save"></FormattedMessage>
+              <FormattedMessage id='pages.button.save' defaultMessage='Save'></FormattedMessage>
             </Button>
           </Space>
         }

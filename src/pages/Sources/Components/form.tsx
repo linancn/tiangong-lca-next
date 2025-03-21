@@ -68,8 +68,8 @@ export const SourceForm: FC<Props> = ({
       key: 'sourceInformation',
       tab: (
         <FormattedMessage
-          id="pages.source.edit.sourceInformation"
-          defaultMessage="Source information"
+          id='pages.source.edit.sourceInformation'
+          defaultMessage='Source information'
         />
       ),
     },
@@ -77,17 +77,17 @@ export const SourceForm: FC<Props> = ({
       key: 'administrativeInformation',
       tab: (
         <FormattedMessage
-          id="pages.source.edit.administrativeInformation"
-          defaultMessage="Administrative information"
+          id='pages.source.edit.administrativeInformation'
+          defaultMessage='Administrative information'
         />
       ),
     },
   ];
   const tabContent: { [key: string]: JSX.Element } = {
     sourceInformation: (
-      <Space direction="vertical" style={{ width: '100%' }}>
+      <Space direction='vertical' style={{ width: '100%' }}>
         <Card
-          size="small"
+          size='small'
           title={
             <RequiredMark
               showError={showShortNameError}
@@ -104,8 +104,8 @@ export const SourceForm: FC<Props> = ({
             name={['sourceInformation', 'dataSetInformation', 'common:shortName']}
             label={
               <FormattedMessage
-                id="pages.source.edit.sourceInformation.shortName"
-                defaultMessage="Short name of source"
+                id='pages.source.edit.sourceInformation.shortName'
+                defaultMessage='Short name of source'
               />
             }
             setRuleErrorState={setShowShortNameError}
@@ -130,8 +130,8 @@ export const SourceForm: FC<Props> = ({
         <Form.Item
           label={
             <FormattedMessage
-              id="pages.source.edit.sourceInformation.sourceCitation"
-              defaultMessage="Source citation"
+              id='pages.source.edit.sourceInformation.sourceCitation'
+              defaultMessage='Source citation'
             />
           }
           name={['sourceInformation', 'dataSetInformation', 'sourceCitation']}
@@ -142,8 +142,8 @@ export const SourceForm: FC<Props> = ({
         <Form.Item
           label={
             <FormattedMessage
-              id="pages.source.edit.sourceInformation.publicationType"
-              defaultMessage="Publication type"
+              id='pages.source.edit.sourceInformation.publicationType'
+              defaultMessage='Publication type'
             />
           }
           name={['sourceInformation', 'dataSetInformation', 'publicationType']}
@@ -152,11 +152,11 @@ export const SourceForm: FC<Props> = ({
         </Form.Item>
         {/* <br /> */}
         <Card
-          size="small"
+          size='small'
           title={
             <FormattedMessage
-              id="pages.source.edit.sourceInformation.sourceDescriptionOrComment"
-              defaultMessage="Source description or comment"
+              id='pages.source.edit.sourceInformation.sourceDescriptionOrComment'
+              defaultMessage='Source description or comment'
             />
           }
         >
@@ -164,25 +164,25 @@ export const SourceForm: FC<Props> = ({
             name={['sourceInformation', 'dataSetInformation', 'sourceDescriptionOrComment']}
             label={
               <FormattedMessage
-                id="pages.source.edit.sourceInformation.sourceDescriptionOrComment"
-                defaultMessage="Source description or comment"
+                id='pages.source.edit.sourceInformation.sourceDescriptionOrComment'
+                defaultMessage='Source description or comment'
               />
             }
           />
         </Card>
         <br />
         <Card
-          size="small"
+          size='small'
           title={
             <FormattedMessage
-              id="pages.source.edit.sourceInformation.referenceToDigitalFile"
-              defaultMessage="Link to digital file"
+              id='pages.source.edit.sourceInformation.referenceToDigitalFile'
+              defaultMessage='Link to digital file'
             />
           }
         >
           <Upload
-            name="avatar"
-            listType="picture-card"
+            name='avatar'
+            listType='picture-card'
             fileList={fileList}
             onPreview={handlePreview}
             beforeUpload={(file) => {
@@ -246,21 +246,21 @@ export const SourceForm: FC<Props> = ({
       </Space>
     ),
     administrativeInformation: (
-      <Space direction="vertical" style={{ width: '100%' }}>
+      <Space direction='vertical' style={{ width: '100%' }}>
         <Card
-          size="small"
+          size='small'
           title={
             <FormattedMessage
-              id="pages.source.edit.administrativeInformation.dataEntryBy"
-              defaultMessage="Data entry by"
+              id='pages.source.edit.administrativeInformation.dataEntryBy'
+              defaultMessage='Data entry by'
             />
           }
         >
           <Form.Item
             label={
               <FormattedMessage
-                id="pages.source.edit.administrativeInformation.timeStamp"
-                defaultMessage="Time Stamp"
+                id='pages.source.edit.administrativeInformation.timeStamp'
+                defaultMessage='Time Stamp'
               />
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
@@ -273,8 +273,8 @@ export const SourceForm: FC<Props> = ({
             name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
             label={
               <FormattedMessage
-                id="pages.source.edit.administrativeInformation.referenceToDataSetFormat"
-                defaultMessage="Data set format(s)"
+                id='pages.source.edit.administrativeInformation.referenceToDataSetFormat'
+                defaultMessage='Data set format(s)'
               />
             }
             lang={lang}
@@ -285,19 +285,19 @@ export const SourceForm: FC<Props> = ({
         </Card>
         <br />
         <Card
-          size="small"
+          size='small'
           title={
             <FormattedMessage
-              id="pages.source.edit.administrativeInformation.publicationAndOwnership"
-              defaultMessage="Publication and ownership"
+              id='pages.source.edit.administrativeInformation.publicationAndOwnership'
+              defaultMessage='Publication and ownership'
             />
           }
         >
           <Form.Item
             label={
               <FormattedMessage
-                id="pages.source.edit.administrativeInformation.dataSetVersion"
-                defaultMessage="Data set version"
+                id='pages.source.edit.administrativeInformation.dataSetVersion'
+                defaultMessage='Data set version'
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
@@ -308,8 +308,8 @@ export const SourceForm: FC<Props> = ({
           <ContactSelectForm
             label={
               <FormattedMessage
-                id="pages.source.edit.administrativeInformation.referenceToOwnershipOfDataSet"
-                defaultMessage="Owner of data set"
+                id='pages.source.edit.administrativeInformation.referenceToOwnershipOfDataSet'
+                defaultMessage='Owner of data set'
               />
             }
             name={[
@@ -339,8 +339,8 @@ export const SourceForm: FC<Props> = ({
           <Form.Item
             label={
               <FormattedMessage
-                id="pages.source.edit.administrativeInformation.permanentDataSetURI"
-                defaultMessage="Permanent data set URI"
+                id='pages.source.edit.administrativeInformation.permanentDataSetURI'
+                defaultMessage='Permanent data set URI'
               />
             }
             name={[

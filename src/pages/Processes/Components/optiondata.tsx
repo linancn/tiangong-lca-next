@@ -5,8 +5,8 @@ export const processtypeOfDataSetOptions = [
     value: 'Unit process, single operation',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.typeOfDataSet.unitProcessSingleOperation"
-        defaultMessage="Unit process, single operation"
+        id='pages.process.view.modellingAndValidation.typeOfDataSet.unitProcessSingleOperation'
+        defaultMessage='Unit process, single operation'
       />
     ),
   },
@@ -14,8 +14,8 @@ export const processtypeOfDataSetOptions = [
     value: 'Unit processes, black box',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.typeOfDataSet.unitProcessesBlackBox"
-        defaultMessage="Unit processes, black box"
+        id='pages.process.view.modellingAndValidation.typeOfDataSet.unitProcessesBlackBox'
+        defaultMessage='Unit processes, black box'
       />
     ),
   },
@@ -23,8 +23,8 @@ export const processtypeOfDataSetOptions = [
     value: 'LCI result',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.typeOfDataSet.LCIResult"
-        defaultMessage="LCI result"
+        id='pages.process.view.modellingAndValidation.typeOfDataSet.LCIResult'
+        defaultMessage='LCI result'
       />
     ),
   },
@@ -32,8 +32,8 @@ export const processtypeOfDataSetOptions = [
     value: 'Partly terminated system',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.typeOfDataSet.partlyTerminatedSystem"
-        defaultMessage="Partly terminated system"
+        id='pages.process.view.modellingAndValidation.typeOfDataSet.partlyTerminatedSystem'
+        defaultMessage='Partly terminated system'
       />
     ),
   },
@@ -41,8 +41,8 @@ export const processtypeOfDataSetOptions = [
     value: 'Avoided product system',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.typeOfDataSet.avoidedProductSystem"
-        defaultMessage="Avoided product system"
+        id='pages.process.view.modellingAndValidation.typeOfDataSet.avoidedProductSystem'
+        defaultMessage='Avoided product system'
       />
     ),
   },
@@ -53,8 +53,8 @@ export const LCIMethodPrincipleOptions = [
     value: 'Attributional',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.LCIMethodPrinciple.attributional"
-        defaultMessage="Attributional"
+        id='pages.process.view.modellingAndValidation.LCIMethodPrinciple.attributional'
+        defaultMessage='Attributional'
       />
     ),
   },
@@ -62,8 +62,8 @@ export const LCIMethodPrincipleOptions = [
     value: 'Consequential',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.LCIMethodPrinciple.consequential"
-        defaultMessage="Consequential"
+        id='pages.process.view.modellingAndValidation.LCIMethodPrinciple.consequential'
+        defaultMessage='Consequential'
       />
     ),
   },
@@ -71,8 +71,8 @@ export const LCIMethodPrincipleOptions = [
     value: 'Consequential with attributional components',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.LCIMethodPrinciple.consequentialWithAttributionalComponents"
-        defaultMessage="Consequential with attributional components"
+        id='pages.process.view.modellingAndValidation.LCIMethodPrinciple.consequentialWithAttributionalComponents'
+        defaultMessage='Consequential with attributional components'
       />
     ),
   },
@@ -80,8 +80,8 @@ export const LCIMethodPrincipleOptions = [
     value: 'Not applicable',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.LCIMethodPrinciple.notApplicable"
-        defaultMessage="Not applicable"
+        id='pages.process.view.modellingAndValidation.LCIMethodPrinciple.notApplicable'
+        defaultMessage='Not applicable'
       />
     ),
   },
@@ -89,8 +89,8 @@ export const LCIMethodPrincipleOptions = [
     value: 'Other',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.LCIMethodPrinciple.other"
-        defaultMessage="Other"
+        id='pages.process.view.modellingAndValidation.LCIMethodPrinciple.other'
+        defaultMessage='Other'
       />
     ),
   },
@@ -101,8 +101,8 @@ export const LCIMethodApproachOptions = [
     value: 'Allocation - market value',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.LCIMethodApproach.allocationMarketValue"
-        defaultMessage="Allocation - market value"
+        id='pages.process.view.modellingAndValidation.LCIMethodApproach.allocationMarketValue'
+        defaultMessage='Allocation - market value'
       />
     ),
   },
@@ -110,8 +110,8 @@ export const LCIMethodApproachOptions = [
     value: 'Allocation - gross calorific value',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.LCIMethodApproach.allocationGrossCalorificValue"
-        defaultMessage="Allocation - gross calorific value"
+        id='pages.process.view.modellingAndValidation.LCIMethodApproach.allocationGrossCalorificValue'
+        defaultMessage='Allocation - gross calorific value'
       />
     ),
   },
@@ -119,8 +119,8 @@ export const LCIMethodApproachOptions = [
     value: 'Allocation - net calorific value',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.LCIMethodApproach.allocationNetCalorificValue"
-        defaultMessage="Allocation - net calorific value"
+        id='pages.process.view.modellingAndValidation.LCIMethodApproach.allocationNetCalorificValue'
+        defaultMessage='Allocation - net calorific value'
       />
     ),
   },
@@ -128,8 +128,8 @@ export const LCIMethodApproachOptions = [
     value: 'Allocation - exergetic content',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.LCIMethodApproach.allocationExergeticContent"
-        defaultMessage="Allocation - exergetic content"
+        id='pages.process.view.modellingAndValidation.LCIMethodApproach.allocationExergeticContent'
+        defaultMessage='Allocation - exergetic content'
       />
     ),
   },
@@ -137,8 +137,8 @@ export const LCIMethodApproachOptions = [
     value: 'Allocation - element content',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.LCIMethodApproach.allocationElementContent"
-        defaultMessage="Allocation - element content"
+        id='pages.process.view.modellingAndValidation.LCIMethodApproach.allocationElementContent'
+        defaultMessage='Allocation - element content'
       />
     ),
   },
@@ -146,8 +146,8 @@ export const LCIMethodApproachOptions = [
     value: 'Allocation - mass',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.LCIMethodApproach.allocationMass"
-        defaultMessage="Allocation - mass"
+        id='pages.process.view.modellingAndValidation.LCIMethodApproach.allocationMass'
+        defaultMessage='Allocation - mass'
       />
     ),
   },
@@ -155,8 +155,8 @@ export const LCIMethodApproachOptions = [
     value: 'Allocation - volume',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.LCIMethodApproach.allocationVolume"
-        defaultMessage="Allocation - volume"
+        id='pages.process.view.modellingAndValidation.LCIMethodApproach.allocationVolume'
+        defaultMessage='Allocation - volume'
       />
     ),
   },
@@ -164,8 +164,8 @@ export const LCIMethodApproachOptions = [
     value: 'Allocation - ability to bear',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.LCIMethodApproach.allocationAbilityToBear"
-        defaultMessage="Allocation - ability to bear"
+        id='pages.process.view.modellingAndValidation.LCIMethodApproach.allocationAbilityToBear'
+        defaultMessage='Allocation - ability to bear'
       />
     ),
   },
@@ -173,8 +173,8 @@ export const LCIMethodApproachOptions = [
     value: 'Allocation - marginal causality',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.LCIMethodApproach.allocationMarginalCausality"
-        defaultMessage="Allocation - marginal causality"
+        id='pages.process.view.modellingAndValidation.LCIMethodApproach.allocationMarginalCausality'
+        defaultMessage='Allocation - marginal causality'
       />
     ),
   },
@@ -182,8 +182,8 @@ export const LCIMethodApproachOptions = [
     value: 'Allocation - physical causality',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.LCIMethodApproach.allocationPhysicalCausality"
-        defaultMessage="Allocation - physical causality"
+        id='pages.process.view.modellingAndValidation.LCIMethodApproach.allocationPhysicalCausality'
+        defaultMessage='Allocation - physical causality'
       />
     ),
   },
@@ -191,8 +191,8 @@ export const LCIMethodApproachOptions = [
     value: 'Allocation - 100% to main function',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.LCIMethodApproach.allocation100%ToMainFunction"
-        defaultMessage="Allocation - 100% to main function"
+        id='pages.process.view.modellingAndValidation.LCIMethodApproach.allocation100%ToMainFunction'
+        defaultMessage='Allocation - 100% to main function'
       />
     ),
   },
@@ -200,8 +200,8 @@ export const LCIMethodApproachOptions = [
     value: 'Allocation - other explicit assignment',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.LCIMethodApproach.allocationOtherExplicitAssignment"
-        defaultMessage="Allocation - other explicit assignment"
+        id='pages.process.view.modellingAndValidation.LCIMethodApproach.allocationOtherExplicitAssignment'
+        defaultMessage='Allocation - other explicit assignment'
       />
     ),
   },
@@ -209,8 +209,8 @@ export const LCIMethodApproachOptions = [
     value: 'Allocation - equal distribution',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.LCIMethodApproach.allocationEqualDistribution"
-        defaultMessage="Allocation - equal distribution"
+        id='pages.process.view.modellingAndValidation.LCIMethodApproach.allocationEqualDistribution'
+        defaultMessage='Allocation - equal distribution'
       />
     ),
   },
@@ -218,8 +218,8 @@ export const LCIMethodApproachOptions = [
     value: 'Allocation - recycled content',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.LCIMethodApproach.allocationRecycledContent"
-        defaultMessage="Allocation - recycled content"
+        id='pages.process.view.modellingAndValidation.LCIMethodApproach.allocationRecycledContent'
+        defaultMessage='Allocation - recycled content'
       />
     ),
   },
@@ -227,8 +227,8 @@ export const LCIMethodApproachOptions = [
     value: 'Substitution - BAT',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.LCIMethodApproach.substitutionBAT"
-        defaultMessage="Substitution - BAT"
+        id='pages.process.view.modellingAndValidation.LCIMethodApproach.substitutionBAT'
+        defaultMessage='Substitution - BAT'
       />
     ),
   },
@@ -236,8 +236,8 @@ export const LCIMethodApproachOptions = [
     value: 'Substitution - average, market price correction',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.LCIMethodApproach.substitutionAverageMarketPriceCorrection"
-        defaultMessage="Substitution - average, market price correction"
+        id='pages.process.view.modellingAndValidation.LCIMethodApproach.substitutionAverageMarketPriceCorrection'
+        defaultMessage='Substitution - average, market price correction'
       />
     ),
   },
@@ -245,8 +245,8 @@ export const LCIMethodApproachOptions = [
     value: 'Substitution - average, technical properties correction',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.LCIMethodApproach.substitutionAverageTechnicalPropertiesCorrection"
-        defaultMessage="Substitution - average, technical properties correction"
+        id='pages.process.view.modellingAndValidation.LCIMethodApproach.substitutionAverageTechnicalPropertiesCorrection'
+        defaultMessage='Substitution - average, technical properties correction'
       />
     ),
   },
@@ -254,8 +254,8 @@ export const LCIMethodApproachOptions = [
     value: 'Substitution - recycling potential',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.LCIMethodApproach.substitutionRecyclingPotential"
-        defaultMessage="Substitution - recycling potential"
+        id='pages.process.view.modellingAndValidation.LCIMethodApproach.substitutionRecyclingPotential'
+        defaultMessage='Substitution - recycling potential'
       />
     ),
   },
@@ -263,8 +263,8 @@ export const LCIMethodApproachOptions = [
     value: 'Substitution - average, no correction',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.LCIMethodApproach.substitutionAverageNoCorrection"
-        defaultMessage="Substitution - average, no correction"
+        id='pages.process.view.modellingAndValidation.LCIMethodApproach.substitutionAverageNoCorrection'
+        defaultMessage='Substitution - average, no correction'
       />
     ),
   },
@@ -272,8 +272,8 @@ export const LCIMethodApproachOptions = [
     value: 'Substitution - specific',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.LCIMethodApproach.substitutionSpecific"
-        defaultMessage="Substitution - specific"
+        id='pages.process.view.modellingAndValidation.LCIMethodApproach.substitutionSpecific'
+        defaultMessage='Substitution - specific'
       />
     ),
   },
@@ -281,8 +281,8 @@ export const LCIMethodApproachOptions = [
     value: 'Consequential effects - other',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.LCIMethodApproach.consequentialEffectsOther"
-        defaultMessage="Consequential effects - other"
+        id='pages.process.view.modellingAndValidation.LCIMethodApproach.consequentialEffectsOther'
+        defaultMessage='Consequential effects - other'
       />
     ),
   },
@@ -290,8 +290,8 @@ export const LCIMethodApproachOptions = [
     value: 'Not applicable',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.LCIMethodApproach.notApplicable"
-        defaultMessage="Not applicable"
+        id='pages.process.view.modellingAndValidation.LCIMethodApproach.notApplicable'
+        defaultMessage='Not applicable'
       />
     ),
   },
@@ -299,8 +299,8 @@ export const LCIMethodApproachOptions = [
     value: 'Other',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.LCIMethodApproach.other"
-        defaultMessage="Other"
+        id='pages.process.view.modellingAndValidation.LCIMethodApproach.other'
+        defaultMessage='Other'
       />
     ),
   },
@@ -311,8 +311,8 @@ export const reviewTypeOptions = [
     value: 'Dependent internal review',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.Validation.Review.dependentInternalReview"
-        defaultMessage="Dependent internal review"
+        id='pages.process.view.modellingAndValidation.Validation.Review.dependentInternalReview'
+        defaultMessage='Dependent internal review'
       />
     ),
   },
@@ -320,8 +320,8 @@ export const reviewTypeOptions = [
     value: 'Independent internal review',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.Validation.Review.independentInternalReview"
-        defaultMessage="Independent internal review"
+        id='pages.process.view.modellingAndValidation.Validation.Review.independentInternalReview'
+        defaultMessage='Independent internal review'
       />
     ),
   },
@@ -329,8 +329,8 @@ export const reviewTypeOptions = [
     value: 'Independent external review',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.Validation.Review.independentExternalReview"
-        defaultMessage="Independent external review"
+        id='pages.process.view.modellingAndValidation.Validation.Review.independentExternalReview'
+        defaultMessage='Independent external review'
       />
     ),
   },
@@ -338,8 +338,8 @@ export const reviewTypeOptions = [
     value: 'Accredited third party review',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.Validation.Review.accreditedThirdPartyReview"
-        defaultMessage="Accredited third party review"
+        id='pages.process.view.modellingAndValidation.Validation.Review.accreditedThirdPartyReview'
+        defaultMessage='Accredited third party review'
       />
     ),
   },
@@ -347,8 +347,8 @@ export const reviewTypeOptions = [
     value: 'Independent review panel',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.Validation.Review.independentReviewPanel"
-        defaultMessage="Independent review panel"
+        id='pages.process.view.modellingAndValidation.Validation.Review.independentReviewPanel'
+        defaultMessage='Independent review panel'
       />
     ),
   },
@@ -356,8 +356,8 @@ export const reviewTypeOptions = [
     value: 'Not reviewed',
     label: (
       <FormattedMessage
-        id="pages.process.view.modellingAndValidation.Validation.Review.notReviewed"
-        defaultMessage="Not reviewed"
+        id='pages.process.view.modellingAndValidation.Validation.Review.notReviewed'
+        defaultMessage='Not reviewed'
       />
     ),
   },
@@ -368,8 +368,8 @@ export const scopeNameOptions = [
     value: 'Raw data',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.scopeName.rawData"
-        defaultMessage="Raw data"
+        id='pages.process.modellingAndValidation.scopeName.rawData'
+        defaultMessage='Raw data'
       />
     ),
   },
@@ -377,8 +377,8 @@ export const scopeNameOptions = [
     value: 'Unit process(es), single operation',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.scopeName.unitProcessSingleOperation"
-        defaultMessage="Unit process(es), single operation"
+        id='pages.process.modellingAndValidation.scopeName.unitProcessSingleOperation'
+        defaultMessage='Unit process(es), single operation'
       />
     ),
   },
@@ -386,8 +386,8 @@ export const scopeNameOptions = [
     value: 'Unit process(es), black box',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.scopeName.unitProcessBlackBox"
-        defaultMessage="Unit process(es), black box"
+        id='pages.process.modellingAndValidation.scopeName.unitProcessBlackBox'
+        defaultMessage='Unit process(es), black box'
       />
     ),
   },
@@ -395,8 +395,8 @@ export const scopeNameOptions = [
     value: 'LCI results or Partly terminated system',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.scopeName.lciResultsPartlyTerminatedSystem"
-        defaultMessage="LCI results or Partly terminated system"
+        id='pages.process.modellingAndValidation.scopeName.lciResultsPartlyTerminatedSystem'
+        defaultMessage='LCI results or Partly terminated system'
       />
     ),
   },
@@ -404,8 +404,8 @@ export const scopeNameOptions = [
     value: 'LCIA results',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.scopeName.lciaResults"
-        defaultMessage="LCIA results"
+        id='pages.process.modellingAndValidation.scopeName.lciaResults'
+        defaultMessage='LCIA results'
       />
     ),
   },
@@ -413,8 +413,8 @@ export const scopeNameOptions = [
     value: 'Documentation',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.scopeName.documentation"
-        defaultMessage="Documentation"
+        id='pages.process.modellingAndValidation.scopeName.documentation'
+        defaultMessage='Documentation'
       />
     ),
   },
@@ -422,8 +422,8 @@ export const scopeNameOptions = [
     value: 'Life cycle inventory methods',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.scopeName.lifeCycleInventoryMethods"
-        defaultMessage="Life cycle inventory methods"
+        id='pages.process.modellingAndValidation.scopeName.lifeCycleInventoryMethods'
+        defaultMessage='Life cycle inventory methods'
       />
     ),
   },
@@ -431,8 +431,8 @@ export const scopeNameOptions = [
     value: 'LCIA results calculation',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.scopeName.lciaResultsCalculation"
-        defaultMessage="LCIA results calculation"
+        id='pages.process.modellingAndValidation.scopeName.lciaResultsCalculation'
+        defaultMessage='LCIA results calculation'
       />
     ),
   },
@@ -440,8 +440,8 @@ export const scopeNameOptions = [
     value: 'Goal and scope definition',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.scopeName.goalAndScopeDefinition"
-        defaultMessage="Goal and scope definition"
+        id='pages.process.modellingAndValidation.scopeName.goalAndScopeDefinition'
+        defaultMessage='Goal and scope definition'
       />
     ),
   },
@@ -452,8 +452,8 @@ export const methodNameOptions = [
     value: 'Validation of data sources',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.methodName.validationOfDataSources"
-        defaultMessage="Validation of data sources"
+        id='pages.process.modellingAndValidation.methodName.validationOfDataSources'
+        defaultMessage='Validation of data sources'
       />
     ),
   },
@@ -461,8 +461,8 @@ export const methodNameOptions = [
     value: 'Sample tests on calculations',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.methodName.sampleTestsOnCalculations"
-        defaultMessage="Sample tests on calculations"
+        id='pages.process.modellingAndValidation.methodName.sampleTestsOnCalculations'
+        defaultMessage='Sample tests on calculations'
       />
     ),
   },
@@ -470,8 +470,8 @@ export const methodNameOptions = [
     value: 'Energy balance',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.methodName.energyBalance"
-        defaultMessage="Energy balance"
+        id='pages.process.modellingAndValidation.methodName.energyBalance'
+        defaultMessage='Energy balance'
       />
     ),
   },
@@ -479,8 +479,8 @@ export const methodNameOptions = [
     value: 'Element balance',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.methodName.elementBalance"
-        defaultMessage="Element balance"
+        id='pages.process.modellingAndValidation.methodName.elementBalance'
+        defaultMessage='Element balance'
       />
     ),
   },
@@ -488,8 +488,8 @@ export const methodNameOptions = [
     value: 'Cross-check with other source',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.methodName.crossCheckWithOtherSource"
-        defaultMessage="Cross-check with other source"
+        id='pages.process.modellingAndValidation.methodName.crossCheckWithOtherSource'
+        defaultMessage='Cross-check with other source'
       />
     ),
   },
@@ -497,8 +497,8 @@ export const methodNameOptions = [
     value: 'Cross-check with other data set',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.methodName.crossCheckWithOtherDataSet"
-        defaultMessage="Cross-check with other data set"
+        id='pages.process.modellingAndValidation.methodName.crossCheckWithOtherDataSet'
+        defaultMessage='Cross-check with other data set'
       />
     ),
   },
@@ -506,8 +506,8 @@ export const methodNameOptions = [
     value: 'Expert judgement',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.methodName.expertJudgement"
-        defaultMessage="Expert judgement"
+        id='pages.process.modellingAndValidation.methodName.expertJudgement'
+        defaultMessage='Expert judgement'
       />
     ),
   },
@@ -515,8 +515,8 @@ export const methodNameOptions = [
     value: 'Mass balance',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.methodName.massBalance"
-        defaultMessage="Mass balance"
+        id='pages.process.modellingAndValidation.methodName.massBalance'
+        defaultMessage='Mass balance'
       />
     ),
   },
@@ -524,8 +524,8 @@ export const methodNameOptions = [
     value: 'Compliance with legal limits',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.methodName.complianceWithLegalLimits"
-        defaultMessage="Compliance with legal limits"
+        id='pages.process.modellingAndValidation.methodName.complianceWithLegalLimits'
+        defaultMessage='Compliance with legal limits'
       />
     ),
   },
@@ -533,8 +533,8 @@ export const methodNameOptions = [
     value: 'Compliance with ISO 14040 to 14044',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.methodName.complianceWithISO14040to14044"
-        defaultMessage="Compliance with ISO 14040 to 14044"
+        id='pages.process.modellingAndValidation.methodName.complianceWithISO14040to14044'
+        defaultMessage='Compliance with ISO 14040 to 14044'
       />
     ),
   },
@@ -542,8 +542,8 @@ export const methodNameOptions = [
     value: 'Documentation',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.methodName.documentation"
-        defaultMessage="Documentation"
+        id='pages.process.modellingAndValidation.methodName.documentation'
+        defaultMessage='Documentation'
       />
     ),
   },
@@ -551,8 +551,8 @@ export const methodNameOptions = [
     value: 'Evidence collection by means of plant visits and/or interviews',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.methodName.evidenceCollection"
-        defaultMessage="Evidence collection by means of plant visits and/or interviews"
+        id='pages.process.modellingAndValidation.methodName.evidenceCollection'
+        defaultMessage='Evidence collection by means of plant visits and/or interviews'
       />
     ),
   },
@@ -563,8 +563,8 @@ export const dataQualityIndicatorNameOptions = [
     value: 'Technological representativeness',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.dataQualityIndicatorName.technologicalRepresentativeness"
-        defaultMessage="Technological representativeness"
+        id='pages.process.modellingAndValidation.dataQualityIndicatorName.technologicalRepresentativeness'
+        defaultMessage='Technological representativeness'
       />
     ),
   },
@@ -572,8 +572,8 @@ export const dataQualityIndicatorNameOptions = [
     value: 'Time representativeness',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.dataQualityIndicatorName.timeRepresentativeness"
-        defaultMessage="Time representativeness"
+        id='pages.process.modellingAndValidation.dataQualityIndicatorName.timeRepresentativeness'
+        defaultMessage='Time representativeness'
       />
     ),
   },
@@ -581,8 +581,8 @@ export const dataQualityIndicatorNameOptions = [
     value: 'Geographical representativeness',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.dataQualityIndicatorName.geographicalRepresentativeness"
-        defaultMessage="Geographical representativeness"
+        id='pages.process.modellingAndValidation.dataQualityIndicatorName.geographicalRepresentativeness'
+        defaultMessage='Geographical representativeness'
       />
     ),
   },
@@ -590,8 +590,8 @@ export const dataQualityIndicatorNameOptions = [
     value: 'Completeness',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.dataQualityIndicatorName.completeness"
-        defaultMessage="Completeness"
+        id='pages.process.modellingAndValidation.dataQualityIndicatorName.completeness'
+        defaultMessage='Completeness'
       />
     ),
   },
@@ -599,8 +599,8 @@ export const dataQualityIndicatorNameOptions = [
     value: 'Precision',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.dataQualityIndicatorName.precision"
-        defaultMessage="Precision"
+        id='pages.process.modellingAndValidation.dataQualityIndicatorName.precision'
+        defaultMessage='Precision'
       />
     ),
   },
@@ -608,8 +608,8 @@ export const dataQualityIndicatorNameOptions = [
     value: 'Methodological appropriateness and consistency',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.dataQualityIndicatorName.methodologicalAppropriateness"
-        defaultMessage="Methodological appropriateness and consistency"
+        id='pages.process.modellingAndValidation.dataQualityIndicatorName.methodologicalAppropriateness'
+        defaultMessage='Methodological appropriateness and consistency'
       />
     ),
   },
@@ -617,8 +617,8 @@ export const dataQualityIndicatorNameOptions = [
     value: 'Overall quality',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.dataQualityIndicatorName.overallQuality"
-        defaultMessage="Overall quality"
+        id='pages.process.modellingAndValidation.dataQualityIndicatorName.overallQuality'
+        defaultMessage='Overall quality'
       />
     ),
   },
@@ -629,8 +629,8 @@ export const dataQualityIndicatorValueOptions = [
     value: 'Very good',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.dataQualityIndicatorValue.veryGood"
-        defaultMessage="Very good"
+        id='pages.process.modellingAndValidation.dataQualityIndicatorValue.veryGood'
+        defaultMessage='Very good'
       />
     ),
   },
@@ -638,8 +638,8 @@ export const dataQualityIndicatorValueOptions = [
     value: 'Good',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.dataQualityIndicatorValue.good"
-        defaultMessage="Good"
+        id='pages.process.modellingAndValidation.dataQualityIndicatorValue.good'
+        defaultMessage='Good'
       />
     ),
   },
@@ -647,8 +647,8 @@ export const dataQualityIndicatorValueOptions = [
     value: 'Fair',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.dataQualityIndicatorValue.fair"
-        defaultMessage="Fair"
+        id='pages.process.modellingAndValidation.dataQualityIndicatorValue.fair'
+        defaultMessage='Fair'
       />
     ),
   },
@@ -656,8 +656,8 @@ export const dataQualityIndicatorValueOptions = [
     value: 'Poor',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.dataQualityIndicatorValue.poor"
-        defaultMessage="Poor"
+        id='pages.process.modellingAndValidation.dataQualityIndicatorValue.poor'
+        defaultMessage='Poor'
       />
     ),
   },
@@ -665,8 +665,8 @@ export const dataQualityIndicatorValueOptions = [
     value: 'Very poor',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.dataQualityIndicatorValue.veryPoor"
-        defaultMessage="Very poor"
+        id='pages.process.modellingAndValidation.dataQualityIndicatorValue.veryPoor'
+        defaultMessage='Very poor'
       />
     ),
   },
@@ -674,8 +674,8 @@ export const dataQualityIndicatorValueOptions = [
     value: 'Not evaluated / unknown',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.dataQualityIndicatorValue.notEvaluatedUnknown"
-        defaultMessage="Not evaluated / unknown"
+        id='pages.process.modellingAndValidation.dataQualityIndicatorValue.notEvaluatedUnknown'
+        defaultMessage='Not evaluated / unknown'
       />
     ),
   },
@@ -683,8 +683,8 @@ export const dataQualityIndicatorValueOptions = [
     value: 'Not applicable',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.dataQualityIndicatorValue.notApplicable"
-        defaultMessage="Not applicable"
+        id='pages.process.modellingAndValidation.dataQualityIndicatorValue.notApplicable'
+        defaultMessage='Not applicable'
       />
     ),
   },
@@ -695,8 +695,8 @@ export const workflowAndPublicationStatusOptions = [
     value: 'Working draft',
     label: (
       <FormattedMessage
-        id="pages.process.view.administrativeInformation.workflowAndPublicationStatus.workingDraft"
-        defaultMessage="Working draft"
+        id='pages.process.view.administrativeInformation.workflowAndPublicationStatus.workingDraft'
+        defaultMessage='Working draft'
       />
     ),
   },
@@ -704,8 +704,8 @@ export const workflowAndPublicationStatusOptions = [
     value: 'Final draft for internal review',
     label: (
       <FormattedMessage
-        id="pages.process.view.administrativeInformation.workflowAndPublicationStatus.finalDraftForInternalReview"
-        defaultMessage="Final draft for internal review"
+        id='pages.process.view.administrativeInformation.workflowAndPublicationStatus.finalDraftForInternalReview'
+        defaultMessage='Final draft for internal review'
       />
     ),
   },
@@ -713,8 +713,8 @@ export const workflowAndPublicationStatusOptions = [
     value: 'Final draft for external review',
     label: (
       <FormattedMessage
-        id="pages.process.view.administrativeInformation.workflowAndPublicationStatus.finalDraftForExternalReview"
-        defaultMessage="Final draft for external review"
+        id='pages.process.view.administrativeInformation.workflowAndPublicationStatus.finalDraftForExternalReview'
+        defaultMessage='Final draft for external review'
       />
     ),
   },
@@ -722,8 +722,8 @@ export const workflowAndPublicationStatusOptions = [
     value: 'Data set finalised; unpublished',
     label: (
       <FormattedMessage
-        id="pages.process.view.administrativeInformation.workflowAndPublicationStatus.dataSetFinalisedUnpublished"
-        defaultMessage="Data set finalised; unpublished"
+        id='pages.process.view.administrativeInformation.workflowAndPublicationStatus.dataSetFinalisedUnpublished'
+        defaultMessage='Data set finalised; unpublished'
       />
     ),
   },
@@ -731,8 +731,8 @@ export const workflowAndPublicationStatusOptions = [
     value: 'Under revision',
     label: (
       <FormattedMessage
-        id="pages.process.view.administrativeInformation.workflowAndPublicationStatus.underRevision"
-        defaultMessage="Under revision"
+        id='pages.process.view.administrativeInformation.workflowAndPublicationStatus.underRevision'
+        defaultMessage='Under revision'
       />
     ),
   },
@@ -740,8 +740,8 @@ export const workflowAndPublicationStatusOptions = [
     value: 'Withdrawn',
     label: (
       <FormattedMessage
-        id="pages.process.view.administrativeInformation.workflowAndPublicationStatus.withdrawn"
-        defaultMessage="Withdrawn"
+        id='pages.process.view.administrativeInformation.workflowAndPublicationStatus.withdrawn'
+        defaultMessage='Withdrawn'
       />
     ),
   },
@@ -749,8 +749,8 @@ export const workflowAndPublicationStatusOptions = [
     value: 'Data set finalised; subsystems published',
     label: (
       <FormattedMessage
-        id="pages.process.view.administrativeInformation.workflowAndPublicationStatus.dataSetFinalisedSubsystemsPublished"
-        defaultMessage="Data set finalised; subsystems published"
+        id='pages.process.view.administrativeInformation.workflowAndPublicationStatus.dataSetFinalisedSubsystemsPublished'
+        defaultMessage='Data set finalised; subsystems published'
       />
     ),
   },
@@ -758,8 +758,8 @@ export const workflowAndPublicationStatusOptions = [
     value: 'Data set finalised; entirely published',
     label: (
       <FormattedMessage
-        id="pages.process.view.administrativeInformation.workflowAndPublicationStatus.dataSetFinalisedEntirelyPublished"
-        defaultMessage="Data set finalised; entirely published"
+        id='pages.process.view.administrativeInformation.workflowAndPublicationStatus.dataSetFinalisedEntirelyPublished'
+        defaultMessage='Data set finalised; entirely published'
       />
     ),
   },
@@ -770,8 +770,8 @@ export const copyrightOptions = [
     value: 'Yes',
     label: (
       <FormattedMessage
-        id="pages.process.view.administrativeInformation.copyright.yes"
-        defaultMessage="Yes"
+        id='pages.process.view.administrativeInformation.copyright.yes'
+        defaultMessage='Yes'
       />
     ),
   },
@@ -779,8 +779,8 @@ export const copyrightOptions = [
     value: 'No',
     label: (
       <FormattedMessage
-        id="pages.process.view.administrativeInformation.copyright.no"
-        defaultMessage="No"
+        id='pages.process.view.administrativeInformation.copyright.no'
+        defaultMessage='No'
       />
     ),
   },
@@ -791,8 +791,8 @@ export const licenseTypeOptions = [
     value: 'Free of charge for all users and uses',
     label: (
       <FormattedMessage
-        id="pages.process.view.administrativeInformation.licenseType.freeOfChargeForAllUsersAndUses"
-        defaultMessage="Free of charge for all users and uses"
+        id='pages.process.view.administrativeInformation.licenseType.freeOfChargeForAllUsersAndUses'
+        defaultMessage='Free of charge for all users and uses'
       />
     ),
   },
@@ -800,8 +800,8 @@ export const licenseTypeOptions = [
     value: 'Free of charge for some user types or use types',
     label: (
       <FormattedMessage
-        id="pages.process.view.administrativeInformation.licenseType.freeOfChargeForSomeUserTypesOrUseTypes"
-        defaultMessage="Free of charge for some user types or use types"
+        id='pages.process.view.administrativeInformation.licenseType.freeOfChargeForSomeUserTypesOrUseTypes'
+        defaultMessage='Free of charge for some user types or use types'
       />
     ),
   },
@@ -809,8 +809,8 @@ export const licenseTypeOptions = [
     value: 'Free of charge for members only',
     label: (
       <FormattedMessage
-        id="pages.process.view.administrativeInformation.licenseType.freeOfChargeForMembersOnly"
-        defaultMessage="Free of charge for members only"
+        id='pages.process.view.administrativeInformation.licenseType.freeOfChargeForMembersOnly'
+        defaultMessage='Free of charge for members only'
       />
     ),
   },
@@ -818,8 +818,8 @@ export const licenseTypeOptions = [
     value: 'License fee',
     label: (
       <FormattedMessage
-        id="pages.process.view.administrativeInformation.licenseType.licenseFee"
-        defaultMessage="License fee"
+        id='pages.process.view.administrativeInformation.licenseType.licenseFee'
+        defaultMessage='License fee'
       />
     ),
   },
@@ -827,8 +827,8 @@ export const licenseTypeOptions = [
     value: 'Other',
     label: (
       <FormattedMessage
-        id="pages.process.view.administrativeInformation.licenseType.other"
-        defaultMessage="Other"
+        id='pages.process.view.administrativeInformation.licenseType.other'
+        defaultMessage='Other'
       />
     ),
   },
@@ -839,8 +839,8 @@ export const DataDerivationTypeStatusOptions = [
     value: 'Measured',
     label: (
       <FormattedMessage
-        id="pages.process.view.exchanges.uncertaintyDistributionType.measured"
-        defaultMessage="Measured"
+        id='pages.process.view.exchanges.uncertaintyDistributionType.measured'
+        defaultMessage='Measured'
       />
     ),
   },
@@ -848,8 +848,8 @@ export const DataDerivationTypeStatusOptions = [
     value: 'Calculated',
     label: (
       <FormattedMessage
-        id="pages.process.view.exchanges.uncertaintyDistributionType.calculated"
-        defaultMessage="Calculated"
+        id='pages.process.view.exchanges.uncertaintyDistributionType.calculated'
+        defaultMessage='Calculated'
       />
     ),
   },
@@ -857,8 +857,8 @@ export const DataDerivationTypeStatusOptions = [
     value: 'Estimated',
     label: (
       <FormattedMessage
-        id="pages.process.view.exchanges.uncertaintyDistributionType.estimated"
-        defaultMessage="Estimated"
+        id='pages.process.view.exchanges.uncertaintyDistributionType.estimated'
+        defaultMessage='Estimated'
       />
     ),
   },
@@ -866,8 +866,8 @@ export const DataDerivationTypeStatusOptions = [
     value: 'Unknown derivation',
     label: (
       <FormattedMessage
-        id="pages.process.view.exchanges.uncertaintyDistributionType.unknownDerivation"
-        defaultMessage="Unknown derivation"
+        id='pages.process.view.exchanges.uncertaintyDistributionType.unknownDerivation'
+        defaultMessage='Unknown derivation'
       />
     ),
   },
@@ -875,8 +875,8 @@ export const DataDerivationTypeStatusOptions = [
     value: 'Missing important',
     label: (
       <FormattedMessage
-        id="pages.process.view.exchanges.uncertaintyDistributionType.missingImportant"
-        defaultMessage="Missing important"
+        id='pages.process.view.exchanges.uncertaintyDistributionType.missingImportant'
+        defaultMessage='Missing important'
       />
     ),
   },
@@ -884,8 +884,8 @@ export const DataDerivationTypeStatusOptions = [
     value: 'Missing unimportant',
     label: (
       <FormattedMessage
-        id="pages.process.view.exchanges.uncertaintyDistributionType.missingUnimportant"
-        defaultMessage="Missing unimportant"
+        id='pages.process.view.exchanges.uncertaintyDistributionType.missingUnimportant'
+        defaultMessage='Missing unimportant'
       />
     ),
   },
@@ -896,8 +896,8 @@ export const approvalOfOverallComplianceOptions = [
     value: 'Fully compliant',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.approvalOfOverallCompliance.fullyCompliant"
-        defaultMessage="Fully compliant"
+        id='pages.process.modellingAndValidation.approvalOfOverallCompliance.fullyCompliant'
+        defaultMessage='Fully compliant'
       />
     ),
   },
@@ -905,8 +905,8 @@ export const approvalOfOverallComplianceOptions = [
     value: 'Not compliant',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.approvalOfOverallCompliance.notCompliant"
-        defaultMessage="Not compliant"
+        id='pages.process.modellingAndValidation.approvalOfOverallCompliance.notCompliant'
+        defaultMessage='Not compliant'
       />
     ),
   },
@@ -914,8 +914,8 @@ export const approvalOfOverallComplianceOptions = [
     value: 'Not defined',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.approvalOfOverallCompliance.notDefined"
-        defaultMessage="Not defined"
+        id='pages.process.modellingAndValidation.approvalOfOverallCompliance.notDefined'
+        defaultMessage='Not defined'
       />
     ),
   },
@@ -926,8 +926,8 @@ export const nomenclatureComplianceOptions = [
     value: 'Fully compliant',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.nomenclatureCompliance.fullyCompliant"
-        defaultMessage="Fully compliant"
+        id='pages.process.modellingAndValidation.nomenclatureCompliance.fullyCompliant'
+        defaultMessage='Fully compliant'
       />
     ),
   },
@@ -935,8 +935,8 @@ export const nomenclatureComplianceOptions = [
     value: 'Not compliant',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.nomenclatureCompliance.notCompliant"
-        defaultMessage="Not compliant"
+        id='pages.process.modellingAndValidation.nomenclatureCompliance.notCompliant'
+        defaultMessage='Not compliant'
       />
     ),
   },
@@ -944,8 +944,8 @@ export const nomenclatureComplianceOptions = [
     value: 'Not defined',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.nomenclatureCompliance.notDefined"
-        defaultMessage="Not defined"
+        id='pages.process.modellingAndValidation.nomenclatureCompliance.notDefined'
+        defaultMessage='Not defined'
       />
     ),
   },
@@ -956,8 +956,8 @@ export const methodologicalComplianceOptions = [
     value: 'Fully compliant',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.methodologicalCompliance.fullyCompliant"
-        defaultMessage="Fully compliant"
+        id='pages.process.modellingAndValidation.methodologicalCompliance.fullyCompliant'
+        defaultMessage='Fully compliant'
       />
     ),
   },
@@ -965,8 +965,8 @@ export const methodologicalComplianceOptions = [
     value: 'Not compliant',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.methodologicalCompliance.notCompliant"
-        defaultMessage="Not compliant"
+        id='pages.process.modellingAndValidation.methodologicalCompliance.notCompliant'
+        defaultMessage='Not compliant'
       />
     ),
   },
@@ -974,8 +974,8 @@ export const methodologicalComplianceOptions = [
     value: 'Not defined',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.methodologicalCompliance.notDefined"
-        defaultMessage="Not defined"
+        id='pages.process.modellingAndValidation.methodologicalCompliance.notDefined'
+        defaultMessage='Not defined'
       />
     ),
   },
@@ -986,8 +986,8 @@ export const reviewComplianceOptions = [
     value: 'Fully compliant',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.reviewCompliance.fullyCompliant"
-        defaultMessage="Fully compliant"
+        id='pages.process.modellingAndValidation.reviewCompliance.fullyCompliant'
+        defaultMessage='Fully compliant'
       />
     ),
   },
@@ -995,8 +995,8 @@ export const reviewComplianceOptions = [
     value: 'Not compliant',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.reviewCompliance.notCompliant"
-        defaultMessage="Not compliant"
+        id='pages.process.modellingAndValidation.reviewCompliance.notCompliant'
+        defaultMessage='Not compliant'
       />
     ),
   },
@@ -1004,8 +1004,8 @@ export const reviewComplianceOptions = [
     value: 'Not defined',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.reviewCompliance.notDefined"
-        defaultMessage="Not defined"
+        id='pages.process.modellingAndValidation.reviewCompliance.notDefined'
+        defaultMessage='Not defined'
       />
     ),
   },
@@ -1016,8 +1016,8 @@ export const documentationComplianceOptions = [
     value: 'Fully compliant',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.documentationCompliance.fullyCompliant"
-        defaultMessage="Fully compliant"
+        id='pages.process.modellingAndValidation.documentationCompliance.fullyCompliant'
+        defaultMessage='Fully compliant'
       />
     ),
   },
@@ -1025,8 +1025,8 @@ export const documentationComplianceOptions = [
     value: 'Not compliant',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.documentationCompliance.notCompliant"
-        defaultMessage="Not compliant"
+        id='pages.process.modellingAndValidation.documentationCompliance.notCompliant'
+        defaultMessage='Not compliant'
       />
     ),
   },
@@ -1034,8 +1034,8 @@ export const documentationComplianceOptions = [
     value: 'Not defined',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.documentationCompliance.notDefined"
-        defaultMessage="Not defined"
+        id='pages.process.modellingAndValidation.documentationCompliance.notDefined'
+        defaultMessage='Not defined'
       />
     ),
   },
@@ -1046,8 +1046,8 @@ export const qualityComplianceOptions = [
     value: 'Fully compliant',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.qualityCompliance.fullyCompliant"
-        defaultMessage="Fully compliant"
+        id='pages.process.modellingAndValidation.qualityCompliance.fullyCompliant'
+        defaultMessage='Fully compliant'
       />
     ),
   },
@@ -1055,8 +1055,8 @@ export const qualityComplianceOptions = [
     value: 'Not compliant',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.qualityCompliance.notCompliant"
-        defaultMessage="Not compliant"
+        id='pages.process.modellingAndValidation.qualityCompliance.notCompliant'
+        defaultMessage='Not compliant'
       />
     ),
   },
@@ -1064,8 +1064,8 @@ export const qualityComplianceOptions = [
     value: 'Not defined',
     label: (
       <FormattedMessage
-        id="pages.process.modellingAndValidation.qualityCompliance.notDefined"
-        defaultMessage="Not defined"
+        id='pages.process.modellingAndValidation.qualityCompliance.notDefined'
+        defaultMessage='Not defined'
       />
     ),
   },

@@ -38,26 +38,26 @@ const TableList: FC = () => {
   const actionRef = useRef<ActionType>();
   const flowsColumns: ProColumns<FlowTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
+      title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
       dataIndex: 'index',
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name" />,
+      title: <FormattedMessage id='pages.table.title.name' defaultMessage='Name' />,
       dataIndex: 'name',
       sorter: false,
       search: false,
       render: (_, row) => {
         return [
-          <Tooltip key={0} placement="topLeft" title={row.synonyms}>
+          <Tooltip key={0} placement='topLeft' title={row.synonyms}>
             {row.name}
           </Tooltip>,
         ];
       },
     },
     {
-      title: <FormattedMessage id="pages.flow.flowType" defaultMessage="Flow type" />,
+      title: <FormattedMessage id='pages.flow.flowType' defaultMessage='Flow type' />,
       dataIndex: 'flowType',
       sorter: false,
       search: false,
@@ -72,7 +72,7 @@ const TableList: FC = () => {
     },
     {
       title: (
-        <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />
+        <FormattedMessage id='pages.table.title.classification' defaultMessage='Classification' />
       ),
       dataIndex: 'classification',
       sorter: false,
@@ -85,21 +85,21 @@ const TableList: FC = () => {
     },
 
     {
-      title: <FormattedMessage id="pages.flow.CASNumber" defaultMessage="CAS Number" />,
+      title: <FormattedMessage id='pages.flow.CASNumber' defaultMessage='CAS Number' />,
       dataIndex: 'CASNumber',
       sorter: false,
       search: false,
     },
     {
       title: (
-        <FormattedMessage id="pages.flow.locationOfSupply" defaultMessage="Location of supply" />
+        <FormattedMessage id='pages.flow.locationOfSupply' defaultMessage='Location of supply' />
       ),
       dataIndex: 'locationOfSupply',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.version" defaultMessage="Version" />,
+      title: <FormattedMessage id='pages.table.title.version' defaultMessage='Version' />,
       dataIndex: 'version',
       sorter: false,
       search: false,
@@ -109,7 +109,7 @@ const TableList: FC = () => {
             {row.version}
             <AllVersionsList
               lang={lang}
-              searchTableName="flows"
+              searchTableName='flows'
               columns={getAllVersionsColumns(flowsColumns, 6)}
               searchColume={`
                 id,
@@ -127,7 +127,7 @@ const TableList: FC = () => {
               id={row.id}
             >
               <FlowsCreate
-                actionType="createVersion"
+                actionType='createVersion'
                 id={row.id}
                 version={row.version}
                 lang={lang}
@@ -139,14 +139,14 @@ const TableList: FC = () => {
       },
     },
     {
-      title: <FormattedMessage id="pages.table.title.updatedAt" defaultMessage="Updated at" />,
+      title: <FormattedMessage id='pages.table.title.updatedAt' defaultMessage='Updated at' />,
       dataIndex: 'modifiedAt',
       valueType: 'dateTime',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
+      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
@@ -168,7 +168,7 @@ const TableList: FC = () => {
                 actionRef={actionRef}
               />
               <FlowsCreate
-                actionType="copy"
+                actionType='copy'
                 id={row.id}
                 version={row.version}
                 lang={lang}
@@ -211,7 +211,7 @@ const TableList: FC = () => {
               lang={lang}
             />
             <FlowsCreate
-              actionType="copy"
+              actionType='copy'
               id={row.id}
               version={row.version}
               lang={lang}
@@ -258,7 +258,7 @@ const TableList: FC = () => {
         headerTitle={
           <>
             {getDataTitle(dataSource)} /{' '}
-            <FormattedMessage id="menu.tgdata.flows" defaultMessage="Flows" />
+            <FormattedMessage id='menu.tgdata.flows' defaultMessage='Flows' />
           </>
         }
         actionRef={actionRef}

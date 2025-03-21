@@ -107,26 +107,26 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
 
   const FlowsColumns: ProColumns<FlowTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
+      title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
       dataIndex: 'index',
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name" />,
+      title: <FormattedMessage id='pages.table.title.name' defaultMessage='Name' />,
       dataIndex: 'name',
       sorter: false,
       search: false,
       render: (_, row) => {
         return [
-          <Tooltip key={0} placement="topLeft" title={row.synonyms}>
+          <Tooltip key={0} placement='topLeft' title={row.synonyms}>
             {row.name}
           </Tooltip>,
         ];
       },
     },
     {
-      title: <FormattedMessage id="pages.flow.flowType" defaultMessage="Flow type" />,
+      title: <FormattedMessage id='pages.flow.flowType' defaultMessage='Flow type' />,
       dataIndex: 'flowType',
       sorter: false,
       search: false,
@@ -141,20 +141,20 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
     },
     {
       title: (
-        <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />
+        <FormattedMessage id='pages.table.title.classification' defaultMessage='Classification' />
       ),
       dataIndex: 'classification',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.flow.CASNumber" defaultMessage="CAS Number" />,
+      title: <FormattedMessage id='pages.flow.CASNumber' defaultMessage='CAS Number' />,
       dataIndex: 'CASNumber',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.version" defaultMessage="Version" />,
+      title: <FormattedMessage id='pages.table.title.version' defaultMessage='Version' />,
       dataIndex: 'version',
       sorter: false,
       search: false,
@@ -167,7 +167,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
     //   search: false,
     // },
     {
-      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
+      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
@@ -205,10 +205,10 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
   const tabList = [
     {
       key: 'tg',
-      tab: <FormattedMessage id="pages.tab.title.tgdata" defaultMessage="TianGong Data" />,
+      tab: <FormattedMessage id='pages.tab.title.tgdata' defaultMessage='TianGong Data' />,
     },
-    { key: 'my', tab: <FormattedMessage id="pages.tab.title.mydata" defaultMessage="My Data" /> },
-    { key: 'te', tab: <FormattedMessage id="pages.tab.title.tedata" defaultMessage="TE Data" /> },
+    { key: 'my', tab: <FormattedMessage id='pages.tab.title.mydata' defaultMessage='My Data' /> },
+    { key: 'te', tab: <FormattedMessage id='pages.tab.title.tedata' defaultMessage='TE Data' /> },
   ];
 
   const databaseList: Record<string, React.ReactNode> = {
@@ -216,7 +216,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
       <>
         <Card>
           <Row align={'middle'}>
-            <Col flex="auto" style={{ marginRight: '10px' }}>
+            <Col flex='auto' style={{ marginRight: '10px' }}>
               <Search
                 name={'tg'}
                 size={'large'}
@@ -231,13 +231,13 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
                 enterButton
               />
             </Col>
-            <Col flex="100px">
+            <Col flex='100px'>
               <Checkbox
                 onChange={(e) => {
                   setOpenAI(e.target.checked);
                 }}
               >
-                <FormattedMessage id="pages.search.openAI" defaultMessage="AI Search" />
+                <FormattedMessage id='pages.search.openAI' defaultMessage='AI Search' />
               </Checkbox>
             </Col>
           </Row>
@@ -412,22 +412,22 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
       {buttonType === 'icon' ? (
         <Tooltip
           title={
-            buttonText ?? <FormattedMessage id="pages.button.select" defaultMessage="Select" />
+            buttonText ?? <FormattedMessage id='pages.button.select' defaultMessage='Select' />
           }
         >
-          <Button shape="circle" icon={<DatabaseOutlined />} size="small" onClick={onSelect} />
+          <Button shape='circle' icon={<DatabaseOutlined />} size='small' onClick={onSelect} />
         </Tooltip>
       ) : (
         <Button onClick={onSelect}>
-          {buttonText ?? <FormattedMessage id="pages.button.select" defaultMessage="Select" />}
+          {buttonText ?? <FormattedMessage id='pages.button.select' defaultMessage='Select' />}
         </Button>
       )}
       <Drawer
         getContainer={() => document.body}
         title={
-          <FormattedMessage id="pages.flow.drawer.title.select" defaultMessage="Selete Flow" />
+          <FormattedMessage id='pages.flow.drawer.title.select' defaultMessage='Selete Flow' />
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={
           <Button
@@ -443,7 +443,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
               {' '}
-              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
             </Button>
             <Button
               onClick={() => {
@@ -451,9 +451,9 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
                 onData(keys[0], keys[1]);
                 setDrawerVisible(false);
               }}
-              type="primary"
+              type='primary'
             >
-              <FormattedMessage id="pages.button.submit" defaultMessage="Submit" />
+              <FormattedMessage id='pages.button.submit' defaultMessage='Submit' />
             </Button>
           </Space>
         }

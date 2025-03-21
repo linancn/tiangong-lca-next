@@ -95,12 +95,12 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
     <>
       <Tooltip title={<FormattedMessage id={'pages.button.edit'} defaultMessage={'Edit'} />}>
         {buttonType === 'icon' ? (
-          <Button shape="circle" icon={<FormOutlined />} size="small" onClick={onEdit} />
+          <Button shape='circle' icon={<FormOutlined />} size='small' onClick={onEdit} />
         ) : (
           <Button onClick={onEdit}>
             <FormattedMessage
               id={buttonType ? buttonType : 'pages.button.edit'}
-              defaultMessage="Edit"
+              defaultMessage='Edit'
             />
           </Button>
         )}
@@ -109,7 +109,7 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
         destroyOnClose={true}
         getContainer={() => document.body}
         title={<FormattedMessage id={'pages.button.edit'} defaultMessage={'Edit'} />}
-        width="90%"
+        width='90%'
         closable={false}
         extra={
           <Button
@@ -129,20 +129,20 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
               }}
             >
               <FormattedMessage
-                id="pages.button.updateReference"
-                defaultMessage="Update reference"
+                id='pages.button.updateReference'
+                defaultMessage='Update reference'
               />
             </Button>
             <Button onClick={() => setDrawerVisible(false)}>
               {' '}
-              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
             </Button>
             {/* <Button onClick={onReset}>
               {' '}
               <FormattedMessage id="pages.button.reset" defaultMessage="Reset" />
             </Button> */}
-            <Button onClick={() => formRefEdit.current?.submit()} type="primary">
-              <FormattedMessage id="pages.button.save" defaultMessage="Save" />
+            <Button onClick={() => formRefEdit.current?.submit()} type='primary'>
+              <FormattedMessage id='pages.button.save' defaultMessage='Save' />
             </Button>
           </Space>
         }

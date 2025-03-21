@@ -68,20 +68,20 @@ const ExchangeSelect: FC<Props> = ({
 
   const processExchangeColumns: ProColumns<ProcessExchangeTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
+      title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
       dataIndex: 'index',
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Name" />,
+      title: <FormattedMessage id='pages.table.title.name' defaultMessage='Name' />,
       dataIndex: 'referenceToFlowDataSet',
       sorter: false,
       search: false,
       render: (_, row) => {
         return (
           <Space>
-            <Tooltip key={0} placement="topLeft" title={row?.generalComment ?? '-'}>
+            <Tooltip key={0} placement='topLeft' title={row?.generalComment ?? '-'}>
               {row?.referenceToFlowDataSet ?? '-'}
             </Tooltip>
             {
@@ -98,7 +98,7 @@ const ExchangeSelect: FC<Props> = ({
 
   const processExchangeColumnsSource: ProColumns<ProcessExchangeTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
+      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
@@ -118,7 +118,7 @@ const ExchangeSelect: FC<Props> = ({
 
   const processExchangeColumnsTarget: ProColumns<ProcessExchangeTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
+      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
@@ -195,21 +195,21 @@ const ExchangeSelect: FC<Props> = ({
     <>
       {optionType === 'create' ? (
         buttonType === 'icon' ? (
-          <Tooltip title={<FormattedMessage id="pages.button.create" defaultMessage="Create" />}>
-            <Button type="text" icon={<PlusOutlined />} size={'middle'} onClick={onSelect} />
+          <Tooltip title={<FormattedMessage id='pages.button.create' defaultMessage='Create' />}>
+            <Button type='text' icon={<PlusOutlined />} size={'middle'} onClick={onSelect} />
           </Tooltip>
         ) : (
           <Button onClick={onSelect}>
-            <FormattedMessage id="pages.button.create" defaultMessage="Create" />
+            <FormattedMessage id='pages.button.create' defaultMessage='Create' />
           </Button>
         )
       ) : buttonType === 'icon' ? (
-        <Tooltip title={<FormattedMessage id="pages.button.edit" defaultMessage="Edit" />}>
-          <Button shape="circle" icon={<EditOutlined />} size={'small'} onClick={onSelect} />
+        <Tooltip title={<FormattedMessage id='pages.button.edit' defaultMessage='Edit' />}>
+          <Button shape='circle' icon={<EditOutlined />} size={'small'} onClick={onSelect} />
         </Tooltip>
       ) : (
         <Button onClick={onSelect}>
-          <FormattedMessage id="pages.button.edit" defaultMessage="Edit" />
+          <FormattedMessage id='pages.button.edit' defaultMessage='Edit' />
         </Button>
       )}
 
@@ -218,17 +218,17 @@ const ExchangeSelect: FC<Props> = ({
         title={
           optionType === 'create' ? (
             <FormattedMessage
-              id="pages.flow.model.drawer.title.edge.exchange.create"
-              defaultMessage="Create exchange relation"
+              id='pages.flow.model.drawer.title.edge.exchange.create'
+              defaultMessage='Create exchange relation'
             />
           ) : (
             <FormattedMessage
-              id="pages.flow.model.drawer.title.edge.exchange.edit"
-              defaultMessage="Edit exchange relation"
+              id='pages.flow.model.drawer.title.edge.exchange.edit'
+              defaultMessage='Edit exchange relation'
             />
           )
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={
           <Button
@@ -243,7 +243,7 @@ const ExchangeSelect: FC<Props> = ({
         footer={
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
-              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
             </Button>
             <Button
               disabled={selectedSourceRowKeys.length === 0 || selectedTargetRowKeys.length === 0}
@@ -257,9 +257,9 @@ const ExchangeSelect: FC<Props> = ({
                 onData({ id: id, selectedSource: selectedSource, selectedTarget: selectedTarget });
                 setDrawerVisible(false);
               }}
-              type="primary"
+              type='primary'
             >
-              <FormattedMessage id="pages.button.submit" defaultMessage="Submit" />
+              <FormattedMessage id='pages.button.submit' defaultMessage='Submit' />
             </Button>
           </Space>
         }
@@ -269,8 +269,8 @@ const ExchangeSelect: FC<Props> = ({
             <Card
               title={
                 <FormattedMessage
-                  id="pages.flow.model.sourceOutputFlowName"
-                  defaultMessage="Source process output flow"
+                  id='pages.flow.model.sourceOutputFlowName'
+                  defaultMessage='Source process output flow'
                 />
               }
               bordered={false}
@@ -299,8 +299,8 @@ const ExchangeSelect: FC<Props> = ({
             <Card
               title={
                 <FormattedMessage
-                  id="pages.flow.model.targetInputFlowName"
-                  defaultMessage="Target process input flow"
+                  id='pages.flow.model.targetInputFlowName'
+                  defaultMessage='Target process input flow'
                 />
               }
               bordered={false}

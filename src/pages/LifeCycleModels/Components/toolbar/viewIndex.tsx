@@ -386,7 +386,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
   }, [nodeCount]);
 
   return (
-    <Space direction="vertical" size={'middle'}>
+    <Space direction='vertical' size={'middle'}>
       <ToolbarViewInfo lang={lang} data={infoData} />
       <ProcessView
         id={nodes.find((node) => node.selected)?.data?.id ?? ''}

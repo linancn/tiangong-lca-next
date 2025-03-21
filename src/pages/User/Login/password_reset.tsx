@@ -100,13 +100,13 @@ const PasswordSet: FC = () => {
             <div style={{ marginTop: '80px' }}>
               <Spin spinning={spinning}>
                 <LoginForm
-                  layout="vertical"
+                  layout='vertical'
                   logo={isDarkMode ? '/logo_dark.svg' : Settings.logo}
-                  title={<FormattedMessage id="pages.login.title" defaultMessage="TianGong LCA" />}
+                  title={<FormattedMessage id='pages.login.title' defaultMessage='TianGong LCA' />}
                   subTitle={
-                    <FormattedMessage id="pages.login.subTitle" defaultMessage="TianGong LCA" />
+                    <FormattedMessage id='pages.login.subTitle' defaultMessage='TianGong LCA' />
                   }
-                  name="password_reset"
+                  name='password_reset'
                   fields={initData}
                   onFinish={async (values) => {
                     await handleSubmit(values as API.LoginParams);
@@ -139,7 +139,7 @@ const PasswordSet: FC = () => {
                     ]}
                   />
                   <ProFormText
-                    name="email"
+                    name='email'
                     fieldProps={{
                       size: 'middle',
                       prefix: <MailOutlined />,
@@ -151,14 +151,14 @@ const PasswordSet: FC = () => {
                     disabled={true}
                   />
                   <ProFormText.Password
-                    name="newPassword"
+                    name='newPassword'
                     fieldProps={{
                       size: 'middle',
                       prefix: <LockOutlined />,
                       strengthText: (
                         <FormattedMessage
-                          id="pages.login.password.strengthText"
-                          defaultMessage="Password must contain at least 8 characters, including lowercase and uppercase letters, digits, and symbols."
+                          id='pages.login.password.strengthText'
+                          defaultMessage='Password must contain at least 8 characters, including lowercase and uppercase letters, digits, and symbols.'
                         />
                       ),
                       statusRender: (value) => {
@@ -176,8 +176,8 @@ const PasswordSet: FC = () => {
                           return (
                             <div style={{ color: token.colorWarning }}>
                               <FormattedMessage
-                                id="pages.login.password.strengthMedium"
-                                defaultMessage="Medium"
+                                id='pages.login.password.strengthMedium'
+                                defaultMessage='Medium'
                               />
                             </div>
                           );
@@ -186,8 +186,8 @@ const PasswordSet: FC = () => {
                           return (
                             <div style={{ color: token.colorSuccess }}>
                               <FormattedMessage
-                                id="pages.login.password.strengthStrong"
-                                defaultMessage="Strong"
+                                id='pages.login.password.strengthStrong'
+                                defaultMessage='Strong'
                               />
                             </div>
                           );
@@ -195,8 +195,8 @@ const PasswordSet: FC = () => {
                         return (
                           <div style={{ color: token.colorError }}>
                             <FormattedMessage
-                              id="pages.login.password.strengthWeak"
-                              defaultMessage="Weak"
+                              id='pages.login.password.strengthWeak'
+                              defaultMessage='Weak'
                             />
                           </div>
                         );
@@ -211,8 +211,8 @@ const PasswordSet: FC = () => {
                         required: true,
                         message: (
                           <FormattedMessage
-                            id="pages.login.password.required"
-                            defaultMessage="Please input your password!"
+                            id='pages.login.password.required'
+                            defaultMessage='Please input your password!'
                           />
                         ),
                       },
@@ -221,8 +221,8 @@ const PasswordSet: FC = () => {
                           /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?])[a-zA-Z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]{8,}$/,
                         message: (
                           <FormattedMessage
-                            id="pages.login.password.validation"
-                            defaultMessage="Password is invalid!"
+                            id='pages.login.password.validation'
+                            defaultMessage='Password is invalid!'
                           />
                         ),
                       },
@@ -230,7 +230,7 @@ const PasswordSet: FC = () => {
                     hasFeedback
                   />
                   <ProFormText.Password
-                    name="confirmNewPassword"
+                    name='confirmNewPassword'
                     fieldProps={{
                       size: 'middle',
                       prefix: <LockOutlined />,
@@ -246,8 +246,8 @@ const PasswordSet: FC = () => {
                         required: true,
                         message: (
                           <FormattedMessage
-                            id="pages.login.confirmPassword.required"
-                            defaultMessage="Please confirm your password!"
+                            id='pages.login.confirmPassword.required'
+                            defaultMessage='Please confirm your password!'
                           />
                         ),
                       },

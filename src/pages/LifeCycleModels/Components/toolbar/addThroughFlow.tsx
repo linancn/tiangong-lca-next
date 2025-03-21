@@ -86,51 +86,51 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
 
   const FlowsColumns: ProColumns<FlowTable>[] = [
     {
-      title: <FormattedMessage id="pages.table.title.index" defaultMessage="Index" />,
+      title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
       dataIndex: 'index',
       valueType: 'index',
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.name" defaultMessage="Base name" />,
+      title: <FormattedMessage id='pages.table.title.name' defaultMessage='Base name' />,
       dataIndex: 'name',
       sorter: false,
       search: false,
       render: (_, row) => [
-        <Tooltip key={0} placement="topLeft" title={row.synonyms}>
+        <Tooltip key={0} placement='topLeft' title={row.synonyms}>
           {row.name}
         </Tooltip>,
       ],
     },
     {
-      title: <FormattedMessage id="pages.flow.flowType" defaultMessage="Flow type" />,
+      title: <FormattedMessage id='pages.flow.flowType' defaultMessage='Flow type' />,
       dataIndex: 'flowType',
       sorter: false,
       search: false,
     },
     {
       title: (
-        <FormattedMessage id="pages.table.title.classification" defaultMessage="Classification" />
+        <FormattedMessage id='pages.table.title.classification' defaultMessage='Classification' />
       ),
       dataIndex: 'classification',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.flow.CASNumber" defaultMessage="CAS Number" />,
+      title: <FormattedMessage id='pages.flow.CASNumber' defaultMessage='CAS Number' />,
       dataIndex: 'CASNumber',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created at" />,
+      title: <FormattedMessage id='pages.table.title.createdAt' defaultMessage='Created at' />,
       dataIndex: 'created_at',
       valueType: 'dateTime',
       sorter: false,
       search: false,
     },
     {
-      title: <FormattedMessage id="pages.table.title.option" defaultMessage="Option" />,
+      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
@@ -146,9 +146,9 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
   const tabList = [
     {
       key: 'tg',
-      tab: <FormattedMessage id="pages.tab.title.tgdata" defaultMessage="TianGong Data" />,
+      tab: <FormattedMessage id='pages.tab.title.tgdata' defaultMessage='TianGong Data' />,
     },
-    { key: 'my', tab: <FormattedMessage id="pages.tab.title.mydata" defaultMessage="My Data" /> },
+    { key: 'my', tab: <FormattedMessage id='pages.tab.title.mydata' defaultMessage='My Data' /> },
   ];
 
   const databaseList: Record<string, React.ReactNode> = {
@@ -156,7 +156,7 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
       <>
         <Card>
           <Row align={'middle'}>
-            <Col flex="auto" style={{ marginRight: '10px' }}>
+            <Col flex='auto' style={{ marginRight: '10px' }}>
               <Search
                 name={'tg'}
                 size={'large'}
@@ -171,13 +171,13 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
                 enterButton
               />
             </Col>
-            <Col flex="100px">
+            <Col flex='100px'>
               <Checkbox
                 onChange={(e) => {
                   setOpenAI(e.target.checked);
                 }}
               >
-                <FormattedMessage id="pages.search.openAI" defaultMessage="AI Search" />
+                <FormattedMessage id='pages.search.openAI' defaultMessage='AI Search' />
               </Checkbox>
             </Col>
           </Row>
@@ -262,29 +262,29 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
     <>
       {buttonType === 'icon' ? (
         <Tooltip
-          title={<FormattedMessage id="pages.button.model.add" defaultMessage="Add node" />}
-          placement="left"
+          title={<FormattedMessage id='pages.button.model.add' defaultMessage='Add node' />}
+          placement='left'
         >
           <Button
-            shape="circle"
+            shape='circle'
             icon={<PlusOutlined />}
-            size="small"
+            size='small'
             style={{ boxShadow: 'none' }}
             onClick={onSelect}
           />
         </Tooltip>
       ) : (
         <Button onClick={onSelect}>
-          <FormattedMessage id="pages.button.model.add" defaultMessage="Add node" />
+          <FormattedMessage id='pages.button.model.add' defaultMessage='Add node' />
         </Button>
       )}
 
       <Drawer
         getContainer={() => document.body}
         title={
-          <FormattedMessage id="pages.flow.drawer.title.select" defaultMessage="Selete flow" />
+          <FormattedMessage id='pages.flow.drawer.title.select' defaultMessage='Selete flow' />
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={
           <Button
@@ -300,16 +300,16 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
               {' '}
-              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
             </Button>
             <Button
               onClick={() => {
                 onData(selectedRowKeys);
                 setDrawerVisible(false);
               }}
-              type="primary"
+              type='primary'
             >
-              <FormattedMessage id="pages.button.submit" defaultMessage="Submit" />
+              <FormattedMessage id='pages.button.submit' defaultMessage='Submit' />
             </Button>
           </Space>
         }

@@ -64,13 +64,13 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
     <>
       <Tooltip
         title={
-          <FormattedMessage id="pages.lifeCycleModel.targetAmount" defaultMessage="Target amount" />
+          <FormattedMessage id='pages.lifeCycleModel.targetAmount' defaultMessage='Target amount' />
         }
-        placement="left"
+        placement='left'
       >
         <Button
-          type="primary"
-          size="small"
+          type='primary'
+          size='small'
           icon={<StarOutlined />}
           style={{ boxShadow: 'none' }}
           disabled={!refNode}
@@ -80,23 +80,23 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
       <Drawer
         getContainer={() => document.body}
         title={
-          <FormattedMessage id="pages.lifeCycleModel.targetAmount" defaultMessage="Target amount" />
+          <FormattedMessage id='pages.lifeCycleModel.targetAmount' defaultMessage='Target amount' />
         }
-        width="90%"
+        width='90%'
         closable={false}
         extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={onDrawerClose} />}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={onDrawerClose}>
-              <FormattedMessage id="pages.button.cancel" defaultMessage="Cancel" />
+              <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
             </Button>
             <Button
               onClick={() => {
                 formRefEdit.current?.submit();
               }}
-              type="primary"
+              type='primary'
             >
-              <FormattedMessage id="pages.button.save" defaultMessage="Save"></FormattedMessage>
+              <FormattedMessage id='pages.button.save' defaultMessage='Save'></FormattedMessage>
             </Button>
           </Space>
         }
@@ -127,8 +127,8 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
           <Form.Item
             label={
               <FormattedMessage
-                id="pages.lifeCycleModel.targetAmount"
-                defaultMessage="Target amount"
+                id='pages.lifeCycleModel.targetAmount'
+                defaultMessage='Target amount'
               />
             }
             name={'targetAmount'}
@@ -138,8 +138,8 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
           <Form.Item
             label={
               <FormattedMessage
-                id="pages.lifeCycleModel.originalAmount"
-                defaultMessage="Original amount"
+                id='pages.lifeCycleModel.originalAmount'
+                defaultMessage='Original amount'
               />
             }
             name={'originalAmount'}
@@ -149,8 +149,8 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
           <Form.Item
             label={
               <FormattedMessage
-                id="pages.lifeCycleModel.scalingFactor"
-                defaultMessage="Scaling factor"
+                id='pages.lifeCycleModel.scalingFactor'
+                defaultMessage='Scaling factor'
               />
             }
             name={'scalingFactor'}
@@ -158,22 +158,22 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
             <Input disabled={true} />
           </Form.Item>
           <Card
-            size="small"
+            size='small'
             title={
               <FormattedMessage
-                id="pages.flow.model.drawer.title.refFlow"
-                defaultMessage="Ref flow"
+                id='pages.flow.model.drawer.title.refFlow'
+                defaultMessage='Ref flow'
               />
             }
           >
-            <Space direction="horizontal">
+            <Space direction='horizontal'>
               <Descriptions bordered size={'small'} column={1} style={{ width: '450px' }}>
                 <Descriptions.Item
                   key={0}
                   label={
                     <FormattedMessage
-                      id="pages.process.view.exchange.refObjectId"
-                      defaultMessage="Ref object id"
+                      id='pages.process.view.exchange.refObjectId'
+                      defaultMessage='Ref object id'
                     />
                   }
                   labelStyle={{ width: '140px' }}
@@ -186,7 +186,7 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
                   id={refExchange?.referenceToFlowDataSet?.['@refObjectId']}
                   version={refExchange?.referenceToFlowDataSet?.['@version']}
                   lang={lang}
-                  buttonType="text"
+                  buttonType='text'
                 />
               )}
             </Space>
@@ -196,7 +196,7 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
               <Descriptions.Item
                 key={0}
                 label={
-                  <FormattedMessage id="pages.process.view.exchange.type" defaultMessage="Type" />
+                  <FormattedMessage id='pages.process.view.exchange.type' defaultMessage='Type' />
                 }
                 labelStyle={{ width: '140px' }}
               >
@@ -208,7 +208,7 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
               <Descriptions.Item
                 key={0}
                 label={
-                  <FormattedMessage id="pages.process.view.exchange.uri" defaultMessage="URI" />
+                  <FormattedMessage id='pages.process.view.exchange.uri' defaultMessage='URI' />
                 }
                 labelStyle={{ width: '140px' }}
               >
@@ -219,16 +219,16 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
             <Descriptions bordered size={'small'} column={1}>
               <Descriptions.Item
                 key={0}
-                label={<FormattedMessage id="pages.version" defaultMessage="Version" />}
+                label={<FormattedMessage id='pages.version' defaultMessage='Version' />}
                 labelStyle={{ width: '120px' }}
               >
                 {refExchange?.referenceToFlowDataSet?.['@version'] ?? '-'}
               </Descriptions.Item>
             </Descriptions>
-            <Divider orientationMargin="0" orientation="left" plain>
+            <Divider orientationMargin='0' orientation='left' plain>
               <FormattedMessage
-                id="pages.process.view.exchange.shortDescription"
-                defaultMessage="Short description"
+                id='pages.process.view.exchange.shortDescription'
+                defaultMessage='Short description'
               />
             </Divider>
             <LangTextItemDescription
@@ -243,20 +243,20 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
           </Card>
           <br />
           <Card
-            size="small"
-            title={<FormattedMessage id="pages.lifeCycleModel.refNode" defaultMessage="Ref node" />}
+            size='small'
+            title={<FormattedMessage id='pages.lifeCycleModel.refNode' defaultMessage='Ref node' />}
           >
-            <Divider orientationMargin="0" orientation="left" plain>
-              <FormattedMessage id="pages.lifeCycleModel.information.name" defaultMessage="Name" />
+            <Divider orientationMargin='0' orientation='left' plain>
+              <FormattedMessage id='pages.lifeCycleModel.information.name' defaultMessage='Name' />
             </Divider>
             <LangTextItemDescription
               data={initData.processInformation?.dataSetInformation?.name?.baseName}
             />
             <br />
-            <Divider orientationMargin="0" orientation="left" plain>
+            <Divider orientationMargin='0' orientation='left' plain>
               <FormattedMessage
-                id="pages.lifeCycleModel.information.generalComment"
-                defaultMessage="General Comment"
+                id='pages.lifeCycleModel.information.generalComment'
+                defaultMessage='General Comment'
               />
             </Divider>
             <LangTextItemDescription

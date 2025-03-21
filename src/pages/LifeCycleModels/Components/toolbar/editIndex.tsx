@@ -743,7 +743,7 @@ const ToolbarEdit: FC<Props> = ({
       },
     };
 
-    console.log(thisAction, 'thisAction',action);
+    console.log(thisAction, 'thisAction', action);
 
     if (thisAction === 'edit') {
       updateLifeCycleModel({ ...newData, id: thisId, version: thisVersion }).then((result: any) => {
@@ -969,7 +969,7 @@ const ToolbarEdit: FC<Props> = ({
   }, [nodeCount]);
 
   return (
-    <Space direction="vertical" size={'middle'}>
+    <Space direction='vertical' size={'middle'}>
       <ToolbarEditInfo action={thisAction} data={infoData} onData={updateInfoData} lang={lang} />
       <ProcessView
         id={nodes.find((node) => node.selected)?.data?.id ?? ''}
@@ -1013,25 +1013,25 @@ const ToolbarEdit: FC<Props> = ({
           </Tooltip> */}
       <Tooltip
         title={
-          <FormattedMessage id="pages.button.updateReference" defaultMessage="Update reference" />
+          <FormattedMessage id='pages.button.updateReference' defaultMessage='Update reference' />
         }
-        placement="left"
+        placement='left'
       >
         <Button
-          type="primary"
-          size="small"
+          type='primary'
+          size='small'
           icon={<CopyOutlined />}
           style={{ boxShadow: 'none' }}
           onClick={updateReference}
         />
       </Tooltip>
       <Tooltip
-        title={<FormattedMessage id="pages.button.model.delete" defaultMessage="Delete element" />}
-        placement="left"
+        title={<FormattedMessage id='pages.button.model.delete' defaultMessage='Delete element' />}
+        placement='left'
       >
         <Button
-          type="primary"
-          size="small"
+          type='primary'
+          size='small'
           icon={<DeleteOutlined />}
           style={{ boxShadow: 'none' }}
           disabled={
@@ -1044,12 +1044,12 @@ const ToolbarEdit: FC<Props> = ({
       <br />
 
       <Tooltip
-        title={<FormattedMessage id="pages.button.model.save" defaultMessage="Save data" />}
-        placement="left"
+        title={<FormattedMessage id='pages.button.model.save' defaultMessage='Save data' />}
+        placement='left'
       >
         <Button
-          type="primary"
-          size="small"
+          type='primary'
+          size='small'
           icon={<SaveOutlined />}
           style={{ boxShadow: 'none' }}
           onClick={saveData}

@@ -16,29 +16,29 @@ const ScopeItemForm: FC<Props> = ({ name }) => {
           <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
             {subFields.map((subField, index) => (
               <Row key={subField.key}>
-                <Col flex="50" style={{ marginRight: '10px' }}>
+                <Col flex='50' style={{ marginRight: '10px' }}>
                   {index === 0 && (
                     <FormattedMessage
-                      id="pages.process.modellingAndValidation.validation.review.scope.name"
-                      defaultMessage="Scope name"
+                      id='pages.process.modellingAndValidation.validation.review.scope.name'
+                      defaultMessage='Scope name'
                     />
                   )}
                   <Form.Item noStyle name={[subField.name, '@name']}>
                     <Select options={scopeNameOptions} />
                   </Form.Item>
                 </Col>
-                <Col flex="50" style={{ marginRight: '10px' }}>
+                <Col flex='50' style={{ marginRight: '10px' }}>
                   {index === 0 && (
                     <FormattedMessage
-                      id="pages.process.modellingAndValidation.validation.review.scope.method.name"
-                      defaultMessage="Method name"
+                      id='pages.process.modellingAndValidation.validation.review.scope.method.name'
+                      defaultMessage='Method name'
                     />
                   )}
                   <Form.Item noStyle name={[subField.name, 'common:method', '@name']}>
                     <Select options={methodNameOptions} />
                   </Form.Item>
                 </Col>
-                <Col flex="20px">
+                <Col flex='20px'>
                   {index === 0 && <br />}
                   <CloseOutlined
                     style={{ marginTop: '10px' }}
@@ -49,13 +49,13 @@ const ScopeItemForm: FC<Props> = ({ name }) => {
                 </Col>
               </Row>
             ))}
-            <Button type="dashed" onClick={() => subOpt.add()} block>
-              + <FormattedMessage id="pages.button.item.add" defaultMessage="Add" />{' '}
+            <Button type='dashed' onClick={() => subOpt.add()} block>
+              + <FormattedMessage id='pages.button.item.add' defaultMessage='Add' />{' '}
               <FormattedMessage
-                id="pages.process.modellingAndValidation.validation.review.scope"
-                defaultMessage="Scope of review"
+                id='pages.process.modellingAndValidation.validation.review.scope'
+                defaultMessage='Scope of review'
               />{' '}
-              <FormattedMessage id="pages.button.item.label" defaultMessage="Item" />
+              <FormattedMessage id='pages.button.item.label' defaultMessage='Item' />
             </Button>
           </div>
         )}
