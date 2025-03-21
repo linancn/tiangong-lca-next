@@ -152,6 +152,7 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData, action }) => {
             }}
           >
             <LifeCycleModelForm
+              formType={action}
               lang={lang}
               activeTabKey={activeTabKey}
               formRef={formRefEdit}

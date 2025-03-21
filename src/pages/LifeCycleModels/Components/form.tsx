@@ -27,6 +27,7 @@ type Props = {
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;
   onTabChange: (key: string) => void;
+  formType?: string
 };
 export const LifeCycleModelForm: FC<Props> = ({
   lang,
@@ -34,6 +35,7 @@ export const LifeCycleModelForm: FC<Props> = ({
   formRef,
   onData,
   onTabChange,
+  formType
 }) => {
   const { token } = theme.useToken();
   const [baseNameError, setBaseNameError] = useState(false);
@@ -556,6 +558,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             <Input disabled={true} style={{ color: token.colorTextDescription }} />
           </Form.Item>
           <SourceSelectForm
+            defaultSourceName={formType === 'create' ? 'ILCD format' : undefined}
             lang={lang}
             formRef={formRef}
             label={
