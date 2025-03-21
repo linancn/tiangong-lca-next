@@ -84,7 +84,7 @@ export default {
   // 验证器消息
   'pages.flow.validator.version.required': '请输入版本',
   'pages.flow.validator.uuid.required': '请输入UUID',
-  'pages.flow.validator.name.required': '请输入名称',
+  'pages.flow.validator.name.required': '请输入基础名称',
   'pages.flow.validator.treatmentStandardsRoutes.required': '请输入处理、标准、路线',
   'pages.flow.validator.mixAndLocationTypes.required': '请输入混合和位置类型',
   'pages.flow.validator.category.required': '请输入基础流分类',

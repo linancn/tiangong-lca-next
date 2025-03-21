@@ -38,7 +38,7 @@
               {
                 "required": true,
                 "messageKey": "pages.flow.validator.name.required",
-                "defaultMessage": "Please input name"
+                "defaultMessage": "Please input base name"
               },
               {
                 "warningOnly": true,

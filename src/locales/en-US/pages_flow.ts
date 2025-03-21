@@ -84,7 +84,7 @@ export default {
   // Validator messages
   'pages.flow.validator.version.required': 'Please input version',
   'pages.flow.validator.uuid.required': 'Please input UUID',
-  'pages.flow.validator.name.required': 'Please input name',
+  'pages.flow.validator.name.required': 'Please input base name',
   'pages.flow.validator.treatmentStandardsRoutes.required': 'Please input treatment,standards,routes',
   'pages.flow.validator.mixAndLocationTypes.required': 'Please input mix and location types',
   'pages.flow.validator.category.required': 'Please input elementary flow categorization',
