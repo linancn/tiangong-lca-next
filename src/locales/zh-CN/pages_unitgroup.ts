@@ -109,4 +109,6 @@ export default {
   'pages.unitgroup.validator.referenceToDataSetFormat.required': '请输入数据集格式',
   'pages.unitgroup.validator.dataSetVersion.required': '请输入数据集版本',
   'pages.unitgroup.validator.referenceToOwnershipOfDataSet.required': '请输入数据集拥有者',
+  'pages.unitgroups.validator.unit.required': '请选择单位',
+  'pages.unitgroups.validator.unit.quantitativeReference.required': '单位需要有且仅有一条量值参考打开',
 };

@@ -109,4 +109,6 @@ export default {
   'pages.unitgroup.validator.referenceToDataSetFormat.required': 'Please input data set format(s)',
   'pages.unitgroup.validator.dataSetVersion.required': 'Please input data set version',
   'pages.unitgroup.validator.referenceToOwnershipOfDataSet.required': 'Please input owner of data set',
+  'pages.unitgroups.validator.unit.required': 'Please select unit',
+  'pages.unitgroups.validator.unit.quantitativeReference.required': 'Unit needs to have exactly one quantitative reference open',
 };

@@ -1,4 +1,5 @@
 export default {
+  'pages.button.deleteMessage': '您确定要删除此数据吗？',
   'pages.layouts.userLayout.title': '',
   'pages.404.buttonText': '返回首页',
   'pages.404.subTitle': '抱歉，您访问的页面不存在。',
