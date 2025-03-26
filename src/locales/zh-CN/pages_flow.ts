@@ -41,6 +41,7 @@ export default {
   'pages.flow.view.flowInformation.mixAndLocationTypes': '混合和位置类型',
   'pages.flow.view.flowInformation.flowProperties': '定量流属性',
   'pages.flow.view.flowInformation.CASNumber': 'CAS号',
+  'pages.flow.view.flowInformation.sumFormula': '求和公式',
   'pages.flow.view.flowInformation.classification': '分类',
   'pages.flow.view.flowInformation.ECNumber': 'EC登记号',
   'pages.flow.view.flowInformation.generalComment': '数据集一般性说明',

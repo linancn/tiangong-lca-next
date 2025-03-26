@@ -327,6 +327,21 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
             {initData?.flowInformation?.dataSetInformation?.['CASNumber'] ?? '-'}
           </Descriptions.Item>
         </Descriptions>
+        <br />
+        <Descriptions bordered size={'small'} column={1}>
+          <Descriptions.Item
+            key={0}
+            label={
+              <FormattedMessage
+                id='pages.flow.view.flowInformation.sumFormula'
+                defaultMessage='Sum formula'
+              />
+            }
+            labelStyle={{ width: '140px' }}
+          >
+            {initData?.flowInformation?.dataSetInformation?.['sumFormula'] ?? '-'}
+          </Descriptions.Item>
+        </Descriptions>
 
         <Divider orientationMargin='0' orientation='left' plain>
           <FormattedMessage

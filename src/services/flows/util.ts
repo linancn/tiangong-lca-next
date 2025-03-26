@@ -102,6 +102,7 @@ export function genFlowJsonOrdered(id: string, data: any) {
           ),
           classificationInformation: classificationInformation,
           CASNumber: data?.flowInformation?.dataSetInformation?.['CASNumber'],
+          sumFormula: data?.flowInformation?.dataSetInformation?.['sumFormula'],
           'common:generalComment': getLangJson(
             data?.flowInformation?.dataSetInformation?.['common:generalComment'],
           ),
@@ -342,6 +343,7 @@ export function genFlowFromData(data: any) {
         ),
         classificationInformation: classificationInformation,
         CASNumber: data?.flowInformation?.dataSetInformation?.['CASNumber'],
+        sumFormula: data?.flowInformation?.dataSetInformation?.['sumFormula'],
         'common:generalComment': getLangList(
           data?.flowInformation?.dataSetInformation?.['common:generalComment'],
         ),

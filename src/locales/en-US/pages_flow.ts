@@ -41,6 +41,7 @@ export default {
   'pages.flow.view.flowInformation.mixAndLocationTypes': 'Mix and location types',
   'pages.flow.view.flowInformation.flowProperties': 'Quantitative flow properties',
   'pages.flow.view.flowInformation.CASNumber': 'CAS Number',
+  'pages.flow.view.flowInformation.sumFormula': 'Sum formula',
   'pages.flow.view.flowInformation.classification': 'Classification',
   'pages.flow.view.flowInformation.ECNumber': 'EC Number',
   'pages.flow.view.flowInformation.generalComment': 'General comment on data set',

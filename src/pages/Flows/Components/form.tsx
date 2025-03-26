@@ -475,6 +475,17 @@ export const FlowForm: FC<Props> = ({
         >
           <Input />
         </Form.Item>
+        <Form.Item
+          label={
+            <FormattedMessage
+              id='pages.flow.view.flowInformation.sumFormula'
+              defaultMessage='Sum formula'
+            />
+          }
+          name={['flowInformation', 'dataSetInformation', 'sumFormula']}
+        >
+          <Input />
+        </Form.Item>
         <Card
           size='small'
           title={
