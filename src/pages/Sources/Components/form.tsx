@@ -243,6 +243,7 @@ export const SourceForm: FC<Props> = ({
           formRef={formRef}
           onData={onData}
         />
+        <br />
         <SourceSelectForm
           label={
             <FormattedMessage

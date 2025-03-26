@@ -166,6 +166,7 @@ export const FlowpropertyForm: FC<Props> = ({
             />
           </Card>
         </Card>
+        <br />
         <UnitGroupSelectFrom
           name={[
             'flowPropertiesInformation',
@@ -207,6 +208,7 @@ export const FlowpropertyForm: FC<Props> = ({
           formRef={formRef}
           onData={onData}
         />
+        <br />
         <SourceSelectForm
           defaultSourceName={
             formType === 'create' ? 'ILCD Data Network - compliance (non-Process)' : ''
@@ -232,6 +234,7 @@ export const FlowpropertyForm: FC<Props> = ({
             ]['common:referenceToComplianceSystem']['rules'],
           )}
         />
+        <br />
         <Form.Item
           label={
             <FormattedMessage
@@ -301,7 +304,7 @@ export const FlowpropertyForm: FC<Props> = ({
             )}
           />
         </Card>
-
+        <br />
         <Card
           size='small'
           title={

@@ -85,6 +85,7 @@ export const ContactForm: FC<Props> = ({
               )}
             />
           </Card>
+          <br />
           <Card
             size='small'
             title={
@@ -108,6 +109,7 @@ export const ContactForm: FC<Props> = ({
               )}
             />
           </Card>
+          <br />
           <LevelTextItemForm
             name={[
               'contactInformation',
@@ -150,6 +152,7 @@ export const ContactForm: FC<Props> = ({
               )}
             />
           </Card>
+          <br />
           <Form.Item
             label={<FormattedMessage id='pages.contact.telephone' defaultMessage='Telephone' />}
             name={['contactInformation', 'dataSetInformation', 'telephone']}
@@ -218,6 +221,7 @@ export const ContactForm: FC<Props> = ({
               )}
             />
           </Card>
+          <br />
           <Card
             size='small'
             title={
@@ -242,6 +246,7 @@ export const ContactForm: FC<Props> = ({
               )}
             />
           </Card>
+          <br />
           <ContactSelectForm
             label={
               <FormattedMessage
@@ -254,6 +259,7 @@ export const ContactForm: FC<Props> = ({
             formRef={formRef}
             onData={onData}
           />
+          <br />
           <SourceSelectForm
             label={
               <FormattedMessage
@@ -294,7 +300,6 @@ export const ContactForm: FC<Props> = ({
             >
               <Input disabled={true} style={{ color: token.colorTextDescription }} />
             </Form.Item>
-            <br />
             <SourceSelectForm
               defaultSourceName={formType === 'create' ? 'ILCD format' : undefined}
               label={
@@ -314,6 +319,7 @@ export const ContactForm: FC<Props> = ({
               onData={onData}
             />
           </Card>
+          <br />
           <Card
             size='small'
             title={
