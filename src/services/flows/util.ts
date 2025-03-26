@@ -29,6 +29,14 @@ export function genFlowJsonOrdered(id: string, data: any) {
           ),
         },
         meanValue: item?.['meanValue'],
+        minimumValue: item?.['minimumValue'],
+        maximumValue: item?.['maximumValue'],
+        uncertaintyDistributionType: item?.['uncertaintyDistributionType'],
+        relativeStandardDeviation95In: item?.['relativeStandardDeviation95In'],
+        dataDerivationTypeStatus: item?.['dataDerivationTypeStatus'],
+        ['common:generalComment']: getLangJson(
+          item?.['common:generalComment'],
+        ),
       };
     }) ?? [];
   let flowPropertyJson: any = {};
@@ -536,6 +544,14 @@ export function genFlowFromData(data: any) {
             ),
           },
           meanValue: item?.['meanValue'],
+          minimumValue: item?.['minimumValue'],
+          maximumValue: item?.['maximumValue'],
+          uncertaintyDistributionType: item?.['uncertaintyDistributionType'],
+          relativeStandardDeviation95In: item?.['relativeStandardDeviation95In'],
+          dataDerivationTypeStatus: item?.['dataDerivationTypeStatus'],
+          ['common:generalComment']: getLangJson(
+            item?.['common:generalComment'],
+          ),
           quantitativeReference:
             item?.['@dataSetInternalID'] ===
             data?.flowInformation?.quantitativeReference?.referenceToReferenceFlowProperty
@@ -574,6 +590,15 @@ export function genFlowPropertyTabTableData(data: any, lang: string) {
         meanValue: item?.['meanValue'],
         quantitativeReference: item?.quantitativeReference ?? false,
         location: item?.locationOfSupply ?? '-',
+        minimumValue: item?.['minimumValue'],
+        maximumValue: item?.['maximumValue'],
+        uncertaintyDistributionType: item?.['uncertaintyDistributionType'],
+        relativeStandardDeviation95In: item?.['relativeStandardDeviation95In'],
+        dataDerivationTypeStatus: item?.['dataDerivationTypeStatus'],
+        ['common:generalComment']: getLangText(
+          item?.['common:generalComment'],
+          lang,
+        ),
       });
     });
   }

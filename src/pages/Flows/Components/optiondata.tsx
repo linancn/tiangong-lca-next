@@ -1,5 +1,91 @@
 import { FormattedMessage } from 'umi';
 
+export const dataDerivationTypeStatusOptions = [
+  {
+    value: 'Measured',
+    label: (
+      <FormattedMessage
+        id='pages.flow.view.flowProperties.dataDerivationType.measured'
+        defaultMessage='Measured'
+      />
+    ),
+  },
+  {
+    value: 'Calculated',
+    label: (
+      <FormattedMessage
+        id='pages.flow.view.flowProperties.dataDerivationType.calculated'
+        defaultMessage='Calculated'
+      />
+    ),
+  },
+  {
+    value: 'Estimated',
+    label: (
+      <FormattedMessage
+        id='pages.flow.view.flowProperties.dataDerivationType.estimated'
+        defaultMessage='Estimated'
+      />
+    ),
+  },
+  {
+    value: 'Unknown derivation',
+    label: (
+      <FormattedMessage
+        id='pages.flow.view.flowProperties.dataDerivationType.unknown'
+        defaultMessage='Unknown derivation'
+      />
+    ),
+  },
+]
+
+export const uncertaintyDistributionTypeOptions = [
+  {
+    value: 'undefined',
+    label: (
+      <FormattedMessage
+        id='pages.flow.view.flowProperties.uncertaintyDistributionType.undefined'
+        defaultMessage='undefined'
+      />
+    ),
+  },
+  {
+    value: 'log-normal',
+    label: (
+      <FormattedMessage
+        id='pages.flow.view.flowProperties.uncertaintyDistributionType.logNormal'
+        defaultMessage='log-normal'
+      />
+    ),
+  },
+  {
+    value: 'normal',
+    label: (
+      <FormattedMessage
+        id='pages.flow.view.flowProperties.uncertaintyDistributionType.normal'
+        defaultMessage='normal'
+      />
+    ),
+  },
+  {
+    value: 'triangular',
+    label: (
+      <FormattedMessage
+        id='pages.flow.view.flowProperties.uncertaintyDistributionType.triangular'
+        defaultMessage='triangular'
+      />
+    ),
+  },
+  {
+    value: 'uniform',
+    label: (
+      <FormattedMessage
+        id='pages.flow.view.flowProperties.uncertaintyDistributionType.uniform'
+        defaultMessage='uniform'
+      />
+    ),
+  },
+];
 export const myFlowTypeOptions = [
   {
     value: 'Product flow',

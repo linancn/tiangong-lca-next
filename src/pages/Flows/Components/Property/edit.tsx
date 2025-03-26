@@ -2,10 +2,14 @@ import FlowpropertiesSelectForm from '@/pages/Flowproperties/Components/select/f
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
-import { Button, Collapse, Drawer, Form, Input, Space, Switch, Tooltip, Typography } from 'antd';
+import { Button, Collapse, Drawer, Form, Input, InputNumber, Select, Space, Switch, Tooltip, Typography, Card } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
+import LangTextItemForm from '@/components/LangTextItem/form';
+import { dataDerivationTypeStatusOptions, uncertaintyDistributionTypeOptions } from '../optiondata';
+import { getRules } from '@/pages/Utils';
+import schema from '../../flows_schema.json';
 
 type Props = {
   id: string;
@@ -135,6 +139,7 @@ const PropertyEdit: FC<Props> = ({
               drawerVisible={drawerVisible}
               formRef={formRefEdit}
               onData={handletFromData}
+              rules={getRules(schema['flowDataSet']['flowProperties']['flowProperty']['referenceToFlowPropertyDataSet']['rules'])}
             />
             <br />
             <Form.Item
@@ -145,9 +150,85 @@ const PropertyEdit: FC<Props> = ({
                 />
               }
               name={['meanValue']}
+              rules={getRules(schema['flowDataSet']['flowProperties']['flowProperty']['meanValue']['rules'])}
             >
               <Input />
             </Form.Item>
+            <Form.Item
+              label={
+                <FormattedMessage
+                  id='pages.flow.view.flowProperties.minimumValue'
+                  defaultMessage='Minimum value'
+                />
+              }
+              name={['minimumValue']}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              label={
+                <FormattedMessage
+                  id='pages.flow.view.flowProperties.maximumValue'
+                  defaultMessage='Maximum value'
+                />
+              }
+              name={['maximumValue']}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              label={
+                <FormattedMessage
+                  id='pages.flow.view.flowProperties.uncertaintyDistributionType'
+                  defaultMessage='Uncertainty distribution type'
+                />
+              }
+              name={'uncertaintyDistributionType'}
+            >
+              <Select options={uncertaintyDistributionTypeOptions} />
+            </Form.Item>
+            <Form.Item
+              label={
+                <FormattedMessage
+                  id='pages.flow.view.flowProperties.relativeStandardDeviation95In'
+                  defaultMessage='Relative StdDev in %'
+                />
+              }
+              name={['relativeStandardDeviation95In']}
+            >
+              <InputNumber suffix="%" min={0} max={100} style={{ width: '100%' }} />
+            </Form.Item>
+            <Form.Item
+              label={
+                <FormattedMessage
+                  id='pages.flow.view.flowProperties.dataDerivationType'
+                  defaultMessage='Data derivation type/status'
+                />
+              }
+              name={['dataDerivationTypeStatus']}
+            >
+              <Select options={dataDerivationTypeStatusOptions} />
+            </Form.Item>
+            <Card
+              size='small'
+              title={
+                <FormattedMessage
+                  id='pages.flow.view.flowProperties.generalComment'
+                  defaultMessage='General comment on data set'
+                />
+              }
+            >
+              <LangTextItemForm
+                name={['common:generalComment']}
+                label={
+                  <FormattedMessage
+                    id='pages.flow.view.flowProperties.generalComment'
+                    defaultMessage='General comment on data set'
+                  />
+                }
+              />
+            </Card>
+            <br />
             <Form.Item
               label={
                 <FormattedMessage

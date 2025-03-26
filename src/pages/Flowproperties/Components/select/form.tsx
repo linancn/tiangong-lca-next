@@ -12,6 +12,7 @@ import FlowpropertyView from '../view';
 import FlowpropertiesSelectDrawer from './drawer';
 // import LangTextItemForm from '@/components/LangTextItem/form';
 const { TextArea } = Input;
+import { validateRefObjectId } from '@/pages/Utils';
 
 type Props = {
   name: any;
@@ -50,6 +51,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
       });
       setId(rowId);
       setVersion(result.data?.version);
+      validateRefObjectId(formRef, name);
       onData();
     });
   };
@@ -144,6 +146,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
             <Button
               onClick={() => {
                 formRef.current?.setFieldValue([...name], {});
+                validateRefObjectId(formRef, name);
                 onData();
               }}
             >
