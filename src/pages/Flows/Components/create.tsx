@@ -265,22 +265,33 @@ const FlowsCreate: FC<CreateProps> = ({ lang, actionRef, actionType = 'create', 
             onFinish={async () => {
               const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
               const FieldsValue = formRefCreate.current?.getFieldsValue();
+              const flowProperties = fromData?.flowProperties
               if (
-                !fromData?.flowProperties ||
-                !fromData?.flowProperties?.flowProperty ||
-                fromData?.flowProperties?.flowProperty?.length === 0
+                !flowProperties ||
+                !flowProperties?.flowProperty ||
+                flowProperties?.flowProperty?.length === 0
               ) {
                 message.error(
                   intl.formatMessage({
                     id: 'pages.flow.validator.flowProperties.required',
-                    defaultMessage: 'Please add flow properties',
+                    defaultMessage: 'Please select flow properties',
                   }),
                 );
                 return true;
+              }else if (
+                flowProperties.flowProperty.filter((item: any) => item?.quantitativeReference).length !== 1
+              ) {
+                message.error(
+                  intl.formatMessage({
+                    id: 'pages.flow.validator.flowProperties.quantitativeReference.required',
+                    defaultMessage: 'Flow property needs to have exactly one quantitative reference open',
+                  }),
+                );
+                return false;
               }
               const result = await createFlows(paramsId, {
                 ...FieldsValue,
-                flowProperties: fromData?.flowProperties,
+                flowProperties,
               });
               if (result.data) {
                 message.success(
