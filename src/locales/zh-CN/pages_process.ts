@@ -28,6 +28,7 @@ export default {
   'pages.process.view.processInformation.treatmentStandardsRoutes': '处理、标准、路线',
   'pages.process.view.processInformation.mixAndLocationTypes': '混合和位置类型',
   'pages.process.view.processInformation.functionalUnitFlowProperties': '定量产品或过程属性',
+  'pages.process.view.processInformation.identifierOfSubDataSet': '子数据集标识符',
   'pages.process.view.processInformation.generalComment': '数据集一般性说明',
   'pages.process.view.processInformation.referenceToExternalDocumentation': 'LCA 数据集报告的背景信息',
   'pages.process.view.processInformation.classification': '分类',

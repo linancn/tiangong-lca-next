@@ -324,7 +324,21 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
             }
           />
         </Card>
-
+        <br />
+        <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.process.view.processInformation.identifierOfSubDataSet'
+                  defaultMessage='Identifier of sub-data set'
+                />
+              }
+              labelStyle={{ width: '140px' }}
+            >
+              {initData.processInformation?.dataSetInformation?.identifierOfSubDataSet ?? '-'}
+            </Descriptions.Item>
+        </Descriptions>
         <Divider orientationMargin='0' orientation='left' plain>
           <FormattedMessage
             id='pages.process.view.processInformation.generalComment'

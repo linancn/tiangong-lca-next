@@ -360,6 +360,18 @@ export const ProcessForm: FC<Props> = ({
           </Card>
         </Card>
         <br />
+        <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.process.view.processInformation.identifierOfSubDataSet'
+                defaultMessage='Identifier of sub-data set'
+              />
+            }
+            name={['processInformation', 'dataSetInformation', 'identifierOfSubDataSet']}
+            rules={Yearvalidation_r}
+          >
+            <Input />
+        </Form.Item>
         <LevelTextItemForm
           name={[
             'processInformation',

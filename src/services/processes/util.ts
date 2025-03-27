@@ -73,6 +73,7 @@ export function genProcessJsonOrdered(id: string, data: any) {
               data?.processInformation?.dataSetInformation?.name?.functionalUnitFlowProperties,
             ),
           },
+          identifierOfSubDataSet: data?.processInformation?.dataSetInformation?.identifierOfSubDataSet,
           classificationInformation: {
             'common:classification': {
               'common:class': classificationToJsonList(
@@ -548,6 +549,7 @@ export function genProcessFromData(data: any) {
             data?.processInformation?.dataSetInformation?.name?.functionalUnitFlowProperties,
           ),
         },
+        identifierOfSubDataSet: data?.processInformation?.dataSetInformation?.identifierOfSubDataSet,
         classificationInformation: {
           'common:classification': {
             'common:class': classificationToStringList(
