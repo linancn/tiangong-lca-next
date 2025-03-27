@@ -74,6 +74,9 @@ export function genProcessJsonOrdered(id: string, data: any) {
             ),
           },
           identifierOfSubDataSet: data?.processInformation?.dataSetInformation?.identifierOfSubDataSet,
+          'common:synonyms': getLangJson(
+            data?.processInformation?.dataSetInformation?.['common:synonyms'],
+          ),
           classificationInformation: {
             'common:classification': {
               'common:class': classificationToJsonList(
@@ -550,6 +553,9 @@ export function genProcessFromData(data: any) {
           ),
         },
         identifierOfSubDataSet: data?.processInformation?.dataSetInformation?.identifierOfSubDataSet,
+        'common:synonyms': getLangList(
+          data?.processInformation?.dataSetInformation?.['common:synonyms'],
+        ),
         classificationInformation: {
           'common:classification': {
             'common:class': classificationToStringList(

@@ -341,6 +341,15 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
         </Descriptions>
         <Divider orientationMargin='0' orientation='left' plain>
           <FormattedMessage
+            id='pages.process.view.processInformation.synonyms'
+            defaultMessage='Synonyms'
+          />
+        </Divider>
+        <LangTextItemDescription
+          data={initData?.processInformation?.dataSetInformation?.['common:synonyms']}
+        />
+        <Divider orientationMargin='0' orientation='left' plain>
+          <FormattedMessage
             id='pages.process.view.processInformation.generalComment'
             defaultMessage='General comment on data set'
           />

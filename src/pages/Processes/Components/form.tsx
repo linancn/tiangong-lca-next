@@ -372,6 +372,26 @@ export const ProcessForm: FC<Props> = ({
           >
             <Input />
         </Form.Item>
+        <Card
+            size='small'
+            title={
+              <FormattedMessage
+                id='pages.process.view.processInformation.synonyms'
+                defaultMessage='Synonyms'
+              />
+            }
+          >
+            <LangTextItemForm
+              name={['processInformation', 'dataSetInformation', 'common:synonyms']}
+              label={
+                <FormattedMessage
+                  id='pages.process.view.processInformation.synonyms'
+                  defaultMessage='Synonyms'
+                />
+              }
+            />
+        </Card>
+        <br />
         <LevelTextItemForm
           name={[
             'processInformation',

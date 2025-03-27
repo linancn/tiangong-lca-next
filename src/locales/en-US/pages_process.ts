@@ -30,6 +30,7 @@ export default {
   'pages.process.view.processInformation.mixAndLocationTypes': 'Mix and location types',
   'pages.process.view.processInformation.functionalUnitFlowProperties': 'Quantitative product or process properties',
   'pages.process.view.processInformation.identifierOfSubDataSet': 'Identifier of sub-data set',
+  'pages.process.view.processInformation.synonyms': 'Synonyms',
   'pages.process.view.processInformation.generalComment': 'General comment on data set',
   'pages.process.view.processInformation.referenceToExternalDocumentation': 'Data set LCA report, background info',
   'pages.process.view.processInformation.quantitativeReference': 'Quantitative reference',
