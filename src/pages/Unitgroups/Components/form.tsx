@@ -18,7 +18,7 @@ import UnitDelete from './Unit/delete';
 import UnitEdit from './Unit/edit';
 import UnitView from './Unit/view';
 import { complianceOptions } from './optiondata';
-import UnitGroupSelectFrom from './select/form';
+// import UnitGroupSelectFrom from './select/form';
 
 type Props = {
   lang: string;
@@ -370,7 +370,7 @@ export const UnitGroupForm: FC<Props> = ({
           )}
         />
         <br />
-        <UnitGroupSelectFrom
+        {/* <UnitGroupSelectFrom
           name={[
             'administrativeInformation',
             'publicationAndOwnership',
@@ -386,7 +386,7 @@ export const UnitGroupForm: FC<Props> = ({
           formRef={formRef}
           onData={onData}
         />
-        <br />
+        <br /> */}
         <Form.Item
           label={
             <FormattedMessage

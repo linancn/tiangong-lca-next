@@ -13,7 +13,7 @@ import { getRules } from '@/pages/Utils';
 import { ProFormInstance } from '@ant-design/pro-components';
 import schema from '../flowproperties_schema.json';
 import { complianceOptions } from './optiondata';
-import FlowpropertiesSelectForm from './select/form';
+// import FlowpropertiesSelectForm from './select/form';
 
 type Props = {
   lang: string;
@@ -27,7 +27,7 @@ type Props = {
 export const FlowpropertyForm: FC<Props> = ({
   lang,
   activeTabKey,
-  drawerVisible,
+  // drawerVisible,
   formRef,
   onData,
   onTabChange,
@@ -330,7 +330,7 @@ export const FlowpropertyForm: FC<Props> = ({
           >
             <Input />
           </Form.Item>
-          <FlowpropertiesSelectForm
+          {/* <FlowpropertiesSelectForm
             name={[
               'administrativeInformation',
               'publicationAndOwnership',
@@ -347,7 +347,7 @@ export const FlowpropertyForm: FC<Props> = ({
             formRef={formRef}
             onData={onData}
           />
-          <br />
+          <br /> */}
           <ContactSelectForm
             label={
               <FormattedMessage

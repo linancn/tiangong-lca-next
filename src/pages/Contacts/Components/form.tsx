@@ -371,7 +371,7 @@ export const ContactForm: FC<Props> = ({
               onData={onData}
             />
             <br />
-            <ContactSelectForm
+            {/* <ContactSelectForm
               label={
                 <FormattedMessage
                   id='pages.contact.referenceToPrecedingDataSetVersion'
@@ -387,7 +387,7 @@ export const ContactForm: FC<Props> = ({
               formRef={formRef}
               onData={onData}
             />
-            <br />
+            <br /> */}
             <Form.Item
               label={
                 <FormattedMessage

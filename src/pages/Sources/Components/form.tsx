@@ -352,7 +352,7 @@ export const SourceForm: FC<Props> = ({
             )}
           />
           <br />
-          <SourceSelectForm
+          {/* <SourceSelectForm
             label={
               <FormattedMessage
                 id='pages.source.edit.administrativeInformation.referenceToPrecedingDataSetVersion'
@@ -368,7 +368,7 @@ export const SourceForm: FC<Props> = ({
             formRef={formRef}
             onData={onData}
           />
-          <br />
+          <br /> */}
           <Form.Item
             label={
               <FormattedMessage

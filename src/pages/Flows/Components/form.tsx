@@ -22,7 +22,7 @@ import PropertyCreate from './Property/create';
 import PropertyDelete from './Property/delete';
 import PropertyEdit from './Property/edit';
 import PropertyView from './Property/view';
-import FlowsSelectForm from './select/form';
+// import FlowsSelectForm from './select/form';
 
 type Props = {
   lang: string;
@@ -751,7 +751,7 @@ export const FlowForm: FC<Props> = ({
           >
             <Input />
           </Form.Item>
-          <FlowsSelectForm
+          {/* <FlowsSelectForm
             name={[
               'administrativeInformation',
               'publicationAndOwnership',
@@ -768,7 +768,7 @@ export const FlowForm: FC<Props> = ({
             drawerVisible={drawerVisible}
             onData={onData}
           />
-          <br />
+          <br /> */}
           <ContactSelectForm
             lang={lang}
             formRef={formRef}
