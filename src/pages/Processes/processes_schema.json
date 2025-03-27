@@ -5,6 +5,7 @@
     "@xmlns:xsi": "str",
     "@version": "str",
     "@locations": "str",
+    "@metaDataOnly": "boolean",
     "@xsi:schemaLocation": "str",
     "processInformation": {
       "dataSetInformation": {
@@ -15,13 +16,53 @@
               "@xml:lang": "str",
               "#text": "str"
             }
+          ],
+          "treatmentStandardsRoutes": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ],
+          "mixAndLocationTypes": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ],
+          "functionalUnitFlowProperties": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
           ]
+        },
+        "identifierOfSubDataSet": "str",
+        "common:synonyms": [
+          {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        ],
+        "complementingProcesses": {
+          "referenceToComplementingProcess": {
+            "@refObjectId": "str",
+            "@version": "str",
+            "@type": "str",
+            "@uri": "str",
+            "common:shortDescription": [
+              {
+                "@xml:lang": "str",
+                "#text": "str"
+              }
+            ]
+          }
         },
         "classificationInformation": {
           "common:classification": {
             "common:class": [
               {
                 "@level": "str",
+                "@classId": "str",
                 "#text": "str"
               }
             ]
@@ -32,7 +73,19 @@
             "@xml:lang": "str",
             "#text": "str"
           }
-        ]
+        ],
+        "referenceToExternalDocumentation": {
+          "@refObjectId": "str",
+          "@type": "str",
+          "@uri": "str",
+          "@version": "str",
+          "common:shortDescription": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ]
+        }
       },
       "quantitativeReference": {
         "@type": "str",
@@ -55,6 +108,17 @@
       "geography": {
         "locationOfOperationSupplyOrProduction": {
           "@location": "str",
+          "@latitudeAndLongitude": "str",
+          "descriptionOfRestrictions": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ]
+        },
+        "subLocationOfOperationSupplyOrProduction": {
+          "@location": "str",
+          "@latitudeAndLongitude": "str",
           "descriptionOfRestrictions": [
             {
               "@xml:lang": "str",
@@ -70,12 +134,36 @@
             "#text": "str"
           }
         ],
+        "referenceToIncludedProcesses": {
+          "@refObjectId": "str",
+          "@type": "str",
+          "@uri": "str",
+          "@version": "str",
+          "common:shortDescription": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ]
+        },
         "technologicalApplicability": [
           {
             "@xml:lang": "str",
             "#text": "str"
           }
         ],
+        "referenceToTechnologyPictogramme": {
+          "@refObjectId": "str",
+          "@type": "str",
+          "@uri": "str",
+          "@version": "str",
+          "common:shortDescription": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ]
+        },
         "referenceToTechnologyFlowDiagrammOrPicture": {
           "@type": "str",
           "@refObjectId": "str",
@@ -92,7 +180,22 @@
             "@xml:lang": "str",
             "#text": "str"
           }
-        ]
+        ],
+        "variableParameter": {
+          "@name": "str",
+          "formula": "str",
+          "meanValue": "str",
+          "minimumValue": "str",
+          "maximumValue": "str",
+          "common:uncertaintyDistributionType": "str",
+          "relativeStandardDeviation95In": "str",
+          "comment": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ]
+        }
       }
     },
     "modellingAndValidation": {
@@ -110,16 +213,40 @@
             "#text": "str"
           }
         ],
+        "modellingConstants": [
+          {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        ],
         "deviationsFromModellingConstants": [
           {
             "@xml:lang": "str",
             "#text": "str"
           }
         ],
+        "referenceToLCAMethodDetails": {
+          "@refObjectId": "str",
+          "@type": "str",
+          "@uri": "str",
+          "@version": "str",
+          "common:shortDescription": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ]
+        },
         "LCIMethodPrinciple": "str",
         "LCIMethodApproaches": "str"
       },
       "dataSourcesTreatmentAndRepresentativeness": {
+        "dataCutOffAndCompletenessPrinciples": [
+          {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        ],
         "deviationsFromCutOffAndCompletenessPrinciples": [
           {
             "@xml:lang": "str",
@@ -150,6 +277,18 @@
             "#text": "str"
           }
         ],
+        "referenceToDataHandlingPrinciples": {
+          "@refObjectId": "str",
+          "@type": "str",
+          "@uri": "str",
+          "@version": "str",
+          "common:shortDescription": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ]
+        },
         "referenceToDataSource": {
           "@type": "str",
           "@refObjectId": "str",
@@ -161,6 +300,25 @@
             }
           ]
         },
+        "percentageSupplyOrProductionCovered": "str",
+        "annualSupplyOrProductionVolume": [
+          {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        ],
+        "dataCollectionPeriod": [
+          {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        ],
+        "uncertaintyAdjustments": [
+          {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        ],
         "useAdviceForDataSet": [
           {
             "@xml:lang": "str",
@@ -174,10 +332,46 @@
           }
         ]
       },
-      "completeness": "NoneType",
+      "completeness": {
+        "completenessProductModel": "str",
+        "referenceToSupportedImpactAssessmentMethods": {
+          "@refObjectId": "str",
+          "@type": "str",
+          "@uri": "str",
+          "@version": "str",
+          "common:shortDescription": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ]
+        },
+        "completenessElementaryFlows": {
+          "@type": "str",
+          "@value": "str"
+        },
+        "completenessOtherProblemField": [
+          {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        ]
+      },
       "validation": {
         "review": {
           "@type": "str",
+          "common:scope": {
+            "@name": "str",
+            "method": {
+              "@name": "str"
+            }
+          },
+          "dataQualityIndicators": {
+            "dataQualityIndicator": {
+              "@name": "str",
+              "@value": "str"
+            }
+          },
           "common:reviewDetails": [
             {
               "@xml:lang": "str",
@@ -194,11 +388,74 @@
                 "#text": "str"
               }
             ]
+          },
+          "common:otherReviewDetails": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ],
+          "referenceToCompleteReviewReport": {
+            "@refObjectId": "str",
+            "@type": "str",
+            "@uri": "str",
+            "@version": "str",
+            "common:shortDescription": [
+              {
+                "@xml:lang": "str",
+                "#text": "str"
+              }
+            ]
           }
+        }
+      },
+      "complianceDeclarations": {
+        "compliance": {
+          "common:referenceToComplianceSystem": {
+            "@refObjectId": "str",
+            "@type": "str",
+            "@uri": "str",
+            "common:shortDescription": {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          },
+          "common:approvalOfOverallCompliance": "str",
+          "common:nomenclatureCompliance": "str",
+          "common:methodologicalCompliance": "str",
+          "common:reviewCompliance": "str",
+          "common:documentationCompliance": "str",
+          "common:qualityCompliance": "str"
         }
       }
     },
     "administrativeInformation": {
+      "common:commissionerAndGoal": {
+        "common:referenceToCommissioner": {
+          "@refObjectId": "str",
+          "@type": "str",
+          "@uri": "str",
+          "@version": "str",
+          "common:shortDescription": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ]
+        },
+        "common:project": [
+          {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        ],
+        "common:intendedApplications": [
+          {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        ]
+      },
       "dataGenerator": {
         "common:referenceToPersonOrEntityGeneratingTheDataSet": {
           "@type": "str",
@@ -214,12 +471,98 @@
         }
       },
       "dataEntryBy": {
-        "common:timeStamp": "str"
+        "common:timeStamp": "str",
+        "common:referenceToDataSetFormat": {
+          "@refObjectId": "str",
+          "@type": "str",
+          "@uri": "str",
+          "@version": "str",
+          "common:shortDescription": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ]
+        },
+        "common:referenceToConvertedOriginalDataSetFrom": {
+          "@refObjectId": "str",
+          "@type": "str",
+          "@uri": "str",
+          "@version": "str",
+          "common:shortDescription": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ]
+        },
+        "common:referenceToPersonOrEntityEnteringTheData": {
+          "@refObjectId": "str",
+          "@type": "str",
+          "@uri": "str",
+          "@version": "str",
+          "common:shortDescription": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ]
+        },
+        "common:referenceToDataSetUseApproval": {
+          "@refObjectId": "str",
+          "@type": "str",
+          "@uri": "str",
+          "@version": "str",
+          "common:shortDescription": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ]
+        }
       },
       "publicationAndOwnership": {
         "common:dateOfLastRevision": "str",
         "common:dataSetVersion": "str",
+        "common:referenceToPrecedingDataSetVersion": {
+          "@refObjectId": "str",
+          "@type": "str",
+          "@uri": "str",
+          "@version": "str",
+          "common:shortDescription": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ]
+        },
         "common:permanentDataSetURI": "str",
+        "common:workflowAndPublicationStatus": "str",
+        "referenceToUnchangedRepublication": {
+          "@refObjectId": "str",
+          "@type": "str",
+          "@uri": "str",
+          "@version": "str",
+          "common:shortDescription": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ]
+        },
+        "common:referenceToRegistrationAuthority": {
+          "@refObjectId": "str",
+          "@type": "str",
+          "@uri": "str",
+          "@version": "str",
+          "common:shortDescription": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ]
+        },
+        "common:registrationNumber": "str",
         "common:referenceToOwnershipOfDataSet": {
           "@refObjectId": "str",
           "@type": "str",
@@ -232,7 +575,25 @@
           ]
         },
         "common:copyright": "str",
-        "common:licenseType": "str"
+        "referenceToEntitiesWithExclusiveAccess": {
+          "@refObjectId": "str",
+          "@type": "str",
+          "@uri": "str",
+          "@version": "str",
+          "common:shortDescription": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ]
+        },
+        "common:licenseType": "str",
+        "common:accessRestrictions": [
+          {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        ]
       }
     },
     "exchanges": {
@@ -243,12 +604,16 @@
             "@type": "str",
             "@refObjectId": "str",
             "@uri": "str",
+            "@version": "str",
             "common:shortDescription": {
               "@xml:lang": "str",
               "#text": "str"
             }
           },
+          "location": "str",
+          "functionType": "str",
           "exchangeDirection": "str",
+          "referenceToVariable": "str",
           "meanAmount": "str",
           "resultingAmount": "str",
           "dataDerivationTypeStatus": "str",
@@ -260,7 +625,56 @@
           ],
           "minimumAmount": "str",
           "maximumAmount": "str",
-          "uncertaintyDistributionType": "str"
+          "common:uncertaintyDistributionType": "str",
+          "relativeStandardDeviation95In": "str",
+          "allocations": {
+            "allocation": {
+              "@internalReferenceToCoProduct": "str",
+              "@allocatedFraction": "str"
+            }
+          },
+          "common:dataSourceType": "str",
+          "referencesToDataSource": {
+            "referenceToDataSource": {
+              "@type": "str",
+              "@refObjectId": "str",
+              "@uri": "str",
+              "@version": "str",
+              "common:shortDescription": [
+                {
+                  "@xml:lang": "str",
+                  "#text": "str"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "LCIAResults": {
+      "LCIAResult": [
+        {
+          "referenceToLCIAMethodDataSet": {
+            "@refObjectId": "str",
+            "@type": "str",
+            "@uri": "str",
+            "@version": "str",
+            "common:shortDescription": [
+              {
+                "@xml:lang": "str",
+                "#text": "str"
+              }
+            ]
+          },
+          "meanAmount": "str",
+          "common:uncertaintyDistributionType": "str",
+          "relativeStandardDeviation95In": "str",
+          "common:generalComment": [
+            {
+              "@xml:lang": "str",
+              "@text": "str"
+            }
+          ]
         }
       ]
     }
