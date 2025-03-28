@@ -182,6 +182,16 @@ export function genProcessJsonOrdered(id: string, data: any) {
           modelDescription: getLangJson(
             data?.processInformation?.mathematicalRelations?.modelDescription,
           ),
+          variableParameter: {
+            '@name': data?.processInformation?.mathematicalRelations?.variableParameter?.['@name'],
+            formula: data?.processInformation?.mathematicalRelations?.variableParameter?.formula ,
+            meanValue: data?.processInformation?.mathematicalRelations?.variableParameter?.meanValue ,
+            minimumValue: data?.processInformation?.mathematicalRelations?.variableParameter?.minimumValue ,
+            maximumValue: data?.processInformation?.mathematicalRelations?.variableParameter?.maximumValue ,
+            uncertaintyDistributionType: data?.processInformation?.mathematicalRelations?.variableParameter?.uncertaintyDistributionType ,
+            relativeStandardDeviation95In: data?.processInformation?.mathematicalRelations?.variableParameter?.relativeStandardDeviation95In ,
+            comment: data?.processInformation?.mathematicalRelations?.variableParameter?.comment ,
+          },
         },
       },
       modellingAndValidation: {
@@ -675,6 +685,18 @@ export function genProcessFromData(data: any) {
         modelDescription: getLangList(
           data?.processInformation?.mathematicalRelations?.modelDescription,
         ),
+        variableParameter: {
+          '@name': data?.processInformation?.mathematicalRelations?.variableParameter?.[
+            '@name'
+          ],
+          formula: data?.processInformation?.mathematicalRelations?.variableParameter?.formula ,
+          meanValue: data?.processInformation?.mathematicalRelations?.variableParameter?.meanValue ,
+          minimumValue: data?.processInformation?.mathematicalRelations?.variableParameter?.minimumValue ,
+          maximumValue: data?.processInformation?.mathematicalRelations?.variableParameter?.maximumValue ,
+          uncertaintyDistributionType: data?.processInformation?.mathematicalRelations?.variableParameter?.uncertaintyDistributionType ,
+          relativeStandardDeviation95In: data?.processInformation?.mathematicalRelations?.variableParameter?.relativeStandardDeviation95In ,
+          comment: data?.processInformation?.mathematicalRelations?.variableParameter?.comment ,
+        }
       },
     },
     modellingAndValidation: {

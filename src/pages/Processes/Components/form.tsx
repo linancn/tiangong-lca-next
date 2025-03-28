@@ -35,6 +35,8 @@ import {
   workflowAndPublicationStatusOptions,
 } from './optiondata';
 import ReveiwItemForm from './Review/form';
+import { uncertaintyDistributionTypeOptions } from './optiondata';
+
 type Props = {
   lang: string;
   activeTabKey: string;
@@ -241,13 +243,13 @@ export const ProcessForm: FC<Props> = ({
               lang={lang}
               buttonType={'icon'}
               onData={onExchangeData}
-              setViewDrawerVisible={() => {}}
+              setViewDrawerVisible={() => { }}
             />
             <ProcessExchangeDelete
               id={row.dataSetInternalID}
               data={exchangeDataSource}
               buttonType={'icon'}
-              setViewDrawerVisible={() => {}}
+              setViewDrawerVisible={() => { }}
               onData={onExchangeData}
             />
           </Space>,
@@ -361,35 +363,35 @@ export const ProcessForm: FC<Props> = ({
         </Card>
         <br />
         <Form.Item
-            label={
-              <FormattedMessage
-                id='pages.process.view.processInformation.identifierOfSubDataSet'
-                defaultMessage='Identifier of sub-data set'
-              />
-            }
-            name={['processInformation', 'dataSetInformation', 'identifierOfSubDataSet']}
-            rules={Yearvalidation_r}
-          >
-            <Input />
+          label={
+            <FormattedMessage
+              id='pages.process.view.processInformation.identifierOfSubDataSet'
+              defaultMessage='Identifier of sub-data set'
+            />
+          }
+          name={['processInformation', 'dataSetInformation', 'identifierOfSubDataSet']}
+          rules={Yearvalidation_r}
+        >
+          <Input />
         </Form.Item>
         <Card
-            size='small'
-            title={
+          size='small'
+          title={
+            <FormattedMessage
+              id='pages.process.view.processInformation.synonyms'
+              defaultMessage='Synonyms'
+            />
+          }
+        >
+          <LangTextItemForm
+            name={['processInformation', 'dataSetInformation', 'common:synonyms']}
+            label={
               <FormattedMessage
                 id='pages.process.view.processInformation.synonyms'
                 defaultMessage='Synonyms'
               />
             }
-          >
-            <LangTextItemForm
-              name={['processInformation', 'dataSetInformation', 'common:synonyms']}
-              label={
-                <FormattedMessage
-                  id='pages.process.view.processInformation.synonyms'
-                  defaultMessage='Synonyms'
-                />
-              }
-            />
+          />
         </Card>
         <br />
         <LevelTextItemForm
@@ -667,6 +669,118 @@ export const ProcessForm: FC<Props> = ({
             }
           />
         </Card>
+        <Card
+          size='small'
+          title={
+            <FormattedMessage
+              id='pages.process.view.processInformation.variableParameter'
+              defaultMessage='Variable / parameter'
+            />
+          }
+        >
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.process.view.processInformation.variableParameter.name'
+                defaultMessage='Name of variable'
+              />
+            }
+            name={['processInformation', 'mathematicalRelations', 'variableParameter', '@name']}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.process.view.processInformation.variableParameter.formula'
+                defaultMessage='Formula'
+              />
+            }
+            name={['processInformation', 'mathematicalRelations', 'variableParameter', 'formula']}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.process.view.processInformation.variableParameter.meanValue'
+                defaultMessage='Mean value'
+              />
+            }
+            name={['processInformation', 'mathematicalRelations', 'variableParameter', 'meanValue']}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.process.view.processInformation.variableParameter.minimumValue'
+                defaultMessage='Minimum value'
+              />
+            }
+            name={['processInformation', 'mathematicalRelations', 'variableParameter', 'minimumValue']}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.process.view.processInformation.variableParameter.maximumValue'
+                defaultMessage='Maximum value'
+              />
+            }
+            name={['processInformation', 'mathematicalRelations', 'variableParameter', 'maximumValue']}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.process.view.processInformation.variableParameter.uncertaintyDistributionType'
+                defaultMessage='Uncertainty distribution type'
+              />
+            }
+            name={['processInformation', 'mathematicalRelations', 'variableParameter', 'uncertaintyDistributionType']}
+          >
+            <Select options={uncertaintyDistributionTypeOptions} />
+          </Form.Item>
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.process.view.processInformation.variableParameter.relativeStandardDeviation95In'
+                defaultMessage='Relative StdDev in %'
+              />
+            }
+            name={['processInformation', 'mathematicalRelations', 'variableParameter', 'relativeStandardDeviation95In']}
+          >
+            <Input />
+          </Form.Item>
+          <Card
+            size='small'
+            title={
+              <FormattedMessage
+                id='pages.process.view.processInformation.variableParameter.comment'
+                defaultMessage='Comment, units, defaults'
+              />
+            }
+          >
+            <LangTextItemForm
+              name={[
+                'processInformation',
+                'mathematicalRelations',
+                'variableParameter',
+                'comment',
+              ]}
+              label={
+                <FormattedMessage
+                  id='pages.process.view.processInformation.variableParameter.comment'
+                  defaultMessage='Comment, units, defaults'
+                />
+              }
+            />
+          </Card>
+        </Card>
+
       </Space>
     ),
     modellingAndValidation: (

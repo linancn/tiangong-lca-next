@@ -17,6 +17,8 @@ import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import ProcessExchangeView from './Exchange/view';
+import { uncertaintyDistributionTypeOptions } from './optiondata';
+
 import {
   copyrightOptions,
   LCIMethodApproachOptions,
@@ -57,6 +59,11 @@ const getCopyrightOptions = (value: string) => {
 };
 const getLicenseTypeOptions = (value: string) => {
   const option = licenseTypeOptions.find((opt) => opt.value === value);
+  return option ? option.label : '-';
+};
+
+const getComplianceLabel = (value: string) => {
+  const option = uncertaintyDistributionTypeOptions.find((opt) => opt.value === value);
   return option ? option.label : '-';
 };
 
@@ -326,18 +333,18 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
         </Card>
         <br />
         <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.process.view.processInformation.identifierOfSubDataSet'
-                  defaultMessage='Identifier of sub-data set'
-                />
-              }
-              labelStyle={{ width: '140px' }}
-            >
-              {initData.processInformation?.dataSetInformation?.identifierOfSubDataSet ?? '-'}
-            </Descriptions.Item>
+          <Descriptions.Item
+            key={0}
+            label={
+              <FormattedMessage
+                id='pages.process.view.processInformation.identifierOfSubDataSet'
+                defaultMessage='Identifier of sub-data set'
+              />
+            }
+            labelStyle={{ width: '140px' }}
+          >
+            {initData.processInformation?.dataSetInformation?.identifierOfSubDataSet ?? '-'}
+          </Descriptions.Item>
         </Descriptions>
         <Divider orientationMargin='0' orientation='left' plain>
           <FormattedMessage
@@ -361,7 +368,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
         <LevelTextItemDescription
           data={
             initData.processInformation?.dataSetInformation?.classificationInformation?.[
-              'common:classification'
+            'common:classification'
             ]?.['common:class']?.['value']
           }
           lang={lang}
@@ -377,7 +384,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
           }
           data={
             initData.processInformation?.dataSetInformation?.[
-              'common:referenceToExternalDocumentation'
+            'common:referenceToExternalDocumentation'
             ]
           }
           lang={lang}
@@ -431,8 +438,8 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
             </Descriptions.Item>
           </Descriptions>
           <br />
-          <Descriptions  bordered size={'small'} column={1}>
-           <Descriptions.Item
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
               key={0}
               label={
                 <FormattedMessage
@@ -469,7 +476,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
             lang={lang}
             data={
               initData.processInformation?.geography?.locationOfOperationSupplyOrProduction?.[
-                '@location'
+              '@location'
               ] ?? '-'
             }
             label={
@@ -507,7 +514,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
             lang={lang}
             data={
               initData.processInformation?.geography?.subLocationOfOperationSupplyOrProduction?.[
-                '@subLocation'
+              '@subLocation'
               ] ?? '-'
             }
             label={
@@ -585,6 +592,135 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
         <LangTextItemDescription
           data={initData.processInformation?.mathematicalRelations?.modelDescription}
         />
+        <br />
+        <Card
+          size='small'
+          title={
+            <FormattedMessage
+              id='pages.process.view.processInformation.variableParameter'
+              defaultMessage='Variable / parameter'
+            />
+          }
+        >
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.process.view.processInformation.variableParameter.name'
+                  defaultMessage='Name of variable'
+                />
+              }
+              labelStyle={{ width: '120px' }}
+            >
+              {initData.processInformation?.mathematicalRelations?.variableParameter?.['@name'] ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
+          <br />
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.process.view.processInformation.variableParameter.formula'
+                  defaultMessage='Formula'
+                />
+              }
+              labelStyle={{ width: '120px' }}
+            >
+              {initData.processInformation?.mathematicalRelations?.variableParameter?.formula ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
+          <br />
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.process.view.processInformation.variableParameter.meanValue'
+                  defaultMessage='Mean value'
+                />
+              }
+              labelStyle={{ width: '120px' }}
+            >
+              {initData.processInformation?.mathematicalRelations?.variableParameter?.meanValue ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
+          <br />
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.process.view.processInformation.variableParameter.minimumValue'
+                  defaultMessage='Minimum value'
+                />
+              }
+              labelStyle={{ width: '120px' }}
+            >
+              {initData.processInformation?.mathematicalRelations?.variableParameter?.minimumValue ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
+          <br />
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.process.view.processInformation.variableParameter.maximumValue'
+                  defaultMessage='Maximum value'
+                />
+              }
+              labelStyle={{ width: '120px' }}
+            >
+              {initData.processInformation?.mathematicalRelations?.variableParameter?.maximumValue ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
+          <br />
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.process.view.processInformation.variableParameter.uncertaintyDistributionType'
+                  defaultMessage='Uncertainty distribution type'
+                />
+              }
+              labelStyle={{ width: '180px' }}
+            >
+              {getComplianceLabel(
+             initData.processInformation?.mathematicalRelations?.variableParameter?.uncertaintyDistributionType ?? '-')}
+            </Descriptions.Item>
+          </Descriptions>
+          <br />
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.process.view.processInformation.variableParameter.relativeStandardDeviation95In'
+                  defaultMessage='Relative StdDev in %'
+                />
+              }
+              labelStyle={{ width: '180px' }}
+            >
+              {initData.processInformation?.mathematicalRelations?.variableParameter?.relativeStandardDeviation95In ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
+
+          <Divider orientationMargin='0' orientation='left' plain>
+            {
+              <FormattedMessage
+                id='pages.process.view.processInformation.variableParameter.comment'
+                defaultMessage='Comment, units, defaults'
+              />
+            }
+          </Divider>
+          <LangTextItemDescription
+            data={initData.processInformation?.mathematicalRelations?.variableParameter?.comment}
+          />
+        </Card>
+
       </>
     ),
     modellingAndValidation: (
@@ -852,7 +988,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
             lang={lang}
             data={
               initData.modellingAndValidation?.validation?.review?.[
-                'common:referenceToNameOfReviewerAndInstitution'
+              'common:referenceToNameOfReviewerAndInstitution'
               ]
             }
           />
@@ -871,7 +1007,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
           lang={lang}
           data={
             initData.administrativeInformation?.commissionerAndGoal?.[
-              'common:referenceToCommissioner'
+            'common:referenceToCommissioner'
             ]
           }
         />
@@ -898,7 +1034,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
           lang={lang}
           data={
             initData.administrativeInformation?.dataGenerator?.[
-              'common:referenceToPersonOrEntityGeneratingTheDataSet'
+            'common:referenceToPersonOrEntityGeneratingTheDataSet'
             ]
           }
         />
@@ -944,7 +1080,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
           <SourceSelectDescription
             data={
               initData?.administrativeInformation?.dataEntryBy?.[
-                'common:referenceToConvertedOriginalDataSetFrom'
+              'common:referenceToConvertedOriginalDataSetFrom'
               ]
             }
             title={
@@ -959,7 +1095,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
           <ContactSelectDescription
             data={
               initData?.administrativeInformation?.dataEntryBy?.[
-                'common:referenceToPersonOrEntityEnteringTheData'
+              'common:referenceToPersonOrEntityEnteringTheData'
               ]
             }
             title={
@@ -974,7 +1110,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
           <SourceSelectDescription
             data={
               initData?.administrativeInformation?.dataEntryBy?.[
-                'common:referenceToDataSetUseApproval'
+              'common:referenceToDataSetUseApproval'
               ]
             }
             title={
@@ -1077,7 +1213,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
             lang={lang}
             data={
               initData.administrativeInformation?.publicationAndOwnership?.[
-                'common:referenceToOwnershipOfDataSet'
+              'common:referenceToOwnershipOfDataSet'
               ]
             }
           />
@@ -1095,7 +1231,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
             >
               {getCopyrightOptions(
                 initData.administrativeInformation?.publicationAndOwnership?.['common:copyright'] ??
-                  '-',
+                '-',
               )}
             </Descriptions.Item>
           </Descriptions>
@@ -1113,7 +1249,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
             >
               {getLicenseTypeOptions(
                 initData.administrativeInformation?.publicationAndOwnership?.[
-                  'common:licenseType'
+                'common:licenseType'
                 ] ?? '-',
               )}
             </Descriptions.Item>

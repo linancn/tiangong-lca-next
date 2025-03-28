@@ -1,5 +1,53 @@
 import { FormattedMessage } from 'umi';
 
+export const uncertaintyDistributionTypeOptions = [
+  {
+    value: 'undefined',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.modellingAndValidation.uncertaintyDistributionType.undefined'
+        defaultMessage='undefined'
+      />
+    ),
+  },
+  {
+    value: 'log-normal',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.modellingAndValidation.uncertaintyDistributionType.logNormal'
+        defaultMessage='log-normal'
+      />
+    ),
+  },
+  {
+    value: 'normal',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.modellingAndValidation.uncertaintyDistributionType.normal'
+        defaultMessage='normal'
+      />
+    ),
+  },
+  {
+    value: 'triangular',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.modellingAndValidation.uncertaintyDistributionType.triangular'
+        defaultMessage='triangular'
+      />
+    ),
+  },
+  {
+    value: 'uniform',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.modellingAndValidation.uncertaintyDistributionType.uniform'
+        defaultMessage='uniform'
+      />
+    ),
+  },
+];
+
 export const processtypeOfDataSetOptions = [
   {
     value: 'Unit process, single operation',
