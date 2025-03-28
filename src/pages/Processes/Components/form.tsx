@@ -554,7 +554,7 @@ export const ProcessForm: FC<Props> = ({
           <LocationTextItemForm
             label={
               <FormattedMessage
-                id='pages.process.view.processInformation.subLocationOfOperationSupplyOrProduction'
+                id='pages.process.view.processInformation.location'
                 defaultMessage='Sub-location(s)'
               />
             }
