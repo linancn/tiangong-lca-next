@@ -1087,7 +1087,7 @@ export const ProcessForm: FC<Props> = ({
             }
           />
 
-        <Divider orientationMargin='0' orientation='left' plain>
+          <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.samplingProcedure'
               defaultMessage='Sampling procedure'
@@ -1103,6 +1103,26 @@ export const ProcessForm: FC<Props> = ({
               <FormattedMessage
                 id='pages.process.view.modellingAndValidation.samplingProcedure'
                 defaultMessage='Sampling procedure'
+              />
+            }
+          />
+
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.process.view.modellingAndValidation.dataCollectionPeriod'
+              defaultMessage='Data collection period'
+            />
+          </Divider>
+          <LangTextItemForm
+            name={[
+              'modellingAndValidation',
+              'dataSourcesTreatmentAndRepresentativeness',
+              'dataCollectionPeriod',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.process.view.modellingAndValidation.dataCollectionPeriod'
+                defaultMessage='Data collection period'
               />
             }
           />

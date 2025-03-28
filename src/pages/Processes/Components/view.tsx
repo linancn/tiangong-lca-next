@@ -972,6 +972,18 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
           />
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
+              id='pages.process.view.modellingAndValidation.dataCollectionPeriod'
+              defaultMessage='Data collection period'
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={
+              initData.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.dataCollectionPeriod
+            }
+          />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
               id='pages.process.view.modellingAndValidation.useAdviceForDataSet'
               defaultMessage='Use advice for data set'
             />

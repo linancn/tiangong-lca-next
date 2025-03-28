@@ -89,6 +89,7 @@ export default {
   'pages.process.view.modellingAndValidation.percentageSupplyOrProductionCovered': 'Percentage supply or production covered',
   'pages.process.view.modellingAndValidation.annualSupplyOrProductionVolume': 'Annual supply or production volume',
   'pages.process.view.modellingAndValidation.samplingProcedure': 'Sampling procedure',
+  'pages.process.view.modellingAndValidation.dataCollectionPeriod': 'Data collection period',
   'pages.process.view.modellingAndValidation.useAdviceForDataSet': 'Use advice for data set',
   'pages.process.view.modellingAndValidation.completenessOtherProblemField': 'Completeness other problem field(s)',
   'pages.process.view.modellingAndValidation.completeness': 'Completeness',

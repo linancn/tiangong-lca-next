@@ -83,6 +83,7 @@ export default {
   'pages.process.view.modellingAndValidation.percentageSupplyOrProductionCovered': '供应或生产覆盖率',
   'pages.process.view.modellingAndValidation.annualSupplyOrProductionVolume': '年供应量或生产量',
   'pages.process.view.modellingAndValidation.samplingProcedure': '采样程序',
+  'pages.process.view.modellingAndValidation.dataCollectionPeriod': '数据收集期',
   'pages.process.view.modellingAndValidation.useAdviceForDataSet': '数据集使用建议',
   'pages.process.view.modellingAndValidation.completenessOtherProblemField': '其他问题领域的完整性',
   'pages.process.view.modellingAndValidation.completeness': '完整性',
