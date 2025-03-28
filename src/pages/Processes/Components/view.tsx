@@ -811,6 +811,18 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
           />
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
+              id='pages.process.view.modellingAndValidation.modellingConstants'
+              defaultMessage='Modelling constants'
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={
+              initData.modellingAndValidation?.LCIMethodAndAllocation
+                ?.modellingConstants
+            }
+          />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
               id='pages.process.view.modellingAndValidation.deviationsFromModellingConstants'
               defaultMessage='Deviation from modelling constants / explanations'
             />

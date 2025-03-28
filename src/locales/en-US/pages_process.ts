@@ -76,6 +76,7 @@ export default {
   'pages.process.view.modellingAndValidation.deviationsFromLCIMethodPrinciple': 'Deviation from LCI method principle / explanations',
   'pages.process.view.modellingAndValidation.lCIMethodApproaches': 'LCI method approaches',
   'pages.process.view.modellingAndValidation.deviationsFromLCIMethodApproaches': 'Deviations from LCI method approaches / explanations',
+  'pages.process.view.modellingAndValidation.modellingConstants': 'Modelling constants',
   'pages.process.view.modellingAndValidation.deviationsFromModellingConstants': 'Deviation from modelling constants / explanations',
   'pages.process.view.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness': 'Data sources, treatment, and representativeness',
   'pages.process.view.modellingAndValidation.dataCutOffAndCompletenessPrinciples': 'Data cut-off and completeness principles',

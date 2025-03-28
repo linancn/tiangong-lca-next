@@ -207,6 +207,9 @@ export function genProcessJsonOrdered(id: string, data: any) {
           deviationsFromLCIMethodApproaches: getLangJson(
             data?.modellingAndValidation?.LCIMethodAndAllocation?.deviationsFromLCIMethodApproaches,
           ),
+          modellingConstants: getLangJson(
+            data?.modellingAndValidation?.LCIMethodAndAllocation?.modellingConstants,
+          ),
           deviationsFromModellingConstants: getLangJson(
             data?.modellingAndValidation?.LCIMethodAndAllocation?.deviationsFromModellingConstants,
           ),
@@ -711,6 +714,9 @@ export function genProcessFromData(data: any) {
           data?.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodApproaches ?? {},
         deviationsFromLCIMethodApproaches: getLangList(
           data?.modellingAndValidation?.LCIMethodAndAllocation?.deviationsFromLCIMethodApproaches,
+        ),
+        modellingConstants: getLangList(
+          data?.modellingAndValidation?.LCIMethodAndAllocation?.modellingConstants,
         ),
         deviationsFromModellingConstants: getLangList(
           data?.modellingAndValidation?.LCIMethodAndAllocation?.deviationsFromModellingConstants,

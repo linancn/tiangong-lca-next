@@ -70,6 +70,7 @@ export default {
   'pages.process.view.modellingAndValidation.deviationsFromLCIMethodPrinciple': '偏离LCI方法原则/解释', //
   'pages.process.view.modellingAndValidation.lCIMethodApproaches': 'LCI方法学途径',
   'pages.process.view.modellingAndValidation.deviationsFromLCIMethodApproaches': '偏离LCI方法应用/解释',
+  'pages.process.view.modellingAndValidation.modellingConstants': '建模常数',
   'pages.process.view.modellingAndValidation.deviationsFromModellingConstants': '偏离建模常数/解释',
   'pages.process.view.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness': '数据来源、处理和代表性',
   'pages.process.view.modellingAndValidation.dataCutOffAndCompletenessPrinciples': '数据切断和完整性原则',

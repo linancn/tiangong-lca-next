@@ -869,6 +869,26 @@ export const ProcessForm: FC<Props> = ({
           />
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
+              id='pages.process.view.modellingAndValidation.modellingConstants'
+              defaultMessage='Modelling constants'
+            />
+          </Divider>
+          <LangTextItemForm
+            name={[
+              'modellingAndValidation',
+              'LCIMethodAndAllocation',
+              'modellingConstants',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.process.view.modellingAndValidation.modellingConstants'
+                defaultMessage='Modelling constants'
+              />
+            }
+          />
+
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
               id='pages.process.view.modellingAndValidation.deviationsFromModellingConstants'
               defaultMessage='Deviation from modelling constants / explanations'
             />
