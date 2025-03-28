@@ -464,6 +464,18 @@ export const ProcessForm: FC<Props> = ({
           >
             <Input />
           </Form.Item>
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.process.view.processInformation.dataSetValidUntil'
+                defaultMessage='Data set valid until:'
+              />
+            }
+            name={['processInformation', 'time', 'dataSetValidUntil']}
+            rules={Yearvalidation_r}
+          >
+            <Input />
+          </Form.Item>
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
               id='pages.process.view.processInformation.timeRepresentativenessDescription'

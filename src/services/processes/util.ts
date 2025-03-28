@@ -116,6 +116,7 @@ export function genProcessJsonOrdered(id: string, data: any) {
         quantitativeReference: { ...quantitativeReference },
         time: {
           'common:referenceYear': data?.processInformation?.time?.['common:referenceYear'] ?? {},
+          dataSetValidUntil: data?.processInformation?.time?.dataSetValidUntil ?? {},
           'common:timeRepresentativenessDescription': getLangJson(
             data?.processInformation?.time?.['common:timeRepresentativenessDescription'],
           ),
@@ -602,6 +603,7 @@ export function genProcessFromData(data: any) {
       },
       time: {
         'common:referenceYear': data?.processInformation?.time?.['common:referenceYear'] ?? {},
+        dataSetValidUntil: data?.processInformation?.time?.dataSetValidUntil ?? {},
         'common:timeRepresentativenessDescription': getLangList(
           data?.processInformation?.time?.['common:timeRepresentativenessDescription'],
         ),

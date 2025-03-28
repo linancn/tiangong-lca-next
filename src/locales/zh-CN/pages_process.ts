@@ -35,6 +35,7 @@ export default {
   'pages.process.view.processInformation.classification': '分类',
   'pages.process.view.processInformation.time': '时间代表性',
   'pages.process.view.processInformation.referenceYear': '参考年份',
+  'pages.process.view.processInformation.dataSetValidUntil': '数据集有效期至:',
   'pages.process.view.processInformation.timeRepresentativenessDescription': '时间代表性',
   'pages.process.view.processInformation.locationOfOperationSupplyOrProduction': '运营、供应或生产地点',
   'pages.process.view.processInformation.location': '地理位置',

@@ -430,6 +430,21 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
               {initData.processInformation?.time?.['common:referenceYear'] ?? '-'}
             </Descriptions.Item>
           </Descriptions>
+          <br />
+          <Descriptions  bordered size={'small'} column={1}>
+           <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.process.view.processInformation.dataSetValidUntil'
+                  defaultMessage='Data set valid until:'
+                />
+              }
+              labelStyle={{ width: '140px' }}
+            >
+              {initData.processInformation?.time?.dataSetValidUntil ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
               id='pages.process.view.processInformation.timeRepresentativenessDescription'

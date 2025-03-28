@@ -37,6 +37,7 @@ export default {
   'pages.process.view.processInformation.classification': 'Classification',
   'pages.process.view.processInformation.time': 'Time representativeness',
   'pages.process.view.processInformation.referenceYear': 'Reference year',
+  'pages.process.view.processInformation.dataSetValidUntil': 'Data set valid until:',
   'pages.process.view.processInformation.timeRepresentativenessDescription': 'Time representativeness description',
   'pages.process.view.processInformation.locationOfOperationSupplyOrProduction': 'Location',
   'pages.process.view.processInformation.location': 'Location',
