@@ -689,7 +689,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
               labelStyle={{ width: '180px' }}
             >
               {getComplianceLabel(
-             initData.processInformation?.mathematicalRelations?.variableParameter?.uncertaintyDistributionType ?? '-')}
+                initData.processInformation?.mathematicalRelations?.variableParameter?.uncertaintyDistributionType ?? '-')}
             </Descriptions.Item>
           </Descriptions>
           <br />
@@ -956,6 +956,18 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
             data={
               initData.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
                 ?.annualSupplyOrProductionVolume
+            }
+          />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.process.view.modellingAndValidation.samplingProcedure'
+              defaultMessage='Sampling procedure'
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={
+              initData.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.samplingProcedure
             }
           />
           <Divider orientationMargin='0' orientation='left' plain>

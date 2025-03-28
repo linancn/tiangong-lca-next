@@ -255,7 +255,10 @@ export function genProcessJsonOrdered(id: string, data: any) {
             ),
           },
           percentageSupplyOrProductionCovered: data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.percentageSupplyOrProductionCovered ?? {},
-          annualSupplyOrProductionVolume: data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.annualSupplyOrProductionVolume ?? {},
+          annualSupplyOrProductionVolume: getLangJson(data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.annualSupplyOrProductionVolume),
+          samplingProcedure: getLangJson(
+            data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.samplingProcedure,
+          ),
           useAdviceForDataSet: getLangJson(
             data?.modellingAndValidation?.LCIMethodAndAllocation?.useAdviceForDataSet,
           ),
@@ -765,7 +768,10 @@ export function genProcessFromData(data: any) {
           ),
         },
         percentageSupplyOrProductionCovered: data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.percentageSupplyOrProductionCovered ?? {},
-        annualSupplyOrProductionVolume: data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.annualSupplyOrProductionVolume ?? {},
+        annualSupplyOrProductionVolume: getLangList(data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.annualSupplyOrProductionVolume),
+        samplingProcedure: getLangList(
+          data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.samplingProcedure,
+        ),
         useAdviceForDataSet: getLangList(
           data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
             ?.useAdviceForDataSet,
