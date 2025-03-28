@@ -930,7 +930,21 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
             }
             lang={lang}
           />
-
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.process.view.modellingAndValidation.percentageSupplyOrProductionCovered'
+                  defaultMessage='Percentage supply or production covered'
+                />
+              }
+              labelStyle={{ width: '220px' }}
+            >
+              {initData.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.percentageSupplyOrProductionCovered ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.useAdviceForDataSet'

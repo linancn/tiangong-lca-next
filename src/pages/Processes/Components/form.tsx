@@ -1055,7 +1055,17 @@ export const ProcessForm: FC<Props> = ({
             formRef={formRef}
             onData={onData}
           />
-
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.process.view.administrativeInformation.percentageSupplyOrProductionCovered'
+                defaultMessage='Percentage supply or production covered'
+              />
+            }
+            name={['modellingAndValidation', 'dataSourcesTreatmentAndRepresentativeness', 'percentageSupplyOrProductionCovered']}
+          >
+            <Input />
+          </Form.Item>
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.useAdviceForDataSet'

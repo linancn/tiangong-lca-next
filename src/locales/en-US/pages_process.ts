@@ -86,6 +86,7 @@ export default {
   'pages.process.view.modellingAndValidation.dataTreatmentAndExtrapolationsPrinciples': 'Data treatment and extrapolations principles',
   'pages.process.view.modellingAndValidation.deviationsFromTreatmentAndExtrapolationPrinciples': 'Deviation from data treatment and extrapolations principles / explanations',
   'pages.process.view.modellingAndValidation.referenceToDataSource': 'Data source(s) used for this data set',
+  'pages.process.view.administrativeInformation.percentageSupplyOrProductionCovered': 'Percentage supply or production covered',
   'pages.process.view.modellingAndValidation.useAdviceForDataSet': 'Use advice for data set',
   'pages.process.view.modellingAndValidation.completenessOtherProblemField': 'Completeness other problem field(s)',
   'pages.process.view.modellingAndValidation.completeness': 'Completeness',
