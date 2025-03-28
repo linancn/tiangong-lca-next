@@ -40,6 +40,7 @@ export default {
   'pages.process.view.processInformation.dataSetValidUntil': 'Data set valid until:',
   'pages.process.view.processInformation.timeRepresentativenessDescription': 'Time representativeness description',
   'pages.process.view.processInformation.locationOfOperationSupplyOrProduction': 'Location',
+  'pages.process.view.processInformation.subLocationOfOperationSupplyOrProduction': 'Sub-location(s)',
   'pages.process.view.processInformation.location': 'Location',
   'pages.process.view.processInformation.descriptionOfRestrictions': 'Geographical representativeness description',
   'pages.process.view.processInformation.technology': 'Technological representativeness',

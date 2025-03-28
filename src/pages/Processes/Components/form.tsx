@@ -546,6 +546,54 @@ export const ProcessForm: FC<Props> = ({
           size='small'
           title={
             <FormattedMessage
+              id='pages.process.view.processInformation.subLocationOfOperationSupplyOrProduction'
+              defaultMessage='Sub-location(s)'
+            />
+          }
+        >
+          <LocationTextItemForm
+            label={
+              <FormattedMessage
+                id='pages.process.view.processInformation.subLocationOfOperationSupplyOrProduction'
+                defaultMessage='Sub-location(s)'
+              />
+            }
+            name={[
+              'processInformation',
+              'geography',
+              'subLocationOfOperationSupplyOrProduction',
+              '@subLocation',
+            ]}
+            lang={lang}
+            onData={onData}
+            rules={NullableString}
+          />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.process.view.processInformation.descriptionOfRestrictions'
+              defaultMessage='Geographical representativeness description'
+            />
+          </Divider>
+          <LangTextItemForm
+            name={[
+              'processInformation',
+              'geography',
+              'subLocationOfOperationSupplyOrProduction',
+              'descriptionOfRestrictions',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.process.view.processInformation.descriptionOfRestrictions'
+                defaultMessage='Geographical representativeness description'
+              />
+            }
+          />
+        </Card>
+
+        <Card
+          size='small'
+          title={
+            <FormattedMessage
               id='pages.process.view.processInformation.technology'
               defaultMessage='Technological representativeness'
             />

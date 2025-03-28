@@ -498,6 +498,44 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
           size='small'
           title={
             <FormattedMessage
+              id='pages.process.view.processInformation.subLocationOfOperationSupplyOrProduction'
+              defaultMessage='Sub-location(s)'
+            />
+          }
+        >
+          <LocationTextItemDescription
+            lang={lang}
+            data={
+              initData.processInformation?.geography?.subLocationOfOperationSupplyOrProduction?.[
+                '@subLocation'
+              ] ?? '-'
+            }
+            label={
+              <FormattedMessage
+                id='pages.process.view.processInformation.location'
+                defaultMessage='Sub-location(s)'
+              />
+            }
+            labelStyle={{ width: '100px' }}
+          />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.process.view.processInformation.descriptionOfRestrictions'
+              defaultMessage='Geographical representativeness description'
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={
+              initData.processInformation?.geography?.subLocationOfOperationSupplyOrProduction
+                ?.descriptionOfRestrictions
+            }
+          />
+        </Card>
+        <br />
+        <Card
+          size='small'
+          title={
+            <FormattedMessage
               id='pages.process.view.processInformation.technology'
               defaultMessage='Technological representativeness'
             />

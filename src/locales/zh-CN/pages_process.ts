@@ -38,6 +38,7 @@ export default {
   'pages.process.view.processInformation.dataSetValidUntil': '数据集有效期至:',
   'pages.process.view.processInformation.timeRepresentativenessDescription': '时间代表性',
   'pages.process.view.processInformation.locationOfOperationSupplyOrProduction': '运营、供应或生产地点',
+  'pages.process.view.processInformation.subLocationOfOperationSupplyOrProduction': '运营、供应或生产地子地点',
   'pages.process.view.processInformation.location': '地理位置',
   'pages.process.view.processInformation.descriptionOfRestrictions': '地理代表性描述',
   'pages.process.view.processInformation.technology': '技术代表性',

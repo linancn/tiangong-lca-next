@@ -136,6 +136,20 @@ export function genProcessJsonOrdered(id: string, data: any) {
                 ?.descriptionOfRestrictions,
             ),
           },
+          subLocationOfOperationSupplyOrProduction: {
+            '@subLocation':
+              data?.processInformation?.geography?.subLocationOfOperationSupplyOrProduction?.[
+                '@subLocation'
+              ] === 'NULL'
+                ? {}
+                : (data?.processInformation?.geography?.subLocationOfOperationSupplyOrProduction?.[
+                    '@subLocation'
+                  ] ?? {}),
+            descriptionOfRestrictions: getLangJson(
+              data?.processInformation?.geography?.subLocationOfOperationSupplyOrProduction
+                ?.descriptionOfRestrictions,
+            ),
+          },
         },
         technology: {
           technologyDescriptionAndIncludedProcesses: getLangJson(
@@ -616,6 +630,16 @@ export function genProcessFromData(data: any) {
             ] ?? {},
           descriptionOfRestrictions: getLangList(
             data?.processInformation?.geography?.locationOfOperationSupplyOrProduction
+              ?.descriptionOfRestrictions,
+          ),
+        },
+        subLocationOfOperationSupplyOrProduction: {
+          '@subLocation':
+            data?.processInformation?.geography?.subLocationOfOperationSupplyOrProduction?.[
+              '@subLocation'
+            ] ?? {},
+          descriptionOfRestrictions: getLangList(
+            data?.processInformation?.geography?.subLocationOfOperationSupplyOrProduction
               ?.descriptionOfRestrictions,
           ),
         },
