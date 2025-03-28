@@ -1055,10 +1055,11 @@ export const ProcessForm: FC<Props> = ({
             formRef={formRef}
             onData={onData}
           />
+          <br />
           <Form.Item
             label={
               <FormattedMessage
-                id='pages.process.view.administrativeInformation.percentageSupplyOrProductionCovered'
+                id='pages.process.view.modellingAndValidation.percentageSupplyOrProductionCovered'
                 defaultMessage='Percentage supply or production covered'
               />
             }

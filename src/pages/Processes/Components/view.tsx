@@ -930,6 +930,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
             }
             lang={lang}
           />
+          <br />
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item
               key={0}
