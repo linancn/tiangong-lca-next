@@ -262,6 +262,9 @@ export function genProcessJsonOrdered(id: string, data: any) {
           dataCollectionPeriod: getLangJson(
             data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.dataCollectionPeriod,
           ),
+          uncertaintyAdjustments: getLangJson(
+            data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.uncertaintyAdjustments,
+          ),
           useAdviceForDataSet: getLangJson(
             data?.modellingAndValidation?.LCIMethodAndAllocation?.useAdviceForDataSet,
           ),
@@ -777,6 +780,9 @@ export function genProcessFromData(data: any) {
         ),
         dataCollectionPeriod: getLangList(
           data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.dataCollectionPeriod,
+        ),
+        uncertaintyAdjustments: getLangList(
+          data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.uncertaintyAdjustments,
         ),
         useAdviceForDataSet: getLangList(
           data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
