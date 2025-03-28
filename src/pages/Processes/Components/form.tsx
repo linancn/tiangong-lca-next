@@ -1069,6 +1069,26 @@ export const ProcessForm: FC<Props> = ({
           </Form.Item>
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
+              id='pages.process.view.modellingAndValidation.annualSupplyOrProductionVolume'
+              defaultMessage='Annual supply or production volume'
+            />
+          </Divider>
+          <LangTextItemForm
+            name={[
+              'modellingAndValidation',
+              'dataSourcesTreatmentAndRepresentativeness',
+              'annualSupplyOrProductionVolume',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.process.view.modellingAndValidation.annualSupplyOrProductionVolume'
+                defaultMessage='Annual supply or production volume'
+              />
+            }
+          />
+
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
               id='pages.process.view.modellingAndValidation.useAdviceForDataSet'
               defaultMessage='Use advice for data set'
             />

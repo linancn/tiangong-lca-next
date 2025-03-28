@@ -255,6 +255,7 @@ export function genProcessJsonOrdered(id: string, data: any) {
             ),
           },
           percentageSupplyOrProductionCovered: data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.percentageSupplyOrProductionCovered ?? {},
+          annualSupplyOrProductionVolume: data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.annualSupplyOrProductionVolume ?? {},
           useAdviceForDataSet: getLangJson(
             data?.modellingAndValidation?.LCIMethodAndAllocation?.useAdviceForDataSet,
           ),
@@ -764,6 +765,7 @@ export function genProcessFromData(data: any) {
           ),
         },
         percentageSupplyOrProductionCovered: data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.percentageSupplyOrProductionCovered ?? {},
+        annualSupplyOrProductionVolume: data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.annualSupplyOrProductionVolume ?? {},
         useAdviceForDataSet: getLangList(
           data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
             ?.useAdviceForDataSet,

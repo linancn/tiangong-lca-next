@@ -948,6 +948,18 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
           </Descriptions>
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
+              id='pages.process.view.modellingAndValidation.annualSupplyOrProductionVolume'
+              defaultMessage='Annual supply or production volume'
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={
+              initData.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.annualSupplyOrProductionVolume
+            }
+          />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
               id='pages.process.view.modellingAndValidation.useAdviceForDataSet'
               defaultMessage='Use advice for data set'
             />
