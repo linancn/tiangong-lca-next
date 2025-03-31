@@ -270,9 +270,10 @@ export function genProcessJsonOrdered(id: string, data: any) {
           ),
         },
         completeness: {
-          completenessDescription: getLangJson(
-            data?.modellingAndValidation?.completeness?.completenessDescription,
-          ),
+          completenessProductModel: data?.modellingAndValidation?.completeness?.completenessProductModel,
+          // completenessDescription: getLangJson(
+          //   data?.modellingAndValidation?.completeness?.completenessDescription,
+          // ),
         },
         validation: {
           review: listToJson(
@@ -790,9 +791,10 @@ export function genProcessFromData(data: any) {
         ),
       },
       completeness: {
-        completenessDescription: getLangList(
-          data?.modellingAndValidation?.completeness?.completenessDescription,
-        ),
+        completenessProductModel: data?.modellingAndValidation?.completeness?.completenessProductModel,
+        // completenessDescription: getLangList(
+        //   data?.modellingAndValidation?.completeness?.completenessDescription,
+        // ),
       },
       validation: {
         review: {

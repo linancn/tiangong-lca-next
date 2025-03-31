@@ -17,7 +17,7 @@ import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import ProcessExchangeView from './Exchange/view';
-import { uncertaintyDistributionTypeOptions } from './optiondata';
+import { uncertaintyDistributionTypeOptions, completenessProductModelOptions } from './optiondata';
 
 import {
   copyrightOptions,
@@ -64,6 +64,11 @@ const getLicenseTypeOptions = (value: string) => {
 
 const getComplianceLabel = (value: string) => {
   const option = uncertaintyDistributionTypeOptions.find((opt) => opt.value === value);
+  return option ? option.label : '-';
+};
+
+const getCompletenessProductModelOptions = (value: string) => {
+  const option = completenessProductModelOptions.find((opt) => opt.value === value);
   return option ? option.label : '-';
 };
 
@@ -1008,7 +1013,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
           />
         </Card>
         <br />
-        <Divider orientationMargin='0' orientation='left' plain>
+        {/* <Divider orientationMargin='0' orientation='left' plain>
           <FormattedMessage
             id='pages.process.view.modellingAndValidation.completenessOtherProblemField'
             defaultMessage='Completeness other problem field(s)'
@@ -1016,7 +1021,33 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
         </Divider>
         <LangTextItemDescription
           data={initData.modellingAndValidation?.completeness?.completenessOtherProblemField}
-        />
+        /> */}
+        <Card
+          size='small'
+          title={
+            <FormattedMessage
+              id='pages.process.view.modellingAndValidation.completeness'
+              defaultMessage='Completeness'
+            />
+          }
+        >
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.process.view.modellingAndValidation.completeness.completenessProductModel'
+                  defaultMessage='Completeness product model'
+                />
+              }
+              labelStyle={{ width: '140px' }}
+            >
+              {getCompletenessProductModelOptions(
+                initData.modellingAndValidation?.completeness?.completenessProductModel ?? '-',
+              )}
+            </Descriptions.Item>
+          </Descriptions>
+        </Card>
         <br />
         <Card
           size='small'

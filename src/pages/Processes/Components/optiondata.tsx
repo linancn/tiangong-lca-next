@@ -1,5 +1,44 @@
 import { FormattedMessage } from 'umi';
 
+export const completenessProductModelOptions = [
+  {
+    value: 'All relevant flows quantified',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.modellingAndValidation.completeness.allRelevantFlowsQuantified'
+        defaultMessage='All relevant flows quantified'
+      />
+    ),
+  },
+  {
+    value: 'Relevant flows missing',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.modellingAndValidation.completeness.relevantFlowsMissing'
+        defaultMessage='Relevant flows missing'
+      />
+    ),
+  },
+  {
+    value: 'Topic not relevant',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.modellingAndValidation.completeness.topicNotRelevant'
+        defaultMessage='Topic not relevant'
+      />
+    ),
+  },
+  {
+    value: 'No statement',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.modellingAndValidation.completeness.noStatement'
+        defaultMessage='No statement'
+      />
+    ),
+  },
+]
+
 export const uncertaintyDistributionTypeOptions = [
   {
     value: 'undefined',

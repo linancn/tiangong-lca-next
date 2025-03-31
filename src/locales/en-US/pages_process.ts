@@ -94,6 +94,12 @@ export default {
   'pages.process.view.modellingAndValidation.useAdviceForDataSet': 'Use advice for data set',
   'pages.process.view.modellingAndValidation.completenessOtherProblemField': 'Completeness other problem field(s)',
   'pages.process.view.modellingAndValidation.completeness': 'Completeness',
+  'pages.process.view.modellingAndValidation.completeness.completenessProductModel': 'Completeness product model',
+  'pages.process.view.modellingAndValidation.completeness.allRelevantFlowsQuantified': 'All relevant flows quantified',
+  'pages.process.view.modellingAndValidation.completeness.relevantFlowsMissing': 'Relevant flows missing',
+  'pages.process.view.modellingAndValidation.completeness.topicNotRelevant': 'Topic not relevant',
+  'pages.process.view.modellingAndValidation.completeness.noStatement': 'No statement',
+
   // 'pages.process.view.modellingAndValidation.completenessDescription': '完整性描述',
   'pages.process.view.modellingAndValidation.Review': 'Review',
   'pages.process.view.modellingAndValidation.type': 'Type of review',

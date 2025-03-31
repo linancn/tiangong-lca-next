@@ -35,7 +35,7 @@ import {
   workflowAndPublicationStatusOptions,
 } from './optiondata';
 import ReveiwItemForm from './Review/form';
-import { uncertaintyDistributionTypeOptions } from './optiondata';
+import { uncertaintyDistributionTypeOptions, completenessProductModelOptions } from './optiondata';
 
 type Props = {
   lang: string;
@@ -1126,7 +1126,7 @@ export const ProcessForm: FC<Props> = ({
               />
             }
           />
-           <Divider orientationMargin='0' orientation='left' plain>
+          <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.uncertaintyAdjustments'
               defaultMessage='Uncertainty adjustments'
@@ -1167,7 +1167,28 @@ export const ProcessForm: FC<Props> = ({
             rules={FTMultiLang_r}
           />
         </Card>
-        <Divider orientationMargin='0' orientation='left' plain>
+        <Card 
+          size='small'
+          title={
+            <FormattedMessage
+              id='pages.process.view.modellingAndValidation.completeness'
+              defaultMessage='Completeness'
+            />
+          }>
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.process.view.modellingAndValidation.completeness.completenessProductModel'
+                defaultMessage='Completeness product model'
+              />
+            }
+            name={['modellingAndValidation', 'completeness', 'completenessProductModel']}
+          >
+            <Select options={completenessProductModelOptions} />
+          </Form.Item>
+        </Card>
+
+        {/* <Divider orientationMargin='0' orientation='left' plain>
           <FormattedMessage
             id='pages.process.view.modellingAndValidation.completeness'
             defaultMessage='Completeness'
@@ -1181,7 +1202,7 @@ export const ProcessForm: FC<Props> = ({
               defaultMessage='Completeness'
             />
           }
-        />
+        /> */}
       </Space>
     ),
     administrativeInformation: (
