@@ -50,6 +50,7 @@ export function genProcessJsonOrdered(id: string, data: any) {
           }
         },
         relativeStandardDeviation95In: item.relativeStandardDeviation95In,
+        dataSourceType: item.dataSourceType,
         dataDerivationTypeStatus: item.dataDerivationTypeStatus,
         generalComment: getLangJson(item.generalComment),
       };
@@ -1094,6 +1095,7 @@ export function genProcessFromData(data: any) {
               }
             },
             relativeStandardDeviation95In: item.relativeStandardDeviation95In,
+            dataSourceType: item.dataSourceType,
             dataDerivationTypeStatus: item.dataDerivationTypeStatus,
             generalComment: getLangList(item.generalComment),
             quantitativeReference: true,
@@ -1129,6 +1131,7 @@ export function genProcessFromData(data: any) {
               }
             },
             relativeStandardDeviation95In: item.relativeStandardDeviation95In,
+            dataSourceType: item.dataSourceType,
             dataDerivationTypeStatus: item.dataDerivationTypeStatus,
             generalComment: getLangList(item.generalComment),
             quantitativeReference: false,

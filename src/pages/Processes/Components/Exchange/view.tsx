@@ -6,7 +6,7 @@ import { Button, Card, Descriptions, Divider, Drawer, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
-import { DataDerivationTypeStatusOptions, functionTypeOptions } from '../optiondata';
+import { DataDerivationTypeStatusOptions, functionTypeOptions, dataSourceTypeOptions } from '../optiondata';
 
 type Props = {
   id: string;
@@ -19,6 +19,11 @@ type Props = {
 
 const getDataDerivationTypeStatusOptions = (value: string) => {
   const option = DataDerivationTypeStatusOptions.find((opt) => opt.value === value);
+  return option ? option.label : '-';
+};
+
+const getDataSourceTypeOptions = (value: string) => {
+  const option = dataSourceTypeOptions.find((opt) => opt.value === value);
   return option ? option.label : '-';
 };
 
@@ -300,6 +305,21 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
             </Descriptions.Item>
           </Descriptions>
         </Card>
+        <br />
+        <Descriptions bordered size={'small'} column={1}>
+          <Descriptions.Item
+            key={0}
+            label={
+              <FormattedMessage
+                id='pages.process.view.exchange.dataSourceType'
+                defaultMessage="Data source type"
+              />
+            }
+            labelStyle={{ width: '220px' }}
+          >
+            {getDataSourceTypeOptions(viewData.dataSourceType)}
+          </Descriptions.Item>
+        </Descriptions>
         <br />
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item

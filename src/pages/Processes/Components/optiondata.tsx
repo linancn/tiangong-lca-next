@@ -1,5 +1,44 @@
 import { FormattedMessage } from 'umi';
 
+export const dataSourceTypeOptions = [
+  {
+    value: 'Primary',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.dataSourceType.primary'
+        defaultMessage='Primary'
+      />
+    ),
+  },
+  {
+    value: '> 90% primary',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.dataSourceType.over90Primary'
+        defaultMessage='> 90% primary'
+      />
+    ),
+  },
+  {
+    value: 'Mixed primary / secondary',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.dataSourceType.mixedPrimarySecondary'
+        defaultMessage='Mixed primary / secondary'
+      />
+    ),
+  },
+  {
+    value: 'Secondary',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.dataSourceType.secondary'
+        defaultMessage='Secondary'
+      />
+    ),
+  },
+]
+
 export const functionTypeOptions = [
   {
     value: 'General reminder flow',

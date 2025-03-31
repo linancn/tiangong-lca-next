@@ -22,7 +22,7 @@ import {
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import { DataDerivationTypeStatusOptions,functionTypeOptions } from '../optiondata';
+import { DataDerivationTypeStatusOptions,functionTypeOptions, dataSourceTypeOptions } from '../optiondata';
 
 type Props = {
   direction: string;
@@ -335,7 +335,18 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
             </Form.Item>
 
             </Card>
-              
+            <br />
+            <Form.Item
+              label={
+                <FormattedMessage
+                  id='pages.process.view.exchange.dataSourceType'
+                  defaultMessage='Data source type'
+                />
+              }
+              name={'dataSourceType'}
+            >
+              <Select options={dataSourceTypeOptions} />
+            </Form.Item>
             <Form.Item
               label={
                 <FormattedMessage
