@@ -168,6 +168,7 @@ export default {
   'pages.process.veiw.exchange.version': '版本',
   'pages.process.view.exchange.shortDescription': '简述',
   'pages.process.view.exchange.location': '位置',
+  'pages.process.view.exchange.referenceToVariable': '变量',
   'pages.process.view.exchange.meanAmount': '平均量',
   'pages.process.view.exchange.resultingAmount': '结果量',
   'pages.process.view.exchange.functionType': '功能类型',
