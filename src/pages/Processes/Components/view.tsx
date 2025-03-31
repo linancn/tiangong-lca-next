@@ -1386,6 +1386,23 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
             </Descriptions.Item>
           </Descriptions>
           <br />
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.process.view.administrativeInformation.registrationNumber'
+                  defaultMessage='Registration number'
+                />
+              }
+              styles={{ label: { width: '140px' } }}
+            >
+              {initData.administrativeInformation?.publicationAndOwnership?.[
+                'common:registrationNumber'
+              ] ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
+          <br />
           <ContactSelectDescription
             title={
               <FormattedMessage

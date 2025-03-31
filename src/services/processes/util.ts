@@ -541,6 +541,10 @@ export function genProcessJsonOrdered(id: string, data: any) {
             data?.administrativeInformation?.publicationAndOwnership?.[
               'common:workflowAndPublicationStatus'
             ] ?? {},
+          'common:registrationNumber':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:registrationNumber'
+            ] ?? {},
           'common:referenceToOwnershipOfDataSet': {
             '@refObjectId':
               data?.administrativeInformation?.publicationAndOwnership?.[
@@ -1009,6 +1013,10 @@ export function genProcessFromData(data: any) {
           data?.administrativeInformation?.publicationAndOwnership?.[
             'common:workflowAndPublicationStatus'
           ] ?? {},
+        'common:registrationNumber':
+          data?.administrativeInformation?.publicationAndOwnership?.[
+            'common:registrationNumber'
+          ],
         'common:referenceToOwnershipOfDataSet': {
           '@refObjectId':
             data?.administrativeInformation?.publicationAndOwnership?.[

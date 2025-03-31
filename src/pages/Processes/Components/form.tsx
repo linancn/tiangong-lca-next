@@ -1494,6 +1494,22 @@ export const ProcessForm: FC<Props> = ({
             <Select options={workflowAndPublicationStatusOptions} />
           </Form.Item>
 
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.process.view.administrativeInformation.registrationNumber'
+                defaultMessage='Registration number'
+              />
+            }
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:registrationNumber',
+            ]}
+          >
+            <Input />
+          </Form.Item>
+
           <ContactSelectForm
             name={[
               'administrativeInformation',
