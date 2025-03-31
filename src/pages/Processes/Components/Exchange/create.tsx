@@ -214,6 +214,73 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
             <Form.Item
               label={
                 <FormattedMessage
+                  id='processExchange.uncertaintyDistributionType'
+                  defaultMessage='Uncertainty distribution type'
+                />
+              }
+              name={'uncertaintyDistributionType'}
+            >
+              <Select
+                options={[
+                  { value: 'undefined', label: 'Undefined' },
+                  { value: 'log-normal', label: 'Lognormal' },
+                  { value: 'normal', label: 'Normal' },
+                  { value: 'triangular', label: 'Triangular' },
+                  { value: 'uniform', label: 'Uniform' },
+                ]}
+              />
+            </Form.Item>
+            {formRefCreate.current?.getFieldValue('uncertaintyDistributionType') === 'triangular' ||
+            formRefCreate.current?.getFieldValue('uncertaintyDistributionType') === 'uniform' ? (
+              <>
+                <Form.Item
+                  label={
+                    <FormattedMessage
+                      id='processExchange.minimumAmount'
+                      defaultMessage='Minimum amount'
+                    />
+                  }
+                  name={'minimumAmount'}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  label={
+                    <FormattedMessage
+                      id='processExchange.maximumAmount'
+                      defaultMessage='Maximum amount'
+                    />
+                  }
+                  name={'maximumAmount'}
+                >
+                  <Input />
+                </Form.Item>
+              </>
+            ) : (
+              <></>
+            )}
+
+            {formRefCreate.current?.getFieldValue('uncertaintyDistributionType') === 'log-normal' ||
+            formRefCreate.current?.getFieldValue('uncertaintyDistributionType') === 'log-normal' ? (
+              <>
+                <Form.Item
+                  label={
+                    <FormattedMessage
+                      id='processExchange.relativeStandardDeviation95In'
+                      defaultMessage='Relative standard deviation 95 in'
+                    />
+                  }
+                  name={'relativeStandardDeviation95In'}
+                >
+                  <Input />
+                </Form.Item>
+              </>
+            ) : (
+              <></>
+            )}
+            <Form.Item
+              label={
+                <FormattedMessage
                   id='pages.process.view.exchange.dataDerivationTypeStatus'
                   defaultMessage='Data derivation type / status'
                 />
