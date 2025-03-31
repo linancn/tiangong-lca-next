@@ -22,7 +22,7 @@ import {
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import { DataDerivationTypeStatusOptions } from '../optiondata';
+import { DataDerivationTypeStatusOptions,functionTypeOptions } from '../optiondata';
 
 type Props = {
   id: string;
@@ -219,6 +219,17 @@ const ProcessExchangeEdit: FC<Props> = ({
               name={'location'}
             >
               <Input/>
+            </Form.Item>
+            <Form.Item
+              label={
+                <FormattedMessage
+                  id='pages.process.view.exchange.functionType'
+                  defaultMessage='Function type'
+                />
+              }
+              name={'functionType'}
+            >
+              <Select options={functionTypeOptions}/>
             </Form.Item>
             <Form.Item
               label={

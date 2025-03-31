@@ -1,5 +1,35 @@
 import { FormattedMessage } from 'umi';
 
+export const functionTypeOptions = [
+  {
+    value: 'General reminder flow',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.functionType.generalReminderFlow'
+        defaultMessage='General reminder flow'
+      />
+    ),
+  },
+  {
+    value: 'Allocation reminder flow',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.functionType.allocationReminderFlow'
+        defaultMessage='Allocation reminder flow'
+      />
+    ),
+  },
+  {
+    value: 'System expansion reminder flow',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.functionType.systemExpansionReminderFlow'
+        defaultMessage='System expansion reminder flow'
+      />
+    ),
+  },
+]
+
 export const completenessElementaryFlowsTypeOptions = [
   {
     value: 'Climate change',
