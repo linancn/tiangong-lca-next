@@ -1454,6 +1454,17 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
               )}
             </Descriptions.Item>
           </Descriptions>
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.process.view.administrativeInformation.accessRestrictions'
+              defaultMessage='Access and use restrictions'
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={
+              initData.administrativeInformation?.publicationAndOwnership?.['common:accessRestrictions']
+            }
+          />
         </Card>
       </>
     ),

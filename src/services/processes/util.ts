@@ -572,6 +572,9 @@ export function genProcessJsonOrdered(id: string, data: any) {
             data?.administrativeInformation?.publicationAndOwnership?.['common:copyright'],
           'common:licenseType':
             data?.administrativeInformation?.publicationAndOwnership?.['common:licenseType'],
+          'common:accessRestrictions':getLangJson(
+              data?.administrativeInformation?.publicationAndOwnership?.['common:accessRestrictions'],
+            ),
         },
       },
       exchanges: {
@@ -1044,6 +1047,9 @@ export function genProcessFromData(data: any) {
           data?.administrativeInformation?.publicationAndOwnership?.['common:copyright'],
         'common:licenseType':
           data?.administrativeInformation?.publicationAndOwnership?.['common:licenseType'],
+        'common:accessRestrictions':getLangList(
+            data?.administrativeInformation?.publicationAndOwnership?.['common:accessRestrictions'],
+          ),
       },
     },
     exchanges: {

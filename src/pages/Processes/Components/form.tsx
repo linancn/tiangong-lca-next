@@ -35,7 +35,7 @@ import {
   workflowAndPublicationStatusOptions,
 } from './optiondata';
 import ReveiwItemForm from './Review/form';
-import { uncertaintyDistributionTypeOptions, completenessProductModelOptions, completenessElementaryFlowsTypeOptions ,completenessElementaryFlowsValueOptions} from './optiondata';
+import { uncertaintyDistributionTypeOptions, completenessProductModelOptions, completenessElementaryFlowsTypeOptions, completenessElementaryFlowsValueOptions } from './optiondata';
 
 type Props = {
   lang: string;
@@ -1526,7 +1526,7 @@ export const ProcessForm: FC<Props> = ({
             formRef={formRef}
             onData={onData}
           />
-
+          <br />
           <Form.Item
             label={
               <FormattedMessage
@@ -1550,6 +1550,24 @@ export const ProcessForm: FC<Props> = ({
           >
             <Select options={licenseTypeOptions} />
           </Form.Item>
+          <Card size='small' title={
+            <FormattedMessage
+              id='pages.process.view.administrativeInformation.accessRestrictions'
+              defaultMessage='Access and use restrictions'
+            />
+          }>
+            <LangTextItemForm
+              name={['administrativeInformation', 'publicationAndOwnership', 'common:accessRestrictions']}
+              label={
+                <FormattedMessage
+                  id='pages.process.view.administrativeInformation.accessRestrictions'
+                  defaultMessage='Access and use restrictions'
+                />
+              }
+              rules={FTMultiLang_r}
+            />
+          </Card>
+
         </Card>
       </Space>
     ),

@@ -142,6 +142,7 @@ export default {
   'pages.process.view.administrativeInformation.referenceToOwnershipOfDataSet': '数据集拥有者',
   'pages.process.view.administrativeInformation.copyright': '版权？',
   'pages.process.view.administrativeInformation.licenseType': '许可类型',
+  'pages.process.view.administrativeInformation.accessRestrictions': '访问和使用限制',
 
   'pages.process.view.exchanges': '输入/输出',
   'processExchange.exchangeDirection': '输入/输出方向',

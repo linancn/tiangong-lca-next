@@ -149,6 +149,7 @@ export default {
   'pages.process.view.administrativeInformation.referenceToOwnershipOfDataSet': 'Owner of data set',
   'pages.process.view.administrativeInformation.copyright': 'Copyright?',
   'pages.process.view.administrativeInformation.licenseType': 'License type',
+  'pages.process.view.administrativeInformation.accessRestrictions': 'Access and use restrictions',
   'processExchange.exchangeDirection': 'Exchange direction',
   'processExchange.resultingAmount': 'Resulting amount',
   'processExchange.meanAmount': 'Mean amount',
