@@ -397,6 +397,9 @@ export function genProcessJsonOrdered(id: string, data: any) {
               ]?.['common:shortDescription'],
             ),
           },
+          "common:project": getLangJson(
+            data?.administrativeInformation?.commissionerAndGoal?.['common:project'],
+          ),
           'common:intendedApplications': getLangJson(
             data?.administrativeInformation?.commissionerAndGoal?.['common:intendedApplications'],
           ),
@@ -863,6 +866,9 @@ export function genProcessFromData(data: any) {
             ]?.['common:shortDescription'],
           ),
         },
+        'common:project': getLangList(
+          data?.administrativeInformation?.commissionerAndGoal?.['common:project'],
+        ),
         'common:intendedApplications': getLangList(
           data?.administrativeInformation?.commissionerAndGoal?.['common:intendedApplications'],
         ),

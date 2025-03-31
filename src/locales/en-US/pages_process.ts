@@ -131,6 +131,7 @@ export default {
   'pages.process.view.modellingAndValidation.referenceToNameOfReviewerAndInstitution': 'Reviewer name and institution',
 
   'pages.process.view.administrativeInformation.referenceToCommissioner': 'Commissioner of data set',
+  'pages.process.view.administrativeInformation.project': 'Project',
   'pages.process.view.administrativeInformation.intendedApplications': 'Intended applications',
   'pages.process.view.administrativeInformation.RreferenceToPersonOrEntityGeneratingTheDataSet': 'Data set generator / modeller',
   'pages.process.view.administrativeInformation.dataEntryBy': 'Data entry by',

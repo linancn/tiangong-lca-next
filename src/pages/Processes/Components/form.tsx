@@ -1278,6 +1278,29 @@ export const ProcessForm: FC<Props> = ({
           size='small'
           title={
             <FormattedMessage
+              id='pages.process.view.administrativeInformation.project'
+              defaultMessage='Project'
+            />
+          }
+        >
+          <LangTextItemForm
+            name={[
+              'administrativeInformation',
+              'commissionerAndGoal',
+              'common:project',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.process.view.administrativeInformation.project'
+                defaultMessage='Project'
+              />
+            }
+          />
+        </Card>
+        <Card
+          size='small'
+          title={
+            <FormattedMessage
               id='pages.process.view.administrativeInformation.intendedApplications'
               defaultMessage='Intended applications'
             />

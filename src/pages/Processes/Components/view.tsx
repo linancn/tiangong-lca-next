@@ -1184,6 +1184,18 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
         />
         <Divider orientationMargin='0' orientation='left' plain>
           <FormattedMessage
+            id='pages.process.view.administrativeInformation.project'
+            defaultMessage='Project'
+          />
+        </Divider>
+        <LangTextItemDescription
+          data={
+            initData.administrativeInformation?.commissionerAndGoal?.['common:project']
+          }
+        />
+        <br />
+        <Divider orientationMargin='0' orientation='left' plain>
+          <FormattedMessage
             id='pages.process.view.administrativeInformation.intendedApplications'
             defaultMessage='Intended applications'
           />

@@ -124,6 +124,7 @@ export default {
 
   'pages.process.view.administrativeInformation': '管理信息',
   'pages.process.view.administrativeInformation.referenceToCommissioner': '数据集委托方',
+  'pages.process.view.administrativeInformation.project': '项目',
   'pages.process.view.administrativeInformation.intendedApplications': '预期应用',
   'pages.process.view.administrativeInformation.RreferenceToPersonOrEntityGeneratingTheDataSet': '数据集生成者/建模者',
   'pages.process.view.administrativeInformation.dataEntryBy': '数据输入方式',
