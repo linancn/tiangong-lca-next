@@ -126,6 +126,18 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
           <Descriptions.Item
             key={0}
             label={
+              <FormattedMessage id='pages.process.view.exchange.location' defaultMessage='Location' />
+            }
+            labelStyle={{ width: '220px' }}
+          >
+            {viewData.location ?? '-'}
+          </Descriptions.Item>
+        </Descriptions>
+        <br />
+        <Descriptions bordered size={'small'} column={1}>
+          <Descriptions.Item
+            key={0}
+            label={
               <FormattedMessage id='processExchange.meanAmount' defaultMessage='Mean amount' />
             }
             labelStyle={{ width: '220px' }}

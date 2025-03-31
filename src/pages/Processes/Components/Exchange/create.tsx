@@ -171,6 +171,17 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
             <Form.Item
               label={
                 <FormattedMessage
+                  id='pages.process.view.exchange.location'
+                  defaultMessage='Location'
+                />
+              }
+              name={'location'}
+            >
+              <Input/>
+            </Form.Item>
+            <Form.Item
+              label={
+                <FormattedMessage
                   id='pages.process.view.exchange.meanAmount'
                   defaultMessage='Mean amount'
                 />

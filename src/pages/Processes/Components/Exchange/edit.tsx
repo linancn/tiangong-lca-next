@@ -212,6 +212,17 @@ const ProcessExchangeEdit: FC<Props> = ({
             <Form.Item
               label={
                 <FormattedMessage
+                  id='pages.process.view.exchange.location'
+                  defaultMessage='Location'
+                />
+              }
+              name={'location'}
+            >
+              <Input/>
+            </Form.Item>
+            <Form.Item
+              label={
+                <FormattedMessage
                   id='pages.process.view.exchange.meanAmount'
                   defaultMessage='Mean amount'
                 />

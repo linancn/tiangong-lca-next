@@ -167,6 +167,7 @@ export default {
   'pages.process.view.exchange.uri': '统一资源标识符',
   'pages.process.veiw.exchange.version': '版本',
   'pages.process.view.exchange.shortDescription': '简述',
+  'pages.process.view.exchange.location': '位置',
   'pages.process.view.exchange.meanAmount': '平均量',
   'pages.process.view.exchange.resultingAmount': '结果量',
   'pages.process.view.exchange.relativeStandardDeviation95In': '95%相对标准偏差',
