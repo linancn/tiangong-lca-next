@@ -43,6 +43,12 @@ export function genProcessJsonOrdered(id: string, data: any) {
         minimumAmount: item.minimumAmount,
         maximumAmount: item.maximumAmount,
         uncertaintyDistributionType: item.uncertaintyDistributionType,
+        allocations:{
+          allocation:{
+            '@internalReferenceToCoProduct': item.allocations.allocation['@internalReferenceToCoProduct'],
+            '@allocatedFraction': item.allocations.allocation['@allocatedFraction'],
+          }
+        },
         relativeStandardDeviation95In: item.relativeStandardDeviation95In,
         dataDerivationTypeStatus: item.dataDerivationTypeStatus,
         generalComment: getLangJson(item.generalComment),
@@ -1081,6 +1087,12 @@ export function genProcessFromData(data: any) {
             minimumAmount: item.minimumAmount,
             maximumAmount: item.maximumAmount,
             uncertaintyDistributionType: item.uncertaintyDistributionType,
+            allocations:{
+              allocation:{
+                '@internalReferenceToCoProduct': item.allocations.allocation['@internalReferenceToCoProduct'],
+                '@allocatedFraction': item.allocations.allocation['@allocatedFraction'],
+              }
+            },
             relativeStandardDeviation95In: item.relativeStandardDeviation95In,
             dataDerivationTypeStatus: item.dataDerivationTypeStatus,
             generalComment: getLangList(item.generalComment),
@@ -1110,6 +1122,12 @@ export function genProcessFromData(data: any) {
             minimumAmount: item.minimumAmount,
             maximumAmount: item.maximumAmount,
             uncertaintyDistributionType: item.uncertaintyDistributionType,
+            allocations:{
+              allocation:{
+                '@internalReferenceToCoProduct': item.allocations.allocation['@internalReferenceToCoProduct'],
+                '@allocatedFraction': item.allocations.allocation['@allocatedFraction'],
+              }
+            },
             relativeStandardDeviation95In: item.relativeStandardDeviation95In,
             dataDerivationTypeStatus: item.dataDerivationTypeStatus,
             generalComment: getLangList(item.generalComment),

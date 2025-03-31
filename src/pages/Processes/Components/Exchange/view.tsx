@@ -6,7 +6,7 @@ import { Button, Card, Descriptions, Divider, Drawer, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
-import { DataDerivationTypeStatusOptions,functionTypeOptions } from '../optiondata';
+import { DataDerivationTypeStatusOptions, functionTypeOptions } from '../optiondata';
 
 type Props = {
   id: string;
@@ -205,7 +205,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
           </Descriptions.Item>
         </Descriptions>
         {viewData.uncertaintyDistributionType === 'triangular' ||
-        viewData.uncertaintyDistributionType === 'uniform' ? (
+          viewData.uncertaintyDistributionType === 'uniform' ? (
           <>
             <br />
             <Descriptions bordered size={'small'} column={1}>
@@ -242,7 +242,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
           <></>
         )}
         {viewData.uncertaintyDistributionType === 'normal' ||
-        viewData.uncertaintyDistributionType === 'log-normal' ? (
+          viewData.uncertaintyDistributionType === 'log-normal' ? (
           <>
             <br />
             <Descriptions bordered size={'small'} column={1}>
@@ -264,13 +264,50 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
           <></>
         )}
         <br />
+        <Card size='small' title={
+          <FormattedMessage
+            id='pages.process.view.exchange.allocation'
+            defaultMessage='Allocation'
+          />
+        }>
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.process.view.exchange.internalReferenceToCoProduct'
+                  defaultMessage='Internal reference to co-product'
+                />
+              }
+              labelStyle={{ width: '180px' }}
+            >
+              {viewData?.allocations?.allocation['@internalReferenceToCoProduct'] ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
+          <br />
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.process.view.exchange.allocatedFraction'
+                  defaultMessage='Allocated fraction'
+                />
+              }
+              labelStyle={{ width: '180px' }}
+            >
+              {viewData?.allocations?.allocation['@allocatedFraction'] ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
+        </Card>
+        <br />
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
             key={0}
             label={
               <FormattedMessage
                 id='pages.process.view.exchange.dataDerivationTypeStatus'
-                defaultMessage="'Data derivation type / status"
+                defaultMessage="Data derivation type / status"
               />
             }
             labelStyle={{ width: '220px' }}

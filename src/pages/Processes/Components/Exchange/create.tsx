@@ -302,6 +302,40 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
             ) : (
               <></>
             )}
+            <Card
+              size='small'
+              title={
+                <FormattedMessage
+                  id='pages.process.view.exchange.allocation'
+                  defaultMessage='Allocation'  
+                />
+              }
+            >
+              <Form.Item
+              label={
+                <FormattedMessage
+                  id='pages.process.view.exchange.internalReferenceToCoProduct'
+                  defaultMessage='Internal reference to co-product'
+                />
+              }
+              name={['allocations','allocation','@internalReferenceToCoProduct']}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              label={
+                <FormattedMessage
+                  id='pages.process.view.exchange.allocatedFraction'
+                  defaultMessage='Allocated fraction'
+                />
+              }
+              name={['allocations','allocation','@allocatedFraction']}
+            >
+              <Input />
+            </Form.Item>
+
+            </Card>
+              
             <Form.Item
               label={
                 <FormattedMessage
