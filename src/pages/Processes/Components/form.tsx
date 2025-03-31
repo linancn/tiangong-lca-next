@@ -1218,6 +1218,25 @@ export const ProcessForm: FC<Props> = ({
               <Select options={completenessElementaryFlowsValueOptions} />
             </Form.Item>
           </Card>
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.process.view.modellingAndValidation.completeness.completenessOtherProblemField'
+              defaultMessage='Completeness other problem field(s)'
+            />
+          </Divider>
+          <LangTextItemForm
+            name={[
+              'modellingAndValidation',
+              'completeness',
+              'completenessOtherProblemField',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.process.view.modellingAndValidation.completeness.completenessOtherProblemField'
+                defaultMessage='Completeness other problem field(s)'
+              />
+            }
+          />
         </Card>
 
         {/* <Divider orientationMargin='0' orientation='left' plain>

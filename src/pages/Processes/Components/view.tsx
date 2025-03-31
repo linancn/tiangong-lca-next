@@ -17,7 +17,7 @@ import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import ProcessExchangeView from './Exchange/view';
-import { uncertaintyDistributionTypeOptions, completenessProductModelOptions, completenessElementaryFlowsValueOptions,completenessElementaryFlowsTypeOptions } from './optiondata';
+import { uncertaintyDistributionTypeOptions, completenessProductModelOptions, completenessElementaryFlowsValueOptions, completenessElementaryFlowsTypeOptions } from './optiondata';
 
 import {
   copyrightOptions,
@@ -1084,8 +1084,8 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
               </Descriptions.Item>
             </Descriptions>
             <br />
-            <Descriptions  bordered size={'small'} column={1}>
-            <Descriptions.Item
+            <Descriptions bordered size={'small'} column={1}>
+              <Descriptions.Item
                 key={0}
                 label={
                   <FormattedMessage
@@ -1101,6 +1101,17 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
               </Descriptions.Item>
             </Descriptions>
           </Card>
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.process.view.modellingAndValidation.completeness.completenessOtherProblemField'
+              defaultMessage='Completeness other problem field(s)'
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={
+              initData.modellingAndValidation?.completeness?.completenessOtherProblemField
+            }
+          />
         </Card>
         <br />
         <Card

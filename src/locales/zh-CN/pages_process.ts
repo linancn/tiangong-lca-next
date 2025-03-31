@@ -114,6 +114,7 @@ export default {
   'pages.process.view.modellingAndValidation.completeness.speciesDepletion': '物种消耗',
   'pages.process.view.modellingAndValidation.completeness.noise': '噪音',
   'pages.process.view.modellingAndValidation.completeness.completenessElementaryFlows.value': '完整性值',
+  'pages.process.view.modellingAndValidation.completeness.completenessOtherProblemField': '完整性其他问题领域',
 
   'pages.process.view.modellingAndValidation.completenessDescription': '完整性描述',
   'pages.process.view.modellingAndValidation.Review': '审查',
