@@ -17,7 +17,7 @@ import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import ProcessExchangeView from './Exchange/view';
-import { uncertaintyDistributionTypeOptions, completenessProductModelOptions } from './optiondata';
+import { uncertaintyDistributionTypeOptions, completenessProductModelOptions, completenessElementaryFlowsValueOptions,completenessElementaryFlowsTypeOptions } from './optiondata';
 
 import {
   copyrightOptions,
@@ -69,6 +69,16 @@ const getComplianceLabel = (value: string) => {
 
 const getCompletenessProductModelOptions = (value: string) => {
   const option = completenessProductModelOptions.find((opt) => opt.value === value);
+  return option ? option.label : '-';
+};
+
+const getCompletenessElementaryFlowsTypeOptions = (value: string) => {
+  const option = completenessElementaryFlowsTypeOptions.find((opt) => opt.value === value);
+  return option ? option.label : '-';
+};
+
+const getCompletenessElementaryFlowsValueOptions = (value: string) => {
+  const option = completenessElementaryFlowsValueOptions.find((opt) => opt.value === value);
   return option ? option.label : '-';
 };
 
@@ -1047,6 +1057,50 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
               )}
             </Descriptions.Item>
           </Descriptions>
+          <br />
+          <Card
+            size='small'
+            title={
+              <FormattedMessage
+                id='pages.process.view.modellingAndValidation.completeness.completenessElementaryFlows'
+                defaultMessage='Completeness elementary flows, per topic'
+              />
+            }
+          >
+            <Descriptions bordered size={'small'} column={1}>
+              <Descriptions.Item
+                key={0}
+                label={
+                  <FormattedMessage
+                    id='pages.process.view.modellingAndValidation.completeness.completenessElementaryFlows.type'
+                    defaultMessage='completeness type'
+                  />
+                }
+                labelStyle={{ width: '140px' }}
+              >
+                {getCompletenessElementaryFlowsTypeOptions(
+                  initData.modellingAndValidation?.completeness?.completenessElementaryFlows?.['@type'] ?? '-',
+                )}
+              </Descriptions.Item>
+            </Descriptions>
+            <br />
+            <Descriptions  bordered size={'small'} column={1}>
+            <Descriptions.Item
+                key={0}
+                label={
+                  <FormattedMessage
+                    id='pages.process.view.modellingAndValidation.completeness.completenessElementaryFlows.value'
+                    defaultMessage='value'
+                  />
+                }
+                labelStyle={{ width: '140px' }}
+              >
+                {getCompletenessElementaryFlowsValueOptions(
+                  initData.modellingAndValidation?.completeness?.completenessElementaryFlows?.['@value'] ?? '-',
+                )}
+              </Descriptions.Item>
+            </Descriptions>
+          </Card>
         </Card>
         <br />
         <Card

@@ -271,6 +271,10 @@ export function genProcessJsonOrdered(id: string, data: any) {
         },
         completeness: {
           completenessProductModel: data?.modellingAndValidation?.completeness?.completenessProductModel,
+          completenessElementaryFlows:{
+            '@type': data?.modellingAndValidation?.completeness?.completenessElementaryFlows?.['@type'],
+            '@value': data?.modellingAndValidation?.completeness?.completenessElementaryFlows?.['@value'],
+          },
           // completenessDescription: getLangJson(
           //   data?.modellingAndValidation?.completeness?.completenessDescription,
           // ),
@@ -792,6 +796,10 @@ export function genProcessFromData(data: any) {
       },
       completeness: {
         completenessProductModel: data?.modellingAndValidation?.completeness?.completenessProductModel,
+        completenessElementaryFlows:{
+          '@type': data?.modellingAndValidation?.completeness?.completenessElementaryFlows?.['@type'],
+          '@value': data?.modellingAndValidation?.completeness?.completenessElementaryFlows?.['@value'],
+        }
         // completenessDescription: getLangList(
         //   data?.modellingAndValidation?.completeness?.completenessDescription,
         // ),

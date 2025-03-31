@@ -35,7 +35,7 @@ import {
   workflowAndPublicationStatusOptions,
 } from './optiondata';
 import ReveiwItemForm from './Review/form';
-import { uncertaintyDistributionTypeOptions, completenessProductModelOptions } from './optiondata';
+import { uncertaintyDistributionTypeOptions, completenessProductModelOptions, completenessElementaryFlowsTypeOptions ,completenessElementaryFlowsValueOptions} from './optiondata';
 
 type Props = {
   lang: string;
@@ -1167,7 +1167,7 @@ export const ProcessForm: FC<Props> = ({
             rules={FTMultiLang_r}
           />
         </Card>
-        <Card 
+        <Card
           size='small'
           title={
             <FormattedMessage
@@ -1186,6 +1186,38 @@ export const ProcessForm: FC<Props> = ({
           >
             <Select options={completenessProductModelOptions} />
           </Form.Item>
+          <Card
+            size='small'
+            title={
+              <FormattedMessage
+                id='pages.process.view.modellingAndValidation.completeness.completenessElementaryFlows'
+                defaultMessage='Completeness elementary flows, per topic'
+              />
+            }
+          >
+            <Form.Item
+              label={
+                <FormattedMessage
+                  id='pages.process.view.modellingAndValidation.completeness.completenessElementaryFlows.type'
+                  defaultMessage='completeness type'
+                />
+              }
+              name={['modellingAndValidation', 'completeness', 'completenessElementaryFlows', '@type']}
+            >
+              <Select options={completenessElementaryFlowsTypeOptions} />
+            </Form.Item>
+            <Form.Item
+              label={
+                <FormattedMessage
+                  id='pages.process.view.modellingAndValidation.completeness.completenessElementaryFlows.value'
+                  defaultMessage='value'
+                />
+              }
+              name={['modellingAndValidation', 'completeness', 'completenessElementaryFlows', '@value']}
+            >
+              <Select options={completenessElementaryFlowsValueOptions} />
+            </Form.Item>
+          </Card>
         </Card>
 
         {/* <Divider orientationMargin='0' orientation='left' plain>

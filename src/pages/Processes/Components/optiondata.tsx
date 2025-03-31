@@ -1,5 +1,209 @@
 import { FormattedMessage } from 'umi';
 
+export const completenessElementaryFlowsTypeOptions = [
+  {
+    value: 'Climate change',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.modellingAndValidation.completeness.climateChange'
+        defaultMessage='Climate change'
+      />
+    ),
+  },
+  {
+    value: 'Ozone depletion',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.modellingAndValidation.completeness.ozoneDepletion'
+        defaultMessage='Ozone depletion'
+      />
+    ),
+  },
+  {
+    value: 'Summer smog',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.modellingAndValidation.completeness.summerSmog'
+        defaultMessage='Summer smog'
+      />
+    ),
+  },
+  {
+    value: 'Eutrophication',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.modellingAndValidation.completeness.eutrophication'
+        defaultMessage='Eutrophication'
+      />
+    ),
+  },
+  {
+    value: 'Acidification',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.modellingAndValidation.completeness.acidification'
+        defaultMessage='Acidification'
+      />
+    ),
+  },
+  {
+    value: 'Human toxicity',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.modellingAndValidation.completeness.humanToxicity'
+        defaultMessage='Human toxicity'
+      />
+    ),
+  },
+  {
+    value: 'Freshwater ecotoxicity',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.modellingAndValidation.completeness.freshwaterEcotoxicity'
+        defaultMessage='Freshwater ecotoxicity'
+      />
+    ),
+  },
+  {
+    value: 'Seawater eco-toxicity',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.modellingAndValidation.completeness.seawaterEcoToxicity'
+        defaultMessage='Seawater eco-toxicity'
+      />
+    ),
+  },
+  {
+    value: 'Terrestric eco-toxicity',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.modellingAndValidation.completeness.terrestricEcoToxicity'
+        defaultMessage='Terrestric eco-toxicity'
+      />
+    ),
+  },
+  {
+    value: 'Radioactivity',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.modellingAndValidation.completeness.radioactivity'
+        defaultMessage='Radioactivity'
+      />
+    ),
+  },
+  {
+    value: 'Land use',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.modellingAndValidation.completeness.landUse'
+        defaultMessage='Land use'
+      />
+    ),
+  },
+  {
+    value: 'Non-renewable material resource depletion',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.modellingAndValidation.completeness.nonRenewableMaterialResourceDepletion'
+        defaultMessage='Non-renewable material resource depletion'
+      />
+    ),
+  },
+  {
+    value: 'Renewable material resource consumption',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.modellingAndValidation.completeness.renewableMaterialResourceConsumption'
+        defaultMessage='Renewable material resource consumption'
+      />
+    ),
+  },
+  {
+    value: 'Non-renewable primary energy depletion',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.modellingAndValidation.completeness.nonRenewablePrimaryEnergyDepletion'
+        defaultMessage='Non-renewable primary energy depletion'
+      />
+    ),
+  },
+  {
+    value: 'Renewable primary energy consumption',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.modellingAndValidation.completeness.renewablePrimaryEnergyConsumption'
+        defaultMessage='Renewable primary energy consumption'
+      />
+    ),
+  },
+  {
+    value: 'Particulate matter/respiratory inorganics',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.modellingAndValidation.completeness.particulateMatterRespiratoryInorganics'
+        defaultMessage='Particulate matter/respiratory inorganics'
+      />
+    ),
+  },
+  {
+    value: 'Species depletion',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.modellingAndValidation.completeness.speciesDepletion'
+        defaultMessage='Species depletion'
+      />
+    ),
+  },
+  {
+    value: 'Noise',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.modellingAndValidation.completeness.noise'
+        defaultMessage='Noise'
+      />
+    ),
+  }
+]
+
+export const completenessElementaryFlowsValueOptions=[
+  {
+    value: 'All relevant flows quantified',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.modellingAndValidation.completeness.allRelevantFlowsQuantified'
+        defaultMessage='All relevant flows quantified'
+      />
+    ),
+  },
+  {
+    value: 'Relevant flows missing',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.modellingAndValidation.completeness.relevantFlowsMissing'
+        defaultMessage='Relevant flows missing'
+      />
+    ),
+  },
+  {
+    value: 'Topic not relevant',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.modellingAndValidation.completeness.topicNotRelevant'
+        defaultMessage='Topic not relevant'
+      />
+    ),
+  },
+  {
+    value: 'No statement',
+    label: (
+      <FormattedMessage
+        id='pages.process.view.modellingAndValidation.completeness.noStatement'
+        defaultMessage='No statement'
+      />
+    ),
+  }
+]
+
 export const completenessProductModelOptions = [
   {
     value: 'All relevant flows quantified',
