@@ -127,8 +127,8 @@ export function genProcessJsonOrdered(id: string, data: any) {
         time: {
           'common:referenceYear': data?.processInformation?.time?.['common:referenceYear'] ?? {},
           dataSetValidUntil: data?.processInformation?.time?.dataSetValidUntil ?? {},
-          'common:timeRepresentativenessDescription': getLangJson(
-            data?.processInformation?.time?.['common:timeRepresentativenessDescription'],
+          'timeRepresentativenessDescription': getLangJson(
+            data?.processInformation?.time?.['timeRepresentativenessDescription'],
           ),
         },
         geography: {
@@ -337,15 +337,15 @@ export function genProcessJsonOrdered(id: string, data: any) {
                   ),
                 },
                 'common:otherReviewDetails': getLangJson(review?.['common:otherReviewDetails']),
-                'common:referenceToCompleteReviewReport': {
+                'referenceToCompleteReviewReport': {
                   '@refObjectId':
-                    review?.['common:referenceToCompleteReviewReport']?.['@refObjectId'] ?? {},
-                  '@type': review?.['common:referenceToCompleteReviewReport']?.['@type'] ?? {},
-                  '@uri': review?.['common:referenceToCompleteReviewReport']?.['@uri'] ?? {},
+                    review?.['referenceToCompleteReviewReport']?.['@refObjectId'] ?? {},
+                  '@type': review?.['referenceToCompleteReviewReport']?.['@type'] ?? {},
+                  '@uri': review?.['referenceToCompleteReviewReport']?.['@uri'] ?? {},
                   '@version':
-                    review?.['common:referenceToCompleteReviewReport']?.['@version'] ?? {},
+                    review?.['referenceToCompleteReviewReport']?.['@version'] ?? {},
                   'common:shortDescription': getLangJson(
-                    review?.['common:referenceToCompleteReviewReport']?.['common:shortDescription'],
+                    review?.['referenceToCompleteReviewReport']?.['common:shortDescription'],
                   ),
                 },
               };
@@ -670,8 +670,8 @@ export function genProcessFromData(data: any) {
       time: {
         'common:referenceYear': data?.processInformation?.time?.['common:referenceYear'] ?? {},
         dataSetValidUntil: data?.processInformation?.time?.dataSetValidUntil ?? {},
-        'common:timeRepresentativenessDescription': getLangList(
-          data?.processInformation?.time?.['common:timeRepresentativenessDescription'],
+        'timeRepresentativenessDescription': getLangList(
+          data?.processInformation?.time?.['timeRepresentativenessDescription'],
         ),
       },
       geography: {
@@ -1163,13 +1163,13 @@ export function genProcessFromData(data: any) {
             ),
           },
           'common:otherReviewDetails': getLangList(review?.['common:otherReviewDetails']),
-          'common:referenceToCompleteReviewReport': {
-            '@refObjectId': review?.['common:referenceToCompleteReviewReport']?.['@refObjectId'],
-            '@type': review?.['common:referenceToCompleteReviewReport']?.['@type'],
-            '@uri': review?.['common:referenceToCompleteReviewReport']?.['@uri'],
-            '@version': review?.['common:referenceToCompleteReviewReport']?.['@version'],
+          'referenceToCompleteReviewReport': {
+            '@refObjectId': review?.['referenceToCompleteReviewReport']?.['@refObjectId'],
+            '@type': review?.['referenceToCompleteReviewReport']?.['@type'],
+            '@uri': review?.['referenceToCompleteReviewReport']?.['@uri'],
+            '@version': review?.['referenceToCompleteReviewReport']?.['@version'],
             'common:shortDescription': getLangList(
-              review?.['common:referenceToCompleteReviewReport']?.['common:shortDescription'],
+              review?.['referenceToCompleteReviewReport']?.['common:shortDescription'],
             ),
           },
         };

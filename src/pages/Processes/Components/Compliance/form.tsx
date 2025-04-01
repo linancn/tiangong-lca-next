@@ -12,6 +12,8 @@ import {
   qualityComplianceOptions,
   reviewComplianceOptions,
 } from '../optiondata';
+import schema from '../../processes_schema.json';
+import { getRules } from '@/pages/Utils';
 // const { TextArea } = Input;
 
 type Props = {
@@ -58,7 +60,8 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                             defaultMessage='Approval of overall compliance'
                           />
                         }
-                        name={[subField.name, 'common:approvalOfOverallCompliance']}
+                        name={[subField.name, 'common:c']}
+                        rules={getRules(schema['processDataSet']['modellingAndValidation']['complianceDeclarations']['compliance']['common:approvalOfOverallCompliance']['rules'])}
                       >
                         <Select options={approvalOfOverallComplianceOptions} />
                       </Form.Item>
@@ -72,6 +75,7 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                           />
                         }
                         name={[subField.name, 'common:nomenclatureCompliance']}
+                        rules={getRules(schema['processDataSet']['modellingAndValidation']['complianceDeclarations']['compliance']['common:nomenclatureCompliance']['rules'])}
                       >
                         <Select options={nomenclatureComplianceOptions} />
                       </Form.Item>
@@ -85,6 +89,7 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                           />
                         }
                         name={[subField.name, 'common:methodologicalCompliance']}
+                        rules={getRules(schema['processDataSet']['modellingAndValidation']['complianceDeclarations']['compliance']['common:methodologicalCompliance']['rules'])}
                       >
                         <Select options={methodologicalComplianceOptions} />
                       </Form.Item>
@@ -98,6 +103,7 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                           />
                         }
                         name={[subField.name, 'common:reviewCompliance']}
+                        rules={getRules(schema['processDataSet']['modellingAndValidation']['complianceDeclarations']['compliance']['common:reviewCompliance']['rules'])}
                       >
                         <Select options={reviewComplianceOptions} />
                       </Form.Item>
@@ -111,7 +117,8 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                           />
                         }
                         name={[subField.name, 'common:documentationCompliance']}
-                      >
+                        rules={getRules(schema['processDataSet']['modellingAndValidation']['complianceDeclarations']['compliance']['common:documentationCompliance']['rules'])}
+                      > 
                         <Select options={documentationComplianceOptions} />
                       </Form.Item>
                     </Col>
@@ -124,6 +131,7 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                           />
                         }
                         name={[subField.name, 'common:qualityCompliance']}
+                        rules={getRules(schema['processDataSet']['modellingAndValidation']['complianceDeclarations']['compliance']['common:qualityCompliance']['rules'])}
                       >
                         <Select options={qualityComplianceOptions} />
                       </Form.Item>
@@ -141,6 +149,7 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                       lang={lang}
                       formRef={formRef}
                       onData={onData}
+                      rules={getRules(schema['processDataSet']['modellingAndValidation']['complianceDeclarations']['compliance']['common:referenceToComplianceSystem']['rules'])}
                     />
                   </Card>
                 </Space>

@@ -474,7 +474,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
             />
           </Divider>
           <LangTextItemDescription
-            data={initData.processInformation?.time?.['common:timeRepresentativenessDescription']}
+            data={initData.processInformation?.time?.['timeRepresentativenessDescription']}
           />
         </Card>
         <br />

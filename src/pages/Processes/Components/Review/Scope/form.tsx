@@ -3,6 +3,8 @@ import { Button, Col, Form, Row, Select } from 'antd';
 import { FC } from 'react';
 import { FormattedMessage } from 'umi';
 import { methodNameOptions, scopeNameOptions } from '../../optiondata';
+import schema from '../../../processes_schema.json';
+import { getRules } from '@/pages/Utils';
 
 type Props = {
   name: any;
@@ -23,7 +25,7 @@ const ScopeItemForm: FC<Props> = ({ name }) => {
                       defaultMessage='Scope name'
                     />
                   )}
-                  <Form.Item noStyle name={[subField.name, '@name']}>
+                  <Form.Item noStyle name={[subField.name, '@name']} rules={getRules(schema['processDataSet']['modellingAndValidation']['validation']['review']['scope']['@name']['rules'])}>
                     <Select options={scopeNameOptions} />
                   </Form.Item>
                 </Col>
@@ -34,7 +36,7 @@ const ScopeItemForm: FC<Props> = ({ name }) => {
                       defaultMessage='Method name'
                     />
                   )}
-                  <Form.Item noStyle name={[subField.name, 'common:method', '@name']}>
+                  <Form.Item noStyle name={[subField.name, 'common:method', '@name']} rules={getRules(schema['processDataSet']['modellingAndValidation']['validation']['review']['scope']['method']['@name']['rules'])}>
                     <Select options={methodNameOptions} />
                   </Form.Item>
                 </Col>

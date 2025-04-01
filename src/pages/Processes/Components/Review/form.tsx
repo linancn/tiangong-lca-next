@@ -4,12 +4,14 @@ import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { CloseOutlined } from '@ant-design/icons';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Divider, Form, Row, Select, Space } from 'antd';
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { reviewTypeOptions } from '../optiondata';
 import DataQualityIndicatorItemForm from './DataQualityIndicator/form';
 import ScopeItemForm from './Scope/form';
-
+import RequiredMark from '@/components/RequiredMark';
+import schema from '../../processes_schema.json';
+import { getRules } from '@/pages/Utils';
 // const { TextArea } = Input;
 
 type Props = {
@@ -20,6 +22,7 @@ type Props = {
 };
 
 const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
+  const [reviewDetailsError, setReviewDetailsError] = useState(false);
   return (
     <Form.Item>
       <Form.List name={name}>
@@ -57,6 +60,7 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                           />
                         }
                         name={[subField.name, '@type']}
+                        rules={getRules(schema['processDataSet']['modellingAndValidation']['validation']['review']['@type']['rules'])}
                       >
                         <Select options={reviewTypeOptions} />
                       </Form.Item>
@@ -90,11 +94,15 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                         ]}
                       />
                     </Card>
-                    <Divider orientationMargin='0' orientation='left' plain>
+                    <Divider className='required-divider' orientationMargin='0' orientation='left' plain>
+                    <RequiredMark label={
                       <FormattedMessage
                         id='pages.process.view.modellingAndValidation.validation.reviewDetails'
                         defaultMessage='Review details'
                       />
+                    }
+                    showError={reviewDetailsError}
+                    />
                     </Divider>
                     <LangTextItemForm
                       name={[subField.name, 'common:reviewDetails']}
@@ -104,6 +112,8 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                           defaultMessage='Review details'
                         />
                       }
+                      setRuleErrorState={setReviewDetailsError}
+                      rules={getRules(schema['processDataSet']['modellingAndValidation']['validation']['review']['reviewDetails']['rules'])}
                     />
                     <Divider orientationMargin='0' orientation='left' plain>
                       <FormattedMessage
@@ -132,11 +142,12 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                       lang={lang}
                       formRef={formRef}
                       onData={onData}
+                      rules={getRules(schema['processDataSet']['modellingAndValidation']['validation']['review']['referenceToNameOfReviewerAndInstitution']['rules'])}
                     />
                     <br />
                     <SourceSelectForm
                       parentName={name}
-                      name={[subField.name, 'common:referenceToCompleteReviewReport']}
+                      name={[subField.name, 'referenceToCompleteReviewReport']}
                       label={
                         <FormattedMessage
                           id='pages.process.view.modellingAndValidation.referenceToCompleteReviewReport'
@@ -146,6 +157,7 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                       lang={lang}
                       formRef={formRef}
                       onData={onData}
+                      rules={getRules(schema['processDataSet']['modellingAndValidation']['validation']['review']['referenceToCompleteReviewReport']['rules'])}
                     />
                   </Card>
                 </Space>

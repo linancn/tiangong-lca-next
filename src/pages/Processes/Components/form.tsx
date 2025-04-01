@@ -1,13 +1,6 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
 import LocationTextItemForm from '@/components/LocationTextItem/form';
-import {
-  dataSetVersion,
-  FTMultiLang_r,
-  NullableString,
-  StringMultiLang_r,
-  Yearvalidation_r,
-} from '@/components/Validator/index';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
@@ -19,7 +12,7 @@ import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData } from '@/services/processes/util';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
 import { Card, Collapse, Divider, Form, Input, Select, Space, theme, Tooltip } from 'antd';
-import { useEffect, useRef, type FC } from 'react';
+import { useEffect, useRef, type FC, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import ComplianceItemForm from './Compliance/form';
 import ProcessExchangeCreate from './Exchange/create';
@@ -36,6 +29,9 @@ import {
 } from './optiondata';
 import ReveiwItemForm from './Review/form';
 import { uncertaintyDistributionTypeOptions, completenessProductModelOptions, completenessElementaryFlowsTypeOptions, completenessElementaryFlowsValueOptions } from './optiondata';
+import schema from '../processes_schema.json';
+import { getRules } from '@/pages/Utils';
+import RequiredMark from '@/components/RequiredMark';
 
 type Props = {
   lang: string;
@@ -60,6 +56,10 @@ export const ProcessForm: FC<Props> = ({
 }) => {
   const actionRefExchangeTableInput = useRef<ActionType>();
   const actionRefExchangeTableOutput = useRef<ActionType>();
+  const [baseNameError, setBaseNameError] = useState(false);
+  const [treatmentStandardsRoutesError, setTreatmentStandardsRoutesError] = useState(false);
+  const [mixAndLocationTypesError, setMixAndLocationTypesError] = useState(false);
+  const [intendedApplicationsError, setIntendedApplicationsError] = useState(false);
   const { token } = theme.useToken();
   const tabList = [
     {
@@ -270,10 +270,13 @@ export const ProcessForm: FC<Props> = ({
           <Card
             size='small'
             title={
-              <FormattedMessage
+              <RequiredMark label={ <FormattedMessage
                 id='pages.process.view.processInformation.baseName'
                 defaultMessage='Base name'
               />
+            }
+            showError={baseNameError}
+            />
             }
           >
             <LangTextItemForm
@@ -284,17 +287,21 @@ export const ProcessForm: FC<Props> = ({
                   defaultMessage='Base name'
                 />
               }
-              rules={StringMultiLang_r}
+              setRuleErrorState={setBaseNameError}
+              rules={getRules(schema['processDataSet']['processInformation']['dataSetInformation']['name']['baseName']['rules'])}
             />
           </Card>
           <br />
           <Card
             size='small'
             title={
-              <FormattedMessage
+              <RequiredMark label={ <FormattedMessage
                 id='pages.process.view.processInformation.treatmentStandardsRoutes'
                 defaultMessage='Treatment, standards, routes'
               />
+            }
+            showError={treatmentStandardsRoutesError}
+            />
             }
           >
             <LangTextItemForm
@@ -310,17 +317,21 @@ export const ProcessForm: FC<Props> = ({
                   defaultMessage='Treatment, standards, routes'
                 />
               }
-              rules={StringMultiLang_r}
+              setRuleErrorState={setTreatmentStandardsRoutesError}
+              rules={getRules(schema['processDataSet']['processInformation']['dataSetInformation']['name']['treatmentStandardsRoutes']['rules'])}
             />
           </Card>
           <br />
           <Card
             size='small'
             title={
-              <FormattedMessage
+              <RequiredMark label={ <FormattedMessage
                 id='pages.process.view.processInformation.mixAndLocationTypes'
                 defaultMessage='Mix and location types'
               />
+            }
+            showError={mixAndLocationTypesError}
+            />
             }
           >
             <LangTextItemForm
@@ -331,7 +342,8 @@ export const ProcessForm: FC<Props> = ({
                   defaultMessage='Mix and location types'
                 />
               }
-              rules={StringMultiLang_r}
+              setRuleErrorState={setMixAndLocationTypesError}
+              rules={getRules(schema['processDataSet']['processInformation']['dataSetInformation']['name']['mixAndLocationTypes']['rules'])}
             />
           </Card>
           <br />
@@ -357,7 +369,6 @@ export const ProcessForm: FC<Props> = ({
                   defaultMessage='Quantitative product or process properties'
                 />
               }
-              rules={StringMultiLang_r}
             />
           </Card>
         </Card>
@@ -370,7 +381,7 @@ export const ProcessForm: FC<Props> = ({
             />
           }
           name={['processInformation', 'dataSetInformation', 'identifierOfSubDataSet']}
-          rules={Yearvalidation_r}
+          rules={getRules(schema['processDataSet']['processInformation']['dataSetInformation']['identifierOfSubDataSet']['rules'])}
         >
           <Input />
         </Form.Item>
@@ -406,6 +417,7 @@ export const ProcessForm: FC<Props> = ({
           lang={lang}
           dataType={'Process'}
           onData={onData}
+          rules={getRules(schema['processDataSet']['processInformation']['dataSetInformation']['classificationInformation']['common:classification']['common:class']['rules'])}
         />
 
         <Card
@@ -425,6 +437,7 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='General comment on data set'
               />
             }
+            rules={getRules(schema['processDataSet']['processInformation']['dataSetInformation']['common:generalComment']['rules'])}
           />
         </Card>
 
@@ -462,7 +475,7 @@ export const ProcessForm: FC<Props> = ({
               />
             }
             name={['processInformation', 'time', 'common:referenceYear']}
-            rules={Yearvalidation_r}
+            rules={getRules(schema['processDataSet']['processInformation']['time']['common:referenceYear']['rules'])}
           >
             <Input />
           </Form.Item>
@@ -474,7 +487,7 @@ export const ProcessForm: FC<Props> = ({
               />
             }
             name={['processInformation', 'time', 'dataSetValidUntil']}
-            rules={Yearvalidation_r}
+            rules={getRules(schema['processDataSet']['processInformation']['time']['dataSetValidUntil']['rules'])}
           >
             <Input />
           </Form.Item>
@@ -485,14 +498,13 @@ export const ProcessForm: FC<Props> = ({
             />
           </Divider>
           <LangTextItemForm
-            name={['processInformation', 'time', 'common:timeRepresentativenessDescription']}
+            name={['processInformation', 'time', 'timeRepresentativenessDescription']}
             label={
               <FormattedMessage
                 id='pages.process.view.processInformation.timeRepresentativenessDescription'
                 defaultMessage='Time representativeness description'
               />
             }
-            rules={FTMultiLang_r}
           />
         </Card>
 
@@ -520,7 +532,7 @@ export const ProcessForm: FC<Props> = ({
             ]}
             lang={lang}
             onData={onData}
-            rules={NullableString}
+            rules={getRules(schema['processDataSet']['processInformation']['geography']['locationOfOperationSupplyOrProduction']['@location']['rules'])}
           />
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
@@ -568,7 +580,6 @@ export const ProcessForm: FC<Props> = ({
             ]}
             lang={lang}
             onData={onData}
-            rules={NullableString}
           />
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
@@ -802,6 +813,7 @@ export const ProcessForm: FC<Props> = ({
               />
             }
             name={['modellingAndValidation', 'LCIMethodAndAllocation', 'typeOfDataSet']}
+            rules={getRules(schema['processDataSet']['modellingAndValidation']['LCIMethodAndAllocation']['typeOfDataSet']['rules'])}
           >
             <Select options={processtypeOfDataSetOptions} />
           </Form.Item>
@@ -834,7 +846,6 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='Deviation from LCI method principle / explanations'
               />
             }
-            rules={FTMultiLang_r}
           />
           <Form.Item
             label={
@@ -865,7 +876,6 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='Deviations from LCI method approaches / explanations'
               />
             }
-            rules={FTMultiLang_r}
           />
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
@@ -905,7 +915,6 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='Deviation from modelling constants / explanations'
               />
             }
-            rules={FTMultiLang_r}
           />
         </Card>
 
@@ -936,7 +945,6 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='Data cut-off and completeness principles'
               />
             }
-            rules={FTMultiLang_r}
           />
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
@@ -956,7 +964,6 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='Deviation from data cut-off and completeness principles / explanations'
               />
             }
-            rules={FTMultiLang_r}
           />
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
@@ -976,7 +983,6 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='Data selection and combination principles'
               />
             }
-            rules={FTMultiLang_r}
           />
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
@@ -996,7 +1002,6 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='Deviation from data selection and combination principles / explanations'
               />
             }
-            rules={FTMultiLang_r}
           />
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
@@ -1016,7 +1021,6 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='Data treatment and extrapolations principles'
               />
             }
-            rules={FTMultiLang_r}
           />
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
@@ -1036,7 +1040,6 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='Deviation from data treatment and extrapolations principles / explanations'
               />
             }
-            rules={FTMultiLang_r}
           />
 
           <SourceSelectForm
@@ -1164,7 +1167,6 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='Use advice for data set'
               />
             }
-            rules={FTMultiLang_r}
           />
         </Card>
         <Card
@@ -1273,6 +1275,7 @@ export const ProcessForm: FC<Props> = ({
           lang={lang}
           formRef={formRef}
           onData={onData}
+          rules={getRules(schema['processDataSet']['administrativeInformation']['commissionerAndGoal']['common:referenceToCommissioner']['rules'])}
         />
         <Card
           size='small'
@@ -1300,9 +1303,12 @@ export const ProcessForm: FC<Props> = ({
         <Card
           size='small'
           title={
-            <FormattedMessage
+            <RequiredMark label={ <FormattedMessage
               id='pages.process.view.administrativeInformation.intendedApplications'
               defaultMessage='Intended applications'
+            />
+            }
+            showError={intendedApplicationsError}
             />
           }
         >
@@ -1318,6 +1324,8 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='Intended applications'
               />
             }
+            setRuleErrorState={setIntendedApplicationsError}
+            rules={getRules(schema['processDataSet']['administrativeInformation']['commissionerAndGoal']['common:intendedApplications']['rules'])}
           />
         </Card>
 
@@ -1355,6 +1363,7 @@ export const ProcessForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
+            rules={getRules(schema['processDataSet']['administrativeInformation']['dataEntryBy']['common:timeStamp']['rules'])}
           >
             <Input disabled={true} style={{ color: token.colorTextDescription }} />
           </Form.Item>
@@ -1369,6 +1378,7 @@ export const ProcessForm: FC<Props> = ({
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
             onData={onData}
+            rules={getRules(schema['processDataSet']['administrativeInformation']['dataEntryBy']['common:referenceToDataSetFormat']['rules'])}
           />
           <br />
           <SourceSelectForm
@@ -1402,6 +1412,7 @@ export const ProcessForm: FC<Props> = ({
               'dataEntryBy',
               'common:referenceToPersonOrEntityEnteringTheData',
             ]}
+            rules={getRules(schema['processDataSet']['administrativeInformation']['dataEntryBy']['common:referenceToPersonOrEntityEnteringTheData']['rules'])}
             onData={onData}
           />
           <br />
@@ -1457,7 +1468,7 @@ export const ProcessForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
-            rules={dataSetVersion}
+            rules={getRules(schema['processDataSet']['administrativeInformation']['publicationAndOwnership']['common:dataSetVersion']['rules'])}
           >
             <Input />
           </Form.Item>
@@ -1474,6 +1485,7 @@ export const ProcessForm: FC<Props> = ({
               'publicationAndOwnership',
               'common:permanentDataSetURI',
             ]}
+            rules={getRules(schema['processDataSet']['administrativeInformation']['publicationAndOwnership']['common:permanentDataSetURI']['rules'])}
           >
             <Input />
           </Form.Item>
@@ -1525,6 +1537,7 @@ export const ProcessForm: FC<Props> = ({
             lang={lang}
             formRef={formRef}
             onData={onData}
+            rules={getRules(schema['processDataSet']['administrativeInformation']['publicationAndOwnership']['common:referenceToOwnershipOfDataSet']['rules'])}
           />
           <br />
           <Form.Item
@@ -1535,6 +1548,7 @@ export const ProcessForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:copyright']}
+            rules={getRules(schema['processDataSet']['administrativeInformation']['publicationAndOwnership']['common:copyright']['rules'])}
           >
             <Select options={copyrightOptions} />
           </Form.Item>
@@ -1547,6 +1561,7 @@ export const ProcessForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:licenseType']}
+            rules={getRules(schema['processDataSet']['administrativeInformation']['publicationAndOwnership']['common:licenseType']['rules'])}
           >
             <Select options={licenseTypeOptions} />
           </Form.Item>
@@ -1564,7 +1579,6 @@ export const ProcessForm: FC<Props> = ({
                   defaultMessage='Access and use restrictions'
                 />
               }
-              rules={FTMultiLang_r}
             />
           </Card>
 
