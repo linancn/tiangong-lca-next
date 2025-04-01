@@ -60,7 +60,7 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                             defaultMessage='Approval of overall compliance'
                           />
                         }
-                        name={[subField.name, 'common:c']}
+                        name={[subField.name, 'common:approvalOfOverallCompliance']}
                         rules={getRules(schema['processDataSet']['modellingAndValidation']['complianceDeclarations']['compliance']['common:approvalOfOverallCompliance']['rules'])}
                       >
                         <Select options={approvalOfOverallComplianceOptions} />
