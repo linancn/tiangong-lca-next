@@ -1784,7 +1784,7 @@ export const ProcessForm: FC<Props> = ({
     ),
     complianceDeclarations: (
       <ComplianceItemForm
-        name={['complianceDeclarations', 'compliance']}
+        name={['modellingAndValidation','complianceDeclarations', 'compliance']}
         lang={lang}
         formRef={formRef}
         onData={onData}

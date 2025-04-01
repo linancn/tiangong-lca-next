@@ -26,7 +26,7 @@ type Props = {
 const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
   return (
     <Form.Item>
-      <Form.List name={name}>
+      <Form.List initialValue={[{}]}  name={name}>
         {(subFields, subOpt) => (
           <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
             {subFields.map((subField) => (
@@ -45,8 +45,14 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                     }
                     extra={
                       <CloseOutlined
-                        style={{ marginTop: '10px' }}
+                        style={{
+                          cursor: subFields.length === 1 ? 'not-allowed' : 'pointer',
+                           marginTop: '10px'
+                        }}
                         onClick={() => {
+                          if (subFields.length === 1) {
+                            return;
+                          }
                           subOpt.remove(subField.name);
                         }}
                       />
@@ -136,7 +142,6 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                         <Select options={qualityComplianceOptions} />
                       </Form.Item>
                     </Col>
-                    <br />
                     <SourceSelectForm
                       parentName={name}
                       name={[subField.name, 'common:referenceToComplianceSystem']}

@@ -25,7 +25,7 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
   const [reviewDetailsError, setReviewDetailsError] = useState(false);
   return (
     <Form.Item>
-      <Form.List name={name}>
+      <Form.List  initialValue={[{}]} name={name}>
         {(subFields, subOpt) => (
           <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
             {subFields.map((subField) => (
@@ -44,8 +44,14 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                     }
                     extra={
                       <CloseOutlined
-                        style={{ marginTop: '10px' }}
+                        style={{
+                          cursor: subFields.length === 1 ? 'not-allowed' : 'pointer',
+                           marginTop: '10px'
+                        }}
                         onClick={() => {
+                          if (subFields.length === 1) {
+                            return;
+                          }
                           subOpt.remove(subField.name);
                         }}
                       />

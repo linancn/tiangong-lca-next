@@ -23,15 +23,15 @@ type Props = {
 type CreateProps =
   | (Omit<Props, 'type'> & { actionType?: 'create' })
   | (Omit<Props, 'type' | 'id' | 'version'> & {
-      actionType: 'copy';
-      id: string;
-      version: string;
-    })
+    actionType: 'copy';
+    id: string;
+    version: string;
+  })
   | (Omit<Props, 'type' | 'id' | 'version'> & {
-      actionType: 'createVersion';
-      id: string;
-      version: string;
-    });
+    actionType: 'createVersion';
+    id: string;
+    version: string;
+  });
 
 const ProcessCreate: FC<CreateProps> = ({
   lang,
@@ -109,11 +109,26 @@ const ProcessCreate: FC<CreateProps> = ({
           'common:timeStamp': currentDateTime,
         },
       },
+      modellingAndValidation: {
+        complianceDeclarations: {
+          compliance: [{
+            'common:referenceToComplianceSystem': 'Fully compliant',
+            'common:approvalOfOverallCompliance': 'Fully compliant',
+            'common:nomenclatureCompliance': 'Fully compliant',
+            'common:methodologicalCompliance': 'Fully compliant',
+            'common:reviewCompliance': 'Fully compliant',
+            'common:documentationCompliance': 'Fully compliant',
+            'common:qualityCompliance': 'Fully compliant',
+          }]
+        }
+      }
     };
+    console.log("chaugjian")
     const newId = v4();
     setInitData({ ...newData, id: newId });
-    formRefCreate.current?.resetFields();
-    formRefCreate.current?.setFieldsValue(newData);
+    // formRefCreate.current?.resetFields();
+    const currentData = formRefCreate.current?.getFieldsValue();
+    formRefCreate.current?.setFieldsValue({ ...currentData, ...newData });
     setFromData({ ...newData, id: newId });
     setExchangeDataSource([]);
   }, [drawerVisible]);
@@ -159,6 +174,7 @@ const ProcessCreate: FC<CreateProps> = ({
         )}
       </Tooltip>
       <Drawer
+        destroyOnClose={true}
         getContainer={() => document.body}
         title={
           <FormattedMessage
