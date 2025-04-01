@@ -606,6 +606,29 @@ export function genProcessJsonOrdered(id: string, data: any) {
             data?.administrativeInformation?.publicationAndOwnership?.[
             'common:workflowAndPublicationStatus'
             ] ?? {},
+          'common:referenceToUnchangedRepublication': {
+            '@refObjectId':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToUnchangedRepublication'
+              ]?.['@refObjectId'] ?? {},
+            '@type':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToUnchangedRepublication'
+              ]?.['@type'] ?? {},
+            '@uri':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToUnchangedRepublication'
+              ]?.['@uri'] ?? {},
+            '@version':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToUnchangedRepublication'
+              ]?.['@version'] ?? {},
+            'common:shortDescription': getLangList(
+              data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToUnchangedRepublication'
+              ]?.['common:shortDescription'],
+            ),
+          },
           'common:registrationNumber':
             data?.administrativeInformation?.publicationAndOwnership?.[
             'common:registrationNumber'
@@ -1136,6 +1159,29 @@ export function genProcessFromData(data: any) {
           data?.administrativeInformation?.publicationAndOwnership?.[
           'common:workflowAndPublicationStatus'
           ] ?? {},
+        'common:referenceToUnchangedRepublication': {
+          '@refObjectId':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+            'common:referenceToUnchangedRepublication'
+            ]?.['@refObjectId'] ?? {},
+          '@type':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+            'common:referenceToUnchangedRepublication'
+            ]?.['@type'] ?? {},
+          '@uri':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+            'common:referenceToUnchangedRepublication'
+            ]?.['@uri'] ?? {},
+          '@version':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+            'common:referenceToUnchangedRepublication'
+            ]?.['@version'] ?? {},
+          'common:shortDescription': getLangList(
+            data?.administrativeInformation?.publicationAndOwnership?.[
+            'common:referenceToUnchangedRepublication'
+            ]?.['common:shortDescription'],
+          ),
+        },
         'common:registrationNumber':
           data?.administrativeInformation?.publicationAndOwnership?.[
           'common:registrationNumber'

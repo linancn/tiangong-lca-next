@@ -1553,6 +1553,23 @@ export const ProcessForm: FC<Props> = ({
             <Select options={workflowAndPublicationStatusOptions} />
           </Form.Item>
 
+          <SourceSelectForm
+            lang={lang}
+            formRef={formRef}
+            label={
+              <FormattedMessage
+                id='pages.process.view.administrativeInformation.referenceToUnchangedRepublication'
+                defaultMessage='Unchanged re-publication of:'
+              />
+            }
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:referenceToUnchangedRepublication',
+            ]}
+            onData={onData}
+          />
+          <br />
           <Form.Item
             label={
               <FormattedMessage

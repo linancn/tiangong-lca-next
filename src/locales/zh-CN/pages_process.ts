@@ -141,6 +141,7 @@ export default {
   'pages.process.view.administrativeInformation.dataSetVersion': '数据集版本',
   'pages.process.view.administrativeInformation.permanentDataSetURI': '永久数据集统一资源标识符',
   'pages.process.view.administrativeInformation.workflowAndPublicationStatus': '工作流和发布状态',
+  'pages.process.view.administrativeInformation.referenceToUnchangedRepublication': '未变更重发布：',
   'pages.process.view.administrativeInformation.registrationNumber': '注册号',
   'pages.process.view.administrativeInformation.referenceToOwnershipOfDataSet': '数据集拥有者',
   'pages.process.view.administrativeInformation.copyright': '版权？',

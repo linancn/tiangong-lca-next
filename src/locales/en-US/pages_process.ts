@@ -148,6 +148,7 @@ export default {
   'pages.process.view.administrativeInformation.dataSetVersion': 'Data set version',
   'pages.process.view.administrativeInformation.permanentDataSetURI': 'Permanent data set URI',
   'pages.process.view.administrativeInformation.workflowAndPublicationStatus': 'Workflow and publication status',
+  'pages.process.view.administrativeInformation.referenceToUnchangedRepublication': 'Unchanged re-publication of:',
   'pages.process.view.administrativeInformation.registrationNumber': 'Registration number',
   'pages.process.view.administrativeInformation.referenceToOwnershipOfDataSet': 'Owner of data set',
   'pages.process.view.administrativeInformation.copyright': 'Copyright?',

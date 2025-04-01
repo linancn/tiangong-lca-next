@@ -1428,6 +1428,21 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
             </Descriptions.Item>
           </Descriptions>
           <br />
+          <SourceSelectDescription
+            title={
+              <FormattedMessage
+                id='pages.process.view.administrativeInformation.referenceToUnchangedRepublication'
+                defaultMessage='Unchanged re-publication of:'
+              />
+            }
+            data={
+              initData.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToUnchangedRepublication'
+              ] ?? {}
+            }
+            lang={lang}
+          />
+          <br />
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item
               key={0}
