@@ -146,6 +146,7 @@ export default {
   'pages.process.view.administrativeInformation.registrationNumber': '注册号',
   'pages.process.view.administrativeInformation.referenceToOwnershipOfDataSet': '数据集拥有者',
   'pages.process.view.administrativeInformation.copyright': '版权？',
+  'pages.process.view.administrativeInformation.referenceToEntitiesWithExclusiveAccess': '数据集的独有访问者或个人',
   'pages.process.view.administrativeInformation.licenseType': '许可类型',
   'pages.process.view.administrativeInformation.accessRestrictions': '访问和使用限制',
 

@@ -681,6 +681,29 @@ export function genProcessJsonOrdered(id: string, data: any) {
           },
           'common:copyright':
             data?.administrativeInformation?.publicationAndOwnership?.['common:copyright'],
+          'common:referenceToEntitiesWithExclusiveAccess': {
+            '@refObjectId':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToEntitiesWithExclusiveAccess'
+              ]?.['@refObjectId'] ?? {},
+            '@type':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToEntitiesWithExclusiveAccess'
+              ]?.['@type'] ?? {},
+            '@uri':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToEntitiesWithExclusiveAccess'
+              ]?.['@uri'] ?? {},
+            '@version':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToEntitiesWithExclusiveAccess'
+              ]?.['@version'] ?? {},
+            'common:shortDescription': getLangList(
+              data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToEntitiesWithExclusiveAccess'
+              ]?.['common:shortDescription'],
+            ),
+          },
           'common:licenseType':
             data?.administrativeInformation?.publicationAndOwnership?.['common:licenseType'],
           'common:accessRestrictions': getLangJson(
@@ -1257,6 +1280,29 @@ export function genProcessFromData(data: any) {
         },
         'common:copyright':
           data?.administrativeInformation?.publicationAndOwnership?.['common:copyright'],
+        'common:referenceToEntitiesWithExclusiveAccess': {
+          '@refObjectId':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+            'common:referenceToEntitiesWithExclusiveAccess'
+            ]?.['@refObjectId'] ?? {},
+          '@type':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+            'common:referenceToEntitiesWithExclusiveAccess'
+            ]?.['@type'] ?? {},
+          '@uri':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+            'common:referenceToEntitiesWithExclusiveAccess'
+            ]?.['@uri'] ?? {},
+          '@version':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+            'common:referenceToEntitiesWithExclusiveAccess'
+            ]?.['@version'] ?? {},
+          'common:shortDescription': getLangList(
+            data?.administrativeInformation?.publicationAndOwnership?.[
+            'common:referenceToEntitiesWithExclusiveAccess'
+            ]?.['common:shortDescription'],
+          ),
+        },
         'common:licenseType':
           data?.administrativeInformation?.publicationAndOwnership?.['common:licenseType'],
         'common:accessRestrictions': getLangList(

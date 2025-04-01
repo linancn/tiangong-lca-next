@@ -153,6 +153,7 @@ export default {
   'pages.process.view.administrativeInformation.registrationNumber': 'Registration number',
   'pages.process.view.administrativeInformation.referenceToOwnershipOfDataSet': 'Owner of data set',
   'pages.process.view.administrativeInformation.copyright': 'Copyright?',
+  'pages.process.view.administrativeInformation.referenceToEntitiesWithExclusiveAccess': 'Entities or persons with exclusive access to this data set',
   'pages.process.view.administrativeInformation.licenseType': 'License type',
   'pages.process.view.administrativeInformation.accessRestrictions': 'Access and use restrictions',
   'processExchange.exchangeDirection': 'Exchange direction',

@@ -1508,6 +1508,21 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
             </Descriptions.Item>
           </Descriptions>
           <br />
+          <ContactSelectDescription
+            title={
+              <FormattedMessage
+                id='pages.process.view.administrativeInformation.referenceToEntitiesWithExclusiveAccess'
+                defaultMessage='Entities or persons with exclusive access to this data set'
+              />
+            }
+            lang={lang}
+            data={
+              initData.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToEntitiesWithExclusiveAccess'
+              ]
+            }
+          />
+          <br />
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item
               key={0}

@@ -1633,7 +1633,19 @@ export const ProcessForm: FC<Props> = ({
           >
             <Select options={copyrightOptions} />
           </Form.Item>
-
+          <ContactSelectForm
+            name={['administrativeInformation','publicationAndOwnership','common:referenceToEntitiesWithExclusiveAccess',]}
+            label={
+              <FormattedMessage
+                id='pages.process.view.administrativeInformation.referenceToEntitiesWithExclusiveAccess'
+                defaultMessage='Entities or persons with exclusive access to this data set'
+              />
+            }
+            lang={lang}
+            formRef={formRef}
+            onData={onData}
+          />
+          <br />
           <Form.Item
             label={
               <FormattedMessage
