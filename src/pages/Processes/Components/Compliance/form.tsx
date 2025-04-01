@@ -2,7 +2,7 @@ import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { CloseOutlined } from '@ant-design/icons';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Form, Row, Select, Space } from 'antd';
-import { FC } from 'react';
+import { FC, useEffect } from 'react';
 import { FormattedMessage } from 'umi';
 import {
   approvalOfOverallComplianceOptions,
@@ -24,9 +24,14 @@ type Props = {
 };
 
 const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
+  useEffect(() => {
+    formRef.current?.setFieldsValue({
+      name: [{}]
+    });
+  }, []);
   return (
     <Form.Item>
-      <Form.List initialValue={[{}]}  name={name}>
+      <Form.List name={name}>
         {(subFields, subOpt) => (
           <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
             {subFields.map((subField) => (

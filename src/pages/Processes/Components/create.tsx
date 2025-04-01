@@ -126,7 +126,6 @@ const ProcessCreate: FC<CreateProps> = ({
         }
       },
     };
-    console.log("chaugjian")
     const newId = v4();
     setInitData({ ...newData, id: newId });
     // formRefCreate.current?.resetFields();
