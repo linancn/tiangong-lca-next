@@ -12,9 +12,10 @@ type Props = {
   rules?: any[];
   setRuleErrorState?: (showError: boolean) => void;
   formRef?: any;
+  listName?:string[]
 };
 
-const LangTextItemForm: FC<Props> = ({ name, label, rules = [], setRuleErrorState, formRef }) => {
+const LangTextItemForm: FC<Props> = ({ name, label, rules = [], setRuleErrorState, formRef,listName }) => {
   const intl = useIntl();
   const isRequired = rules?.some((rule) => rule.required);
   const initialRenderRef = useRef(true);
@@ -22,10 +23,19 @@ const LangTextItemForm: FC<Props> = ({ name, label, rules = [], setRuleErrorStat
   const formContext = Form.useFormInstance();
   const form = formRef?.current || formContext;
 
-  const watchedValues = Form.useWatch(name, form);
-  const formValues = watchedValues || [];
+  let formValues =[];
+  if(listName){
+    formValues = form.getFieldValue([...listName]);
+    const fieldName = name[name.length-1];
+    if(fieldName){
+      formValues = form.getFieldValue([...listName])[0][fieldName]
+    }
+  }else{
+    formValues = form.getFieldValue(name)
+  }
 
-  const selectedLangValues = (formValues ?? [])
+
+  const selectedLangValues = (formValues??[])
     .filter((item: any) => item && item['@xml:lang'])
     .map((item: any) => item['@xml:lang']);
 

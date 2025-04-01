@@ -112,6 +112,7 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                     </Divider>
                     <LangTextItemForm
                       name={[subField.name, 'common:reviewDetails']}
+                      listName={[...name]}
                       label={
                         <FormattedMessage
                           id='pages.process.view.modellingAndValidation.validation.reviewDetails'
@@ -129,6 +130,7 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                     </Divider>
                     <LangTextItemForm
                       name={[subField.name, 'common:otherReviewDetails']}
+                      listName={[...name]}
                       label={
                         <FormattedMessage
                           id='pages.process.view.modellingAndValidation.validation.otherReviewDetails'
