@@ -191,6 +191,7 @@ export default {
   'pages.process.view.dataSourceType.mixedPrimarySecondary': '混合主要/次要',
   'pages.process.view.dataSourceType.secondary': '次要的',
   'pages.process.view.exchange.dataDerivationTypeStatus': '数据推导类型/状态',
+  'pages.process.view.exchange.referenceToDataSource': '数据源',
   'pages.process.view.exchange.generalComment': '备注',
   'pages.process.view.exchange.quantitativeReference': '量值参考',
   'pages.process.view.exchange.referenceToReferenceFlow': '基准流',

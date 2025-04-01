@@ -195,6 +195,7 @@ export default {
   'pages.process.view.dataSourceType.mixedPrimarySecondary': 'Mixed primary / secondary',
   'pages.process.view.dataSourceType.secondary': 'Secondary',
   'pages.process.view.exchange.dataDerivationTypeStatus': 'Data derivation type / status',
+  'pages.process.view.exchange.referenceToDataSource': 'Data source(s)',
   'pages.process.view.exchange.generalComment': 'Comment',
   'pages.process.view.exchange.quantitativeReference': 'Quantitative reference',
   'pages.process.view.exchange.referenceToReferenceFlow': 'Reference flow(s)',

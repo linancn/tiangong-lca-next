@@ -52,6 +52,15 @@ export function genProcessJsonOrdered(id: string, data: any) {
         relativeStandardDeviation95In: item.relativeStandardDeviation95In,
         dataSourceType: item.dataSourceType,
         dataDerivationTypeStatus: item.dataDerivationTypeStatus,
+        referencesToDataSource: {
+          referenceToDataSource: {
+            '@type': item?.referencesToDataSource?.referenceToDataSource?.['@type'],
+            '@refObjectId': item?.referencesToDataSource?.referenceToDataSource?.['@refObjectId'],
+            '@uri': item?.referencesToDataSource?.referenceToDataSource?.['@uri'],
+            '@version': item?.referencesToDataSource?.referenceToDataSource?.['@version'],
+            'common:shortDescription': getLangJson(item?.referencesToDataSource?.referenceToDataSource?.['common:shortDescription']),
+          },
+        },
         generalComment: getLangJson(item.generalComment),
       };
     }) ?? [];
@@ -1229,28 +1238,28 @@ export function genProcessFromData(data: any) {
           ),
         },
         'common:referenceToRegistrationAuthority': {
-            '@refObjectId':
-              data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToRegistrationAuthority'
-              ]?.['@refObjectId'] ?? {},
-            '@type':
-              data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToRegistrationAuthority'
-              ]?.['@type'] ?? {},
-            '@uri':
-              data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToRegistrationAuthority'
-              ]?.['@uri'] ?? {},
-            '@version':
-              data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToRegistrationAuthority'
-              ]?.['@version'] ?? {},
-            'common:shortDescription': getLangList(
-              data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToRegistrationAuthority'
-              ]?.['common:shortDescription'],
-            ),
-          },
+          '@refObjectId':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+            'common:referenceToRegistrationAuthority'
+            ]?.['@refObjectId'] ?? {},
+          '@type':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+            'common:referenceToRegistrationAuthority'
+            ]?.['@type'] ?? {},
+          '@uri':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+            'common:referenceToRegistrationAuthority'
+            ]?.['@uri'] ?? {},
+          '@version':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+            'common:referenceToRegistrationAuthority'
+            ]?.['@version'] ?? {},
+          'common:shortDescription': getLangList(
+            data?.administrativeInformation?.publicationAndOwnership?.[
+            'common:referenceToRegistrationAuthority'
+            ]?.['common:shortDescription'],
+          ),
+        },
         'common:registrationNumber':
           data?.administrativeInformation?.publicationAndOwnership?.[
           'common:registrationNumber'
@@ -1345,6 +1354,15 @@ export function genProcessFromData(data: any) {
             relativeStandardDeviation95In: item.relativeStandardDeviation95In,
             dataSourceType: item.dataSourceType,
             dataDerivationTypeStatus: item.dataDerivationTypeStatus,
+            referencesToDataSource: {
+              referenceToDataSource: {
+                '@type': item?.referencesToDataSource?.referenceToDataSource?.['@type'],
+                '@refObjectId': item?.referencesToDataSource?.referenceToDataSource?.['@refObjectId'],
+                '@uri': item?.referencesToDataSource?.referenceToDataSource?.['@uri'],
+                '@version': item?.referencesToDataSource?.referenceToDataSource?.['@version'],
+                'common:shortDescription': getLangJson(item?.referencesToDataSource?.referenceToDataSource?.['common:shortDescription']),
+              },
+            },
             generalComment: getLangList(item.generalComment),
             quantitativeReference: true,
             functionalUnitOrOther: getLangList(
@@ -1381,6 +1399,15 @@ export function genProcessFromData(data: any) {
             relativeStandardDeviation95In: item.relativeStandardDeviation95In,
             dataSourceType: item.dataSourceType,
             dataDerivationTypeStatus: item.dataDerivationTypeStatus,
+            referencesToDataSource: {
+              referenceToDataSource: {
+                '@type': item?.referencesToDataSource?.referenceToDataSource?.['@type'],
+                '@refObjectId': item?.referencesToDataSource?.referenceToDataSource?.['@refObjectId'],
+                '@uri': item?.referencesToDataSource?.referenceToDataSource?.['@uri'],
+                '@version': item?.referencesToDataSource?.referenceToDataSource?.['@version'],
+                'common:shortDescription': getLangJson(item?.referencesToDataSource?.referenceToDataSource?.['common:shortDescription']),
+              },
+            },
             generalComment: getLangList(item.generalComment),
             quantitativeReference: false,
           };
@@ -1476,6 +1503,15 @@ export function genProcessExchangeTableData(data: any, lang: string) {
         meanAmount: item?.meanAmount ?? '-',
         resultingAmount: item?.resultingAmount ?? '-',
         dataDerivationTypeStatus: item?.dataDerivationTypeStatus ?? '-',
+        referencesToDataSource: {
+          referenceToDataSource: {
+            '@type': item?.referencesToDataSource?.referenceToDataSource?.['@type'],
+            '@refObjectId': item?.referencesToDataSource?.referenceToDataSource?.['@refObjectId'],
+            '@uri': item?.referencesToDataSource?.referenceToDataSource?.['@uri'],
+            '@version': item?.referencesToDataSource?.referenceToDataSource?.['@version'],
+            'common:shortDescription': getLangJson(item?.referencesToDataSource?.referenceToDataSource?.['common:shortDescription']),
+          },
+        },
         generalComment: getLangText(item?.generalComment, lang),
         quantitativeReference: item?.quantitativeReference ?? false,
         functionalUnitOrOther: getLangText(item?.functionalUnitOrOther, lang),

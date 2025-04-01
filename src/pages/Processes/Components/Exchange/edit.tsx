@@ -2,6 +2,7 @@ import LangTextItemForm from '@/components/LangTextItem/form';
 import UnitConvert from '@/components/UnitConvert';
 import { UnitsContext } from '@/contexts/unitContext';
 import FlowsSelectForm from '@/pages/Flows/Components/select/form';
+import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -397,6 +398,21 @@ const ProcessExchangeEdit: FC<Props> = ({
             >
               <Select options={DataDerivationTypeStatusOptions} />
             </Form.Item>
+            <SourceSelectForm
+              name={[
+                'referencesToDataSource',
+                'referenceToDataSource',
+              ]}
+              label={
+                <FormattedMessage
+                  id='pages.process.view.exchange.referenceToDataSource'
+                  defaultMessage='Data source(s)'
+                />
+              }
+              lang={lang}
+              formRef={formRefEdit}
+              onData={handletFromData}
+            />
             <Divider orientationMargin='0' orientation='left' plain>
               <FormattedMessage
                 id='pages.process.view.exchange.generalComment'

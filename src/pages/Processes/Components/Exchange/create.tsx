@@ -2,6 +2,7 @@ import LangTextItemForm from '@/components/LangTextItem/form';
 import UnitConvert from '@/components/UnitConvert';
 import { UnitsContext } from '@/contexts/unitContext';
 import FlowsSelectForm from '@/pages/Flows/Components/select/form';
+import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -22,7 +23,7 @@ import {
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import { DataDerivationTypeStatusOptions,functionTypeOptions, dataSourceTypeOptions } from '../optiondata';
+import { DataDerivationTypeStatusOptions, functionTypeOptions, dataSourceTypeOptions } from '../optiondata';
 
 type Props = {
   direction: string;
@@ -177,7 +178,7 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
               }
               name={'location'}
             >
-              <Input/>
+              <Input />
             </Form.Item>
             <Form.Item
               label={
@@ -201,7 +202,7 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
               }
               name={'referenceToVariable'}
             >
-              <Input/>
+              <Input />
             </Form.Item>
             <Form.Item
               label={
@@ -255,7 +256,7 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
               />
             </Form.Item>
             {formRefCreate.current?.getFieldValue('uncertaintyDistributionType') === 'triangular' ||
-            formRefCreate.current?.getFieldValue('uncertaintyDistributionType') === 'uniform' ? (
+              formRefCreate.current?.getFieldValue('uncertaintyDistributionType') === 'uniform' ? (
               <>
                 <Form.Item
                   label={
@@ -285,7 +286,7 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
             )}
 
             {formRefCreate.current?.getFieldValue('uncertaintyDistributionType') === 'log-normal' ||
-            formRefCreate.current?.getFieldValue('uncertaintyDistributionType') === 'log-normal' ? (
+              formRefCreate.current?.getFieldValue('uncertaintyDistributionType') === 'log-normal' ? (
               <>
                 <Form.Item
                   label={
@@ -307,32 +308,32 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
               title={
                 <FormattedMessage
                   id='pages.process.view.exchange.allocation'
-                  defaultMessage='Allocation'  
+                  defaultMessage='Allocation'
                 />
               }
             >
               <Form.Item
-              label={
-                <FormattedMessage
-                  id='pages.process.view.exchange.internalReferenceToCoProduct'
-                  defaultMessage='Internal reference to co-product'
-                />
-              }
-              name={['allocations','allocation','@internalReferenceToCoProduct']}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label={
-                <FormattedMessage
-                  id='pages.process.view.exchange.allocatedFraction'
-                  defaultMessage='Allocated fraction'
-                />
-              }
-              name={['allocations','allocation','@allocatedFraction']}
-            >
-              <Input />
-            </Form.Item>
+                label={
+                  <FormattedMessage
+                    id='pages.process.view.exchange.internalReferenceToCoProduct'
+                    defaultMessage='Internal reference to co-product'
+                  />
+                }
+                name={['allocations', 'allocation', '@internalReferenceToCoProduct']}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
+                label={
+                  <FormattedMessage
+                    id='pages.process.view.exchange.allocatedFraction'
+                    defaultMessage='Allocated fraction'
+                  />
+                }
+                name={['allocations', 'allocation', '@allocatedFraction']}
+              >
+                <Input />
+              </Form.Item>
 
             </Card>
             <br />
@@ -358,6 +359,22 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
             >
               <Select options={DataDerivationTypeStatusOptions} />
             </Form.Item>
+
+            <SourceSelectForm
+              name={[
+                'referencesToDataSource',
+                'referenceToDataSource',
+              ]}
+              label={
+                <FormattedMessage
+                  id='pages.process.view.exchange.referenceToDataSource'
+                  defaultMessage='Data source(s)'
+                />
+              }
+              lang={lang}
+              formRef={formRefCreate}
+              onData={handletFromData}
+            />
             <Divider orientationMargin='0' orientation='left' plain>
               <FormattedMessage
                 id='pages.process.view.exchange.generalComment'

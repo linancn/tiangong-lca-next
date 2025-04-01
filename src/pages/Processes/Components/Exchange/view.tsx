@@ -7,7 +7,7 @@ import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { DataDerivationTypeStatusOptions, functionTypeOptions, dataSourceTypeOptions } from '../optiondata';
-
+import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 type Props = {
   id: string;
   data: any;
@@ -335,7 +335,17 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
             {getDataDerivationTypeStatusOptions(viewData.dataDerivationTypeStatus)}
           </Descriptions.Item>
         </Descriptions>
-
+        <br />
+        <SourceSelectDescription
+          title={
+            <FormattedMessage
+              id='pages.process.view.exchange.referenceToDataSource'
+              defaultMessage='Data source(s)'
+            />
+          }
+          lang={lang}
+          data={viewData.referencesToDataSource?.referenceToDataSource}
+        />
         <Divider orientationMargin='0' orientation='left' plain>
           <FormattedMessage
             id='pages.process.view.exchange.generalComment'
