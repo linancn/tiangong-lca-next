@@ -286,6 +286,24 @@ export function genProcessJsonOrdered(id: string, data: any) {
             data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
               ?.deviationsFromTreatmentAndExtrapolationPrinciples,
           ),
+          referenceToDataHandlingPrinciples: {
+            '@type':
+              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.referenceToDataHandlingPrinciples?.['@type'] ?? {},
+            '@refObjectId':
+              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.referenceToDataHandlingPrinciples?.['@refObjectId'] ?? {},
+            '@uri':
+              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.referenceToDataHandlingPrinciples?.['@uri'] ?? {},
+            '@version':
+              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.referenceToDataHandlingPrinciples?.['@version'] ?? {},
+            'common:shortDescription': getLangJson(
+              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.referenceToDataHandlingPrinciples?.['common:shortDescription'],
+            ),
+          },
           referenceToDataSource: {
             '@type':
               data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
@@ -860,6 +878,24 @@ export function genProcessFromData(data: any) {
           data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
             ?.deviationsFromTreatmentAndExtrapolationPrinciples,
         ),
+        referenceToDataHandlingPrinciples: {
+          '@type':
+            data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+              ?.referenceToDataHandlingPrinciples?.['@type'] ?? {},
+          '@refObjectId':
+            data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+              ?.referenceToDataHandlingPrinciples?.['@refObjectId'] ?? {},
+          '@uri':
+            data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+              ?.referenceToDataHandlingPrinciples?.['@uri'] ?? {},
+          '@version':
+            data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+              ?.referenceToDataHandlingPrinciples?.['@version'] ?? {},
+          'common:shortDescription': getLangJson(
+            data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+              ?.referenceToDataHandlingPrinciples?.['common:shortDescription'],
+          ),
+        },
         referenceToDataSource: {
           '@type':
             data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness

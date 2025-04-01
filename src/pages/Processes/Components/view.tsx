@@ -963,6 +963,20 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
           <SourceSelectDescription
             title={
               <FormattedMessage
+                id='pages.process.view.modellingAndValidation.referenceToDataHandlingPrinciples'
+                defaultMessage='Data handling report'
+              />
+            }
+            data={
+              initData.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.referenceToDataHandlingPrinciples ?? {}
+            }
+            lang={lang}
+          />
+          <br />
+          <SourceSelectDescription
+            title={
+              <FormattedMessage
                 id='pages.process.view.modellingAndValidation.referenceToDataSource'
                 defaultMessage='Data source(s) used for this data set'
               />

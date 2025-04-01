@@ -87,6 +87,7 @@ export default {
   'pages.process.view.modellingAndValidation.deviationsFromSelectionAndCombinationPrinciples': 'Deviation from data selection and combination principles / explanations',
   'pages.process.view.modellingAndValidation.dataTreatmentAndExtrapolationsPrinciples': 'Data treatment and extrapolations principles',
   'pages.process.view.modellingAndValidation.deviationsFromTreatmentAndExtrapolationPrinciples': 'Deviation from data treatment and extrapolations principles / explanations',
+  'pages.process.view.modellingAndValidation.referenceToDataHandlingPrinciples': 'Data handling report',
   'pages.process.view.modellingAndValidation.referenceToDataSource': 'Data source(s) used for this data set',
   'pages.process.view.modellingAndValidation.percentageSupplyOrProductionCovered': 'Percentage supply or production covered',
   'pages.process.view.modellingAndValidation.annualSupplyOrProductionVolume': 'Annual supply or production volume',

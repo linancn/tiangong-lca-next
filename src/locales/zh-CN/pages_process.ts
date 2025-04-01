@@ -81,6 +81,7 @@ export default {
   'pages.process.view.modellingAndValidation.deviationsFromSelectionAndCombinationPrinciples': '偏离数据选择和组合原则/解释',
   'pages.process.view.modellingAndValidation.dataTreatmentAndExtrapolationsPrinciples': '数据处理和外推原则',
   'pages.process.view.modellingAndValidation.deviationsFromTreatmentAndExtrapolationPrinciples': '偏离数据处理和外推原则/解释',
+  'pages.process.view.modellingAndValidation.referenceToDataHandlingPrinciples': '数据处理报告',
   'pages.process.view.modellingAndValidation.referenceToDataSource': '使用的数据来源',
   'pages.process.view.modellingAndValidation.percentageSupplyOrProductionCovered': '供应或生产覆盖率',
   'pages.process.view.modellingAndValidation.annualSupplyOrProductionVolume': '年供应量或生产量',

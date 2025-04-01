@@ -1072,7 +1072,23 @@ export const ProcessForm: FC<Props> = ({
               />
             }
           />
-
+          <SourceSelectForm
+            name={[
+              'modellingAndValidation',
+              'dataSourcesTreatmentAndRepresentativeness',
+              'referenceToDataHandlingPrinciples',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.process.view.modellingAndValidation.referenceToDataHandlingPrinciples'
+                defaultMessage='Data handling report'
+              />
+            }
+            lang={lang}
+            formRef={formRef}
+            onData={onData}
+          />
+          <br />
           <SourceSelectForm
             name={[
               'modellingAndValidation',
