@@ -42,6 +42,7 @@ type Props = {
   onExchangeDataCreate: (data: any) => void;
   onTabChange: (key: string) => void;
   exchangeDataSource: ProcessExchangeTable[];
+  formType?: string;
 };
 
 export const ProcessForm: FC<Props> = ({
@@ -53,6 +54,7 @@ export const ProcessForm: FC<Props> = ({
   onExchangeDataCreate,
   onTabChange,
   exchangeDataSource,
+  formType
 }) => {
   const actionRefExchangeTableInput = useRef<ActionType>();
   const actionRefExchangeTableOutput = useRef<ActionType>();
@@ -1415,6 +1417,7 @@ export const ProcessForm: FC<Props> = ({
             <Input disabled={true} style={{ color: token.colorTextDescription }} />
           </Form.Item>
           <SourceSelectForm
+            defaultSourceName={formType === 'create' ? 'ILCD format' : ''}
             lang={lang}
             formRef={formRef}
             label={

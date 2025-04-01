@@ -108,6 +108,9 @@ const ProcessCreate: FC<CreateProps> = ({
         dataEntryBy: {
           'common:timeStamp': currentDateTime,
         },
+        publicationAndOwnership: {
+          'common:dataSetVersion': '01.01.000',
+        },
       },
       modellingAndValidation: {
         complianceDeclarations: {
@@ -121,7 +124,7 @@ const ProcessCreate: FC<CreateProps> = ({
             'common:qualityCompliance': 'Fully compliant',
           }]
         }
-      }
+      },
     };
     console.log("chaugjian")
     const newId = v4();
@@ -244,6 +247,7 @@ const ProcessCreate: FC<CreateProps> = ({
             }}
           >
             <ProcessForm
+              formType={actionType}
               lang={lang}
               activeTabKey={activeTabKey}
               formRef={formRefCreate}
