@@ -270,13 +270,13 @@ export const ProcessForm: FC<Props> = ({
           <Card
             size='small'
             title={
-              <RequiredMark label={ <FormattedMessage
+              <RequiredMark label={<FormattedMessage
                 id='pages.process.view.processInformation.baseName'
                 defaultMessage='Base name'
               />
-            }
-            showError={baseNameError}
-            />
+              }
+                showError={baseNameError}
+              />
             }
           >
             <LangTextItemForm
@@ -295,13 +295,13 @@ export const ProcessForm: FC<Props> = ({
           <Card
             size='small'
             title={
-              <RequiredMark label={ <FormattedMessage
+              <RequiredMark label={<FormattedMessage
                 id='pages.process.view.processInformation.treatmentStandardsRoutes'
                 defaultMessage='Treatment, standards, routes'
               />
-            }
-            showError={treatmentStandardsRoutesError}
-            />
+              }
+                showError={treatmentStandardsRoutesError}
+              />
             }
           >
             <LangTextItemForm
@@ -325,13 +325,13 @@ export const ProcessForm: FC<Props> = ({
           <Card
             size='small'
             title={
-              <RequiredMark label={ <FormattedMessage
+              <RequiredMark label={<FormattedMessage
                 id='pages.process.view.processInformation.mixAndLocationTypes'
                 defaultMessage='Mix and location types'
               />
-            }
-            showError={mixAndLocationTypesError}
-            />
+              }
+                showError={mixAndLocationTypesError}
+              />
             }
           >
             <LangTextItemForm
@@ -642,7 +642,23 @@ export const ProcessForm: FC<Props> = ({
               />
             }
           />
-
+          <SourceSelectForm
+            name={[
+              'processInformation',
+              'technology',
+              'referenceToTechnologyPictogramme',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.process.view.processInformation.referenceToTechnologyPictogramme'
+                defaultMessage='Pictogramme of technology'
+              />
+            }
+            lang={lang}
+            formRef={formRef}
+            onData={onData}
+          />
+          <br />
           <SourceSelectForm
             name={[
               'processInformation',
@@ -1303,12 +1319,12 @@ export const ProcessForm: FC<Props> = ({
         <Card
           size='small'
           title={
-            <RequiredMark label={ <FormattedMessage
+            <RequiredMark label={<FormattedMessage
               id='pages.process.view.administrativeInformation.intendedApplications'
               defaultMessage='Intended applications'
             />
             }
-            showError={intendedApplicationsError}
+              showError={intendedApplicationsError}
             />
           }
         >

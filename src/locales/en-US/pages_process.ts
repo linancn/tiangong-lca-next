@@ -46,6 +46,7 @@ export default {
   'pages.process.view.processInformation.technology': 'Technological representativeness',
   'pages.process.view.processInformation.technologyDescriptionAndIncludedProcesses': 'Technology description including background system',
   'pages.process.view.processInformation.technologicalApplicability': 'Technical purpose of product or process',
+  'pages.process.view.processInformation.referenceToTechnologyPictogramme': 'Pictogramme of technology',
   'pages.process.view.processInformation.referenceToTechnologyFlowDiagrammOrPicture': 'Flow diagramm(s) or picture(s)',
   'pages.process.view.processInformation.mathematicalRelations': 'Mathematical model',
   'pages.process.view.processInformation.modelDescription': 'Model description',

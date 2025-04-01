@@ -583,6 +583,20 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
           <LangTextItemDescription
             data={initData.processInformation?.technology?.technologicalApplicability}
           />
+           <br />
+          <SourceSelectDescription
+            title={
+              <FormattedMessage
+                id='pages.process.view.processInformation.referenceToTechnologyPictogramme'
+                defaultMessage='Flow diagramm(s) or picture(s)'
+              />
+            }
+            data={
+              initData.processInformation?.technology?.referenceToTechnologyPictogramme ??
+              {}
+            }
+            lang={lang}
+          />
           <br />
           <SourceSelectDescription
             title={

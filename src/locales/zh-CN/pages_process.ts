@@ -43,6 +43,7 @@ export default {
   'pages.process.view.processInformation.descriptionOfRestrictions': '地理代表性描述',
   'pages.process.view.processInformation.technology': '技术代表性',
   'pages.process.view.processInformation.technologyDescriptionAndIncludedProcesses': '技术描述及背景系统',
+  'pages.process.view.processInformation.referenceToTechnologyPictogramme': '工艺图',
   'pages.process.view.processInformation.technologicalApplicability': '产品或工艺的技术用途',
   'pages.process.view.processInformation.referenceToTechnologyFlowDiagrammOrPicture': '流程图或者工艺图',
   'pages.process.view.processInformation.mathematicalRelations': '数学模型',
