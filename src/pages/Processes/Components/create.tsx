@@ -229,7 +229,34 @@ const ProcessCreate: FC<CreateProps> = ({
             }}
             onFinish={async () => {
               const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
-              const result = await createProcess(paramsId, fromData);
+              const fieldsValue = formRefCreate.current?.getFieldsValue();
+              const exchanges = fromData?.exchanges;
+              if (
+                !exchanges ||
+                !exchanges?.exchange ||
+                exchanges?.exchange?.length === 0
+              ) {
+                message.error(
+                  intl.formatMessage({
+                    id: 'pages.process.validator.exchanges.required',
+                    defaultMessage: 'Please select exchanges',
+                  }),
+                );
+                return false;
+              }else if (
+                exchanges.exchange.filter((item: any) => item?.quantitativeReference).length !== 1
+              ) {
+                message.error(
+                  intl.formatMessage({
+                    id: 'pages.process.validator.exchanges.quantitativeReference.required',
+                    defaultMessage: 'Exchange needs to have exactly one quantitative reference open',
+                  }),
+                );
+                return false;
+              }
+
+              console.log('exchanges',exchanges)
+              const result = await createProcess(paramsId, {...fieldsValue, exchanges});
               if (result.data) {
                 message.success(
                   intl.formatMessage({

@@ -62,6 +62,7 @@ export const ProcessForm: FC<Props> = ({
   const [treatmentStandardsRoutesError, setTreatmentStandardsRoutesError] = useState(false);
   const [mixAndLocationTypesError, setMixAndLocationTypesError] = useState(false);
   const [intendedApplicationsError, setIntendedApplicationsError] = useState(false);
+  const [generalCommentError, setGeneralCommentError] = useState(false);
   const { token } = theme.useToken();
   const tabList = [
     {
@@ -425,9 +426,13 @@ export const ProcessForm: FC<Props> = ({
         <Card
           size='small'
           title={
+            <RequiredMark label={
             <FormattedMessage
               id='pages.process.view.processInformation.generalComment'
               defaultMessage='General comment on data set'
+            />
+            }
+            showError={generalCommentError}
             />
           }
         >
@@ -439,6 +444,7 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='General comment on data set'
               />
             }
+            setRuleErrorState={setGeneralCommentError}
             rules={getRules(schema['processDataSet']['processInformation']['dataSetInformation']['common:generalComment']['rules'])}
           />
         </Card>

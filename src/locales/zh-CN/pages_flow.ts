@@ -116,5 +116,5 @@ export default {
   'pages.flow.validator.referenceToFlowPropertyDataSet.required': '请输入参考流属性',
   'pages.flow.validator.meanValue.required': '请输入流属性的平均值',
   'pages.flow.validator.flowProperties.required': '请选择流属性',
-  'pages.flow.validator.flowProperties.quantitativeReference.required': '流属性需要有且仅有一条开放的量值参考',
+  'pages.flow.validator.flowProperties.quantitativeReference.required': '流属性需要有且仅有一条量值参考打开',
 };
