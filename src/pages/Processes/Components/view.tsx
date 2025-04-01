@@ -1443,6 +1443,21 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
             lang={lang}
           />
           <br />
+          <ContactSelectDescription
+            title={
+              <FormattedMessage
+                id='pages.process.view.administrativeInformation.referenceToRegistrationAuthority'
+                defaultMessage='Registration authority'
+              />
+            }
+            lang={lang}
+            data={
+              initData.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToRegistrationAuthority'
+              ]
+            }
+          />
+          <br />
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item
               key={0}

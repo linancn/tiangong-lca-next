@@ -629,6 +629,29 @@ export function genProcessJsonOrdered(id: string, data: any) {
               ]?.['common:shortDescription'],
             ),
           },
+          'common:referenceToRegistrationAuthority': {
+            '@refObjectId':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToRegistrationAuthority'
+              ]?.['@refObjectId'] ?? {},
+            '@type':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToRegistrationAuthority'
+              ]?.['@type'] ?? {},
+            '@uri':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToRegistrationAuthority'
+              ]?.['@uri'] ?? {},
+            '@version':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToRegistrationAuthority'
+              ]?.['@version'] ?? {},
+            'common:shortDescription': getLangList(
+              data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToRegistrationAuthority'
+              ]?.['common:shortDescription'],
+            ),
+          },
           'common:registrationNumber':
             data?.administrativeInformation?.publicationAndOwnership?.[
             'common:registrationNumber'
@@ -1182,6 +1205,29 @@ export function genProcessFromData(data: any) {
             ]?.['common:shortDescription'],
           ),
         },
+        'common:referenceToRegistrationAuthority': {
+            '@refObjectId':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToRegistrationAuthority'
+              ]?.['@refObjectId'] ?? {},
+            '@type':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToRegistrationAuthority'
+              ]?.['@type'] ?? {},
+            '@uri':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToRegistrationAuthority'
+              ]?.['@uri'] ?? {},
+            '@version':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToRegistrationAuthority'
+              ]?.['@version'] ?? {},
+            'common:shortDescription': getLangList(
+              data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToRegistrationAuthority'
+              ]?.['common:shortDescription'],
+            ),
+          },
         'common:registrationNumber':
           data?.administrativeInformation?.publicationAndOwnership?.[
           'common:registrationNumber'

@@ -1570,6 +1570,23 @@ export const ProcessForm: FC<Props> = ({
             onData={onData}
           />
           <br />
+          <ContactSelectForm
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:referenceToRegistrationAuthority',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.process.view.administrativeInformation.referenceToRegistrationAuthority'
+                defaultMessage='Registration authority'
+              />
+            }
+            lang={lang}
+            formRef={formRef}
+            onData={onData}
+          />
+          <br />
           <Form.Item
             label={
               <FormattedMessage
