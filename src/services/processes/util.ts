@@ -242,6 +242,24 @@ export function genProcessJsonOrdered(id: string, data: any) {
           deviationsFromModellingConstants: getLangJson(
             data?.modellingAndValidation?.LCIMethodAndAllocation?.deviationsFromModellingConstants,
           ),
+          referenceToLCAMethodDetails: {
+            '@type':
+              data?.modellingAndValidation?.LCIMethodAndAllocation
+                ?.referenceToLCAMethodDetails?.['@type'] ?? {},
+            '@refObjectId':
+              data?.modellingAndValidation?.LCIMethodAndAllocation
+                ?.referenceToLCAMethodDetails?.['@refObjectId'] ?? {},
+            '@uri':
+              data?.modellingAndValidation?.LCIMethodAndAllocation
+                ?.referenceToLCAMethodDetails?.['@uri'] ?? {},
+            '@version':
+              data?.modellingAndValidation?.LCIMethodAndAllocation
+                ?.referenceToLCAMethodDetails?.['@version'] ?? {},
+            'common:shortDescription': getLangJson(
+              data?.modellingAndValidation?.LCIMethodAndAllocation
+                ?.referenceToLCAMethodDetails?.['common:shortDescription'],
+            ),
+          },
         },
         dataSourcesTreatmentAndRepresentativeness: {
           dataCutOffAndCompletenessPrinciples: getLangJson(
@@ -798,6 +816,24 @@ export function genProcessFromData(data: any) {
         deviationsFromModellingConstants: getLangList(
           data?.modellingAndValidation?.LCIMethodAndAllocation?.deviationsFromModellingConstants,
         ),
+        referenceToLCAMethodDetails: {
+          '@type':
+            data?.modellingAndValidation?.LCIMethodAndAllocation
+              ?.referenceToLCAMethodDetails?.['@type'] ?? {},
+          '@refObjectId':
+            data?.modellingAndValidation?.LCIMethodAndAllocation
+              ?.referenceToLCAMethodDetails?.['@refObjectId'] ?? {},
+          '@uri':
+            data?.modellingAndValidation?.LCIMethodAndAllocation
+              ?.referenceToLCAMethodDetails?.['@uri'] ?? {},
+          '@version':
+            data?.modellingAndValidation?.LCIMethodAndAllocation
+              ?.referenceToLCAMethodDetails?.['@version'] ?? {},
+          'common:shortDescription': getLangJson(
+            data?.modellingAndValidation?.LCIMethodAndAllocation
+              ?.referenceToLCAMethodDetails?.['common:shortDescription'],
+          ),
+        },
       },
       dataSourcesTreatmentAndRepresentativeness: {
         dataCutOffAndCompletenessPrinciples: getLangList(

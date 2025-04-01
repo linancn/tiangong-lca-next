@@ -932,8 +932,23 @@ export const ProcessForm: FC<Props> = ({
               />
             }
           />
+          <SourceSelectForm
+            name={[
+              'modellingAndValidation',
+              'LCIMethodAndAllocation',
+              'referenceToLCAMethodDetails',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.process.view.modellingAndValidation.referenceToLCAMethodDetails'
+                defaultMessage='LCA methodology report'
+              />
+            }
+            lang={lang}
+            formRef={formRef}
+            onData={onData}
+          />
         </Card>
-
         <Card
           size='small'
           title={

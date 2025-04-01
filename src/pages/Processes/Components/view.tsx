@@ -583,7 +583,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
           <LangTextItemDescription
             data={initData.processInformation?.technology?.technologicalApplicability}
           />
-           <br />
+          <br />
           <SourceSelectDescription
             title={
               <FormattedMessage
@@ -861,6 +861,20 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
               initData.modellingAndValidation?.LCIMethodAndAllocation
                 ?.deviationsFromModellingConstants
             }
+          />
+          <br />
+          <SourceSelectDescription
+            title={
+              <FormattedMessage
+                id='pages.process.view.modellingAndValidation.referenceToLCAMethodDetails'
+                defaultMessage='LCA methodology report'
+              />
+            }
+            data={
+              initData.modellingAndValidation?.LCIMethodAndAllocation?.referenceToLCAMethodDetails ??
+              {}
+            }
+            lang={lang}
           />
         </Card>
         <br />
