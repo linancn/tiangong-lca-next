@@ -231,7 +231,8 @@ const ProcessCreate: FC<CreateProps> = ({
             onFinish={async () => {
               const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
               const fieldsValue = formRefCreate.current?.getFieldsValue();
-              if (exchangeDataSource || exchangeDataSource?.length === 0) {
+              const exchanges = fromData?.exchanges
+              if (!exchanges||!exchanges?.exchange || exchanges?.exchange?.length === 0) {
                 message.error(
                   intl.formatMessage({
                     id: 'pages.process.validator.exchanges.required',
@@ -240,7 +241,7 @@ const ProcessCreate: FC<CreateProps> = ({
                 );
                 return false;
               } else if (
-                exchangeDataSource.filter((item: any) => item?.quantitativeReference).length !== 1
+                exchanges?.exchange.filter((item: any) => item?.quantitativeReference).length !== 1
               ) {
                 message.error(
                   intl.formatMessage({
@@ -254,7 +255,7 @@ const ProcessCreate: FC<CreateProps> = ({
 
               const result = await createProcess(paramsId, {
                 ...fieldsValue,
-                exchanges: { exchange: [...exchangeDataSource] },
+                exchanges,
               });
               if (result.data) {
                 message.success(

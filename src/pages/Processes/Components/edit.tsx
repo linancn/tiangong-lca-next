@@ -233,9 +233,9 @@ const ProcessEdit: FC<Props> = ({
                 },
               }}
               onFinish={async () => {
-                setSpinning(true);
                 const fieldsValue = formRefEdit.current?.getFieldsValue();
-                if (!exchangeDataSource || exchangeDataSource?.length === 0) {
+                const exchanges = fromData?.exchanges
+                if (!exchanges || !exchanges?.exchange || exchanges?.exchange?.length === 0) {
                   message.error(
                     intl.formatMessage({
                       id: 'pages.process.validator.exchanges.required',
@@ -244,7 +244,7 @@ const ProcessEdit: FC<Props> = ({
                   );
                   return false;
                 } else if (
-                  exchangeDataSource.filter((item: any) => item?.quantitativeReference).length !== 1
+                  exchanges?.exchange.filter((item: any) => item?.quantitativeReference).length !== 1
                 ) {
                   message.error(
                     intl.formatMessage({
@@ -255,9 +255,10 @@ const ProcessEdit: FC<Props> = ({
                   );
                   return false;
                 }
+                setSpinning(true);
                 const updateResult = await updateProcess(id, version, {
                   ...fieldsValue,
-                  exchanges: { exchange: [...exchangeDataSource] },
+                  exchanges,
                 });
                 if (updateResult?.data) {
                   message.success(
