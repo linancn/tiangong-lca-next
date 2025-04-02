@@ -62,7 +62,7 @@ const ProcessCreate: FC<CreateProps> = ({
   }, [actionRef]);
 
   const handletExchangeDataCreate = (data: any) => {
-    if (fromData?.id)
+    // if (fromData?.id)
       setExchangeDataSource([
         ...exchangeDataSource,
         { ...data, '@dataSetInternalID': exchangeDataSource.length.toString() },

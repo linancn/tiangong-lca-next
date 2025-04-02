@@ -81,7 +81,7 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
         visible={unitConvertVisible}
         onCancel={() => setUnitConvertVisible(false)}
         onOk={(result) => {
-          formRefCreate.current?.setFieldValue(unitConvertName, result);
+          formRefCreate.current?.setFieldValue(unitConvertName, `${result}`);
           setFromData({ ...fromData, [unitConvertName]: result });
         }}
         units={units}
