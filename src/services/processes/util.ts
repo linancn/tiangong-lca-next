@@ -383,7 +383,7 @@ export function genProcessJsonOrdered(id: string, data: any) {
         },
         validation: {
           review: listToJson(
-            data?.validation?.review?.map((review: any) => {
+            data?.modellingAndValidation?.validation?.review?.map((review: any) => {
               return {
                 '@type': review?.['@type'] ?? {},
                 'common:scope': listToJson(
@@ -442,7 +442,7 @@ export function genProcessJsonOrdered(id: string, data: any) {
         },
         complianceDeclarations: {
           compliance: listToJson(
-            data?.complianceDeclarations?.compliance?.map((compliance: any) => {
+            data?.modellingAndValidation?.complianceDeclarations?.compliance?.map((compliance: any) => {
               return {
                 'common:referenceToComplianceSystem': {
                   '@refObjectId':

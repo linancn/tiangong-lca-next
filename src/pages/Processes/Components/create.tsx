@@ -126,7 +126,9 @@ const ProcessCreate: FC<CreateProps> = ({
           ],
         },
         validation:{
-          review:[{}]
+          review:[{
+            'common:scope':[{}]
+          }]
         }
       },
     };

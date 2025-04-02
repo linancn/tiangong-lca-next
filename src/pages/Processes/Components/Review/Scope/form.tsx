@@ -5,7 +5,7 @@ import { FC } from 'react';
 import { FormattedMessage } from 'umi';
 import schema from '../../../processes_schema.json';
 import { methodNameOptions, scopeNameOptions } from '../../optiondata';
-
+import RequiredMark from '@/components/RequiredMark';
 type Props = {
   name: any;
 };
@@ -13,24 +13,27 @@ type Props = {
 const ScopeItemForm: FC<Props> = ({ name }) => {
   return (
     <Form.Item>
-      <Form.List name={name}>
+      <Form.List name={[...name]}>
         {(subFields, subOpt) => (
           <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
             {subFields.map((subField, index) => (
               <Row key={subField.key}>
                 <Col flex='50' style={{ marginRight: '10px' }}>
                   {index === 0 && (
-                    <FormattedMessage
-                      id='pages.process.modellingAndValidation.validation.review.scope.name'
-                      defaultMessage='Scope name'
+                    <RequiredMark label={
+                      <FormattedMessage
+                        id='pages.process.modellingAndValidation.validation.review.scope.name'
+                        defaultMessage='Scope name'
+                      />
+                    }
+                      showError={false}
                     />
                   )}
                   <Form.Item
-                    noStyle
                     name={[subField.name, '@name']}
                     rules={getRules(
                       schema['processDataSet']['modellingAndValidation']['validation']['review'][
-                        'scope'
+                      'scope'
                       ]['@name']['rules'],
                     )}
                   >
@@ -39,17 +42,20 @@ const ScopeItemForm: FC<Props> = ({ name }) => {
                 </Col>
                 <Col flex='50' style={{ marginRight: '10px' }}>
                   {index === 0 && (
-                    <FormattedMessage
-                      id='pages.process.modellingAndValidation.validation.review.scope.method.name'
-                      defaultMessage='Method name'
+                    <RequiredMark label={
+                      <FormattedMessage
+                        id='pages.process.modellingAndValidation.validation.review.scope.method.name'
+                        defaultMessage='Method name'
+                      />
+                    }
+                      showError={false}
                     />
                   )}
                   <Form.Item
-                    noStyle
                     name={[subField.name, 'common:method', '@name']}
                     rules={getRules(
                       schema['processDataSet']['modellingAndValidation']['validation']['review'][
-                        'scope'
+                      'scope'
                       ]['method']['@name']['rules'],
                     )}
                   >
@@ -61,6 +67,9 @@ const ScopeItemForm: FC<Props> = ({ name }) => {
                   <CloseOutlined
                     style={{ marginTop: '10px' }}
                     onClick={() => {
+                      if (subFields.length === 1) {
+                        return;
+                      }
                       subOpt.remove(subField.name);
                     }}
                   />
