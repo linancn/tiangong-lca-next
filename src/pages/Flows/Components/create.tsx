@@ -264,7 +264,7 @@ const FlowsCreate: FC<CreateProps> = ({ lang, actionRef, actionType = 'create', 
             }}
             onFinish={async () => {
               const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
-              const FieldsValue = formRefCreate.current?.getFieldsValue();
+              const fieldsValue = formRefCreate.current?.getFieldsValue();
               const flowProperties = fromData?.flowProperties;
               if (
                 !flowProperties ||
@@ -292,7 +292,7 @@ const FlowsCreate: FC<CreateProps> = ({ lang, actionRef, actionType = 'create', 
                 return false;
               }
               const result = await createFlows(paramsId, {
-                ...FieldsValue,
+                ...fieldsValue,
                 flowProperties,
               });
               if (result.data) {

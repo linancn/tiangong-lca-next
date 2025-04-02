@@ -163,7 +163,8 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
                 },
               }}
               onFinish={async () => {
-                const updateResult = await updateFlowproperties(id, version, fromData);
+                const formFieldsValue = formRefEdit.current?.getFieldsValue();
+                const updateResult = await updateFlowproperties(id, version, formFieldsValue);
                 if (updateResult?.data) {
                   message.success(
                     intl.formatMessage({

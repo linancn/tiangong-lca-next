@@ -191,7 +191,7 @@ const ProcessEdit: FC<Props> = ({
         footer={
           <Space size={'middle'} className={styles.footer_right}>
             <>
-              <Button onClick={() => {}}>
+              <Button onClick={() => { }}>
                 <FormattedMessage id='pages.button.review' defaultMessage='Submit for review' />
               </Button>
               <Button
@@ -234,8 +234,29 @@ const ProcessEdit: FC<Props> = ({
               }}
               onFinish={async () => {
                 setSpinning(true);
+                const fieldsValue = formRefEdit.current?.getFieldsValue();
+                if (!exchangeDataSource  || exchangeDataSource?.length === 0) {
+                  message.error(
+                    intl.formatMessage({
+                      id: 'pages.process.validator.exchanges.required',
+                      defaultMessage: 'Please select exchanges',
+                    }),
+                  );
+                  return false;
+                } else if (
+                  exchangeDataSource.filter((item: any) => item?.quantitativeReference).length !== 1
+                ) {
+                  message.error(
+                    intl.formatMessage({
+                      id: 'pages.process.validator.exchanges.quantitativeReference.required',
+                      defaultMessage:
+                        'Exchange needs to have exactly one quantitative reference open',
+                    }),
+                  );
+                  return false;
+                }
                 const updateResult = await updateProcess(id, version, {
-                  ...fromData,
+                  ...fieldsValue,
                   exchanges: { exchange: [...exchangeDataSource] },
                 });
                 if (updateResult?.data) {

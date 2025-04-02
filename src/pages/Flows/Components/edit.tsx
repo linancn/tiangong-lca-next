@@ -158,7 +158,7 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
                 },
               }}
               onFinish={async () => {
-                const FieldsValue = formRefEdit.current?.getFieldsValue();
+                const fieldsValue = formRefEdit.current?.getFieldsValue();
                 const flowProperties = fromData?.flowProperties;
                 if (
                   !flowProperties ||
@@ -186,7 +186,7 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
                   return false;
                 }
                 const updateResult = await updateFlows(id, version, {
-                  ...FieldsValue,
+                  ...fieldsValue,
                   flowProperties,
                 });
                 if (updateResult?.data) {
