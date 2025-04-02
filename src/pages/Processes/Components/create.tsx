@@ -63,10 +63,10 @@ const ProcessCreate: FC<CreateProps> = ({
 
   const handletExchangeDataCreate = (data: any) => {
     // if (fromData?.id)
-      setExchangeDataSource([
-        ...exchangeDataSource,
-        { ...data, '@dataSetInternalID': exchangeDataSource.length.toString() },
-      ]);
+    setExchangeDataSource([
+      ...exchangeDataSource,
+      { ...data, '@dataSetInternalID': exchangeDataSource.length.toString() },
+    ]);
   };
 
   const handletExchangeData = (data: any) => {
@@ -122,14 +122,16 @@ const ProcessCreate: FC<CreateProps> = ({
               'common:reviewCompliance': 'Fully compliant',
               'common:documentationCompliance': 'Fully compliant',
               'common:qualityCompliance': 'Fully compliant',
-            }
+            },
           ],
         },
-        validation:{
-          review:[{
-            'common:scope':[{}]
-          }]
-        }
+        validation: {
+          review: [
+            {
+              'common:scope': [{}],
+            },
+          ],
+        },
       },
     };
     const newId = v4();
@@ -235,8 +237,8 @@ const ProcessCreate: FC<CreateProps> = ({
             onFinish={async () => {
               const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
               const fieldsValue = formRefCreate.current?.getFieldsValue();
-              const exchanges = fromData?.exchanges
-              if (!exchanges||!exchanges?.exchange || exchanges?.exchange?.length === 0) {
+              const exchanges = fromData?.exchanges;
+              if (!exchanges || !exchanges?.exchange || exchanges?.exchange?.length === 0) {
                 message.error(
                   intl.formatMessage({
                     id: 'pages.process.validator.exchanges.required',

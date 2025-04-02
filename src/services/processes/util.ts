@@ -442,31 +442,35 @@ export function genProcessJsonOrdered(id: string, data: any) {
         },
         complianceDeclarations: {
           compliance: listToJson(
-            data?.modellingAndValidation?.complianceDeclarations?.compliance?.map((compliance: any) => {
-              return {
-                'common:referenceToComplianceSystem': {
-                  '@refObjectId':
-                    compliance?.['common:referenceToComplianceSystem']?.['@refObjectId'] ?? {},
-                  '@type': compliance?.['common:referenceToComplianceSystem']?.['@type'] ?? {},
-                  '@uri': compliance?.['common:referenceToComplianceSystem']?.['@uri'] ?? {},
-                  '@version':
-                    compliance?.['common:referenceToComplianceSystem']?.['@version'] ?? {},
-                  'common:shortDescription': getLangJson(
-                    compliance?.['common:referenceToComplianceSystem']?.['common:shortDescription'],
-                  ),
-                },
-                'common:approvalOfOverallCompliance':
-                  compliance?.['common:approvalOfOverallCompliance'] ?? {},
-                'common:nomenclatureCompliance':
-                  compliance?.['common:nomenclatureCompliance'] ?? {},
-                'common:methodologicalCompliance':
-                  compliance?.['common:methodologicalCompliance'] ?? {},
-                'common:reviewCompliance': compliance?.['common:reviewCompliance'] ?? {},
-                'common:documentationCompliance':
-                  compliance?.['common:documentationCompliance'] ?? {},
-                'common:qualityCompliance': compliance?.['common:qualityCompliance'] ?? {},
-              };
-            }),
+            data?.modellingAndValidation?.complianceDeclarations?.compliance?.map(
+              (compliance: any) => {
+                return {
+                  'common:referenceToComplianceSystem': {
+                    '@refObjectId':
+                      compliance?.['common:referenceToComplianceSystem']?.['@refObjectId'] ?? {},
+                    '@type': compliance?.['common:referenceToComplianceSystem']?.['@type'] ?? {},
+                    '@uri': compliance?.['common:referenceToComplianceSystem']?.['@uri'] ?? {},
+                    '@version':
+                      compliance?.['common:referenceToComplianceSystem']?.['@version'] ?? {},
+                    'common:shortDescription': getLangJson(
+                      compliance?.['common:referenceToComplianceSystem']?.[
+                        'common:shortDescription'
+                      ],
+                    ),
+                  },
+                  'common:approvalOfOverallCompliance':
+                    compliance?.['common:approvalOfOverallCompliance'] ?? {},
+                  'common:nomenclatureCompliance':
+                    compliance?.['common:nomenclatureCompliance'] ?? {},
+                  'common:methodologicalCompliance':
+                    compliance?.['common:methodologicalCompliance'] ?? {},
+                  'common:reviewCompliance': compliance?.['common:reviewCompliance'] ?? {},
+                  'common:documentationCompliance':
+                    compliance?.['common:documentationCompliance'] ?? {},
+                  'common:qualityCompliance': compliance?.['common:qualityCompliance'] ?? {},
+                };
+              },
+            ),
           ),
         },
       },
@@ -869,9 +873,8 @@ export function genProcessFromData(data: any) {
               '@refObjectId'
             ] ?? {},
           '@version':
-            data?.processInformation?.technology?.referenceToTechnologyPictogramme?.[
-              '@version'
-            ] ?? {},
+            data?.processInformation?.technology?.referenceToTechnologyPictogramme?.['@version'] ??
+            {},
           '@uri':
             data?.processInformation?.technology?.referenceToTechnologyPictogramme?.['@uri'] ?? {},
           'common:shortDescription': getLangList(

@@ -234,7 +234,7 @@ const ProcessEdit: FC<Props> = ({
               }}
               onFinish={async () => {
                 const fieldsValue = formRefEdit.current?.getFieldsValue();
-                const exchanges = fromData?.exchanges
+                const exchanges = fromData?.exchanges;
                 if (!exchanges || !exchanges?.exchange || exchanges?.exchange?.length === 0) {
                   message.error(
                     intl.formatMessage({
@@ -244,7 +244,8 @@ const ProcessEdit: FC<Props> = ({
                   );
                   return false;
                 } else if (
-                  exchanges?.exchange.filter((item: any) => item?.quantitativeReference).length !== 1
+                  exchanges?.exchange.filter((item: any) => item?.quantitativeReference).length !==
+                  1
                 ) {
                   message.error(
                     intl.formatMessage({

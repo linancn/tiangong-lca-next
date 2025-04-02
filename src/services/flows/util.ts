@@ -388,7 +388,6 @@ export function genFlowFromData(data: any) {
           ),
         },
       },
-     
     },
     modellingAndValidation: {
       LCIMethod: {
