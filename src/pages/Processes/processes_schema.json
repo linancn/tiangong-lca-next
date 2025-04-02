@@ -88,14 +88,7 @@
           ]
         },
         "identifierOfSubDataSet": {
-          "value": "str",
-          "rules": [
-            {
-              "pattern": "year",
-              "messageKey": "validator.Year.pattern",
-              "defaultMessage": "Please enter a valid year (e.g., 2023)"
-            }
-          ]
+          "value": "str"
         },
         "common:synonyms": [
           {
@@ -573,7 +566,7 @@
               {
                 "required": true,
                 "messageKey": "pages.process.validator.referenceToNameOfReviewerAndInstitution.required",
-                "defaultMessage": "Please input data set report, background info"
+                "defaultMessage": "Please input reviewer name and institution"
               }
             ]
           },
@@ -809,7 +802,7 @@
             {
               "required": true,
               "messageKey": "pages.process.validator.referenceToPersonOrEntityEnteringTheData.required",
-              "defaultMessage": "Please input data entry by:"
+              "defaultMessage": "Please input reference to Person or Entity Entering The Data"
             }
           ]
         },
@@ -979,7 +972,7 @@
               {
                 "required": true,
                 "messageKey": "pages.process.validator.referenceToFlowDataSet.required",
-                "defaultMessage": "Please input reference to flow data set"
+                "defaultMessage": "Please input flow"
               }
             ]
           },

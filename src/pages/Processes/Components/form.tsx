@@ -405,11 +405,6 @@ export const ProcessForm: FC<Props> = ({
             />
           }
           name={['processInformation', 'dataSetInformation', 'identifierOfSubDataSet']}
-          rules={getRules(
-            schema['processDataSet']['processInformation']['dataSetInformation'][
-              'identifierOfSubDataSet'
-            ]['rules'],
-          )}
         >
           <Input />
         </Form.Item>
