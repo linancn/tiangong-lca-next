@@ -1,7 +1,7 @@
 import RequiredSelectFormTitle from '@/components/RequiredSelectFormTitle';
 import { useUpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import UnitGroupFromMini from '@/pages/Unitgroups/Components/select/formMini';
-import { getLocalValueProps } from '@/pages/Utils';
+import { getLocalValueProps, validateRefObjectId } from '@/pages/Utils';
 import { getFlowpropertyDetail } from '@/services/flowproperties/api';
 import { genFlowpropertyFromData } from '@/services/flowproperties/util';
 import { ProFormInstance } from '@ant-design/pro-components';
@@ -12,7 +12,6 @@ import FlowpropertyView from '../view';
 import FlowpropertiesSelectDrawer from './drawer';
 // import LangTextItemForm from '@/components/LangTextItem/form';
 const { TextArea } = Input;
-import { validateRefObjectId } from '@/pages/Utils';
 
 type Props = {
   name: any;

@@ -1,17 +1,17 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
+import RequiredMark from '@/components/RequiredMark';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
+import { getRules } from '@/pages/Utils';
 import { CloseOutlined } from '@ant-design/icons';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Divider, Form, Row, Select, Space } from 'antd';
 import { FC, useState } from 'react';
 import { FormattedMessage } from 'umi';
+import schema from '../../processes_schema.json';
 import { reviewTypeOptions } from '../optiondata';
 import DataQualityIndicatorItemForm from './DataQualityIndicator/form';
 import ScopeItemForm from './Scope/form';
-import RequiredMark from '@/components/RequiredMark';
-import schema from '../../processes_schema.json';
-import { getRules } from '@/pages/Utils';
 // const { TextArea } = Input;
 
 type Props = {
@@ -25,7 +25,7 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
   const [reviewDetailsError, setReviewDetailsError] = useState(false);
   return (
     <Form.Item>
-      <Form.List  initialValue={[{}]} name={name}>
+      <Form.List initialValue={[{}]} name={name}>
         {(subFields, subOpt) => (
           <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
             {subFields.map((subField) => (
@@ -46,7 +46,7 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                       <CloseOutlined
                         style={{
                           cursor: subFields.length === 1 ? 'not-allowed' : 'pointer',
-                           marginTop: '10px'
+                          marginTop: '10px',
                         }}
                         onClick={() => {
                           if (subFields.length === 1) {
@@ -66,7 +66,11 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                           />
                         }
                         name={[subField.name, '@type']}
-                        rules={getRules(schema['processDataSet']['modellingAndValidation']['validation']['review']['@type']['rules'])}
+                        rules={getRules(
+                          schema['processDataSet']['modellingAndValidation']['validation'][
+                            'review'
+                          ]['@type']['rules'],
+                        )}
                       >
                         <Select options={reviewTypeOptions} />
                       </Form.Item>
@@ -100,15 +104,21 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                         ]}
                       />
                     </Card>
-                    <Divider className='required-divider' orientationMargin='0' orientation='left' plain>
-                    <RequiredMark label={
-                      <FormattedMessage
-                        id='pages.process.view.modellingAndValidation.validation.reviewDetails'
-                        defaultMessage='Review details'
+                    <Divider
+                      className='required-divider'
+                      orientationMargin='0'
+                      orientation='left'
+                      plain
+                    >
+                      <RequiredMark
+                        label={
+                          <FormattedMessage
+                            id='pages.process.view.modellingAndValidation.validation.reviewDetails'
+                            defaultMessage='Review details'
+                          />
+                        }
+                        showError={reviewDetailsError}
                       />
-                    }
-                    showError={reviewDetailsError}
-                    />
                     </Divider>
                     <LangTextItemForm
                       name={[subField.name, 'common:reviewDetails']}
@@ -120,7 +130,11 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                         />
                       }
                       setRuleErrorState={setReviewDetailsError}
-                      rules={getRules(schema['processDataSet']['modellingAndValidation']['validation']['review']['reviewDetails']['rules'])}
+                      rules={getRules(
+                        schema['processDataSet']['modellingAndValidation']['validation']['review'][
+                          'reviewDetails'
+                        ]['rules'],
+                      )}
                     />
                     <Divider orientationMargin='0' orientation='left' plain>
                       <FormattedMessage
@@ -150,7 +164,11 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                       lang={lang}
                       formRef={formRef}
                       onData={onData}
-                      rules={getRules(schema['processDataSet']['modellingAndValidation']['validation']['review']['referenceToNameOfReviewerAndInstitution']['rules'])}
+                      rules={getRules(
+                        schema['processDataSet']['modellingAndValidation']['validation']['review'][
+                          'referenceToNameOfReviewerAndInstitution'
+                        ]['rules'],
+                      )}
                     />
                     <br />
                     <SourceSelectForm
@@ -165,7 +183,11 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                       lang={lang}
                       formRef={formRef}
                       onData={onData}
-                      rules={getRules(schema['processDataSet']['modellingAndValidation']['validation']['review']['referenceToCompleteReviewReport']['rules'])}
+                      rules={getRules(
+                        schema['processDataSet']['modellingAndValidation']['validation']['review'][
+                          'referenceToCompleteReviewReport'
+                        ]['rules'],
+                      )}
                     />
                   </Card>
                 </Space>

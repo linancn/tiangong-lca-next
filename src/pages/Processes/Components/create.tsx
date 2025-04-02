@@ -23,15 +23,15 @@ type Props = {
 type CreateProps =
   | (Omit<Props, 'type'> & { actionType?: 'create' })
   | (Omit<Props, 'type' | 'id' | 'version'> & {
-    actionType: 'copy';
-    id: string;
-    version: string;
-  })
+      actionType: 'copy';
+      id: string;
+      version: string;
+    })
   | (Omit<Props, 'type' | 'id' | 'version'> & {
-    actionType: 'createVersion';
-    id: string;
-    version: string;
-  });
+      actionType: 'createVersion';
+      id: string;
+      version: string;
+    });
 
 const ProcessCreate: FC<CreateProps> = ({
   lang,
@@ -114,16 +114,18 @@ const ProcessCreate: FC<CreateProps> = ({
       },
       modellingAndValidation: {
         complianceDeclarations: {
-          compliance: [{
-            'common:referenceToComplianceSystem': 'Fully compliant',
-            'common:approvalOfOverallCompliance': 'Fully compliant',
-            'common:nomenclatureCompliance': 'Fully compliant',
-            'common:methodologicalCompliance': 'Fully compliant',
-            'common:reviewCompliance': 'Fully compliant',
-            'common:documentationCompliance': 'Fully compliant',
-            'common:qualityCompliance': 'Fully compliant',
-          }]
-        }
+          compliance: [
+            {
+              'common:referenceToComplianceSystem': 'Fully compliant',
+              'common:approvalOfOverallCompliance': 'Fully compliant',
+              'common:nomenclatureCompliance': 'Fully compliant',
+              'common:methodologicalCompliance': 'Fully compliant',
+              'common:reviewCompliance': 'Fully compliant',
+              'common:documentationCompliance': 'Fully compliant',
+              'common:qualityCompliance': 'Fully compliant',
+            },
+          ],
+        },
       },
     };
     const newId = v4();
@@ -230,11 +232,7 @@ const ProcessCreate: FC<CreateProps> = ({
               const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
               const fieldsValue = formRefCreate.current?.getFieldsValue();
               const exchanges = fromData?.exchanges;
-              if (
-                !exchanges ||
-                !exchanges?.exchange ||
-                exchanges?.exchange?.length === 0
-              ) {
+              if (!exchanges || !exchanges?.exchange || exchanges?.exchange?.length === 0) {
                 message.error(
                   intl.formatMessage({
                     id: 'pages.process.validator.exchanges.required',
@@ -242,20 +240,21 @@ const ProcessCreate: FC<CreateProps> = ({
                   }),
                 );
                 return false;
-              }else if (
+              } else if (
                 exchanges.exchange.filter((item: any) => item?.quantitativeReference).length !== 1
               ) {
                 message.error(
                   intl.formatMessage({
                     id: 'pages.process.validator.exchanges.quantitativeReference.required',
-                    defaultMessage: 'Exchange needs to have exactly one quantitative reference open',
+                    defaultMessage:
+                      'Exchange needs to have exactly one quantitative reference open',
                   }),
                 );
                 return false;
               }
 
-              console.log('exchanges',exchanges)
-              const result = await createProcess(paramsId, {...fieldsValue, exchanges});
+              console.log('exchanges', exchanges);
+              const result = await createProcess(paramsId, { ...fieldsValue, exchanges });
               if (result.data) {
                 message.success(
                   intl.formatMessage({

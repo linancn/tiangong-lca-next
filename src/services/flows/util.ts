@@ -34,9 +34,7 @@ export function genFlowJsonOrdered(id: string, data: any) {
         uncertaintyDistributionType: item?.['uncertaintyDistributionType'],
         relativeStandardDeviation95In: item?.['relativeStandardDeviation95In'],
         dataDerivationTypeStatus: item?.['dataDerivationTypeStatus'],
-        ['common:generalComment']: getLangJson(
-          item?.['common:generalComment'],
-        ),
+        ['common:generalComment']: getLangJson(item?.['common:generalComment']),
       };
     }) ?? [];
   let flowPropertyJson: any = {};
@@ -549,9 +547,7 @@ export function genFlowFromData(data: any) {
           uncertaintyDistributionType: item?.['uncertaintyDistributionType'],
           relativeStandardDeviation95In: item?.['relativeStandardDeviation95In'],
           dataDerivationTypeStatus: item?.['dataDerivationTypeStatus'],
-          ['common:generalComment']: getLangJson(
-            item?.['common:generalComment'],
-          ),
+          ['common:generalComment']: getLangJson(item?.['common:generalComment']),
           quantitativeReference:
             item?.['@dataSetInternalID'] ===
             data?.flowInformation?.quantitativeReference?.referenceToReferenceFlowProperty
@@ -595,10 +591,7 @@ export function genFlowPropertyTabTableData(data: any, lang: string) {
         uncertaintyDistributionType: item?.['uncertaintyDistributionType'],
         relativeStandardDeviation95In: item?.['relativeStandardDeviation95In'],
         dataDerivationTypeStatus: item?.['dataDerivationTypeStatus'],
-        ['common:generalComment']: getLangText(
-          item?.['common:generalComment'],
-          lang,
-        ),
+        ['common:generalComment']: getLangText(item?.['common:generalComment'], lang),
       });
     });
   }

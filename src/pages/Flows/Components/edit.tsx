@@ -159,7 +159,7 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
               }}
               onFinish={async () => {
                 const FieldsValue = formRefEdit.current?.getFieldsValue();
-                const flowProperties = fromData?.flowProperties
+                const flowProperties = fromData?.flowProperties;
                 if (
                   !flowProperties ||
                   !flowProperties?.flowProperty ||
@@ -172,18 +172,23 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
                     }),
                   );
                   return true;
-                }else if (
-                  flowProperties.flowProperty.filter((item: any) => item?.quantitativeReference).length !== 1
+                } else if (
+                  flowProperties.flowProperty.filter((item: any) => item?.quantitativeReference)
+                    .length !== 1
                 ) {
                   message.error(
                     intl.formatMessage({
                       id: 'pages.flow.validator.flowProperties.quantitativeReference.required',
-                      defaultMessage: 'Flow property needs to have exactly one quantitative reference open',
+                      defaultMessage:
+                        'Flow property needs to have exactly one quantitative reference open',
                     }),
                   );
                   return false;
                 }
-                const updateResult = await updateFlows(id, version, {...FieldsValue, flowProperties});
+                const updateResult = await updateFlows(id, version, {
+                  ...FieldsValue,
+                  flowProperties,
+                });
                 if (updateResult?.data) {
                   message.success(
                     intl.formatMessage({

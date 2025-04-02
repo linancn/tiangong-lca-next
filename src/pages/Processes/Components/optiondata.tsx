@@ -4,10 +4,7 @@ export const dataSourceTypeOptions = [
   {
     value: 'Primary',
     label: (
-      <FormattedMessage
-        id='pages.process.view.dataSourceType.primary'
-        defaultMessage='Primary'
-      />
+      <FormattedMessage id='pages.process.view.dataSourceType.primary' defaultMessage='Primary' />
     ),
   },
   {
@@ -37,7 +34,7 @@ export const dataSourceTypeOptions = [
       />
     ),
   },
-]
+];
 
 export const functionTypeOptions = [
   {
@@ -67,7 +64,7 @@ export const functionTypeOptions = [
       />
     ),
   },
-]
+];
 
 export const completenessElementaryFlowsTypeOptions = [
   {
@@ -231,10 +228,10 @@ export const completenessElementaryFlowsTypeOptions = [
         defaultMessage='Noise'
       />
     ),
-  }
-]
+  },
+];
 
-export const completenessElementaryFlowsValueOptions=[
+export const completenessElementaryFlowsValueOptions = [
   {
     value: 'All relevant flows quantified',
     label: (
@@ -270,8 +267,8 @@ export const completenessElementaryFlowsValueOptions=[
         defaultMessage='No statement'
       />
     ),
-  }
-]
+  },
+];
 
 export const completenessProductModelOptions = [
   {
@@ -310,7 +307,7 @@ export const completenessProductModelOptions = [
       />
     ),
   },
-]
+];
 
 export const uncertaintyDistributionTypeOptions = [
   {

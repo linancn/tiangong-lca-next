@@ -1,15 +1,28 @@
+import LangTextItemForm from '@/components/LangTextItem/form';
 import FlowpropertiesSelectForm from '@/pages/Flowproperties/Components/select/form';
+import { getRules } from '@/pages/Utils';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { ProForm, ProFormInstance } from '@ant-design/pro-components';
-import { Button, Collapse, Drawer, Form, Input, InputNumber, Select, Space, Switch, Tooltip, Typography, Card } from 'antd';
+import {
+  Button,
+  Card,
+  Collapse,
+  Drawer,
+  Form,
+  Input,
+  InputNumber,
+  Select,
+  Space,
+  Switch,
+  Tooltip,
+  Typography,
+} from 'antd';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import { dataDerivationTypeStatusOptions, uncertaintyDistributionTypeOptions } from '../optiondata';
-import LangTextItemForm from '@/components/LangTextItem/form';
-import { getRules } from '@/pages/Utils';
 import schema from '../../flows_schema.json';
+import { dataDerivationTypeStatusOptions, uncertaintyDistributionTypeOptions } from '../optiondata';
 
 type Props = {
   lang: string;
@@ -106,7 +119,11 @@ const PropertyCreate: FC<Props> = ({ lang, onData }) => {
               drawerVisible={drawerVisible}
               formRef={formRefCreate}
               onData={handletFromData}
-              rules={getRules(schema['flowDataSet']['flowProperties']['flowProperty']['referenceToFlowPropertyDataSet']['rules'])}
+              rules={getRules(
+                schema['flowDataSet']['flowProperties']['flowProperty'][
+                  'referenceToFlowPropertyDataSet'
+                ]['rules'],
+              )}
             />
             <br />
             <Form.Item
@@ -117,7 +134,9 @@ const PropertyCreate: FC<Props> = ({ lang, onData }) => {
                 />
               }
               name={['meanValue']}
-              rules={getRules(schema['flowDataSet']['flowProperties']['flowProperty']['meanValue']['rules'])}
+              rules={getRules(
+                schema['flowDataSet']['flowProperties']['flowProperty']['meanValue']['rules'],
+              )}
             >
               <Input />
             </Form.Item>
@@ -163,7 +182,7 @@ const PropertyCreate: FC<Props> = ({ lang, onData }) => {
               }
               name={['relativeStandardDeviation95In']}
             >
-              <InputNumber suffix="%" min={0} max={100} style={{ width: '100%' }} />
+              <InputNumber suffix='%' min={0} max={100} style={{ width: '100%' }} />
             </Form.Item>
             <Form.Item
               label={

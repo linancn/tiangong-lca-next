@@ -37,7 +37,7 @@ export const dataDerivationTypeStatusOptions = [
       />
     ),
   },
-]
+];
 
 export const uncertaintyDistributionTypeOptions = [
   {

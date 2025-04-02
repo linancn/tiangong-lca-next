@@ -35,7 +35,7 @@ export function getRules(rules: any[]) {
         _rule.pattern = /^\d{2,7}-\d{2}-\d$/;
       }
       if (rule.pattern === 'year') {
-        _rule.pattern =  /^[0-9]{4}$/;
+        _rule.pattern = /^[0-9]{4}$/;
       }
     }
     return {

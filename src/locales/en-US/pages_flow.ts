@@ -90,7 +90,6 @@ export default {
   'pages.flows.deleteMessage.areyousureyouwanttodeletethisdata': 'Are you sure you want to delete this data?',
   'pages.process.drawer.title.addProcess': 'Add process',
 
-
   'pages.flow.view.modellingAndValidation.approvalOfOverallCompliance.fullyCompliant': 'Fully compliant',
   'pages.flow.view.modellingAndValidation.approvalOfOverallCompliance.notCompliant': 'Not compliant',
   'pages.flow.view.modellingAndValidation.approvalOfOverallCompliance.notDefined': 'Not defined',

@@ -3,6 +3,7 @@ import UnitConvert from '@/components/UnitConvert';
 import { UnitsContext } from '@/contexts/unitContext';
 import FlowsSelectForm from '@/pages/Flows/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
+import { getRules } from '@/pages/Utils';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -23,9 +24,12 @@ import {
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import { DataDerivationTypeStatusOptions, functionTypeOptions, dataSourceTypeOptions } from '../optiondata';
 import schema from '../../processes_schema.json';
-import { getRules } from '@/pages/Utils';
+import {
+  DataDerivationTypeStatusOptions,
+  dataSourceTypeOptions,
+  functionTypeOptions,
+} from '../optiondata';
 
 type Props = {
   direction: string;
@@ -142,7 +146,9 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
                 />
               }
               name={'exchangeDirection'}
-              rules={getRules(schema['processDataSet']['exchanges']['exchange'][0]['exchangeDirection']['rules'])}
+              rules={getRules(
+                schema['processDataSet']['exchanges']['exchange'][0]['exchangeDirection']['rules'],
+              )}
             >
               <Select
                 // placeholder="Select a direction"
@@ -170,7 +176,11 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
                 formRef={formRefCreate}
                 asInput={asInput}
                 onData={handletFromData}
-                rules={getRules(schema['processDataSet']['exchanges']['exchange'][0]['referenceToFlowDataSet']['rules'])}
+                rules={getRules(
+                  schema['processDataSet']['exchanges']['exchange'][0]['referenceToFlowDataSet'][
+                    'rules'
+                  ],
+                )}
               />
             </UnitsContext.Provider>
             <Form.Item
@@ -193,9 +203,7 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
               }
               name={'functionType'}
             >
-              <Select
-                options={functionTypeOptions}
-              />
+              <Select options={functionTypeOptions} />
             </Form.Item>
             <Form.Item
               label={
@@ -216,7 +224,9 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
                 />
               }
               name={'meanAmount'}
-              rules={getRules(schema['processDataSet']['exchanges']['exchange'][0]['meanAmount']['rules'])}
+              rules={getRules(
+                schema['processDataSet']['exchanges']['exchange'][0]['meanAmount']['rules'],
+              )}
             >
               <Input
                 onClick={() => {
@@ -233,7 +243,9 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
                 />
               }
               name={'resultingAmount'}
-              rules={getRules(schema['processDataSet']['exchanges']['exchange'][0]['resultingAmount']['rules'])}
+              rules={getRules(
+                schema['processDataSet']['exchanges']['exchange'][0]['resultingAmount']['rules'],
+              )}
             >
               <Input
                 onClick={() => {
@@ -262,7 +274,7 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
               />
             </Form.Item>
             {formRefCreate.current?.getFieldValue('uncertaintyDistributionType') === 'triangular' ||
-              formRefCreate.current?.getFieldValue('uncertaintyDistributionType') === 'uniform' ? (
+            formRefCreate.current?.getFieldValue('uncertaintyDistributionType') === 'uniform' ? (
               <>
                 <Form.Item
                   label={
@@ -292,7 +304,7 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
             )}
 
             {formRefCreate.current?.getFieldValue('uncertaintyDistributionType') === 'log-normal' ||
-              formRefCreate.current?.getFieldValue('uncertaintyDistributionType') === 'log-normal' ? (
+            formRefCreate.current?.getFieldValue('uncertaintyDistributionType') === 'log-normal' ? (
               <>
                 <Form.Item
                   label={
@@ -340,7 +352,6 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
               >
                 <Input />
               </Form.Item>
-
             </Card>
             <br />
             <Form.Item
@@ -362,16 +373,17 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData }) => {
                 />
               }
               name={'dataDerivationTypeStatus'}
-              rules={getRules(schema['processDataSet']['exchanges']['exchange'][0]['dataDerivationTypeStatus']['rules'])}
+              rules={getRules(
+                schema['processDataSet']['exchanges']['exchange'][0]['dataDerivationTypeStatus'][
+                  'rules'
+                ],
+              )}
             >
               <Select options={DataDerivationTypeStatusOptions} />
             </Form.Item>
 
             <SourceSelectForm
-              name={[
-                'referencesToDataSource',
-                'referenceToDataSource',
-              ]}
+              name={['referencesToDataSource', 'referenceToDataSource']}
               label={
                 <FormattedMessage
                   id='pages.process.view.exchange.referenceToDataSource'

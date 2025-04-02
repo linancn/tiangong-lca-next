@@ -1,13 +1,17 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import FlowsSelectDescription from '@/pages/Flows/Components/select/description';
+import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { Button, Card, Descriptions, Divider, Drawer, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
-import { DataDerivationTypeStatusOptions, functionTypeOptions, dataSourceTypeOptions } from '../optiondata';
-import SourceSelectDescription from '@/pages/Sources/Components/select/description';
+import {
+  DataDerivationTypeStatusOptions,
+  dataSourceTypeOptions,
+  functionTypeOptions,
+} from '../optiondata';
 type Props = {
   id: string;
   data: any;
@@ -136,7 +140,10 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
           <Descriptions.Item
             key={0}
             label={
-              <FormattedMessage id='pages.process.view.exchange.location' defaultMessage='Location' />
+              <FormattedMessage
+                id='pages.process.view.exchange.location'
+                defaultMessage='Location'
+              />
             }
             labelStyle={{ width: '220px' }}
           >
@@ -148,7 +155,10 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
           <Descriptions.Item
             key={0}
             label={
-              <FormattedMessage id='pages.process.view.exchange.functionType' defaultMessage='Function type' />
+              <FormattedMessage
+                id='pages.process.view.exchange.functionType'
+                defaultMessage='Function type'
+              />
             }
             labelStyle={{ width: '220px' }}
           >
@@ -160,7 +170,10 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
           <Descriptions.Item
             key={0}
             label={
-              <FormattedMessage id='pages.process.view.exchange.referenceToVariable' defaultMessage='Variable' />
+              <FormattedMessage
+                id='pages.process.view.exchange.referenceToVariable'
+                defaultMessage='Variable'
+              />
             }
             labelStyle={{ width: '220px' }}
           >
@@ -210,7 +223,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
           </Descriptions.Item>
         </Descriptions>
         {viewData.uncertaintyDistributionType === 'triangular' ||
-          viewData.uncertaintyDistributionType === 'uniform' ? (
+        viewData.uncertaintyDistributionType === 'uniform' ? (
           <>
             <br />
             <Descriptions bordered size={'small'} column={1}>
@@ -247,7 +260,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
           <></>
         )}
         {viewData.uncertaintyDistributionType === 'normal' ||
-          viewData.uncertaintyDistributionType === 'log-normal' ? (
+        viewData.uncertaintyDistributionType === 'log-normal' ? (
           <>
             <br />
             <Descriptions bordered size={'small'} column={1}>
@@ -269,12 +282,15 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
           <></>
         )}
         <br />
-        <Card size='small' title={
-          <FormattedMessage
-            id='pages.process.view.exchange.allocation'
-            defaultMessage='Allocation'
-          />
-        }>
+        <Card
+          size='small'
+          title={
+            <FormattedMessage
+              id='pages.process.view.exchange.allocation'
+              defaultMessage='Allocation'
+            />
+          }
+        >
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item
               key={0}
@@ -312,7 +328,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
             label={
               <FormattedMessage
                 id='pages.process.view.exchange.dataSourceType'
-                defaultMessage="Data source type"
+                defaultMessage='Data source type'
               />
             }
             labelStyle={{ width: '220px' }}
@@ -327,7 +343,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
             label={
               <FormattedMessage
                 id='pages.process.view.exchange.dataDerivationTypeStatus'
-                defaultMessage="Data derivation type / status"
+                defaultMessage='Data derivation type / status'
               />
             }
             labelStyle={{ width: '220px' }}

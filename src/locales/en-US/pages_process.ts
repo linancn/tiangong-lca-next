@@ -126,7 +126,6 @@ export default {
   'pages.process.view.modellingAndValidation.completeness.completenessElementaryFlows.value': 'value',
   'pages.process.view.modellingAndValidation.completeness.completenessOtherProblemField': 'Completeness other problem field(s)',
 
-
   // 'pages.process.view.modellingAndValidation.completenessDescription': '完整性描述',
   'pages.process.view.modellingAndValidation.Review': 'Review',
   'pages.process.view.modellingAndValidation.type': 'Type of review',
