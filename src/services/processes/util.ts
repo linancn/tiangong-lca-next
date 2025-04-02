@@ -868,6 +868,10 @@ export function genProcessFromData(data: any) {
             data?.processInformation?.technology?.referenceToTechnologyPictogramme?.[
               '@refObjectId'
             ] ?? {},
+          '@version':
+            data?.processInformation?.technology?.referenceToTechnologyPictogramme?.[
+              '@version'
+            ] ?? {},
           '@uri':
             data?.processInformation?.technology?.referenceToTechnologyPictogramme?.['@uri'] ?? {},
           'common:shortDescription': getLangList(
@@ -884,6 +888,10 @@ export function genProcessFromData(data: any) {
           '@refObjectId':
             data?.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.[
               '@refObjectId'
+            ] ?? {},
+          '@version':
+            data?.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.[
+              '@version'
             ] ?? {},
           '@uri':
             data?.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.[
@@ -1011,6 +1019,9 @@ export function genProcessFromData(data: any) {
           '@refObjectId':
             data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
               ?.referenceToDataSource?.['@refObjectId'] ?? {},
+          '@version':
+            data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+              ?.referenceToDataSource?.['@version'] ?? {},
           '@uri':
             data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
               ?.referenceToDataSource?.['@uri'] ?? {},
