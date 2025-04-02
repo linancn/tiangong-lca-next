@@ -3,7 +3,7 @@ import { getRules } from '@/pages/Utils';
 import { CloseOutlined } from '@ant-design/icons';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Form, Row, Select, Space } from 'antd';
-import { FC, useEffect } from 'react';
+import { FC } from 'react';
 import { FormattedMessage } from 'umi';
 import schema from '../../processes_schema.json';
 import {
@@ -24,11 +24,6 @@ type Props = {
 };
 
 const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
-  useEffect(() => {
-    formRef.current?.setFieldsValue({
-      name: [{}],
-    });
-  }, []);
   return (
     <Form.Item>
       <Form.List name={name}>

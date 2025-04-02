@@ -363,7 +363,7 @@
               {
                 "required": true,
                 "messageKey": "pages.lifecyclemodel.validator.referenceToNameOfReviewerAndInstitution.required",
-                "defaultMessage": "Please input reviewer name and institution"
+                "defaultMessage": "Please input data set report, background info"
               }
             ]
           },

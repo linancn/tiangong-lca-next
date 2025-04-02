@@ -116,16 +116,18 @@ const ProcessCreate: FC<CreateProps> = ({
         complianceDeclarations: {
           compliance: [
             {
-              'common:referenceToComplianceSystem': 'Fully compliant',
               'common:approvalOfOverallCompliance': 'Fully compliant',
               'common:nomenclatureCompliance': 'Fully compliant',
               'common:methodologicalCompliance': 'Fully compliant',
               'common:reviewCompliance': 'Fully compliant',
               'common:documentationCompliance': 'Fully compliant',
               'common:qualityCompliance': 'Fully compliant',
-            },
+            }
           ],
         },
+        validation:{
+          review:[{}]
+        }
       },
     };
     const newId = v4();

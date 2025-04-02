@@ -573,7 +573,7 @@
               {
                 "required": true,
                 "messageKey": "pages.process.validator.referenceToNameOfReviewerAndInstitution.required",
-                "defaultMessage": "Please input reviewer name and institution"
+                "defaultMessage": "Please input data set report, background info"
               }
             ]
           },

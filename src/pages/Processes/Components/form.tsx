@@ -1898,7 +1898,7 @@ export const ProcessForm: FC<Props> = ({
     ),
     validation: (
       <ReveiwItemForm
-        name={['validation', 'review']}
+        name={['modellingAndValidation','validation', 'review']}
         lang={lang}
         formRef={formRef}
         onData={onData}

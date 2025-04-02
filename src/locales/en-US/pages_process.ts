@@ -380,7 +380,7 @@ export default {
   'pages.process.validator.scopeName.required': 'Please input scope name',
   'pages.process.validator.methodName.required': 'Please input method name',
   'pages.process.validator.reviewDetails.required': 'Please input review details',
-  'pages.process.validator.referenceToNameOfReviewerAndInstitution.required': 'Please input reviewer name and institution',
+  'pages.process.validator.referenceToNameOfReviewerAndInstitution.required': 'Please input data set report, background info',
   'pages.process.validator.referenceToCompleteReviewReport.required': 'Please input complete review report',
   'pages.process.validator.referenceToComplianceSystem.required': 'Please input compliance system name',
   'pages.process.validator.approvalOfOverallCompliance.required': 'Please input approval of overall compliance',

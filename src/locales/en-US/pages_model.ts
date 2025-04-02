@@ -85,7 +85,7 @@ export default {
   'pages.lifecyclemodel.validator.dominant.required': 'Please input dominant exchange',
   'pages.lifecyclemodel.validator.flowUUID.required': 'Please input UUID of exchange',
   'pages.lifecyclemodel.validator.id.required': 'Please input ID of connected process instance',
-  'pages.lifecyclemodel.validator.referenceToNameOfReviewerAndInstitution.required': 'Please input reviewer name and institution',
+  'pages.lifecyclemodel.validator.referenceToNameOfReviewerAndInstitution.required': 'Please input data set report, background info',
   'pages.lifecyclemodel.validator.referenceToComplianceSystem.required': 'Please input compliance system name',
   'pages.lifecyclemodel.validator.approvalOfOverallCompliance.required': 'Please input approval of overall compliance',
   'pages.lifecyclemodel.validator.nomenclatureCompliance.required': 'Please input nomenclature compliance',
