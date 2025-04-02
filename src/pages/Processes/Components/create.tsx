@@ -231,7 +231,7 @@ const ProcessCreate: FC<CreateProps> = ({
             onFinish={async () => {
               const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
               const fieldsValue = formRefCreate.current?.getFieldsValue();
-              if (exchangeDataSource||exchangeDataSource?.length === 0) {
+              if (exchangeDataSource || exchangeDataSource?.length === 0) {
                 message.error(
                   intl.formatMessage({
                     id: 'pages.process.validator.exchanges.required',
