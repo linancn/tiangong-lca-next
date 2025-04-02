@@ -388,11 +388,12 @@ export function genFlowFromData(data: any) {
           ),
         },
       },
+     
+    },
+    modellingAndValidation: {
       LCIMethod: {
         typeOfDataSet: data?.modellingAndValidation?.LCIMethod?.typeOfDataSet,
       },
-    },
-    modellingAndValidation: {
       complianceDeclarations: {
         compliance: {
           'common:referenceToComplianceSystem': {
