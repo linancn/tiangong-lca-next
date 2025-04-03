@@ -357,7 +357,7 @@ export default {
   'pages.process.unitConvert.result': '结果',
 
   'pages.flow.process.administrativeInformation.referenceToDataSetFormat': '数据集格式',
-  
+
   'pages.process.review.error': '相关引用数据处于审核阶段，不能再发起审核',
 
   'pages.process.validator.UUID.required': '请输入UUID',

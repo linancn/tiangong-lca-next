@@ -1,9 +1,14 @@
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import { getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
-import { getProcessDetail, updateProcess } from '@/services/processes/api';
-import { genProcessFromData } from '@/services/processes/util';
 import { getRefData, updateReviewIdAndStateCode } from '@/services/general/api';
+import {
+  getLifeCycleModelDetail,
+  updateLifeCycleModelStateCode,
+} from '@/services/lifeCycleModels/api';
+import { getProcessDetail, updateProcess, updateProcessStateCode } from '@/services/processes/api';
+import { genProcessFromData } from '@/services/processes/util';
+import { getUserTeamId } from '@/services/roles/api';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined, ProductOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -23,9 +28,6 @@ import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { ProcessForm } from './form';
-import { updateProcessStateCode } from '@/services/processes/api';
-import { getLifeCycleModelDetail, updateLifeCycleModelStateCode } from '@/services/lifeCycleModels/api';
-import { getUserTeamId } from '@/services/roles/api';
 
 type Props = {
   id: string;
@@ -117,9 +119,9 @@ const ProcessEdit: FC<Props> = ({
       }
 
       if (Array.isArray(current)) {
-        current.forEach(item => traverse(item));
+        current.forEach((item) => traverse(item));
       } else if (typeof current === 'object') {
-        Object.values(current).forEach(value => traverse(value));
+        Object.values(current).forEach((value) => traverse(value));
       }
     };
 
@@ -140,11 +142,11 @@ const ProcessEdit: FC<Props> = ({
       message.error(
         intl.formatMessage({
           id: 'pages.process.review.error',
-          defaultMessage: 'Referenced data is under review, cannot initiate another review'
-        })
+          defaultMessage: 'Referenced data is under review, cannot initiate another review',
+        }),
       );
       return;
-    };
+    }
 
     const teamId = await getUserTeamId();
 
@@ -160,13 +162,21 @@ const ProcessEdit: FC<Props> = ({
     };
 
     const refObjs = getAllRefObj(fromData);
-    const unReview: any[] = []
-    const checkReferences = async (refs: any[], checkedIds = new Set<string>()): Promise<boolean> => {
+    const unReview: any[] = [];
+    const checkReferences = async (
+      refs: any[],
+      checkedIds = new Set<string>(),
+    ): Promise<boolean> => {
       for (const ref of refs) {
         if (checkedIds.has(ref['@refObjectId'])) continue;
         checkedIds.add(ref['@refObjectId']);
 
-        const refResult = await getRefData(ref['@refObjectId'], ref['@version'], getTableName(ref['@type']), teamId);
+        const refResult = await getRefData(
+          ref['@refObjectId'],
+          ref['@version'],
+          getTableName(ref['@type']),
+          teamId,
+        );
         // console.log('refResult', refResult, ref);
 
         if (refResult.success) {
@@ -176,8 +186,8 @@ const ProcessEdit: FC<Props> = ({
             message.error(
               intl.formatMessage({
                 id: 'pages.process.review.error',
-                defaultMessage: 'Referenced data is under review, cannot initiate another review'
-              })
+                defaultMessage: 'Referenced data is under review, cannot initiate another review',
+              }),
             );
             return false;
           }
@@ -203,16 +213,22 @@ const ProcessEdit: FC<Props> = ({
       if (!error && data && data.length) {
         stateCode = data[0]?.state_code;
         // console.log('stateCode', stateCode)
-      };
+      }
 
       // console.log('updateResult', data)
       // console.log('unReview', unReview)
 
-      if(lifeCycleModelStateCode<20){
+      if (lifeCycleModelStateCode < 20) {
         await updateLifeCycleModelStateCode(id, version, stateCode);
       }
       unReview.forEach(async (item: any) => {
-        await updateReviewIdAndStateCode(id, item['@refObjectId'], item['@version'], getTableName(item['@type']), stateCode);
+        await updateReviewIdAndStateCode(
+          id,
+          item['@refObjectId'],
+          item['@version'],
+          getTableName(item['@type']),
+          stateCode,
+        );
       });
     }
   };
@@ -306,9 +322,11 @@ const ProcessEdit: FC<Props> = ({
         footer={
           <Space size={'middle'} className={styles.footer_right}>
             <>
-              <Button onClick={() => {
-                submitReview();
-              }}>
+              <Button
+                onClick={() => {
+                  submitReview();
+                }}
+              >
                 <FormattedMessage id='pages.button.review' defaultMessage='Submit for review' />
               </Button>
               <Button

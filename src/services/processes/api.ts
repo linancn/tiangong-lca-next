@@ -42,7 +42,7 @@ export async function updateProcessStateCode(id: string, version: string) {
   let stateCode = 0;
   if (!error && data && data.length) {
     stateCode = data[0]?.state_code + 20;
-  };
+  }
 
   if (stateCode) {
     const updateResult = await supabase
@@ -435,7 +435,7 @@ export async function getProcessTablePgroongaSearch(
 
             const classifications = jsonToList(
               dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-              'common:class'
+                'common:class'
               ],
             );
             const classificationZH = genClassificationZH(classifications, res?.data);
@@ -469,7 +469,7 @@ export async function getProcessTablePgroongaSearch(
           const dataInfo = i.json?.processDataSet?.processInformation;
           const classifications = jsonToList(
             dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-            'common:class'
+              'common:class'
             ],
           );
           const thisLocation = locationData.find(

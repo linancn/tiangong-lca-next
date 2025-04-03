@@ -360,7 +360,7 @@ export default {
   'pages.process.unitConvert.result': 'Result',
 
   'pages.flow.process.administrativeInformation.referenceToDataSetFormat': 'Data set format(s)',
-  
+
   'pages.process.review.error': 'Referenced data is under review, cannot initiate another review',
 
   'pages.process.validator.UUID.required': 'Please input UUID',

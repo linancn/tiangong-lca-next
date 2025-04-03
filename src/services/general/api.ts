@@ -65,7 +65,7 @@ export async function getRefData(id: string, version: string, table: string, tea
       data: null,
       success: false,
     });
-  };
+  }
   const session = await supabase.auth.getSession();
   let query = supabase
     .from(table)
@@ -74,12 +74,10 @@ export async function getRefData(id: string, version: string, table: string, tea
     .neq('team_id', '00000000-0000-0000-0000-000000000000');
 
   if (teamId) {
-    query = query.eq('team_id', teamId)
+    query = query.eq('team_id', teamId);
   } else {
     query = query.eq('user_id', session?.data?.session?.user?.id);
   }
-
-
 
   let result: any = {};
 
@@ -109,7 +107,13 @@ export async function getRefData(id: string, version: string, table: string, tea
   });
 }
 
-export async function updateReviewIdAndStateCode(processId: string, id: string, version: string, table: string, stateCode: number) {
+export async function updateReviewIdAndStateCode(
+  processId: string,
+  id: string,
+  version: string,
+  table: string,
+  stateCode: number,
+) {
   if (!table) return;
   let result: any = {};
   if (id && id.length === 36) {
@@ -457,7 +461,7 @@ export async function getAllVersions(
                 if (i?.typeOfDataSet === 'Elementary flow') {
                   classificationData =
                     i?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-                    'common:category'
+                      'common:category'
                     ];
                   thisClass = res?.data?.categoryElementaryFlow;
                 } else {
@@ -512,7 +516,7 @@ export async function getAllVersions(
               if (i?.typeOfDataSet === 'Elementary flow') {
                 classificationData =
                   i?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-                  'common:category'
+                    'common:category'
                   ];
               } else {
                 classificationData =

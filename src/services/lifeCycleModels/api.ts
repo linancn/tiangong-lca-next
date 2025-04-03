@@ -399,7 +399,11 @@ export async function getLifeCycleModelDetail(id: string, version: string) {
   });
 }
 
-export async function updateLifeCycleModelStateCode(id: string, version: string, stateCode: number) {
+export async function updateLifeCycleModelStateCode(
+  id: string,
+  version: string,
+  stateCode: number,
+) {
   const result = await supabase
     .from('lifecyclemodels')
     .update({ state_code: stateCode })
