@@ -167,7 +167,7 @@ const ProcessEdit: FC<Props> = ({
         checkedIds.add(ref['@refObjectId']);
 
         const refResult = await getRefData(ref['@refObjectId'], ref['@version'], getTableName(ref['@type']), teamId);
-        console.log('refResult', refResult, ref);
+        // console.log('refResult', refResult, ref);
 
         if (refResult.success) {
           const refData = refResult?.data;
@@ -195,18 +195,18 @@ const ProcessEdit: FC<Props> = ({
     };
 
     const checkResult = await checkReferences(refObjs);
-    console.log('checkResult', checkResult);
+    // console.log('checkResult', checkResult);
 
     if (checkResult) {
       const { error, data } = await updateProcessStateCode(id, version);
       let stateCode = 0;
       if (!error && data && data.length) {
         stateCode = data[0]?.state_code;
-        console.log('stateCode', stateCode)
+        // console.log('stateCode', stateCode)
       };
 
-      console.log('updateResult', data)
-      console.log('unReview', unReview)
+      // console.log('updateResult', data)
+      // console.log('unReview', unReview)
 
       if(lifeCycleModelStateCode<20){
         await updateLifeCycleModelStateCode(id, version, stateCode);
