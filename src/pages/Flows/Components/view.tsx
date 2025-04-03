@@ -19,6 +19,7 @@ import { useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { complianceOptions, flowTypeOptions } from './optiondata';
 import PropertyView from './Property/view';
+import FlowsSelectDescription from './select/description';
 type Props = {
   id: string;
   version: string;
@@ -326,6 +327,21 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
             {initData?.flowInformation?.dataSetInformation?.['CASNumber'] ?? '-'}
           </Descriptions.Item>
         </Descriptions>
+        <br />
+        <Descriptions bordered size={'small'} column={1}>
+          <Descriptions.Item
+            key={0}
+            label={
+              <FormattedMessage
+                id='pages.flow.view.flowInformation.sumFormula'
+                defaultMessage='Sum formula'
+              />
+            }
+            labelStyle={{ width: '140px' }}
+          >
+            {initData?.flowInformation?.dataSetInformation?.['sumFormula'] ?? '-'}
+          </Descriptions.Item>
+        </Descriptions>
 
         <Divider orientationMargin='0' orientation='left' plain>
           <FormattedMessage
@@ -560,6 +576,21 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
               </Space>
             </Descriptions.Item>
           </Descriptions>
+          <br />
+          <FlowsSelectDescription
+            title={
+              <FormattedMessage
+                id='pages.flow.view.administrativeInformation.referenceToPrecedingDataSetVersion'
+                defaultMessage='Preceding data set version'
+              />
+            }
+            data={
+              initData?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToPrecedingDataSetVersion'
+              ] ?? {}
+            }
+            lang={lang}
+          />
           <br />
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item

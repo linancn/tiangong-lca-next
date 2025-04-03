@@ -65,7 +65,7 @@ const ContactSelectForm: FC<Props> = ({
       }
       setId(rowId);
       setVersion(result.data?.version);
-      validateRefObjectId(formRef, parentName, name);
+      validateRefObjectId(formRef, name, parentName);
       onData();
     });
   };
@@ -158,7 +158,7 @@ const ContactSelectForm: FC<Props> = ({
             <Button
               onClick={() => {
                 formRef.current?.setFieldValue([...name], {});
-                validateRefObjectId(formRef, parentName, name);
+                validateRefObjectId(formRef, name, parentName);
                 onData();
               }}
             >

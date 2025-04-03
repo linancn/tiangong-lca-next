@@ -29,6 +29,7 @@ export default {
   'pages.unitgroup.name': 'Name of unit group',
   'pages.unitgroup.unitName': 'Name of unit',
   'pages.unitgroup.classification': 'Classification',
+  'pages.unitgroup.unitGroupInformation.generalComment': 'General comment',
   'pages.unitgroup.meanValue': 'Mean value (of unit)',
   'pages.unitgroup.quantitativeReference': 'Quantitative reference',
   'pages.unitgroup.referenceToComplianceSystem': 'Compliance system name',
@@ -36,6 +37,9 @@ export default {
   'pages.unitgroup.timeStamp': 'Time stamp (last saved)',
   'pages.unitgroup.referenceToDataSetFormat': 'Data set format(s)',
   'pages.unitgroup.dataSetVersion': 'Data set version',
+  'pages.unitgroup.referenceToOwnershipOfDataSet': 'Owner of data set',
+  'pages.unitgroup.permanentDataSetURI': 'Permanent data set URI',
+  'pages.unitgroup.referenceToPrecedingDataSetVersion': 'Preceding data set version',
 
   //
   //unit 创建
@@ -60,6 +64,7 @@ export default {
   'pages.unitgroup.edit.unitGroupInformation': 'Unit group information',
   'pages.unitgroup.edit.unitGroupInformation.name': 'Name of unit group',
   'pages.unitgroup.edit.unitGroupInformation.classification': 'Classification',
+  'pages.unitgroup.edit.unitGroupInformation.generalComment': 'General comment',
   'pages.unitgroup.edit.modellingAndValidation': 'Modelling and validation',
   'pages.unitgroup.edit.modellingAndValidation.referenceToComplianceSystem': 'Compliance system name',
   'pages.unitgroup.edit.modellingAndValidation.approvalOfOverallCompliance': 'Approval of overall compliance',
@@ -67,6 +72,9 @@ export default {
   'pages.unitgroup.edit.administrativeInformation.timeStamp': 'Time stamp (last saved)',
   'pages.unitgroup.edit.administrativeInformation.referenceToDataSetFormat': 'Data set format(s)',
   'pages.unitgroup.edit.administrativeInformation.dataSetVersion': 'Data set version',
+  'pages.unitgroup.edit.administrativeInformation.referenceToPrecedingDataSetVersion': 'Preceding data set version',
+  'pages.unitgroup.edit.administrativeInformation.permanentDataSetURI': 'Permanent data set URI',
+  'pages.unitgroup.edit.administrativeInformation.referenceToOwnershipOfDataSet': 'Owner of data set',
   //
   'pages.unitgroup.edit.units': 'Units',
   'pages.unitgroup.edit.name': 'Name of unit',
@@ -89,4 +97,18 @@ export default {
   'pages.unitgroup.view.modellingAndValidation.approvalOfOverallCompliance.fullyCompliant': 'Fully compliant',
   'pages.unitgroup.view.modellingAndValidation.approvalOfOverallCompliance.notCompliant': 'Not compliant',
   'pages.unitgroup.view.modellingAndValidation.approvalOfOverallCompliance.notDefined': 'Not defined',
+
+  'pages.unitgroup.validator.version.required': 'Please input version',
+  'pages.unitgroup.validator.uuid.required': 'Please input UUID',
+  'pages.unitgroup.validator.name.required': 'Please input name of unit group',
+  'pages.unitgroup.validator.class.required': 'Please input classification',
+  'pages.unitgroup.validator.referenceToReferenceUnit.required': 'Please input reference to reference unit',
+  'pages.unitgroup.validator.referenceToComplianceSystem.required': 'Please input compliance system name',
+  'pages.unitgroup.validator.approvalOfOverallCompliance.required': 'Please input approval of overall compliance',
+  'pages.unitgroup.validator.timeStamp.required': 'Please input time stamp',
+  'pages.unitgroup.validator.referenceToDataSetFormat.required': 'Please input data set format(s)',
+  'pages.unitgroup.validator.dataSetVersion.required': 'Please input data set version',
+  'pages.unitgroup.validator.referenceToOwnershipOfDataSet.required': 'Please input owner of data set',
+  'pages.unitgroups.validator.unit.required': 'Please select unit',
+  'pages.unitgroups.validator.unit.quantitativeReference.required': 'Unit needs to have exactly one quantitative reference open',
 };

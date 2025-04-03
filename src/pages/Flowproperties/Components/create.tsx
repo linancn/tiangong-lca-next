@@ -123,11 +123,18 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
           'common:dataSetVersion': initVersion,
         },
       },
+      modellingAndValidation: {
+        complianceDeclarations: {
+          compliance: {
+            'common:approvalOfOverallCompliance': 'Fully compliant',
+          },
+        },
+      },
     };
 
     setInitData(newData);
-    formRefCreate.current?.resetFields();
-    formRefCreate.current?.setFieldsValue(newData);
+    const currentData = formRefCreate.current?.getFieldsValue();
+    formRefCreate.current?.setFieldsValue({ ...currentData, ...newData });
     setFromData(newData);
   }, [drawerVisible]);
 
@@ -168,6 +175,7 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
         )}
       </Tooltip>
       <Drawer
+        destroyOnClose={true}
         getContainer={() => document.body}
         title={
           <FormattedMessage
@@ -219,7 +227,8 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
             }}
             onFinish={async () => {
               const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
-              const result = await createFlowproperties(paramsId, fromData);
+              const formFieldsValue = formRefCreate.current?.getFieldsValue();
+              const result = await createFlowproperties(paramsId, formFieldsValue);
               if (result.data) {
                 message.success(
                   intl.formatMessage({
@@ -245,6 +254,7 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
               formRef={formRefCreate}
               onData={handletFromData}
               onTabChange={onTabChange}
+              formType='create'
             />
           </ProForm>
         </Spin>

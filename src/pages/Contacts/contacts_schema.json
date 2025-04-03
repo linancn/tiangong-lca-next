@@ -19,7 +19,7 @@
             {
               "required": true,
               "messageKey": "pages.contact.validator.shortName.required",
-              "defaultMessage": "shortName is required"
+              "defaultMessage": "Please input short name for contact"
             }
           ]
         },
@@ -34,7 +34,7 @@
             {
               "required": true,
               "messageKey": "pages.contact.validator.name.required",
-              "defaultMessage": "Name is required"
+              "defaultMessage": "Please input name of contact"
             }
           ]
         },
@@ -53,7 +53,7 @@
               {
                 "required": true,
                 "messageKey": "pages.contact.validator.classification.required",
-                "defaultMessage": "Classification is required"
+                "defaultMessage": "Please input classification"
               }
             ]
           }
@@ -185,7 +185,7 @@
             {
               "required": true,
               "messageKey": "pages.contact.validator.dataSetVersion.required",
-              "defaultMessage": "Data set version is required"
+              "defaultMessage": "Please input data set version"
             }
           ]
         },
@@ -204,7 +204,7 @@
             {
               "required": true,
               "messageKey": "pages.contact.validator.referenceToOwnershipOfDataSet.required",
-              "defaultMessage": "Reference to ownership of data set is required"
+              "defaultMessage": "Please input owner of data set"
             }
           ]
         },
@@ -225,7 +225,7 @@
             {
               "required": true,
               "messageKey": "pages.contact.validator.timeStamp.required",
-              "defaultMessage": "Time stamp is required"
+              "defaultMessage": "Please input time stamp"
             }
           ]
         },
@@ -244,7 +244,7 @@
             {
               "required": true,
               "messageKey": "pages.contact.validator.referenceToDataSetFormat.required",
-              "defaultMessage": "Time stamp is required"
+              "defaultMessage": "Please input data set format(s)"
             }
           ]
         }

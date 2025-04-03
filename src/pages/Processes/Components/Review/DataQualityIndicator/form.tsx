@@ -14,7 +14,7 @@ type Props = {
 const DataQualityIndicatorItemForm: FC<Props> = ({ name }) => {
   return (
     <Form.Item>
-      <Form.List name={name}>
+      <Form.List name={[...name]}>
         {(subFields, subOpt) => (
           <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
             {subFields.map((subField, index) => (

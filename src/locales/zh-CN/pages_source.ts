@@ -18,6 +18,7 @@ export default {
   'pages.source.view.sourceInformation.sourceDescriptionOrComment': '数据源描述或备注',
   'pages.source.view.sourceInformation.referenceToDigitalFile': '电子文档链接',
   'pages.source.view.sourceInformation.referenceToContact': '属于：',
+  'pages.source.view.sourceInformation.referenceToLogo': '组织或来源的logo',
   'pages.source.view.administrativeInformation': '管理信息',
   'pages.source.view.administrativeInformation.dataEntryBy': '数据输入方式',
   'pages.source.view.administrativeInformation.TimeStamp': '时间戳（最后保存）',
@@ -26,6 +27,7 @@ export default {
   'pages.source.view.administrativeInformation.dataSetVersion': '数据集版本',
   'pages.source.view.administrativeInformation.permanentDataSetURI': '永久数据集统一资源标识符',
   'pages.source.view.administrativeInformation.referenceToOwnershipOfDataSet': '数据集拥有者',
+  'pages.source.view.administrativeInformation.referenceToPrecedingDataSetVersion': '数据集前一版本',
 
   //source.edit 编辑
   'pages.source.edit.sourceInformation': '源信息',
@@ -36,12 +38,14 @@ export default {
   'pages.source.edit.sourceInformation.sourceDescriptionOrComment': '数据源描述或备注',
   'pages.source.edit.sourceInformation.referenceToDigitalFile': '电子文档链接',
   'pages.source.edit.sourceInformation.referenceToContact': '属于：',
+  'pages.source.edit.sourceInformation.referenceToLogo': '组织或来源的logo',
   'pages.source.edit.administrativeInformation': '管理信息',
   'pages.source.edit.administrativeInformation.dataEntryBy': '数据输入方式',
   'pages.source.edit.administrativeInformation.timeStamp': '时间戳（最后保存）',
   'pages.source.edit.administrativeInformation.referenceToDataSetFormat': '数据集格式',
   'pages.source.edit.administrativeInformation.publicationAndOwnership': '出版和所有权',
   'pages.source.edit.administrativeInformation.dataSetVersion': '数据集版本',
+  'pages.source.edit.administrativeInformation.referenceToPrecedingDataSetVersion': '数据集前一版本',
   'pages.source.edit.administrativeInformation.permanentDataSetURI': '永久数据集统一资源标识符',
   'pages.source.edit.administrativeInformation.referenceToOwnershipOfDataSet': '数据集拥有者',
   //source.delete 删除
@@ -74,4 +78,13 @@ export default {
   'pages.source.view.sourceInformation.publicationType.questionnaire': '问卷调查',
   'pages.source.view.sourceInformation.publicationType.softwareOrDatabase': '软件或数据库',
   'pages.source.view.sourceInformation.publicationType.otherUnpublishedAndGreyLiterature': '其他未发表和灰色文献',
+
+  'pages.source.validator.version.required': '请输入版本',
+  'pages.source.validator.uuid.required': '请输入UUID',
+  'pages.source.validator.shortName.required': '请输入源的简称',
+  'pages.source.validator.class.required': '请输入分类',
+  'pages.source.validator.timeStamp.required': '请输入时间戳',
+  'pages.source.validator.referenceToDataSetFormat.required': '请输入数据集格式',
+  'pages.source.validator.dataSetVersion.required': '请输入数据集版本',
+  'pages.source.validator.referenceToOwnershipOfDataSet.required': '请输入数据集拥有者',
 };

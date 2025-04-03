@@ -48,11 +48,11 @@ export default {
   //管理信息
 
   // rules
-  'pages.contact.validator.shortName.required': '联系人的简称是必填项！',
-  'pages.contact.validator.name.required': '联系人姓名是必填项！',
-  'pages.contact.validator.classification.required': '分类是必填项！',
-  'pages.contact.validator.dataSetVersion.required': '数据集版本是必填项！',
-  'pages.contact.validator.referenceToOwnershipOfDataSet.required': '数据集拥有者是必填项！',
-  'pages.contact.validator.timeStamp.required': '时间戳是必填项！',
-  'pages.contact.validator.referenceToDataSetFormat.required': '数据集格式是必填项！',
+  'pages.contact.validator.shortName.required': '请输入联系人简称',
+  'pages.contact.validator.name.required': '请输入联系人姓名',
+  'pages.contact.validator.classification.required': '请输入分类',
+  'pages.contact.validator.dataSetVersion.required': '请输入数据集版本',
+  'pages.contact.validator.referenceToOwnershipOfDataSet.required': '请输入数据集拥有者',
+  'pages.contact.validator.timeStamp.required': '请输入时间戳',
+  'pages.contact.validator.referenceToDataSetFormat.required': '请输入数据集格式',
 };

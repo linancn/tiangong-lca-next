@@ -3,14 +3,51 @@
     "@xmlns": "str",
     "@xmlns:common": "str",
     "@xmlns:xsi": "str",
-    "@version": "str",
+    "@version": {
+      "value": "str",
+      "rules": [
+        {
+          "required": true,
+          "messageKey": "pages.flowproperties.validator.version.required",
+          "defaultMessage": "Please input version"
+        }
+      ]
+    },
     "@xsi:schemaLocation": "str",
     "flowPropertiesInformation": {
       "dataSetInformation": {
-        "common:UUID": "str",
+        "common:UUID": {
+          "value": "str",
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.flowproperties.validator.uuid.required",
+              "defaultMessage": "Please input UUID"
+            }
+          ]
+        },
         "common:name": {
-          "@xml:lang": "str",
-          "#text": "str"
+          "value": {
+            "@xml:lang": "str",
+            "#text": "str"
+          },
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.flowproperties.validator.name.required",
+              "defaultMessage": "Please input name of flow property"
+            },
+            {
+              "warningOnly": true,
+              "messageKey": "validator.recommended.empty",
+              "defaultMessage": "Recommended to fill in to enhance data detail and usability!"
+            },
+            {
+              "max": 500,
+              "messageKey": "validator.StringMultiLang.pattern",
+              "defaultMessage": "Length cannot exceed 500 characters!"
+            }
+          ]
         },
         "common:synonyms": {
           "@xml:lang": "str",
@@ -19,8 +56,18 @@
         "classificationInformation": {
           "common:classification": {
             "common:class": {
-              "@level": "str",
-              "#text": "str"
+              "value": {
+                "@level": "str",
+                "@classId": "str",
+                "#text": "str"
+              },
+              "rules": [
+                {
+                  "required": true,
+                  "messageKey": "pages.flowproperties.validator.class.required",
+                  "defaultMessage": "Please input classification"
+                }
+              ]
             }
           }
         },
@@ -31,21 +78,86 @@
       },
       "quantitativeReference": {
         "referenceToReferenceUnitGroup": {
-          "@refObjectId": "str",
-          "@type": "str",
-          "@uri": "str",
-          "common:shortDescription": {
-            "@xml:lang": "str",
-            "#text": "str"
+          "value": {
+            "@refObjectId": "str",
+            "@type": "str",
+            "@uri": "str",
+            "common:shortDescription": {
+              "@xml:lang": "str",
+              "#text": "str"
+            },
+            "@version": "str"
           },
-          "@version": "str"
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.flowproperties.validator.referenceToReferenceUnitGroup.required",
+              "defaultMessage": "Please input reference unit"
+            }
+          ]
         }
       }
     },
     "modellingAndValidation": {
+      "dataSourcesTreatmentAndRepresentativeness": {
+        "referenceToDataSource": {
+          "@refObjectId": "str",
+          "@type": "str",
+          "@uri": "str",
+          "@version": "str",
+          "common:shortDescription": {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
+        }
+      },
       "complianceDeclarations": {
         "compliance": {
           "common:referenceToComplianceSystem": {
+            "value": {
+              "@refObjectId": "str",
+              "@type": "str",
+              "@uri": "str",
+              "common:shortDescription": {
+                "@xml:lang": "str",
+                "#text": "str"
+              }
+            },
+            "rules": [
+              {
+                "required": true,
+                "messageKey": "pages.flowproperties.validator.referenceToComplianceSystem.required",
+                "defaultMessage": "Please input compliance system name"
+              }
+            ]
+          },
+          "common:approvalOfOverallCompliance": {
+            "value": "str",
+            "rules": [
+              {
+                "required": true,
+                "messageKey": "pages.flowproperties.validator.approvalOfOverallCompliance.required",
+                "defaultMessage": "Please input approval of overall compliance"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "administrativeInformation": {
+      "dataEntryBy": {
+        "common:timeStamp": {
+          "value": "str",
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.flowproperties.validator.timeStamp.required",
+              "defaultMessage": "Please input time stamp"
+            }
+          ]
+        },
+        "common:referenceToDataSetFormat": {
+          "value": {
             "@refObjectId": "str",
             "@type": "str",
             "@uri": "str",
@@ -54,25 +166,31 @@
               "#text": "str"
             }
           },
-          "common:approvalOfOverallCompliance": "str"
-        }
-      }
-    },
-    "administrativeInformation": {
-      "dataEntryBy": {
-        "common:timeStamp": "str",
-        "common:referenceToDataSetFormat": {
-          "@refObjectId": "str",
-          "@type": "str",
-          "@uri": "str",
-          "common:shortDescription": {
-            "@xml:lang": "str",
-            "#text": "str"
-          }
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.flowproperties.validator.referenceToDataSetFormat.required",
+              "defaultMessage": "Please input data set format(s)"
+            }
+          ]
         }
       },
       "publicationAndOwnership": {
-        "common:dataSetVersion": "str",
+        "common:dataSetVersion": {
+          "value": "str",
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.flowproperties.validator.dataSetVersion.required",
+              "defaultMessage": "Please input dataSetVersion"
+            },
+            {
+              "pattern": "dataSetVersion",
+              "messageKey": "validator.dataSetVersion.pattern",
+              "defaultMessage": "Version format must be XX.XX.XXX, where X is a digit!"
+            }
+          ]
+        },
         "common:referenceToPrecedingDataSetVersion": {
           "@refObjectId": "str",
           "@type": "str",
@@ -81,6 +199,24 @@
             "@xml:lang": "str",
             "#text": "str"
           }
+        },
+        "common:referenceToOwnershipOfDataSet": {
+          "value": {
+            "@type": "str",
+            "@refObjectId": "str",
+            "@uri": "str",
+            "common:shortDescription": {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          },
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.flowproperties.validator.referenceToOwnershipOfDataSet.required",
+              "defaultMessage": "Please input owner of data set"
+            }
+          ]
         },
         "common:permanentDataSetURI": "str"
       }

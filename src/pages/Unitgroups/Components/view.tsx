@@ -1,7 +1,9 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
+import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
+import UnitGroupDescription from '@/pages/Unitgroups/Components/select/description';
 import { ListPagination } from '@/services/general/data';
 import { getUnitGroupDetail } from '@/services/unitgroups/api';
 import { UnitTable } from '@/services/unitgroups/data';
@@ -205,6 +207,15 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
           lang={lang}
           categoryType={'UnitGroup'}
         />
+        <Divider orientationMargin='0' orientation='left' plain>
+          <FormattedMessage
+            id='pages.unitgroup.unitGroupInformation.generalComment'
+            defaultMessage='General comment'
+          />
+        </Divider>
+        <LangTextItemDescription
+          data={initData.unitGroupInformation?.dataSetInformation?.['common:generalComment']}
+        />
       </>
     ),
     modellingAndValidation: (
@@ -291,6 +302,53 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
                 'common:dataSetVersion'
               ] ?? '-'}
             </Space>
+          </Descriptions.Item>
+        </Descriptions>
+        <br />
+        <ContactSelectDescription
+          data={
+            initData.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToOwnershipOfDataSet'
+            ]
+          }
+          lang={lang}
+          title={
+            <FormattedMessage
+              id='pages.unitgroup.referenceToOwnershipOfDataSet'
+              defaultMessage='Owner of data set'
+            />
+          }
+        ></ContactSelectDescription>
+        <br />
+        <UnitGroupDescription
+          lang={lang}
+          title={
+            <FormattedMessage
+              id='pages.unitgroup.referenceToPrecedingDataSetVersion'
+              defaultMessage='Preceding data set version'
+            />
+          }
+          data={
+            initData.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToPrecedingDataSetVersion'
+            ]
+          }
+        />
+        <br />
+        <Descriptions bordered size={'small'} column={1}>
+          <Descriptions.Item
+            key={0}
+            label={
+              <FormattedMessage
+                id='pages.unitgroup.permanentDataSetURI'
+                defaultMessage='Permanent data set URI'
+              />
+            }
+            labelStyle={{ width: '220px' }}
+          >
+            {initData.administrativeInformation?.publicationAndOwnership?.[
+              'common:permanentDataSetURI'
+            ] ?? '-'}
           </Descriptions.Item>
         </Descriptions>
       </>

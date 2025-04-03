@@ -25,16 +25,30 @@ export function getAllVersionsColumns(columns: ProColumns<any>[], versionIndex: 
 }
 
 export function getRules(rules: any[]) {
-  return rules.map((rule) => ({
-    ...rule,
-    message: <FormattedMessage id={rule.messageKey} defaultMessage={rule.defaultMessage} />,
-  }));
+  return rules.map((rule) => {
+    let _rule = { ...rule };
+    if (rule.hasOwnProperty('pattern')) {
+      if (rule.pattern === 'dataSetVersion') {
+        _rule.pattern = /^\d{2}\.\d{2}\.\d{3}$/;
+      }
+      if (rule.pattern === 'CASNumber') {
+        _rule.pattern = /^\d{2,7}-\d{2}-\d$/;
+      }
+      if (rule.pattern === 'year') {
+        _rule.pattern = /^[0-9]{4}$/;
+      }
+    }
+    return {
+      ..._rule,
+      message: <FormattedMessage id={rule.messageKey} defaultMessage={rule.defaultMessage} />,
+    };
+  });
 }
 
 export const validateRefObjectId = (
   formRef: React.MutableRefObject<ProFormInstance | undefined>,
-  parentName: string[],
   name: string[],
+  parentName?: string[],
 ) => {
   if (parentName) {
     formRef.current?.validateFields([[...parentName, ...name, '@refObjectId']]);

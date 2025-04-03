@@ -1,16 +1,12 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
 import LocationTextItemForm from '@/components/LocationTextItem/form';
-import {
-  CASNumber,
-  dataSetVersion,
-  StringMultiLang_o,
-  StringMultiLang_r,
-} from '@/components/Validator/index';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
+import RequiredMark from '@/components/RequiredMark';
+import { getRules } from '@/pages/Utils';
 import { FlowpropertyTabTable } from '@/services/flows/data';
 import { genFlowPropertyTabTableData } from '@/services/flows/util';
 import { ListPagination } from '@/services/general/data';
@@ -20,11 +16,13 @@ import { Card, Divider, Form, Input, Select, Space, theme, Tooltip } from 'antd'
 import type { FC } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
+import schema from '../flows_schema.json';
 import { complianceOptions, myFlowTypeOptions } from './optiondata';
 import PropertyCreate from './Property/create';
 import PropertyDelete from './Property/delete';
 import PropertyEdit from './Property/edit';
 import PropertyView from './Property/view';
+// import FlowsSelectForm from './select/form';
 
 type Props = {
   lang: string;
@@ -56,6 +54,9 @@ export const FlowForm: FC<Props> = ({
   const actionRefPropertyTable = useRef<ActionType>();
   const { token } = theme.useToken();
   const [dataSource, setDataSource] = useState<any>([]);
+  const [baseNameError, setBaseNameError] = useState(false);
+  const [treatmentStandardsRoutesError, setTreatmentStandardsRoutesError] = useState(false);
+  const [mixAndLocationTypesError, setMixAndLocationTypesError] = useState(false);
 
   useEffect(() => {
     getUnitData('flowproperty', genFlowPropertyTabTableData(propertyDataSource, lang)).then(
@@ -230,9 +231,14 @@ export const FlowForm: FC<Props> = ({
           <Card
             size='small'
             title={
-              <FormattedMessage
-                id='pages.flow.view.flowInformation.baseName'
-                defaultMessage='Base name'
+              <RequiredMark
+                label={
+                  <FormattedMessage
+                    id='pages.flow.view.flowInformation.baseName'
+                    defaultMessage='Base name'
+                  />
+                }
+                showError={baseNameError}
               />
             }
           >
@@ -244,16 +250,26 @@ export const FlowForm: FC<Props> = ({
                   defaultMessage='Base name'
                 />
               }
-              rules={StringMultiLang_r}
+              setRuleErrorState={setBaseNameError}
+              rules={getRules(
+                schema['flowDataSet']['flowInformation']['dataSetInformation']['name']['baseName'][
+                  'rules'
+                ],
+              )}
             />
           </Card>
           <br />
           <Card
             size='small'
             title={
-              <FormattedMessage
-                id='pages.flow.view.flowInformation.treatmentStandardsRoutes'
-                defaultMessage='Treatment, standards, routes'
+              <RequiredMark
+                label={
+                  <FormattedMessage
+                    id='pages.flow.view.flowInformation.treatmentStandardsRoutes'
+                    defaultMessage='Treatment, standards, routes'
+                  />
+                }
+                showError={treatmentStandardsRoutesError}
               />
             }
           >
@@ -265,16 +281,26 @@ export const FlowForm: FC<Props> = ({
                   defaultMessage='Treatment, standards, routes'
                 />
               }
-              rules={StringMultiLang_r}
+              setRuleErrorState={setTreatmentStandardsRoutesError}
+              rules={getRules(
+                schema['flowDataSet']['flowInformation']['dataSetInformation']['name'][
+                  'treatmentStandardsRoutes'
+                ]['rules'],
+              )}
             />
           </Card>
           <br />
           <Card
             size='small'
             title={
-              <FormattedMessage
-                id='pages.flow.view.flowInformation.mixAndLocationTypes'
-                defaultMessage='Mix and location types'
+              <RequiredMark
+                label={
+                  <FormattedMessage
+                    id='pages.flow.view.flowInformation.mixAndLocationTypes'
+                    defaultMessage='Mix and location types'
+                  />
+                }
+                showError={mixAndLocationTypesError}
               />
             }
           >
@@ -286,7 +312,12 @@ export const FlowForm: FC<Props> = ({
                   defaultMessage='Mix and location types'
                 />
               }
-              rules={StringMultiLang_r}
+              setRuleErrorState={setMixAndLocationTypesError}
+              rules={getRules(
+                schema['flowDataSet']['flowInformation']['dataSetInformation']['name'][
+                  'mixAndLocationTypes'
+                ]['rules'],
+              )}
             />
           </Card>
           <br />
@@ -307,7 +338,11 @@ export const FlowForm: FC<Props> = ({
                   defaultMessage='Quantitative flow properties'
                 />
               }
-              rules={StringMultiLang_r}
+              rules={getRules(
+                schema['flowDataSet']['flowInformation']['dataSetInformation']['name'][
+                  'flowProperties'
+                ]['rules'],
+              )}
             />
           </Card>
         </Card>
@@ -348,7 +383,12 @@ export const FlowForm: FC<Props> = ({
                 defaultMessage='Type of flow'
               />
             }
-            name={['flowInformation', 'LCIMethod', 'typeOfDataSet']}
+            name={['modellingAndValidation', 'LCIMethod', 'typeOfDataSet']}
+            rules={getRules(
+              schema['flowDataSet']['modellingAndValidation']['LCIMethod']['typeOfDataSet'][
+                'rules'
+              ],
+            )}
           >
             <Select
               options={myFlowTypeOptions}
@@ -375,7 +415,6 @@ export const FlowForm: FC<Props> = ({
               }}
             />
           </Form.Item>
-          <br />
           <LevelTextItemForm
             hidden={thisFlowType !== 'Elementary flow'}
             dataType={'Flow'}
@@ -390,6 +429,15 @@ export const FlowForm: FC<Props> = ({
               'common:elementaryFlowCategorization',
               'common:category',
             ]}
+            rules={
+              thisFlowType !== 'Elementary flow'
+                ? []
+                : getRules(
+                    schema['flowDataSet']['flowInformation']['dataSetInformation'][
+                      'classificationInformation'
+                    ]['common:elementaryFlowCategorization']['common:category']['rules'],
+                  )
+            }
           />
           <LevelTextItemForm
             hidden={thisFlowType === 'Elementary flow'}
@@ -405,6 +453,11 @@ export const FlowForm: FC<Props> = ({
               'common:classification',
               'common:class',
             ]}
+            rules={getRules(
+              schema['flowDataSet']['flowInformation']['dataSetInformation'][
+                'classificationInformation'
+              ]['common:classification']['common:class']['rules'],
+            )}
           />
         </Card>
         <br />
@@ -416,11 +469,23 @@ export const FlowForm: FC<Props> = ({
             />
           }
           name={['flowInformation', 'dataSetInformation', 'CASNumber']}
-          rules={CASNumber}
+          rules={getRules(
+            schema['flowDataSet']['flowInformation']['dataSetInformation']['CASNumber']['rules'],
+          )}
         >
           <Input />
         </Form.Item>
-        <br />
+        <Form.Item
+          label={
+            <FormattedMessage
+              id='pages.flow.view.flowInformation.sumFormula'
+              defaultMessage='Sum formula'
+            />
+          }
+          name={['flowInformation', 'dataSetInformation', 'sumFormula']}
+        >
+          <Input />
+        </Form.Item>
         <Card
           size='small'
           title={
@@ -478,7 +543,9 @@ export const FlowForm: FC<Props> = ({
             name={['flowInformation', 'geography', 'locationOfSupply']}
             lang={lang}
             onData={onData}
-            rules={StringMultiLang_o}
+            rules={getRules(
+              schema['flowDataSet']['flowInformation']['geography']['locationOfSupply']['rules'],
+            )}
           />
         </Card>
         <br />
@@ -507,7 +574,6 @@ export const FlowForm: FC<Props> = ({
             }
           />
           <SourceSelectForm
-            defaultSourceName={formType === 'create' ? 'ILCD format' : undefined}
             name={['flowInformation', 'technology', 'referenceToTechnicalSpecification']}
             label={
               <FormattedMessage
@@ -548,6 +614,7 @@ export const FlowForm: FC<Props> = ({
           }
         > */}
         <SourceSelectForm
+          defaultSourceName={formType === 'create' ? 'ILCD Data Network - Entry-level' : undefined}
           lang={lang}
           formRef={formRef}
           label={
@@ -563,6 +630,11 @@ export const FlowForm: FC<Props> = ({
             'common:referenceToComplianceSystem',
           ]}
           onData={onData}
+          rules={getRules(
+            schema['flowDataSet']['modellingAndValidation']['complianceDeclarations']['compliance'][
+              'common:referenceToComplianceSystem'
+            ]['rules'],
+          )}
         />
         <br />
         <Form.Item
@@ -578,6 +650,11 @@ export const FlowForm: FC<Props> = ({
             'compliance',
             'common:approvalOfOverallCompliance',
           ]}
+          rules={getRules(
+            schema['flowDataSet']['modellingAndValidation']['complianceDeclarations']['compliance'][
+              'common:approvalOfOverallCompliance'
+            ]['rules'],
+          )}
         >
           <Select options={complianceOptions} />
         </Form.Item>
@@ -603,10 +680,16 @@ export const FlowForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
+            rules={getRules(
+              schema['flowDataSet']['administrativeInformation']['dataEntryBy']['common:timeStamp'][
+                'rules'
+              ],
+            )}
           >
             <Input disabled={true} style={{ color: token.colorTextDescription }} />
           </Form.Item>
           <SourceSelectForm
+            defaultSourceName={formType === 'create' ? 'ILCD format' : undefined}
             lang={lang}
             formRef={formRef}
             label={
@@ -616,6 +699,11 @@ export const FlowForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
+            rules={getRules(
+              schema['flowDataSet']['administrativeInformation']['dataEntryBy'][
+                'common:referenceToDataSetFormat'
+              ]['rules'],
+            )}
             onData={onData}
           />
           <br />
@@ -655,25 +743,32 @@ export const FlowForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
-            rules={dataSetVersion}
+            rules={getRules(
+              schema['flowDataSet']['administrativeInformation']['publicationAndOwnership'][
+                'common:dataSetVersion'
+              ]['rules'],
+            )}
           >
             <Input />
           </Form.Item>
-          <Form.Item
+          {/* <FlowsSelectForm
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:referenceToPrecedingDataSetVersion',
+            ]}
             label={
               <FormattedMessage
                 id='pages.flow.view.administrativeInformation.permanentDataSetURI'
                 defaultMessage='Permanent data set URI'
               />
             }
-            name={[
-              'administrativeInformation',
-              'publicationAndOwnership',
-              'common:permanentDataSetURI',
-            ]}
-          >
-            <Input />
-          </Form.Item>
+            lang={lang}
+            formRef={formRef}
+            drawerVisible={drawerVisible}
+            onData={onData}
+          />
+          <br /> */}
           <ContactSelectForm
             lang={lang}
             formRef={formRef}
@@ -689,8 +784,28 @@ export const FlowForm: FC<Props> = ({
               'common:referenceToOwnershipOfDataSet',
             ]}
             onData={onData}
+            rules={getRules(
+              schema['flowDataSet']['administrativeInformation']['publicationAndOwnership'][
+                'common:referenceToOwnershipOfDataSet'
+              ]['rules'],
+            )}
           />
           <br />
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.flow.view.administrativeInformation.permanentDataSetURI'
+                defaultMessage='Permanent data set URI'
+              />
+            }
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:permanentDataSetURI',
+            ]}
+          >
+            <Input />
+          </Form.Item>
         </Card>
       </Space>
     ),

@@ -145,7 +145,8 @@ const ContactEdit: FC<Props> = ({
               initialValues={initData}
               onFinish={async () => {
                 setSpinning(true);
-                const updateResult = await updateContact(id, version, fromData);
+                const formFieldsValue = formRefEdit.current?.getFieldsValue();
+                const updateResult = await updateContact(id, version, formFieldsValue);
                 if (updateResult?.data) {
                   message.success(
                     intl.formatMessage({

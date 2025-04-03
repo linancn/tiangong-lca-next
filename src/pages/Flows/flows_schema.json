@@ -4,27 +4,117 @@
     "@xmlns:common": "str",
     "@xmlns:ecn": "str",
     "@xmlns:xsi": "str",
-    "@version": "str",
+    "@version": {
+      "value": "str",
+      "rules": [
+        {
+          "required": true,
+          "messageKey": "pages.flow.validator.version.required",
+          "defaultMessage": "Please input version"
+        }
+      ]
+    },
+    "@locations": "str",
     "@xsi:schemaLocation": "str",
     "flowInformation": {
       "dataSetInformation": {
-        "common:UUID": "str",
+        "common:UUID": {
+          "value": "str",
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.flow.validator.uuid.required",
+              "defaultMessage": "Please input UUID"
+            }
+          ]
+        },
         "name": {
           "baseName": {
-            "@xml:lang": "str",
-            "#text": "str"
+            "value": {
+              "@xml:lang": "str",
+              "#text": "str"
+            },
+            "rules": [
+              {
+                "required": true,
+                "messageKey": "pages.flow.validator.name.required",
+                "defaultMessage": "Please input base name"
+              },
+              {
+                "warningOnly": true,
+                "messageKey": "validator.recommended.empty",
+                "defaultMessage": "Recommended to fill in to enhance data detail and usability!"
+              },
+              {
+                "max": 500,
+                "messageKey": "validator.StringMultiLang.pattern",
+                "defaultMessage": "Length cannot exceed 500 characters!"
+              }
+            ]
           },
           "treatmentStandardsRoutes": {
-            "@xml:lang": "str",
-            "#text": "str"
+            "value": {
+              "@xml:lang": "str",
+              "#text": "str"
+            },
+            "rules": [
+              {
+                "required": true,
+                "messageKey": "pages.flow.validator.treatmentStandardsRoutes.required",
+                "defaultMessage": "Please input treatment,standards,routes"
+              },
+              {
+                "warningOnly": true,
+                "messageKey": "validator.recommended.empty",
+                "defaultMessage": "Recommended to fill in to enhance data detail and usability!"
+              },
+              {
+                "max": 500,
+                "messageKey": "validator.StringMultiLang.pattern",
+                "defaultMessage": "Length cannot exceed 500 characters!"
+              }
+            ]
           },
           "mixAndLocationTypes": {
-            "@xml:lang": "str",
-            "#text": "str"
+            "value": {
+              "@xml:lang": "str",
+              "#text": "str"
+            },
+            "rules": [
+              {
+                "required": true,
+                "messageKey": "pages.flow.validator.mixAndLocationTypes.required",
+                "defaultMessage": "Please input mix and location types"
+              },
+              {
+                "warningOnly": true,
+                "messageKey": "validator.recommended.empty",
+                "defaultMessage": "Recommended to fill in to enhance data detail and usability!"
+              },
+              {
+                "max": 500,
+                "messageKey": "validator.StringMultiLang.pattern",
+                "defaultMessage": "Length cannot exceed 500 characters!"
+              }
+            ]
           },
           "flowProperties": {
-            "@xml:lang": "str",
-            "#text": "str"
+            "value": {
+              "@xml:lang": "str",
+              "#text": "str"
+            },
+            "rules": [
+              {
+                "warningOnly": true,
+                "messageKey": "validator.recommended.empty",
+                "defaultMessage": "Recommended to fill in to enhance data detail and usability!"
+              },
+              {
+                "max": 500,
+                "messageKey": "validator.StringMultiLang.pattern",
+                "defaultMessage": "Length cannot exceed 500 characters!"
+              }
+            ]
           }
         },
         "common:synonyms": {
@@ -33,39 +123,95 @@
         },
         "classificationInformation": {
           "common:elementaryFlowCategorization": {
-            "common:category": [
-              {
-                "@level": "str",
-                "#text": "str"
-              }
-            ]
+            "common:category": {
+              "value": [
+                {
+                  "@catId": "str",
+                  "@level": "str",
+                  "#text": "str"
+                }
+              ],
+              "rules": [
+                {
+                  "required": true,
+                  "messageKey": "pages.flow.validator.category.required",
+                  "defaultMessage": "Please input elementary flow categorization"
+                }
+              ]
+            }
           },
           "common:classification": {
             "@name": "str",
             "@classes": "str",
-            "common:class": [
-              {
-                "@level": "str",
-                "#text": "str"
-              }
-            ]
+            "common:class": {
+              "value": [
+                {
+                  "@level": "str",
+                  "@classId": "str",
+                  "#text": "str"
+                }
+              ],
+              "rules": [
+                {
+                  "required": true,
+                  "messageKey": "pages.flow.validator.class.required",
+                  "defaultMessage": "Please input classification"
+                }
+              ]
+            }
           }
         },
-        "CASNumber": "str",
+        "CASNumber": {
+          "value": "str",
+          "rules": [
+            {
+              "warningOnly": true,
+              "messageKey": "validator.CASNumber.empty",
+              "defaultMessage": "Should only be given for (virtually) pure substances, but NOT also for the main constituent of a material or product etc!"
+            },
+            {
+              "pattern": "CASNumber",
+              "messageKey": "validator.CASNumber.pattern",
+              "defaultMessage": "CAS Number format must be XX-XX-X or XXXXXXX-XX-X, where X is a digit!"
+            }
+          ]
+        },
+        "sumFormula": "str",
         "common:generalComment": {
           "@xml:lang": "str",
           "#text": "str"
         },
         "common:other": {
           "ecn:ECNumber": "str"
-        },
-        "sumFormula": "str"
+        }
       },
       "quantitativeReference": {
-        "referenceToReferenceFlowProperty": "str"
+        "referenceToReferenceFlowProperty": {
+          "value": "str",
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.flow.validator.referenceToReferenceFlowProperty.required",
+              "defaultMessage": "Please input reference flow property"
+            }
+          ]
+        }
       },
       "geography": {
-        "locationOfSupply": "str"
+        "locationOfSupply": {
+          "value": "str",
+          "rules": [
+            {
+              "messageKey": "validator.optional.empty",
+              "defaultMessage": "Optional to fill in, providing additional information without affecting completeness!"
+            },
+            {
+              "max": 500,
+              "messageKey": "validator.StringMultiLang.pattern",
+              "defaultMessage": "Length cannot exceed 500 characters!"
+            }
+          ]
+        }
       },
       "technology": {
         "technologicalApplicability": [
@@ -87,11 +233,65 @@
     },
     "modellingAndValidation": {
       "LCIMethod": {
-        "typeOfDataSet": "str"
+        "typeOfDataSet": {
+          "value": "str",
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.flow.validator.typeOfDataSet.required",
+              "defaultMessage": "Please input type of flow"
+            }
+          ]
+        }
       },
       "complianceDeclarations": {
         "compliance": {
           "common:referenceToComplianceSystem": {
+            "value": {
+              "@refObjectId": "str",
+              "@type": "str",
+              "@uri": "str",
+              "common:shortDescription": {
+                "@xml:lang": "str",
+                "#text": "str"
+              },
+              "@version": "str"
+            },
+            "rules": [
+              {
+                "required": true,
+                "messageKey": "pages.flow.validator.referenceToComplianceSystem.required",
+                "defaultMessage": "Please input compliance system name"
+              }
+            ]
+          },
+          "common:approvalOfOverallCompliance": {
+            "value": "str",
+            "rules": [
+              {
+                "required": true,
+                "messageKey": "pages.flow.validator.approvalOfOverallCompliance.required",
+                "defaultMessage": "Please input approval of overall compliance"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "administrativeInformation": {
+      "dataEntryBy": {
+        "common:timeStamp": {
+          "value": "str",
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.flow.validator.timeStamp.required",
+              "defaultMessage": "Please input time stamp"
+            }
+          ]
+        },
+        "common:referenceToDataSetFormat": {
+          "value": {
             "@refObjectId": "str",
             "@type": "str",
             "@uri": "str",
@@ -101,26 +301,41 @@
             },
             "@version": "str"
           },
-          "common:approvalOfOverallCompliance": "str"
-        }
-      }
-    },
-    "administrativeInformation": {
-      "dataEntryBy": {
-        "common:timeStamp": "str",
-        "common:referenceToDataSetFormat": {
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.flow.validator.referenceToDataSetFormat.required",
+              "defaultMessage": "Please input data set format(s)"
+            }
+          ]
+        },
+        "common:referenceToPersonOrEntityEnteringTheData": {
           "@refObjectId": "str",
           "@type": "str",
           "@uri": "str",
+          "@version": "str",
           "common:shortDescription": {
             "@xml:lang": "str",
             "#text": "str"
-          },
-          "@version": "str"
+          }
         }
       },
       "publicationAndOwnership": {
-        "common:dataSetVersion": "str",
+        "common:dataSetVersion": {
+          "value": "str",
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.flow.validator.dataSetVersion.required",
+              "defaultMessage": "Please input data set version"
+            },
+            {
+              "pattern": "dataSetVersion",
+              "messageKey": "validator.dataSetVersion.pattern",
+              "defaultMessage": "Version format must be XX.XX.XXX, where X is a digit!"
+            }
+          ]
+        },
         "common:permanentDataSetURI": "str",
         "common:referenceToPrecedingDataSetVersion": {
           "@refObjectId": "str",
@@ -132,33 +347,79 @@
           }
         },
         "common:referenceToOwnershipOfDataSet": {
-          "@refObjectId": "str",
-          "@type": "str",
-          "@uri": "str",
-          "@version": "str",
-          "common:shortDescription": {
-            "@xml:lang": "str",
-            "#text": "str"
-          }
+          "value": {
+            "@refObjectId": "str",
+            "@type": "str",
+            "@uri": "str",
+            "@version": "str",
+            "common:shortDescription": {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          },
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.flow.validator.referenceToOwnershipOfDataSet.required",
+              "defaultMessage": "Please input owner of data set"
+            }
+          ]
         }
       }
     },
     "flowProperties": {
       "flowProperty": {
-        "@dataSetInternalID": "str",
+        "@dataSetInternalID": {
+          "value": "str",
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.flow.validator.dataSetInternalID.required",
+              "defaultMessage": "Please input data set internal ID"
+            }
+          ]
+        },
         "referenceToFlowPropertyDataSet": {
-          "@refObjectId": "str",
-          "@type": "str",
-          "@uri": "str",
-          "common:shortDescription": {
+          "value": {
+            "@refObjectId": "str",
+            "@type": "str",
+            "@uri": "str",
+            "common:shortDescription": {
+              "@xml:lang": "str",
+              "#text": "str"
+            },
+            "@version": "str"
+          },
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.flow.validator.referenceToFlowPropertyDataSet.required",
+              "defaultMessage": "Please input reference flow property"
+            }
+          ]
+        },
+        "meanValue": {
+          "value": "str",
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.flow.validator.meanValue.required",
+              "defaultMessage": "Please input mean value (of flow property)"
+            }
+          ]
+        },
+        "minimumValue": "str",
+        "maximumValue": "str",
+        "uncertaintyDistributionType": "str",
+        "relativeStandardDeviation95In": "str",
+        "dataDerivationTypeStatus": "str",
+        "generalComment": [
+          {
             "@xml:lang": "str",
             "#text": "str"
-          },
-          "@version": "str"
-        },
-        "meanValue": "str"
+          }
+        ]
       }
-    },
-    "@locations": "str"
+    }
   }
 }

@@ -175,6 +175,17 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
           lang={lang}
           data={initData.sourceInformation?.dataSetInformation?.referenceToContact}
         />
+        <br />
+        <SourceSelectDescription
+          title={
+            <FormattedMessage
+              id='pages.source.view.sourceInformation.referenceToLogo'
+              defaultMessage='Logo of organisation or source'
+            />
+          }
+          data={initData.sourceInformation?.dataSetInformation?.referenceToLogo}
+          lang={lang}
+        />
       </>
     ),
     administrativeInformation: (
@@ -259,6 +270,21 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
               />
             }
           ></ContactSelectDescription>
+          <br />
+          <SourceSelectDescription
+            title={
+              <FormattedMessage
+                id='pages.source.view.administrativeInformation.referenceToPrecedingDataSetVersion'
+                defaultMessage='Preceding data set version'
+              />
+            }
+            lang={lang}
+            data={
+              initData.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToPrecedingDataSetVersion'
+              ]
+            }
+          />
           <br />
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item

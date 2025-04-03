@@ -61,7 +61,7 @@ const SourceSelectForm: FC<Props> = ({
       }
       setId(rowId);
       setVersion(result.data?.version);
-      validateRefObjectId(formRef, parentName, name);
+      validateRefObjectId(formRef, name, parentName);
       onData();
     });
   };
@@ -74,34 +74,37 @@ const SourceSelectForm: FC<Props> = ({
   }, [referenceValue]);
 
   const getDefaultValue = () => {
+    let referenceToDataSetFormatId = null;
     if (defaultSourceName === 'ILCD format') {
-      const referenceToDataSetFormatId = 'a97a0155-0234-4b87-b4ce-a45da52f2a40';
-      getSourceDetail(referenceToDataSetFormatId, '').then(async (result2: any) => {
-        const referenceToDataSetFormatData = genSourceFromData(
-          result2.data?.json?.sourceDataSet ?? {},
-        );
-        const referenceToDataSetFormat = {
-          '@refObjectId': referenceToDataSetFormatId,
-          '@type': 'source data set',
-          '@uri': `../sources/${referenceToDataSetFormatId}.xml`,
-          '@version': result2.data?.version,
-          'common:shortDescription':
-            referenceToDataSetFormatData?.sourceInformation?.dataSetInformation?.[
-              'common:shortName'
-            ] ?? [],
-        };
-        const newData = {
-          administrativeInformation: {
-            dataEntryBy: {
-              'common:referenceToDataSetFormat': referenceToDataSetFormat,
-            },
-          },
-        };
-        // formRef.current?.resetFields();
-        const currentData = formRef.current?.getFieldsValue();
-        formRef.current?.setFieldsValue({ ...currentData, ...newData });
-      });
+      referenceToDataSetFormatId = 'a97a0155-0234-4b87-b4ce-a45da52f2a40';
     }
+    if (defaultSourceName === 'ILCD Data Network - compliance (non-Process)') {
+      referenceToDataSetFormatId = '9ba3ac1e-6797-4cc0-afd5-1b8f7bf28c6a';
+    }
+    if (defaultSourceName === 'ILCD Data Network - Entry-level') {
+      referenceToDataSetFormatId = 'd92a1a12-2545-49e2-a585-55c259997756';
+    }
+    if (!referenceToDataSetFormatId) return;
+    getSourceDetail(referenceToDataSetFormatId, '').then(async (result2: any) => {
+      const referenceToDataSetFormatData = genSourceFromData(
+        result2.data?.json?.sourceDataSet ?? {},
+      );
+      const referenceToDataSetFormat = {
+        '@refObjectId': referenceToDataSetFormatId,
+        '@type': 'source data set',
+        '@uri': `../sources/${referenceToDataSetFormatId}.xml`,
+        '@version': result2.data?.version,
+        'common:shortDescription':
+          referenceToDataSetFormatData?.sourceInformation?.dataSetInformation?.[
+            'common:shortName'
+          ] ?? [],
+      };
+      if (parentName) {
+        formRef.current?.setFieldValue([...parentName, ...name], referenceToDataSetFormat);
+      } else {
+        formRef.current?.setFieldValue(name, referenceToDataSetFormat);
+      }
+    });
   };
 
   useEffect(() => {
@@ -189,7 +192,7 @@ const SourceSelectForm: FC<Props> = ({
               onClick={() => {
                 formRef.current?.setFieldValue([...name], {});
                 onData();
-                validateRefObjectId(formRef, parentName, name);
+                validateRefObjectId(formRef, name, parentName);
               }}
             >
               <FormattedMessage id='pages.button.clear' defaultMessage='Clear' />

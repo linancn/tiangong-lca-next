@@ -1,17 +1,12 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
 import LocationTextItemForm from '@/components/LocationTextItem/form';
-import {
-  dataSetVersion,
-  FTMultiLang_r,
-  NullableString,
-  StringMultiLang_r,
-  Yearvalidation_r,
-} from '@/components/Validator/index';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
+import RequiredMark from '@/components/RequiredMark';
+import { getRules } from '@/pages/Utils';
 import { ListPagination } from '@/services/general/data';
 import { getLangText, getUnitData } from '@/services/general/util';
 import { getProcessExchange } from '@/services/processes/api';
@@ -19,22 +14,28 @@ import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData } from '@/services/processes/util';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
 import { Card, Collapse, Divider, Form, Input, Select, Space, theme, Tooltip } from 'antd';
-import { useEffect, useRef, type FC } from 'react';
+import { useEffect, useRef, useState, type FC } from 'react';
 import { FormattedMessage } from 'umi';
+import schema from '../processes_schema.json';
 import ComplianceItemForm from './Compliance/form';
 import ProcessExchangeCreate from './Exchange/create';
 import ProcessExchangeDelete from './Exchange/delete';
 import ProcessExchangeEdit from './Exchange/edit';
 import ProcessExchangeView from './Exchange/view';
 import {
+  completenessElementaryFlowsTypeOptions,
+  completenessElementaryFlowsValueOptions,
+  completenessProductModelOptions,
   copyrightOptions,
   LCIMethodApproachOptions,
   LCIMethodPrincipleOptions,
   licenseTypeOptions,
   processtypeOfDataSetOptions,
+  uncertaintyDistributionTypeOptions,
   workflowAndPublicationStatusOptions,
 } from './optiondata';
 import ReveiwItemForm from './Review/form';
+
 type Props = {
   lang: string;
   activeTabKey: string;
@@ -44,6 +45,7 @@ type Props = {
   onExchangeDataCreate: (data: any) => void;
   onTabChange: (key: string) => void;
   exchangeDataSource: ProcessExchangeTable[];
+  formType?: string;
 };
 
 export const ProcessForm: FC<Props> = ({
@@ -55,9 +57,15 @@ export const ProcessForm: FC<Props> = ({
   onExchangeDataCreate,
   onTabChange,
   exchangeDataSource,
+  formType,
 }) => {
   const actionRefExchangeTableInput = useRef<ActionType>();
   const actionRefExchangeTableOutput = useRef<ActionType>();
+  const [baseNameError, setBaseNameError] = useState(false);
+  const [treatmentStandardsRoutesError, setTreatmentStandardsRoutesError] = useState(false);
+  const [mixAndLocationTypesError, setMixAndLocationTypesError] = useState(false);
+  const [intendedApplicationsError, setIntendedApplicationsError] = useState(false);
+  const [generalCommentError, setGeneralCommentError] = useState(false);
   const { token } = theme.useToken();
   const tabList = [
     {
@@ -268,9 +276,14 @@ export const ProcessForm: FC<Props> = ({
           <Card
             size='small'
             title={
-              <FormattedMessage
-                id='pages.process.view.processInformation.baseName'
-                defaultMessage='Base name'
+              <RequiredMark
+                label={
+                  <FormattedMessage
+                    id='pages.process.view.processInformation.baseName'
+                    defaultMessage='Base name'
+                  />
+                }
+                showError={baseNameError}
               />
             }
           >
@@ -282,16 +295,26 @@ export const ProcessForm: FC<Props> = ({
                   defaultMessage='Base name'
                 />
               }
-              rules={StringMultiLang_r}
+              setRuleErrorState={setBaseNameError}
+              rules={getRules(
+                schema['processDataSet']['processInformation']['dataSetInformation']['name'][
+                  'baseName'
+                ]['rules'],
+              )}
             />
           </Card>
           <br />
           <Card
             size='small'
             title={
-              <FormattedMessage
-                id='pages.process.view.processInformation.treatmentStandardsRoutes'
-                defaultMessage='Treatment, standards, routes'
+              <RequiredMark
+                label={
+                  <FormattedMessage
+                    id='pages.process.view.processInformation.treatmentStandardsRoutes'
+                    defaultMessage='Treatment, standards, routes'
+                  />
+                }
+                showError={treatmentStandardsRoutesError}
               />
             }
           >
@@ -308,16 +331,26 @@ export const ProcessForm: FC<Props> = ({
                   defaultMessage='Treatment, standards, routes'
                 />
               }
-              rules={StringMultiLang_r}
+              setRuleErrorState={setTreatmentStandardsRoutesError}
+              rules={getRules(
+                schema['processDataSet']['processInformation']['dataSetInformation']['name'][
+                  'treatmentStandardsRoutes'
+                ]['rules'],
+              )}
             />
           </Card>
           <br />
           <Card
             size='small'
             title={
-              <FormattedMessage
-                id='pages.process.view.processInformation.mixAndLocationTypes'
-                defaultMessage='Mix and location types'
+              <RequiredMark
+                label={
+                  <FormattedMessage
+                    id='pages.process.view.processInformation.mixAndLocationTypes'
+                    defaultMessage='Mix and location types'
+                  />
+                }
+                showError={mixAndLocationTypesError}
               />
             }
           >
@@ -329,7 +362,12 @@ export const ProcessForm: FC<Props> = ({
                   defaultMessage='Mix and location types'
                 />
               }
-              rules={StringMultiLang_r}
+              setRuleErrorState={setMixAndLocationTypesError}
+              rules={getRules(
+                schema['processDataSet']['processInformation']['dataSetInformation']['name'][
+                  'mixAndLocationTypes'
+                ]['rules'],
+              )}
             />
           </Card>
           <br />
@@ -355,9 +393,39 @@ export const ProcessForm: FC<Props> = ({
                   defaultMessage='Quantitative product or process properties'
                 />
               }
-              rules={StringMultiLang_r}
             />
           </Card>
+        </Card>
+        <br />
+        <Form.Item
+          label={
+            <FormattedMessage
+              id='pages.process.view.processInformation.identifierOfSubDataSet'
+              defaultMessage='Identifier of sub-data set'
+            />
+          }
+          name={['processInformation', 'dataSetInformation', 'identifierOfSubDataSet']}
+        >
+          <Input />
+        </Form.Item>
+        <Card
+          size='small'
+          title={
+            <FormattedMessage
+              id='pages.process.view.processInformation.synonyms'
+              defaultMessage='Synonyms'
+            />
+          }
+        >
+          <LangTextItemForm
+            name={['processInformation', 'dataSetInformation', 'common:synonyms']}
+            label={
+              <FormattedMessage
+                id='pages.process.view.processInformation.synonyms'
+                defaultMessage='Synonyms'
+              />
+            }
+          />
         </Card>
         <br />
         <LevelTextItemForm
@@ -372,14 +440,24 @@ export const ProcessForm: FC<Props> = ({
           lang={lang}
           dataType={'Process'}
           onData={onData}
+          rules={getRules(
+            schema['processDataSet']['processInformation']['dataSetInformation'][
+              'classificationInformation'
+            ]['common:classification']['common:class']['rules'],
+          )}
         />
 
         <Card
           size='small'
           title={
-            <FormattedMessage
-              id='pages.process.view.processInformation.generalComment'
-              defaultMessage='General comment on data set'
+            <RequiredMark
+              label={
+                <FormattedMessage
+                  id='pages.process.view.processInformation.generalComment'
+                  defaultMessage='General comment on data set'
+                />
+              }
+              showError={generalCommentError}
             />
           }
         >
@@ -391,6 +469,12 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='General comment on data set'
               />
             }
+            setRuleErrorState={setGeneralCommentError}
+            rules={getRules(
+              schema['processDataSet']['processInformation']['dataSetInformation'][
+                'common:generalComment'
+              ]['rules'],
+            )}
           />
         </Card>
 
@@ -428,7 +512,25 @@ export const ProcessForm: FC<Props> = ({
               />
             }
             name={['processInformation', 'time', 'common:referenceYear']}
-            rules={Yearvalidation_r}
+            rules={getRules(
+              schema['processDataSet']['processInformation']['time']['common:referenceYear'][
+                'rules'
+              ],
+            )}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.process.view.processInformation.dataSetValidUntil'
+                defaultMessage='Data set valid until:'
+              />
+            }
+            name={['processInformation', 'time', 'dataSetValidUntil']}
+            rules={getRules(
+              schema['processDataSet']['processInformation']['time']['dataSetValidUntil']['rules'],
+            )}
           >
             <Input />
           </Form.Item>
@@ -439,14 +541,13 @@ export const ProcessForm: FC<Props> = ({
             />
           </Divider>
           <LangTextItemForm
-            name={['processInformation', 'time', 'common:timeRepresentativenessDescription']}
+            name={['processInformation', 'time', 'timeRepresentativenessDescription']}
             label={
               <FormattedMessage
                 id='pages.process.view.processInformation.timeRepresentativenessDescription'
                 defaultMessage='Time representativeness description'
               />
             }
-            rules={FTMultiLang_r}
           />
         </Card>
 
@@ -474,7 +575,11 @@ export const ProcessForm: FC<Props> = ({
             ]}
             lang={lang}
             onData={onData}
-            rules={NullableString}
+            rules={getRules(
+              schema['processDataSet']['processInformation']['geography'][
+                'locationOfOperationSupplyOrProduction'
+              ]['@location']['rules'],
+            )}
           />
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
@@ -487,6 +592,53 @@ export const ProcessForm: FC<Props> = ({
               'processInformation',
               'geography',
               'locationOfOperationSupplyOrProduction',
+              'descriptionOfRestrictions',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.process.view.processInformation.descriptionOfRestrictions'
+                defaultMessage='Geographical representativeness description'
+              />
+            }
+          />
+        </Card>
+
+        <Card
+          size='small'
+          title={
+            <FormattedMessage
+              id='pages.process.view.processInformation.subLocationOfOperationSupplyOrProduction'
+              defaultMessage='Sub-location(s)'
+            />
+          }
+        >
+          <LocationTextItemForm
+            label={
+              <FormattedMessage
+                id='pages.process.view.processInformation.location'
+                defaultMessage='Sub-location(s)'
+              />
+            }
+            name={[
+              'processInformation',
+              'geography',
+              'subLocationOfOperationSupplyOrProduction',
+              '@subLocation',
+            ]}
+            lang={lang}
+            onData={onData}
+          />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.process.view.processInformation.descriptionOfRestrictions'
+              defaultMessage='Geographical representativeness description'
+            />
+          </Divider>
+          <LangTextItemForm
+            name={[
+              'processInformation',
+              'geography',
+              'subLocationOfOperationSupplyOrProduction',
               'descriptionOfRestrictions',
             ]}
             label={
@@ -537,7 +689,19 @@ export const ProcessForm: FC<Props> = ({
               />
             }
           />
-
+          <SourceSelectForm
+            name={['processInformation', 'technology', 'referenceToTechnologyPictogramme']}
+            label={
+              <FormattedMessage
+                id='pages.process.view.processInformation.referenceToTechnologyPictogramme'
+                defaultMessage='Pictogramme of technology'
+              />
+            }
+            lang={lang}
+            formRef={formRef}
+            onData={onData}
+          />
+          <br />
           <SourceSelectForm
             name={[
               'processInformation',
@@ -575,6 +739,132 @@ export const ProcessForm: FC<Props> = ({
             }
           />
         </Card>
+        <Card
+          size='small'
+          title={
+            <FormattedMessage
+              id='pages.process.view.processInformation.variableParameter'
+              defaultMessage='Variable / parameter'
+            />
+          }
+        >
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.process.view.processInformation.variableParameter.name'
+                defaultMessage='Name of variable'
+              />
+            }
+            name={['processInformation', 'mathematicalRelations', 'variableParameter', '@name']}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.process.view.processInformation.variableParameter.formula'
+                defaultMessage='Formula'
+              />
+            }
+            name={['processInformation', 'mathematicalRelations', 'variableParameter', 'formula']}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.process.view.processInformation.variableParameter.meanValue'
+                defaultMessage='Mean value'
+              />
+            }
+            name={['processInformation', 'mathematicalRelations', 'variableParameter', 'meanValue']}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.process.view.processInformation.variableParameter.minimumValue'
+                defaultMessage='Minimum value'
+              />
+            }
+            name={[
+              'processInformation',
+              'mathematicalRelations',
+              'variableParameter',
+              'minimumValue',
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.process.view.processInformation.variableParameter.maximumValue'
+                defaultMessage='Maximum value'
+              />
+            }
+            name={[
+              'processInformation',
+              'mathematicalRelations',
+              'variableParameter',
+              'maximumValue',
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.process.view.processInformation.variableParameter.uncertaintyDistributionType'
+                defaultMessage='Uncertainty distribution type'
+              />
+            }
+            name={[
+              'processInformation',
+              'mathematicalRelations',
+              'variableParameter',
+              'uncertaintyDistributionType',
+            ]}
+          >
+            <Select options={uncertaintyDistributionTypeOptions} />
+          </Form.Item>
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.process.view.processInformation.variableParameter.relativeStandardDeviation95In'
+                defaultMessage='Relative StdDev in %'
+              />
+            }
+            name={[
+              'processInformation',
+              'mathematicalRelations',
+              'variableParameter',
+              'relativeStandardDeviation95In',
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          <Card
+            size='small'
+            title={
+              <FormattedMessage
+                id='pages.process.view.processInformation.variableParameter.comment'
+                defaultMessage='Comment, units, defaults'
+              />
+            }
+          >
+            <LangTextItemForm
+              name={['processInformation', 'mathematicalRelations', 'variableParameter', 'comment']}
+              label={
+                <FormattedMessage
+                  id='pages.process.view.processInformation.variableParameter.comment'
+                  defaultMessage='Comment, units, defaults'
+                />
+              }
+            />
+          </Card>
+        </Card>
       </Space>
     ),
     modellingAndValidation: (
@@ -596,6 +886,11 @@ export const ProcessForm: FC<Props> = ({
               />
             }
             name={['modellingAndValidation', 'LCIMethodAndAllocation', 'typeOfDataSet']}
+            rules={getRules(
+              schema['processDataSet']['modellingAndValidation']['LCIMethodAndAllocation'][
+                'typeOfDataSet'
+              ]['rules'],
+            )}
           >
             <Select options={processtypeOfDataSetOptions} />
           </Form.Item>
@@ -628,7 +923,6 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='Deviation from LCI method principle / explanations'
               />
             }
-            rules={FTMultiLang_r}
           />
           <Form.Item
             label={
@@ -659,8 +953,23 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='Deviations from LCI method approaches / explanations'
               />
             }
-            rules={FTMultiLang_r}
           />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.process.view.modellingAndValidation.modellingConstants'
+              defaultMessage='Modelling constants'
+            />
+          </Divider>
+          <LangTextItemForm
+            name={['modellingAndValidation', 'LCIMethodAndAllocation', 'modellingConstants']}
+            label={
+              <FormattedMessage
+                id='pages.process.view.modellingAndValidation.modellingConstants'
+                defaultMessage='Modelling constants'
+              />
+            }
+          />
+
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.deviationsFromModellingConstants'
@@ -679,10 +988,24 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='Deviation from modelling constants / explanations'
               />
             }
-            rules={FTMultiLang_r}
+          />
+          <SourceSelectForm
+            name={[
+              'modellingAndValidation',
+              'LCIMethodAndAllocation',
+              'referenceToLCAMethodDetails',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.process.view.modellingAndValidation.referenceToLCAMethodDetails'
+                defaultMessage='LCA methodology report'
+              />
+            }
+            lang={lang}
+            formRef={formRef}
+            onData={onData}
           />
         </Card>
-
         <Card
           size='small'
           title={
@@ -710,7 +1033,6 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='Data cut-off and completeness principles'
               />
             }
-            rules={FTMultiLang_r}
           />
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
@@ -730,7 +1052,6 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='Deviation from data cut-off and completeness principles / explanations'
               />
             }
-            rules={FTMultiLang_r}
           />
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
@@ -750,7 +1071,6 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='Data selection and combination principles'
               />
             }
-            rules={FTMultiLang_r}
           />
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
@@ -770,7 +1090,6 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='Deviation from data selection and combination principles / explanations'
               />
             }
-            rules={FTMultiLang_r}
           />
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
@@ -790,7 +1109,6 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='Data treatment and extrapolations principles'
               />
             }
-            rules={FTMultiLang_r}
           />
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
@@ -810,9 +1128,24 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='Deviation from data treatment and extrapolations principles / explanations'
               />
             }
-            rules={FTMultiLang_r}
           />
-
+          <SourceSelectForm
+            name={[
+              'modellingAndValidation',
+              'dataSourcesTreatmentAndRepresentativeness',
+              'referenceToDataHandlingPrinciples',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.process.view.modellingAndValidation.referenceToDataHandlingPrinciples'
+                defaultMessage='Data handling report'
+              />
+            }
+            lang={lang}
+            formRef={formRef}
+            onData={onData}
+          />
+          <br />
           <SourceSelectForm
             name={[
               'modellingAndValidation',
@@ -828,6 +1161,100 @@ export const ProcessForm: FC<Props> = ({
             lang={lang}
             formRef={formRef}
             onData={onData}
+          />
+          <br />
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.process.view.modellingAndValidation.percentageSupplyOrProductionCovered'
+                defaultMessage='Percentage supply or production covered'
+              />
+            }
+            name={[
+              'modellingAndValidation',
+              'dataSourcesTreatmentAndRepresentativeness',
+              'percentageSupplyOrProductionCovered',
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.process.view.modellingAndValidation.annualSupplyOrProductionVolume'
+              defaultMessage='Annual supply or production volume'
+            />
+          </Divider>
+          <LangTextItemForm
+            name={[
+              'modellingAndValidation',
+              'dataSourcesTreatmentAndRepresentativeness',
+              'annualSupplyOrProductionVolume',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.process.view.modellingAndValidation.annualSupplyOrProductionVolume'
+                defaultMessage='Annual supply or production volume'
+              />
+            }
+          />
+
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.process.view.modellingAndValidation.samplingProcedure'
+              defaultMessage='Sampling procedure'
+            />
+          </Divider>
+          <LangTextItemForm
+            name={[
+              'modellingAndValidation',
+              'dataSourcesTreatmentAndRepresentativeness',
+              'samplingProcedure',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.process.view.modellingAndValidation.samplingProcedure'
+                defaultMessage='Sampling procedure'
+              />
+            }
+          />
+
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.process.view.modellingAndValidation.dataCollectionPeriod'
+              defaultMessage='Data collection period'
+            />
+          </Divider>
+          <LangTextItemForm
+            name={[
+              'modellingAndValidation',
+              'dataSourcesTreatmentAndRepresentativeness',
+              'dataCollectionPeriod',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.process.view.modellingAndValidation.dataCollectionPeriod'
+                defaultMessage='Data collection period'
+              />
+            }
+          />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.process.view.modellingAndValidation.uncertaintyAdjustments'
+              defaultMessage='Uncertainty adjustments'
+            />
+          </Divider>
+          <LangTextItemForm
+            name={[
+              'modellingAndValidation',
+              'dataSourcesTreatmentAndRepresentativeness',
+              'uncertaintyAdjustments',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.process.view.modellingAndValidation.uncertaintyAdjustments'
+                defaultMessage='Uncertainty adjustments'
+              />
+            }
           />
 
           <Divider orientationMargin='0' orientation='left' plain>
@@ -848,10 +1275,88 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='Use advice for data set'
               />
             }
-            rules={FTMultiLang_r}
           />
         </Card>
-        <Divider orientationMargin='0' orientation='left' plain>
+        <Card
+          size='small'
+          title={
+            <FormattedMessage
+              id='pages.process.view.modellingAndValidation.completeness'
+              defaultMessage='Completeness'
+            />
+          }
+        >
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.process.view.modellingAndValidation.completeness.completenessProductModel'
+                defaultMessage='Completeness product model'
+              />
+            }
+            name={['modellingAndValidation', 'completeness', 'completenessProductModel']}
+          >
+            <Select options={completenessProductModelOptions} />
+          </Form.Item>
+          <Card
+            size='small'
+            title={
+              <FormattedMessage
+                id='pages.process.view.modellingAndValidation.completeness.completenessElementaryFlows'
+                defaultMessage='Completeness elementary flows, per topic'
+              />
+            }
+          >
+            <Form.Item
+              label={
+                <FormattedMessage
+                  id='pages.process.view.modellingAndValidation.completeness.completenessElementaryFlows.type'
+                  defaultMessage='completeness type'
+                />
+              }
+              name={[
+                'modellingAndValidation',
+                'completeness',
+                'completenessElementaryFlows',
+                '@type',
+              ]}
+            >
+              <Select options={completenessElementaryFlowsTypeOptions} />
+            </Form.Item>
+            <Form.Item
+              label={
+                <FormattedMessage
+                  id='pages.process.view.modellingAndValidation.completeness.completenessElementaryFlows.value'
+                  defaultMessage='value'
+                />
+              }
+              name={[
+                'modellingAndValidation',
+                'completeness',
+                'completenessElementaryFlows',
+                '@value',
+              ]}
+            >
+              <Select options={completenessElementaryFlowsValueOptions} />
+            </Form.Item>
+          </Card>
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.process.view.modellingAndValidation.completeness.completenessOtherProblemField'
+              defaultMessage='Completeness other problem field(s)'
+            />
+          </Divider>
+          <LangTextItemForm
+            name={['modellingAndValidation', 'completeness', 'completenessOtherProblemField']}
+            label={
+              <FormattedMessage
+                id='pages.process.view.modellingAndValidation.completeness.completenessOtherProblemField'
+                defaultMessage='Completeness other problem field(s)'
+              />
+            }
+          />
+        </Card>
+
+        {/* <Divider orientationMargin='0' orientation='left' plain>
           <FormattedMessage
             id='pages.process.view.modellingAndValidation.completeness'
             defaultMessage='Completeness'
@@ -865,7 +1370,7 @@ export const ProcessForm: FC<Props> = ({
               defaultMessage='Completeness'
             />
           }
-        />
+        /> */}
       </Space>
     ),
     administrativeInformation: (
@@ -885,13 +1390,42 @@ export const ProcessForm: FC<Props> = ({
           lang={lang}
           formRef={formRef}
           onData={onData}
+          rules={getRules(
+            schema['processDataSet']['administrativeInformation']['commissionerAndGoal'][
+              'common:referenceToCommissioner'
+            ]['rules'],
+          )}
         />
         <Card
           size='small'
           title={
             <FormattedMessage
-              id='pages.process.view.administrativeInformation.intendedApplications'
-              defaultMessage='Intended applications'
+              id='pages.process.view.administrativeInformation.project'
+              defaultMessage='Project'
+            />
+          }
+        >
+          <LangTextItemForm
+            name={['administrativeInformation', 'commissionerAndGoal', 'common:project']}
+            label={
+              <FormattedMessage
+                id='pages.process.view.administrativeInformation.project'
+                defaultMessage='Project'
+              />
+            }
+          />
+        </Card>
+        <Card
+          size='small'
+          title={
+            <RequiredMark
+              label={
+                <FormattedMessage
+                  id='pages.process.view.administrativeInformation.intendedApplications'
+                  defaultMessage='Intended applications'
+                />
+              }
+              showError={intendedApplicationsError}
             />
           }
         >
@@ -907,6 +1441,12 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='Intended applications'
               />
             }
+            setRuleErrorState={setIntendedApplicationsError}
+            rules={getRules(
+              schema['processDataSet']['administrativeInformation']['commissionerAndGoal'][
+                'common:intendedApplications'
+              ]['rules'],
+            )}
           />
         </Card>
 
@@ -944,10 +1484,16 @@ export const ProcessForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
+            rules={getRules(
+              schema['processDataSet']['administrativeInformation']['dataEntryBy'][
+                'common:timeStamp'
+              ]['rules'],
+            )}
           >
             <Input disabled={true} style={{ color: token.colorTextDescription }} />
           </Form.Item>
           <SourceSelectForm
+            defaultSourceName={formType === 'create' ? 'ILCD format' : ''}
             lang={lang}
             formRef={formRef}
             label={
@@ -958,6 +1504,11 @@ export const ProcessForm: FC<Props> = ({
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
             onData={onData}
+            rules={getRules(
+              schema['processDataSet']['administrativeInformation']['dataEntryBy'][
+                'common:referenceToDataSetFormat'
+              ]['rules'],
+            )}
           />
           <br />
           <SourceSelectForm
@@ -991,6 +1542,11 @@ export const ProcessForm: FC<Props> = ({
               'dataEntryBy',
               'common:referenceToPersonOrEntityEnteringTheData',
             ]}
+            rules={getRules(
+              schema['processDataSet']['administrativeInformation']['dataEntryBy'][
+                'common:referenceToPersonOrEntityEnteringTheData'
+              ]['rules'],
+            )}
             onData={onData}
           />
           <br />
@@ -1046,7 +1602,11 @@ export const ProcessForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
-            rules={dataSetVersion}
+            rules={getRules(
+              schema['processDataSet']['administrativeInformation']['publicationAndOwnership'][
+                'common:dataSetVersion'
+              ]['rules'],
+            )}
           >
             <Input />
           </Form.Item>
@@ -1063,6 +1623,11 @@ export const ProcessForm: FC<Props> = ({
               'publicationAndOwnership',
               'common:permanentDataSetURI',
             ]}
+            rules={getRules(
+              schema['processDataSet']['administrativeInformation']['publicationAndOwnership'][
+                'common:permanentDataSetURI'
+              ]['rules'],
+            )}
           >
             <Input />
           </Form.Item>
@@ -1083,6 +1648,56 @@ export const ProcessForm: FC<Props> = ({
             <Select options={workflowAndPublicationStatusOptions} />
           </Form.Item>
 
+          <SourceSelectForm
+            lang={lang}
+            formRef={formRef}
+            label={
+              <FormattedMessage
+                id='pages.process.view.administrativeInformation.referenceToUnchangedRepublication'
+                defaultMessage='Unchanged re-publication of:'
+              />
+            }
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:referenceToUnchangedRepublication',
+            ]}
+            onData={onData}
+          />
+          <br />
+          <ContactSelectForm
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:referenceToRegistrationAuthority',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.process.view.administrativeInformation.referenceToRegistrationAuthority'
+                defaultMessage='Registration authority'
+              />
+            }
+            lang={lang}
+            formRef={formRef}
+            onData={onData}
+          />
+          <br />
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.process.view.administrativeInformation.registrationNumber'
+                defaultMessage='Registration number'
+              />
+            }
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:registrationNumber',
+            ]}
+          >
+            <Input />
+          </Form.Item>
+
           <ContactSelectForm
             name={[
               'administrativeInformation',
@@ -1098,8 +1713,13 @@ export const ProcessForm: FC<Props> = ({
             lang={lang}
             formRef={formRef}
             onData={onData}
+            rules={getRules(
+              schema['processDataSet']['administrativeInformation']['publicationAndOwnership'][
+                'common:referenceToOwnershipOfDataSet'
+              ]['rules'],
+            )}
           />
-
+          <br />
           <Form.Item
             label={
               <FormattedMessage
@@ -1108,10 +1728,31 @@ export const ProcessForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:copyright']}
+            rules={getRules(
+              schema['processDataSet']['administrativeInformation']['publicationAndOwnership'][
+                'common:copyright'
+              ]['rules'],
+            )}
           >
             <Select options={copyrightOptions} />
           </Form.Item>
-
+          <ContactSelectForm
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:referenceToEntitiesWithExclusiveAccess',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.process.view.administrativeInformation.referenceToEntitiesWithExclusiveAccess'
+                defaultMessage='Entities or persons with exclusive access to this data set'
+              />
+            }
+            lang={lang}
+            formRef={formRef}
+            onData={onData}
+          />
+          <br />
           <Form.Item
             label={
               <FormattedMessage
@@ -1120,9 +1761,37 @@ export const ProcessForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:licenseType']}
+            rules={getRules(
+              schema['processDataSet']['administrativeInformation']['publicationAndOwnership'][
+                'common:licenseType'
+              ]['rules'],
+            )}
           >
             <Select options={licenseTypeOptions} />
           </Form.Item>
+          <Card
+            size='small'
+            title={
+              <FormattedMessage
+                id='pages.process.view.administrativeInformation.accessRestrictions'
+                defaultMessage='Access and use restrictions'
+              />
+            }
+          >
+            <LangTextItemForm
+              name={[
+                'administrativeInformation',
+                'publicationAndOwnership',
+                'common:accessRestrictions',
+              ]}
+              label={
+                <FormattedMessage
+                  id='pages.process.view.administrativeInformation.accessRestrictions'
+                  defaultMessage='Access and use restrictions'
+                />
+              }
+            />
+          </Card>
         </Card>
       </Space>
     ),
@@ -1224,7 +1893,7 @@ export const ProcessForm: FC<Props> = ({
     ),
     validation: (
       <ReveiwItemForm
-        name={['validation', 'review']}
+        name={['modellingAndValidation', 'validation', 'review']}
         lang={lang}
         formRef={formRef}
         onData={onData}
@@ -1232,7 +1901,7 @@ export const ProcessForm: FC<Props> = ({
     ),
     complianceDeclarations: (
       <ComplianceItemForm
-        name={['complianceDeclarations', 'compliance']}
+        name={['modellingAndValidation', 'complianceDeclarations', 'compliance']}
         lang={lang}
         formRef={formRef}
         onData={onData}

@@ -1,7 +1,7 @@
 import RequiredSelectFormTitle from '@/components/RequiredSelectFormTitle';
 import { useUpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import UnitGroupFromMini from '@/pages/Unitgroups/Components/select/formMini';
-import { getLocalValueProps } from '@/pages/Utils';
+import { getLocalValueProps, validateRefObjectId } from '@/pages/Utils';
 import { getFlowpropertyDetail } from '@/services/flowproperties/api';
 import { genFlowpropertyFromData } from '@/services/flowproperties/util';
 import { ProFormInstance } from '@ant-design/pro-components';
@@ -50,6 +50,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
       });
       setId(rowId);
       setVersion(result.data?.version);
+      validateRefObjectId(formRef, name);
       onData();
     });
   };
@@ -144,6 +145,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
             <Button
               onClick={() => {
                 formRef.current?.setFieldValue([...name], {});
+                validateRefObjectId(formRef, name);
                 onData();
               }}
             >
