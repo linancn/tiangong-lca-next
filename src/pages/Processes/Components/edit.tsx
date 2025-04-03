@@ -3,6 +3,7 @@ import { getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
 import { getProcessDetail, updateProcess } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
+import { getRefData, updateReviewIdAndStateCode } from '@/services/general/api';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined, ProductOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -22,6 +23,9 @@ import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { ProcessForm } from './form';
+import { updateProcessStateCode } from '@/services/processes/api';
+import { getLifeCycleModelDetail, updateLifeCycleModelStateCode } from '@/services/lifeCycleModels/api';
+import { getUserTeamId } from '@/services/roles/api';
 
 type Props = {
   id: string;
@@ -100,6 +104,117 @@ const ProcessEdit: FC<Props> = ({
 
     setExchangeDataSource(newExchangeDataSource);
     setReferenceValue(referenceValue + 1);
+  };
+
+  const getAllRefObj = (obj: any): any[] => {
+    const result: any[] = [];
+
+    const traverse = (current: any) => {
+      if (!current || typeof current !== 'object') return;
+
+      if ('@refObjectId' in current) {
+        result.push(current);
+      }
+
+      if (Array.isArray(current)) {
+        current.forEach(item => traverse(item));
+      } else if (typeof current === 'object') {
+        Object.values(current).forEach(value => traverse(value));
+      }
+    };
+
+    traverse(obj);
+    return result;
+  };
+
+  const getLifeCycleModelStateCode = async () => {
+    const result: any = await getLifeCycleModelDetail(id, version);
+    if (result.success && result.data) {
+      return result.data?.state_code;
+    }
+  };
+
+  const submitReview = async () => {
+    let lifeCycleModelStateCode = await getLifeCycleModelStateCode();
+    if (lifeCycleModelStateCode >= 20 && lifeCycleModelStateCode < 100) {
+      message.error(
+        intl.formatMessage({
+          id: 'pages.process.review.error',
+          defaultMessage: 'Referenced data is under review, cannot initiate another review'
+        })
+      );
+      return;
+    };
+
+    const teamId = await getUserTeamId();
+
+    const tableDict = {
+      'contact data set': 'contacts',
+      'source data set': 'sources',
+      'unit group data set': 'unitgroups',
+      'flow property data set': 'flowproperties',
+      'flow data set': 'flows',
+    };
+    const getTableName = (type: string) => {
+      return tableDict[type as keyof typeof tableDict] ?? undefined;
+    };
+
+    const refObjs = getAllRefObj(fromData);
+    const unReview: any[] = []
+    const checkReferences = async (refs: any[], checkedIds = new Set<string>()): Promise<boolean> => {
+      for (const ref of refs) {
+        if (checkedIds.has(ref['@refObjectId'])) continue;
+        checkedIds.add(ref['@refObjectId']);
+
+        const refResult = await getRefData(ref['@refObjectId'], ref['@version'], getTableName(ref['@type']), teamId);
+        console.log('refResult', refResult, ref);
+
+        if (refResult.success) {
+          const refData = refResult?.data;
+
+          if (refData?.stateCode >= 20 && refData?.stateCode < 100) {
+            message.error(
+              intl.formatMessage({
+                id: 'pages.process.review.error',
+                defaultMessage: 'Referenced data is under review, cannot initiate another review'
+              })
+            );
+            return false;
+          }
+
+          if (refData?.stateCode < 20) {
+            const json = refData?.json;
+            unReview.push(ref);
+
+            const subRefs = getAllRefObj(json);
+            await checkReferences(subRefs, checkedIds);
+          }
+        }
+      }
+      return true;
+    };
+
+    const checkResult = await checkReferences(refObjs);
+    console.log('checkResult', checkResult);
+
+    if (checkResult) {
+      const { error, data } = await updateProcessStateCode(id, version);
+      let stateCode = 0;
+      if (!error && data && data.length) {
+        stateCode = data[0]?.state_code;
+        console.log('stateCode', stateCode)
+      };
+
+      console.log('updateResult', data)
+      console.log('unReview', unReview)
+
+      if(lifeCycleModelStateCode<20){
+        await updateLifeCycleModelStateCode(id, version, stateCode);
+      }
+      unReview.forEach(async (item: any) => {
+        await updateReviewIdAndStateCode(id, item['@refObjectId'], item['@version'], getTableName(item['@type']), stateCode);
+      });
+    }
   };
 
   const onTabChange = (key: string) => {
@@ -191,7 +306,9 @@ const ProcessEdit: FC<Props> = ({
         footer={
           <Space size={'middle'} className={styles.footer_right}>
             <>
-              <Button onClick={() => {}}>
+              <Button onClick={() => {
+                submitReview();
+              }}>
                 <FormattedMessage id='pages.button.review' defaultMessage='Submit for review' />
               </Button>
               <Button

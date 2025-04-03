@@ -59,6 +59,86 @@ export async function getDataDetail(id: string, version: string, table: string) 
   });
 }
 
+export async function getRefData(id: string, version: string, table: string, teamId: string) {
+  if (!table) {
+    return Promise.resolve({
+      data: null,
+      success: false,
+    });
+  };
+  const session = await supabase.auth.getSession();
+  let query = supabase
+    .from(table)
+    .select('state_code,json')
+    .eq('id', id)
+    .neq('team_id', '00000000-0000-0000-0000-000000000000');
+
+  if (teamId) {
+    query = query.eq('team_id', teamId)
+  } else {
+    query = query.eq('user_id', session?.data?.session?.user?.id);
+  }
+
+
+
+  let result: any = {};
+
+  if (id && id.length === 36) {
+    if (version && version.length === 9) {
+      result = await query.eq('version', version);
+      if (result.data === null || result.data.length === 0) {
+        result = await query.order('version', { ascending: false }).range(0, 0);
+      }
+    } else {
+      result = await query.order('version', { ascending: false }).range(0, 0);
+    }
+    if (result?.data && result.data.length > 0) {
+      const data = result.data[0];
+      return Promise.resolve({
+        data: {
+          stateCode: data?.state_code,
+          json: data?.json,
+        },
+        success: true,
+      });
+    }
+  }
+  return Promise.resolve({
+    data: null,
+    success: false,
+  });
+}
+
+export async function updateReviewIdAndStateCode(processId: string, id: string, version: string, table: string, stateCode: number) {
+  if (!table) return;
+  let result: any = {};
+  if (id && id.length === 36) {
+    if (version && version.length === 9) {
+      result = await supabase
+        .from(table)
+        .update({ review_id: processId, state_code: stateCode })
+        .eq('id', id)
+        .eq('version', version)
+        .select();
+      if (result.data === null || result.data.length === 0) {
+        result = await supabase
+          .from(table)
+          .update({ review_id: processId, state_code: stateCode })
+          .eq('id', id)
+          .order('version', { ascending: false })
+          .range(0, 0);
+      }
+    } else {
+      result = await supabase
+        .from(table)
+        .update({ review_id: processId, state_code: stateCode })
+        .eq('id', id)
+        .order('version', { ascending: false })
+        .range(0, 0);
+    }
+  }
+}
+
 // Get the team id of the user when the user is not an invited user and  is not a rejected user
 export async function getTeamIdByUserId() {
   const session = await supabase.auth.getSession();
@@ -377,7 +457,7 @@ export async function getAllVersions(
                 if (i?.typeOfDataSet === 'Elementary flow') {
                   classificationData =
                     i?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-                      'common:category'
+                    'common:category'
                     ];
                   thisClass = res?.data?.categoryElementaryFlow;
                 } else {
@@ -432,7 +512,7 @@ export async function getAllVersions(
               if (i?.typeOfDataSet === 'Elementary flow') {
                 classificationData =
                   i?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-                    'common:category'
+                  'common:category'
                   ];
               } else {
                 classificationData =

@@ -3,6 +3,23 @@ import { addTeam } from '@/services/teams/api';
 import { getUserIdByEmail, getUsersByIds } from '@/services/users/api';
 import { SortOrder } from 'antd/lib/table/interface';
 
+export async function getUserTeamId() {
+  const session = await supabase.auth.getSession();
+  const { data } = await supabase
+    .from('roles')
+    .select(
+      ` 
+      user_id,
+      team_id,
+      role
+      `,
+    )
+    .eq('user_id', session?.data?.session?.user?.id)
+    .neq('team_id', '00000000-0000-0000-0000-000000000000');
+
+  return data?.[0]?.team_id;
+}
+
 export async function getTeamRoles(
   params: { pageSize: number; current: number },
   sort: Record<string, SortOrder>,
