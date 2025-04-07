@@ -22,7 +22,7 @@ export const Question = () => {
         height: 26,
       }}
       onClick={() => {
-        window.open('https://www.tiangong.earth');
+        window.open('https://docs.tiangong.earth');
       }}
     >
       <QuestionCircleOutlined />
