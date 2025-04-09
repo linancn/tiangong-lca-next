@@ -117,7 +117,7 @@ const ReviewProcessDetail: FC<Props> = ({
       message.success(intl.formatMessage({ id: 'pages.review.ReviewProcessDetail.assigned.success', defaultMessage: 'Review approved successfully' }));
     };
   };
-  
+
   const onReset = () => {
     setSpinning(true);
     getProcessDetail(id, version).then(async (result: any) => {
@@ -170,6 +170,30 @@ const ReviewProcessDetail: FC<Props> = ({
     });
   }, [exchangeDataSource]);
 
+  const temporarySave = async () => {
+    const fieldsValue = formRefEdit.current?.getFieldsValue();
+    const submitData = {
+      modellingAndValidation: {
+        complianceDeclarations: fieldsValue?.modellingAndValidation?.complianceDeclarations,
+        validation: fieldsValue?.modellingAndValidation?.validation
+      },
+    }
+
+    setSpinning(true);
+    const { error } = await updateCommentApi(reviewId, { json: submitData }, tabType);
+    if (!error) {
+      message.success(
+        intl.formatMessage({
+          id: 'pages.review.temporarySaveSuccess',
+          defaultMessage: 'Temporary save successfully',
+        }),
+      );
+      setDrawerVisible(false);
+      actionRef?.current?.reload();
+    }
+    setSpinning(false);
+  }
+
   return (
     <>{
       type === 'edit' ? <Tooltip title={<FormattedMessage id={'pages.review.actions.review'} defaultMessage={'Review'} />}>
@@ -221,7 +245,9 @@ const ReviewProcessDetail: FC<Props> = ({
               <Button onClick={() => setDrawerVisible(false)}>
                 <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
               </Button>
-
+              <Button onClick={temporarySave} >
+                <FormattedMessage id='pages.button.temporarySave' />
+              </Button>
               <Button onClick={() => formRefEdit.current?.submit()} type='primary'>
                 <FormattedMessage id='pages.button.save' defaultMessage='Save' />
               </Button>
@@ -248,7 +274,6 @@ const ReviewProcessDetail: FC<Props> = ({
               onFinish={async () => {
 
                 const fieldsValue = formRefEdit.current?.getFieldsValue();
-                console.log(fieldsValue);
                 const submitData = {
                   modellingAndValidation: {
                     complianceDeclarations: fieldsValue?.modellingAndValidation?.complianceDeclarations,
@@ -257,7 +282,7 @@ const ReviewProcessDetail: FC<Props> = ({
                 }
 
                 setSpinning(true);
-                const { error } = await updateCommentApi(reviewId, { json: submitData }, tabType);
+                const { error } = await updateCommentApi(reviewId, { json: submitData,state_code:1 }, tabType);
                 if (!error) {
                   message.success(
                     intl.formatMessage({

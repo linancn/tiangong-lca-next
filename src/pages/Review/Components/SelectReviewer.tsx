@@ -60,7 +60,7 @@ export default function SelectReviewer({ reviewIds, actionRef }: SelectReviewerP
                 commentData.push({
                     review_id: item?.id,
                     reviewer_id: id,
-                    state_code: item?.state_code,
+                    state_code: 0,
                 });
             });
         });
