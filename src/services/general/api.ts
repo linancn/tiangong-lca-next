@@ -108,7 +108,7 @@ export async function getRefData(id: string, version: string, table: string, tea
 }
 
 export async function updateReviewIdAndStateCode(
-  processId: string,
+  reviewId: string,
   id: string,
   version: string,
   table: string,
@@ -120,14 +120,14 @@ export async function updateReviewIdAndStateCode(
     if (version && version.length === 9) {
       result = await supabase
         .from(table)
-        .update({ review_id: processId, state_code: stateCode })
+        .update({ review_id: reviewId, state_code: stateCode })
         .eq('id', id)
         .eq('version', version)
         .select();
       if (result.data === null || result.data.length === 0) {
         result = await supabase
           .from(table)
-          .update({ review_id: processId, state_code: stateCode })
+          .update({ review_id: reviewId, state_code: stateCode })
           .eq('id', id)
           .order('version', { ascending: false })
           .range(0, 0);
@@ -135,7 +135,7 @@ export async function updateReviewIdAndStateCode(
     } else {
       result = await supabase
         .from(table)
-        .update({ review_id: processId, state_code: stateCode })
+        .update({ review_id: reviewId, state_code: stateCode })
         .eq('id', id)
         .order('version', { ascending: false })
         .range(0, 0);

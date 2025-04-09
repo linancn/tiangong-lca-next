@@ -131,7 +131,7 @@ export async function createTeamMessage(id: string, data: any, rank: number) {
   return error;
 }
 
-export async function updateRoleApi(teamId: string, userId: string, role: 'admin' | 'member') {
+export async function updateRoleApi(teamId: string, userId: string, role: 'admin' | 'member'|'review-admin' | 'review-member') {
   const result = await supabase
     .from('roles')
     .update({ role })
@@ -225,6 +225,7 @@ export async function getSystemMembersApi(params: any, sort: any) {
       .from('roles')
       .select('user_id,role', { count: 'exact' })
       .eq('team_id', '00000000-0000-0000-0000-000000000000')
+      .in('role', ['admin', 'owner', 'member'])
       .order(sortBy, { ascending: orderBy === 'ascend' })
       .range(
         ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
@@ -270,6 +271,110 @@ export async function addSystemMemberApi(email: string) {
         userId,
         '00000000-0000-0000-0000-000000000000',
         'member',
+      );
+      if (addRoleError) {
+        throw addRoleError;
+      }
+      return {
+        success: true,
+      };
+    } else {
+      return {
+        success: false,
+        error: 'notRegistered',
+      };
+    }
+  } catch (error) {
+    console.log(error);
+    return {
+      success: false,
+    };
+  }
+}
+
+// review api
+export async function getReviewUserRoleApi() {
+  try {
+    const session = await supabase.auth.getSession();
+    const { data, error } = await supabase
+      .from('roles')
+      .select('user_id,role')
+      .eq('user_id', session?.data?.session?.user?.id)
+      .eq('team_id', '00000000-0000-0000-0000-000000000000')
+      .in('role', ['review-admin', 'review-member'])
+      .single();
+
+    if (error) {
+      throw error;
+    }
+    return data;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+}
+export async function getReviewMembersApi(params: any, sort: any,role?:string) {
+  try {
+    const sortBy = Object.keys(sort)[0] ?? 'created_at';
+    const orderBy = sort[sortBy] ?? 'descend';
+
+    let res: any[] = [];
+    
+    let query =supabase
+    .from('roles')
+    .select('user_id,role', { count: 'exact' })
+    .eq('team_id', '00000000-0000-0000-0000-000000000000')
+    .in('role', ['review-admin', 'review-member'])
+    .order(sortBy, { ascending: orderBy === 'ascend' })
+    .range(
+      ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
+      (params.current ?? 1) * (params.pageSize ?? 10) - 1,
+    );
+
+    if(role){
+      query = query.eq('role', role);
+    }
+
+    const { data, error, count } = await query;
+
+    if (!error) {
+      const users = await getUsersByIds(data.map((item) => item.user_id));
+      if (users) {
+        res = data.map((roleItem: any) => {
+          const user = users.find((user) => user.id === roleItem.user_id);
+          return {
+            user_id: roleItem.user_id,
+            role: roleItem.role,
+            email: user?.email,
+            display_name: user?.display_name,
+            team_id: '00000000-0000-0000-0000-000000000000',
+          };
+        });
+      }
+    }
+
+    return {
+      data: res || [],
+      success: true,
+      total: count || 0,
+    };
+  } catch (error) {
+    return {
+      data: [],
+      total: 0,
+      success: true,
+    };
+  }
+}
+
+export async function addReviewMemberApi(email: string) {
+  try {
+    const userId = await getUserIdByEmail(email);
+    if (userId) {
+      const addRoleError = await addRoleApi(
+        userId,
+        '00000000-0000-0000-0000-000000000000',
+        'review-member',
       );
       if (addRoleError) {
         throw addRoleError;
