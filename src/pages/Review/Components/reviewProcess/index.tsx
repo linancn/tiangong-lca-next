@@ -51,6 +51,7 @@ const ReviewProcessDetail: FC<Props> = ({
   const [spinning, setSpinning] = useState(false);
   const intl = useIntl();
   const [referenceValue, setReferenceValue] = useState(0);
+  const [approveReviewDisabled, setApproveReviewDisabled] = useState(false);
 
   const handletFromData = () => {
     if (fromData?.id) {
@@ -115,6 +116,8 @@ const ReviewProcessDetail: FC<Props> = ({
 
     if (!error && !error2) {
       message.success(intl.formatMessage({ id: 'pages.review.ReviewProcessDetail.assigned.success', defaultMessage: 'Review approved successfully' }));
+      setDrawerVisible(false);
+      actionRef?.current?.reload();
     };
   };
 
@@ -123,21 +126,29 @@ const ReviewProcessDetail: FC<Props> = ({
     getProcessDetail(id, version).then(async (result: any) => {
       const { data, error } = await getCommentApi(reviewId, tabType);
       if (!error && data && data.length) {
-        const allReviews = data.map((item: any) => {
-          return item?.json?.modellingAndValidation.validation.review[0]
+        const allReviews: any[] = []
+        data.forEach((item: any) => {
+          if (item?.json?.modellingAndValidation.validation.review[0]) {
+            allReviews.push(item?.json?.modellingAndValidation.validation.review[0])
+          }
         })
-        const allCompliance = data.map((item: any) => {
-          return item?.json?.modellingAndValidation.complianceDeclarations.compliance[0]
+        const allCompliance: any[] = []
+        data.forEach((item: any) => {
+          if (item?.json?.modellingAndValidation.complianceDeclarations.compliance[0]) {
+            allCompliance.push(item?.json?.modellingAndValidation.complianceDeclarations.compliance[0])
+          }
         })
-
+        setApproveReviewDisabled(allReviews.length === 0 || allCompliance.length === 0)
         if (result?.data?.json?.processDataSet) {
           result.data.json.processDataSet.modellingAndValidation = {
             ...result.data.json.processDataSet.modellingAndValidation,
             complianceDeclarations: {
-              compliance: allCompliance ?? [{}]
+              compliance: type === 'edit' ? [{}] : allCompliance
             },
             validation: {
-              review: allReviews ?? [{}]
+              review: type === 'edit' ? [{
+                'common:scope':[{}]
+              }] : allReviews
             }
           }
         }
@@ -252,7 +263,7 @@ const ReviewProcessDetail: FC<Props> = ({
                 <FormattedMessage id='pages.button.save' defaultMessage='Save' />
               </Button>
             </Space> : tabType === 'assigned' ? <Space className={styles.footer_right}>
-              <Button type='primary' onClick={approveReview}>
+              <Button disabled={approveReviewDisabled} type='primary' onClick={approveReview}>
                 <FormattedMessage id='pages.review.ReviewProcessDetail.assigned.save' defaultMessage='Approve Review' />
               </Button>
             </Space> : <></>
@@ -282,7 +293,7 @@ const ReviewProcessDetail: FC<Props> = ({
                 }
 
                 setSpinning(true);
-                const { error } = await updateCommentApi(reviewId, { json: submitData,state_code:1 }, tabType);
+                const { error } = await updateCommentApi(reviewId, { json: submitData, state_code: 1 }, tabType);
                 if (!error) {
                   message.success(
                     intl.formatMessage({
