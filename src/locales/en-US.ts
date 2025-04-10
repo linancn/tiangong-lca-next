@@ -21,7 +21,7 @@ import pwa from './en-US/pwa';
 import settingDrawer from './en-US/settingDrawer';
 import settings from './en-US/settings';
 import validator from './en-US/validator';
-
+import pages_review from './en-US/pages_review';
 export default {
   'navBar.lang': 'Languages',
   'layout.user.link.help': 'Help',
@@ -53,4 +53,5 @@ export default {
   ...component_contributeData,
   ...component_allVersions,
   ...pages_manageSystem,
+  ...pages_review,
 };

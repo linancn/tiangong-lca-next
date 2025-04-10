@@ -21,6 +21,7 @@ import pwa from './zh-CN/pwa';
 import settingDrawer from './zh-CN/settingDrawer';
 import settings from './zh-CN/settings';
 import validator from './zh-CN/validator';
+import pages_review from './zh-CN/pages_review';
 
 export default {
   'navBar.lang': '语言',
@@ -53,4 +54,5 @@ export default {
   ...component_contributeData,
   ...component_allVersions,
   ...pages_manageSystem,
+  ...pages_review,
 };

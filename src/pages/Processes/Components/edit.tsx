@@ -28,7 +28,8 @@ import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { ProcessForm } from './form';
-
+import { v4 } from 'uuid';
+import { addReviewsApi } from '@/services/reviews/api';
 type Props = {
   id: string;
   version: string;
@@ -137,7 +138,9 @@ const ProcessEdit: FC<Props> = ({
   };
 
   const submitReview = async () => {
+    setSpinning(true);
     let lifeCycleModelStateCode = await getLifeCycleModelStateCode();
+    console.log('lifeCycleModelStateCode', lifeCycleModelStateCode);
     if (lifeCycleModelStateCode >= 20 && lifeCycleModelStateCode < 100) {
       message.error(
         intl.formatMessage({
@@ -177,7 +180,7 @@ const ProcessEdit: FC<Props> = ({
           getTableName(ref['@type']),
           teamId,
         );
-        // console.log('refResult', refResult, ref);
+        console.log('refResult', refResult, ref);
 
         if (refResult.success) {
           const refData = refResult?.data;
@@ -208,29 +211,37 @@ const ProcessEdit: FC<Props> = ({
     // console.log('checkResult', checkResult);
 
     if (checkResult) {
-      const { error, data } = await updateProcessStateCode(id, version);
+      const reviewId = v4();
+      const result = await addReviewsApi(reviewId, id, version);
+      if (result?.error) return;
+
+      const { error, data } = await updateProcessStateCode(id, version, reviewId);
+
       let stateCode = 0;
       if (!error && data && data.length) {
         stateCode = data[0]?.state_code;
         // console.log('stateCode', stateCode)
-      }
 
-      // console.log('updateResult', data)
-      // console.log('unReview', unReview)
+        // console.log('updateResult', data)
+        // console.log('unReview', unReview)
 
-      if (lifeCycleModelStateCode < 20) {
-        await updateLifeCycleModelStateCode(id, version, stateCode);
+        if (lifeCycleModelStateCode < 20) {
+          await updateLifeCycleModelStateCode(id, version, stateCode);
+        };
+
+        unReview.forEach(async (item: any) => {
+          await updateReviewIdAndStateCode(
+            reviewId,
+            item['@refObjectId'],
+            item['@version'],
+            getTableName(item['@type']),
+            stateCode,
+          );
+        });
+        setDrawerVisible(false);
       }
-      unReview.forEach(async (item: any) => {
-        await updateReviewIdAndStateCode(
-          id,
-          item['@refObjectId'],
-          item['@version'],
-          getTableName(item['@type']),
-          stateCode,
-        );
-      });
     }
+    setSpinning(false);
   };
 
   const onTabChange = (key: string) => {

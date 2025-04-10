@@ -32,7 +32,7 @@ export async function updateProcess(id: string, version: string, data: any) {
   return updateResult;
 }
 
-export async function updateProcessStateCode(id: string, version: string) {
+export async function updateProcessStateCode(id: string, version: string, reviewId: string) {
   const { data, error } = await supabase
     .from('processes')
     .select('state_code')
@@ -47,7 +47,7 @@ export async function updateProcessStateCode(id: string, version: string) {
   if (stateCode) {
     const updateResult = await supabase
       .from('processes')
-      .update({ state_code: stateCode })
+      .update({ state_code: stateCode, review_id: reviewId })
       .eq('id', id)
       .eq('version', version)
       .select('state_code');

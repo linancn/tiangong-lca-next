@@ -50,6 +50,7 @@ export default {
   'menu.account.logout': 'Logout',
   'menu.account.team': 'My Team',
   'menu.manageSystem': 'System Management',
+  'menu.account.review': 'Review Management',
   'menu.manageWelcomeTeams': 'Home Team Management',
   'menu.editor': 'Graphic Editor',
   'menu.editor.flow': 'Flow Editor',

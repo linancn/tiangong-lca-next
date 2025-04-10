@@ -25,6 +25,7 @@ export default {
   'pages.button.delete.success': 'Selected record has been deleted.',
   'pages.button.contribute': 'Contribute to team',
   'pages.button.cancel': 'Cancel',
+  'pages.button.temporarySave': 'Temporary Save',
   'pages.button.submit': 'Submit',
   'pages.button.save': 'Save',
   'pages.button.review': 'Sumit for review',
