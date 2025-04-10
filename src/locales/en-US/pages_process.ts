@@ -361,6 +361,8 @@ export default {
 
   'pages.flow.process.administrativeInformation.referenceToDataSetFormat': 'Data set format(s)',
 
+  'pages.process.review.error': 'Referenced data is under review, cannot initiate another review',
+
   'pages.process.validator.UUID.required': 'Please input UUID',
   'pages.process.validator.baseName.required': 'Please input base name',
   'pages.process.validator.treatmentStandardsRoutes.required': 'Please input treatment,standards,routes',

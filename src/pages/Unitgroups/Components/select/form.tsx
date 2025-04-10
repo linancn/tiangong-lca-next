@@ -71,8 +71,8 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
         formRef.current?.getFieldValue([...name, '@version']),
       ).then((res: any) => {
         formRef.current?.setFieldValue([...name, 'refUnit'], {
-          name: res.data?.refUnitName ?? '',
-          generalComment: res.data?.refUnitGeneralComment ?? [],
+          name: res?.data?.refUnitName ?? '',
+          generalComment: res?.data?.refUnitGeneralComment ?? [],
         });
       });
     }

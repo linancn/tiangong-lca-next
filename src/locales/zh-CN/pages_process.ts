@@ -358,6 +358,8 @@ export default {
 
   'pages.flow.process.administrativeInformation.referenceToDataSetFormat': '数据集格式',
 
+  'pages.process.review.error': '相关引用数据处于审核阶段，不能再发起审核',
+
   'pages.process.validator.UUID.required': '请输入UUID',
   'pages.process.validator.baseName.required': '请输入基础名称',
   'pages.process.validator.treatmentStandardsRoutes.required': '请输入处理，标准，路线',

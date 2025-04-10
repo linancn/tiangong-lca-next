@@ -1110,28 +1110,28 @@ export function genProcessFromData(data: any) {
         }),
       },
       complianceDeclarations: {
-        compliance: jsonToList(data?.modellingAndValidation?.complianceDeclarations?.compliance).map(
-          (compliance: any) => {
-            return {
-              'common:referenceToComplianceSystem': {
-                '@refObjectId': compliance?.['common:referenceToComplianceSystem']?.['@refObjectId'],
-                '@type': compliance?.['common:referenceToComplianceSystem']?.['@type'],
-                '@uri': compliance?.['common:referenceToComplianceSystem']?.['@uri'],
-                '@version': compliance?.['common:referenceToComplianceSystem']?.['@version'],
-                'common:shortDescription': getLangList(
-                  compliance?.['common:referenceToComplianceSystem']?.['common:shortDescription'],
-                ),
-              },
-              'common:approvalOfOverallCompliance':
-                compliance?.['common:approvalOfOverallCompliance'],
-              'common:nomenclatureCompliance': compliance?.['common:nomenclatureCompliance'],
-              'common:methodologicalCompliance': compliance?.['common:methodologicalCompliance'],
-              'common:reviewCompliance': compliance?.['common:reviewCompliance'],
-              'common:documentationCompliance': compliance?.['common:documentationCompliance'],
-              'common:qualityCompliance': compliance?.['common:qualityCompliance'],
-            };
-          },
-        ),
+        compliance: jsonToList(
+          data?.modellingAndValidation?.complianceDeclarations?.compliance,
+        ).map((compliance: any) => {
+          return {
+            'common:referenceToComplianceSystem': {
+              '@refObjectId': compliance?.['common:referenceToComplianceSystem']?.['@refObjectId'],
+              '@type': compliance?.['common:referenceToComplianceSystem']?.['@type'],
+              '@uri': compliance?.['common:referenceToComplianceSystem']?.['@uri'],
+              '@version': compliance?.['common:referenceToComplianceSystem']?.['@version'],
+              'common:shortDescription': getLangList(
+                compliance?.['common:referenceToComplianceSystem']?.['common:shortDescription'],
+              ),
+            },
+            'common:approvalOfOverallCompliance':
+              compliance?.['common:approvalOfOverallCompliance'],
+            'common:nomenclatureCompliance': compliance?.['common:nomenclatureCompliance'],
+            'common:methodologicalCompliance': compliance?.['common:methodologicalCompliance'],
+            'common:reviewCompliance': compliance?.['common:reviewCompliance'],
+            'common:documentationCompliance': compliance?.['common:documentationCompliance'],
+            'common:qualityCompliance': compliance?.['common:qualityCompliance'],
+          };
+        }),
       },
     },
     administrativeInformation: {
