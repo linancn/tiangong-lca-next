@@ -131,7 +131,11 @@ export async function createTeamMessage(id: string, data: any, rank: number) {
   return error;
 }
 
-export async function updateRoleApi(teamId: string, userId: string, role: 'admin' | 'member'|'review-admin' | 'review-member') {
+export async function updateRoleApi(
+  teamId: string,
+  userId: string,
+  role: 'admin' | 'member' | 'review-admin' | 'review-member',
+) {
   const result = await supabase
     .from('roles')
     .update({ role })
@@ -313,25 +317,25 @@ export async function getReviewUserRoleApi() {
     return null;
   }
 }
-export async function getReviewMembersApi(params: any, sort: any,role?:string) {
+export async function getReviewMembersApi(params: any, sort: any, role?: string) {
   try {
     const sortBy = Object.keys(sort)[0] ?? 'created_at';
     const orderBy = sort[sortBy] ?? 'descend';
 
     let res: any[] = [];
-    
-    let query =supabase
-    .from('roles')
-    .select('user_id,role', { count: 'exact' })
-    .eq('team_id', '00000000-0000-0000-0000-000000000000')
-    .in('role', ['review-admin', 'review-member'])
-    .order(sortBy, { ascending: orderBy === 'ascend' })
-    .range(
-      ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-      (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-    );
 
-    if(role){
+    let query = supabase
+      .from('roles')
+      .select('user_id,role', { count: 'exact' })
+      .eq('team_id', '00000000-0000-0000-0000-000000000000')
+      .in('role', ['review-admin', 'review-member'])
+      .order(sortBy, { ascending: orderBy === 'ascend' })
+      .range(
+        ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
+        (params.current ?? 1) * (params.pageSize ?? 10) - 1,
+      );
+
+    if (role) {
       query = query.eq('role', role);
     }
 

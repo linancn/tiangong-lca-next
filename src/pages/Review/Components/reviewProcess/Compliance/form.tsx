@@ -1,3 +1,4 @@
+import schema from '@/pages/Processes/processes_schema.json';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { getRules } from '@/pages/Utils';
 import { CloseOutlined } from '@ant-design/icons';
@@ -5,7 +6,6 @@ import { ProFormInstance } from '@ant-design/pro-components';
 import { Card, Col, Form, Row, Select, Space } from 'antd';
 import { FC } from 'react';
 import { FormattedMessage } from 'umi';
-import schema from '@/pages/Processes/processes_schema.json';
 import {
   approvalOfOverallComplianceOptions,
   documentationComplianceOptions,
@@ -68,7 +68,7 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                         name={[subField.name, 'common:approvalOfOverallCompliance']}
                         rules={getRules(
                           schema['processDataSet']['modellingAndValidation'][
-                          'complianceDeclarations'
+                            'complianceDeclarations'
                           ]['compliance']['common:approvalOfOverallCompliance']['rules'],
                         )}
                       >
@@ -86,7 +86,7 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                         name={[subField.name, 'common:nomenclatureCompliance']}
                         rules={getRules(
                           schema['processDataSet']['modellingAndValidation'][
-                          'complianceDeclarations'
+                            'complianceDeclarations'
                           ]['compliance']['common:nomenclatureCompliance']['rules'],
                         )}
                       >
@@ -104,7 +104,7 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                         name={[subField.name, 'common:methodologicalCompliance']}
                         rules={getRules(
                           schema['processDataSet']['modellingAndValidation'][
-                          'complianceDeclarations'
+                            'complianceDeclarations'
                           ]['compliance']['common:methodologicalCompliance']['rules'],
                         )}
                       >
@@ -122,7 +122,7 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                         name={[subField.name, 'common:reviewCompliance']}
                         rules={getRules(
                           schema['processDataSet']['modellingAndValidation'][
-                          'complianceDeclarations'
+                            'complianceDeclarations'
                           ]['compliance']['common:reviewCompliance']['rules'],
                         )}
                       >
@@ -140,7 +140,7 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                         name={[subField.name, 'common:documentationCompliance']}
                         rules={getRules(
                           schema['processDataSet']['modellingAndValidation'][
-                          'complianceDeclarations'
+                            'complianceDeclarations'
                           ]['compliance']['common:documentationCompliance']['rules'],
                         )}
                       >
@@ -158,7 +158,7 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                         name={[subField.name, 'common:qualityCompliance']}
                         rules={getRules(
                           schema['processDataSet']['modellingAndValidation'][
-                          'complianceDeclarations'
+                            'complianceDeclarations'
                           ]['compliance']['common:qualityCompliance']['rules'],
                         )}
                       >
@@ -179,7 +179,7 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                       onData={onData}
                       rules={getRules(
                         schema['processDataSet']['modellingAndValidation'][
-                        'complianceDeclarations'
+                          'complianceDeclarations'
                         ]['compliance']['common:referenceToComplianceSystem']['rules'],
                       )}
                     />

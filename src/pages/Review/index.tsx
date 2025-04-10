@@ -49,7 +49,11 @@ const Review = () => {
   };
 
   const renderReviewMember = () => {
-    const updateRole = async (teamId: string, userId: string, role: 'review-admin' | 'review-member') => {
+    const updateRole = async (
+      teamId: string,
+      userId: string,
+      role: 'review-admin' | 'review-member',
+    ) => {
       try {
         const { error } = await updateRoleApi(teamId, userId, role);
         if (error) {
@@ -80,7 +84,9 @@ const Review = () => {
         key: 'email',
       },
       {
-        title: <FormattedMessage id='pages.review.members.memberName' defaultMessage='Member Name' />,
+        title: (
+          <FormattedMessage id='pages.review.members.memberName' defaultMessage='Member Name' />
+        ),
         dataIndex: 'display_name',
         key: 'display_name',
       },
@@ -107,7 +113,9 @@ const Review = () => {
           <Flex gap='small'>
             {
               <Tooltip
-                title={<FormattedMessage id='pages.review.members.delete' defaultMessage='Delete' />}
+                title={
+                  <FormattedMessage id='pages.review.members.delete' defaultMessage='Delete' />
+                }
               >
                 <Button
                   disabled={!(userData?.role === 'review-admin' && record.role === 'review-member')}
@@ -124,7 +132,9 @@ const Review = () => {
                         style: { borderColor: token.colorPrimary, color: token.colorPrimary },
                       },
                       title: intl.formatMessage({ id: 'pages.review.members.deleteConfirm.title' }),
-                      content: intl.formatMessage({ id: 'pages.review.members.deleteConfirm.content' }),
+                      content: intl.formatMessage({
+                        id: 'pages.review.members.deleteConfirm.content',
+                      }),
                       onOk: async () => {
                         try {
                           const { error } = await delRoleApi(record.team_id, record.user_id);
@@ -155,7 +165,9 @@ const Review = () => {
             }
             {
               <Tooltip
-                title={<FormattedMessage id='pages.review.members.setAdmin' defaultMessage='Set Admin' />}
+                title={
+                  <FormattedMessage id='pages.review.members.setAdmin' defaultMessage='Set Admin' />
+                }
               >
                 <Button
                   disabled={!(record.role === 'review-member' && userData?.role === 'review-admin')}
@@ -169,7 +181,10 @@ const Review = () => {
             {
               <Tooltip
                 title={
-                  <FormattedMessage id='pages.review.members.setMember' defaultMessage='Set Member' />
+                  <FormattedMessage
+                    id='pages.review.members.setMember'
+                    defaultMessage='Set Member'
+                  />
                 }
               >
                 <Button
@@ -201,10 +216,7 @@ const Review = () => {
           headerTitle={
             <>
               <FormattedMessage id='menu.review' defaultMessage='Review Management' /> /{' '}
-              <FormattedMessage
-                id='pages.review.tabs.members'
-                defaultMessage='Member Management'
-              />
+              <FormattedMessage id='pages.review.tabs.members' defaultMessage='Member Management' />
             </>
           }
           toolBarRender={() => {
@@ -267,17 +279,27 @@ const Review = () => {
     {
       key: 'unassigned',
       label: <FormattedMessage id='pages.review.tabs.unassigned' />,
-      children: <AssignmentReview actionRef={unassignedTableRef} tableType='unassigned' userData={userData} />,
+      children: (
+        <AssignmentReview
+          actionRef={unassignedTableRef}
+          tableType='unassigned'
+          userData={userData}
+        />
+      ),
     },
     {
       key: 'assigned',
       label: <FormattedMessage id='pages.review.tabs.assigned' />,
-      children: <AssignmentReview actionRef={assignedTableRef} tableType='assigned' userData={userData} />,
+      children: (
+        <AssignmentReview actionRef={assignedTableRef} tableType='assigned' userData={userData} />
+      ),
     },
     {
       key: 'review',
       label: <FormattedMessage id='pages.review.tabs.review' />,
-      children: <AssignmentReview actionRef={reviewTableRef} tableType='review' userData={userData} />,
+      children: (
+        <AssignmentReview actionRef={reviewTableRef} tableType='review' userData={userData} />
+      ),
     },
     {
       key: 'members',

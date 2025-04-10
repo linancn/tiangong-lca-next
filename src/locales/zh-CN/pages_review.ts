@@ -1,12 +1,11 @@
 export default {
   'pages.review.title': '审核管理',
-  
+
   'pages.review.tabs.unassigned': '待分配数据',
   'pages.review.tabs.assigned': '已分配数据',
   'pages.review.tabs.review': '审核数据',
   'pages.review.tabs.members': '成员管理',
 
-  
   'pages.review.members.email': '邮箱',
   'pages.review.members.memberName': '成员名称',
   'pages.review.members.role': '角色',
@@ -25,12 +24,10 @@ export default {
   'pages.review.members.addError': '添加成员失败',
   'pages.review.members.addSuccess': '添加成员成功',
   'pages.review.members.addError.notRegistered': '用户未注册',
- 
 
   'pages.review.drawer.title': '选择审核人员',
   'pages.review.saveSuccess': '保存成功',
   'pages.review.temporarySaveSuccess': '暂存成功',
-
 
   'pages.review.selectReviewer.button': '分配审核人',
 
@@ -44,6 +41,4 @@ export default {
 
   'pages.review.ReviewProcessDetail.assigned.save': '审核通过',
   'pages.review.ReviewProcessDetail.assigned.success': '审核通过成功',
-
 };
-

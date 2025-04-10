@@ -1,4 +1,4 @@
-import { Descriptions,  Row, Col } from 'antd';
+import { Col, Descriptions, Row } from 'antd';
 import { FC } from 'react';
 import { FormattedMessage } from 'umi';
 import {
@@ -12,25 +12,24 @@ type Props = {
 
 const DataQualityIndicatorItemView: FC<Props> = ({ data }) => {
   const getIndicatorName = (nameValue: string) => {
-    const option = dataQualityIndicatorNameOptions.find(item => item.value === nameValue);
+    const option = dataQualityIndicatorNameOptions.find((item) => item.value === nameValue);
     return option ? option.label : nameValue;
   };
 
   const getIndicatorValue = (valueValue: string) => {
-    const option = dataQualityIndicatorValueOptions.find(item => item.value === valueValue);
+    const option = dataQualityIndicatorValueOptions.find((item) => item.value === valueValue);
     return option ? option.label : valueValue;
   };
 
-
   return (
     <>
-      {(data||[]).map((item, index) => (
+      {(data || []).map((item, index) => (
         <Row key={index}>
           <Col flex='50' style={{ marginRight: '10px' }}>
             <Descriptions
               key={index}
               bordered
-              size="small"
+              size='small'
               column={1}
               style={{ marginBottom: index < data.length - 1 ? '16px' : 0 }}
             >
@@ -51,7 +50,7 @@ const DataQualityIndicatorItemView: FC<Props> = ({ data }) => {
             <Descriptions
               key={index}
               bordered
-              size="small"
+              size='small'
               column={1}
               style={{ marginBottom: index < data.length - 1 ? '16px' : 0 }}
             >

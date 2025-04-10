@@ -1,10 +1,10 @@
 import RequiredMark from '@/components/RequiredMark';
+import schema from '@/pages/Processes/processes_schema.json';
 import { getRules } from '@/pages/Utils';
 import { CloseOutlined } from '@ant-design/icons';
 import { Button, Col, Form, Row, Select } from 'antd';
 import { FC } from 'react';
 import { FormattedMessage } from 'umi';
-import schema from '@/pages/Processes/processes_schema.json';
 import { methodNameOptions, scopeNameOptions } from '../../optiondata';
 type Props = {
   name: any;
@@ -12,7 +12,7 @@ type Props = {
 
 const ScopeItemForm: FC<Props> = ({ name }) => {
   return (
-    <Form.Item>   
+    <Form.Item>
       <Form.List name={[...name]}>
         {(subFields, subOpt) => (
           <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>

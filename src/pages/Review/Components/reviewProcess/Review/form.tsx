@@ -1,14 +1,14 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import RequiredMark from '@/components/RequiredMark';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
+import schema from '@/pages/Processes/processes_schema.json';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { getRules } from '@/pages/Utils';
 import { CloseOutlined } from '@ant-design/icons';
 import { ProFormInstance } from '@ant-design/pro-components';
-import {  Card, Col, Divider, Form, Row, Select, Space } from 'antd';
+import { Card, Col, Divider, Form, Row, Select, Space } from 'antd';
 import { FC, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import schema from '@/pages/Processes/processes_schema.json';
 import { reviewTypeOptions } from '../optiondata';
 import DataQualityIndicatorItemForm from './DataQualityIndicator/form';
 import ScopeItemForm from './Scope/form';
@@ -25,7 +25,7 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
   const [reviewDetailsError, setReviewDetailsError] = useState(false);
   return (
     <Form.Item>
-      <Form.List  name={[...name]}>
+      <Form.List name={[...name]}>
         {(subFields, subOpt) => (
           <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
             {subFields.map((subField) => (

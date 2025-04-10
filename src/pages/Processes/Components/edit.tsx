@@ -8,6 +8,7 @@ import {
 } from '@/services/lifeCycleModels/api';
 import { getProcessDetail, updateProcess, updateProcessStateCode } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
+import { addReviewsApi } from '@/services/reviews/api';
 import { getUserTeamId } from '@/services/roles/api';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined, ProductOutlined } from '@ant-design/icons';
@@ -27,9 +28,8 @@ import {
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
-import { ProcessForm } from './form';
 import { v4 } from 'uuid';
-import { addReviewsApi } from '@/services/reviews/api';
+import { ProcessForm } from './form';
 type Props = {
   id: string;
   version: string;
@@ -140,7 +140,7 @@ const ProcessEdit: FC<Props> = ({
   const submitReview = async () => {
     setSpinning(true);
     let lifeCycleModelStateCode = await getLifeCycleModelStateCode();
-    console.log('lifeCycleModelStateCode', lifeCycleModelStateCode);
+    // console.log('lifeCycleModelStateCode', lifeCycleModelStateCode);
     if (lifeCycleModelStateCode >= 20 && lifeCycleModelStateCode < 100) {
       message.error(
         intl.formatMessage({
@@ -180,7 +180,7 @@ const ProcessEdit: FC<Props> = ({
           getTableName(ref['@type']),
           teamId,
         );
-        console.log('refResult', refResult, ref);
+        // console.log('refResult', refResult, ref);
 
         if (refResult.success) {
           const refData = refResult?.data;
@@ -227,7 +227,7 @@ const ProcessEdit: FC<Props> = ({
 
         if (lifeCycleModelStateCode < 20) {
           await updateLifeCycleModelStateCode(id, version, stateCode);
-        };
+        }
 
         unReview.forEach(async (item: any) => {
           await updateReviewIdAndStateCode(

@@ -2,27 +2,18 @@ import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import { getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
 
+import { getCommentApi, updateCommentApi } from '@/services/comments/api';
 import { getProcessDetail } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
+import { updateReviewApi } from '@/services/reviews/api';
 import styles from '@/style/custom.less';
-import { CloseOutlined, AuditOutlined, ProfileOutlined } from '@ant-design/icons';
+import { AuditOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
-import {
-  Button,
-  Drawer,
-  Form,
-  Input,
-  Space,
-  Spin,
-  Tooltip,
-  message,
-} from 'antd';
+import { Button, Drawer, Form, Input, Space, Spin, Tooltip, message } from 'antd';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { TabsDetail } from './tabsDetail';
-import { updateCommentApi, getCommentApi } from '@/services/comments/api';
-import { updateReviewApi } from '@/services/reviews/api';
 
 type Props = {
   id: string;
@@ -30,8 +21,8 @@ type Props = {
   version: string;
   lang: string;
   actionRef: React.MutableRefObject<ActionType | undefined> | undefined;
-  type: 'edit' | 'view'
-  tabType: 'assigned' | 'review'
+  type: 'edit' | 'view';
+  tabType: 'assigned' | 'review';
 };
 const ReviewProcessDetail: FC<Props> = ({
   id,
@@ -40,7 +31,7 @@ const ReviewProcessDetail: FC<Props> = ({
   lang,
   actionRef,
   type,
-  tabType
+  tabType,
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
@@ -104,21 +95,30 @@ const ReviewProcessDetail: FC<Props> = ({
   const onEdit = () => {
     setDrawerVisible(true);
     setActiveTabKey('processInformation');
-  }
+  };
   const approveReview = async () => {
-    const { error } = await updateCommentApi(reviewId, {
-      state_code: 2
-    }, tabType);
+    const { error } = await updateCommentApi(
+      reviewId,
+      {
+        state_code: 2,
+      },
+      tabType,
+    );
 
     const { error: error2 } = await updateReviewApi([reviewId], {
-      state_code: 2
-    })
+      state_code: 2,
+    });
 
     if (!error && !error2) {
-      message.success(intl.formatMessage({ id: 'pages.review.ReviewProcessDetail.assigned.success', defaultMessage: 'Review approved successfully' }));
+      message.success(
+        intl.formatMessage({
+          id: 'pages.review.ReviewProcessDetail.assigned.success',
+          defaultMessage: 'Review approved successfully',
+        }),
+      );
       setDrawerVisible(false);
       actionRef?.current?.reload();
-    };
+    }
   };
 
   const onReset = () => {
@@ -126,31 +126,38 @@ const ReviewProcessDetail: FC<Props> = ({
     getProcessDetail(id, version).then(async (result: any) => {
       const { data, error } = await getCommentApi(reviewId, tabType);
       if (!error && data && data.length) {
-        const allReviews: any[] = []
+        const allReviews: any[] = [];
         data.forEach((item: any) => {
           if (item?.json?.modellingAndValidation.validation.review[0]) {
-            allReviews.push(item?.json?.modellingAndValidation.validation.review[0])
+            allReviews.push(item?.json?.modellingAndValidation.validation.review[0]);
           }
-        })
-        const allCompliance: any[] = []
+        });
+        const allCompliance: any[] = [];
         data.forEach((item: any) => {
           if (item?.json?.modellingAndValidation.complianceDeclarations.compliance[0]) {
-            allCompliance.push(item?.json?.modellingAndValidation.complianceDeclarations.compliance[0])
+            allCompliance.push(
+              item?.json?.modellingAndValidation.complianceDeclarations.compliance[0],
+            );
           }
-        })
-        setApproveReviewDisabled(allReviews.length === 0 || allCompliance.length === 0)
+        });
+        setApproveReviewDisabled(allReviews.length === 0 || allCompliance.length === 0);
         if (result?.data?.json?.processDataSet) {
           result.data.json.processDataSet.modellingAndValidation = {
             ...result.data.json.processDataSet.modellingAndValidation,
             complianceDeclarations: {
-              compliance: type === 'edit' ? [{}] : allCompliance
+              compliance: type === 'edit' ? [{}] : allCompliance,
             },
             validation: {
-              review: type === 'edit' ? [{
-                'common:scope':[{}]
-              }] : allReviews
-            }
-          }
+              review:
+                type === 'edit'
+                  ? [
+                      {
+                        'common:scope': [{}],
+                      },
+                    ]
+                  : allReviews,
+            },
+          };
         }
       }
 
@@ -186,9 +193,9 @@ const ReviewProcessDetail: FC<Props> = ({
     const submitData = {
       modellingAndValidation: {
         complianceDeclarations: fieldsValue?.modellingAndValidation?.complianceDeclarations,
-        validation: fieldsValue?.modellingAndValidation?.validation
+        validation: fieldsValue?.modellingAndValidation?.validation,
       },
-    }
+    };
 
     setSpinning(true);
     const { error } = await updateCommentApi(reviewId, { json: submitData }, tabType);
@@ -203,28 +210,37 @@ const ReviewProcessDetail: FC<Props> = ({
       actionRef?.current?.reload();
     }
     setSpinning(false);
-  }
+  };
 
   return (
-    <>{
-      type === 'edit' ? <Tooltip title={<FormattedMessage id={'pages.review.actions.review'} defaultMessage={'Review'} />}>
-        <Button shape='circle' icon={<AuditOutlined />} size='small' onClick={onEdit} />
-      </Tooltip> :
-        <Tooltip title={<FormattedMessage id={'pages.review.actions.view'} defaultMessage={'View'} />}>
+    <>
+      {type === 'edit' ? (
+        <Tooltip
+          title={<FormattedMessage id={'pages.review.actions.review'} defaultMessage={'Review'} />}
+        >
+          <Button shape='circle' icon={<AuditOutlined />} size='small' onClick={onEdit} />
+        </Tooltip>
+      ) : (
+        <Tooltip
+          title={<FormattedMessage id={'pages.review.actions.view'} defaultMessage={'View'} />}
+        >
           <Button shape='circle' icon={<ProfileOutlined />} size='small' onClick={onEdit} />
         </Tooltip>
-    }
+      )}
       <Drawer
         getContainer={() => document.body}
         title={
-          type === 'edit' ? <FormattedMessage
-            id={'pages.review.ReviewProcessDetail.edit.title'}
-            defaultMessage={'Review process'}
-          /> :
+          type === 'edit' ? (
+            <FormattedMessage
+              id={'pages.review.ReviewProcessDetail.edit.title'}
+              defaultMessage={'Review process'}
+            />
+          ) : (
             <FormattedMessage
               id={'pages.review.ReviewProcessDetail.view.title'}
               defaultMessage={'View review'}
             />
+          )
         }
         width='90%'
         closable={false}
@@ -239,7 +255,7 @@ const ReviewProcessDetail: FC<Props> = ({
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         footer={
-          type === 'edit' ?
+          type === 'edit' ? (
             <Space size={'middle'} className={styles.footer_right}>
               <>
                 <Button
@@ -256,17 +272,25 @@ const ReviewProcessDetail: FC<Props> = ({
               <Button onClick={() => setDrawerVisible(false)}>
                 <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
               </Button>
-              <Button onClick={temporarySave} >
+              <Button onClick={temporarySave}>
                 <FormattedMessage id='pages.button.temporarySave' />
               </Button>
               <Button onClick={() => formRefEdit.current?.submit()} type='primary'>
                 <FormattedMessage id='pages.button.save' defaultMessage='Save' />
               </Button>
-            </Space> : tabType === 'assigned' ? <Space className={styles.footer_right}>
+            </Space>
+          ) : tabType === 'assigned' ? (
+            <Space className={styles.footer_right}>
               <Button disabled={approveReviewDisabled} type='primary' onClick={approveReview}>
-                <FormattedMessage id='pages.review.ReviewProcessDetail.assigned.save' defaultMessage='Approve Review' />
+                <FormattedMessage
+                  id='pages.review.ReviewProcessDetail.assigned.save'
+                  defaultMessage='Approve Review'
+                />
               </Button>
-            </Space> : <></>
+            </Space>
+          ) : (
+            <></>
+          )
         }
       >
         <Spin spinning={spinning}>
@@ -283,17 +307,21 @@ const ReviewProcessDetail: FC<Props> = ({
                 },
               }}
               onFinish={async () => {
-
                 const fieldsValue = formRefEdit.current?.getFieldsValue();
                 const submitData = {
                   modellingAndValidation: {
-                    complianceDeclarations: fieldsValue?.modellingAndValidation?.complianceDeclarations,
-                    validation: fieldsValue?.modellingAndValidation?.validation
+                    complianceDeclarations:
+                      fieldsValue?.modellingAndValidation?.complianceDeclarations,
+                    validation: fieldsValue?.modellingAndValidation?.validation,
                   },
-                }
+                };
 
                 setSpinning(true);
-                const { error } = await updateCommentApi(reviewId, { json: submitData, state_code: 1 }, tabType);
+                const { error } = await updateCommentApi(
+                  reviewId,
+                  { json: submitData, state_code: 1 },
+                  tabType,
+                );
                 if (!error) {
                   message.success(
                     intl.formatMessage({

@@ -1,5 +1,11 @@
 import { getSystemUserRoleApi } from '@/services/roles/api';
-import { LogoutOutlined, SettingOutlined, TeamOutlined, UserOutlined, AuditOutlined } from '@ant-design/icons';
+import {
+  AuditOutlined,
+  LogoutOutlined,
+  SettingOutlined,
+  TeamOutlined,
+  UserOutlined,
+} from '@ant-design/icons';
 import { history, useIntl, useModel } from '@umijs/max';
 import React, { useCallback, useEffect, useState } from 'react';
 
@@ -229,7 +235,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
       key: 'review',
       icon: <AuditOutlined />,
       label: <FormattedMessage id='menu.account.review' defaultMessage='Review Management' />,
-      hidden:userData?.role !== 'review-admin' && userData?.role !== 'review-member'
+      hidden: userData?.role !== 'review-admin' && userData?.role !== 'review-member',
     },
     {
       type: 'divider' as const,

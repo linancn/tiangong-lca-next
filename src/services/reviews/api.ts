@@ -1,44 +1,44 @@
 import { supabase } from '@/services/supabase';
-import { getILCDClassification, getILCDLocationByValues } from '../ilcd/api';
 import {
-    classificationToString,
-    genClassificationZH,
-    getLangText,
-    jsonToList,
+  classificationToString,
+  genClassificationZH,
+  getLangText,
+  jsonToList,
 } from '../general/util';
+import { getILCDClassification, getILCDLocationByValues } from '../ilcd/api';
 import { genProcessName } from '../processes/util';
 
 export async function addReviewsApi(id: string, data_id: string, data_version: string) {
-    const { error } = await supabase
-        .from('reviews')
-        .insert({
-            id: id,
-            data_id: data_id,
-            data_version: data_version,
-            state_code: 0,
-        })
-        .select();
-    return { error }
+  const { error } = await supabase
+    .from('reviews')
+    .insert({
+      id: id,
+      data_id: data_id,
+      data_version: data_version,
+      state_code: 0,
+    })
+    .select();
+  return { error };
 }
 
 export async function updateReviewApi(reviewIds: React.Key[], data: any) {
-    let query = supabase
-        .from('reviews')
-        .update(data)
-        .in('id', reviewIds)
-        .select();
-    const result = await query;
-    return result;
+  let query = supabase.from('reviews').update(data).in('id', reviewIds).select();
+  const result = await query;
+  return result;
 }
 
-
-
-export async function getReviewsApi(params: { pageSize: number, current: number }, sort: any, type: 'unassigned' | 'assigned' | 'review', lang: string) {
-    const sortBy = Object.keys(sort)[0] ?? 'modified_at';
-    const orderBy = sort[sortBy] ?? 'descend';
-    let query = supabase
-        .from('reviews')
-        .select(` 
+export async function getReviewsApi(
+  params: { pageSize: number; current: number },
+  sort: any,
+  type: 'unassigned' | 'assigned' | 'review',
+  lang: string,
+) {
+  const sortBy = Object.keys(sort)[0] ?? 'modified_at';
+  const orderBy = sort[sortBy] ?? 'descend';
+  let query = supabase
+    .from('reviews')
+    .select(
+      ` 
             *,
             processes!inner(
                  id,
@@ -51,125 +51,130 @@ export async function getReviewsApi(params: { pageSize: number, current: number 
                 modified_at,
                 team_id
             )
-        `, { count: 'exact' })
-        .order(sortBy, { ascending: orderBy === 'ascend' })
-        .range(
-            ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-            (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-        );
-    if (type === 'unassigned') {
-        query = query.eq('state_code', 0);
+        `,
+      { count: 'exact' },
+    )
+    .order(sortBy, { ascending: orderBy === 'ascend' })
+    .range(
+      ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
+      (params.current ?? 1) * (params.pageSize ?? 10) - 1,
+    );
+  if (type === 'unassigned') {
+    query = query.eq('state_code', 0);
+  }
+  if (type === 'assigned') {
+    query = query.eq('state_code', 1);
+  }
+  if (type === 'review') {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const userId = user?.id;
+    if (userId) {
+      query = query.filter('reviewer_id', 'cs', `[${JSON.stringify(userId)}]`).eq('state_code', 1);
     }
-    if (type === 'assigned') {
-        query = query.eq('state_code', 1);
-    }
-    if (type === 'review') {
-        const { data: { user } } = await supabase.auth.getUser();
-        const userId = user?.id;
-        if (userId) {
-            query = query.filter('reviewer_id', 'cs', `[${JSON.stringify(userId)}]`).eq('state_code', 1);
-        }
-    }
-    const result = await query;
+  }
+  const result = await query;
 
-    if (result?.data) {
-        if (result?.data.length === 0) {
-            return Promise.resolve({
-                data: [],
-                success: true,
-            });
-        }
-
-        const locations: string[] = Array.from(new Set(result?.data.map((i: any) => i['@location'])));
-        let locationData: any[] = [];
-        await getILCDLocationByValues(lang, locations).then((res) => {
-            locationData = res.data;
-        });
-
-        let data: any[] = [];
-        if (lang === 'zh') {
-            await getILCDClassification('Process', lang, ['all']).then((res) => {
-                data = result?.data?.map((i: any) => {
-                    try {
-                        const classifications = jsonToList(i?.processes['common:class']);
-                        const classificationZH = genClassificationZH(classifications, res?.data);
-
-                        const thisLocation = locationData.find((l) => l['@value'] === i?.processes['@location']);
-                        let location = i?.processes['@location'];
-                        if (thisLocation?.['#text']) {
-                            location = thisLocation['#text'];
-                        }
-
-                        return {
-                            ...i,
-                            modifiedAt: new Date(i?.modified_at),
-                            processes: {
-                                key: i?.processes.id + ':' + i?.processes.version,
-                                id: i?.processes.id,
-                                version: i?.processes.version,
-                                lang: lang,
-                                name: genProcessName(i?.processes.name ?? {}, lang),
-                                generalComment: getLangText(i?.processes['common:generalComment'] ?? {}, lang),
-                                classification: classificationToString(classificationZH ?? {}),
-                                referenceYear: i?.processes['common:referenceYear'] ?? '-',
-                                location: location ?? '-',
-                                modifiedAt: new Date(i?.processes.modified_at),
-                                teamId: i?.team_id,
-                            }
-                        };
-                    } catch (e) {
-                        console.error(e);
-                        return {
-                            id: i.id,
-                        };
-                    }
-                });
-            });
-        } else {
-            data = result?.data?.map((i: any) => {
-                try {
-                    const classifications = jsonToList(i?.processes['common:class']);
-                    const thisLocation = locationData.find((l) => l['@value'] === i?.processes['@location']);
-                    let location = i?.processes['@location'];
-                    if (thisLocation?.['#text']) {
-                        location = thisLocation['#text'];
-                    }
-                    return {
-                        ...i,
-                        modifiedAt: new Date(i?.modified_at),
-                        processes: {
-                            key: i?.processes.id + ':' + i?.processes.version,
-                            id: i?.processes.id,
-                            version: i?.processes.version,
-                            lang: lang,
-                            name: genProcessName(i?.processes.name ?? {}, lang),
-                            generalComment: getLangText(i?.processes['common:generalComment'] ?? {}, lang),
-                            classification: classificationToString(classifications),
-                            referenceYear: i?.processes['common:referenceYear'] ?? '-',
-                            location: location,
-                            modifiedAt: new Date(i?.processes.modified_at),
-                            teamId: i?.team_id,
-                        }
-                    };
-                } catch (e) {
-                    console.error(e);
-                    return {
-                        id: i.id,
-                    };
-                }
-            });
-        }
-
-        return Promise.resolve({
-            data: data,
-            page: params?.current ?? 1,
-            success: true,
-            total: result?.count ?? 0,
-        });
-    }
-    return Promise.resolve({
+  if (result?.data) {
+    if (result?.data.length === 0) {
+      return Promise.resolve({
         data: [],
-        success: false,
-    });
-};
+        success: true,
+      });
+    }
 
+    const locations: string[] = Array.from(new Set(result?.data.map((i: any) => i['@location'])));
+    let locationData: any[] = [];
+    await getILCDLocationByValues(lang, locations).then((res) => {
+      locationData = res.data;
+    });
+
+    let data: any[] = [];
+    if (lang === 'zh') {
+      await getILCDClassification('Process', lang, ['all']).then((res) => {
+        data = result?.data?.map((i: any) => {
+          try {
+            const classifications = jsonToList(i?.processes['common:class']);
+            const classificationZH = genClassificationZH(classifications, res?.data);
+
+            const thisLocation = locationData.find(
+              (l) => l['@value'] === i?.processes['@location'],
+            );
+            let location = i?.processes['@location'];
+            if (thisLocation?.['#text']) {
+              location = thisLocation['#text'];
+            }
+
+            return {
+              ...i,
+              modifiedAt: new Date(i?.modified_at),
+              processes: {
+                key: i?.processes.id + ':' + i?.processes.version,
+                id: i?.processes.id,
+                version: i?.processes.version,
+                lang: lang,
+                name: genProcessName(i?.processes.name ?? {}, lang),
+                generalComment: getLangText(i?.processes['common:generalComment'] ?? {}, lang),
+                classification: classificationToString(classificationZH ?? {}),
+                referenceYear: i?.processes['common:referenceYear'] ?? '-',
+                location: location ?? '-',
+                modifiedAt: new Date(i?.processes.modified_at),
+                teamId: i?.team_id,
+              },
+            };
+          } catch (e) {
+            console.error(e);
+            return {
+              id: i.id,
+            };
+          }
+        });
+      });
+    } else {
+      data = result?.data?.map((i: any) => {
+        try {
+          const classifications = jsonToList(i?.processes['common:class']);
+          const thisLocation = locationData.find((l) => l['@value'] === i?.processes['@location']);
+          let location = i?.processes['@location'];
+          if (thisLocation?.['#text']) {
+            location = thisLocation['#text'];
+          }
+          return {
+            ...i,
+            modifiedAt: new Date(i?.modified_at),
+            processes: {
+              key: i?.processes.id + ':' + i?.processes.version,
+              id: i?.processes.id,
+              version: i?.processes.version,
+              lang: lang,
+              name: genProcessName(i?.processes.name ?? {}, lang),
+              generalComment: getLangText(i?.processes['common:generalComment'] ?? {}, lang),
+              classification: classificationToString(classifications),
+              referenceYear: i?.processes['common:referenceYear'] ?? '-',
+              location: location,
+              modifiedAt: new Date(i?.processes.modified_at),
+              teamId: i?.team_id,
+            },
+          };
+        } catch (e) {
+          console.error(e);
+          return {
+            id: i.id,
+          };
+        }
+      });
+    }
+
+    return Promise.resolve({
+      data: data,
+      page: params?.current ?? 1,
+      success: true,
+      total: result?.count ?? 0,
+    });
+  }
+  return Promise.resolve({
+    data: [],
+    success: false,
+  });
+}

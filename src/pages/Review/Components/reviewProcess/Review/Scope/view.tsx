@@ -1,4 +1,4 @@
-import { Descriptions, Row, Col } from 'antd';
+import { Col, Descriptions, Row } from 'antd';
 import { FC } from 'react';
 import { FormattedMessage } from 'umi';
 import { methodNameOptions, scopeNameOptions } from '../../optiondata';
@@ -9,25 +9,24 @@ type Props = {
 
 const ScopeItemView: FC<Props> = ({ data }) => {
   const getScopeName = (nameValue: string) => {
-    const option = scopeNameOptions.find(item => item.value === nameValue);
+    const option = scopeNameOptions.find((item) => item.value === nameValue);
     return option ? option.label : nameValue;
   };
 
   const getMethodName = (nameValue: string) => {
-    const option = methodNameOptions.find(item => item.value === nameValue);
+    const option = methodNameOptions.find((item) => item.value === nameValue);
     return option ? option.label : nameValue;
   };
 
-
   return (
     <>
-      {(data||[]).map((item, index) => (
+      {(data || []).map((item, index) => (
         <Row key={index}>
           <Col flex='50' style={{ marginRight: '10px' }}>
             <Descriptions
               key={index}
               bordered
-              size="small"
+              size='small'
               column={1}
               style={{ marginBottom: index < data.length - 1 ? '16px' : 0 }}
             >
@@ -48,7 +47,7 @@ const ScopeItemView: FC<Props> = ({ data }) => {
             <Descriptions
               key={index}
               bordered
-              size="small"
+              size='small'
               column={1}
               style={{ marginBottom: index < data.length - 1 ? '16px' : 0 }}
             >
@@ -63,10 +62,9 @@ const ScopeItemView: FC<Props> = ({ data }) => {
               >
                 {getMethodName(item['common:method']?.['@name']) || '-'}
               </Descriptions.Item>
-            </Descriptions >
+            </Descriptions>
           </Col>
         </Row>
-
       ))}
     </>
   );

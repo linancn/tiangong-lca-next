@@ -1,25 +1,24 @@
 import { ListPagination } from '@/services/general/data';
-import { ProColumns, ProTable } from '@ant-design/pro-components';
-import { FormattedMessage, useIntl } from '@umijs/max';
-import { Tooltip, Space } from 'antd';
-import { useState } from 'react';
-import SelectReviewer from './SelectReviewer';
 import { getReviewsApi } from '@/services/reviews/api';
 import { ReviewsTable } from '@/services/reviews/data';
+import { ProColumns, ProTable } from '@ant-design/pro-components';
+import { FormattedMessage, useIntl } from '@umijs/max';
+import { Space, Tooltip } from 'antd';
+import { useState } from 'react';
 import ReviewProcessDetail from './reviewProcess';
+import SelectReviewer from './SelectReviewer';
 
 type AssignmentReviewProps = {
-  userData: { user_id: string, role: string } | null,
-  tableType: 'unassigned' | 'assigned' | 'review'
-  actionRef: any
-}
+  userData: { user_id: string; role: string } | null;
+  tableType: 'unassigned' | 'assigned' | 'review';
+  actionRef: any;
+};
 const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewProps) => {
   // const intl = useIntl();
   const { locale } = useIntl();
   const lang = locale === 'zh-CN' ? 'zh' : 'en';
   const [tableLoading, setTableLoading] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-  
 
   const handleRowSelectionChange = (keys: React.Key[]) => {
     setSelectedRowKeys(keys);
@@ -53,7 +52,7 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
       sorter: false,
       search: false,
       render: (_, row) => {
-        return [<span key={0}>{row.processes.classification}</span>]
+        return [<span key={0}>{row.processes.classification}</span>];
       },
     },
     {
@@ -62,7 +61,7 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
       sorter: false,
       search: false,
       render: (_, row) => {
-        return [<span key={0}>{row.processes.referenceYear}</span>]
+        return [<span key={0}>{row.processes.referenceYear}</span>];
       },
     },
     {
@@ -71,7 +70,7 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
       sorter: false,
       search: false,
       render: (_, row) => {
-        return [<span key={0}>{row.processes.location}</span>]
+        return [<span key={0}>{row.processes.location}</span>];
       },
     },
     {
@@ -91,12 +90,20 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
       render: (_, record) => {
         return [
           <Space key={0}>
-            <ReviewProcessDetail tabType='assigned' type='view'  actionRef={actionRef}  id={record.data_id} version={record.data_version} lang={lang} reviewId={record.id} />
-          </Space>
+            <ReviewProcessDetail
+              tabType='assigned'
+              type='view'
+              actionRef={actionRef}
+              id={record.data_id}
+              version={record.data_version}
+              lang={lang}
+              reviewId={record.id}
+            />
+          </Space>,
         ];
       },
     });
-  };
+  }
 
   if (tableType === 'review') {
     processColumns.push({
@@ -106,9 +113,25 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
       render: (_, record) => {
         return [
           <Space key={0}>
-            <ReviewProcessDetail tabType='review' type='edit'  actionRef={actionRef}  id={record.data_id} version={record.data_version} lang={lang} reviewId={record.id} />
-            <ReviewProcessDetail tabType='review' type='view'  actionRef={actionRef}  id={record.data_id} version={record.data_version} lang={lang} reviewId={record.id} />
-          </Space>
+            <ReviewProcessDetail
+              tabType='review'
+              type='edit'
+              actionRef={actionRef}
+              id={record.data_id}
+              version={record.data_version}
+              lang={lang}
+              reviewId={record.id}
+            />
+            <ReviewProcessDetail
+              tabType='review'
+              type='view'
+              actionRef={actionRef}
+              id={record.data_id}
+              version={record.data_version}
+              lang={lang}
+              reviewId={record.id}
+            />
+          </Space>,
         ];
       },
     });
@@ -127,18 +150,20 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
       }}
       toolBarRender={() => {
         if (selectedRowKeys && selectedRowKeys?.length > 0 && tableType === 'unassigned') {
-          return [
-            <SelectReviewer actionRef={actionRef} reviewIds={selectedRowKeys} key={0} />
-          ]
+          return [<SelectReviewer actionRef={actionRef} reviewIds={selectedRowKeys} key={0} />];
         }
         return [];
       }}
       headerTitle={
         <>
           <FormattedMessage id='menu.review' defaultMessage='Review Management' /> /{' '}
-          {tableType === 'unassigned' ? <FormattedMessage id='pages.review.tabs.unassigned' defaultMessage='Unassigned' /> :
-            tableType === 'assigned' ? <FormattedMessage id='pages.review.tabs.assigned' defaultMessage='Assigned' /> :
-              <FormattedMessage id='pages.review.tabs.review' defaultMessage='Review' />}
+          {tableType === 'unassigned' ? (
+            <FormattedMessage id='pages.review.tabs.unassigned' defaultMessage='Unassigned' />
+          ) : tableType === 'assigned' ? (
+            <FormattedMessage id='pages.review.tabs.assigned' defaultMessage='Assigned' />
+          ) : (
+            <FormattedMessage id='pages.review.tabs.review' defaultMessage='Review' />
+          )}
         </>
       }
       request={async (
@@ -159,7 +184,6 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
           setTableLoading(true);
           setSelectedRowKeys([]);
           return await getReviewsApi(params, sort, tableType, lang);
-
         } catch (error) {
           console.error(error);
           return {
@@ -172,12 +196,15 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
         }
       }}
       actionRef={actionRef}
-      rowSelection={tableType === 'unassigned' ? {
-        selectedRowKeys,
-        onChange: handleRowSelectionChange,
-      } : undefined}
+      rowSelection={
+        tableType === 'unassigned'
+          ? {
+              selectedRowKeys,
+              onChange: handleRowSelectionChange,
+            }
+          : undefined
+      }
     />
-
   );
 };
 

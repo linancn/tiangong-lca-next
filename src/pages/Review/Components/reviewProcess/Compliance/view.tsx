@@ -1,4 +1,6 @@
-import { Descriptions, Card, Space } from 'antd';
+import SourceSelectDescription from '@/pages/Sources/Components/select/description';
+import { getLang } from '@/services/general/util';
+import { Card, Descriptions, Space } from 'antd';
 import { FC } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import {
@@ -9,8 +11,6 @@ import {
   qualityComplianceOptions,
   reviewComplianceOptions,
 } from '../optiondata';
-import { getLang } from '@/services/general/util';
-import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 
 type Props = {
   data: any[];
@@ -18,18 +18,18 @@ type Props = {
 
 const ComplianceItemView: FC<Props> = ({ data }) => {
   const getOptionLabel = (options: any[], value: string) => {
-    const option = options.find(item => item.value === value);
+    const option = options.find((item) => item.value === value);
     return option ? option.label : value;
   };
   const intl = useIntl();
   const lang = getLang(intl.locale);
 
-
   return (
     <>
       {(data || []).map((item, index) => (
-        <Card key={index}
-          size="small"
+        <Card
+          key={index}
+          size='small'
           title={
             <FormattedMessage
               id='pages.process.modellingAndValidation.compliance'
@@ -38,8 +38,8 @@ const ComplianceItemView: FC<Props> = ({ data }) => {
           }
           style={{ marginBottom: '16px' }}
         >
-          <Space direction="vertical" style={{ width: '100%' }}>
-            <Descriptions bordered size="small" column={1}>
+          <Space direction='vertical' style={{ width: '100%' }}>
+            <Descriptions bordered size='small' column={1}>
               <Descriptions.Item
                 labelStyle={{ width: '180px' }}
                 label={
@@ -49,11 +49,14 @@ const ComplianceItemView: FC<Props> = ({ data }) => {
                   />
                 }
               >
-                {getOptionLabel(approvalOfOverallComplianceOptions, item['common:approvalOfOverallCompliance']) || '-'}
+                {getOptionLabel(
+                  approvalOfOverallComplianceOptions,
+                  item['common:approvalOfOverallCompliance'],
+                ) || '-'}
               </Descriptions.Item>
             </Descriptions>
             <br />
-            <Descriptions bordered size="small" column={1}>
+            <Descriptions bordered size='small' column={1}>
               <Descriptions.Item
                 labelStyle={{ width: '180px' }}
                 label={
@@ -63,11 +66,14 @@ const ComplianceItemView: FC<Props> = ({ data }) => {
                   />
                 }
               >
-                {getOptionLabel(nomenclatureComplianceOptions, item['common:nomenclatureCompliance']) || '-'}
+                {getOptionLabel(
+                  nomenclatureComplianceOptions,
+                  item['common:nomenclatureCompliance'],
+                ) || '-'}
               </Descriptions.Item>
             </Descriptions>
             <br />
-            <Descriptions bordered size="small" column={1}>
+            <Descriptions bordered size='small' column={1}>
               <Descriptions.Item
                 labelStyle={{ width: '180px' }}
                 label={
@@ -77,11 +83,14 @@ const ComplianceItemView: FC<Props> = ({ data }) => {
                   />
                 }
               >
-                {getOptionLabel(methodologicalComplianceOptions, item['common:methodologicalCompliance']) || '-'}
+                {getOptionLabel(
+                  methodologicalComplianceOptions,
+                  item['common:methodologicalCompliance'],
+                ) || '-'}
               </Descriptions.Item>
             </Descriptions>
             <br />
-            <Descriptions bordered size="small" column={1}>
+            <Descriptions bordered size='small' column={1}>
               <Descriptions.Item
                 labelStyle={{ width: '180px' }}
                 label={
@@ -95,7 +104,7 @@ const ComplianceItemView: FC<Props> = ({ data }) => {
               </Descriptions.Item>
             </Descriptions>
             <br />
-            <Descriptions bordered size="small" column={1}>
+            <Descriptions bordered size='small' column={1}>
               <Descriptions.Item
                 labelStyle={{ width: '180px' }}
                 label={
@@ -105,11 +114,14 @@ const ComplianceItemView: FC<Props> = ({ data }) => {
                   />
                 }
               >
-                {getOptionLabel(documentationComplianceOptions, item['common:documentationCompliance']) || '-'}
+                {getOptionLabel(
+                  documentationComplianceOptions,
+                  item['common:documentationCompliance'],
+                ) || '-'}
               </Descriptions.Item>
             </Descriptions>
             <br />
-            <Descriptions bordered size="small" column={1}>
+            <Descriptions bordered size='small' column={1}>
               <Descriptions.Item
                 labelStyle={{ width: '180px' }}
                 label={

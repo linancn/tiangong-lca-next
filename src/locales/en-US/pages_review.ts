@@ -2,7 +2,7 @@ export default {
   'pages.review.title': 'Review Management',
   'pages.review.tabs.review': 'Review Management',
   'pages.review.tabs.members': 'Member Management',
-  
+
   'pages.review.members.email': 'Email',
   'pages.review.members.memberName': 'Member Name',
   'pages.review.members.role': 'Role',
@@ -26,4 +26,3 @@ export default {
 
   'pages.review.drawer.title': 'Select Reviewer',
 };
-

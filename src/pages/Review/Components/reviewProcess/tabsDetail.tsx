@@ -1,17 +1,16 @@
-
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import LocationTextItemDescription from '@/components/LocationTextItem/description';
+import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
-import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import { ListPagination } from '@/services/general/data';
 import { getLangText, getUnitData } from '@/services/general/util';
 import { getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData } from '@/services/processes/util';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
-import { Card, Collapse, Divider, Space, Tooltip, Descriptions } from 'antd';
+import { Card, Collapse, Descriptions, Divider, Space, Tooltip } from 'antd';
 import { useEffect, useRef, type FC } from 'react';
 import { FormattedMessage } from 'umi';
 import ComplianceItemForm from './Compliance/form';
@@ -22,14 +21,14 @@ import ReveiwItemForm from './Review/form';
 import ReviewItemView from './Review/view';
 
 import {
+  completenessElementaryFlowsTypeOptions,
+  completenessElementaryFlowsValueOptions,
+  completenessProductModelOptions,
   copyrightOptions,
   LCIMethodApproachOptions,
   LCIMethodPrincipleOptions,
   licenseTypeOptions,
   processtypeOfDataSetOptions,
-  completenessElementaryFlowsTypeOptions,
-  completenessElementaryFlowsValueOptions,
-  completenessProductModelOptions,
   uncertaintyDistributionTypeOptions,
 } from './optiondata';
 
@@ -43,7 +42,7 @@ type Props = {
   exchangeDataSource: ProcessExchangeTable[];
   formType?: string;
   initData: any;
-  type: 'edit' | 'view'
+  type: 'edit' | 'view';
 };
 
 const getProcesstypeOfDataSetOptions = (value: string) => {
@@ -88,8 +87,6 @@ const getCompletenessElementaryFlowsValueOptions = (value: string) => {
   return option ? option.label : '-';
 };
 
-
-
 export const TabsDetail: FC<Props> = ({
   lang,
   activeTabKey,
@@ -98,9 +95,8 @@ export const TabsDetail: FC<Props> = ({
   onTabChange,
   exchangeDataSource,
   initData,
-  type
+  type,
 }) => {
-
   const actionRefExchangeTableInput = useRef<ActionType>();
   const actionRefExchangeTableOutput = useRef<ActionType>();
 
@@ -371,7 +367,7 @@ export const TabsDetail: FC<Props> = ({
         <LevelTextItemDescription
           data={
             initData.processInformation?.dataSetInformation?.classificationInformation?.[
-            'common:classification'
+              'common:classification'
             ]?.['common:class']?.['value']
           }
           lang={lang}
@@ -387,7 +383,7 @@ export const TabsDetail: FC<Props> = ({
           }
           data={
             initData.processInformation?.dataSetInformation?.[
-            'common:referenceToExternalDocumentation'
+              'common:referenceToExternalDocumentation'
             ]
           }
           lang={lang}
@@ -455,7 +451,7 @@ export const TabsDetail: FC<Props> = ({
             lang={lang}
             data={
               initData.processInformation?.geography?.locationOfOperationSupplyOrProduction?.[
-              '@location'
+                '@location'
               ] ?? '-'
             }
             label={
@@ -493,7 +489,7 @@ export const TabsDetail: FC<Props> = ({
             lang={lang}
             data={
               initData.processInformation?.geography?.subLocationOfOperationSupplyOrProduction?.[
-              '@subLocation'
+                '@subLocation'
               ] ?? '-'
             }
             label={
@@ -1087,7 +1083,7 @@ export const TabsDetail: FC<Props> = ({
               >
                 {getCompletenessElementaryFlowsTypeOptions(
                   initData.modellingAndValidation?.completeness?.completenessElementaryFlows?.[
-                  '@type'
+                    '@type'
                   ] ?? '-',
                 )}
               </Descriptions.Item>
@@ -1106,7 +1102,7 @@ export const TabsDetail: FC<Props> = ({
               >
                 {getCompletenessElementaryFlowsValueOptions(
                   initData.modellingAndValidation?.completeness?.completenessElementaryFlows?.[
-                  '@value'
+                    '@value'
                   ] ?? '-',
                 )}
               </Descriptions.Item>
@@ -1136,7 +1132,7 @@ export const TabsDetail: FC<Props> = ({
           lang={lang}
           data={
             initData.administrativeInformation?.commissionerAndGoal?.[
-            'common:referenceToCommissioner'
+              'common:referenceToCommissioner'
             ]
           }
         />
@@ -1173,7 +1169,7 @@ export const TabsDetail: FC<Props> = ({
           lang={lang}
           data={
             initData.administrativeInformation?.dataGenerator?.[
-            'common:referenceToPersonOrEntityGeneratingTheDataSet'
+              'common:referenceToPersonOrEntityGeneratingTheDataSet'
             ]
           }
         />
@@ -1219,7 +1215,7 @@ export const TabsDetail: FC<Props> = ({
           <SourceSelectDescription
             data={
               initData?.administrativeInformation?.dataEntryBy?.[
-              'common:referenceToConvertedOriginalDataSetFrom'
+                'common:referenceToConvertedOriginalDataSetFrom'
               ]
             }
             title={
@@ -1234,7 +1230,7 @@ export const TabsDetail: FC<Props> = ({
           <ContactSelectDescription
             data={
               initData?.administrativeInformation?.dataEntryBy?.[
-              'common:referenceToPersonOrEntityEnteringTheData'
+                'common:referenceToPersonOrEntityEnteringTheData'
               ]
             }
             title={
@@ -1249,7 +1245,7 @@ export const TabsDetail: FC<Props> = ({
           <SourceSelectDescription
             data={
               initData?.administrativeInformation?.dataEntryBy?.[
-              'common:referenceToDataSetUseApproval'
+                'common:referenceToDataSetUseApproval'
               ]
             }
             title={
@@ -1351,7 +1347,7 @@ export const TabsDetail: FC<Props> = ({
             }
             data={
               initData.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToUnchangedRepublication'
+                'common:referenceToUnchangedRepublication'
               ] ?? {}
             }
             lang={lang}
@@ -1367,7 +1363,7 @@ export const TabsDetail: FC<Props> = ({
             lang={lang}
             data={
               initData.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToRegistrationAuthority'
+                'common:referenceToRegistrationAuthority'
               ]
             }
           />
@@ -1399,7 +1395,7 @@ export const TabsDetail: FC<Props> = ({
             lang={lang}
             data={
               initData.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToOwnershipOfDataSet'
+                'common:referenceToOwnershipOfDataSet'
               ]
             }
           />
@@ -1417,7 +1413,7 @@ export const TabsDetail: FC<Props> = ({
             >
               {getCopyrightOptions(
                 initData.administrativeInformation?.publicationAndOwnership?.['common:copyright'] ??
-                '-',
+                  '-',
               )}
             </Descriptions.Item>
           </Descriptions>
@@ -1432,7 +1428,7 @@ export const TabsDetail: FC<Props> = ({
             lang={lang}
             data={
               initData.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToEntitiesWithExclusiveAccess'
+                'common:referenceToEntitiesWithExclusiveAccess'
               ]
             }
           />
@@ -1450,7 +1446,7 @@ export const TabsDetail: FC<Props> = ({
             >
               {getLicenseTypeOptions(
                 initData.administrativeInformation?.publicationAndOwnership?.[
-                'common:licenseType'
+                  'common:licenseType'
                 ] ?? '-',
               )}
             </Descriptions.Item>
@@ -1464,7 +1460,7 @@ export const TabsDetail: FC<Props> = ({
           <LangTextItemDescription
             data={
               initData.administrativeInformation?.publicationAndOwnership?.[
-              'common:accessRestrictions'
+                'common:accessRestrictions'
               ]
             }
           />
@@ -1547,41 +1543,40 @@ export const TabsDetail: FC<Props> = ({
         />
       </>
     ),
+  };
 
-  }
-
-  const tabContent: { [key: string]: JSX.Element } = type === 'edit' ? {
-    ...defaultTabContent,
-    validation: (
-      <ReveiwItemForm
-        name={['modellingAndValidation', 'validation', 'review']}
-        lang={lang}
-        formRef={formRef}
-        onData={onData}
-      />
-    ),
-    complianceDeclarations: (
-      <ComplianceItemForm
-        name={['modellingAndValidation', 'complianceDeclarations', 'compliance']}
-        lang={lang}
-        formRef={formRef}
-        onData={onData}
-      />
-    ),
-  } : {
-    ...defaultTabContent,
-    validation: (
-      <ReviewItemView
-        data={initData?.modellingAndValidation?.validation?.review}
-      />
-    ),
-    complianceDeclarations: (
-      <ComplianceItemView
-        data={initData?.modellingAndValidation?.complianceDeclarations?.compliance}
-      />
-    ),
-  }
-
+  const tabContent: { [key: string]: JSX.Element } =
+    type === 'edit'
+      ? {
+          ...defaultTabContent,
+          validation: (
+            <ReveiwItemForm
+              name={['modellingAndValidation', 'validation', 'review']}
+              lang={lang}
+              formRef={formRef}
+              onData={onData}
+            />
+          ),
+          complianceDeclarations: (
+            <ComplianceItemForm
+              name={['modellingAndValidation', 'complianceDeclarations', 'compliance']}
+              lang={lang}
+              formRef={formRef}
+              onData={onData}
+            />
+          ),
+        }
+      : {
+          ...defaultTabContent,
+          validation: (
+            <ReviewItemView data={initData?.modellingAndValidation?.validation?.review} />
+          ),
+          complianceDeclarations: (
+            <ComplianceItemView
+              data={initData?.modellingAndValidation?.complianceDeclarations?.compliance}
+            />
+          ),
+        };
 
   useEffect(() => {
     actionRefExchangeTableInput.current?.reload();
