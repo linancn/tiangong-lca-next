@@ -200,7 +200,7 @@
             }
           ]
         },
-        "dataSetValidUntil": {
+        "common:dataSetValidUntil": {
           "value": "str",
           "rules": [
             {
@@ -210,7 +210,7 @@
             }
           ]
         },
-        "timeRepresentativenessDescription": [
+        "common:timeRepresentativenessDescription": [
           {
             "@xml:lang": "str",
             "#text": "str"
@@ -550,7 +550,7 @@
               }
             ]
           },
-          "referenceToNameOfReviewerAndInstitution": {
+          "common:referenceToNameOfReviewerAndInstitution": {
             "value": {
               "@refObjectId": "str",
               "@type": "str",
@@ -570,13 +570,13 @@
               }
             ]
           },
-          "otherReviewDetails": [
+          "common:otherReviewDetails": [
             {
               "@xml:lang": "str",
               "#text": "str"
             }
           ],
-          "referenceToCompleteReviewReport": {
+          "common:referenceToCompleteReviewReport": {
             "value": {
               "@refObjectId": "str",
               "@type": "str",
@@ -806,7 +806,7 @@
             }
           ]
         },
-        "referenceToDataSetUseApproval": {
+        "common:referenceToDataSetUseApproval": {
           "@refObjectId": "str",
           "@type": "str",
           "@uri": "str",

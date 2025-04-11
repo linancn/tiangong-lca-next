@@ -527,9 +527,9 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='Data set valid until:'
               />
             }
-            name={['processInformation', 'time', 'dataSetValidUntil']}
+            name={['processInformation', 'time', 'common:dataSetValidUntil']}
             rules={getRules(
-              schema['processDataSet']['processInformation']['time']['dataSetValidUntil']['rules'],
+              schema['processDataSet']['processInformation']['time']['common:dataSetValidUntil']['rules'],
             )}
           >
             <Input />
@@ -541,7 +541,7 @@ export const ProcessForm: FC<Props> = ({
             />
           </Divider>
           <LangTextItemForm
-            name={['processInformation', 'time', 'timeRepresentativenessDescription']}
+            name={['processInformation', 'time', 'common:timeRepresentativenessDescription']}
             label={
               <FormattedMessage
                 id='pages.process.view.processInformation.timeRepresentativenessDescription'
