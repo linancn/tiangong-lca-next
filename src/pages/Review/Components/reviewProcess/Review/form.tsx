@@ -165,7 +165,7 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                       onData={onData}
                       rules={getRules(
                         schema['processDataSet']['modellingAndValidation']['validation']['review'][
-                          'referenceToNameOfReviewerAndInstitution'
+                          'common:referenceToNameOfReviewerAndInstitution'
                         ]['rules'],
                       )}
                     />
@@ -184,7 +184,7 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                       onData={onData}
                       rules={getRules(
                         schema['processDataSet']['modellingAndValidation']['validation']['review'][
-                          'referenceToCompleteReviewReport'
+                          'common:referenceToCompleteReviewReport'
                         ]['rules'],
                       )}
                     />

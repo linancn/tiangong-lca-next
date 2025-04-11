@@ -529,7 +529,9 @@ export const ProcessForm: FC<Props> = ({
             }
             name={['processInformation', 'time', 'common:dataSetValidUntil']}
             rules={getRules(
-              schema['processDataSet']['processInformation']['time']['common:dataSetValidUntil']['rules'],
+              schema['processDataSet']['processInformation']['time']['common:dataSetValidUntil'][
+                'rules'
+              ],
             )}
           >
             <Input />
@@ -674,7 +676,9 @@ export const ProcessForm: FC<Props> = ({
               />
             }
             rules={getRules(
-              schema['processDataSet']['processInformation']['technology']['technologyDescriptionAndIncludedProcesses']['rules'],
+              schema['processDataSet']['processInformation']['technology'][
+                'technologyDescriptionAndIncludedProcesses'
+              ]['rules'],
             )}
           />
           <Divider orientationMargin='0' orientation='left' plain>
@@ -1037,7 +1041,9 @@ export const ProcessForm: FC<Props> = ({
               />
             }
             rules={getRules(
-              schema['processDataSet']['modellingAndValidation']['dataSourcesTreatmentAndRepresentativeness']['dataCutOffAndCompletenessPrinciples']['rules'],
+              schema['processDataSet']['modellingAndValidation'][
+                'dataSourcesTreatmentAndRepresentativeness'
+              ]['dataCutOffAndCompletenessPrinciples']['rules'],
             )}
           />
           <Divider orientationMargin='0' orientation='left' plain>
@@ -1168,7 +1174,9 @@ export const ProcessForm: FC<Props> = ({
             formRef={formRef}
             onData={onData}
             rules={getRules(
-              schema['processDataSet']['modellingAndValidation']['dataSourcesTreatmentAndRepresentativeness']['referenceToDataSource']['rules'],
+              schema['processDataSet']['modellingAndValidation'][
+                'dataSourcesTreatmentAndRepresentativeness'
+              ]['referenceToDataSource']['rules'],
             )}
           />
           <br />

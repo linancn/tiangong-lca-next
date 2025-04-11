@@ -139,7 +139,8 @@ export function genProcessJsonOrdered(id: string, data: any) {
         quantitativeReference: { ...quantitativeReference },
         time: {
           'common:referenceYear': data?.processInformation?.time?.['common:referenceYear'] ?? {},
-          'common:dataSetValidUntil': data?.processInformation?.time?.['common:dataSetValidUntil'] ?? {},
+          'common:dataSetValidUntil':
+            data?.processInformation?.time?.['common:dataSetValidUntil'] ?? {},
           'common:timeRepresentativenessDescription': getLangJson(
             data?.processInformation?.time?.['common:timeRepresentativenessDescription'],
           ),
@@ -431,7 +432,8 @@ export function genProcessJsonOrdered(id: string, data: any) {
                     review?.['common:referenceToCompleteReviewReport']?.['@refObjectId'] ?? {},
                   '@type': review?.['common:referenceToCompleteReviewReport']?.['@type'] ?? {},
                   '@uri': review?.['common:referenceToCompleteReviewReport']?.['@uri'] ?? {},
-                  '@version': review?.['common:referenceToCompleteReviewReport']?.['@version'] ?? {},
+                  '@version':
+                    review?.['common:referenceToCompleteReviewReport']?.['@version'] ?? {},
                   'common:shortDescription': getLangJson(
                     review?.['common:referenceToCompleteReviewReport']?.['common:shortDescription'],
                   ),
@@ -831,7 +833,8 @@ export function genProcessFromData(data: any) {
       },
       time: {
         'common:referenceYear': data?.processInformation?.time?.['common:referenceYear'] ?? {},
-        'common:dataSetValidUntil': data?.processInformation?.time?.['common:dataSetValidUntil'] ?? {},
+        'common:dataSetValidUntil':
+          data?.processInformation?.time?.['common:dataSetValidUntil'] ?? {},
         'common:timeRepresentativenessDescription': getLangList(
           data?.processInformation?.time?.['common:timeRepresentativenessDescription'],
         ),
