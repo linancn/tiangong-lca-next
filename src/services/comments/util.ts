@@ -60,7 +60,8 @@ export function genProcessJsonOrdered(id: string, data: any) {
                     review?.['common:referenceToCompleteReviewReport']?.['@refObjectId'] ?? {},
                   '@type': review?.['common:referenceToCompleteReviewReport']?.['@type'] ?? {},
                   '@uri': review?.['common:referenceToCompleteReviewReport']?.['@uri'] ?? {},
-                  '@version': review?.['common:referenceToCompleteReviewReport']?.['@version'] ?? {},
+                  '@version':
+                    review?.['common:referenceToCompleteReviewReport']?.['@version'] ?? {},
                   'common:shortDescription': getLangJson(
                     review?.['common:referenceToCompleteReviewReport']?.['common:shortDescription'],
                   ),
