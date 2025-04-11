@@ -172,7 +172,7 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                     <br />
                     <SourceSelectForm
                       parentName={name}
-                      name={[subField.name, 'referenceToCompleteReviewReport']}
+                      name={[subField.name, 'common:referenceToCompleteReviewReport']}
                       label={
                         <FormattedMessage
                           id='pages.process.view.modellingAndValidation.referenceToCompleteReviewReport'
