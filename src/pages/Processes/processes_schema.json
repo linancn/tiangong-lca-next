@@ -255,12 +255,21 @@
         }
       },
       "technology": {
-        "technologyDescriptionAndIncludedProcesses": [
-          {
-            "@xml:lang": "str",
-            "#text": "str"
-          }
-        ],
+        "technologyDescriptionAndIncludedProcesses": {
+          "values": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ],
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.process.validator.technologyDescriptionAndIncludedProcesses.required",
+              "defaultMessage": "Please input technology description including background system"
+            }
+          ]
+        },
         "referenceToIncludedProcesses": {
           "@refObjectId": "str",
           "@type": "str",
@@ -377,12 +386,21 @@
         }
       },
       "dataSourcesTreatmentAndRepresentativeness": {
-        "dataCutOffAndCompletenessPrinciples": [
-          {
-            "@xml:lang": "str",
-            "#text": "str"
-          }
-        ],
+        "dataCutOffAndCompletenessPrinciples": {
+          "values": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ],
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.process.validator.dataCutOffAndCompletenessPrinciples.required",
+              "defaultMessage": "Please input data cut-off and completeness principles"
+            }
+          ]
+        },
         "deviationsFromCutOffAndCompletenessPrinciples": [
           {
             "@xml:lang": "str",
@@ -426,13 +444,22 @@
           ]
         },
         "referenceToDataSource": {
-          "@type": "str",
-          "@refObjectId": "str",
-          "@uri": "str",
-          "common:shortDescription": [
+          "value": {
+            "@type": "str",
+            "@refObjectId": "str",
+            "@uri": "str",
+            "common:shortDescription": [
+              {
+                "@xml:lang": "str",
+                "#text": "str"
+              }
+            ]
+          },
+          "rules": [
             {
-              "@xml:lang": "str",
-              "#text": "str"
+              "required": true,
+              "messageKey": "pages.process.validator.referenceToDataSource.required",
+              "defaultMessage": "Please input data source(s) used for this data set"
             }
           ]
         },

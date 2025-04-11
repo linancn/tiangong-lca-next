@@ -673,6 +673,9 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='Technology description including background system'
               />
             }
+            rules={getRules(
+              schema['processDataSet']['processInformation']['technology']['technologyDescriptionAndIncludedProcesses']['rules'],
+            )}
           />
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
@@ -1033,6 +1036,9 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='Data cut-off and completeness principles'
               />
             }
+            rules={getRules(
+              schema['processDataSet']['modellingAndValidation']['dataSourcesTreatmentAndRepresentativeness']['dataCutOffAndCompletenessPrinciples']['rules'],
+            )}
           />
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
@@ -1161,6 +1167,9 @@ export const ProcessForm: FC<Props> = ({
             lang={lang}
             formRef={formRef}
             onData={onData}
+            rules={getRules(
+              schema['processDataSet']['modellingAndValidation']['dataSourcesTreatmentAndRepresentativeness']['referenceToDataSource']['rules'],
+            )}
           />
           <br />
           <Form.Item
