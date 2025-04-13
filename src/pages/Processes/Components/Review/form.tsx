@@ -166,14 +166,14 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                       onData={onData}
                       rules={getRules(
                         schema['processDataSet']['modellingAndValidation']['validation']['review'][
-                          'referenceToNameOfReviewerAndInstitution'
+                          'common:referenceToNameOfReviewerAndInstitution'
                         ]['rules'],
                       )}
                     />
                     <br />
                     <SourceSelectForm
                       parentName={name}
-                      name={[subField.name, 'referenceToCompleteReviewReport']}
+                      name={[subField.name, 'common:referenceToCompleteReviewReport']}
                       label={
                         <FormattedMessage
                           id='pages.process.view.modellingAndValidation.referenceToCompleteReviewReport'
@@ -185,7 +185,7 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                       onData={onData}
                       rules={getRules(
                         schema['processDataSet']['modellingAndValidation']['validation']['review'][
-                          'referenceToCompleteReviewReport'
+                          'common:referenceToCompleteReviewReport'
                         ]['rules'],
                       )}
                     />

@@ -527,9 +527,11 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='Data set valid until:'
               />
             }
-            name={['processInformation', 'time', 'dataSetValidUntil']}
+            name={['processInformation', 'time', 'common:dataSetValidUntil']}
             rules={getRules(
-              schema['processDataSet']['processInformation']['time']['dataSetValidUntil']['rules'],
+              schema['processDataSet']['processInformation']['time']['common:dataSetValidUntil'][
+                'rules'
+              ],
             )}
           >
             <Input />
@@ -541,7 +543,7 @@ export const ProcessForm: FC<Props> = ({
             />
           </Divider>
           <LangTextItemForm
-            name={['processInformation', 'time', 'timeRepresentativenessDescription']}
+            name={['processInformation', 'time', 'common:timeRepresentativenessDescription']}
             label={
               <FormattedMessage
                 id='pages.process.view.processInformation.timeRepresentativenessDescription'
@@ -673,6 +675,11 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='Technology description including background system'
               />
             }
+            rules={getRules(
+              schema['processDataSet']['processInformation']['technology'][
+                'technologyDescriptionAndIncludedProcesses'
+              ]['rules'],
+            )}
           />
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
@@ -1033,6 +1040,11 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='Data cut-off and completeness principles'
               />
             }
+            rules={getRules(
+              schema['processDataSet']['modellingAndValidation'][
+                'dataSourcesTreatmentAndRepresentativeness'
+              ]['dataCutOffAndCompletenessPrinciples']['rules'],
+            )}
           />
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
@@ -1161,6 +1173,11 @@ export const ProcessForm: FC<Props> = ({
             lang={lang}
             formRef={formRef}
             onData={onData}
+            rules={getRules(
+              schema['processDataSet']['modellingAndValidation'][
+                'dataSourcesTreatmentAndRepresentativeness'
+              ]['referenceToDataSource']['rules'],
+            )}
           />
           <br />
           <Form.Item

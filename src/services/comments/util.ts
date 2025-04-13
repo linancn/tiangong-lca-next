@@ -55,14 +55,15 @@ export function genProcessJsonOrdered(id: string, data: any) {
                   ),
                 },
                 'common:otherReviewDetails': getLangJson(review?.['common:otherReviewDetails']),
-                referenceToCompleteReviewReport: {
+                'common:referenceToCompleteReviewReport': {
                   '@refObjectId':
-                    review?.['referenceToCompleteReviewReport']?.['@refObjectId'] ?? {},
-                  '@type': review?.['referenceToCompleteReviewReport']?.['@type'] ?? {},
-                  '@uri': review?.['referenceToCompleteReviewReport']?.['@uri'] ?? {},
-                  '@version': review?.['referenceToCompleteReviewReport']?.['@version'] ?? {},
+                    review?.['common:referenceToCompleteReviewReport']?.['@refObjectId'] ?? {},
+                  '@type': review?.['common:referenceToCompleteReviewReport']?.['@type'] ?? {},
+                  '@uri': review?.['common:referenceToCompleteReviewReport']?.['@uri'] ?? {},
+                  '@version':
+                    review?.['common:referenceToCompleteReviewReport']?.['@version'] ?? {},
                   'common:shortDescription': getLangJson(
-                    review?.['referenceToCompleteReviewReport']?.['common:shortDescription'],
+                    review?.['common:referenceToCompleteReviewReport']?.['common:shortDescription'],
                   ),
                 },
               };
@@ -158,13 +159,13 @@ export function genProcessFromData(data: any) {
               ),
             },
             'common:otherReviewDetails': getLangList(review?.['common:otherReviewDetails']),
-            referenceToCompleteReviewReport: {
-              '@refObjectId': review?.['referenceToCompleteReviewReport']?.['@refObjectId'],
-              '@type': review?.['referenceToCompleteReviewReport']?.['@type'],
-              '@uri': review?.['referenceToCompleteReviewReport']?.['@uri'],
-              '@version': review?.['referenceToCompleteReviewReport']?.['@version'],
+            'common:referenceToCompleteReviewReport': {
+              '@refObjectId': review?.['common:referenceToCompleteReviewReport']?.['@refObjectId'],
+              '@type': review?.['common:referenceToCompleteReviewReport']?.['@type'],
+              '@uri': review?.['common:referenceToCompleteReviewReport']?.['@uri'],
+              '@version': review?.['common:referenceToCompleteReviewReport']?.['@version'],
               'common:shortDescription': getLangList(
-                review?.['referenceToCompleteReviewReport']?.['common:shortDescription'],
+                review?.['common:referenceToCompleteReviewReport']?.['common:shortDescription'],
               ),
             },
           };

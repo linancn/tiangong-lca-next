@@ -1,5 +1,6 @@
 import { FormattedMessage } from '@umijs/max';
 import { Form, Input, Modal, Select } from 'antd';
+import BigNumber from 'bignumber.js';
 import React, { useEffect, useState } from 'react';
 
 interface UnitConvertProps {
@@ -35,7 +36,7 @@ const UnitConvert: React.FC<UnitConvertProps> = ({
     if (values.value && values.unit) {
       const selectedUnit = units.find((u) => u.name === values.unit);
       if (selectedUnit) {
-        setResult(values.value * selectedUnit.meanValue);
+        setResult(new BigNumber(values.value).times(selectedUnit.meanValue).toNumber());
       }
     }
   };

@@ -469,7 +469,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
               }
               labelStyle={{ width: '140px' }}
             >
-              {initData.processInformation?.time?.dataSetValidUntil ?? '-'}
+              {initData.processInformation?.time?.['common:dataSetValidUntil'] ?? '-'}
             </Descriptions.Item>
           </Descriptions>
           <Divider orientationMargin='0' orientation='left' plain>
@@ -479,7 +479,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
             />
           </Divider>
           <LangTextItemDescription
-            data={initData.processInformation?.time?.['timeRepresentativenessDescription']}
+            data={initData.processInformation?.time?.['common:timeRepresentativenessDescription']}
           />
         </Card>
         <br />
