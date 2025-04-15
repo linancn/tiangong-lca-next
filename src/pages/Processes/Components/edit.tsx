@@ -115,7 +115,7 @@ const ProcessEdit: FC<Props> = ({
     const traverse = (current: any) => {
       if (!current || typeof current !== 'object') return;
 
-      if ('@refObjectId' in current) {
+      if ('@refObjectId' in current && current['@refObjectId'] && current['@version']) {
         result.push(current);
       }
 
@@ -215,7 +215,7 @@ const ProcessEdit: FC<Props> = ({
       const result = await addReviewsApi(reviewId, id, version);
       if (result?.error) return;
 
-      const { error, data } = await updateProcessStateCode(id, version, reviewId);
+      const { error, data } = await updateProcessStateCode(id, version, reviewId,initData.stateCode);
 
       let stateCode = 0;
       if (!error && data && data.length) {
@@ -257,7 +257,7 @@ const ProcessEdit: FC<Props> = ({
     setSpinning(true);
     getProcessDetail(id, version).then(async (result: any) => {
       const dataSet = genProcessFromData(result.data?.json?.processDataSet ?? {});
-      setInitData({ ...dataSet, id: id });
+      setInitData({ ...dataSet, id: id,stateCode:result.data?.stateCode });
       setFromData({ ...dataSet, id: id });
       setExchangeDataSource(dataSet?.exchanges?.exchange ?? []);
       formRefEdit.current?.resetFields();

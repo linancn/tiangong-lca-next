@@ -451,7 +451,7 @@ const ToolbarEdit: FC<Props> = ({
   }, [isSave, setIsSave]);
 
   const updateInfoData = (data: any) => {
-    setInfoData({ ...data, id: thisId });
+    setInfoData({ ...data, id: thisId,version:thisVersion });
   };
 
   const updateTargetAmount = (data: any) => {
@@ -879,7 +879,7 @@ const ToolbarEdit: FC<Props> = ({
         const fromData = genLifeCycleModelInfoFromData(
           result.data?.json?.lifeCycleModelDataSet ?? {},
         );
-        setInfoData({ ...fromData, id: thisId });
+        setInfoData({ ...fromData, id: thisId, version: thisVersion });
         const model = genLifeCycleModelData(result.data?.json_tg ?? {}, lang);
         let initNodes = (model?.nodes ?? []).map((node: any) => {
           return {
@@ -946,7 +946,7 @@ const ToolbarEdit: FC<Props> = ({
           },
         },
       };
-      setInfoData({ ...newData, id: thisId });
+      setInfoData({ ...newData, id: thisId ,version:thisVersion});
       modelData({
         nodes: [],
         edges: [],
