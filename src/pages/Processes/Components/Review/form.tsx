@@ -6,7 +6,7 @@ import { getRules } from '@/pages/Utils';
 import { CloseOutlined } from '@ant-design/icons';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Divider, Form, Row, Select, Space } from 'antd';
-import { FC, useEffect, useState } from 'react';
+import { FC, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import schema from '../../processes_schema.json';
 import { reviewTypeOptions } from '../optiondata';
@@ -23,11 +23,6 @@ type Props = {
 
 const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
   const [reviewDetailsError, setReviewDetailsError] = useState(false);
-  const formList = Form.useWatch([...name], formRef?.current);
-
-  useEffect(() => {
-    onData();
-  }, [formList]);
   return (
     <Form.Item>
       <Form.List name={[...name]}>
