@@ -40,8 +40,7 @@ export default {
   'pages.lifeCycleModel.information.variableParameter.relativeStandardDeviation95In': '95%相对标准偏差',
   'pages.lifeCycleModel.information.variableParameter.comment': '备注，单位，默认值',
 
-
-'pages.lifeCycleModel.modellingAndValidation.lCIMethodAndAllocation': 'LCI方法和分配',
+  'pages.lifeCycleModel.modellingAndValidation.lCIMethodAndAllocation': 'LCI方法和分配',
   'pages.lifeCycleModel.modellingAndValidation.typeOfDataSet': '数据集类型',
   'pages.lifeCycleModel.modellingAndValidation.lCIMethodPrinciple': 'LCI方法原则',
   'pages.lifeCycleModel.modellingAndValidation.deviationsFromLCIMethodPrinciple': '偏离LCI方法原则/解释', //
@@ -185,7 +184,6 @@ export default {
   'pages.lifeCycleModel.view.modellingAndValidation.LCIMethodPrinciple.notApplicable': '不适用',
   'pages.lifeCycleModel.view.modellingAndValidation.LCIMethodPrinciple.other': '其他',
 
-
   'pages.lifeCycleModel.view.modellingAndValidation.LCIMethodApproach.allocationMarketValue': '分配-市场价值',
   'pages.lifeCycleModel.view.modellingAndValidation.LCIMethodApproach.allocationGrossCalorificValue': '分配-总热值',
   'pages.lifeCycleModel.view.modellingAndValidation.LCIMethodApproach.allocationNetCalorificValue': '分配-净热值',
@@ -239,7 +237,6 @@ export default {
   'pages.lifeCycleModel.view.modellingAndValidation.completeness.completenessElementaryFlows.value': '完整性值',
   'pages.lifeCycleModel.view.modellingAndValidation.completeness.completenessOtherProblemField': '完整性其他问题领域',
 
-
   'pages.lifeCycleModel.view.administrativeInformation.workflowAndPublicationStatus.workingDraft': '草稿',
   'pages.lifeCycleModel.view.administrativeInformation.workflowAndPublicationStatus.finalDraftForInternalReview': '内部审查的最终草稿',
   'pages.lifeCycleModel.view.administrativeInformation.workflowAndPublicationStatus.finalDraftForExternalReview': '外部审查的最终草稿',
@@ -248,7 +245,6 @@ export default {
   'pages.lifeCycleModel.view.administrativeInformation.workflowAndPublicationStatus.withdrawn': '撤回',
   'pages.lifeCycleModel.view.administrativeInformation.workflowAndPublicationStatus.dataSetFinalisedSubsystemsPublished': '数据集最终版; 子系统已发布',
   'pages.lifeCycleModel.view.administrativeInformation.workflowAndPublicationStatus.dataSetFinalisedEntirelyPublished': '数据集最终版; 已全部发布',
-
 
   'pages.lifecyclemodel.validator.locations.required': '请输入位置',
   'pages.lifecyclemodel.validator.version.required': '请输入版本',

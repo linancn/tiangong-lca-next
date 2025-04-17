@@ -32,15 +32,19 @@ export async function updateProcess(id: string, version: string, data: any) {
   return updateResult;
 }
 
-export async function updateProcessStateCode(id: string, version: string, reviewId: string,stateCode:number) {
-
-    const updateResult = await supabase
-      .from('processes')
-      .update({ state_code: stateCode, review_id: reviewId })
-      .eq('id', id)
-      .eq('version', version)
-      .select('state_code');
-    return updateResult;
+export async function updateProcessStateCode(
+  id: string,
+  version: string,
+  reviewId: string,
+  stateCode: number,
+) {
+  const updateResult = await supabase
+    .from('processes')
+    .update({ state_code: stateCode, review_id: reviewId })
+    .eq('id', id)
+    .eq('version', version)
+    .select('state_code');
+  return updateResult;
 }
 
 export async function getProcessTableAll(

@@ -18,14 +18,15 @@ import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { LifeCycleModelForm } from '../form';
 // const { TextArea } = Input;
-import { getUserTeamId } from '@/services/roles/api';
-import { v4 } from 'uuid';
 import { getRefData, updateReviewIdAndStateCode } from '@/services/general/api';
-import { addReviewsApi } from '@/services/reviews/api';
 import {
-  getLifeCycleModelDetail, updateLifeCycleModelStateCode
+  getLifeCycleModelDetail,
+  updateLifeCycleModelStateCode,
 } from '@/services/lifeCycleModels/api';
 import { getProcessDetail, updateProcessStateCode } from '@/services/processes/api';
+import { addReviewsApi } from '@/services/reviews/api';
+import { getUserTeamId } from '@/services/roles/api';
+import { v4 } from 'uuid';
 
 type Props = {
   lang: string;
@@ -54,25 +55,26 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData, action }) => {
     setReferenceValue(referenceValue + 1);
   };
   const handletFromData = () => {
-    if(activeTabKey === 'complianceDeclarations'){
+    if (activeTabKey === 'complianceDeclarations') {
       setFromData({
         ...fromData,
-        modellingAndValidation:{
+        modellingAndValidation: {
           ...fromData?.modellingAndValidation,
-          complianceDeclarations:formRefEdit.current?.getFieldsValue()?.modellingAndValidation?.complianceDeclarations
+          complianceDeclarations:
+            formRefEdit.current?.getFieldsValue()?.modellingAndValidation?.complianceDeclarations,
         },
       });
-      return
+      return;
     }
-    if(activeTabKey === 'validation'){
+    if (activeTabKey === 'validation') {
       setFromData({
         ...fromData,
-        modellingAndValidation:{
+        modellingAndValidation: {
           ...fromData?.modellingAndValidation,
-          validation:formRefEdit.current?.getFieldsValue()?.modellingAndValidation?.validation
+          validation: formRefEdit.current?.getFieldsValue()?.modellingAndValidation?.validation,
         },
       });
-      return
+      return;
     }
 
     if (fromData) {
@@ -101,7 +103,10 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData, action }) => {
 
   const getAllProcesses = async () => {
     lifeCycleModelDetail = await getLifeCycleModelDetail(data.id, data.version);
-    if (lifeCycleModelDetail?.data?.state_code >= 20 && lifeCycleModelDetail?.data?.state_code < 100) {
+    if (
+      lifeCycleModelDetail?.data?.state_code >= 20 &&
+      lifeCycleModelDetail?.data?.state_code < 100
+    ) {
       message.error(
         intl.formatMessage({
           id: 'pages.process.review.error',
@@ -117,7 +122,7 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData, action }) => {
       }
     });
     return processes;
-  }
+  };
 
   const getAllRefObj = (obj: any): any[] => {
     // console.log('getAllRefObj', obj)
@@ -157,7 +162,7 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData, action }) => {
     };
 
     const refObjs = getAllRefObj(data);
-    console.log('refObjs', refObjs)
+    console.log('refObjs', refObjs);
     const unReview: any[] = [];
     const unReviewProcesses: any[] = [];
     const checkReferences = async (
@@ -234,12 +239,18 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData, action }) => {
       console.log('lifeCycleModelDetail', lifeCycleModelDetail?.data?.state_code);
       const lifeCycleModelStateCode = lifeCycleModelDetail?.data?.state_code + 20;
 
-      const { error: updateModalStateError, data: updateModalStateData } = await updateLifeCycleModelStateCode(data.id, data.version, lifeCycleModelStateCode);
+      const { error: updateModalStateError, data: updateModalStateData } =
+        await updateLifeCycleModelStateCode(data.id, data.version, lifeCycleModelStateCode);
       console.log('updateModalStateError', updateModalStateError, updateModalStateData);
 
       if (unReviewProcesses.length > 0) {
         for (const process of unReviewProcesses) {
-          await updateProcessStateCode(process.id, process.version,reviewId, lifeCycleModelStateCode);
+          await updateProcessStateCode(
+            process.id,
+            process.version,
+            reviewId,
+            lifeCycleModelStateCode,
+          );
         }
       }
       unReview.forEach(async (item: any) => {
@@ -299,11 +310,11 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData, action }) => {
         }}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
-            {showReview && <Button
-              onClick={submitReview}
-            >
-              <FormattedMessage id='pages.button.review' defaultMessage='Submit for review' />
-            </Button>}
+            {showReview && (
+              <Button onClick={submitReview}>
+                <FormattedMessage id='pages.button.review' defaultMessage='Submit for review' />
+              </Button>
+            )}
             {action === 'edit' ? (
               <Button
                 onClick={() => {

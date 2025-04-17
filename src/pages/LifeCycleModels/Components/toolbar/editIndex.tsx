@@ -451,7 +451,7 @@ const ToolbarEdit: FC<Props> = ({
   }, [isSave, setIsSave]);
 
   const updateInfoData = (data: any) => {
-    setInfoData({ ...data, id: thisId,version:thisVersion });
+    setInfoData({ ...data, id: thisId, version: thisVersion });
   };
 
   const updateTargetAmount = (data: any) => {
@@ -743,7 +743,6 @@ const ToolbarEdit: FC<Props> = ({
       },
     };
 
-
     if (thisAction === 'edit') {
       updateLifeCycleModel({ ...newData, id: thisId, version: thisVersion }).then((result: any) => {
         if (result.data) {
@@ -763,7 +762,7 @@ const ToolbarEdit: FC<Props> = ({
       });
     } else if (thisAction === 'create') {
       const newId = actionType === 'createVersion' ? thisId : v4();
-      console.log(newData,'newData')
+      console.log(newData, 'newData');
       createLifeCycleModel({ ...newData, id: newId }).then((result: any) => {
         if (result.data) {
           message.success(
@@ -927,14 +926,16 @@ const ToolbarEdit: FC<Props> = ({
       const newData = {
         modellingAndValidation: {
           complianceDeclarations: {
-            compliance: [{
-              'common:approvalOfOverallCompliance': 'Fully compliant',
-              'common:nomenclatureCompliance': 'Fully compliant',
-              'common:methodologicalCompliance': 'Fully compliant',
-              'common:reviewCompliance': 'Fully compliant',
-              'common:documentationCompliance': 'Fully compliant',
-              'common:qualityCompliance': 'Fully compliant',
-            }],
+            compliance: [
+              {
+                'common:approvalOfOverallCompliance': 'Fully compliant',
+                'common:nomenclatureCompliance': 'Fully compliant',
+                'common:methodologicalCompliance': 'Fully compliant',
+                'common:reviewCompliance': 'Fully compliant',
+                'common:documentationCompliance': 'Fully compliant',
+                'common:qualityCompliance': 'Fully compliant',
+              },
+            ],
           },
           validation: {
             review: [
@@ -953,7 +954,7 @@ const ToolbarEdit: FC<Props> = ({
           },
         },
       };
-      setInfoData({ ...newData, id: thisId ,version:thisVersion});
+      setInfoData({ ...newData, id: thisId, version: thisVersion });
       modelData({
         nodes: [],
         edges: [],
@@ -996,7 +997,7 @@ const ToolbarEdit: FC<Props> = ({
         lang={lang}
         setDrawerVisible={setTargetAmountDrawerVisible}
         onData={updateTargetAmount}
-      /> 
+      />
 
       <ModelToolbarAdd buttonType={'icon'} lang={lang} onData={addProcessNodes} />
       {/* <Tooltip

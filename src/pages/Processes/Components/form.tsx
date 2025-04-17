@@ -479,11 +479,7 @@ export const ProcessForm: FC<Props> = ({
         </Card>
 
         <SourceSelectForm
-          name={[
-            'processInformation',
-            'dataSetInformation',
-            'referenceToExternalDocumentation',
-          ]}
+          name={['processInformation', 'dataSetInformation', 'referenceToExternalDocumentation']}
           label={
             <FormattedMessage
               id='pages.process.view.processInformation.referenceToExternalDocumentation'

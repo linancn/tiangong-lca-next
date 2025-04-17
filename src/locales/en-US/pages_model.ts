@@ -36,14 +36,11 @@ export default {
   'pages.lifeCycleModel.information.variableParameter.relativeStandardDeviation95In': 'Relative StdDev in %',
   'pages.lifeCycleModel.information.variableParameter.comment': 'Comment, units, defaults',
 
-
-
   'pages.lifeCycleModel.information.referenceToExternalDocumentation': 'Data set report, background info',
   'pages.lifeCycleModel.information.otherReviewDetails': 'Subsequent review comments',
   'pages.lifeCycleModel.information.technology.referenceToDiagram': 'Life cycle model diagramm(s) or screenshot(s)',
   'pages.lifeCycleModel.information.referenceToCompleteReviewReport': 'Complete review report',
 
-  
   'pages.lifeCycleModel.modellingAndValidation.typeOfDataSet': 'Type of data set',
   'pages.lifeCycleModel.modellingAndValidation.lCIMethodAndAllocation': 'LCI method and allocation',
   'pages.lifeCycleModel.modellingAndValidation.lCIMethodPrinciple': 'LCI method principle',
@@ -104,7 +101,6 @@ export default {
   'pages.lifeCycleModel.modellingAndValidation.type': 'Type of review',
   'pages.lifeCycleModel.modellingAndValidation.reviewDetails': 'Review details',
   'pages.lifeCycleModel.modellingAndValidation.referenceToNameOfReviewerAndInstitution': 'Reviewer name and institution',
-
 
   'pages.lifeCycleModel.modellingAndValidation.useAdviceForDataSet': 'Use advice for data set',
   'pages.lifeCycleModel.modellingAndValidation.referenceToComplianceSystem': 'Compliance system name',
@@ -242,7 +238,6 @@ export default {
   'pages.lifeCycleModel.view.modellingAndValidation.completeness.noise': 'Noise',
   'pages.lifeCycleModel.view.modellingAndValidation.completeness.completenessElementaryFlows.value': 'value',
   'pages.lifeCycleModel.view.modellingAndValidation.completeness.completenessOtherProblemField': 'Completeness other problem field(s)',
-
 
   'pages.lifeCycleModel.view.administrativeInformation.workflowAndPublicationStatus.workingDraft': 'Working draft',
   'pages.lifeCycleModel.view.administrativeInformation.workflowAndPublicationStatus.finalDraftForInternalReview': 'Final draft for internal review',
