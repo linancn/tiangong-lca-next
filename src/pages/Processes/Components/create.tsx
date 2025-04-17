@@ -236,7 +236,7 @@ const ProcessCreate: FC<CreateProps> = ({
             }}
             onFinish={async () => {
               const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
-              const fieldsValue = formRefCreate.current?.getFieldsValue();
+              // const fieldsValue = formRefCreate.current?.getFieldsValue();
               const exchanges = fromData?.exchanges;
               if (!exchanges || !exchanges?.exchange || exchanges?.exchange?.length === 0) {
                 message.error(
@@ -260,7 +260,8 @@ const ProcessCreate: FC<CreateProps> = ({
               }
 
               const result = await createProcess(paramsId, {
-                ...fieldsValue,
+                // ...fieldsValue,
+                ...fromData,
                 exchanges,
               });
               if (result.data) {

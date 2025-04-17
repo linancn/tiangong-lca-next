@@ -743,7 +743,6 @@ const ToolbarEdit: FC<Props> = ({
       },
     };
 
-    console.log(thisAction, 'thisAction', action);
 
     if (thisAction === 'edit') {
       updateLifeCycleModel({ ...newData, id: thisId, version: thisVersion }).then((result: any) => {
@@ -764,6 +763,7 @@ const ToolbarEdit: FC<Props> = ({
       });
     } else if (thisAction === 'create') {
       const newId = actionType === 'createVersion' ? thisId : v4();
+      console.log(newData,'newData')
       createLifeCycleModel({ ...newData, id: newId }).then((result: any) => {
         if (result.data) {
           message.success(
@@ -927,14 +927,21 @@ const ToolbarEdit: FC<Props> = ({
       const newData = {
         modellingAndValidation: {
           complianceDeclarations: {
-            compliance: {
+            compliance: [{
               'common:approvalOfOverallCompliance': 'Fully compliant',
               'common:nomenclatureCompliance': 'Fully compliant',
               'common:methodologicalCompliance': 'Fully compliant',
               'common:reviewCompliance': 'Fully compliant',
               'common:documentationCompliance': 'Fully compliant',
               'common:qualityCompliance': 'Fully compliant',
-            },
+            }],
+          },
+          validation: {
+            review: [
+              {
+                'common:scope': [{}],
+              },
+            ],
           },
         },
         administrativeInformation: {
@@ -989,7 +996,7 @@ const ToolbarEdit: FC<Props> = ({
         lang={lang}
         setDrawerVisible={setTargetAmountDrawerVisible}
         onData={updateTargetAmount}
-      />
+      /> 
 
       <ModelToolbarAdd buttonType={'icon'} lang={lang} onData={addProcessNodes} />
       {/* <Tooltip

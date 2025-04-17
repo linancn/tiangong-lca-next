@@ -6,20 +6,32 @@ import { copyrightOptions } from '@/pages/Processes/Components/optiondata';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { getRules } from '@/pages/Utils';
 import { ProFormInstance } from '@ant-design/pro-components';
-import { Card, Form, Input, Select, Space, theme } from 'antd';
+import { Card, Form, Input, Select, Space, theme, Divider } from 'antd';
 import type { FC } from 'react';
 import React, { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import schema from '../lifecyclemodels.json';
 import {
-  approvalOfOverallComplianceOptions,
-  documentationComplianceOptions,
+  // approvalOfOverallComplianceOptions,
+  // documentationComplianceOptions,
   licenseTypeOptions,
-  methodologicalComplianceOptions,
-  nomenclatureComplianceOptions,
-  qualityComplianceOptions,
-  reviewComplianceOptions,
+  // methodologicalComplianceOptions,
+  // nomenclatureComplianceOptions,
+  // qualityComplianceOptions,
+  // reviewComplianceOptions,
+  uncertaintyDistributionTypeOptions,
+  processtypeOfDataSetOptions,
+  LCIMethodPrincipleOptions,
+  LCIMethodApproachOptions,
+  completenessProductModelOptions,
+  completenessElementaryFlowsTypeOptions,
+  completenessElementaryFlowsValueOptions,
+  workflowAndPublicationStatusOptions
 } from './optiondata';
+import LocationTextItemForm from '@/components/LocationTextItem/form';
+import processSchema from '@/pages/Processes/processes_schema.json';
+import ReveiwItemForm from '@/pages/Processes/Components/Review/form';
+import ComplianceItemForm from '@/pages/Processes/Components/Compliance/form';
 
 type Props = {
   lang: string;
@@ -29,7 +41,7 @@ type Props = {
   onTabChange: (key: string) => void;
   formType?: string;
 };
-export const LifeCycleModelForm: FC<Props> = ({
+export const LifeCycleModelForm: FC<Props> = ({ 
   lang,
   activeTabKey,
   formRef,
@@ -70,6 +82,19 @@ export const LifeCycleModelForm: FC<Props> = ({
         />
       ),
     },
+    {
+      key: 'validation',
+      tab: <FormattedMessage id='pages.lifeCycleModel.validation' defaultMessage='Validation' />,
+    },
+    {
+      key: 'complianceDeclarations',
+      tab: (
+        <FormattedMessage
+          id='pages.lifeCycleModel.complianceDeclarations'
+          defaultMessage='Compliance declarations'
+        />
+      ),
+    },
   ];
 
   const tabContent: { [key: string]: JSX.Element } = {
@@ -106,7 +131,7 @@ export const LifeCycleModelForm: FC<Props> = ({
               setRuleErrorState={setBaseNameError}
               rules={getRules(
                 schema['lifeCycleModelDataSet']['lifeCycleModelInformation']['dataSetInformation'][
-                  'name'
+                'name'
                 ]['baseName']['rules'],
               )}
             />
@@ -142,7 +167,7 @@ export const LifeCycleModelForm: FC<Props> = ({
               setRuleErrorState={setTreatmentStandardsRoutesError}
               rules={getRules(
                 schema['lifeCycleModelDataSet']['lifeCycleModelInformation']['dataSetInformation'][
-                  'name'
+                'name'
                 ]['treatmentStandardsRoutes']['rules'],
               )}
             />
@@ -178,7 +203,7 @@ export const LifeCycleModelForm: FC<Props> = ({
               setRuleErrorState={setMixAndLocationTypesError}
               rules={getRules(
                 schema['lifeCycleModelDataSet']['lifeCycleModelInformation']['dataSetInformation'][
-                  'name'
+                'name'
                 ]['mixAndLocationTypes']['rules'],
               )}
             />
@@ -208,11 +233,42 @@ export const LifeCycleModelForm: FC<Props> = ({
               }
               rules={getRules(
                 schema['lifeCycleModelDataSet']['lifeCycleModelInformation']['dataSetInformation'][
-                  'name'
+                'name'
                 ]['functionalUnitFlowProperties']['rules'],
               )}
             />
           </Card>
+        </Card>
+
+        <Form.Item
+          label={
+            <FormattedMessage
+              id='pages.lifeCycleModel.information.identifierOfSubDataSet'
+              defaultMessage='Identifier of sub-data set'
+            />
+          }
+          name={['lifeCycleModelInformation', 'dataSetInformation', 'identifierOfSubDataSet']}
+        >
+          <Input />
+        </Form.Item>
+        <Card
+          size='small'
+          title={
+            <FormattedMessage
+              id='pages.lifeCycleModel.information.synonyms'
+              defaultMessage='Synonyms'
+            />
+          }
+        >
+          <LangTextItemForm
+            name={['lifeCycleModelInformation', 'dataSetInformation', 'common:synonyms']}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.information.synonyms'
+                defaultMessage='Synonyms'
+              />
+            }
+          />
         </Card>
         <br />
         <LevelTextItemForm
@@ -229,7 +285,7 @@ export const LifeCycleModelForm: FC<Props> = ({
           onData={onData}
           rules={getRules(
             schema['lifeCycleModelDataSet']['lifeCycleModelInformation']['dataSetInformation'][
-              'classificationInformation'
+            'classificationInformation'
             ]['common:classification']['common:class']['rules'],
           )}
         />
@@ -282,6 +338,380 @@ export const LifeCycleModelForm: FC<Props> = ({
           name={['lifeCycleModelInformation', 'technology', 'referenceToDiagram']}
           onData={onData}
         />
+
+        <Card
+          size='small'
+          title={
+            <FormattedMessage
+              id='pages.lifeCycleModel.information.time'
+              defaultMessage='Time representativeness'
+            />
+          }
+        >
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.information.referenceYear'
+                defaultMessage='Reference year'
+              />
+            }
+            name={['lifeCycleModelInformation', 'time', 'common:referenceYear']}
+            rules={getRules(
+              processSchema['processDataSet']['processInformation']['time']['common:referenceYear'][
+              'rules'
+              ],
+            )}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.information.dataSetValidUntil'
+                defaultMessage='Data set valid until:'
+              />
+            }
+            name={['lifeCycleModelInformation', 'time', 'common:dataSetValidUntil']}
+            rules={getRules(
+              processSchema['processDataSet']['processInformation']['time']['common:dataSetValidUntil'][
+              'rules'
+              ],
+            )}
+          >
+            <Input />
+          </Form.Item>
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.information.timeRepresentativenessDescription'
+              defaultMessage='Time representativeness description'
+            />
+          </Divider>
+          <LangTextItemForm
+            name={['lifeCycleModelInformation', 'time', 'common:timeRepresentativenessDescription']}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.information.timeRepresentativenessDescription'
+                defaultMessage='Time representativeness description'
+              />
+            }
+          />
+        </Card>
+        <Card
+          size='small'
+          title={
+            <FormattedMessage
+              id='pages.lifeCycleModel.information.locationOfOperationSupplyOrProduction'
+              defaultMessage='Location'
+            />
+          }
+        >
+          <LocationTextItemForm
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.information.location'
+                defaultMessage='Location'
+              />
+            }
+            name={[
+              'lifeCycleModelInformation',
+              'geography',
+              'locationOfOperationSupplyOrProduction',
+              '@location',
+            ]}
+            lang={lang}
+            onData={onData}
+            rules={getRules(
+              processSchema['processDataSet']['processInformation']['geography'][
+              'locationOfOperationSupplyOrProduction'
+              ]['@location']['rules'],
+            )}
+          />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.information.descriptionOfRestrictions'
+              defaultMessage='Geographical representativeness description'
+            />
+          </Divider>
+          <LangTextItemForm
+            name={[
+              'lifeCycleModelInformation',
+              'geography',
+              'locationOfOperationSupplyOrProduction',
+              'descriptionOfRestrictions',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.information.descriptionOfRestrictions'
+                defaultMessage='Geographical representativeness description'
+              />
+            }
+          />
+        </Card>
+        <Card
+          size='small'
+          title={
+            <FormattedMessage
+              id='pages.lifeCycleModel.information.subLocationOfOperationSupplyOrProduction'
+              defaultMessage='Sub-location(s)'
+            />
+          }
+        >
+          <LocationTextItemForm
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.information.location'
+                defaultMessage='Sub-location(s)'
+              />
+            }
+            name={[
+              'lifeCycleModelInformation',
+              'geography',
+              'subLocationOfOperationSupplyOrProduction',
+              '@subLocation',
+            ]}
+            lang={lang}
+            onData={onData}
+          />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.information.descriptionOfRestrictions'
+              defaultMessage='Geographical representativeness description'
+            />
+          </Divider>
+          <LangTextItemForm
+            name={[
+              'lifeCycleModelInformation',
+              'geography',
+              'subLocationOfOperationSupplyOrProduction',
+              'descriptionOfRestrictions',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.information.descriptionOfRestrictions'
+                defaultMessage='Geographical representativeness description'
+              />
+            }
+          />
+        </Card>
+        <Card
+          size='small'
+          title={
+            <FormattedMessage
+              id='pages.lifeCycleModel.information.technology'
+              defaultMessage='Technological representativeness'
+            />
+          }
+        >
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.information.technologyDescriptionAndIncludedProcesses'
+              defaultMessage='Technology description including background system'
+            />
+          </Divider>
+          <LangTextItemForm
+            name={['lifeCycleModelInformation', 'technology', 'technologyDescriptionAndIncludedProcesses']}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.information.technologyDescriptionAndIncludedProcesses'
+                defaultMessage='Technology description including background system'
+              />
+            }
+            rules={getRules(
+              processSchema['processDataSet']['processInformation']['technology'][
+              'technologyDescriptionAndIncludedProcesses'
+              ]['rules'],
+            )}
+          />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.information.technologicalApplicability'
+              defaultMessage='Technical purpose of product or process'
+            />
+          </Divider>
+          <LangTextItemForm
+            name={['lifeCycleModelInformation', 'technology', 'technologicalApplicability']}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.information.technologicalApplicability'
+                defaultMessage='Technical purpose of product or process'
+              />
+            }
+          />
+          <SourceSelectForm
+            name={['lifeCycleModelInformation', 'technology', 'referenceToTechnologyPictogramme']}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.information.referenceToTechnologyPictogramme'
+                defaultMessage='Pictogramme of technology'
+              />
+            }
+            lang={lang}
+            formRef={formRef}
+            onData={onData}
+          />
+          <br />
+          <SourceSelectForm
+            name={[
+              'lifeCycleModelInformation',
+              'technology',
+              'referenceToTechnologyFlowDiagrammOrPicture',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.information.referenceToTechnologyFlowDiagrammOrPicture'
+                defaultMessage='Flow diagramm(s) or picture(s)'
+              />
+            }
+            lang={lang}
+            formRef={formRef}
+            onData={onData}
+          />
+        </Card>
+        <Card
+          size='small'
+          title={
+            <FormattedMessage
+              id='pages.lifeCycleModel.information.modelDescription'
+              defaultMessage='Model description'
+            />
+          }
+        >
+          <LangTextItemForm
+            name={['lifeCycleModelInformation', 'mathematicalRelations', 'modelDescription']}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.information.modelDescription'
+                defaultMessage='Model description'
+              />
+            }
+          />
+        </Card>
+        <Card
+          size='small'
+          title={
+            <FormattedMessage
+              id='pages.lifeCycleModel.information.variableParameter'
+              defaultMessage='Variable / parameter'
+            />
+          }
+        >
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.information.variableParameter.name'
+                defaultMessage='Name of variable'
+              />
+            }
+            name={['lifeCycleModelInformation', 'mathematicalRelations', 'variableParameter', '@name']}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.information.variableParameter.formula'
+                defaultMessage='Formula'
+              />
+            }
+            name={['lifeCycleModelInformation', 'mathematicalRelations', 'variableParameter', 'formula']}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.information.variableParameter.meanValue'
+                defaultMessage='Mean value'
+              />
+            }
+            name={['lifeCycleModelInformation', 'mathematicalRelations', 'variableParameter', 'meanValue']}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.information.variableParameter.minimumValue'
+                defaultMessage='Minimum value'
+              />
+            }
+            name={[
+              'lifeCycleModelInformation',
+              'mathematicalRelations',
+              'variableParameter',
+              'minimumValue',
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.information.variableParameter.maximumValue'
+                defaultMessage='Maximum value'
+              />
+            }
+            name={[
+              'lifeCycleModelInformation',
+              'mathematicalRelations',
+              'variableParameter',
+              'maximumValue',
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.information.variableParameter.uncertaintyDistributionType'
+                defaultMessage='Uncertainty distribution type'
+              />
+            }
+            name={[
+              'lifeCycleModelInformation',
+              'mathematicalRelations',
+              'variableParameter',
+              'uncertaintyDistributionType',
+            ]}
+          >
+            <Select options={uncertaintyDistributionTypeOptions} />
+          </Form.Item>
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.information.variableParameter.relativeStandardDeviation95In'
+                defaultMessage='Relative StdDev in %'
+              />
+            }
+            name={[
+              'lifeCycleModelInformation',
+              'mathematicalRelations',
+              'variableParameter',
+              'relativeStandardDeviation95In',
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          <Card
+            size='small'
+            title={
+              <FormattedMessage
+                id='pages.lifeCycleModel.information.variableParameter.comment'
+                defaultMessage='Comment, units, defaults'
+              />
+            }
+          >
+            <LangTextItemForm
+              name={['lifeCycleModelInformation', 'mathematicalRelations', 'variableParameter', 'comment']}
+              label={
+                <FormattedMessage
+                  id='pages.lifeCycleModel.information.variableParameter.comment'
+                  defaultMessage='Comment, units, defaults'
+                />
+              }
+            />
+          </Card>
+        </Card>
       </Space>
     ),
     modellingAndValidation: (
@@ -305,217 +735,483 @@ export const LifeCycleModelForm: FC<Props> = ({
             }
           />
         </Card>
-        <br />
-        <ContactSelectForm
-          lang={lang}
-          formRef={formRef}
-          label={
-            <FormattedMessage
-              id='pages.lifeCycleModel.information.referenceToExternalDocumentation'
-              defaultMessage='Data set report, background info'
-            />
-          }
-          name={[
-            'modellingAndValidation',
-            'validation',
-            'review',
-            'common:referenceToNameOfReviewerAndInstitution',
-          ]}
-          onData={onData}
-          rules={getRules(
-            schema['lifeCycleModelDataSet']['modellingAndValidation']['validation']['review'][
-              'common:referenceToNameOfReviewerAndInstitution'
-            ]['rules'],
-          )}
-        />
-        <br />
+
         <Card
           size='small'
           title={
             <FormattedMessage
-              id='pages.lifeCycleModel.information.otherReviewDetails'
-              defaultMessage='Use advice for data set'
+              id='pages.lifeCycleModel.modellingAndValidation.lCIMethodAndAllocation'
+              defaultMessage='LCI method and allocation'
             />
           }
         >
-          <LangTextItemForm
-            name={['modellingAndValidation', 'validation', 'review', 'common:otherReviewDetails']}
+          <Form.Item
             label={
               <FormattedMessage
-                id='pages.lifeCycleModel.information.otherReviewDetails'
-                defaultMessage='Subsequent review comments	'
+                id='pages.lifeCycleModel.modellingAndValidation.typeOfDataSet'
+                defaultMessage='Type of data set'
+              />
+            }
+            name={['modellingAndValidation', 'LCIMethodAndAllocation', 'typeOfDataSet']}
+            rules={getRules(
+              processSchema['processDataSet']['modellingAndValidation']['LCIMethodAndAllocation'][
+              'typeOfDataSet'
+              ]['rules'],
+            )}
+          >
+            <Select options={processtypeOfDataSetOptions} />
+          </Form.Item>
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.modellingAndValidation.lCIMethodPrinciple'
+                defaultMessage='LCI method principle'
+              />
+            }
+            name={['modellingAndValidation', 'LCIMethodAndAllocation', 'LCIMethodPrinciple']}
+          >
+            <Select options={LCIMethodPrincipleOptions} />
+          </Form.Item>
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.deviationsFromLCIMethodPrinciple'
+              defaultMessage='Deviation from LCI method principle / explanations'
+            />
+          </Divider>
+          <LangTextItemForm
+            name={[
+              'modellingAndValidation',
+              'LCIMethodAndAllocation',
+              'deviationsFromLCIMethodPrinciple',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.modellingAndValidation.deviationsFromLCIMethodPrinciple'
+                defaultMessage='Deviation from LCI method principle / explanations'
+              />
+            }
+          />
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.modellingAndValidation.lCIMethodApproaches'
+                defaultMessage='LCI method approaches'
+              />
+            }
+            name={['modellingAndValidation', 'LCIMethodAndAllocation', 'LCIMethodApproaches']}
+          >
+            <Select options={LCIMethodApproachOptions} />
+          </Form.Item>
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.deviationsFromLCIMethodApproaches'
+              defaultMessage='Deviations from LCI method approaches / explanations'
+            />
+          </Divider>
+          <LangTextItemForm
+            name={[
+              'modellingAndValidation',
+              'LCIMethodAndAllocation',
+              'deviationsFromLCIMethodApproaches',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.modellingAndValidation.deviationsFromLCIMethodApproaches'
+                defaultMessage='Deviations from LCI method approaches / explanations'
+              />
+            }
+          />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.modellingConstants'
+              defaultMessage='Modelling constants'
+            />
+          </Divider>
+          <LangTextItemForm
+            name={['modellingAndValidation', 'LCIMethodAndAllocation', 'modellingConstants']}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.modellingAndValidation.modellingConstants'
+                defaultMessage='Modelling constants'
+              />
+            }
+          />
+
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.deviationsFromModellingConstants'
+              defaultMessage='Deviation from modelling constants / explanations'
+            />
+          </Divider>
+          <LangTextItemForm
+            name={[
+              'modellingAndValidation',
+              'LCIMethodAndAllocation',
+              'deviationsFromModellingConstants',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.modellingAndValidation.deviationsFromModellingConstants'
+                defaultMessage='Deviation from modelling constants / explanations'
+              />
+            }
+          />
+          <SourceSelectForm
+            name={[
+              'modellingAndValidation',
+              'LCIMethodAndAllocation',
+              'referenceToLCAMethodDetails',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.modellingAndValidation.referenceToLCAMethodDetails'
+                defaultMessage='LCA methodology report'
+              />
+            }
+            lang={lang}
+            formRef={formRef}
+            onData={onData}
+          />
+        </Card>
+        <Card
+          size='small'
+          title={
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness'
+              defaultMessage='Data sources, treatment, and representativeness'
+            />
+          }
+        >
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.dataCutOffAndCompletenessPrinciples'
+              defaultMessage='Data cut-off and completeness principles'
+            />
+          </Divider>
+          <LangTextItemForm
+            name={[
+              'modellingAndValidation',
+              'dataSourcesTreatmentAndRepresentativeness',
+              'dataCutOffAndCompletenessPrinciples',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.modellingAndValidation.dataCutOffAndCompletenessPrinciples'
+                defaultMessage='Data cut-off and completeness principles'
+              />
+            }
+            rules={getRules(
+              processSchema['processDataSet']['modellingAndValidation'][
+              'dataSourcesTreatmentAndRepresentativeness'
+              ]['dataCutOffAndCompletenessPrinciples']['rules'],
+            )}
+          />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.deviationsFromCutOffAndCompletenessPrinciples'
+              defaultMessage='Deviation from data cut-off and completeness principles / explanations'
+            />
+          </Divider>
+          <LangTextItemForm
+            name={[
+              'modellingAndValidation',
+              'dataSourcesTreatmentAndRepresentativeness',
+              'deviationsFromCutOffAndCompletenessPrinciples',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.modellingAndValidation.deviationsFromCutOffAndCompletenessPrinciples'
+                defaultMessage='Deviation from data cut-off and completeness principles / explanations'
+              />
+            }
+          />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.dataSelectionAndCombinationPrinciples'
+              defaultMessage='Data selection and combination principles'
+            />
+          </Divider>
+          <LangTextItemForm
+            name={[
+              'modellingAndValidation',
+              'dataSourcesTreatmentAndRepresentativeness',
+              'dataSelectionAndCombinationPrinciples',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.modellingAndValidation.dataSelectionAndCombinationPrinciples'
+                defaultMessage='Data selection and combination principles'
+              />
+            }
+          />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.deviationsFromSelectionAndCombinationPrinciples'
+              defaultMessage='Deviation from data selection and combination principles / explanations'
+            />
+          </Divider>
+          <LangTextItemForm
+            name={[
+              'modellingAndValidation',
+              'dataSourcesTreatmentAndRepresentativeness',
+              'deviationsFromSelectionAndCombinationPrinciples',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.modellingAndValidation.deviationsFromSelectionAndCombinationPrinciples'
+                defaultMessage='Deviation from data selection and combination principles / explanations'
+              />
+            }
+          />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.dataTreatmentAndExtrapolationsPrinciples'
+              defaultMessage='Data treatment and extrapolations principles'
+            />
+          </Divider>
+          <LangTextItemForm
+            name={[
+              'modellingAndValidation',
+              'dataSourcesTreatmentAndRepresentativeness',
+              'dataTreatmentAndExtrapolationsPrinciples',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.modellingAndValidation.dataTreatmentAndExtrapolationsPrinciples'
+                defaultMessage='Data treatment and extrapolations principles'
+              />
+            }
+          />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.deviationsFromTreatmentAndExtrapolationPrinciples'
+              defaultMessage='Deviation from data treatment and extrapolations principles / explanations'
+            />
+          </Divider>
+          <LangTextItemForm
+            name={[
+              'modellingAndValidation',
+              'dataSourcesTreatmentAndRepresentativeness',
+              'deviationsFromTreatmentAndExtrapolationPrinciples',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.modellingAndValidation.deviationsFromTreatmentAndExtrapolationPrinciples'
+                defaultMessage='Deviation from data treatment and extrapolations principles / explanations'
+              />
+            }
+          />
+          <SourceSelectForm
+            name={[
+              'modellingAndValidation',
+              'dataSourcesTreatmentAndRepresentativeness',
+              'referenceToDataHandlingPrinciples',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.modellingAndValidation.referenceToDataHandlingPrinciples'
+                defaultMessage='Data handling report'
+              />
+            }
+            lang={lang}
+            formRef={formRef}
+            onData={onData}
+          />
+          <br />
+          <SourceSelectForm
+            name={[
+              'modellingAndValidation',
+              'dataSourcesTreatmentAndRepresentativeness',
+              'referenceToDataSource',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.modellingAndValidation.referenceToDataSource'
+                defaultMessage='Data source(s) used for this data set'
+              />
+            }
+            lang={lang}
+            formRef={formRef}
+            onData={onData}
+            rules={getRules(
+              processSchema['processDataSet']['modellingAndValidation'][
+              'dataSourcesTreatmentAndRepresentativeness'
+              ]['referenceToDataSource']['rules'],
+            )}
+          />
+          <br />
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.modellingAndValidation.percentageSupplyOrProductionCovered'
+                defaultMessage='Percentage supply or production covered'
+              />
+            }
+            name={[
+              'modellingAndValidation',
+              'dataSourcesTreatmentAndRepresentativeness',
+              'percentageSupplyOrProductionCovered',
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.annualSupplyOrProductionVolume'
+              defaultMessage='Annual supply or production volume'
+            />
+          </Divider>
+          <LangTextItemForm
+            name={[
+              'modellingAndValidation',
+              'dataSourcesTreatmentAndRepresentativeness',
+              'annualSupplyOrProductionVolume',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.modellingAndValidation.annualSupplyOrProductionVolume'
+                defaultMessage='Annual supply or production volume'
+              />
+            }
+          />
+
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.samplingProcedure'
+              defaultMessage='Sampling procedure'
+            />
+          </Divider>
+          <LangTextItemForm
+            name={[
+              'modellingAndValidation',
+              'dataSourcesTreatmentAndRepresentativeness',
+              'samplingProcedure',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.modellingAndValidation.samplingProcedure'
+                defaultMessage='Sampling procedure'
+              />
+            }
+          />
+
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.dataCollectionPeriod'
+              defaultMessage='Data collection period'
+            />
+          </Divider>
+          <LangTextItemForm
+            name={[
+              'modellingAndValidation',
+              'dataSourcesTreatmentAndRepresentativeness',
+              'dataCollectionPeriod',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.modellingAndValidation.dataCollectionPeriod'
+                defaultMessage='Data collection period'
+              />
+            }
+          />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.uncertaintyAdjustments'
+              defaultMessage='Uncertainty adjustments'
+            />
+          </Divider>
+          <LangTextItemForm
+            name={[
+              'modellingAndValidation',
+              'dataSourcesTreatmentAndRepresentativeness',
+              'uncertaintyAdjustments',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.modellingAndValidation.uncertaintyAdjustments'
+                defaultMessage='Uncertainty adjustments'
               />
             }
           />
         </Card>
-        <br />
-        <SourceSelectForm
-          lang={lang}
-          formRef={formRef}
-          label={
+        <Card
+          size='small'
+          title={
             <FormattedMessage
-              id='pages.lifeCycleModel.information.referenceToCompleteReviewReport'
-              defaultMessage='Data set report, background info'
+              id='pages.lifeCycleModel.modellingAndValidation.completeness'
+              defaultMessage='Completeness'
             />
           }
-          name={[
-            'modellingAndValidation',
-            'validation',
-            'review',
-            'common:referenceToCompleteReviewReport',
-          ]}
-          onData={onData}
-        />
-        <br />
-        <SourceSelectForm
-          lang={lang}
-          formRef={formRef}
-          label={
-            <FormattedMessage
-              id='pages.lifeCycleModel.modellingAndValidation.referenceToComplianceSystem'
-              defaultMessage='Compliance system name'
-            />
-          }
-          name={[
-            'modellingAndValidation',
-            'complianceDeclarations',
-            'compliance',
-            'common:referenceToComplianceSystem',
-          ]}
-          onData={onData}
-          rules={getRules(
-            schema['lifeCycleModelDataSet']['modellingAndValidation']['complianceDeclarations'][
-              'compliance'
-            ]['common:referenceToComplianceSystem']['rules'],
-          )}
-        />
-        <br />
-        <Form.Item
-          label={
-            <FormattedMessage
-              id='pages.lifeCycleModel.modellingAndValidation.approvalOfOverallCompliance'
-              defaultMessage='Approval of overall compliance'
-            />
-          }
-          name={[
-            'modellingAndValidation',
-            'complianceDeclarations',
-            'compliance',
-            'common:approvalOfOverallCompliance',
-          ]}
-          rules={getRules(
-            schema['lifeCycleModelDataSet']['modellingAndValidation']['complianceDeclarations'][
-              'compliance'
-            ]['common:approvalOfOverallCompliance']['rules'],
-          )}
         >
-          <Select options={approvalOfOverallComplianceOptions} />
-        </Form.Item>
-        <Form.Item
-          label={
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.modellingAndValidation.completeness.completenessProductModel'
+                defaultMessage='Completeness product model'
+              />
+            }
+            name={['modellingAndValidation', 'completeness', 'completenessProductModel']}
+          >
+            <Select options={completenessProductModelOptions} />
+          </Form.Item>
+          <Card
+            size='small'
+            title={
+              <FormattedMessage
+                id='pages.lifeCycleModel.modellingAndValidation.completeness.completenessElementaryFlows'
+                defaultMessage='Completeness elementary flows, per topic'
+              />
+            }
+          >
+            <Form.Item
+              label={
+                <FormattedMessage
+                  id='pages.lifeCycleModel.modellingAndValidation.completeness.completenessElementaryFlows.type'
+                  defaultMessage='completeness type'
+                />
+              }
+              name={[
+                'modellingAndValidation',
+                'completeness',
+                'completenessElementaryFlows',
+                '@type',
+              ]}
+            >
+              <Select options={completenessElementaryFlowsTypeOptions} />
+            </Form.Item>
+            <Form.Item
+              label={
+                <FormattedMessage
+                  id='pages.lifeCycleModel.modellingAndValidation.completeness.completenessElementaryFlows.value'
+                  defaultMessage='value'
+                />
+              }
+              name={[
+                'modellingAndValidation',
+                'completeness',
+                'completenessElementaryFlows',
+                '@value',
+              ]}
+            >
+              <Select options={completenessElementaryFlowsValueOptions} />
+            </Form.Item>
+          </Card>
+          <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
-              id='pages.lifeCycleModel.modellingAndValidation.nomenclatureCompliance'
-              defaultMessage='Nomenclature compliance'
+              id='pages.lifeCycleModel.modellingAndValidation.completeness.completenessOtherProblemField'
+              defaultMessage='Completeness other problem field(s)'
             />
-          }
-          name={[
-            'modellingAndValidation',
-            'complianceDeclarations',
-            'compliance',
-            'common:nomenclatureCompliance',
-          ]}
-          rules={getRules(
-            schema['lifeCycleModelDataSet']['modellingAndValidation']['complianceDeclarations'][
-              'compliance'
-            ]['common:nomenclatureCompliance']['rules'],
-          )}
-        >
-          <Select options={nomenclatureComplianceOptions} />
-        </Form.Item>
-        <Form.Item
-          label={
-            <FormattedMessage
-              id='pages.lifeCycleModel.modellingAndValidation.methodologicalCompliance'
-              defaultMessage='Methodological compliance'
-            />
-          }
-          name={[
-            'modellingAndValidation',
-            'complianceDeclarations',
-            'compliance',
-            'common:methodologicalCompliance',
-          ]}
-          rules={getRules(
-            schema['lifeCycleModelDataSet']['modellingAndValidation']['complianceDeclarations'][
-              'compliance'
-            ]['common:methodologicalCompliance']['rules'],
-          )}
-        >
-          <Select options={methodologicalComplianceOptions} />
-        </Form.Item>
-        <Form.Item
-          label={
-            <FormattedMessage
-              id='pages.lifeCycleModel.modellingAndValidation.reviewCompliance'
-              defaultMessage='Review compliance'
-            />
-          }
-          name={[
-            'modellingAndValidation',
-            'complianceDeclarations',
-            'compliance',
-            'common:reviewCompliance',
-          ]}
-          rules={getRules(
-            schema['lifeCycleModelDataSet']['modellingAndValidation']['complianceDeclarations'][
-              'compliance'
-            ]['common:reviewCompliance']['rules'],
-          )}
-        >
-          <Select options={reviewComplianceOptions} />
-        </Form.Item>
-        <Form.Item
-          label={
-            <FormattedMessage
-              id='pages.lifeCycleModel.modellingAndValidation.documentationCompliance'
-              defaultMessage='Documentation compliance'
-            />
-          }
-          name={[
-            'modellingAndValidation',
-            'complianceDeclarations',
-            'compliance',
-            'common:documentationCompliance',
-          ]}
-          rules={getRules(
-            schema['lifeCycleModelDataSet']['modellingAndValidation']['complianceDeclarations'][
-              'compliance'
-            ]['common:documentationCompliance']['rules'],
-          )}
-        >
-          <Select options={documentationComplianceOptions} />
-        </Form.Item>
-        <Form.Item
-          label={
-            <FormattedMessage
-              id='pages.lifeCycleModel.modellingAndValidation.qualityCompliance'
-              defaultMessage='Quality compliance'
-            />
-          }
-          name={[
-            'modellingAndValidation',
-            'complianceDeclarations',
-            'compliance',
-            'common:qualityCompliance',
-          ]}
-          rules={getRules(
-            schema['lifeCycleModelDataSet']['modellingAndValidation']['complianceDeclarations'][
-              'compliance'
-            ]['common:qualityCompliance']['rules'],
-          )}
-        >
-          <Select options={qualityComplianceOptions} />
-        </Form.Item>
+          </Divider>
+          <LangTextItemForm
+            name={['modellingAndValidation', 'completeness', 'completenessOtherProblemField']}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.modellingAndValidation.completeness.completenessOtherProblemField'
+                defaultMessage='Completeness other problem field(s)'
+              />
+            }
+          />
+        </Card>
       </Space>
     ),
     administrativeInformation: (
@@ -546,7 +1242,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             onData={onData}
             rules={getRules(
               schema['lifeCycleModelDataSet']['administrativeInformation'][
-                'common:commissionerAndGoal'
+              'common:commissionerAndGoal'
               ]['common:referenceToCommissioner']['rules'],
             )}
           />
@@ -632,7 +1328,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
             rules={getRules(
               schema['lifeCycleModelDataSet']['administrativeInformation']['dataEntryBy'][
-                'common:timeStamp'
+              'common:timeStamp'
               ]['rules'],
             )}
           >
@@ -652,9 +1348,27 @@ export const LifeCycleModelForm: FC<Props> = ({
             onData={onData}
             rules={getRules(
               schema['lifeCycleModelDataSet']['administrativeInformation']['dataEntryBy'][
-                'common:referenceToDataSetFormat'
+              'common:referenceToDataSetFormat'
               ]['rules'],
             )}
+          />
+          <br />
+
+          <SourceSelectForm
+            lang={lang}
+            formRef={formRef}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.administrativeInformation.referenceToConvertedOriginalDataSetFrom'
+                defaultMessage='Converted original data set from:'
+              />
+            }
+            name={[
+              'administrativeInformation',
+              'dataEntryBy',
+              'common:referenceToConvertedOriginalDataSetFrom',
+            ]}
+            onData={onData}
           />
           <br />
           <ContactSelectForm
@@ -674,9 +1388,27 @@ export const LifeCycleModelForm: FC<Props> = ({
             onData={onData}
             rules={getRules(
               schema['lifeCycleModelDataSet']['administrativeInformation']['dataEntryBy'][
-                'common:referenceToPersonOrEntityEnteringTheData'
+              'common:referenceToPersonOrEntityEnteringTheData'
               ]['rules'],
             )}
+          />
+          <br />
+
+          <SourceSelectForm
+            lang={lang}
+            formRef={formRef}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.administrativeInformation.referenceToDataSetUseApproval'
+                defaultMessage='Official approval of data set by producer/operator:'
+              />
+            }
+            name={[
+              'administrativeInformation',
+              'dataEntryBy',
+              'common:referenceToDataSetUseApproval',
+            ]}
+            onData={onData}
           />
         </Card>
         <br />
@@ -689,6 +1421,22 @@ export const LifeCycleModelForm: FC<Props> = ({
             />
           }
         >
+
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.administrativeInformation.dateOfLastRevision'
+                defaultMessage='Date of last revision'
+              />
+            }
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:dateOfLastRevision',
+            ]}
+          >
+            <Input />
+          </Form.Item>
           <Form.Item
             label={
               <FormattedMessage
@@ -699,7 +1447,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
             rules={getRules(
               schema['lifeCycleModelDataSet']['administrativeInformation'][
-                'publicationAndOwnership'
+              'publicationAndOwnership'
               ]['common:dataSetVersion']['rules'],
             )}
           >
@@ -719,9 +1467,75 @@ export const LifeCycleModelForm: FC<Props> = ({
             ]}
             rules={getRules(
               schema['lifeCycleModelDataSet']['administrativeInformation'][
-                'publicationAndOwnership'
+              'publicationAndOwnership'
               ]['common:permanentDataSetURI']['rules'],
             )}
+          >
+            <Input />
+          </Form.Item>
+
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.administrativeInformation.workflowAndPublicationStatus'
+                defaultMessage='Workflow and publication status	'
+              />
+            }
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:workflowAndPublicationStatus',
+            ]}
+          >
+            <Select options={workflowAndPublicationStatusOptions} />
+          </Form.Item>
+
+          <SourceSelectForm
+            lang={lang}
+            formRef={formRef}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.administrativeInformation.referenceToUnchangedRepublication'
+                defaultMessage='Unchanged re-publication of:'
+              />
+            }
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:referenceToUnchangedRepublication',
+            ]}
+            onData={onData}
+          />
+          <br />
+          <ContactSelectForm
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:referenceToRegistrationAuthority',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.administrativeInformation.referenceToRegistrationAuthority'
+                defaultMessage='Registration authority'
+              />
+            }
+            lang={lang}
+            formRef={formRef}
+            onData={onData}
+          />
+          <br />
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.administrativeInformation.registrationNumber'
+                defaultMessage='Registration number'
+              />
+            }
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:registrationNumber',
+            ]}
           >
             <Input />
           </Form.Item>
@@ -742,7 +1556,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             onData={onData}
             rules={getRules(
               schema['lifeCycleModelDataSet']['administrativeInformation'][
-                'publicationAndOwnership'
+              'publicationAndOwnership'
               ]['common:referenceToOwnershipOfDataSet']['rules'],
             )}
           />
@@ -757,7 +1571,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             name={['administrativeInformation', 'publicationAndOwnership', 'common:copyright']}
             rules={getRules(
               schema['lifeCycleModelDataSet']['administrativeInformation'][
-                'publicationAndOwnership'
+              'publicationAndOwnership'
               ]['common:copyright']['rules'],
             )}
           >
@@ -790,7 +1604,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             name={['administrativeInformation', 'publicationAndOwnership', 'common:licenseType']}
             rules={getRules(
               schema['lifeCycleModelDataSet']['administrativeInformation'][
-                'publicationAndOwnership'
+              'publicationAndOwnership'
               ]['common:licenseType']['rules'],
             )}
           >
@@ -822,6 +1636,22 @@ export const LifeCycleModelForm: FC<Props> = ({
         </Card>
       </Space>
     ),
+    validation: (
+      <ReveiwItemForm
+        name={['modellingAndValidation', 'validation', 'review']}
+        lang={lang}
+        formRef={formRef}
+        onData={onData}
+      />
+    ),
+    complianceDeclarations: (
+      <ComplianceItemForm
+        name={['modellingAndValidation', 'complianceDeclarations', 'compliance']}
+        lang={lang}
+        formRef={formRef}
+        onData={onData}
+      />
+    ),
   };
 
   return (
@@ -831,11 +1661,12 @@ export const LifeCycleModelForm: FC<Props> = ({
       activeTabKey={activeTabKey}
       onTabChange={onTabChange}
     >
-      {Object.keys(tabContent).map((key) => (
+      {/* {Object.keys(tabContent).map((key) => (
         <div key={key} style={{ display: key === activeTabKey ? 'block' : 'none' }}>
           {tabContent[key]}
         </div>
-      ))}
+      ))} */}
+      {tabContent[activeTabKey]}
     </Card>
   );
 };

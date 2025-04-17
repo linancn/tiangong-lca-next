@@ -35,7 +35,7 @@ const LangTextItemForm: FC<Props> = ({
     formValues = form.getFieldValue([...listName]);
     const fieldName = name[name.length - 1];
     if (fieldName) {
-      formValues = form.getFieldValue([...listName])[0][fieldName];
+      formValues = form?.getFieldValue([...listName])[0]?.[fieldName];
     }
   } else {
     formValues = form.getFieldValue(name);

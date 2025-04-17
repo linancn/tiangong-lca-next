@@ -482,7 +482,7 @@ export const ProcessForm: FC<Props> = ({
           name={[
             'processInformation',
             'dataSetInformation',
-            'common:referenceToExternalDocumentation',
+            'referenceToExternalDocumentation',
           ]}
           label={
             <FormattedMessage
@@ -1395,7 +1395,7 @@ export const ProcessForm: FC<Props> = ({
         <ContactSelectForm
           name={[
             'administrativeInformation',
-            'commissionerAndGoal',
+            'common:commissionerAndGoal',
             'common:referenceToCommissioner',
           ]}
           label={
@@ -1408,7 +1408,7 @@ export const ProcessForm: FC<Props> = ({
           formRef={formRef}
           onData={onData}
           rules={getRules(
-            schema['processDataSet']['administrativeInformation']['commissionerAndGoal'][
+            schema['processDataSet']['administrativeInformation']['common:commissionerAndGoal'][
               'common:referenceToCommissioner'
             ]['rules'],
           )}
@@ -1423,7 +1423,7 @@ export const ProcessForm: FC<Props> = ({
           }
         >
           <LangTextItemForm
-            name={['administrativeInformation', 'commissionerAndGoal', 'common:project']}
+            name={['administrativeInformation', 'common:commissionerAndGoal', 'common:project']}
             label={
               <FormattedMessage
                 id='pages.process.view.administrativeInformation.project'
@@ -1449,7 +1449,7 @@ export const ProcessForm: FC<Props> = ({
           <LangTextItemForm
             name={[
               'administrativeInformation',
-              'commissionerAndGoal',
+              'common:commissionerAndGoal',
               'common:intendedApplications',
             ]}
             label={
@@ -1460,7 +1460,7 @@ export const ProcessForm: FC<Props> = ({
             }
             setRuleErrorState={setIntendedApplicationsError}
             rules={getRules(
-              schema['processDataSet']['administrativeInformation']['commissionerAndGoal'][
+              schema['processDataSet']['administrativeInformation']['common:commissionerAndGoal'][
                 'common:intendedApplications'
               ]['rules'],
             )}
@@ -1938,11 +1938,7 @@ export const ProcessForm: FC<Props> = ({
       activeTabKey={activeTabKey}
       onTabChange={onTabChange}
     >
-      {Object.keys(tabContent).map((key) => (
-        <div key={key} style={{ display: key === activeTabKey ? 'block' : 'none' }}>
-          {tabContent[key]}
-        </div>
-      ))}
+      {tabContent[activeTabKey]}
     </Card>
   );
 };

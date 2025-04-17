@@ -54,6 +54,27 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData, action }) => {
     setReferenceValue(referenceValue + 1);
   };
   const handletFromData = () => {
+    if(activeTabKey === 'complianceDeclarations'){
+      setFromData({
+        ...fromData,
+        modellingAndValidation:{
+          ...fromData?.modellingAndValidation,
+          complianceDeclarations:formRefEdit.current?.getFieldsValue()?.modellingAndValidation?.complianceDeclarations
+        },
+      });
+      return
+    }
+    if(activeTabKey === 'validation'){
+      setFromData({
+        ...fromData,
+        modellingAndValidation:{
+          ...fromData?.modellingAndValidation,
+          validation:formRefEdit.current?.getFieldsValue()?.modellingAndValidation?.validation
+        },
+      });
+      return
+    }
+
     if (fromData) {
       setFromData({
         ...fromData,
