@@ -1,3 +1,4 @@
+import { checkRequiredFields } from '@/pages/Utils';
 import { formatDateTime } from '@/services/general/util';
 import { createProcess, getProcessDetail } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
@@ -9,9 +10,8 @@ import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
-import { ProcessForm } from './form';
 import requiredFields from '../requiredFields';
-import { checkRequiredFields } from '@/pages/Utils';
+import { ProcessForm } from './form';
 
 type Props = {
   lang: string;
@@ -25,15 +25,15 @@ type Props = {
 type CreateProps =
   | (Omit<Props, 'type'> & { actionType?: 'create' })
   | (Omit<Props, 'type' | 'id' | 'version'> & {
-    actionType: 'copy';
-    id: string;
-    version: string;
-  })
+      actionType: 'copy';
+      id: string;
+      version: string;
+    })
   | (Omit<Props, 'type' | 'id' | 'version'> & {
-    actionType: 'createVersion';
-    id: string;
-    version: string;
-  });
+      actionType: 'createVersion';
+      id: string;
+      version: string;
+    });
 
 const ProcessCreate: FC<CreateProps> = ({
   lang,
@@ -52,25 +52,27 @@ const ProcessCreate: FC<CreateProps> = ({
   const intl = useIntl();
 
   const handletFromData = async () => {
-    const fieldsValue = formRefCreate.current?.getFieldsValue()
+    const fieldsValue = formRefCreate.current?.getFieldsValue();
     // if (fromData?.id)
     if (activeTabKey === 'validation') {
       await setFromData({
-        ...fromData, 
+        ...fromData,
         modellingAndValidation: {
           ...fromData?.modellingAndValidation,
-          validation: { ...fieldsValue?.modellingAndValidation?.validation }
-        }
+          validation: { ...fieldsValue?.modellingAndValidation?.validation },
+        },
       });
-    } else if(activeTabKey === 'complianceDeclarations'){
+    } else if (activeTabKey === 'complianceDeclarations') {
       await setFromData({
-        ...fromData, 
+        ...fromData,
         modellingAndValidation: {
           ...fromData?.modellingAndValidation,
-          complianceDeclarations: { ...fieldsValue?.modellingAndValidation?.complianceDeclarations }
-        }
+          complianceDeclarations: {
+            ...fieldsValue?.modellingAndValidation?.complianceDeclarations,
+          },
+        },
       });
-    }else {
+    } else {
       await setFromData({
         ...fromData,
         [activeTabKey]: fieldsValue?.[activeTabKey] ?? {},
@@ -250,21 +252,23 @@ const ProcessCreate: FC<CreateProps> = ({
             onValuesChange={async (_, allValues) => {
               if (activeTabKey === 'validation') {
                 await setFromData({
-                  ...fromData, 
+                  ...fromData,
                   modellingAndValidation: {
                     ...fromData?.modellingAndValidation,
-                    validation: { ...allValues?.modellingAndValidation?.validation }
-                  }
+                    validation: { ...allValues?.modellingAndValidation?.validation },
+                  },
                 });
-              } else if(activeTabKey === 'complianceDeclarations'){
+              } else if (activeTabKey === 'complianceDeclarations') {
                 await setFromData({
-                  ...fromData, 
+                  ...fromData,
                   modellingAndValidation: {
                     ...fromData?.modellingAndValidation,
-                    complianceDeclarations: { ...allValues?.modellingAndValidation?.complianceDeclarations }
-                  }
+                    complianceDeclarations: {
+                      ...allValues?.modellingAndValidation?.complianceDeclarations,
+                    },
+                  },
                 });
-              }else {
+              } else {
                 await setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
               }
             }}

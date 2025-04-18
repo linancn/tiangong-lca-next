@@ -1,4 +1,5 @@
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
+import { checkRequiredFields } from '@/pages/Utils';
 import { getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
 import { getRefData, updateReviewIdAndStateCode } from '@/services/general/api';
@@ -29,9 +30,8 @@ import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
-import { ProcessForm } from './form';
 import requiredFields from '../requiredFields';
-import { checkRequiredFields } from '@/pages/Utils';
+import { ProcessForm } from './form';
 type Props = {
   id: string;
   version: string;
@@ -60,22 +60,24 @@ const ProcessEdit: FC<Props> = ({
 
   const handletFromData = async () => {
     if (fromData?.id) {
-      const fieldsValue = formRefEdit.current?.getFieldsValue()
+      const fieldsValue = formRefEdit.current?.getFieldsValue();
       if (activeTabKey === 'validation') {
         await setFromData({
           ...fromData,
           modellingAndValidation: {
             ...fromData?.modellingAndValidation,
-            validation: { ...fieldsValue?.modellingAndValidation?.validation }
-          }
+            validation: { ...fieldsValue?.modellingAndValidation?.validation },
+          },
         });
       } else if (activeTabKey === 'complianceDeclarations') {
         await setFromData({
           ...fromData,
           modellingAndValidation: {
             ...fromData?.modellingAndValidation,
-            complianceDeclarations: { ...fieldsValue?.modellingAndValidation?.complianceDeclarations }
-          }
+            complianceDeclarations: {
+              ...fieldsValue?.modellingAndValidation?.complianceDeclarations,
+            },
+          },
         });
       } else {
         await setFromData({
@@ -402,16 +404,18 @@ const ProcessEdit: FC<Props> = ({
                     ...fromData,
                     modellingAndValidation: {
                       ...fromData?.modellingAndValidation,
-                      validation: { ...allValues?.modellingAndValidation?.validation }
-                    }
+                      validation: { ...allValues?.modellingAndValidation?.validation },
+                    },
                   });
                 } else if (activeTabKey === 'complianceDeclarations') {
                   await setFromData({
                     ...fromData,
                     modellingAndValidation: {
                       ...fromData?.modellingAndValidation,
-                      complianceDeclarations: { ...allValues?.modellingAndValidation?.complianceDeclarations }
-                    }
+                      complianceDeclarations: {
+                        ...allValues?.modellingAndValidation?.complianceDeclarations,
+                      },
+                    },
                   });
                 } else {
                   await setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });

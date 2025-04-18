@@ -64,8 +64,12 @@ export const ProcessForm: FC<Props> = ({
   const [baseNameError, setBaseNameError] = useState(false);
   const [treatmentStandardsRoutesError, setTreatmentStandardsRoutesError] = useState(false);
   const [mixAndLocationTypesError, setMixAndLocationTypesError] = useState(false);
-  const [technologyDescriptionAndIncludedProcessesError, setTechnologyDescriptionAndIncludedProcessesError] = useState(false);
-  const [dataCutOffAndCompletenessPrinciplesError, setDataCutOffAndCompletenessPrinciplesError] = useState(false);
+  const [
+    technologyDescriptionAndIncludedProcessesError,
+    setTechnologyDescriptionAndIncludedProcessesError,
+  ] = useState(false);
+  const [dataCutOffAndCompletenessPrinciplesError, setDataCutOffAndCompletenessPrinciplesError] =
+    useState(false);
   const [intendedApplicationsError, setIntendedApplicationsError] = useState(false);
   const [generalCommentError, setGeneralCommentError] = useState(false);
   const { token } = theme.useToken();
@@ -661,14 +665,14 @@ export const ProcessForm: FC<Props> = ({
         >
           <Divider className='required-divider' orientationMargin='0' orientation='left' plain>
             <RequiredMark
-                label={
-                  <FormattedMessage
-                    id='pages.process.view.processInformation.technologyDescriptionAndIncludedProcesses'
-                    defaultMessage='Technology description including background system'
-                  />
-                }
-                showError={technologyDescriptionAndIncludedProcessesError}
-              />
+              label={
+                <FormattedMessage
+                  id='pages.process.view.processInformation.technologyDescriptionAndIncludedProcesses'
+                  defaultMessage='Technology description including background system'
+                />
+              }
+              showError={technologyDescriptionAndIncludedProcessesError}
+            />
           </Divider>
           <LangTextItemForm
             name={['processInformation', 'technology', 'technologyDescriptionAndIncludedProcesses']}
@@ -1027,14 +1031,14 @@ export const ProcessForm: FC<Props> = ({
           }
         >
           <Divider className='required-divider' orientationMargin='0' orientation='left' plain>
-          <RequiredMark
-                label={
-                  <FormattedMessage
-                    id='pages.process.view.modellingAndValidation.dataCutOffAndCompletenessPrinciples'
-                    defaultMessage='Data cut-off and completeness principles'
-                  />
-                }
-                showError={dataCutOffAndCompletenessPrinciplesError}
+            <RequiredMark
+              label={
+                <FormattedMessage
+                  id='pages.process.view.modellingAndValidation.dataCutOffAndCompletenessPrinciples'
+                  defaultMessage='Data cut-off and completeness principles'
+                />
+              }
+              showError={dataCutOffAndCompletenessPrinciplesError}
             />
           </Divider>
           <LangTextItemForm

@@ -18,6 +18,7 @@ import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { LifeCycleModelForm } from '../form';
 // const { TextArea } = Input;
+import { checkRequiredFields } from '@/pages/Utils';
 import { getRefData, updateReviewIdAndStateCode } from '@/services/general/api';
 import {
   getLifeCycleModelDetail,
@@ -28,7 +29,6 @@ import { addReviewsApi } from '@/services/reviews/api';
 import { getUserTeamId } from '@/services/roles/api';
 import { v4 } from 'uuid';
 import requiredFields from '../../requiredFields';
-import { checkRequiredFields } from '@/pages/Utils';
 
 type Props = {
   lang: string;
@@ -57,14 +57,14 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData, action }) => {
     setReferenceValue(referenceValue + 1);
   };
   const handletFromData = () => {
-    const fieldsValue = formRefEdit.current?.getFieldsValue()
+    const fieldsValue = formRefEdit.current?.getFieldsValue();
 
     if (activeTabKey === 'complianceDeclarations') {
       setFromData({
         ...fromData,
         modellingAndValidation: {
           ...fromData?.modellingAndValidation,
-          complianceDeclarations:fieldsValue?.modellingAndValidation?.complianceDeclarations,
+          complianceDeclarations: fieldsValue?.modellingAndValidation?.complianceDeclarations,
         },
       });
       return;
@@ -81,10 +81,10 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData, action }) => {
     }
 
     // if (fromData) {
-      setFromData({
-        ...fromData,
-        [activeTabKey]: fieldsValue?.[activeTabKey] ?? {},
-      });
+    setFromData({
+      ...fromData,
+      [activeTabKey]: fieldsValue?.[activeTabKey] ?? {},
+    });
     // }
   };
 
@@ -242,8 +242,8 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData, action }) => {
       // console.log('lifeCycleModelDetail', lifeCycleModelDetail?.data?.state_code);
       const lifeCycleModelStateCode = lifeCycleModelDetail?.data?.state_code + 20;
 
-      const { error: updateModalStateError, data: updateModalStateData } =
-        await updateLifeCycleModelStateCode(data.id, data.version, lifeCycleModelStateCode);
+      // const { error: updateModalStateError, data: updateModalStateData } =
+      await updateLifeCycleModelStateCode(data.id, data.version, lifeCycleModelStateCode);
       // console.log('updateModalStateError', updateModalStateError, updateModalStateData);
 
       if (unReviewProcesses.length > 0) {
@@ -355,24 +355,26 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData, action }) => {
             <ProForm
               formRef={formRefEdit}
               initialValues={data}
-              onValuesChange={async(_, allValues) => {
+              onValuesChange={async (_, allValues) => {
                 if (activeTabKey === 'validation') {
                   await setFromData({
-                    ...fromData, 
+                    ...fromData,
                     modellingAndValidation: {
                       ...fromData?.modellingAndValidation,
-                      validation: { ...allValues?.modellingAndValidation?.validation }
-                    }
+                      validation: { ...allValues?.modellingAndValidation?.validation },
+                    },
                   });
-                } else if(activeTabKey === 'complianceDeclarations'){
+                } else if (activeTabKey === 'complianceDeclarations') {
                   await setFromData({
-                    ...fromData, 
+                    ...fromData,
                     modellingAndValidation: {
                       ...fromData?.modellingAndValidation,
-                      complianceDeclarations: { ...allValues?.modellingAndValidation?.complianceDeclarations }
-                    }
+                      complianceDeclarations: {
+                        ...allValues?.modellingAndValidation?.complianceDeclarations,
+                      },
+                    },
                   });
-                }else {
+                } else {
                   await setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
                 }
               }}
