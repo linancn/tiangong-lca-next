@@ -53,6 +53,10 @@ export const LifeCycleModelForm: FC<Props> = ({
   const [baseNameError, setBaseNameError] = useState(false);
   const [treatmentStandardsRoutesError, setTreatmentStandardsRoutesError] = useState(false);
   const [mixAndLocationTypesError, setMixAndLocationTypesError] = useState(false);
+  const [generalCommentError, setGeneralCommentError] = useState(false);
+  const [intendedApplicationsError, setIntendedApplicationsError] = useState(false);
+  const [dataCutOffAndCompletenessPrinciplesError, setDataCutOffAndCompletenessPrinciplesError] = useState(false);
+  const [technologyDescriptionAndIncludedProcessesError, setTechnologyDescriptionAndIncludedProcessesError] = useState(false);
 
   const tabList = [
     {
@@ -131,7 +135,7 @@ export const LifeCycleModelForm: FC<Props> = ({
               setRuleErrorState={setBaseNameError}
               rules={getRules(
                 schema['lifeCycleModelDataSet']['lifeCycleModelInformation']['dataSetInformation'][
-                  'name'
+                'name'
                 ]['baseName']['rules'],
               )}
             />
@@ -167,7 +171,7 @@ export const LifeCycleModelForm: FC<Props> = ({
               setRuleErrorState={setTreatmentStandardsRoutesError}
               rules={getRules(
                 schema['lifeCycleModelDataSet']['lifeCycleModelInformation']['dataSetInformation'][
-                  'name'
+                'name'
                 ]['treatmentStandardsRoutes']['rules'],
               )}
             />
@@ -203,7 +207,7 @@ export const LifeCycleModelForm: FC<Props> = ({
               setRuleErrorState={setMixAndLocationTypesError}
               rules={getRules(
                 schema['lifeCycleModelDataSet']['lifeCycleModelInformation']['dataSetInformation'][
-                  'name'
+                'name'
                 ]['mixAndLocationTypes']['rules'],
               )}
             />
@@ -233,13 +237,13 @@ export const LifeCycleModelForm: FC<Props> = ({
               }
               rules={getRules(
                 schema['lifeCycleModelDataSet']['lifeCycleModelInformation']['dataSetInformation'][
-                  'name'
+                'name'
                 ]['functionalUnitFlowProperties']['rules'],
               )}
             />
           </Card>
         </Card>
-
+        <br />
         <Form.Item
           label={
             <FormattedMessage
@@ -285,16 +289,21 @@ export const LifeCycleModelForm: FC<Props> = ({
           onData={onData}
           rules={getRules(
             schema['lifeCycleModelDataSet']['lifeCycleModelInformation']['dataSetInformation'][
-              'classificationInformation'
+            'classificationInformation'
             ]['common:classification']['common:class']['rules'],
           )}
         />
         <Card
           size='small'
           title={
-            <FormattedMessage
-              id='pages.lifeCycleModel.information.generalComment'
-              defaultMessage='General comment'
+            <RequiredMark
+              label={
+                <FormattedMessage
+                  id='pages.lifeCycleModel.information.generalComment'
+                  defaultMessage='General comment'
+                />
+              }
+              showError={generalCommentError}
             />
           }
         >
@@ -306,6 +315,12 @@ export const LifeCycleModelForm: FC<Props> = ({
                 defaultMessage='General comment'
               />
             }
+            rules={getRules(
+              processSchema['processDataSet']['processInformation']['dataSetInformation'][
+              'common:generalComment'
+              ]['rules'],
+            )}
+            setRuleErrorState={setGeneralCommentError}
           />
         </Card>
         <br />
@@ -338,7 +353,7 @@ export const LifeCycleModelForm: FC<Props> = ({
           name={['lifeCycleModelInformation', 'technology', 'referenceToDiagram']}
           onData={onData}
         />
-
+        <br />
         <Card
           size='small'
           title={
@@ -358,7 +373,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             name={['lifeCycleModelInformation', 'time', 'common:referenceYear']}
             rules={getRules(
               processSchema['processDataSet']['processInformation']['time']['common:referenceYear'][
-                'rules'
+              'rules'
               ],
             )}
           >
@@ -374,7 +389,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             name={['lifeCycleModelInformation', 'time', 'common:dataSetValidUntil']}
             rules={getRules(
               processSchema['processDataSet']['processInformation']['time'][
-                'common:dataSetValidUntil'
+              'common:dataSetValidUntil'
               ]['rules'],
             )}
           >
@@ -396,6 +411,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             }
           />
         </Card>
+        <br />
         <Card
           size='small'
           title={
@@ -422,7 +438,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             onData={onData}
             rules={getRules(
               processSchema['processDataSet']['processInformation']['geography'][
-                'locationOfOperationSupplyOrProduction'
+              'locationOfOperationSupplyOrProduction'
               ]['@location']['rules'],
             )}
           />
@@ -447,6 +463,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             }
           />
         </Card>
+        <br />
         <Card
           size='small'
           title={
@@ -493,6 +510,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             }
           />
         </Card>
+        <br />
         <Card
           size='small'
           title={
@@ -502,10 +520,16 @@ export const LifeCycleModelForm: FC<Props> = ({
             />
           }
         >
-          <Divider orientationMargin='0' orientation='left' plain>
-            <FormattedMessage
-              id='pages.lifeCycleModel.information.technologyDescriptionAndIncludedProcesses'
-              defaultMessage='Technology description including background system'
+          <Divider className='required-divider' orientationMargin='0' orientation='left' plain>
+
+            <RequiredMark
+              label={
+                <FormattedMessage
+                  id='pages.lifeCycleModel.information.technologyDescriptionAndIncludedProcesses'
+                  defaultMessage='Technology description including background system'
+                />
+              }
+              showError={technologyDescriptionAndIncludedProcessesError}
             />
           </Divider>
           <LangTextItemForm
@@ -520,9 +544,10 @@ export const LifeCycleModelForm: FC<Props> = ({
                 defaultMessage='Technology description including background system'
               />
             }
+            setRuleErrorState={setTechnologyDescriptionAndIncludedProcessesError}
             rules={getRules(
               processSchema['processDataSet']['processInformation']['technology'][
-                'technologyDescriptionAndIncludedProcesses'
+              'technologyDescriptionAndIncludedProcesses'
               ]['rules'],
             )}
           />
@@ -571,6 +596,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             onData={onData}
           />
         </Card>
+        <br />
         <Card
           size='small'
           title={
@@ -590,6 +616,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             }
           />
         </Card>
+        <br />
         <Card
           size='small'
           title={
@@ -759,7 +786,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             }
           />
         </Card>
-
+        <br />
         <Card
           size='small'
           title={
@@ -779,7 +806,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             name={['modellingAndValidation', 'LCIMethodAndAllocation', 'typeOfDataSet']}
             rules={getRules(
               processSchema['processDataSet']['modellingAndValidation']['LCIMethodAndAllocation'][
-                'typeOfDataSet'
+              'typeOfDataSet'
               ]['rules'],
             )}
           >
@@ -897,6 +924,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             onData={onData}
           />
         </Card>
+        <br />
         <Card
           size='small'
           title={
@@ -906,10 +934,16 @@ export const LifeCycleModelForm: FC<Props> = ({
             />
           }
         >
-          <Divider orientationMargin='0' orientation='left' plain>
-            <FormattedMessage
-              id='pages.lifeCycleModel.modellingAndValidation.dataCutOffAndCompletenessPrinciples'
-              defaultMessage='Data cut-off and completeness principles'
+          <Divider className='required-divider' orientationMargin='0' orientation='left' plain>
+
+            <RequiredMark
+              label={
+                <FormattedMessage
+                  id='pages.lifeCycleModel.modellingAndValidation.dataCutOffAndCompletenessPrinciples'
+                  defaultMessage='Data cut-off and completeness principles'
+                />
+              }
+              showError={dataCutOffAndCompletenessPrinciplesError}
             />
           </Divider>
           <LangTextItemForm
@@ -924,9 +958,10 @@ export const LifeCycleModelForm: FC<Props> = ({
                 defaultMessage='Data cut-off and completeness principles'
               />
             }
+            setRuleErrorState={setDataCutOffAndCompletenessPrinciplesError}
             rules={getRules(
               processSchema['processDataSet']['modellingAndValidation'][
-                'dataSourcesTreatmentAndRepresentativeness'
+              'dataSourcesTreatmentAndRepresentativeness'
               ]['dataCutOffAndCompletenessPrinciples']['rules'],
             )}
           />
@@ -1059,7 +1094,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             onData={onData}
             rules={getRules(
               processSchema['processDataSet']['modellingAndValidation'][
-                'dataSourcesTreatmentAndRepresentativeness'
+              'dataSourcesTreatmentAndRepresentativeness'
               ]['referenceToDataSource']['rules'],
             )}
           />
@@ -1158,6 +1193,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             }
           />
         </Card>
+        <br />
         <Card
           size='small'
           title={
@@ -1266,7 +1302,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             onData={onData}
             rules={getRules(
               schema['lifeCycleModelDataSet']['administrativeInformation'][
-                'common:commissionerAndGoal'
+              'common:commissionerAndGoal'
               ]['common:referenceToCommissioner']['rules'],
             )}
           />
@@ -1294,9 +1330,14 @@ export const LifeCycleModelForm: FC<Props> = ({
           <Card
             size='small'
             title={
-              <FormattedMessage
-                id='pages.lifeCycleModel.administrativeInformation.intendedApplications'
-                defaultMessage='Intended applications'
+              <RequiredMark
+                label={
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.administrativeInformation.intendedApplications'
+                    defaultMessage='Intended applications'
+                  />
+                }
+                showError={intendedApplicationsError}
               />
             }
           >
@@ -1312,6 +1353,12 @@ export const LifeCycleModelForm: FC<Props> = ({
                   defaultMessage='Intended applications'
                 />
               }
+              setRuleErrorState={setIntendedApplicationsError}
+              rules={getRules(
+                processSchema['processDataSet']['administrativeInformation']['common:commissionerAndGoal'][
+                'common:intendedApplications'
+                ]['rules'],
+              )}
             />
           </Card>
         </Card>
@@ -1352,7 +1399,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
             rules={getRules(
               schema['lifeCycleModelDataSet']['administrativeInformation']['dataEntryBy'][
-                'common:timeStamp'
+              'common:timeStamp'
               ]['rules'],
             )}
           >
@@ -1372,7 +1419,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             onData={onData}
             rules={getRules(
               schema['lifeCycleModelDataSet']['administrativeInformation']['dataEntryBy'][
-                'common:referenceToDataSetFormat'
+              'common:referenceToDataSetFormat'
               ]['rules'],
             )}
           />
@@ -1412,7 +1459,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             onData={onData}
             rules={getRules(
               schema['lifeCycleModelDataSet']['administrativeInformation']['dataEntryBy'][
-                'common:referenceToPersonOrEntityEnteringTheData'
+              'common:referenceToPersonOrEntityEnteringTheData'
               ]['rules'],
             )}
           />
@@ -1470,7 +1517,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
             rules={getRules(
               schema['lifeCycleModelDataSet']['administrativeInformation'][
-                'publicationAndOwnership'
+              'publicationAndOwnership'
               ]['common:dataSetVersion']['rules'],
             )}
           >
@@ -1490,7 +1537,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             ]}
             rules={getRules(
               schema['lifeCycleModelDataSet']['administrativeInformation'][
-                'publicationAndOwnership'
+              'publicationAndOwnership'
               ]['common:permanentDataSetURI']['rules'],
             )}
           >
@@ -1579,7 +1626,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             onData={onData}
             rules={getRules(
               schema['lifeCycleModelDataSet']['administrativeInformation'][
-                'publicationAndOwnership'
+              'publicationAndOwnership'
               ]['common:referenceToOwnershipOfDataSet']['rules'],
             )}
           />
@@ -1594,7 +1641,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             name={['administrativeInformation', 'publicationAndOwnership', 'common:copyright']}
             rules={getRules(
               schema['lifeCycleModelDataSet']['administrativeInformation'][
-                'publicationAndOwnership'
+              'publicationAndOwnership'
               ]['common:copyright']['rules'],
             )}
           >
@@ -1627,7 +1674,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             name={['administrativeInformation', 'publicationAndOwnership', 'common:licenseType']}
             rules={getRules(
               schema['lifeCycleModelDataSet']['administrativeInformation'][
-                'publicationAndOwnership'
+              'publicationAndOwnership'
               ]['common:licenseType']['rules'],
             )}
           >

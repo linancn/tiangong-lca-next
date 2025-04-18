@@ -27,6 +27,8 @@ import { getProcessDetail, updateProcessStateCode } from '@/services/processes/a
 import { addReviewsApi } from '@/services/reviews/api';
 import { getUserTeamId } from '@/services/roles/api';
 import { v4 } from 'uuid';
+import requiredFields from '../../requiredFields';
+import { checkRequiredFields } from '@/pages/Utils';
 
 type Props = {
   lang: string;
@@ -55,13 +57,14 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData, action }) => {
     setReferenceValue(referenceValue + 1);
   };
   const handletFromData = () => {
+    const fieldsValue = formRefEdit.current?.getFieldsValue()
+
     if (activeTabKey === 'complianceDeclarations') {
       setFromData({
         ...fromData,
         modellingAndValidation: {
           ...fromData?.modellingAndValidation,
-          complianceDeclarations:
-            formRefEdit.current?.getFieldsValue()?.modellingAndValidation?.complianceDeclarations,
+          complianceDeclarations:fieldsValue?.modellingAndValidation?.complianceDeclarations,
         },
       });
       return;
@@ -71,18 +74,18 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData, action }) => {
         ...fromData,
         modellingAndValidation: {
           ...fromData?.modellingAndValidation,
-          validation: formRefEdit.current?.getFieldsValue()?.modellingAndValidation?.validation,
+          validation: fieldsValue?.modellingAndValidation?.validation,
         },
       });
       return;
     }
 
-    if (fromData) {
+    // if (fromData) {
       setFromData({
         ...fromData,
-        [activeTabKey]: formRefEdit.current?.getFieldsValue()?.[activeTabKey] ?? {},
+        [activeTabKey]: fieldsValue?.[activeTabKey] ?? {},
       });
-    }
+    // }
   };
 
   const onTabChange = (key: string) => {
@@ -162,7 +165,7 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData, action }) => {
     };
 
     const refObjs = getAllRefObj(data);
-    console.log('refObjs', refObjs);
+    // console.log('refObjs', refObjs);
     const unReview: any[] = [];
     const unReviewProcesses: any[] = [];
     const checkReferences = async (
@@ -205,12 +208,12 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData, action }) => {
     };
 
     const refCheckResult = await checkReferences(refObjs);
-    console.log('refCheckResult', refCheckResult);
+    // console.log('refCheckResult', refCheckResult);
 
     if (refCheckResult) {
       const allProcesses = await getAllProcesses();
       if (!allProcesses) return false;
-      console.log('allProcesses', allProcesses);
+      // console.log('allProcesses', allProcesses);
       for (const process of allProcesses) {
         const processDetail = await getProcessDetail(process.id, process.version);
         if (processDetail?.data?.stateCode < 20) {
@@ -236,12 +239,12 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData, action }) => {
       const result = await addReviewsApi(reviewId, data.id, data.version);
       if (result?.error) return;
 
-      console.log('lifeCycleModelDetail', lifeCycleModelDetail?.data?.state_code);
+      // console.log('lifeCycleModelDetail', lifeCycleModelDetail?.data?.state_code);
       const lifeCycleModelStateCode = lifeCycleModelDetail?.data?.state_code + 20;
 
       const { error: updateModalStateError, data: updateModalStateData } =
         await updateLifeCycleModelStateCode(data.id, data.version, lifeCycleModelStateCode);
-      console.log('updateModalStateError', updateModalStateError, updateModalStateData);
+      // console.log('updateModalStateError', updateModalStateError, updateModalStateData);
 
       if (unReviewProcesses.length > 0) {
         for (const process of unReviewProcesses) {
@@ -352,8 +355,26 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData, action }) => {
             <ProForm
               formRef={formRefEdit}
               initialValues={data}
-              onValuesChange={(_, allValues) => {
-                setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+              onValuesChange={async(_, allValues) => {
+                if (activeTabKey === 'validation') {
+                  await setFromData({
+                    ...fromData, 
+                    modellingAndValidation: {
+                      ...fromData?.modellingAndValidation,
+                      validation: { ...allValues?.modellingAndValidation?.validation }
+                    }
+                  });
+                } else if(activeTabKey === 'complianceDeclarations'){
+                  await setFromData({
+                    ...fromData, 
+                    modellingAndValidation: {
+                      ...fromData?.modellingAndValidation,
+                      complianceDeclarations: { ...allValues?.modellingAndValidation?.complianceDeclarations }
+                    }
+                  });
+                }else {
+                  await setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+                }
               }}
               submitter={{
                 render: () => {
@@ -361,6 +382,12 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData, action }) => {
                 },
               }}
               onFinish={async () => {
+                const { checkResult, tabName } = checkRequiredFields(requiredFields, fromData);
+                if (!checkResult) {
+                  await setActiveTabKey(tabName);
+                  formRefEdit.current?.validateFields();
+                  return false;
+                }
                 onData({ ...fromData });
                 formRefEdit.current?.resetFields();
                 setDrawerVisible(false);

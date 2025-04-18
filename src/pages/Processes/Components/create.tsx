@@ -10,6 +10,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
 import { ProcessForm } from './form';
+import requiredFields from '../requiredFields';
+import { checkRequiredFields } from '@/pages/Utils';
 
 type Props = {
   lang: string;
@@ -23,15 +25,15 @@ type Props = {
 type CreateProps =
   | (Omit<Props, 'type'> & { actionType?: 'create' })
   | (Omit<Props, 'type' | 'id' | 'version'> & {
-      actionType: 'copy';
-      id: string;
-      version: string;
-    })
+    actionType: 'copy';
+    id: string;
+    version: string;
+  })
   | (Omit<Props, 'type' | 'id' | 'version'> & {
-      actionType: 'createVersion';
-      id: string;
-      version: string;
-    });
+    actionType: 'createVersion';
+    id: string;
+    version: string;
+  });
 
 const ProcessCreate: FC<CreateProps> = ({
   lang,
@@ -49,12 +51,31 @@ const ProcessCreate: FC<CreateProps> = ({
   const [spinning, setSpinning] = useState<boolean>(false);
   const intl = useIntl();
 
-  const handletFromData = () => {
-    if (fromData?.id)
-      setFromData({
-        ...fromData,
-        [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
+  const handletFromData = async () => {
+    const fieldsValue = formRefCreate.current?.getFieldsValue()
+    // if (fromData?.id)
+    if (activeTabKey === 'validation') {
+      await setFromData({
+        ...fromData, 
+        modellingAndValidation: {
+          ...fromData?.modellingAndValidation,
+          validation: { ...fieldsValue?.modellingAndValidation?.validation }
+        }
       });
+    } else if(activeTabKey === 'complianceDeclarations'){
+      await setFromData({
+        ...fromData, 
+        modellingAndValidation: {
+          ...fromData?.modellingAndValidation,
+          complianceDeclarations: { ...fieldsValue?.modellingAndValidation?.complianceDeclarations }
+        }
+      });
+    }else {
+      await setFromData({
+        ...fromData,
+        [activeTabKey]: fieldsValue?.[activeTabKey] ?? {},
+      });
+    }
   };
 
   const reload = useCallback(() => {
@@ -226,8 +247,26 @@ const ProcessCreate: FC<CreateProps> = ({
           <ProForm
             formRef={formRefCreate}
             initialValues={initData}
-            onValuesChange={(_, allValues) => {
-              setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+            onValuesChange={async (_, allValues) => {
+              if (activeTabKey === 'validation') {
+                await setFromData({
+                  ...fromData, 
+                  modellingAndValidation: {
+                    ...fromData?.modellingAndValidation,
+                    validation: { ...allValues?.modellingAndValidation?.validation }
+                  }
+                });
+              } else if(activeTabKey === 'complianceDeclarations'){
+                await setFromData({
+                  ...fromData, 
+                  modellingAndValidation: {
+                    ...fromData?.modellingAndValidation,
+                    complianceDeclarations: { ...allValues?.modellingAndValidation?.complianceDeclarations }
+                  }
+                });
+              }else {
+                await setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+              }
             }}
             submitter={{
               render: () => {
@@ -235,8 +274,14 @@ const ProcessCreate: FC<CreateProps> = ({
               },
             }}
             onFinish={async () => {
+              const { checkResult, tabName } = checkRequiredFields(requiredFields, fromData);
+              if (!checkResult) {
+                await setActiveTabKey(tabName);
+                formRefCreate.current?.validateFields();
+                return false;
+              }
+
               const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
-              // const fieldsValue = formRefCreate.current?.getFieldsValue();
               const exchanges = fromData?.exchanges;
               if (!exchanges || !exchanges?.exchange || exchanges?.exchange?.length === 0) {
                 message.error(
@@ -260,9 +305,7 @@ const ProcessCreate: FC<CreateProps> = ({
               }
 
               const result = await createProcess(paramsId, {
-                // ...fieldsValue,
                 ...fromData,
-                exchanges,
               });
               if (result.data) {
                 message.success(

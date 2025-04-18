@@ -181,7 +181,7 @@ export function genLifeCycleModelJsonOrdered(id: string, data: any, oldData: any
           'common:referenceYear':
             data?.lifeCycleModelInformation?.time?.['common:referenceYear'] ?? {},
           'common:dataSetValidUntil':
-            data?.lifeCycleModelInformation?.time?.['common:dataSetValidUntil'] ?? {},
+            data?.lifeCycleModelInformation?.time?.['common:dataSetValidUntil'] ,
           'common:timeRepresentativenessDescription': getLangJson(
             data?.lifeCycleModelInformation?.time?.['common:timeRepresentativenessDescription'],
           ),
@@ -912,9 +912,9 @@ export function genLifeCycleModelInfoFromData(data: any) {
       },
       time: {
         'common:referenceYear':
-          data?.lifeCycleModelInformation?.time?.['common:referenceYear'] ?? {},
+          data?.lifeCycleModelInformation?.time?.['common:referenceYear'] ,
         'common:dataSetValidUntil':
-          data?.lifeCycleModelInformation?.time?.['common:dataSetValidUntil'] ?? {},
+          data?.lifeCycleModelInformation?.time?.['common:dataSetValidUntil'] ,
         'common:timeRepresentativenessDescription': getLangList(
           data?.lifeCycleModelInformation?.time?.['common:timeRepresentativenessDescription'],
         ),
@@ -924,7 +924,7 @@ export function genLifeCycleModelInfoFromData(data: any) {
           '@location':
             data?.lifeCycleModelInformation?.geography?.locationOfOperationSupplyOrProduction?.[
               '@location'
-            ] ?? {},
+            ],
           descriptionOfRestrictions: getLangList(
             data?.lifeCycleModelInformation?.geography?.locationOfOperationSupplyOrProduction
               ?.descriptionOfRestrictions,
@@ -934,7 +934,7 @@ export function genLifeCycleModelInfoFromData(data: any) {
           '@subLocation':
             data?.lifeCycleModelInformation?.geography?.subLocationOfOperationSupplyOrProduction?.[
               '@subLocation'
-            ] ?? {},
+            ] ,
           descriptionOfRestrictions: getLangList(
             data?.lifeCycleModelInformation?.geography?.subLocationOfOperationSupplyOrProduction
               ?.descriptionOfRestrictions,
@@ -952,19 +952,19 @@ export function genLifeCycleModelInfoFromData(data: any) {
           '@type':
             data?.lifeCycleModelInformation?.technology?.referenceToTechnologyPictogramme?.[
               '@type'
-            ] ?? {},
+            ] ,
           '@refObjectId':
             data?.lifeCycleModelInformation?.technology?.referenceToTechnologyPictogramme?.[
               '@refObjectId'
-            ] ?? {},
+            ] ,
           '@version':
             data?.lifeCycleModelInformation?.technology?.referenceToTechnologyPictogramme?.[
               '@version'
-            ] ?? {},
+            ],
           '@uri':
             data?.lifeCycleModelInformation?.technology?.referenceToTechnologyPictogramme?.[
               '@uri'
-            ] ?? {},
+            ] ,
           'common:shortDescription': getLangList(
             data?.lifeCycleModelInformation?.technology?.referenceToTechnologyPictogramme?.[
               'common:shortDescription'
@@ -974,16 +974,16 @@ export function genLifeCycleModelInfoFromData(data: any) {
         referenceToTechnologyFlowDiagrammOrPicture: {
           '@type':
             data?.lifeCycleModelInformation?.technology
-              ?.referenceToTechnologyFlowDiagrammOrPicture?.['@type'] ?? {},
+              ?.referenceToTechnologyFlowDiagrammOrPicture?.['@type'] ,
           '@refObjectId':
             data?.lifeCycleModelInformation?.technology
-              ?.referenceToTechnologyFlowDiagrammOrPicture?.['@refObjectId'] ?? {},
+              ?.referenceToTechnologyFlowDiagrammOrPicture?.['@refObjectId'] ,
           '@version':
             data?.lifeCycleModelInformation?.technology
-              ?.referenceToTechnologyFlowDiagrammOrPicture?.['@version'] ?? {},
+              ?.referenceToTechnologyFlowDiagrammOrPicture?.['@version'] ,
           '@uri':
             data?.lifeCycleModelInformation?.technology
-              ?.referenceToTechnologyFlowDiagrammOrPicture?.['@uri'] ?? {},
+              ?.referenceToTechnologyFlowDiagrammOrPicture?.['@uri'],
           'common:shortDescription': getLangList(
             data?.lifeCycleModelInformation?.technology
               ?.referenceToTechnologyFlowDiagrammOrPicture?.['common:shortDescription'],
@@ -1039,14 +1039,14 @@ export function genLifeCycleModelInfoFromData(data: any) {
         ),
       },
       LCIMethodAndAllocation: {
-        typeOfDataSet: data?.modellingAndValidation?.LCIMethodAndAllocation?.typeOfDataSet ?? {},
+        typeOfDataSet: data?.modellingAndValidation?.LCIMethodAndAllocation?.typeOfDataSet ,
         LCIMethodPrinciple:
-          data?.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodPrinciple ?? {},
+          data?.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodPrinciple ,
         deviationsFromLCIMethodPrinciple: getLangList(
           data?.modellingAndValidation?.LCIMethodAndAllocation?.deviationsFromLCIMethodPrinciple,
         ),
         LCIMethodApproaches:
-          data?.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodApproaches ?? {},
+          data?.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodApproaches ,
         deviationsFromLCIMethodApproaches: getLangList(
           data?.modellingAndValidation?.LCIMethodAndAllocation?.deviationsFromLCIMethodApproaches,
         ),
@@ -1060,19 +1060,19 @@ export function genLifeCycleModelInfoFromData(data: any) {
           '@type':
             data?.modellingAndValidation?.LCIMethodAndAllocation?.referenceToLCAMethodDetails?.[
               '@type'
-            ] ?? {},
+            ] ,
           '@refObjectId':
             data?.modellingAndValidation?.LCIMethodAndAllocation?.referenceToLCAMethodDetails?.[
               '@refObjectId'
-            ] ?? {},
+            ] ,
           '@uri':
             data?.modellingAndValidation?.LCIMethodAndAllocation?.referenceToLCAMethodDetails?.[
               '@uri'
-            ] ?? {},
+            ] ,
           '@version':
             data?.modellingAndValidation?.LCIMethodAndAllocation?.referenceToLCAMethodDetails?.[
               '@version'
-            ] ?? {},
+            ] ,
           'common:shortDescription': getLangJson(
             data?.modellingAndValidation?.LCIMethodAndAllocation?.referenceToLCAMethodDetails?.[
               'common:shortDescription'
@@ -1108,16 +1108,16 @@ export function genLifeCycleModelInfoFromData(data: any) {
         referenceToDataHandlingPrinciples: {
           '@type':
             data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-              ?.referenceToDataHandlingPrinciples?.['@type'] ?? {},
+              ?.referenceToDataHandlingPrinciples?.['@type'] ,
           '@refObjectId':
             data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-              ?.referenceToDataHandlingPrinciples?.['@refObjectId'] ?? {},
+              ?.referenceToDataHandlingPrinciples?.['@refObjectId'] ,
           '@uri':
             data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-              ?.referenceToDataHandlingPrinciples?.['@uri'] ?? {},
+              ?.referenceToDataHandlingPrinciples?.['@uri'] ,
           '@version':
             data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-              ?.referenceToDataHandlingPrinciples?.['@version'] ?? {},
+              ?.referenceToDataHandlingPrinciples?.['@version'] ,
           'common:shortDescription': getLangJson(
             data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
               ?.referenceToDataHandlingPrinciples?.['common:shortDescription'],
@@ -1126,16 +1126,16 @@ export function genLifeCycleModelInfoFromData(data: any) {
         referenceToDataSource: {
           '@type':
             data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-              ?.referenceToDataSource?.['@type'] ?? {},
+              ?.referenceToDataSource?.['@type'] ,
           '@refObjectId':
             data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-              ?.referenceToDataSource?.['@refObjectId'] ?? {},
+              ?.referenceToDataSource?.['@refObjectId'] ,
           '@version':
             data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-              ?.referenceToDataSource?.['@version'] ?? {},
+              ?.referenceToDataSource?.['@version'] ,
           '@uri':
             data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-              ?.referenceToDataSource?.['@uri'] ?? {},
+              ?.referenceToDataSource?.['@uri'] ,
           'common:shortDescription': getLangList(
             data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
               ?.referenceToDataSource?.['common:shortDescription'],
@@ -1143,7 +1143,7 @@ export function genLifeCycleModelInfoFromData(data: any) {
         },
         percentageSupplyOrProductionCovered:
           data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-            ?.percentageSupplyOrProductionCovered ?? {},
+            ?.percentageSupplyOrProductionCovered ,
         annualSupplyOrProductionVolume: getLangList(
           data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
             ?.annualSupplyOrProductionVolume,
@@ -1342,7 +1342,7 @@ export function genLifeCycleModelInfoFromData(data: any) {
           '@version':
             data?.administrativeInformation?.dataEntryBy?.[
               'common:referenceToConvertedOriginalDataSetFrom'
-            ]?.['@version'] ?? {},
+            ]?.['@version'],
           'common:shortDescription': getLangList(
             data?.administrativeInformation?.dataEntryBy?.[
               'common:referenceToConvertedOriginalDataSetFrom'
@@ -1388,7 +1388,7 @@ export function genLifeCycleModelInfoFromData(data: any) {
           '@version':
             data?.administrativeInformation?.dataEntryBy?.[
               'common:referenceToDataSetUseApproval'
-            ]?.['@version'] ?? {},
+            ]?.['@version'],
           'common:shortDescription': getLangList(
             data?.administrativeInformation?.dataEntryBy?.[
               'common:referenceToDataSetUseApproval'
@@ -1398,8 +1398,7 @@ export function genLifeCycleModelInfoFromData(data: any) {
       },
       publicationAndOwnership: {
         'common:dateOfLastRevision':
-          data?.administrativeInformation?.publicationAndOwnership?.['common:dateOfLastRevision'] ??
-          {},
+          data?.administrativeInformation?.publicationAndOwnership?.['common:dateOfLastRevision'] ,
         'common:dataSetVersion':
           data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'],
         'common:permanentDataSetURI':
@@ -1407,24 +1406,24 @@ export function genLifeCycleModelInfoFromData(data: any) {
         'common:workflowAndPublicationStatus':
           data?.administrativeInformation?.publicationAndOwnership?.[
             'common:workflowAndPublicationStatus'
-          ] ?? {},
+          ] ,
         'common:referenceToUnchangedRepublication': {
           '@refObjectId':
             data?.administrativeInformation?.publicationAndOwnership?.[
               'common:referenceToUnchangedRepublication'
-            ]?.['@refObjectId'] ?? {},
+            ]?.['@refObjectId'] ,
           '@type':
             data?.administrativeInformation?.publicationAndOwnership?.[
               'common:referenceToUnchangedRepublication'
-            ]?.['@type'] ?? {},
+            ]?.['@type'] ,
           '@uri':
             data?.administrativeInformation?.publicationAndOwnership?.[
               'common:referenceToUnchangedRepublication'
-            ]?.['@uri'] ?? {},
+            ]?.['@uri'] ,
           '@version':
             data?.administrativeInformation?.publicationAndOwnership?.[
               'common:referenceToUnchangedRepublication'
-            ]?.['@version'] ?? {},
+            ]?.['@version'] ,
           'common:shortDescription': getLangList(
             data?.administrativeInformation?.publicationAndOwnership?.[
               'common:referenceToUnchangedRepublication'
@@ -1435,19 +1434,19 @@ export function genLifeCycleModelInfoFromData(data: any) {
           '@refObjectId':
             data?.administrativeInformation?.publicationAndOwnership?.[
               'common:referenceToRegistrationAuthority'
-            ]?.['@refObjectId'] ?? {},
+            ]?.['@refObjectId'] ,
           '@type':
             data?.administrativeInformation?.publicationAndOwnership?.[
               'common:referenceToRegistrationAuthority'
-            ]?.['@type'] ?? {},
+            ]?.['@type'] ,
           '@uri':
             data?.administrativeInformation?.publicationAndOwnership?.[
               'common:referenceToRegistrationAuthority'
-            ]?.['@uri'] ?? {},
+            ]?.['@uri'] ,
           '@version':
             data?.administrativeInformation?.publicationAndOwnership?.[
               'common:referenceToRegistrationAuthority'
-            ]?.['@version'] ?? {},
+            ]?.['@version'] ,
           'common:shortDescription': getLangList(
             data?.administrativeInformation?.publicationAndOwnership?.[
               'common:referenceToRegistrationAuthority'
@@ -1961,7 +1960,7 @@ export async function genLifeCycleModelProcess(id: string, refNode: any, data: a
           'common:referenceYear':
             data?.lifeCycleModelInformation?.time?.['common:referenceYear'] ?? {},
           'common:dataSetValidUntil':
-            data?.lifeCycleModelInformation?.time?.['common:dataSetValidUntil'] ?? {},
+            data?.lifeCycleModelInformation?.time?.['common:dataSetValidUntil'] ,
           'common:timeRepresentativenessDescription':
             data?.lifeCycleModelInformation?.time?.['common:timeRepresentativenessDescription'],
         },
@@ -1999,15 +1998,15 @@ export async function genLifeCycleModelProcess(id: string, refNode: any, data: a
             '@type':
               data?.lifeCycleModelInformation?.technology?.referenceToTechnologyPictogramme?.[
                 '@type'
-              ] ?? {},
+              ] ,
             '@refObjectId':
               data?.lifeCycleModelInformation?.technology?.referenceToTechnologyPictogramme?.[
                 '@refObjectId'
-              ] ?? {},
+              ] ,
             '@uri':
               data?.lifeCycleModelInformation?.technology?.referenceToTechnologyPictogramme?.[
                 '@uri'
-              ] ?? {},
+              ] ,
             'common:shortDescription':
               data?.lifeCycleModelInformation?.technology?.referenceToTechnologyPictogramme?.[
                 'common:shortDescription'
@@ -2016,13 +2015,13 @@ export async function genLifeCycleModelProcess(id: string, refNode: any, data: a
           referenceToTechnologyFlowDiagrammOrPicture: {
             '@type':
               data?.lifeCycleModelInformation?.technology
-                ?.referenceToTechnologyFlowDiagrammOrPicture?.['@type'] ?? {},
+                ?.referenceToTechnologyFlowDiagrammOrPicture?.['@type'] ,
             '@refObjectId':
               data?.lifeCycleModelInformation?.technology
-                ?.referenceToTechnologyFlowDiagrammOrPicture?.['@refObjectId'] ?? {},
+                ?.referenceToTechnologyFlowDiagrammOrPicture?.['@refObjectId'] ,
             '@uri':
               data?.lifeCycleModelInformation?.technology
-                ?.referenceToTechnologyFlowDiagrammOrPicture?.['@uri'] ?? {},
+                ?.referenceToTechnologyFlowDiagrammOrPicture?.['@uri'] ,
             'common:shortDescription':
               data?.lifeCycleModelInformation?.technology
                 ?.referenceToTechnologyFlowDiagrammOrPicture?.['common:shortDescription'],
