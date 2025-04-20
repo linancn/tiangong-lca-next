@@ -710,7 +710,7 @@
       }
     },
     "administrativeInformation": {
-      "commissionerAndGoal": {
+      "common:commissionerAndGoal": {
         "common:referenceToCommissioner": {
           "value": {
             "@refObjectId": "str",

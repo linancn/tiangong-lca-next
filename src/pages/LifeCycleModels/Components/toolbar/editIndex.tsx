@@ -451,7 +451,7 @@ const ToolbarEdit: FC<Props> = ({
   }, [isSave, setIsSave]);
 
   const updateInfoData = (data: any) => {
-    setInfoData({ ...data, id: thisId });
+    setInfoData({ ...data, id: thisId, version: thisVersion });
   };
 
   const updateTargetAmount = (data: any) => {
@@ -743,8 +743,6 @@ const ToolbarEdit: FC<Props> = ({
       },
     };
 
-    console.log(thisAction, 'thisAction', action);
-
     if (thisAction === 'edit') {
       updateLifeCycleModel({ ...newData, id: thisId, version: thisVersion }).then((result: any) => {
         if (result.data) {
@@ -764,6 +762,7 @@ const ToolbarEdit: FC<Props> = ({
       });
     } else if (thisAction === 'create') {
       const newId = actionType === 'createVersion' ? thisId : v4();
+      console.log(newData, 'newData');
       createLifeCycleModel({ ...newData, id: newId }).then((result: any) => {
         if (result.data) {
           message.success(
@@ -879,7 +878,7 @@ const ToolbarEdit: FC<Props> = ({
         const fromData = genLifeCycleModelInfoFromData(
           result.data?.json?.lifeCycleModelDataSet ?? {},
         );
-        setInfoData({ ...fromData, id: thisId });
+        setInfoData({ ...fromData, id: thisId, version: thisVersion });
         const model = genLifeCycleModelData(result.data?.json_tg ?? {}, lang);
         let initNodes = (model?.nodes ?? []).map((node: any) => {
           return {
@@ -927,14 +926,23 @@ const ToolbarEdit: FC<Props> = ({
       const newData = {
         modellingAndValidation: {
           complianceDeclarations: {
-            compliance: {
-              'common:approvalOfOverallCompliance': 'Fully compliant',
-              'common:nomenclatureCompliance': 'Fully compliant',
-              'common:methodologicalCompliance': 'Fully compliant',
-              'common:reviewCompliance': 'Fully compliant',
-              'common:documentationCompliance': 'Fully compliant',
-              'common:qualityCompliance': 'Fully compliant',
-            },
+            compliance: [
+              {
+                'common:approvalOfOverallCompliance': 'Fully compliant',
+                'common:nomenclatureCompliance': 'Fully compliant',
+                'common:methodologicalCompliance': 'Fully compliant',
+                'common:reviewCompliance': 'Fully compliant',
+                'common:documentationCompliance': 'Fully compliant',
+                'common:qualityCompliance': 'Fully compliant',
+              },
+            ],
+          },
+          validation: {
+            review: [
+              {
+                'common:scope': [{}],
+              },
+            ],
           },
         },
         administrativeInformation: {
@@ -946,7 +954,7 @@ const ToolbarEdit: FC<Props> = ({
           },
         },
       };
-      setInfoData({ ...newData, id: thisId });
+      setInfoData({ ...newData, id: thisId, version: thisVersion });
       modelData({
         nodes: [],
         edges: [],

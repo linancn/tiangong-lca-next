@@ -402,11 +402,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
               defaultMessage='Data set LCA report, background info'
             />
           }
-          data={
-            initData.processInformation?.dataSetInformation?.[
-              'common:referenceToExternalDocumentation'
-            ]
-          }
+          data={initData.processInformation?.dataSetInformation?.referenceToExternalDocumentation}
           lang={lang}
         />
         {/* <Card size="small" title={'Quantitative Reference'}>
@@ -1227,7 +1223,7 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
           }
           lang={lang}
           data={
-            initData.administrativeInformation?.commissionerAndGoal?.[
+            initData.administrativeInformation?.['common:commissionerAndGoal']?.[
               'common:referenceToCommissioner'
             ]
           }
@@ -1239,7 +1235,9 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
           />
         </Divider>
         <LangTextItemDescription
-          data={initData.administrativeInformation?.commissionerAndGoal?.['common:project']}
+          data={
+            initData.administrativeInformation?.['common:commissionerAndGoal']?.['common:project']
+          }
         />
         <br />
         <Divider orientationMargin='0' orientation='left' plain>
@@ -1250,7 +1248,9 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
         </Divider>
         <LangTextItemDescription
           data={
-            initData.administrativeInformation?.commissionerAndGoal?.['common:intendedApplications']
+            initData.administrativeInformation?.['common:commissionerAndGoal']?.[
+              'common:intendedApplications'
+            ]
           }
         />
         <br />

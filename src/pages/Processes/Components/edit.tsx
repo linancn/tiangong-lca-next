@@ -1,4 +1,5 @@
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
+import { checkRequiredFields } from '@/pages/Utils';
 import { getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
 import { getRefData, updateReviewIdAndStateCode } from '@/services/general/api';
@@ -29,6 +30,7 @@ import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
+import requiredFields from '../requiredFields';
 import { ProcessForm } from './form';
 type Props = {
   id: string;
@@ -56,12 +58,33 @@ const ProcessEdit: FC<Props> = ({
   const intl = useIntl();
   const [referenceValue, setReferenceValue] = useState(0);
 
-  const handletFromData = () => {
+  const handletFromData = async () => {
     if (fromData?.id) {
-      setFromData({
-        ...fromData,
-        [activeTabKey]: formRefEdit.current?.getFieldsValue()?.[activeTabKey] ?? {},
-      });
+      const fieldsValue = formRefEdit.current?.getFieldsValue();
+      if (activeTabKey === 'validation') {
+        await setFromData({
+          ...fromData,
+          modellingAndValidation: {
+            ...fromData?.modellingAndValidation,
+            validation: { ...fieldsValue?.modellingAndValidation?.validation },
+          },
+        });
+      } else if (activeTabKey === 'complianceDeclarations') {
+        await setFromData({
+          ...fromData,
+          modellingAndValidation: {
+            ...fromData?.modellingAndValidation,
+            complianceDeclarations: {
+              ...fieldsValue?.modellingAndValidation?.complianceDeclarations,
+            },
+          },
+        });
+      } else {
+        await setFromData({
+          ...fromData,
+          [activeTabKey]: fieldsValue?.[activeTabKey] ?? {},
+        });
+      }
     }
   };
 
@@ -115,7 +138,7 @@ const ProcessEdit: FC<Props> = ({
     const traverse = (current: any) => {
       if (!current || typeof current !== 'object') return;
 
-      if ('@refObjectId' in current) {
+      if ('@refObjectId' in current && current['@refObjectId'] && current['@version']) {
         result.push(current);
       }
 
@@ -215,7 +238,12 @@ const ProcessEdit: FC<Props> = ({
       const result = await addReviewsApi(reviewId, id, version);
       if (result?.error) return;
 
-      const { error, data } = await updateProcessStateCode(id, version, reviewId);
+      const { error, data } = await updateProcessStateCode(
+        id,
+        version,
+        reviewId,
+        initData.stateCode,
+      );
 
       let stateCode = 0;
       if (!error && data && data.length) {
@@ -257,7 +285,7 @@ const ProcessEdit: FC<Props> = ({
     setSpinning(true);
     getProcessDetail(id, version).then(async (result: any) => {
       const dataSet = genProcessFromData(result.data?.json?.processDataSet ?? {});
-      setInitData({ ...dataSet, id: id });
+      setInitData({ ...dataSet, id: id, stateCode: result.data?.stateCode });
       setFromData({ ...dataSet, id: id });
       setExchangeDataSource(dataSet?.exchanges?.exchange ?? []);
       formRefEdit.current?.resetFields();
@@ -370,8 +398,28 @@ const ProcessEdit: FC<Props> = ({
             <ProForm
               formRef={formRefEdit}
               initialValues={initData}
-              onValuesChange={(_, allValues) => {
-                setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+              onValuesChange={async (_, allValues) => {
+                if (activeTabKey === 'validation') {
+                  await setFromData({
+                    ...fromData,
+                    modellingAndValidation: {
+                      ...fromData?.modellingAndValidation,
+                      validation: { ...allValues?.modellingAndValidation?.validation },
+                    },
+                  });
+                } else if (activeTabKey === 'complianceDeclarations') {
+                  await setFromData({
+                    ...fromData,
+                    modellingAndValidation: {
+                      ...fromData?.modellingAndValidation,
+                      complianceDeclarations: {
+                        ...allValues?.modellingAndValidation?.complianceDeclarations,
+                      },
+                    },
+                  });
+                } else {
+                  await setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+                }
               }}
               submitter={{
                 render: () => {
@@ -379,7 +427,12 @@ const ProcessEdit: FC<Props> = ({
                 },
               }}
               onFinish={async () => {
-                const fieldsValue = formRefEdit.current?.getFieldsValue();
+                const { checkResult, tabName } = checkRequiredFields(requiredFields, fromData);
+                if (!checkResult) {
+                  await setActiveTabKey(tabName);
+                  formRefEdit.current?.validateFields();
+                  return false;
+                }
                 const exchanges = fromData?.exchanges;
                 if (!exchanges || !exchanges?.exchange || exchanges?.exchange?.length === 0) {
                   message.error(
@@ -404,8 +457,7 @@ const ProcessEdit: FC<Props> = ({
                 }
                 setSpinning(true);
                 const updateResult = await updateProcess(id, version, {
-                  ...fieldsValue,
-                  exchanges,
+                  ...fromData,
                 });
                 if (updateResult?.data) {
                   message.success(

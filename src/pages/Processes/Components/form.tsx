@@ -64,6 +64,12 @@ export const ProcessForm: FC<Props> = ({
   const [baseNameError, setBaseNameError] = useState(false);
   const [treatmentStandardsRoutesError, setTreatmentStandardsRoutesError] = useState(false);
   const [mixAndLocationTypesError, setMixAndLocationTypesError] = useState(false);
+  const [
+    technologyDescriptionAndIncludedProcessesError,
+    setTechnologyDescriptionAndIncludedProcessesError,
+  ] = useState(false);
+  const [dataCutOffAndCompletenessPrinciplesError, setDataCutOffAndCompletenessPrinciplesError] =
+    useState(false);
   const [intendedApplicationsError, setIntendedApplicationsError] = useState(false);
   const [generalCommentError, setGeneralCommentError] = useState(false);
   const { token } = theme.useToken();
@@ -479,11 +485,7 @@ export const ProcessForm: FC<Props> = ({
         </Card>
 
         <SourceSelectForm
-          name={[
-            'processInformation',
-            'dataSetInformation',
-            'common:referenceToExternalDocumentation',
-          ]}
+          name={['processInformation', 'dataSetInformation', 'referenceToExternalDocumentation']}
           label={
             <FormattedMessage
               id='pages.process.view.processInformation.referenceToExternalDocumentation'
@@ -661,10 +663,15 @@ export const ProcessForm: FC<Props> = ({
             />
           }
         >
-          <Divider orientationMargin='0' orientation='left' plain>
-            <FormattedMessage
-              id='pages.process.view.processInformation.technologyDescriptionAndIncludedProcesses'
-              defaultMessage='Technology description including background system'
+          <Divider className='required-divider' orientationMargin='0' orientation='left' plain>
+            <RequiredMark
+              label={
+                <FormattedMessage
+                  id='pages.process.view.processInformation.technologyDescriptionAndIncludedProcesses'
+                  defaultMessage='Technology description including background system'
+                />
+              }
+              showError={technologyDescriptionAndIncludedProcessesError}
             />
           </Divider>
           <LangTextItemForm
@@ -680,6 +687,7 @@ export const ProcessForm: FC<Props> = ({
                 'technologyDescriptionAndIncludedProcesses'
               ]['rules'],
             )}
+            setRuleErrorState={setTechnologyDescriptionAndIncludedProcessesError}
           />
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
@@ -1022,10 +1030,15 @@ export const ProcessForm: FC<Props> = ({
             />
           }
         >
-          <Divider orientationMargin='0' orientation='left' plain>
-            <FormattedMessage
-              id='pages.process.view.modellingAndValidation.dataCutOffAndCompletenessPrinciples'
-              defaultMessage='Data cut-off and completeness principles'
+          <Divider className='required-divider' orientationMargin='0' orientation='left' plain>
+            <RequiredMark
+              label={
+                <FormattedMessage
+                  id='pages.process.view.modellingAndValidation.dataCutOffAndCompletenessPrinciples'
+                  defaultMessage='Data cut-off and completeness principles'
+                />
+              }
+              showError={dataCutOffAndCompletenessPrinciplesError}
             />
           </Divider>
           <LangTextItemForm
@@ -1045,6 +1058,7 @@ export const ProcessForm: FC<Props> = ({
                 'dataSourcesTreatmentAndRepresentativeness'
               ]['dataCutOffAndCompletenessPrinciples']['rules'],
             )}
+            setRuleErrorState={setDataCutOffAndCompletenessPrinciplesError}
           />
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
@@ -1395,7 +1409,7 @@ export const ProcessForm: FC<Props> = ({
         <ContactSelectForm
           name={[
             'administrativeInformation',
-            'commissionerAndGoal',
+            'common:commissionerAndGoal',
             'common:referenceToCommissioner',
           ]}
           label={
@@ -1408,7 +1422,7 @@ export const ProcessForm: FC<Props> = ({
           formRef={formRef}
           onData={onData}
           rules={getRules(
-            schema['processDataSet']['administrativeInformation']['commissionerAndGoal'][
+            schema['processDataSet']['administrativeInformation']['common:commissionerAndGoal'][
               'common:referenceToCommissioner'
             ]['rules'],
           )}
@@ -1423,7 +1437,7 @@ export const ProcessForm: FC<Props> = ({
           }
         >
           <LangTextItemForm
-            name={['administrativeInformation', 'commissionerAndGoal', 'common:project']}
+            name={['administrativeInformation', 'common:commissionerAndGoal', 'common:project']}
             label={
               <FormattedMessage
                 id='pages.process.view.administrativeInformation.project'
@@ -1449,7 +1463,7 @@ export const ProcessForm: FC<Props> = ({
           <LangTextItemForm
             name={[
               'administrativeInformation',
-              'commissionerAndGoal',
+              'common:commissionerAndGoal',
               'common:intendedApplications',
             ]}
             label={
@@ -1460,7 +1474,7 @@ export const ProcessForm: FC<Props> = ({
             }
             setRuleErrorState={setIntendedApplicationsError}
             rules={getRules(
-              schema['processDataSet']['administrativeInformation']['commissionerAndGoal'][
+              schema['processDataSet']['administrativeInformation']['common:commissionerAndGoal'][
                 'common:intendedApplications'
               ]['rules'],
             )}
@@ -1938,11 +1952,7 @@ export const ProcessForm: FC<Props> = ({
       activeTabKey={activeTabKey}
       onTabChange={onTabChange}
     >
-      {Object.keys(tabContent).map((key) => (
-        <div key={key} style={{ display: key === activeTabKey ? 'block' : 'none' }}>
-          {tabContent[key]}
-        </div>
-      ))}
+      {tabContent[activeTabKey]}
     </Card>
   );
 };

@@ -112,27 +112,27 @@ export function genProcessJsonOrdered(id: string, data: any) {
           'common:generalComment': getLangJson(
             data?.processInformation?.dataSetInformation?.['common:generalComment'],
           ),
-          'common:referenceToExternalDocumentation': {
+          referenceToExternalDocumentation: {
             '@refObjectId':
-              data?.processInformation?.dataSetInformation?.[
-                'common:referenceToExternalDocumentation'
-              ]?.['@refObjectId'] ?? {},
+              data?.processInformation?.dataSetInformation?.['referenceToExternalDocumentation']?.[
+                '@refObjectId'
+              ] ?? {},
             '@type':
-              data?.processInformation?.dataSetInformation?.[
-                'common:referenceToExternalDocumentation'
-              ]?.['@type'] ?? {},
+              data?.processInformation?.dataSetInformation?.['referenceToExternalDocumentation']?.[
+                '@type'
+              ] ?? {},
             '@uri':
-              data?.processInformation?.dataSetInformation?.[
-                'common:referenceToExternalDocumentation'
-              ]?.['@uri'] ?? {},
+              data?.processInformation?.dataSetInformation?.['referenceToExternalDocumentation']?.[
+                '@uri'
+              ] ?? {},
             '@version':
-              data?.processInformation?.dataSetInformation?.[
-                'common:referenceToExternalDocumentation'
-              ]?.['@version'] ?? {},
+              data?.processInformation?.dataSetInformation?.['referenceToExternalDocumentation']?.[
+                '@version'
+              ] ?? {},
             'common:shortDescription': getLangJson(
-              data?.processInformation?.dataSetInformation?.[
-                'common:referenceToExternalDocumentation'
-              ]?.['common:shortDescription'],
+              data?.processInformation?.dataSetInformation?.['referenceToExternalDocumentation']?.[
+                'common:shortDescription'
+              ],
             ),
           },
         },
@@ -477,35 +477,37 @@ export function genProcessJsonOrdered(id: string, data: any) {
         },
       },
       administrativeInformation: {
-        commissionerAndGoal: {
+        ['common:commissionerAndGoal']: {
           'common:referenceToCommissioner': {
             '@refObjectId':
-              data?.administrativeInformation?.commissionerAndGoal?.[
+              data?.administrativeInformation?.['common:commissionerAndGoal']?.[
                 'common:referenceToCommissioner'
               ]?.['@refObjectId'] ?? {},
             '@type':
-              data?.administrativeInformation?.commissionerAndGoal?.[
+              data?.administrativeInformation?.['common:commissionerAndGoal']?.[
                 'common:referenceToCommissioner'
               ]?.['@type'] ?? {},
             '@uri':
-              data?.administrativeInformation?.commissionerAndGoal?.[
+              data?.administrativeInformation?.['common:commissionerAndGoal']?.[
                 'common:referenceToCommissioner'
               ]?.['@uri'] ?? {},
             '@version':
-              data?.administrativeInformation?.commissionerAndGoal?.[
+              data?.administrativeInformation?.['common:commissionerAndGoal']?.[
                 'common:referenceToCommissioner'
               ]?.['@version'] ?? {},
             'common:shortDescription': getLangJson(
-              data?.administrativeInformation?.commissionerAndGoal?.[
+              data?.administrativeInformation?.['common:commissionerAndGoal']?.[
                 'common:referenceToCommissioner'
               ]?.['common:shortDescription'],
             ),
           },
           'common:project': getLangJson(
-            data?.administrativeInformation?.commissionerAndGoal?.['common:project'],
+            data?.administrativeInformation?.['common:commissionerAndGoal']?.['common:project'],
           ),
           'common:intendedApplications': getLangJson(
-            data?.administrativeInformation?.commissionerAndGoal?.['common:intendedApplications'],
+            data?.administrativeInformation?.['common:commissionerAndGoal']?.[
+              'common:intendedApplications'
+            ],
           ),
         },
         dataGenerator: {
@@ -799,27 +801,27 @@ export function genProcessFromData(data: any) {
         'common:generalComment': getLangList(
           data?.processInformation?.dataSetInformation?.['common:generalComment'],
         ),
-        'common:referenceToExternalDocumentation': {
+        referenceToExternalDocumentation: {
           '@refObjectId':
-            data?.processInformation?.dataSetInformation?.[
-              'common:referenceToExternalDocumentation'
-            ]?.['@refObjectId'] ?? {},
+            data?.processInformation?.dataSetInformation?.['referenceToExternalDocumentation']?.[
+              '@refObjectId'
+            ] ?? {},
           '@type':
-            data?.processInformation?.dataSetInformation?.[
-              'common:referenceToExternalDocumentation'
-            ]?.['@type'] ?? {},
+            data?.processInformation?.dataSetInformation?.['referenceToExternalDocumentation']?.[
+              '@type'
+            ] ?? {},
           '@uri':
-            data?.processInformation?.dataSetInformation?.[
-              'common:referenceToExternalDocumentation'
-            ]?.['@uri'] ?? {},
+            data?.processInformation?.dataSetInformation?.['referenceToExternalDocumentation']?.[
+              '@uri'
+            ] ?? {},
           '@version':
-            data?.processInformation?.dataSetInformation?.[
-              'common:referenceToExternalDocumentation'
-            ]?.['@version'] ?? {},
+            data?.processInformation?.dataSetInformation?.['referenceToExternalDocumentation']?.[
+              '@version'
+            ] ?? {},
           'common:shortDescription': getLangJson(
-            data?.processInformation?.dataSetInformation?.[
-              'common:referenceToExternalDocumentation'
-            ]?.['common:shortDescription'],
+            data?.processInformation?.dataSetInformation?.['referenceToExternalDocumentation']?.[
+              'common:shortDescription'
+            ],
           ),
         },
       },
@@ -1138,35 +1140,37 @@ export function genProcessFromData(data: any) {
       },
     },
     administrativeInformation: {
-      commissionerAndGoal: {
+      ['common:commissionerAndGoal']: {
         'common:referenceToCommissioner': {
           '@refObjectId':
-            data?.administrativeInformation?.commissionerAndGoal?.[
+            data?.administrativeInformation?.['common:commissionerAndGoal']?.[
               'common:referenceToCommissioner'
             ]?.['@refObjectId'] ?? {},
           '@type':
-            data?.administrativeInformation?.commissionerAndGoal?.[
+            data?.administrativeInformation?.['common:commissionerAndGoal']?.[
               'common:referenceToCommissioner'
             ]?.['@type'] ?? {},
           '@uri':
-            data?.administrativeInformation?.commissionerAndGoal?.[
+            data?.administrativeInformation?.['common:commissionerAndGoal']?.[
               'common:referenceToCommissioner'
             ]?.['@uri'] ?? {},
           '@version':
-            data?.administrativeInformation?.commissionerAndGoal?.[
+            data?.administrativeInformation?.['common:commissionerAndGoal']?.[
               'common:referenceToCommissioner'
             ]?.['@version'] ?? {},
           'common:shortDescription': getLangList(
-            data?.administrativeInformation?.commissionerAndGoal?.[
+            data?.administrativeInformation?.['common:commissionerAndGoal']?.[
               'common:referenceToCommissioner'
             ]?.['common:shortDescription'],
           ),
         },
         'common:project': getLangList(
-          data?.administrativeInformation?.commissionerAndGoal?.['common:project'],
+          data?.administrativeInformation?.['common:commissionerAndGoal']?.['common:project'],
         ),
         'common:intendedApplications': getLangList(
-          data?.administrativeInformation?.commissionerAndGoal?.['common:intendedApplications'],
+          data?.administrativeInformation?.['common:commissionerAndGoal']?.[
+            'common:intendedApplications'
+          ],
         ),
       },
       dataGenerator: {

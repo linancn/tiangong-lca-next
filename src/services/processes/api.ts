@@ -32,31 +32,19 @@ export async function updateProcess(id: string, version: string, data: any) {
   return updateResult;
 }
 
-export async function updateProcessStateCode(id: string, version: string, reviewId: string) {
-  const { data, error } = await supabase
+export async function updateProcessStateCode(
+  id: string,
+  version: string,
+  reviewId: string,
+  stateCode: number,
+) {
+  const updateResult = await supabase
     .from('processes')
-    .select('state_code')
+    .update({ state_code: stateCode, review_id: reviewId })
     .eq('id', id)
-    .eq('version', version);
-
-  let stateCode = 0;
-  if (!error && data && data.length) {
-    stateCode = data[0]?.state_code + 20;
-  }
-
-  if (stateCode) {
-    const updateResult = await supabase
-      .from('processes')
-      .update({ state_code: stateCode, review_id: reviewId })
-      .eq('id', id)
-      .eq('version', version)
-      .select('state_code');
-    return updateResult;
-  }
-  return Promise.resolve({
-    data: [],
-    error: true,
-  });
+    .eq('version', version)
+    .select('state_code');
+  return updateResult;
 }
 
 export async function getProcessTableAll(
@@ -550,13 +538,13 @@ export async function getProcessDetail(id: string, version: string) {
     if (version && version.length === 9) {
       result = await supabase
         .from('processes')
-        .select('json,version, modified_at')
+        .select('json,version, modified_at,state_code')
         .eq('id', id)
         .eq('version', version);
     } else {
       result = await supabase
         .from('processes')
-        .select('json,version, modified_at')
+        .select('json,version, modified_at,state_code')
         .eq('id', id)
         .order('version', { ascending: false })
         .range(0, 0);
@@ -569,6 +557,7 @@ export async function getProcessDetail(id: string, version: string) {
           version: data.version,
           json: data.json,
           modifiedAt: data?.modified_at,
+          stateCode: data?.state_code,
         },
         success: true,
       });
