@@ -188,7 +188,21 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                 </Space>
               </Row>
             ))}
-            <Button type='dashed' onClick={() => subOpt.add()} block>
+            <Button
+              type='dashed'
+              onClick={() =>
+                subOpt.add({
+                  'common:approvalOfOverallCompliance': 'Fully compliant',
+                  'common:nomenclatureCompliance': 'Fully compliant',
+                  'common:methodologicalCompliance': 'Fully compliant',
+                  'common:reviewCompliance': 'Fully compliant',
+                  'common:documentationCompliance': 'Fully compliant',
+                  'common:qualityCompliance': 'Fully compliant',
+                  'common:referenceToComplianceSystem': {},
+                })
+              }
+              block
+            >
               + <FormattedMessage id='pages.button.item.add' defaultMessage='Add' />{' '}
               <FormattedMessage id='pages.process.validation.review' defaultMessage='Review' />{' '}
               <FormattedMessage id='pages.button.item.label' defaultMessage='Item' />
