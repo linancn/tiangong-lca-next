@@ -15,6 +15,7 @@ import {
   completenessElementaryFlowsValueOptions,
   completenessProductModelOptions,
   copyrightOptions,
+  workflowAndPublicationStatusOptions,
   // approvalOfOverallComplianceOptions,
   // documentationComplianceOptions,
   licenseTypeOptions,
@@ -55,6 +56,10 @@ type Props = {
 //   const option = qualityComplianceOptions.find((opt) => opt.value === value);
 //   return option ? option.label : '-';
 // };
+const getWorkflowAndPublicationStatusOptions = (value: string) => {
+  const option = workflowAndPublicationStatusOptions.find((opt) => opt.value === value);
+  return option ? option.label : '-';
+};
 const getCompletenessElementaryFlowsTypeOptions = (value: string) => {
   const option = completenessElementaryFlowsTypeOptions.find((opt) => opt.value === value);
   return option ? option.label : '-';
@@ -1398,9 +1403,9 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
               }
               styles={{ label: { width: '240px' } }}
             >
-              {data.administrativeInformation?.publicationAndOwnership?.[
+              {getWorkflowAndPublicationStatusOptions(data.administrativeInformation?.publicationAndOwnership?.[
                 'common:workflowAndPublicationStatus'
-              ] ?? '-'}
+              ]??'-')}
             </Descriptions.Item>
           </Descriptions>
           <br />
