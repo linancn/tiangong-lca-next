@@ -8,46 +8,90 @@ import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import {
-  approvalOfOverallComplianceOptions,
-  documentationComplianceOptions,
+  completenessProductModelOptions,
+  completenessElementaryFlowsValueOptions,
+  completenessElementaryFlowsTypeOptions,
+  // approvalOfOverallComplianceOptions,
+  // documentationComplianceOptions,
   licenseTypeOptions,
-  methodologicalComplianceOptions,
-  nomenclatureComplianceOptions,
-  qualityComplianceOptions,
-  reviewComplianceOptions,
+  // methodologicalComplianceOptions,
+  // nomenclatureComplianceOptions,
+  // qualityComplianceOptions,
+  // reviewComplianceOptions,
+  uncertaintyDistributionTypeOptions,
+  processtypeOfDataSetOptions,
+  LCIMethodPrincipleOptions,
+  LCIMethodApproachOptions,
+  copyrightOptions
 } from '../optiondata';
+import LocationTextItemDescription from '@/components/LocationTextItem/description';
+
 
 type Props = {
   lang: string;
   data: any;
 };
 
-const getapprovalOfOverallComplianceOptions = (value: string) => {
-  const option = approvalOfOverallComplianceOptions.find((opt) => opt.value === value);
+// const getapprovalOfOverallComplianceOptions = (value: string) => {
+//   const option = approvalOfOverallComplianceOptions.find((opt) => opt.value === value);
+//   return option ? option.label : '-';
+// };
+// const getnomenclatureComplianceOptions = (value: string) => {
+//   const option = nomenclatureComplianceOptions.find((opt) => opt.value === value);
+//   return option ? option.label : '-';
+// };
+// const getmethodologicalComplianceOptions = (value: string) => {
+//   const option = methodologicalComplianceOptions.find((opt) => opt.value === value);
+//   return option ? option.label : '-';
+// };
+// const getreviewComplianceOptions = (value: string) => {
+//   const option = reviewComplianceOptions.find((opt) => opt.value === value);
+//   return option ? option.label : '-';
+// };
+// const getdocumentationComplianceOptions = (value: string) => {
+//   const option = documentationComplianceOptions.find((opt) => opt.value === value);
+//   return option ? option.label : '-';
+// };
+// const getqualityComplianceOptions = (value: string) => {
+//   const option = qualityComplianceOptions.find((opt) => opt.value === value);
+//   return option ? option.label : '-';
+// };
+const getCompletenessElementaryFlowsTypeOptions = (value: string) => {
+  const option = completenessElementaryFlowsTypeOptions.find((opt) => opt.value === value);
   return option ? option.label : '-';
 };
-const getnomenclatureComplianceOptions = (value: string) => {
-  const option = nomenclatureComplianceOptions.find((opt) => opt.value === value);
+const getCompletenessElementaryFlowsValueOptions = (value: string) => {
+  const option = completenessElementaryFlowsValueOptions.find((opt) => opt.value === value);
   return option ? option.label : '-';
 };
-const getmethodologicalComplianceOptions = (value: string) => {
-  const option = methodologicalComplianceOptions.find((opt) => opt.value === value);
-  return option ? option.label : '-';
-};
-const getreviewComplianceOptions = (value: string) => {
-  const option = reviewComplianceOptions.find((opt) => opt.value === value);
-  return option ? option.label : '-';
-};
-const getdocumentationComplianceOptions = (value: string) => {
-  const option = documentationComplianceOptions.find((opt) => opt.value === value);
-  return option ? option.label : '-';
-};
-const getqualityComplianceOptions = (value: string) => {
-  const option = qualityComplianceOptions.find((opt) => opt.value === value);
+const getCompletenessProductModelOptions = (value: string) => {
+  const option = completenessProductModelOptions.find((opt) => opt.value === value);
   return option ? option.label : '-';
 };
 const getLicenseTypeOptions = (value: string) => {
   const option = licenseTypeOptions.find((opt) => opt.value === value);
+  return option ? option.label : '-';
+};
+const getComplianceLabel = (value: string) => {
+  const option = uncertaintyDistributionTypeOptions.find((opt) => opt.value === value);
+  return option ? option.label : '-';
+};
+const getProcesstypeOfDataSetOptions = (value: string) => {
+  const option = processtypeOfDataSetOptions.find((opt) => opt.value === value);
+  return option ? option.label : '-';
+};
+
+const getLCIMethodPrincipleOptions = (value: string) => {
+  const option = LCIMethodPrincipleOptions.find((opt) => opt.value === value);
+  return option ? option.label : '-';
+};
+
+const getLCIMethodApproachOptions = (value: string) => {
+  const option = LCIMethodApproachOptions.find((opt) => opt.value === value);
+  return option ? option.label : '-';
+};
+const getCopyrightOptions = (value: string) => {
+  const option = copyrightOptions.find((opt) => opt.value === value);
   return option ? option.label : '-';
 };
 
@@ -158,10 +202,34 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           />
         </Card>
         <br />
+        <Descriptions bordered size={'small'} column={1}>
+          <Descriptions.Item
+            key={0}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.information.identifierOfSubDataSet'
+                defaultMessage='Identifier of sub-data set'
+              />
+            }
+            labelStyle={{ width: '140px' }}
+          >
+            {data.lifeCycleModelInformation?.dataSetInformation?.identifierOfSubDataSet ?? '-'}
+          </Descriptions.Item>
+        </Descriptions>
+        <Divider orientationMargin='0' orientation='left' plain>
+          <FormattedMessage
+            id='pages.lifeCycleModel.information.synonyms'
+            defaultMessage='Synonyms'
+          />
+        </Divider>
+        <LangTextItemDescription
+          data={data.lifeCycleModelInformation?.dataSetInformation?.['common:synonyms']}
+        />
+        <br />
         <LevelTextItemDescription
           data={
             data.lifeCycleModelInformation?.dataSetInformation?.classificationInformation?.[
-              'common:classification'
+            'common:classification'
             ]?.['common:class']?.['value']
           }
           lang={lang}
@@ -204,6 +272,332 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           data={data.lifeCycleModelInformation?.technology?.referenceToDiagram ?? {}}
           lang={lang}
         />
+        <br />
+        <Card
+          size='small'
+          title={
+            <FormattedMessage
+              id='pages.lifeCycleModel.information.time'
+              defaultMessage='Time representativeness'
+            />
+          }
+        >
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.lifeCycleModel.information.referenceYear'
+                  defaultMessage='Reference year'
+                />
+              }
+              labelStyle={{ width: '140px' }}
+            >
+              {data.lifeCycleModelInformation?.time?.['common:referenceYear'] ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
+          <br />
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.lifeCycleModel.information.dataSetValidUntil'
+                  defaultMessage='Data set valid until:'
+                />
+              }
+              labelStyle={{ width: '140px' }}
+            >
+              {data.lifeCycleModelInformation?.time?.['common:dataSetValidUntil'] ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.information.timeRepresentativenessDescription'
+              defaultMessage='Time representativeness description'
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={data.lifeCycleModelInformation?.time?.['common:timeRepresentativenessDescription']}
+          />
+        </Card>
+        <br />
+        <Card
+          size='small'
+          title={
+            <FormattedMessage
+              id='pages.lifeCycleModel.information.locationOfOperationSupplyOrProduction'
+              defaultMessage='Location'
+            />
+          }
+        >
+          <LocationTextItemDescription
+            lang={lang}
+            data={
+              data.lifeCycleModelInformation?.geography?.locationOfOperationSupplyOrProduction?.[
+              '@location'
+              ] ?? '-'
+            }
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.information.location'
+                defaultMessage='Location'
+              />
+            }
+            labelStyle={{ width: '100px' }}
+          />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.information.descriptionOfRestrictions'
+              defaultMessage='Geographical representativeness description'
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={
+              data.lifeCycleModelInformation?.geography?.locationOfOperationSupplyOrProduction
+                ?.descriptionOfRestrictions
+            }
+          />
+        </Card>
+        <br />
+        <Card
+          size='small'
+          title={
+            <FormattedMessage
+              id='pages.lifeCycleModel.information.subLocationOfOperationSupplyOrProduction'
+              defaultMessage='Sub-location(s)'
+            />
+          }
+        >
+          <LocationTextItemDescription
+            lang={lang}
+            data={
+              data.lifeCycleModelInformation?.geography?.subLocationOfOperationSupplyOrProduction?.[
+              '@subLocation'
+              ] ?? '-'
+            }
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.information.location'
+                defaultMessage='Sub-location(s)'
+              />
+            }
+            labelStyle={{ width: '100px' }}
+          />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.information.descriptionOfRestrictions'
+              defaultMessage='Geographical representativeness description'
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={
+              data.lifeCycleModelInformation?.geography?.subLocationOfOperationSupplyOrProduction
+                ?.descriptionOfRestrictions
+            }
+          />
+        </Card>
+        <br />
+        <Card
+          size='small'
+          title={
+            <FormattedMessage
+              id='pages.lifeCycleModel.information.technology'
+              defaultMessage='Technological representativeness'
+            />
+          }
+        >
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.information.technologyDescriptionAndIncludedProcesses'
+              defaultMessage='Technology description including background system'
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={
+              data.lifeCycleModelInformation?.technology?.technologyDescriptionAndIncludedProcesses
+            }
+          />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.information.technologicalApplicability'
+              defaultMessage='Technical purpose of product or process'
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={data.lifeCycleModelInformation?.technology?.technologicalApplicability}
+          />
+          <br />
+          <SourceSelectDescription
+            title={
+              <FormattedMessage
+                id='pages.lifeCycleModel.information.referenceToTechnologyPictogramme'
+                defaultMessage='Flow diagramm(s) or picture(s)'
+              />
+            }
+            data={data.lifeCycleModelInformation?.technology?.referenceToTechnologyPictogramme ?? {}}
+            lang={lang}
+          />
+          <br />
+          <SourceSelectDescription
+            title={
+              <FormattedMessage
+                id='pages.lifeCycleModel.information.referenceToTechnologyFlowDiagrammOrPicture'
+                defaultMessage='Flow diagramm(s) or picture(s)'
+              />
+            }
+            data={
+              data.lifeCycleModelInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture ??
+              {}
+            }
+            lang={lang}
+          />
+        </Card>
+        <Divider orientationMargin='0' orientation='left' plain>
+          <FormattedMessage
+            id='pages.lifeCycleModel.information.modelDescription'
+            defaultMessage='Model description'
+          />
+        </Divider>
+        <LangTextItemDescription
+          data={data.lifeCycleModelInformation?.mathematicalRelations?.modelDescription}
+        />
+        <br />
+        <Card
+          size='small'
+          title={
+            <FormattedMessage
+              id='pages.lifeCycleModel.information.variableParameter'
+              defaultMessage='Variable / parameter'
+            />
+          }
+        >
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.lifeCycleModel.information.variableParameter.name'
+                  defaultMessage='Name of variable'
+                />
+              }
+              labelStyle={{ width: '120px' }}
+            >
+              {data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter?.['@name'] ??
+                '-'}
+            </Descriptions.Item>
+          </Descriptions>
+          <br />
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.lifeCycleModel.information.variableParameter.formula'
+                  defaultMessage='Formula'
+                />
+              }
+              labelStyle={{ width: '120px' }}
+            >
+              {data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter?.formula ??
+                '-'}
+            </Descriptions.Item>
+          </Descriptions>
+          <br />
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.lifeCycleModel.information.variableParameter.meanValue'
+                  defaultMessage='Mean value'
+                />
+              }
+              labelStyle={{ width: '120px' }}
+            >
+              {data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter?.meanValue ??
+                '-'}
+            </Descriptions.Item>
+          </Descriptions>
+          <br />
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.lifeCycleModel.information.variableParameter.minimumValue'
+                  defaultMessage='Minimum value'
+                />
+              }
+              labelStyle={{ width: '120px' }}
+            >
+              {data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
+                ?.minimumValue ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
+          <br />
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.lifeCycleModel.information.variableParameter.maximumValue'
+                  defaultMessage='Maximum value'
+                />
+              }
+              labelStyle={{ width: '120px' }}
+            >
+              {data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
+                ?.maximumValue ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
+          <br />
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.lifeCycleModel.information.variableParameter.uncertaintyDistributionType'
+                  defaultMessage='Uncertainty distribution type'
+                />
+              }
+              labelStyle={{ width: '180px' }}
+            >
+              {getComplianceLabel(
+                data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
+                  ?.uncertaintyDistributionType ?? '-',
+              )}
+            </Descriptions.Item>
+          </Descriptions>
+          <br />
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.lifeCycleModel.information.variableParameter.relativeStandardDeviation95In'
+                  defaultMessage='Relative StdDev in %'
+                />
+              }
+              labelStyle={{ width: '180px' }}
+            >
+              {data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
+                ?.relativeStandardDeviation95In ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
+
+          <Divider orientationMargin='0' orientation='left' plain>
+            {
+              <FormattedMessage
+                id='pages.lifeCycleModel.information.variableParameter.comment'
+                defaultMessage='Comment, units, defaults'
+              />
+            }
+          </Divider>
+          <LangTextItemDescription
+            data={data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter?.comment}
+          />
+        </Card>
       </>
     ),
     modellingAndValidation: (
@@ -221,7 +615,398 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           }
         />
         <br />
-        <ContactSelectDescription
+        <Card
+          size='small'
+          title={
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.lCIMethodAndAllocation'
+              defaultMessage='LCI method and allocation'
+            />
+          }
+        >
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.lifeCycleModel.modellingAndValidation.typeOfDataSet'
+                  defaultMessage='Type of data set'
+                />
+              }
+              labelStyle={{ width: '220px' }}
+            >
+              {getProcesstypeOfDataSetOptions(
+                data.modellingAndValidation?.LCIMethodAndAllocation?.typeOfDataSet ?? '-',
+              )}
+            </Descriptions.Item>
+          </Descriptions>
+          <br />
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.lifeCycleModel.modellingAndValidation.lCIMethodPrinciple'
+                  defaultMessage='LCI method principle'
+                />
+              }
+              labelStyle={{ width: '220px' }}
+            >
+              {getLCIMethodPrincipleOptions(
+                data.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodPrinciple ?? '-',
+              )}
+            </Descriptions.Item>
+          </Descriptions>
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.deviationsFromLCIMethodPrinciple'
+              defaultMessage='Deviation from LCI method principle / explanations'
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={
+              data.modellingAndValidation?.LCIMethodAndAllocation
+                ?.deviationsFromLCIMethodPrinciple
+            }
+          />
+          <br />
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.lifeCycleModel.modellingAndValidation.lCIMethodApproaches'
+                  defaultMessage='LCI method approaches'
+                />
+              }
+              labelStyle={{ width: '220px' }}
+            >
+              {getLCIMethodApproachOptions(
+                data.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodApproaches ?? '-',
+              )}
+            </Descriptions.Item>
+          </Descriptions>
+
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.deviationsFromLCIMethodApproaches'
+              defaultMessage='Deviations from LCI method approaches / explanations'
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={
+              data.modellingAndValidation?.LCIMethodAndAllocation
+                ?.deviationsFromLCIMethodApproaches
+            }
+          />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.modellingConstants'
+              defaultMessage='Modelling constants'
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={data.modellingAndValidation?.LCIMethodAndAllocation?.modellingConstants}
+          />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.deviationsFromModellingConstants'
+              defaultMessage='Deviation from modelling constants / explanations'
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={
+              data.modellingAndValidation?.LCIMethodAndAllocation
+                ?.deviationsFromModellingConstants
+            }
+          />
+          <br />
+          <SourceSelectDescription
+            title={
+              <FormattedMessage
+                id='pages.lifeCycleModel.modellingAndValidation.referenceToLCAMethodDetails'
+                defaultMessage='LCA methodology report'
+              />
+            }
+            data={
+              data.modellingAndValidation?.LCIMethodAndAllocation
+                ?.referenceToLCAMethodDetails ?? {}
+            }
+            lang={lang}
+          />
+        </Card>
+        <br />
+        <Card
+          size='small'
+          title={
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness'
+              defaultMessage='Data sources, treatment, and representativeness'
+            />
+          }
+        >
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.dataCutOffAndCompletenessPrinciples'
+              defaultMessage='Data cut-off and completeness principles'
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={
+              data.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.dataCutOffAndCompletenessPrinciples
+            }
+          />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.deviationsFromCutOffAndCompletenessPrinciples'
+              defaultMessage='Deviation from data cut-off and completeness principles / explanations'
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={
+              data.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.deviationsFromCutOffAndCompletenessPrinciples
+            }
+          />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.dataSelectionAndCombinationPrinciples'
+              defaultMessage='Data selection and combination principles'
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={
+              data.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.dataSelectionAndCombinationPrinciples
+            }
+          />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.deviationsFromSelectionAndCombinationPrinciples'
+              defaultMessage='Deviation from data selection and combination principles / explanations'
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={
+              data.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.deviationsFromSelectionAndCombinationPrinciples
+            }
+          />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.dataTreatmentAndExtrapolationsPrinciples'
+              defaultMessage='Data treatment and extrapolations principles'
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={
+              data.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.dataTreatmentAndExtrapolationsPrinciples
+            }
+          />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.deviationsFromTreatmentAndExtrapolationPrinciples'
+              defaultMessage='Deviation from data treatment and extrapolations principles / explanations'
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={
+              data.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.deviationsFromTreatmentAndExtrapolationPrinciples
+            }
+          />
+          <br />
+          <SourceSelectDescription
+            title={
+              <FormattedMessage
+                id='pages.lifeCycleModel.modellingAndValidation.referenceToDataHandlingPrinciples'
+                defaultMessage='Data handling report'
+              />
+            }
+            data={
+              data.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.referenceToDataHandlingPrinciples ?? {}
+            }
+            lang={lang}
+          />
+          <br />
+          <SourceSelectDescription
+            title={
+              <FormattedMessage
+                id='pages.lifeCycleModel.modellingAndValidation.referenceToDataSource'
+                defaultMessage='Data source(s) used for this data set'
+              />
+            }
+            data={
+              data.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.referenceToDataSource ?? {}
+            }
+            lang={lang}
+          />
+          <br />
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.lifeCycleModel.modellingAndValidation.percentageSupplyOrProductionCovered'
+                  defaultMessage='Percentage supply or production covered'
+                />
+              }
+              labelStyle={{ width: '220px' }}
+            >
+              {data.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.percentageSupplyOrProductionCovered ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.annualSupplyOrProductionVolume'
+              defaultMessage='Annual supply or production volume'
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={
+              data.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.annualSupplyOrProductionVolume
+            }
+          />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.samplingProcedure'
+              defaultMessage='Sampling procedure'
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={
+              data.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.samplingProcedure
+            }
+          />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.dataCollectionPeriod'
+              defaultMessage='Data collection period'
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={
+              data.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.dataCollectionPeriod
+            }
+          />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.uncertaintyAdjustments'
+              defaultMessage='Uncertainty adjustments'
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={
+              data.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.uncertaintyAdjustments
+            }
+          />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.useAdviceForDataSet'
+              defaultMessage='Use advice for data set'
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={
+              data.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.useAdviceForDataSet
+            }
+          />
+        </Card>
+        <br />
+        <Card
+          size='small'
+          title={
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.completeness'
+              defaultMessage='Completeness'
+            />
+          }
+        >
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.lifeCycleModel.modellingAndValidation.completeness.completenessProductModel'
+                  defaultMessage='Completeness product model'
+                />
+              }
+              labelStyle={{ width: '140px' }}
+            >
+              {getCompletenessProductModelOptions(
+                data.modellingAndValidation?.completeness?.completenessProductModel ?? '-',
+              )}
+            </Descriptions.Item>
+          </Descriptions>
+          <br />
+          <Card
+            size='small'
+            title={
+              <FormattedMessage
+                id='pages.lifeCycleModel.modellingAndValidation.completeness.completenessElementaryFlows'
+                defaultMessage='Completeness elementary flows, per topic'
+              />
+            }
+          >
+            <Descriptions bordered size={'small'} column={1}>
+              <Descriptions.Item
+                key={0}
+                label={
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.modellingAndValidation.completeness.completenessElementaryFlows.type'
+                    defaultMessage='completeness type'
+                  />
+                }
+                labelStyle={{ width: '140px' }}
+              >
+                {getCompletenessElementaryFlowsTypeOptions(
+                  data.modellingAndValidation?.completeness?.completenessElementaryFlows?.[
+                  '@type'
+                  ] ?? '-',
+                )}
+              </Descriptions.Item>
+            </Descriptions>
+            <br />
+            <Descriptions bordered size={'small'} column={1}>
+              <Descriptions.Item
+                key={0}
+                label={
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.modellingAndValidation.completeness.completenessElementaryFlows.value'
+                    defaultMessage='value'
+                  />
+                }
+                labelStyle={{ width: '140px' }}
+              >
+                {getCompletenessElementaryFlowsValueOptions(
+                  data.modellingAndValidation?.completeness?.completenessElementaryFlows?.[
+                  '@value'
+                  ] ?? '-',
+                )}
+              </Descriptions.Item>
+            </Descriptions>
+          </Card>
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.completeness.completenessOtherProblemField'
+              defaultMessage='Completeness other problem field(s)'
+            />
+          </Divider>
+          <LangTextItemDescription
+            data={data.modellingAndValidation?.completeness?.completenessOtherProblemField}
+          />
+        </Card>
+        {/* <ContactSelectDescription
           title={
             <FormattedMessage
               id='pages.lifeCycleModel.information.referenceToCompleteReviewReport'
@@ -235,8 +1020,8 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             ]
           }
         />
-        <br />
-        <SourceSelectDescription
+        <br /> */}
+        {/* <SourceSelectDescription
           title={
             <FormattedMessage
               id='pages.lifeCycleModel.information.referenceToCompleteReviewReport'
@@ -265,8 +1050,8 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           }
           lang={lang}
         />
-        <br />
-        <Descriptions bordered size={'small'} column={1}>
+        <br /> */}
+        {/* <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
             key={0}
             label={
@@ -378,7 +1163,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
               ] ?? '-',
             )}
           </Descriptions.Item>
-        </Descriptions>
+        </Descriptions> */}
       </>
     ),
     administrativeInformation: (
@@ -402,7 +1187,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             lang={lang}
             data={
               data.administrativeInformation?.['common:commissionerAndGoal']?.[
-                'common:referenceToCommissioner'
+              'common:referenceToCommissioner'
               ]
             }
           />
@@ -428,7 +1213,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           <LangTextItemDescription
             data={
               data.administrativeInformation?.['common:commissionerAndGoal']?.[
-                'common:intendedApplications'
+              'common:intendedApplications'
               ]
             }
           />
@@ -444,10 +1229,94 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           lang={lang}
           data={
             data.administrativeInformation?.dataGenerator?.[
-              'common:referenceToPersonOrEntityGeneratingTheDataSet'
+            'common:referenceToPersonOrEntityGeneratingTheDataSet'
             ]
           }
         />
+        <br />
+        <Card
+          size='small'
+          title={
+            <FormattedMessage
+              id='pages.lifeCycleModel.administrativeInformation.dataEntryBy'
+              defaultMessage='Data entry by'
+            />
+          }
+        >
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.lifeCycleModel.administrativeInformation.timeStamp'
+                  defaultMessage='Time stamp (last saved)'
+                />
+              }
+              styles={{ label: { width: '200px' } }}
+            >
+              {data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
+          <br />
+          <SourceSelectDescription
+            data={
+              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']
+            }
+            title={
+              <FormattedMessage
+                id='pages.lifeCycleModel.administrativeInformation.referenceToDataSetFormat'
+                defaultMessage='Data set format(s)'
+              />
+            }
+            lang={lang}
+          />
+          <br />
+          <SourceSelectDescription
+            data={
+              data?.administrativeInformation?.dataEntryBy?.[
+              'common:referenceToConvertedOriginalDataSetFrom'
+              ]
+            }
+            title={
+              <FormattedMessage
+                id='pages.lifeCycleModel.administrativeInformation.referenceToConvertedOriginalDataSetFrom'
+                defaultMessage='Converted original data set from:'
+              />
+            }
+            lang={lang}
+          />
+          <br />
+          <ContactSelectDescription
+            data={
+              data?.administrativeInformation?.dataEntryBy?.[
+              'common:referenceToPersonOrEntityEnteringTheData'
+              ]
+            }
+            title={
+              <FormattedMessage
+                id='pages.lifeCycleModel.administrativeInformation.referenceToPersonOrEntityEnteringTheData'
+                defaultMessage='Data entry by:'
+              />
+            }
+            lang={lang}
+          />
+          <br />
+          <SourceSelectDescription
+            data={
+              data?.administrativeInformation?.dataEntryBy?.[
+              'common:referenceToDataSetUseApproval'
+              ]
+            }
+            title={
+              <FormattedMessage
+                id='pages.lifeCycleModel.administrativeInformation.referenceToDataSetUseApproval'
+                defaultMessage='Official approval of data set by producer/operator:'
+              />
+            }
+            lang={lang}
+          />
+          <br />
+        </Card>
         <br />
         <Card
           size='small'
@@ -458,6 +1327,23 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             />
           }
         >
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.lifeCycleModel.administrativeInformation.dateOfLastRevision'
+                  defaultMessage='Date of last revision'
+                />
+              }
+              labelStyle={{ width: '180px' }}
+            >
+              {data.administrativeInformation?.publicationAndOwnership?.[
+                'common:dateOfLastRevision'
+              ] ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
+          <br />
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item
               key={0}
@@ -497,10 +1383,110 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           <LangTextItemDescription
             data={
               data.administrativeInformation?.publicationAndOwnership?.[
-                'common:permanentDataSetURI'
+              'common:permanentDataSetURI'
               ]
             }
           />
+          <br />
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.lifeCycleModel.administrativeInformation.workflowAndPublicationStatus'
+                  defaultMessage='Workflow and publication status	'
+                />
+              }
+              styles={{ label: { width: '240px' } }}
+            >
+              {data.administrativeInformation?.publicationAndOwnership?.[
+                'common:workflowAndPublicationStatus'
+              ] ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
+          <br />
+          <SourceSelectDescription
+            title={
+              <FormattedMessage
+                id='pages.lifeCycleModel.administrativeInformation.referenceToUnchangedRepublication'
+                defaultMessage='Unchanged re-publication of:'
+              />
+            }
+            data={
+              data.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToUnchangedRepublication'
+              ] ?? {}
+            }
+            lang={lang}
+          />
+          <br />
+          <ContactSelectDescription
+            title={
+              <FormattedMessage
+                id='pages.lifeCycleModel.administrativeInformation.referenceToRegistrationAuthority'
+                defaultMessage='Registration authority'
+              />
+            }
+            lang={lang}
+            data={
+              data.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToRegistrationAuthority'
+              ]
+            }
+          />
+          <br />
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.lifeCycleModel.administrativeInformation.registrationNumber'
+                  defaultMessage='Registration number'
+                />
+              }
+              styles={{ label: { width: '140px' } }}
+            >
+              {data.administrativeInformation?.publicationAndOwnership?.[
+                'common:registrationNumber'
+              ] ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
+          <br />
+          <ContactSelectDescription
+            title={
+              <FormattedMessage
+                id='pages.lifeCycleModel.administrativeInformation.referenceToOwnershipOfDataSet'
+                defaultMessage='Owner of data set'
+              />
+            }
+            lang={lang}
+            data={
+              data.administrativeInformation?.publicationAndOwnership?.[
+              'common:referenceToOwnershipOfDataSet'
+              ]
+            }
+          />
+          <br />
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.lifeCycleModel.administrativeInformation.copyright'
+                  defaultMessage='Copyright?'
+                />
+              }
+              labelStyle={{ width: '180px' }}
+            >
+              {getCopyrightOptions(
+                data.administrativeInformation?.publicationAndOwnership?.['common:copyright'] ??
+                '-',
+              )}
+            </Descriptions.Item>
+          </Descriptions>
+          <br />
+
+
           <br />
           <ContactSelectDescription
             title={
@@ -512,7 +1498,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             lang={lang}
             data={
               data.administrativeInformation?.publicationAndOwnership?.[
-                'common:referenceToEntitiesWithExclusiveAccess'
+              'common:referenceToEntitiesWithExclusiveAccess'
               ]
             }
           />
@@ -530,7 +1516,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             >
               {getLicenseTypeOptions(
                 data.administrativeInformation?.publicationAndOwnership?.['common:licenseType'] ??
-                  '-',
+                '-',
               )}
             </Descriptions.Item>
           </Descriptions>
@@ -544,7 +1530,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           <LangTextItemDescription
             data={
               data.administrativeInformation?.['publicationAndOwnership']?.[
-                'common:accessRestrictions'
+              'common:accessRestrictions'
               ]
             }
           />

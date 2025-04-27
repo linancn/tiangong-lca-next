@@ -247,6 +247,8 @@ export default {
   'pages.lifeCycleModel.view.administrativeInformation.workflowAndPublicationStatus.withdrawn': 'Withdrawn',
   'pages.lifeCycleModel.view.administrativeInformation.workflowAndPublicationStatus.dataSetFinalisedSubsystemsPublished': 'Data set finalised; subsystems published',
   'pages.lifeCycleModel.view.administrativeInformation.workflowAndPublicationStatus.dataSetFinalisedEntirelyPublished': 'Data set finalised; entirely published',
+  'pages.lifeCycleModel.view.administrativeInformation.copyright.yes': 'Yes',
+  'pages.lifeCycleModel.view.administrativeInformation.copyright.no': 'No',
 
   // Validator translations
   'pages.lifecyclemodel.validator.locations.required': 'Please input locations',

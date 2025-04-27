@@ -140,6 +140,26 @@ export const LCIMethodPrincipleOptions = [
     ),
   },
 ];
+export const copyrightOptions = [
+  {
+    value: 'Yes',
+    label: (
+      <FormattedMessage
+        id='pages.lifeCycleModel.view.administrativeInformation.copyright.yes'
+        defaultMessage='Yes'
+      />
+    ),
+  },
+  {
+    value: 'No',
+    label: (
+      <FormattedMessage
+        id='pages.lifeCycleModel.view.administrativeInformation.copyright.no'
+        defaultMessage='No'
+      />
+    ),
+  },
+];
 export const LCIMethodApproachOptions = [
   {
     value: 'Allocation - market value',
