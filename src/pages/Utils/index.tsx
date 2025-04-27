@@ -64,59 +64,67 @@ export const getLocalValueProps = (value: string) => ({
 });
 
 const checkValidationFields = (data: any) => {
-  if(!data){
-    return { checkResult: false, tabName: 'validation' }
-  };
-  if(data.every((review:any)=>review['@type'] &&
-    (review['common:scope'] && review['common:scope']?.length && review['common:scope'].every((item: any) => item['@name'] && item['common:method'] && item['common:method']['@name'])) &&
-    (review['common:reviewDetails'] && review['common:reviewDetails']?.length && review['common:reviewDetails'].every((item: any) => item !== undefined))
-  )){
+  if (!data) {
+    return { checkResult: false, tabName: 'validation' };
+  }
+  if (
+    data.every(
+      (review: any) =>
+        review['@type'] &&
+        review['common:scope'] &&
+        review['common:scope']?.length &&
+        review['common:scope'].every(
+          (item: any) => item['@name'] && item['common:method'] && item['common:method']['@name'],
+        ) &&
+        review['common:reviewDetails'] &&
+        review['common:reviewDetails']?.length &&
+        review['common:reviewDetails'].every((item: any) => item !== undefined),
+    )
+  ) {
     return { checkResult: true, tabName: null };
-  };
+  }
 
-  return { checkResult: false, tabName: 'validation' }
+  return { checkResult: false, tabName: 'validation' };
 };
 
 const checkComplianceFields = (data: any) => {
-  if(!data || !data?.length){
-    return { checkResult: false, tabName: 'complianceDeclarations' }
-  };
+  if (!data || !data?.length) {
+    return { checkResult: false, tabName: 'complianceDeclarations' };
+  }
 
-  for(let item of data){
-    if(!item){
-      return {checkResult:false,tabName:'complianceDeclarations'}
+  for (let item of data) {
+    if (!item) {
+      return { checkResult: false, tabName: 'complianceDeclarations' };
     }
-    for(let key of Object.keys(item)){
-      if(key==='common:referenceToComplianceSystem'){
-        if(!item[key]?.['@refObjectId']){
-          return {checkResult:false,tabName:'complianceDeclarations'}
+    for (let key of Object.keys(item)) {
+      if (key === 'common:referenceToComplianceSystem') {
+        if (!item[key]?.['@refObjectId']) {
+          return { checkResult: false, tabName: 'complianceDeclarations' };
         }
       }
-      if(item[key] === null || item[key] === undefined){
-        return {checkResult:false,tabName:'complianceDeclarations'}
-      };
+      if (item[key] === null || item[key] === undefined) {
+        return { checkResult: false, tabName: 'complianceDeclarations' };
+      }
     }
-    
-  };
-  return {checkResult:true,tabName:null}
-  
-}
+  }
+  return { checkResult: true, tabName: null };
+};
 
 export const checkRequiredFields = (requiredFields: any, formData: any) => {
   for (let field of Object.keys(requiredFields)) {
     const value = get(formData, field);
     // console.log('checkRequiredFields', field, value,formData)
     if (field === 'modellingAndValidation.validation.review') {
-      const {checkResult,tabName} = checkValidationFields(value);
-      if(!checkResult){
-        return { checkResult, tabName }
+      const { checkResult, tabName } = checkValidationFields(value);
+      if (!checkResult) {
+        return { checkResult, tabName };
       }
     }
-    
+
     if (field === 'modellingAndValidation.complianceDeclarations.compliance') {
-      const {checkResult,tabName} = checkComplianceFields(value);
-      if(!checkResult){
-        return { checkResult, tabName }
+      const { checkResult, tabName } = checkComplianceFields(value);
+      if (!checkResult) {
+        return { checkResult, tabName };
       }
     }
 
@@ -124,7 +132,7 @@ export const checkRequiredFields = (requiredFields: any, formData: any) => {
       return { checkResult: false, tabName: requiredFields[field] };
     }
 
-    if (Array.isArray(value) && (value.length === 0 || value.every(item => !item))) {
+    if (Array.isArray(value) && (value.length === 0 || value.every((item) => !item))) {
       return { checkResult: false, tabName: requiredFields[field] };
     }
 
@@ -133,7 +141,7 @@ export const checkRequiredFields = (requiredFields: any, formData: any) => {
         return { checkResult: false, tabName: requiredFields[field] };
       }
       const allPropsEmpty = Object.values(value).every(
-        (propValue) => propValue === undefined || propValue === null
+        (propValue) => propValue === undefined || propValue === null,
       );
       if (allPropsEmpty) {
         return { checkResult: false, tabName: requiredFields[field] };
@@ -141,5 +149,5 @@ export const checkRequiredFields = (requiredFields: any, formData: any) => {
     }
   }
 
-  return { checkResult: true, tabName: null }
-}
+  return { checkResult: true, tabName: null };
+};

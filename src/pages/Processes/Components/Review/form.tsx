@@ -193,9 +193,15 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                 </Space>
               </Row>
             ))}
-            <Button type='dashed' onClick={() => subOpt.add({
-              'common:scope':[{}]
-            })} block>
+            <Button
+              type='dashed'
+              onClick={() =>
+                subOpt.add({
+                  'common:scope': [{}],
+                })
+              }
+              block
+            >
               + <FormattedMessage id='pages.button.item.add' defaultMessage='Add' />{' '}
               <FormattedMessage id='pages.process.validation.review' defaultMessage='Review' />{' '}
               <FormattedMessage id='pages.button.item.label' defaultMessage='Item' />

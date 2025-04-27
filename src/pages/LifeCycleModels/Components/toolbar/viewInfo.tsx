@@ -1,5 +1,6 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
+import LocationTextItemDescription from '@/components/LocationTextItem/description';
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 import { CloseOutlined, InfoOutlined } from '@ant-design/icons';
@@ -8,24 +9,22 @@ import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import {
-  completenessProductModelOptions,
-  completenessElementaryFlowsValueOptions,
+  LCIMethodApproachOptions,
+  LCIMethodPrincipleOptions,
   completenessElementaryFlowsTypeOptions,
+  completenessElementaryFlowsValueOptions,
+  completenessProductModelOptions,
+  copyrightOptions,
   // approvalOfOverallComplianceOptions,
   // documentationComplianceOptions,
   licenseTypeOptions,
+  processtypeOfDataSetOptions,
   // methodologicalComplianceOptions,
   // nomenclatureComplianceOptions,
   // qualityComplianceOptions,
   // reviewComplianceOptions,
   uncertaintyDistributionTypeOptions,
-  processtypeOfDataSetOptions,
-  LCIMethodPrincipleOptions,
-  LCIMethodApproachOptions,
-  copyrightOptions
 } from '../optiondata';
-import LocationTextItemDescription from '@/components/LocationTextItem/description';
-
 
 type Props = {
   lang: string;
@@ -229,7 +228,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
         <LevelTextItemDescription
           data={
             data.lifeCycleModelInformation?.dataSetInformation?.classificationInformation?.[
-            'common:classification'
+              'common:classification'
             ]?.['common:class']?.['value']
           }
           lang={lang}
@@ -318,7 +317,9 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             />
           </Divider>
           <LangTextItemDescription
-            data={data.lifeCycleModelInformation?.time?.['common:timeRepresentativenessDescription']}
+            data={
+              data.lifeCycleModelInformation?.time?.['common:timeRepresentativenessDescription']
+            }
           />
         </Card>
         <br />
@@ -335,7 +336,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             lang={lang}
             data={
               data.lifeCycleModelInformation?.geography?.locationOfOperationSupplyOrProduction?.[
-              '@location'
+                '@location'
               ] ?? '-'
             }
             label={
@@ -373,7 +374,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             lang={lang}
             data={
               data.lifeCycleModelInformation?.geography?.subLocationOfOperationSupplyOrProduction?.[
-              '@subLocation'
+                '@subLocation'
               ] ?? '-'
             }
             label={
@@ -435,7 +436,9 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
                 defaultMessage='Flow diagramm(s) or picture(s)'
               />
             }
-            data={data.lifeCycleModelInformation?.technology?.referenceToTechnologyPictogramme ?? {}}
+            data={
+              data.lifeCycleModelInformation?.technology?.referenceToTechnologyPictogramme ?? {}
+            }
             lang={lang}
           />
           <br />
@@ -447,8 +450,8 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
               />
             }
             data={
-              data.lifeCycleModelInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture ??
-              {}
+              data.lifeCycleModelInformation?.technology
+                ?.referenceToTechnologyFlowDiagrammOrPicture ?? {}
             }
             lang={lang}
           />
@@ -483,8 +486,9 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
               }
               labelStyle={{ width: '120px' }}
             >
-              {data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter?.['@name'] ??
-                '-'}
+              {data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter?.[
+                '@name'
+              ] ?? '-'}
             </Descriptions.Item>
           </Descriptions>
           <br />
@@ -515,8 +519,8 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
               }
               labelStyle={{ width: '120px' }}
             >
-              {data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter?.meanValue ??
-                '-'}
+              {data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
+                ?.meanValue ?? '-'}
             </Descriptions.Item>
           </Descriptions>
           <br />
@@ -665,8 +669,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           </Divider>
           <LangTextItemDescription
             data={
-              data.modellingAndValidation?.LCIMethodAndAllocation
-                ?.deviationsFromLCIMethodPrinciple
+              data.modellingAndValidation?.LCIMethodAndAllocation?.deviationsFromLCIMethodPrinciple
             }
           />
           <br />
@@ -695,8 +698,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           </Divider>
           <LangTextItemDescription
             data={
-              data.modellingAndValidation?.LCIMethodAndAllocation
-                ?.deviationsFromLCIMethodApproaches
+              data.modellingAndValidation?.LCIMethodAndAllocation?.deviationsFromLCIMethodApproaches
             }
           />
           <Divider orientationMargin='0' orientation='left' plain>
@@ -716,8 +718,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           </Divider>
           <LangTextItemDescription
             data={
-              data.modellingAndValidation?.LCIMethodAndAllocation
-                ?.deviationsFromModellingConstants
+              data.modellingAndValidation?.LCIMethodAndAllocation?.deviationsFromModellingConstants
             }
           />
           <br />
@@ -729,8 +730,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
               />
             }
             data={
-              data.modellingAndValidation?.LCIMethodAndAllocation
-                ?.referenceToLCAMethodDetails ?? {}
+              data.modellingAndValidation?.LCIMethodAndAllocation?.referenceToLCAMethodDetails ?? {}
             }
             lang={lang}
           />
@@ -971,7 +971,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
               >
                 {getCompletenessElementaryFlowsTypeOptions(
                   data.modellingAndValidation?.completeness?.completenessElementaryFlows?.[
-                  '@type'
+                    '@type'
                   ] ?? '-',
                 )}
               </Descriptions.Item>
@@ -990,7 +990,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
               >
                 {getCompletenessElementaryFlowsValueOptions(
                   data.modellingAndValidation?.completeness?.completenessElementaryFlows?.[
-                  '@value'
+                    '@value'
                   ] ?? '-',
                 )}
               </Descriptions.Item>
@@ -1187,7 +1187,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             lang={lang}
             data={
               data.administrativeInformation?.['common:commissionerAndGoal']?.[
-              'common:referenceToCommissioner'
+                'common:referenceToCommissioner'
               ]
             }
           />
@@ -1213,7 +1213,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           <LangTextItemDescription
             data={
               data.administrativeInformation?.['common:commissionerAndGoal']?.[
-              'common:intendedApplications'
+                'common:intendedApplications'
               ]
             }
           />
@@ -1229,7 +1229,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           lang={lang}
           data={
             data.administrativeInformation?.dataGenerator?.[
-            'common:referenceToPersonOrEntityGeneratingTheDataSet'
+              'common:referenceToPersonOrEntityGeneratingTheDataSet'
             ]
           }
         />
@@ -1259,9 +1259,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           </Descriptions>
           <br />
           <SourceSelectDescription
-            data={
-              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']
-            }
+            data={data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']}
             title={
               <FormattedMessage
                 id='pages.lifeCycleModel.administrativeInformation.referenceToDataSetFormat'
@@ -1274,7 +1272,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           <SourceSelectDescription
             data={
               data?.administrativeInformation?.dataEntryBy?.[
-              'common:referenceToConvertedOriginalDataSetFrom'
+                'common:referenceToConvertedOriginalDataSetFrom'
               ]
             }
             title={
@@ -1289,7 +1287,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           <ContactSelectDescription
             data={
               data?.administrativeInformation?.dataEntryBy?.[
-              'common:referenceToPersonOrEntityEnteringTheData'
+                'common:referenceToPersonOrEntityEnteringTheData'
               ]
             }
             title={
@@ -1303,9 +1301,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           <br />
           <SourceSelectDescription
             data={
-              data?.administrativeInformation?.dataEntryBy?.[
-              'common:referenceToDataSetUseApproval'
-              ]
+              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetUseApproval']
             }
             title={
               <FormattedMessage
@@ -1383,7 +1379,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           <LangTextItemDescription
             data={
               data.administrativeInformation?.publicationAndOwnership?.[
-              'common:permanentDataSetURI'
+                'common:permanentDataSetURI'
               ]
             }
           />
@@ -1414,7 +1410,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             }
             data={
               data.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToUnchangedRepublication'
+                'common:referenceToUnchangedRepublication'
               ] ?? {}
             }
             lang={lang}
@@ -1430,7 +1426,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             lang={lang}
             data={
               data.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToRegistrationAuthority'
+                'common:referenceToRegistrationAuthority'
               ]
             }
           />
@@ -1462,7 +1458,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             lang={lang}
             data={
               data.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToOwnershipOfDataSet'
+                'common:referenceToOwnershipOfDataSet'
               ]
             }
           />
@@ -1480,12 +1476,11 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             >
               {getCopyrightOptions(
                 data.administrativeInformation?.publicationAndOwnership?.['common:copyright'] ??
-                '-',
+                  '-',
               )}
             </Descriptions.Item>
           </Descriptions>
           <br />
-
 
           <br />
           <ContactSelectDescription
@@ -1498,7 +1493,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             lang={lang}
             data={
               data.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToEntitiesWithExclusiveAccess'
+                'common:referenceToEntitiesWithExclusiveAccess'
               ]
             }
           />
@@ -1516,7 +1511,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             >
               {getLicenseTypeOptions(
                 data.administrativeInformation?.publicationAndOwnership?.['common:licenseType'] ??
-                '-',
+                  '-',
               )}
             </Descriptions.Item>
           </Descriptions>
@@ -1530,7 +1525,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           <LangTextItemDescription
             data={
               data.administrativeInformation?.['publicationAndOwnership']?.[
-              'common:accessRestrictions'
+                'common:accessRestrictions'
               ]
             }
           />
