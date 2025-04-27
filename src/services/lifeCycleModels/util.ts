@@ -170,7 +170,7 @@ export function genLifeCycleModelJsonOrdered(id: string, data: any, oldData: any
                 ?.referenceToExternalDocumentation?.['@version'],
             'common:shortDescription': getLangJson(
               data?.lifeCycleModelInformation?.dataSetInformation
-                ?.referenceToExternalDocumentation?.['@refObjectId'],
+                ?.referenceToExternalDocumentation?.['common:shortDescription'],
             ),
           },
         },
@@ -225,6 +225,10 @@ export function genLifeCycleModelJsonOrdered(id: string, data: any, oldData: any
               data?.lifeCycleModelInformation?.technology?.referenceToTechnologyPictogramme?.[
                 '@type'
               ] ?? {},
+            '@version':
+              data?.lifeCycleModelInformation?.technology?.referenceToTechnologyPictogramme?.[
+                '@version'
+              ] ?? {},
             '@refObjectId':
               data?.lifeCycleModelInformation?.technology?.referenceToTechnologyPictogramme?.[
                 '@refObjectId'
@@ -243,6 +247,9 @@ export function genLifeCycleModelJsonOrdered(id: string, data: any, oldData: any
             '@type':
               data?.lifeCycleModelInformation?.technology
                 ?.referenceToTechnologyFlowDiagrammOrPicture?.['@type'] ?? {},
+            '@version':
+              data?.lifeCycleModelInformation?.technology
+                ?.referenceToTechnologyFlowDiagrammOrPicture?.['@version'],
             '@refObjectId':
               data?.lifeCycleModelInformation?.technology
                 ?.referenceToTechnologyFlowDiagrammOrPicture?.['@refObjectId'] ?? {},
@@ -395,6 +402,9 @@ export function genLifeCycleModelJsonOrdered(id: string, data: any, oldData: any
             '@type':
               data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
                 ?.referenceToDataSource?.['@type'] ?? {},
+            '@version':
+              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.referenceToDataSource?.['@version'] ?? {},
             '@refObjectId':
               data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
                 ?.referenceToDataSource?.['@refObjectId'] ?? {},
@@ -425,9 +435,9 @@ export function genLifeCycleModelJsonOrdered(id: string, data: any, oldData: any
             data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
               ?.uncertaintyAdjustments,
           ),
-          // useAdviceForDataSet: getLangJson(
-          //   data?.modellingAndValidation?.LCIMethodAndAllocation?.useAdviceForDataSet,
-          // ),
+          useAdviceForDataSet: getLangJson(
+            data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.useAdviceForDataSet,
+          ),
         },
         completeness: {
           completenessProductModel:
@@ -895,7 +905,7 @@ export function genLifeCycleModelInfoFromData(data: any) {
             ],
           'common:shortDescription': getLangList(
             data?.lifeCycleModelInformation?.dataSetInformation?.referenceToExternalDocumentation?.[
-              '@refObjectId'
+              'common:shortDescription'
             ],
           ),
         },
@@ -1157,10 +1167,10 @@ export function genLifeCycleModelInfoFromData(data: any) {
           data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
             ?.uncertaintyAdjustments,
         ),
-        // useAdviceForDataSet: getLangList(
-        //   data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-        //     ?.useAdviceForDataSet,
-        // ),
+        useAdviceForDataSet: getLangList(
+          data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+            ?.useAdviceForDataSet,
+        ),
       },
       completeness: {
         completenessProductModel:
@@ -2000,6 +2010,10 @@ export async function genLifeCycleModelProcess(id: string, refNode: any, data: a
               data?.lifeCycleModelInformation?.technology?.referenceToTechnologyPictogramme?.[
                 '@refObjectId'
               ],
+            '@version':
+              data?.lifeCycleModelInformation?.technology?.referenceToTechnologyPictogramme?.[
+                '@version'
+              ],
             '@uri':
               data?.lifeCycleModelInformation?.technology?.referenceToTechnologyPictogramme?.[
                 '@uri'
@@ -2013,6 +2027,9 @@ export async function genLifeCycleModelProcess(id: string, refNode: any, data: a
             '@type':
               data?.lifeCycleModelInformation?.technology
                 ?.referenceToTechnologyFlowDiagrammOrPicture?.['@type'],
+            '@version':
+              data?.lifeCycleModelInformation?.technology
+                ?.referenceToTechnologyFlowDiagrammOrPicture?.['@version'],
             '@refObjectId':
               data?.lifeCycleModelInformation?.technology
                 ?.referenceToTechnologyFlowDiagrammOrPicture?.['@refObjectId'],
@@ -2129,6 +2146,9 @@ export async function genLifeCycleModelProcess(id: string, refNode: any, data: a
             '@type':
               data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
                 ?.referenceToDataSource?.['@type'] ?? {},
+            '@version':
+              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.referenceToDataSource?.['@version'] ?? {},
             '@refObjectId':
               data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
                 ?.referenceToDataSource?.['@refObjectId'] ?? {},
@@ -2155,7 +2175,8 @@ export async function genLifeCycleModelProcess(id: string, refNode: any, data: a
             data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
               ?.uncertaintyAdjustments,
           useAdviceForDataSet:
-            data?.modellingAndValidation?.LCIMethodAndAllocation?.useAdviceForDataSet,
+            data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+            ?.useAdviceForDataSet,
         },
         completeness: {
           completenessProductModel:

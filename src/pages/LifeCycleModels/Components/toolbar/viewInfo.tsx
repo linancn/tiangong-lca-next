@@ -614,7 +614,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
         </Divider>
         <LangTextItemDescription
           data={
-            data.lifeCycleModelInformation?.modellingAndValidation?.dataSourcesTreatmentEtc
+            data.modellingAndValidation?.dataSourcesTreatmentEtc
               ?.useAdviceForDataSet ?? '-'
           }
         />
@@ -1370,19 +1370,22 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             }
           /> */}
           <br />
-          <Divider orientationMargin='0' orientation='left' plain>
-            <FormattedMessage
-              id='pages.flow.view.administrativeInformation.permanentDataSetURI'
-              defaultMessage='Permanent data set URI'
-            />
-          </Divider>
-          <LangTextItemDescription
-            data={
-              data.administrativeInformation?.publicationAndOwnership?.[
+          <Descriptions bordered size={'small'} column={1}>
+            <Descriptions.Item
+              key={0}
+              label={
+                <FormattedMessage
+                  id='pages.flow.view.administrativeInformation.permanentDataSetURI'
+                  defaultMessage='Permanent data set URI'
+                />
+              }
+              styles={{ label: { width: '220px' } }}
+            >
+              {data.administrativeInformation?.publicationAndOwnership?.[
                 'common:permanentDataSetURI'
-              ]
-            }
-          />
+              ] ?? '-'}
+            </Descriptions.Item>
+          </Descriptions>
           <br />
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item
