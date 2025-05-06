@@ -301,7 +301,7 @@ const TableList: FC<{ systemUserRole?: 'admin' | 'owner' | 'member'; showDragSor
         <ProTable<TeamTable, ListPagination>
           rowKey='id'
           headerTitle={
-            <FormattedMessage id='component.allTeams.table.title' defaultMessage='All Teams' />
+            <FormattedMessage id='component.allTeams.table.desc' defaultMessage='All Teams' />
           }
           actionRef={actionRef}
           search={false}

@@ -1,5 +1,6 @@
 export default {
   'component.allTeams.table.title': '全部团队',
+  'component.allTeams.table.desc':'请通过“联系方式”联系团队负责人加入团队',
   'component.allTeams.table.index': '序号',
   'component.allTeams.table.name': '团队名称',
   'component.allTeams.table.description': '团队简介',
