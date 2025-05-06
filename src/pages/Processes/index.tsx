@@ -48,7 +48,7 @@ const TableList: FC = () => {
     {
       title: <FormattedMessage id='pages.table.title.name' defaultMessage='Name' />,
       dataIndex: 'name',
-      sorter: false,
+      sorter: true,
       search: false,
       render: (_, row) => {
         return [
@@ -63,7 +63,7 @@ const TableList: FC = () => {
         <FormattedMessage id='pages.table.title.classification' defaultMessage='Classification' />
       ),
       dataIndex: 'classification',
-      sorter: false,
+      sorter: true,
       search: false,
     },
     {
@@ -316,7 +316,24 @@ const TableList: FC = () => {
           if (keyWord.length > 0) {
             return getProcessTablePgroongaSearch(params, lang, dataSource, keyWord, {});
           }
-          return getProcessTableAll(params, sort, lang, dataSource, tid ?? '');
+
+          const sortFields: Record<string, string> = {
+            name: 'json->processDataSet->processInformation->dataSetInformation->name',
+            classification:
+              'json->processDataSet->processInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class"',
+          };
+
+          const convertedSort: Record<string, any> = {};
+          if (sort && Object.keys(sort).length > 0) {
+            const field = Object.keys(sort)[0];
+            if (sortFields[field]) {
+              convertedSort[sortFields[field]] = sort[field];
+            } else {
+              convertedSort[field] = sort[field];
+            }
+          }
+
+          return getProcessTableAll(params, convertedSort, lang, dataSource, tid ?? '');
         }}
         columns={processColumns}
       />
