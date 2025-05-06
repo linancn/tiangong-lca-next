@@ -287,7 +287,9 @@ const Team = () => {
       <Flex gap='small' vertical style={{ maxWidth: '50%', minWidth: '200px' }}>
         <Spin spinning={teamInfoSpinning}>
           <ProForm
-            disabled={userRole !== 'admin' && userRole !== 'owner' && action !== 'create'}
+            disabled={
+              (userRole !== 'admin' && userRole !== 'owner' && action !== 'create') || rank > 0
+            }
             formRef={formRefEdit}
             submitter={{
               resetButtonProps: false,
@@ -385,7 +387,9 @@ const Team = () => {
               }
             >
               <Upload
-                disabled={userRole !== 'admin' && userRole !== 'owner' && action !== 'create'}
+                disabled={
+                  (userRole !== 'admin' && userRole !== 'owner' && action !== 'create') || rank > 0
+                }
                 beforeUpload={() => {
                   setLightLogoSpinning(true);
                   return true;
@@ -420,7 +424,9 @@ const Team = () => {
               label={<FormattedMessage id='pages.team.info.darkLogo' defaultMessage='Dark Logo' />}
             >
               <Upload
-                disabled={userRole !== 'admin' && userRole !== 'owner' && action !== 'create'}
+                disabled={
+                  (userRole !== 'admin' && userRole !== 'owner' && action !== 'create') || rank > 0
+                }
                 beforeUpload={() => {
                   setDarkLogoSpinning(true);
                   return true;
