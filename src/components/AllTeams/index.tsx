@@ -7,7 +7,7 @@ import {
   updateTeamRank,
 } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
-import { DeleteOutlined, SaveOutlined } from '@ant-design/icons';
+import { EyeInvisibleOutlined, SaveOutlined } from '@ant-design/icons';
 import { ActionType, DragSortTable, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Input, message, Modal, Space, theme, Tooltip } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
@@ -143,7 +143,7 @@ const TableList: FC<{ systemUserRole?: 'admin' | 'owner' | 'member'; showDragSor
             <Button
               disabled={systemUserRole !== 'admin' && systemUserRole !== 'owner'}
               shape='circle'
-              icon={<DeleteOutlined />}
+              icon={<EyeInvisibleOutlined />}
               size='small'
               onClick={() => handleRemoveTeam(record)}
             />
