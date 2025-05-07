@@ -20,8 +20,14 @@ import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import ProcessCreate from './Components/create';
 import ProcessDelete from './Components/delete';
 import ProcessEdit from './Components/edit';
+import { processtypeOfDataSetOptions } from './Components/optiondata';
 import ProcessView from './Components/view';
 const { Search } = Input;
+
+const getProcesstypeOfDataSetOptions = (value: string) => {
+  const option = processtypeOfDataSetOptions.find((opt) => opt.value === value);
+  return option ? option.label : '-';
+};
 
 const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<any>('');
@@ -65,6 +71,20 @@ const TableList: FC = () => {
       dataIndex: 'classification',
       sorter: true,
       search: false,
+    },
+    {
+      title: (
+        <FormattedMessage
+          id='pages.process.view.modellingAndValidation.typeOfDataSet'
+          defaultMessage='Type of data set'
+        />
+      ),
+      dataIndex: 'typeOfDataSet',
+      sorter: false,
+      search: false,
+      render: (_, row) => {
+        return getProcesstypeOfDataSetOptions(row.typeOfDataSet);
+      },
     },
     {
       title: <FormattedMessage id='pages.process.referenceYear' defaultMessage='Reference year' />,
