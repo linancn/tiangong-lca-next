@@ -19,6 +19,7 @@ import {
   CrownOutlined,
   DeleteOutlined,
   PlusOutlined,
+  QuestionCircleOutlined,
   UserAddOutlined,
   UserOutlined,
 } from '@ant-design/icons';
@@ -59,6 +60,8 @@ const Team = () => {
   const formRefEdit = useRef<ProFormInstance>();
   const [lightLogo, setLightLogo] = useState('');
   const [darkLogo, setDarkLogo] = useState('');
+  const [lightLogoError, setLightLogoError] = useState(false);
+  const [darkLogoError, setDarkLogoError] = useState(false);
   const [teamInfoSpinning, setTeamInfoSpinning] = useState(false);
   const [lightLogoSpinning, setLightLogoSpinning] = useState(false);
   const [darkLogoSpinning, setDarkLogoSpinning] = useState(false);
@@ -110,6 +113,7 @@ const Team = () => {
         title: title || [],
         description: description || [],
         rank: data[0]?.rank,
+        is_public: data[0]?.is_public,
       };
 
       setLightLogo(data[0]?.json?.lightLogo);
@@ -208,8 +212,10 @@ const Team = () => {
             const { data } = await uploadLogoApi(file.name, file);
             if (type === 'lightLogo') {
               setLightLogo(data.path);
+              setLightLogoError(false);
             } else {
               setDarkLogo(data.path);
+              setDarkLogoError(false);
             }
           } catch (error) {
             console.log('upload error', error);
@@ -222,10 +228,16 @@ const Team = () => {
     };
 
     const editTeamInfo = async (values: any) => {
-      const { rank } = values;
+      const { rank, is_public } = values;
       delete values.rank;
+      delete values.is_public;
       const params = getParams(values);
-      const { error } = await editTeamMessage(teamId, { ...params, darkLogo, lightLogo }, rank);
+      const { error } = await editTeamMessage(
+        teamId,
+        { ...params, darkLogo, lightLogo },
+        rank,
+        is_public,
+      );
       if (error) {
         message.error(
           intl.formatMessage({
@@ -244,10 +256,16 @@ const Team = () => {
     };
 
     const createTeamInfo = async (values: any) => {
-      const { rank } = values;
+      const { rank, is_public } = values;
       delete values.rank;
+      delete values.is_public;
       const params = getParams(values);
-      const error = await createTeamMessage(v4(), { ...params, darkLogo, lightLogo }, rank);
+      const error = await createTeamMessage(
+        v4(),
+        { ...params, darkLogo, lightLogo },
+        rank,
+        is_public,
+      );
       if (error) {
         message.error(
           intl.formatMessage({
@@ -269,6 +287,13 @@ const Team = () => {
 
     const submitTeamInfo = async (values: any) => {
       try {
+        if (rank === 0) {
+          if (!lightLogo || !darkLogo) {
+            setLightLogoError(!lightLogo);
+            setDarkLogoError(!darkLogo);
+            return;
+          }
+        }
         setTeamInfoSpinning(true);
         if (action === 'edit') {
           if (!teamId) return;
@@ -362,8 +387,43 @@ const Team = () => {
               />
             </Form.Item>
             <Form.Item
+              name='is_public'
+              label={
+                <>
+                  <FormattedMessage id='pages.team.info.public' defaultMessage='Public' />
+                  <Tooltip title={intl.formatMessage({ id: 'pages.team.info.public.tooltip' })}>
+                    <QuestionCircleOutlined style={{ marginLeft: 4 }} />
+                  </Tooltip>
+                </>
+              }
+              valuePropName='checked'
+              // getValueProps={(value) => ({
+              //   checked: value !== -1,
+              // })}
+              // normalize={(value) => {
+              //   console.log(value);
+              //   return value ? 0 : -1;
+              // }}
+            >
+              <Switch
+                disabled={
+                  (userRole !== 'admin' && userRole !== 'owner' && action !== 'create') || rank > 0
+                }
+              />
+            </Form.Item>
+            <Form.Item
               name='rank'
-              label={<FormattedMessage id='pages.team.info.public' defaultMessage='Public' />}
+              label={
+                <>
+                  <FormattedMessage
+                    id='pages.team.info.showInHome'
+                    defaultMessage='Apply to display on the homepage'
+                  />
+                  <Tooltip title={intl.formatMessage({ id: 'pages.team.info.showInHome.tooltip' })}>
+                    <QuestionCircleOutlined style={{ marginLeft: 4 }} />
+                  </Tooltip>
+                </>
+              }
               valuePropName='checked'
               getValueProps={(value) => ({
                 checked: value !== -1,
@@ -377,6 +437,11 @@ const Team = () => {
                 disabled={
                   (userRole !== 'admin' && userRole !== 'owner' && action !== 'create') || rank > 0
                 }
+                onChange={(checked) => {
+                  setRank(checked ? 0 : -1);
+                  setLightLogoError(false);
+                  setDarkLogoError(false);
+                }}
               />
             </Form.Item>
             {/* <Flex gap="middle" > */}
@@ -384,6 +449,26 @@ const Team = () => {
               name='lightLogo'
               label={
                 <FormattedMessage id='pages.team.info.lightLogo' defaultMessage='Light Logo' />
+              }
+              rules={[
+                {
+                  required: rank === 0,
+                  message: (
+                    <FormattedMessage
+                      id='pages.team.info.lightLogo.required'
+                      defaultMessage='Please upload light logo!'
+                    />
+                  ),
+                },
+              ]}
+              validateStatus={lightLogoError ? 'error' : undefined}
+              help={
+                lightLogoError ? (
+                  <FormattedMessage
+                    id='pages.team.info.lightLogo.required'
+                    defaultMessage='Please upload light logo!'
+                  />
+                ) : undefined
               }
             >
               <Upload
@@ -422,6 +507,26 @@ const Team = () => {
             <Form.Item
               name='darkLogo'
               label={<FormattedMessage id='pages.team.info.darkLogo' defaultMessage='Dark Logo' />}
+              rules={[
+                {
+                  required: rank === 0,
+                  message: (
+                    <FormattedMessage
+                      id='pages.team.info.darkLogo.required'
+                      defaultMessage='Please upload dark logo!'
+                    />
+                  ),
+                },
+              ]}
+              validateStatus={darkLogoError ? 'error' : undefined}
+              help={
+                darkLogoError ? (
+                  <FormattedMessage
+                    id='pages.team.info.darkLogo.required'
+                    defaultMessage='Please upload dark logo!'
+                  />
+                ) : undefined
+              }
             >
               <Upload
                 disabled={

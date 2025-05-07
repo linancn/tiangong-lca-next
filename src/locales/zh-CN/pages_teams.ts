@@ -37,5 +37,10 @@ export default {
   'teams.modal.noTeam.content': '您不属于任何一个团队，您可以创建团队或者加入已有团队。',
   'teams.modal.noTeam.create': '创建团队',
   'teams.modal.noTeam.join': '加入团队',
-  'pages.team.info.public': '公开展示',
+  'pages.team.info.public': '公开团队信息',
+  'pages.team.info.public.tooltip': '开启后，允许他人通过邮箱联系团队负责人',
+  'pages.team.info.showInHome': '申请首页展示',
+  'pages.team.info.showInHome.tooltip': '开启后，允许在首页展示Logo及团队简介',
+  'pages.team.info.lightLogo.required': '请上传亮色Logo!',
+  'pages.team.info.darkLogo.required': '请上传暗色Logo!',
 };

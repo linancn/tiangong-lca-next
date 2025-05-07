@@ -37,5 +37,10 @@ export default {
   'teams.modal.noTeam.content': 'You are not in any team, you can create a team or join an existing team.',
   'teams.modal.noTeam.create': 'Create Team',
   'teams.modal.noTeam.join': 'Join Team',
-  'pages.team.info.public': 'Public Display',
+  'pages.team.info.public': 'Publicize team information',
+  'pages.team.info.public.tooltip': 'After enabling, allow others to contact the team leader through email',
+  'pages.team.info.showInHome': 'Apply to display on the homepage',
+  'pages.team.info.showInHome.tooltip': 'After enabling, allow the logo and team introduction to be displayed on the homepage',
+  'pages.team.info.lightLogo.required': 'Please upload light logo!',
+  'pages.team.info.darkLogo.required': 'Please upload dark logo!',
 };

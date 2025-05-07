@@ -50,18 +50,24 @@ export async function getTeamsByKeyword(keyword: string) {
 
 export async function getAllTableTeams(
   params: { pageSize: number; current: number },
+  tableType: 'joinTeam' | 'manageSystem',
   // sort: Record<string, SortOrder>,
 ) {
   try {
-    const { data: teams, count } = await supabase
+    const query = supabase
       .from('teams')
       .select('*', { count: 'exact' })
-      .gte('rank', 1)
       .order('rank', { ascending: true })
       .range(
         ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
         (params.current ?? 1) * (params.pageSize ?? 10) - 1,
       );
+    if (tableType === 'joinTeam') {
+      query.eq('is_public', true);
+    } else {
+      query.gt('rank', 0);
+    }
+    const { data: teams, count } = await query;
 
     if (teams && teams.length > 0) {
       const teamIds = teams.map((item) => item.id);
@@ -128,12 +134,20 @@ export async function getTeamById(id: string) {
   });
 }
 
-export async function editTeamMessage(id: string, data: any, rank?: number) {
+export async function editTeamMessage(id: string, data: any, rank?: number, is_public?: boolean) {
   if (typeof rank !== 'undefined') {
-    const result = await supabase.from('teams').update({ json: data, rank }).eq('id', id).select();
+    const result = await supabase
+      .from('teams')
+      .update({ json: data, rank, is_public })
+      .eq('id', id)
+      .select();
     return result;
   } else {
-    const result = await supabase.from('teams').update({ json: data }).eq('id', id).select();
+    const result = await supabase
+      .from('teams')
+      .update({ json: data, is_public })
+      .eq('id', id)
+      .select();
     return result;
   }
 }
@@ -251,8 +265,8 @@ export async function uploadLogoApi(name: string, file: File) {
   }
 }
 
-export async function addTeam(id: string, data: any, rank: number) {
-  const { error } = await supabase.from('teams').insert({ id, json: data, rank });
+export async function addTeam(id: string, data: any, rank: number, is_public: boolean) {
+  const { error } = await supabase.from('teams').insert({ id, json: data, rank, is_public });
   return error;
 }
 
