@@ -426,7 +426,7 @@ const Team = () => {
               }
               valuePropName='checked'
               getValueProps={(value) => ({
-                checked: value !== -1,
+                checked: value === 0,
               })}
               normalize={(value) => {
                 console.log(value);
