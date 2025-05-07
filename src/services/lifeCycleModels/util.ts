@@ -436,7 +436,8 @@ export function genLifeCycleModelJsonOrdered(id: string, data: any, oldData: any
               ?.uncertaintyAdjustments,
           ),
           useAdviceForDataSet: getLangJson(
-            data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness?.useAdviceForDataSet,
+            data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+              ?.useAdviceForDataSet,
           ),
         },
         completeness: {
@@ -2176,7 +2177,7 @@ export async function genLifeCycleModelProcess(id: string, refNode: any, data: a
               ?.uncertaintyAdjustments,
           useAdviceForDataSet:
             data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-            ?.useAdviceForDataSet,
+              ?.useAdviceForDataSet,
         },
         completeness: {
           completenessProductModel:

@@ -15,7 +15,6 @@ import {
   completenessElementaryFlowsValueOptions,
   completenessProductModelOptions,
   copyrightOptions,
-  workflowAndPublicationStatusOptions,
   // approvalOfOverallComplianceOptions,
   // documentationComplianceOptions,
   licenseTypeOptions,
@@ -25,6 +24,7 @@ import {
   // qualityComplianceOptions,
   // reviewComplianceOptions,
   uncertaintyDistributionTypeOptions,
+  workflowAndPublicationStatusOptions,
 } from '../optiondata';
 
 type Props = {
@@ -618,10 +618,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           />
         </Divider>
         <LangTextItemDescription
-          data={
-            data.modellingAndValidation?.dataSourcesTreatmentEtc
-              ?.useAdviceForDataSet ?? '-'
-          }
+          data={data.modellingAndValidation?.dataSourcesTreatmentEtc?.useAdviceForDataSet ?? '-'}
         />
         <br />
         <Card
@@ -1403,9 +1400,11 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
               }
               styles={{ label: { width: '240px' } }}
             >
-              {getWorkflowAndPublicationStatusOptions(data.administrativeInformation?.publicationAndOwnership?.[
-                'common:workflowAndPublicationStatus'
-              ]??'-')}
+              {getWorkflowAndPublicationStatusOptions(
+                data.administrativeInformation?.publicationAndOwnership?.[
+                  'common:workflowAndPublicationStatus'
+                ] ?? '-',
+              )}
             </Descriptions.Item>
           </Descriptions>
           <br />
