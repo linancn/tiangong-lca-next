@@ -12,10 +12,10 @@ import { getILCDClassification } from '../ilcd/api';
 import { genSourceJsonOrdered } from './util';
 export async function createSource(id: string, data: any) {
   const newData = genSourceJsonOrdered(id, data);
-  const teamId = await getTeamIdByUserId();
+  // const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('sources')
-    .insert([{ id: id, json_ordered: newData, team_id: teamId }])
+    .insert([{ id: id, json_ordered: newData }])
     .select();
   return result;
 }

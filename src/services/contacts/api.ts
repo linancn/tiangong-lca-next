@@ -13,10 +13,10 @@ import { genContactJsonOrdered } from './util';
 
 export async function createContact(id: string, data: any) {
   const newData = genContactJsonOrdered(id, data);
-  const teamId = await getTeamIdByUserId();
+  // const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('contacts')
-    .insert([{ id: id, json_ordered: newData, team_id: teamId }])
+    .insert([{ id: id, json_ordered: newData }])
     .select();
   return result;
 }
