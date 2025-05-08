@@ -227,10 +227,9 @@ const IoPortSelect: FC<Props> = ({
             );
           }}
           columns={processExchangeColumns}
-          tableAlertRender={false}
-          tableAlertOptionRender={false}
           rowSelection={{
             alwaysShowAlert: true,
+            preserveSelectedRowKeys: true,
             selectedRowKeys: selectedRowKeys,
             onChange: onSelectChange,
           }}
