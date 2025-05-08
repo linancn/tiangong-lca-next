@@ -48,7 +48,7 @@ const ManageSystem = () => {
     return (
       <Spin spinning={loading}>
         <AllTeams
-          showDragSort={true}
+          tableType='manageSystem'
           systemUserRole={userData?.role as 'admin' | 'member' | 'owner'}
         />
       </Spin>

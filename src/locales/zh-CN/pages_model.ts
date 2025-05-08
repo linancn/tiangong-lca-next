@@ -245,6 +245,8 @@ export default {
   'pages.lifeCycleModel.view.administrativeInformation.workflowAndPublicationStatus.withdrawn': '撤回',
   'pages.lifeCycleModel.view.administrativeInformation.workflowAndPublicationStatus.dataSetFinalisedSubsystemsPublished': '数据集最终版; 子系统已发布',
   'pages.lifeCycleModel.view.administrativeInformation.workflowAndPublicationStatus.dataSetFinalisedEntirelyPublished': '数据集最终版; 已全部发布',
+  'pages.lifeCycleModel.view.administrativeInformation.copyright.yes': '是',
+  'pages.lifeCycleModel.view.administrativeInformation.copyright.no': '否',
 
   'pages.lifecyclemodel.validator.locations.required': '请输入位置',
   'pages.lifecyclemodel.validator.version.required': '请输入版本',

@@ -266,7 +266,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
         onCancel={() => setShowAllTeamsModal(false)}
         footer={null}
       >
-        <AllTeams showDragSort={false} />
+        <AllTeams tableType='joinTeam' />
       </Modal>
     </>
   );

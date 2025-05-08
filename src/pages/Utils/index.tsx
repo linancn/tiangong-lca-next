@@ -67,21 +67,23 @@ const checkValidationFields = (data: any) => {
   if (!data) {
     return { checkResult: false, tabName: 'validation' };
   }
-  for (let review of data) {
-    if (
-      review['@type'] &&
-      review['common:scope'] &&
-      review['common:scope']?.length &&
-      review['common:scope'].every(
-        (item: any) => item['@name'] && item['common:method'] && item['common:method']['@name'],
-      ) &&
-      review['common:reviewDetails'] &&
-      review['common:reviewDetails']?.length &&
-      review['common:reviewDetails'].every((item: any) => item !== undefined)
-    ) {
-      return { checkResult: true, tabName: null };
-    }
+  if (
+    data.every(
+      (review: any) =>
+        review['@type'] &&
+        review['common:scope'] &&
+        review['common:scope']?.length &&
+        review['common:scope'].every(
+          (item: any) => item['@name'] && item['common:method'] && item['common:method']['@name'],
+        ) &&
+        review['common:reviewDetails'] &&
+        review['common:reviewDetails']?.length &&
+        review['common:reviewDetails'].every((item: any) => item !== undefined),
+    )
+  ) {
+    return { checkResult: true, tabName: null };
   }
+
   return { checkResult: false, tabName: 'validation' };
 };
 
@@ -91,6 +93,9 @@ const checkComplianceFields = (data: any) => {
   }
 
   for (let item of data) {
+    if (!item) {
+      return { checkResult: false, tabName: 'complianceDeclarations' };
+    }
     for (let key of Object.keys(item)) {
       if (key === 'common:referenceToComplianceSystem') {
         if (!item[key]?.['@refObjectId']) {

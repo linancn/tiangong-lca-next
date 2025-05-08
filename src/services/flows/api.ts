@@ -14,10 +14,10 @@ import { genFlowJsonOrdered, genFlowName } from './util';
 
 export async function createFlows(id: string, data: any) {
   const newData = genFlowJsonOrdered(id, data);
-  const teamId = await getTeamIdByUserId();
+  // const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('flows')
-    .insert([{ id: id, json_ordered: newData, team_id: teamId }])
+    .insert([{ id: id, json_ordered: newData }])
     .select();
   return result;
 }

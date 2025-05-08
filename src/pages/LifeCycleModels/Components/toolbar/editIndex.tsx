@@ -1,4 +1,3 @@
-import ProcessEdit from '@/pages/Processes/Components/edit';
 import ProcessView from '@/pages/Processes/Components/view';
 import { initVersion } from '@/services/general/data';
 import { formatDateTime, getLangText } from '@/services/general/util';
@@ -1065,13 +1064,13 @@ const ToolbarEdit: FC<Props> = ({
       </Tooltip>
       <br />
 
-      <ProcessEdit
+      <ProcessView
         id={id ?? ''}
         version={version ?? ''}
         lang={lang}
-        buttonType={'tool'}
+        buttonType={'toolResultIcon'}
         actionRef={undefined}
-        setViewDrawerVisible={() => {}}
+        disabled={false}
       />
       <Control items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin']} />
       <Spin spinning={spinning} fullscreen />

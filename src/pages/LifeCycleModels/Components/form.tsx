@@ -1194,6 +1194,25 @@ export const LifeCycleModelForm: FC<Props> = ({
               />
             }
           />
+          <Divider orientationMargin='0' orientation='left' plain>
+            <FormattedMessage
+              id='pages.lifeCycleModel.modellingAndValidation.useAdviceForDataSet'
+              defaultMessage='Use advice for data set'
+            />
+          </Divider>
+          <LangTextItemForm
+            name={[
+              'modellingAndValidation',
+              'dataSourcesTreatmentAndRepresentativeness',
+              'useAdviceForDataSet',
+            ]}
+            label={
+              <FormattedMessage
+                id='pages.lifeCycleModel.modellingAndValidation.useAdviceForDataSet'
+                defaultMessage='Use advice for data set'
+              />
+            }
+          />
         </Card>
         <br />
         <Card

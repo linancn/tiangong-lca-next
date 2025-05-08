@@ -114,7 +114,7 @@ export async function getTeamInvitationStatusApi() {
   }
 }
 
-export async function createTeamMessage(id: string, data: any, rank: number) {
+export async function createTeamMessage(id: string, data: any, rank: number, is_public: boolean) {
   const session = await supabase.auth.getSession();
   await supabase
     .from('roles')
@@ -123,7 +123,7 @@ export async function createTeamMessage(id: string, data: any, rank: number) {
     .eq('role', 'rejected')
     .neq('team_id', '00000000-0000-0000-0000-000000000000');
 
-  const error = await addTeam(id, data, rank);
+  const error = await addTeam(id, data, rank, is_public);
   if (!error) {
     const roleError = await addRoleApi(session?.data?.session?.user?.id || '', id, 'owner');
     return roleError;

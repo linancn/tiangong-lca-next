@@ -1,5 +1,6 @@
 export default {
   'component.allTeams.table.title': 'All Teams',
+  'component.allTeams.table.desc': 'Please contact the team leader through "Contact" to join the team',
   'component.allTeams.table.index': 'Index',
   'component.allTeams.table.name': 'Team Name',
   'component.allTeams.table.description': 'Description',
