@@ -13,8 +13,7 @@ import {
   Typography,
   message,
 } from 'antd';
-import type { FC } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { LifeCycleModelForm } from '../form';
 // const { TextArea } = Input;
@@ -36,22 +35,14 @@ type Props = {
   onData: (data: any) => void;
   action: string;
 };
-const ToolbarEditInfo: FC<Props> = ({ lang, data, onData, action }) => {
+const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, ref) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('lifeCycleModelInformation');
   const formRefEdit = useRef<ProFormInstance>();
   const [fromData, setFromData] = useState<any>({});
   const [referenceValue, setReferenceValue] = useState(0);
-  const [showReview, setShowReview] = useState(false);
   const [spinning, setSpinning] = useState(false);
   const intl = useIntl();
-
-  useEffect(() => {
-    const pathname = window.location.pathname;
-    if (pathname === '/mydata/processes') {
-      setShowReview(true);
-    }
-  }, []);
 
   const updateReference = async () => {
     setReferenceValue(referenceValue + 1);
@@ -270,6 +261,16 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData, action }) => {
     setSpinning(false);
   };
 
+  useImperativeHandle(ref, () => ({
+    submitReview: async () => {
+      await submitReview();
+    },
+  }));
+
+  useEffect(() => {
+    console.log('data', data);
+  }, [data]);
+
   return (
     <>
       <Tooltip
@@ -313,11 +314,11 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData, action }) => {
         }}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
-            {showReview && (
+            {/* {showReview && (
               <Button onClick={submitReview}>
                 <FormattedMessage id='pages.button.review' defaultMessage='Submit for review' />
               </Button>
-            )}
+            )} */}
             {action === 'edit' ? (
               <Button
                 onClick={() => {
@@ -423,6 +424,6 @@ const ToolbarEditInfo: FC<Props> = ({ lang, data, onData, action }) => {
       </Drawer>
     </>
   );
-};
+});
 
 export default ToolbarEditInfo;
