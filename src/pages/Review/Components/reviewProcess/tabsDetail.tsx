@@ -13,12 +13,12 @@ import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/p
 import { Card, Collapse, Descriptions, Divider, Space, Tooltip } from 'antd';
 import { useEffect, useRef, type FC } from 'react';
 import { FormattedMessage } from 'umi';
-import ComplianceItemForm from './Compliance/form';
-import ComplianceItemView from './Compliance/view';
-import ProcessExchangeView from './Exchange/view';
+import ComplianceItemForm from '../Compliance/form';
+import ComplianceItemView from '../Compliance/view';
+import ProcessExchangeView from '../Exchange/view';
 
-import ReveiwItemForm from './Review/form';
-import ReviewItemView from './Review/view';
+import ReveiwItemForm from '../ReviewForm/form';
+import ReviewItemView from '../ReviewForm/view';
 
 import {
   completenessElementaryFlowsTypeOptions,

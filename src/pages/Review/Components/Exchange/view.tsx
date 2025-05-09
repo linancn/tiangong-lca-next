@@ -11,7 +11,7 @@ import {
   DataDerivationTypeStatusOptions,
   dataSourceTypeOptions,
   functionTypeOptions,
-} from '../optiondata';
+} from '../reviewProcess/optiondata';
 type Props = {
   id: string;
   data: any;

@@ -13,7 +13,7 @@ import {
   nomenclatureComplianceOptions,
   qualityComplianceOptions,
   reviewComplianceOptions,
-} from '../optiondata';
+} from '../reviewProcess/optiondata';
 // const { TextArea } = Input;
 
 type Props = {

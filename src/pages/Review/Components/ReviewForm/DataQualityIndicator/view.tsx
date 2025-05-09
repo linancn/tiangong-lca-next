@@ -1,21 +1,24 @@
 import { Col, Descriptions, Row } from 'antd';
 import { FC } from 'react';
 import { FormattedMessage } from 'umi';
-import { methodNameOptions, scopeNameOptions } from '../../optiondata';
+import {
+  dataQualityIndicatorNameOptions,
+  dataQualityIndicatorValueOptions,
+} from '../../reviewProcess/optiondata';
 
 type Props = {
   data: any[];
 };
 
-const ScopeItemView: FC<Props> = ({ data }) => {
-  const getScopeName = (nameValue: string) => {
-    const option = scopeNameOptions.find((item) => item.value === nameValue);
+const DataQualityIndicatorItemView: FC<Props> = ({ data }) => {
+  const getIndicatorName = (nameValue: string) => {
+    const option = dataQualityIndicatorNameOptions.find((item) => item.value === nameValue);
     return option ? option.label : nameValue;
   };
 
-  const getMethodName = (nameValue: string) => {
-    const option = methodNameOptions.find((item) => item.value === nameValue);
-    return option ? option.label : nameValue;
+  const getIndicatorValue = (valueValue: string) => {
+    const option = dataQualityIndicatorValueOptions.find((item) => item.value === valueValue);
+    return option ? option.label : valueValue;
   };
 
   return (
@@ -31,15 +34,15 @@ const ScopeItemView: FC<Props> = ({ data }) => {
               style={{ marginBottom: index < data.length - 1 ? '16px' : 0 }}
             >
               <Descriptions.Item
-                labelStyle={{ width: '120px' }}
+                labelStyle={{ width: '160px' }}
                 label={
                   <FormattedMessage
-                    id='pages.process.modellingAndValidation.validation.review.scope.name'
-                    defaultMessage='Scope name'
+                    id='pages.process.modellingAndValidation.validation.review.dataQualityIndicator.name'
+                    defaultMessage='Name'
                   />
                 }
               >
-                {getScopeName(item['@name']) || '-'}
+                {getIndicatorName(item['@name']) || '-'}
               </Descriptions.Item>
             </Descriptions>
           </Col>
@@ -52,15 +55,15 @@ const ScopeItemView: FC<Props> = ({ data }) => {
               style={{ marginBottom: index < data.length - 1 ? '16px' : 0 }}
             >
               <Descriptions.Item
-                labelStyle={{ width: '120px' }}
+                labelStyle={{ width: '160px' }}
                 label={
                   <FormattedMessage
-                    id='pages.process.modellingAndValidation.validation.review.scope.method.name'
-                    defaultMessage='Method name'
+                    id='pages.process.modellingAndValidation.validation.review.dataQualityIndicator.value'
+                    defaultMessage='Value'
                   />
                 }
               >
-                {getMethodName(item['common:method']?.['@name']) || '-'}
+                {getIndicatorValue(item['@value']) || '-'}
               </Descriptions.Item>
             </Descriptions>
           </Col>
@@ -70,4 +73,4 @@ const ScopeItemView: FC<Props> = ({ data }) => {
   );
 };
 
-export default ScopeItemView;
+export default DataQualityIndicatorItemView;

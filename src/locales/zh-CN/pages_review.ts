@@ -41,4 +41,7 @@ export default {
 
   'pages.review.ReviewProcessDetail.assigned.save': '审核通过',
   'pages.review.ReviewProcessDetail.assigned.success': '审核通过成功',
+
+  'pages.review.ReviewLifeCycleModelsDetail.edit.title': '审核模型',
+  'pages.review.ReviewLifeCycleModelsDetail.view.title': '查看审核',
 };

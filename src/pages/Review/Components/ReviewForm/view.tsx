@@ -5,7 +5,7 @@ import { getLang } from '@/services/general/util';
 import { Card, Descriptions, Divider, Space } from 'antd';
 import { FC } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
-import { reviewTypeOptions } from '../optiondata';
+import { reviewTypeOptions } from '../reviewProcess/optiondata';
 
 import DataQualityIndicatorItemView from './DataQualityIndicator/view';
 import ScopeItemView from './Scope/view';

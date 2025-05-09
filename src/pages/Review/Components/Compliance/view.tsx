@@ -10,7 +10,7 @@ import {
   nomenclatureComplianceOptions,
   qualityComplianceOptions,
   reviewComplianceOptions,
-} from '../optiondata';
+} from '../reviewProcess/optiondata';
 
 type Props = {
   data: any[];
