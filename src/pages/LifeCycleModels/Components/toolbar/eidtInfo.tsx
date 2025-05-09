@@ -109,7 +109,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
       );
       return false;
     }
-    const processes: any[] = [];
+    const processes: any[] = [{ id: data.id, version: data.version }];
     lifeCycleModelDetail?.data?.json_tg?.xflow?.nodes?.forEach((item: any) => {
       if (item.data) {
         processes.push(item.data);

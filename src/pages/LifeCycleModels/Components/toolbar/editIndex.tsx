@@ -983,6 +983,12 @@ const ToolbarEdit: FC<Props> = ({
     });
   }, [nodeCount]);
 
+  const handelSubmitReview = async () => {
+    setSpinning(true);
+    await editInfoRef.current?.submitReview();
+    setSpinning(false);
+  };
+
   return (
     <Space direction='vertical' size={'middle'}>
       <ToolbarEditInfo
@@ -1096,7 +1102,7 @@ const ToolbarEdit: FC<Props> = ({
             size='small'
             icon={<CheckCircleOutlined />}
             style={{ boxShadow: 'none' }}
-            onClick={() => editInfoRef.current?.submitReview()}
+            onClick={handelSubmitReview}
           />
         </Tooltip>
       ) : null}
