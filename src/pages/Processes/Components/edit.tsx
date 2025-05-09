@@ -242,7 +242,7 @@ const ProcessEdit: FC<Props> = ({
         id,
         version,
         reviewId,
-        initData.stateCode,
+        initData.stateCode + 20,
       );
 
       let stateCode = 0;
