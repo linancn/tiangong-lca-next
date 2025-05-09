@@ -46,6 +46,15 @@ const Review = () => {
 
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
+    if (key === 'unassigned' && unassignedTableRef.current) {
+      unassignedTableRef.current.reload();
+    } else if (key === 'assigned' && assignedTableRef.current) {
+      assignedTableRef.current.reload();
+    } else if (key === 'review' && reviewTableRef.current) {
+      reviewTableRef.current.reload();
+    } else if (key === 'members' && actionRef.current) {
+      actionRef.current.reload();
+    }
   };
 
   const renderReviewMember = () => {
@@ -319,9 +328,15 @@ const Review = () => {
   useEffect(() => {
     if (userData?.role === 'review-member' && activeTabKey !== 'review') {
       setActiveTabKey('review');
+      if (reviewTableRef.current) {
+        reviewTableRef.current.reload();
+      }
     }
     if (userData?.role === 'review-admin' && activeTabKey !== 'unassigned') {
       setActiveTabKey('unassigned');
+      if (unassignedTableRef.current) {
+        unassignedTableRef.current.reload();
+      }
     }
   }, [userData]);
 
