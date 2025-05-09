@@ -276,24 +276,32 @@ const Review = () => {
   };
 
   const tabs = [
-    {
-      key: 'unassigned',
-      label: <FormattedMessage id='pages.review.tabs.unassigned' />,
-      children: (
-        <AssignmentReview
-          actionRef={unassignedTableRef}
-          tableType='unassigned'
-          userData={userData}
-        />
-      ),
-    },
-    {
-      key: 'assigned',
-      label: <FormattedMessage id='pages.review.tabs.assigned' />,
-      children: (
-        <AssignmentReview actionRef={assignedTableRef} tableType='assigned' userData={userData} />
-      ),
-    },
+    ...(userData?.role === 'review-admin'
+      ? [
+          {
+            key: 'unassigned',
+            label: <FormattedMessage id='pages.review.tabs.unassigned' />,
+            children: (
+              <AssignmentReview
+                actionRef={unassignedTableRef}
+                tableType='unassigned'
+                userData={userData}
+              />
+            ),
+          },
+          {
+            key: 'assigned',
+            label: <FormattedMessage id='pages.review.tabs.assigned' />,
+            children: (
+              <AssignmentReview
+                actionRef={assignedTableRef}
+                tableType='assigned'
+                userData={userData}
+              />
+            ),
+          },
+        ]
+      : []),
     {
       key: 'review',
       label: <FormattedMessage id='pages.review.tabs.review' />,
@@ -307,6 +315,15 @@ const Review = () => {
       children: renderReviewMember(),
     },
   ];
+
+  useEffect(() => {
+    if (userData?.role === 'review-member' && activeTabKey !== 'review') {
+      setActiveTabKey('review');
+    }
+    if (userData?.role === 'review-admin' && activeTabKey !== 'unassigned') {
+      setActiveTabKey('unassigned');
+    }
+  }, [userData]);
 
   return (
     <PageContainer title={<FormattedMessage id='pages.review.title' />}>
