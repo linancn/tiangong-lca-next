@@ -5,6 +5,7 @@ import { ProColumns, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
 import { Space, Tooltip } from 'antd';
 import { useState } from 'react';
+import ReviewLifeCycleModelsDetail from './reviewLifeCycleModels';
 import ReviewProcessDetail from './reviewProcess';
 import SelectReviewer from './SelectReviewer';
 
@@ -13,6 +14,7 @@ type AssignmentReviewProps = {
   tableType: 'unassigned' | 'assigned' | 'review';
   actionRef: any;
 };
+
 const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewProps) => {
   // const intl = useIntl();
   const { locale } = useIntl();
@@ -90,15 +92,27 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
       render: (_, record) => {
         return [
           <Space key={0}>
-            <ReviewProcessDetail
-              tabType='assigned'
-              type='view'
-              actionRef={actionRef}
-              id={record.data_id}
-              version={record.data_version}
-              lang={lang}
-              reviewId={record.id}
-            />
+            {record.isFromLifeCycle ? (
+              <ReviewLifeCycleModelsDetail
+                tabType='assigned'
+                type='view'
+                actionRef={actionRef}
+                id={record.data_id}
+                version={record.data_version}
+                lang={lang}
+                reviewId={record.id}
+              />
+            ) : (
+              <ReviewProcessDetail
+                tabType='assigned'
+                type='view'
+                actionRef={actionRef}
+                id={record.data_id}
+                version={record.data_version}
+                lang={lang}
+                reviewId={record.id}
+              />
+            )}
           </Space>,
         ];
       },
@@ -113,24 +127,50 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
       render: (_, record) => {
         return [
           <Space key={0}>
-            <ReviewProcessDetail
-              tabType='review'
-              type='edit'
-              actionRef={actionRef}
-              id={record.data_id}
-              version={record.data_version}
-              lang={lang}
-              reviewId={record.id}
-            />
-            <ReviewProcessDetail
-              tabType='review'
-              type='view'
-              actionRef={actionRef}
-              id={record.data_id}
-              version={record.data_version}
-              lang={lang}
-              reviewId={record.id}
-            />
+            {record.isFromLifeCycle ? (
+              <>
+                <ReviewLifeCycleModelsDetail
+                  type='edit'
+                  id={record.data_id}
+                  version={record.data_version}
+                  lang={lang}
+                  reviewId={record.id}
+                  tabType='review'
+                  actionRef={actionRef}
+                />
+
+                <ReviewLifeCycleModelsDetail
+                  reviewId={record.id}
+                  tabType='review'
+                  type='view'
+                  id={record.data_id}
+                  version={record.data_version}
+                  lang={lang}
+                  actionRef={actionRef}
+                />
+              </>
+            ) : (
+              <>
+                <ReviewProcessDetail
+                  tabType='review'
+                  type='edit'
+                  actionRef={actionRef}
+                  id={record.data_id}
+                  version={record.data_version}
+                  lang={lang}
+                  reviewId={record.id}
+                />
+                <ReviewProcessDetail
+                  tabType='review'
+                  type='view'
+                  actionRef={actionRef}
+                  id={record.data_id}
+                  version={record.data_version}
+                  lang={lang}
+                  reviewId={record.id}
+                />
+              </>
+            )}
           </Space>,
         ];
       },

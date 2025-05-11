@@ -71,13 +71,7 @@ export async function getRefData(id: string, version: string, table: string, tea
     .from(table)
     .select('state_code,json')
     .eq('id', id)
-    .neq('team_id', '00000000-0000-0000-0000-000000000000');
-
-  if (teamId) {
-    query = query.eq('team_id', teamId);
-  } else {
-    query = query.eq('user_id', session?.data?.session?.user?.id);
-  }
+    .eq('user_id', session?.data?.session?.user?.id);
 
   let result: any = {};
 
@@ -91,7 +85,11 @@ export async function getRefData(id: string, version: string, table: string, tea
       result = await query.order('version', { ascending: false }).range(0, 0);
     }
     if (result?.data && result.data.length > 0) {
-      const data = result.data[0];
+      let data = result.data[0];
+      const teamData = result.data.filter((item: any) => item.team_id === teamId);
+      if (teamId !== '00000000-0000-0000-0000-000000000000' && teamData && teamData.length > 0) {
+        data = teamData[0];
+      }
       return Promise.resolve({
         data: {
           stateCode: data?.state_code,

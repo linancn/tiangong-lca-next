@@ -14,10 +14,10 @@ import {
 } from '@/services/lifeCycleModels/util';
 import { getProcessDetail, getProcessDetailByIdAndVersion } from '@/services/processes/api';
 import { genProcessFromData, genProcessName, genProcessNameJson } from '@/services/processes/util';
-import { CopyOutlined, DeleteOutlined, SaveOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, CopyOutlined, DeleteOutlined, SaveOutlined } from '@ant-design/icons';
 import { useGraphEvent, useGraphStore } from '@antv/xflow';
 import { Button, Space, Spin, Tooltip, message, theme } from 'antd';
-import { FC, useCallback, useEffect, useState } from 'react';
+import { FC, useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
 import ModelToolbarAdd from './add';
@@ -66,7 +66,15 @@ const ToolbarEdit: FC<Props> = ({
   const removeEdges = useGraphStore((state) => state.removeEdges);
   const updateEdge = useGraphStore((state) => state.updateEdge);
   const intl = useIntl();
+  const [showReview, setShowReview] = useState(false);
 
+  useEffect(() => {
+    const pathname = window.location.pathname;
+    if (pathname === '/mydata/processes') {
+      setShowReview(true);
+    }
+  }, []);
+  const editInfoRef = useRef<any>(null);
   useEffect(() => {
     setThisAction(action);
   }, [action]);
@@ -975,9 +983,21 @@ const ToolbarEdit: FC<Props> = ({
     });
   }, [nodeCount]);
 
+  const handelSubmitReview = async () => {
+    setSpinning(true);
+    await editInfoRef.current?.submitReview();
+    setSpinning(false);
+  };
+
   return (
     <Space direction='vertical' size={'middle'}>
-      <ToolbarEditInfo action={thisAction} data={infoData} onData={updateInfoData} lang={lang} />
+      <ToolbarEditInfo
+        ref={editInfoRef}
+        action={thisAction}
+        data={infoData}
+        onData={updateInfoData}
+        lang={lang}
+      />
       <ProcessView
         id={nodes.find((node) => node.selected)?.data?.id ?? ''}
         version={nodes.find((node) => node.selected)?.data?.version ?? ''}
@@ -1072,6 +1092,20 @@ const ToolbarEdit: FC<Props> = ({
         actionRef={undefined}
         disabled={false}
       />
+      {showReview ? (
+        <Tooltip
+          title={<FormattedMessage id='pages.button.review' defaultMessage='Submit for review' />}
+          placement='left'
+        >
+          <Button
+            type='primary'
+            size='small'
+            icon={<CheckCircleOutlined />}
+            style={{ boxShadow: 'none' }}
+            onClick={handelSubmitReview}
+          />
+        </Tooltip>
+      ) : null}
       <Control items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin']} />
       <Spin spinning={spinning} fullscreen />
       <IoPortSelect

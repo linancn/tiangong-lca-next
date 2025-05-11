@@ -1590,7 +1590,7 @@ const calculateProcessExchange = (
     const thisRefFlow = dbPE?.exchange?.find(
       (e: any) =>
         e?.referenceToFlowDataSet?.['@refObjectId'] === connectionFlowId &&
-        e?.exchangeDirection.toUpperCase() === connectionDirection,
+        e?.exchangeDirection?.toUpperCase() === connectionDirection,
     );
     const thisRefMeanAmount = toAmountNumber(thisRefFlow?.meanAmount);
     if (thisRefMeanAmount !== 0 && targetAmount !== 0) {
@@ -1613,7 +1613,7 @@ const calculateProcessExchange = (
           const connectionOutputFlow = dbPE.exchange?.find((e: any) => {
             return (
               e?.referenceToFlowDataSet?.['@refObjectId'] === o?.['@flowUUID'] &&
-              e?.exchangeDirection.toUpperCase() === 'OUTPUT'
+              e?.exchangeDirection?.toUpperCase() === 'OUTPUT'
             );
           });
           const outputFlowMeanAmount =
@@ -1647,7 +1647,7 @@ const calculateProcessExchange = (
             const connectionOutputFlow = dbPE.exchange?.find((e: any) => {
               return (
                 e?.referenceToFlowDataSet?.['@refObjectId'] === o?.['@flowUUID'] &&
-                e?.exchangeDirection.toUpperCase() === 'OUTPUT'
+                e?.exchangeDirection?.toUpperCase() === 'OUTPUT'
               );
             });
             const outputFlowMeanAmount =
@@ -1733,7 +1733,7 @@ const calculateProcessExchange = (
                 return (
                   e?.referenceToFlowDataSet?.['@refObjectId'] ===
                     upstreamModelProcessOutputExchange?.['@flowUUID'] &&
-                  e?.exchangeDirection.toUpperCase() === 'INPUT'
+                  e?.exchangeDirection?.toUpperCase() === 'INPUT'
                 );
               });
               const inputFlowMeanAmount =
@@ -1781,7 +1781,7 @@ const sumProcessExchange = (processExchange: any[]) => {
   processExchange?.forEach((pe: any) => {
     pe?.exchange?.forEach((e: any) => {
       if (
-        e?.exchangeDirection.toUpperCase() === 'OUTPUT' &&
+        e?.exchangeDirection?.toUpperCase() === 'OUTPUT' &&
         !pe?.connectionFlow?.outputFlowIds?.includes(e?.referenceToFlowDataSet?.['@refObjectId'])
       ) {
         const newAmount = e?.meanAmount * pe?.scalingFactor;
@@ -1792,7 +1792,7 @@ const sumProcessExchange = (processExchange: any[]) => {
         };
         allExchange.push(newExchange);
       } else if (
-        e?.exchangeDirection.toUpperCase() === 'INPUT' &&
+        e?.exchangeDirection?.toUpperCase() === 'INPUT' &&
         !pe?.connectionFlow?.inputFlowIds?.includes(e?.referenceToFlowDataSet?.['@refObjectId'])
       ) {
         const newAmount = e?.meanAmount * pe?.scalingFactor;
@@ -1900,7 +1900,7 @@ export async function genLifeCycleModelProcess(id: string, refNode: any, data: a
 
   const referenceToReferenceFlow = sumExchange?.find(
     (e: any) =>
-      e?.exchangeDirection.toUpperCase() ===
+      e?.exchangeDirection?.toUpperCase() ===
         thisFlowQuantitativeReference?.exchangeDirection.toUpperCase() &&
       e?.referenceToFlowDataSet?.['@refObjectId'] ===
         thisFlowQuantitativeReference?.referenceToFlowDataSet?.['@refObjectId'],
