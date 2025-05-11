@@ -9,7 +9,7 @@ import { ProFormInstance } from '@ant-design/pro-components';
 import { Card, Col, Divider, Form, Row, Select, Space } from 'antd';
 import { FC, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import { reviewTypeOptions } from '../optiondata';
+import { reviewTypeOptions } from '../reviewProcess/optiondata';
 import DataQualityIndicatorItemForm from './DataQualityIndicator/form';
 import ScopeItemForm from './Scope/form';
 // const { TextArea } = Input;

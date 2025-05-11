@@ -6,8 +6,8 @@ import {
   jsonToList,
 } from '../general/util';
 import { getILCDClassification, getILCDLocationByValues } from '../ilcd/api';
+import { getLifeCyclesByIds } from '../lifeCycleModels/api';
 import { genProcessName } from '../processes/util';
-
 export async function addReviewsApi(id: string, data_id: string, data_version: string) {
   const { error } = await supabase
     .from('reviews')
@@ -166,6 +166,16 @@ export async function getReviewsApi(
       });
     }
 
+    const dataIds = data.map((i: any) => i.data_id);
+    const lifeCycleResult = await getLifeCyclesByIds(dataIds);
+    if (lifeCycleResult.data && lifeCycleResult.data.length > 0) {
+      lifeCycleResult.data.forEach((i) => {
+        const review = data.find((j) => j.data_id === i.id && j.data_version === i.version);
+        if (review) {
+          review.isFromLifeCycle = true;
+        }
+      });
+    }
     return Promise.resolve({
       data: data,
       page: params?.current ?? 1,

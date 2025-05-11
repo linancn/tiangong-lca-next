@@ -25,4 +25,6 @@ export default {
   'pages.review.members.addError.notRegistered': 'User not registered',
 
   'pages.review.drawer.title': 'Select Reviewer',
+  'pages.review.ReviewLifeCycleModelsDetail.edit.title': 'Review model',
+  'pages.review.ReviewLifeCycleModelsDetail.view.title': 'View review',
 };

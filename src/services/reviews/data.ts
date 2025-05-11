@@ -8,4 +8,5 @@ export type ReviewsTable = {
   reviewer_id: string[];
   state_code: number;
   processes: ProcessTable;
+  isFromLifeCycle: boolean;
 };

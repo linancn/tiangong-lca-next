@@ -225,6 +225,8 @@ const ProcessEdit: FC<Props> = ({
             const subRefs = getAllRefObj(json);
             await checkReferences(subRefs, checkedIds);
           }
+        } else {
+          return false;
         }
       }
       return true;
@@ -242,7 +244,7 @@ const ProcessEdit: FC<Props> = ({
         id,
         version,
         reviewId,
-        initData.stateCode,
+        initData.stateCode + 20,
       );
 
       let stateCode = 0;

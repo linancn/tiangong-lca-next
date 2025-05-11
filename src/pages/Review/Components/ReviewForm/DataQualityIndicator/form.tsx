@@ -5,7 +5,7 @@ import { FormattedMessage } from 'umi';
 import {
   dataQualityIndicatorNameOptions,
   dataQualityIndicatorValueOptions,
-} from '../../optiondata';
+} from '../../reviewProcess/optiondata';
 
 type Props = {
   name: any;

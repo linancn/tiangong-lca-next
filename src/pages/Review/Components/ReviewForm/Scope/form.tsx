@@ -5,7 +5,7 @@ import { CloseOutlined } from '@ant-design/icons';
 import { Button, Col, Form, Row, Select } from 'antd';
 import { FC } from 'react';
 import { FormattedMessage } from 'umi';
-import { methodNameOptions, scopeNameOptions } from '../../optiondata';
+import { methodNameOptions, scopeNameOptions } from '../../reviewProcess/optiondata';
 type Props = {
   name: any;
 };
