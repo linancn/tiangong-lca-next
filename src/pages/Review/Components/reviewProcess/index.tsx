@@ -42,7 +42,7 @@ const ReviewProcessDetail: FC<Props> = ({
   const [spinning, setSpinning] = useState(false);
   const intl = useIntl();
   const [referenceValue, setReferenceValue] = useState(0);
-  const [approveReviewDisabled, setApproveReviewDisabled] = useState(false);
+  const [approveReviewDisabled, setApproveReviewDisabled] = useState(true);
 
   const handletFromData = () => {
     if (fromData?.id) {

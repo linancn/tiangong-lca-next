@@ -47,7 +47,7 @@ const ToolbarView: FC<Props> = ({
   const [ioPortSelectorDirection, setIoPortSelectorDirection] = useState('');
   const [ioPortSelectorNode, setIoPortSelectorNode] = useState<any>({});
   const [ioPortSelectorDrawerVisible, setIoPortSelectorDrawerVisible] = useState(false);
-  const [approveReviewDisabled, setApproveReviewDisabled] = useState(false);
+  const [approveReviewDisabled, setApproveReviewDisabled] = useState(true);
   const modelData = useGraphStore((state) => state.initData);
   const updateNode = useGraphStore((state) => state.updateNode);
   const intl = useIntl();
