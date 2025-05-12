@@ -1,3 +1,4 @@
+import { checkRequiredFields } from '@/pages/Utils';
 import { formatDateTime } from '@/services/general/util';
 import { createProcess, getProcessDetail } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
@@ -9,6 +10,7 @@ import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
+import requiredFields from '../requiredFields';
 import { ProcessForm } from './form';
 
 type Props = {
@@ -49,12 +51,33 @@ const ProcessCreate: FC<CreateProps> = ({
   const [spinning, setSpinning] = useState<boolean>(false);
   const intl = useIntl();
 
-  const handletFromData = () => {
-    if (fromData?.id)
-      setFromData({
+  const handletFromData = async () => {
+    const fieldsValue = formRefCreate.current?.getFieldsValue();
+    // if (fromData?.id)
+    if (activeTabKey === 'validation') {
+      await setFromData({
         ...fromData,
-        [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
+        modellingAndValidation: {
+          ...fromData?.modellingAndValidation,
+          validation: { ...fieldsValue?.modellingAndValidation?.validation },
+        },
       });
+    } else if (activeTabKey === 'complianceDeclarations') {
+      await setFromData({
+        ...fromData,
+        modellingAndValidation: {
+          ...fromData?.modellingAndValidation,
+          complianceDeclarations: {
+            ...fieldsValue?.modellingAndValidation?.complianceDeclarations,
+          },
+        },
+      });
+    } else {
+      await setFromData({
+        ...fromData,
+        [activeTabKey]: fieldsValue?.[activeTabKey] ?? {},
+      });
+    }
   };
 
   const reload = useCallback(() => {
@@ -62,11 +85,11 @@ const ProcessCreate: FC<CreateProps> = ({
   }, [actionRef]);
 
   const handletExchangeDataCreate = (data: any) => {
-    if (fromData?.id)
-      setExchangeDataSource([
-        ...exchangeDataSource,
-        { ...data, '@dataSetInternalID': exchangeDataSource.length.toString() },
-      ]);
+    // if (fromData?.id)
+    setExchangeDataSource([
+      ...exchangeDataSource,
+      { ...data, '@dataSetInternalID': exchangeDataSource.length.toString() },
+    ]);
   };
 
   const handletExchangeData = (data: any) => {
@@ -108,12 +131,37 @@ const ProcessCreate: FC<CreateProps> = ({
         dataEntryBy: {
           'common:timeStamp': currentDateTime,
         },
+        publicationAndOwnership: {
+          'common:dataSetVersion': '01.01.000',
+        },
+      },
+      modellingAndValidation: {
+        complianceDeclarations: {
+          compliance: [
+            {
+              'common:approvalOfOverallCompliance': 'Fully compliant',
+              'common:nomenclatureCompliance': 'Fully compliant',
+              'common:methodologicalCompliance': 'Fully compliant',
+              'common:reviewCompliance': 'Fully compliant',
+              'common:documentationCompliance': 'Fully compliant',
+              'common:qualityCompliance': 'Fully compliant',
+            },
+          ],
+        },
+        validation: {
+          review: [
+            {
+              'common:scope': [{}],
+            },
+          ],
+        },
       },
     };
     const newId = v4();
     setInitData({ ...newData, id: newId });
-    formRefCreate.current?.resetFields();
-    formRefCreate.current?.setFieldsValue(newData);
+    // formRefCreate.current?.resetFields();
+    const currentData = formRefCreate.current?.getFieldsValue();
+    formRefCreate.current?.setFieldsValue({ ...currentData, ...newData });
     setFromData({ ...newData, id: newId });
     setExchangeDataSource([]);
   }, [drawerVisible]);
@@ -159,6 +207,7 @@ const ProcessCreate: FC<CreateProps> = ({
         )}
       </Tooltip>
       <Drawer
+        destroyOnClose={true}
         getContainer={() => document.body}
         title={
           <FormattedMessage
@@ -200,8 +249,28 @@ const ProcessCreate: FC<CreateProps> = ({
           <ProForm
             formRef={formRefCreate}
             initialValues={initData}
-            onValuesChange={(_, allValues) => {
-              setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+            onValuesChange={async (_, allValues) => {
+              if (activeTabKey === 'validation') {
+                await setFromData({
+                  ...fromData,
+                  modellingAndValidation: {
+                    ...fromData?.modellingAndValidation,
+                    validation: { ...allValues?.modellingAndValidation?.validation },
+                  },
+                });
+              } else if (activeTabKey === 'complianceDeclarations') {
+                await setFromData({
+                  ...fromData,
+                  modellingAndValidation: {
+                    ...fromData?.modellingAndValidation,
+                    complianceDeclarations: {
+                      ...allValues?.modellingAndValidation?.complianceDeclarations,
+                    },
+                  },
+                });
+              } else {
+                await setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+              }
             }}
             submitter={{
               render: () => {
@@ -209,8 +278,39 @@ const ProcessCreate: FC<CreateProps> = ({
               },
             }}
             onFinish={async () => {
+              const { checkResult, tabName } = checkRequiredFields(requiredFields, fromData);
+              if (!checkResult) {
+                await setActiveTabKey(tabName);
+                formRefCreate.current?.validateFields();
+                return false;
+              }
+
               const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
-              const result = await createProcess(paramsId, fromData);
+              const exchanges = fromData?.exchanges;
+              if (!exchanges || !exchanges?.exchange || exchanges?.exchange?.length === 0) {
+                message.error(
+                  intl.formatMessage({
+                    id: 'pages.process.validator.exchanges.required',
+                    defaultMessage: 'Please select exchanges',
+                  }),
+                );
+                return false;
+              } else if (
+                exchanges?.exchange.filter((item: any) => item?.quantitativeReference).length !== 1
+              ) {
+                message.error(
+                  intl.formatMessage({
+                    id: 'pages.process.validator.exchanges.quantitativeReference.required',
+                    defaultMessage:
+                      'Exchange needs to have exactly one quantitative reference open',
+                  }),
+                );
+                return false;
+              }
+
+              const result = await createProcess(paramsId, {
+                ...fromData,
+              });
               if (result.data) {
                 message.success(
                   intl.formatMessage({
@@ -228,6 +328,7 @@ const ProcessCreate: FC<CreateProps> = ({
             }}
           >
             <ProcessForm
+              formType={actionType}
               lang={lang}
               activeTabKey={activeTabKey}
               formRef={formRefCreate}

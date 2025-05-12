@@ -1,7 +1,7 @@
 import { langOptions } from '@/services/general/data';
 import { CloseOutlined } from '@ant-design/icons';
 import { Button, Col, Form, Input, Row, Select, message } from 'antd';
-import { FC, ReactNode } from 'react';
+import { FC, ReactNode, useRef } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 
 const { TextArea } = Input;
@@ -12,19 +12,36 @@ type Props = {
   rules?: any[];
   setRuleErrorState?: (showError: boolean) => void;
   formRef?: any;
+  listName?: string[];
 };
 
-const LangTextItemForm: FC<Props> = ({ name, label, rules = [], setRuleErrorState, formRef }) => {
+const LangTextItemForm: FC<Props> = ({
+  name,
+  label,
+  rules = [],
+  setRuleErrorState,
+  formRef,
+  listName,
+}) => {
   const intl = useIntl();
   const isRequired = rules?.some((rule) => rule.required);
+  const initialRenderRef = useRef(true);
 
   const formContext = Form.useFormInstance();
   const form = formRef?.current || formContext;
 
-  const watchedValues = Form.useWatch(name, form);
-  const formValues = watchedValues || [];
+  let formValues = [];
+  if (listName) {
+    formValues = form.getFieldValue([...listName]);
+    const fieldName = name[name.length - 1];
+    if (fieldName) {
+      formValues = form?.getFieldValue([...listName])[0]?.[fieldName];
+    }
+  } else {
+    formValues = form.getFieldValue(name);
+  }
 
-  const selectedLangValues = formValues
+  const selectedLangValues = (formValues ?? [])
     .filter((item: any) => item && item['@xml:lang'])
     .map((item: any) => item['@xml:lang']);
 
@@ -65,10 +82,11 @@ const LangTextItemForm: FC<Props> = ({ name, label, rules = [], setRuleErrorStat
         }
       >
         {(subFields, subOpt) => {
-          if (isRequired && subFields.length === 0) {
-            setTimeout(() => {
+          if (isRequired && subFields.length === 0 && initialRenderRef.current) {
+            initialRenderRef.current = false;
+            requestAnimationFrame(() => {
               subOpt.add();
-            }, 0);
+            });
           }
 
           return (

@@ -1,20 +1,24 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
 import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
-import { StringMultiLang_r, dataSetVersion } from '@/components/Validator/index';
+import RequiredMark from '@/components/RequiredMark';
+import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
+import { getRules } from '@/pages/Utils';
 import { ListPagination } from '@/services/general/data';
 import { UnitTable } from '@/services/unitgroups/data';
 import { genUnitTableData } from '@/services/unitgroups/util';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
 import { Card, Form, Input, Select, Space, theme } from 'antd';
-import { FC, useRef } from 'react';
+import { FC, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
+import schema from '../unitgroups_schema.json';
 import UnitCreate from './Unit/create';
 import UnitDelete from './Unit/delete';
 import UnitEdit from './Unit/edit';
 import UnitView from './Unit/view';
 import { complianceOptions } from './optiondata';
+// import UnitGroupSelectFrom from './select/form';
 
 type Props = {
   lang: string;
@@ -25,6 +29,7 @@ type Props = {
   onUnitDataCreate: (data: any) => void;
   onTabChange: (key: string) => void;
   unitDataSource: UnitTable[];
+  formType?: string;
 };
 
 export const UnitGroupForm: FC<Props> = ({
@@ -36,9 +41,11 @@ export const UnitGroupForm: FC<Props> = ({
   onUnitDataCreate,
   onTabChange,
   unitDataSource,
+  formType,
 }) => {
   const { token } = theme.useToken();
   const actionRefUnitTable = useRef<ActionType>();
+  const [showNameError, setShowNameError] = useState(false);
   const tabList = [
     {
       key: 'unitGroupInformation',
@@ -163,9 +170,14 @@ export const UnitGroupForm: FC<Props> = ({
         <Card
           size='small'
           title={
-            <FormattedMessage
-              id='pages.unitgroup.edit.unitGroupInformation.name'
-              defaultMessage='Name of unit group'
+            <RequiredMark
+              showError={showNameError}
+              label={
+                <FormattedMessage
+                  id='pages.unitgroup.edit.unitGroupInformation.name'
+                  defaultMessage='Name of unit group'
+                />
+              }
             />
           }
         >
@@ -177,7 +189,12 @@ export const UnitGroupForm: FC<Props> = ({
                 defaultMessage='Name of unit group'
               />
             }
-            rules={StringMultiLang_r}
+            setRuleErrorState={setShowNameError}
+            rules={getRules(
+              schema['unitGroupDataSet']['unitGroupInformation']['dataSetInformation'][
+                'common:name'
+              ]['rules'] ?? [],
+            )}
           ></LangTextItemForm>
         </Card>
         <br />
@@ -193,7 +210,31 @@ export const UnitGroupForm: FC<Props> = ({
           formRef={formRef}
           dataType={'UnitGroup'}
           onData={onData}
+          rules={getRules(
+            schema['unitGroupDataSet']['unitGroupInformation']['dataSetInformation'][
+              'classificationInformation'
+            ]['common:classification']['common:class']['rules'] ?? [],
+          )}
         />
+        <Card
+          size='small'
+          title={
+            <FormattedMessage
+              id='pages.unitgroup.edit.unitGroupInformation.generalComment'
+              defaultMessage='General comment'
+            />
+          }
+        >
+          <LangTextItemForm
+            name={['unitGroupInformation', 'dataSetInformation', 'common:generalComment']}
+            label={
+              <FormattedMessage
+                id='pages.unitgroup.edit.unitGroupInformation.generalComment'
+                defaultMessage='General comment'
+              />
+            }
+          />
+        </Card>
         <Form.Item
           label='ID'
           name={['unitGroupInformation', 'dataSetInformation', 'common:UUID']}
@@ -206,6 +247,9 @@ export const UnitGroupForm: FC<Props> = ({
     modellingAndValidation: (
       <Space direction='vertical' style={{ width: '100%' }}>
         <SourceSelectForm
+          defaultSourceName={
+            formType === 'create' ? 'ILCD Data Network - compliance (non-Process)' : undefined
+          }
           name={[
             'modellingAndValidation',
             'complianceDeclarations',
@@ -221,7 +265,13 @@ export const UnitGroupForm: FC<Props> = ({
           lang={lang}
           formRef={formRef}
           onData={onData}
+          rules={getRules(
+            schema['unitGroupDataSet']['modellingAndValidation']['complianceDeclarations'][
+              'compliance'
+            ]['common:referenceToComplianceSystem']['rules'] ?? [],
+          )}
         />
+        <br />
         <Form.Item
           label={
             <FormattedMessage
@@ -235,6 +285,11 @@ export const UnitGroupForm: FC<Props> = ({
             'compliance',
             'common:approvalOfOverallCompliance',
           ]}
+          rules={getRules(
+            schema['unitGroupDataSet']['modellingAndValidation']['complianceDeclarations'][
+              'compliance'
+            ]['common:approvalOfOverallCompliance']['rules'] ?? [],
+          )}
         >
           <Select options={complianceOptions} />
         </Form.Item>
@@ -250,10 +305,16 @@ export const UnitGroupForm: FC<Props> = ({
             />
           }
           name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
+          rules={getRules(
+            schema['unitGroupDataSet']['administrativeInformation']['dataEntryBy'][
+              'common:timeStamp'
+            ]['rules'] ?? [],
+          )}
         >
           <Input disabled={true} style={{ color: token.colorTextDescription }} />
         </Form.Item>
         <SourceSelectForm
+          defaultSourceName={formType === 'create' ? 'ILCD format' : undefined}
           name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
           label={
             <FormattedMessage
@@ -264,7 +325,13 @@ export const UnitGroupForm: FC<Props> = ({
           lang={lang}
           formRef={formRef}
           onData={onData}
+          rules={getRules(
+            schema['unitGroupDataSet']['administrativeInformation']['dataEntryBy'][
+              'common:referenceToDataSetFormat'
+            ]['rules'] ?? [],
+          )}
         />
+        <br />
         <Form.Item
           label={
             <FormattedMessage
@@ -273,7 +340,65 @@ export const UnitGroupForm: FC<Props> = ({
             />
           }
           name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
-          rules={dataSetVersion}
+          rules={getRules(
+            schema['unitGroupDataSet']['administrativeInformation']['publicationAndOwnership'][
+              'common:dataSetVersion'
+            ]['rules'] ?? [],
+          )}
+        >
+          <Input />
+        </Form.Item>
+        <ContactSelectForm
+          lang={lang}
+          formRef={formRef}
+          label={
+            <FormattedMessage
+              id='pages.unitgroup.edit.administrativeInformation.referenceToOwnershipOfDataSet'
+              defaultMessage='Owner of data set'
+            />
+          }
+          name={[
+            'administrativeInformation',
+            'publicationAndOwnership',
+            'common:referenceToOwnershipOfDataSet',
+          ]}
+          onData={onData}
+          rules={getRules(
+            schema['unitGroupDataSet']['administrativeInformation']['publicationAndOwnership'][
+              'common:referenceToOwnershipOfDataSet'
+            ]['rules'] ?? [],
+          )}
+        />
+        <br />
+        {/* <UnitGroupSelectFrom
+          name={[
+            'administrativeInformation',
+            'publicationAndOwnership',
+            'common:referenceToPrecedingDataSetVersion',
+          ]}
+          label={
+            <FormattedMessage
+              id='pages.unitgroup.edit.administrativeInformation.referenceToPrecedingDataSetVersion'
+              defaultMessage='Preceding data set version'
+            />
+          }
+          lang={lang}
+          formRef={formRef}
+          onData={onData}
+        />
+        <br /> */}
+        <Form.Item
+          label={
+            <FormattedMessage
+              id='pages.unitgroup.edit.administrativeInformation.permanentDataSetURI'
+              defaultMessage='Permanent data set URI'
+            />
+          }
+          name={[
+            'administrativeInformation',
+            'publicationAndOwnership',
+            'common:permanentDataSetURI',
+          ]}
         >
           <Input />
         </Form.Item>

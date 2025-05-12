@@ -19,6 +19,13 @@ export default [
     hideInMenu: true,
   },
   {
+    path: '/review',
+    name: 'review',
+    component: './Review',
+    icon: 'TeamOutlined',
+    hideInMenu: true,
+  },
+  {
     path: '/tgdata',
     name: 'tgdata',
     icon: 'FolderOpenOutlined',

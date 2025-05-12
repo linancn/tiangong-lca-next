@@ -14,6 +14,7 @@ import pages_manageSystem from './en-US/pages_manageSystem';
 import pages_model from './en-US/pages_model';
 import pages_process from './en-US/pages_process';
 import pages_product from './en-US/pages_product';
+import pages_review from './en-US/pages_review';
 import pages_source from './en-US/pages_source';
 import teams from './en-US/pages_teams';
 import pages_unitgroup from './en-US/pages_unitgroup';
@@ -21,7 +22,6 @@ import pwa from './en-US/pwa';
 import settingDrawer from './en-US/settingDrawer';
 import settings from './en-US/settings';
 import validator from './en-US/validator';
-
 export default {
   'navBar.lang': 'Languages',
   'layout.user.link.help': 'Help',
@@ -53,4 +53,5 @@ export default {
   ...component_contributeData,
   ...component_allVersions,
   ...pages_manageSystem,
+  ...pages_review,
 };

@@ -107,6 +107,13 @@ const UnitGroupCreate: FC<CreateProps> = ({
     }
     const currentDateTime = formatDateTime(new Date());
     const newData = {
+      modellingAndValidation: {
+        complianceDeclarations: {
+          compliance: {
+            'common:approvalOfOverallCompliance': 'Fully compliant',
+          },
+        },
+      },
       administrativeInformation: {
         dataEntryBy: {
           'common:timeStamp': currentDateTime,
@@ -117,8 +124,8 @@ const UnitGroupCreate: FC<CreateProps> = ({
       },
     };
     setInitData(newData);
-    formRefCreate.current?.resetFields();
-    formRefCreate.current?.setFieldsValue(newData);
+    const currentData = formRefCreate.current?.getFieldsValue();
+    formRefCreate.current?.setFieldsValue({ ...currentData, ...newData });
     setFromData(newData);
     setUnitDataSource([]);
   }, [drawerVisible]);
@@ -164,6 +171,7 @@ const UnitGroupCreate: FC<CreateProps> = ({
         )}
       </Tooltip>
       <Drawer
+        destroyOnClose={true}
         getContainer={() => document.body}
         title={
           <FormattedMessage
@@ -227,7 +235,31 @@ const UnitGroupCreate: FC<CreateProps> = ({
             }}
             onFinish={async () => {
               const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
-              const result = await createUnitGroup(paramsId, fromData);
+              const units = fromData.units;
+              if (!units?.unit || !Array.isArray(units.unit) || units.unit.length === 0) {
+                message.error(
+                  intl.formatMessage({
+                    id: 'pages.unitgroups.validator.unit.required',
+                    defaultMessage: 'Please select unit',
+                  }),
+                );
+                return false;
+              } else if (
+                units.unit.filter((item: any) => item?.quantitativeReference).length !== 1
+              ) {
+                message.error(
+                  intl.formatMessage({
+                    id: 'pages.unitgroups.validator.unit.quantitativeReference.required',
+                    defaultMessage: 'Unit needs to have exactly one quantitative reference open',
+                  }),
+                );
+                return false;
+              }
+              const formFieldsValue = {
+                ...formRefCreate.current?.getFieldsValue(),
+                units,
+              };
+              const result = await createUnitGroup(paramsId, formFieldsValue);
               if (result.data) {
                 message.success(
                   intl.formatMessage({
@@ -245,6 +277,7 @@ const UnitGroupCreate: FC<CreateProps> = ({
             }}
           >
             <UnitGroupForm
+              formType={'create'}
               lang={lang}
               activeTabKey={activeTabKey}
               formRef={formRefCreate}

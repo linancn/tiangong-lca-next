@@ -7,7 +7,7 @@ import {
   updateTeamRank,
 } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
-import { DeleteOutlined, SaveOutlined } from '@ant-design/icons';
+import { EyeInvisibleOutlined, SaveOutlined } from '@ant-design/icons';
 import { ActionType, DragSortTable, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Input, message, Modal, Space, theme, Tooltip } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
@@ -20,10 +20,12 @@ import TeamView from './view';
 
 const { Search } = Input;
 
-const TableList: FC<{ systemUserRole?: 'admin' | 'owner' | 'member'; showDragSort: boolean }> = ({
-  systemUserRole,
-  showDragSort = false,
-}) => {
+type TableListProps = {
+  systemUserRole?: 'admin' | 'owner' | 'member';
+  tableType: 'joinTeam' | 'manageSystem';
+};
+
+const TableList: FC<TableListProps> = ({ systemUserRole, tableType }) => {
   const intl = useIntl();
   const lang = getLang(intl.locale);
   const actionRef = useRef<ActionType>();
@@ -120,7 +122,7 @@ const TableList: FC<{ systemUserRole?: 'admin' | 'owner' | 'member'; showDragSor
     },
   ];
 
-  if (showDragSort) {
+  if (tableType === 'manageSystem') {
     // Manage teams on homepage
     teamColumns.push({
       title: <FormattedMessage id='component.allTeams.table.option' defaultMessage='Option' />,
@@ -143,7 +145,7 @@ const TableList: FC<{ systemUserRole?: 'admin' | 'owner' | 'member'; showDragSor
             <Button
               disabled={systemUserRole !== 'admin' && systemUserRole !== 'owner'}
               shape='circle'
-              icon={<DeleteOutlined />}
+              icon={<EyeInvisibleOutlined />}
               size='small'
               onClick={() => handleRemoveTeam(record)}
             />
@@ -226,7 +228,7 @@ const TableList: FC<{ systemUserRole?: 'admin' | 'owner' | 'member'; showDragSor
           enterButton
         />
       </Card>
-      {showDragSort ? (
+      {tableType === 'manageSystem' ? (
         <>
           <DragSortTable<TeamTable, ListPagination>
             rowKey='id'
@@ -247,7 +249,7 @@ const TableList: FC<{ systemUserRole?: 'admin' | 'owner' | 'member'; showDragSor
                 setTableData(result.data || []);
                 return result;
               }
-              const result = await getAllTableTeams(params);
+              const result = await getAllTableTeams(params, tableType);
               setTableData(result.data || []);
               return result;
             }}
@@ -301,7 +303,7 @@ const TableList: FC<{ systemUserRole?: 'admin' | 'owner' | 'member'; showDragSor
         <ProTable<TeamTable, ListPagination>
           rowKey='id'
           headerTitle={
-            <FormattedMessage id='component.allTeams.table.title' defaultMessage='All Teams' />
+            <FormattedMessage id='component.allTeams.table.desc' defaultMessage='All Teams' />
           }
           actionRef={actionRef}
           search={false}
@@ -314,7 +316,7 @@ const TableList: FC<{ systemUserRole?: 'admin' | 'owner' | 'member'; showDragSor
             if (keyWord.length > 0) {
               return getTeamsByKeyword(keyWord);
             }
-            return getAllTableTeams(params);
+            return getAllTableTeams(params, tableType);
           }}
           columns={teamColumns}
         />

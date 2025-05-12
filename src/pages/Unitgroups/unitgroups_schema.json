@@ -3,20 +3,67 @@
     "@xmlns": "str",
     "@xmlns:common": "str",
     "@xmlns:xsi": "str",
-    "@version": "str",
+    "@version": {
+      "vlaue": "str",
+      "rules": [
+        {
+          "required": true,
+          "messageKey": "pages.unitgroup.validator.version.required",
+          "defaultMessage": "Please input version"
+        }
+      ]
+    },
     "@xsi:schemaLocation": "str",
     "unitGroupInformation": {
       "dataSetInformation": {
-        "common:UUID": "str",
+        "common:UUID": {
+          "value": "str",
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.unitgroup.validator.uuid.required",
+              "defaultMessage": "Please input UUID"
+            }
+          ]
+        },
         "common:name": {
-          "@xml:lang": "str",
-          "#text": "str"
+          "value": {
+            "@xml:lang": "str",
+            "#text": "str"
+          },
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.unitgroup.validator.name.required",
+              "defaultMessage": "Please input name of unit group"
+            },
+            {
+              "warningOnly": true,
+              "messageKey": "validator.recommended.empty",
+              "defaultMessage": "Recommended to fill in to enhance data detail and usability!"
+            },
+            {
+              "max": 500,
+              "messageKey": "validator.StringMultiLang.pattern",
+              "defaultMessage": "Length cannot exceed 500 characters!"
+            }
+          ]
         },
         "classificationInformation": {
           "common:classification": {
             "common:class": {
-              "@level": "str",
-              "#text": "str"
+              "value": {
+                "@level": "str",
+                "#text": "str",
+                "@classId": "str"
+              },
+              "rules": [
+                {
+                  "required": true,
+                  "messageKey": "pages.unitgroup.validator.class.required",
+                  "defaultMessage": "Please input classification"
+                }
+              ]
             }
           }
         },
@@ -26,13 +73,67 @@
         }
       },
       "quantitativeReference": {
-        "referenceToReferenceUnit": "str"
+        "referenceToReferenceUnit": {
+          "value": "str",
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.unitgroup.validator.referenceToReferenceUnit.required",
+              "defaultMessage": "Please input reference to reference unit"
+            }
+          ]
+        }
       }
     },
     "modellingAndValidation": {
       "complianceDeclarations": {
         "compliance": {
           "common:referenceToComplianceSystem": {
+            "value": {
+              "@refObjectId": "str",
+              "@type": "str",
+              "@uri": "str",
+              "common:shortDescription": {
+                "@xml:lang": "str",
+                "#text": "str"
+              },
+              "@version": "str"
+            },
+            "rules": [
+              {
+                "required": true,
+                "messageKey": "pages.unitgroup.validator.referenceToComplianceSystem.required",
+                "defaultMessage": "Please input reference to compliance system"
+              }
+            ]
+          },
+          "common:approvalOfOverallCompliance": {
+            "value": "str",
+            "rules": [
+              {
+                "required": true,
+                "messageKey": "pages.unitgroup.validator.approvalOfOverallCompliance.required",
+                "defaultMessage": "Please input approval of overall compliance"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "administrativeInformation": {
+      "dataEntryBy": {
+        "common:timeStamp": {
+          "value": "str",
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.unitgroup.validator.timeStamp.required",
+              "defaultMessage": "Please input time stamp"
+            }
+          ]
+        },
+        "common:referenceToDataSetFormat": {
+          "value": {
             "@refObjectId": "str",
             "@type": "str",
             "@uri": "str",
@@ -42,14 +143,32 @@
             },
             "@version": "str"
           },
-          "common:approvalOfOverallCompliance": "str"
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.unitgroup.validator.referenceToDataSetFormat.required",
+              "defaultMessage": "Please input reference to data set format"
+            }
+          ]
         }
-      }
-    },
-    "administrativeInformation": {
-      "dataEntryBy": {
-        "common:timeStamp": "str",
-        "common:referenceToDataSetFormat": {
+      },
+      "publicationAndOwnership": {
+        "common:dataSetVersion": {
+          "value": "str",
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.unitgroup.validator.dataSetVersion.required",
+              "defaultMessage": "Please input data set version"
+            },
+            {
+              "pattern": "dataSetVersion",
+              "messageKey": "validator.dataSetVersion.pattern",
+              "defaultMessage": "Version format must be XX.XX.XXX, where X is a digit!"
+            }
+          ]
+        },
+        "common:referenceToPrecedingDataSetVersion": {
           "@refObjectId": "str",
           "@type": "str",
           "@uri": "str",
@@ -58,20 +177,27 @@
             "#text": "str"
           },
           "@version": "str"
-        }
-      },
-      "publicationAndOwnership": {
-        "common:dataSetVersion": "str",
-        "common:referenceToPrecedingDataSetVersion": {
-          "@refObjectId": "str",
-          "@type": "str",
-          "@uri": "str",
-          "common:shortDescription": {
-            "@xml:lang": "str",
-            "#text": "str"
-          }
         },
-        "common:permanentDataSetURI": "str"
+        "common:permanentDataSetURI": "str",
+        "common:referenceToOwnershipOfDataSet": {
+          "value": {
+            "@refObjectId": "str",
+            "@type": "str",
+            "@uri": "str",
+            "common:shortDescription": {
+              "@xml:lang": "str",
+              "#text": "str"
+            },
+            "@version": "str"
+          },
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.unitgroup.validator.referenceToOwnershipOfDataSet.required",
+              "defaultMessage": "Please input owner of data set"
+            }
+          ]
+        }
       }
     },
     "units": {

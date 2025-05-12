@@ -11,6 +11,7 @@ export type ProcessTable = {
   modifiedAt: Date;
   teamId: string;
   isFromLifeCycle?: boolean;
+  typeOfDataSet: string;
 };
 
 export type ProcessExchangeTable = {

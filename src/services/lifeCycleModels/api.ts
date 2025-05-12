@@ -76,12 +76,10 @@ export async function createLifeCycleModel(data: any) {
     },
   };
   const newData = genLifeCycleModelJsonOrdered(data.id, data, oldData);
-  const teamId = await getTeamIdByUserId();
+  // const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('lifecyclemodels')
-    .insert([
-      { id: data.id, json_ordered: newData, json_tg: { xflow: data?.model }, team_id: teamId },
-    ])
+    .insert([{ id: data.id, json_ordered: newData, json_tg: { xflow: data?.model } }])
     .select();
   if (result.data && result.data.length === 1) {
     const refNode = data?.model?.nodes.find((i: any) => i?.data?.quantitativeReference === '1');
@@ -378,7 +376,7 @@ export async function getLifeCycleModelTablePgroongaSearch(
 export async function getLifeCycleModelDetail(id: string, version: string) {
   const result = await supabase
     .from('lifecyclemodels')
-    .select('json, json_tg')
+    .select('json, json_tg,state_code')
     .eq('id', id)
     .eq('version', version);
   if (result.data && result.data.length > 0) {
@@ -388,14 +386,29 @@ export async function getLifeCycleModelDetail(id: string, version: string) {
         id: id,
         json: data.json,
         json_tg: data?.json_tg,
+        state_code: data?.state_code,
       },
       success: true,
     });
   }
   return Promise.resolve({
     data: {},
-    success: true,
+    success: false,
   });
+}
+
+export async function updateLifeCycleModelStateCode(
+  id: string,
+  version: string,
+  stateCode: number,
+) {
+  const result = await supabase
+    .from('lifecyclemodels')
+    .update({ state_code: stateCode })
+    .eq('id', id)
+    .eq('version', version)
+    .select('state_code');
+  return result;
 }
 
 export async function getLifeCyclesByIds(ids: string[]) {

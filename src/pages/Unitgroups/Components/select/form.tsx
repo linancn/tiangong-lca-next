@@ -1,6 +1,6 @@
 import RequiredSelectFormTitle from '@/components/RequiredSelectFormTitle';
 import { useUpdateReferenceContext } from '@/contexts/updateReferenceContext';
-import { getLocalValueProps } from '@/pages/Utils';
+import { getLocalValueProps, validateRefObjectId } from '@/pages/Utils';
 import { jsonToList } from '@/services/general/util';
 import { getReferenceUnit, getUnitGroupDetail } from '@/services/unitgroups/api';
 import { genUnitGroupFromData } from '@/services/unitgroups/util';
@@ -10,7 +10,6 @@ import React, { FC, ReactNode, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import UnitgroupsView from '../view';
 import UnitgroupsSelectDrawer from './drawer';
-// import LangTextItemForm from '@/components/LangTextItem/form';
 const { TextArea } = Input;
 
 type Props = {
@@ -54,6 +53,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
       setId(rowId);
       setVersion(result.data?.version);
       onData();
+      validateRefObjectId(formRef, name);
     });
   };
   useEffect(() => {
@@ -71,8 +71,8 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
         formRef.current?.getFieldValue([...name, '@version']),
       ).then((res: any) => {
         formRef.current?.setFieldValue([...name, 'refUnit'], {
-          name: res.data?.refUnitName ?? '',
-          generalComment: res.data?.refUnitGeneralComment ?? [],
+          name: res?.data?.refUnitName ?? '',
+          generalComment: res?.data?.refUnitGeneralComment ?? [],
         });
       });
     }
@@ -149,6 +149,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
               onClick={() => {
                 formRef.current?.setFieldValue([...name], {});
                 onData();
+                validateRefObjectId(formRef, name);
               }}
             >
               <FormattedMessage id='pages.button.clear' defaultMessage='Clear' />

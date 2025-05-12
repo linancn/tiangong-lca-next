@@ -190,7 +190,31 @@ const UnitGroupEdit: FC<Props> = ({
                 },
               }}
               onFinish={async () => {
-                const updateResult = await updateUnitGroup(id, version, fromData);
+                const units = fromData.units;
+                if (!units?.unit || !Array.isArray(units.unit) || units.unit.length === 0) {
+                  message.error(
+                    intl.formatMessage({
+                      id: 'pages.unitgroups.validator.unit.required',
+                      defaultMessage: 'Please select unit',
+                    }),
+                  );
+                  return false;
+                } else if (
+                  units.unit.filter((item: any) => item?.quantitativeReference).length !== 1
+                ) {
+                  message.error(
+                    intl.formatMessage({
+                      id: 'pages.unitgroups.validator.unit.quantitativeReference.required',
+                      defaultMessage: 'Unit needs to have exactly one quantitative reference open',
+                    }),
+                  );
+                  return false;
+                }
+                const formFieldsValue = {
+                  ...formRefEdit.current?.getFieldsValue(),
+                  units,
+                };
+                const updateResult = await updateUnitGroup(id, version, formFieldsValue);
                 if (updateResult?.data) {
                   message.success(
                     intl.formatMessage({

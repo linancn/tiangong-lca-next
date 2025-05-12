@@ -70,8 +70,8 @@ const ContactCreate: FC<CreateProps> = ({
     getContactDetail(id, version).then(async (result) => {
       const contactFromData = genContactFromData(result.data?.json?.contactDataSet ?? {});
       setInitData(contactFromData);
-      const currentData = formRefCreate.current?.getFieldsValue();
-      formRefCreate.current?.setFieldsValue({ ...currentData, ...contactFromData });
+      formRefCreate.current?.resetFields();
+      formRefCreate.current?.setFieldsValue({ ...contactFromData });
       setFromData(contactFromData);
       setSpinning(false);
     });
@@ -203,7 +203,8 @@ const ContactCreate: FC<CreateProps> = ({
             }}
             onFinish={async () => {
               const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
-              const result = await createContact(paramsId, fromData);
+              const formFieldsValue = formRefCreate.current?.getFieldsValue();
+              const result = await createContact(paramsId, formFieldsValue);
               if (result.data) {
                 message.success(
                   intl.formatMessage({

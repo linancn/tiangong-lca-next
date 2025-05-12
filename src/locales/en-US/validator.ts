@@ -16,6 +16,6 @@ export default {
 
   'validator.NullableString.pattern': 'Length cannot exceed 500 characters characters and may be empty!',
 
-  'validator.lang.select': 'Please select a language!',
-  'validator.lang.mustBeEnglish': 'English is a required language!',
+  'validator.lang.select': 'Please select a language',
+  'validator.lang.mustBeEnglish': 'English is a required language',
 };

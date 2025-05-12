@@ -19,6 +19,7 @@ export default {
   'pages.source.view.sourceInformation.sourceDescriptionOrComment': 'Source description or comment',
   'pages.source.view.sourceInformation.referenceToDigitalFile': 'Link to digital file',
   'pages.source.view.sourceInformation.referenceToContact': 'Belongs to:',
+  'pages.source.view.sourceInformation.referenceToLogo': 'Logo of organisation or source',
   'pages.source.view.administrativeInformation': 'Administrative information',
   'pages.source.view.administrativeInformation.dataEntryBy': 'Data entry by',
   'pages.source.view.administrativeInformation.TimeStamp': 'Time stamp (last saved)',
@@ -27,6 +28,7 @@ export default {
   'pages.source.view.administrativeInformation.dataSetVersion': 'Data set version',
   'pages.source.view.administrativeInformation.permanentDataSetURI': 'Permanent data set URI',
   'pages.source.view.administrativeInformation.referenceToOwnershipOfDataSet': 'Owner of data set',
+  'pages.source.view.administrativeInformation.referenceToPrecedingDataSetVersion': 'Preceding data set version',
 
   //source.edit 编辑
   'pages.source.edit.sourceInformation': 'Source information',
@@ -37,12 +39,14 @@ export default {
   'pages.source.edit.sourceInformation.sourceDescriptionOrComment': 'Source description or comment',
   'pages.source.edit.sourceInformation.referenceToDigitalFile': 'Link to digital file',
   'pages.source.edit.sourceInformation.referenceToContact': 'Belongs to:',
+  'pages.source.edit.sourceInformation.referenceToLogo': 'Logo of organisation or source',
   'pages.source.edit.administrativeInformation': 'Administrative information',
   'pages.source.edit.administrativeInformation.dataEntryBy': 'Data entry by',
   'pages.source.edit.administrativeInformation.timeStamp': 'Time stamp',
   'pages.source.edit.administrativeInformation.referenceToDataSetFormat': 'Data set format(s)',
   'pages.source.edit.administrativeInformation.publicationAndOwnership': 'Publication and ownership',
   'pages.source.edit.administrativeInformation.dataSetVersion': 'Data set version',
+  'pages.source.edit.administrativeInformation.referenceToPrecedingDataSetVersion': 'Preceding data set version',
   'pages.source.edit.administrativeInformation.permanentDataSetURI': 'Permanent data set URI',
   'pages.source.edit.administrativeInformation.referenceToOwnershipOfDataSet': 'Owner of data set',
   //source.delete 删除
@@ -75,4 +79,13 @@ export default {
   'pages.source.view.sourceInformation.publicationType.questionnaire': 'Questionnaire',
   'pages.source.view.sourceInformation.publicationType.softwareOrDatabase': 'Software or database',
   'pages.source.view.sourceInformation.publicationType.otherUnpublishedAndGreyLiterature': 'Other unpublished and grey literature',
+
+  'pages.source.validator.version.required': 'Please input version',
+  'pages.source.validator.uuid.required': 'Please input UUID',
+  'pages.source.validator.shortName.required': 'Please input short name of source',
+  'pages.source.validator.class.required': 'Please input classification',
+  'pages.source.validator.timeStamp.required': 'Please input time stamp',
+  'pages.source.validator.referenceToDataSetFormat.required': 'Please input data set format(s)',
+  'pages.source.validator.dataSetVersion.required': 'Please input data set version',
+  'pages.source.validator.referenceToOwnershipOfDataSet.required': 'Please input owner of data set',
 };

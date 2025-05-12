@@ -13,10 +13,10 @@ import { genProcessJsonOrdered, genProcessName } from './util';
 
 export async function createProcess(id: string, data: any) {
   const newData = genProcessJsonOrdered(id, data);
-  const teamId = await getTeamIdByUserId();
+  // const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('processes')
-    .insert([{ id: id, json_ordered: newData, team_id: teamId }])
+    .insert([{ id: id, json_ordered: newData }])
     .select();
   return result;
 }
@@ -29,6 +29,21 @@ export async function updateProcess(id: string, version: string, data: any) {
     .eq('id', id)
     .eq('version', version)
     .select();
+  return updateResult;
+}
+
+export async function updateProcessStateCode(
+  id: string,
+  version: string,
+  reviewId: string,
+  stateCode: number,
+) {
+  const updateResult = await supabase
+    .from('processes')
+    .update({ state_code: stateCode, review_id: reviewId })
+    .eq('id', id)
+    .eq('version', version)
+    .select('state_code');
   return updateResult;
 }
 
@@ -51,6 +66,7 @@ export async function getProcessTableAll(
     json->processDataSet->processInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
     json->processDataSet->processInformation->dataSetInformation->"common:generalComment",
     json->processDataSet->processInformation->time->>"common:referenceYear",
+    json->processDataSet->modellingAndValidation->LCIMethodAndAllocation->typeOfDataSet,
     json->processDataSet->processInformation->geography->locationOfOperationSupplyOrProduction->>"@location",
     version,
     modified_at,
@@ -142,6 +158,7 @@ export async function getProcessTableAll(
               name: genProcessName(i.name ?? {}, lang),
               generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
               classification: classificationToString(classificationZH ?? {}),
+              typeOfDataSet: i.typeOfDataSet ?? '-',
               referenceYear: i['common:referenceYear'] ?? '-',
               location: location ?? '-',
               modifiedAt: new Date(i.modified_at),
@@ -172,6 +189,7 @@ export async function getProcessTableAll(
             name: genProcessName(i.name ?? {}, lang),
             generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
             classification: classificationToString(classifications),
+            typeOfDataSet: i.typeOfDataSet ?? '-',
             referenceYear: i['common:referenceYear'] ?? '-',
             location: location,
             modifiedAt: new Date(i.modified_at),
@@ -523,13 +541,13 @@ export async function getProcessDetail(id: string, version: string) {
     if (version && version.length === 9) {
       result = await supabase
         .from('processes')
-        .select('json,version, modified_at')
+        .select('json,version, modified_at,state_code')
         .eq('id', id)
         .eq('version', version);
     } else {
       result = await supabase
         .from('processes')
-        .select('json,version, modified_at')
+        .select('json,version, modified_at,state_code')
         .eq('id', id)
         .order('version', { ascending: false })
         .range(0, 0);
@@ -542,6 +560,7 @@ export async function getProcessDetail(id: string, version: string) {
           version: data.version,
           json: data.json,
           modifiedAt: data?.modified_at,
+          stateCode: data?.state_code,
         },
         success: true,
       });

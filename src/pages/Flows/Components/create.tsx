@@ -1,8 +1,8 @@
 import { createFlows, getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData } from '@/services/flows/util';
 import { formatDateTime } from '@/services/general/util';
-import { getSourceDetail } from '@/services/sources/api';
-import { genSourceFromData } from '@/services/sources/util';
+// import { getSourceDetail } from '@/services/sources/api';
+// import { genSourceFromData } from '@/services/sources/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, CopyOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -110,68 +110,69 @@ const FlowsCreate: FC<CreateProps> = ({ lang, actionRef, actionType = 'create', 
       return;
     }
 
-    const referenceToComplianceSystemId = '9ba3ac1e-6797-4cc0-afd5-1b8f7bf28c6a';
+    // const referenceToComplianceSystemId = '9ba3ac1e-6797-4cc0-afd5-1b8f7bf28c6a';
     // const referenceToDataSetFormatId = 'a97a0155-0234-4b87-b4ce-a45da52f2a40';
 
-    getSourceDetail(referenceToComplianceSystemId, '').then(async (result1: any) => {
-      const referenceToComplianceSystemData = genSourceFromData(
-        result1.data?.json?.sourceDataSet ?? {},
-      );
-      const referenceToComplianceSystem = {
-        '@refObjectId': referenceToComplianceSystemId,
-        '@type': 'source data set',
-        '@uri': `../sources/${referenceToComplianceSystemId}.xml`,
-        '@version': result1.data?.version,
-        'common:shortDescription':
-          referenceToComplianceSystemData?.sourceInformation?.dataSetInformation?.[
-            'common:shortName'
-          ] ?? [],
-      };
+    // getSourceDetail(referenceToComplianceSystemId, '').then(async (result1: any) => {
+    //   const referenceToComplianceSystemData = genSourceFromData(
+    //     result1.data?.json?.sourceDataSet ?? {},
+    //   );
+    //   const referenceToComplianceSystem = {
+    //     '@refObjectId': referenceToComplianceSystemId,
+    //     '@type': 'source data set',
+    //     '@uri': `../sources/${referenceToComplianceSystemId}.xml`,
+    //     '@version': result1.data?.version,
+    //     'common:shortDescription':
+    //       referenceToComplianceSystemData?.sourceInformation?.dataSetInformation?.[
+    //         'common:shortName'
+    //       ] ?? [],
+    //   };
 
-      // getSourceDetail(referenceToDataSetFormatId, '').then(async (result2: any) => {
-      // const referenceToDataSetFormatData = genSourceFromData(
-      //   result2.data?.json?.sourceDataSet ?? {},
-      // );
-      // const referenceToDataSetFormat = {
-      //   '@refObjectId': referenceToDataSetFormatId,
-      //   '@type': 'source data set',
-      //   '@uri': `../sources/${referenceToDataSetFormatId}.xml`,
-      //   '@version': result2.data?.version,
-      //   'common:shortDescription':
-      //     referenceToDataSetFormatData?.sourceInformation?.dataSetInformation?.[
-      //       'common:shortName'
-      //     ] ?? [],
-      // };
+    // getSourceDetail(referenceToDataSetFormatId, '').then(async (result2: any) => {
+    // const referenceToDataSetFormatData = genSourceFromData(
+    //   result2.data?.json?.sourceDataSet ?? {},
+    // );
+    // const referenceToDataSetFormat = {
+    //   '@refObjectId': referenceToDataSetFormatId,
+    //   '@type': 'source data set',
+    //   '@uri': `../sources/${referenceToDataSetFormatId}.xml`,
+    //   '@version': result2.data?.version,
+    //   'common:shortDescription':
+    //     referenceToDataSetFormatData?.sourceInformation?.dataSetInformation?.[
+    //       'common:shortName'
+    //     ] ?? [],
+    // };
 
-      const currentDateTime = formatDateTime(new Date());
-      const newData = {
-        modellingAndValidation: {
-          complianceDeclarations: {
-            compliance: {
-              'common:referenceToComplianceSystem': referenceToComplianceSystem,
-            },
+    const currentDateTime = formatDateTime(new Date());
+    const newData = {
+      modellingAndValidation: {
+        complianceDeclarations: {
+          compliance: {
+            // 'common:referenceToComplianceSystem': referenceToComplianceSystem,
+            'common:approvalOfOverallCompliance': 'Fully compliant',
           },
         },
-        administrativeInformation: {
-          dataEntryBy: {
-            'common:timeStamp': currentDateTime,
-            // 'common:referenceToDataSetFormat': referenceToDataSetFormat,
-          },
-          publicationAndOwnership: {
-            'common:dataSetVersion': '01.01.000',
-          },
+      },
+      administrativeInformation: {
+        dataEntryBy: {
+          'common:timeStamp': currentDateTime,
+          // 'common:referenceToDataSetFormat': referenceToDataSetFormat,
         },
-      };
+        publicationAndOwnership: {
+          'common:dataSetVersion': '01.01.000',
+        },
+      },
+    };
 
-      setInitData(newData);
+    setInitData(newData);
 
-      setPropertyDataSource([]);
-      // formRefCreate.current?.resetFields();
-      const currentData = formRefCreate.current?.getFieldsValue();
-      formRefCreate.current?.setFieldsValue({ ...currentData, ...newData });
-      setFromData(newData);
-      // });
-    });
+    setPropertyDataSource([]);
+    // formRefCreate.current?.resetFields();
+    const currentData = formRefCreate.current?.getFieldsValue();
+    formRefCreate.current?.setFieldsValue({ ...currentData, ...newData });
+    setFromData(newData);
+    // });
+    // });
   }, [drawerVisible]);
 
   return (
@@ -263,7 +264,37 @@ const FlowsCreate: FC<CreateProps> = ({ lang, actionRef, actionType = 'create', 
             }}
             onFinish={async () => {
               const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
-              const result = await createFlows(paramsId, fromData);
+              const fieldsValue = formRefCreate.current?.getFieldsValue();
+              const flowProperties = fromData?.flowProperties;
+              if (
+                !flowProperties ||
+                !flowProperties?.flowProperty ||
+                flowProperties?.flowProperty?.length === 0
+              ) {
+                message.error(
+                  intl.formatMessage({
+                    id: 'pages.flow.validator.flowProperties.required',
+                    defaultMessage: 'Please select flow properties',
+                  }),
+                );
+                return true;
+              } else if (
+                flowProperties.flowProperty.filter((item: any) => item?.quantitativeReference)
+                  .length !== 1
+              ) {
+                message.error(
+                  intl.formatMessage({
+                    id: 'pages.flow.validator.flowProperties.quantitativeReference.required',
+                    defaultMessage:
+                      'Flow property needs to have exactly one quantitative reference open',
+                  }),
+                );
+                return false;
+              }
+              const result = await createFlows(paramsId, {
+                ...fieldsValue,
+                flowProperties,
+              });
               if (result.data) {
                 message.success(
                   intl.formatMessage({

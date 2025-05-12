@@ -1,4 +1,3 @@
-import { ST_r, StringMultiLang_r, dataSetVersion } from '@/components/Validator/index';
 import { FileType, getBase64, getOriginalFileUrl, isImage } from '@/services/supabase/storage';
 import { Card, Form, Image, Input, Select, Space, Upload, UploadFile } from 'antd';
 import { FC, useState } from 'react';
@@ -6,13 +5,17 @@ import { FC, useState } from 'react';
 import { UploadButton } from '@/components/FileViewer/upload';
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
+import RequiredMark from '@/components/RequiredMark';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
+import { getRules } from '@/pages/Utils';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { theme } from 'antd';
 import { RcFile } from 'antd/es/upload';
 import { FormattedMessage } from 'umi';
+import schema from '../sources_schema.json';
 import { publicationTypeOptions } from './optiondata';
+
 type Props = {
   lang: string;
   activeTabKey: string;
@@ -40,6 +43,7 @@ export const SourceForm: FC<Props> = ({
 }) => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
+  const [showShortNameError, setShowShortNameError] = useState(false);
   const { token } = theme.useToken();
   const handlePreview = async (file: UploadFile) => {
     if (isImage(file)) {
@@ -85,9 +89,14 @@ export const SourceForm: FC<Props> = ({
         <Card
           size='small'
           title={
-            <FormattedMessage
-              id='pages.source.edit.sourceInformation.shortName'
-              defaultMessage='Short name of source'
+            <RequiredMark
+              showError={showShortNameError}
+              label={
+                <FormattedMessage
+                  id='pages.source.edit.sourceInformation.shortName'
+                  defaultMessage='Short name of source'
+                />
+              }
             />
           }
         >
@@ -99,7 +108,12 @@ export const SourceForm: FC<Props> = ({
                 defaultMessage='Short name of source'
               />
             }
-            rules={StringMultiLang_r}
+            setRuleErrorState={setShowShortNameError}
+            rules={getRules(
+              schema['sourceDataSet']['sourceInformation']['dataSetInformation'][
+                'common:shortName'
+              ]['rules'] ?? [],
+            )}
           />
         </Card>
         <br />
@@ -115,6 +129,11 @@ export const SourceForm: FC<Props> = ({
           lang={lang}
           dataType={'Source'}
           onData={onData}
+          rules={getRules(
+            schema['sourceDataSet']['sourceInformation']['dataSetInformation'][
+              'classificationInformation'
+            ]['common:classification']['common:class']['rules'] ?? [],
+          )}
         />
         <Form.Item
           label={
@@ -124,7 +143,11 @@ export const SourceForm: FC<Props> = ({
             />
           }
           name={['sourceInformation', 'dataSetInformation', 'sourceCitation']}
-          rules={ST_r}
+          rules={getRules(
+            schema['sourceDataSet']['sourceInformation']['dataSetInformation']['sourceCitation'][
+              'rules'
+            ] ?? [],
+          )}
         >
           <Input />
         </Form.Item>
@@ -220,6 +243,19 @@ export const SourceForm: FC<Props> = ({
           formRef={formRef}
           onData={onData}
         />
+        <br />
+        <SourceSelectForm
+          label={
+            <FormattedMessage
+              id='pages.source.edit.sourceInformation.referenceToLogo'
+              defaultMessage='Logo of organisation or source'
+            />
+          }
+          name={['sourceInformation', 'dataSetInformation', 'referenceToLogo']}
+          lang={lang}
+          formRef={formRef}
+          onData={onData}
+        />
       </Space>
     ),
     administrativeInformation: (
@@ -241,6 +277,11 @@ export const SourceForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
+            rules={getRules(
+              schema['sourceDataSet']['administrativeInformation']['dataEntryBy'][
+                'common:timeStamp'
+              ]['rules'] ?? [],
+            )}
           >
             <Input disabled={true} style={{ color: token.colorTextDescription }} />
           </Form.Item>
@@ -256,6 +297,11 @@ export const SourceForm: FC<Props> = ({
             lang={lang}
             formRef={formRef}
             onData={onData}
+            rules={getRules(
+              schema['sourceDataSet']['administrativeInformation']['dataEntryBy'][
+                'common:referenceToDataSetFormat'
+              ]['rules'] ?? [],
+            )}
           />
         </Card>
         <br />
@@ -276,7 +322,11 @@ export const SourceForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
-            rules={dataSetVersion}
+            rules={getRules(
+              schema['sourceDataSet']['administrativeInformation']['publicationAndOwnership'][
+                'common:dataSetVersion'
+              ]['rules'] ?? [],
+            )}
           >
             <Input />
           </Form.Item>
@@ -295,8 +345,30 @@ export const SourceForm: FC<Props> = ({
             lang={lang}
             formRef={formRef}
             onData={onData}
+            rules={getRules(
+              schema['sourceDataSet']['administrativeInformation']['publicationAndOwnership'][
+                'common:referenceToOwnershipOfDataSet'
+              ]['rules'] ?? [],
+            )}
           />
           <br />
+          {/* <SourceSelectForm
+            label={
+              <FormattedMessage
+                id='pages.source.edit.administrativeInformation.referenceToPrecedingDataSetVersion'
+                defaultMessage='Preceding data set version'
+              />
+            }
+            name={[
+              'administrativeInformation',
+              'publicationAndOwnership',
+              'common:referenceToPrecedingDataSetVersion',
+            ]}
+            lang={lang}
+            formRef={formRef}
+            onData={onData}
+          />
+          <br /> */}
           <Form.Item
             label={
               <FormattedMessage

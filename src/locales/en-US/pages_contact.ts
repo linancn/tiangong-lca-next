@@ -47,12 +47,11 @@ export default {
   'pages.contact.referenceToLogo': 'Logo of organisation or source',
 
   // rules
-  // rules
-  'pages.contact.validator.shortName.required': 'Short name for contact is required!',
-  'pages.contact.validator.name.required': 'Name of contact is required!',
-  'pages.contact.validator.classification.required': 'Classification is required!',
-  'pages.contact.validator.dataSetVersion.required': 'Data set version is required!',
-  'pages.contact.validator.referenceToOwnershipOfDataSet.required': 'Owner of data set is required!',
-  'pages.contact.validator.timeStamp.required': 'Time stamp is required!',
-  'pages.contact.validator.referenceToDataSetFormat.required': 'Data set format(s) is required!',
+  'pages.contact.validator.shortName.required': 'Please input short name for contact',
+  'pages.contact.validator.name.required': 'Please input name of contact',
+  'pages.contact.validator.classification.required': 'Please input classification',
+  'pages.contact.validator.dataSetVersion.required': 'Please input data set version',
+  'pages.contact.validator.referenceToOwnershipOfDataSet.required': 'Please input owner of data set',
+  'pages.contact.validator.timeStamp.required': 'Please input time stamp',
+  'pages.contact.validator.referenceToDataSetFormat.required': 'Please input  data set format(s)',
 };
