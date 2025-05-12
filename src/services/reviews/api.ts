@@ -27,6 +27,16 @@ export async function updateReviewApi(reviewIds: React.Key[], data: any) {
   return result;
 }
 
+export async function getReviewerIdsApi(reviewIds: React.Key[]) {
+  const { data } = await supabase
+    .from('reviews')
+    .select('reviewer_id')
+    .in('id', reviewIds)
+    .single();
+
+  return data?.reviewer_id ?? [];
+}
+
 export async function getReviewsApi(
   params: { pageSize: number; current: number },
   sort: any,

@@ -1,5 +1,5 @@
 import { addCommentApi } from '@/services/comments/api';
-import { updateReviewApi } from '@/services/reviews/api';
+import { getReviewerIdsApi, updateReviewApi } from '@/services/reviews/api';
 import { getReviewMembersApi } from '@/services/roles/api';
 import { TeamMemberTable } from '@/services/teams/data';
 import styles from '@/style/custom.less';
@@ -7,7 +7,7 @@ import { AuditOutlined, CloseOutlined } from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
 import { Button, Drawer, message, Space, Spin, Tooltip } from 'antd';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 type SelectReviewerProps = {
   reviewIds: React.Key[];
@@ -23,6 +23,15 @@ export default function SelectReviewer({ reviewIds, actionRef }: SelectReviewerP
   const handleRowSelectionChange = (keys: React.Key[]) => {
     setSelectedRowKeys(keys);
   };
+
+  useEffect(() => {
+    if (!drawerVisible) return;
+    const getReviewerIds = async () => {
+      const result = await getReviewerIdsApi(reviewIds);
+      setSelectedRowKeys(result);
+    };
+    getReviewerIds();
+  }, [drawerVisible]);
 
   const columns: ProColumns<TeamMemberTable>[] = [
     {
