@@ -47,7 +47,7 @@ const ToolbarView: FC<Props> = ({
   const [ioPortSelectorDirection, setIoPortSelectorDirection] = useState('');
   const [ioPortSelectorNode, setIoPortSelectorNode] = useState<any>({});
   const [ioPortSelectorDrawerVisible, setIoPortSelectorDrawerVisible] = useState(false);
-  const [approveReviewDisabled, setApproveReviewDisabled] = useState(false);
+  const [approveReviewDisabled, setApproveReviewDisabled] = useState(true);
   const modelData = useGraphStore((state) => state.initData);
   const updateNode = useGraphStore((state) => state.updateNode);
   const intl = useIntl();
@@ -324,6 +324,7 @@ const ToolbarView: FC<Props> = ({
         const { data, error } = await getCommentApi(reviewId, tabType);
 
         if (!error && data && data.length) {
+          const isSaveReview = data && data.every((item: any) => item.state_code === 1);
           const allReviews: any[] = [];
           data.forEach((item: any) => {
             if (item?.json?.modellingAndValidation.validation.review[0]) {
@@ -338,22 +339,23 @@ const ToolbarView: FC<Props> = ({
               );
             }
           });
-          setApproveReviewDisabled(allReviews.length === 0 || allCompliance.length === 0);
+          setApproveReviewDisabled(
+            !isSaveReview || allReviews.length === 0 || allCompliance.length === 0,
+          );
           if (result?.data?.json?.lifeCycleModelDataSet) {
             result.data.json.lifeCycleModelDataSet.modellingAndValidation = {
               ...result.data.json.lifeCycleModelDataSet.modellingAndValidation,
               complianceDeclarations: {
-                compliance: type === 'edit' ? [{}] : allCompliance,
+                compliance: allCompliance.length ? allCompliance : [{}],
               },
               validation: {
-                review:
-                  type === 'edit'
-                    ? [
-                        {
-                          'common:scope': [{}],
-                        },
-                      ]
-                    : allReviews,
+                review: allReviews.length
+                  ? allReviews
+                  : [
+                      {
+                        'common:scope': [{}],
+                      },
+                    ],
               },
             };
           }

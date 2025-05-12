@@ -108,7 +108,7 @@ const ReviewItemView: FC<Props> = ({ data = [] }) => {
                     defaultMessage='Complete review report'
                   />
                 }
-                data={item?.['referenceToCompleteReviewReport']}
+                data={item?.['common:referenceToCompleteReviewReport']}
                 lang={lang}
               />
             </Space>
