@@ -273,10 +273,6 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
     },
   }));
 
-  useEffect(() => {
-    console.log('data', data);
-  }, [data]);
-
   return (
     <>
       <Tooltip

@@ -324,6 +324,7 @@ const ToolbarView: FC<Props> = ({
         const { data, error } = await getCommentApi(reviewId, tabType);
 
         if (!error && data && data.length) {
+          const isSaveReview = data && data.every((item: any) => item.state_code === 1);
           const allReviews: any[] = [];
           data.forEach((item: any) => {
             if (item?.json?.modellingAndValidation.validation.review[0]) {
@@ -338,7 +339,9 @@ const ToolbarView: FC<Props> = ({
               );
             }
           });
-          setApproveReviewDisabled(allReviews.length === 0 || allCompliance.length === 0);
+          setApproveReviewDisabled(
+            !isSaveReview || allReviews.length === 0 || allCompliance.length === 0,
+          );
           if (result?.data?.json?.lifeCycleModelDataSet) {
             result.data.json.lifeCycleModelDataSet.modellingAndValidation = {
               ...result.data.json.lifeCycleModelDataSet.modellingAndValidation,
