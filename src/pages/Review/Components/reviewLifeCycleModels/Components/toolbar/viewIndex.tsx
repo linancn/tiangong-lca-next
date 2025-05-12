@@ -343,17 +343,16 @@ const ToolbarView: FC<Props> = ({
             result.data.json.lifeCycleModelDataSet.modellingAndValidation = {
               ...result.data.json.lifeCycleModelDataSet.modellingAndValidation,
               complianceDeclarations: {
-                compliance: type === 'edit' ? [{}] : allCompliance,
+                compliance: allCompliance.length ? allCompliance : [{}],
               },
               validation: {
-                review:
-                  type === 'edit'
-                    ? [
-                        {
-                          'common:scope': [{}],
-                        },
-                      ]
-                    : allReviews,
+                review: allReviews.length
+                  ? allReviews
+                  : [
+                      {
+                        'common:scope': [{}],
+                      },
+                    ],
               },
             };
           }
