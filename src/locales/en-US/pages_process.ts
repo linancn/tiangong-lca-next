@@ -408,4 +408,6 @@ export default {
   'pages.process.validator.dataDerivationTypeStatus.required': 'Please input data derivation type/status',
   'pages.process.validator.exchanges.required': 'Please select exchanges',
   'pages.process.validator.exchanges.quantitativeReference.required': 'Exchange needs to have exactly one quantitative reference open',
+
+  'pages.process.review.submitSuccess': 'Review submitted successfully',
 };

@@ -256,6 +256,12 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
           lifeCycleModelStateCode,
         );
       });
+      message.success(
+        intl.formatMessage({
+          id: 'pages.process.review.submitSuccess',
+          defaultMessage: 'Review submitted successfully',
+        }),
+      );
       setDrawerVisible(false);
     }
     setSpinning(false);
