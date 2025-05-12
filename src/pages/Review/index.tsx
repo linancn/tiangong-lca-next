@@ -211,7 +211,7 @@ const Review = () => {
     ];
 
     return (
-      <Spin spinning={loading}>
+      <>
         <ProTable<TeamMemberTable, ListPagination>
           loading={membersLoading}
           columns={columns}
@@ -280,7 +280,7 @@ const Review = () => {
             actionRef.current?.reload();
           }}
         />
-      </Spin>
+      </>
     );
   };
 
@@ -342,7 +342,9 @@ const Review = () => {
 
   return (
     <PageContainer title={<FormattedMessage id='pages.review.title' />}>
-      <Tabs activeKey={activeTabKey} onChange={onTabChange} tabPosition='left' items={tabs} />
+      <Spin spinning={loading}>
+        <Tabs activeKey={activeTabKey} onChange={onTabChange} tabPosition='left' items={tabs} />
+      </Spin>
     </PageContainer>
   );
 };
