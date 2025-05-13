@@ -168,9 +168,9 @@ const Welcome: React.FC = () => {
         <Row gutter={16}>
           {teams?.map((team: any, index: React.Key | null | undefined) => {
             const logo = isDarkMode ? team.json?.darkLogo : team.json?.lightLogo;
-            // const logoUrl = logo.startsWith('logo/')
-            //   ? LogoBaseUrl + logo
-            //   : `/images/dataLogo/${logo}`;
+            const logoUrl = logo.startsWith('logo/')
+              ? LogoBaseUrl + logo
+              : `/images/dataLogo/${logo}`;
             return (
               <Col span={8} key={index}>
                 <Card
@@ -183,7 +183,7 @@ const Welcome: React.FC = () => {
                   }}
                   cover={
                     <div className={styles.team_logo_container}>
-                      <img src={`${LogoBaseUrl}${logo}`} className={styles.team_logo} />
+                      <img src={logoUrl} className={styles.team_logo} />
                     </div>
                   }
                   onClick={() => {
