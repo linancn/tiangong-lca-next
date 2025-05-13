@@ -1,7 +1,8 @@
 import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import ProcessExchangeView from '@/pages/Processes/Components/Exchange/view';
-import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
+// import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import { ListPagination } from '@/services/general/data';
+import { getLangText, getUnitData } from '@/services/general/util';
 import { getProcessDetail, getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData, genProcessFromData } from '@/services/processes/util';
@@ -11,6 +12,7 @@ import { Button, Drawer, Space, Tooltip } from 'antd';
 import type { FC, Key } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
+
 type Props = {
   node: any;
   lang: string;
@@ -76,13 +78,23 @@ const IoPortSelector: FC<Props> = ({ node, lang, direction, drawerVisible, onDra
       search: false,
       render: (_, row) => {
         return [
-          <ReferenceUnit
-            key={0}
-            id={row.referenceToFlowDataSetId}
-            version={row.referenceToFlowDataSetVersion}
-            idType={'flow'}
-            lang={lang}
-          />,
+          // <ReferenceUnit
+          //   key={0}
+          //   id={row.referenceToFlowDataSetId}
+          //   version={row.referenceToFlowDataSetVersion}
+          //   idType={'flow'}
+          //   lang={lang}
+          // />,
+          <span key={1}>
+            {getLangText(row.refUnitRes?.name, lang)} (
+            <Tooltip
+              placement='topLeft'
+              title={getLangText(row.refUnitRes?.refUnitGeneralComment, lang)}
+            >
+              {row.refUnitRes?.refUnitName}
+            </Tooltip>
+            )
+          </span>,
         ];
       },
     },
@@ -149,13 +161,13 @@ const IoPortSelector: FC<Props> = ({ node, lang, direction, drawerVisible, onDra
         ...(genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? []),
       ]);
       actionRefSelect.current?.reload();
-      setDataLoading(false);
     });
   }, [drawerVisible]);
 
   return (
     <>
       <Drawer
+        destroyOnClose
         getContainer={() => document.body}
         title={
           <FormattedMessage
@@ -184,7 +196,19 @@ const IoPortSelector: FC<Props> = ({ node, lang, direction, drawerVisible, onDra
               genProcessExchangeTableData(exchangeDataSource, lang),
               direction,
               params,
-            );
+            ).then((res: any) => {
+              return getUnitData('flow', res?.data)
+                .then((unitRes: any) => {
+                  return {
+                    ...res,
+                    data: unitRes,
+                    success: true,
+                  };
+                })
+                .finally(() => {
+                  setDataLoading(false);
+                });
+            });
           }}
           columns={processExchangeColumns}
           tableAlertRender={false}

@@ -769,7 +769,6 @@ const ToolbarEdit: FC<Props> = ({
       });
     } else if (thisAction === 'create') {
       const newId = actionType === 'createVersion' ? thisId : v4();
-      console.log(newData, 'newData');
       createLifeCycleModel({ ...newData, id: newId }).then((result: any) => {
         if (result.data) {
           message.success(
