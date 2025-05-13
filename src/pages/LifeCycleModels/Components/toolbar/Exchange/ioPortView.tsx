@@ -167,7 +167,6 @@ const IoPortSelector: FC<Props> = ({ node, lang, direction, drawerVisible, onDra
   return (
     <>
       <Drawer
-        destroyOnClose
         getContainer={() => document.body}
         title={
           <FormattedMessage
