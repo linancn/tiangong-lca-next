@@ -4,7 +4,7 @@ import { supabaseStorageBucket } from '../supabase/key';
 import path from 'path';
 import { supabase } from '../supabase';
 
-const imageExtensions = ['.jpeg', '.jpg', '.png', '.gif', '.bmp', '.webp'];
+const imageExtensions = ['.jpeg', '.jpg', '.png', '.gif', '.bmp', '.webp', '.svg'];
 
 export type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0];
 
