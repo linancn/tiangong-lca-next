@@ -146,6 +146,7 @@ export default {
   'pages.process.view.administrativeInformation.dateOfLastRevision': 'Date of last revision',
   'pages.process.view.administrativeInformation.dataSetVersion': 'Data set version',
   'pages.process.view.administrativeInformation.permanentDataSetURI': 'Permanent data set URI',
+  'pages.process.view.administrativeInformation.permanentDataSetURI.default': 'Automatically generated',
   'pages.process.view.administrativeInformation.workflowAndPublicationStatus': 'Workflow and publication status',
   'pages.process.view.administrativeInformation.referenceToUnchangedRepublication': 'Unchanged re-publication of:',
   'pages.process.view.administrativeInformation.referenceToRegistrationAuthority': 'Registration authority',

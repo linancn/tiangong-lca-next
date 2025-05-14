@@ -133,6 +133,10 @@ const ProcessCreate: FC<CreateProps> = ({
         },
         publicationAndOwnership: {
           'common:dataSetVersion': '01.01.000',
+          'common:permanentDataSetURI': intl.formatMessage({
+            id: 'pages.process.view.administrativeInformation.permanentDataSetURI.default',
+            defaultMessage: 'Automatically generated',
+          }),
         },
       },
       modellingAndValidation: {

@@ -1654,13 +1654,13 @@ export const ProcessForm: FC<Props> = ({
               'publicationAndOwnership',
               'common:permanentDataSetURI',
             ]}
-            rules={getRules(
-              schema['processDataSet']['administrativeInformation']['publicationAndOwnership'][
-                'common:permanentDataSetURI'
-              ]['rules'],
-            )}
+            // rules={getRules(
+            //   schema['processDataSet']['administrativeInformation']['publicationAndOwnership'][
+            //     'common:permanentDataSetURI'
+            //   ]['rules'],
+            // )}
           >
-            <Input />
+            <Input disabled={true} />
           </Form.Item>
 
           <Form.Item
