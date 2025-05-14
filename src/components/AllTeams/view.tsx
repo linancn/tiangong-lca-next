@@ -1,12 +1,10 @@
+import { getThumbFileUrls } from '@/services/supabase/storage';
 import { getTeamMessageApi } from '@/services/teams/api';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { Button, Card, Descriptions, Drawer, Image, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
-
-const LogoBaseUrl = 'https://qgzvkongdjqiiamzbbts.supabase.co/storage/v1/object/public/sys-files/';
-
 type Props = {
   id: string;
   buttonType: string;
@@ -95,8 +93,8 @@ const TeamView: FC<Props> = ({ id, buttonType }) => {
               }
               labelStyle={{ width: '120px' }}
             >
-              {initData?.json?.lightLogo ? (
-                <Image width={100} src={LogoBaseUrl + initData?.json?.lightLogo} alt='Light Logo' />
+              {initData?.json?.lightLogoPreviewUrl ? (
+                <Image width={100} src={initData?.json?.lightLogoPreviewUrl} alt='Light Logo' />
               ) : (
                 '-'
               )}
@@ -107,8 +105,8 @@ const TeamView: FC<Props> = ({ id, buttonType }) => {
               label={<FormattedMessage id='pages.team.info.darkLogo' defaultMessage='Dark Logo' />}
               labelStyle={{ width: '120px' }}
             >
-              {initData?.json?.darkLogo ? (
-                <Image width={100} src={LogoBaseUrl + initData?.json?.darkLogo} alt='Dark Logo' />
+              {initData?.json?.darkLogoPreviewUrl ? (
+                <Image width={100} src={initData?.json?.darkLogoPreviewUrl} alt='Dark Logo' />
               ) : (
                 '-'
               )}
@@ -124,7 +122,21 @@ const TeamView: FC<Props> = ({ id, buttonType }) => {
     setSpinning(true);
     getTeamMessageApi(id).then(async (result: any) => {
       if (result.data && result.data.length > 0) {
-        setInitData(result.data[0]);
+        const { lightLogo, darkLogo } = result.data[0]?.json;
+        Promise.all([
+          getThumbFileUrls([{ '@uri': `${lightLogo}` }]).then((res) => {
+            if (res[0]?.status === 'done') {
+              result.data[0].json.lightLogoPreviewUrl = res[0]?.thumbUrl;
+            }
+          }),
+          getThumbFileUrls([{ '@uri': `${darkLogo}` }]).then((res) => {
+            if (res[0]?.status === 'done') {
+              result.data[0].json.darkLogoPreviewUrl = res[0]?.thumbUrl;
+            }
+          }),
+        ]).then(() => {
+          setInitData(result.data[0]);
+        });
       }
       setSpinning(false);
     });

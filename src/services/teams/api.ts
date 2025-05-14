@@ -1,6 +1,5 @@
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
-import { v4 } from 'uuid';
 import { addRoleApi, getRoleByuserId, getTeamRoles, getUserIdsByTeamIds } from '../roles/api';
 import { getUserEmailByUserIds, getUserIdByEmail, getUsersByIds } from '../users/api';
 
@@ -251,16 +250,6 @@ export async function addTeamMemberApi(teamId: string, email: string) {
         },
       };
     }
-  }
-}
-
-export async function uploadLogoApi(name: string, file: File) {
-  const res = await supabase.storage.from('sys-files').upload(`logo/${v4()}`, file);
-
-  if (res.error) {
-    throw res.error;
-  } else {
-    return res;
   }
 }
 

@@ -1,3 +1,4 @@
+import { FileType, isImage, removeLogoApi, uploadLogoApi } from '@/services/supabase/storage';
 import { editTeamMessage, getTeamMessageApi } from '@/services/teams/api';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
@@ -28,29 +29,74 @@ const TeamEdit: FC<Props> = ({
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<any>({});
   const [fromData, setFromData] = useState<any>(undefined);
+  const [lightLogo, setLightLogo] = useState<any>(undefined);
+  const [darkLogo, setDarkLogo] = useState<any>(undefined);
+
+  const [beforeLightLogoPath, setBeforeLightLogoPath] = useState<string>('');
+  const [beforeDarkLogoPath, setBeforeDarkLogoPath] = useState<string>('');
   const intl = useIntl();
 
   const onEdit = useCallback(() => {
     setDrawerVisible(true);
   }, [setViewDrawerVisible]);
 
-  const handletFromData = () => {
+  const handletLogoChange = (data: any) => {
     if (fromData) {
-      const formValues = formRefEdit.current?.getFieldsValue() ?? {};
-      setFromData({
-        ...fromData,
-        ...formValues,
-      });
+      setLightLogo(data.lightLogo);
+      setDarkLogo(data.darkLogo);
     }
   };
+  const handleRemoveLogo = async (type: 'lightLogo' | 'darkLogo') => {
+    if (type === 'lightLogo') {
+      setLightLogo([]);
+      await removeLogoApi([beforeLightLogoPath]);
+    } else {
+      setDarkLogo([]);
+      await removeLogoApi([beforeDarkLogoPath]);
+    }
+  };
+  const uploadLogo = async (fileList: FileType[], type: 'lightLogo' | 'darkLogo') => {
+    if (fileList.length > 0) {
+      const file = fileList[0];
+      if (file) {
+        if (!isImage(file)) {
+          message.error(
+            intl.formatMessage({
+              id: 'teams.logo.typeError',
+              defaultMessage: 'Only image files can be uploaded!',
+            }),
+          );
+          if (type === 'lightLogo') {
+            setLightLogo([]);
+          } else {
+            setDarkLogo([]);
+          }
+          return;
+        }
 
+        try {
+          const suffix: string = file.name.split('.').pop() || '';
+          const { data } = await uploadLogoApi(file.name, file, suffix);
+          if (type === 'lightLogo') {
+            setBeforeLightLogoPath(data?.path);
+            return data.path;
+          } else {
+            setBeforeDarkLogoPath(data?.path);
+            return data.path;
+          }
+        } catch (error) {
+          console.log('upload error', error);
+        }
+      }
+    }
+  };
   const onReset = async () => {
     setSpinning(true);
     formRefEdit.current?.resetFields();
     const result = await getTeamMessageApi(id);
     if (result.data && result.data.length > 0) {
       const teamData = result.data[0];
-      setInitData({ ...teamData });
+      setInitData(teamData);
       const formValues = {
         title: teamData.json?.title || [
           { '#text': '', '@xml:lang': 'zh' },
@@ -60,9 +106,6 @@ const TeamEdit: FC<Props> = ({
           { '#text': '', '@xml:lang': 'zh' },
           { '#text': '', '@xml:lang': 'en' },
         ],
-        // rank: teamData.rank,
-        darkLogo: teamData.json?.darkLogo || '',
-        lightLogo: teamData.json?.lightLogo || '',
       };
 
       formRefEdit.current?.setFieldsValue({ ...formValues });
@@ -142,16 +185,22 @@ const TeamEdit: FC<Props> = ({
             onFinish={async () => {
               setSpinning(true);
               const formValues = formRefEdit.current?.getFieldsValue() ?? {};
-              // const rank = formValues.rank ? 0 : -1;
-              const jsonData = {
-                title: formValues.title,
-                description: formValues.description,
-                lightLogo: fromData?.lightLogo || '',
-                darkLogo: fromData?.darkLogo || '',
-              };
-              const updateResult = await editTeamMessage(id, jsonData);
+              if (!lightLogo.length) {
+                handleRemoveLogo('lightLogo');
+                formValues.lightLogo = null;
+              } else {
+                const lightLogoPath = await uploadLogo(lightLogo, 'lightLogo');
+                formValues.lightLogo = lightLogoPath ? `../sys-files/${lightLogoPath}` : null;
+              }
+              if (!darkLogo.length) {
+                handleRemoveLogo('darkLogo');
+                formValues.darkLogo = null;
+              } else {
+                const darkLogoPath = await uploadLogo(darkLogo, 'darkLogo');
+                formValues.darkLogo = darkLogoPath ? `../sys-files/${darkLogoPath}` : null;
+              }
+              const updateResult = await editTeamMessage(id, formValues);
               if (updateResult?.data) {
-                console.log('updateResult', updateResult);
                 message.success(
                   intl.formatMessage({
                     id: 'component.allTeams.form.updateSuccess',
@@ -176,8 +225,7 @@ const TeamEdit: FC<Props> = ({
             <TeamForm
               lightLogoProps={initData?.json?.lightLogo}
               darkLogoProps={initData?.json?.darkLogo}
-              formRef={formRefEdit}
-              onData={handletFromData}
+              onLogoChange={handletLogoChange}
             />
           </ProForm>
           <Collapse

@@ -1,8 +1,8 @@
 import { GetProp, UploadFile, UploadProps } from 'antd';
-import { supabaseStorageBucket } from '../supabase/key';
-
 import path from 'path';
+import { v4 } from 'uuid';
 import { supabase } from '../supabase';
+import { supabaseStorageBucket } from '../supabase/key';
 
 const imageExtensions = ['.jpeg', '.jpg', '.png', '.gif', '.bmp', '.webp', '.svg'];
 
@@ -83,6 +83,34 @@ export async function getThumbFileUrls(fileList: any) {
             return { uid: file, status: 'error', name: `${index + 1}${path.extname(file)}` };
           }
         }
+        if (filePaths.length === 4) {
+          try {
+            let thumbFileUrl = '.';
+            if (imageExtensions.includes(path.extname(file))) {
+              const bucketName = filePaths[1];
+              const filePath = `${filePaths[2]}/${filePaths[3]}`;
+              const thumbFile = await supabase.storage.from(bucketName).download(filePath, {
+                transform: {
+                  width: 100,
+                  height: 100,
+                  resize: 'contain',
+                },
+              });
+              if (thumbFile.data) {
+                thumbFileUrl = URL.createObjectURL(thumbFile.data);
+              }
+            }
+            return {
+              uid: file,
+              status: 'done',
+              name: `${index + 1}${path.extname(file)}`,
+              thumbUrl: thumbFileUrl,
+              url: thumbFileUrl,
+            };
+          } catch (e) {
+            return { uid: file, status: 'error', name: `${index + 1}${path.extname(file)}` };
+          }
+        }
       }
       return { uid: file, status: 'error', name: `${index + 1}${path.extname(file)}` };
     }),
@@ -98,4 +126,27 @@ export async function uploadFile(name: string, file: any) {
 export async function removeFile(files: string[]) {
   const result = await supabase.storage.from(supabaseStorageBucket).remove(files);
   return result;
+}
+
+export async function uploadLogoApi(name: string, file: File, suffix: string) {
+  const res = await supabase.storage.from('sys-files').upload(`logo/${v4()}.${suffix}`, file);
+  if (res.error) {
+    throw res.error;
+  } else {
+    return res;
+  }
+}
+
+export async function removeLogoApi(files: string[]) {
+  const formattedFiles = files.map((file) => {
+    let formattedPath = file.replace('../sys-files/', '');
+    formattedPath = formattedPath.replace(/^\/+/, '');
+    return formattedPath;
+  });
+  const res = await supabase.storage.from('sys-files').remove(formattedFiles);
+  if (res.error) {
+    throw res.error;
+  } else {
+    return res;
+  }
 }
