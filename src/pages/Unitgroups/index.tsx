@@ -1,5 +1,6 @@
 import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
+import ExportData from '@/components/ExportData';
 import { contributeSource } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
 import { getDataSource, getLang, getLangText } from '@/services/general/util';
@@ -181,6 +182,7 @@ const TableList: FC = () => {
                 }}
                 disabled={!!row.teamId}
               />
+              <ExportData tableName='unitgroups' id={row.id} version={row.version} />
             </Space>,
           ];
         }
@@ -200,6 +202,7 @@ const TableList: FC = () => {
               lang={lang}
               actionRef={actionRef}
             ></UnitGroupCreate>
+            <ExportData tableName='unitgroups' id={row.id} version={row.version} />
           </Space>,
         ];
       },

@@ -15,6 +15,17 @@ import {
   getILCDLocationByValues,
 } from '../ilcd/api';
 import { genProcessName } from '../processes/util';
+
+export async function exportDataApi(tableName: string, id: string, version: string) {
+  const result = await supabase
+    .from(tableName)
+    .select('json_ordered')
+    .eq('id', id)
+    .eq('version', version)
+    .throwOnError();
+  return result;
+}
+
 export async function getDataDetail(id: string, version: string, table: string) {
   let result: any = {};
   if (id && id.length === 36) {
