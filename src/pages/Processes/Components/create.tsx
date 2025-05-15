@@ -290,27 +290,27 @@ const ProcessCreate: FC<CreateProps> = ({
               // }
 
               const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
-              const exchanges = fromData?.exchanges;
-              if (!exchanges || !exchanges?.exchange || exchanges?.exchange?.length === 0) {
-                message.error(
-                  intl.formatMessage({
-                    id: 'pages.process.validator.exchanges.required',
-                    defaultMessage: 'Please select exchanges',
-                  }),
-                );
-                return false;
-              } else if (
-                exchanges?.exchange.filter((item: any) => item?.quantitativeReference).length !== 1
-              ) {
-                message.error(
-                  intl.formatMessage({
-                    id: 'pages.process.validator.exchanges.quantitativeReference.required',
-                    defaultMessage:
-                      'Exchange needs to have exactly one quantitative reference open',
-                  }),
-                );
-                return false;
-              }
+              // const exchanges = fromData?.exchanges;
+              // if (!exchanges || !exchanges?.exchange || exchanges?.exchange?.length === 0) {
+              //   message.error(
+              //     intl.formatMessage({
+              //       id: 'pages.process.validator.exchanges.required',
+              //       defaultMessage: 'Please select exchanges',
+              //     }),
+              //   );
+              //   return false;
+              // } else if (
+              //   exchanges?.exchange.filter((item: any) => item?.quantitativeReference).length !== 1
+              // ) {
+              //   message.error(
+              //     intl.formatMessage({
+              //       id: 'pages.process.validator.exchanges.quantitativeReference.required',
+              //       defaultMessage:
+              //         'Exchange needs to have exactly one quantitative reference open',
+              //     }),
+              //   );
+              //   return false;
+              // }
 
               const result = await createProcess(paramsId, {
                 ...fromData,
