@@ -932,24 +932,24 @@ const ToolbarEdit: FC<Props> = ({
       const newData = {
         modellingAndValidation: {
           complianceDeclarations: {
-            compliance: [
-              {
-                'common:approvalOfOverallCompliance': 'Fully compliant',
-                'common:nomenclatureCompliance': 'Fully compliant',
-                'common:methodologicalCompliance': 'Fully compliant',
-                'common:reviewCompliance': 'Fully compliant',
-                'common:documentationCompliance': 'Fully compliant',
-                'common:qualityCompliance': 'Fully compliant',
-              },
-            ],
+            // compliance: [
+            //   {
+            //     'common:approvalOfOverallCompliance': 'Fully compliant',
+            //     'common:nomenclatureCompliance': 'Fully compliant',
+            //     'common:methodologicalCompliance': 'Fully compliant',
+            //     'common:reviewCompliance': 'Fully compliant',
+            //     'common:documentationCompliance': 'Fully compliant',
+            //     'common:qualityCompliance': 'Fully compliant',
+            //   },
+            // ],
           },
-          validation: {
-            review: [
-              {
-                'common:scope': [{}],
-              },
-            ],
-          },
+          // validation: {
+          //   review: [
+          //     {
+          //       'common:scope': [{}],
+          //     },
+          //   ],
+          // },
         },
         administrativeInformation: {
           dataEntryBy: {
