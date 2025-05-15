@@ -4,7 +4,7 @@ import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import RequiredMark from '@/components/RequiredMark';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
-// import { getRules } from '@/pages/Utils';
+import { getRules } from '@/pages/Utils';
 import { ListPagination } from '@/services/general/data';
 import { UnitTable } from '@/services/unitgroups/data';
 import { genUnitTableData } from '@/services/unitgroups/util';
@@ -12,7 +12,7 @@ import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/p
 import { Card, Form, Input, Select, Space, theme } from 'antd';
 import { FC, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-// import schema from '../unitgroups_schema.json';
+import schema from '../unitgroups_schema.json';
 import UnitCreate from './Unit/create';
 import UnitDelete from './Unit/delete';
 import UnitEdit from './Unit/edit';
@@ -340,11 +340,11 @@ export const UnitGroupForm: FC<Props> = ({
             />
           }
           name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
-          // rules={getRules(
-          //   schema['unitGroupDataSet']['administrativeInformation']['publicationAndOwnership'][
-          //     'common:dataSetVersion'
-          //   ]['rules'] ?? [],
-          // )}
+          rules={getRules(
+            schema['unitGroupDataSet']['administrativeInformation']['publicationAndOwnership'][
+              'common:dataSetVersion'
+            ]['rules'] ?? [],
+          )}
         >
           <Input />
         </Form.Item>

@@ -6,7 +6,7 @@ import SourceSelectForm from '@/pages/Sources/Components/select/form';
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import RequiredMark from '@/components/RequiredMark';
-// import { getRules } from '@/pages/Utils';
+import { getRules } from '@/pages/Utils';
 import { ListPagination } from '@/services/general/data';
 import { getLangText, getUnitData } from '@/services/general/util';
 import { getProcessExchange } from '@/services/processes/api';
@@ -16,7 +16,7 @@ import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/p
 import { Card, Collapse, Divider, Form, Input, Select, Space, theme, Tooltip } from 'antd';
 import { useEffect, useRef, useState, type FC } from 'react';
 import { FormattedMessage } from 'umi';
-// import schema from '../processes_schema.json';
+import schema from '../processes_schema.json';
 import ComplianceItemForm from './Compliance/form';
 import ProcessExchangeCreate from './Exchange/create';
 import ProcessExchangeDelete from './Exchange/delete';
@@ -1633,11 +1633,11 @@ export const ProcessForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
-            // rules={getRules(
-            //   schema['processDataSet']['administrativeInformation']['publicationAndOwnership'][
-            //     'common:dataSetVersion'
-            //   ]['rules'],
-            // )}
+            rules={getRules(
+              schema['processDataSet']['administrativeInformation']['publicationAndOwnership'][
+                'common:dataSetVersion'
+              ]['rules'],
+            )}
           >
             <Input />
           </Form.Item>

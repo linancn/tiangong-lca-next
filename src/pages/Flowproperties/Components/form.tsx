@@ -9,9 +9,9 @@ import RequiredMark from '@/components/RequiredMark';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import UnitGroupSelectFrom from '@/pages/Unitgroups/Components/select/form';
-// import { getRules } from '@/pages/Utils';
+import { getRules } from '@/pages/Utils';
 import { ProFormInstance } from '@ant-design/pro-components';
-// import schema from '../flowproperties_schema.json';
+import schema from '../flowproperties_schema.json';
 import { complianceOptions } from './optiondata';
 // import FlowpropertiesSelectForm from './select/form';
 
@@ -322,11 +322,11 @@ export const FlowpropertyForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
-            // rules={getRules(
-            //   schema['flowPropertyDataSet']['administrativeInformation']['publicationAndOwnership'][
-            //     'common:dataSetVersion'
-            //   ]['rules'],
-            // )}
+            rules={getRules(
+              schema['flowPropertyDataSet']['administrativeInformation']['publicationAndOwnership'][
+                'common:dataSetVersion'
+              ]['rules'],
+            )}
           >
             <Input />
           </Form.Item>

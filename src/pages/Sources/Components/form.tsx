@@ -8,12 +8,12 @@ import LevelTextItemForm from '@/components/LevelTextItem/form';
 import RequiredMark from '@/components/RequiredMark';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
-// import { getRules } from '@/pages/Utils';
+import { getRules } from '@/pages/Utils';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { theme } from 'antd';
 import { RcFile } from 'antd/es/upload';
 import { FormattedMessage } from 'umi';
-// import schema from '../sources_schema.json';
+import schema from '../sources_schema.json';
 import { publicationTypeOptions } from './optiondata';
 
 type Props = {
@@ -322,11 +322,11 @@ export const SourceForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
-            // rules={getRules(
-            //   schema['sourceDataSet']['administrativeInformation']['publicationAndOwnership'][
-            //     'common:dataSetVersion'
-            //   ]['rules'] ?? [],
-            // )}
+            rules={getRules(
+              schema['sourceDataSet']['administrativeInformation']['publicationAndOwnership'][
+                'common:dataSetVersion'
+              ]['rules'] ?? [],
+            )}
           >
             <Input />
           </Form.Item>

@@ -8,13 +8,13 @@ import { copyrightOptions } from '@/pages/Processes/Components/optiondata';
 import ReveiwItemForm from '@/pages/Processes/Components/Review/form';
 // import processSchema from '@/pages/Processes/processes_schema.json';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
-// import { getRules } from '@/pages/Utils';
+import { getRules } from '@/pages/Utils';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Card, Divider, Form, Input, Select, Space, theme } from 'antd';
 import type { FC } from 'react';
 import React, { useState } from 'react';
 import { FormattedMessage } from 'umi';
-// import schema from '../lifecyclemodels.json';
+import schema from '../lifecyclemodels.json';
 import {
   LCIMethodApproachOptions,
   LCIMethodPrincipleOptions,
@@ -1536,11 +1536,11 @@ export const LifeCycleModelForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
-            // rules={getRules(
-            //   schema['lifeCycleModelDataSet']['administrativeInformation'][
-            //     'publicationAndOwnership'
-            //   ]['common:dataSetVersion']['rules'],
-            // )}
+            rules={getRules(
+              schema['lifeCycleModelDataSet']['administrativeInformation'][
+                'publicationAndOwnership'
+              ]['common:dataSetVersion']['rules'],
+            )}
           >
             <Input />
           </Form.Item>

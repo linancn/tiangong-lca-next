@@ -2,9 +2,9 @@ import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
 import RequiredMark from '@/components/RequiredMark';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
-// import schema from '@/pages/Contacts/contacts_schema.json';
+import schema from '@/pages/Contacts/contacts_schema.json';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
-// import { getRules } from '@/pages/Utils';
+import { getRules } from '@/pages/Utils';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Card, Form, Input, Space, theme } from 'antd';
 import { FC, useState } from 'react';
@@ -341,11 +341,11 @@ export const ContactForm: FC<Props> = ({
                 'publicationAndOwnership',
                 'common:dataSetVersion',
               ]}
-              // rules={getRules(
-              //   schema['contactDataSet']['administrativeInformation']['publicationAndOwnership'][
-              //     'common:dataSetVersion'
-              //   ]['rules'] ?? [],
-              // )}
+              rules={getRules(
+                schema['contactDataSet']['administrativeInformation']['publicationAndOwnership'][
+                  'common:dataSetVersion'
+                ]['rules'] ?? [],
+              )}
             >
               <Input />
             </Form.Item>

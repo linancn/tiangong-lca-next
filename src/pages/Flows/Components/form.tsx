@@ -6,7 +6,7 @@ import SourceSelectForm from '@/pages/Sources/Components/select/form';
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import RequiredMark from '@/components/RequiredMark';
-// import { getRules } from '@/pages/Utils';
+import { getRules } from '@/pages/Utils';
 import { FlowpropertyTabTable } from '@/services/flows/data';
 import { genFlowPropertyTabTableData } from '@/services/flows/util';
 import { ListPagination } from '@/services/general/data';
@@ -16,7 +16,7 @@ import { Card, Divider, Form, Input, Select, Space, theme, Tooltip } from 'antd'
 import type { FC } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-// import schema from '../flows_schema.json';
+import schema from '../flows_schema.json';
 import { complianceOptions, myFlowTypeOptions } from './optiondata';
 import PropertyCreate from './Property/create';
 import PropertyDelete from './Property/delete';
@@ -743,11 +743,11 @@ export const FlowForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
-            // rules={getRules(
-            //   schema['flowDataSet']['administrativeInformation']['publicationAndOwnership'][
-            //     'common:dataSetVersion'
-            //   ]['rules'],
-            // )}
+            rules={getRules(
+              schema['flowDataSet']['administrativeInformation']['publicationAndOwnership'][
+                'common:dataSetVersion'
+              ]['rules'],
+            )}
           >
             <Input />
           </Form.Item>
