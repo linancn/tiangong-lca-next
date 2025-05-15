@@ -8,12 +8,12 @@ import LevelTextItemForm from '@/components/LevelTextItem/form';
 import RequiredMark from '@/components/RequiredMark';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
-import { getRules } from '@/pages/Utils';
+// import { getRules } from '@/pages/Utils';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { theme } from 'antd';
 import { RcFile } from 'antd/es/upload';
 import { FormattedMessage } from 'umi';
-import schema from '../sources_schema.json';
+// import schema from '../sources_schema.json';
 import { publicationTypeOptions } from './optiondata';
 
 type Props = {
@@ -109,11 +109,11 @@ export const SourceForm: FC<Props> = ({
               />
             }
             setRuleErrorState={setShowShortNameError}
-            rules={getRules(
-              schema['sourceDataSet']['sourceInformation']['dataSetInformation'][
-                'common:shortName'
-              ]['rules'] ?? [],
-            )}
+            // rules={getRules(
+            //   schema['sourceDataSet']['sourceInformation']['dataSetInformation'][
+            //     'common:shortName'
+            //   ]['rules'] ?? [],
+            // )}
           />
         </Card>
         <br />
@@ -129,11 +129,11 @@ export const SourceForm: FC<Props> = ({
           lang={lang}
           dataType={'Source'}
           onData={onData}
-          rules={getRules(
-            schema['sourceDataSet']['sourceInformation']['dataSetInformation'][
-              'classificationInformation'
-            ]['common:classification']['common:class']['rules'] ?? [],
-          )}
+          // rules={getRules(
+          //   schema['sourceDataSet']['sourceInformation']['dataSetInformation'][
+          //     'classificationInformation'
+          //   ]['common:classification']['common:class']['rules'] ?? [],
+          // )}
         />
         <Form.Item
           label={
@@ -143,11 +143,11 @@ export const SourceForm: FC<Props> = ({
             />
           }
           name={['sourceInformation', 'dataSetInformation', 'sourceCitation']}
-          rules={getRules(
-            schema['sourceDataSet']['sourceInformation']['dataSetInformation']['sourceCitation'][
-              'rules'
-            ] ?? [],
-          )}
+          // rules={getRules(
+          //   schema['sourceDataSet']['sourceInformation']['dataSetInformation']['sourceCitation'][
+          //     'rules'
+          //   ] ?? [],
+          // )}
         >
           <Input />
         </Form.Item>
@@ -277,11 +277,11 @@ export const SourceForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
-            rules={getRules(
-              schema['sourceDataSet']['administrativeInformation']['dataEntryBy'][
-                'common:timeStamp'
-              ]['rules'] ?? [],
-            )}
+            // rules={getRules(
+            //   schema['sourceDataSet']['administrativeInformation']['dataEntryBy'][
+            //     'common:timeStamp'
+            //   ]['rules'] ?? [],
+            // )}
           >
             <Input disabled={true} style={{ color: token.colorTextDescription }} />
           </Form.Item>
@@ -297,11 +297,11 @@ export const SourceForm: FC<Props> = ({
             lang={lang}
             formRef={formRef}
             onData={onData}
-            rules={getRules(
-              schema['sourceDataSet']['administrativeInformation']['dataEntryBy'][
-                'common:referenceToDataSetFormat'
-              ]['rules'] ?? [],
-            )}
+            // rules={getRules(
+            //   schema['sourceDataSet']['administrativeInformation']['dataEntryBy'][
+            //     'common:referenceToDataSetFormat'
+            //   ]['rules'] ?? [],
+            // )}
           />
         </Card>
         <br />
@@ -322,11 +322,11 @@ export const SourceForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
-            rules={getRules(
-              schema['sourceDataSet']['administrativeInformation']['publicationAndOwnership'][
-                'common:dataSetVersion'
-              ]['rules'] ?? [],
-            )}
+            // rules={getRules(
+            //   schema['sourceDataSet']['administrativeInformation']['publicationAndOwnership'][
+            //     'common:dataSetVersion'
+            //   ]['rules'] ?? [],
+            // )}
           >
             <Input />
           </Form.Item>
@@ -345,11 +345,11 @@ export const SourceForm: FC<Props> = ({
             lang={lang}
             formRef={formRef}
             onData={onData}
-            rules={getRules(
-              schema['sourceDataSet']['administrativeInformation']['publicationAndOwnership'][
-                'common:referenceToOwnershipOfDataSet'
-              ]['rules'] ?? [],
-            )}
+            // rules={getRules(
+            //   schema['sourceDataSet']['administrativeInformation']['publicationAndOwnership'][
+            //     'common:referenceToOwnershipOfDataSet'
+            //   ]['rules'] ?? [],
+            // )}
           />
           <br />
           {/* <SourceSelectForm

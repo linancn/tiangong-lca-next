@@ -6,7 +6,7 @@ import SourceSelectForm from '@/pages/Sources/Components/select/form';
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import RequiredMark from '@/components/RequiredMark';
-import { getRules } from '@/pages/Utils';
+// import { getRules } from '@/pages/Utils';
 import { ListPagination } from '@/services/general/data';
 import { getLangText, getUnitData } from '@/services/general/util';
 import { getProcessExchange } from '@/services/processes/api';
@@ -16,7 +16,7 @@ import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/p
 import { Card, Collapse, Divider, Form, Input, Select, Space, theme, Tooltip } from 'antd';
 import { useEffect, useRef, useState, type FC } from 'react';
 import { FormattedMessage } from 'umi';
-import schema from '../processes_schema.json';
+// import schema from '../processes_schema.json';
 import ComplianceItemForm from './Compliance/form';
 import ProcessExchangeCreate from './Exchange/create';
 import ProcessExchangeDelete from './Exchange/delete';
@@ -302,11 +302,11 @@ export const ProcessForm: FC<Props> = ({
                 />
               }
               setRuleErrorState={setBaseNameError}
-              rules={getRules(
-                schema['processDataSet']['processInformation']['dataSetInformation']['name'][
-                  'baseName'
-                ]['rules'],
-              )}
+              // rules={getRules(
+              //   schema['processDataSet']['processInformation']['dataSetInformation']['name'][
+              //     'baseName'
+              //   ]['rules'],
+              // )}
             />
           </Card>
           <br />
@@ -338,11 +338,11 @@ export const ProcessForm: FC<Props> = ({
                 />
               }
               setRuleErrorState={setTreatmentStandardsRoutesError}
-              rules={getRules(
-                schema['processDataSet']['processInformation']['dataSetInformation']['name'][
-                  'treatmentStandardsRoutes'
-                ]['rules'],
-              )}
+              // rules={getRules(
+              //   schema['processDataSet']['processInformation']['dataSetInformation']['name'][
+              //     'treatmentStandardsRoutes'
+              //   ]['rules'],
+              // )}
             />
           </Card>
           <br />
@@ -369,11 +369,11 @@ export const ProcessForm: FC<Props> = ({
                 />
               }
               setRuleErrorState={setMixAndLocationTypesError}
-              rules={getRules(
-                schema['processDataSet']['processInformation']['dataSetInformation']['name'][
-                  'mixAndLocationTypes'
-                ]['rules'],
-              )}
+              // rules={getRules(
+              //   schema['processDataSet']['processInformation']['dataSetInformation']['name'][
+              //     'mixAndLocationTypes'
+              //   ]['rules'],
+              // )}
             />
           </Card>
           <br />
@@ -446,11 +446,11 @@ export const ProcessForm: FC<Props> = ({
           lang={lang}
           dataType={'Process'}
           onData={onData}
-          rules={getRules(
-            schema['processDataSet']['processInformation']['dataSetInformation'][
-              'classificationInformation'
-            ]['common:classification']['common:class']['rules'],
-          )}
+          // rules={getRules(
+          //   schema['processDataSet']['processInformation']['dataSetInformation'][
+          //     'classificationInformation'
+          //   ]['common:classification']['common:class']['rules'],
+          // )}
         />
 
         <Card
@@ -476,11 +476,11 @@ export const ProcessForm: FC<Props> = ({
               />
             }
             setRuleErrorState={setGeneralCommentError}
-            rules={getRules(
-              schema['processDataSet']['processInformation']['dataSetInformation'][
-                'common:generalComment'
-              ]['rules'],
-            )}
+            // rules={getRules(
+            //   schema['processDataSet']['processInformation']['dataSetInformation'][
+            //     'common:generalComment'
+            //   ]['rules'],
+            // )}
           />
         </Card>
 
@@ -514,11 +514,11 @@ export const ProcessForm: FC<Props> = ({
               />
             }
             name={['processInformation', 'time', 'common:referenceYear']}
-            rules={getRules(
-              schema['processDataSet']['processInformation']['time']['common:referenceYear'][
-                'rules'
-              ],
-            )}
+            // rules={getRules(
+            //   schema['processDataSet']['processInformation']['time']['common:referenceYear'][
+            //     'rules'
+            //   ],
+            // )}
           >
             <Input />
           </Form.Item>
@@ -530,11 +530,11 @@ export const ProcessForm: FC<Props> = ({
               />
             }
             name={['processInformation', 'time', 'common:dataSetValidUntil']}
-            rules={getRules(
-              schema['processDataSet']['processInformation']['time']['common:dataSetValidUntil'][
-                'rules'
-              ],
-            )}
+            // rules={getRules(
+            //   schema['processDataSet']['processInformation']['time']['common:dataSetValidUntil'][
+            //     'rules'
+            //   ],
+            // )}
           >
             <Input />
           </Form.Item>
@@ -579,11 +579,11 @@ export const ProcessForm: FC<Props> = ({
             ]}
             lang={lang}
             onData={onData}
-            rules={getRules(
-              schema['processDataSet']['processInformation']['geography'][
-                'locationOfOperationSupplyOrProduction'
-              ]['@location']['rules'],
-            )}
+            // rules={getRules(
+            //   schema['processDataSet']['processInformation']['geography'][
+            //     'locationOfOperationSupplyOrProduction'
+            //   ]['@location']['rules'],
+            // )}
           />
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
@@ -682,11 +682,11 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='Technology description including background system'
               />
             }
-            rules={getRules(
-              schema['processDataSet']['processInformation']['technology'][
-                'technologyDescriptionAndIncludedProcesses'
-              ]['rules'],
-            )}
+            // rules={getRules(
+            //   schema['processDataSet']['processInformation']['technology'][
+            //     'technologyDescriptionAndIncludedProcesses'
+            //   ]['rules'],
+            // )}
             setRuleErrorState={setTechnologyDescriptionAndIncludedProcessesError}
           />
           <Divider orientationMargin='0' orientation='left' plain>
@@ -901,11 +901,11 @@ export const ProcessForm: FC<Props> = ({
               />
             }
             name={['modellingAndValidation', 'LCIMethodAndAllocation', 'typeOfDataSet']}
-            rules={getRules(
-              schema['processDataSet']['modellingAndValidation']['LCIMethodAndAllocation'][
-                'typeOfDataSet'
-              ]['rules'],
-            )}
+            // rules={getRules(
+            //   schema['processDataSet']['modellingAndValidation']['LCIMethodAndAllocation'][
+            //     'typeOfDataSet'
+            //   ]['rules'],
+            // )}
           >
             <Select options={processtypeOfDataSetOptions} />
           </Form.Item>
@@ -1053,11 +1053,11 @@ export const ProcessForm: FC<Props> = ({
                 defaultMessage='Data cut-off and completeness principles'
               />
             }
-            rules={getRules(
-              schema['processDataSet']['modellingAndValidation'][
-                'dataSourcesTreatmentAndRepresentativeness'
-              ]['dataCutOffAndCompletenessPrinciples']['rules'],
-            )}
+            // rules={getRules(
+            //   schema['processDataSet']['modellingAndValidation'][
+            //     'dataSourcesTreatmentAndRepresentativeness'
+            //   ]['dataCutOffAndCompletenessPrinciples']['rules'],
+            // )}
             setRuleErrorState={setDataCutOffAndCompletenessPrinciplesError}
           />
           <Divider orientationMargin='0' orientation='left' plain>
@@ -1187,11 +1187,11 @@ export const ProcessForm: FC<Props> = ({
             lang={lang}
             formRef={formRef}
             onData={onData}
-            rules={getRules(
-              schema['processDataSet']['modellingAndValidation'][
-                'dataSourcesTreatmentAndRepresentativeness'
-              ]['referenceToDataSource']['rules'],
-            )}
+            // rules={getRules(
+            //   schema['processDataSet']['modellingAndValidation'][
+            //     'dataSourcesTreatmentAndRepresentativeness'
+            //   ]['referenceToDataSource']['rules'],
+            // )}
           />
           <br />
           <Form.Item
@@ -1421,11 +1421,11 @@ export const ProcessForm: FC<Props> = ({
           lang={lang}
           formRef={formRef}
           onData={onData}
-          rules={getRules(
-            schema['processDataSet']['administrativeInformation']['common:commissionerAndGoal'][
-              'common:referenceToCommissioner'
-            ]['rules'],
-          )}
+          // rules={getRules(
+          //   schema['processDataSet']['administrativeInformation']['common:commissionerAndGoal'][
+          //     'common:referenceToCommissioner'
+          //   ]['rules'],
+          // )}
         />
         <Card
           size='small'
@@ -1473,11 +1473,11 @@ export const ProcessForm: FC<Props> = ({
               />
             }
             setRuleErrorState={setIntendedApplicationsError}
-            rules={getRules(
-              schema['processDataSet']['administrativeInformation']['common:commissionerAndGoal'][
-                'common:intendedApplications'
-              ]['rules'],
-            )}
+            // rules={getRules(
+            //   schema['processDataSet']['administrativeInformation']['common:commissionerAndGoal'][
+            //     'common:intendedApplications'
+            //   ]['rules'],
+            // )}
           />
         </Card>
 
@@ -1515,11 +1515,11 @@ export const ProcessForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
-            rules={getRules(
-              schema['processDataSet']['administrativeInformation']['dataEntryBy'][
-                'common:timeStamp'
-              ]['rules'],
-            )}
+            // rules={getRules(
+            //   schema['processDataSet']['administrativeInformation']['dataEntryBy'][
+            //     'common:timeStamp'
+            //   ]['rules'],
+            // )}
           >
             <Input disabled={true} style={{ color: token.colorTextDescription }} />
           </Form.Item>
@@ -1535,11 +1535,11 @@ export const ProcessForm: FC<Props> = ({
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
             onData={onData}
-            rules={getRules(
-              schema['processDataSet']['administrativeInformation']['dataEntryBy'][
-                'common:referenceToDataSetFormat'
-              ]['rules'],
-            )}
+            // rules={getRules(
+            //   schema['processDataSet']['administrativeInformation']['dataEntryBy'][
+            //     'common:referenceToDataSetFormat'
+            //   ]['rules'],
+            // )}
           />
           <br />
           <SourceSelectForm
@@ -1573,11 +1573,11 @@ export const ProcessForm: FC<Props> = ({
               'dataEntryBy',
               'common:referenceToPersonOrEntityEnteringTheData',
             ]}
-            rules={getRules(
-              schema['processDataSet']['administrativeInformation']['dataEntryBy'][
-                'common:referenceToPersonOrEntityEnteringTheData'
-              ]['rules'],
-            )}
+            // rules={getRules(
+            //   schema['processDataSet']['administrativeInformation']['dataEntryBy'][
+            //     'common:referenceToPersonOrEntityEnteringTheData'
+            //   ]['rules'],
+            // )}
             onData={onData}
           />
           <br />
@@ -1633,11 +1633,11 @@ export const ProcessForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
-            rules={getRules(
-              schema['processDataSet']['administrativeInformation']['publicationAndOwnership'][
-                'common:dataSetVersion'
-              ]['rules'],
-            )}
+            // rules={getRules(
+            //   schema['processDataSet']['administrativeInformation']['publicationAndOwnership'][
+            //     'common:dataSetVersion'
+            //   ]['rules'],
+            // )}
           >
             <Input />
           </Form.Item>
@@ -1744,11 +1744,11 @@ export const ProcessForm: FC<Props> = ({
             lang={lang}
             formRef={formRef}
             onData={onData}
-            rules={getRules(
-              schema['processDataSet']['administrativeInformation']['publicationAndOwnership'][
-                'common:referenceToOwnershipOfDataSet'
-              ]['rules'],
-            )}
+            // rules={getRules(
+            //   schema['processDataSet']['administrativeInformation']['publicationAndOwnership'][
+            //     'common:referenceToOwnershipOfDataSet'
+            //   ]['rules'],
+            // )}
           />
           <br />
           <Form.Item
@@ -1759,11 +1759,11 @@ export const ProcessForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:copyright']}
-            rules={getRules(
-              schema['processDataSet']['administrativeInformation']['publicationAndOwnership'][
-                'common:copyright'
-              ]['rules'],
-            )}
+            // rules={getRules(
+            //   schema['processDataSet']['administrativeInformation']['publicationAndOwnership'][
+            //     'common:copyright'
+            //   ]['rules'],
+            // )}
           >
             <Select options={copyrightOptions} />
           </Form.Item>
@@ -1792,11 +1792,11 @@ export const ProcessForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:licenseType']}
-            rules={getRules(
-              schema['processDataSet']['administrativeInformation']['publicationAndOwnership'][
-                'common:licenseType'
-              ]['rules'],
-            )}
+            // rules={getRules(
+            //   schema['processDataSet']['administrativeInformation']['publicationAndOwnership'][
+            //     'common:licenseType'
+            //   ]['rules'],
+            // )}
           >
             <Select options={licenseTypeOptions} />
           </Form.Item>
