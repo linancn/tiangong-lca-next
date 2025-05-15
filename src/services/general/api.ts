@@ -77,12 +77,9 @@ export async function getRefData(id: string, version: string, table: string, tea
       success: false,
     });
   }
-  const session = await supabase.auth.getSession();
-  let query = supabase
-    .from(table)
-    .select('state_code,json')
-    .eq('id', id)
-    .eq('user_id', session?.data?.session?.user?.id);
+  // const session = await supabase.auth.getSession();
+  let query = supabase.from(table).select('state_code,json').eq('id', id);
+  // .eq('user_id', session?.data?.session?.user?.id);
 
   let result: any = {};
 
