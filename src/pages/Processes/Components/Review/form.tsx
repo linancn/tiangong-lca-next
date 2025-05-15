@@ -45,13 +45,13 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                     extra={
                       <CloseOutlined
                         style={{
-                          cursor: subFields.length === 1 ? 'not-allowed' : 'pointer',
+                          // cursor: subFields.length === 1 ? 'not-allowed' : 'pointer',
                           marginTop: '10px',
                         }}
                         onClick={() => {
-                          if (subFields.length === 1) {
-                            return;
-                          }
+                          // if (subFields.length === 1) {
+                          //   return;
+                          // }
                           subOpt.remove(subField.name);
                         }}
                       />
