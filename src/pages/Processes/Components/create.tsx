@@ -1,4 +1,4 @@
-import { checkRequiredFields } from '@/pages/Utils';
+// import { checkRequiredFields } from '@/pages/Utils';
 import { formatDateTime } from '@/services/general/util';
 import { createProcess, getProcessDetail } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
@@ -10,7 +10,7 @@ import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
-import requiredFields from '../requiredFields';
+// import requiredFields from '../requiredFields';
 import { ProcessForm } from './form';
 
 type Props = {
@@ -282,12 +282,12 @@ const ProcessCreate: FC<CreateProps> = ({
               },
             }}
             onFinish={async () => {
-              const { checkResult, tabName } = checkRequiredFields(requiredFields, fromData);
-              if (!checkResult) {
-                await setActiveTabKey(tabName);
-                formRefCreate.current?.validateFields();
-                return false;
-              }
+              // const { checkResult, tabName } = checkRequiredFields(requiredFields, fromData);
+              // if (!checkResult) {
+              //   await setActiveTabKey(tabName);
+              //   formRefCreate.current?.validateFields();
+              //   return false;
+              // }
 
               const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
               const exchanges = fromData?.exchanges;
