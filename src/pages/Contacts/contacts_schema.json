@@ -186,6 +186,11 @@
               "required": true,
               "messageKey": "pages.contact.validator.dataSetVersion.required",
               "defaultMessage": "Please input data set version"
+            },
+            {
+              "pattern": "dataSetVersion",
+              "messageKey": "validator.dataSetVersion.pattern",
+              "defaultMessage": "Version format must be XX.XX.XXX, where X is a digit!"
             }
           ]
         },

@@ -6,6 +6,7 @@ import { FormattedMessage, useIntl, useLocation } from 'umi';
 
 import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
+import ExportData from '@/components/ExportData';
 import { ListPagination } from '@/services/general/data';
 import { getDataSource, getLang, getLangText } from '@/services/general/util';
 import { SourceTable } from '@/services/sources/data';
@@ -18,6 +19,7 @@ import SourceCreate from './Components/create';
 import SourceDelete from './Components/delete';
 import SourceEdit from './Components/edit';
 import SourceView from './Components/view';
+
 const { Search } = Input;
 
 const TableList: FC = () => {
@@ -167,6 +169,7 @@ const TableList: FC = () => {
                 }}
                 disabled={!!row.teamId}
               />
+              <ExportData tableName='sources' id={row.id} version={row.version} />
             </Space>,
           ];
         }
@@ -186,6 +189,7 @@ const TableList: FC = () => {
               lang={lang}
               actionRef={actionRef}
             />
+            <ExportData tableName='sources' id={row.id} version={row.version} />
           </Space>,
         ];
       },

@@ -17,13 +17,13 @@ import { getTeamById } from '@/services/teams/api';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 // import ReferenceUnit from '../Unitgroups/Components/Unit/reference';
+import ExportData from '@/components/ExportData';
 import { getUnitData } from '@/services/general/util';
 import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import FlowpropertiesCreate from './Components/create';
 import FlowpropertiesDelete from './Components/delete';
 import FlowpropertiesEdit from './Components/edit';
 import FlowpropertyView from './Components/view';
-
 const { Search } = Input;
 
 const TableList: FC = () => {
@@ -196,6 +196,7 @@ const TableList: FC = () => {
                 }}
                 disabled={!!row.teamId}
               />
+              <ExportData tableName='flowproperties' id={row.id} version={row.version} />
             </Space>,
           ];
         }
@@ -215,6 +216,7 @@ const TableList: FC = () => {
               actionRef={actionRef}
               lang={lang}
             />
+            <ExportData tableName='flowproperties' id={row.id} version={row.version} />
           </Space>,
         ];
       },

@@ -3,6 +3,7 @@ import styles from '@/style/custom.less';
 import { Card, Col, Divider, Row, Statistic, StatisticProps, theme } from 'antd';
 import React, { useEffect, useState } from 'react';
 
+import { getThumbFileUrls } from '@/services/supabase/storage';
 import { getTeams } from '@/services/teams/api';
 import { PageContainer } from '@ant-design/pro-components';
 import Meta from 'antd/es/card/Meta';
@@ -11,8 +12,6 @@ import { FormattedMessage, useIntl } from 'umi';
 
 const Welcome: React.FC = () => {
   const { token } = theme.useToken();
-  const LogoBaseUrl =
-    'https://qgzvkongdjqiiamzbbts.supabase.co/storage/v1/object/public/sys-files/';
 
   const { locale } = useIntl();
   const lang = getLang(locale);
@@ -26,8 +25,29 @@ const Welcome: React.FC = () => {
     if (teams) {
       return;
     }
-    getTeams().then((res) => {
-      console.log(res);
+    getTeams().then(async (res) => {
+      if (res.data && res.data.length > 0) {
+        const processTeams = [...res.data];
+        const promises = processTeams.map(async (team, index) => {
+          if (team.json?.lightLogo) {
+            const thumbResult = await getThumbFileUrls([{ '@uri': `${team.json.lightLogo}` }]);
+            if (thumbResult[0]?.status === 'done') {
+              processTeams[index].json.previewLightUrl = thumbResult[0].thumbUrl;
+            }
+          }
+          if (team.json?.darkLogo) {
+            const thumbResult = await getThumbFileUrls([{ '@uri': `${team.json.darkLogo}` }]);
+            if (thumbResult[0]?.status === 'done') {
+              processTeams[index].json.previewDarkUrl = thumbResult[0].thumbUrl;
+            }
+          }
+          return team;
+        });
+
+        await Promise.all(promises);
+        setTeams(processTeams);
+        return;
+      }
       setTeams(res.data);
     });
   }, []);
@@ -167,10 +187,14 @@ const Welcome: React.FC = () => {
         </Divider>
         <Row gutter={16}>
           {teams?.map((team: any, index: React.Key | null | undefined) => {
-            const logo = isDarkMode ? team.json?.darkLogo : team.json?.lightLogo;
-            const logoUrl = logo.startsWith('logo/')
-              ? LogoBaseUrl + logo
-              : `/images/dataLogo/${logo}`;
+            let logoUrl = '';
+            if (team.json?.previewLightUrl) {
+              logoUrl = isDarkMode ? team.json?.previewDarkUrl : team.json?.previewLightUrl;
+            } else {
+              logoUrl = isDarkMode
+                ? `/images/dataLogo/${team.json?.darkLogo}`
+                : `/images/dataLogo/${team.json?.lightLogo}`;
+            }
             return (
               <Col span={8} key={index}>
                 <Card

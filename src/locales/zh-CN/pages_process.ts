@@ -140,6 +140,7 @@ export default {
   'pages.process.view.administrativeInformation.dateOfLastRevision': '最后修订日期',
   'pages.process.view.administrativeInformation.dataSetVersion': '数据集版本',
   'pages.process.view.administrativeInformation.permanentDataSetURI': '永久数据集统一资源标识符',
+  'pages.process.view.administrativeInformation.permanentDataSetURI.default': '自动生成',
   'pages.process.view.administrativeInformation.workflowAndPublicationStatus': '工作流和发布状态',
   'pages.process.view.administrativeInformation.referenceToUnchangedRepublication': '未变更重发布：',
   'pages.process.view.administrativeInformation.referenceToRegistrationAuthority': '注册机构',

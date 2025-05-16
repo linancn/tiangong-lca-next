@@ -5,6 +5,7 @@ import { FormattedMessage, useIntl, useLocation } from 'umi';
 
 import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
+import ExportData from '@/components/ExportData';
 import LifeCycleModelCreate from '@/pages/LifeCycleModels/Components/create';
 import LifeCycleModelEdit from '@/pages/LifeCycleModels/Components/edit';
 import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
@@ -248,6 +249,7 @@ const TableList: FC = () => {
                 }}
                 disabled={!!row.teamId}
               />
+              <ExportData tableName='processes' id={row.id} version={row.version} />
             </Space>,
           ];
         }
@@ -269,6 +271,7 @@ const TableList: FC = () => {
               lang={lang}
               actionRef={actionRef}
             />
+            <ExportData tableName='processes' id={row.id} version={row.version} />
           </Space>,
         ];
       },

@@ -1,5 +1,6 @@
 import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
+import ExportData from '@/components/ExportData';
 import { contributeSource } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
 import { getDataSource, getLang, getLangText } from '@/services/general/util';
@@ -163,6 +164,7 @@ const TableList: FC = () => {
                 }}
                 disabled={!!row.teamId}
               />
+              <ExportData tableName='lifecyclemodels' id={row.id} version={row.version} />
             </Space>,
           ];
         }
@@ -177,6 +179,7 @@ const TableList: FC = () => {
               actionRef={actionRef}
               buttonType={'icon'}
             />
+            <ExportData tableName='lifecyclemodels' id={row.id} version={row.version} />
           </Space>,
         ];
       },

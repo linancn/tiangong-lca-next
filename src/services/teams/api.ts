@@ -253,18 +253,6 @@ export async function addTeamMemberApi(teamId: string, email: string) {
   }
 }
 
-export async function uploadLogoApi(name: string, file: File) {
-  const res = await supabase.storage
-    .from('sys-files')
-    .upload(`logo/${Date.now()}-${encodeURIComponent(name)}`, file);
-
-  if (res.error) {
-    throw res.error;
-  } else {
-    return res;
-  }
-}
-
 export async function addTeam(id: string, data: any, rank: number, is_public: boolean) {
   const { error } = await supabase.from('teams').insert({ id, json: data, rank, is_public });
   return error;
