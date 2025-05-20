@@ -180,7 +180,9 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                       rules={getRules(
                         schema['processDataSet']['modellingAndValidation'][
                           'complianceDeclarations'
-                        ]['compliance']['common:referenceToComplianceSystem']['rules'],
+                        ]['compliance']['common:referenceToComplianceSystem']['@refObjectId'][
+                          'rules'
+                        ],
                       )}
                     />
                   </Card>
