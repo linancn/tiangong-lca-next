@@ -1,3 +1,4 @@
+import schema from '@/pages/Processes/processes_schema.json';
 import { getLifeCyclesByIds } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/es/table/interface';
@@ -6,6 +7,7 @@ import {
   classificationToString,
   genClassificationZH,
   getLangText,
+  getRuleVerification,
   jsonToList,
 } from '../general/util';
 import { getILCDClassification, getILCDLocationByValues } from '../ilcd/api';
@@ -13,19 +15,21 @@ import { genProcessJsonOrdered, genProcessName } from './util';
 
 export async function createProcess(id: string, data: any) {
   const newData = genProcessJsonOrdered(id, data);
+  const rule_verification = getRuleVerification(schema, newData);
   // const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('processes')
-    .insert([{ id: id, json_ordered: newData }])
+    .insert([{ id: id, json_ordered: newData, rule_verification }])
     .select();
   return result;
 }
 
 export async function updateProcess(id: string, version: string, data: any) {
   const newData = genProcessJsonOrdered(id, data);
+  const rule_verification = getRuleVerification(schema, newData);
   const updateResult = await supabase
     .from('processes')
-    .update({ json_ordered: newData })
+    .update({ json_ordered: newData, rule_verification })
     .eq('id', id)
     .eq('version', version)
     .select();

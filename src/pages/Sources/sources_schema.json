@@ -52,18 +52,18 @@
         "classificationInformation": {
           "common:classification": {
             "common:class": {
-              "value": {
-                "@level": "str",
-                "@classId": "str",
-                "#text": "str"
+              "@level": "str",
+              "@classId": {
+                "value": "str",
+                "rules": [
+                  {
+                    "required": true,
+                    "messageKey": "pages.source.validator.class.required",
+                    "defaultMessage": "class is required"
+                  }
+                ]
               },
-              "rules": [
-                {
-                  "required": true,
-                  "messageKey": "pages.source.validator.class.required",
-                  "defaultMessage": "class is required"
-                }
-              ]
+              "#text": "str"
             }
           }
         },
@@ -127,23 +127,23 @@
           ]
         },
         "common:referenceToDataSetFormat": {
-          "value": {
-            "@type": "str",
-            "@refObjectId": "str",
-            "@version": "str",
-            "@uri": "str",
-            "common:shortDescription": {
-              "@xml:lang": "str",
-              "#text": "str"
-            }
+          "@type": "str",
+          "@refObjectId": {
+            "value": "str",
+            "rules": [
+              {
+                "required": true,
+                "messageKey": "pages.source.validator.referenceToDataSetFormat.required",
+                "defaultMessage": "referenceToDataSetFormat is required"
+              }
+            ]
           },
-          "rules": [
-            {
-              "required": true,
-              "messageKey": "pages.source.validator.referenceToDataSetFormat.required",
-              "defaultMessage": "referenceToDataSetFormat is required"
-            }
-          ]
+          "@version": "str",
+          "@uri": "str",
+          "common:shortDescription": {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
         }
       },
       "publicationAndOwnership": {
@@ -174,23 +174,23 @@
         },
         "common:permanentDataSetURI": "str",
         "common:referenceToOwnershipOfDataSet": {
-          "value": {
-            "@type": "str",
-            "@refObjectId": "str",
-            "@version": "str",
-            "@uri": "str",
-            "common:shortDescription": {
-              "@xml:lang": "str",
-              "#text": "str"
-            }
+          "@type": "str",
+          "@refObjectId": {
+            "value": "str",
+            "rules": [
+              {
+                "required": true,
+                "messageKey": "pages.source.validator.referenceToOwnershipOfDataSet.required",
+                "defaultMessage": "referenceToOwnershipOfDataSet is required"
+              }
+            ]
           },
-          "rules": [
-            {
-              "required": true,
-              "messageKey": "pages.source.validator.referenceToOwnershipOfDataSet.required",
-              "defaultMessage": "referenceToOwnershipOfDataSet is required"
-            }
-          ]
+          "@version": "str",
+          "@uri": "str",
+          "common:shortDescription": {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
         }
       }
     }

@@ -5,27 +5,31 @@ import {
   jsonToList,
 } from '../general/util';
 
+import schema from '@/pages/Flowproperties/flowproperties_schema.json';
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getDataDetail, getTeamIdByUserId } from '../general/api';
+import { getRuleVerification } from '../general/util';
 import { getILCDClassification } from '../ilcd/api';
 import { genFlowpropertyJsonOrdered } from './util';
 
 export async function createFlowproperties(id: string, data: any) {
   const newData = genFlowpropertyJsonOrdered(id, data);
+  const rule_verification = getRuleVerification(schema, newData);
   // const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('flowproperties')
-    .insert([{ id: id, json_ordered: newData }])
+    .insert([{ id: id, json_ordered: newData, rule_verification }])
     .select();
   return result;
 }
 
 export async function updateFlowproperties(id: string, version: string, data: any) {
   const newData = genFlowpropertyJsonOrdered(id, data);
+  const rule_verification = getRuleVerification(schema, newData);
   const updateResult = await supabase
     .from('flowproperties')
-    .update({ json_ordered: newData })
+    .update({ json_ordered: newData, rule_verification })
     .eq('id', id)
     .eq('version', version)
     .select();

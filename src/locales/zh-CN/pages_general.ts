@@ -72,4 +72,6 @@ export default {
 
   'page.exportData.success': '数据导出成功',
   'page.exportData.error': '数据导出失败',
+
+  'page.options.savesuccess': '保存成功',
 };

@@ -137,20 +137,18 @@
         "classificationInformation": {
           "common:classification": {
             "common:class": {
-              "value": [
-                {
-                  "@level": "str",
-                  "@classId": "str",
-                  "#text": "str"
-                }
-              ],
-              "rules": [
-                {
-                  "required": true,
-                  "messageKey": "pages.lifecyclemodel.validator.class.required",
-                  "defaultMessage": "Please input classification"
-                }
-              ]
+              "@level": "str",
+              "@classId": {
+                "value": "str",
+                "rules": [
+                  {
+                    "required": true,
+                    "messageKey": "pages.lifecyclemodel.validator.class.required",
+                    "defaultMessage": "Please input classification"
+                  }
+                ]
+              },
+              "#text": "str"
             }
           }
         },
@@ -235,23 +233,23 @@
                 ]
               },
               "referenceToProcess": {
-                "value": {
-                  "@refObjectId": "str",
-                  "@type": "str",
-                  "@uri": "str",
-                  "@version": "str",
-                  "common:shortDescription": [
+                "@refObjectId": {
+                  "value": "str",
+                  "rules": [
                     {
-                      "@xml:lang": "str",
-                      "#text": "str"
+                      "required": true,
+                      "messageKey": "pages.lifecyclemodel.validator.referenceToProcess.required",
+                      "defaultMessage": "Please input reference to process data set"
                     }
                   ]
                 },
-                "rules": [
+                "@type": "str",
+                "@uri": "str",
+                "@version": "str",
+                "common:shortDescription": [
                   {
-                    "required": true,
-                    "messageKey": "pages.lifecyclemodel.validator.referenceToProcess.required",
-                    "defaultMessage": "Please input reference to process data set"
+                    "@xml:lang": "str",
+                    "#text": "str"
                   }
                 ]
               },
@@ -347,23 +345,23 @@
       "validation": {
         "review": {
           "common:referenceToNameOfReviewerAndInstitution": {
-            "value": {
-              "@refObjectId": "str",
-              "@type": "str",
-              "@uri": "str",
-              "@version": "str",
-              "common:shortDescription": [
+            "@refObjectId": {
+              "value": "str",
+              "rules": [
                 {
-                  "@xml:lang": "str",
-                  "#text": "str"
+                  "required": true,
+                  "messageKey": "pages.lifecyclemodel.validator.referenceToNameOfReviewerAndInstitution.required",
+                  "defaultMessage": "Please input data set report, background info"
                 }
               ]
             },
-            "rules": [
+            "@type": "str",
+            "@uri": "str",
+            "@version": "str",
+            "common:shortDescription": [
               {
-                "required": true,
-                "messageKey": "pages.lifecyclemodel.validator.referenceToNameOfReviewerAndInstitution.required",
-                "defaultMessage": "Please input data set report, background info"
+                "@xml:lang": "str",
+                "#text": "str"
               }
             ]
           },
@@ -390,23 +388,23 @@
       "complianceDeclarations": {
         "compliance": {
           "common:referenceToComplianceSystem": {
-            "value": {
-              "@refObjectId": "str",
-              "@type": "str",
-              "@uri": "str",
-              "@version": "str",
-              "common:shortDescription": [
+            "@refObjectId": {
+              "value": "str",
+              "rules": [
                 {
-                  "@xml:lang": "str",
-                  "#text": "str"
+                  "required": true,
+                  "messageKey": "pages.lifecyclemodel.validator.referenceToComplianceSystem.required",
+                  "defaultMessage": "Please input compliance system name"
                 }
               ]
             },
-            "rules": [
+            "@type": "str",
+            "@uri": "str",
+            "@version": "str",
+            "common:shortDescription": [
               {
-                "required": true,
-                "messageKey": "pages.lifecyclemodel.validator.referenceToComplianceSystem.required",
-                "defaultMessage": "Please input compliance system name"
+                "@xml:lang": "str",
+                "#text": "str"
               }
             ]
           },
@@ -476,23 +474,23 @@
     "administrativeInformation": {
       "common:commissionerAndGoal": {
         "common:referenceToCommissioner": {
-          "value": {
-            "@refObjectId": "str",
-            "@type": "str",
-            "@uri": "str",
-            "@version": "str",
-            "common:shortDescription": [
+          "@refObjectId": {
+            "value": "str",
+            "rules": [
               {
-                "@xml:lang": "str",
-                "#text": "str"
+                "required": true,
+                "messageKey": "pages.lifecyclemodel.validator.referenceToCommissioner.required",
+                "defaultMessage": "Please input commissioner of data set"
               }
             ]
           },
-          "rules": [
+          "@type": "str",
+          "@uri": "str",
+          "@version": "str",
+          "common:shortDescription": [
             {
-              "required": true,
-              "messageKey": "pages.lifecyclemodel.validator.referenceToCommissioner.required",
-              "defaultMessage": "Please input commissioner of data set"
+              "@xml:lang": "str",
+              "#text": "str"
             }
           ]
         },
@@ -535,44 +533,44 @@
           ]
         },
         "common:referenceToDataSetFormat": {
-          "value": {
-            "@refObjectId": "str",
-            "@type": "str",
-            "@uri": "str",
-            "@version": "str",
-            "common:shortDescription": [
+          "@refObjectId": {
+            "value": "str",
+            "rules": [
               {
-                "@xml:lang": "str",
-                "#text": "str"
+                "required": true,
+                "messageKey": "pages.lifecyclemodel.validator.referenceToDataSetFormat.required",
+                "defaultMessage": "Please input data set format(s)"
               }
             ]
           },
-          "rules": [
+          "@type": "str",
+          "@uri": "str",
+          "@version": "str",
+          "common:shortDescription": [
             {
-              "required": true,
-              "messageKey": "pages.lifecyclemodel.validator.referenceToDataSetFormat.required",
-              "defaultMessage": "Please input data set format(s)"
+              "@xml:lang": "str",
+              "#text": "str"
             }
           ]
         },
         "common:referenceToPersonOrEntityEnteringTheData": {
-          "value": {
-            "@refObjectId": "str",
-            "@type": "str",
-            "@uri": "str",
-            "@version": "str",
-            "common:shortDescription": [
+          "@refObjectId": {
+            "value": "str",
+            "rules": [
               {
-                "@xml:lang": "str",
-                "#text": "str"
+                "required": true,
+                "messageKey": "pages.lifecyclemodel.validator.referenceToPersonOrEntityEnteringTheData.required",
+                "defaultMessage": "Please input data enter by"
               }
             ]
           },
-          "rules": [
+          "@type": "str",
+          "@uri": "str",
+          "@version": "str",
+          "common:shortDescription": [
             {
-              "required": true,
-              "messageKey": "pages.lifecyclemodel.validator.referenceToPersonOrEntityEnteringTheData.required",
-              "defaultMessage": "Please input data enter by"
+              "@xml:lang": "str",
+              "#text": "str"
             }
           ]
         }
@@ -616,23 +614,23 @@
           ]
         },
         "common:referenceToOwnershipOfDataSet": {
-          "value": {
-            "@refObjectId": "str",
-            "@type": "str",
-            "@uri": "str",
-            "@version": "str",
-            "common:shortDescription": [
+          "@refObjectId": {
+            "value": "str",
+            "rules": [
               {
-                "@xml:lang": "str",
-                "#text": "str"
+                "required": true,
+                "messageKey": "pages.lifecyclemodel.validator.referenceToOwnershipOfDataSet.required",
+                "defaultMessage": "Please input owner of data set"
               }
             ]
           },
-          "rules": [
+          "@type": "str",
+          "@uri": "str",
+          "@version": "str",
+          "common:shortDescription": [
             {
-              "required": true,
-              "messageKey": "pages.lifecyclemodel.validator.referenceToOwnershipOfDataSet.required",
-              "defaultMessage": "Please input owner of data set"
+              "@xml:lang": "str",
+              "#text": "str"
             }
           ]
         },

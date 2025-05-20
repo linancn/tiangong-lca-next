@@ -10,7 +10,7 @@ import { Button, Collapse, Drawer, Space, Spin, Tooltip, Typography, message } f
 import path from 'path';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
 import { SourceForm } from './form';
 
@@ -31,6 +31,7 @@ const SourceEdit: FC<Props> = ({
   lang,
   setViewDrawerVisible,
 }) => {
+  const intl = useIntl();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
   const [activeTabKey, setActiveTabKey] = useState<string>('sourceInformation');
@@ -133,7 +134,10 @@ const SourceEdit: FC<Props> = ({
         });
       }
       message.success(
-        <FormattedMessage id='options.savesuccess' defaultMessage='Saved Successfully!' />,
+        intl.formatMessage({
+          id: 'page.options.savesuccess',
+          defaultMessage: 'Saved Successfully!',
+        }),
       );
       formRefEdit.current?.resetFields();
       setDrawerVisible(false);
