@@ -140,6 +140,9 @@ export default {
   'pages.account.confirmNewPassword.placeholder': 'Confirm  New Password',
   'pages.account.confirmNewEmail.placeholder': 'Confirm New Email',
 
+  'pages.account.generateAPIKey': 'Generate API Key',
+  'pages.account.apiKey.viewed': 'Make sure to copy it to a secure location. This key will not be shown again.',
+
   'pages.login.passwordForgot.tab': 'Account',
 
   // Team Management

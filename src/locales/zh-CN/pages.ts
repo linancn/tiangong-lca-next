@@ -140,6 +140,9 @@ export default {
   'pages.account.confirmNewPassword.placeholder': '确认新密码',
   'pages.account.confirmNewEmail.placeholder': '确认新邮箱',
 
+  'pages.account.generateAPIKey': '生成 API Key',
+  'pages.account.apiKey.viewed': '请确保将其保存到安全的位置。此密钥将不会再次显示。',
+
   'pages.login.passwordForgot.tab': '账户',
 
   'pages.team.editsuccess': '修改成功！',

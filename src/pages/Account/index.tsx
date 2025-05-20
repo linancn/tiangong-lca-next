@@ -16,11 +16,16 @@ const Profile: FC = () => {
   const formRefEdit = useRef<ProFormInstance>();
   const [initData, setInitData] = useState<API.CurrentUser | null>(null);
   const [roleValue, setRoleValue] = useState<string>('');
+  const [apiKey, setApiKey] = useState<string>('');
   const intl = useIntl();
   const { token } = theme.useToken();
   const { setInitialState } = useModel('@@initialState');
 
   const onTabChange = (key: string) => {
+    if (activeTabKey === 'generateAPIKey' && key !== 'generateAPIKey' && apiKey) {
+      setApiKey('');
+    }
+
     setActiveTabKey(key);
   };
 
@@ -421,6 +426,99 @@ const Profile: FC = () => {
       </ProForm>
     </Flex>
   );
+  const renderGenerateAPIKey = () => {
+    return (
+      <Flex gap='middle' vertical style={{ maxWidth: '50%', minWidth: '300px' }}>
+        <ProForm
+          formRef={formRefEdit}
+          submitter={{
+            searchConfig: {
+              submitText: intl.formatMessage({
+                id: 'pages.account.generateKey',
+                defaultMessage: 'Generate Key',
+              }),
+            },
+            render: (props, doms) => {
+              return (
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                  <Flex gap='middle'>{doms}</Flex>
+                </div>
+              );
+            },
+          }}
+          onFinish={async (values) => {
+            try {
+              // Create JSON object with email and password
+              const payload = {
+                email: initData?.email || '',
+                password: values.currentPassword,
+              };
+
+              // Convert JSON to string and then to Base64
+              const jsonString = JSON.stringify(payload);
+              const encodedKey = btoa(jsonString);
+
+              setApiKey(encodedKey);
+              message.success(
+                <FormattedMessage
+                  id='pages.account.apiKey.generated.success'
+                  defaultMessage='API Key generated successfully!'
+                />,
+              );
+              return true;
+            } catch (error) {
+              message.error('An error occurred while generating the API key.');
+              return false;
+            }
+          }}
+        >
+          <Form.Item name={'email'} initialValue={initData?.email} style={{ display: 'none' }}>
+            <Input />
+          </Form.Item>
+
+          <Form.Item
+            name='currentPassword'
+            label={
+              <FormattedMessage
+                id='pages.account.password.currentPassword'
+                defaultMessage='Current Password'
+              />
+            }
+            rules={[
+              {
+                required: true,
+                message: (
+                  <FormattedMessage
+                    id='pages.account.currentPassword.required'
+                    defaultMessage='Please input your current password!'
+                  />
+                ),
+              },
+            ]}
+            hasFeedback
+          >
+            <Input.Password prefix={<LockOutlined />} />
+          </Form.Item>
+
+          {apiKey && (
+            <Form.Item
+              label={<FormattedMessage id='pages.account.apiKey' defaultMessage='API Key' />}
+            >
+              <Input.TextArea value={apiKey} autoSize={{ minRows: 2, maxRows: 6 }} readOnly />
+              <div style={{ marginTop: 12, display: 'flex', justifyContent: 'center' }}>
+                <div style={{ color: token.colorWarning, marginTop: 8 }}>
+                  <FormattedMessage
+                    id='pages.account.apiKey.viewed'
+                    defaultMessage='Make sure to copy it to a secure location. This key will not be shown again.'
+                  />
+                </div>
+              </div>
+            </Form.Item>
+          )}
+        </ProForm>
+      </Flex>
+    );
+  };
 
   useEffect(() => {
     setSpinning(true);
@@ -476,6 +574,14 @@ const Profile: FC = () => {
                 defaultMessage: 'Change Email',
               }),
               children: renderChangeEmailForm(),
+            },
+            {
+              key: 'generateAPIKey',
+              label: intl.formatMessage({
+                id: 'pages.account.generateAPIKey',
+                defaultMessage: 'Generate API Key',
+              }),
+              children: renderGenerateAPIKey(),
             },
           ]}
         ></Tabs>
