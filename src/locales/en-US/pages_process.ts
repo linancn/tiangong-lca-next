@@ -411,4 +411,9 @@ export default {
   'pages.process.validator.exchanges.quantitativeReference.required': 'Exchange needs to have exactly one quantitative reference open',
 
   'pages.process.review.submitSuccess': 'Review submitted successfully',
+  'pages.process.review.submitError': 'Submit review failed',
+
+  'pages.process.review.unRuleVerification.modal.title': 'Notice',
+  'pages.process.review.unRuleVerification.modal.content': 'The following data is incomplete, please modify and resubmit for review',
+  'pages.process.review.unRuleVerification.modal.button.ok': 'OK',
 };

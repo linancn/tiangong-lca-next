@@ -545,13 +545,13 @@ export async function getProcessDetail(id: string, version: string) {
     if (version && version.length === 9) {
       result = await supabase
         .from('processes')
-        .select('json,version, modified_at,state_code')
+        .select('json,version, modified_at,state_code,rule_verification')
         .eq('id', id)
         .eq('version', version);
     } else {
       result = await supabase
         .from('processes')
-        .select('json,version, modified_at,state_code')
+        .select('json,version, modified_at,state_code,rule_verification')
         .eq('id', id)
         .order('version', { ascending: false })
         .range(0, 0);
@@ -565,6 +565,7 @@ export async function getProcessDetail(id: string, version: string) {
           json: data.json,
           modifiedAt: data?.modified_at,
           stateCode: data?.state_code,
+          ruleVerification: data?.rule_verification,
         },
         success: true,
       });
