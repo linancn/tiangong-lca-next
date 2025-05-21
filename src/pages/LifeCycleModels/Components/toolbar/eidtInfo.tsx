@@ -229,7 +229,16 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
       const reviewId = v4();
       const result = await addReviewsApi(reviewId, data.id, data.version);
       if (result?.error) return;
-
+      if (lifeCycleModelDetail?.data?.state_code >= 20) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.process.review.submitError',
+            defaultMessage: 'Submit review failed',
+          }),
+        );
+        setSpinning(false);
+        return;
+      }
       // console.log('lifeCycleModelDetail', lifeCycleModelDetail?.data?.state_code);
       const lifeCycleModelStateCode = lifeCycleModelDetail?.data?.state_code + 20;
 
