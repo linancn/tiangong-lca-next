@@ -2,6 +2,7 @@ import {
   changeEmail,
   changePassword,
   currentUser,
+  login,
   setProfile,
 } from '@/services/ant-design-pro/api';
 import { IdcardOutlined, LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons';
@@ -426,6 +427,7 @@ const Profile: FC = () => {
       </ProForm>
     </Flex>
   );
+
   const renderGenerateAPIKey = () => {
     return (
       <Flex gap='middle' vertical style={{ maxWidth: '50%', minWidth: '300px' }}>
@@ -447,15 +449,33 @@ const Profile: FC = () => {
             },
           }}
           onFinish={async (values) => {
+            setSpinning(true);
             try {
-              // Create JSON object with email and password
+              // First validate credentials by attempting to login
+              const loginResult = await login({
+                email: initData?.email || '',
+                password: values.currentPassword,
+              });
+
+              if (loginResult.status !== 'ok') {
+                message.error(
+                  intl.formatMessage({
+                    id: 'pages.account.invalidCredentials',
+                    defaultMessage: 'Invalid credentials. Please check your password.',
+                  }),
+                );
+                setSpinning(false);
+                return false;
+              }
+
+              // If login successful, generate API key
               const payload = {
                 email: initData?.email || '',
                 password: values.currentPassword,
               };
 
               // Convert JSON to string and then to Base64
-              const jsonString = JSON.stringify(payload);
+              const jsonString = JSON.stringify(payload, null, 0);
               const encodedKey = btoa(jsonString);
 
               setApiKey(encodedKey);
@@ -465,8 +485,10 @@ const Profile: FC = () => {
                   defaultMessage='API Key generated successfully!'
                 />,
               );
+              setSpinning(false);
               return true;
             } catch (error) {
+              setSpinning(false);
               message.error('An error occurred while generating the API key.');
               return false;
             }
