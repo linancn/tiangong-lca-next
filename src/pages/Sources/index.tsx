@@ -12,6 +12,8 @@ import { getDataSource, getLang, getLangText } from '@/services/general/util';
 import { SourceTable } from '@/services/sources/data';
 import { getTeamById } from '@/services/teams/api';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
+import { TableDropdown } from '@ant-design/pro-table';
+import { theme } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { getAllVersionsColumns, getDataTitle } from '../Utils';
@@ -25,7 +27,7 @@ const { Search } = Input;
 const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<any>('');
   const [team, setTeam] = useState<any>(null);
-
+  const { token } = theme.useToken();
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
 
@@ -138,13 +140,7 @@ const TableList: FC = () => {
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
               />
-              <SourceCreate
-                actionType='copy'
-                id={row.id}
-                version={row.version}
-                lang={lang}
-                actionRef={actionRef}
-              />
+
               <SourceDelete
                 id={row.id}
                 version={row.version}
@@ -152,24 +148,51 @@ const TableList: FC = () => {
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
               />
-              <ContributeData
-                onOk={async () => {
-                  const { error } = await contributeSource('sources', row.id, row.version);
-                  if (error) {
-                    console.log(error);
-                  } else {
-                    message.success(
-                      intl.formatMessage({
-                        id: 'component.contributeData.success',
-                        defaultMessage: 'Contribute successfully',
-                      }),
-                    );
-                    actionRef.current?.reload();
-                  }
+              <TableDropdown
+                style={{
+                  color: token.colorPrimary,
                 }}
-                disabled={!!row.teamId}
+                menus={[
+                  {
+                    key: 'export',
+                    name: <ExportData tableName='sources' id={row.id} version={row.version} />,
+                  },
+                  {
+                    key: 'copy',
+                    name: (
+                      <SourceCreate
+                        actionType='copy'
+                        id={row.id}
+                        version={row.version}
+                        lang={lang}
+                        actionRef={actionRef}
+                      />
+                    ),
+                  },
+                  {
+                    key: 'contribute',
+                    name: (
+                      <ContributeData
+                        onOk={async () => {
+                          const { error } = await contributeSource('sources', row.id, row.version);
+                          if (error) {
+                            console.log(error);
+                          } else {
+                            message.success(
+                              intl.formatMessage({
+                                id: 'component.contributeData.success',
+                                defaultMessage: 'Contribute successfully',
+                              }),
+                            );
+                            actionRef.current?.reload();
+                          }
+                        }}
+                        disabled={!!row.teamId}
+                      />
+                    ),
+                  },
+                ]}
               />
-              <ExportData tableName='sources' id={row.id} version={row.version} />
             </Space>,
           ];
         }

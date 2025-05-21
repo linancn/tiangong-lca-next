@@ -19,17 +19,20 @@ import type { FC } from 'react';
 // import ReferenceUnit from '../Unitgroups/Components/Unit/reference';
 import ExportData from '@/components/ExportData';
 import { getUnitData } from '@/services/general/util';
+import { TableDropdown } from '@ant-design/pro-table';
+import { theme } from 'antd';
 import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import FlowpropertiesCreate from './Components/create';
 import FlowpropertiesDelete from './Components/delete';
 import FlowpropertiesEdit from './Components/edit';
 import FlowpropertyView from './Components/view';
+
 const { Search } = Input;
 
 const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<any>('');
   const [team, setTeam] = useState<any>(null);
-
+  const { token } = theme.useToken();
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
 
@@ -165,13 +168,6 @@ const TableList: FC = () => {
                 actionRef={actionRef}
                 lang={lang}
               />
-              <FlowpropertiesCreate
-                actionType='copy'
-                id={row.id}
-                version={row.version}
-                actionRef={actionRef}
-                lang={lang}
-              />
               <FlowpropertiesDelete
                 id={row.id}
                 version={row.version}
@@ -179,24 +175,57 @@ const TableList: FC = () => {
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
               />
-              <ContributeData
-                onOk={async () => {
-                  const { error } = await contributeSource('flowproperties', row.id, row.version);
-                  if (error) {
-                    console.log(error);
-                  } else {
-                    message.success(
-                      intl.formatMessage({
-                        id: 'component.contributeData.success',
-                        defaultMessage: 'Contribute successfully',
-                      }),
-                    );
-                    actionRef.current?.reload();
-                  }
+              <TableDropdown
+                style={{
+                  color: token.colorPrimary,
                 }}
-                disabled={!!row.teamId}
+                menus={[
+                  {
+                    key: 'export',
+                    name: (
+                      <ExportData tableName='flowproperties' id={row.id} version={row.version} />
+                    ),
+                  },
+                  {
+                    key: 'copy',
+                    name: (
+                      <FlowpropertiesCreate
+                        actionType='copy'
+                        id={row.id}
+                        version={row.version}
+                        actionRef={actionRef}
+                        lang={lang}
+                      />
+                    ),
+                  },
+                  {
+                    key: 'contribute',
+                    name: (
+                      <ContributeData
+                        onOk={async () => {
+                          const { error } = await contributeSource(
+                            'flowproperties',
+                            row.id,
+                            row.version,
+                          );
+                          if (error) {
+                            console.log(error);
+                          } else {
+                            message.success(
+                              intl.formatMessage({
+                                id: 'component.contributeData.success',
+                                defaultMessage: 'Contribute successfully',
+                              }),
+                            );
+                            actionRef.current?.reload();
+                          }
+                        }}
+                        disabled={!!row.teamId}
+                      />
+                    ),
+                  },
+                ]}
               />
-              <ExportData tableName='flowproperties' id={row.id} version={row.version} />
             </Space>,
           ];
         }

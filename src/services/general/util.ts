@@ -614,7 +614,7 @@ export function getRuleVerification(schema: any, data: any) {
 
   collectRequiredPaths(schema);
 
-  console.log('requiredPaths', requiredPaths);
+  // console.log('requiredPaths', requiredPaths);
 
   requiredPaths.forEach(({ path, rule }) => {
     let value = getValueByPath(data, path);
@@ -633,7 +633,7 @@ export function getRuleVerification(schema: any, data: any) {
     }
   });
 
-  console.log('result', result);
+  // console.log('result', result);
 
   return result.valid;
 }

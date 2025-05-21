@@ -1,5 +1,5 @@
 import { exportDataApi } from '@/services/general/api';
-import { CloudDownloadOutlined } from '@ant-design/icons';
+import { DownloadOutlined } from '@ant-design/icons';
 import { FormattedMessage, useIntl } from '@umijs/max';
 import { Button, message, Spin, Tooltip } from 'antd';
 import { FC, useState } from 'react';
@@ -60,7 +60,7 @@ const ExportData: FC<ExportDataProps> = ({ tableName, id, version }) => {
     <Spin spinning={loading}>
       <Tooltip title={<FormattedMessage id={'pages.button.export'} defaultMessage='Export Data' />}>
         <Button
-          icon={<CloudDownloadOutlined />}
+          icon={<DownloadOutlined />}
           onClick={handleExport}
           shape='circle'
           size='small'

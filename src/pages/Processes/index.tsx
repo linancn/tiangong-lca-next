@@ -15,6 +15,8 @@ import { getDataSource, getLang, getLangText } from '@/services/general/util';
 import { ProcessTable } from '@/services/processes/data';
 import { getTeamById } from '@/services/teams/api';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
+import { TableDropdown } from '@ant-design/pro-table';
+import { theme } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { getAllVersionsColumns, getDataTitle } from '../Utils';
@@ -23,6 +25,7 @@ import ProcessDelete from './Components/delete';
 import ProcessEdit from './Components/edit';
 import { processtypeOfDataSetOptions } from './Components/optiondata';
 import ProcessView from './Components/view';
+
 const { Search } = Input;
 
 const getProcesstypeOfDataSetOptions = (value: string) => {
@@ -33,7 +36,7 @@ const getProcesstypeOfDataSetOptions = (value: string) => {
 const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<any>('');
   const [team, setTeam] = useState<any>(null);
-
+  const { token } = theme.useToken();
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
 
@@ -189,24 +192,7 @@ const TableList: FC = () => {
                   setViewDrawerVisible={() => {}}
                 />
               )}
-              {row.isFromLifeCycle ? (
-                <LifeCycleModelCreate
-                  actionType='copy'
-                  id={row.id}
-                  version={row.version}
-                  lang={lang}
-                  actionRef={actionRef}
-                  buttonType={'icon'}
-                />
-              ) : (
-                <ProcessCreate
-                  actionType='copy'
-                  id={row.id}
-                  version={row.version}
-                  lang={lang}
-                  actionRef={actionRef}
-                />
-              )}
+
               <ProcessDelete
                 id={row.id}
                 version={row.version}
@@ -214,42 +200,86 @@ const TableList: FC = () => {
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
               />
-              <ContributeData
-                onOk={async () => {
-                  const { error } = await contributeSource('processes', row.id, row.version);
-                  if (row.isFromLifeCycle) {
-                    const { error: lifeCycleError } = await contributeSource(
-                      'lifecyclemodels',
-                      row.id,
-                      row.version,
-                    );
-                    if (lifeCycleError || error) {
-                      console.log(lifeCycleError);
-                    } else {
-                      message.success(
-                        intl.formatMessage({
-                          id: 'component.contributeData.success',
-                          defaultMessage: 'Contribute successfully',
-                        }),
-                      );
-                    }
-                  } else {
-                    if (error) {
-                      console.log(error);
-                    } else {
-                      message.success(
-                        intl.formatMessage({
-                          id: 'component.contributeData.success',
-                          defaultMessage: 'Contribute successfully',
-                        }),
-                      );
-                    }
-                  }
-                  actionRef.current?.reload();
+              <TableDropdown
+                style={{
+                  color: token.colorPrimary,
                 }}
-                disabled={!!row.teamId}
+                menus={[
+                  {
+                    key: 'export',
+                    name: <ExportData tableName='processes' id={row.id} version={row.version} />,
+                  },
+                  {
+                    key: 'copy',
+                    name: (
+                      <>
+                        {row.isFromLifeCycle ? (
+                          <LifeCycleModelCreate
+                            actionType='copy'
+                            id={row.id}
+                            version={row.version}
+                            lang={lang}
+                            actionRef={actionRef}
+                            buttonType={'icon'}
+                          />
+                        ) : (
+                          <ProcessCreate
+                            actionType='copy'
+                            id={row.id}
+                            version={row.version}
+                            lang={lang}
+                            actionRef={actionRef}
+                          />
+                        )}
+                      </>
+                    ),
+                  },
+                  {
+                    key: 'contribute',
+                    name: (
+                      <ContributeData
+                        onOk={async () => {
+                          const { error } = await contributeSource(
+                            'processes',
+                            row.id,
+                            row.version,
+                          );
+                          if (row.isFromLifeCycle) {
+                            const { error: lifeCycleError } = await contributeSource(
+                              'lifecyclemodels',
+                              row.id,
+                              row.version,
+                            );
+                            if (lifeCycleError || error) {
+                              console.log(lifeCycleError);
+                            } else {
+                              message.success(
+                                intl.formatMessage({
+                                  id: 'component.contributeData.success',
+                                  defaultMessage: 'Contribute successfully',
+                                }),
+                              );
+                            }
+                          } else {
+                            if (error) {
+                              console.log(error);
+                            } else {
+                              message.success(
+                                intl.formatMessage({
+                                  id: 'component.contributeData.success',
+                                  defaultMessage: 'Contribute successfully',
+                                }),
+                              );
+                            }
+                          }
+                          actionRef.current?.reload();
+                        }}
+                        disabled={!!row.teamId}
+                      />
+                    ),
+                  },
+                ]}
               />
-              <ExportData tableName='processes' id={row.id} version={row.version} />
             </Space>,
           ];
         }

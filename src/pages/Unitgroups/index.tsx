@@ -8,7 +8,8 @@ import { getTeamById } from '@/services/teams/api';
 import { getUnitGroupTableAll, getUnitGroupTablePgroongaSearch } from '@/services/unitgroups/api';
 import { UnitGroupTable } from '@/services/unitgroups/data';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Card, Input, Space, Tooltip, message } from 'antd';
+import { TableDropdown } from '@ant-design/pro-table';
+import { Card, Input, Space, Tooltip, message, theme } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
@@ -18,12 +19,13 @@ import UnitGroupCreate from './Components/create';
 import UnitGroupDelete from './Components/delete';
 import UnitGroupEdit from './Components/edit';
 import UnitGroupView from './Components/view';
+
 const { Search } = Input;
 
 const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<any>('');
   const [team, setTeam] = useState<any>(null);
-
+  const { token } = theme.useToken();
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
 
@@ -151,13 +153,6 @@ const TableList: FC = () => {
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
               ></UnitGroupEdit>
-              <UnitGroupCreate
-                actionType='copy'
-                id={row.id}
-                version={row.version}
-                lang={lang}
-                actionRef={actionRef}
-              ></UnitGroupCreate>
               <UnitGroupDelete
                 id={row.id}
                 version={row.version}
@@ -165,24 +160,55 @@ const TableList: FC = () => {
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
               ></UnitGroupDelete>
-              <ContributeData
-                onOk={async () => {
-                  const { error } = await contributeSource('unitgroups', row.id, row.version);
-                  if (error) {
-                    console.log(error);
-                  } else {
-                    message.success(
-                      intl.formatMessage({
-                        id: 'component.contributeData.success',
-                        defaultMessage: 'Contribute successfully',
-                      }),
-                    );
-                    actionRef.current?.reload();
-                  }
+              <TableDropdown
+                style={{
+                  color: token.colorPrimary,
                 }}
-                disabled={!!row.teamId}
+                menus={[
+                  {
+                    key: 'export',
+                    name: <ExportData tableName='unitgroups' id={row.id} version={row.version} />,
+                  },
+                  {
+                    key: 'copy',
+                    name: (
+                      <UnitGroupCreate
+                        actionType='copy'
+                        id={row.id}
+                        version={row.version}
+                        lang={lang}
+                        actionRef={actionRef}
+                      ></UnitGroupCreate>
+                    ),
+                  },
+                  {
+                    key: 'contribute',
+                    name: (
+                      <ContributeData
+                        onOk={async () => {
+                          const { error } = await contributeSource(
+                            'unitgroups',
+                            row.id,
+                            row.version,
+                          );
+                          if (error) {
+                            console.log(error);
+                          } else {
+                            message.success(
+                              intl.formatMessage({
+                                id: 'component.contributeData.success',
+                                defaultMessage: 'Contribute successfully',
+                              }),
+                            );
+                            actionRef.current?.reload();
+                          }
+                        }}
+                        disabled={!!row.teamId}
+                      />
+                    ),
+                  },
+                ]}
               />
-              <ExportData tableName='unitgroups' id={row.id} version={row.version} />
             </Space>,
           ];
         }
