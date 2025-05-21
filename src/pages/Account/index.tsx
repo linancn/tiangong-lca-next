@@ -436,7 +436,7 @@ const Profile: FC = () => {
           submitter={{
             searchConfig: {
               submitText: intl.formatMessage({
-                id: 'pages.account.generateKey',
+                id: 'pages.account.apiKey.generateButton',
                 defaultMessage: 'Generate Key',
               }),
             },
@@ -479,12 +479,13 @@ const Profile: FC = () => {
               const encodedKey = btoa(jsonString);
 
               setApiKey(encodedKey);
-              message.success(
-                <FormattedMessage
-                  id='pages.account.apiKey.generated.success'
-                  defaultMessage='API Key generated successfully!'
-                />,
-              );
+
+              const successMsg = intl.formatMessage({
+                id: 'pages.account.apiKey.generated.success',
+                defaultMessage: 'API Key generated successfully!',
+              });
+              message.success(successMsg);
+
               setSpinning(false);
               return true;
             } catch (error) {

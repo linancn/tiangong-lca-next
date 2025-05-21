@@ -142,6 +142,8 @@ export default {
 
   'pages.account.generateAPIKey': 'Generate API Key',
   'pages.account.apiKey.viewed': 'Make sure to copy it to a secure location. This key will not be shown again.',
+  'pages.account.apiKey.generateButton': 'Generate Key',
+  'pages.account.apiKey.generated.success': 'API Key generated successfully!',
 
   'pages.login.passwordForgot.tab': 'Account',
 
