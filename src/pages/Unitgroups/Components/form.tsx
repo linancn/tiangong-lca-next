@@ -190,11 +190,11 @@ export const UnitGroupForm: FC<Props> = ({
               />
             }
             setRuleErrorState={setShowNameError}
-            rules={getRules(
-              schema['unitGroupDataSet']['unitGroupInformation']['dataSetInformation'][
-                'common:name'
-              ]['rules'] ?? [],
-            )}
+            // rules={getRules(
+            //   schema['unitGroupDataSet']['unitGroupInformation']['dataSetInformation'][
+            //     'common:name'
+            //   ]['rules'] ?? [],
+            // )}
           ></LangTextItemForm>
         </Card>
         <br />
@@ -210,11 +210,11 @@ export const UnitGroupForm: FC<Props> = ({
           formRef={formRef}
           dataType={'UnitGroup'}
           onData={onData}
-          rules={getRules(
-            schema['unitGroupDataSet']['unitGroupInformation']['dataSetInformation'][
-              'classificationInformation'
-            ]['common:classification']['common:class']['rules'] ?? [],
-          )}
+          // rules={getRules(
+          //   schema['unitGroupDataSet']['unitGroupInformation']['dataSetInformation'][
+          //     'classificationInformation'
+          //   ]['common:classification']['common:class']['rules'] ?? [],
+          // )}
         />
         <Card
           size='small'
@@ -265,11 +265,11 @@ export const UnitGroupForm: FC<Props> = ({
           lang={lang}
           formRef={formRef}
           onData={onData}
-          rules={getRules(
-            schema['unitGroupDataSet']['modellingAndValidation']['complianceDeclarations'][
-              'compliance'
-            ]['common:referenceToComplianceSystem']['rules'] ?? [],
-          )}
+          // rules={getRules(
+          //   schema['unitGroupDataSet']['modellingAndValidation']['complianceDeclarations'][
+          //     'compliance'
+          //   ]['common:referenceToComplianceSystem']['rules'] ?? [],
+          // )}
         />
         <br />
         <Form.Item
@@ -285,11 +285,11 @@ export const UnitGroupForm: FC<Props> = ({
             'compliance',
             'common:approvalOfOverallCompliance',
           ]}
-          rules={getRules(
-            schema['unitGroupDataSet']['modellingAndValidation']['complianceDeclarations'][
-              'compliance'
-            ]['common:approvalOfOverallCompliance']['rules'] ?? [],
-          )}
+          // rules={getRules(
+          //   schema['unitGroupDataSet']['modellingAndValidation']['complianceDeclarations'][
+          //     'compliance'
+          //   ]['common:approvalOfOverallCompliance']['rules'] ?? [],
+          // )}
         >
           <Select options={complianceOptions} />
         </Form.Item>
@@ -305,11 +305,11 @@ export const UnitGroupForm: FC<Props> = ({
             />
           }
           name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
-          rules={getRules(
-            schema['unitGroupDataSet']['administrativeInformation']['dataEntryBy'][
-              'common:timeStamp'
-            ]['rules'] ?? [],
-          )}
+          // rules={getRules(
+          //   schema['unitGroupDataSet']['administrativeInformation']['dataEntryBy'][
+          //     'common:timeStamp'
+          //   ]['rules'] ?? [],
+          // )}
         >
           <Input disabled={true} style={{ color: token.colorTextDescription }} />
         </Form.Item>
@@ -325,11 +325,11 @@ export const UnitGroupForm: FC<Props> = ({
           lang={lang}
           formRef={formRef}
           onData={onData}
-          rules={getRules(
-            schema['unitGroupDataSet']['administrativeInformation']['dataEntryBy'][
-              'common:referenceToDataSetFormat'
-            ]['rules'] ?? [],
-          )}
+          // rules={getRules(
+          //   schema['unitGroupDataSet']['administrativeInformation']['dataEntryBy'][
+          //     'common:referenceToDataSetFormat'
+          //   ]['rules'] ?? [],
+          // )}
         />
         <br />
         <Form.Item
@@ -363,11 +363,11 @@ export const UnitGroupForm: FC<Props> = ({
             'common:referenceToOwnershipOfDataSet',
           ]}
           onData={onData}
-          rules={getRules(
-            schema['unitGroupDataSet']['administrativeInformation']['publicationAndOwnership'][
-              'common:referenceToOwnershipOfDataSet'
-            ]['rules'] ?? [],
-          )}
+          // rules={getRules(
+          //   schema['unitGroupDataSet']['administrativeInformation']['publicationAndOwnership'][
+          //     'common:referenceToOwnershipOfDataSet'
+          //   ]['rules'] ?? [],
+          // )}
         />
         <br />
         {/* <UnitGroupSelectFrom

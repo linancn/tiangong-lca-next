@@ -70,4 +70,7 @@ export default {
 
   'pages.version': 'Version',
   'pages.lang.select': 'Select a lang',
+
+  'page.exportData.success': 'Export data successfully',
+  'page.exportData.error': 'Export data failed',
 };

@@ -1,5 +1,6 @@
 import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
+import ExportData from '@/components/ExportData';
 import { getContactTableAll, getContactTablePgroongaSearch } from '@/services/contacts/api';
 import { ContactTable } from '@/services/contacts/data';
 import { contributeSource } from '@/services/general/api';
@@ -165,6 +166,7 @@ const TableList: FC = () => {
                 }}
                 disabled={!!row.teamId}
               />
+              <ExportData tableName='contacts' id={row.id} version={row.version} />
             </Space>,
           ];
         }
@@ -184,6 +186,7 @@ const TableList: FC = () => {
               lang={lang}
               actionRef={actionRef}
             />
+            <ExportData tableName='contacts' id={row.id} version={row.version} />
           </Space>,
         ];
       },

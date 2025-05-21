@@ -5,6 +5,7 @@ import { FormattedMessage, useIntl, useLocation } from 'umi';
 
 import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
+import ExportData from '@/components/ExportData';
 import { FlowTable } from '@/services/flows/data';
 import { contributeSource } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
@@ -198,6 +199,7 @@ const TableList: FC = () => {
                 }}
                 disabled={!!row.teamId}
               />
+              <ExportData tableName='flows' id={row.id} version={row.version} />
             </Space>,
           ];
         }
@@ -217,6 +219,7 @@ const TableList: FC = () => {
               lang={lang}
               actionRef={actionRef}
             />
+            <ExportData tableName='flows' id={row.id} version={row.version} />
           </Space>,
         ];
       },

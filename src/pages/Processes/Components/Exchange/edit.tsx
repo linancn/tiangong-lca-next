@@ -3,7 +3,7 @@ import UnitConvert from '@/components/UnitConvert';
 import { UnitsContext } from '@/contexts/unitContext';
 import FlowsSelectForm from '@/pages/Flows/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
-import { getRules } from '@/pages/Utils';
+// import { getRules } from '@/pages/Utils';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -24,7 +24,7 @@ import {
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import schema from '../../processes_schema.json';
+// import schema from '../../processes_schema.json';
 import {
   DataDerivationTypeStatusOptions,
   dataSourceTypeOptions,
@@ -182,9 +182,9 @@ const ProcessExchangeEdit: FC<Props> = ({
                 />
               }
               name={'exchangeDirection'}
-              rules={getRules(
-                schema['processDataSet']['exchanges']['exchange'][0]['exchangeDirection']['rules'],
-              )}
+              // rules={getRules(
+              //   schema['processDataSet']['exchanges']['exchange'][0]['exchangeDirection']['rules'],
+              // )}
             >
               <Select
                 placeholder={
@@ -217,11 +217,11 @@ const ProcessExchangeEdit: FC<Props> = ({
                 drawerVisible={drawerVisible}
                 asInput={asInput}
                 onData={handletFromData}
-                rules={getRules(
-                  schema['processDataSet']['exchanges']['exchange'][0]['referenceToFlowDataSet'][
-                    'rules'
-                  ],
-                )}
+                // rules={getRules(
+                //   schema['processDataSet']['exchanges']['exchange'][0]['referenceToFlowDataSet'][
+                //     'rules'
+                //   ],
+                // )}
               />
             </UnitsContext.Provider>
             <Form.Item
@@ -265,9 +265,9 @@ const ProcessExchangeEdit: FC<Props> = ({
                 />
               }
               name={'meanAmount'}
-              rules={getRules(
-                schema['processDataSet']['exchanges']['exchange'][0]['meanAmount']['rules'],
-              )}
+              // rules={getRules(
+              //   schema['processDataSet']['exchanges']['exchange'][0]['meanAmount']['rules'],
+              // )}
             >
               <Input
                 onClick={() => {
@@ -284,9 +284,9 @@ const ProcessExchangeEdit: FC<Props> = ({
                 />
               }
               name={'resultingAmount'}
-              rules={getRules(
-                schema['processDataSet']['exchanges']['exchange'][0]['resultingAmount']['rules'],
-              )}
+              // rules={getRules(
+              //   schema['processDataSet']['exchanges']['exchange'][0]['resultingAmount']['rules'],
+              // )}
             >
               <Input
                 onClick={() => {
@@ -415,11 +415,11 @@ const ProcessExchangeEdit: FC<Props> = ({
                 />
               }
               name={'dataDerivationTypeStatus'}
-              rules={getRules(
-                schema['processDataSet']['exchanges']['exchange'][0]['dataDerivationTypeStatus'][
-                  'rules'
-                ],
-              )}
+              // rules={getRules(
+              //   schema['processDataSet']['exchanges']['exchange'][0]['dataDerivationTypeStatus'][
+              //     'rules'
+              //   ],
+              // )}
             >
               <Select options={DataDerivationTypeStatusOptions} />
             </Form.Item>

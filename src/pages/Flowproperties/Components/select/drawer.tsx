@@ -407,7 +407,9 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
             <Button
               onClick={() => {
                 const keys = selectedRowKeys?.[0]?.toString().split(':');
-                onData(keys[0], keys[1]);
+                if (keys && keys.length) {
+                  onData(keys[0], keys[1]);
+                }
                 setDrawerVisible(false);
               }}
               type='primary'

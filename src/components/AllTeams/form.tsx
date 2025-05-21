@@ -1,88 +1,48 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
-import { uploadLogoApi } from '@/services/teams/api';
+import { FileType, getBase64, getThumbFileUrls } from '@/services/supabase/storage';
 import { PlusOutlined } from '@ant-design/icons';
-import { ProFormInstance } from '@ant-design/pro-components';
-import { Card, Form, Space, Spin, Upload, message } from 'antd';
-import type { UploadFile } from 'antd/es/upload/interface';
+import { Card, Form, Space, Upload } from 'antd';
 import { FC, useEffect, useState } from 'react';
-import { FormattedMessage, useIntl } from 'umi';
-
-const LogoBaseUrl = 'https://qgzvkongdjqiiamzbbts.supabase.co/storage/v1/object/public/sys-files/';
+import { FormattedMessage } from 'umi';
 
 type Props = {
-  formRef: React.RefObject<ProFormInstance> | React.MutableRefObject<ProFormInstance | undefined>;
-  onData: () => void;
+  onLogoChange: (data: any) => void;
   lightLogoProps: string;
   darkLogoProps: string;
 };
 
-const TeamForm: FC<Props> = ({ formRef, onData, lightLogoProps, darkLogoProps }) => {
-  const [lightLogo, setLightLogo] = useState<string>('');
-  const [darkLogo, setDarkLogo] = useState<string>('');
-  const [lightLogoSpinning, setLightLogoSpinning] = useState<boolean>(false);
-  const [darkLogoSpinning, setDarkLogoSpinning] = useState<boolean>(false);
-  const intl = useIntl();
+const TeamForm: FC<Props> = ({ onLogoChange, lightLogoProps, darkLogoProps }) => {
+  const [lightLogo, setLightLogo] = useState<FileType[]>([]);
+  const [lightLogoPreviewUrl, setLightLogoPreviewUrl] = useState('');
+
+  const [darkLogo, setDarkLogo] = useState<FileType[]>([]);
+  const [darkLogoPreviewUrl, setDarkLogoPreviewUrl] = useState('');
 
   useEffect(() => {
-    setLightLogo(lightLogoProps);
-    setDarkLogo(darkLogoProps);
+    getThumbFileUrls([{ '@uri': `${lightLogoProps}` }]).then((res) => {
+      if (res[0]?.status === 'done') {
+        setLightLogoPreviewUrl(res[0]?.thumbUrl);
+      }
+    });
+
+    getThumbFileUrls([{ '@uri': `${darkLogoProps}` }]).then((res) => {
+      if (res[0]?.status === 'done') {
+        setDarkLogoPreviewUrl(res[0]?.thumbUrl);
+      }
+    });
   }, [lightLogoProps, darkLogoProps]);
 
   useEffect(() => {
-    formRef.current?.setFieldsValue({
-      lightLogo,
-      darkLogo,
-    });
-    onData();
+    onLogoChange({ lightLogo: lightLogo, darkLogo: darkLogo });
   }, [lightLogo, darkLogo]);
 
   const removeLogo = async (type: 'lightLogo' | 'darkLogo') => {
     if (type === 'lightLogo') {
-      setLightLogo('');
+      setLightLogo([]);
+      setLightLogoPreviewUrl('');
     } else {
-      setDarkLogo('');
-    }
-  };
-
-  const uploadLogo = async (fileList: UploadFile[], type: 'lightLogo' | 'darkLogo') => {
-    if (fileList.length === 0) {
-      if (type === 'lightLogo') {
-        setLightLogo('');
-        setLightLogoSpinning(false);
-      } else {
-        setDarkLogo('');
-        setDarkLogoSpinning(false);
-      }
-      return;
-    }
-
-    const file = fileList[0];
-    if (file.originFileObj) {
-      try {
-        const result = await uploadLogoApi(file.name || 'logo', file.originFileObj);
-        if (result.data?.path) {
-          if (type === 'lightLogo') {
-            setLightLogo(result.data.path);
-            setLightLogoSpinning(false);
-          } else {
-            setDarkLogo(result.data.path);
-            setDarkLogoSpinning(false);
-          }
-          onData();
-        }
-      } catch (error) {
-        message.error(
-          intl.formatMessage({
-            id: 'pages.team.uploadError',
-            defaultMessage: 'Failed to upload logo.',
-          }),
-        );
-        if (type === 'lightLogo') {
-          setLightLogoSpinning(false);
-        } else {
-          setDarkLogoSpinning(false);
-        }
-      }
+      setDarkLogo([]);
+      setDarkLogoPreviewUrl('');
     }
   };
 
@@ -181,34 +141,35 @@ const TeamForm: FC<Props> = ({ formRef, onData, lightLogoProps, darkLogoProps })
             labelCol={{ span: 4 }}
             name='lightLogo'
           >
-            <Upload
-              beforeUpload={() => {
-                setLightLogoSpinning(true);
-                return true;
-              }}
-              onRemove={() => removeLogo('lightLogo')}
-              maxCount={1}
-              listType='picture-card'
-              fileList={
-                lightLogo
-                  ? [
-                      {
-                        uid: '-1',
-                        name: 'logo',
-                        status: 'done',
-                        url: LogoBaseUrl + lightLogo,
-                      },
-                    ]
-                  : []
-              }
-              onChange={({ fileList }) => uploadLogo(fileList, 'lightLogo')}
-            >
-              {lightLogo?.length === 0 && (
-                <Spin spinning={lightLogoSpinning}>
-                  <PlusOutlined />
-                </Spin>
-              )}
-            </Upload>
+            <div>
+              <Upload
+                beforeUpload={(file) => {
+                  getBase64(file as FileType).then((url) => {
+                    setLightLogoPreviewUrl(url);
+                    setLightLogo([file]);
+                  });
+
+                  return false;
+                }}
+                onRemove={() => removeLogo('lightLogo')}
+                maxCount={1}
+                listType='picture-card'
+                fileList={
+                  lightLogoPreviewUrl && lightLogoPreviewUrl.length > 0
+                    ? [
+                        {
+                          uid: '-1',
+                          name: 'logo',
+                          status: 'done',
+                          url: lightLogoPreviewUrl,
+                        },
+                      ]
+                    : []
+                }
+              >
+                {!lightLogoPreviewUrl && <PlusOutlined />}
+              </Upload>
+            </div>
           </Form.Item>
 
           <Form.Item
@@ -218,34 +179,34 @@ const TeamForm: FC<Props> = ({ formRef, onData, lightLogoProps, darkLogoProps })
             labelCol={{ span: 4 }}
             name='darkLogo'
           >
-            <Upload
-              beforeUpload={() => {
-                setDarkLogoSpinning(true);
-                return true;
-              }}
-              onRemove={() => removeLogo('darkLogo')}
-              maxCount={1}
-              listType='picture-card'
-              fileList={
-                darkLogo
-                  ? [
-                      {
-                        uid: '-1',
-                        name: 'logo',
-                        status: 'done',
-                        url: LogoBaseUrl + darkLogo,
-                      },
-                    ]
-                  : []
-              }
-              onChange={({ fileList }) => uploadLogo(fileList, 'darkLogo')}
-            >
-              {darkLogo?.length === 0 && (
-                <Spin spinning={darkLogoSpinning}>
-                  <PlusOutlined />
-                </Spin>
-              )}
-            </Upload>
+            <div>
+              <Upload
+                beforeUpload={(file) => {
+                  getBase64(file as FileType).then((url) => {
+                    setDarkLogoPreviewUrl(url);
+                    setDarkLogo([file]);
+                  });
+                  return false;
+                }}
+                onRemove={() => removeLogo('darkLogo')}
+                maxCount={1}
+                listType='picture-card'
+                fileList={
+                  darkLogoPreviewUrl && darkLogoPreviewUrl.length > 0
+                    ? [
+                        {
+                          uid: '-1',
+                          name: 'logo',
+                          status: 'done',
+                          url: darkLogoPreviewUrl,
+                        },
+                      ]
+                    : []
+                }
+              >
+                {!darkLogoPreviewUrl && <PlusOutlined />}
+              </Upload>
+            </div>
           </Form.Item>
         </Space>
       </Card>

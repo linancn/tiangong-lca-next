@@ -1,6 +1,6 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import FlowpropertiesSelectForm from '@/pages/Flowproperties/Components/select/form';
-import { getRules } from '@/pages/Utils';
+// import { getRules } from '@/pages/Utils';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -21,7 +21,7 @@ import {
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-import schema from '../../flows_schema.json';
+// import schema from '../../flows_schema.json';
 import { dataDerivationTypeStatusOptions, uncertaintyDistributionTypeOptions } from '../optiondata';
 
 type Props = {
@@ -152,11 +152,11 @@ const PropertyEdit: FC<Props> = ({
               drawerVisible={drawerVisible}
               formRef={formRefEdit}
               onData={handletFromData}
-              rules={getRules(
-                schema['flowDataSet']['flowProperties']['flowProperty'][
-                  'referenceToFlowPropertyDataSet'
-                ]['rules'],
-              )}
+              // rules={getRules(
+              //   schema['flowDataSet']['flowProperties']['flowProperty'][
+              //     'referenceToFlowPropertyDataSet'
+              //   ]['rules'],
+              // )}
             />
             <br />
             <Form.Item
@@ -167,9 +167,9 @@ const PropertyEdit: FC<Props> = ({
                 />
               }
               name={['meanValue']}
-              rules={getRules(
-                schema['flowDataSet']['flowProperties']['flowProperty']['meanValue']['rules'],
-              )}
+              // rules={getRules(
+              //   schema['flowDataSet']['flowProperties']['flowProperty']['meanValue']['rules'],
+              // )}
             >
               <Input />
             </Form.Item>

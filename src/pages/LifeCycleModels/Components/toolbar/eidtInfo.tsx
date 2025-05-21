@@ -17,7 +17,7 @@ import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 're
 import { FormattedMessage, useIntl } from 'umi';
 import { LifeCycleModelForm } from '../form';
 // const { TextArea } = Input;
-import { checkRequiredFields } from '@/pages/Utils';
+// import { checkRequiredFields } from '@/pages/Utils';
 import { getRefData, updateReviewIdAndStateCode } from '@/services/general/api';
 import {
   getLifeCycleModelDetail,
@@ -27,7 +27,7 @@ import { getProcessDetail, updateProcessStateCode } from '@/services/processes/a
 import { addReviewsApi } from '@/services/reviews/api';
 import { getUserTeamId } from '@/services/roles/api';
 import { v4 } from 'uuid';
-import requiredFields from '../../requiredFields';
+// import requiredFields from '../../requiredFields';
 
 type Props = {
   lang: string;
@@ -387,12 +387,12 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
                 },
               }}
               onFinish={async () => {
-                const { checkResult, tabName } = checkRequiredFields(requiredFields, fromData);
-                if (!checkResult) {
-                  await setActiveTabKey(tabName);
-                  formRefEdit.current?.validateFields();
-                  return false;
-                }
+                // const { checkResult, tabName } = checkRequiredFields(requiredFields, fromData);
+                // if (!checkResult) {
+                //   await setActiveTabKey(tabName);
+                //   formRefEdit.current?.validateFields();
+                //   return false;
+                // }
                 onData({ ...fromData });
                 formRefEdit.current?.resetFields();
                 setDrawerVisible(false);

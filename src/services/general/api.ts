@@ -15,6 +15,17 @@ import {
   getILCDLocationByValues,
 } from '../ilcd/api';
 import { genProcessName } from '../processes/util';
+
+export async function exportDataApi(tableName: string, id: string, version: string) {
+  const result = await supabase
+    .from(tableName)
+    .select('json_ordered')
+    .eq('id', id)
+    .eq('version', version)
+    .throwOnError();
+  return result;
+}
+
 export async function getDataDetail(id: string, version: string, table: string) {
   let result: any = {};
   if (id && id.length === 36) {
@@ -66,12 +77,9 @@ export async function getRefData(id: string, version: string, table: string, tea
       success: false,
     });
   }
-  const session = await supabase.auth.getSession();
-  let query = supabase
-    .from(table)
-    .select('state_code,json')
-    .eq('id', id)
-    .eq('user_id', session?.data?.session?.user?.id);
+  // const session = await supabase.auth.getSession();
+  let query = supabase.from(table).select('state_code,json').eq('id', id);
+  // .eq('user_id', session?.data?.session?.user?.id);
 
   let result: any = {};
 

@@ -1,5 +1,5 @@
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
-import { checkRequiredFields } from '@/pages/Utils';
+// import { checkRequiredFields } from '@/pages/Utils';
 import { getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
 import { getRefData, updateReviewIdAndStateCode } from '@/services/general/api';
@@ -30,7 +30,7 @@ import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
-import requiredFields from '../requiredFields';
+// import requiredFields from '../requiredFields';
 import { ProcessForm } from './form';
 type Props = {
   id: string;
@@ -435,34 +435,34 @@ const ProcessEdit: FC<Props> = ({
                 },
               }}
               onFinish={async () => {
-                const { checkResult, tabName } = checkRequiredFields(requiredFields, fromData);
-                if (!checkResult) {
-                  await setActiveTabKey(tabName);
-                  formRefEdit.current?.validateFields();
-                  return false;
-                }
-                const exchanges = fromData?.exchanges;
-                if (!exchanges || !exchanges?.exchange || exchanges?.exchange?.length === 0) {
-                  message.error(
-                    intl.formatMessage({
-                      id: 'pages.process.validator.exchanges.required',
-                      defaultMessage: 'Please select exchanges',
-                    }),
-                  );
-                  return false;
-                } else if (
-                  exchanges?.exchange.filter((item: any) => item?.quantitativeReference).length !==
-                  1
-                ) {
-                  message.error(
-                    intl.formatMessage({
-                      id: 'pages.process.validator.exchanges.quantitativeReference.required',
-                      defaultMessage:
-                        'Exchange needs to have exactly one quantitative reference open',
-                    }),
-                  );
-                  return false;
-                }
+                // const { checkResult, tabName } = checkRequiredFields(requiredFields, fromData);
+                // if (!checkResult) {
+                //   await setActiveTabKey(tabName);
+                //   formRefEdit.current?.validateFields();
+                //   return false;
+                // }
+                // const exchanges = fromData?.exchanges;
+                // if (!exchanges || !exchanges?.exchange || exchanges?.exchange?.length === 0) {
+                //   message.error(
+                //     intl.formatMessage({
+                //       id: 'pages.process.validator.exchanges.required',
+                //       defaultMessage: 'Please select exchanges',
+                //     }),
+                //   );
+                //   return false;
+                // } else if (
+                //   exchanges?.exchange.filter((item: any) => item?.quantitativeReference).length !==
+                //   1
+                // ) {
+                //   message.error(
+                //     intl.formatMessage({
+                //       id: 'pages.process.validator.exchanges.quantitativeReference.required',
+                //       defaultMessage:
+                //         'Exchange needs to have exactly one quantitative reference open',
+                //     }),
+                //   );
+                //   return false;
+                // }
                 setSpinning(true);
                 const updateResult = await updateProcess(id, version, {
                   ...fromData,
