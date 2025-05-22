@@ -387,7 +387,7 @@ export async function getLifeCycleModelTablePgroongaSearch(
 export async function getLifeCycleModelDetail(id: string, version: string) {
   const result = await supabase
     .from('lifecyclemodels')
-    .select('json, json_tg,state_code')
+    .select('json, json_tg,state_code,rule_verification')
     .eq('id', id)
     .eq('version', version);
   if (result.data && result.data.length > 0) {
@@ -395,9 +395,11 @@ export async function getLifeCycleModelDetail(id: string, version: string) {
     return Promise.resolve({
       data: {
         id: id,
+        version: version,
         json: data.json,
         json_tg: data?.json_tg,
         state_code: data?.state_code,
+        rule_verification: data?.rule_verification,
       },
       success: true,
     });

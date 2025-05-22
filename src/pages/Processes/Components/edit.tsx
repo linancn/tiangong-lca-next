@@ -278,6 +278,12 @@ const ProcessEdit: FC<Props> = ({
             await checkReferences(subRefs, checkedIds);
           }
         } else {
+          message.error(
+            intl.formatMessage({
+              id: 'pages.process.review.submitError',
+              defaultMessage: 'Submit review failed',
+            }),
+          );
           return false;
         }
       }
@@ -297,7 +303,6 @@ const ProcessEdit: FC<Props> = ({
       setSpinning(false);
       return;
     }
-    // console.log('checkResult', checkResult);
 
     if (checkResult) {
       const reviewId = v4();
@@ -325,10 +330,6 @@ const ProcessEdit: FC<Props> = ({
       let stateCode = 0;
       if (!error && data && data.length) {
         stateCode = data[0]?.state_code;
-        // console.log('stateCode', stateCode)
-
-        // console.log('updateResult', data)
-        // console.log('unReview', unReview)
 
         if (lifeCycleModelStateCode < 20) {
           await updateLifeCycleModelStateCode(id, version, stateCode);
