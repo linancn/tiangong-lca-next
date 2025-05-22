@@ -26,8 +26,8 @@ const ExportData: FC<ExportDataProps> = ({ tableName, id, version }) => {
       }
       const jsonData =
         tableName === 'lifecyclemodels'
-          ? data.map((item) => ({ ...item.json_ordered, json_tg: item.json_tg }))
-          : data.map((item) => item.json_ordered);
+          ? data.map((item: any) => ({ ...item?.json_ordered, json_tg: item?.json_tg }))
+          : data.map((item) => item?.json_ordered);
       const jsonString = JSON.stringify(jsonData, null, 2);
       const blob = new Blob([jsonString], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
