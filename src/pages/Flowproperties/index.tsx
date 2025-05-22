@@ -18,6 +18,7 @@ import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 // import ReferenceUnit from '../Unitgroups/Components/Unit/reference';
 import ExportData from '@/components/ExportData';
+import ImportData from '@/components/ImportData';
 import { getUnitData } from '@/services/general/util';
 import { TableDropdown } from '@ant-design/pro-table';
 import { theme } from 'antd';
@@ -32,6 +33,7 @@ const { Search } = Input;
 const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<any>('');
   const [team, setTeam] = useState<any>(null);
+  const [importData, setImportData] = useState<any>(null);
   const { token } = theme.useToken();
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
@@ -266,7 +268,9 @@ const TableList: FC = () => {
     actionRef.current?.setPageInfo?.({ current: 1 });
     actionRef.current?.reload();
   };
-
+  const handleImportData = (jsonData: any) => {
+    setImportData(jsonData);
+  };
   return (
     <PageContainer
       header={{
@@ -299,7 +303,17 @@ const TableList: FC = () => {
         }}
         toolBarRender={() => {
           if (dataSource === 'my') {
-            return [<FlowpropertiesCreate lang={lang} key={0} actionRef={actionRef} />];
+            return [
+              <FlowpropertiesCreate
+                isInToolbar={true}
+                importData={importData}
+                onClose={() => setImportData(null)}
+                lang={lang}
+                key={0}
+                actionRef={actionRef}
+              />,
+              <ImportData onJsonData={handleImportData} key={1} />,
+            ];
           }
           return [];
         }}

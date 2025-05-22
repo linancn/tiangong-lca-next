@@ -17,12 +17,18 @@ import {
 import { genProcessName } from '../processes/util';
 
 export async function exportDataApi(tableName: string, id: string, version: string) {
-  const result = await supabase
-    .from(tableName)
-    .select('json_ordered')
-    .eq('id', id)
-    .eq('version', version)
-    .throwOnError();
+  let query;
+  if (tableName === 'lifecyclemodels') {
+    query = supabase
+      .from(tableName)
+      .select(`json_ordered,json_tg`)
+      .eq('id', id)
+      .eq('version', version);
+  } else {
+    query = supabase.from(tableName).select(`json_ordered`).eq('id', id).eq('version', version);
+  }
+
+  const result = await query;
   return result;
 }
 

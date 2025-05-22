@@ -36,6 +36,8 @@ type Props = {
   action: string;
   setIsSave: (isSave: boolean) => void;
   actionType?: 'create' | 'copy' | 'createVersion';
+  importData?: any;
+  onClose?: () => void;
 };
 
 const ToolbarEdit: FC<Props> = ({
@@ -47,6 +49,8 @@ const ToolbarEdit: FC<Props> = ({
   action,
   setIsSave,
   actionType,
+  importData,
+  onClose = () => {},
 }) => {
   const [thisId, setThisId] = useState(id);
   const [thisVersion, setThisVersion] = useState(version);
@@ -876,7 +880,57 @@ const ToolbarEdit: FC<Props> = ({
   });
 
   useEffect(() => {
-    if (!drawerVisible) return;
+    if (!drawerVisible) {
+      onClose();
+      setInfoData({});
+      setNodeCount(0);
+      return;
+    }
+    if (importData && importData.length > 0) {
+      const formData = genLifeCycleModelInfoFromData(importData[0].lifeCycleModelDataSet);
+      setInfoData(formData);
+      const model = genLifeCycleModelData(importData[0]?.json_tg ?? {}, lang);
+      let initNodes = (model?.nodes ?? []).map((node: any) => {
+        return {
+          ...node,
+          attrs: nodeAttrs,
+          ports: {
+            ...node.ports,
+            groups: ports.groups,
+          },
+          tools: [
+            node?.data?.quantitativeReference === '1' ? refTool : nonRefTool,
+            nodeTitleTool(node?.width ?? 0, genProcessName(node?.data?.label, lang) ?? ''),
+            inputFlowTool,
+            outputFlowTool,
+          ],
+        };
+      });
+      const initEdges =
+        model?.edges?.map((edge: any) => {
+          if (edge.target) {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { x, y, ...targetRest } = edge.target as any;
+            return {
+              ...edge,
+              attrs: {
+                line: {
+                  stroke: token.colorPrimary,
+                },
+              },
+              target: targetRest,
+            };
+          }
+          return edge;
+        }) ?? [];
+      modelData({
+        nodes: initNodes,
+        edges: initEdges,
+      });
+
+      setNodeCount(initNodes.length);
+      return;
+    }
     if (id !== '') {
       setIsSave(false);
       setSpinning(true);

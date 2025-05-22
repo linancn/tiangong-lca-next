@@ -1,6 +1,7 @@
 import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
 import ExportData from '@/components/ExportData';
+import ImportData from '@/components/ImportData';
 import { getContactTableAll, getContactTablePgroongaSearch } from '@/services/contacts/api';
 import { ContactTable } from '@/services/contacts/data';
 import { contributeSource } from '@/services/general/api';
@@ -25,8 +26,8 @@ const { Search } = Input;
 const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<any>('');
   const [team, setTeam] = useState<any>(null);
+  const [importData, setImportData] = useState<any>(null);
   const { token } = theme.useToken();
-
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
 
@@ -231,6 +232,10 @@ const TableList: FC = () => {
     actionRef.current?.reload();
   };
 
+  const handleImportData = (jsonData: any) => {
+    setImportData(jsonData);
+  };
+
   return (
     <PageContainer
       header={{
@@ -263,7 +268,17 @@ const TableList: FC = () => {
         }}
         toolBarRender={() => {
           if (dataSource === 'my') {
-            return [<ContactCreate lang={lang} key={0} actionRef={actionRef} />];
+            return [
+              <ContactCreate
+                isInToolbar={true}
+                importData={importData}
+                onClose={() => setImportData(null)}
+                lang={lang}
+                key={0}
+                actionRef={actionRef}
+              />,
+              <ImportData onJsonData={handleImportData} key={1} />,
+            ];
           }
           return [];
         }}

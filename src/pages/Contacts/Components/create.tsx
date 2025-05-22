@@ -17,6 +17,9 @@ type Props = {
   actionType?: 'create' | 'copy' | 'createVersion';
   id?: string;
   version?: string;
+  importData?: any;
+  onClose?: () => void;
+  isInToolbar?: boolean;
 };
 
 // When type is 'copy' or 'createVersion', id and version are required parameters
@@ -39,6 +42,9 @@ const ContactCreate: FC<CreateProps> = ({
   actionType = 'create',
   id,
   version,
+  importData,
+  onClose = () => {},
+  isInToolbar = false,
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [fromData, setFromData] = useState<any>({});
@@ -78,7 +84,25 @@ const ContactCreate: FC<CreateProps> = ({
   };
 
   useEffect(() => {
-    if (!drawerVisible) return;
+    if (importData && importData.length > 0 && !drawerVisible) {
+      setDrawerVisible(true);
+    }
+  }, [importData]);
+
+  useEffect(() => {
+    if (!drawerVisible) {
+      onClose();
+      formRefCreate.current?.resetFields();
+      setInitData({});
+      setFromData({});
+      return;
+    }
+    if (importData && importData.length > 0) {
+      const formData = genContactFromData(importData[0].contactDataSet);
+      formRefCreate.current?.setFieldsValue({ ...formData });
+      setFromData({ ...formData });
+      return;
+    }
     if (actionType === 'copy' || actionType === 'createVersion') {
       getFormDetail();
       return;
@@ -139,7 +163,8 @@ const ContactCreate: FC<CreateProps> = ({
           />
         ) : (
           <Button
-            size={'middle'}
+            style={isInToolbar ? { width: 'inherit', paddingInline: '4px' } : {}}
+            size={isInToolbar ? 'large' : 'middle'}
             type='text'
             icon={<PlusOutlined />}
             onClick={() => {
