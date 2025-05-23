@@ -131,7 +131,7 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                       setRuleErrorState={setReviewDetailsError}
                       rules={getRules(
                         schema['processDataSet']['modellingAndValidation']['validation']['review'][
-                          'reviewDetails'
+                          'common:reviewDetails'
                         ]['rules'],
                       )}
                     />
