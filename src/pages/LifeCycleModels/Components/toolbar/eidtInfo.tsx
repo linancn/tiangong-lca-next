@@ -197,7 +197,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
     const unReview: any[] = [];
     const unReviewProcesses: any[] = [];
     const unRuleVerification: any[] = [];
-
+    let getRefError = false;
     const checkReferences = async (
       refs: any[],
       checkedIds = new Set<string>(),
@@ -235,12 +235,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
             await checkReferences(subRefs, checkedIds);
           }
         } else {
-          message.error(
-            intl.formatMessage({
-              id: 'pages.process.review.submitError',
-              defaultMessage: 'Submit review failed',
-            }),
-          );
+          getRefError = true;
           return false;
         }
       }
@@ -283,8 +278,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
           return false;
         }
       }
-
-      if (lifeCycleModelDetail?.data?.rule_verification) {
+      if (!lifeCycleModelDetail?.data?.rule_verification) {
         unRuleVerification.unshift({
           '@type': 'lifeCycleModel data set',
           '@refObjectId': lifeCycleModelDetail?.data?.id,
@@ -294,6 +288,17 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
 
       if (unRuleVerification.length > 0) {
         showUnRuleVerification(unRuleVerification);
+        setSpinning(false);
+        return;
+      }
+
+      if (getRefError) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.process.review.submitError',
+            defaultMessage: 'Submit review failed',
+          }),
+        );
         setSpinning(false);
         return;
       }

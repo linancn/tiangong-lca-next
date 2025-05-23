@@ -226,8 +226,8 @@ const ProcessEdit: FC<Props> = ({
 
     const refObjs = getAllRefObj(fromData);
     const unReview: any[] = [];
-
     const unRuleVerification: any[] = [];
+    let getRefError = false;
     if (initData.stateCode >= 20 && initData.stateCode < 100) {
       message.error(
         intl.formatMessage({
@@ -278,12 +278,7 @@ const ProcessEdit: FC<Props> = ({
             await checkReferences(subRefs, checkedIds);
           }
         } else {
-          message.error(
-            intl.formatMessage({
-              id: 'pages.process.review.submitError',
-              defaultMessage: 'Submit review failed',
-            }),
-          );
+          getRefError = true;
           return false;
         }
       }
@@ -291,6 +286,16 @@ const ProcessEdit: FC<Props> = ({
     };
 
     const checkResult = await checkReferences(refObjs);
+    if (getRefError) {
+      message.error(
+        intl.formatMessage({
+          id: 'pages.process.review.submitError',
+          defaultMessage: 'Submit review failed',
+        }),
+      );
+      setSpinning(false);
+      return;
+    }
     if (unRuleVerification.length > 0) {
       if (!initData?.ruleVerification) {
         unRuleVerification.unshift({
@@ -369,7 +374,12 @@ const ProcessEdit: FC<Props> = ({
     setSpinning(true);
     getProcessDetail(id, version).then(async (result: any) => {
       const dataSet = genProcessFromData(result.data?.json?.processDataSet ?? {});
-      setInitData({ ...dataSet, id: id, stateCode: result.data?.stateCode });
+      setInitData({
+        ...dataSet,
+        id: id,
+        stateCode: result.data?.stateCode,
+        ruleVerification: result.data?.ruleVerification,
+      });
       setFromData({ ...dataSet, id: id });
       setExchangeDataSource(dataSet?.exchanges?.exchange ?? []);
       formRefEdit.current?.resetFields();
