@@ -112,20 +112,22 @@
         },
         "classificationInformation": {
           "common:classification": {
-            "common:class": {
-              "@level": "str",
-              "@classId": {
-                "value": "str",
-                "rules": [
-                  {
-                    "required": true,
-                    "messageKey": "pages.process.validator.class.required",
-                    "defaultMessage": "Please input classification"
-                  }
-                ]
-              },
-              "#text": "str"
-            }
+            "common:class": [
+              {
+                "@level": "str",
+                "@classId": {
+                  "value": "str",
+                  "rules": [
+                    {
+                      "required": true,
+                      "messageKey": "pages.process.validator.class.required",
+                      "defaultMessage": "Please input classification"
+                    }
+                  ]
+                },
+                "#text": "str"
+              }
+            ]
           }
         },
         "common:generalComment": {
@@ -530,7 +532,7 @@
               }
             ]
           },
-          "scope": {
+          "common:scope": {
             "@name": {
               "value": "str",
               "rules": [
@@ -541,7 +543,7 @@
                 }
               ]
             },
-            "method": {
+            "common:method": {
               "@name": {
                 "value": "str",
                 "rules": [
@@ -560,7 +562,7 @@
               "@value": "str"
             }
           },
-          "reviewDetails": {
+          "common:reviewDetails": {
             "value": [
               {
                 "@xml:lang": "str",
@@ -1096,7 +1098,6 @@
           "value": "str",
           "rules": [
             {
-              "required": true,
               "messageKey": "pages.process.validator.meanAmount.required",
               "defaultMessage": "Please input mean amount"
             }

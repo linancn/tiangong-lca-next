@@ -136,20 +136,22 @@
         },
         "classificationInformation": {
           "common:classification": {
-            "common:class": {
-              "@level": "str",
-              "@classId": {
-                "value": "str",
-                "rules": [
-                  {
-                    "required": true,
-                    "messageKey": "pages.lifecyclemodel.validator.class.required",
-                    "defaultMessage": "Please input classification"
-                  }
-                ]
-              },
-              "#text": "str"
-            }
+            "common:class": [
+              {
+                "@level": "str",
+                "@classId": {
+                  "value": "str",
+                  "rules": [
+                    {
+                      "required": true,
+                      "messageKey": "pages.lifecyclemodel.validator.class.required",
+                      "defaultMessage": "Please input classification"
+                    }
+                  ]
+                },
+                "#text": "str"
+              }
+            ]
           }
         },
         "referenceToResultingProcess": {

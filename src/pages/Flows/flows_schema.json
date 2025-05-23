@@ -128,7 +128,6 @@
                 "value": "str",
                 "rules": [
                   {
-                    "required": true,
                     "messageKey": "pages.flow.validator.category.required",
                     "defaultMessage": "Please input elementary flow categorization"
                   }
@@ -141,20 +140,22 @@
           "common:classification": {
             "@name": "str",
             "@classes": "str",
-            "common:class": {
-              "@level": "str",
-              "@classId": {
-                "vlaue": "str",
-                "rules": [
-                  {
-                    "required": true,
-                    "messageKey": "pages.flow.validator.class.required",
-                    "defaultMessage": "Please input classification"
-                  }
-                ]
-              },
-              "#text": "str"
-            }
+            "common:class": [
+              {
+                "@level": "str",
+                "@classId": {
+                  "vlaue": "str",
+                  "rules": [
+                    {
+                      "required": true,
+                      "messageKey": "pages.flow.validator.class.required",
+                      "defaultMessage": "Please input classification"
+                    }
+                  ]
+                },
+                "#text": "str"
+              }
+            ]
           }
         },
         "CASNumber": {

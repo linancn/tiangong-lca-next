@@ -40,20 +40,22 @@
         },
         "classificationInformation": {
           "common:classification": {
-            "common:class": {
-              "@level": "str",
-              "#text": "str",
-              "@classId": {
-                "value": "str",
-                "rules": [
-                  {
-                    "required": true,
-                    "messageKey": "pages.contact.validator.classification.required",
-                    "defaultMessage": "Please input classification"
-                  }
-                ]
+            "common:class": [
+              {
+                "@level": "str",
+                "#text": "str",
+                "@classId": {
+                  "value": "str",
+                  "rules": [
+                    {
+                      "required": true,
+                      "messageKey": "pages.contact.validator.classification.required",
+                      "defaultMessage": "Please input classification"
+                    }
+                  ]
+                }
               }
-            },
+            ],
             "@name": "str",
             "@classes": "str"
           }
