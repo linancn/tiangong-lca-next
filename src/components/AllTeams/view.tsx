@@ -106,7 +106,16 @@ const TeamView: FC<Props> = ({ id, buttonType }) => {
               labelStyle={{ width: '120px' }}
             >
               {initData?.json?.darkLogoPreviewUrl ? (
-                <Image width={100} src={initData?.json?.darkLogoPreviewUrl} alt='Dark Logo' />
+                <Image
+                  style={
+                    initData?.json?.darkLogoPreviewUrl
+                      ? { background: '#141414', display: 'inline-block', borderRadius: '8px' }
+                      : {}
+                  }
+                  width={100}
+                  src={initData?.json?.darkLogoPreviewUrl}
+                  alt='Dark Logo'
+                />
               ) : (
                 '-'
               )}

@@ -10,6 +10,11 @@ import {
 import { getILCDClassification } from '../ilcd/api';
 import { genProcessName } from '../processes/util';
 import { genLifeCycleModelJsonOrdered, genLifeCycleModelProcess } from './util';
+
+import schema from '@/pages/LifeCycleModels/lifecyclemodels.json';
+import processSchema from '@/pages/Processes/processes_schema.json';
+import { getRuleVerification } from '../general/util';
+
 const updateLifeCycleModelProcess = async (
   id: string,
   version: string,
@@ -29,9 +34,10 @@ const updateLifeCycleModelProcess = async (
       data?.lifeCycleModelDataSet,
       oldData,
     );
+    const rule_verification = getRuleVerification(processSchema, newData);
     const uResult = await supabase
       .from('processes')
-      .update({ json_ordered: newData })
+      .update({ json_ordered: newData, rule_verification })
       .eq('id', id)
       .eq('version', version)
       .select();
@@ -54,9 +60,10 @@ const updateLifeCycleModelProcess = async (
       data?.lifeCycleModelDataSet,
       oldData,
     );
+    const rule_verification = getRuleVerification(processSchema, newData);
     const cResult = await supabase
       .from('processes')
-      .insert([{ id: id, json_ordered: newData }])
+      .insert([{ id: id, json_ordered: newData, rule_verification }])
       .select();
     return cResult;
   }
@@ -76,10 +83,13 @@ export async function createLifeCycleModel(data: any) {
     },
   };
   const newData = genLifeCycleModelJsonOrdered(data.id, data, oldData);
+  const rule_verification = getRuleVerification(schema, newData);
   // const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('lifecyclemodels')
-    .insert([{ id: data.id, json_ordered: newData, json_tg: { xflow: data?.model } }])
+    .insert([
+      { id: data.id, json_ordered: newData, json_tg: { xflow: data?.model }, rule_verification },
+    ])
     .select();
   if (result.data && result.data.length === 1) {
     const refNode = data?.model?.nodes.find((i: any) => i?.data?.quantitativeReference === '1');
@@ -97,9 +107,10 @@ export async function updateLifeCycleModel(data: any) {
   if (result.data && result.data.length === 1) {
     const oldData = result.data[0].json;
     const newData = genLifeCycleModelJsonOrdered(data.id, data, oldData);
+    const rule_verification = getRuleVerification(schema, newData);
     const updateResult = await supabase
       .from('lifecyclemodels')
-      .update({ json_ordered: newData, json_tg: { xflow: data?.model } })
+      .update({ json_ordered: newData, json_tg: { xflow: data?.model }, rule_verification })
       .eq('id', data.id)
       .eq('version', data.version)
       .select();
@@ -376,7 +387,7 @@ export async function getLifeCycleModelTablePgroongaSearch(
 export async function getLifeCycleModelDetail(id: string, version: string) {
   const result = await supabase
     .from('lifecyclemodels')
-    .select('json, json_tg,state_code')
+    .select('json, json_tg,state_code,rule_verification')
     .eq('id', id)
     .eq('version', version);
   if (result.data && result.data.length > 0) {
@@ -384,9 +395,11 @@ export async function getLifeCycleModelDetail(id: string, version: string) {
     return Promise.resolve({
       data: {
         id: id,
+        version: version,
         json: data.json,
         json_tg: data?.json_tg,
         state_code: data?.state_code,
+        rule_verification: data?.rule_verification,
       },
       success: true,
     });

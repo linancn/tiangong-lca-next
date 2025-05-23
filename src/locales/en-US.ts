@@ -2,6 +2,7 @@ import component from './en-US/component';
 import component_allTeams from './en-US/component_allTeams';
 import component_allVersions from './en-US/component_allVersions';
 import component_contributeData from './en-US/component_contributeData';
+import importData from './en-US/component_importData';
 import globalHeader from './en-US/globalHeader';
 import menu from './en-US/menu';
 import pages from './en-US/pages';
@@ -54,4 +55,5 @@ export default {
   ...component_allVersions,
   ...pages_manageSystem,
   ...pages_review,
+  ...importData,
 };

@@ -555,3 +555,85 @@ export function getDataSource(pathname: string) {
   }
   return '';
 }
+
+export function getRuleVerification(schema: any, data: any) {
+  const result: any = { valid: true, errors: [] };
+  const requiredPaths: Array<{ path: string; rule: any }> = [];
+
+  const collectRequiredPaths = (schemaObj: any, path: string = '') => {
+    if (!schemaObj || typeof schemaObj !== 'object') return;
+
+    Object.keys(schemaObj).forEach((key) => {
+      const currentPath = path ? `${path}.${key}` : key;
+      const schemaValue = schemaObj[key];
+
+      if (schemaValue && schemaValue.rules) {
+        const rules = schemaValue.rules;
+        for (const rule of rules) {
+          if (rule.required) {
+            requiredPaths.push({
+              path: currentPath,
+              rule: rule,
+            });
+            break;
+          }
+        }
+      }
+
+      if (schemaValue && typeof schemaValue === 'object' && !schemaValue.rules) {
+        collectRequiredPaths(schemaValue, currentPath);
+      }
+    });
+  };
+
+  const getValueByPath = (obj: any, path: string) => {
+    if (!obj) return undefined;
+
+    if (path.includes('.')) {
+      const parts = path.split('.');
+      let current = obj;
+
+      for (const part of parts) {
+        if (current === undefined || current === null) return undefined;
+        current = current[part];
+      }
+
+      return current;
+    }
+
+    return obj[path];
+  };
+
+  const isEmpty = (value: any) => {
+    if (value === undefined || value === null) return true;
+    if (typeof value === 'string' && value.trim() === '') return true;
+    if (Array.isArray(value) && value.length === 0) return true;
+    if (typeof value === 'object' && Object.keys(value).length === 0) return true;
+    return false;
+  };
+
+  collectRequiredPaths(schema);
+
+  // console.log('requiredPaths', requiredPaths);
+
+  requiredPaths.forEach(({ path, rule }) => {
+    let value = getValueByPath(data, path);
+
+    if (value && typeof value === 'object' && value.value !== undefined) {
+      value = value.value;
+    }
+
+    if (isEmpty(value)) {
+      result.valid = false;
+      result.errors.push({
+        path,
+        message: rule.defaultMessage || rule.messageKey,
+        rule: 'required',
+      });
+    }
+  });
+
+  // console.log('result', result);
+
+  return result.valid;
+}

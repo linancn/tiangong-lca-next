@@ -34,8 +34,8 @@ const ScopeItemForm: FC<Props> = ({ name }) => {
                     name={[subField.name, '@name']}
                     rules={getRules(
                       schema['processDataSet']['modellingAndValidation']['validation']['review'][
-                        'scope'
-                      ]['@name']['rules'],
+                        'common:scope'
+                      ]['common:method']['@name']['rules'],
                     )}
                   >
                     <Select options={scopeNameOptions} />
@@ -57,8 +57,8 @@ const ScopeItemForm: FC<Props> = ({ name }) => {
                     name={[subField.name, 'common:method', '@name']}
                     rules={getRules(
                       schema['processDataSet']['modellingAndValidation']['validation']['review'][
-                        'scope'
-                      ]['method']['@name']['rules'],
+                        'common:scope'
+                      ]['common:method']['@name']['rules'],
                     )}
                   >
                     <Select options={methodNameOptions} />

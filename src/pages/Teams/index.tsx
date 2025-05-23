@@ -557,7 +557,13 @@ const Team = () => {
                 ) : undefined
               }
             >
-              <div>
+              <div
+                style={
+                  darkLogoPreviewUrl
+                    ? { background: '#141414', display: 'inline-block', borderRadius: '8px' }
+                    : {}
+                }
+              >
                 <Upload
                   disabled={
                     (userRole !== 'admin' && userRole !== 'owner' && action !== 'create') ||

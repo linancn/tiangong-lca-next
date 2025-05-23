@@ -1,6 +1,7 @@
 import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
 import ExportData from '@/components/ExportData';
+import ImportData from '@/components/ImportData';
 import { contributeSource } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
 import { getDataSource, getLang, getLangText } from '@/services/general/util';
@@ -11,7 +12,8 @@ import {
 import { LifeCycleModelTable } from '@/services/lifeCycleModels/data';
 import { getTeamById } from '@/services/teams/api';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Card, Input, Space, Tooltip, message } from 'antd';
+import { TableDropdown } from '@ant-design/pro-table';
+import { Card, Input, Space, Tooltip, message, theme } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
@@ -21,12 +23,14 @@ import LifeCycleModelCreate from './Components/create';
 import LifeCycleModelDelete from './Components/delete';
 import LifeCycleModelEdit from './Components/edit';
 import LifeCycleModelView from './Components/view';
+
 const { Search } = Input;
 
 const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<any>('');
   const [team, setTeam] = useState<any>(null);
-
+  const [importData, setImportData] = useState<any>(null);
+  const { token } = theme.useToken();
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
 
@@ -132,14 +136,6 @@ const TableList: FC = () => {
                 actionRef={actionRef}
                 buttonType={'icon'}
               />
-              <LifeCycleModelCreate
-                actionType='copy'
-                id={row.id}
-                version={row.version}
-                lang={lang}
-                actionRef={actionRef}
-                buttonType={'icon'}
-              />
               <LifeCycleModelDelete
                 id={row.id}
                 version={row.version}
@@ -147,24 +143,58 @@ const TableList: FC = () => {
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
               />
-              <ContributeData
-                onOk={async () => {
-                  const { error } = await contributeSource('lifecyclemodels', row.id, row.version);
-                  if (error) {
-                    console.log(error);
-                  } else {
-                    message.success(
-                      intl.formatMessage({
-                        id: 'component.contributeData.success',
-                        defaultMessage: 'Contribute successfully',
-                      }),
-                    );
-                    actionRef.current?.reload();
-                  }
+              <TableDropdown
+                style={{
+                  color: token.colorPrimary,
                 }}
-                disabled={!!row.teamId}
+                menus={[
+                  {
+                    key: 'export',
+                    name: (
+                      <ExportData tableName='lifecyclemodels' id={row.id} version={row.version} />
+                    ),
+                  },
+                  {
+                    key: 'copy',
+                    name: (
+                      <LifeCycleModelCreate
+                        actionType='copy'
+                        id={row.id}
+                        version={row.version}
+                        lang={lang}
+                        actionRef={actionRef}
+                        buttonType={'icon'}
+                      />
+                    ),
+                  },
+                  {
+                    key: 'contribute',
+                    name: (
+                      <ContributeData
+                        onOk={async () => {
+                          const { error } = await contributeSource(
+                            'lifecyclemodels',
+                            row.id,
+                            row.version,
+                          );
+                          if (error) {
+                            console.log(error);
+                          } else {
+                            message.success(
+                              intl.formatMessage({
+                                id: 'component.contributeData.success',
+                                defaultMessage: 'Contribute successfully',
+                              }),
+                            );
+                            actionRef.current?.reload();
+                          }
+                        }}
+                        disabled={!!row.teamId}
+                      />
+                    ),
+                  },
+                ]}
               />
-              <ExportData tableName='lifecyclemodels' id={row.id} version={row.version} />
             </Space>,
           ];
         }
@@ -200,7 +230,9 @@ const TableList: FC = () => {
       if (res.data.length > 0) setTeam(res.data[0]);
     });
   }, []);
-
+  const handleImportData = (jsonData: any) => {
+    setImportData(jsonData);
+  };
   return (
     <PageContainer
       header={{
@@ -235,11 +267,15 @@ const TableList: FC = () => {
           if (dataSource === 'my') {
             return [
               <LifeCycleModelCreate
+                isInToolbar={true}
+                importData={importData}
+                onClose={() => setImportData(null)}
                 key={0}
                 lang={lang}
                 actionRef={actionRef}
                 buttonType={'icon'}
               />,
+              <ImportData onJsonData={handleImportData} key={1} />,
             ];
           }
           return [];

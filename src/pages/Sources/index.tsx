@@ -7,11 +7,14 @@ import { FormattedMessage, useIntl, useLocation } from 'umi';
 import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
 import ExportData from '@/components/ExportData';
+import ImportData from '@/components/ImportData';
 import { ListPagination } from '@/services/general/data';
 import { getDataSource, getLang, getLangText } from '@/services/general/util';
 import { SourceTable } from '@/services/sources/data';
 import { getTeamById } from '@/services/teams/api';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
+import { TableDropdown } from '@ant-design/pro-table';
+import { theme } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { getAllVersionsColumns, getDataTitle } from '../Utils';
@@ -19,13 +22,13 @@ import SourceCreate from './Components/create';
 import SourceDelete from './Components/delete';
 import SourceEdit from './Components/edit';
 import SourceView from './Components/view';
-
 const { Search } = Input;
 
 const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<any>('');
   const [team, setTeam] = useState<any>(null);
-
+  const [importData, setImportData] = useState<any>(null);
+  const { token } = theme.useToken();
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
 
@@ -138,13 +141,7 @@ const TableList: FC = () => {
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
               />
-              <SourceCreate
-                actionType='copy'
-                id={row.id}
-                version={row.version}
-                lang={lang}
-                actionRef={actionRef}
-              />
+
               <SourceDelete
                 id={row.id}
                 version={row.version}
@@ -152,24 +149,51 @@ const TableList: FC = () => {
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
               />
-              <ContributeData
-                onOk={async () => {
-                  const { error } = await contributeSource('sources', row.id, row.version);
-                  if (error) {
-                    console.log(error);
-                  } else {
-                    message.success(
-                      intl.formatMessage({
-                        id: 'component.contributeData.success',
-                        defaultMessage: 'Contribute successfully',
-                      }),
-                    );
-                    actionRef.current?.reload();
-                  }
+              <TableDropdown
+                style={{
+                  color: token.colorPrimary,
                 }}
-                disabled={!!row.teamId}
+                menus={[
+                  {
+                    key: 'export',
+                    name: <ExportData tableName='sources' id={row.id} version={row.version} />,
+                  },
+                  {
+                    key: 'copy',
+                    name: (
+                      <SourceCreate
+                        actionType='copy'
+                        id={row.id}
+                        version={row.version}
+                        lang={lang}
+                        actionRef={actionRef}
+                      />
+                    ),
+                  },
+                  {
+                    key: 'contribute',
+                    name: (
+                      <ContributeData
+                        onOk={async () => {
+                          const { error } = await contributeSource('sources', row.id, row.version);
+                          if (error) {
+                            console.log(error);
+                          } else {
+                            message.success(
+                              intl.formatMessage({
+                                id: 'component.contributeData.success',
+                                defaultMessage: 'Contribute successfully',
+                              }),
+                            );
+                            actionRef.current?.reload();
+                          }
+                        }}
+                        disabled={!!row.teamId}
+                      />
+                    ),
+                  },
+                ]}
               />
-              <ExportData tableName='sources' id={row.id} version={row.version} />
             </Space>,
           ];
         }
@@ -208,7 +232,9 @@ const TableList: FC = () => {
     actionRef.current?.setPageInfo?.({ current: 1 });
     actionRef.current?.reload();
   };
-
+  const handleImportData = (jsonData: any) => {
+    setImportData(jsonData);
+  };
   return (
     <PageContainer
       header={{
@@ -244,7 +270,17 @@ const TableList: FC = () => {
         }}
         toolBarRender={() => {
           if (dataSource === 'my') {
-            return [<SourceCreate lang={lang} key={0} actionRef={actionRef} />];
+            return [
+              <SourceCreate
+                isInToolbar={true}
+                importData={importData}
+                onClose={() => setImportData(null)}
+                lang={lang}
+                key={0}
+                actionRef={actionRef}
+              />,
+              <ImportData onJsonData={handleImportData} key={1} />,
+            ];
           }
           return [];
         }}

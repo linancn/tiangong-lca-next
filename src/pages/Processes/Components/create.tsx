@@ -19,6 +19,9 @@ type Props = {
   actionType?: 'create' | 'copy' | 'createVersion';
   id?: string;
   version?: string;
+  importData?: any;
+  onClose?: () => void;
+  isInToolbar?: boolean;
 };
 
 // When type is 'copy' or 'createVersion', id and version are required parameters
@@ -41,6 +44,9 @@ const ProcessCreate: FC<CreateProps> = ({
   actionType = 'create',
   id,
   version,
+  importData,
+  onClose = () => {},
+  isInToolbar = false,
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
@@ -116,9 +122,28 @@ const ProcessCreate: FC<CreateProps> = ({
       setSpinning(false);
     });
   };
-
   useEffect(() => {
-    if (!drawerVisible) return;
+    if (importData && importData.length > 0 && !drawerVisible) {
+      setDrawerVisible(true);
+    }
+  }, [importData]);
+  useEffect(() => {
+    if (!drawerVisible) {
+      onClose();
+      formRefCreate.current?.resetFields();
+      setInitData({});
+      setFromData({});
+      setExchangeDataSource([]);
+      return;
+    }
+    if (importData && importData.length > 0) {
+      const formData = genProcessFromData(importData[0].processDataSet);
+      setInitData(formData);
+      setFromData(formData);
+      setExchangeDataSource(formData?.exchanges?.exchange ?? []);
+      formRefCreate.current?.setFieldsValue(formData);
+      return;
+    }
 
     if (actionType === 'copy' || actionType === 'createVersion') {
       getFormDetail();
@@ -201,7 +226,8 @@ const ProcessCreate: FC<CreateProps> = ({
           ></Button>
         ) : (
           <Button
-            size={'middle'}
+            style={isInToolbar ? { width: 'inherit', paddingInline: '4px' } : {}}
+            size={isInToolbar ? 'large' : 'middle'}
             type='text'
             icon={<PlusOutlined />}
             onClick={() => {

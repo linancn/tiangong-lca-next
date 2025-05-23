@@ -19,6 +19,9 @@ type Props = {
   actionType?: 'create' | 'copy' | 'createVersion';
   id?: string;
   version?: string;
+  importData?: any;
+  onClose?: () => void;
+  isInToolbar?: boolean;
 };
 
 // When type is 'copy' or 'createVersion', id and version are required parameters
@@ -35,7 +38,16 @@ type CreateProps =
       version: string;
     });
 
-const FlowsCreate: FC<CreateProps> = ({ lang, actionRef, actionType = 'create', id, version }) => {
+const FlowsCreate: FC<CreateProps> = ({
+  lang,
+  actionRef,
+  actionType = 'create',
+  id,
+  version,
+  importData,
+  onClose = () => {},
+  isInToolbar = false,
+}) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
   const [activeTabKey, setActiveTabKey] = useState<string>('flowInformation');
@@ -103,8 +115,30 @@ const FlowsCreate: FC<CreateProps> = ({ lang, actionRef, actionType = 'create', 
   };
 
   useEffect(() => {
-    if (!drawerVisible) return;
+    if (importData && importData.length > 0 && !drawerVisible) {
+      setDrawerVisible(true);
+    }
+  }, [importData]);
 
+  useEffect(() => {
+    if (!drawerVisible) {
+      onClose();
+      setInitData(undefined);
+      setPropertyDataSource([]);
+      setFromData(undefined);
+      setFlowType(undefined);
+      formRefCreate.current?.resetFields();
+      return;
+    }
+    if (importData && importData.length > 0) {
+      const formData = genFlowFromData(importData[0].flowDataSet);
+      setInitData(formData);
+      setPropertyDataSource(formData?.flowProperties?.flowProperty ?? []);
+      setFromData(formData);
+      setFlowType(formData?.flowInformation?.LCIMethod?.typeOfDataSet);
+      formRefCreate.current?.setFieldsValue(formData);
+      return;
+    }
     if (actionType === 'copy' || actionType === 'createVersion') {
       getFormDetail();
       return;
@@ -202,7 +236,8 @@ const FlowsCreate: FC<CreateProps> = ({ lang, actionRef, actionType = 'create', 
           ></Button>
         ) : (
           <Button
-            size={'middle'}
+            style={isInToolbar ? { width: 'inherit', paddingInline: '4px' } : {}}
+            size={isInToolbar ? 'large' : 'middle'}
             type='text'
             icon={<PlusOutlined />}
             onClick={() => {

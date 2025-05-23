@@ -40,22 +40,24 @@
         },
         "classificationInformation": {
           "common:classification": {
-            "value": {
-              "common:class": {
+            "common:class": [
+              {
                 "@level": "str",
                 "#text": "str",
-                "@classId": "str"
-              },
-              "@name": "str",
-              "@classes": "str"
-            },
-            "rules": [
-              {
-                "required": true,
-                "messageKey": "pages.contact.validator.classification.required",
-                "defaultMessage": "Please input classification"
+                "@classId": {
+                  "value": "str",
+                  "rules": [
+                    {
+                      "required": true,
+                      "messageKey": "pages.contact.validator.classification.required",
+                      "defaultMessage": "Please input classification"
+                    }
+                  ]
+                }
               }
-            ]
+            ],
+            "@name": "str",
+            "@classes": "str"
           }
         },
         "email": {
@@ -196,22 +198,22 @@
         },
         "common:permanentDataSetURI": "str",
         "common:referenceToOwnershipOfDataSet": {
-          "value": {
-            "@type": "str",
-            "@refObjectId": "str",
-            "@uri": "str",
-            "common:shortDescription": {
-              "@xml:lang": "str",
-              "#text": "str"
-            }
+          "@type": "str",
+          "@refObjectId": {
+            "value": "str",
+            "rules": [
+              {
+                "required": true,
+                "messageKey": "pages.contact.validator.referenceToOwnershipOfDataSet.required",
+                "defaultMessage": "Please input owner of data set"
+              }
+            ]
           },
-          "rules": [
-            {
-              "required": true,
-              "messageKey": "pages.contact.validator.referenceToOwnershipOfDataSet.required",
-              "defaultMessage": "Please input owner of data set"
-            }
-          ]
+          "@uri": "str",
+          "common:shortDescription": {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
         },
         "common:referenceToPrecedingDataSetVersion": {
           "@type": "str",
@@ -235,23 +237,23 @@
           ]
         },
         "common:referenceToDataSetFormat": {
-          "value": {
-            "@refObjectId": "str",
-            "@type": "str",
-            "@uri": "str",
-            "common:shortDescription": {
-              "@xml:lang": "str",
-              "#text": "str"
-            },
-            "@version": "str"
+          "@refObjectId": {
+            "value": "str",
+            "rules": [
+              {
+                "required": true,
+                "messageKey": "pages.contact.validator.referenceToDataSetFormat.required",
+                "defaultMessage": "Please input data set format(s)"
+              }
+            ]
           },
-          "rules": [
-            {
-              "required": true,
-              "messageKey": "pages.contact.validator.referenceToDataSetFormat.required",
-              "defaultMessage": "Please input data set format(s)"
-            }
-          ]
+          "@type": "str",
+          "@uri": "str",
+          "common:shortDescription": {
+            "@xml:lang": "str",
+            "#text": "str"
+          },
+          "@version": "str"
         }
       }
     }

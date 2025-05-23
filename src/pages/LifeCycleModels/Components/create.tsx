@@ -14,6 +14,9 @@ type Props = {
   actionType?: 'create' | 'copy' | 'createVersion';
   id?: string;
   version?: string;
+  importData?: any;
+  onClose?: () => void;
+  isInToolbar?: boolean;
 };
 
 // When type is 'copy' or 'createVersion', id and version are required parameters
@@ -37,10 +40,19 @@ const LifeCycleModelCreate: FC<CreateProps> = ({
   actionType,
   id,
   version,
+  importData,
+  onClose = () => {},
+  isInToolbar = false,
 }) => {
   const [isSave, setIsSave] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [toolEditAction, setToolEditAction] = useState('create');
+
+  useEffect(() => {
+    if (importData && importData.length > 0 && !drawerVisible) {
+      setDrawerVisible(true);
+    }
+  }, [importData]);
 
   useEffect(() => {
     if (drawerVisible) {
@@ -99,7 +111,13 @@ const LifeCycleModelCreate: FC<CreateProps> = ({
           {actionType === 'copy' ? (
             <Button shape='circle' icon={<CopyOutlined />} size='small' onClick={onCreate}></Button>
           ) : (
-            <Button size={'middle'} type='text' icon={<PlusOutlined />} onClick={onCreate} />
+            <Button
+              style={isInToolbar ? { width: 'inherit', paddingInline: '4px' } : {}}
+              size={isInToolbar ? 'large' : 'middle'}
+              type='text'
+              icon={<PlusOutlined />}
+              onClick={onCreate}
+            />
           )}
         </Tooltip>
       ) : (
@@ -183,6 +201,8 @@ const LifeCycleModelCreate: FC<CreateProps> = ({
                 isSave={isSave}
                 setIsSave={setIsSave}
                 action={toolEditAction}
+                importData={importData}
+                onClose={onClose}
               />
             </Sider>
           </Layout>

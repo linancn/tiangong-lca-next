@@ -5,28 +5,32 @@ import {
   jsonToList,
 } from '../general/util';
 
+import schema from '@/pages/Flows/flows_schema.json';
 import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getDataDetail, getTeamIdByUserId } from '../general/api';
+import { getRuleVerification } from '../general/util';
 import { getILCDFlowCategorizationAll, getILCDLocationByValues } from '../ilcd/api';
 import { genFlowJsonOrdered, genFlowName } from './util';
 
 export async function createFlows(id: string, data: any) {
   const newData = genFlowJsonOrdered(id, data);
+  const rule_verification = getRuleVerification(schema, newData);
   // const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('flows')
-    .insert([{ id: id, json_ordered: newData }])
+    .insert([{ id: id, json_ordered: newData, rule_verification }])
     .select();
   return result;
 }
 
 export async function updateFlows(id: string, version: string, data: any) {
   const newData = genFlowJsonOrdered(id, data);
+  const rule_verification = getRuleVerification(schema, newData);
   const updateResult = await supabase
     .from('flows')
-    .update({ json_ordered: newData })
+    .update({ json_ordered: newData, rule_verification })
     .eq('id', id)
     .eq('version', version)
     .select();
