@@ -1,4 +1,5 @@
 import {
+  flowproperty_hybrid_search,
   getFlowpropertyTableAll,
   getFlowpropertyTablePgroongaSearch,
 } from '@/services/flowproperties/api';
@@ -6,7 +7,7 @@ import { FlowpropertyTable } from '@/services/flowproperties/data';
 import { ListPagination } from '@/services/general/data';
 import { getDataSource, getLang, getLangText } from '@/services/general/util';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Card, Input, Space, Tooltip, message } from 'antd';
+import { Card, Checkbox, Col, Input, Row, Space, Tooltip, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 
@@ -34,6 +35,7 @@ const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<any>('');
   const [team, setTeam] = useState<any>(null);
   const [importData, setImportData] = useState<any>(null);
+  const [openAI, setOpenAI] = useState<boolean>(false);
   const { token } = theme.useToken();
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
@@ -279,12 +281,29 @@ const TableList: FC = () => {
       }}
     >
       <Card>
-        <Search
-          size={'large'}
-          placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
-          onSearch={onSearch}
-          enterButton
-        />
+        <Row align={'middle'}>
+          <Col flex='auto' style={{ marginRight: '10px' }}>
+            <Search
+              size={'large'}
+              placeholder={
+                openAI
+                  ? intl.formatMessage({ id: 'pages.search.placeholder' })
+                  : intl.formatMessage({ id: 'pages.search.keyWord' })
+              }
+              onSearch={onSearch}
+              enterButton
+            />
+          </Col>
+          <Col flex='100px'>
+            <Checkbox
+              onChange={(e) => {
+                setOpenAI(e.target.checked);
+              }}
+            >
+              <FormattedMessage id='pages.search.openAI' defaultMessage='AI Search' />
+            </Checkbox>
+          </Col>
+        </Row>
       </Card>
       <ProTable<FlowpropertyTable, ListPagination>
         rowKey={(record) => `${record.id}-${record.version}`}
@@ -325,6 +344,9 @@ const TableList: FC = () => {
           sort,
         ) => {
           if (keyWord.length > 0) {
+            if (openAI) {
+              return flowproperty_hybrid_search(params, lang, dataSource, keyWord, {});
+            }
             return getFlowpropertyTablePgroongaSearch(params, lang, dataSource, keyWord, {});
           }
           return getFlowpropertyTableAll(params, sort, lang, dataSource, tid ?? '').then((res) => {

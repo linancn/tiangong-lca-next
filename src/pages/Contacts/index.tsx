@@ -2,7 +2,11 @@ import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
 import ExportData from '@/components/ExportData';
 import ImportData from '@/components/ImportData';
-import { getContactTableAll, getContactTablePgroongaSearch } from '@/services/contacts/api';
+import {
+  contact_hybrid_search,
+  getContactTableAll,
+  getContactTablePgroongaSearch,
+} from '@/services/contacts/api';
 import { ContactTable } from '@/services/contacts/data';
 import { contributeSource } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
@@ -10,7 +14,7 @@ import { getDataSource, getLang, getLangText } from '@/services/general/util';
 import { getTeamById } from '@/services/teams/api';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { TableDropdown } from '@ant-design/pro-table';
-import { Card, Input, Space, Tooltip, message, theme } from 'antd';
+import { Card, Checkbox, Col, Input, Row, Space, Tooltip, message, theme } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
@@ -27,6 +31,7 @@ const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<any>('');
   const [team, setTeam] = useState<any>(null);
   const [importData, setImportData] = useState<any>(null);
+  const [openAI, setOpenAI] = useState<boolean>(false);
   const { token } = theme.useToken();
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
@@ -244,12 +249,29 @@ const TableList: FC = () => {
       }}
     >
       <Card>
-        <Search
-          size={'large'}
-          placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
-          onSearch={onSearch}
-          enterButton
-        />
+        <Row align={'middle'}>
+          <Col flex='auto' style={{ marginRight: '10px' }}>
+            <Search
+              size={'large'}
+              placeholder={
+                openAI
+                  ? intl.formatMessage({ id: 'pages.search.placeholder' })
+                  : intl.formatMessage({ id: 'pages.search.keyWord' })
+              }
+              onSearch={onSearch}
+              enterButton
+            />
+          </Col>
+          <Col flex='100px'>
+            <Checkbox
+              onChange={(e) => {
+                setOpenAI(e.target.checked);
+              }}
+            >
+              <FormattedMessage id='pages.search.openAI' defaultMessage='AI Search' />
+            </Checkbox>
+          </Col>
+        </Row>
       </Card>
       <ProTable<ContactTable, ListPagination>
         rowKey={(record) => `${record.id}-${record.version}`}
@@ -290,6 +312,9 @@ const TableList: FC = () => {
           sort,
         ) => {
           if (keyWord.length > 0) {
+            if (openAI) {
+              return contact_hybrid_search(params, lang, dataSource, keyWord, {});
+            }
             return getContactTablePgroongaSearch(params, lang, dataSource, keyWord, {});
           }
           return getContactTableAll(params, sort, lang, dataSource, tid ?? '');

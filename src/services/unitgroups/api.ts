@@ -1,3 +1,4 @@
+import { FunctionRegion } from '@supabase/supabase-js';
 import {
   classificationToString,
   genClassificationZH,
@@ -272,6 +273,123 @@ export async function getUnitGroupTablePgroongaSearch(
       });
     } else {
       data = result.data.map((i: any) => {
+        try {
+          const dataInfo = i.json?.unitGroupDataSet?.unitGroupInformation;
+          const classifications = jsonToList(
+            dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
+              'common:class'
+            ],
+          );
+          const refUnitId = dataInfo?.quantitativeReference?.referenceToReferenceUnit ?? '-';
+          const unitList = jsonToList(i.json?.unitGroupDataSet?.units?.unit);
+          const refUnit = unitList.find((item) => item?.['@dataSetInternalID'] === refUnitId);
+
+          return {
+            key: i.id + ':' + i.version,
+            id: i.id,
+            name: getLangText(dataInfo?.dataSetInformation?.['common:name'] ?? {}, lang),
+            classification: classificationToString(classifications),
+            refUnitId: refUnitId,
+            refUnitName: refUnit?.name ?? '-',
+            refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
+            version: i.version,
+            modifiedAt: new Date(i?.modified_at),
+            teamId: i?.team_id,
+          };
+        } catch (e) {
+          console.error(e);
+          return {
+            id: i.id,
+          };
+        }
+      });
+    }
+
+    return Promise.resolve({
+      data: data,
+      page: params.current ?? 1,
+      success: true,
+      total: totalCount ?? 0,
+    });
+  }
+
+  return result;
+}
+export async function unitgroup_hybrid_search(
+  params: {
+    current?: number;
+    pageSize?: number;
+  },
+  // sort: Record<string, SortOrder>,
+  lang: string,
+  dataSource: string,
+  queryText: string,
+  filterCondition: any,
+) {
+  let result: any = {};
+  const session = await supabase.auth.getSession();
+  if (session.data.session) {
+    result = await supabase.functions.invoke('unitgroup_hybrid_search', {
+      headers: {
+        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+      },
+      body: { query: queryText, filter: filterCondition },
+      region: FunctionRegion.UsEast1,
+    });
+  }
+  if (result.error) {
+    console.log('error', result.error);
+  }
+  if (result.data?.data) {
+    if (result.data?.data.length === 0) {
+      return Promise.resolve({
+        data: [],
+        success: true,
+      });
+    }
+    const resultData = result.data.data;
+    const totalCount = resultData.total_count;
+
+    let data: any[] = [];
+    if (lang === 'zh') {
+      await getILCDClassification('UnitGroup', lang, ['all']).then((res) => {
+        data = resultData.map((i: any) => {
+          try {
+            const dataInfo = i.json?.unitGroupDataSet?.unitGroupInformation;
+            const refUnitId = dataInfo?.quantitativeReference?.referenceToReferenceUnit ?? '-';
+            const unitList = jsonToList(i.json?.unitGroupDataSet?.units?.unit);
+            const refUnit = unitList.find((item) => item?.['@dataSetInternalID'] === refUnitId);
+
+            const classifications = jsonToList(
+              dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
+                'common:class'
+              ],
+            );
+
+            const classificationZH = genClassificationZH(classifications, res?.data);
+
+            return {
+              key: i.id + ':' + i.version,
+              id: i.id,
+              name: getLangText(dataInfo?.dataSetInformation?.['common:name'] ?? {}, lang),
+              classification: classificationToString(classificationZH),
+              refUnitId: refUnitId,
+              refUnitName: refUnit?.name ?? '-',
+              refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
+              version: i.version,
+              modifiedAt: new Date(i?.modified_at),
+              teamId: i?.team_id,
+            };
+          } catch (e) {
+            console.error(e);
+            return {
+              id: i.id,
+            };
+          }
+        });
+      });
+    } else {
+      data = resultData.map((i: any) => {
         try {
           const dataInfo = i.json?.unitGroupDataSet?.unitGroupInformation;
           const classifications = jsonToList(
