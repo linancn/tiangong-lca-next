@@ -1,4 +1,5 @@
 import schema from '@/pages/Sources/sources_schema.json';
+import { FunctionRegion } from '@supabase/supabase-js';
 import {
   classificationToString,
   genClassificationZH,
@@ -252,6 +253,110 @@ export async function getSourceTablePgroongaSearch(
       });
     } else {
       data = result.data.map((i: any) => {
+        try {
+          const dataInfo = i.json?.sourceDataSet?.sourceInformation?.dataSetInformation;
+          const classifications = jsonToList(
+            dataInfo?.classificationInformation?.['common:classification']?.['common:class'],
+          );
+          return {
+            key: i.id + ':' + i.version,
+            id: i.id,
+            shortName: getLangText(dataInfo?.['common:shortName'], lang),
+            classification: classificationToString(classifications),
+            sourceCitation: dataInfo?.sourceCitation ?? '-',
+            publicationType: dataInfo?.publicationType ?? '-',
+            version: i.version,
+            modifiedAt: new Date(dataInfo?.modified_at),
+            teamId: i.team_id,
+          };
+        } catch (e) {
+          console.error(e);
+          return {
+            id: i.id,
+          };
+        }
+      });
+    }
+
+    return Promise.resolve({
+      data: data,
+      page: params.current ?? 1,
+      success: true,
+      total: totalCount ?? 0,
+    });
+  }
+
+  return result;
+}
+
+export async function source_hybrid_search(
+  params: {
+    current?: number;
+    pageSize?: number;
+  },
+  // sort: Record<string, SortOrder>,
+  lang: string,
+  dataSource: string,
+  queryText: string,
+  filterCondition: any,
+) {
+  let result: any = {};
+  const session = await supabase.auth.getSession();
+  if (session.data.session) {
+    result = await supabase.functions.invoke('source_hybrid_search', {
+      headers: {
+        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+      },
+      body: { query: queryText, filter: filterCondition },
+      region: FunctionRegion.UsEast1,
+    });
+  }
+  if (result.error) {
+    console.log('error', result.error);
+  }
+  if (result.data?.data) {
+    if (result.data?.data.length === 0) {
+      return Promise.resolve({
+        data: [],
+        success: true,
+      });
+    }
+
+    const resultData = result.data.data;
+    const totalCount = resultData.total_count;
+
+    let data: any[] = [];
+    if (lang === 'zh') {
+      await getILCDClassification('Source', lang, ['all']).then((res) => {
+        data = resultData.map((i: any) => {
+          try {
+            const dataInfo = i.json?.sourceDataSet?.sourceInformation?.dataSetInformation;
+            const classifications = jsonToList(
+              dataInfo?.classificationInformation?.['common:classification']?.['common:class'],
+            );
+            const classificationZH = genClassificationZH(classifications, res?.data);
+
+            return {
+              key: i.id + ':' + i.version,
+              id: i.id,
+              shortName: getLangText(dataInfo?.['common:shortName'], lang),
+              classification: classificationToString(classificationZH),
+              sourceCitation: dataInfo?.sourceCitation ?? '-',
+              publicationType: dataInfo?.publicationType ?? '-',
+              version: i.version,
+              modifiedAt: new Date(i?.modified_at),
+              teamId: i.team_id,
+            };
+          } catch (e) {
+            console.error(e);
+            return {
+              id: i.id,
+            };
+          }
+        });
+      });
+    } else {
+      data = resultData.map((i: any) => {
         try {
           const dataInfo = i.json?.sourceDataSet?.sourceInformation?.dataSetInformation;
           const classifications = jsonToList(

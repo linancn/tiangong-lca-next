@@ -8,12 +8,13 @@ import { getDataSource, getLang, getLangText } from '@/services/general/util';
 import {
   getLifeCycleModelTableAll,
   getLifeCycleModelTablePgroongaSearch,
+  lifeCycleModel_hybrid_search,
 } from '@/services/lifeCycleModels/api';
 import { LifeCycleModelTable } from '@/services/lifeCycleModels/data';
 import { getTeamById } from '@/services/teams/api';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { TableDropdown } from '@ant-design/pro-table';
-import { Card, Input, Space, Tooltip, message, theme } from 'antd';
+import { Card, Checkbox, Col, Input, Row, Space, Tooltip, message, theme } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
@@ -30,6 +31,7 @@ const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<any>('');
   const [team, setTeam] = useState<any>(null);
   const [importData, setImportData] = useState<any>(null);
+  const [openAI, setOpenAI] = useState<boolean>(false);
   const { token } = theme.useToken();
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
@@ -241,12 +243,29 @@ const TableList: FC = () => {
       }}
     >
       <Card>
-        <Search
-          size={'large'}
-          placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
-          onSearch={onSearch}
-          enterButton
-        />
+        <Row align={'middle'}>
+          <Col flex='auto' style={{ marginRight: '10px' }}>
+            <Search
+              size={'large'}
+              placeholder={
+                openAI
+                  ? intl.formatMessage({ id: 'pages.search.placeholder' })
+                  : intl.formatMessage({ id: 'pages.search.keyWord' })
+              }
+              onSearch={onSearch}
+              enterButton
+            />
+          </Col>
+          <Col flex='100px'>
+            <Checkbox
+              onChange={(e) => {
+                setOpenAI(e.target.checked);
+              }}
+            >
+              <FormattedMessage id='pages.search.openAI' defaultMessage='AI Search' />
+            </Checkbox>
+          </Col>
+        </Row>
       </Card>
       <ProTable<LifeCycleModelTable, ListPagination>
         rowKey={(record) => `${record.id}-${record.version}`}
@@ -288,6 +307,9 @@ const TableList: FC = () => {
           sort,
         ) => {
           if (keyWord.length > 0) {
+            if (openAI) {
+              return lifeCycleModel_hybrid_search(params, lang, dataSource, keyWord, {});
+            }
             return getLifeCycleModelTablePgroongaSearch(params, lang, dataSource, keyWord, {});
           }
           return getLifeCycleModelTableAll(params, sort, lang, dataSource, tid ?? '');
