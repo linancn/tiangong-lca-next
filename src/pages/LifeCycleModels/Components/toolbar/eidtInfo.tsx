@@ -6,12 +6,14 @@ import {
   Button,
   Collapse,
   Drawer,
+  message,
+  Modal,
   // Input,
   Space,
   Spin,
+  theme,
   Tooltip,
   Typography,
-  message,
 } from 'antd';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
@@ -43,6 +45,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
   const [referenceValue, setReferenceValue] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const intl = useIntl();
+  const { token } = theme.useToken();
 
   const updateReference = async () => {
     setReferenceValue(referenceValue + 1);
@@ -139,7 +142,42 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
     traverse(obj);
     return result;
   };
-
+  const showUnRuleVerification = (refs: any[]) => {
+    Modal.confirm({
+      okButtonProps: {
+        type: 'primary',
+        style: { backgroundColor: token.colorPrimary },
+      },
+      title: intl.formatMessage({
+        id: 'pages.process.review.unRuleVerification.modal.title',
+        defaultMessage: 'Notice',
+      }),
+      width: 500,
+      content: (
+        <>
+          <div>
+            {intl.formatMessage({
+              id: 'pages.process.review.unRuleVerification.modal.content',
+              defaultMessage:
+                'The following data is incomplete, please modify and resubmit for review',
+            })}
+            :
+          </div>
+          <div>
+            {refs.map((item: any) => (
+              <div key={item['@refObjectId']}>{`${item['@type']} : ${item['@refObjectId']}`}</div>
+            ))}
+          </div>
+        </>
+      ),
+      okText: intl.formatMessage({
+        id: 'pages.process.review.unRuleVerification.modal.button.ok',
+        defaultMessage: 'OK',
+      }),
+      cancelButtonProps: { style: { display: 'none' } },
+      onOk: () => {},
+    });
+  };
   const submitReview = async () => {
     setSpinning(true);
     const teamId = await getUserTeamId();
@@ -156,9 +194,10 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
     };
 
     const refObjs = getAllRefObj(data);
-    // console.log('refObjs', refObjs);
     const unReview: any[] = [];
     const unReviewProcesses: any[] = [];
+    const unRuleVerification: any[] = [];
+    let getRefError = false;
     const checkReferences = async (
       refs: any[],
       checkedIds = new Set<string>(),
@@ -173,9 +212,11 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
           getTableName(ref['@type']),
           teamId,
         );
-        // console.log('refResult', refResult, ref);
         if (refResult.success) {
           const refData = refResult?.data;
+          if (!refData?.ruleVerification) {
+            unRuleVerification.push(ref);
+          }
           if (refData?.stateCode >= 20 && refData?.stateCode < 100) {
             message.error(
               intl.formatMessage({
@@ -193,20 +234,27 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
             const subRefs = getAllRefObj(json);
             await checkReferences(subRefs, checkedIds);
           }
+        } else {
+          getRefError = true;
+          return false;
         }
       }
       return true;
     };
 
     const refCheckResult = await checkReferences(refObjs);
-    // console.log('refCheckResult', refCheckResult);
-
     if (refCheckResult) {
       const allProcesses = await getAllProcesses();
       if (!allProcesses) return false;
-      // console.log('allProcesses', allProcesses);
       for (const process of allProcesses) {
         const processDetail = await getProcessDetail(process.id, process.version);
+        if (!processDetail?.data?.ruleVerification) {
+          unRuleVerification.unshift({
+            '@type': 'process data set',
+            '@refObjectId': processDetail?.data?.id,
+            '@version': processDetail?.data?.version,
+          });
+        }
         if (processDetail?.data?.stateCode < 20) {
           unReviewProcesses.push(process);
         } else if (processDetail?.data?.stateCode >= 20 && processDetail?.data?.stateCode < 100) {
@@ -220,22 +268,57 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
         }
         const processRefObjs = getAllRefObj(processDetail?.data?.json);
         const processCheckResult = await checkReferences(processRefObjs);
-        // console.log(process.id, process.version, processDetail?.data?.stateCode, 'processCheckResult', processCheckResult);
         if (!processCheckResult) {
+          message.error(
+            intl.formatMessage({
+              id: 'pages.process.review.submitError',
+              defaultMessage: 'Submit review failed',
+            }),
+          );
           return false;
         }
+      }
+      if (!lifeCycleModelDetail?.data?.rule_verification) {
+        unRuleVerification.unshift({
+          '@type': 'lifeCycleModel data set',
+          '@refObjectId': lifeCycleModelDetail?.data?.id,
+          '@version': lifeCycleModelDetail?.data?.version,
+        });
+      }
+
+      if (unRuleVerification.length > 0) {
+        showUnRuleVerification(unRuleVerification);
+        setSpinning(false);
+        return;
+      }
+
+      if (getRefError) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.process.review.submitError',
+            defaultMessage: 'Submit review failed',
+          }),
+        );
+        setSpinning(false);
+        return;
       }
 
       const reviewId = v4();
       const result = await addReviewsApi(reviewId, data.id, data.version);
       if (result?.error) return;
-
-      // console.log('lifeCycleModelDetail', lifeCycleModelDetail?.data?.state_code);
+      if (lifeCycleModelDetail?.data?.state_code >= 20) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.process.review.submitError',
+            defaultMessage: 'Submit review failed',
+          }),
+        );
+        setSpinning(false);
+        return;
+      }
       const lifeCycleModelStateCode = lifeCycleModelDetail?.data?.state_code + 20;
 
-      // const { error: updateModalStateError, data: updateModalStateData } =
       await updateLifeCycleModelStateCode(data.id, data.version, lifeCycleModelStateCode);
-      // console.log('updateModalStateError', updateModalStateError, updateModalStateData);
 
       if (unReviewProcesses.length > 0) {
         for (const process of unReviewProcesses) {

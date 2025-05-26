@@ -21,6 +21,9 @@ type Props = {
   actionType?: 'create' | 'copy' | 'createVersion';
   id?: string;
   version?: string;
+  importData?: any;
+  onClose?: () => void;
+  isInToolbar?: boolean;
 };
 
 // When type is 'copy' or 'createVersion', id and version are required parameters
@@ -37,7 +40,16 @@ type CreateProps =
       version: string;
     });
 
-const SourceCreate: FC<CreateProps> = ({ actionRef, lang, actionType = 'create', id, version }) => {
+const SourceCreate: FC<CreateProps> = ({
+  actionRef,
+  lang,
+  actionType = 'create',
+  id,
+  version,
+  importData,
+  onClose = () => {},
+  isInToolbar = false,
+}) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
   const [fromData, setFromData] = useState<any>({});
@@ -136,28 +148,51 @@ const SourceCreate: FC<CreateProps> = ({ actionRef, lang, actionType = 'create',
     return true;
   };
 
+  const initFormDetail = async (dataSet: any) => {
+    setInitData(dataSet);
+    setFromData(dataSet);
+
+    formRefCreate.current?.validateFields();
+    formRefCreate.current?.setFieldsValue({ ...dataSet });
+
+    const initFile = await getThumbFileUrls(
+      dataSet.sourceInformation?.dataSetInformation?.referenceToDigitalFile,
+    );
+    await setFileList0(initFile);
+    await setFileList(initFile);
+  };
+
   const getFormDetail = async () => {
     if (!id || !version) return;
     setSpinning(true);
     getSourceDetail(id, version).then(async (result: any) => {
       const dataSet = genSourceFromData(result.data?.json?.sourceDataSet ?? {});
-      setInitData(dataSet);
-      setFromData(dataSet);
-
-      formRefCreate.current?.validateFields();
-      formRefCreate.current?.setFieldsValue({ ...dataSet });
-
-      const initFile = await getThumbFileUrls(
-        dataSet.sourceInformation?.dataSetInformation?.referenceToDigitalFile,
-      );
-      await setFileList0(initFile);
-      await setFileList(initFile);
+      await initFormDetail(dataSet);
       setSpinning(false);
     });
   };
 
   useEffect(() => {
-    if (!drawerVisible) return;
+    if (importData && importData.length > 0 && !drawerVisible) {
+      setDrawerVisible(true);
+    }
+  }, [importData]);
+
+  useEffect(() => {
+    if (!drawerVisible) {
+      onClose();
+      formRefCreate.current?.resetFields();
+      setFromData({});
+      setInitData({});
+      setFileList([]);
+      setFileList0([]);
+      return;
+    }
+    if (importData && importData.length > 0) {
+      const formData = genSourceFromData(importData[0].sourceDataSet);
+      initFormDetail(formData);
+      return;
+    }
     if (actionType === 'copy' || actionType === 'createVersion') {
       getFormDetail();
       return;
@@ -228,7 +263,8 @@ const SourceCreate: FC<CreateProps> = ({ actionRef, lang, actionType = 'create',
           />
         ) : (
           <Button
-            size={'middle'}
+            style={isInToolbar ? { width: 'inherit', paddingInline: '4px' } : {}}
+            size={isInToolbar ? 'large' : 'middle'}
             type='text'
             icon={<PlusOutlined />}
             onClick={() => {

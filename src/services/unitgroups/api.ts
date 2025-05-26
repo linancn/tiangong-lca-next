@@ -5,27 +5,31 @@ import {
   jsonToList,
 } from '../general/util';
 
+import schema from '@/pages/Unitgroups/unitgroups_schema.json';
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getDataDetail, getTeamIdByUserId } from '../general/api';
+import { getRuleVerification } from '../general/util';
 import { getILCDClassification } from '../ilcd/api';
 import { genUnitGroupJsonOrdered } from './util';
 
 export async function createUnitGroup(id: string, data: any) {
   const newData = genUnitGroupJsonOrdered(id, data);
+  const rule_verification = getRuleVerification(schema, newData);
   // const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('unitgroups')
-    .insert([{ id: id, json_ordered: newData }])
+    .insert([{ id: id, json_ordered: newData, rule_verification }])
     .select();
   return result;
 }
 
 export async function updateUnitGroup(id: string, version: string, data: any) {
   const newData = genUnitGroupJsonOrdered(id, data);
+  const rule_verification = getRuleVerification(schema, newData);
   const updateResult = await supabase
     .from('unitgroups')
-    .update({ json_ordered: newData })
+    .update({ json_ordered: newData, rule_verification })
     .eq('id', id)
     .eq('version', version)
     .select();

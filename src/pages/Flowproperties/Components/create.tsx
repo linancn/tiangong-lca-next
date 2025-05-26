@@ -17,13 +17,7 @@ import {
   Typography,
 } from 'antd';
 import type { FC } from 'react';
-import React, {
-  useCallback,
-  useEffect,
-  // useEffect,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 // import UnitgroupsFrom from '@/pages/Unitgroups/Components/Unit/edit';
 import { initVersion } from '@/services/general/data';
@@ -38,6 +32,9 @@ type Props = {
   actionType?: 'create' | 'copy' | 'createVersion';
   id?: string;
   version?: string;
+  importData?: any;
+  onClose?: () => void;
+  isInToolbar?: boolean;
 };
 
 // When type is 'copy' or 'createVersion', id and version are required parameters
@@ -59,6 +56,9 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
   actionType = 'create',
   id,
   version,
+  importData,
+  onClose = () => {},
+  isInToolbar = false,
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
@@ -108,7 +108,26 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
   };
 
   useEffect(() => {
-    if (drawerVisible === false) return;
+    if (importData && importData.length > 0 && !drawerVisible) {
+      setDrawerVisible(true);
+    }
+  }, [importData]);
+
+  useEffect(() => {
+    if (drawerVisible === false) {
+      onClose();
+      formRefCreate.current?.resetFields();
+      setInitData({});
+      setFromData({});
+      return;
+    }
+    if (importData && importData.length > 0) {
+      const formData = genFlowpropertyFromData(importData[0].flowPropertyDataSet);
+      setInitData(formData);
+      formRefCreate.current?.setFieldsValue(formData);
+      setFromData(formData);
+      return;
+    }
     if (actionType === 'copy' || actionType === 'createVersion') {
       getFormDetail();
       return;
@@ -165,7 +184,8 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
           ></Button>
         ) : (
           <Button
-            size={'middle'}
+            style={isInToolbar ? { width: 'inherit', paddingInline: '4px' } : {}}
+            size={isInToolbar ? 'large' : 'middle'}
             type='text'
             icon={<PlusOutlined />}
             onClick={() => {

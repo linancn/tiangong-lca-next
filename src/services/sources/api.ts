@@ -1,7 +1,9 @@
+import schema from '@/pages/Sources/sources_schema.json';
 import {
   classificationToString,
   genClassificationZH,
   getLangText,
+  getRuleVerification,
   jsonToList,
 } from '../general/util';
 
@@ -12,19 +14,21 @@ import { getILCDClassification } from '../ilcd/api';
 import { genSourceJsonOrdered } from './util';
 export async function createSource(id: string, data: any) {
   const newData = genSourceJsonOrdered(id, data);
+  const rule_verification = getRuleVerification(schema, newData);
   // const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('sources')
-    .insert([{ id: id, json_ordered: newData }])
+    .insert([{ id: id, json_ordered: newData, rule_verification }])
     .select();
   return result;
 }
 
 export async function updateSource(id: string, version: string, data: any) {
   const newData = genSourceJsonOrdered(id, data);
+  const rule_verification = getRuleVerification(schema, newData);
   const updateResult = await supabase
     .from('sources')
-    .update({ json_ordered: newData })
+    .update({ json_ordered: newData, rule_verification })
     .eq('id', id)
     .eq('version', version)
     .select();

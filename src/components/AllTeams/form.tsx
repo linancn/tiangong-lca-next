@@ -179,7 +179,13 @@ const TeamForm: FC<Props> = ({ onLogoChange, lightLogoProps, darkLogoProps }) =>
             labelCol={{ span: 4 }}
             name='darkLogo'
           >
-            <div>
+            <div
+              style={
+                darkLogoPreviewUrl
+                  ? { background: '#141414', display: 'inline-block', borderRadius: '8px' }
+                  : {}
+              }
+            >
               <Upload
                 beforeUpload={(file) => {
                   getBase64(file as FileType).then((url) => {

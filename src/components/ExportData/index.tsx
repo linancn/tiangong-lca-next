@@ -1,5 +1,5 @@
 import { exportDataApi } from '@/services/general/api';
-import { CloudDownloadOutlined } from '@ant-design/icons';
+import { DownloadOutlined } from '@ant-design/icons';
 import { FormattedMessage, useIntl } from '@umijs/max';
 import { Button, message, Spin, Tooltip } from 'antd';
 import { FC, useState } from 'react';
@@ -24,7 +24,10 @@ const ExportData: FC<ExportDataProps> = ({ tableName, id, version }) => {
       if (!data || data.length === 0) {
         return;
       }
-      const jsonData = data.map((item) => item.json_ordered);
+      const jsonData =
+        tableName === 'lifecyclemodels'
+          ? data.map((item: any) => ({ ...item?.json_ordered, json_tg: item?.json_tg }))
+          : data.map((item) => item?.json_ordered);
       const jsonString = JSON.stringify(jsonData, null, 2);
       const blob = new Blob([jsonString], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -60,7 +63,7 @@ const ExportData: FC<ExportDataProps> = ({ tableName, id, version }) => {
     <Spin spinning={loading}>
       <Tooltip title={<FormattedMessage id={'pages.button.export'} defaultMessage='Export Data' />}>
         <Button
-          icon={<CloudDownloadOutlined />}
+          icon={<DownloadOutlined />}
           onClick={handleExport}
           shape='circle'
           size='small'

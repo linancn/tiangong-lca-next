@@ -56,18 +56,18 @@
         "classificationInformation": {
           "common:classification": {
             "common:class": {
-              "value": {
-                "@level": "str",
-                "@classId": "str",
-                "#text": "str"
+              "@level": "str",
+              "@classId": {
+                "vlaue": "str",
+                "rules": [
+                  {
+                    "required": true,
+                    "messageKey": "pages.flowproperties.validator.class.required",
+                    "defaultMessage": "Please input classification"
+                  }
+                ]
               },
-              "rules": [
-                {
-                  "required": true,
-                  "messageKey": "pages.flowproperties.validator.class.required",
-                  "defaultMessage": "Please input classification"
-                }
-              ]
+              "#text": "str"
             }
           }
         },
@@ -78,23 +78,23 @@
       },
       "quantitativeReference": {
         "referenceToReferenceUnitGroup": {
-          "value": {
-            "@refObjectId": "str",
-            "@type": "str",
-            "@uri": "str",
-            "common:shortDescription": {
-              "@xml:lang": "str",
-              "#text": "str"
-            },
-            "@version": "str"
+          "@refObjectId": {
+            "value": "str",
+            "rules": [
+              {
+                "required": true,
+                "messageKey": "pages.flowproperties.validator.referenceToReferenceUnitGroup.required",
+                "defaultMessage": "Please input reference unit"
+              }
+            ]
           },
-          "rules": [
-            {
-              "required": true,
-              "messageKey": "pages.flowproperties.validator.referenceToReferenceUnitGroup.required",
-              "defaultMessage": "Please input reference unit"
-            }
-          ]
+          "@type": "str",
+          "@uri": "str",
+          "common:shortDescription": {
+            "@xml:lang": "str",
+            "#text": "str"
+          },
+          "@version": "str"
         }
       }
     },
@@ -114,22 +114,22 @@
       "complianceDeclarations": {
         "compliance": {
           "common:referenceToComplianceSystem": {
-            "value": {
-              "@refObjectId": "str",
-              "@type": "str",
-              "@uri": "str",
-              "common:shortDescription": {
-                "@xml:lang": "str",
-                "#text": "str"
-              }
+            "@refObjectId": {
+              "value": "str",
+              "rules": [
+                {
+                  "required": true,
+                  "messageKey": "pages.flowproperties.validator.referenceToComplianceSystem.required",
+                  "defaultMessage": "Please input compliance system name"
+                }
+              ]
             },
-            "rules": [
-              {
-                "required": true,
-                "messageKey": "pages.flowproperties.validator.referenceToComplianceSystem.required",
-                "defaultMessage": "Please input compliance system name"
-              }
-            ]
+            "@type": "str",
+            "@uri": "str",
+            "common:shortDescription": {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
           },
           "common:approvalOfOverallCompliance": {
             "value": "str",
@@ -157,22 +157,22 @@
           ]
         },
         "common:referenceToDataSetFormat": {
-          "value": {
-            "@refObjectId": "str",
-            "@type": "str",
-            "@uri": "str",
-            "common:shortDescription": {
-              "@xml:lang": "str",
-              "#text": "str"
-            }
+          "@refObjectId": {
+            "value": "str",
+            "rules": [
+              {
+                "required": true,
+                "messageKey": "pages.flowproperties.validator.referenceToDataSetFormat.required",
+                "defaultMessage": "Please input data set format(s)"
+              }
+            ]
           },
-          "rules": [
-            {
-              "required": true,
-              "messageKey": "pages.flowproperties.validator.referenceToDataSetFormat.required",
-              "defaultMessage": "Please input data set format(s)"
-            }
-          ]
+          "@type": "str",
+          "@uri": "str",
+          "common:shortDescription": {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
         }
       },
       "publicationAndOwnership": {
@@ -201,22 +201,22 @@
           }
         },
         "common:referenceToOwnershipOfDataSet": {
-          "value": {
-            "@type": "str",
-            "@refObjectId": "str",
-            "@uri": "str",
-            "common:shortDescription": {
-              "@xml:lang": "str",
-              "#text": "str"
-            }
+          "@type": "str",
+          "@refObjectId": {
+            "value": "str",
+            "rules": [
+              {
+                "required": true,
+                "messageKey": "pages.flowproperties.validator.referenceToOwnershipOfDataSet.required",
+                "defaultMessage": "Please input owner of data set"
+              }
+            ]
           },
-          "rules": [
-            {
-              "required": true,
-              "messageKey": "pages.flowproperties.validator.referenceToOwnershipOfDataSet.required",
-              "defaultMessage": "Please input owner of data set"
-            }
-          ]
+          "@uri": "str",
+          "common:shortDescription": {
+            "@xml:lang": "str",
+            "#text": "str"
+          }
         },
         "common:permanentDataSetURI": "str"
       }

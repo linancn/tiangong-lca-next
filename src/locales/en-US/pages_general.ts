@@ -73,4 +73,6 @@ export default {
 
   'page.exportData.success': 'Export data successfully',
   'page.exportData.error': 'Export data failed',
+
+  'page.options.savesuccess': 'Save successfully',
 };

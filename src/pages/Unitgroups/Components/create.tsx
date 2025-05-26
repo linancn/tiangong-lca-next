@@ -18,6 +18,9 @@ type Props = {
   actionType?: 'create' | 'copy' | 'createVersion';
   id?: string;
   version?: string;
+  isInToolbar?: boolean;
+  importData?: any;
+  onClose?: () => void;
 };
 
 // When type is 'copy' or 'createVersion', id and version are required parameters
@@ -40,6 +43,9 @@ const UnitGroupCreate: FC<CreateProps> = ({
   actionType = 'create',
   id,
   version,
+  importData,
+  onClose = () => {},
+  isInToolbar = false,
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
@@ -100,7 +106,29 @@ const UnitGroupCreate: FC<CreateProps> = ({
   };
 
   useEffect(() => {
-    if (drawerVisible === false) return;
+    if (importData && importData.length > 0 && !drawerVisible) {
+      setDrawerVisible(true);
+    }
+  }, [importData]);
+
+  useEffect(() => {
+    if (drawerVisible === false) {
+      onClose();
+      setInitData({});
+      setFromData({});
+      setUnitDataSource([]);
+      formRefCreate.current?.resetFields();
+      return;
+    }
+    if (importData && importData.length > 0) {
+      const formData = genUnitGroupFromData(importData[0].unitGroupDataSet);
+      setInitData(formData);
+      setFromData(formData);
+      setUnitDataSource(formData?.units?.unit ?? []);
+      formRefCreate.current?.resetFields();
+      formRefCreate.current?.setFieldsValue(formData);
+      return;
+    }
     if (actionType === 'copy' || actionType === 'createVersion') {
       getFormDetail();
       return;
@@ -161,7 +189,8 @@ const UnitGroupCreate: FC<CreateProps> = ({
           ></Button>
         ) : (
           <Button
-            size={'middle'}
+            style={isInToolbar ? { width: 'inherit', paddingInline: '4px' } : {}}
+            size={isInToolbar ? 'large' : 'middle'}
             type='text'
             icon={<PlusOutlined />}
             onClick={() => {
