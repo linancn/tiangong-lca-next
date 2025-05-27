@@ -23,7 +23,7 @@ import PropertyDelete from './Property/delete';
 import PropertyEdit from './Property/edit';
 import PropertyView from './Property/view';
 // import FlowsSelectForm from './select/form';
-
+import AlignedNumber from '@/components/AlignedNumber';
 type Props = {
   lang: string;
   activeTabKey: string;
@@ -135,6 +135,11 @@ export const FlowForm: FC<Props> = ({
       dataIndex: 'meanValue',
       sorter: false,
       search: false,
+      align: 'right',
+      width: 140,
+      render: (_: any, record: any) => {
+        return <AlignedNumber number={record.meanValue} />;
+      },
     },
     {
       title: (
