@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js';
 import { v4 } from 'uuid';
 import {
   classificationToJsonList,
@@ -1584,7 +1585,7 @@ const calculateProcessExchange = (
     );
     const thisRefMeanAmount = toAmountNumber(thisRefFlow?.meanAmount);
     if (thisRefMeanAmount !== 0 && targetAmount !== 0) {
-      scalingFactor = targetAmount / thisRefMeanAmount;
+      scalingFactor = new BigNumber(targetAmount).div(thisRefMeanAmount).toNumber();
     }
   } else {
     const thisRefFlow = dbPE?.exchange?.find(
@@ -1594,7 +1595,7 @@ const calculateProcessExchange = (
     );
     const thisRefMeanAmount = toAmountNumber(thisRefFlow?.meanAmount);
     if (thisRefMeanAmount !== 0 && targetAmount !== 0) {
-      scalingFactor = targetAmount / thisRefMeanAmount;
+      scalingFactor = new BigNumber(targetAmount).div(thisRefMeanAmount).toNumber();
     }
   }
 
@@ -1616,8 +1617,11 @@ const calculateProcessExchange = (
               e?.exchangeDirection?.toUpperCase() === 'OUTPUT'
             );
           });
-          const outputFlowMeanAmount =
-            toAmountNumber(connectionOutputFlow?.meanAmount) * scalingFactor;
+          const outputFlowMeanAmount = new BigNumber(
+            toAmountNumber(connectionOutputFlow?.meanAmount),
+          )
+            .times(scalingFactor)
+            .toNumber();
           const outputPE = calculateProcessExchange(
             dsModelProcess,
             modelProcess,
@@ -1650,8 +1654,11 @@ const calculateProcessExchange = (
                 e?.exchangeDirection?.toUpperCase() === 'OUTPUT'
               );
             });
-            const outputFlowMeanAmount =
-              toAmountNumber(connectionOutputFlow?.meanAmount) * scalingFactor;
+            const outputFlowMeanAmount = new BigNumber(
+              toAmountNumber(connectionOutputFlow?.meanAmount),
+            )
+              .times(scalingFactor)
+              .toNumber();
             const outputPE = calculateProcessExchange(
               dsModelProcess,
               modelProcess,
@@ -1736,8 +1743,11 @@ const calculateProcessExchange = (
                   e?.exchangeDirection?.toUpperCase() === 'INPUT'
                 );
               });
-              const inputFlowMeanAmount =
-                toAmountNumber(connectionInputFlow?.meanAmount) * scalingFactor;
+              const inputFlowMeanAmount = new BigNumber(
+                toAmountNumber(connectionInputFlow?.meanAmount),
+              )
+                .times(scalingFactor)
+                .toNumber();
               const inputPE = calculateProcessExchange(
                 usModelProcess,
                 modelProcess,
@@ -1784,7 +1794,7 @@ const sumProcessExchange = (processExchange: any[]) => {
         e?.exchangeDirection?.toUpperCase() === 'OUTPUT' &&
         !pe?.connectionFlow?.outputFlowIds?.includes(e?.referenceToFlowDataSet?.['@refObjectId'])
       ) {
-        const newAmount = e?.meanAmount * pe?.scalingFactor;
+        const newAmount = new BigNumber(e?.meanAmount).times(pe?.scalingFactor).toNumber();
         const newExchange = {
           ...e,
           meanAmount: newAmount,
@@ -1795,7 +1805,7 @@ const sumProcessExchange = (processExchange: any[]) => {
         e?.exchangeDirection?.toUpperCase() === 'INPUT' &&
         !pe?.connectionFlow?.inputFlowIds?.includes(e?.referenceToFlowDataSet?.['@refObjectId'])
       ) {
-        const newAmount = e?.meanAmount * pe?.scalingFactor;
+        const newAmount = new BigNumber(e?.meanAmount).times(pe?.scalingFactor).toNumber();
         const newExchange = {
           ...e,
           meanAmount: newAmount,
