@@ -1,3 +1,4 @@
+import AlignedNumber from '@/components/AlignedNumber';
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
 import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
@@ -118,6 +119,11 @@ export const UnitGroupForm: FC<Props> = ({
       ),
       dataIndex: 'meanValue',
       search: false,
+      align: 'right',
+      width: 150,
+      render: (_: any, record: any) => {
+        return <AlignedNumber number={record.meanValue} />;
+      },
     },
     {
       title: (

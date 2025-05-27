@@ -4,6 +4,7 @@ import LocationTextItemForm from '@/components/LocationTextItem/form';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
+import AlignedNumber from '@/components/AlignedNumber';
 import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import RequiredMark from '@/components/RequiredMark';
 import { getRules } from '@/pages/Utils';
@@ -164,8 +165,13 @@ export const ProcessForm: FC<Props> = ({
         <FormattedMessage id='pages.process.exchange.meanAmount' defaultMessage='Mean amount' />
       ),
       dataIndex: 'meanAmount',
+      align: 'right',
       sorter: false,
       search: false,
+      width: 140,
+      render: (_: any, record: any) => {
+        return <AlignedNumber number={record.meanAmount} />;
+      },
     },
     {
       title: (
@@ -175,8 +181,13 @@ export const ProcessForm: FC<Props> = ({
         />
       ),
       dataIndex: 'resultingAmount',
+      align: 'right',
       sorter: false,
       search: false,
+      width: 140,
+      render: (_: any, record: any) => {
+        return <AlignedNumber number={record.resultingAmount} />;
+      },
     },
     {
       title: (
