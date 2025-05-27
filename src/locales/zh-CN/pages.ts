@@ -112,6 +112,7 @@ export default {
   'pages.account.password': '密码',
   'pages.account.password.changed.success': '密码修改成功！',
   'pages.account.password.setted.success': '密码设置成功！',
+  'pages.account.password.changeError': '修改密码时发生系统错误，请稍后重试。',
   'pages.account.email.currentEmail': '当前邮箱',
   'pages.account.newEmail': '新邮箱',
   'pages.account.email.confirmNewEmail': '确认新邮箱',
@@ -128,6 +129,7 @@ export default {
   'pages.account.currentPassword.required': '请输入当前密码！',
   'pages.account.confirmNewPassword.required': '请再次输入新密码！',
   'pages.account.passwordsDoNotMatch': '两次输入的密码不一致！',
+  'pages.account.newPassword.sameAsOld': '新密码必须与当前密码不同！',
 
   'pages.account.newEmail.placeholder': '新邮箱',
   'pages.account.newEmail.wrong-format': '邮箱格式错误！',
@@ -140,10 +142,14 @@ export default {
   'pages.account.confirmNewPassword.placeholder': '确认新密码',
   'pages.account.confirmNewEmail.placeholder': '确认新邮箱',
 
+  'pages.account.apiKey': 'API Key',
   'pages.account.generateAPIKey': '生成 API Key',
   'pages.account.apiKey.viewed': '请确保将其保存到安全的位置。此密钥将不会再次显示。',
   'pages.account.apiKey.generateButton': '生成密钥',
+  'pages.account.invalidCredentials': '认证信息无效，请检查您的密码。',
   'pages.account.apiKey.generated.success': 'API Key 生成成功！',
+  'pages.account.apiKey.generateError': '生成 API Key 时发生系统错误，请稍后重试。',
+  'pages.account.password.currentPassword.tooltip': '请输入当前账户密码以验证您的身份并生成 API Key。',
 
   'pages.login.passwordForgot.tab': '账户',
 
