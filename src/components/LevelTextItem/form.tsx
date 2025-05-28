@@ -11,6 +11,7 @@ type Props = {
   hidden?: boolean;
   onData: () => void;
   rules?: any[];
+  showRules?: boolean;
 };
 
 const LevelTextItemForm: FC<Props> = ({
@@ -22,8 +23,10 @@ const LevelTextItemForm: FC<Props> = ({
   hidden,
   onData,
   rules = [],
+  showRules = false,
 }) => {
   const [selectOptions, setSelectOptions] = useState<any>([]);
+  const [hasClassId, setHasClassId] = useState<boolean>(false);
 
   const getNodePath = (
     targetId: string,
@@ -152,6 +155,11 @@ const LevelTextItemForm: FC<Props> = ({
       [...name, 'showValue'],
       fullPath.ids[fullPath.ids.length - 1],
     );
+    if (fullPath?.ids?.length > 0) {
+      setHasClassId(true);
+    } else {
+      setHasClassId(false);
+    }
     onData();
   };
 
@@ -164,6 +172,15 @@ const LevelTextItemForm: FC<Props> = ({
         }
         name={[...name, 'showValue']}
         rules={rules}
+        validateStatus={showRules && !hasClassId ? 'error' : undefined}
+        help={
+          showRules && !hasClassId ? (
+            <FormattedMessage
+              id='pages.contact.validator.classification.required'
+              defaultMessage='Please input classification'
+            />
+          ) : undefined
+        }
       >
         <TreeSelect
           treeDefaultExpandedKeys={

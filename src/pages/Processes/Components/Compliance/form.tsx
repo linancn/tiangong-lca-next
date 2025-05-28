@@ -1,11 +1,11 @@
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
-// import { getRules } from '@/pages/Utils';
+import { getRules } from '@/pages/Utils';
 import { CloseOutlined } from '@ant-design/icons';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Form, Row, Select, Space } from 'antd';
 import { FC } from 'react';
 import { FormattedMessage } from 'umi';
-// import schema from '../../processes_schema.json';
+import schema from '../../processes_schema.json';
 import {
   approvalOfOverallComplianceOptions,
   documentationComplianceOptions,
@@ -21,9 +21,10 @@ type Props = {
   lang: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;
+  showRules?: boolean;
 };
 
-const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
+const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData, showRules = false }) => {
   return (
     <Form.Item>
       <Form.List name={[...name]}>
@@ -67,11 +68,15 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                           />
                         }
                         name={[subField.name, 'common:approvalOfOverallCompliance']}
-                        // rules={getRules(
-                        //   schema['processDataSet']['modellingAndValidation'][
-                        //     'complianceDeclarations'
-                        //   ]['compliance']['common:approvalOfOverallCompliance']['rules'],
-                        // )}
+                        rules={
+                          showRules
+                            ? getRules(
+                                schema['processDataSet']['modellingAndValidation'][
+                                  'complianceDeclarations'
+                                ]['compliance']['common:approvalOfOverallCompliance']['rules'],
+                              )
+                            : []
+                        }
                       >
                         <Select options={approvalOfOverallComplianceOptions} />
                       </Form.Item>
@@ -85,11 +90,15 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                           />
                         }
                         name={[subField.name, 'common:nomenclatureCompliance']}
-                        // rules={getRules(
-                        //   schema['processDataSet']['modellingAndValidation'][
-                        //     'complianceDeclarations'
-                        //   ]['compliance']['common:nomenclatureCompliance']['rules'],
-                        // )}
+                        rules={
+                          showRules
+                            ? getRules(
+                                schema['processDataSet']['modellingAndValidation'][
+                                  'complianceDeclarations'
+                                ]['compliance']['common:nomenclatureCompliance']['rules'],
+                              )
+                            : []
+                        }
                       >
                         <Select options={nomenclatureComplianceOptions} />
                       </Form.Item>
@@ -103,11 +112,15 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                           />
                         }
                         name={[subField.name, 'common:methodologicalCompliance']}
-                        // rules={getRules(
-                        //   schema['processDataSet']['modellingAndValidation'][
-                        //     'complianceDeclarations'
-                        //   ]['compliance']['common:methodologicalCompliance']['rules'],
-                        // )}
+                        rules={
+                          showRules
+                            ? getRules(
+                                schema['processDataSet']['modellingAndValidation'][
+                                  'complianceDeclarations'
+                                ]['compliance']['common:methodologicalCompliance']['rules'],
+                              )
+                            : []
+                        }
                       >
                         <Select options={methodologicalComplianceOptions} />
                       </Form.Item>
@@ -121,11 +134,15 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                           />
                         }
                         name={[subField.name, 'common:reviewCompliance']}
-                        // rules={getRules(
-                        //   schema['processDataSet']['modellingAndValidation'][
-                        //     'complianceDeclarations'
-                        //   ]['compliance']['common:reviewCompliance']['rules'],
-                        // )}
+                        rules={
+                          showRules
+                            ? getRules(
+                                schema['processDataSet']['modellingAndValidation'][
+                                  'complianceDeclarations'
+                                ]['compliance']['common:reviewCompliance']['rules'],
+                              )
+                            : []
+                        }
                       >
                         <Select options={reviewComplianceOptions} />
                       </Form.Item>
@@ -139,11 +156,15 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                           />
                         }
                         name={[subField.name, 'common:documentationCompliance']}
-                        // rules={getRules(
-                        //   schema['processDataSet']['modellingAndValidation'][
-                        //     'complianceDeclarations'
-                        //   ]['compliance']['common:documentationCompliance']['rules'],
-                        // )}
+                        rules={
+                          showRules
+                            ? getRules(
+                                schema['processDataSet']['modellingAndValidation'][
+                                  'complianceDeclarations'
+                                ]['compliance']['common:documentationCompliance']['rules'],
+                              )
+                            : []
+                        }
                       >
                         <Select options={documentationComplianceOptions} />
                       </Form.Item>
@@ -157,11 +178,15 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                           />
                         }
                         name={[subField.name, 'common:qualityCompliance']}
-                        // rules={getRules(
-                        //   schema['processDataSet']['modellingAndValidation'][
-                        //     'complianceDeclarations'
-                        //   ]['compliance']['common:qualityCompliance']['rules'],
-                        // )}
+                        rules={
+                          showRules
+                            ? getRules(
+                                schema['processDataSet']['modellingAndValidation'][
+                                  'complianceDeclarations'
+                                ]['compliance']['common:qualityCompliance']['rules'],
+                              )
+                            : []
+                        }
                       >
                         <Select options={qualityComplianceOptions} />
                       </Form.Item>
@@ -178,11 +203,17 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                       lang={lang}
                       formRef={formRef}
                       onData={onData}
-                      // rules={getRules(
-                      //   schema['processDataSet']['modellingAndValidation'][
-                      //     'complianceDeclarations'
-                      //   ]['compliance']['common:referenceToComplianceSystem']['rules'],
-                      // )}
+                      rules={
+                        showRules
+                          ? getRules(
+                              schema['processDataSet']['modellingAndValidation'][
+                                'complianceDeclarations'
+                              ]['compliance']['common:referenceToComplianceSystem']['@refObjectId'][
+                                'rules'
+                              ],
+                            )
+                          : []
+                      }
                     />
                   </Card>
                 </Space>

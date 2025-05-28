@@ -2,13 +2,13 @@ import LangTextItemForm from '@/components/LangTextItem/form';
 import RequiredMark from '@/components/RequiredMark';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
-// import { getRules } from '@/pages/Utils';
+import { getRules } from '@/pages/Utils';
 import { CloseOutlined } from '@ant-design/icons';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Divider, Form, Row, Select, Space } from 'antd';
 import { FC, useState } from 'react';
 import { FormattedMessage } from 'umi';
-// import schema from '../../processes_schema.json';
+import schema from '../../processes_schema.json';
 import { reviewTypeOptions } from '../optiondata';
 import DataQualityIndicatorItemForm from './DataQualityIndicator/form';
 import ScopeItemForm from './Scope/form';
@@ -19,9 +19,10 @@ type Props = {
   lang: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;
+  showRules?: boolean;
 };
 
-const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
+const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData, showRules = false }) => {
   const [reviewDetailsError, setReviewDetailsError] = useState(false);
   return (
     <Form.Item>
@@ -66,11 +67,15 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                           />
                         }
                         name={[subField.name, '@type']}
-                        // rules={getRules(
-                        //   schema['processDataSet']['modellingAndValidation']['validation'][
-                        //     'review'
-                        //   ]['@type']['rules'],
-                        // )}
+                        rules={
+                          showRules
+                            ? getRules(
+                                schema['processDataSet']['modellingAndValidation']['validation'][
+                                  'review'
+                                ]['@type']['rules'],
+                              )
+                            : []
+                        }
                       >
                         <Select options={reviewTypeOptions} />
                       </Form.Item>
@@ -84,7 +89,7 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                         />
                       }
                     >
-                      <ScopeItemForm name={[subField.name, 'common:scope']} />
+                      <ScopeItemForm showRules={showRules} name={[subField.name, 'common:scope']} />
                     </Card>
                     <br />
                     <Card
@@ -130,11 +135,15 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                         />
                       }
                       setRuleErrorState={setReviewDetailsError}
-                      // rules={getRules(
-                      //   schema['processDataSet']['modellingAndValidation']['validation']['review'][
-                      //     'reviewDetails'
-                      //   ]['rules'],
-                      // )}
+                      rules={
+                        showRules
+                          ? getRules(
+                              schema['processDataSet']['modellingAndValidation']['validation'][
+                                'review'
+                              ]['common:reviewDetails']['rules'],
+                            )
+                          : []
+                      }
                     />
                     <Divider orientationMargin='0' orientation='left' plain>
                       <FormattedMessage
@@ -164,11 +173,17 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                       lang={lang}
                       formRef={formRef}
                       onData={onData}
-                      // rules={getRules(
-                      //   schema['processDataSet']['modellingAndValidation']['validation']['review'][
-                      //     'common:referenceToNameOfReviewerAndInstitution'
-                      //   ]['rules'],
-                      // )}
+                      rules={
+                        showRules
+                          ? getRules(
+                              schema['processDataSet']['modellingAndValidation']['validation'][
+                                'review'
+                              ]['common:referenceToNameOfReviewerAndInstitution']['@refObjectId'][
+                                'rules'
+                              ],
+                            )
+                          : []
+                      }
                     />
                     <br />
                     <SourceSelectForm
@@ -183,11 +198,15 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                       lang={lang}
                       formRef={formRef}
                       onData={onData}
-                      // rules={getRules(
-                      //   schema['processDataSet']['modellingAndValidation']['validation']['review'][
-                      //     'common:referenceToCompleteReviewReport'
-                      //   ]['rules'],
-                      // )}
+                      rules={
+                        showRules
+                          ? getRules(
+                              schema['processDataSet']['modellingAndValidation']['validation'][
+                                'review'
+                              ]['common:referenceToCompleteReviewReport']['@refObjectId']['rules'],
+                            )
+                          : []
+                      }
                     />
                   </Card>
                 </Space>

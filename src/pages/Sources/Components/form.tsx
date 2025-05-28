@@ -27,6 +27,7 @@ type Props = {
   fileList: UploadFile[];
   setFileList: React.Dispatch<React.SetStateAction<UploadFile[]>>;
   formType?: string;
+  showRules?: boolean;
 };
 
 export const SourceForm: FC<Props> = ({
@@ -40,6 +41,7 @@ export const SourceForm: FC<Props> = ({
   fileList,
   setFileList,
   formType,
+  showRules = false,
 }) => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
@@ -109,11 +111,15 @@ export const SourceForm: FC<Props> = ({
               />
             }
             setRuleErrorState={setShowShortNameError}
-            // rules={getRules(
-            //   schema['sourceDataSet']['sourceInformation']['dataSetInformation'][
-            //     'common:shortName'
-            //   ]['rules'] ?? [],
-            // )}
+            rules={
+              showRules
+                ? getRules(
+                    schema['sourceDataSet']['sourceInformation']['dataSetInformation'][
+                      'common:shortName'
+                    ]['rules'] ?? [],
+                  )
+                : []
+            }
           />
         </Card>
         <br />
@@ -129,11 +135,16 @@ export const SourceForm: FC<Props> = ({
           lang={lang}
           dataType={'Source'}
           onData={onData}
-          // rules={getRules(
-          //   schema['sourceDataSet']['sourceInformation']['dataSetInformation'][
-          //     'classificationInformation'
-          //   ]['common:classification']['common:class']['rules'] ?? [],
-          // )}
+          showRules={showRules}
+          rules={
+            showRules
+              ? getRules(
+                  schema['sourceDataSet']['sourceInformation']['dataSetInformation'][
+                    'classificationInformation'
+                  ]['common:classification']['common:class']['@classId']['rules'] ?? [],
+                )
+              : []
+          }
         />
         <Form.Item
           label={
@@ -143,11 +154,15 @@ export const SourceForm: FC<Props> = ({
             />
           }
           name={['sourceInformation', 'dataSetInformation', 'sourceCitation']}
-          // rules={getRules(
-          //   schema['sourceDataSet']['sourceInformation']['dataSetInformation']['sourceCitation'][
-          //     'rules'
-          //   ] ?? [],
-          // )}
+          rules={
+            showRules
+              ? getRules(
+                  schema['sourceDataSet']['sourceInformation']['dataSetInformation'][
+                    'sourceCitation'
+                  ]['rules'] ?? [],
+                )
+              : []
+          }
         >
           <Input />
         </Form.Item>
@@ -277,11 +292,15 @@ export const SourceForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
-            // rules={getRules(
-            //   schema['sourceDataSet']['administrativeInformation']['dataEntryBy'][
-            //     'common:timeStamp'
-            //   ]['rules'] ?? [],
-            // )}
+            rules={
+              showRules
+                ? getRules(
+                    schema['sourceDataSet']['administrativeInformation']['dataEntryBy'][
+                      'common:timeStamp'
+                    ]['rules'] ?? [],
+                  )
+                : []
+            }
           >
             <Input disabled={true} style={{ color: token.colorTextDescription }} />
           </Form.Item>
@@ -297,11 +316,15 @@ export const SourceForm: FC<Props> = ({
             lang={lang}
             formRef={formRef}
             onData={onData}
-            // rules={getRules(
-            //   schema['sourceDataSet']['administrativeInformation']['dataEntryBy'][
-            //     'common:referenceToDataSetFormat'
-            //   ]['rules'] ?? [],
-            // )}
+            rules={
+              showRules
+                ? getRules(
+                    schema['sourceDataSet']['administrativeInformation']['dataEntryBy'][
+                      'common:referenceToDataSetFormat'
+                    ]['@refObjectId']['rules'] ?? [],
+                  )
+                : []
+            }
           />
         </Card>
         <br />
@@ -345,11 +368,15 @@ export const SourceForm: FC<Props> = ({
             lang={lang}
             formRef={formRef}
             onData={onData}
-            // rules={getRules(
-            //   schema['sourceDataSet']['administrativeInformation']['publicationAndOwnership'][
-            //     'common:referenceToOwnershipOfDataSet'
-            //   ]['rules'] ?? [],
-            // )}
+            rules={
+              showRules
+                ? getRules(
+                    schema['sourceDataSet']['administrativeInformation']['publicationAndOwnership'][
+                      'common:referenceToOwnershipOfDataSet'
+                    ]['@refObjectId']['rules'] ?? [],
+                  )
+                : []
+            }
           />
           <br />
           {/* <SourceSelectForm

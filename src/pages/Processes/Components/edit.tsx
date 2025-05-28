@@ -1,5 +1,5 @@
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
-// import { checkRequiredFields } from '@/pages/Utils';
+import { checkRequiredFields } from '@/pages/Utils';
 import { getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
 import { getRefData, updateReviewIdAndStateCode } from '@/services/general/api';
@@ -32,7 +32,7 @@ import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
-// import requiredFields from '../requiredFields';
+import requiredFields from '../requiredFields';
 import { ProcessForm } from './form';
 type Props = {
   id: string;
@@ -57,9 +57,19 @@ const ProcessEdit: FC<Props> = ({
   const [initData, setInitData] = useState<any>({});
   const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
   const [spinning, setSpinning] = useState(false);
+  const [showRules, setShowRules] = useState<boolean>(false);
   const intl = useIntl();
   const [referenceValue, setReferenceValue] = useState(0);
   const { token } = theme.useToken();
+
+  useEffect(() => {
+    if (showRules) {
+      setTimeout(() => {
+        formRefEdit.current?.validateFields();
+      });
+    }
+  }, [showRules]);
+
   const handletFromData = async () => {
     if (fromData?.id) {
       const fieldsValue = formRefEdit.current?.getFieldsValue();
@@ -392,7 +402,10 @@ const ProcessEdit: FC<Props> = ({
   };
 
   useEffect(() => {
-    if (!drawerVisible) return;
+    if (!drawerVisible) {
+      setShowRules(false);
+      return;
+    }
     onReset();
   }, [drawerVisible]);
 
@@ -454,6 +467,19 @@ const ProcessEdit: FC<Props> = ({
         onClose={() => setDrawerVisible(false)}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
+            <Button
+              onClick={async () => {
+                setShowRules(true);
+                const { checkResult, tabName } = checkRequiredFields(requiredFields, fromData);
+                if (!checkResult) {
+                  await setActiveTabKey(tabName);
+                  formRefEdit.current?.validateFields();
+                  return false;
+                }
+              }}
+            >
+              <FormattedMessage id='pages.button.check' defaultMessage='Data check' />
+            </Button>
             <>
               <Button
                 onClick={() => {
@@ -481,7 +507,13 @@ const ProcessEdit: FC<Props> = ({
               <FormattedMessage id="pages.button.reset" defaultMessage="Reset" />
             </Button> */}
 
-            <Button onClick={() => formRefEdit.current?.submit()} type='primary'>
+            <Button
+              onClick={() => {
+                setShowRules(false);
+                formRefEdit.current?.submit();
+              }}
+              type='primary'
+            >
               <FormattedMessage id='pages.button.save' defaultMessage='Save' />
             </Button>
           </Space>
@@ -521,12 +553,6 @@ const ProcessEdit: FC<Props> = ({
                 },
               }}
               onFinish={async () => {
-                // const { checkResult, tabName } = checkRequiredFields(requiredFields, fromData);
-                // if (!checkResult) {
-                //   await setActiveTabKey(tabName);
-                //   formRefEdit.current?.validateFields();
-                //   return false;
-                // }
                 // const exchanges = fromData?.exchanges;
                 // if (!exchanges || !exchanges?.exchange || exchanges?.exchange?.length === 0) {
                 //   message.error(
@@ -580,6 +606,7 @@ const ProcessEdit: FC<Props> = ({
                 onExchangeDataCreate={handletExchangeDataCreate}
                 onTabChange={onTabChange}
                 exchangeDataSource={exchangeDataSource}
+                showRules={showRules}
               />
               <Form.Item name='id' hidden>
                 <Input />

@@ -27,6 +27,7 @@ export default {
   'pages.button.temporarySave': '暂存',
   'pages.button.submit': '提交',
   'pages.button.save': '保存',
+  'pages.button.check': '数据校验',
   'pages.button.review': '提交审核',
   'pages.button.select': '选择',
   'pages.button.reselect': '重选',

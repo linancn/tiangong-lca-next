@@ -34,11 +34,20 @@ const UnitGroupEdit: FC<Props> = ({
   const [fromData, setFromData] = useState<any>({});
   const [unitDataSource, setUnitDataSource] = useState<UnitTable[]>([]);
   const [spinning, setSpinning] = useState(false);
+  const [showRules, setShowRules] = useState<boolean>(false);
   const intl = useIntl();
   const [referenceValue, setReferenceValue] = useState(0);
   const updateReference = async () => {
     setReferenceValue(referenceValue + 1);
   };
+
+  useEffect(() => {
+    if (showRules) {
+      setTimeout(() => {
+        formRefEdit.current?.validateFields();
+      });
+    }
+  }, [showRules]);
 
   const handletFromData = () => {
     if (fromData)
@@ -89,7 +98,10 @@ const UnitGroupEdit: FC<Props> = ({
   };
 
   useEffect(() => {
-    if (!drawerVisible) return;
+    if (!drawerVisible) {
+      setShowRules(false);
+      return;
+    }
     onReset();
   }, [drawerVisible]);
 
@@ -147,6 +159,13 @@ const UnitGroupEdit: FC<Props> = ({
           <Space size={'middle'} className={styles.footer_right}>
             <Button
               onClick={() => {
+                setShowRules(true);
+              }}
+            >
+              <FormattedMessage id='pages.button.check' defaultMessage='Data check' />
+            </Button>
+            <Button
+              onClick={() => {
                 updateReference();
               }}
             >
@@ -167,6 +186,7 @@ const UnitGroupEdit: FC<Props> = ({
             </Button> */}
             <Button
               onClick={() => {
+                setShowRules(false);
                 formRefEdit.current?.submit();
               }}
               type='primary'
@@ -241,6 +261,7 @@ const UnitGroupEdit: FC<Props> = ({
                 onUnitDataCreate={handletUnitDataCreate}
                 onTabChange={onTabChange}
                 unitDataSource={unitDataSource}
+                showRules={showRules}
               />
             </ProForm>
           </UpdateReferenceContext.Provider>

@@ -19,7 +19,7 @@ import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 're
 import { FormattedMessage, useIntl } from 'umi';
 import { LifeCycleModelForm } from '../form';
 // const { TextArea } = Input;
-// import { checkRequiredFields } from '@/pages/Utils';
+import { checkRequiredFields } from '@/pages/Utils';
 import { getRefData, updateReviewIdAndStateCode } from '@/services/general/api';
 import {
   getLifeCycleModelDetail,
@@ -29,7 +29,7 @@ import { getProcessDetail, updateProcessStateCode } from '@/services/processes/a
 import { addReviewsApi } from '@/services/reviews/api';
 import { getUserTeamId } from '@/services/roles/api';
 import { v4 } from 'uuid';
-// import requiredFields from '../../requiredFields';
+import requiredFields from '../../requiredFields';
 
 type Props = {
   lang: string;
@@ -44,8 +44,17 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
   const [fromData, setFromData] = useState<any>({});
   const [referenceValue, setReferenceValue] = useState(0);
   const [spinning, setSpinning] = useState(false);
+  const [showRules, setShowRules] = useState<boolean>(false);
   const intl = useIntl();
   const { token } = theme.useToken();
+
+  useEffect(() => {
+    if (showRules) {
+      setTimeout(() => {
+        formRefEdit.current?.validateFields();
+      });
+    }
+  }, [showRules]);
 
   const updateReference = async () => {
     setReferenceValue(referenceValue + 1);
@@ -93,7 +102,10 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
   };
 
   useEffect(() => {
-    if (!drawerVisible) return;
+    if (!drawerVisible) {
+      setShowRules(false);
+      return;
+    }
     onReset();
   }, [drawerVisible]);
   let lifeCycleModelDetail: any = {};
@@ -405,16 +417,32 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
               </Button>
             )} */}
             {action === 'edit' ? (
-              <Button
-                onClick={() => {
-                  updateReference();
-                }}
-              >
-                <FormattedMessage
-                  id='pages.button.updateReference'
-                  defaultMessage='Update reference'
-                />
-              </Button>
+              <>
+                <Button
+                  onClick={async () => {
+                    setShowRules(true);
+                    const { checkResult, tabName } = checkRequiredFields(requiredFields, fromData);
+                    if (!checkResult) {
+                      await setActiveTabKey(tabName);
+                      formRefEdit.current?.validateFields();
+                      return false;
+                    }
+                  }}
+                >
+                  <FormattedMessage id='pages.button.check' defaultMessage='Data check' />
+                </Button>
+
+                <Button
+                  onClick={() => {
+                    updateReference();
+                  }}
+                >
+                  <FormattedMessage
+                    id='pages.button.updateReference'
+                    defaultMessage='Update reference'
+                  />
+                </Button>
+              </>
             ) : (
               <></>
             )}
@@ -427,6 +455,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
             </Button>
             <Button
               onClick={() => {
+                setShowRules(false);
                 formRefEdit.current?.submit();
               }}
               type='primary'
@@ -470,7 +499,6 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
                 },
               }}
               onFinish={async () => {
-                // const { checkResult, tabName } = checkRequiredFields(requiredFields, fromData);
                 // if (!checkResult) {
                 //   await setActiveTabKey(tabName);
                 //   formRefEdit.current?.validateFields();
@@ -489,6 +517,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
                 formRef={formRefEdit}
                 onTabChange={onTabChange}
                 onData={handletFromData}
+                showRules={showRules}
               />
             </ProForm>
           </UpdateReferenceContext.Provider>

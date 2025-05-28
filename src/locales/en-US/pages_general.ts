@@ -28,6 +28,7 @@ export default {
   'pages.button.temporarySave': 'Temporary Save',
   'pages.button.submit': 'Submit',
   'pages.button.save': 'Save',
+  'pages.button.check': 'Data check',
   'pages.button.review': 'Sumit for review',
   'pages.button.select': 'Select',
   'pages.button.reselect': 'Reselect',
