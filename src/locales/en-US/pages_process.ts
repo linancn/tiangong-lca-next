@@ -413,5 +413,5 @@ export default {
   'pages.process.review.submitSuccess': 'Review submitted successfully',
   'pages.process.review.submitError': 'Submit review failed',
 
-  'pages.process.review.unRuleVerification.tip': 'The referenced data is incomplete. Please complete it and try again.',
+  'pages.process.review.unRuleVerification.tip': 'The referenced data is incomplete. Please complete it and try again:',
 };

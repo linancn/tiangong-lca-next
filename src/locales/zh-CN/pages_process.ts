@@ -409,5 +409,5 @@ export default {
 
   'pages.process.review.submitSuccess': '提交审核成功',
   'pages.process.review.submitError': '提交审核失败',
-  'pages.process.review.unRuleVerification.tip': '引用数据不完整，请补充完整后重试',
+  'pages.process.review.unRuleVerification.tip': '引用数据不完整，请补充完整后重试：',
 };
