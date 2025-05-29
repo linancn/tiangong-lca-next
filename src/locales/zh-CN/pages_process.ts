@@ -409,7 +409,5 @@ export default {
 
   'pages.process.review.submitSuccess': '提交审核成功',
   'pages.process.review.submitError': '提交审核失败',
-  'pages.process.review.unRuleVerification.modal.title': '提示',
-  'pages.process.review.unRuleVerification.modal.content': '以下数据不完整，请修改后重新提交审核',
-  'pages.process.review.unRuleVerification.modal.button.ok': '确定',
+  'pages.process.review.unRuleVerification.tip': '引用数据不完整，请补充完整后重试',
 };

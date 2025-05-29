@@ -14,6 +14,7 @@ export default {
   'pages.button.allVersion': '所有版本',
   'pages.button.view': '查看',
   'pages.button.create.success': '创建成功!',
+  'pages.button.save.success': '保存成功!',
   'pages.button.edit': '编辑',
   'pages.button.copy': '复制',
   'pages.button.refresh': '刷新',
@@ -28,6 +29,7 @@ export default {
   'pages.button.submit': '提交',
   'pages.button.save': '保存',
   'pages.button.check': '数据校验',
+  'pages.button.check.success': '数据校验成功!',
   'pages.button.review': '提交审核',
   'pages.button.select': '选择',
   'pages.button.reselect': '重选',
@@ -75,4 +77,5 @@ export default {
   'page.exportData.error': '数据导出失败',
 
   'page.options.savesuccess': '保存成功',
+  'page.select.unRuleVerification': '请将数据补充完整',
 };

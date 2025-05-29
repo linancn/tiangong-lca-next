@@ -116,11 +116,13 @@ const LevelTextItemForm: FC<Props> = ({
       field.id.every((item: string) => typeof item === 'string' && item.length !== 0)
     ) {
       const id = field.id[field.id.length - 1];
+      setHasClassId(true);
       await formRef.current?.setFieldValue([...name, 'showValue'], id);
     } else if (field && field.value && field.value?.length) {
       const value = field.value[field.value.length - 1];
       const id = getIdByValue(value, selectOptions);
       await formRef.current?.setFieldValue([...name, 'showValue'], id);
+      setHasClassId(true);
     }
   };
 

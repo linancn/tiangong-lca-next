@@ -169,7 +169,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
         <>
           <div>
             {intl.formatMessage({
-              id: 'pages.process.review.unRuleVerification.modal.content',
+              id: 'pages.process.review.unRuleVerification.tip',
               defaultMessage:
                 'The following data is incomplete, please modify and resubmit for review',
             })}

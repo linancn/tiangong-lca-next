@@ -20,13 +20,11 @@ import {
   Drawer,
   Form,
   Input,
-  Modal,
   Space,
   Spin,
   Tooltip,
   Typography,
   message,
-  theme,
 } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -58,18 +56,9 @@ const ProcessEdit: FC<Props> = ({
   const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
   const [spinning, setSpinning] = useState(false);
   const [showRules, setShowRules] = useState<boolean>(false);
+  const [unRuleVerificationData, setUnRuleVerificationData] = useState<any[]>([]);
   const intl = useIntl();
   const [referenceValue, setReferenceValue] = useState(0);
-  const { token } = theme.useToken();
-
-  useEffect(() => {
-    if (showRules) {
-      setTimeout(() => {
-        formRefEdit.current?.validateFields();
-      });
-    }
-  }, [showRules]);
-
   const handletFromData = async () => {
     if (fromData?.id) {
       const fieldsValue = formRefEdit.current?.getFieldsValue();
@@ -144,6 +133,89 @@ const ProcessEdit: FC<Props> = ({
     setReferenceValue(referenceValue + 1);
   };
 
+  const handleCheckData = async () => {
+    setShowRules(true);
+    const { checkResult, tabName } = checkRequiredFields(requiredFields, fromData);
+    if (!checkResult) {
+      await setActiveTabKey(tabName);
+      setTimeout(() => {
+        formRefEdit.current?.validateFields();
+      }, 200);
+      return { checkResult, tabName };
+    } else {
+      const exchanges = fromData?.exchanges;
+      if (!exchanges || !exchanges?.exchange || exchanges?.exchange?.length === 0) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.process.validator.exchanges.required',
+            defaultMessage: 'Please select exchanges',
+          }),
+        );
+        return { checkResult, tabName };
+      } else if (
+        exchanges?.exchange.filter((item: any) => item?.quantitativeReference).length !==
+        1
+      ) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.process.validator.exchanges.quantitativeReference.required',
+            defaultMessage:
+              'Exchange needs to have exactly one quantitative reference open',
+          }),
+        );
+        return { checkResult, tabName };
+      }
+    }
+    message.success(
+      intl.formatMessage({
+        id: 'pages.button.check.success',
+        defaultMessage: 'Data check successfully!',
+      }),
+    );
+    return { checkResult, tabName };
+  };
+
+  const handleSubmit = async (closeDrawer: boolean) => {
+    if (closeDrawer) setSpinning(true);
+    const updateResult = await updateProcess(id, version, {
+      ...fromData,
+    });
+    if (updateResult?.data) {
+    if (!closeDrawer) {
+      const dataSet = genProcessFromData(updateResult.data[0]?.json?.processDataSet ?? {});
+      setInitData({
+        ...dataSet,
+        id: id,
+        stateCode: updateResult.data[0]?.stateCode,
+        ruleVerification: updateResult.data[0]?.ruleVerification,
+      });
+      setFromData({ ...dataSet, id: id });
+      setExchangeDataSource(dataSet?.exchanges?.exchange ?? []);
+      formRefEdit.current?.resetFields();
+      formRefEdit.current?.setFieldsValue({
+        ...dataSet,
+        id: id,
+      });
+    }
+    message.success(
+      intl.formatMessage({
+        id: 'pages.button.save.success',
+        defaultMessage: 'Save successfully!',
+      }),
+    );
+    if (closeDrawer) {
+      setSpinning(false);
+      setDrawerVisible(false);
+      setViewDrawerVisible(false);
+    }
+    actionRef?.current?.reload();
+    } else {
+      setSpinning(false);
+      message.error(updateResult?.error?.message);
+    }
+    return true;
+  }
+
   const getAllRefObj = (obj: any): any[] => {
     const result: any[] = [];
 
@@ -171,44 +243,12 @@ const ProcessEdit: FC<Props> = ({
       return result.data?.state_code;
     }
   };
-  const showUnRuleVerification = (refs: any[]) => {
-    Modal.confirm({
-      okButtonProps: {
-        type: 'primary',
-        style: { backgroundColor: token.colorPrimary },
-      },
-      title: intl.formatMessage({
-        id: 'pages.process.review.unRuleVerification.modal.title',
-        defaultMessage: 'Notice',
-      }),
-      width: 500,
-      content: (
-        <>
-          <div>
-            {intl.formatMessage({
-              id: 'pages.process.review.unRuleVerification.modal.content',
-              defaultMessage:
-                'The following data is incomplete, please modify and resubmit for review',
-            })}
-            :
-          </div>
-          <div>
-            {refs.map((item: any) => (
-              <div key={item['@refObjectId']}>{`${item['@type']} : ${item['@refObjectId']}`}</div>
-            ))}
-          </div>
-        </>
-      ),
-      okText: intl.formatMessage({
-        id: 'pages.process.review.unRuleVerification.modal.button.ok',
-        defaultMessage: 'OK',
-      }),
-      cancelButtonProps: { style: { display: 'none' } },
-      onOk: () => {},
-    });
-  };
+ 
   const submitReview = async () => {
     setSpinning(true);
+    await handleSubmit(false);
+    const { checkResult } = await handleCheckData();
+    if (checkResult) {
     let lifeCycleModelStateCode = await getLifeCycleModelStateCode();
     // console.log('lifeCycleModelStateCode', lifeCycleModelStateCode);
     if (lifeCycleModelStateCode >= 20 && lifeCycleModelStateCode < 100) {
@@ -314,7 +354,13 @@ const ProcessEdit: FC<Props> = ({
           '@version': version,
         });
       }
-      showUnRuleVerification(unRuleVerification);
+      setUnRuleVerificationData(unRuleVerification);
+      message.error(
+        intl.formatMessage({
+          id: 'pages.process.review.unRuleVerification.tip',
+          defaultMessage: 'Notice',
+        }),
+      );
       setSpinning(false);
       return;
     }
@@ -369,6 +415,9 @@ const ProcessEdit: FC<Props> = ({
       }
     }
     setSpinning(false);
+    } else {
+      setSpinning(false);
+    }
   };
 
   const onTabChange = (key: string) => {
@@ -468,15 +517,7 @@ const ProcessEdit: FC<Props> = ({
         footer={
           <Space size={'middle'} className={styles.footer_right}>
             <Button
-              onClick={async () => {
-                setShowRules(true);
-                const { checkResult, tabName } = checkRequiredFields(requiredFields, fromData);
-                if (!checkResult) {
-                  await setActiveTabKey(tabName);
-                  formRefEdit.current?.validateFields();
-                  return false;
-                }
-              }}
+              onClick={handleCheckData}
             >
               <FormattedMessage id='pages.button.check' defaultMessage='Data check' />
             </Button>
@@ -552,50 +593,7 @@ const ProcessEdit: FC<Props> = ({
                   return [];
                 },
               }}
-              onFinish={async () => {
-                // const exchanges = fromData?.exchanges;
-                // if (!exchanges || !exchanges?.exchange || exchanges?.exchange?.length === 0) {
-                //   message.error(
-                //     intl.formatMessage({
-                //       id: 'pages.process.validator.exchanges.required',
-                //       defaultMessage: 'Please select exchanges',
-                //     }),
-                //   );
-                //   return false;
-                // } else if (
-                //   exchanges?.exchange.filter((item: any) => item?.quantitativeReference).length !==
-                //   1
-                // ) {
-                //   message.error(
-                //     intl.formatMessage({
-                //       id: 'pages.process.validator.exchanges.quantitativeReference.required',
-                //       defaultMessage:
-                //         'Exchange needs to have exactly one quantitative reference open',
-                //     }),
-                //   );
-                //   return false;
-                // }
-                setSpinning(true);
-                const updateResult = await updateProcess(id, version, {
-                  ...fromData,
-                });
-                if (updateResult?.data) {
-                  message.success(
-                    intl.formatMessage({
-                      id: 'pages.button.create.success',
-                      defaultMessage: 'Created successfully!',
-                    }),
-                  );
-                  setSpinning(false);
-                  setDrawerVisible(false);
-                  setViewDrawerVisible(false);
-                  actionRef?.current?.reload();
-                } else {
-                  setSpinning(false);
-                  message.error(updateResult?.error?.message);
-                }
-                return true;
-              }}
+              onFinish={() => handleSubmit(true)}
             >
               <ProcessForm
                 lang={lang}
