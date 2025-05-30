@@ -84,7 +84,7 @@ export async function getRefData(id: string, version: string, table: string, tea
     });
   }
   // const session = await supabase.auth.getSession();
-  let query = supabase.from(table).select('state_code,json,rule_verification').eq('id', id);
+  let query = supabase.from(table).select('state_code,json,rule_verification,user_id').eq('id', id);
   // .eq('user_id', session?.data?.session?.user?.id);
 
   let result: any = {};
@@ -109,6 +109,7 @@ export async function getRefData(id: string, version: string, table: string, tea
           stateCode: data?.state_code,
           json: data?.json,
           ruleVerification: data?.rule_verification,
+          userId: data?.user_id,
         },
         success: true,
       });

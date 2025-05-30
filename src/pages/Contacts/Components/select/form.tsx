@@ -3,13 +3,16 @@ import { useUpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import { validateRefObjectId } from '@/pages/Utils';
 import { getContactDetail } from '@/services/contacts/api';
 import { genContactFromData } from '@/services/contacts/util';
+import { getRefData } from '@/services/general/api';
 import { jsonToList } from '@/services/general/util';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Divider, Form, Input, Row, Space, theme } from 'antd';
 import React, { FC, ReactNode, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
+import ContactEdit from '../edit';
 import ContactView from '../view';
 import ContactSelectDrawer from './drawer';
+
 const { TextArea } = Input;
 
 type Props = {
@@ -36,6 +39,15 @@ const ContactSelectForm: FC<Props> = ({
   const { token } = theme.useToken();
   const { referenceValue } = useUpdateReferenceContext() as { referenceValue: number };
   const [ruleErrorState, setRuleErrorState] = useState(false);
+  const [refData, setRefData] = useState<any>(null);
+
+  useEffect(() => {
+    if (id && version) {
+      getRefData(id, version, 'contacts', '').then((result: any) => {
+        setRefData({ ...result.data });
+      });
+    }
+  }, [id, version]);
 
   const handletContactData = (rowId: string, rowVersion: string) => {
     getContactDetail(rowId, rowVersion).then(async (result: any) => {
@@ -154,6 +166,15 @@ const ContactSelectForm: FC<Props> = ({
             </Button>
           )}
           {id && <ContactView lang={lang} id={id} version={version ?? ''} buttonType='text' />}
+          {id && refData?.userId === sessionStorage.getItem('userId') && (
+            <ContactEdit
+              lang={lang}
+              id={id}
+              version={version ?? ''}
+              buttonType=''
+              setViewDrawerVisible={() => {}}
+            />
+          )}
           {id && (
             <Button
               onClick={() => {

@@ -454,6 +454,7 @@ const ProcessEdit: FC<Props> = ({
   useEffect(() => {
     if (!drawerVisible) {
       setShowRules(false);
+      setUnRuleVerificationData([]);
       return;
     }
     onReset();
@@ -560,22 +561,30 @@ const ProcessEdit: FC<Props> = ({
         }
       >
         {unRuleVerificationData && unRuleVerificationData.length > 0 && (
-          <Typography>
-            <Paragraph>
-              {intl.formatMessage({
-                id: 'pages.process.review.unRuleVerification.tip',
-                defaultMessage:
-                  'The following data is incomplete, please modify and resubmit for review',
-              })}
-            </Paragraph>
-            <div>
-              {unRuleVerificationData.map((item: any) => (
-                <Paragraph
-                  key={item['@refObjectId']}
-                >{`${item['@type']} : ${item['@refObjectId']}`}</Paragraph>
-              ))}
-            </div>
-          </Typography>
+          <>
+            <Collapse
+              items={[
+                {
+                  key: '1',
+                  label: intl.formatMessage({
+                    id: 'pages.process.review.unRuleVerification.tip',
+                    defaultMessage:
+                      'The following data is incomplete, please modify and resubmit for review',
+                  }),
+                  children: (
+                    <Typography>
+                      {unRuleVerificationData.map((item: any) => (
+                        <Paragraph
+                          key={item['@refObjectId']}
+                        >{`${item['@type']} : ${item['@refObjectId']}`}</Paragraph>
+                      ))}
+                    </Typography>
+                  ),
+                },
+              ]}
+            />
+            <br />
+          </>
         )}
         <Spin spinning={spinning}>
           <UpdateReferenceContext.Provider value={{ referenceValue }}>
