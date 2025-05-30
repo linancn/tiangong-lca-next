@@ -60,6 +60,7 @@ const ProcessEdit: FC<Props> = ({
   const [spinning, setSpinning] = useState(false);
   const [showRules, setShowRules] = useState<boolean>(false);
   const [unRuleVerificationData, setUnRuleVerificationData] = useState<any[]>([]);
+  const [nonExistentRefData, setNonExistentRefData] = useState<any[]>([]);
   const intl = useIntl();
   const [referenceValue, setReferenceValue] = useState(0);
   const handletFromData = async () => {
@@ -251,7 +252,6 @@ const ProcessEdit: FC<Props> = ({
     const { checkResult } = await handleCheckData();
     if (checkResult) {
       let lifeCycleModelStateCode = await getLifeCycleModelStateCode();
-      // console.log('lifeCycleModelStateCode', lifeCycleModelStateCode);
       if (lifeCycleModelStateCode >= 20 && lifeCycleModelStateCode < 100) {
         message.error(
           intl.formatMessage({
@@ -278,7 +278,7 @@ const ProcessEdit: FC<Props> = ({
       const refObjs = getAllRefObj(fromData);
       const unReview: any[] = [];
       const unRuleVerification: any[] = [];
-      let getRefError = false;
+      const nonExistentRef: any[] = [];
       if (initData.stateCode >= 20 && initData.stateCode < 100) {
         message.error(
           intl.formatMessage({
@@ -329,7 +329,7 @@ const ProcessEdit: FC<Props> = ({
               await checkReferences(subRefs, checkedIds);
             }
           } else {
-            getRefError = true;
+            nonExistentRef.push(ref);
             return false;
           }
         }
@@ -337,13 +337,8 @@ const ProcessEdit: FC<Props> = ({
       };
 
       const checkResult = await checkReferences(refObjs);
-      if (getRefError) {
-        message.error(
-          intl.formatMessage({
-            id: 'pages.process.review.submitError',
-            defaultMessage: 'Submit review failed',
-          }),
-        );
+      if (nonExistentRef && nonExistentRef.length > 0) {
+        setNonExistentRefData(nonExistentRef);
         setSpinning(false);
         return;
       }
@@ -455,6 +450,7 @@ const ProcessEdit: FC<Props> = ({
     if (!drawerVisible) {
       setShowRules(false);
       setUnRuleVerificationData([]);
+      setNonExistentRefData([]);
       return;
     }
     onReset();
@@ -574,6 +570,36 @@ const ProcessEdit: FC<Props> = ({
                   children: (
                     <Typography>
                       {unRuleVerificationData.map((item: any) => (
+                        <Paragraph
+                          key={item['@refObjectId']}
+                        >{`${item['@type']} : ${item['@refObjectId']}`}</Paragraph>
+                      ))}
+                    </Typography>
+                  ),
+                },
+              ]}
+            />
+            <br />
+          </>
+        )}
+        {nonExistentRefData &&
+          nonExistentRefData.length > 0 &&
+          unRuleVerificationData &&
+          unRuleVerificationData.length > 0 && <br />}
+        {nonExistentRefData && nonExistentRefData.length > 0 && (
+          <>
+            <Collapse
+              items={[
+                {
+                  key: '1',
+                  label: intl.formatMessage({
+                    id: 'pages.process.review.nonExistentRefData.tip',
+                    defaultMessage:
+                      'The following data is incomplete, please modify and resubmit for review',
+                  }),
+                  children: (
+                    <Typography>
+                      {nonExistentRefData.map((item: any) => (
                         <Paragraph
                           key={item['@refObjectId']}
                         >{`${item['@type']} : ${item['@refObjectId']}`}</Paragraph>
