@@ -3,10 +3,12 @@ import UnitGroupFromMini from '@/pages/Unitgroups/Components/select/formMini';
 import { getLocalValueProps, validateRefObjectId } from '@/pages/Utils';
 import { getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
+import { getRefData } from '@/services/general/api';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Divider, Form, Input, Row, Space, theme } from 'antd';
 import React, { FC, ReactNode, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
+import FlowsEdit from '../edit';
 import FlowsView from '../view';
 import FlowsSelectDrawer from './drawer';
 const { TextArea } = Input;
@@ -36,6 +38,16 @@ const FlowsSelectForm: FC<Props> = ({
   const [version, setVersion] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
   const [ruleErrorState, setRuleErrorState] = useState(false);
+  const [refData, setRefData] = useState<any>(null);
+
+  useEffect(() => {
+    if (id && version) {
+      getRefData(id, version, 'flows', '').then((result: any) => {
+        setRefData({ ...result.data });
+      });
+    }
+  }, [id, version]);
+
   const handletFlowsData = (rowId: string, rowVersion: string) => {
     getFlowDetail(rowId, rowVersion).then(async (result: any) => {
       const selectedData = genFlowFromData(result.data?.json?.flowDataSet ?? {});
@@ -139,6 +151,9 @@ const FlowsSelectForm: FC<Props> = ({
             </Button>
           )}
           {id && <FlowsView lang={lang} id={id} version={version ?? ''} buttonType='text' />}
+          {id && refData?.userId === sessionStorage.getItem('userId') && (
+            <FlowsEdit lang={lang} id={id} version={version ?? ''} buttonType='' />
+          )}
           {id && (
             <Button
               onClick={() => {

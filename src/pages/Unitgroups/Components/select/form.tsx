@@ -1,6 +1,7 @@
 import RequiredSelectFormTitle from '@/components/RequiredSelectFormTitle';
 import { useUpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import { getLocalValueProps, validateRefObjectId } from '@/pages/Utils';
+import { getRefData } from '@/services/general/api';
 import { jsonToList } from '@/services/general/util';
 import { getReferenceUnit, getUnitGroupDetail } from '@/services/unitgroups/api';
 import { genUnitGroupFromData } from '@/services/unitgroups/util';
@@ -8,8 +9,10 @@ import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Divider, Form, Input, Row, Space, theme } from 'antd';
 import React, { FC, ReactNode, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
+import UnitgroupsEdit from '../edit';
 import UnitgroupsView from '../view';
 import UnitgroupsSelectDrawer from './drawer';
+
 const { TextArea } = Input;
 
 type Props = {
@@ -27,6 +30,16 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
   const { token } = theme.useToken();
   const { referenceValue } = useUpdateReferenceContext() as { referenceValue: number };
   const [ruleErrorState, setRuleErrorState] = useState(false);
+  const [refData, setRefData] = useState<any>(null);
+
+  useEffect(() => {
+    if (id && version) {
+      getRefData(id, version, 'unitgroups', '').then((result: any) => {
+        setRefData({ ...result.data });
+      });
+    }
+  }, [id, version]);
+
   const handletUnitgroupsData = (rowId: string, rowVersion: string) => {
     getUnitGroupDetail(rowId, rowVersion).then(async (result: any) => {
       const selectedData = genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {});
@@ -144,6 +157,15 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
             </Button>
           )}
           {id && <UnitgroupsView lang={lang} id={id} version={version ?? ''} buttonType='text' />}
+          {id && refData?.userId === sessionStorage.getItem('userId') && (
+            <UnitgroupsEdit
+              lang={lang}
+              id={id}
+              version={version ?? ''}
+              buttonType=''
+              setViewDrawerVisible={() => {}}
+            />
+          )}
           {id && (
             <Button
               onClick={() => {

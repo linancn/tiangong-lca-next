@@ -4,12 +4,15 @@ import UnitGroupFromMini from '@/pages/Unitgroups/Components/select/formMini';
 import { getLocalValueProps, validateRefObjectId } from '@/pages/Utils';
 import { getFlowpropertyDetail } from '@/services/flowproperties/api';
 import { genFlowpropertyFromData } from '@/services/flowproperties/util';
+import { getRefData } from '@/services/general/api';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Divider, Form, Input, Row, Space, theme } from 'antd';
 import React, { FC, ReactNode, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
+import FlowpropertiesEdit from '../edit';
 import FlowpropertyView from '../view';
 import FlowpropertiesSelectDrawer from './drawer';
+
 // import LangTextItemForm from '@/components/LangTextItem/form';
 const { TextArea } = Input;
 
@@ -37,6 +40,16 @@ const FlowpropertiesSelectForm: FC<Props> = ({
   const { token } = theme.useToken();
   const { referenceValue } = useUpdateReferenceContext() as { referenceValue: number };
   const [ruleErrorState, setRuleErrorState] = useState(false);
+  const [refData, setRefData] = useState<any>(null);
+
+  useEffect(() => {
+    if (id && version) {
+      getRefData(id, version, 'flowproperties', '').then((result: any) => {
+        setRefData({ ...result.data });
+      });
+    }
+  }, [id, version]);
+
   const handletFlowpropertyData = (rowId: string, rowVersion: string) => {
     getFlowpropertyDetail(rowId, rowVersion ?? '').then(async (result: any) => {
       const selectedData = genFlowpropertyFromData(result.data?.json?.flowPropertyDataSet ?? {});
@@ -141,6 +154,10 @@ const FlowpropertiesSelectForm: FC<Props> = ({
             </Button>
           )}
           {id && <FlowpropertyView lang={lang} id={id} version={version ?? ''} buttonType='text' />}
+          {id && refData?.userId === sessionStorage.getItem('userId') && (
+            <FlowpropertiesEdit lang={lang} id={id} version={version ?? ''} buttonType='' />
+          )}
+
           {id && (
             <Button
               onClick={() => {
