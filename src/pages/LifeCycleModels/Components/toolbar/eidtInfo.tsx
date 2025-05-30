@@ -108,6 +108,28 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
     }
     onReset();
   }, [drawerVisible]);
+
+  const handleCheckData = async () => {
+    console.log('handleCheckData', fromData);
+    setShowRules(true);
+    const { checkResult, tabName } = checkRequiredFields(requiredFields, fromData);
+    console.log('checkResult', checkResult);
+    if (!checkResult) {
+      await setActiveTabKey(tabName);
+      setTimeout(() => {
+        formRefEdit.current?.validateFields();
+      }, 100);
+      return { checkResult, tabName };
+    }
+    message.success(
+      intl.formatMessage({
+        id: 'pages.button.check.success',
+        defaultMessage: 'Data check successfully!',
+      }),
+    );
+    return { checkResult, tabName };
+  };
+
   let lifeCycleModelDetail: any = {};
 
   const getAllProcesses = async () => {
@@ -418,17 +440,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
             )} */}
             {action === 'edit' ? (
               <>
-                <Button
-                  onClick={async () => {
-                    setShowRules(true);
-                    const { checkResult, tabName } = checkRequiredFields(requiredFields, fromData);
-                    if (!checkResult) {
-                      await setActiveTabKey(tabName);
-                      formRefEdit.current?.validateFields();
-                      return false;
-                    }
-                  }}
-                >
+                <Button onClick={handleCheckData}>
                   <FormattedMessage id='pages.button.check' defaultMessage='Data check' />
                 </Button>
 
