@@ -549,59 +549,59 @@ const ProcessEdit: FC<Props> = ({
           </Space>
         }
       >
-        {unRuleVerificationData && unRuleVerificationData.length > 0 && (
-          <>
-            <Collapse
-              items={[
-                {
-                  key: '1',
-                  label: intl.formatMessage({
-                    id: 'pages.process.review.unRuleVerification.tip',
-                    defaultMessage:
-                      'The following data is incomplete, please modify and resubmit for review',
-                  }),
-                  children: (
-                    <Typography>
-                      {unRuleVerificationData.map((item: any) => (
-                        <Paragraph
-                          key={item['@refObjectId']}
-                        >{`${item['@type']} : ${item['@refObjectId']}`}</Paragraph>
-                      ))}
-                    </Typography>
-                  ),
-                },
-              ]}
-            />
-            <br />
-          </>
-        )}
-        {nonExistentRefData && nonExistentRefData.length > 0 && (
-          <>
-            <Collapse
-              items={[
-                {
-                  key: '1',
-                  label: intl.formatMessage({
-                    id: 'pages.process.review.nonExistentRefData.tip',
-                    defaultMessage:
-                      'The following data is incomplete, please modify and resubmit for review',
-                  }),
-                  children: (
-                    <Typography>
-                      {nonExistentRefData.map((item: any) => (
-                        <Paragraph
-                          key={item['@refObjectId']}
-                        >{`${item['@type']} : ${item['@refObjectId']}`}</Paragraph>
-                      ))}
-                    </Typography>
-                  ),
-                },
-              ]}
-            />
-            <br />
-          </>
-        )}
         <Spin spinning={spinning}>
+          {unRuleVerificationData && unRuleVerificationData.length > 0 && (
+            <>
+              <Collapse
+                items={[
+                  {
+                    key: '1',
+                    label: intl.formatMessage({
+                      id: 'pages.process.review.unRuleVerification.tip',
+                      defaultMessage:
+                        'The following data is incomplete, please modify and resubmit for review',
+                    }),
+                    children: (
+                      <Typography>
+                        {unRuleVerificationData.map((item: any) => (
+                          <Paragraph
+                            key={item['@refObjectId']}
+                          >{`${item['@type']} : ${item['@refObjectId']}`}</Paragraph>
+                        ))}
+                      </Typography>
+                    ),
+                  },
+                ]}
+              />
+              <br />
+            </>
+          )}
+          {nonExistentRefData && nonExistentRefData.length > 0 && (
+            <>
+              <Collapse
+                items={[
+                  {
+                    key: '1',
+                    label: intl.formatMessage({
+                      id: 'pages.process.review.nonExistentRefData.tip',
+                      defaultMessage:
+                        'The following data is incomplete, please modify and resubmit for review',
+                    }),
+                    children: (
+                      <Typography>
+                        {nonExistentRefData.map((item: any) => (
+                          <Paragraph
+                            key={item['@refObjectId']}
+                          >{`${item['@type']} : ${item['@refObjectId']}`}</Paragraph>
+                        ))}
+                      </Typography>
+                    ),
+                  },
+                ]}
+              />
+              <br />
+            </>
+          )}
           <UpdateReferenceContext.Provider value={{ referenceValue }}>
             <ProForm
               formRef={formRefEdit}
