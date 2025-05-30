@@ -239,10 +239,10 @@ const ProcessEdit: FC<Props> = ({
     return result;
   };
 
-  const getLifeCycleModelStateCode = async () => {
+  const getLifeCycleModel = async () => {
     const result: any = await getLifeCycleModelDetail(id, version);
     if (result.success && result.data) {
-      return result.data?.state_code;
+      return result;
     }
   };
 
@@ -251,19 +251,7 @@ const ProcessEdit: FC<Props> = ({
     await handleSubmit(false);
     const { checkResult } = await handleCheckData();
     if (checkResult) {
-      let lifeCycleModelStateCode = await getLifeCycleModelStateCode();
-      if (lifeCycleModelStateCode >= 20 && lifeCycleModelStateCode < 100) {
-        message.error(
-          intl.formatMessage({
-            id: 'pages.process.review.error',
-            defaultMessage: 'Referenced data is under review, cannot initiate another review',
-          }),
-        );
-        return;
-      }
-
       const teamId = await getUserTeamId();
-
       const tableDict = {
         'contact data set': 'contacts',
         'source data set': 'sources',
@@ -276,24 +264,31 @@ const ProcessEdit: FC<Props> = ({
       };
 
       const refObjs = getAllRefObj(fromData);
-      const unReview: any[] = [];
+      const unReview: any[] = []; // stateCode < 20
+      const underReview: any[] = []; // stateCode >= 20 && stateCode < 100
       const unRuleVerification: any[] = [];
       const nonExistentRef: any[] = [];
+
+      let model = await getLifeCycleModel();
+      const lifeCycleModelStateCode = model?.data?.state_code;
+      if (lifeCycleModelStateCode >= 20 && lifeCycleModelStateCode < 100) {
+        underReview.push(model);
+        // return;
+      }
       if (initData.stateCode >= 20 && initData.stateCode < 100) {
-        message.error(
-          intl.formatMessage({
-            id: 'pages.process.review.error',
-            defaultMessage: 'Referenced data is under review, cannot initiate another review',
-          }),
-        );
-        setSpinning(false);
-        return false;
+        underReview.push(initData);
+        // setSpinning(false);
+        // return false;
+      }
+      if (!initData?.ruleVerification) {
+        unRuleVerification.unshift({
+          '@type': 'process data set',
+          '@refObjectId': id,
+          '@version': version,
+        });
       }
 
-      const checkReferences = async (
-        refs: any[],
-        checkedIds = new Set<string>(),
-      ): Promise<boolean> => {
+      const checkReferences = async (refs: any[], checkedIds = new Set<string>()) => {
         for (const ref of refs) {
           if (checkedIds.has(ref['@refObjectId'])) continue;
           checkedIds.add(ref['@refObjectId']);
@@ -312,13 +307,14 @@ const ProcessEdit: FC<Props> = ({
             }
 
             if (refData?.stateCode >= 20 && refData?.stateCode < 100) {
-              message.error(
-                intl.formatMessage({
-                  id: 'pages.process.review.error',
-                  defaultMessage: 'Referenced data is under review, cannot initiate another review',
-                }),
-              );
-              return false;
+              // message.error(
+              //   intl.formatMessage({
+              //     id: 'pages.process.review.error',
+              //     defaultMessage: 'Referenced data is under review, cannot initiate another review',
+              //   }),
+              // );
+              underReview.push(ref);
+              // return false;
             }
 
             if (refData?.stateCode < 20) {
@@ -330,85 +326,82 @@ const ProcessEdit: FC<Props> = ({
             }
           } else {
             nonExistentRef.push(ref);
-            return false;
+            // return false;
           }
         }
-        return true;
+        // return true;
       };
 
-      const checkResult = await checkReferences(refObjs);
-      if (nonExistentRef && nonExistentRef.length > 0) {
-        setNonExistentRefData(nonExistentRef);
+      await checkReferences(refObjs);
+      if (
+        (nonExistentRef && nonExistentRef.length > 0) ||
+        (unRuleVerification && unRuleVerification.length > 0) ||
+        (underReview && underReview.length > 0)
+      ) {
+        if (nonExistentRef && nonExistentRef.length > 0) {
+          setNonExistentRefData(nonExistentRef);
+        }
+        if (unRuleVerification && unRuleVerification.length > 0) {
+          setUnRuleVerificationData(unRuleVerification);
+        }
+        if (underReview && underReview.length > 0) {
+          message.error(
+            intl.formatMessage({
+              id: 'pages.process.review.error',
+              defaultMessage: 'Referenced data is under review, cannot initiate another review',
+            }),
+          );
+        }
         setSpinning(false);
         return;
       }
-      if (unRuleVerification.length > 0) {
-        if (!initData?.ruleVerification) {
-          unRuleVerification.unshift({
-            '@type': 'process data set',
-            '@refObjectId': id,
-            '@version': version,
-          });
-        }
-        setUnRuleVerificationData(unRuleVerification);
+
+      if (initData.stateCode >= 20) {
         message.error(
           intl.formatMessage({
-            id: 'pages.process.review.unRuleVerification.tip',
-            defaultMessage: 'Notice',
+            id: 'pages.process.review.submitError',
+            defaultMessage: 'Submit review failed',
           }),
         );
         setSpinning(false);
         return;
       }
 
-      if (checkResult) {
-        const reviewId = v4();
-        const result = await addReviewsApi(reviewId, id, version);
-        if (result?.error) return;
+      const reviewId = v4();
+      const result = await addReviewsApi(reviewId, id, version);
+      if (result?.error) return;
 
-        if (initData.stateCode >= 20) {
-          message.error(
-            intl.formatMessage({
-              id: 'pages.process.review.submitError',
-              defaultMessage: 'Submit review failed',
-            }),
-          );
-          setSpinning(false);
-          return;
+      const { error, data } = await updateProcessStateCode(
+        id,
+        version,
+        reviewId,
+        initData.stateCode + 20,
+      );
+
+      let stateCode = 0;
+      if (!error && data && data.length) {
+        stateCode = data[0]?.state_code;
+
+        if (lifeCycleModelStateCode < 20) {
+          await updateLifeCycleModelStateCode(id, version, stateCode);
         }
 
-        const { error, data } = await updateProcessStateCode(
-          id,
-          version,
-          reviewId,
-          initData.stateCode + 20,
+        unReview.forEach(async (item: any) => {
+          await updateReviewIdAndStateCode(
+            reviewId,
+            item['@refObjectId'],
+            item['@version'],
+            getTableName(item['@type']),
+            stateCode,
+          );
+        });
+        message.success(
+          intl.formatMessage({
+            id: 'pages.process.review.submitSuccess',
+            defaultMessage: 'Review submitted successfully',
+          }),
         );
-
-        let stateCode = 0;
-        if (!error && data && data.length) {
-          stateCode = data[0]?.state_code;
-
-          if (lifeCycleModelStateCode < 20) {
-            await updateLifeCycleModelStateCode(id, version, stateCode);
-          }
-
-          unReview.forEach(async (item: any) => {
-            await updateReviewIdAndStateCode(
-              reviewId,
-              item['@refObjectId'],
-              item['@version'],
-              getTableName(item['@type']),
-              stateCode,
-            );
-          });
-          message.success(
-            intl.formatMessage({
-              id: 'pages.process.review.submitSuccess',
-              defaultMessage: 'Review submitted successfully',
-            }),
-          );
-          setDrawerVisible(false);
-        }
+        setDrawerVisible(false);
       }
       setSpinning(false);
     } else {
@@ -582,10 +575,6 @@ const ProcessEdit: FC<Props> = ({
             <br />
           </>
         )}
-        {nonExistentRefData &&
-          nonExistentRefData.length > 0 &&
-          unRuleVerificationData &&
-          unRuleVerificationData.length > 0 && <br />}
         {nonExistentRefData && nonExistentRefData.length > 0 && (
           <>
             <Collapse
