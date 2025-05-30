@@ -85,7 +85,7 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
       setInitData({ ...fromData0, id: id });
       setPropertyDataSource(fromData0?.flowProperties?.flowProperty ?? []);
       setFromData({ ...fromData0, id: id });
-      setFlowType(fromData0?.flowInformation?.LCIMethod?.typeOfDataSet);
+      setFlowType(fromData0?.modellingAndValidation?.LCIMethod?.typeOfDataSet);
       formRefEdit.current?.resetFields();
       formRefEdit.current?.setFieldsValue({
         ...fromData0,
