@@ -109,12 +109,14 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
     onReset();
   }, [drawerVisible]);
 
-  const handleCheckData = async () => {
-    console.log('handleCheckData', fromData);
+  const handleCheckData = async (data?: any) => {
     setShowRules(true);
-    const { checkResult, tabName } = checkRequiredFields(requiredFields, fromData);
-    console.log('checkResult', checkResult);
+    const { checkResult, tabName } = checkRequiredFields(requiredFields, data ?? fromData);
     if (!checkResult) {
+      if (!drawerVisible) {
+        setDrawerVisible(true);
+        onReset();
+      }
       await setActiveTabKey(tabName);
       setTimeout(() => {
         formRefEdit.current?.validateFields();
@@ -381,13 +383,11 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
       );
       setDrawerVisible(false);
     }
-    setSpinning(false);
   };
 
   useImperativeHandle(ref, () => ({
-    submitReview: async () => {
-      await submitReview();
-    },
+    submitReview: submitReview,
+    handleCheckData: handleCheckData,
   }));
 
   return (

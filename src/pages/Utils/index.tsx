@@ -111,6 +111,9 @@ const checkComplianceFields = (data: any) => {
 };
 
 export const checkRequiredFields = (requiredFields: any, formData: any) => {
+  if (!formData || JSON.stringify(formData) === '{}') {
+    return { checkResult: false, tabName: '' };
+  }
   for (let field of Object.keys(requiredFields)) {
     const value = get(formData, field);
     // console.log('checkRequiredFields', field, value,formData)
