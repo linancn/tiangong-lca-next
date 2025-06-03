@@ -363,7 +363,7 @@ const ToolbarView: FC<Props> = ({
         const fromData = genLifeCycleModelInfoFromData(
           result.data?.json?.lifeCycleModelDataSet ?? {},
         );
-        setInfoData({ ...fromData, id: id });
+        setInfoData({ ...fromData, id: id, version: version });
         const model = genLifeCycleModelData(result.data?.json_tg ?? {}, lang);
         let initNodes = (model?.nodes ?? []).map((node: any) => {
           return {
@@ -447,6 +447,8 @@ const ToolbarView: FC<Props> = ({
         data={infoData}
         reviewId={reviewId}
         tabType={tabType}
+        modelId={id}
+        modelVersion={version}
       />
       <ProcessView
         id={nodes.find((node) => node.selected)?.data?.id ?? ''}

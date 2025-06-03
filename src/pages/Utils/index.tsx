@@ -162,6 +162,7 @@ const tableDict = {
   'flow property data set': 'flowproperties',
   'flow data set': 'flows',
   'process data set': 'processes',
+  'lifeCycleModel data set': 'lifecyclemodels',
 };
 export const getRefTableName = (type: string) => {
   return tableDict[type as keyof typeof tableDict] ?? undefined;
