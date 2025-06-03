@@ -67,14 +67,14 @@ const updateReviewDataToPublic = async (id: string, version: string) => {
         }
       };
       await getReferences(refs);
-      result.forEach(async (item: any) => {
+      for (const item of result) {
         await updateStateCodeApi(
-          item['@refObjectId'],
-          item['@version'],
-          getRefTableName(item['@type']),
+          item['@refObjectId'] ?? '',
+          item['@version'] ?? '',
+          getRefTableName(item['@type'] ?? ''),
           100,
         );
-      });
+      }
     }
   }
 };
