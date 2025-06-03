@@ -104,7 +104,7 @@ const FlowsCreate: FC<CreateProps> = ({
       setInitData({ ...fromData0, id: id });
       setPropertyDataSource(fromData0?.flowProperties?.flowProperty ?? []);
       setFromData({ ...fromData0, id: id });
-      setFlowType(fromData0?.flowInformation?.LCIMethod?.typeOfDataSet);
+      setFlowType(fromData0?.modellingAndValidation?.LCIMethod?.typeOfDataSet);
       formRefCreate.current?.resetFields();
       formRefCreate.current?.setFieldsValue({
         ...fromData0,
@@ -135,7 +135,7 @@ const FlowsCreate: FC<CreateProps> = ({
       setInitData(formData);
       setPropertyDataSource(formData?.flowProperties?.flowProperty ?? []);
       setFromData(formData);
-      setFlowType(formData?.flowInformation?.LCIMethod?.typeOfDataSet);
+      setFlowType(formData?.modellingAndValidation?.LCIMethod?.typeOfDataSet);
       formRefCreate.current?.setFieldsValue(formData);
       return;
     }
