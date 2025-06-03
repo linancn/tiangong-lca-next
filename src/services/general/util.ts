@@ -589,6 +589,10 @@ export function getRuleVerification(schema: any, data: any) {
   const getValueByPath = (obj: any, path: string) => {
     if (!obj) return undefined;
 
+    if (path.includes(':') && !path.includes('.')) {
+      return obj[path];
+    }
+
     if (path.includes('.')) {
       const parts = path.split('.');
       let current = obj;
@@ -614,13 +618,20 @@ export function getRuleVerification(schema: any, data: any) {
 
   collectRequiredPaths(schema);
 
-  // console.log('requiredPaths', requiredPaths);
-
   requiredPaths.forEach(({ path, rule }) => {
     let value = getValueByPath(data, path);
 
     if (value && typeof value === 'object' && value.value !== undefined) {
       value = value.value;
+    }
+
+    if (path.includes('common:class')) {
+      if (!value) {
+        const classPath = path.includes('common:class.0')
+          ? path.replace('common:class.0', 'common:class')
+          : path.replace('common:class', 'common:class.0');
+        value = getValueByPath(data, classPath);
+      }
     }
 
     if (isEmpty(value)) {
@@ -633,7 +644,9 @@ export function getRuleVerification(schema: any, data: any) {
     }
   });
 
-  // console.log('result', result);
+  if (!result.valid) {
+    console.log('getRuleVerificationFalse', result);
+  }
 
   return result.valid;
 }
