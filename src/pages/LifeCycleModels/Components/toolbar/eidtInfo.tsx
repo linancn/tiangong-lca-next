@@ -17,7 +17,7 @@ import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 're
 import { FormattedMessage, useIntl } from 'umi';
 import { LifeCycleModelForm } from '../form';
 // const { TextArea } = Input;
-import { checkRequiredFields } from '@/pages/Utils';
+import { checkRequiredFields, getAllRefObj, getRefTableName } from '@/pages/Utils';
 import { getRefData, updateReviewIdAndStateCode } from '@/services/general/api';
 import {
   getLifeCycleModelDetail,
@@ -132,41 +132,9 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
     return { checkResult, tabName };
   };
 
-  const getAllRefObj = (obj: any): any[] => {
-    // console.log('getAllRefObj', obj)
-    const result: any[] = [];
-
-    const traverse = (current: any) => {
-      if (!current || typeof current !== 'object') return;
-
-      if ('@refObjectId' in current && current['@refObjectId'] && current['@version']) {
-        result.push(current);
-      }
-
-      if (Array.isArray(current)) {
-        current.forEach((item) => traverse(item));
-      } else if (typeof current === 'object') {
-        Object.values(current).forEach((value) => traverse(value));
-      }
-    };
-
-    traverse(obj);
-    return result;
-  };
-
   const submitReview = async () => {
     setSpinning(true);
     const teamId = await getUserTeamId();
-    const tableDict = {
-      'contact data set': 'contacts',
-      'source data set': 'sources',
-      'unit group data set': 'unitgroups',
-      'flow property data set': 'flowproperties',
-      'flow data set': 'flows',
-    };
-    const getTableName = (type: string) => {
-      return tableDict[type as keyof typeof tableDict] ?? undefined;
-    };
 
     const refObjs = getAllRefObj(data);
     const unReview: any[] = []; //stateCode < 20
@@ -209,7 +177,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
         const refResult = await getRefData(
           ref['@refObjectId'],
           ref['@version'],
-          getTableName(ref['@type']),
+          getRefTableName(ref['@type']),
           teamId,
         );
         if (refResult.success) {
@@ -334,7 +302,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
         reviewId,
         item['@refObjectId'],
         item['@version'],
-        getTableName(item['@type']),
+        getRefTableName(item['@type']),
         lifeCycleModelStateCode,
       );
     });

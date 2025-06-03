@@ -1,5 +1,5 @@
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
-import { checkRequiredFields } from '@/pages/Utils';
+import { checkRequiredFields, getAllRefObj, getRefTableName } from '@/pages/Utils';
 import { getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
 import { getRefData, updateReviewIdAndStateCode } from '@/services/general/api';
@@ -218,27 +218,6 @@ const ProcessEdit: FC<Props> = ({
     return true;
   };
 
-  const getAllRefObj = (obj: any): any[] => {
-    const result: any[] = [];
-
-    const traverse = (current: any) => {
-      if (!current || typeof current !== 'object') return;
-
-      if ('@refObjectId' in current && current['@refObjectId'] && current['@version']) {
-        result.push(current);
-      }
-
-      if (Array.isArray(current)) {
-        current.forEach((item) => traverse(item));
-      } else if (typeof current === 'object') {
-        Object.values(current).forEach((value) => traverse(value));
-      }
-    };
-
-    traverse(obj);
-    return result;
-  };
-
   const getLifeCycleModel = async () => {
     const result: any = await getLifeCycleModelDetail(id, version);
     if (result.success && result.data) {
@@ -252,16 +231,6 @@ const ProcessEdit: FC<Props> = ({
     const { checkResult } = await handleCheckData();
     if (checkResult) {
       const teamId = await getUserTeamId();
-      const tableDict = {
-        'contact data set': 'contacts',
-        'source data set': 'sources',
-        'unit group data set': 'unitgroups',
-        'flow property data set': 'flowproperties',
-        'flow data set': 'flows',
-      };
-      const getTableName = (type: string) => {
-        return tableDict[type as keyof typeof tableDict] ?? undefined;
-      };
 
       const refObjs = getAllRefObj(fromData);
       const unReview: any[] = []; // stateCode < 20
@@ -296,7 +265,7 @@ const ProcessEdit: FC<Props> = ({
           const refResult = await getRefData(
             ref['@refObjectId'],
             ref['@version'],
-            getTableName(ref['@type']),
+            getRefTableName(ref['@type']),
             teamId,
           );
 
@@ -395,7 +364,7 @@ const ProcessEdit: FC<Props> = ({
             reviewId,
             item['@refObjectId'],
             item['@version'],
-            getTableName(item['@type']),
+            getRefTableName(item['@type']),
             stateCode,
           );
         });

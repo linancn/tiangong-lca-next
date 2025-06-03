@@ -2,10 +2,13 @@ import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import { getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
 
+import { getAllRefObj, getRefTableName } from '@/pages/Utils';
 import { getCommentApi, updateCommentApi } from '@/services/comments/api';
+import { getRefData, updateStateCodeApi } from '@/services/general/api';
 import { getProcessDetail } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
 import { updateReviewApi } from '@/services/reviews/api';
+import { getUserTeamId } from '@/services/roles/api';
 import styles from '@/style/custom.less';
 import { AuditOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -24,6 +27,58 @@ type Props = {
   type: 'edit' | 'view';
   tabType: 'assigned' | 'review';
 };
+
+const updateReviewDataToPublic = async (id: string, version: string) => {
+  const result = [];
+  const { data: process, success } = await getProcessDetail(id, version);
+  if (success) {
+    if (process?.stateCode !== 100 && process?.stateCode !== 200) {
+      result.push({
+        '@refObjectId': process?.id,
+        '@version': process?.version,
+        '@type': 'process data set',
+      });
+    }
+
+    const refs = getAllRefObj(process?.json);
+    if (refs.length) {
+      const teamId = await getUserTeamId();
+      const getReferences = async (refs: any[], checkedIds = new Set<string>()) => {
+        for (const ref of refs) {
+          if (checkedIds.has(ref['@refObjectId'])) continue;
+          checkedIds.add(ref['@refObjectId']);
+
+          const refResult = await getRefData(
+            ref['@refObjectId'],
+            ref['@version'],
+            getRefTableName(ref['@type']),
+            teamId,
+          );
+
+          if (refResult.success) {
+            const refData = refResult?.data;
+            if (refData?.stateCode !== 100 && refData?.stateCode !== 200) {
+              result.push(ref);
+            }
+            const json = refData?.json;
+            const subRefs = getAllRefObj(json);
+            await getReferences(subRefs, checkedIds);
+          }
+        }
+      };
+      await getReferences(refs);
+      result.forEach(async (item: any) => {
+        await updateStateCodeApi(
+          item['@refObjectId'],
+          item['@version'],
+          getRefTableName(item['@type']),
+          100,
+        );
+      });
+    }
+  }
+};
+
 const ReviewProcessDetail: FC<Props> = ({
   id,
   reviewId,
@@ -108,6 +163,8 @@ const ReviewProcessDetail: FC<Props> = ({
     const { error: error2 } = await updateReviewApi([reviewId], {
       state_code: 2,
     });
+
+    await updateReviewDataToPublic(id, version);
 
     if (!error && !error2) {
       message.success(

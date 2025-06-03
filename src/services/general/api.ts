@@ -121,6 +121,24 @@ export async function getRefData(id: string, version: string, table: string, tea
   });
 }
 
+export async function updateStateCodeApi(
+  id: string,
+  version: string,
+  table: string,
+  stateCode: number,
+) {
+  if (!table) return;
+  let result: any = {};
+  if (id && version) {
+    result = await supabase
+      .from(table)
+      .update({ state_code: stateCode })
+      .eq('id', id)
+      .eq('version', version);
+  }
+  return result;
+}
+
 export async function updateReviewIdAndStateCode(
   reviewId: string,
   id: string,
