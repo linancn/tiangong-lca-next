@@ -495,7 +495,26 @@ export async function lifeCycleModel_hybrid_search(
   return result;
 }
 
-export async function getLifeCycleModelDetail(id: string, version: string) {
+export async function getLifeCycleModelDetail(
+  id: string,
+  version: string,
+): Promise<
+  | {
+      data: {
+        id: string;
+        version: string;
+        json: any;
+        json_tg: any;
+        state_code: number;
+        rule_verification: any;
+      };
+      success: true;
+    }
+  | {
+      data: object;
+      success: false;
+    }
+> {
   const result = await supabase
     .from('lifecyclemodels')
     .select('json, json_tg,state_code,rule_verification')
