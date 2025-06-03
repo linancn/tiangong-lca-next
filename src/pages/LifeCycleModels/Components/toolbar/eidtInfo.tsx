@@ -214,7 +214,11 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
         );
         if (refResult.success) {
           const refData = refResult?.data;
-          if (!refData?.ruleVerification) {
+          if (
+            !refData?.ruleVerification &&
+            refData?.stateCode !== 100 &&
+            refData?.stateCode !== 200
+          ) {
             unRuleVerification.push(ref);
           }
           if (refData?.stateCode >= 20 && refData?.stateCode < 100) {
@@ -240,7 +244,11 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
 
     for (const process of allProcesses) {
       const processDetail = await getProcessDetail(process.id, process.version);
-      if (!processDetail?.data?.ruleVerification) {
+      if (
+        !processDetail?.data?.ruleVerification &&
+        processDetail?.data?.stateCode !== 100 &&
+        processDetail?.data?.stateCode !== 200
+      ) {
         unRuleVerification.unshift({
           '@type': 'process data set',
           '@refObjectId': processDetail?.data?.id,
@@ -255,7 +263,11 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
       const processRefObjs = getAllRefObj(processDetail?.data?.json);
       await checkReferences(processRefObjs);
     }
-    if (!lifeCycleModelDetail?.data?.rule_verification) {
+    if (
+      !lifeCycleModelDetail?.data?.rule_verification &&
+      lifeCycleModelDetail?.data?.state_code !== 100 &&
+      lifeCycleModelDetail?.data?.state_code !== 200
+    ) {
       unRuleVerification.unshift({
         '@type': 'lifeCycleModel data set',
         '@refObjectId': lifeCycleModelDetail?.data?.id,

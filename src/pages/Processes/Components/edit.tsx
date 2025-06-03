@@ -280,7 +280,7 @@ const ProcessEdit: FC<Props> = ({
         // setSpinning(false);
         // return false;
       }
-      if (!initData?.ruleVerification) {
+      if (!initData?.ruleVerification && initData.stateCode !== 100 && initData.stateCode !== 200) {
         unRuleVerification.unshift({
           '@type': 'process data set',
           '@refObjectId': id,
@@ -302,7 +302,11 @@ const ProcessEdit: FC<Props> = ({
 
           if (refResult.success) {
             const refData = refResult?.data;
-            if (!refData?.ruleVerification) {
+            if (
+              !refData?.ruleVerification &&
+              refData?.stateCode !== 100 &&
+              refData?.stateCode !== 200
+            ) {
               unRuleVerification.push(ref);
             }
 
