@@ -3,7 +3,7 @@ import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import LocationTextItemDescription from '@/components/LocationTextItem/description';
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
-import { updateCommentApi } from '@/services/comments/api';
+import { getCommentApi, updateCommentApi } from '@/services/comments/api';
 import { updateReviewApi } from '@/services/reviews/api';
 import styles from '@/style/custom.less';
 import { CloseOutlined, InfoOutlined } from '@ant-design/icons';
@@ -33,8 +33,11 @@ import ReviewItemView from '../../../ReviewForm/view';
 
 import { getAllRefObj, getRefTableName } from '@/pages/Utils';
 import { getRefData, updateStateCodeApi } from '@/services/general/api';
-import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
-import { getProcessDetail } from '@/services/processes/api';
+import {
+  getLifeCycleModelDetail,
+  updateLifeCycleModelJsonApi,
+} from '@/services/lifeCycleModels/api';
+import { getProcessDetail, updateProcess } from '@/services/processes/api';
 import { getUserTeamId } from '@/services/roles/api';
 
 type Props = {
@@ -136,6 +139,91 @@ const ToolbarViewInfo: FC<Props> = ({
     setSpinning(false);
   };
 
+  const updateProcessJson = async (process: any) => {
+    const { data: commentData, error } = await getCommentApi(reviewId, tabType);
+    if (!error && commentData && commentData.length) {
+      const allReviews: any[] = [];
+      commentData.forEach((item: any) => {
+        if (item?.json?.modellingAndValidation?.validation?.review[0]) {
+          allReviews.push(item?.json?.modellingAndValidation.validation.review[0]);
+        }
+      });
+      const allCompliance: any[] = [];
+      commentData.forEach((item: any) => {
+        if (item?.json?.modellingAndValidation?.complianceDeclarations?.compliance[0]) {
+          allCompliance.push(
+            item?.json?.modellingAndValidation.complianceDeclarations.compliance[0],
+          );
+        }
+      });
+
+      const _review = process?.json?.processDataSet?.modellingAndValidation?.validation?.review;
+      const _compliance =
+        process?.json?.processDataSet?.modellingAndValidation?.complianceDeclarations?.compliance;
+      const json = {
+        ...process?.json,
+      };
+      json.processDataSet.modellingAndValidation = {
+        ...process?.json?.processDataSet?.modellingAndValidation,
+        validation: {
+          ...process?.json?.processDataSet?.modellingAndValidation?.validation,
+          review: Array.isArray(_review) ? [..._review, ...allReviews] : [_review, ...allReviews],
+        },
+        complianceDeclarations: {
+          ...process?.json?.processDataSet?.modellingAndValidation?.complianceDeclarations,
+          compliance: Array.isArray(_compliance)
+            ? [..._compliance, ...allCompliance]
+            : [_compliance, ...allCompliance],
+        },
+      };
+      await updateProcess(process?.id, process?.version, json);
+    }
+  };
+
+  const updateLifeCycleModelJson = async (lifeCycleModel: any) => {
+    const { data: commentData, error } = await getCommentApi(reviewId, tabType);
+    if (!error && commentData && commentData.length) {
+      const allReviews: any[] = [];
+      commentData.forEach((item: any) => {
+        if (item?.json?.modellingAndValidation?.validation?.review[0]) {
+          allReviews.push(item?.json?.modellingAndValidation.validation.review[0]);
+        }
+      });
+      const allCompliance: any[] = [];
+      commentData.forEach((item: any) => {
+        if (item?.json?.modellingAndValidation?.complianceDeclarations?.compliance[0]) {
+          allCompliance.push(
+            item?.json?.modellingAndValidation.complianceDeclarations.compliance[0],
+          );
+        }
+      });
+
+      const _review =
+        lifeCycleModel?.json?.lifeCycleModelDataSet?.modellingAndValidation?.validation?.review;
+      const _compliance =
+        lifeCycleModel?.json?.lifeCycleModelDataSet?.modellingAndValidation?.complianceDeclarations
+          ?.compliance;
+      const json = {
+        ...lifeCycleModel?.json,
+      };
+      json.lifeCycleModelDataSet.modellingAndValidation = {
+        ...lifeCycleModel?.json?.lifeCycleModelDataSet?.modellingAndValidation,
+        validation: {
+          ...lifeCycleModel?.json?.lifeCycleModelDataSet?.modellingAndValidation?.validation,
+          review: Array.isArray(_review) ? [..._review, ...allReviews] : [_review, ...allReviews],
+        },
+        complianceDeclarations: {
+          ...lifeCycleModel?.json?.lifeCycleModelDataSet?.modellingAndValidation
+            ?.complianceDeclarations,
+          compliance: Array.isArray(_compliance)
+            ? [..._compliance, ...allCompliance]
+            : [_compliance, ...allCompliance],
+        },
+      };
+      await updateLifeCycleModelJsonApi(modelId, modelVersion, json);
+    }
+  };
+
   const updateReviewDataToPublic = async (modelId: string, modelVersion: string) => {
     const result: any[] = [];
     const teamId = await getUserTeamId();
@@ -165,6 +253,7 @@ const ToolbarViewInfo: FC<Props> = ({
 
     const { data: lifeCycleModel, success } = await getLifeCycleModelDetail(modelId, modelVersion);
     if (success) {
+      await updateLifeCycleModelJson(lifeCycleModel);
       if (lifeCycleModel?.state_code !== 100 && lifeCycleModel?.state_code !== 200) {
         result.push({
           '@refObjectId': modelId,
@@ -189,6 +278,9 @@ const ToolbarViewInfo: FC<Props> = ({
       const allProcesses = getAllProcesses(lifeCycleModel);
       for (const item of allProcesses) {
         const { data: process, success } = await getProcessDetail(item.id, item.version);
+        if (item.id === modelId && item.version === modelVersion) {
+          await updateProcessJson(process);
+        }
         if (success) {
           if (process?.stateCode !== 100 && process?.stateCode !== 200) {
             result.push({
