@@ -1,4 +1,5 @@
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
+import { getFlowpropertyDetail } from '@/services/flowproperties/api';
 import { getFlowDetail, updateFlows } from '@/services/flows/api';
 import { genFlowFromData } from '@/services/flows/util';
 import styles from '@/style/custom.less';
@@ -38,6 +39,24 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
   }, [showRules]);
 
   const updateReference = async () => {
+    propertyDataSource.forEach(async (property: any, index: number) => {
+      if (property?.referenceToFlowPropertyDataSet) {
+        const { data: flowPropertyData, success } = await getFlowpropertyDetail(
+          property.referenceToFlowPropertyDataSet['@refObjectId'],
+          property.referenceToFlowPropertyDataSet['@version'],
+        );
+        if (success) {
+          const name =
+            flowPropertyData?.json?.flowPropertyDataSet?.flowPropertiesInformation
+              ?.dataSetInformation?.['common:name'];
+          property.referenceToFlowPropertyDataSet['common:shortDescription'] = name;
+          property.referenceToFlowPropertyDataSet['@version'] = flowPropertyData?.version;
+        }
+        if (index === propertyDataSource.length - 1) {
+          setPropertyDataSource([...propertyDataSource]);
+        }
+      }
+    });
     setReferenceValue(referenceValue + 1);
   };
 

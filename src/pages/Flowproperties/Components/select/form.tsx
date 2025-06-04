@@ -36,6 +36,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
   rules = [],
 }) => {
   const [id, setId] = useState<string | undefined>(undefined);
+  const [UnitGroupFromMiniKey, setUnitGroupFromMiniKey] = useState<number>(0);
   const [version, setVersion] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
   const { referenceValue } = useUpdateReferenceContext() as { referenceValue: number };
@@ -64,6 +65,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
       setId(rowId);
       setVersion(result.data?.version);
       validateRefObjectId(formRef, name);
+      setUnitGroupFromMiniKey(UnitGroupFromMiniKey + 1);
       onData();
     });
   };
@@ -246,6 +248,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
         name={name}
         formRef={formRef}
         drawerVisible={drawerVisible}
+        key={UnitGroupFromMiniKey}
       />
     </Card>
   );
