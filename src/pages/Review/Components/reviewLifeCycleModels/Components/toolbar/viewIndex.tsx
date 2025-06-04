@@ -343,19 +343,22 @@ const ToolbarView: FC<Props> = ({
             !isSaveReview || allReviews.length === 0 || allCompliance.length === 0,
           );
           if (result?.data?.json?.lifeCycleModelDataSet) {
+            const _compliance =
+              result.data.json.lifeCycleModelDataSet?.modellingAndValidation?.complianceDeclarations
+                .compliance;
+            const _review =
+              result.data.json.lifeCycleModelDataSet?.modellingAndValidation?.validation?.review;
             result.data.json.lifeCycleModelDataSet.modellingAndValidation = {
               ...result.data.json.lifeCycleModelDataSet.modellingAndValidation,
               complianceDeclarations: {
-                compliance: allCompliance.length ? allCompliance : [{}],
+                compliance: Array.isArray(_compliance)
+                  ? [..._compliance, ...allCompliance]
+                  : [_compliance, ...allCompliance],
               },
               validation: {
-                review: allReviews.length
-                  ? allReviews
-                  : [
-                      {
-                        'common:scope': [{}],
-                      },
-                    ],
+                review: Array.isArray(_review)
+                  ? [..._review, ...allReviews]
+                  : [_review, ...allReviews],
               },
             };
           }
