@@ -7,13 +7,19 @@ const AlignedNumber = ({ number, precision = 4 }: { number: number; precision?: 
   const [intPart, decPart = ''] = strValue.split('.');
 
   return (
-    <div className='decimal-align'>
-      <span className='int'>{intPart}</span>
-      <span className='dec'>
-        {hasDecimal ? '.' : ''}
-        {decPart}
-      </span>
-    </div>
+    <>
+      {isNaN(number) ? (
+        <span style={{ textAlign: 'right' }}>-</span>
+      ) : (
+        <div className='decimal-align'>
+          <span className='int'>{intPart}</span>
+          <span className='dec'>
+            {hasDecimal ? '.' : ''}
+            {decPart}
+          </span>
+        </div>
+      )}
+    </>
   );
 };
 
