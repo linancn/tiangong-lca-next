@@ -1,14 +1,17 @@
 import RequiredSelectFormTitle from '@/components/RequiredSelectFormTitle';
 import { useUpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import { getLocalValueProps, validateRefObjectId } from '@/pages/Utils';
+import { getRefData } from '@/services/general/api';
 import { getSourceDetail } from '@/services/sources/api';
 import { genSourceFromData } from '@/services/sources/util';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { FormattedMessage } from '@umijs/max';
 import { Button, Card, Col, Divider, Form, Input, Row, Space, theme } from 'antd';
 import React, { FC, ReactNode, useEffect, useState } from 'react';
+import SourceEdit from '../edit';
 import SourceView from '../view';
 import SourceSelectDrawer from './drawer';
+
 const { TextArea } = Input;
 
 type Props = {
@@ -34,6 +37,16 @@ const SourceSelectForm: FC<Props> = ({
 }) => {
   const [id, setId] = useState<string | undefined>(undefined);
   const [version, setVersion] = useState<string | undefined>(undefined);
+
+  const [refData, setRefData] = useState<any>(null);
+  useEffect(() => {
+    if (id && version) {
+      getRefData(id, version, 'sources', '').then((result: any) => {
+        setRefData({ ...result.data });
+      });
+    }
+  }, [id, version]);
+
   const { token } = theme.useToken();
   const { referenceValue } = useUpdateReferenceContext() as { referenceValue: number };
   const [ruleErrorState, setRuleErrorState] = useState(false);
@@ -187,6 +200,15 @@ const SourceSelectForm: FC<Props> = ({
             </Button>
           )}
           {id && <SourceView lang={lang} id={id} version={version ?? ''} buttonType='text' />}
+          {id && refData?.userId === sessionStorage.getItem('userId') && (
+            <SourceEdit
+              lang={lang}
+              id={id}
+              version={version ?? ''}
+              buttonType=''
+              setViewDrawerVisible={() => {}}
+            />
+          )}
           {id && (
             <Button
               onClick={() => {

@@ -42,9 +42,18 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
   const [fromData, setFromData] = useState<any>({});
   const [initData, setInitData] = useState<any>({});
   const [spinning, setSpinning] = useState(false);
+  const [showRules, setShowRules] = useState<boolean>(false);
+  const [referenceValue, setReferenceValue] = useState(0);
+
   const intl = useIntl();
 
-  const [referenceValue, setReferenceValue] = useState(0);
+  useEffect(() => {
+    if (showRules) {
+      setTimeout(() => {
+        formRefEdit.current?.validateFields();
+      });
+    }
+  }, [showRules]);
 
   const updateReference = async () => {
     setReferenceValue(referenceValue + 1);
@@ -88,7 +97,10 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
   };
 
   useEffect(() => {
-    if (!drawerVisible) return;
+    if (!drawerVisible) {
+      setShowRules(false);
+      return;
+    }
     onReset();
   }, [drawerVisible]);
 
@@ -130,6 +142,13 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
           <Space size={'middle'} className={styles.footer_right}>
             <Button
               onClick={() => {
+                setShowRules(true);
+              }}
+            >
+              <FormattedMessage id='pages.button.check' defaultMessage='Data check' />
+            </Button>
+            <Button
+              onClick={() => {
                 updateReference();
               }}
             >
@@ -146,7 +165,13 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
               {' '}
               <FormattedMessage id='pages.button.reset' defaultMessage='Reset' />
             </Button>
-            <Button onClick={() => formRefEdit.current?.submit()} type='primary'>
+            <Button
+              onClick={() => {
+                setShowRules(false);
+                formRefEdit.current?.submit();
+              }}
+              type='primary'
+            >
               <FormattedMessage id='pages.button.save' defaultMessage='Save' />
             </Button>
           </Space>
@@ -192,6 +217,7 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
                 formRef={formRefEdit}
                 onData={handletFromData}
                 onTabChange={onTabChange}
+                showRules={showRules}
               />
             </ProForm>
           </UpdateReferenceContext.Provider>

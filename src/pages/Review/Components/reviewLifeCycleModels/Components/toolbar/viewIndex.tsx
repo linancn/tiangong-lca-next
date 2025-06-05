@@ -343,19 +343,36 @@ const ToolbarView: FC<Props> = ({
             !isSaveReview || allReviews.length === 0 || allCompliance.length === 0,
           );
           if (result?.data?.json?.lifeCycleModelDataSet) {
+            const _compliance =
+              result.data.json.lifeCycleModelDataSet?.modellingAndValidation?.complianceDeclarations
+                .compliance;
+            const _review =
+              result.data.json.lifeCycleModelDataSet?.modellingAndValidation?.validation?.review;
             result.data.json.lifeCycleModelDataSet.modellingAndValidation = {
               ...result.data.json.lifeCycleModelDataSet.modellingAndValidation,
               complianceDeclarations: {
-                compliance: allCompliance.length ? allCompliance : [{}],
+                compliance:
+                  tabType === 'review'
+                    ? [...(allCompliance.length ? allCompliance : [{}])]
+                    : Array.isArray(_compliance)
+                      ? [..._compliance, ...allCompliance]
+                      : [_compliance, ...allCompliance],
               },
               validation: {
-                review: allReviews.length
-                  ? allReviews
-                  : [
-                      {
-                        'common:scope': [{}],
-                      },
-                    ],
+                review:
+                  tabType === 'review'
+                    ? [
+                        ...(allReviews.length
+                          ? allReviews
+                          : [
+                              {
+                                'common:scope': [{ '@name': undefined }],
+                              },
+                            ]),
+                      ]
+                    : Array.isArray(_review)
+                      ? [..._review, ...allReviews]
+                      : [_review, ...allReviews],
               },
             };
           }
@@ -363,7 +380,7 @@ const ToolbarView: FC<Props> = ({
         const fromData = genLifeCycleModelInfoFromData(
           result.data?.json?.lifeCycleModelDataSet ?? {},
         );
-        setInfoData({ ...fromData, id: id });
+        setInfoData({ ...fromData, id: id, version: version });
         const model = genLifeCycleModelData(result.data?.json_tg ?? {}, lang);
         let initNodes = (model?.nodes ?? []).map((node: any) => {
           return {
@@ -447,6 +464,8 @@ const ToolbarView: FC<Props> = ({
         data={infoData}
         reviewId={reviewId}
         tabType={tabType}
+        modelId={id}
+        modelVersion={version}
       />
       <ProcessView
         id={nodes.find((node) => node.selected)?.data?.id ?? ''}

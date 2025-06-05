@@ -34,7 +34,16 @@ const ContactEdit: FC<Props> = ({
   const [fromData, setFromData] = useState<any>(undefined);
   const [activeTabKey, setActiveTabKey] = useState<string>('contactInformation');
   const [referenceValue, setReferenceValue] = useState<number>(0);
+  const [showRules, setShowRules] = useState<boolean>(false);
   const intl = useIntl();
+
+  useEffect(() => {
+    if (showRules) {
+      setTimeout(() => {
+        formRefEdit.current?.validateFields();
+      });
+    }
+  }, [showRules]);
 
   const onEdit = useCallback(() => {
     setDrawerVisible(true);
@@ -69,7 +78,10 @@ const ContactEdit: FC<Props> = ({
   };
 
   useEffect(() => {
-    if (!drawerVisible) return;
+    if (!drawerVisible) {
+      setShowRules(false);
+      return;
+    }
     onReset();
   }, [drawerVisible]);
 
@@ -110,6 +122,13 @@ const ContactEdit: FC<Props> = ({
           <Space size={'middle'} className={styles.footer_right}>
             <Button
               onClick={() => {
+                setShowRules(true);
+              }}
+            >
+              <FormattedMessage id='pages.button.check' defaultMessage='Data check' />
+            </Button>
+            <Button
+              onClick={() => {
                 updateReference();
               }}
             >
@@ -124,7 +143,13 @@ const ContactEdit: FC<Props> = ({
             {/* <Button onClick={onReset}>
               <FormattedMessage id="pages.button.reset" defaultMessage="Reset" />
             </Button> */}
-            <Button onClick={() => formRefEdit.current?.submit()} type='primary'>
+            <Button
+              onClick={() => {
+                setShowRules(false);
+                formRefEdit.current?.submit();
+              }}
+              type='primary'
+            >
               <FormattedMessage id='pages.button.save' defaultMessage='Save' />
             </Button>
           </Space>
@@ -170,6 +195,7 @@ const ContactEdit: FC<Props> = ({
                 formRef={formRefEdit}
                 onData={handletFromData}
                 onTabChange={onTabChange}
+                showRules={showRules}
               />
             </ProForm>
           </UpdateReferenceContext.Provider>

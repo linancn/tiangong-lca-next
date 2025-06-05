@@ -290,16 +290,16 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
               labelStyle={{ width: '160px' }}
             >
               {flowTypeOptions.find(
-                (i) => i.value === initData?.flowInformation?.LCIMethod?.typeOfDataSet,
+                (i) => i.value === initData?.modellingAndValidation?.LCIMethod?.typeOfDataSet,
               )?.label ??
-                initData?.flowInformation?.LCIMethod?.typeOfDataSet ??
+                initData?.modellingAndValidation?.LCIMethod?.typeOfDataSet ??
                 '-'}
             </Descriptions.Item>
           </Descriptions>
           <br />
           <LevelTextItemDescription
             data={
-              initData?.flowInformation?.LCIMethod?.typeOfDataSet === 'Elementary flow'
+              initData?.modellingAndValidation?.LCIMethod?.typeOfDataSet === 'Elementary flow'
                 ? initData?.flowInformation?.dataSetInformation?.classificationInformation?.[
                     'common:elementaryFlowCategorization'
                   ]?.['common:category']?.['value']
@@ -309,7 +309,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
             }
             lang={lang}
             categoryType={'Flow'}
-            flowType={initData?.flowInformation?.LCIMethod?.typeOfDataSet}
+            flowType={initData?.modellingAndValidation?.LCIMethod?.typeOfDataSet}
           />
         </Card>
         <br />

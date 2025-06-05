@@ -37,6 +37,17 @@ export async function updateProcess(id: string, version: string, data: any) {
   return updateResult;
 }
 
+export async function updateProcessJsonApi(id: string, version: string, data: any) {
+  const newData = genProcessJsonOrdered(id, data);
+  const updateResult = await supabase
+    .from('processes')
+    .update({ json: newData })
+    .eq('id', id)
+    .eq('version', version)
+    .select();
+  return updateResult;
+}
+
 export async function updateProcessStateCode(
   id: string,
   version: string,

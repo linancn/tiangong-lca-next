@@ -121,6 +121,16 @@ export async function updateLifeCycleModel(data: any) {
   return null;
 }
 
+export async function updateLifeCycleModelJsonApi(id: string, version: string, data: any) {
+  const updateResult = await supabase
+    .from('lifecyclemodels')
+    .update({ json: data })
+    .eq('id', id)
+    .eq('version', version)
+    .select();
+  return updateResult;
+}
+
 export async function deleteLifeCycleModel(id: string, version: string) {
   const result = await supabase
     .from('lifecyclemodels')
@@ -495,7 +505,26 @@ export async function lifeCycleModel_hybrid_search(
   return result;
 }
 
-export async function getLifeCycleModelDetail(id: string, version: string) {
+export async function getLifeCycleModelDetail(
+  id: string,
+  version: string,
+): Promise<
+  | {
+      data: {
+        id: string;
+        version: string;
+        json: any;
+        json_tg: any;
+        state_code: number;
+        rule_verification: any;
+      };
+      success: true;
+    }
+  | {
+      data: object;
+      success: false;
+    }
+> {
   const result = await supabase
     .from('lifecyclemodels')
     .select('json, json_tg,state_code,rule_verification')
