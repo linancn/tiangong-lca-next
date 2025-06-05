@@ -1,6 +1,7 @@
 import schema from '@/pages/Processes/processes_schema.json';
 import { getLifeCyclesByIds } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
+import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/es/table/interface';
 import { getTeamIdByUserId } from '../general/api';
 import {
@@ -30,6 +31,17 @@ export async function updateProcess(id: string, version: string, data: any) {
   const updateResult = await supabase
     .from('processes')
     .update({ json_ordered: newData, rule_verification })
+    .eq('id', id)
+    .eq('version', version)
+    .select();
+  return updateResult;
+}
+
+export async function updateProcessJsonApi(id: string, version: string, data: any) {
+  const newData = genProcessJsonOrdered(id, data);
+  const updateResult = await supabase
+    .from('processes')
+    .update({ json: newData })
     .eq('id', id)
     .eq('version', version)
     .select();
@@ -511,7 +523,155 @@ export async function getProcessTablePgroongaSearch(
 
   return result;
 }
+export async function process_hybrid_search(
+  params: {
+    current?: number;
+    pageSize?: number;
+  },
+  // sort: Record<string, SortOrder>,
+  lang: string,
+  dataSource: string,
+  queryText: string,
+  filterCondition: any,
+) {
+  let result: any = {};
+  const session = await supabase.auth.getSession();
+  if (session.data.session) {
+    result = await supabase.functions.invoke('process_hybrid_search', {
+      headers: {
+        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+      },
+      body: { query: queryText, filter: filterCondition },
+      region: FunctionRegion.UsEast1,
+    });
+  }
+  if (result.error) {
+    console.log('error', result.error);
+  }
+  if (result.data?.data) {
+    if (result.data?.data.length === 0) {
+      return Promise.resolve({
+        data: [],
+        success: true,
+      });
+    }
+    const resultData = result.data.data;
+    const totalCount = resultData.total_count;
 
+    const locations: string[] = Array.from(
+      new Set(
+        resultData.map(
+          (i: any) =>
+            i.json?.processDataSet?.processInformation?.geography
+              ?.locationOfOperationSupplyOrProduction?.['@location'],
+        ),
+      ),
+    );
+    let locationData: any[] = [];
+    await getILCDLocationByValues(lang, locations).then((res) => {
+      locationData = res.data;
+    });
+
+    let data: any[] = [];
+    if (lang === 'zh') {
+      await getILCDClassification('Process', lang, ['all']).then((res) => {
+        data = resultData.map((i: any) => {
+          try {
+            const dataInfo = i.json?.processDataSet?.processInformation;
+
+            const thisLocation = locationData.find(
+              (l) =>
+                l['@value'] ===
+                dataInfo?.geography?.locationOfOperationSupplyOrProduction?.['@location'],
+            );
+            let location = i['@location'];
+            if (thisLocation?.['#text']) {
+              location = thisLocation['#text'];
+            }
+
+            const classifications = jsonToList(
+              dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
+                'common:class'
+              ],
+            );
+            const classificationZH = genClassificationZH(classifications, res?.data);
+
+            return {
+              key: i.id + ':' + i.version,
+              id: i.id,
+              name: genProcessName(dataInfo?.dataSetInformation?.name ?? {}, lang),
+              generalComment: getLangText(
+                dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
+                lang,
+              ),
+              classification: classificationToString(classificationZH),
+              referenceYear: dataInfo?.time?.['common:referenceYear'] ?? '-',
+              location: location ?? '-',
+              version: i.version,
+              modifiedAt: new Date(i?.modified_at),
+              teamId: i?.team_id,
+            };
+          } catch (e) {
+            console.error(e);
+            return {
+              id: i.id,
+            };
+          }
+        });
+      });
+    } else {
+      data = resultData.map((i: any) => {
+        try {
+          const dataInfo = i.json?.processDataSet?.processInformation;
+          const classifications = jsonToList(
+            dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
+              'common:class'
+            ],
+          );
+          const thisLocation = locationData.find(
+            (l) =>
+              l['@value'] ===
+              dataInfo?.geography?.locationOfOperationSupplyOrProduction?.['@location'],
+          );
+          let location = dataInfo?.geography?.locationOfOperationSupplyOrProduction?.['@location'];
+          if (thisLocation?.['#text']) {
+            location = thisLocation['#text'];
+          }
+
+          return {
+            key: i.id + ':' + i.version,
+            id: i.id,
+            name: genProcessName(dataInfo?.dataSetInformation?.name ?? {}, lang),
+            generalComment: getLangText(
+              dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
+              lang,
+            ),
+            classification: classificationToString(classifications),
+            referenceYear: dataInfo?.time?.['common:referenceYear'] ?? '-',
+            location: location ?? '-',
+            version: i.version,
+            modifiedAt: new Date(i?.modified_at),
+            teamId: i?.team_id,
+          };
+        } catch (e) {
+          console.error(e);
+          return {
+            id: i.id,
+          };
+        }
+      });
+    }
+
+    return Promise.resolve({
+      data: data,
+      page: params.current ?? 1,
+      success: true,
+      total: totalCount ?? 0,
+    });
+  }
+
+  return result;
+}
 export async function getProcessDetailByIdAndVersion(data: { id: string; version: string }[]) {
   if (data && data.length) {
     const ids = data.map((item) => item.id);

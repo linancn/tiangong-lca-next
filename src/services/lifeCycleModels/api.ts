@@ -1,19 +1,19 @@
+import schema from '@/pages/LifeCycleModels/lifecyclemodels.json';
+import processSchema from '@/pages/Processes/processes_schema.json';
 import { supabase } from '@/services/supabase';
+import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getTeamIdByUserId } from '../general/api';
 import {
   classificationToString,
   genClassificationZH,
   getLangText,
+  getRuleVerification,
   jsonToList,
 } from '../general/util';
 import { getILCDClassification } from '../ilcd/api';
 import { genProcessName } from '../processes/util';
 import { genLifeCycleModelJsonOrdered, genLifeCycleModelProcess } from './util';
-
-import schema from '@/pages/LifeCycleModels/lifecyclemodels.json';
-import processSchema from '@/pages/Processes/processes_schema.json';
-import { getRuleVerification } from '../general/util';
 
 const updateLifeCycleModelProcess = async (
   id: string,
@@ -119,6 +119,16 @@ export async function updateLifeCycleModel(data: any) {
     return updateResult;
   }
   return null;
+}
+
+export async function updateLifeCycleModelJsonApi(id: string, version: string, data: any) {
+  const updateResult = await supabase
+    .from('lifecyclemodels')
+    .update({ json: data })
+    .eq('id', id)
+    .eq('version', version)
+    .select();
+  return updateResult;
 }
 
 export async function deleteLifeCycleModel(id: string, version: string) {
@@ -383,8 +393,138 @@ export async function getLifeCycleModelTablePgroongaSearch(
 
   return result;
 }
+export async function lifeCycleModel_hybrid_search(
+  params: {
+    current?: number;
+    pageSize?: number;
+  },
+  // sort: Record<string, SortOrder>,
+  lang: string,
+  dataSource: string,
+  queryText: string,
+  filterCondition: any,
+) {
+  let result: any = {};
+  const session = await supabase.auth.getSession();
+  if (session.data.session) {
+    result = await supabase.functions.invoke('lifeCycleModel_hybrid_search', {
+      headers: {
+        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+      },
+      body: { query: queryText, filter: filterCondition },
+      region: FunctionRegion.UsEast1,
+    });
+  }
+  if (result.error) {
+    console.log('error', result.error);
+  }
+  if (result.data?.data) {
+    if (result.data?.data.length === 0) {
+      return Promise.resolve({
+        data: [],
+        success: true,
+      });
+    }
+    const resultData = result.data.data;
+    const totalCount = resultData.total_count;
 
-export async function getLifeCycleModelDetail(id: string, version: string) {
+    let data: any[] = [];
+    if (lang === 'zh') {
+      await getILCDClassification('LifeCycleModel', lang, ['all']).then((res) => {
+        data = resultData.map((i: any) => {
+          try {
+            const dataInfo = i.json?.lifeCycleModelDataSet?.lifeCycleModelInformation;
+
+            const classifications = jsonToList(
+              dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
+                'common:class'
+              ],
+            );
+            const classificationZH = genClassificationZH(classifications, res?.data);
+
+            return {
+              key: i.id,
+              id: i.id,
+              name: genProcessName(dataInfo?.dataSetInformation?.name ?? {}, lang),
+              generalComment: getLangText(
+                dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
+                lang,
+              ),
+              classification: classificationToString(classificationZH),
+              version: i?.version,
+              modifiedAt: new Date(i?.modified_at),
+              teamId: i?.team_id,
+            };
+          } catch (e) {
+            console.error(e);
+            return {
+              id: i.id,
+            };
+          }
+        });
+      });
+    } else {
+      data = resultData.map((i: any) => {
+        try {
+          const dataInfo = i.json?.lifeCycleModelDataSet?.lifeCycleModelInformation;
+          const classifications = jsonToList(
+            dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
+              'common:class'
+            ],
+          );
+          return {
+            key: i.id,
+            id: i.id,
+            name: genProcessName(dataInfo?.dataSetInformation?.name ?? {}, lang),
+            generalComment: getLangText(
+              dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
+              lang,
+            ),
+            classification: classificationToString(classifications),
+            version: i?.version,
+            modifiedAt: new Date(i?.modified_at),
+            teamId: i?.team_id,
+          };
+        } catch (e) {
+          console.error(e);
+          return {
+            id: i.id,
+          };
+        }
+      });
+    }
+
+    return Promise.resolve({
+      data: data,
+      page: params.current ?? 1,
+      success: true,
+      total: totalCount ?? 0,
+    });
+  }
+
+  return result;
+}
+
+export async function getLifeCycleModelDetail(
+  id: string,
+  version: string,
+): Promise<
+  | {
+      data: {
+        id: string;
+        version: string;
+        json: any;
+        json_tg: any;
+        state_code: number;
+        rule_verification: any;
+      };
+      success: true;
+    }
+  | {
+      data: object;
+      success: false;
+    }
+> {
   const result = await supabase
     .from('lifecyclemodels')
     .select('json, json_tg,state_code,rule_verification')

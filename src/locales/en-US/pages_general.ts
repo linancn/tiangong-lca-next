@@ -15,6 +15,7 @@ export default {
   'pages.button.allVersion': 'All Versions',
   'pages.button.create': 'Create',
   'pages.button.create.success': 'Created successfully!',
+  'pages.button.save.success': 'Save successfully!',
   'pages.button.reset': 'Reset',
   'pages.button.view': 'View',
   'pages.button.edit': 'Edit',
@@ -28,6 +29,8 @@ export default {
   'pages.button.temporarySave': 'Temporary Save',
   'pages.button.submit': 'Submit',
   'pages.button.save': 'Save',
+  'pages.button.check': 'Data check',
+  'pages.button.check.success': 'Data check successfully!',
   'pages.button.review': 'Sumit for review',
   'pages.button.select': 'Select',
   'pages.button.reselect': 'Reselect',
@@ -75,4 +78,5 @@ export default {
   'page.exportData.error': 'Export data failed',
 
   'page.options.savesuccess': 'Save successfully',
+  'page.select.unRuleVerification': 'Please complete the data',
 };

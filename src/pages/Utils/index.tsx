@@ -111,6 +111,9 @@ const checkComplianceFields = (data: any) => {
 };
 
 export const checkRequiredFields = (requiredFields: any, formData: any) => {
+  if (!formData || Object.keys(formData).length === 0) {
+    return { checkResult: false, tabName: '' };
+  }
   for (let field of Object.keys(requiredFields)) {
     const value = get(formData, field);
     // console.log('checkRequiredFields', field, value,formData)
@@ -128,6 +131,11 @@ export const checkRequiredFields = (requiredFields: any, formData: any) => {
       }
     }
 
+    if (field.includes('common:classification.common:class')) {
+      if (!value || (value?.id ?? []).some((item: any) => !item)) {
+        return { checkResult: false, tabName: requiredFields[field] };
+      }
+    }
     if (!value) {
       return { checkResult: false, tabName: requiredFields[field] };
     }
@@ -150,4 +158,38 @@ export const checkRequiredFields = (requiredFields: any, formData: any) => {
   }
 
   return { checkResult: true, tabName: null };
+};
+
+const tableDict = {
+  'contact data set': 'contacts',
+  'source data set': 'sources',
+  'unit group data set': 'unitgroups',
+  'flow property data set': 'flowproperties',
+  'flow data set': 'flows',
+  'process data set': 'processes',
+  'lifeCycleModel data set': 'lifecyclemodels',
+};
+export const getRefTableName = (type: string) => {
+  return tableDict[type as keyof typeof tableDict] ?? undefined;
+};
+
+export const getAllRefObj = (obj: any): any[] => {
+  const result: any[] = [];
+
+  const traverse = (current: any) => {
+    if (!current || typeof current !== 'object') return;
+
+    if ('@refObjectId' in current && current['@refObjectId'] && current['@version']) {
+      result.push(current);
+    }
+
+    if (Array.isArray(current)) {
+      current.forEach((item) => traverse(item));
+    } else if (typeof current === 'object') {
+      Object.values(current).forEach((value) => traverse(value));
+    }
+  };
+
+  traverse(obj);
+  return result;
 };

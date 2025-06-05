@@ -58,3 +58,16 @@ ol {
     }
   }
 }
+
+.decimal-align {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  font-feature-settings: 'tnum';
+  font-variant-numeric: tabular-nums;
+  .int {
+    text-align: right;
+  }
+  .dec {
+    text-align: left;
+  }
+}

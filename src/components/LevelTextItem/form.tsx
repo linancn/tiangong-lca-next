@@ -11,6 +11,7 @@ type Props = {
   hidden?: boolean;
   onData: () => void;
   rules?: any[];
+  showRules?: boolean;
 };
 
 const LevelTextItemForm: FC<Props> = ({
@@ -22,8 +23,10 @@ const LevelTextItemForm: FC<Props> = ({
   hidden,
   onData,
   rules = [],
+  showRules = false,
 }) => {
   const [selectOptions, setSelectOptions] = useState<any>([]);
+  const [hasClassId, setHasClassId] = useState<boolean>(false);
 
   const getNodePath = (
     targetId: string,
@@ -113,11 +116,20 @@ const LevelTextItemForm: FC<Props> = ({
       field.id.every((item: string) => typeof item === 'string' && item.length !== 0)
     ) {
       const id = field.id[field.id.length - 1];
+      setHasClassId(true);
       await formRef.current?.setFieldValue([...name, 'showValue'], id);
-    } else if (field && field.value && field.value?.length) {
+    } else if (
+      field &&
+      field.value &&
+      field.value?.length &&
+      field.value.every((item: any) => item)
+    ) {
       const value = field.value[field.value.length - 1];
       const id = getIdByValue(value, selectOptions);
       await formRef.current?.setFieldValue([...name, 'showValue'], id);
+      setHasClassId(true);
+    } else {
+      setHasClassId(false);
     }
   };
 
@@ -152,6 +164,11 @@ const LevelTextItemForm: FC<Props> = ({
       [...name, 'showValue'],
       fullPath.ids[fullPath.ids.length - 1],
     );
+    if (fullPath?.ids?.length > 0) {
+      setHasClassId(true);
+    } else {
+      setHasClassId(false);
+    }
     onData();
   };
 
@@ -164,6 +181,15 @@ const LevelTextItemForm: FC<Props> = ({
         }
         name={[...name, 'showValue']}
         rules={rules}
+        validateStatus={showRules && !hasClassId ? 'error' : undefined}
+        help={
+          showRules && !hasClassId ? (
+            <FormattedMessage
+              id='pages.contact.validator.classification.required'
+              defaultMessage='Please input classification'
+            />
+          ) : undefined
+        }
       >
         <TreeSelect
           treeDefaultExpandedKeys={

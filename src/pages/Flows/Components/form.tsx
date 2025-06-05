@@ -23,7 +23,7 @@ import PropertyDelete from './Property/delete';
 import PropertyEdit from './Property/edit';
 import PropertyView from './Property/view';
 // import FlowsSelectForm from './select/form';
-
+import AlignedNumber from '@/components/AlignedNumber';
 type Props = {
   lang: string;
   activeTabKey: string;
@@ -36,6 +36,7 @@ type Props = {
   onPropertyDataCreate: (data: any) => void;
   onTabChange: (key: string) => void;
   formType?: string;
+  showRules?: boolean;
 };
 export const FlowForm: FC<Props> = ({
   lang,
@@ -49,6 +50,7 @@ export const FlowForm: FC<Props> = ({
   onPropertyDataCreate,
   onTabChange,
   formType,
+  showRules = false,
 }) => {
   const [thisFlowType, setThisFlowType] = useState<string | undefined>(flowType);
   const actionRefPropertyTable = useRef<ActionType>();
@@ -135,6 +137,11 @@ export const FlowForm: FC<Props> = ({
       dataIndex: 'meanValue',
       sorter: false,
       search: false,
+      align: 'right',
+      width: 140,
+      render: (_: any, record: any) => {
+        return <AlignedNumber number={record.meanValue} />;
+      },
     },
     {
       title: (
@@ -251,11 +258,15 @@ export const FlowForm: FC<Props> = ({
                 />
               }
               setRuleErrorState={setBaseNameError}
-              // rules={getRules(
-              //   schema['flowDataSet']['flowInformation']['dataSetInformation']['name']['baseName'][
-              //     'rules'
-              //   ],
-              // )}
+              rules={
+                showRules
+                  ? getRules(
+                      schema['flowDataSet']['flowInformation']['dataSetInformation']['name'][
+                        'baseName'
+                      ]['rules'],
+                    )
+                  : []
+              }
             />
           </Card>
           <br />
@@ -282,11 +293,15 @@ export const FlowForm: FC<Props> = ({
                 />
               }
               setRuleErrorState={setTreatmentStandardsRoutesError}
-              // rules={getRules(
-              //   schema['flowDataSet']['flowInformation']['dataSetInformation']['name'][
-              //     'treatmentStandardsRoutes'
-              //   ]['rules'],
-              // )}
+              rules={
+                showRules
+                  ? getRules(
+                      schema['flowDataSet']['flowInformation']['dataSetInformation']['name'][
+                        'treatmentStandardsRoutes'
+                      ]['rules'],
+                    )
+                  : []
+              }
             />
           </Card>
           <br />
@@ -313,11 +328,15 @@ export const FlowForm: FC<Props> = ({
                 />
               }
               setRuleErrorState={setMixAndLocationTypesError}
-              // rules={getRules(
-              //   schema['flowDataSet']['flowInformation']['dataSetInformation']['name'][
-              //     'mixAndLocationTypes'
-              //   ]['rules'],
-              // )}
+              rules={
+                showRules
+                  ? getRules(
+                      schema['flowDataSet']['flowInformation']['dataSetInformation']['name'][
+                        'mixAndLocationTypes'
+                      ]['rules'],
+                    )
+                  : []
+              }
             />
           </Card>
           <br />
@@ -338,11 +357,15 @@ export const FlowForm: FC<Props> = ({
                   defaultMessage='Quantitative flow properties'
                 />
               }
-              // rules={getRules(
-              //   schema['flowDataSet']['flowInformation']['dataSetInformation']['name'][
-              //     'flowProperties'
-              //   ]['rules'],
-              // )}
+              rules={
+                showRules
+                  ? getRules(
+                      schema['flowDataSet']['flowInformation']['dataSetInformation']['name'][
+                        'flowProperties'
+                      ]['rules'],
+                    )
+                  : []
+              }
             />
           </Card>
         </Card>
@@ -384,11 +407,15 @@ export const FlowForm: FC<Props> = ({
               />
             }
             name={['modellingAndValidation', 'LCIMethod', 'typeOfDataSet']}
-            // rules={getRules(
-            //   schema['flowDataSet']['modellingAndValidation']['LCIMethod']['typeOfDataSet'][
-            //     'rules'
-            //   ],
-            // )}
+            rules={
+              showRules
+                ? getRules(
+                    schema['flowDataSet']['modellingAndValidation']['LCIMethod']['typeOfDataSet'][
+                      'rules'
+                    ],
+                  )
+                : []
+            }
           >
             <Select
               options={myFlowTypeOptions}
@@ -429,15 +456,19 @@ export const FlowForm: FC<Props> = ({
               'common:elementaryFlowCategorization',
               'common:category',
             ]}
-            // rules={
-            //   thisFlowType !== 'Elementary flow'
-            //     ? []
-            //     : getRules(
-            //         schema['flowDataSet']['flowInformation']['dataSetInformation'][
-            //           'classificationInformation'
-            //         ]['common:elementaryFlowCategorization']['common:category']['rules'],
-            //       )
-            // }
+            rules={
+              thisFlowType !== 'Elementary flow'
+                ? []
+                : showRules
+                  ? getRules(
+                      schema['flowDataSet']['flowInformation']['dataSetInformation'][
+                        'classificationInformation'
+                      ]['common:elementaryFlowCategorization']['common:category']['@catId'][
+                        'rules'
+                      ],
+                    )
+                  : []
+            }
           />
           <LevelTextItemForm
             hidden={thisFlowType === 'Elementary flow'}
@@ -453,11 +484,16 @@ export const FlowForm: FC<Props> = ({
               'common:classification',
               'common:class',
             ]}
-            // rules={getRules(
-            //   schema['flowDataSet']['flowInformation']['dataSetInformation'][
-            //     'classificationInformation'
-            //   ]['common:classification']['common:class']['rules'],
-            // )}
+            showRules={showRules}
+            rules={
+              showRules
+                ? getRules(
+                    schema['flowDataSet']['flowInformation']['dataSetInformation'][
+                      'classificationInformation'
+                    ]['common:classification']['common:class'][0]['@classId']['rules'],
+                  )
+                : []
+            }
           />
         </Card>
         <br />
@@ -469,9 +505,15 @@ export const FlowForm: FC<Props> = ({
             />
           }
           name={['flowInformation', 'dataSetInformation', 'CASNumber']}
-          // rules={getRules(
-          //   schema['flowDataSet']['flowInformation']['dataSetInformation']['CASNumber']['rules'],
-          // )}
+          rules={
+            showRules
+              ? getRules(
+                  schema['flowDataSet']['flowInformation']['dataSetInformation']['CASNumber'][
+                    'rules'
+                  ],
+                )
+              : []
+          }
         >
           <Input />
         </Form.Item>
@@ -543,9 +585,15 @@ export const FlowForm: FC<Props> = ({
             name={['flowInformation', 'geography', 'locationOfSupply']}
             lang={lang}
             onData={onData}
-            // rules={getRules(
-            //   schema['flowDataSet']['flowInformation']['geography']['locationOfSupply']['rules'],
-            // )}
+            rules={
+              showRules
+                ? getRules(
+                    schema['flowDataSet']['flowInformation']['geography']['locationOfSupply'][
+                      'rules'
+                    ],
+                  )
+                : []
+            }
           />
         </Card>
         <br />
@@ -630,11 +678,15 @@ export const FlowForm: FC<Props> = ({
             'common:referenceToComplianceSystem',
           ]}
           onData={onData}
-          // rules={getRules(
-          //   schema['flowDataSet']['modellingAndValidation']['complianceDeclarations']['compliance'][
-          //     'common:referenceToComplianceSystem'
-          //   ]['rules'],
-          // )}
+          rules={
+            showRules
+              ? getRules(
+                  schema['flowDataSet']['modellingAndValidation']['complianceDeclarations'][
+                    'compliance'
+                  ]['common:referenceToComplianceSystem']['@refObjectId']['rules'],
+                )
+              : []
+          }
         />
         <br />
         <Form.Item
@@ -650,11 +702,15 @@ export const FlowForm: FC<Props> = ({
             'compliance',
             'common:approvalOfOverallCompliance',
           ]}
-          // rules={getRules(
-          //   schema['flowDataSet']['modellingAndValidation']['complianceDeclarations']['compliance'][
-          //     'common:approvalOfOverallCompliance'
-          //   ]['rules'],
-          // )}
+          rules={
+            showRules
+              ? getRules(
+                  schema['flowDataSet']['modellingAndValidation']['complianceDeclarations'][
+                    'compliance'
+                  ]['common:approvalOfOverallCompliance']['rules'],
+                )
+              : []
+          }
         >
           <Select options={complianceOptions} />
         </Form.Item>
@@ -680,11 +736,15 @@ export const FlowForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
-            // rules={getRules(
-            //   schema['flowDataSet']['administrativeInformation']['dataEntryBy']['common:timeStamp'][
-            //     'rules'
-            //   ],
-            // )}
+            rules={
+              showRules
+                ? getRules(
+                    schema['flowDataSet']['administrativeInformation']['dataEntryBy'][
+                      'common:timeStamp'
+                    ]['rules'],
+                  )
+                : []
+            }
           >
             <Input disabled={true} style={{ color: token.colorTextDescription }} />
           </Form.Item>
@@ -699,11 +759,15 @@ export const FlowForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
-            // rules={getRules(
-            //   schema['flowDataSet']['administrativeInformation']['dataEntryBy'][
-            //     'common:referenceToDataSetFormat'
-            //   ]['rules'],
-            // )}
+            rules={
+              showRules
+                ? getRules(
+                    schema['flowDataSet']['administrativeInformation']['dataEntryBy'][
+                      'common:referenceToDataSetFormat'
+                    ]['@refObjectId']['rules'],
+                  )
+                : []
+            }
             onData={onData}
           />
           <br />
@@ -784,11 +848,15 @@ export const FlowForm: FC<Props> = ({
               'common:referenceToOwnershipOfDataSet',
             ]}
             onData={onData}
-            // rules={getRules(
-            //   schema['flowDataSet']['administrativeInformation']['publicationAndOwnership'][
-            //     'common:referenceToOwnershipOfDataSet'
-            //   ]['rules'],
-            // )}
+            rules={
+              showRules
+                ? getRules(
+                    schema['flowDataSet']['administrativeInformation']['publicationAndOwnership'][
+                      'common:referenceToOwnershipOfDataSet'
+                    ]['@refObjectId']['rules'],
+                  )
+                : []
+            }
           />
           <br />
           <Form.Item

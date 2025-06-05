@@ -1,16 +1,17 @@
 import RequiredMark from '@/components/RequiredMark';
-// import { getRules } from '@/pages/Utils';
+import { getRules } from '@/pages/Utils';
 import { CloseOutlined } from '@ant-design/icons';
 import { Button, Col, Form, Row, Select } from 'antd';
 import { FC } from 'react';
 import { FormattedMessage } from 'umi';
-// import schema from '../../../processes_schema.json';
+import schema from '../../../processes_schema.json';
 import { methodNameOptions, scopeNameOptions } from '../../optiondata';
 type Props = {
   name: any;
+  showRules: boolean;
 };
 
-const ScopeItemForm: FC<Props> = ({ name }) => {
+const ScopeItemForm: FC<Props> = ({ name, showRules = false }) => {
   return (
     <Form.Item>
       <Form.List name={[...name]}>
@@ -32,11 +33,15 @@ const ScopeItemForm: FC<Props> = ({ name }) => {
                   )}
                   <Form.Item
                     name={[subField.name, '@name']}
-                    // rules={getRules(
-                    //   schema['processDataSet']['modellingAndValidation']['validation']['review'][
-                    //     'scope'
-                    //   ]['@name']['rules'],
-                    // )}
+                    rules={
+                      showRules
+                        ? getRules(
+                            schema['processDataSet']['modellingAndValidation']['validation'][
+                              'review'
+                            ]['common:scope']['@name']['rules'],
+                          )
+                        : []
+                    }
                   >
                     <Select options={scopeNameOptions} />
                   </Form.Item>
@@ -55,11 +60,15 @@ const ScopeItemForm: FC<Props> = ({ name }) => {
                   )}
                   <Form.Item
                     name={[subField.name, 'common:method', '@name']}
-                    // rules={getRules(
-                    //   schema['processDataSet']['modellingAndValidation']['validation']['review'][
-                    //     'scope'
-                    //   ]['method']['@name']['rules'],
-                    // )}
+                    rules={
+                      showRules
+                        ? getRules(
+                            schema['processDataSet']['modellingAndValidation']['validation'][
+                              'review'
+                            ]['common:scope']['common:method']['@name']['rules'],
+                          )
+                        : []
+                    }
                   >
                     <Select options={methodNameOptions} />
                   </Form.Item>

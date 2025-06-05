@@ -1,5 +1,9 @@
-import { getProcessTableAll, getProcessTablePgroongaSearch } from '@/services/processes/api';
-import { Card, Input, Space, Tooltip, message } from 'antd';
+import {
+  getProcessTableAll,
+  getProcessTablePgroongaSearch,
+  process_hybrid_search,
+} from '@/services/processes/api';
+import { Card, Checkbox, Col, Input, Row, Space, Tooltip, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 
@@ -38,6 +42,7 @@ const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<any>('');
   const [team, setTeam] = useState<any>(null);
   const [importData, setImportData] = useState<any>(null);
+  const [openAI, setOpenAI] = useState<boolean>(false);
   const { token } = theme.useToken();
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
@@ -123,6 +128,7 @@ const TableList: FC = () => {
                 json->processDataSet->processInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
                 json->processDataSet->processInformation->dataSetInformation->"common:generalComment",
                 json->processDataSet->processInformation->time->>"common:referenceYear",
+                json->processDataSet->modellingAndValidation->LCIMethodAndAllocation->typeOfDataSet,
                 json->processDataSet->processInformation->geography->locationOfOperationSupplyOrProduction->>"@location",
                 version,
                 modified_at,
@@ -335,12 +341,29 @@ const TableList: FC = () => {
       }}
     >
       <Card>
-        <Search
-          size={'large'}
-          placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
-          onSearch={onSearch}
-          enterButton
-        />
+        <Row align={'middle'}>
+          <Col flex='auto' style={{ marginRight: '10px' }}>
+            <Search
+              size={'large'}
+              placeholder={
+                openAI
+                  ? intl.formatMessage({ id: 'pages.search.placeholder' })
+                  : intl.formatMessage({ id: 'pages.search.keyWord' })
+              }
+              onSearch={onSearch}
+              enterButton
+            />
+          </Col>
+          <Col flex='100px'>
+            <Checkbox
+              onChange={(e) => {
+                setOpenAI(e.target.checked);
+              }}
+            >
+              <FormattedMessage id='pages.search.openAI' defaultMessage='AI Search' />
+            </Checkbox>
+          </Col>
+        </Row>
       </Card>
       <ProTable<ProcessTable, ListPagination>
         rowKey={(record) => `${record.id}-${record.version}`}
@@ -381,6 +404,9 @@ const TableList: FC = () => {
           sort,
         ) => {
           if (keyWord.length > 0) {
+            if (openAI) {
+              return process_hybrid_search(params, lang, dataSource, keyWord, {});
+            }
             return getProcessTablePgroongaSearch(params, lang, dataSource, keyWord, {});
           }
 

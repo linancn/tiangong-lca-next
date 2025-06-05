@@ -1,4 +1,5 @@
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
+import { getFlowpropertyDetail } from '@/services/flowproperties/api';
 import { getFlowDetail, updateFlows } from '@/services/flows/api';
 import { genFlowFromData } from '@/services/flows/util';
 import styles from '@/style/custom.less';
@@ -25,10 +26,37 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
   const [flowType, setFlowType] = useState<string>();
   const [spinning, setSpinning] = useState(false);
   const [propertyDataSource, setPropertyDataSource] = useState<any>([]);
+  const [showRules, setShowRules] = useState<boolean>(false);
   const intl = useIntl();
   const [referenceValue, setReferenceValue] = useState(0);
 
+  useEffect(() => {
+    if (showRules) {
+      setTimeout(() => {
+        formRefEdit.current?.validateFields();
+      });
+    }
+  }, [showRules]);
+
   const updateReference = async () => {
+    propertyDataSource.forEach(async (property: any, index: number) => {
+      if (property?.referenceToFlowPropertyDataSet) {
+        const { data: flowPropertyData, success } = await getFlowpropertyDetail(
+          property.referenceToFlowPropertyDataSet['@refObjectId'],
+          property.referenceToFlowPropertyDataSet['@version'],
+        );
+        if (success) {
+          const name =
+            flowPropertyData?.json?.flowPropertyDataSet?.flowPropertiesInformation
+              ?.dataSetInformation?.['common:name'];
+          property.referenceToFlowPropertyDataSet['common:shortDescription'] = name;
+          property.referenceToFlowPropertyDataSet['@version'] = flowPropertyData?.version;
+        }
+        if (index === propertyDataSource.length - 1) {
+          setPropertyDataSource([...propertyDataSource]);
+        }
+      }
+    });
     setReferenceValue(referenceValue + 1);
   };
 
@@ -76,7 +104,7 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
       setInitData({ ...fromData0, id: id });
       setPropertyDataSource(fromData0?.flowProperties?.flowProperty ?? []);
       setFromData({ ...fromData0, id: id });
-      setFlowType(fromData0?.flowInformation?.LCIMethod?.typeOfDataSet);
+      setFlowType(fromData0?.modellingAndValidation?.LCIMethod?.typeOfDataSet);
       formRefEdit.current?.resetFields();
       formRefEdit.current?.setFieldsValue({
         ...fromData0,
@@ -87,7 +115,10 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
   };
 
   useEffect(() => {
-    if (!drawerVisible) return;
+    if (!drawerVisible) {
+      setShowRules(false);
+      return;
+    }
     onReset();
   }, [drawerVisible]);
 
@@ -125,6 +156,13 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
           <Space size={'middle'} className={styles.footer_right}>
             <Button
               onClick={() => {
+                setShowRules(true);
+              }}
+            >
+              <FormattedMessage id='pages.button.check' defaultMessage='Data check' />
+            </Button>
+            <Button
+              onClick={() => {
                 updateReference();
               }}
             >
@@ -141,7 +179,13 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
               {' '}
               <FormattedMessage id="pages.button.reset" defaultMessage="Reset" />
             </Button> */}
-            <Button onClick={() => formRefEdit.current?.submit()} type='primary'>
+            <Button
+              onClick={() => {
+                setShowRules(false);
+                formRefEdit.current?.submit();
+              }}
+              type='primary'
+            >
               <FormattedMessage id='pages.button.save' defaultMessage='Save' />
             </Button>
           </Space>
@@ -219,6 +263,7 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
                 propertyDataSource={propertyDataSource}
                 onPropertyData={handletPropertyData}
                 onPropertyDataCreate={handletPropertyDataCreate}
+                showRules={showRules}
               />
             </ProForm>
           </UpdateReferenceContext.Provider>

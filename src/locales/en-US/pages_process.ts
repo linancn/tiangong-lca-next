@@ -413,6 +413,8 @@ export default {
   'pages.process.review.submitSuccess': 'Review submitted successfully',
   'pages.process.review.submitError': 'Submit review failed',
 
+  'pages.process.review.unRuleVerification.tip': 'The referenced data is incomplete. Please complete it',
+  'pages.process.review.nonExistentRefData.tip': 'The following data does not exist. Please check.',
   'pages.process.review.unRuleVerification.modal.title': 'Notice',
   'pages.process.review.unRuleVerification.modal.content': 'The following data is incomplete, please modify and resubmit for review',
   'pages.process.review.unRuleVerification.modal.button.ok': 'OK',

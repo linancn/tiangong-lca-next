@@ -335,6 +335,9 @@ export function genProcessJsonOrdered(id: string, data: any) {
             '@refObjectId':
               data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
                 ?.referenceToDataSource?.['@refObjectId'] ?? {},
+            '@version':
+              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.referenceToDataSource?.['@version'] ?? {},
             '@uri':
               data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
                 ?.referenceToDataSource?.['@uri'] ?? {},

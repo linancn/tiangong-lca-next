@@ -56,13 +56,15 @@ const UnitGroupFromMini: FC<Props> = ({ id, version, idType, name, formRef, draw
         setSpinning(true);
         getReferenceUnitGroup(id, version ?? '').then((res1: any) => {
           getReferenceUnit(res1?.data?.refUnitGroupId, res1.data?.version).then((res2: any) => {
-            formRef.current?.setFieldValue([...name, 'refUnitGroup'], {
-              shortDescription: jsonToList(res2?.data?.refUnitGroupShortDescription),
-              refUnit: {
-                name: res2.data?.refUnitName ?? '',
-                generalComment: jsonToList(res2.data?.refUnitGeneralComment),
-              },
-            });
+            if (res2?.data?.refUnitGroupShortDescription) {
+              formRef.current?.setFieldValue([...name, 'refUnitGroup'], {
+                shortDescription: jsonToList(res2?.data?.refUnitGroupShortDescription),
+                refUnit: {
+                  name: res2.data?.refUnitName ?? '',
+                  generalComment: jsonToList(res2.data?.refUnitGeneralComment),
+                },
+              });
+            }
             setSpinning(false);
           });
         });
