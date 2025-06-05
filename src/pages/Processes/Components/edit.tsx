@@ -188,8 +188,8 @@ const ProcessEdit: FC<Props> = ({
         setInitData({
           ...dataSet,
           id: id,
-          stateCode: updateResult.data[0]?.stateCode,
-          ruleVerification: updateResult.data[0]?.ruleVerification,
+          stateCode: updateResult.data[0]?.state_code,
+          ruleVerification: updateResult.data[0]?.rule_verification,
         });
         setFromData({ ...dataSet, id: id });
         setExchangeDataSource(dataSet?.exchanges?.exchange ?? []);
