@@ -187,21 +187,53 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
             refData?.stateCode !== 100 &&
             refData?.stateCode !== 200
           ) {
-            unRuleVerification.push(ref);
+            if (
+              !unRuleVerification.find(
+                (item) =>
+                  item['@refObjectId'] === ref['@refObjectId'] &&
+                  item['@version'] === ref['@version'],
+              )
+            ) {
+              unRuleVerification.push(ref);
+            }
           }
           if (refData?.stateCode >= 20 && refData?.stateCode < 100) {
-            underReview.push(ref);
+            if (
+              !underReview.find(
+                (item) =>
+                  item['@refObjectId'] === ref['@refObjectId'] &&
+                  item['@version'] === ref['@version'],
+              )
+            ) {
+              underReview.push(ref);
+            }
           }
 
           if (refData?.stateCode < 20) {
             const json = refData?.json;
-            unReview.push(ref);
+            if (
+              !unReview.find(
+                (item) =>
+                  item['@refObjectId'] === ref['@refObjectId'] &&
+                  item['@version'] === ref['@version'],
+              )
+            ) {
+              unReview.push(ref);
+            }
 
             const subRefs = getAllRefObj(json);
             await checkReferences(subRefs, checkedIds);
           }
         } else {
-          nonExistentRef.push(ref);
+          if (
+            !nonExistentRef.find(
+              (item) =>
+                item['@refObjectId'] === ref['@refObjectId'] &&
+                item['@version'] === ref['@version'],
+            )
+          ) {
+            nonExistentRef.push(ref);
+          }
         }
       }
     };
