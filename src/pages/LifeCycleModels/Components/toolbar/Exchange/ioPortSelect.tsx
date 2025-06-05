@@ -209,7 +209,7 @@ const IoPortSelect: FC<Props> = ({
                     ':' +
                     (item?.referenceToFlowDataSet?.['@refObjectId'] ?? '-');
 
-                  return item?.exchangeDirection===direction&&selectedRowKeys.includes(itemKey);
+                  return item?.exchangeDirection === direction && selectedRowKeys.includes(itemKey);
                 });
 
                 onData({ selectedRowData: selectedRowData });
