@@ -124,7 +124,7 @@ export async function updateLifeCycleModel(data: any) {
 export async function updateLifeCycleModelJsonApi(id: string, version: string, data: any) {
   const updateResult = await supabase
     .from('lifecyclemodels')
-    .update({ json_ordered: data })
+    .update({ json: data })
     .eq('id', id)
     .eq('version', version)
     .select();

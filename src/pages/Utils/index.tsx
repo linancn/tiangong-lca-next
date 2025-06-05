@@ -111,7 +111,7 @@ const checkComplianceFields = (data: any) => {
 };
 
 export const checkRequiredFields = (requiredFields: any, formData: any) => {
-  if (!formData || JSON.stringify(formData) === '{}') {
+  if (!formData || Object.keys(formData).length === 0) {
     return { checkResult: false, tabName: '' };
   }
   for (let field of Object.keys(requiredFields)) {
@@ -131,6 +131,11 @@ export const checkRequiredFields = (requiredFields: any, formData: any) => {
       }
     }
 
+    if (field.includes('common:classification.common:class')) {
+      if (!value || (value?.id ?? []).some((item: any) => !item)) {
+        return { checkResult: false, tabName: requiredFields[field] };
+      }
+    }
     if (!value) {
       return { checkResult: false, tabName: requiredFields[field] };
     }

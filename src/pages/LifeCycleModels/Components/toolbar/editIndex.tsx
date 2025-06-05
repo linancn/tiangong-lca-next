@@ -734,7 +734,7 @@ const ToolbarEdit: FC<Props> = ({
     }
   };
 
-  const saveData = async () => {
+  const saveData = async (setLoadingData = true) => {
     setSpinning(true);
 
     const newEdges = edges.map((edge) => {
@@ -757,6 +757,7 @@ const ToolbarEdit: FC<Props> = ({
     if (thisAction === 'edit') {
       updateLifeCycleModel({ ...newData, id: thisId, version: thisVersion }).then((result: any) => {
         if (result.data) {
+          setInfoData({ ...newData, id: thisId, version: thisVersion });
           message.success(
             intl.formatMessage({
               id: 'pages.flows.savesuccess',
@@ -769,7 +770,7 @@ const ToolbarEdit: FC<Props> = ({
         } else {
           message.error(result.error.message);
         }
-        setSpinning(false);
+        if (setLoadingData) setSpinning(false);
       });
     } else if (thisAction === 'create') {
       const newId = actionType === 'createVersion' ? thisId : v4();
@@ -788,7 +789,7 @@ const ToolbarEdit: FC<Props> = ({
         } else {
           message.error(result.error.message);
         }
-        setSpinning(false);
+        if (setLoadingData) setSpinning(false);
       });
     }
     return true;
@@ -1037,8 +1038,8 @@ const ToolbarEdit: FC<Props> = ({
   }, [nodeCount]);
 
   const handelSubmitReview = async () => {
+    await saveData(false);
     setSpinning(true);
-    await saveData();
     const { checkResult } = await editInfoRef.current?.handleCheckData(infoData);
     if (checkResult) {
       await editInfoRef.current?.submitReview();
@@ -1136,7 +1137,7 @@ const ToolbarEdit: FC<Props> = ({
           size='small'
           icon={<SaveOutlined />}
           style={{ boxShadow: 'none' }}
-          onClick={saveData}
+          onClick={() => saveData(true)}
         />
       </Tooltip>
       <br />

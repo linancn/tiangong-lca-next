@@ -5,7 +5,7 @@ import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
 import { getAllRefObj, getRefTableName } from '@/pages/Utils';
 import { getCommentApi, updateCommentApi } from '@/services/comments/api';
 import { getRefData, updateStateCodeApi } from '@/services/general/api';
-import { getProcessDetail, updateProcess } from '@/services/processes/api';
+import { getProcessDetail, updateProcessJsonApi } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
 import { updateReviewApi } from '@/services/reviews/api';
 import { getUserTeamId } from '@/services/roles/api';
@@ -138,7 +138,7 @@ const ReviewProcessDetail: FC<Props> = ({
             : [_compliance, ...allCompliance],
         },
       };
-      await updateProcess(id, version, json);
+      await updateProcessJsonApi(id, version, json);
     }
   };
 
@@ -195,6 +195,7 @@ const ReviewProcessDetail: FC<Props> = ({
   };
 
   const approveReview = async () => {
+    setSpinning(true);
     const { error } = await updateCommentApi(
       reviewId,
       {
@@ -219,6 +220,7 @@ const ReviewProcessDetail: FC<Props> = ({
       setDrawerVisible(false);
       actionRef?.current?.reload();
     }
+    setSpinning(false);
   };
 
   const onReset = () => {
@@ -253,14 +255,28 @@ const ReviewProcessDetail: FC<Props> = ({
           result.data.json.processDataSet.modellingAndValidation = {
             ...result.data.json.processDataSet.modellingAndValidation,
             complianceDeclarations: {
-              compliance: Array.isArray(_compliance)
-                ? [..._compliance, ...allCompliance]
-                : [_compliance, ...allCompliance],
+              compliance:
+                tabType === 'review'
+                  ? [...(allCompliance.length ? allCompliance : [{}])]
+                  : Array.isArray(_compliance)
+                    ? [..._compliance, ...allCompliance]
+                    : [_compliance, ...allCompliance],
             },
             validation: {
-              review: Array.isArray(_review)
-                ? [..._review, ...allReviews]
-                : [_review, ...allReviews],
+              review:
+                tabType === 'review'
+                  ? [
+                      ...(allReviews.length
+                        ? allReviews
+                        : [
+                            {
+                              'common:scope': [{ '@name': undefined }],
+                            },
+                          ]),
+                    ]
+                  : Array.isArray(_review)
+                    ? [..._review, ...allReviews]
+                    : [_review, ...allReviews],
             },
           };
         }

@@ -37,7 +37,7 @@ import {
   getLifeCycleModelDetail,
   updateLifeCycleModelJsonApi,
 } from '@/services/lifeCycleModels/api';
-import { getProcessDetail, updateProcess } from '@/services/processes/api';
+import { getProcessDetail, updateProcessJsonApi } from '@/services/processes/api';
 import { getUserTeamId } from '@/services/roles/api';
 
 type Props = {
@@ -176,7 +176,7 @@ const ToolbarViewInfo: FC<Props> = ({
             : [_compliance, ...allCompliance],
         },
       };
-      await updateProcess(process?.id, process?.version, json);
+      await updateProcessJsonApi(process?.id, process?.version, json);
     }
   };
 
@@ -307,6 +307,7 @@ const ToolbarViewInfo: FC<Props> = ({
   };
 
   const approveReview = async () => {
+    setSpinning(true);
     const { error } = await updateCommentApi(
       reviewId,
       {
@@ -326,9 +327,9 @@ const ToolbarViewInfo: FC<Props> = ({
           defaultMessage: 'Review approved successfully',
         }),
       );
-      setDrawerVisible(false);
       actionRef?.current?.reload();
     }
+    setSpinning(false);
   };
 
   const tabList = [

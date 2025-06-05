@@ -351,14 +351,28 @@ const ToolbarView: FC<Props> = ({
             result.data.json.lifeCycleModelDataSet.modellingAndValidation = {
               ...result.data.json.lifeCycleModelDataSet.modellingAndValidation,
               complianceDeclarations: {
-                compliance: Array.isArray(_compliance)
-                  ? [..._compliance, ...allCompliance]
-                  : [_compliance, ...allCompliance],
+                compliance:
+                  tabType === 'review'
+                    ? [...(allCompliance.length ? allCompliance : [{}])]
+                    : Array.isArray(_compliance)
+                      ? [..._compliance, ...allCompliance]
+                      : [_compliance, ...allCompliance],
               },
               validation: {
-                review: Array.isArray(_review)
-                  ? [..._review, ...allReviews]
-                  : [_review, ...allReviews],
+                review:
+                  tabType === 'review'
+                    ? [
+                        ...(allReviews.length
+                          ? allReviews
+                          : [
+                              {
+                                'common:scope': [{ '@name': undefined }],
+                              },
+                            ]),
+                      ]
+                    : Array.isArray(_review)
+                      ? [..._review, ...allReviews]
+                      : [_review, ...allReviews],
               },
             };
           }
