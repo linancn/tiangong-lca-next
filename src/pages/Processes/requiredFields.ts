@@ -38,7 +38,7 @@ const requiredFields = {
   'administrativeInformation.publicationAndOwnership.common:licenseType':
     'administrativeInformation',
 
-  'modellingAndValidation.validation.review': 'validation',
+  // 'modellingAndValidation.validation.review': 'validation',
   // 'modellingAndValidation.validation.review.@type': 'validation',
   // 'modellingAndValidation.validation.review.scope.@type': 'validation',
   // 'modellingAndValidation.validation.review.scope.@name': 'validation',
@@ -47,7 +47,7 @@ const requiredFields = {
   // 'modellingAndValidation.validation.review.common:referenceToNameOfReviewerAndInstitution': 'validation',
   // 'modellingAndValidation.validation.review.common:referenceToCompleteReviewReport': 'validation',
 
-  'modellingAndValidation.complianceDeclarations.compliance': 'complianceDeclarations',
+  // 'modellingAndValidation.complianceDeclarations.compliance': 'complianceDeclarations',
   // 'modellingAndValidation.complianceDeclarations.compliance.common:referenceToComplianceSystem': 'complianceDeclarations',
   // 'modellingAndValidation.complianceDeclarations.compliance.common:approvalOfOverallCompliance': 'complianceDeclarations',
   // 'modellingAndValidation.complianceDeclarations.compliance.common:nomenclatureCompliance': 'complianceDeclarations',

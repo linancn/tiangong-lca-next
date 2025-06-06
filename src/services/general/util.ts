@@ -634,7 +634,11 @@ export function getRuleVerification(schema: any, data: any) {
       }
     }
 
-    if (isEmpty(value)) {
+    if (
+      isEmpty(value) &&
+      !path.includes('modellingAndValidation.validation.review') &&
+      !path.includes('modellingAndValidation.complianceDeclarations.compliance')
+    ) {
       result.valid = false;
       result.errors.push({
         path,
