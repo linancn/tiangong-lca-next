@@ -315,7 +315,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
       setSpinning(false);
       return;
     }
-    const lifeCycleModelStateCode = lifeCycleModelDetail?.data?.state_code + 20;
+    const lifeCycleModelStateCode = 20;
 
     await updateLifeCycleModelStateCode(data.id, data.version, lifeCycleModelStateCode);
 
