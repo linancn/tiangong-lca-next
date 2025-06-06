@@ -402,7 +402,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
             )} */}
             {action === 'edit' ? (
               <>
-                <Button onClick={handleCheckData}>
+                <Button onClick={() => handleCheckData(fromData)}>
                   <FormattedMessage id='pages.button.check' defaultMessage='Data check' />
                 </Button>
 
