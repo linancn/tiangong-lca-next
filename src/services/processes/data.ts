@@ -29,4 +29,5 @@ export type ProcessExchangeTable = {
   quantitativeReference: boolean;
   functionalUnitOrOther: any;
   refUnitRes?: any;
+  stateCode: number;
 };

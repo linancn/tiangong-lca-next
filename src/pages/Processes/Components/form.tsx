@@ -8,6 +8,7 @@ import AlignedNumber from '@/components/AlignedNumber';
 import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import RequiredMark from '@/components/RequiredMark';
 import { getRules } from '@/pages/Utils';
+import { getFlowStateCodeByIdsAndVersions } from '@/services/flows/api';
 import { ListPagination } from '@/services/general/data';
 import { getLangText, getUnitData } from '@/services/general/util';
 import { getProcessExchange } from '@/services/processes/api';
@@ -247,6 +248,34 @@ export const ProcessForm: FC<Props> = ({
       search: false,
       render: (_, row) => {
         return <QuantitativeReferenceIcon value={row.quantitativeReference} />;
+      },
+    },
+    {
+      title: (
+        <FormattedMessage id='pages.process.exchange.reviewType' defaultMessage='Review type' />
+      ),
+      dataIndex: 'reviewType',
+      sorter: false,
+      search: false,
+      width: 80,
+      render: (_, row) => {
+        return (
+          <>
+            {row?.stateCode === 100 || row?.stateCode === 200 ? (
+              <FormattedMessage
+                id='pages.process.exchange.reviewType.reviewed'
+                defaultMessage='Reviewed'
+              />
+            ) : typeof row?.stateCode === 'number' ? (
+              <FormattedMessage
+                id='pages.process.exchange.reviewType.unreviewed'
+                defaultMessage='Unreviewed'
+              />
+            ) : (
+              '-'
+            )}
+          </>
+        );
       },
     },
     {
@@ -1958,11 +1987,33 @@ export const ProcessForm: FC<Props> = ({
                       params,
                     ).then((res: any) => {
                       return getUnitData('flow', res?.data).then((unitRes: any) => {
-                        return {
-                          ...res,
-                          data: unitRes,
-                          success: true,
-                        };
+                        const flows = exchangeDataSource.map((item: any) => {
+                          return {
+                            id: item?.referenceToFlowDataSet?.['@refObjectId'],
+                            version: item?.referenceToFlowDataSet?.['@version'],
+                          };
+                        });
+                        return getFlowStateCodeByIdsAndVersions(flows).then(
+                          ({ error, data: flowsResp }: any) => {
+                            if (!error) {
+                              unitRes.forEach((item: any) => {
+                                const flow = flowsResp.find(
+                                  (flow: any) =>
+                                    flow.id === item?.referenceToFlowDataSetId &&
+                                    flow.version === item?.referenceToFlowDataSetVersion,
+                                );
+                                if (flow) {
+                                  item.stateCode = flow.state_code;
+                                }
+                              });
+                            }
+                            return {
+                              ...res,
+                              data: unitRes,
+                              success: true,
+                            };
+                          },
+                        );
                       });
                     });
                   }}
@@ -2005,11 +2056,33 @@ export const ProcessForm: FC<Props> = ({
                       params,
                     ).then((res: any) => {
                       return getUnitData('flow', res?.data).then((unitRes: any) => {
-                        return {
-                          ...res,
-                          data: unitRes,
-                          success: true,
-                        };
+                        const flows = exchangeDataSource.map((item: any) => {
+                          return {
+                            id: item?.referenceToFlowDataSet?.['@refObjectId'],
+                            version: item?.referenceToFlowDataSet?.['@version'],
+                          };
+                        });
+                        return getFlowStateCodeByIdsAndVersions(flows).then(
+                          ({ error, data: flowsResp }: any) => {
+                            if (!error) {
+                              unitRes.forEach((item: any) => {
+                                const flow = flowsResp.find(
+                                  (flow: any) =>
+                                    flow.id === item?.referenceToFlowDataSetId &&
+                                    flow.version === item?.referenceToFlowDataSetVersion,
+                                );
+                                if (flow) {
+                                  item.stateCode = flow.state_code;
+                                }
+                              });
+                            }
+                            return {
+                              ...res,
+                              data: unitRes,
+                              success: true,
+                            };
+                          },
+                        );
                       });
                     });
                   }}
