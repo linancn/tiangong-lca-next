@@ -116,7 +116,6 @@ export const checkRequiredFields = (requiredFields: any, formData: any) => {
   }
   for (let field of Object.keys(requiredFields)) {
     const value = get(formData, field);
-    // console.log('checkRequiredFields', field, value,formData)
     if (field === 'modellingAndValidation.validation.review') {
       const { checkResult, tabName } = checkValidationFields(value);
       if (!checkResult) {
