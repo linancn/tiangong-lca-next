@@ -14,6 +14,9 @@ export default {
   'pages.process.exchange.resultingAmount': 'Resulting amount',
   'pages.process.exchange.meanAmount': 'Mean amount',
   'pages.process.exchange.quantitativeReference': 'Quantitative reference',
+  'pages.process.exchange.reviewType': 'Review type',
+  'pages.process.exchange.reviewType.reviewed': 'Reviewed',
+  'pages.process.exchange.reviewType.unreviewed': 'Unreviewed',
   'pages.process.exchange.uncertaintyDistributionType': 'Uncertainty distribution type',
   'pages.process.exchange.dataDerivationTypeStatus': 'Data derivation type / status',
 

@@ -696,3 +696,17 @@ export async function getReferenceProperty(id: string, version: string) {
     });
   }
 }
+export async function getFlowStateCodeByIdsAndVersions(params: { id: string; version: string }[]) {
+  const res = await supabase
+    .from('flows')
+    .select('state_code,id,version')
+    .in(
+      'id',
+      params.map((item) => item.id),
+    )
+    .in(
+      'version',
+      params.map((item) => item.version),
+    );
+  return res;
+}

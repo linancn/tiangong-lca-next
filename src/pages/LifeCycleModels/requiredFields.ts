@@ -40,8 +40,8 @@ const requiredFields = {
   'administrativeInformation.publicationAndOwnership.common:licenseType':
     'administrativeInformation',
 
-  'modellingAndValidation.validation.review': 'validation',
-  'modellingAndValidation.complianceDeclarations.compliance': 'complianceDeclarations',
+  // 'modellingAndValidation.validation.review': 'validation',
+  // 'modellingAndValidation.complianceDeclarations.compliance': 'complianceDeclarations',
 };
 
 export default requiredFields;

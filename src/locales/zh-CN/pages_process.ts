@@ -14,6 +14,9 @@ export default {
   'pages.process.exchange.resultingAmount': '结果量',
   'pages.process.exchange.meanAmount': '平均量',
   'pages.process.exchange.quantitativeReference': '量值参考',
+  'pages.process.exchange.reviewType': '审核类型',
+  'pages.process.exchange.reviewType.reviewed': '已审核',
+  'pages.process.exchange.reviewType.unreviewed': '未审核',
   'pages.process.exchange.uncertaintyDistributionType': '不确定性分布类型',
   'pages.process.exchange.dataDerivationTypeStatus': '数据推导类型/状态 ',
 

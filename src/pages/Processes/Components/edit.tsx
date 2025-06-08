@@ -376,14 +376,9 @@ const ProcessEdit: FC<Props> = ({
       const result = await addReviewsApi(reviewId, id, version);
       if (result?.error) return;
 
-      const { error, data } = await updateProcessStateCode(
-        id,
-        version,
-        reviewId,
-        initData.stateCode + 20,
-      );
+      const { error, data } = await updateProcessStateCode(id, version, reviewId, 20);
 
-      let stateCode = 0;
+      let stateCode = 20;
       if (!error && data && data.length) {
         stateCode = data[0]?.state_code;
 
