@@ -4,22 +4,21 @@ import LocationTextItemForm from '@/components/LocationTextItem/form';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
-import AlignedNumber from '@/components/AlignedNumber';
-import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import RequiredMark from '@/components/RequiredMark';
 import { getRules } from '@/pages/Utils';
 import { getFlowStateCodeByIdsAndVersions } from '@/services/flows/api';
 import { ListPagination } from '@/services/general/data';
-import { getLangText, getUnitData } from '@/services/general/util';
+import { getUnitData } from '@/services/general/util';
 import { getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData } from '@/services/processes/util';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
-import { Card, Collapse, Divider, Form, Input, Select, Space, theme, Tooltip } from 'antd';
+import { Card, Collapse, Divider, Form, Input, Select, Space, theme } from 'antd';
 import { useEffect, useRef, useState, type FC } from 'react';
 import { FormattedMessage } from 'umi';
 import schema from '../processes_schema.json';
 import ComplianceItemForm from './Compliance/form';
+import { getExchangeColumns } from './Exchange/column';
 import ProcessExchangeCreate from './Exchange/create';
 import ProcessExchangeDelete from './Exchange/delete';
 import ProcessExchangeEdit from './Exchange/edit';
@@ -123,161 +122,9 @@ export const ProcessForm: FC<Props> = ({
       ),
     },
   ];
+  const baseProcessExchangeColumns = getExchangeColumns(lang);
   const processExchangeColumns: ProColumns<ProcessExchangeTable>[] = [
-    {
-      title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
-      dataIndex: 'index',
-      valueType: 'index',
-      search: false,
-    },
-    // {
-    //   title: <FormattedMessage id="processExchange.dataSetInternalID" defaultMessage="DataSet Internal ID" />,
-    //   dataIndex: 'dataSetInternalID',
-    //   search: false,
-    // },
-    // {
-    //   title: (
-    //     <FormattedMessage
-    //       id="pages.process.exchange.exchangeDirection"
-    //       defaultMessage="Direction"
-    //     />
-    //   ),
-    //   dataIndex: 'exchangeDirection',
-    //   sorter: false,
-    //   search: false,
-    // },
-    {
-      title: <FormattedMessage id='processExchange.referenceToFlowDataSet' defaultMessage='Flow' />,
-      dataIndex: 'referenceToFlowDataSet',
-      sorter: false,
-      search: false,
-      render: (_, row) => [
-        <Tooltip key={0} placement='topLeft' title={row.generalComment}>
-          {row.referenceToFlowDataSet}
-        </Tooltip>,
-      ],
-    },
-    {
-      title: <FormattedMessage id='pages.table.title.version' defaultMessage='Version' />,
-      dataIndex: 'referenceToFlowDataSetVersion',
-      sorter: false,
-      search: false,
-    },
-    {
-      title: (
-        <FormattedMessage id='pages.process.exchange.meanAmount' defaultMessage='Mean amount' />
-      ),
-      dataIndex: 'meanAmount',
-      align: 'right',
-      sorter: false,
-      search: false,
-      width: 140,
-      render: (_: any, record: any) => {
-        return <AlignedNumber number={record.meanAmount} />;
-      },
-    },
-    {
-      title: (
-        <FormattedMessage
-          id='pages.process.exchange.resultingAmount'
-          defaultMessage='Resulting amount'
-        />
-      ),
-      dataIndex: 'resultingAmount',
-      align: 'right',
-      sorter: false,
-      search: false,
-      width: 140,
-      render: (_: any, record: any) => {
-        return <AlignedNumber number={record.resultingAmount} />;
-      },
-    },
-    {
-      title: (
-        <FormattedMessage
-          id='pages.flowproperty.referenceToReferenceUnitGroup'
-          defaultMessage='Reference unit'
-        />
-      ),
-      dataIndex: 'refUnitGroup',
-      sorter: false,
-      search: false,
-      render: (_, row) => {
-        return [
-          // <ReferenceUnit
-          //   key={0}
-          //   id={row.referenceToFlowDataSetId}
-          //   version={row.referenceToFlowDataSetVersion}
-          //   idType={'flow'}
-          //   lang={lang}
-          // />,
-          <span key={1}>
-            {getLangText(row.refUnitRes?.name, lang)} (
-            <Tooltip
-              placement='topLeft'
-              title={getLangText(row.refUnitRes?.refUnitGeneralComment, lang)}
-            >
-              {row.refUnitRes?.refUnitName}
-            </Tooltip>
-            )
-          </span>,
-        ];
-      },
-    },
-
-    {
-      title: (
-        <FormattedMessage
-          id='pages.process.exchange.dataDerivationTypeStatus'
-          defaultMessage='Data derivation type / status'
-        />
-      ),
-      dataIndex: 'dataDerivationTypeStatus',
-      sorter: false,
-      search: false,
-    },
-    {
-      title: (
-        <FormattedMessage
-          id='pages.process.exchange.quantitativeReference'
-          defaultMessage='Quantitative reference'
-        />
-      ),
-      dataIndex: 'quantitativeReference',
-      sorter: false,
-      search: false,
-      render: (_, row) => {
-        return <QuantitativeReferenceIcon value={row.quantitativeReference} />;
-      },
-    },
-    {
-      title: (
-        <FormattedMessage id='pages.process.exchange.reviewType' defaultMessage='Review type' />
-      ),
-      dataIndex: 'reviewType',
-      sorter: false,
-      search: false,
-      width: 80,
-      render: (_, row) => {
-        return (
-          <>
-            {row?.stateCode === 100 || row?.stateCode === 200 ? (
-              <FormattedMessage
-                id='pages.process.exchange.reviewType.reviewed'
-                defaultMessage='Reviewed'
-              />
-            ) : typeof row?.stateCode === 'number' ? (
-              <FormattedMessage
-                id='pages.process.exchange.reviewType.unreviewed'
-                defaultMessage='Unreviewed'
-              />
-            ) : (
-              '-'
-            )}
-          </>
-        );
-      },
-    },
+    ...baseProcessExchangeColumns,
     {
       title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
       dataIndex: 'option',

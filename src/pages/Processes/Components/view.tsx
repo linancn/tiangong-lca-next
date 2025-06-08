@@ -4,10 +4,9 @@ import LocationTextItemDescription from '@/components/LocationTextItem/descripti
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
-import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import { getFlowStateCodeByIdsAndVersions } from '@/services/flows/api';
 import { ListPagination } from '@/services/general/data';
-import { getLangText, getUnitData } from '@/services/general/util';
+import { getUnitData } from '@/services/general/util';
 import { getProcessDetail, getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData, genProcessFromData } from '@/services/processes/util';
@@ -25,6 +24,7 @@ import {
   uncertaintyDistributionTypeOptions,
 } from './optiondata';
 
+import { getExchangeColumns } from './Exchange/column';
 import {
   copyrightOptions,
   LCIMethodApproachOptions,
@@ -132,149 +132,9 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
   };
-
+  const baseProcessExchangeColumns = getExchangeColumns(lang);
   const processExchangeColumns: ProColumns<ProcessExchangeTable>[] = [
-    {
-      title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
-      dataIndex: 'index',
-      valueType: 'index',
-      search: false,
-    },
-    // {
-    //   title: <FormattedMessage id="processExchange.dataSetInternalID" defaultMessage="DataSet Internal ID" />,
-    //   dataIndex: 'dataSetInternalID',
-    //   search: false,
-    // },
-    {
-      title: (
-        <FormattedMessage
-          id='pages.process.exchange.exchangeDirection'
-          defaultMessage='Direction'
-        />
-      ),
-      dataIndex: 'exchangeDirection',
-      sorter: false,
-      search: false,
-    },
-    {
-      title: <FormattedMessage id='processExchange.referenceToFlowDataSet' defaultMessage='Flow' />,
-      dataIndex: 'referenceToFlowDataSet',
-      sorter: false,
-      search: false,
-      render: (_, row) => [
-        <Tooltip key={0} placement='topLeft' title={row.generalComment}>
-          {row.referenceToFlowDataSet}
-        </Tooltip>,
-      ],
-    },
-    {
-      title: <FormattedMessage id='processExchange.meanAmount' defaultMessage='Mean amount' />,
-      dataIndex: 'meanAmount',
-      sorter: false,
-      search: false,
-    },
-    {
-      title: (
-        <FormattedMessage
-          id='pages.flowproperty.referenceToReferenceUnitGroup'
-          defaultMessage='Reference unit'
-        />
-      ),
-      dataIndex: 'refUnitGroup',
-      sorter: false,
-      search: false,
-      render: (_, row) => {
-        return [
-          // <ReferenceUnit
-          //   key={0}
-          //   id={row.referenceToFlowDataSetId}
-          //   version={row.referenceToFlowDataSetVersion}
-          //   idType={'flow'}
-          //   lang={lang}
-          // />,
-          <span key={1}>
-            {getLangText(row.refUnitRes?.name, lang)} (
-            <Tooltip
-              placement='topLeft'
-              title={getLangText(row.refUnitRes?.refUnitGeneralComment, lang)}
-            >
-              {row.refUnitRes?.refUnitName}
-            </Tooltip>
-            )
-          </span>,
-        ];
-      },
-    },
-
-    {
-      title: (
-        <FormattedMessage
-          id='processExchange.dataDerivationTypeStatus'
-          defaultMessage='Data derivation type / status'
-        />
-      ),
-      dataIndex: 'dataDerivationTypeStatus',
-      sorter: false,
-      search: false,
-    },
-    {
-      title: (
-        <FormattedMessage
-          id='processExchange.uncertaintyDistributionType'
-          defaultMessage='Uncertainty distribution type'
-        />
-      ),
-      dataIndex: 'uncertaintyDistributionType',
-      sorter: false,
-      search: false,
-    },
-    {
-      title: (
-        <FormattedMessage
-          id='processExchange.quantitativeReference'
-          defaultMessage='Quantitative reference'
-        />
-      ),
-      dataIndex: 'quantitativeReference',
-      sorter: false,
-      search: false,
-      render: (_, row) => {
-        return (
-          <QuantitativeReferenceIcon
-            tooltipTitle={row.functionalUnitOrOther}
-            value={row.quantitativeReference}
-          />
-        );
-      },
-    },
-    {
-      title: (
-        <FormattedMessage id='pages.process.exchange.reviewType' defaultMessage='Review type' />
-      ),
-      dataIndex: 'reviewType',
-      sorter: false,
-      search: false,
-      width: 80,
-      render: (_, row) => {
-        return (
-          <>
-            {row?.stateCode === 100 || row?.stateCode === 200 ? (
-              <FormattedMessage
-                id='pages.process.exchange.reviewType.reviewed'
-                defaultMessage='Reviewed'
-              />
-            ) : typeof row?.stateCode === 'number' ? (
-              <FormattedMessage
-                id='pages.process.exchange.reviewType.unreviewed'
-                defaultMessage='Unreviewed'
-              />
-            ) : (
-              '-'
-            )}
-          </>
-        );
-      },
-    },
+    ...baseProcessExchangeColumns,
     {
       title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
       dataIndex: 'option',
@@ -285,23 +145,9 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
             <ProcessExchangeView
               id={row.dataSetInternalID}
               data={exchangeDataSource}
-              // dataSource={'my'}
               buttonType={'icon'}
               lang={lang}
             />
-            {/* <ProcessEdit
-                id={row.id}
-                lang={lang}
-                buttonType={'icon'}
-                actionRef={actionRef}
-                setViewDrawerVisible={() => { }}
-              />
-              <ProcessDelete
-                id={row.id}
-                buttonType={'icon'}
-                actionRef={actionRef}
-                setViewDrawerVisible={() => { }}
-              /> */}
           </Space>,
         ];
       },
