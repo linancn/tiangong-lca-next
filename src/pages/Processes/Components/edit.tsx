@@ -550,58 +550,59 @@ const ProcessEdit: FC<Props> = ({
         }
       >
         <Spin spinning={spinning}>
-          {unRuleVerificationData && unRuleVerificationData.length > 0 && (
+          {(unRuleVerificationData && unRuleVerificationData.length > 0) ||
+          (nonExistentRefData && nonExistentRefData.length > 0) ? (
             <>
               <Collapse
                 items={[
                   {
                     key: '1',
                     label: intl.formatMessage({
-                      id: 'pages.process.review.unRuleVerification.tip',
-                      defaultMessage:
-                        'The following data is incomplete, please modify and resubmit for review',
+                      id: 'pages.process.review.verify.title',
+                      defaultMessage: 'Data verification details',
                     }),
                     children: (
-                      <Typography>
-                        {unRuleVerificationData.map((item: any) => (
-                          <Paragraph
-                            key={item['@refObjectId']}
-                          >{`${item['@type']} : ${item['@refObjectId']}`}</Paragraph>
-                        ))}
-                      </Typography>
+                      <>
+                        {unRuleVerificationData && unRuleVerificationData.length > 0 && (
+                          <Typography>
+                            <Paragraph>
+                              <FormattedMessage
+                                id='pages.process.review.unRuleVerification.tip'
+                                defaultMessage='The following referenced data is incomplete, please complete it'
+                              />
+                              {unRuleVerificationData?.map((item: any) => (
+                                <div key={item['@refObjectId']}>
+                                  {`${item['@type']} : ${item['@refObjectId']}`}{' '}
+                                  {`${item['@version']}`}
+                                </div>
+                              ))}
+                            </Paragraph>
+                          </Typography>
+                        )}
+                        {nonExistentRefData && nonExistentRefData.length > 0 && (
+                          <Typography>
+                            <Paragraph>
+                              <FormattedMessage
+                                id='pages.process.review.nonExistentRefData.tip'
+                                defaultMessage='The following data does not exist, please check'
+                              />
+                              {nonExistentRefData?.map((item: any) => (
+                                <div key={item['@refObjectId']}>
+                                  {`${item['@type']} : ${item['@refObjectId']}`}{' '}
+                                  {`${item['@version']}`}
+                                </div>
+                              ))}
+                            </Paragraph>
+                          </Typography>
+                        )}
+                      </>
                     ),
                   },
                 ]}
               />
               <br />
             </>
-          )}
-          {nonExistentRefData && nonExistentRefData.length > 0 && (
-            <>
-              <Collapse
-                items={[
-                  {
-                    key: '1',
-                    label: intl.formatMessage({
-                      id: 'pages.process.review.nonExistentRefData.tip',
-                      defaultMessage:
-                        'The following data is incomplete, please modify and resubmit for review',
-                    }),
-                    children: (
-                      <Typography>
-                        {nonExistentRefData.map((item: any) => (
-                          <Paragraph
-                            key={item['@refObjectId']}
-                          >{`${item['@type']} : ${item['@refObjectId']}`}</Paragraph>
-                        ))}
-                      </Typography>
-                    ),
-                  },
-                ]}
-              />
-              <br />
-            </>
-          )}
+          ) : null}
           <UpdateReferenceContext.Provider value={{ referenceValue }}>
             <ProForm
               formRef={formRefEdit}
