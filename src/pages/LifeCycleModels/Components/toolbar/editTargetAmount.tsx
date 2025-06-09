@@ -7,6 +7,7 @@ import styles from '@/style/custom.less';
 import { CloseOutlined, StarOutlined } from '@ant-design/icons';
 import { ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Descriptions, Divider, Drawer, Form, Input, Space, Tooltip } from 'antd';
+import BigNumber from 'bignumber.js';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -113,7 +114,13 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
           }}
           onValuesChange={(value, values) => {
             if (!value?.scalingFactor) {
-              const scalingFactor = values?.targetAmount / values?.originalAmount;
+              const targetAmount = new BigNumber(values?.targetAmount || 0);
+              const originalAmount = new BigNumber(values?.originalAmount || 1);
+
+              const scalingFactor = originalAmount.isZero()
+                ? '0'
+                : targetAmount.dividedBy(originalAmount).toString();
+
               formRefEdit.current?.setFieldsValue({ scalingFactor: scalingFactor });
             }
           }}
