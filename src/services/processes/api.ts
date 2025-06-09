@@ -477,6 +477,9 @@ export async function getProcessTablePgroongaSearch(
               referenceYear: dataInfo?.time?.['common:referenceYear'] ?? '-',
               location: location ?? '-',
               version: i.version,
+              typeOfDataSet:
+                i?.json?.processDataSet?.modellingAndValidation?.LCIMethodAndAllocation
+                  ?.typeOfDataSet ?? '-',
               modifiedAt: new Date(i?.modified_at),
               teamId: i?.team_id,
             };
@@ -519,6 +522,9 @@ export async function getProcessTablePgroongaSearch(
             referenceYear: dataInfo?.time?.['common:referenceYear'] ?? '-',
             location: location ?? '-',
             version: i.version,
+            typeOfDataSet:
+              i?.json?.processDataSet?.modellingAndValidation?.LCIMethodAndAllocation
+                ?.typeOfDataSet ?? '-',
             modifiedAt: new Date(i?.modified_at),
             teamId: i?.team_id,
           };
@@ -630,6 +636,9 @@ export async function process_hybrid_search(
               referenceYear: dataInfo?.time?.['common:referenceYear'] ?? '-',
               location: location ?? '-',
               version: i.version,
+              typeOfDataSet:
+                i?.json?.processDataSet?.modellingAndValidation?.LCIMethodAndAllocation
+                  ?.typeOfDataSet ?? '-',
               modifiedAt: new Date(i?.modified_at),
               teamId: i?.team_id,
             };
@@ -672,6 +681,9 @@ export async function process_hybrid_search(
             referenceYear: dataInfo?.time?.['common:referenceYear'] ?? '-',
             location: location ?? '-',
             version: i.version,
+            typeOfDataSet:
+              i?.json?.processDataSet?.modellingAndValidation?.LCIMethodAndAllocation
+                ?.typeOfDataSet ?? '-',
             modifiedAt: new Date(i?.modified_at),
             teamId: i?.team_id,
           };
