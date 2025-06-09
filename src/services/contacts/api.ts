@@ -51,7 +51,7 @@ export async function getContactTableAll(
   lang: string,
   dataSource: string,
   tid: string | [],
-  stateCode: string | number,
+  stateCode?: string | number,
 ) {
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
   const orderBy = sort[sortBy] ?? 'descend';
@@ -183,7 +183,7 @@ export async function getContactTablePgroongaSearch(
   dataSource: string,
   queryText: string,
   filterCondition: any,
-  stateCode: string | number,
+  stateCode?: string | number,
 ) {
   let result: any = {};
   const session = await supabase.auth.getSession();
@@ -272,7 +272,7 @@ export async function contact_hybrid_search(
   dataSource: string,
   queryText: string,
   filterCondition: any,
-  stateCode: string | number,
+  stateCode?: string | number,
 ) {
   let result: any = {};
   const session = await supabase.auth.getSession();

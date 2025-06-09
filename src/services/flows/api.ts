@@ -283,7 +283,7 @@ export async function getFlowTablePgroongaSearch(
   dataSource: string,
   queryText: string,
   filter: any,
-  stateCode: string | number,
+  stateCode?: string | number,
 ) {
   let result: any = {};
   const session = await supabase.auth.getSession();
@@ -457,7 +457,7 @@ export async function flow_hybrid_search(
   dataSource: string,
   query: string,
   filter: any,
-  stateCode: string | number,
+  stateCode?: string | number,
 ) {
   let result: any = {};
   const session = await supabase.auth.getSession();
