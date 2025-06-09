@@ -344,12 +344,12 @@ const ToolbarView: FC<Props> = ({
           );
           if (result?.data?.json?.lifeCycleModelDataSet) {
             const _compliance =
-              result.data.json.lifeCycleModelDataSet?.modellingAndValidation?.complianceDeclarations
-                .compliance;
+              result?.data?.json?.lifeCycleModelDataSet?.modellingAndValidation
+                ?.complianceDeclarations?.compliance;
             const _review =
-              result.data.json.lifeCycleModelDataSet?.modellingAndValidation?.validation?.review;
+              result?.data?.json?.lifeCycleModelDataSet?.modellingAndValidation?.validation?.review;
             result.data.json.lifeCycleModelDataSet.modellingAndValidation = {
-              ...result.data.json.lifeCycleModelDataSet.modellingAndValidation,
+              ...result?.data?.json?.lifeCycleModelDataSet?.modellingAndValidation,
               complianceDeclarations: {
                 compliance:
                   tabType === 'review'
