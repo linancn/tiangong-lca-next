@@ -2,6 +2,7 @@ import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
 import ExportData from '@/components/ExportData';
 import ImportData from '@/components/ImportData';
+import TableFilter from '@/components/TableFilter';
 import {
   contact_hybrid_search,
   getContactTableAll,
@@ -28,6 +29,7 @@ import ContactView from './Components/view';
 const { Search } = Input;
 
 const TableList: FC = () => {
+  const [stateCode, setStateCode] = useState<string | number>('all');
   const [keyWord, setKeyWord] = useState<any>('');
   const [team, setTeam] = useState<any>(null);
   const [importData, setImportData] = useState<any>(null);
@@ -291,6 +293,13 @@ const TableList: FC = () => {
         toolBarRender={() => {
           if (dataSource === 'my') {
             return [
+              <TableFilter
+                key={2}
+                onChange={async (val) => {
+                  await setStateCode(val);
+                  actionRef.current?.reload();
+                }}
+              />,
               <ContactCreate
                 isInToolbar={true}
                 importData={importData}
@@ -313,11 +322,11 @@ const TableList: FC = () => {
         ) => {
           if (keyWord.length > 0) {
             if (openAI) {
-              return contact_hybrid_search(params, lang, dataSource, keyWord, {});
+              return contact_hybrid_search(params, lang, dataSource, keyWord, {}, stateCode);
             }
-            return getContactTablePgroongaSearch(params, lang, dataSource, keyWord, {});
+            return getContactTablePgroongaSearch(params, lang, dataSource, keyWord, {}, stateCode);
           }
-          return getContactTableAll(params, sort, lang, dataSource, tid ?? '');
+          return getContactTableAll(params, sort, lang, dataSource, tid ?? '', stateCode);
         }}
         columns={contactColumns}
       />
