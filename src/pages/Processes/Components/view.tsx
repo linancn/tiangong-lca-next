@@ -16,7 +16,10 @@ import { Button, Card, Collapse, Descriptions, Divider, Drawer, Space, Spin, Too
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
+import ComplianceItemView from './Compliance/view';
 import ProcessExchangeView from './Exchange/view';
+import ReviewItemView from './Review/view';
+
 import {
   completenessElementaryFlowsTypeOptions,
   completenessElementaryFlowsValueOptions,
@@ -126,6 +129,19 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
     {
       key: 'exchanges',
       tab: <FormattedMessage id='pages.process.view.exchanges' defaultMessage='Exchanges' />,
+    },
+    {
+      key: 'validation',
+      tab: <FormattedMessage id='pages.process.validation' defaultMessage='Validation' />,
+    },
+    {
+      key: 'complianceDeclarations',
+      tab: (
+        <FormattedMessage
+          id='pages.process.complianceDeclarations'
+          defaultMessage='Compliance declarations'
+        />
+      ),
     },
   ];
 
@@ -1555,6 +1571,12 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
           ]}
         />
       </>
+    ),
+    validation: <ReviewItemView data={initData?.modellingAndValidation?.validation?.review} />,
+    complianceDeclarations: (
+      <ComplianceItemView
+        data={initData?.modellingAndValidation?.complianceDeclarations?.compliance}
+      />
     ),
   };
 
