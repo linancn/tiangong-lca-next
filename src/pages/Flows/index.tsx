@@ -11,6 +11,7 @@ import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
 import ExportData from '@/components/ExportData';
 import ImportData from '@/components/ImportData';
+import TableFilter from '@/components/TableFilter';
 import { FlowTable } from '@/services/flows/data';
 import { contributeSource } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
@@ -38,7 +39,7 @@ const TableList: FC = () => {
   const { token } = theme.useToken();
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
-
+  const [stateCode, setStateCode] = useState<string | number>('all');
   const searchParams = new URLSearchParams(location.search);
   const tid = searchParams.get('tid');
 
@@ -323,6 +324,13 @@ const TableList: FC = () => {
         toolBarRender={() => {
           if (dataSource === 'my') {
             return [
+              <TableFilter
+                key={2}
+                onChange={async (val) => {
+                  await setStateCode(val);
+                  actionRef.current?.reload();
+                }}
+              />,
               <FlowsCreate
                 isInToolbar={true}
                 importData={importData}
@@ -347,13 +355,27 @@ const TableList: FC = () => {
           const flowTypeFilter = filter?.flowType ? filter.flowType.join(',') : '';
           if (keyWord.length > 0) {
             if (openAI) {
-              return flow_hybrid_search(params, lang, dataSource, keyWord, {
-                flowType: flowTypeFilter,
-              });
+              return flow_hybrid_search(
+                params,
+                lang,
+                dataSource,
+                keyWord,
+                {
+                  flowType: flowTypeFilter,
+                },
+                stateCode,
+              );
             }
-            return getFlowTablePgroongaSearch(params, lang, dataSource, keyWord, {
-              flowType: flowTypeFilter,
-            });
+            return getFlowTablePgroongaSearch(
+              params,
+              lang,
+              dataSource,
+              keyWord,
+              {
+                flowType: flowTypeFilter,
+              },
+              stateCode,
+            );
           }
 
           const sortFields: Record<string, string> = {
@@ -372,9 +394,17 @@ const TableList: FC = () => {
             }
           }
 
-          return getFlowTableAll(params, convertedSort, lang, dataSource, tid ?? '', {
-            flowType: flowTypeFilter,
-          });
+          return getFlowTableAll(
+            params,
+            convertedSort,
+            lang,
+            dataSource,
+            tid ?? '',
+            {
+              flowType: flowTypeFilter,
+            },
+            stateCode,
+          );
         }}
         columns={flowsColumns}
       />

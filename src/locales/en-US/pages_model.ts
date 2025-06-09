@@ -3,6 +3,8 @@ export default {
   'pages.lifeCycleModel.view.lifeCycleModelInformation': 'Life cycle model information',
   'pages.lifeCycleModel.view.modellingAndValidation': 'Modelling',
   'pages.lifeCycleModel.view.administrativeInformation': 'Administrative information',
+  'pages.lifeCycleModel.view.validation': 'Validation',
+  'pages.lifeCycleModel.view.complianceDeclarations': 'Compliance declarations',
   'pages.lifeCycleModel.information.name': 'Name',
   'pages.lifeCycleModel.information.baseName': 'Base name',
   'pages.lifeCycleModel.information.treatmentStandardsRoutes': 'Treatment, standards, routes',

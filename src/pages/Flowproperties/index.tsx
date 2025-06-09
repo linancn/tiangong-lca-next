@@ -20,6 +20,7 @@ import type { FC } from 'react';
 // import ReferenceUnit from '../Unitgroups/Components/Unit/reference';
 import ExportData from '@/components/ExportData';
 import ImportData from '@/components/ImportData';
+import TableFilter from '@/components/TableFilter';
 import { getUnitData } from '@/services/general/util';
 import { TableDropdown } from '@ant-design/pro-table';
 import { theme } from 'antd';
@@ -33,6 +34,7 @@ const { Search } = Input;
 
 const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<any>('');
+  const [stateCode, setStateCode] = useState<string | number>('all');
   const [team, setTeam] = useState<any>(null);
   const [importData, setImportData] = useState<any>(null);
   const [openAI, setOpenAI] = useState<boolean>(false);
@@ -323,6 +325,13 @@ const TableList: FC = () => {
         toolBarRender={() => {
           if (dataSource === 'my') {
             return [
+              <TableFilter
+                key={2}
+                onChange={async (val) => {
+                  await setStateCode(val);
+                  actionRef.current?.reload();
+                }}
+              />,
               <FlowpropertiesCreate
                 isInToolbar={true}
                 importData={importData}
@@ -345,18 +354,27 @@ const TableList: FC = () => {
         ) => {
           if (keyWord.length > 0) {
             if (openAI) {
-              return flowproperty_hybrid_search(params, lang, dataSource, keyWord, {});
+              return flowproperty_hybrid_search(params, lang, dataSource, keyWord, {}, stateCode);
             }
-            return getFlowpropertyTablePgroongaSearch(params, lang, dataSource, keyWord, {});
+            return getFlowpropertyTablePgroongaSearch(
+              params,
+              lang,
+              dataSource,
+              keyWord,
+              {},
+              stateCode,
+            );
           }
-          return getFlowpropertyTableAll(params, sort, lang, dataSource, tid ?? '').then((res) => {
-            return getUnitData('unitgroup', res?.data ?? []).then((refUnitGroupResp: any) => {
-              return {
-                ...res,
-                data: refUnitGroupResp ?? [],
-              };
-            });
-          });
+          return getFlowpropertyTableAll(params, sort, lang, dataSource, tid ?? '', stateCode).then(
+            (res) => {
+              return getUnitData('unitgroup', res?.data ?? []).then((refUnitGroupResp: any) => {
+                return {
+                  ...res,
+                  data: refUnitGroupResp ?? [],
+                };
+              });
+            },
+          );
         }}
         columns={flowpropertiesColumns}
       />

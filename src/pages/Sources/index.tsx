@@ -12,6 +12,7 @@ import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
 import ExportData from '@/components/ExportData';
 import ImportData from '@/components/ImportData';
+import TableFilter from '@/components/TableFilter';
 import { ListPagination } from '@/services/general/data';
 import { getDataSource, getLang, getLangText } from '@/services/general/util';
 import { SourceTable } from '@/services/sources/data';
@@ -29,6 +30,7 @@ import SourceView from './Components/view';
 const { Search } = Input;
 
 const TableList: FC = () => {
+  const [stateCode, setStateCode] = useState<string | number>('all');
   const [keyWord, setKeyWord] = useState<any>('');
   const [team, setTeam] = useState<any>(null);
   const [importData, setImportData] = useState<any>(null);
@@ -146,7 +148,6 @@ const TableList: FC = () => {
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
               />
-
               <SourceDelete
                 id={row.id}
                 version={row.version}
@@ -290,6 +291,13 @@ const TableList: FC = () => {
         toolBarRender={() => {
           if (dataSource === 'my') {
             return [
+              <TableFilter
+                key={2}
+                onChange={async (val) => {
+                  await setStateCode(val);
+                  actionRef.current?.reload();
+                }}
+              />,
               <SourceCreate
                 isInToolbar={true}
                 importData={importData}
@@ -312,11 +320,11 @@ const TableList: FC = () => {
         ) => {
           if (keyWord.length > 0) {
             if (openAI) {
-              return source_hybrid_search(params, lang, dataSource, keyWord, {});
+              return source_hybrid_search(params, lang, dataSource, keyWord, {}, stateCode);
             }
-            return getSourceTablePgroongaSearch(params, lang, dataSource, keyWord, {});
+            return getSourceTablePgroongaSearch(params, lang, dataSource, keyWord, {}, stateCode);
           }
-          return getSourceTableAll(params, sort, lang, dataSource, tid ?? '');
+          return getSourceTableAll(params, sort, lang, dataSource, tid ?? '', stateCode);
         }}
         columns={sourceColumns}
       />
