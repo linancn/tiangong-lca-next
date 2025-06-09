@@ -2,6 +2,8 @@ import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import LocationTextItemDescription from '@/components/LocationTextItem/description';
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
+import ComplianceItemView from '@/pages/Processes/Components/Compliance/view';
+import ReviewItemView from '@/pages/Processes/Components/Review/view';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 import { CloseOutlined, InfoOutlined } from '@ant-design/icons';
 import { Button, Card, Descriptions, Divider, Drawer, Space, Tooltip } from 'antd';
@@ -131,6 +133,21 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
         <FormattedMessage
           id='pages.lifeCycleModel.view.administrativeInformation'
           defaultMessage='Administrative Information'
+        />
+      ),
+    },
+    {
+      key: 'validation',
+      tab: (
+        <FormattedMessage id='pages.lifeCycleModel.view.validation' defaultMessage='Validation' />
+      ),
+    },
+    {
+      key: 'complianceDeclarations',
+      tab: (
+        <FormattedMessage
+          id='pages.lifeCycleModel.view.complianceDeclarations'
+          defaultMessage='Compliance declarations'
         />
       ),
     },
@@ -1538,6 +1555,10 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           />
         </Card>
       </>
+    ),
+    validation: <ReviewItemView data={data?.modellingAndValidation?.validation?.review} />,
+    complianceDeclarations: (
+      <ComplianceItemView data={data?.modellingAndValidation?.complianceDeclarations?.compliance} />
     ),
   };
 
