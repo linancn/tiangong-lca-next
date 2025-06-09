@@ -3,10 +3,6 @@ import { checkRequiredFields, getAllRefObj, getRefTableName } from '@/pages/Util
 import { getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
 import { getRefData, updateReviewIdAndStateCode } from '@/services/general/api';
-import {
-  getLifeCycleModelDetail,
-  updateLifeCycleModelStateCode,
-} from '@/services/lifeCycleModels/api';
 import { getProcessDetail, updateProcess, updateProcessStateCode } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
 import { addReviewsApi } from '@/services/reviews/api';
@@ -155,6 +151,7 @@ const ProcessEdit: FC<Props> = ({
             defaultMessage: 'Please select exchanges',
           }),
         );
+        await setActiveTabKey('exchanges');
         return { checkResult, tabName };
       } else if (
         exchanges?.exchange.filter((item: any) => item?.quantitativeReference).length !== 1
@@ -165,6 +162,7 @@ const ProcessEdit: FC<Props> = ({
             defaultMessage: 'Exchange needs to have exactly one quantitative reference open',
           }),
         );
+        await setActiveTabKey('exchanges');
         return { checkResult, tabName };
       }
     }
@@ -218,13 +216,6 @@ const ProcessEdit: FC<Props> = ({
     return true;
   };
 
-  const getLifeCycleModel = async () => {
-    const result: any = await getLifeCycleModelDetail(id, version);
-    if (result.success && result.data) {
-      return result;
-    }
-  };
-
   const submitReview = async () => {
     setSpinning(true);
     await handleSubmit(false);
@@ -238,16 +229,8 @@ const ProcessEdit: FC<Props> = ({
       const unRuleVerification: any[] = [];
       const nonExistentRef: any[] = [];
 
-      let model = await getLifeCycleModel();
-      const lifeCycleModelStateCode = model?.data?.state_code;
-      if (lifeCycleModelStateCode >= 20 && lifeCycleModelStateCode < 100) {
-        underReview.push(model);
-        // return;
-      }
       if (initData.stateCode >= 20 && initData.stateCode < 100) {
         underReview.push(initData);
-        // setSpinning(false);
-        // return false;
       }
       if (!initData?.ruleVerification && initData.stateCode !== 100 && initData.stateCode !== 200) {
         unRuleVerification.unshift({
@@ -381,10 +364,6 @@ const ProcessEdit: FC<Props> = ({
       let stateCode = 20;
       if (!error && data && data.length) {
         stateCode = data[0]?.state_code;
-
-        if (lifeCycleModelStateCode < 20) {
-          await updateLifeCycleModelStateCode(id, version, stateCode);
-        }
 
         unReview.forEach(async (item: any) => {
           await updateReviewIdAndStateCode(
