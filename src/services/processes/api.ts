@@ -73,6 +73,7 @@ export async function getProcessTableAll(
   dataSource: string,
   tid: string | [],
 ) {
+  const time_start = new Date();
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
   const orderBy = sort[sortBy] ?? 'descend';
 
@@ -115,134 +116,97 @@ export async function getProcessTableAll(
     if (session.data.session) {
       query = query.eq('user_id', session?.data?.session?.user?.id);
     } else {
-      return Promise.resolve({
-        data: [],
-        success: false,
-      });
+      return { data: [], success: false };
     }
   } else if (dataSource === 'te') {
     const teamId = await getTeamIdByUserId();
     if (teamId) {
       query = query.eq('team_id', teamId);
     } else {
-      return Promise.resolve({
-        data: [],
-        success: true,
-      });
+      return { data: [], success: true };
     }
   }
 
   const result = await query;
 
   if (result?.error) {
-    console.log('error', result?.error);
+    console.error('error', result?.error);
+    return { data: [], success: false, error: result?.error };
   }
 
-  if (result?.data) {
-    if (result?.data.length === 0) {
-      return Promise.resolve({
-        data: [],
-        success: true,
-      });
+  if (!result?.data || result?.data.length === 0) {
+    return { data: [], success: true };
+  }
+
+  const locations = Array.from(new Set(result.data.map((i: any) => i['@location'])));
+  const [locationRes, classificationRes] = await Promise.all([
+    getILCDLocationByValues(lang, locations),
+    lang === 'zh' ? getILCDClassification('Process', lang, ['all']) : Promise.resolve(null),
+  ]);
+  const locationDataArr = locationRes.data || [];
+  const locationMap = new Map(locationDataArr.map((l: any) => [l['@value'], l['#text']]));
+  const classificationData = classificationRes?.data;
+
+  let data: any[] = result.data.map((i: any) => {
+    try {
+      const classifications = jsonToList(i['common:class']);
+      let classification;
+      if (lang === 'zh') {
+        const classificationZH = genClassificationZH(classifications, classificationData);
+        classification = classificationToString(classificationZH ?? {});
+      } else {
+        classification = classificationToString(classifications);
+      }
+      let location = i['@location'];
+      if (locationMap.has(location)) {
+        location = locationMap.get(location);
+      }
+      return {
+        key: i.id + ':' + i.version,
+        id: i.id,
+        version: i.version,
+        lang: lang,
+        name: genProcessName(i.name ?? {}, lang),
+        generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
+        classification,
+        typeOfDataSet: i.typeOfDataSet ?? '-',
+        referenceYear: i['common:referenceYear'] ?? '-',
+        location: location ?? '-',
+        modifiedAt: new Date(i.modified_at),
+        teamId: i?.team_id,
+      };
+    } catch (e) {
+      console.error(e);
+      return { id: i.id };
     }
+  });
 
-    const locations: string[] = Array.from(new Set(result?.data.map((i: any) => i['@location'])));
-    let locationData: any[] = [];
-    await getILCDLocationByValues(lang, locations).then((res) => {
-      locationData = res.data;
-    });
-
-    let data: any[] = [];
-    if (lang === 'zh') {
-      await getILCDClassification('Process', lang, ['all']).then((res) => {
-        data = result?.data.map((i: any) => {
-          try {
-            const classifications = jsonToList(i['common:class']);
-            const classificationZH = genClassificationZH(classifications, res?.data);
-
-            const thisLocation = locationData.find((l) => l['@value'] === i['@location']);
-            let location = i['@location'];
-            if (thisLocation?.['#text']) {
-              location = thisLocation['#text'];
-            }
-
-            return {
-              key: i.id + ':' + i.version,
-              id: i.id,
-              version: i.version,
-              lang: lang,
-              name: genProcessName(i.name ?? {}, lang),
-              generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
-              classification: classificationToString(classificationZH ?? {}),
-              typeOfDataSet: i.typeOfDataSet ?? '-',
-              referenceYear: i['common:referenceYear'] ?? '-',
-              location: location ?? '-',
-              modifiedAt: new Date(i.modified_at),
-              teamId: i?.team_id,
-            };
-          } catch (e) {
-            console.error(e);
-            return {
-              id: i.id,
-            };
-          }
-        });
-      });
-    } else {
-      data = result?.data?.map((i: any) => {
-        try {
-          const classifications = jsonToList(i['common:class']);
-          const thisLocation = locationData.find((l) => l['@value'] === i['@location']);
-          let location = i['@location'];
-          if (thisLocation?.['#text']) {
-            location = thisLocation['#text'];
-          }
-          return {
-            key: i.id + ':' + i.version,
-            id: i.id,
-            version: i.version,
-            lang: lang,
-            name: genProcessName(i.name ?? {}, lang),
-            generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
-            classification: classificationToString(classifications),
-            typeOfDataSet: i.typeOfDataSet ?? '-',
-            referenceYear: i['common:referenceYear'] ?? '-',
-            location: location,
-            modifiedAt: new Date(i.modified_at),
-            teamId: i?.team_id,
-          };
-        } catch (e) {
-          console.error(e);
-          return {
-            id: i.id,
-          };
-        }
-      });
-    }
-
-    const processIds = data.map((i) => i.id);
-
+  const processIds = data.map((i) => i.id);
+  try {
     const lifeCycleResult = await getLifeCyclesByIds(processIds);
     if (lifeCycleResult.data && lifeCycleResult.data.length > 0) {
-      lifeCycleResult.data.forEach((i) => {
-        const process = data.find((j) => j.id === i.id && j.version === i.version);
-        if (process) {
-          process.isFromLifeCycle = true;
+      const lifeCycleMap = new Map(
+        lifeCycleResult.data.map((i: any) => [i.id + ':' + i.version, true]),
+      );
+      data.forEach((i) => {
+        if (lifeCycleMap.has(i.id + ':' + i.version)) {
+          i.isFromLifeCycle = true;
         }
       });
     }
-
-    return Promise.resolve({
-      data: data,
-      page: params?.current ?? 1,
-      success: true,
-      total: result?.count ?? 0,
-    });
+  } catch (e) {
+    console.error('lifeCycleResult error', e);
   }
-  return Promise.resolve({
-    data: [],
-    success: false,
-  });
+
+  const time_end = new Date();
+  console.log('getProcessTableAll time cost', time_end.getTime() - time_start.getTime(), 'ms');
+
+  return {
+    data,
+    page: params?.current ?? 1,
+    success: true,
+    total: result?.count ?? 0,
+  };
 }
 
 // export async function getProcessTableAllByTeam(
@@ -385,143 +349,100 @@ export async function getProcessTablePgroongaSearch(
   queryText: string,
   filterCondition: any,
 ) {
-  let result: any = {};
+  const time_start = new Date();
+  let result: any;
   const session = await supabase.auth.getSession();
-  if (session.data.session) {
-    result = await supabase.rpc('pgroonga_search_processes', {
-      query_text: queryText,
-      filter_condition: filterCondition,
-      page_size: params.pageSize ?? 10,
-      page_current: params.current ?? 1,
-      data_source: dataSource,
-      this_user_id: session.data.session.user?.id,
-    });
+  if (!session.data.session) {
+    return { data: [], success: true };
   }
-  if (result.error) {
-    console.log('error', result.error);
+  result = await supabase.rpc('pgroonga_search_processes', {
+    query_text: queryText,
+    filter_condition: filterCondition,
+    page_size: params.pageSize ?? 10,
+    page_current: params.current ?? 1,
+    data_source: dataSource,
+    this_user_id: session.data.session.user?.id,
+  });
+  if (result?.error) {
+    console.error('error', result.error);
+    return { data: [], success: false, error: result.error };
   }
-  if (result.data) {
-    if (result.data.length === 0) {
-      return Promise.resolve({
-        data: [],
-        success: true,
-      });
-    }
-    const totalCount = result.data[0].total_count;
-
-    const locations: string[] = Array.from(
-      new Set(
-        result.data.map(
-          (i: any) =>
-            i.json?.processDataSet?.processInformation?.geography
-              ?.locationOfOperationSupplyOrProduction?.['@location'],
-        ),
+  if (!result.data || result.data.length === 0) {
+    return { data: [], success: true };
+  }
+  const totalCount = result.data[0]?.total_count ?? 0;
+  const locations: string[] = Array.from(
+    new Set(
+      result.data.map(
+        (i: any) =>
+          i.json?.processDataSet?.processInformation?.geography
+            ?.locationOfOperationSupplyOrProduction?.['@location'],
       ),
-    );
-    let locationData: any[] = [];
-    await getILCDLocationByValues(lang, locations).then((res) => {
-      locationData = res.data;
-    });
+    ),
+  );
+  const [locationRes, classificationRes] = await Promise.all([
+    getILCDLocationByValues(lang, locations),
+    lang === 'zh' ? getILCDClassification('Process', lang, ['all']) : Promise.resolve(null),
+  ]);
+  const locationDataArr = locationRes.data || [];
+  const locationMap = new Map(locationDataArr.map((l: any) => [l['@value'], l['#text']]));
+  const classificationData = classificationRes?.data;
 
-    let data: any[] = [];
-    if (lang === 'zh') {
-      await getILCDClassification('Process', lang, ['all']).then((res) => {
-        data = result.data.map((i: any) => {
-          try {
-            const dataInfo = i.json?.processDataSet?.processInformation;
-
-            const thisLocation = locationData.find(
-              (l) =>
-                l['@value'] ===
-                dataInfo?.geography?.locationOfOperationSupplyOrProduction?.['@location'],
-            );
-            let location = i['@location'];
-            if (thisLocation?.['#text']) {
-              location = thisLocation['#text'];
-            }
-
-            const classifications = jsonToList(
-              dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-                'common:class'
-              ],
-            );
-            const classificationZH = genClassificationZH(classifications, res?.data);
-
-            return {
-              key: i.id + ':' + i.version,
-              id: i.id,
-              name: genProcessName(dataInfo?.dataSetInformation?.name ?? {}, lang),
-              generalComment: getLangText(
-                dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
-                lang,
-              ),
-              classification: classificationToString(classificationZH),
-              referenceYear: dataInfo?.time?.['common:referenceYear'] ?? '-',
-              location: location ?? '-',
-              version: i.version,
-              modifiedAt: new Date(i?.modified_at),
-              teamId: i?.team_id,
-            };
-          } catch (e) {
-            console.error(e);
-            return {
-              id: i.id,
-            };
-          }
-        });
-      });
-    } else {
-      data = result.data.map((i: any) => {
-        try {
-          const dataInfo = i.json?.processDataSet?.processInformation;
-          const classifications = jsonToList(
-            dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-              'common:class'
-            ],
-          );
-          const thisLocation = locationData.find(
-            (l) =>
-              l['@value'] ===
-              dataInfo?.geography?.locationOfOperationSupplyOrProduction?.['@location'],
-          );
-          let location = dataInfo?.geography?.locationOfOperationSupplyOrProduction?.['@location'];
-          if (thisLocation?.['#text']) {
-            location = thisLocation['#text'];
-          }
-
-          return {
-            key: i.id + ':' + i.version,
-            id: i.id,
-            name: genProcessName(dataInfo?.dataSetInformation?.name ?? {}, lang),
-            generalComment: getLangText(
-              dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
-              lang,
-            ),
-            classification: classificationToString(classifications),
-            referenceYear: dataInfo?.time?.['common:referenceYear'] ?? '-',
-            location: location ?? '-',
-            version: i.version,
-            modifiedAt: new Date(i?.modified_at),
-            teamId: i?.team_id,
-          };
-        } catch (e) {
-          console.error(e);
-          return {
-            id: i.id,
-          };
-        }
-      });
+  const data = result.data.map((i: any) => {
+    try {
+      const dataInfo = i.json?.processDataSet?.processInformation;
+      const geo = dataInfo?.geography?.locationOfOperationSupplyOrProduction;
+      let location = geo?.['@location'] ?? '-';
+      if (locationMap.has(location)) {
+        location = locationMap.get(location);
+      }
+      let classification;
+      if (lang === 'zh') {
+        const classifications = jsonToList(
+          dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
+            'common:class'
+          ],
+        );
+        const classificationZH = genClassificationZH(classifications, classificationData);
+        classification = classificationToString(classificationZH);
+      } else {
+        const classifications = jsonToList(
+          dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
+            'common:class'
+          ],
+        );
+        classification = classificationToString(classifications);
+      }
+      return {
+        key: i.id + ':' + i.version,
+        id: i.id,
+        name: genProcessName(dataInfo?.dataSetInformation?.name ?? {}, lang),
+        generalComment: getLangText(
+          dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
+          lang,
+        ),
+        classification,
+        referenceYear: dataInfo?.time?.['common:referenceYear'] ?? '-',
+        location: location ?? '-',
+        version: i.version,
+        modifiedAt: new Date(i?.modified_at),
+        teamId: i?.team_id,
+      };
+    } catch (e) {
+      console.error(e);
+      return { id: i.id };
     }
+  });
 
-    return Promise.resolve({
-      data: data,
-      page: params.current ?? 1,
-      success: true,
-      total: totalCount ?? 0,
-    });
-  }
+  const time_end = new Date();
+  console.log('time cost', time_end.getTime() - time_start.getTime(), 'ms');
 
-  return result;
+  return {
+    data,
+    page: params.current ?? 1,
+    success: true,
+    total: totalCount,
+  };
 }
 export async function process_hybrid_search(
   params: {
