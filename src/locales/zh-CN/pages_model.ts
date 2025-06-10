@@ -3,6 +3,8 @@ export default {
   'pages.lifeCycleModel.view.lifeCycleModelInformation': '生命周期模型信息',
   'pages.lifeCycleModel.view.modellingAndValidation': '建模信息',
   'pages.lifeCycleModel.view.administrativeInformation': '管理信息',
+  'pages.lifeCycleModel.view.validation': '验证审查',
+  'pages.lifeCycleModel.view.complianceDeclarations': '合规性声明',
 
   'pages.lifeCycleModel.information.name': '名称',
   'pages.lifeCycleModel.information.baseName': '基础名称',

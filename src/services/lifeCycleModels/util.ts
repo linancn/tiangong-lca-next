@@ -1916,6 +1916,18 @@ export async function genLifeCycleModelProcess(id: string, refNode: any, data: a
         thisFlowQuantitativeReference?.referenceToFlowDataSet?.['@refObjectId'],
   );
 
+  const newExchanges = sumExchange?.map((e: any) => {
+    if (e?.['@dataSetInternalID'] === referenceToReferenceFlow?.['@dataSetInternalID']) {
+      return {
+        ...e,
+        meanAmount: targetAmount,
+        resultingAmount: targetAmount,
+      };
+    } else {
+      return e;
+    }
+  });
+
   const newData = removeEmptyObjects({
     processDataSet: {
       '@xmlns:common': oldData.processDataSet?.['@xmlns:common'] ?? {},
@@ -2471,7 +2483,7 @@ export async function genLifeCycleModelProcess(id: string, refNode: any, data: a
         },
       },
       exchanges: {
-        exchange: sumExchange,
+        exchange: newExchanges,
       },
     },
   });

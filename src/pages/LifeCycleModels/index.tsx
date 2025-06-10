@@ -2,6 +2,7 @@ import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
 import ExportData from '@/components/ExportData';
 import ImportData from '@/components/ImportData';
+import TableFilter from '@/components/TableFilter';
 import { contributeSource } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
 import { getDataSource, getLang, getLangText } from '@/services/general/util';
@@ -24,11 +25,11 @@ import LifeCycleModelCreate from './Components/create';
 import LifeCycleModelDelete from './Components/delete';
 import LifeCycleModelEdit from './Components/edit';
 import LifeCycleModelView from './Components/view';
-
 const { Search } = Input;
 
 const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<any>('');
+  const [stateCode, setStateCode] = useState<string | number>('all');
   const [team, setTeam] = useState<any>(null);
   const [importData, setImportData] = useState<any>(null);
   const [openAI, setOpenAI] = useState<boolean>(false);
@@ -285,6 +286,13 @@ const TableList: FC = () => {
         toolBarRender={() => {
           if (dataSource === 'my') {
             return [
+              <TableFilter
+                key={2}
+                onChange={async (val) => {
+                  await setStateCode(val);
+                  actionRef.current?.reload();
+                }}
+              />,
               <LifeCycleModelCreate
                 isInToolbar={true}
                 importData={importData}
@@ -308,11 +316,18 @@ const TableList: FC = () => {
         ) => {
           if (keyWord.length > 0) {
             if (openAI) {
-              return lifeCycleModel_hybrid_search(params, lang, dataSource, keyWord, {});
+              return lifeCycleModel_hybrid_search(params, lang, dataSource, keyWord, {}, stateCode);
             }
-            return getLifeCycleModelTablePgroongaSearch(params, lang, dataSource, keyWord, {});
+            return getLifeCycleModelTablePgroongaSearch(
+              params,
+              lang,
+              dataSource,
+              keyWord,
+              {},
+              stateCode,
+            );
           }
-          return getLifeCycleModelTableAll(params, sort, lang, dataSource, tid ?? '');
+          return getLifeCycleModelTableAll(params, sort, lang, dataSource, tid ?? '', stateCode);
         }}
         columns={processColumns}
       />
