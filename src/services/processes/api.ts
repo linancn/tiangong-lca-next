@@ -74,6 +74,8 @@ export async function getProcessTableAll(
   tid: string | [],
 ) {
   const time_start = new Date();
+  console.log('getProcessTableAll started at:', time_start.toISOString());
+
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
   const orderBy = sort[sortBy] ?? 'descend';
 
@@ -91,6 +93,7 @@ export async function getProcessTableAll(
   `;
 
   const tableName = 'processes';
+  const query_start = new Date();
 
   let query = supabase
     .from(tableName)
@@ -128,6 +131,8 @@ export async function getProcessTableAll(
   }
 
   const result = await query;
+  const query_end = new Date();
+  console.log('Database query time cost:', query_end.getTime() - query_start.getTime(), 'ms');
 
   if (result?.error) {
     console.error('error', result?.error);
@@ -139,14 +144,25 @@ export async function getProcessTableAll(
   }
 
   const locations = Array.from(new Set(result.data.map((i: any) => i['@location'])));
-  const [locationRes, classificationRes] = await Promise.all([
+  const processIds = result.data.map((i: any) => i.id);
+  const location_classification_lifecycle_start = new Date();
+  const [locationRes, classificationRes, lifeCycleResult] = await Promise.all([
     getILCDLocationByValues(lang, locations),
     lang === 'zh' ? getILCDClassification('Process', lang, ['all']) : Promise.resolve(null),
+    getLifeCyclesByIds(processIds),
   ]);
+  const location_classification_lifecycle_end = new Date();
+  console.log(
+    'Location, classification, and lifecycle fetch time cost:',
+    location_classification_lifecycle_end.getTime() -
+      location_classification_lifecycle_start.getTime(),
+    'ms',
+  );
   const locationDataArr = locationRes.data || [];
   const locationMap = new Map(locationDataArr.map((l: any) => [l['@value'], l['#text']]));
   const classificationData = classificationRes?.data;
 
+  const data_processing_start = new Date();
   let data: any[] = result.data.map((i: any) => {
     try {
       const classifications = jsonToList(i['common:class']);
@@ -180,26 +196,38 @@ export async function getProcessTableAll(
       return { id: i.id };
     }
   });
+  const data_processing_end = new Date();
+  console.log(
+    'Data processing time cost:',
+    data_processing_end.getTime() - data_processing_start.getTime(),
+    'ms',
+  );
 
-  const processIds = data.map((i) => i.id);
-  try {
-    const lifeCycleResult = await getLifeCyclesByIds(processIds);
-    if (lifeCycleResult.data && lifeCycleResult.data.length > 0) {
-      const lifeCycleMap = new Map(
-        lifeCycleResult.data.map((i: any) => [i.id + ':' + i.version, true]),
-      );
-      data.forEach((i) => {
-        if (lifeCycleMap.has(i.id + ':' + i.version)) {
-          i.isFromLifeCycle = true;
-        }
-      });
-    }
-  } catch (e) {
-    console.error('lifeCycleResult error', e);
+  // 生命周期标记
+  const lifecycle_start = new Date();
+  if (lifeCycleResult.data && lifeCycleResult.data.length > 0) {
+    const lifeCycleMap = new Map(
+      lifeCycleResult.data.map((i: any) => [i.id + ':' + i.version, true]),
+    );
+    data.forEach((i) => {
+      if (lifeCycleMap.has(i.id + ':' + i.version)) {
+        i.isFromLifeCycle = true;
+      }
+    });
   }
+  const lifecycle_end = new Date();
+  console.log(
+    'Lifecycle processing time cost:',
+    lifecycle_end.getTime() - lifecycle_start.getTime(),
+    'ms',
+  );
 
   const time_end = new Date();
-  console.log('getProcessTableAll time cost', time_end.getTime() - time_start.getTime(), 'ms');
+  console.log(
+    'getProcessTableAll total time cost:',
+    time_end.getTime() - time_start.getTime(),
+    'ms',
+  );
 
   return {
     data,
