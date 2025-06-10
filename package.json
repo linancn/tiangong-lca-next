@@ -38,7 +38,8 @@
     "test": "jest",
     "test:coverage": "npm run jest -- --coverage",
     "test:update": "npm run jest -- -u",
-    "tsc": "tsc --noEmit"
+    "tsc": "tsc --noEmit",
+    "test:antchain": "npx tsx src/services/antchain/api.ts"
   },
   "lint-staged": {
     "**/*.{js,jsx,ts,tsx}": "npm run lint-staged:js",
@@ -61,6 +62,7 @@
     "antd-style": "^3.7.1",
     "bignumber.js": "^9.3.0",
     "classnames": "^2.5.1",
+    "dotenv": "^16.5.0",
     "omit.js": "^2.0.2",
     "querystring": "^0.2.1",
     "react": "^18.3.1",
