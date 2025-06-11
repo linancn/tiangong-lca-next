@@ -163,41 +163,6 @@ export async function updateDateToReviewState(
   return result;
 }
 
-export async function updateReviewIdAndStateCode(
-  reviewId: string,
-  id: string,
-  version: string,
-  table: string,
-  stateCode: number,
-) {
-  if (!table) return;
-  let result: any = {};
-  if (id && id.length === 36) {
-    if (version && version.length === 9) {
-      result = await supabase
-        .from(table)
-        .update({ review_id: reviewId, state_code: stateCode })
-        .eq('id', id)
-        .eq('version', version)
-        .select();
-      if (result.data === null || result.data.length === 0) {
-        result = await supabase
-          .from(table)
-          .update({ review_id: reviewId, state_code: stateCode })
-          .eq('id', id)
-          .order('version', { ascending: false })
-          .range(0, 0);
-      }
-    } else {
-      result = await supabase
-        .from(table)
-        .update({ review_id: reviewId, state_code: stateCode })
-        .eq('id', id)
-        .order('version', { ascending: false })
-        .range(0, 0);
-    }
-  }
-}
 
 // Get the team id of the user when the user is not an invited user and  is not a rejected user
 export async function getTeamIdByUserId() {

@@ -220,6 +220,12 @@ const ProcessEdit: FC<Props> = ({
     if (checkResult) {
       const { data: processDetail } = await getProcessDetail(id, version);
       if (!processDetail) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.process.review.submitError',
+            defaultMessage: 'Submit review failed',
+          }),
+        );
         setSpinning(false);
         return;
       }
