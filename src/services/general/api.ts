@@ -139,41 +139,30 @@ export async function updateStateCodeApi(
   return result;
 }
 
-export async function updateReviewIdAndStateCode(
-  reviewId: string,
+export async function getReviewsOfData(id: string, version: string, table: string) {
+  let result = await supabase
+    .from(table)
+    .select('reviews')
+    .eq('id', id)
+    .eq('version', version);
+  return result.data?.[0]?.reviews ?? [];
+}
+export async function updateDateToReviewState(
   id: string,
   version: string,
   table: string,
-  stateCode: number,
+  data: any,
 ) {
   if (!table) return;
-  let result: any = {};
-  if (id && id.length === 36) {
-    if (version && version.length === 9) {
-      result = await supabase
-        .from(table)
-        .update({ review_id: reviewId, state_code: stateCode })
-        .eq('id', id)
-        .eq('version', version)
-        .select();
-      if (result.data === null || result.data.length === 0) {
-        result = await supabase
-          .from(table)
-          .update({ review_id: reviewId, state_code: stateCode })
-          .eq('id', id)
-          .order('version', { ascending: false })
-          .range(0, 0);
-      }
-    } else {
-      result = await supabase
-        .from(table)
-        .update({ review_id: reviewId, state_code: stateCode })
-        .eq('id', id)
-        .order('version', { ascending: false })
-        .range(0, 0);
-    }
-  }
+  let result = await supabase
+    .from(table)
+    .update(data)
+    .eq('id', id)
+    .eq('version', version)
+    .select();
+  return result;
 }
+
 
 // Get the team id of the user when the user is not an invited user and  is not a rejected user
 export async function getTeamIdByUserId() {
@@ -493,7 +482,7 @@ export async function getAllVersions(
                 if (i?.typeOfDataSet === 'Elementary flow') {
                   classificationData =
                     i?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-                      'common:category'
+                    'common:category'
                     ];
                   thisClass = res?.data?.categoryElementaryFlow;
                 } else {
@@ -548,7 +537,7 @@ export async function getAllVersions(
               if (i?.typeOfDataSet === 'Elementary flow') {
                 classificationData =
                   i?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-                    'common:category'
+                  'common:category'
                   ];
               } else {
                 classificationData =

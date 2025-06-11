@@ -2,15 +2,13 @@ import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import { checkRequiredFields, getAllRefObj, getRefTableName } from '@/pages/Utils';
 import { getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
-import { getRefData, updateReviewIdAndStateCode } from '@/services/general/api';
-import {
-  getLifeCycleModelDetail,
-  updateLifeCycleModelStateCode,
-} from '@/services/lifeCycleModels/api';
-import { getProcessDetail, updateProcess, updateProcessStateCode } from '@/services/processes/api';
+import { getRefData, updateDateToReviewState,getReviewsOfData } from '@/services/general/api';
+import { getProcessDetail, updateProcess } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
 import { addReviewsApi } from '@/services/reviews/api';
 import { getUserTeamId } from '@/services/roles/api';
+import { getTeamMessageApi } from '@/services/teams/api';
+import { getUsersByIds } from '@/services/users/api';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined, ProductOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -155,6 +153,7 @@ const ProcessEdit: FC<Props> = ({
             defaultMessage: 'Please select exchanges',
           }),
         );
+        await setActiveTabKey('exchanges');
         return { checkResult, tabName };
       } else if (
         exchanges?.exchange.filter((item: any) => item?.quantitativeReference).length !== 1
@@ -165,15 +164,11 @@ const ProcessEdit: FC<Props> = ({
             defaultMessage: 'Exchange needs to have exactly one quantitative reference open',
           }),
         );
+        await setActiveTabKey('exchanges');
         return { checkResult, tabName };
       }
     }
-    message.success(
-      intl.formatMessage({
-        id: 'pages.button.check.success',
-        defaultMessage: 'Data check successfully!',
-      }),
-    );
+
     return { checkResult, tabName };
   };
 
@@ -218,38 +213,43 @@ const ProcessEdit: FC<Props> = ({
     return true;
   };
 
-  const getLifeCycleModel = async () => {
-    const result: any = await getLifeCycleModelDetail(id, version);
-    if (result.success && result.data) {
-      return result;
-    }
-  };
-
   const submitReview = async () => {
     setSpinning(true);
     await handleSubmit(false);
     const { checkResult } = await handleCheckData();
     if (checkResult) {
-      const teamId = await getUserTeamId();
+      const { data: processDetail } = await getProcessDetail(id, version);
+      if (!processDetail) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.process.review.submitError',
+            defaultMessage: 'Submit review failed',
+          }),
+        );
+        setSpinning(false);
+        return;
+      }
 
-      const refObjs = getAllRefObj(fromData);
       const unReview: any[] = []; // stateCode < 20
       const underReview: any[] = []; // stateCode >= 20 && stateCode < 100
       const unRuleVerification: any[] = [];
       const nonExistentRef: any[] = [];
 
-      let model = await getLifeCycleModel();
-      const lifeCycleModelStateCode = model?.data?.state_code;
-      if (lifeCycleModelStateCode >= 20 && lifeCycleModelStateCode < 100) {
-        underReview.push(model);
-        // return;
+      if(processDetail.stateCode < 20){
+        unReview.push({
+          '@type': 'process data set',
+          '@refObjectId': id,
+          '@version': version,
+        });
       }
-      if (initData.stateCode >= 20 && initData.stateCode < 100) {
-        underReview.push(initData);
-        // setSpinning(false);
-        // return false;
+      if (processDetail.stateCode >= 20 && processDetail.stateCode < 100) {
+        underReview.push({
+          '@type': 'process data set',
+          '@refObjectId': id,
+          '@version': version,
+        });
       }
-      if (!initData?.ruleVerification && initData.stateCode !== 100 && initData.stateCode !== 200) {
+      if (!processDetail?.ruleVerification && processDetail.stateCode !== 100 && processDetail.stateCode !== 200) {
         unRuleVerification.unshift({
           '@type': 'process data set',
           '@refObjectId': id,
@@ -257,6 +257,9 @@ const ProcessEdit: FC<Props> = ({
         });
       }
 
+      
+      const userTeamId = await getUserTeamId();
+      const refObjs = getAllRefObj(processDetail);
       const checkReferences = async (refs: any[], checkedIds = new Set<string>()) => {
         for (const ref of refs) {
           if (checkedIds.has(ref['@refObjectId'])) continue;
@@ -266,7 +269,7 @@ const ProcessEdit: FC<Props> = ({
             ref['@refObjectId'],
             ref['@version'],
             getRefTableName(ref['@type']),
-            teamId,
+            userTeamId,
           );
 
           if (refResult.success) {
@@ -288,12 +291,6 @@ const ProcessEdit: FC<Props> = ({
             }
 
             if (refData?.stateCode >= 20 && refData?.stateCode < 100) {
-              // message.error(
-              //   intl.formatMessage({
-              //     id: 'pages.process.review.error',
-              //     defaultMessage: 'Referenced data is under review, cannot initiate another review',
-              //   }),
-              // );
               if (
                 !underReview.find(
                   (item) =>
@@ -303,7 +300,6 @@ const ProcessEdit: FC<Props> = ({
               ) {
                 underReview.push(ref);
               }
-              // return false;
             }
 
             if (refData?.stateCode < 20) {
@@ -331,24 +327,18 @@ const ProcessEdit: FC<Props> = ({
             ) {
               nonExistentRef.push(ref);
             }
-            // return false;
           }
         }
-        // return true;
       };
-
       await checkReferences(refObjs);
+
+      setNonExistentRefData(nonExistentRef);
+      setUnRuleVerificationData(unRuleVerification);
       if (
         (nonExistentRef && nonExistentRef.length > 0) ||
         (unRuleVerification && unRuleVerification.length > 0) ||
         (underReview && underReview.length > 0)
       ) {
-        if (nonExistentRef && nonExistentRef.length > 0) {
-          setNonExistentRefData(nonExistentRef);
-        }
-        if (unRuleVerification && unRuleVerification.length > 0) {
-          setUnRuleVerificationData(unRuleVerification);
-        }
         if (underReview && underReview.length > 0) {
           message.error(
             intl.formatMessage({
@@ -361,7 +351,7 @@ const ProcessEdit: FC<Props> = ({
         return;
       }
 
-      if (initData.stateCode >= 20) {
+      if (processDetail.stateCode >= 20) {
         message.error(
           intl.formatMessage({
             id: 'pages.process.review.submitError',
@@ -371,38 +361,57 @@ const ProcessEdit: FC<Props> = ({
         setSpinning(false);
         return;
       }
-
+      const team = await getTeamMessageApi(processDetail.teamId);
+      const user = await getUsersByIds([sessionStorage.getItem('userId') ?? '']);
       const reviewId = v4();
-      const result = await addReviewsApi(reviewId, id, version);
-      if (result?.error) return;
-
-      const { error, data } = await updateProcessStateCode(id, version, reviewId, 20);
-
-      let stateCode = 20;
-      if (!error && data && data.length) {
-        stateCode = data[0]?.state_code;
-
-        if (lifeCycleModelStateCode < 20) {
-          await updateLifeCycleModelStateCode(id, version, stateCode);
+      const reviewJson = {
+        data: {
+          id,
+          version,
+          name: processDetail?.json?.processDataSet?.processInformation?.dataSetInformation?.name ?? {}
+        },
+        team: {
+          id: processDetail.teamId,
+          name: team?.data?.[0]?.json?.title
+        },
+        user: {
+          id: sessionStorage.getItem('userId'),
+          name: user?.[0]?.display_name,
+          email: user?.[0]?.email
+        },
+        comment: {
+          result: 0,
+          message: ''
         }
-
-        unReview.forEach(async (item: any) => {
-          await updateReviewIdAndStateCode(
-            reviewId,
-            item['@refObjectId'],
-            item['@version'],
-            getRefTableName(item['@type']),
-            stateCode,
-          );
-        });
-        message.success(
-          intl.formatMessage({
-            id: 'pages.process.review.submitSuccess',
-            defaultMessage: 'Review submitted successfully',
-          }),
-        );
-        setDrawerVisible(false);
       }
+      const result = await addReviewsApi(reviewId, reviewJson);
+      if (result?.error) return;
+      for(const item of unReview){
+        const oldReviews = await getReviewsOfData(item['@refObjectId'],item['@version'],getRefTableName(item['@type']));
+        const updateData = {
+          state_code: 20,
+          reviews:[
+            ...oldReviews,
+            {
+              key: oldReviews?.length,
+              id: reviewId
+            }
+          ]
+        }
+        await updateDateToReviewState(
+          item['@refObjectId'],
+          item['@version'],
+          getRefTableName(item['@type']),
+          updateData
+        );
+      }
+      message.success(
+        intl.formatMessage({
+          id: 'pages.process.review.submitSuccess',
+          defaultMessage: 'Review submitted successfully',
+        }),
+      );
+      setDrawerVisible(false);
       setSpinning(false);
     } else {
       setSpinning(false);
@@ -550,58 +559,59 @@ const ProcessEdit: FC<Props> = ({
         }
       >
         <Spin spinning={spinning}>
-          {unRuleVerificationData && unRuleVerificationData.length > 0 && (
+          {(unRuleVerificationData && unRuleVerificationData.length > 0) ||
+            (nonExistentRefData && nonExistentRefData.length > 0) ? (
             <>
               <Collapse
                 items={[
                   {
                     key: '1',
                     label: intl.formatMessage({
-                      id: 'pages.process.review.unRuleVerification.tip',
-                      defaultMessage:
-                        'The following data is incomplete, please modify and resubmit for review',
+                      id: 'pages.process.review.verify.title',
+                      defaultMessage: 'Data verification details',
                     }),
                     children: (
-                      <Typography>
-                        {unRuleVerificationData.map((item: any) => (
-                          <Paragraph
-                            key={item['@refObjectId']}
-                          >{`${item['@type']} : ${item['@refObjectId']}`}</Paragraph>
-                        ))}
-                      </Typography>
+                      <>
+                        {unRuleVerificationData && unRuleVerificationData.length > 0 && (
+                          <Typography>
+                            <Paragraph>
+                              <FormattedMessage
+                                id='pages.process.review.unRuleVerification.tip'
+                                defaultMessage='The following referenced data is incomplete, please complete it'
+                              />
+                              {unRuleVerificationData?.map((item: any) => (
+                                <div key={item['@refObjectId']}>
+                                  {`${item['@type']} : ${item['@refObjectId']}`}{' '}
+                                  {`${item['@version']}`}
+                                </div>
+                              ))}
+                            </Paragraph>
+                          </Typography>
+                        )}
+                        {nonExistentRefData && nonExistentRefData.length > 0 && (
+                          <Typography>
+                            <Paragraph>
+                              <FormattedMessage
+                                id='pages.process.review.nonExistentRefData.tip'
+                                defaultMessage='The following data does not exist, please check'
+                              />
+                              {nonExistentRefData?.map((item: any) => (
+                                <div key={item['@refObjectId']}>
+                                  {`${item['@type']} : ${item['@refObjectId']}`}{' '}
+                                  {`${item['@version']}`}
+                                </div>
+                              ))}
+                            </Paragraph>
+                          </Typography>
+                        )}
+                      </>
                     ),
                   },
                 ]}
               />
               <br />
             </>
-          )}
-          {nonExistentRefData && nonExistentRefData.length > 0 && (
-            <>
-              <Collapse
-                items={[
-                  {
-                    key: '1',
-                    label: intl.formatMessage({
-                      id: 'pages.process.review.nonExistentRefData.tip',
-                      defaultMessage:
-                        'The following data is incomplete, please modify and resubmit for review',
-                    }),
-                    children: (
-                      <Typography>
-                        {nonExistentRefData.map((item: any) => (
-                          <Paragraph
-                            key={item['@refObjectId']}
-                          >{`${item['@type']} : ${item['@refObjectId']}`}</Paragraph>
-                        ))}
-                      </Typography>
-                    ),
-                  },
-                ]}
-              />
-              <br />
-            </>
-          )}
+          ) : null}
           <UpdateReferenceContext.Provider value={{ referenceValue }}>
             <ProForm
               formRef={formRefEdit}

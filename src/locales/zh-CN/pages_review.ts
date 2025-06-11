@@ -1,10 +1,15 @@
 export default {
   'pages.review.title': '审核管理',
 
-  'pages.review.tabs.unassigned': '待分配数据',
-  'pages.review.tabs.assigned': '已分配数据',
-  'pages.review.tabs.review': '审核数据',
+  'pages.review.tabs.unassigned': '待分配任务',
+  'pages.review.tabs.assigned': '已分配任务',
+  'pages.review.tabs.review': '审核任务',
   'pages.review.tabs.members': '成员管理',
+
+  'pages.review.table.column.processName': '过程名称',
+  'pages.review.table.column.teamName': '团队名称',
+  'pages.review.table.column.userName': '用户名称',
+  'pages.review.table.column.createAt': '提交时间',
 
   'pages.review.members.email': '邮箱',
   'pages.review.members.memberName': '成员名称',

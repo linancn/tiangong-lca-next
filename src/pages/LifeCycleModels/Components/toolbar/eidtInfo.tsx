@@ -18,16 +18,18 @@ import { FormattedMessage, useIntl } from 'umi';
 import { LifeCycleModelForm } from '../form';
 // const { TextArea } = Input;
 import { checkRequiredFields, getAllRefObj, getRefTableName } from '@/pages/Utils';
-import { getRefData, updateReviewIdAndStateCode } from '@/services/general/api';
+import { getRefData, updateDateToReviewState,getReviewsOfData  } from '@/services/general/api';
 import {
   getLifeCycleModelDetail,
-  updateLifeCycleModelStateCode,
 } from '@/services/lifeCycleModels/api';
-import { getProcessDetail, updateProcessStateCode } from '@/services/processes/api';
+
+import { getProcessDetail, } from '@/services/processes/api';
 import { addReviewsApi } from '@/services/reviews/api';
 import { getUserTeamId } from '@/services/roles/api';
 import { v4 } from 'uuid';
 import requiredFields from '../../requiredFields';
+import { getTeamMessageApi } from '@/services/teams/api';
+import { getUsersByIds } from '@/services/users/api';
 const { Paragraph } = Typography;
 
 type Props = {
@@ -47,6 +49,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
   const [unRuleVerificationData, setUnRuleVerificationData] = useState<any[]>([]);
   const [nonExistentRefData, setNonExistentRefData] = useState<any[]>([]);
   const intl = useIntl();
+  let modelDetail: any;
 
   useEffect(() => {
     if (showRules) {
@@ -109,7 +112,8 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
     onReset();
   }, [drawerVisible]);
 
-  const handleCheckData = async (data?: any) => {
+  const handleCheckData = async () => {
+    modelDetail = await getLifeCycleModelDetail(data.id, data.version);
     setShowRules(true);
     const { checkResult, tabName } = checkRequiredFields(requiredFields, data ?? fromData);
     if (!checkResult) {
@@ -135,33 +139,61 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
   const submitReview = async () => {
     setSpinning(true);
     const teamId = await getUserTeamId();
-
     const refObjs = getAllRefObj(data);
+
     const unReview: any[] = []; //stateCode < 20
     const underReview: any[] = []; //stateCode >= 20 && stateCode < 100
-    const unReviewProcesses: any[] = [];
     const unRuleVerification: any[] = [];
     const nonExistentRef: any[] = [];
 
-    let lifeCycleModelDetail: any = {};
+    if (!modelDetail) {
+      message.error(
+        intl.formatMessage({
+          id: 'pages.process.review.submitError',
+          defaultMessage: 'Submit review failed',
+        }),
+      );
+      setSpinning(false);
+      return;
+    }
+
+    const dealModel = (modelDetail: any) => {
+      if (
+        modelDetail?.data?.state_code < 20
+      ) {
+        unReview.push({
+          '@type': 'lifeCycleModel data set',
+          '@refObjectId': data?.id,
+          '@version': data?.version,
+        });
+      }
+      if (
+        modelDetail?.data?.state_code >= 20 &&
+        modelDetail?.data?.state_code < 100
+      ) {
+        underReview.push({
+          '@type': 'lifeCycleModel data set',
+          '@refObjectId': data?.id,
+          '@version': data?.version,
+        });
+      }
+      if (
+        !modelDetail?.data?.rule_verification &&
+        modelDetail?.data?.state_code !== 100 &&
+        modelDetail?.data?.state_code !== 200
+      ) {
+        unRuleVerification.unshift({
+          '@type': 'lifeCycleModel data set',
+          '@refObjectId': modelDetail?.data?.id,
+          '@version': modelDetail?.data?.version,
+        });
+      }
+    }
+    dealModel(modelDetail);
 
     const getAllProcesses = async () => {
-      lifeCycleModelDetail = await getLifeCycleModelDetail(data.id, data.version);
-      if (
-        lifeCycleModelDetail?.data?.state_code >= 20 &&
-        lifeCycleModelDetail?.data?.state_code < 100
-      ) {
-        underReview.push(lifeCycleModelDetail);
-        // message.error(
-        //   intl.formatMessage({
-        //     id: 'pages.process.review.error',
-        //     defaultMessage: 'Referenced data is under review, cannot initiate another review',
-        //   }),
-        // );
-        // return false;
-      }
       const processes: any[] = [{ id: data.id, version: data.version }];
-      lifeCycleModelDetail?.data?.json_tg?.xflow?.nodes?.forEach((item: any) => {
+      modelDetail?.data?.json_tg?.xflow?.nodes?.forEach((item: any) => {
         if (item.data) {
           processes.push(item.data);
         }
@@ -237,13 +269,23 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
         }
       }
     };
-
     await checkReferences(refObjs);
 
     const allProcesses = await getAllProcesses();
-
     for (const process of allProcesses) {
+      const modelOfProcess = await getLifeCycleModelDetail(process.id, process.version);
+      if (modelOfProcess) {
+        dealModel(modelOfProcess);
+      };
       const processDetail = await getProcessDetail(process.id, process.version);
+      if (!processDetail) {
+        nonExistentRef.push({
+          '@type': 'process data set',
+          '@refObjectId': process.id,
+          '@version': process.version,
+        });
+        continue;
+      }
       if (
         !processDetail?.data?.ruleVerification &&
         processDetail?.data?.stateCode !== 100 &&
@@ -251,30 +293,30 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
       ) {
         unRuleVerification.unshift({
           '@type': 'process data set',
-          '@refObjectId': processDetail?.data?.id,
-          '@version': processDetail?.data?.version,
+          '@refObjectId': process.id,
+          '@version': process.version,
         });
       }
       if (processDetail?.data?.stateCode < 20) {
-        unReviewProcesses.push(process);
-      } else if (processDetail?.data?.stateCode >= 20 && processDetail?.data?.stateCode < 100) {
-        underReview.push(processDetail);
+        unReview.push({
+          '@type': 'process data set',
+          '@refObjectId': process.id,
+          '@version': process.version,
+        });
+      }
+      if (processDetail?.data?.stateCode >= 20 && processDetail?.data?.stateCode < 100) {
+        underReview.push({
+          '@type': 'process data set',
+          '@refObjectId': process.id,
+          '@version': process.version,
+        });
       }
       const processRefObjs = getAllRefObj(processDetail?.data?.json);
       await checkReferences(processRefObjs);
     }
-    if (
-      !lifeCycleModelDetail?.data?.rule_verification &&
-      lifeCycleModelDetail?.data?.state_code !== 100 &&
-      lifeCycleModelDetail?.data?.state_code !== 200
-    ) {
-      unRuleVerification.unshift({
-        '@type': 'lifeCycleModel data set',
-        '@refObjectId': lifeCycleModelDetail?.data?.id,
-        '@version': lifeCycleModelDetail?.data?.version,
-      });
-    }
 
+    setNonExistentRefData(nonExistentRef);
+    setUnRuleVerificationData(unRuleVerification);
     if (
       (nonExistentRef && nonExistentRef.length > 0) ||
       (unRuleVerification && unRuleVerification.length > 0) ||
@@ -283,12 +325,6 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
       if (!drawerVisible) {
         setDrawerVisible(true);
         onReset();
-      }
-      if (nonExistentRef && nonExistentRef.length > 0) {
-        setNonExistentRefData(nonExistentRef);
-      }
-      if (unRuleVerification && unRuleVerification.length > 0) {
-        setUnRuleVerificationData(unRuleVerification);
       }
       if (underReview && underReview.length > 0) {
         message.error(
@@ -302,10 +338,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
       return;
     }
 
-    const reviewId = v4();
-    const result = await addReviewsApi(reviewId, data.id, data.version);
-    if (result?.error) return;
-    if (lifeCycleModelDetail?.data?.state_code >= 20) {
+    if (modelDetail?.data?.state_code >= 20) {
       message.error(
         intl.formatMessage({
           id: 'pages.process.review.submitError',
@@ -315,29 +348,52 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
       setSpinning(false);
       return;
     }
-    const lifeCycleModelStateCode = 20;
 
-    await updateLifeCycleModelStateCode(data.id, data.version, lifeCycleModelStateCode);
-
-    if (unReviewProcesses.length > 0) {
-      for (const process of unReviewProcesses) {
-        await updateProcessStateCode(
-          process.id,
-          process.version,
-          reviewId,
-          lifeCycleModelStateCode,
-        );
+    const team = await getTeamMessageApi(modelDetail?.data?.teamId);
+    const user = await getUsersByIds([sessionStorage.getItem('userId') ?? '']);
+    const reviewId = v4();
+    const reviewJson = {
+      data: {
+        id: data.id,
+        version:data.version,
+        name: modelDetail?.data?.json?.lifeCycleModelDataSet?.lifeCycleModelInformation?.dataSetInformation?.name ?? {}
+      },
+      team: {
+        id: modelDetail?.data?.teamId,
+        name: team?.data?.[0]?.json?.title
+      },
+      user: {
+        id: sessionStorage.getItem('userId'),
+        name: user?.[0]?.display_name,
+        email: user?.[0]?.email
+      },
+      comment: {
+        result: 0,
+        message: ''
       }
     }
-    unReview.forEach(async (item: any) => {
-      await updateReviewIdAndStateCode(
-        reviewId,
+    const result = await addReviewsApi(reviewId, reviewJson);
+    if (result?.error) return;
+    for(const item of unReview){
+      const oldReviews = await getReviewsOfData(item['@refObjectId'],item['@version'],getRefTableName(item['@type']));
+      const updateData = {
+        state_code: 20,
+        reviews:[
+          ...oldReviews,
+          {
+            key: oldReviews?.length,
+            id: reviewId
+          }
+        ]
+      }
+      await updateDateToReviewState(
         item['@refObjectId'],
         item['@version'],
         getRefTableName(item['@type']),
-        lifeCycleModelStateCode,
+        updateData
       );
-    });
+    }
+
     message.success(
       intl.formatMessage({
         id: 'pages.process.review.submitSuccess',
@@ -345,6 +401,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
       }),
     );
     setDrawerVisible(false);
+    setSpinning(false);
   };
 
   useImperativeHandle(ref, () => ({
@@ -402,7 +459,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
             )} */}
             {action === 'edit' ? (
               <>
-                <Button onClick={() => handleCheckData(fromData)}>
+                <Button onClick={() => handleCheckData()}>
                   <FormattedMessage id='pages.button.check' defaultMessage='Data check' />
                 </Button>
 
@@ -440,58 +497,59 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
         }
       >
         <Spin spinning={spinning}>
-          {unRuleVerificationData && unRuleVerificationData.length > 0 && (
+          {(unRuleVerificationData && unRuleVerificationData.length > 0) ||
+            (nonExistentRefData && nonExistentRefData.length > 0) ? (
             <>
               <Collapse
                 items={[
                   {
                     key: '1',
                     label: intl.formatMessage({
-                      id: 'pages.process.review.unRuleVerification.tip',
-                      defaultMessage:
-                        'The following data is incomplete, please modify and resubmit for review',
+                      id: 'pages.process.review.verify.title',
+                      defaultMessage: 'Data verification details',
                     }),
                     children: (
-                      <Typography>
-                        {unRuleVerificationData.map((item: any) => (
-                          <Paragraph
-                            key={item['@refObjectId']}
-                          >{`${item['@type']} : ${item['@refObjectId']}`}</Paragraph>
-                        ))}
-                      </Typography>
+                      <>
+                        {unRuleVerificationData && unRuleVerificationData.length > 0 && (
+                          <Typography>
+                            <Paragraph>
+                              <FormattedMessage
+                                id='pages.process.review.unRuleVerification.tip'
+                                defaultMessage='The following referenced data is incomplete, please complete it'
+                              />
+                              {unRuleVerificationData?.map((item: any) => (
+                                <div key={item['@refObjectId']}>
+                                  {`${item['@type']} : ${item['@refObjectId']}`}{' '}
+                                  {`${item['@version']}`}
+                                </div>
+                              ))}
+                            </Paragraph>
+                          </Typography>
+                        )}
+                        {nonExistentRefData && nonExistentRefData.length > 0 && (
+                          <Typography>
+                            <Paragraph>
+                              <FormattedMessage
+                                id='pages.process.review.nonExistentRefData.tip'
+                                defaultMessage='The following data does not exist, please check'
+                              />
+                              {nonExistentRefData?.map((item: any) => (
+                                <div key={item['@refObjectId']}>
+                                  {`${item['@type']} : ${item['@refObjectId']}`}{' '}
+                                  {`${item['@version']}`}
+                                </div>
+                              ))}
+                            </Paragraph>
+                          </Typography>
+                        )}
+                      </>
                     ),
                   },
                 ]}
               />
               <br />
             </>
-          )}
-          {nonExistentRefData && nonExistentRefData.length > 0 && (
-            <>
-              <Collapse
-                items={[
-                  {
-                    key: '1',
-                    label: intl.formatMessage({
-                      id: 'pages.process.review.nonExistentRefData.tip',
-                      defaultMessage:
-                        'The following data is incomplete, please modify and resubmit for review',
-                    }),
-                    children: (
-                      <Typography>
-                        {nonExistentRefData.map((item: any) => (
-                          <Paragraph
-                            key={item['@refObjectId']}
-                          >{`${item['@type']} : ${item['@refObjectId']}`}</Paragraph>
-                        ))}
-                      </Typography>
-                    ),
-                  },
-                ]}
-              />
-              <br />
-            </>
-          )}
+          ) : null}
           <UpdateReferenceContext.Provider value={{ referenceValue }}>
             <ProForm
               formRef={formRefEdit}

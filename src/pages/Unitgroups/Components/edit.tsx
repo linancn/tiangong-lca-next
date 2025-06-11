@@ -123,7 +123,7 @@ const UnitGroupEdit: FC<Props> = ({
           <Button shape='circle' icon={<FormOutlined />} size='small' onClick={onEdit}></Button>
         </Tooltip>
       ) : (
-        <Button size='small' onClick={onEdit}>
+        <Button  onClick={onEdit}>
           <FormattedMessage
             id={buttonType ? buttonType : 'pages.button.edit'}
             defaultMessage='Edit'
