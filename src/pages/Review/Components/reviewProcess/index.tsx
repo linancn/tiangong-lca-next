@@ -1,16 +1,14 @@
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
-import { getFlowDetail } from '@/services/flows/api';
-import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
 
 import { getAllRefObj, getRefTableName } from '@/pages/Utils';
 import { getCommentApi, updateCommentApi } from '@/services/comments/api';
 import { getRefData, updateStateCodeApi } from '@/services/general/api';
 import { getProcessDetail, updateProcessApi } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
-import { updateReviewApi,getReviewsDetail } from '@/services/reviews/api';
+import { updateReviewApi } from '@/services/reviews/api';
 import { getUserTeamId } from '@/services/roles/api';
 import styles from '@/style/custom.less';
-import { AuditOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
+import { AuditOutlined, CloseOutlined, ProfileOutlined  } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { Button, Drawer, Form, Input, Space, Spin, Tooltip, message } from 'antd';
 import type { FC } from 'react';
@@ -45,7 +43,6 @@ const ReviewProcessDetail: FC<Props> = ({
   const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
   const [spinning, setSpinning] = useState(false);
   const intl = useIntl();
-  const [referenceValue, setReferenceValue] = useState(0);
   const [approveReviewDisabled, setApproveReviewDisabled] = useState(true);
 
   const handletFromData = () => {
@@ -61,36 +58,6 @@ const ReviewProcessDetail: FC<Props> = ({
     if (fromData?.id) setExchangeDataSource([...data]);
   };
 
-  const updateReference = async () => {
-    const newExchangeDataSource = await Promise.all(
-      exchangeDataSource.map(async (item: any) => {
-        const refObjectId = item?.referenceToFlowDataSet?.['@refObjectId'] ?? '';
-        const version = item?.referenceToFlowDataSet?.['@version'] ?? '';
-
-        const result = await getFlowDetail(refObjectId, version);
-
-        if (!result?.data) {
-          return item;
-        }
-
-        const refData = genFlowFromData(result.data?.json?.flowDataSet ?? {});
-
-        return {
-          ...item,
-          referenceToFlowDataSet: {
-            ...item?.referenceToFlowDataSet,
-            '@version': result.data?.version ?? '',
-            'common:shortDescription': genFlowNameJson(
-              refData?.flowInformation?.dataSetInformation?.name,
-            ),
-          },
-        };
-      }),
-    );
-
-    setExchangeDataSource(newExchangeDataSource);
-    setReferenceValue(referenceValue + 1);
-  };
 
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
@@ -203,17 +170,17 @@ const ReviewProcessDetail: FC<Props> = ({
       },
       tabType,
     );
-    const oldReviews = await getReviewsDetail(reviewId);
-    const {json:oldReviewJson} = oldReviews??{};
+    // const oldReviews = await getReviewsDetail(reviewId);
+    // const {json:oldReviewJson} = oldReviews??{};
     const { error: error2 } = await updateReviewApi([reviewId], {
       state_code: 2,
-      json:{
-        ...oldReviewJson,
-        comment:{
-          ...oldReviewJson?.comment??{},
-          result:2,
-        }
-      }
+      // json:{
+      //   ...oldReviewJson,
+      //   comment:{
+      //     ...oldReviewJson?.comment??{},
+      //     result:2,
+      //   }
+      // }
     });
 
     await updateReviewDataToPublic(id, version);
@@ -317,29 +284,6 @@ const ReviewProcessDetail: FC<Props> = ({
     });
   }, [exchangeDataSource]);
 
-  const temporarySave = async () => {
-    const fieldsValue = formRefEdit.current?.getFieldsValue();
-    const submitData = {
-      modellingAndValidation: {
-        complianceDeclarations: fieldsValue?.modellingAndValidation?.complianceDeclarations,
-        validation: fieldsValue?.modellingAndValidation?.validation,
-      },
-    };
-
-    setSpinning(true);
-    const { error } = await updateCommentApi(reviewId, { json: submitData }, tabType);
-    if (!error) {
-      message.success(
-        intl.formatMessage({
-          id: 'pages.review.temporarySaveSuccess',
-          defaultMessage: 'Temporary save successfully',
-        }),
-      );
-      setDrawerVisible(false);
-      actionRef?.current?.reload();
-    }
-    setSpinning(false);
-  };
 
   return (
     <>
@@ -384,31 +328,7 @@ const ReviewProcessDetail: FC<Props> = ({
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         footer={
-          type === 'edit' ? (
-            <Space size={'middle'} className={styles.footer_right}>
-              <>
-                <Button
-                  onClick={() => {
-                    updateReference();
-                  }}
-                >
-                  <FormattedMessage
-                    id='pages.button.updateReference'
-                    defaultMessage='Update reference'
-                  />
-                </Button>
-              </>
-              <Button onClick={() => setDrawerVisible(false)}>
-                <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
-              </Button>
-              <Button onClick={temporarySave}>
-                <FormattedMessage id='pages.button.temporarySave' />
-              </Button>
-              <Button onClick={() => formRefEdit.current?.submit()} type='primary'>
-                <FormattedMessage id='pages.button.save' defaultMessage='Save' />
-              </Button>
-            </Space>
-          ) : tabType === 'assigned' ? (
+          tabType === 'assigned' ? (
             <Space className={styles.footer_right}>
               <Button disabled={approveReviewDisabled} type='primary' onClick={approveReview}>
                 <FormattedMessage
@@ -417,13 +337,11 @@ const ReviewProcessDetail: FC<Props> = ({
                 />
               </Button>
             </Space>
-          ) : (
-            <></>
-          )
+          ) : null
         }
       >
         <Spin spinning={spinning}>
-          <UpdateReferenceContext.Provider value={{ referenceValue }}>
+          <UpdateReferenceContext.Provider>
             <ProForm
               formRef={formRefEdit}
               initialValues={initData}

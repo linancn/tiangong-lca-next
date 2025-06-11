@@ -3,13 +3,14 @@ import { getReviewsTableData } from '@/services/reviews/api';
 import { ReviewsTable } from '@/services/reviews/data';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
-import { Space } from 'antd';
+import {  Space } from 'antd';
 import { useState } from 'react';
 import SelectReviewer from './SelectReviewer';
 import ProcessView from '@/pages/Processes/Components/view';
 import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
 import ReviewLifeCycleModelsDetail from './reviewLifeCycleModels';
 import ReviewProcessDetail from './reviewProcess';
+import RejectReview from './RejectReview';
 
 type AssignmentReviewProps = {
   userData: { user_id: string; role: string } | null;
@@ -50,6 +51,7 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
                 version={row?.json?.data?.version}
                 lang={lang}
                 buttonType='icon'
+                buttonTypeProp='text'
               /> :
               <ProcessView
                 id={row?.json?.data?.id}
@@ -57,6 +59,7 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
                 lang={lang}
                 buttonType='icon'
                 disabled={false}
+                buttonTypeProp='text'
               />}
           </div>
         ];
@@ -93,6 +96,41 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
     }
   ];
 
+  if (tableType === 'unassigned') {
+    columns.push({
+      title: <FormattedMessage id='pages.review.actions' defaultMessage='Actions' />,
+      dataIndex: 'actions',
+      search: false,
+      render: (_, record) => {
+        return [
+          <RejectReview reviewId={record.id} key={0}/>,
+          // <Space key={0}>
+          //   {record.isFromLifeCycle ? (
+          //     <ReviewLifeCycleModelsDetail
+          //       tabType='assigned'
+          //       type='edit'
+          //       actionRef={actionRef}
+          //       id={record.json?.data?.id}
+          //       version={record.json?.data?.version}
+          //       lang={lang}
+          //       reviewId={record.id}
+          //     />
+          //   ) : (
+          //     <ReviewProcessDetail
+          //       tabType='assigned'
+          //       type='edit'
+          //       actionRef={actionRef}
+          //       id={record.json?.data?.id}
+          //       version={record.json?.data?.version}
+          //       lang={lang}
+          //       reviewId={record.id}
+          //     />
+          //   )}
+          // </Space>,
+        ];
+      },
+    });
+  }
   if (tableType === 'assigned') {
     columns.push({
       title: <FormattedMessage id='pages.review.actions' defaultMessage='Actions' />,
@@ -104,7 +142,7 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
             {record.isFromLifeCycle ? (
               <ReviewLifeCycleModelsDetail
                 tabType='assigned'
-                type='view'
+                type='edit'
                 actionRef={actionRef}
                 id={record.json?.data?.id}
                 version={record.json?.data?.version}
@@ -114,7 +152,7 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
             ) : (
               <ReviewProcessDetail
                 tabType='assigned'
-                type='view'
+                type='edit'
                 actionRef={actionRef}
                 id={record.json?.data?.id}
                 version={record.json?.data?.version}

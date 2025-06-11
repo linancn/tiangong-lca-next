@@ -115,30 +115,6 @@ const ToolbarViewInfo: FC<Props> = ({
     setActiveTabKey(key);
   };
 
-  const temporarySave = async () => {
-    const fieldsValue = formRef.current?.getFieldsValue();
-    const submitData = {
-      modellingAndValidation: {
-        complianceDeclarations: fieldsValue?.modellingAndValidation?.complianceDeclarations,
-        validation: fieldsValue?.modellingAndValidation?.validation,
-      },
-    };
-
-    setSpinning(true);
-    const { error } = await updateCommentApi(reviewId, { json: submitData }, tabType);
-    if (!error) {
-      message.success(
-        intl.formatMessage({
-          id: 'pages.review.temporarySaveSuccess',
-          defaultMessage: 'Temporary save successfully',
-        }),
-      );
-      setDrawerVisible(false);
-      actionRef?.current?.reload();
-    }
-    setSpinning(false);
-  };
-
   const updateProcessJson = async (process: any) => {
     const { data: commentData, error } = await getCommentApi(reviewId, tabType);
     if (!error && commentData && commentData.length) {
@@ -1850,19 +1826,7 @@ const ToolbarViewInfo: FC<Props> = ({
           setDrawerVisible(false);
         }}
         footer={
-          type === 'edit' ? (
-            <Space size={'middle'} className={styles.footer_right}>
-              <Button onClick={() => setDrawerVisible(false)}>
-                <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
-              </Button>
-              <Button onClick={temporarySave}>
-                <FormattedMessage id='pages.button.temporarySave' />
-              </Button>
-              <Button onClick={() => formRef.current?.submit()} type='primary'>
-                <FormattedMessage id='pages.button.save' defaultMessage='Save' />
-              </Button>
-            </Space>
-          ) : tabType === 'assigned' ? (
+           tabType === 'assigned' ? (
             <Space className={styles.footer_right}>
               <Button disabled={approveReviewDisabled} type='primary' onClick={approveReview}>
                 <FormattedMessage
@@ -1872,7 +1836,7 @@ const ToolbarViewInfo: FC<Props> = ({
               </Button>
             </Space>
           ) : (
-            <></>
+            null
           )
         }
       >

@@ -23,6 +23,7 @@ import pwa from './zh-CN/pwa';
 import settingDrawer from './zh-CN/settingDrawer';
 import settings from './zh-CN/settings';
 import validator from './zh-CN/validator';
+import component_rejectReview from './zh-CN/component_rejectReview';
 export default {
   'navBar.lang': '语言',
   'layout.user.link.help': '帮助',
@@ -56,4 +57,5 @@ export default {
   ...pages_manageSystem,
   ...pages_review,
   ...importData,
+  ...component_rejectReview,
 };
