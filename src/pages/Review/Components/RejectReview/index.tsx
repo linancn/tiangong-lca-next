@@ -1,16 +1,14 @@
+import { getReviewsDetail, updateReviewApi } from '@/services/reviews/api';
+import { FileExcelOutlined } from '@ant-design/icons';
 import { FormattedMessage, useIntl } from '@umijs/max';
 import { Button, Form, FormInstance, Input, message, Modal, Tooltip } from 'antd';
-import { FileExcelOutlined } from '@ant-design/icons';
 import { useEffect, useRef, useState } from 'react';
-import { updateReviewApi, getReviewsDetail } from '@/services/reviews/api'
 
 interface RejectReviewProps {
   reviewId: string;
 }
 
-const RejectReview: React.FC<RejectReviewProps> = ({
-  reviewId,
-}) => {
+const RejectReview: React.FC<RejectReviewProps> = ({ reviewId }) => {
   const formRef = useRef<FormInstance>(null);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -42,8 +40,8 @@ const RejectReview: React.FC<RejectReviewProps> = ({
           ...oldReviewJson,
           comment: {
             message: values.reason,
-          }
-        }
+          },
+        },
       });
 
       if (!error) {
@@ -77,18 +75,13 @@ const RejectReview: React.FC<RejectReviewProps> = ({
           defaultMessage: 'Reject',
         })}
       >
-        <Button
-          size='small'
-          shape="circle"
-          icon={<FileExcelOutlined />}
-          onClick={handleOpen}
-        />
+        <Button size='small' shape='circle' icon={<FileExcelOutlined />} onClick={handleOpen} />
       </Tooltip>
       <Modal
         title={
           <FormattedMessage
-            id="component.rejectReview.modal.title"
-            defaultMessage="Reject Review"
+            id='component.rejectReview.modal.title'
+            defaultMessage='Reject Review'
           />
         }
         open={open}
@@ -97,25 +90,22 @@ const RejectReview: React.FC<RejectReviewProps> = ({
         confirmLoading={loading}
         okText={
           <FormattedMessage
-            id="component.rejectReview.modal.confirm"
-            defaultMessage="Confirm Reject"
+            id='component.rejectReview.modal.confirm'
+            defaultMessage='Confirm Reject'
           />
         }
         cancelText={
-          <FormattedMessage
-            id="component.rejectReview.modal.cancel"
-            defaultMessage="Cancel"
-          />
+          <FormattedMessage id='component.rejectReview.modal.cancel' defaultMessage='Cancel' />
         }
         width={600}
       >
-        <Form ref={formRef} layout="vertical">
+        <Form ref={formRef} layout='vertical'>
           <Form.Item
-            name="reason"
+            name='reason'
             label={
               <FormattedMessage
-                id="component.rejectReview.reason.label"
-                defaultMessage="Reject Reason"
+                id='component.rejectReview.reason.label'
+                defaultMessage='Reject Reason'
               />
             }
             rules={[
@@ -123,8 +113,8 @@ const RejectReview: React.FC<RejectReviewProps> = ({
                 required: true,
                 message: (
                   <FormattedMessage
-                    id="component.rejectReview.reason.required"
-                    defaultMessage="Please enter the reject reason!"
+                    id='component.rejectReview.reason.required'
+                    defaultMessage='Please enter the reject reason!'
                   />
                 ),
               },
@@ -132,8 +122,8 @@ const RejectReview: React.FC<RejectReviewProps> = ({
                 max: 500,
                 message: (
                   <FormattedMessage
-                    id="component.rejectReview.reason.maxLength"
-                    defaultMessage="Reject reason cannot exceed 500 characters!"
+                    id='component.rejectReview.reason.maxLength'
+                    defaultMessage='Reject reason cannot exceed 500 characters!'
                   />
                 ),
               },
@@ -143,7 +133,8 @@ const RejectReview: React.FC<RejectReviewProps> = ({
               rows={4}
               placeholder={intl.formatMessage({
                 id: 'component.rejectReview.reason.placeholder',
-                defaultMessage: 'Please provide detailed reasons for rejection so that the submitter can understand what needs to be modified...',
+                defaultMessage:
+                  'Please provide detailed reasons for rejection so that the submitter can understand what needs to be modified...',
               })}
               showCount
               maxLength={500}

@@ -3,6 +3,7 @@ import component_allTeams from './en-US/component_allTeams';
 import component_allVersions from './en-US/component_allVersions';
 import component_contributeData from './en-US/component_contributeData';
 import importData from './en-US/component_importData';
+import component_rejectReview from './en-US/component_rejectReview';
 import globalHeader from './en-US/globalHeader';
 import menu from './en-US/menu';
 import pages from './en-US/pages';
@@ -23,7 +24,6 @@ import pwa from './en-US/pwa';
 import settingDrawer from './en-US/settingDrawer';
 import settings from './en-US/settings';
 import validator from './en-US/validator';
-import component_rejectReview from './en-US/component_rejectReview';
 export default {
   'navBar.lang': 'Languages',
   'layout.user.link.help': 'Help',

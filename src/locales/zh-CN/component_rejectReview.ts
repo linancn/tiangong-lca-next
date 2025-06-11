@@ -9,4 +9,4 @@ export default {
   'component.rejectReview.reason.placeholder': '请详细说明驳回的原因，以便提交者了解需要修改的内容...',
   'component.rejectReview.success': '驳回成功！',
   'component.rejectReview.error': '驳回失败，请重试！',
-}; 
+};

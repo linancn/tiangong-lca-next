@@ -8,7 +8,7 @@ import { genProcessFromData } from '@/services/processes/util';
 import { updateReviewApi } from '@/services/reviews/api';
 import { getUserTeamId } from '@/services/roles/api';
 import styles from '@/style/custom.less';
-import { AuditOutlined, CloseOutlined, ProfileOutlined  } from '@ant-design/icons';
+import { AuditOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { Button, Drawer, Form, Input, Space, Spin, Tooltip, message } from 'antd';
 import type { FC } from 'react';
@@ -58,7 +58,6 @@ const ReviewProcessDetail: FC<Props> = ({
     if (fromData?.id) setExchangeDataSource([...data]);
   };
 
-
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
   };
@@ -105,7 +104,7 @@ const ReviewProcessDetail: FC<Props> = ({
             : [_compliance, ...allCompliance],
         },
       };
-      await updateProcessApi(id, version, {json_ordered:json});
+      await updateProcessApi(id, version, { json_ordered: json });
     }
   };
 
@@ -283,7 +282,6 @@ const ReviewProcessDetail: FC<Props> = ({
       },
     });
   }, [exchangeDataSource]);
-
 
   return (
     <>

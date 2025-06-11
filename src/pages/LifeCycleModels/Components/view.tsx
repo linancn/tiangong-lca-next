@@ -15,7 +15,14 @@ type Props = {
   actionRef?: React.MutableRefObject<ActionType | undefined>;
   buttonTypeProp?: ButtonType;
 };
-const LifeCycleModelView: FC<Props> = ({ id, version, buttonType, lang, actionRef, buttonTypeProp='default' }) => {
+const LifeCycleModelView: FC<Props> = ({
+  id,
+  version,
+  buttonType,
+  lang,
+  actionRef,
+  buttonTypeProp = 'default',
+}) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const { token } = theme.useToken();
 
@@ -46,7 +53,13 @@ const LifeCycleModelView: FC<Props> = ({ id, version, buttonType, lang, actionRe
     <>
       {buttonType === 'icon' ? (
         <Tooltip title={<FormattedMessage id='pages.button.view' defaultMessage='View' />}>
-          <Button shape='circle' type={buttonTypeProp} icon={<ProfileOutlined />} size='small' onClick={onView} />
+          <Button
+            shape='circle'
+            type={buttonTypeProp}
+            icon={<ProfileOutlined />}
+            size='small'
+            onClick={onView}
+          />
         </Tooltip>
       ) : (
         <Button onClick={onView}>

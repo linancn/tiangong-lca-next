@@ -9,4 +9,4 @@ export default {
   'component.rejectReview.reason.placeholder': 'Please provide detailed reasons for rejection so that the submitter can understand what needs to be modified...',
   'component.rejectReview.success': 'Rejected successfully!',
   'component.rejectReview.error': 'Failed to reject, please try again!',
-}; 
+};

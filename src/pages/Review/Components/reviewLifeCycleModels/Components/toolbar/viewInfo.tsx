@@ -1826,7 +1826,7 @@ const ToolbarViewInfo: FC<Props> = ({
           setDrawerVisible(false);
         }}
         footer={
-           tabType === 'assigned' ? (
+          tabType === 'assigned' ? (
             <Space className={styles.footer_right}>
               <Button disabled={approveReviewDisabled} type='primary' onClick={approveReview}>
                 <FormattedMessage
@@ -1835,9 +1835,7 @@ const ToolbarViewInfo: FC<Props> = ({
                 />
               </Button>
             </Space>
-          ) : (
-            null
-          )
+          ) : null
         }
       >
         <Spin spinning={spinning}>

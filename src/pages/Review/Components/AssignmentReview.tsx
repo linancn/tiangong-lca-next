@@ -1,16 +1,16 @@
+import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
+import ProcessView from '@/pages/Processes/Components/view';
 import { ListPagination } from '@/services/general/data';
 import { getReviewsTableData } from '@/services/reviews/api';
 import { ReviewsTable } from '@/services/reviews/data';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
-import {  Space } from 'antd';
+import { Space } from 'antd';
 import { useState } from 'react';
-import SelectReviewer from './SelectReviewer';
-import ProcessView from '@/pages/Processes/Components/view';
-import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
+import RejectReview from './RejectReview';
 import ReviewLifeCycleModelsDetail from './reviewLifeCycleModels';
 import ReviewProcessDetail from './reviewProcess';
-import RejectReview from './RejectReview';
+import SelectReviewer from './SelectReviewer';
 
 type AssignmentReviewProps = {
   userData: { user_id: string; role: string } | null;
@@ -37,7 +37,12 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
       search: false,
     },
     {
-      title: <FormattedMessage id='pages.review.table.column.processName' defaultMessage='Process Name' />,
+      title: (
+        <FormattedMessage
+          id='pages.review.table.column.processName'
+          defaultMessage='Process Name'
+        />
+      ),
       dataIndex: 'processName',
       sorter: false,
       search: false,
@@ -45,14 +50,15 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
         return [
           <div key={0} style={{ display: 'flex' }}>
             {row.processName}
-            {row?.isFromLifeCycle ?
+            {row?.isFromLifeCycle ? (
               <LifeCycleModelView
                 id={row?.json?.data?.id}
                 version={row?.json?.data?.version}
                 lang={lang}
                 buttonType='icon'
                 buttonTypeProp='text'
-              /> :
+              />
+            ) : (
               <ProcessView
                 id={row?.json?.data?.id}
                 version={row?.json?.data?.version}
@@ -60,8 +66,9 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
                 buttonType='icon'
                 disabled={false}
                 buttonTypeProp='text'
-              />}
-          </div>
+              />
+            )}
+          </div>,
         ];
       },
     },
@@ -88,12 +95,14 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
       },
     },
     {
-      title: <FormattedMessage id='pages.review.table.column.createAt' defaultMessage='Create At' />,
+      title: (
+        <FormattedMessage id='pages.review.table.column.createAt' defaultMessage='Create At' />
+      ),
       dataIndex: 'createAt',
       sorter: false,
       search: false,
       valueType: 'dateTime',
-    }
+    },
   ];
 
   if (tableType === 'unassigned') {
@@ -103,7 +112,7 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
       search: false,
       render: (_, record) => {
         return [
-          <RejectReview reviewId={record.id} key={0}/>,
+          <RejectReview reviewId={record.id} key={0} />,
           // <Space key={0}>
           //   {record.isFromLifeCycle ? (
           //     <ReviewLifeCycleModelsDetail
@@ -286,9 +295,9 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
       rowSelection={
         tableType === 'unassigned'
           ? {
-            selectedRowKeys,
-            onChange: handleRowSelectionChange,
-          }
+              selectedRowKeys,
+              onChange: handleRowSelectionChange,
+            }
           : undefined
       }
     />

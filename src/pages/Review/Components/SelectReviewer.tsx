@@ -3,7 +3,7 @@ import { getReviewerIdsApi, updateReviewApi } from '@/services/reviews/api';
 import { getReviewMembersApi } from '@/services/roles/api';
 import { TeamMemberTable } from '@/services/teams/data';
 import styles from '@/style/custom.less';
-import { UsergroupAddOutlined, CloseOutlined } from '@ant-design/icons';
+import { CloseOutlined, UsergroupAddOutlined } from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
 import { Button, Drawer, message, Space, Spin, Tooltip } from 'antd';
@@ -128,7 +128,7 @@ export default function SelectReviewer({ reviewIds, actionRef }: SelectReviewerP
         <Button
           style={{ width: 'inherit' }}
           onClick={() => setDrawerVisible(true)}
-          type='text'  
+          type='text'
           icon={<UsergroupAddOutlined />}
           size='large'
         />
