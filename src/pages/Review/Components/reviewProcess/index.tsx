@@ -5,9 +5,9 @@ import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
 import { getAllRefObj, getRefTableName } from '@/pages/Utils';
 import { getCommentApi, updateCommentApi } from '@/services/comments/api';
 import { getRefData, updateStateCodeApi } from '@/services/general/api';
-import { getProcessDetail, updateProcessJsonApi } from '@/services/processes/api';
+import { getProcessDetail, updateProcessApi } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
-import { updateReviewApi } from '@/services/reviews/api';
+import { updateReviewApi,getReviewsDetail } from '@/services/reviews/api';
 import { getUserTeamId } from '@/services/roles/api';
 import styles from '@/style/custom.less';
 import { AuditOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
@@ -138,7 +138,7 @@ const ReviewProcessDetail: FC<Props> = ({
             : [_compliance, ...allCompliance],
         },
       };
-      await updateProcessJsonApi(id, version, json);
+      await updateProcessApi(id, version, {json_ordered:json});
     }
   };
 
@@ -203,9 +203,17 @@ const ReviewProcessDetail: FC<Props> = ({
       },
       tabType,
     );
-
+    const oldReviews = await getReviewsDetail(reviewId);
+    const {json:oldReviewJson} = oldReviews??{};
     const { error: error2 } = await updateReviewApi([reviewId], {
       state_code: 2,
+      json:{
+        ...oldReviewJson,
+        comment:{
+          ...oldReviewJson?.comment??{},
+          result:2,
+        }
+      }
     });
 
     await updateReviewDataToPublic(id, version);
@@ -249,7 +257,7 @@ const ReviewProcessDetail: FC<Props> = ({
         if (result?.data?.json?.processDataSet) {
           const _compliance =
             result.data.json.processDataSet?.modellingAndValidation?.complianceDeclarations
-              .compliance;
+              ?.compliance;
           const _review =
             result.data.json.processDataSet?.modellingAndValidation?.validation?.review;
           result.data.json.processDataSet.modellingAndValidation = {

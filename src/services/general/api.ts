@@ -139,6 +139,30 @@ export async function updateStateCodeApi(
   return result;
 }
 
+export async function getReviewsOfData(id: string, version: string, table: string) {
+  let result = await supabase
+    .from(table)
+    .select('reviews')
+    .eq('id', id)
+    .eq('version', version);
+  return result.data?.[0]?.reviews ?? [];
+}
+export async function updateDateToReviewState(
+  id: string,
+  version: string,
+  table: string,
+  data: any,
+) {
+  if (!table) return;
+  let result = await supabase
+    .from(table)
+    .update(data)
+    .eq('id', id)
+    .eq('version', version)
+    .select();
+  return result;
+}
+
 export async function updateReviewIdAndStateCode(
   reviewId: string,
   id: string,
@@ -493,7 +517,7 @@ export async function getAllVersions(
                 if (i?.typeOfDataSet === 'Elementary flow') {
                   classificationData =
                     i?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-                      'common:category'
+                    'common:category'
                     ];
                   thisClass = res?.data?.categoryElementaryFlow;
                 } else {
@@ -548,7 +572,7 @@ export async function getAllVersions(
               if (i?.typeOfDataSet === 'Elementary flow') {
                 classificationData =
                   i?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-                    'common:category'
+                  'common:category'
                   ];
               } else {
                 classificationData =

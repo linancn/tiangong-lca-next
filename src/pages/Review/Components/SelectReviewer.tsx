@@ -83,7 +83,7 @@ export default function SelectReviewer({ reviewIds, actionRef }: SelectReviewerP
 
   const handleTemporarySave = async () => {
     setSpinning(true);
-    const { error, data } = await updateReviewApi(reviewIds, {
+    const { error } = await updateReviewApi(reviewIds, {
       reviewer_id: selectedRowKeys,
     });
     if (!error) {
@@ -93,7 +93,6 @@ export default function SelectReviewer({ reviewIds, actionRef }: SelectReviewerP
           defaultMessage: 'Temporary save success',
         }),
       );
-      await addComment(data);
     }
     setSpinning(false);
   };

@@ -23,7 +23,7 @@ import {
   getLifeCycleModelDetail,
   updateLifeCycleModelStateCode,
 } from '@/services/lifeCycleModels/api';
-import { getProcessDetail, updateProcessStateCode } from '@/services/processes/api';
+import { getProcessDetail,  } from '@/services/processes/api';
 import { addReviewsApi } from '@/services/reviews/api';
 import { getUserTeamId } from '@/services/roles/api';
 import { v4 } from 'uuid';
@@ -321,12 +321,12 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
 
     if (unReviewProcesses.length > 0) {
       for (const process of unReviewProcesses) {
-        await updateProcessStateCode(
-          process.id,
-          process.version,
-          reviewId,
-          lifeCycleModelStateCode,
-        );
+        // await updateProcessStateCode(
+        //   process.id,
+        //   process.version,
+        //   reviewId,
+        //   lifeCycleModelStateCode,
+        // );
       }
     }
     unReview.forEach(async (item: any) => {

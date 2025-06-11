@@ -37,7 +37,7 @@ import {
   getLifeCycleModelDetail,
   updateLifeCycleModelJsonApi,
 } from '@/services/lifeCycleModels/api';
-import { getProcessDetail, updateProcessJsonApi } from '@/services/processes/api';
+import { getProcessDetail, updateProcess } from '@/services/processes/api';
 import { getUserTeamId } from '@/services/roles/api';
 
 type Props = {
@@ -176,7 +176,7 @@ const ToolbarViewInfo: FC<Props> = ({
             : [_compliance, ...allCompliance],
         },
       };
-      await updateProcessJsonApi(process?.id, process?.version, json);
+      await updateProcess(process?.id, process?.version, json);
     }
   };
 
