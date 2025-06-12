@@ -102,7 +102,26 @@ const FlowsSelectForm: FC<Props> = ({
             errRef={errRef}
           />
         ) : (
-          label
+          <>
+            {label}{' '}
+            {errRef && (
+              <span style={{ color: token.colorError, marginLeft: '5px' }}>
+                {errRef?.type === 1 ? (
+                  <FormattedMessage
+                    id='pages.select.unRuleVerification'
+                    defaultMessage='Data is incomplete'
+                  />
+                ) : errRef?.type === 2 ? (
+                  <FormattedMessage
+                    id='pages.select.nonExistentRef'
+                    defaultMessage='Data does not exist'
+                  />
+                ) : (
+                  ''
+                )}
+              </span>
+            )}
+          </>
         )
       }
     >
