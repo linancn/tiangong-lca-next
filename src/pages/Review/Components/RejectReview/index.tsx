@@ -1,16 +1,21 @@
+import type { refDataType } from '@/pages/Utils/review';
+import {
+  checkReferences,
+  dealModel,
+  dealProcress,
+  getAllProcessesOfModel,
+  getAllRefObj,
+  getRefTableName,
+} from '@/pages/Utils/review';
+import { updateDateToReviewState } from '@/services/general/api';
+import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
+import { getProcessDetail } from '@/services/processes/api';
 import { getReviewsDetail, updateReviewApi } from '@/services/reviews/api';
+import { getUserTeamId } from '@/services/roles/api';
 import { FileExcelOutlined } from '@ant-design/icons';
 import { FormattedMessage, useIntl } from '@umijs/max';
 import { Button, Form, FormInstance, Input, message, Modal, Tooltip } from 'antd';
 import { useEffect, useRef, useState } from 'react';
-import { getProcessDetail } from '@/services/processes/api';
-import type { refDataType } from '@/pages/Utils/review';
-import { dealProcress, checkReferences, getRefTableName, getAllRefObj, dealModel,getAllProcessesOfModel } from '@/pages/Utils/review';
-import { getUserTeamId } from '@/services/roles/api';
-import { updateDateToReviewState } from '@/services/general/api';
-import {
-  getLifeCycleModelDetail,
-} from '@/services/lifeCycleModels/api';
 
 interface RejectReviewProps {
   reviewId: string;
@@ -43,15 +48,15 @@ const RejectReview: React.FC<RejectReviewProps> = ({ reviewId, dataId, dataVersi
     for (const item of unReview) {
       const updateData = {
         state_code: 0,
-      }
+      };
       await updateDateToReviewState(
         item['@refObjectId'],
         item['@version'],
         getRefTableName(item['@type']),
-        updateData
+        updateData,
       );
     }
-  }
+  };
 
   const hendleRejectProcress = async () => {
     const { data: processDetail } = await getProcessDetail(dataId, dataVersion);
@@ -67,10 +72,18 @@ const RejectReview: React.FC<RejectReviewProps> = ({ reviewId, dataId, dataVersi
 
     const userTeamId = await getUserTeamId();
     const refObjs = getAllRefObj(processDetail);
-    await checkReferences(refObjs, new Set<string>(), userTeamId, unReview, underReview, unRuleVerification, nonExistentRef);
+    await checkReferences(
+      refObjs,
+      new Set<string>(),
+      userTeamId,
+      unReview,
+      underReview,
+      unRuleVerification,
+      nonExistentRef,
+    );
 
     await updateUnderReviewToUnReview(underReview);
-  }
+  };
 
   const hendleRejectModel = async () => {
     const modelDetail = await getLifeCycleModelDetail(dataId, dataVersion);
@@ -81,27 +94,43 @@ const RejectReview: React.FC<RejectReviewProps> = ({ reviewId, dataId, dataVersi
     const underReview: any[] = []; // stateCode >= 20 && stateCode < 100
     const unRuleVerification: any[] = [];
     const nonExistentRef: any[] = [];
-    dealModel(modelDetail, unReview, underReview, unRuleVerification);
+    dealModel(modelDetail?.data, unReview, underReview, unRuleVerification);
 
     const refObjs = getAllRefObj(modelDetail);
     const userTeamId = await getUserTeamId();
     const refsSet = new Set<string>();
-    await checkReferences(refObjs, refsSet, userTeamId, unReview, underReview, unRuleVerification, nonExistentRef);
+    await checkReferences(
+      refObjs,
+      refsSet,
+      userTeamId,
+      unReview,
+      underReview,
+      unRuleVerification,
+      nonExistentRef,
+    );
 
-    const allProcesses = await getAllProcessesOfModel(modelDetail);
+    const allProcesses = await getAllProcessesOfModel(modelDetail?.data);
     for (const process of allProcesses) {
       const modelOfProcess = await getLifeCycleModelDetail(process.id, process.version);
       if (modelOfProcess) {
-        dealModel(modelOfProcess, unReview, underReview, unRuleVerification);
-      };
+        dealModel(modelOfProcess?.data, unReview, underReview, unRuleVerification);
+      }
       const processDetail = await getProcessDetail(process.id, process.version);
-      dealProcress(processDetail, unReview, underReview, unRuleVerification, nonExistentRef);
+      dealProcress(processDetail?.data, unReview, underReview, unRuleVerification, nonExistentRef);
 
       const processRefObjs = getAllRefObj(processDetail?.data?.json);
-      await checkReferences(processRefObjs, refsSet, userTeamId, unReview, underReview, unRuleVerification, nonExistentRef);
+      await checkReferences(
+        processRefObjs,
+        refsSet,
+        userTeamId,
+        unReview,
+        underReview,
+        unRuleVerification,
+        nonExistentRef,
+      );
     }
     await updateUnderReviewToUnReview(underReview);
-  }
+  };
 
   const handleOk = async () => {
     try {
@@ -124,7 +153,7 @@ const RejectReview: React.FC<RejectReviewProps> = ({ reviewId, dataId, dataVersi
           await hendleRejectModel();
         } else {
           await hendleRejectProcress();
-        };
+        }
         message.success(
           intl.formatMessage({
             id: 'component.rejectReview.success',

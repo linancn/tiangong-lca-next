@@ -1,15 +1,14 @@
-import { get } from 'lodash';
-import { getRefData } from '@/services/general/api';
-import { getUsersByIds } from '@/services/users/api';
+import { getRefData, getReviewsOfData, updateDateToReviewState } from '@/services/general/api';
 import { addReviewsApi } from '@/services/reviews/api';
 import { getTeamMessageApi } from '@/services/teams/api';
-import { updateDateToReviewState, getReviewsOfData } from '@/services/general/api';
+import { getUsersByIds } from '@/services/users/api';
+import { get } from 'lodash';
 
 export type refDataType = {
-  '@type': string,
-  '@refObjectId': string,
-  '@version': string,
-}
+  '@type': string;
+  '@refObjectId': string;
+  '@version': string;
+};
 const tableDict = {
   'contact data set': 'contacts',
   'source data set': 'sources',
@@ -19,7 +18,6 @@ const tableDict = {
   'process data set': 'processes',
   'lifeCycleModel data set': 'lifecyclemodels',
 };
-
 
 export const getRefTableName = (type: string) => {
   return tableDict[type as keyof typeof tableDict] ?? undefined;
@@ -53,7 +51,7 @@ export const checkReferences = async (
   unReview: refDataType[],
   underReview: refDataType[],
   unRuleVerification: refDataType[],
-  nonExistentRef: refDataType[]
+  nonExistentRef: refDataType[],
 ) => {
   for (const ref of refs) {
     if (checkedIds.has(ref['@refObjectId'])) continue;
@@ -68,16 +66,11 @@ export const checkReferences = async (
 
     if (refResult.success) {
       const refData = refResult?.data;
-      if (
-        !refData?.ruleVerification &&
-        refData?.stateCode !== 100 &&
-        refData?.stateCode !== 200
-      ) {
+      if (!refData?.ruleVerification && refData?.stateCode !== 100 && refData?.stateCode !== 200) {
         if (
           !unRuleVerification.find(
             (item) =>
-              item['@refObjectId'] === ref['@refObjectId'] &&
-              item['@version'] === ref['@version'],
+              item['@refObjectId'] === ref['@refObjectId'] && item['@version'] === ref['@version'],
           )
         ) {
           unRuleVerification.push(ref);
@@ -88,8 +81,7 @@ export const checkReferences = async (
         if (
           !underReview.find(
             (item) =>
-              item['@refObjectId'] === ref['@refObjectId'] &&
-              item['@version'] === ref['@version'],
+              item['@refObjectId'] === ref['@refObjectId'] && item['@version'] === ref['@version'],
           )
         ) {
           underReview.push(ref);
@@ -101,22 +93,28 @@ export const checkReferences = async (
         if (
           !unReview.find(
             (item) =>
-              item['@refObjectId'] === ref['@refObjectId'] &&
-              item['@version'] === ref['@version'],
+              item['@refObjectId'] === ref['@refObjectId'] && item['@version'] === ref['@version'],
           )
         ) {
           unReview.push(ref);
         }
 
         const subRefs = getAllRefObj(json);
-        await checkReferences(subRefs, checkedIds,userTeamId,unReview,underReview,unRuleVerification,nonExistentRef);
+        await checkReferences(
+          subRefs,
+          checkedIds,
+          userTeamId,
+          unReview,
+          underReview,
+          unRuleVerification,
+          nonExistentRef,
+        );
       }
     } else {
       if (
         !nonExistentRef.find(
           (item) =>
-            item['@refObjectId'] === ref['@refObjectId'] &&
-            item['@version'] === ref['@version'],
+            item['@refObjectId'] === ref['@refObjectId'] && item['@version'] === ref['@version'],
         )
       ) {
         nonExistentRef.push(ref);
@@ -124,41 +122,50 @@ export const checkReferences = async (
     }
   }
 };
-
-export const dealProcress = (processDetail: any, unReview: refDataType[], underReview: refDataType[], unRuleVerification: refDataType[], nonExistentRef: refDataType[]) => {
+export const dealProcress = (
+  processDetail: any,
+  unReview: refDataType[],
+  underReview: refDataType[],
+  unRuleVerification: refDataType[],
+  nonExistentRef: refDataType[],
+) => {
   const procressRef = {
     '@type': 'process data set',
     '@refObjectId': processDetail.id,
     '@version': processDetail.version,
-  }
+  };
   if (processDetail.stateCode < 20) {
     unReview.push(procressRef);
   }
   if (processDetail.stateCode >= 20 && processDetail.stateCode < 100) {
     underReview.push(procressRef);
   }
-  if (!processDetail?.ruleVerification && processDetail.stateCode !== 100 && processDetail.stateCode !== 200) {
+  if (
+    !processDetail?.ruleVerification &&
+    processDetail.stateCode !== 100 &&
+    processDetail.stateCode !== 200
+  ) {
     unRuleVerification.unshift(procressRef);
   }
   if (!processDetail) {
     nonExistentRef.push(procressRef);
   }
-}
+};
 
-export const dealModel = (modelDetail: any, unReview: refDataType[], underReview: refDataType[], unRuleVerification: refDataType[]) => {
-  if (
-    modelDetail?.data?.state_code < 20
-  ) {
+export const dealModel = (
+  modelDetail: any,
+  unReview: refDataType[],
+  underReview: refDataType[],
+  unRuleVerification: refDataType[],
+) => {
+  if (modelDetail?.state_code < 20) {
     unReview.push({
       '@type': 'lifeCycleModel data set',
       '@refObjectId': modelDetail?.id,
       '@version': modelDetail?.version,
     });
   }
-  if (
-    modelDetail?.data?.state_code >= 20 &&
-    modelDetail?.data?.state_code < 100
-  ) {
+  if (modelDetail?.state_code >= 20 && modelDetail?.state_code < 100) {
     underReview.push({
       '@type': 'lifeCycleModel data set',
       '@refObjectId': modelDetail?.id,
@@ -166,72 +173,77 @@ export const dealModel = (modelDetail: any, unReview: refDataType[], underReview
     });
   }
   if (
-    !modelDetail?.data?.rule_verification &&
-    modelDetail?.data?.state_code !== 100 &&
-    modelDetail?.data?.state_code !== 200
+    !modelDetail?.rule_verification &&
+    modelDetail?.state_code !== 100 &&
+    modelDetail?.state_code !== 200
   ) {
     unRuleVerification.unshift({
       '@type': 'lifeCycleModel data set',
-      '@refObjectId': modelDetail?.data?.id,
-      '@version': modelDetail?.data?.version,
+      '@refObjectId': modelDetail?.id,
+      '@version': modelDetail?.version,
     });
   }
-}
+};
 
 export const getAllProcessesOfModel = async (modelDetail: any) => {
   const processes: any[] = [{ id: modelDetail.id, version: modelDetail.version }];
-  modelDetail?.data?.json_tg?.xflow?.nodes?.forEach((item: any) => {
+  modelDetail?.json_tg?.xflow?.nodes?.forEach((item: any) => {
     if (item.data) {
       processes.push(item.data);
     }
   });
   return processes;
 };
-export const updateReviewsAfterCheckData = async (teamId:string,data:any,reviewId:string)=>{
+
+export const updateReviewsAfterCheckData = async (teamId: string, data: any, reviewId: string) => {
   const team = await getTeamMessageApi(teamId);
   const user = await getUsersByIds([sessionStorage.getItem('userId') ?? '']);
   const reviewJson = {
     data,
     team: {
       id: teamId,
-      name: team?.data?.[0]?.json?.title
+      name: team?.data?.[0]?.json?.title,
     },
     user: {
       id: sessionStorage.getItem('userId'),
       name: user?.[0]?.display_name,
-      email: user?.[0]?.email
+      email: user?.[0]?.email,
     },
     comment: {
-      message: ''
-    }
-  }
+      message: '',
+    },
+  };
   const result = await addReviewsApi(reviewId, reviewJson);
   return result;
-}
+};
 
-export const updateUnReviewToUnderReview = async (unReview: refDataType[],reviewId:string)=>{
+export const updateUnReviewToUnderReview = async (unReview: refDataType[], reviewId: string) => {
   for (const item of unReview) {
-    const oldReviews = await getReviewsOfData(item['@refObjectId'], item['@version'], getRefTableName(item['@type']));
+    const oldReviews = await getReviewsOfData(
+      item['@refObjectId'],
+      item['@version'],
+      getRefTableName(item['@type']),
+    );
     const updateData = {
       state_code: 20,
       reviews: [
         ...oldReviews,
         {
           key: oldReviews?.length,
-          id: reviewId
-        }
-      ]
-    }
+          id: reviewId,
+        },
+      ],
+    };
     await updateDateToReviewState(
       item['@refObjectId'],
       item['@version'],
       getRefTableName(item['@type']),
-      updateData
+      updateData,
     );
   }
-}
+};
 
- const checkValidationFields = (data: any) => {
+const checkValidationFields = (data: any) => {
   if (!data) {
     return { checkResult: false, tabName: 'validation' };
   }
@@ -255,7 +267,7 @@ export const updateUnReviewToUnderReview = async (unReview: refDataType[],review
   return { checkResult: false, tabName: 'validation' };
 };
 
- const checkComplianceFields = (data: any) => {
+const checkComplianceFields = (data: any) => {
   if (!data || !data?.length) {
     return { checkResult: false, tabName: 'complianceDeclarations' };
   }

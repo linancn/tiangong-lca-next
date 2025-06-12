@@ -17,13 +17,19 @@ import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 're
 import { FormattedMessage, useIntl } from 'umi';
 import { LifeCycleModelForm } from '../form';
 // const { TextArea } = Input;
-import { checkRequiredFields, getAllRefObj } from '@/pages/Utils/review';
 import {
-  getLifeCycleModelDetail,
-} from '@/services/lifeCycleModels/api';
-import { getAllProcessesOfModel,dealProcress, checkReferences, updateReviewsAfterCheckData, updateUnReviewToUnderReview, dealModel } from '@/pages/Utils/review';
+  checkReferences,
+  checkRequiredFields,
+  dealModel,
+  dealProcress,
+  getAllProcessesOfModel,
+  getAllRefObj,
+  updateReviewsAfterCheckData,
+  updateUnReviewToUnderReview,
+} from '@/pages/Utils/review';
+import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
 
-import { getProcessDetail, } from '@/services/processes/api';
+import { getProcessDetail } from '@/services/processes/api';
 import { getUserTeamId } from '@/services/roles/api';
 import { v4 } from 'uuid';
 import requiredFields from '../../requiredFields';
@@ -153,23 +159,39 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
       setSpinning(false);
       return;
     }
-  
-    dealModel(modelDetail, unReview, underReview, unRuleVerification);
-    
-    const refsSet = new Set<string>();
-    await checkReferences(refObjs, refsSet, userTeamId, unReview, underReview, unRuleVerification, nonExistentRef);
 
-    const allProcesses = await getAllProcessesOfModel(modelDetail);
+    dealModel(modelDetail?.data, unReview, underReview, unRuleVerification);
+
+    const refsSet = new Set<string>();
+    await checkReferences(
+      refObjs,
+      refsSet,
+      userTeamId,
+      unReview,
+      underReview,
+      unRuleVerification,
+      nonExistentRef,
+    );
+
+    const allProcesses = await getAllProcessesOfModel(modelDetail?.data);
     for (const process of allProcesses) {
       const modelOfProcess = await getLifeCycleModelDetail(process.id, process.version);
       if (modelOfProcess) {
-        dealModel(modelOfProcess, unReview, underReview, unRuleVerification);
-      };
+        dealModel(modelOfProcess?.data, unReview, underReview, unRuleVerification);
+      }
       const processDetail = await getProcessDetail(process.id, process.version);
-      dealProcress(processDetail, unReview, underReview, unRuleVerification, nonExistentRef);
+      dealProcress(processDetail?.data, unReview, underReview, unRuleVerification, nonExistentRef);
 
       const processRefObjs = getAllRefObj(processDetail?.data?.json);
-      await checkReferences(processRefObjs, refsSet, userTeamId, unReview, underReview, unRuleVerification, nonExistentRef);
+      await checkReferences(
+        processRefObjs,
+        refsSet,
+        userTeamId,
+        unReview,
+        underReview,
+        unRuleVerification,
+        nonExistentRef,
+      );
     }
 
     setNonExistentRefData(nonExistentRef);
@@ -212,14 +234,16 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
       {
         id: data.id,
         version: data.version,
-        name: modelDetail?.data?.json?.lifeCycleModelDataSet?.lifeCycleModelInformation?.dataSetInformation?.name ?? {}
+        name:
+          modelDetail?.data?.json?.lifeCycleModelDataSet?.lifeCycleModelInformation
+            ?.dataSetInformation?.name ?? {},
       },
-      reviewId
-    )
+      reviewId,
+    );
 
     if (result?.error) return;
 
-    await updateUnReviewToUnderReview(unReview,reviewId);
+    await updateUnReviewToUnderReview(unReview, reviewId);
 
     message.success(
       intl.formatMessage({
@@ -325,7 +349,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
       >
         <Spin spinning={spinning}>
           {(unRuleVerificationData && unRuleVerificationData.length > 0) ||
-            (nonExistentRefData && nonExistentRefData.length > 0) ? (
+          (nonExistentRefData && nonExistentRefData.length > 0) ? (
             <>
               <Collapse
                 items={[
