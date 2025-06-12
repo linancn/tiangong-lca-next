@@ -6,20 +6,20 @@ export type ReviewsTable = {
   userName: string;
   createAt: string;
   isFromLifeCycle: boolean;
-  json:{
-    data:{
-      id:string;
-      version:string;
-      name:any;
-    },
-    team:{
-      name:string;
-      id:string;
-    }
-    user:{
-      id:string;
-      name:string;
-      email:string;
-    }
-  }
+  json: {
+    data: {
+      id: string;
+      version: string;
+      name: any;
+    };
+    team: {
+      name: string;
+      id: string;
+    };
+    user: {
+      id: string;
+      name: string;
+      email: string;
+    };
+  };
 };

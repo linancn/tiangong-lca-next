@@ -1,8 +1,6 @@
-import { supabase } from '@/services/supabase';
 import { getLifeCyclesByIds } from '@/services/lifeCycleModels/api';
-import {
-  getLangText,
-} from '../general/util';
+import { supabase } from '@/services/supabase';
+import { getLangText } from '../general/util';
 import { genProcessName } from '../processes/util';
 export async function addReviewsApi(id: string, data: any) {
   const { error } = await supabase
@@ -33,11 +31,7 @@ export async function getReviewerIdsApi(reviewIds: React.Key[]) {
 }
 
 export async function getReviewsDetail(id: string) {
-  const { data } = await supabase
-    .from('reviews')
-    .select('*')
-    .eq('id', id)
-    .single();
+  const { data } = await supabase.from('reviews').select('*').eq('id', id).single();
   return data;
 }
 
@@ -93,12 +87,12 @@ export async function getReviewsTableData(
         key: i.id,
         id: i.id,
         isFromLifeCycle: model ? true : false,
-        processName: genProcessName(i?.json?.data?.name ?? {}, lang)||'-',
+        processName: genProcessName(i?.json?.data?.name ?? {}, lang) || '-',
         teamName: getLangText(i?.json?.team?.name ?? {}, lang),
         userName: i?.json?.user?.name ?? '-',
         createAt: new Date(i.created_at).toISOString(),
-        json:i?.json,
-      }
+        json: i?.json,
+      };
     });
 
     return Promise.resolve({

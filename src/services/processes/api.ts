@@ -37,11 +37,7 @@ export async function updateProcess(id: string, version: string, data: any) {
   return updateResult;
 }
 
-export async function updateProcessApi(
-  id: string,
-  version: string,
-  data:any
-) {
+export async function updateProcessApi(id: string, version: string, data: any) {
   const updateResult = await supabase
     .from('processes')
     .update(data)
