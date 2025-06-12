@@ -31,7 +31,7 @@ import ComplianceItemView from '../../../Compliance/view';
 import ReveiwItemForm from '../../../ReviewForm/form';
 import ReviewItemView from '../../../ReviewForm/view';
 
-import { getAllRefObj, getRefTableName } from '@/pages/Utils';
+import { getAllRefObj, getRefTableName } from '@/pages/Utils/review';
 import { getRefData, updateStateCodeApi } from '@/services/general/api';
 import {
   getLifeCycleModelDetail,

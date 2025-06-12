@@ -1,6 +1,6 @@
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 
-import { getAllRefObj, getRefTableName } from '@/pages/Utils';
+import { getAllRefObj, getRefTableName } from '@/pages/Utils/review';
 import { getCommentApi, updateCommentApi } from '@/services/comments/api';
 import { getRefData, updateStateCodeApi } from '@/services/general/api';
 import { getProcessDetail, updateProcessApi } from '@/services/processes/api';

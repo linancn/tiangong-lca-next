@@ -17,19 +17,16 @@ import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 're
 import { FormattedMessage, useIntl } from 'umi';
 import { LifeCycleModelForm } from '../form';
 // const { TextArea } = Input;
-import { checkRequiredFields, getAllRefObj, getRefTableName } from '@/pages/Utils';
-import { getRefData, updateDateToReviewState,getReviewsOfData  } from '@/services/general/api';
+import { checkRequiredFields, getAllRefObj } from '@/pages/Utils/review';
 import {
   getLifeCycleModelDetail,
 } from '@/services/lifeCycleModels/api';
+import { getAllProcessesOfModel,dealProcress, checkReferences, updateReviewsAfterCheckData, updateUnReviewToUnderReview, dealModel } from '@/pages/Utils/review';
 
 import { getProcessDetail, } from '@/services/processes/api';
-import { addReviewsApi } from '@/services/reviews/api';
 import { getUserTeamId } from '@/services/roles/api';
 import { v4 } from 'uuid';
 import requiredFields from '../../requiredFields';
-import { getTeamMessageApi } from '@/services/teams/api';
-import { getUsersByIds } from '@/services/users/api';
 const { Paragraph } = Typography;
 
 type Props = {
@@ -138,7 +135,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
 
   const submitReview = async () => {
     setSpinning(true);
-    const teamId = await getUserTeamId();
+    const userTeamId = await getUserTeamId();
     const refObjs = getAllRefObj(data);
 
     const unReview: any[] = []; //stateCode < 20
@@ -156,163 +153,23 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
       setSpinning(false);
       return;
     }
+  
+    dealModel(modelDetail, unReview, underReview, unRuleVerification);
+    
+    const refsSet = new Set<string>();
+    await checkReferences(refObjs, refsSet, userTeamId, unReview, underReview, unRuleVerification, nonExistentRef);
 
-    const dealModel = (modelDetail: any) => {
-      if (
-        modelDetail?.data?.state_code < 20
-      ) {
-        unReview.push({
-          '@type': 'lifeCycleModel data set',
-          '@refObjectId': data?.id,
-          '@version': data?.version,
-        });
-      }
-      if (
-        modelDetail?.data?.state_code >= 20 &&
-        modelDetail?.data?.state_code < 100
-      ) {
-        underReview.push({
-          '@type': 'lifeCycleModel data set',
-          '@refObjectId': data?.id,
-          '@version': data?.version,
-        });
-      }
-      if (
-        !modelDetail?.data?.rule_verification &&
-        modelDetail?.data?.state_code !== 100 &&
-        modelDetail?.data?.state_code !== 200
-      ) {
-        unRuleVerification.unshift({
-          '@type': 'lifeCycleModel data set',
-          '@refObjectId': modelDetail?.data?.id,
-          '@version': modelDetail?.data?.version,
-        });
-      }
-    }
-    dealModel(modelDetail);
-
-    const getAllProcesses = async () => {
-      const processes: any[] = [{ id: data.id, version: data.version }];
-      modelDetail?.data?.json_tg?.xflow?.nodes?.forEach((item: any) => {
-        if (item.data) {
-          processes.push(item.data);
-        }
-      });
-      return processes;
-    };
-
-    const checkReferences = async (refs: any[], checkedIds = new Set<string>()) => {
-      for (const ref of refs) {
-        if (checkedIds.has(ref['@refObjectId'])) continue;
-        checkedIds.add(ref['@refObjectId']);
-
-        const refResult = await getRefData(
-          ref['@refObjectId'],
-          ref['@version'],
-          getRefTableName(ref['@type']),
-          teamId,
-        );
-        if (refResult.success) {
-          const refData = refResult?.data;
-          if (
-            !refData?.ruleVerification &&
-            refData?.stateCode !== 100 &&
-            refData?.stateCode !== 200
-          ) {
-            if (
-              !unRuleVerification.find(
-                (item) =>
-                  item['@refObjectId'] === ref['@refObjectId'] &&
-                  item['@version'] === ref['@version'],
-              )
-            ) {
-              unRuleVerification.push(ref);
-            }
-          }
-          if (refData?.stateCode >= 20 && refData?.stateCode < 100) {
-            if (
-              !underReview.find(
-                (item) =>
-                  item['@refObjectId'] === ref['@refObjectId'] &&
-                  item['@version'] === ref['@version'],
-              )
-            ) {
-              underReview.push(ref);
-            }
-          }
-
-          if (refData?.stateCode < 20) {
-            const json = refData?.json;
-            if (
-              !unReview.find(
-                (item) =>
-                  item['@refObjectId'] === ref['@refObjectId'] &&
-                  item['@version'] === ref['@version'],
-              )
-            ) {
-              unReview.push(ref);
-            }
-
-            const subRefs = getAllRefObj(json);
-            await checkReferences(subRefs, checkedIds);
-          }
-        } else {
-          if (
-            !nonExistentRef.find(
-              (item) =>
-                item['@refObjectId'] === ref['@refObjectId'] &&
-                item['@version'] === ref['@version'],
-            )
-          ) {
-            nonExistentRef.push(ref);
-          }
-        }
-      }
-    };
-    await checkReferences(refObjs);
-
-    const allProcesses = await getAllProcesses();
+    const allProcesses = await getAllProcessesOfModel(modelDetail);
     for (const process of allProcesses) {
       const modelOfProcess = await getLifeCycleModelDetail(process.id, process.version);
       if (modelOfProcess) {
-        dealModel(modelOfProcess);
+        dealModel(modelOfProcess, unReview, underReview, unRuleVerification);
       };
       const processDetail = await getProcessDetail(process.id, process.version);
-      if (!processDetail) {
-        nonExistentRef.push({
-          '@type': 'process data set',
-          '@refObjectId': process.id,
-          '@version': process.version,
-        });
-        continue;
-      }
-      if (
-        !processDetail?.data?.ruleVerification &&
-        processDetail?.data?.stateCode !== 100 &&
-        processDetail?.data?.stateCode !== 200
-      ) {
-        unRuleVerification.unshift({
-          '@type': 'process data set',
-          '@refObjectId': process.id,
-          '@version': process.version,
-        });
-      }
-      if (processDetail?.data?.stateCode < 20) {
-        unReview.push({
-          '@type': 'process data set',
-          '@refObjectId': process.id,
-          '@version': process.version,
-        });
-      }
-      if (processDetail?.data?.stateCode >= 20 && processDetail?.data?.stateCode < 100) {
-        underReview.push({
-          '@type': 'process data set',
-          '@refObjectId': process.id,
-          '@version': process.version,
-        });
-      }
+      dealProcress(processDetail, unReview, underReview, unRuleVerification, nonExistentRef);
+
       const processRefObjs = getAllRefObj(processDetail?.data?.json);
-      await checkReferences(processRefObjs);
+      await checkReferences(processRefObjs, refsSet, userTeamId, unReview, underReview, unRuleVerification, nonExistentRef);
     }
 
     setNonExistentRefData(nonExistentRef);
@@ -349,50 +206,20 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
       return;
     }
 
-    const team = await getTeamMessageApi(modelDetail?.data?.teamId);
-    const user = await getUsersByIds([sessionStorage.getItem('userId') ?? '']);
     const reviewId = v4();
-    const reviewJson = {
-      data: {
+    const result = await updateReviewsAfterCheckData(
+      modelDetail?.data?.teamId,
+      {
         id: data.id,
-        version:data.version,
+        version: data.version,
         name: modelDetail?.data?.json?.lifeCycleModelDataSet?.lifeCycleModelInformation?.dataSetInformation?.name ?? {}
       },
-      team: {
-        id: modelDetail?.data?.teamId,
-        name: team?.data?.[0]?.json?.title
-      },
-      user: {
-        id: sessionStorage.getItem('userId'),
-        name: user?.[0]?.display_name,
-        email: user?.[0]?.email
-      },
-      comment: {
-        result: 0,
-        message: ''
-      }
-    }
-    const result = await addReviewsApi(reviewId, reviewJson);
+      reviewId
+    )
+
     if (result?.error) return;
-    for(const item of unReview){
-      const oldReviews = await getReviewsOfData(item['@refObjectId'],item['@version'],getRefTableName(item['@type']));
-      const updateData = {
-        state_code: 20,
-        reviews:[
-          ...oldReviews,
-          {
-            key: oldReviews?.length,
-            id: reviewId
-          }
-        ]
-      }
-      await updateDateToReviewState(
-        item['@refObjectId'],
-        item['@version'],
-        getRefTableName(item['@type']),
-        updateData
-      );
-    }
+
+    await updateUnReviewToUnderReview(unReview,reviewId);
 
     message.success(
       intl.formatMessage({

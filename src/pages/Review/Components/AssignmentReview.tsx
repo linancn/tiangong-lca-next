@@ -112,7 +112,7 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
       search: false,
       render: (_, record) => {
         return [
-          <RejectReview reviewId={record.id} key={0} />,
+          <RejectReview isModel={record.isFromLifeCycle} dataId={record.json?.data?.id} dataVersion={record.json?.data?.version} reviewId={record.id} key={0} />,
           // <Space key={0}>
           //   {record.isFromLifeCycle ? (
           //     <ReviewLifeCycleModelsDetail
