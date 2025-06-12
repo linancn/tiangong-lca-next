@@ -35,7 +35,7 @@ const RequiredSelectFormTitle = ({
               );
             })}
           {errRef && (
-            <span style={{ color: token.colorError, marginLeft: '5px' }}>
+            <span style={{ color: token.colorError, marginLeft: '5px', fontWeight: 'normal' }}>
               {errRef?.type === 1 ? (
                 <FormattedMessage
                   id='pages.select.unRuleVerification'

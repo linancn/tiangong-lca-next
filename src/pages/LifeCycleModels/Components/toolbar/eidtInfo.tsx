@@ -148,19 +148,8 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
       setTimeout(() => {
         formRefEdit.current?.validateFields();
       }, 100);
-      return { checkResult, tabName };
     }
-    message.success(
-      intl.formatMessage({
-        id: 'pages.button.check.success',
-        defaultMessage: 'Data check successfully!',
-      }),
-    );
-    return { checkResult, tabName };
-  };
 
-  const submitReview = async () => {
-    setSpinning(true);
     const userTeamId = await getUserTeamId();
     const refObjs = getAllRefObj(data);
 
@@ -177,7 +166,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
         }),
       );
       setSpinning(false);
-      return;
+      return { checkResult, unReview };
     }
 
     dealModel(modelDetail?.data, unReview, underReview, unRuleVerification);
@@ -234,7 +223,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
         );
       }
       setSpinning(false);
-      return;
+      return { checkResult, unReview };
     }
 
     if (modelDetail?.data?.state_code >= 20) {
@@ -245,8 +234,14 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
         }),
       );
       setSpinning(false);
-      return;
+      return { checkResult, unReview };
     }
+    setSpinning(false);
+    return { checkResult, unReview };
+  };
+
+  const submitReview = async (unReview: any[]) => {
+    setSpinning(true);
 
     const reviewId = v4();
     const result = await updateReviewsAfterCheckData(

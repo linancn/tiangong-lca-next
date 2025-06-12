@@ -1040,9 +1040,9 @@ const ToolbarEdit: FC<Props> = ({
   const handelSubmitReview = async () => {
     await saveData(false);
     setSpinning(true);
-    const { checkResult } = await editInfoRef.current?.handleCheckData();
+    const { checkResult, unReview } = await editInfoRef.current?.handleCheckData();
     if (checkResult) {
-      await editInfoRef.current?.submitReview();
+      await editInfoRef.current?.submitReview(unReview);
     }
     setSpinning(false);
   };

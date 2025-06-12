@@ -158,7 +158,8 @@ const ProcessEdit: FC<Props> = ({
     setReferenceValue(referenceValue + 1);
   };
 
-  const handleCheckData = async () => {
+  const handleCheckData = async (processDetail: any) => {
+    setSpinning(true);
     setShowRules(true);
     const { checkResult, tabName } = checkRequiredFields(requiredFields, fromData);
     if (!checkResult) {
@@ -166,7 +167,6 @@ const ProcessEdit: FC<Props> = ({
       setTimeout(() => {
         formRefEdit.current?.validateFields();
       }, 200);
-      return { checkResult, tabName };
     } else {
       const exchanges = fromData?.exchanges;
       if (!exchanges || !exchanges?.exchange || exchanges?.exchange?.length === 0) {
@@ -177,7 +177,6 @@ const ProcessEdit: FC<Props> = ({
           }),
         );
         await setActiveTabKey('exchanges');
-        return { checkResult, tabName };
       } else if (
         exchanges?.exchange.filter((item: any) => item?.quantitativeReference).length !== 1
       ) {
@@ -188,11 +187,60 @@ const ProcessEdit: FC<Props> = ({
           }),
         );
         await setActiveTabKey('exchanges');
-        return { checkResult, tabName };
       }
     }
 
-    return { checkResult, tabName };
+    const unReview: any[] = []; // stateCode < 20
+    const underReview: any[] = []; // stateCode >= 20 && stateCode < 100
+    const unRuleVerification: any[] = [];
+    const nonExistentRef: any[] = [];
+
+    dealProcress(processDetail, unReview, underReview, unRuleVerification, nonExistentRef);
+
+    const userTeamId = await getUserTeamId();
+    const refObjs = getAllRefObj(processDetail);
+
+    await checkReferences(
+      refObjs,
+      new Set<string>(),
+      userTeamId,
+      unReview,
+      underReview,
+      unRuleVerification,
+      nonExistentRef,
+    );
+
+    setNonExistentRefData(nonExistentRef);
+    setUnRuleVerificationData(unRuleVerification);
+    if (
+      (nonExistentRef && nonExistentRef.length > 0) ||
+      (unRuleVerification && unRuleVerification.length > 0) ||
+      (underReview && underReview.length > 0)
+    ) {
+      if (underReview && underReview.length > 0) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.process.review.error',
+            defaultMessage: 'Referenced data is under review, cannot initiate another review',
+          }),
+        );
+      }
+      setSpinning(false);
+      return { checkResult, unReview };
+    }
+
+    if (processDetail.stateCode >= 20) {
+      message.error(
+        intl.formatMessage({
+          id: 'pages.process.review.submitError',
+          defaultMessage: 'Submit review failed',
+        }),
+      );
+      setSpinning(false);
+      return { checkResult, unReview };
+    }
+    setSpinning(false);
+    return { checkResult, unReview };
   };
 
   const handleSubmit = async (closeDrawer: boolean) => {
@@ -239,70 +287,20 @@ const ProcessEdit: FC<Props> = ({
   const submitReview = async () => {
     setSpinning(true);
     await handleSubmit(false);
-    const { checkResult } = await handleCheckData();
-    if (checkResult) {
-      const { data: processDetail } = await getProcessDetail(id, version);
-      if (!processDetail) {
-        message.error(
-          intl.formatMessage({
-            id: 'pages.process.review.submitError',
-            defaultMessage: 'Submit review failed',
-          }),
-        );
-        setSpinning(false);
-        return;
-      }
-
-      const unReview: any[] = []; // stateCode < 20
-      const underReview: any[] = []; // stateCode >= 20 && stateCode < 100
-      const unRuleVerification: any[] = [];
-      const nonExistentRef: any[] = [];
-
-      dealProcress(processDetail, unReview, underReview, unRuleVerification, nonExistentRef);
-
-      const userTeamId = await getUserTeamId();
-      const refObjs = getAllRefObj(processDetail);
-
-      await checkReferences(
-        refObjs,
-        new Set<string>(),
-        userTeamId,
-        unReview,
-        underReview,
-        unRuleVerification,
-        nonExistentRef,
+    const { data: processDetail } = await getProcessDetail(id, version);
+    if (!processDetail) {
+      message.error(
+        intl.formatMessage({
+          id: 'pages.process.review.submitError',
+          defaultMessage: 'Submit review failed',
+        }),
       );
+      setSpinning(false);
+      return;
+    }
+    const { checkResult, unReview } = await handleCheckData(processDetail);
 
-      setNonExistentRefData(nonExistentRef);
-      setUnRuleVerificationData(unRuleVerification);
-      if (
-        (nonExistentRef && nonExistentRef.length > 0) ||
-        (unRuleVerification && unRuleVerification.length > 0) ||
-        (underReview && underReview.length > 0)
-      ) {
-        if (underReview && underReview.length > 0) {
-          message.error(
-            intl.formatMessage({
-              id: 'pages.process.review.error',
-              defaultMessage: 'Referenced data is under review, cannot initiate another review',
-            }),
-          );
-        }
-        setSpinning(false);
-        return;
-      }
-
-      if (processDetail.stateCode >= 20) {
-        message.error(
-          intl.formatMessage({
-            id: 'pages.process.review.submitError',
-            defaultMessage: 'Submit review failed',
-          }),
-        );
-        setSpinning(false);
-        return;
-      }
-
+    if (checkResult) {
       const reviewId = v4();
       const result = await updateReviewsAfterCheckData(
         processDetail.teamId,
@@ -428,7 +426,7 @@ const ProcessEdit: FC<Props> = ({
         onClose={() => setDrawerVisible(false)}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
-            <Button onClick={handleCheckData}>
+            <Button onClick={() => handleCheckData(initData)}>
               <FormattedMessage id='pages.button.check' defaultMessage='Data check' />
             </Button>
             <>
