@@ -1,3 +1,6 @@
+import { RefCheckContext } from '@/contexts/refCheckContext';
+import type { refDataType } from '@/pages/Utils/review';
+import { checkData } from '@/pages/Utils/review';
 import { getFlowpropertyDetail, updateFlowproperties } from '@/services/flowproperties/api';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
@@ -44,7 +47,7 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
   const [spinning, setSpinning] = useState(false);
   const [showRules, setShowRules] = useState<boolean>(false);
   const [referenceValue, setReferenceValue] = useState(0);
-
+  const [refCheckData, setRefCheckData] = useState<any[]>([]);
   const intl = useIntl();
 
   useEffect(() => {
@@ -104,6 +107,39 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
     onReset();
   }, [drawerVisible]);
 
+  const handleCheckData = async () => {
+    setSpinning(true);
+    const unRuleVerification: refDataType[] = [];
+    const nonExistentRef: refDataType[] = [];
+    await checkData(
+      {
+        '@type': 'flow property data set',
+        '@refObjectId': id,
+        '@version': version,
+      },
+      unRuleVerification,
+      nonExistentRef,
+    );
+    const unRuleVerificationData = unRuleVerification.map((item: any) => {
+      return {
+        id: item['@refObjectId'],
+        version: item['@version'],
+        type: 1,
+      };
+    });
+    const nonExistentRefData = nonExistentRef.map((item: any) => {
+      return {
+        id: item['@refObjectId'],
+        version: item['@version'],
+        type: 2,
+      };
+    });
+
+    setRefCheckData([...unRuleVerificationData, ...nonExistentRefData]);
+    setShowRules(true);
+    setSpinning(false);
+  };
+
   return (
     <>
       <Tooltip title={<FormattedMessage id={'pages.button.edit'} defaultMessage={'Edit'} />}>
@@ -140,11 +176,7 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
         onClose={() => setDrawerVisible(false)}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
-            <Button
-              onClick={() => {
-                setShowRules(true);
-              }}
-            >
+            <Button onClick={handleCheckData}>
               <FormattedMessage id='pages.button.check' defaultMessage='Data check' />
             </Button>
             <Button
@@ -179,47 +211,49 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
       >
         <Spin spinning={spinning}>
           <UpdateReferenceContext.Provider value={{ referenceValue }}>
-            <ProForm
-              formRef={formRefEdit}
-              initialValues={initData}
-              submitter={{
-                render: () => {
-                  return [];
-                },
-              }}
-              onFinish={async () => {
-                const formFieldsValue = formRefEdit.current?.getFieldsValue();
-                const updateResult = await updateFlowproperties(id, version, formFieldsValue);
-                if (updateResult?.data) {
-                  message.success(
-                    intl.formatMessage({
-                      id: 'pages.flowproperty.editsuccess',
-                      defaultMessage: 'Edit flowproperties successfully!',
-                    }),
-                  );
-                  setDrawerVisible(false);
-                  // setViewDrawerVisible(false);
-                  setActiveTabKey('flowPropertiesInformation');
-                  actionRef?.current?.reload();
-                } else {
-                  message.error(updateResult?.error?.message);
-                }
-                return true;
-              }}
-              onValuesChange={(_, allValues) => {
-                setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
-              }}
-            >
-              <FlowpropertyForm
-                lang={lang}
-                activeTabKey={activeTabKey}
-                drawerVisible={drawerVisible}
+            <RefCheckContext.Provider value={refCheckData}>
+              <ProForm
                 formRef={formRefEdit}
-                onData={handletFromData}
-                onTabChange={onTabChange}
-                showRules={showRules}
-              />
-            </ProForm>
+                initialValues={initData}
+                submitter={{
+                  render: () => {
+                    return [];
+                  },
+                }}
+                onFinish={async () => {
+                  const formFieldsValue = formRefEdit.current?.getFieldsValue();
+                  const updateResult = await updateFlowproperties(id, version, formFieldsValue);
+                  if (updateResult?.data) {
+                    message.success(
+                      intl.formatMessage({
+                        id: 'pages.flowproperty.editsuccess',
+                        defaultMessage: 'Edit flowproperties successfully!',
+                      }),
+                    );
+                    setDrawerVisible(false);
+                    // setViewDrawerVisible(false);
+                    setActiveTabKey('flowPropertiesInformation');
+                    actionRef?.current?.reload();
+                  } else {
+                    message.error(updateResult?.error?.message);
+                  }
+                  return true;
+                }}
+                onValuesChange={(_, allValues) => {
+                  setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+                }}
+              >
+                <FlowpropertyForm
+                  lang={lang}
+                  activeTabKey={activeTabKey}
+                  drawerVisible={drawerVisible}
+                  formRef={formRefEdit}
+                  onData={handletFromData}
+                  onTabChange={onTabChange}
+                  showRules={showRules}
+                />
+              </ProForm>
+            </RefCheckContext.Provider>
           </UpdateReferenceContext.Provider>
           <Collapse
             items={[

@@ -1,4 +1,7 @@
+import { RefCheckContext } from '@/contexts/refCheckContext';
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
+import type { refDataType } from '@/pages/Utils/review';
+import { checkData } from '@/pages/Utils/review';
 import { getFlowpropertyDetail } from '@/services/flowproperties/api';
 import { getFlowDetail, updateFlows } from '@/services/flows/api';
 import { genFlowFromData } from '@/services/flows/util';
@@ -29,6 +32,7 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
   const [showRules, setShowRules] = useState<boolean>(false);
   const intl = useIntl();
   const [referenceValue, setReferenceValue] = useState(0);
+  const [refCheckData, setRefCheckData] = useState<any[]>([]);
 
   useEffect(() => {
     if (showRules) {
@@ -122,6 +126,38 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
     onReset();
   }, [drawerVisible]);
 
+  const handleCheckData = async () => {
+    setSpinning(true);
+    const unRuleVerification: refDataType[] = [];
+    const nonExistentRef: refDataType[] = [];
+    await checkData(
+      {
+        '@type': 'flow property data set',
+        '@refObjectId': id,
+        '@version': version,
+      },
+      unRuleVerification,
+      nonExistentRef,
+    );
+    const unRuleVerificationData = unRuleVerification.map((item: any) => {
+      return {
+        id: item['@refObjectId'],
+        version: item['@version'],
+        type: 1,
+      };
+    });
+    const nonExistentRefData = nonExistentRef.map((item: any) => {
+      return {
+        id: item['@refObjectId'],
+        version: item['@version'],
+        type: 2,
+      };
+    });
+
+    setRefCheckData([...unRuleVerificationData, ...nonExistentRefData]);
+    setShowRules(true);
+    setSpinning(false);
+  };
   return (
     <>
       <Tooltip title={<FormattedMessage id={'pages.button.edit'} defaultMessage={'Edit'} />}>
@@ -154,11 +190,7 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
         onClose={() => setDrawerVisible(false)}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
-            <Button
-              onClick={() => {
-                setShowRules(true);
-              }}
-            >
+            <Button onClick={handleCheckData}>
               <FormattedMessage id='pages.button.check' defaultMessage='Data check' />
             </Button>
             <Button
@@ -193,79 +225,81 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
       >
         <Spin spinning={spinning}>
           <UpdateReferenceContext.Provider value={{ referenceValue }}>
-            <ProForm
-              formRef={formRefEdit}
-              initialValues={initData}
-              submitter={{
-                render: () => {
-                  return [];
-                },
-              }}
-              onFinish={async () => {
-                const fieldsValue = formRefEdit.current?.getFieldsValue();
-                const flowProperties = fromData?.flowProperties;
-                // if (
-                //   !flowProperties ||
-                //   !flowProperties?.flowProperty ||
-                //   flowProperties?.flowProperty?.length === 0
-                // ) {
-                //   message.error(
-                //     intl.formatMessage({
-                //       id: 'pages.flow.validator.flowProperties.required',
-                //       defaultMessage: 'Please select flow properties',
-                //     }),
-                //   );
-                //   return true;
-                // } else if (
-                //   flowProperties.flowProperty.filter((item: any) => item?.quantitativeReference)
-                //     .length !== 1
-                // ) {
-                //   message.error(
-                //     intl.formatMessage({
-                //       id: 'pages.flow.validator.flowProperties.quantitativeReference.required',
-                //       defaultMessage:
-                //         'Flow property needs to have exactly one quantitative reference open',
-                //     }),
-                //   );
-                //   return false;
-                // }
-                const updateResult = await updateFlows(id, version, {
-                  ...fieldsValue,
-                  flowProperties,
-                });
-                if (updateResult?.data) {
-                  message.success(
-                    intl.formatMessage({
-                      id: 'pages.flows.editsuccess',
-                      defaultMessage: 'Edit successfully!',
-                    }),
-                  );
-                  setDrawerVisible(false);
-                  setActiveTabKey('flowInformation');
-                  actionRef?.current?.reload();
-                } else {
-                  message.error(updateResult?.error?.message);
-                }
-                return true;
-              }}
-              onValuesChange={(_, allValues) => {
-                setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
-              }}
-            >
-              <FlowForm
-                lang={lang}
-                activeTabKey={activeTabKey}
-                drawerVisible={drawerVisible}
+            <RefCheckContext.Provider value={refCheckData}>
+              <ProForm
                 formRef={formRefEdit}
-                onData={handletFromData}
-                flowType={flowType}
-                onTabChange={onTabChange}
-                propertyDataSource={propertyDataSource}
-                onPropertyData={handletPropertyData}
-                onPropertyDataCreate={handletPropertyDataCreate}
-                showRules={showRules}
-              />
-            </ProForm>
+                initialValues={initData}
+                submitter={{
+                  render: () => {
+                    return [];
+                  },
+                }}
+                onFinish={async () => {
+                  const fieldsValue = formRefEdit.current?.getFieldsValue();
+                  const flowProperties = fromData?.flowProperties;
+                  // if (
+                  //   !flowProperties ||
+                  //   !flowProperties?.flowProperty ||
+                  //   flowProperties?.flowProperty?.length === 0
+                  // ) {
+                  //   message.error(
+                  //     intl.formatMessage({
+                  //       id: 'pages.flow.validator.flowProperties.required',
+                  //       defaultMessage: 'Please select flow properties',
+                  //     }),
+                  //   );
+                  //   return true;
+                  // } else if (
+                  //   flowProperties.flowProperty.filter((item: any) => item?.quantitativeReference)
+                  //     .length !== 1
+                  // ) {
+                  //   message.error(
+                  //     intl.formatMessage({
+                  //       id: 'pages.flow.validator.flowProperties.quantitativeReference.required',
+                  //       defaultMessage:
+                  //         'Flow property needs to have exactly one quantitative reference open',
+                  //     }),
+                  //   );
+                  //   return false;
+                  // }
+                  const updateResult = await updateFlows(id, version, {
+                    ...fieldsValue,
+                    flowProperties,
+                  });
+                  if (updateResult?.data) {
+                    message.success(
+                      intl.formatMessage({
+                        id: 'pages.flows.editsuccess',
+                        defaultMessage: 'Edit successfully!',
+                      }),
+                    );
+                    setDrawerVisible(false);
+                    setActiveTabKey('flowInformation');
+                    actionRef?.current?.reload();
+                  } else {
+                    message.error(updateResult?.error?.message);
+                  }
+                  return true;
+                }}
+                onValuesChange={(_, allValues) => {
+                  setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+                }}
+              >
+                <FlowForm
+                  lang={lang}
+                  activeTabKey={activeTabKey}
+                  drawerVisible={drawerVisible}
+                  formRef={formRefEdit}
+                  onData={handletFromData}
+                  flowType={flowType}
+                  onTabChange={onTabChange}
+                  propertyDataSource={propertyDataSource}
+                  onPropertyData={handletPropertyData}
+                  onPropertyDataCreate={handletPropertyDataCreate}
+                  showRules={showRules}
+                />
+              </ProForm>
+            </RefCheckContext.Provider>
           </UpdateReferenceContext.Provider>
           <Collapse
             items={[

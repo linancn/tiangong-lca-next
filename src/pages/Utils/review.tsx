@@ -122,6 +122,23 @@ export const checkReferences = async (
     }
   }
 };
+
+export const checkData = async (
+  data: refDataType,
+  unRuleVerification: refDataType[],
+  nonExistentRef: refDataType[],
+) => {
+  const { data: detail } = await getRefData(
+    data['@refObjectId'],
+    data['@version'],
+    getRefTableName(data['@type']),
+  );
+  if (detail) {
+    const refs = getAllRefObj(detail?.json);
+    await checkReferences(refs, new Set(), '', [], [], unRuleVerification, nonExistentRef);
+  }
+};
+
 export const dealProcress = (
   processDetail: any,
   unReview: refDataType[],

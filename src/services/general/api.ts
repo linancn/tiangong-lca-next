@@ -76,7 +76,7 @@ export async function getDataDetail(id: string, version: string, table: string) 
   });
 }
 
-export async function getRefData(id: string, version: string, table: string, teamId: string) {
+export async function getRefData(id: string, version: string, table: string, teamId?: string) {
   if (!table) {
     return Promise.resolve({
       data: null,
@@ -140,11 +140,7 @@ export async function updateStateCodeApi(
 }
 
 export async function getReviewsOfData(id: string, version: string, table: string) {
-  let result = await supabase
-    .from(table)
-    .select('reviews')
-    .eq('id', id)
-    .eq('version', version);
+  let result = await supabase.from(table).select('reviews').eq('id', id).eq('version', version);
   return result.data?.[0]?.reviews ?? [];
 }
 export async function updateDateToReviewState(
@@ -154,15 +150,9 @@ export async function updateDateToReviewState(
   data: any,
 ) {
   if (!table) return;
-  let result = await supabase
-    .from(table)
-    .update(data)
-    .eq('id', id)
-    .eq('version', version)
-    .select();
+  let result = await supabase.from(table).update(data).eq('id', id).eq('version', version).select();
   return result;
 }
-
 
 // Get the team id of the user when the user is not an invited user and  is not a rejected user
 export async function getTeamIdByUserId() {
@@ -482,7 +472,7 @@ export async function getAllVersions(
                 if (i?.typeOfDataSet === 'Elementary flow') {
                   classificationData =
                     i?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-                    'common:category'
+                      'common:category'
                     ];
                   thisClass = res?.data?.categoryElementaryFlow;
                 } else {
@@ -537,7 +527,7 @@ export async function getAllVersions(
               if (i?.typeOfDataSet === 'Elementary flow') {
                 classificationData =
                   i?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-                  'common:category'
+                    'common:category'
                   ];
               } else {
                 classificationData =

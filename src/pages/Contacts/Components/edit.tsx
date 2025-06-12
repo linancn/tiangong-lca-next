@@ -1,4 +1,7 @@
+import { RefCheckContext } from '@/contexts/refCheckContext';
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
+import type { refDataType } from '@/pages/Utils/review';
+import { checkData } from '@/pages/Utils/review';
 import { getContactDetail, updateContact } from '@/services/contacts/api';
 import { genContactFromData } from '@/services/contacts/util';
 import styles from '@/style/custom.less';
@@ -36,7 +39,7 @@ const ContactEdit: FC<Props> = ({
   const [referenceValue, setReferenceValue] = useState<number>(0);
   const [showRules, setShowRules] = useState<boolean>(false);
   const intl = useIntl();
-
+  const [refCheckData, setRefCheckData] = useState<any[]>([]);
   useEffect(() => {
     if (showRules) {
       setTimeout(() => {
@@ -85,6 +88,38 @@ const ContactEdit: FC<Props> = ({
     onReset();
   }, [drawerVisible]);
 
+  const handleCheckData = async () => {
+    setSpinning(true);
+    const unRuleVerification: refDataType[] = [];
+    const nonExistentRef: refDataType[] = [];
+    await checkData(
+      {
+        '@type': 'flow property data set',
+        '@refObjectId': id,
+        '@version': version,
+      },
+      unRuleVerification,
+      nonExistentRef,
+    );
+    const unRuleVerificationData = unRuleVerification.map((item: any) => {
+      return {
+        id: item['@refObjectId'],
+        version: item['@version'],
+        type: 1,
+      };
+    });
+    const nonExistentRefData = nonExistentRef.map((item: any) => {
+      return {
+        id: item['@refObjectId'],
+        version: item['@version'],
+        type: 2,
+      };
+    });
+
+    setRefCheckData([...unRuleVerificationData, ...nonExistentRefData]);
+    setShowRules(true);
+    setSpinning(false);
+  };
   return (
     <>
       {buttonType === 'icon' ? (
@@ -120,11 +155,7 @@ const ContactEdit: FC<Props> = ({
         onClose={() => setDrawerVisible(false)}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
-            <Button
-              onClick={() => {
-                setShowRules(true);
-              }}
-            >
+            <Button onClick={handleCheckData}>
               <FormattedMessage id='pages.button.check' defaultMessage='Data check' />
             </Button>
             <Button
@@ -157,47 +188,49 @@ const ContactEdit: FC<Props> = ({
       >
         <Spin spinning={spinning}>
           <UpdateReferenceContext.Provider value={{ referenceValue }}>
-            <ProForm
-              formRef={formRefEdit}
-              onValuesChange={(_, allValues) => {
-                setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
-              }}
-              submitter={{
-                render: () => {
-                  return [];
-                },
-              }}
-              initialValues={initData}
-              onFinish={async () => {
-                setSpinning(true);
-                const formFieldsValue = formRefEdit.current?.getFieldsValue();
-                const updateResult = await updateContact(id, version, formFieldsValue);
-                if (updateResult?.data) {
-                  message.success(
-                    intl.formatMessage({
-                      id: 'pages.button.create.success',
-                      defaultMessage: 'Created successfully!',
-                    }),
-                  );
-                  setDrawerVisible(false);
-                  setViewDrawerVisible(false);
-                  actionRef?.current?.reload();
-                } else {
-                  message.error(updateResult?.error?.message);
-                }
-                setSpinning(true);
-                return true;
-              }}
-            >
-              <ContactForm
-                lang={lang}
-                activeTabKey={activeTabKey}
+            <RefCheckContext.Provider value={refCheckData}>
+              <ProForm
                 formRef={formRefEdit}
-                onData={handletFromData}
-                onTabChange={onTabChange}
-                showRules={showRules}
-              />
-            </ProForm>
+                onValuesChange={(_, allValues) => {
+                  setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+                }}
+                submitter={{
+                  render: () => {
+                    return [];
+                  },
+                }}
+                initialValues={initData}
+                onFinish={async () => {
+                  setSpinning(true);
+                  const formFieldsValue = formRefEdit.current?.getFieldsValue();
+                  const updateResult = await updateContact(id, version, formFieldsValue);
+                  if (updateResult?.data) {
+                    message.success(
+                      intl.formatMessage({
+                        id: 'pages.button.create.success',
+                        defaultMessage: 'Created successfully!',
+                      }),
+                    );
+                    setDrawerVisible(false);
+                    setViewDrawerVisible(false);
+                    actionRef?.current?.reload();
+                  } else {
+                    message.error(updateResult?.error?.message);
+                  }
+                  setSpinning(true);
+                  return true;
+                }}
+              >
+                <ContactForm
+                  lang={lang}
+                  activeTabKey={activeTabKey}
+                  formRef={formRefEdit}
+                  onData={handletFromData}
+                  onTabChange={onTabChange}
+                  showRules={showRules}
+                />
+              </ProForm>
+            </RefCheckContext.Provider>
           </UpdateReferenceContext.Provider>
           <Collapse
             items={[
