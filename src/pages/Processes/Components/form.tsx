@@ -1820,6 +1820,7 @@ export const ProcessForm: FC<Props> = ({
                   toolBarRender={() => {
                     return [
                       <ProcessExchangeCreate
+                        showRules={showRules}
                         key={0}
                         direction={'input'}
                         lang={lang}
@@ -1889,6 +1890,7 @@ export const ProcessForm: FC<Props> = ({
                   toolBarRender={() => {
                     return [
                       <ProcessExchangeCreate
+                        showRules={showRules}
                         key={0}
                         direction={'output'}
                         lang={lang}
