@@ -140,6 +140,12 @@ export default {
   'pages.account.confirmNewPassword.placeholder': 'Confirm  New Password',
   'pages.account.confirmNewEmail.placeholder': 'Confirm New Email',
 
+  'pages.account.info.title': 'Account Information',
+  'pages.account.profile.userid': 'User ID',
+  'pages.account.view.tooltip': 'View Account',
+  'pages.account.view.button': 'View Account',
+  'pages.account.drawer.title.view': 'View Account Information',
+
   'pages.login.passwordForgot.tab': 'Account',
 
   // Team Management

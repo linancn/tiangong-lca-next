@@ -1,3 +1,5 @@
+import TeamView from '@/components/AllTeams/view';
+import AccountView from '@/pages/Account/view';
 import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
 import ProcessView from '@/pages/Processes/Components/view';
 import { ListPagination } from '@/services/general/data';
@@ -80,7 +82,12 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
       sorter: false,
       search: false,
       render: (_, row) => {
-        return [<span key={0}>{row.teamName}</span>];
+        return [
+          <span key={0}>
+            {row.teamName}
+            {row?.json?.team?.id && <TeamView id={row?.json?.team?.id} buttonType='icon' />}
+          </span>,
+        ];
       },
     },
     {
@@ -91,7 +98,12 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
       sorter: false,
       search: false,
       render: (_, row) => {
-        return [<span key={0}>{row.userName}</span>];
+        return [
+          <span key={0}>
+            {row.userName}
+            <AccountView userId={row.json?.user?.id} buttonType='icon' />
+          </span>,
+        ];
       },
     },
     {
@@ -112,30 +124,13 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
       search: false,
       render: (_, record) => {
         return [
-          <RejectReview isModel={record.isFromLifeCycle} dataId={record.json?.data?.id} dataVersion={record.json?.data?.version} reviewId={record.id} key={0} />,
-          // <Space key={0}>
-          //   {record.isFromLifeCycle ? (
-          //     <ReviewLifeCycleModelsDetail
-          //       tabType='assigned'
-          //       type='edit'
-          //       actionRef={actionRef}
-          //       id={record.json?.data?.id}
-          //       version={record.json?.data?.version}
-          //       lang={lang}
-          //       reviewId={record.id}
-          //     />
-          //   ) : (
-          //     <ReviewProcessDetail
-          //       tabType='assigned'
-          //       type='edit'
-          //       actionRef={actionRef}
-          //       id={record.json?.data?.id}
-          //       version={record.json?.data?.version}
-          //       lang={lang}
-          //       reviewId={record.id}
-          //     />
-          //   )}
-          // </Space>,
+          <RejectReview
+            isModel={record.isFromLifeCycle}
+            dataId={record.json?.data?.id}
+            dataVersion={record.json?.data?.version}
+            reviewId={record.id}
+            key={0}
+          />,
         ];
       },
     });

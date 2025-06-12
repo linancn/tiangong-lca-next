@@ -140,6 +140,12 @@ export default {
   'pages.account.confirmNewPassword.placeholder': '确认新密码',
   'pages.account.confirmNewEmail.placeholder': '确认新邮箱',
 
+  'pages.account.info.title': '账户信息',
+  'pages.account.profile.userid': '用户ID',
+  'pages.account.view.tooltip': '查看账户',
+  'pages.account.view.button': '查看账户',
+  'pages.account.drawer.title.view': '查看账户信息',
+
   'pages.login.passwordForgot.tab': '账户',
 
   'pages.team.editsuccess': '修改成功！',
