@@ -412,7 +412,6 @@ export default {
 
   'pages.process.review.submitSuccess': '提交审核成功',
   'pages.process.review.submitError': '提交审核失败',
-  'pages.process.review.verify.title': '数据校验详情',
   'pages.process.review.verify.success.tip': '数据校验成功',
   'pages.process.review.unRuleVerification.tip': '以下引用数据不完整，请补充完整:',
   'pages.process.review.nonExistentRefData.tip': '以下数据不存在，请检查:',

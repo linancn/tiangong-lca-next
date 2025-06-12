@@ -1,4 +1,7 @@
 export default {
+  'pages.select.unRuleVerification': '数据不完整',
+  'pages.select.nonExistentRef': '数据不存在',
+
   'pages.button.deleteMessage': '您确定要删除此数据吗？',
   'pages.layouts.userLayout.title': '',
   'pages.404.buttonText': '返回首页',

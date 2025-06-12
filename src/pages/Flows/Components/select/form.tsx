@@ -1,4 +1,5 @@
 import RequiredSelectFormTitle from '@/components/RequiredSelectFormTitle';
+import { useRefCheckContext } from '@/contexts/refCheckContext';
 import UnitGroupFromMini from '@/pages/Unitgroups/Components/select/formMini';
 import { getLocalValueProps, validateRefObjectId } from '@/pages/Utils';
 import { getFlowDetail } from '@/services/flows/api';
@@ -11,6 +12,7 @@ import { FormattedMessage } from 'umi';
 import FlowsEdit from '../edit';
 import FlowsView from '../view';
 import FlowsSelectDrawer from './drawer';
+
 const { TextArea } = Input;
 
 type Props = {
@@ -39,12 +41,20 @@ const FlowsSelectForm: FC<Props> = ({
   const { token } = theme.useToken();
   const [ruleErrorState, setRuleErrorState] = useState(false);
   const [refData, setRefData] = useState<any>(null);
+  const [errRef, setErrRef] = useState<{ id: string; version: string; type: number } | null>(null);
+  const refCheckData = useRefCheckContext();
 
   useEffect(() => {
     if (id && version) {
       getRefData(id, version, 'flows', '').then((result: any) => {
         setRefData({ ...result.data });
       });
+      if (refCheckData.length) {
+        const ref = refCheckData.find((item: any) => item.id === id && item.version === version);
+        if (ref) {
+          setErrRef(ref);
+        }
+      }
     }
   }, [id, version]);
 
@@ -82,12 +92,14 @@ const FlowsSelectForm: FC<Props> = ({
   return (
     <Card
       size='small'
+      style={errRef ? { border: `1px solid ${token.colorError}` } : {}}
       title={
         isRequired ? (
           <RequiredSelectFormTitle
             label={label}
             ruleErrorState={ruleErrorState}
             requiredRules={requiredRules}
+            errRef={errRef}
           />
         ) : (
           label

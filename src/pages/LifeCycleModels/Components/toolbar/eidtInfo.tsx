@@ -29,11 +29,11 @@ import {
 } from '@/pages/Utils/review';
 import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
 
+import { RefCheckContext } from '@/contexts/refCheckContext';
 import { getProcessDetail } from '@/services/processes/api';
 import { getUserTeamId } from '@/services/roles/api';
 import { v4 } from 'uuid';
 import requiredFields from '../../requiredFields';
-const { Paragraph } = Typography;
 
 type Props = {
   lang: string;
@@ -51,8 +51,28 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
   const [showRules, setShowRules] = useState<boolean>(false);
   const [unRuleVerificationData, setUnRuleVerificationData] = useState<any[]>([]);
   const [nonExistentRefData, setNonExistentRefData] = useState<any[]>([]);
+  const [refCheckData, setRefCheckData] = useState<any[]>([]);
   const intl = useIntl();
   let modelDetail: any;
+
+  useEffect(() => {
+    const unRuleVerification = unRuleVerificationData.map((item: any) => {
+      return {
+        id: item['@refObjectId'],
+        version: item['@version'],
+        type: 1,
+      };
+    });
+    const nonExistentRef = nonExistentRefData.map((item: any) => {
+      return {
+        id: item['@refObjectId'],
+        version: item['@version'],
+        type: 2,
+      };
+    });
+
+    setRefCheckData([...unRuleVerification, ...nonExistentRef]);
+  }, [unRuleVerificationData, nonExistentRefData]);
 
   useEffect(() => {
     if (showRules) {
@@ -348,113 +368,65 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
         }
       >
         <Spin spinning={spinning}>
-          {(unRuleVerificationData && unRuleVerificationData.length > 0) ||
-          (nonExistentRefData && nonExistentRefData.length > 0) ? (
-            <>
-              <Collapse
-                items={[
-                  {
-                    key: '1',
-                    label: intl.formatMessage({
-                      id: 'pages.process.review.verify.title',
-                      defaultMessage: 'Data verification details',
-                    }),
-                    children: (
-                      <>
-                        {unRuleVerificationData && unRuleVerificationData.length > 0 && (
-                          <Typography>
-                            <Paragraph>
-                              <FormattedMessage
-                                id='pages.process.review.unRuleVerification.tip'
-                                defaultMessage='The following referenced data is incomplete, please complete it'
-                              />
-                              {unRuleVerificationData?.map((item: any) => (
-                                <div key={item['@refObjectId']}>
-                                  {`${item['@type']} : ${item['@refObjectId']}`}{' '}
-                                  {`${item['@version']}`}
-                                </div>
-                              ))}
-                            </Paragraph>
-                          </Typography>
-                        )}
-                        {nonExistentRefData && nonExistentRefData.length > 0 && (
-                          <Typography>
-                            <Paragraph>
-                              <FormattedMessage
-                                id='pages.process.review.nonExistentRefData.tip'
-                                defaultMessage='The following data does not exist, please check'
-                              />
-                              {nonExistentRefData?.map((item: any) => (
-                                <div key={item['@refObjectId']}>
-                                  {`${item['@type']} : ${item['@refObjectId']}`}{' '}
-                                  {`${item['@version']}`}
-                                </div>
-                              ))}
-                            </Paragraph>
-                          </Typography>
-                        )}
-                      </>
-                    ),
-                  },
-                ]}
-              />
-              <br />
-            </>
-          ) : null}
           <UpdateReferenceContext.Provider value={{ referenceValue }}>
-            <ProForm
-              formRef={formRefEdit}
-              initialValues={data}
-              onValuesChange={async (_, allValues) => {
-                if (activeTabKey === 'validation') {
-                  await setFromData({
-                    ...fromData,
-                    modellingAndValidation: {
-                      ...fromData?.modellingAndValidation,
-                      validation: { ...allValues?.modellingAndValidation?.validation },
-                    },
-                  });
-                } else if (activeTabKey === 'complianceDeclarations') {
-                  await setFromData({
-                    ...fromData,
-                    modellingAndValidation: {
-                      ...fromData?.modellingAndValidation,
-                      complianceDeclarations: {
-                        ...allValues?.modellingAndValidation?.complianceDeclarations,
-                      },
-                    },
-                  });
-                } else {
-                  await setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
-                }
-              }}
-              submitter={{
-                render: () => {
-                  return [];
-                },
-              }}
-              onFinish={async () => {
-                // if (!checkResult) {
-                //   await setActiveTabKey(tabName);
-                //   formRefEdit.current?.validateFields();
-                //   return false;
-                // }
-                onData({ ...fromData });
-                formRefEdit.current?.resetFields();
-                setDrawerVisible(false);
-                return true;
-              }}
-            >
-              <LifeCycleModelForm
-                formType={action}
-                lang={lang}
-                activeTabKey={activeTabKey}
+            <RefCheckContext.Provider value={refCheckData}>
+              <ProForm
                 formRef={formRefEdit}
-                onTabChange={onTabChange}
-                onData={handletFromData}
-                showRules={showRules}
-              />
-            </ProForm>
+                initialValues={data}
+                onValuesChange={async (_, allValues) => {
+                  if (activeTabKey === 'validation') {
+                    await setFromData({
+                      ...fromData,
+                      modellingAndValidation: {
+                        ...fromData?.modellingAndValidation,
+                        validation: { ...allValues?.modellingAndValidation?.validation },
+                      },
+                    });
+                  } else if (activeTabKey === 'complianceDeclarations') {
+                    await setFromData({
+                      ...fromData,
+                      modellingAndValidation: {
+                        ...fromData?.modellingAndValidation,
+                        complianceDeclarations: {
+                          ...allValues?.modellingAndValidation?.complianceDeclarations,
+                        },
+                      },
+                    });
+                  } else {
+                    await setFromData({
+                      ...fromData,
+                      [activeTabKey]: allValues[activeTabKey] ?? {},
+                    });
+                  }
+                }}
+                submitter={{
+                  render: () => {
+                    return [];
+                  },
+                }}
+                onFinish={async () => {
+                  // if (!checkResult) {
+                  //   await setActiveTabKey(tabName);
+                  //   formRefEdit.current?.validateFields();
+                  //   return false;
+                  // }
+                  onData({ ...fromData });
+                  formRefEdit.current?.resetFields();
+                  setDrawerVisible(false);
+                  return true;
+                }}
+              >
+                <LifeCycleModelForm
+                  formType={action}
+                  lang={lang}
+                  activeTabKey={activeTabKey}
+                  formRef={formRefEdit}
+                  onTabChange={onTabChange}
+                  onData={handletFromData}
+                  showRules={showRules}
+                />
+              </ProForm>
+            </RefCheckContext.Provider>
           </UpdateReferenceContext.Provider>
           <Collapse
             items={[

@@ -1,4 +1,5 @@
 import RequiredSelectFormTitle from '@/components/RequiredSelectFormTitle';
+import { useRefCheckContext } from '@/contexts/refCheckContext';
 import { useUpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import UnitGroupFromMini from '@/pages/Unitgroups/Components/select/formMini';
 import { getLocalValueProps, validateRefObjectId } from '@/pages/Utils';
@@ -42,14 +43,21 @@ const FlowpropertiesSelectForm: FC<Props> = ({
   const { referenceValue } = useUpdateReferenceContext() as { referenceValue: number };
   const [ruleErrorState, setRuleErrorState] = useState(false);
   const [refData, setRefData] = useState<any>(null);
-
+  const [errRef, setErrRef] = useState<{ id: string; version: string; type: number } | null>(null);
+  const refCheckData = useRefCheckContext();
   useEffect(() => {
     if (id && version) {
       getRefData(id, version, 'flowproperties', '').then((result: any) => {
         setRefData({ ...result.data });
       });
+      if (refCheckData.length) {
+        const ref = refCheckData.find((item: any) => item.id === id && item.version === version);
+        if (ref) {
+          setErrRef(ref);
+        }
+      }
     }
-  }, [id, version]);
+  }, [id, version, refCheckData]);
 
   const handletFlowpropertyData = (rowId: string, rowVersion: string) => {
     getFlowpropertyDetail(rowId, rowVersion ?? '').then(async (result: any) => {
@@ -89,12 +97,14 @@ const FlowpropertiesSelectForm: FC<Props> = ({
   return (
     <Card
       size='small'
+      style={errRef ? { border: `1px solid ${token.colorError}` } : {}}
       title={
         isRequired ? (
           <RequiredSelectFormTitle
             label={label}
             ruleErrorState={ruleErrorState}
             requiredRules={requiredRules}
+            errRef={errRef}
           />
         ) : (
           label

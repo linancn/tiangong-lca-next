@@ -1,4 +1,7 @@
 export default {
+  'pages.select.unRuleVerification': 'Data is incomplete',
+  'pages.select.nonExistentRef': 'Data does not exist',
+
   'pages.layouts.userLayout.title': '',
   'pages.404.buttonText': 'Back Home',
   'pages.404.subTitle': 'Sorry, the page you visited does not exist.',

@@ -415,7 +415,6 @@ export default {
 
   'pages.process.review.submitSuccess': 'Review submitted successfully',
   'pages.process.review.submitError': 'Submit review failed',
-  'pages.process.review.verify.title': 'Data verification details',
   'pages.process.review.verify.success.tip': 'Data verification successful',
   'pages.process.review.unRuleVerification.tip': 'The following referenced data is incomplete, please complete it:',
   'pages.process.review.nonExistentRefData.tip': 'The following data does not exist, please check:',

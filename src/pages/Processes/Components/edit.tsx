@@ -1,4 +1,13 @@
+import { RefCheckContext } from '@/contexts/refCheckContext';
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
+import {
+  checkReferences,
+  checkRequiredFields,
+  dealProcress,
+  getAllRefObj,
+  updateReviewsAfterCheckData,
+  updateUnReviewToUnderReview,
+} from '@/pages/Utils/review';
 import { getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
 import { getProcessDetail, updateProcess } from '@/services/processes/api';
@@ -22,12 +31,9 @@ import {
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
+import { v4 } from 'uuid';
 import requiredFields from '../requiredFields';
 import { ProcessForm } from './form';
-import { dealProcress, checkReferences, updateReviewsAfterCheckData, updateUnReviewToUnderReview,checkRequiredFields, getAllRefObj } from '@/pages/Utils/review';
-import { v4 } from 'uuid';
-
-const { Paragraph } = Typography;
 
 type Props = {
   id: string;
@@ -57,6 +63,27 @@ const ProcessEdit: FC<Props> = ({
   const [nonExistentRefData, setNonExistentRefData] = useState<any[]>([]);
   const intl = useIntl();
   const [referenceValue, setReferenceValue] = useState(0);
+  const [refCheckData, setRefCheckData] = useState<any[]>([]);
+
+  useEffect(() => {
+    const unRuleVerification = unRuleVerificationData.map((item: any) => {
+      return {
+        id: item['@refObjectId'],
+        version: item['@version'],
+        type: 1,
+      };
+    });
+    const nonExistentRef = nonExistentRefData.map((item: any) => {
+      return {
+        id: item['@refObjectId'],
+        version: item['@version'],
+        type: 2,
+      };
+    });
+
+    setRefCheckData([...unRuleVerification, ...nonExistentRef]);
+  }, [unRuleVerificationData, nonExistentRefData]);
+
   const handletFromData = async () => {
     if (fromData?.id) {
       const fieldsValue = formRefEdit.current?.getFieldsValue();
@@ -236,7 +263,15 @@ const ProcessEdit: FC<Props> = ({
       const userTeamId = await getUserTeamId();
       const refObjs = getAllRefObj(processDetail);
 
-      await checkReferences(refObjs, new Set<string>(), userTeamId, unReview, underReview, unRuleVerification, nonExistentRef);
+      await checkReferences(
+        refObjs,
+        new Set<string>(),
+        userTeamId,
+        unReview,
+        underReview,
+        unRuleVerification,
+        nonExistentRef,
+      );
 
       setNonExistentRefData(nonExistentRef);
       setUnRuleVerificationData(unRuleVerification);
@@ -274,9 +309,10 @@ const ProcessEdit: FC<Props> = ({
         {
           id,
           version,
-          name: processDetail?.json?.processDataSet?.processInformation?.dataSetInformation?.name ?? {}
+          name:
+            processDetail?.json?.processDataSet?.processInformation?.dataSetInformation?.name ?? {},
         },
-        reviewId
+        reviewId,
       );
       if (result?.error) return;
 
@@ -435,108 +471,60 @@ const ProcessEdit: FC<Props> = ({
         }
       >
         <Spin spinning={spinning}>
-          {(unRuleVerificationData && unRuleVerificationData.length > 0) ||
-            (nonExistentRefData && nonExistentRefData.length > 0) ? (
-            <>
-              <Collapse
-                items={[
-                  {
-                    key: '1',
-                    label: intl.formatMessage({
-                      id: 'pages.process.review.verify.title',
-                      defaultMessage: 'Data verification details',
-                    }),
-                    children: (
-                      <>
-                        {unRuleVerificationData && unRuleVerificationData.length > 0 && (
-                          <Typography>
-                            <Paragraph>
-                              <FormattedMessage
-                                id='pages.process.review.unRuleVerification.tip'
-                                defaultMessage='The following referenced data is incomplete, please complete it'
-                              />
-                              {unRuleVerificationData?.map((item: any) => (
-                                <div key={item['@refObjectId']}>
-                                  {`${item['@type']} : ${item['@refObjectId']}`}{' '}
-                                  {`${item['@version']}`}
-                                </div>
-                              ))}
-                            </Paragraph>
-                          </Typography>
-                        )}
-                        {nonExistentRefData && nonExistentRefData.length > 0 && (
-                          <Typography>
-                            <Paragraph>
-                              <FormattedMessage
-                                id='pages.process.review.nonExistentRefData.tip'
-                                defaultMessage='The following data does not exist, please check'
-                              />
-                              {nonExistentRefData?.map((item: any) => (
-                                <div key={item['@refObjectId']}>
-                                  {`${item['@type']} : ${item['@refObjectId']}`}{' '}
-                                  {`${item['@version']}`}
-                                </div>
-                              ))}
-                            </Paragraph>
-                          </Typography>
-                        )}
-                      </>
-                    ),
-                  },
-                ]}
-              />
-              <br />
-            </>
-          ) : null}
           <UpdateReferenceContext.Provider value={{ referenceValue }}>
-            <ProForm
-              formRef={formRefEdit}
-              initialValues={initData}
-              onValuesChange={async (_, allValues) => {
-                if (activeTabKey === 'validation') {
-                  await setFromData({
-                    ...fromData,
-                    modellingAndValidation: {
-                      ...fromData?.modellingAndValidation,
-                      validation: { ...allValues?.modellingAndValidation?.validation },
-                    },
-                  });
-                } else if (activeTabKey === 'complianceDeclarations') {
-                  await setFromData({
-                    ...fromData,
-                    modellingAndValidation: {
-                      ...fromData?.modellingAndValidation,
-                      complianceDeclarations: {
-                        ...allValues?.modellingAndValidation?.complianceDeclarations,
-                      },
-                    },
-                  });
-                } else {
-                  await setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
-                }
-              }}
-              submitter={{
-                render: () => {
-                  return [];
-                },
-              }}
-              onFinish={() => handleSubmit(true)}
-            >
-              <ProcessForm
-                lang={lang}
-                activeTabKey={activeTabKey}
+            <RefCheckContext.Provider value={refCheckData}>
+              <ProForm
                 formRef={formRefEdit}
-                onData={handletFromData}
-                onExchangeData={handletExchangeData}
-                onExchangeDataCreate={handletExchangeDataCreate}
-                onTabChange={onTabChange}
-                exchangeDataSource={exchangeDataSource}
-                showRules={showRules}
-              />
-              <Form.Item name='id' hidden>
-                <Input />
-              </Form.Item>
-            </ProForm>
+                initialValues={initData}
+                onValuesChange={async (_, allValues) => {
+                  if (activeTabKey === 'validation') {
+                    await setFromData({
+                      ...fromData,
+                      modellingAndValidation: {
+                        ...fromData?.modellingAndValidation,
+                        validation: { ...allValues?.modellingAndValidation?.validation },
+                      },
+                    });
+                  } else if (activeTabKey === 'complianceDeclarations') {
+                    await setFromData({
+                      ...fromData,
+                      modellingAndValidation: {
+                        ...fromData?.modellingAndValidation,
+                        complianceDeclarations: {
+                          ...allValues?.modellingAndValidation?.complianceDeclarations,
+                        },
+                      },
+                    });
+                  } else {
+                    await setFromData({
+                      ...fromData,
+                      [activeTabKey]: allValues[activeTabKey] ?? {},
+                    });
+                  }
+                }}
+                submitter={{
+                  render: () => {
+                    return [];
+                  },
+                }}
+                onFinish={() => handleSubmit(true)}
+              >
+                <ProcessForm
+                  lang={lang}
+                  activeTabKey={activeTabKey}
+                  formRef={formRefEdit}
+                  onData={handletFromData}
+                  onExchangeData={handletExchangeData}
+                  onExchangeDataCreate={handletExchangeDataCreate}
+                  onTabChange={onTabChange}
+                  exchangeDataSource={exchangeDataSource}
+                  showRules={showRules}
+                />
+                <Form.Item name='id' hidden>
+                  <Input />
+                </Form.Item>
+              </ProForm>
+            </RefCheckContext.Provider>
           </UpdateReferenceContext.Provider>
           <Collapse
             items={[

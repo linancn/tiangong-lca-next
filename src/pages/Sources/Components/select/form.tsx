@@ -1,4 +1,5 @@
 import RequiredSelectFormTitle from '@/components/RequiredSelectFormTitle';
+import { useRefCheckContext } from '@/contexts/refCheckContext';
 import { useUpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import { getLocalValueProps, validateRefObjectId } from '@/pages/Utils';
 import { getRefData } from '@/services/general/api';
@@ -37,6 +38,8 @@ const SourceSelectForm: FC<Props> = ({
 }) => {
   const [id, setId] = useState<string | undefined>(undefined);
   const [version, setVersion] = useState<string | undefined>(undefined);
+  const [errRef, setErrRef] = useState<{ id: string; version: string; type: number } | null>(null);
+  const refCheckData = useRefCheckContext();
 
   const [refData, setRefData] = useState<any>(null);
   useEffect(() => {
@@ -44,8 +47,14 @@ const SourceSelectForm: FC<Props> = ({
       getRefData(id, version, 'sources', '').then((result: any) => {
         setRefData({ ...result.data });
       });
+      if (refCheckData.length) {
+        const ref = refCheckData.find((item: any) => item.id === id && item.version === version);
+        if (ref) {
+          setErrRef(ref);
+        }
+      }
     }
-  }, [id, version]);
+  }, [id, version, refCheckData]);
 
   const { token } = theme.useToken();
   const { referenceValue } = useUpdateReferenceContext() as { referenceValue: number };
@@ -144,12 +153,14 @@ const SourceSelectForm: FC<Props> = ({
   return (
     <Card
       size='small'
+      style={errRef ? { border: `1px solid ${token.colorError}` } : {}}
       title={
         isRequired ? (
           <RequiredSelectFormTitle
             label={label}
             ruleErrorState={ruleErrorState}
             requiredRules={requiredRules}
+            errRef={errRef}
           />
         ) : (
           label
