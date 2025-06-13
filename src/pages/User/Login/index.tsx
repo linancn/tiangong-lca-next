@@ -381,7 +381,7 @@ const Login: React.FC = () => {
                               <div style={{ color: token.colorWarning }}>
                                 <FormattedMessage
                                   id='pages.login.password.strengthMedium'
-                                  defaultMessage='Medium'
+                                  defaultMessage='Strength: Medium'
                                 />
                               </div>
                             );
@@ -391,7 +391,7 @@ const Login: React.FC = () => {
                               <div style={{ color: token.colorSuccess }}>
                                 <FormattedMessage
                                   id='pages.login.password.strengthStrong'
-                                  defaultMessage='Strong'
+                                  defaultMessage='Strength: Strong'
                                 />
                               </div>
                             );
@@ -400,7 +400,7 @@ const Login: React.FC = () => {
                             <div style={{ color: token.colorError }}>
                               <FormattedMessage
                                 id='pages.login.password.strengthWeak'
-                                defaultMessage='Weak'
+                                defaultMessage='Strength: Weak'
                               />
                             </div>
                           );
