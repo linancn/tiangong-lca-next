@@ -49,7 +49,7 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
   const [referenceValue, setReferenceValue] = useState(0);
   const [refCheckData, setRefCheckData] = useState<any[]>([]);
   const intl = useIntl();
-  const parentRefCheckData = useRefCheckContext();
+  const parentRefCheckContext = useRefCheckContext();
 
   useEffect(() => {
     if (showRules) {
@@ -212,7 +212,12 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
       >
         <Spin spinning={spinning}>
           <UpdateReferenceContext.Provider value={{ referenceValue }}>
-            <RefCheckContext.Provider value={[...parentRefCheckData, ...refCheckData]}>
+            <RefCheckContext.Provider
+              value={{
+                refCheckData: [...parentRefCheckContext.refCheckData, ...refCheckData],
+                updateRefCheckStatus: () => {},
+              }}
+            >
               <ProForm
                 formRef={formRefEdit}
                 initialValues={initData}

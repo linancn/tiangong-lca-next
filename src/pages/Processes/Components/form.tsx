@@ -5,6 +5,7 @@ import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import RequiredMark from '@/components/RequiredMark';
+import { useRefCheckContext } from '@/contexts/refCheckContext';
 import { getRules } from '@/pages/Utils';
 import { getFlowStateCodeByIdsAndVersions } from '@/services/flows/api';
 import { ListPagination } from '@/services/general/data';
@@ -36,7 +37,6 @@ import {
   workflowAndPublicationStatusOptions,
 } from './optiondata';
 import ReveiwItemForm from './Review/form';
-import { useRefCheckContext } from '@/contexts/refCheckContext';
 
 type Props = {
   lang: string;
@@ -63,7 +63,7 @@ export const ProcessForm: FC<Props> = ({
   formType,
   showRules = false,
 }) => {
-  const refCheckData = useRefCheckContext();
+  const refCheckContext = useRefCheckContext();
   const actionRefExchangeTableInput = useRef<ActionType>();
   const actionRefExchangeTableOutput = useRef<ActionType>();
   const [baseNameError, setBaseNameError] = useState(false);
@@ -1820,14 +1820,14 @@ export const ProcessForm: FC<Props> = ({
                     pageSize: 10,
                   }}
                   rowClassName={(record) => {
-                    const isInRefCheck = refCheckData?.some(
+                    const isInRefCheck = refCheckContext?.refCheckData?.some(
                       (item: any) =>
                         item.id === record.referenceToFlowDataSetId &&
                         item.version === record.referenceToFlowDataSetVersion,
                     );
                     return isInRefCheck ? 'error-row' : '';
                   }}
-                  className="process-exchange-table"
+                  className='process-exchange-table'
                   toolBarRender={() => {
                     return [
                       <ProcessExchangeCreate
@@ -1899,14 +1899,14 @@ export const ProcessForm: FC<Props> = ({
                     pageSize: 10,
                   }}
                   rowClassName={(record) => {
-                    const isInRefCheck = refCheckData?.some(
+                    const isInRefCheck = refCheckContext?.refCheckData?.some(
                       (item: any) =>
                         item.id === record.referenceToFlowDataSetId &&
                         item.version === record.referenceToFlowDataSetVersion,
                     );
                     return isInRefCheck ? 'error-row' : '';
                   }}
-                  className="process-exchange-table"
+                  className='process-exchange-table'
                   toolBarRender={() => {
                     return [
                       <ProcessExchangeCreate

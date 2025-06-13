@@ -216,6 +216,8 @@ const ProcessEdit: FC<Props> = ({
         };
       });
       setRefCheckData(result);
+    } else {
+      setRefCheckData([]);
     }
 
     // setNonExistentRefData(nonExistentRef);
@@ -292,7 +294,7 @@ const ProcessEdit: FC<Props> = ({
     return true;
   };
 
-  const submitReview = async () => {
+  const submitReview = async (onlyCheck: boolean = false) => {
     setSpinning(true);
     await handleSubmit(false);
     const { data: processDetail } = await getProcessDetail(id, version);
@@ -308,7 +310,9 @@ const ProcessEdit: FC<Props> = ({
     }
     const { checkResult, unReview } = await handleCheckData(processDetail);
 
-    if (checkResult) {
+    if (checkResult && !onlyCheck) {
+      console.log('可以提交审核啦！！！！！！！！！！！！');
+      return;
       const reviewId = v4();
       const result = await updateReviewsAfterCheckData(
         processDetail.teamId,
@@ -439,7 +443,7 @@ const ProcessEdit: FC<Props> = ({
             <>
               <Button
                 onClick={() => {
-                  submitReview();
+                  submitReview(false);
                 }}
               >
                 <FormattedMessage id='pages.button.review' defaultMessage='Submit for review' />
@@ -477,7 +481,12 @@ const ProcessEdit: FC<Props> = ({
       >
         <Spin spinning={spinning}>
           <UpdateReferenceContext.Provider value={{ referenceValue }}>
-            <RefCheckContext.Provider value={refCheckData}>
+            <RefCheckContext.Provider
+              value={{
+                refCheckData: [...refCheckData],
+                updateRefCheckStatus: () => submitReview(true),
+              }}
+            >
               <ProForm
                 formRef={formRefEdit}
                 initialValues={initData}

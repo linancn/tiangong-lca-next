@@ -38,7 +38,7 @@ const UnitGroupEdit: FC<Props> = ({
   const [spinning, setSpinning] = useState(false);
   const [showRules, setShowRules] = useState<boolean>(false);
   const [refCheckData, setRefCheckData] = useState<any[]>([]);
-  const parentRefCheckData = useRefCheckContext();
+  const parentRefCheckContext = useRefCheckContext();
   const intl = useIntl();
   const [referenceValue, setReferenceValue] = useState(0);
   const updateReference = async () => {
@@ -247,7 +247,12 @@ const UnitGroupEdit: FC<Props> = ({
       >
         <Spin spinning={spinning}>
           <UpdateReferenceContext.Provider value={{ referenceValue }}>
-            <RefCheckContext.Provider value={[...parentRefCheckData, ...refCheckData]}>
+            <RefCheckContext.Provider
+              value={{
+                refCheckData: [...parentRefCheckContext.refCheckData, ...refCheckData],
+                updateRefCheckStatus: () => {},
+              }}
+            >
               <ProForm
                 formRef={formRefEdit}
                 initialValues={initData}

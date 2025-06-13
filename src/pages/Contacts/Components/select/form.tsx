@@ -41,15 +41,17 @@ const ContactSelectForm: FC<Props> = ({
   const [ruleErrorState, setRuleErrorState] = useState(false);
   const [refData, setRefData] = useState<any>(null);
   const [errRef, setErrRef] = useState<RefCheckType | null>(null);
-  const refCheckData = useRefCheckContext();
+  const refCheckContext = useRefCheckContext();
 
   useEffect(() => {
     if (id && version) {
       getRefData(id, version, 'contacts', '').then((result: any) => {
         setRefData({ ...result.data });
       });
-      if (refCheckData.length) {
-        const ref = refCheckData.find((item: any) => item.id === id && item.version === version);
+      if (refCheckContext?.refCheckData?.length) {
+        const ref = refCheckContext?.refCheckData?.find(
+          (item: any) => item.id === id && item.version === version,
+        );
         if (ref) {
           setErrRef(ref);
         } else {
@@ -59,7 +61,7 @@ const ContactSelectForm: FC<Props> = ({
         setErrRef(null);
       }
     }
-  }, [id, version, refCheckData]);
+  }, [id, version, refCheckContext]);
 
   const handletContactData = (rowId: string, rowVersion: string) => {
     getContactDetail(rowId, rowVersion).then(async (result: any) => {

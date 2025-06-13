@@ -32,15 +32,17 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
   const [ruleErrorState, setRuleErrorState] = useState(false);
   const [refData, setRefData] = useState<any>(null);
   const [errRef, setErrRef] = useState<RefCheckType | null>(null);
-  const refCheckData = useRefCheckContext();
+  const refCheckContext = useRefCheckContext();
 
   useEffect(() => {
     if (id && version) {
       getRefData(id, version, 'unitgroups', '').then((result: any) => {
         setRefData({ ...result.data });
       });
-      if (refCheckData.length) {
-        const ref = refCheckData.find((item: any) => item.id === id && item.version === version);
+      if (refCheckContext?.refCheckData?.length) {
+        const ref = refCheckContext?.refCheckData?.find(
+          (item: any) => item.id === id && item.version === version,
+        );
         if (ref) {
           setErrRef(ref);
         } else {
@@ -50,7 +52,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
         setErrRef(null);
       }
     }
-  }, [id, version, refCheckData]);
+  }, [id, version, refCheckContext]);
 
   const handletUnitgroupsData = (rowId: string, rowVersion: string) => {
     getUnitGroupDetail(rowId, rowVersion).then(async (result: any) => {

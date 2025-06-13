@@ -1,6 +1,9 @@
 import { createContext, useContext } from 'react';
 
-const RefCheckContext: any = createContext<RefCheckType[]>([]);
+const RefCheckContext: any = createContext<RefCheckContextType>({
+  refCheckData: [],
+  updateRefCheckStatus: () => {},
+});
 
 export type RefCheckType = {
   id: string;
@@ -9,10 +12,15 @@ export type RefCheckType = {
   nonExistent: boolean;
 };
 
+type RefCheckContextType = {
+  refCheckData: RefCheckType[];
+  updateRefCheckStatus: (onlyCheck: boolean) => void;
+};
+
 const useRefCheckContext = () => {
-  const context: [] = useContext(RefCheckContext);
+  const context: RefCheckContextType = useContext(RefCheckContext);
   if (!context) {
-    return []; //{id:refId,version:refVersion,ruleVerification:boolean,nonExistent:boolean}[]
+    return { refCheckData: [], updateRefCheckStatus: () => {} };
   }
   return context;
 };

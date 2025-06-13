@@ -51,7 +51,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
   const [unRuleVerificationData, setUnRuleVerificationData] = useState<any[]>([]);
   const [nonExistentRefData, setNonExistentRefData] = useState<any[]>([]);
   const [refCheckData, setRefCheckData] = useState<any[]>([]);
-  const parentRefCheckData = useRefCheckContext();
+  const parentRefCheckContext = useRefCheckContext();
   const intl = useIntl();
   let modelDetail: any;
 
@@ -364,7 +364,12 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
       >
         <Spin spinning={spinning}>
           <UpdateReferenceContext.Provider value={{ referenceValue }}>
-            <RefCheckContext.Provider value={[...parentRefCheckData, ...refCheckData]}>
+            <RefCheckContext.Provider
+              value={{
+                refCheckData: [...parentRefCheckContext.refCheckData, ...refCheckData],
+                updateRefCheckStatus: () => {},
+              }}
+            >
               <ProForm
                 formRef={formRefEdit}
                 initialValues={data}
