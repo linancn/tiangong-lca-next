@@ -1,4 +1,4 @@
-import { RefCheckContext } from '@/contexts/refCheckContext';
+import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
 import type { refDataType } from '@/pages/Utils/review';
 import { checkData } from '@/pages/Utils/review';
 import { getFlowpropertyDetail, updateFlowproperties } from '@/services/flowproperties/api';
@@ -49,6 +49,7 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
   const [referenceValue, setReferenceValue] = useState(0);
   const [refCheckData, setRefCheckData] = useState<any[]>([]);
   const intl = useIntl();
+  const parentRefCheckData = useRefCheckContext();
 
   useEffect(() => {
     if (showRules) {
@@ -211,7 +212,7 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
       >
         <Spin spinning={spinning}>
           <UpdateReferenceContext.Provider value={{ referenceValue }}>
-            <RefCheckContext.Provider value={refCheckData}>
+            <RefCheckContext.Provider value={[...parentRefCheckData, ...refCheckData]}>
               <ProForm
                 formRef={formRefEdit}
                 initialValues={initData}

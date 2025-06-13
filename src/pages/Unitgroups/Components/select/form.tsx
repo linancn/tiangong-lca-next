@@ -1,5 +1,5 @@
 import RequiredSelectFormTitle from '@/components/RequiredSelectFormTitle';
-import { useRefCheckContext } from '@/contexts/refCheckContext';
+import { RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
 import { useUpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import { getLocalValueProps, validateRefObjectId } from '@/pages/Utils';
 import { getRefData } from '@/services/general/api';
@@ -13,7 +13,6 @@ import { FormattedMessage } from 'umi';
 import UnitgroupsEdit from '../edit';
 import UnitgroupsView from '../view';
 import UnitgroupsSelectDrawer from './drawer';
-
 const { TextArea } = Input;
 
 type Props = {
@@ -32,7 +31,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
   const { referenceValue } = useUpdateReferenceContext() as { referenceValue: number };
   const [ruleErrorState, setRuleErrorState] = useState(false);
   const [refData, setRefData] = useState<any>(null);
-  const [errRef, setErrRef] = useState<{ id: string; version: string; type: number } | null>(null);
+  const [errRef, setErrRef] = useState<RefCheckType | null>(null);
   const refCheckData = useRefCheckContext();
 
   useEffect(() => {
@@ -44,14 +43,14 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
         const ref = refCheckData.find((item: any) => item.id === id && item.version === version);
         if (ref) {
           setErrRef(ref);
-        }else{
+        } else {
           setErrRef(null);
         }
-      }else{
+      } else {
         setErrRef(null);
       }
     }
-  }, [id, version,refCheckData]);
+  }, [id, version, refCheckData]);
 
   const handletUnitgroupsData = (rowId: string, rowVersion: string) => {
     getUnitGroupDetail(rowId, rowVersion).then(async (result: any) => {
@@ -123,12 +122,12 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
             {label}{' '}
             {errRef && (
               <span style={{ color: token.colorError, marginLeft: '5px', fontWeight: 'normal' }}>
-                {errRef?.type === 1 ? (
+                {errRef?.ruleVerification === false ? (
                   <FormattedMessage
                     id='pages.select.unRuleVerification'
                     defaultMessage='Data is incomplete'
                   />
-                ) : errRef?.type === 2 ? (
+                ) : errRef?.nonExistent === true ? (
                   <FormattedMessage
                     id='pages.select.nonExistentRef'
                     defaultMessage='Data does not exist'

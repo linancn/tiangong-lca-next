@@ -1,4 +1,4 @@
-import { RefCheckContext } from '@/contexts/refCheckContext';
+import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import type { refDataType } from '@/pages/Utils/review';
 import { checkData } from '@/pages/Utils/review';
@@ -13,6 +13,7 @@ import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { FlowForm } from './form';
+
 type Props = {
   id: string;
   version: string;
@@ -33,6 +34,7 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
   const intl = useIntl();
   const [referenceValue, setReferenceValue] = useState(0);
   const [refCheckData, setRefCheckData] = useState<any[]>([]);
+  const parentRefCheckData = useRefCheckContext();
 
   useEffect(() => {
     if (showRules) {
@@ -155,7 +157,7 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
       };
     });
 
-    const flowProperties  = fromData?.flowProperties;
+    const flowProperties = fromData?.flowProperties;
     if (
       !flowProperties ||
       !flowProperties?.flowProperty ||
@@ -168,14 +170,12 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
         }),
       );
     } else if (
-      flowProperties.flowProperty.filter((item: any) => item?.quantitativeReference)
-        .length !== 1
+      flowProperties.flowProperty.filter((item: any) => item?.quantitativeReference).length !== 1
     ) {
       message.error(
         intl.formatMessage({
           id: 'pages.flow.validator.flowProperties.quantitativeReference.required',
-          defaultMessage:
-            'Flow property needs to have exactly one quantitative reference open',
+          defaultMessage: 'Flow property needs to have exactly one quantitative reference open',
         }),
       );
     }
@@ -250,7 +250,7 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
       >
         <Spin spinning={spinning}>
           <UpdateReferenceContext.Provider value={{ referenceValue }}>
-            <RefCheckContext.Provider value={refCheckData}>
+            <RefCheckContext.Provider value={[...parentRefCheckData, ...refCheckData]}>
               <ProForm
                 formRef={formRefEdit}
                 initialValues={initData}

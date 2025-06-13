@@ -9,6 +9,15 @@ export type refDataType = {
   '@refObjectId': string;
   '@version': string;
 };
+
+type ReffPathNode = {
+  '@refObjectId': string;
+  '@version': string;
+  '@type': string;
+  ruleVerification: boolean;
+  nonExistent: boolean;
+};
+
 const tableDict = {
   'contact data set': 'contacts',
   'source data set': 'sources',
@@ -44,6 +53,63 @@ export const getAllRefObj = (obj: any): any[] => {
   return result;
 };
 
+export class ReffPath {
+  '@refObjectId': string;
+  '@version': string;
+  '@type': string;
+  children: ReffPath[] = [];
+  ruleVerification: boolean;
+  nonExistent: boolean;
+
+  constructor(ref: refDataType, ruleVerification: boolean = false, nonExistent: boolean = false) {
+    this['@refObjectId'] = ref['@refObjectId'];
+    this['@version'] = ref['@version'];
+    this['@type'] = ref['@type'];
+    this.ruleVerification = ruleVerification;
+    this.nonExistent = nonExistent;
+  }
+
+  addChild(child: ReffPath) {
+    this.children.push(child);
+  }
+
+  findProblemNodes(): ReffPathNode[] {
+    const result: ReffPath[] = [];
+    const visited = new Set<ReffPath>();
+    const uniqueKeys = new Set<string>();
+
+    const getUniqueKey = (node: ReffPath) => `${node['@refObjectId']}_${node['@version']}`;
+
+    const traverse = (node: ReffPath, parentPath: ReffPath[] = []) => {
+      if (visited.has(node)) return;
+      visited.add(node);
+
+      if (node.ruleVerification === false || node.nonExistent === true) {
+        const nodeKey = getUniqueKey(node);
+        if (!uniqueKeys.has(nodeKey)) {
+          result.push(node);
+          uniqueKeys.add(nodeKey);
+        }
+
+        parentPath.forEach((parent) => {
+          const parentKey = getUniqueKey(parent);
+          if (!uniqueKeys.has(parentKey)) {
+            result.push(parent);
+            uniqueKeys.add(parentKey);
+          }
+        });
+      }
+
+      node.children.forEach((child) => {
+        traverse(child, [...parentPath, node]);
+      });
+    };
+
+    traverse(this);
+    return result.map(({ ...rest }) => rest);
+  }
+}
+
 export const checkReferences = async (
   refs: any[],
   checkedIds: Set<string>,
@@ -52,8 +118,8 @@ export const checkReferences = async (
   underReview: refDataType[],
   unRuleVerification: refDataType[],
   nonExistentRef: refDataType[],
-
-) => {
+  parentPath?: ReffPath,
+): Promise<ReffPath | undefined> => {
   for (const ref of refs) {
     if (checkedIds.has(ref['@refObjectId'])) continue;
     checkedIds.add(ref['@refObjectId']);
@@ -65,8 +131,16 @@ export const checkReferences = async (
       userTeamId,
     );
 
+    let currentPath: ReffPath | undefined;
     if (refResult.success) {
       const refData = refResult?.data;
+      if (refData?.stateCode !== 100 && refData?.stateCode !== 200) {
+        currentPath = new ReffPath(ref, refResult?.data?.ruleVerification, !refResult.success);
+
+        if (parentPath) {
+          parentPath.addChild(currentPath);
+        }
+      }
       if (!refData?.ruleVerification && refData?.stateCode !== 100 && refData?.stateCode !== 200) {
         if (
           !unRuleVerification.find(
@@ -109,6 +183,7 @@ export const checkReferences = async (
           underReview,
           unRuleVerification,
           nonExistentRef,
+          currentPath,
         );
       }
     } else {
@@ -122,6 +197,7 @@ export const checkReferences = async (
       }
     }
   }
+  return parentPath;
 };
 
 export const checkData = async (

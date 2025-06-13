@@ -29,12 +29,11 @@ import {
 } from '@/pages/Utils/review';
 import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
 
-import { RefCheckContext } from '@/contexts/refCheckContext';
+import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
 import { getProcessDetail } from '@/services/processes/api';
 import { getUserTeamId } from '@/services/roles/api';
 import { v4 } from 'uuid';
 import requiredFields from '../../requiredFields';
-
 type Props = {
   lang: string;
   data: any;
@@ -52,6 +51,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
   const [unRuleVerificationData, setUnRuleVerificationData] = useState<any[]>([]);
   const [nonExistentRefData, setNonExistentRefData] = useState<any[]>([]);
   const [refCheckData, setRefCheckData] = useState<any[]>([]);
+  const parentRefCheckData = useRefCheckContext();
   const intl = useIntl();
   let modelDetail: any;
 
@@ -364,7 +364,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
       >
         <Spin spinning={spinning}>
           <UpdateReferenceContext.Provider value={{ referenceValue }}>
-            <RefCheckContext.Provider value={refCheckData}>
+            <RefCheckContext.Provider value={[...parentRefCheckData, ...refCheckData]}>
               <ProForm
                 formRef={formRefEdit}
                 initialValues={data}

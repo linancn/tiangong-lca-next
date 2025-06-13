@@ -1,6 +1,7 @@
 import { RefCheckContext } from '@/contexts/refCheckContext';
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import {
+  ReffPath,
   checkReferences,
   checkRequiredFields,
   dealProcress,
@@ -59,30 +60,11 @@ const ProcessEdit: FC<Props> = ({
   const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
   const [spinning, setSpinning] = useState(false);
   const [showRules, setShowRules] = useState<boolean>(false);
-  const [unRuleVerificationData, setUnRuleVerificationData] = useState<any[]>([]);
-  const [nonExistentRefData, setNonExistentRefData] = useState<any[]>([]);
+  // const [unRuleVerificationData, setUnRuleVerificationData] = useState<any[]>([]);
+  // const [nonExistentRefData, setNonExistentRefData] = useState<any[]>([]);
   const intl = useIntl();
   const [referenceValue, setReferenceValue] = useState(0);
   const [refCheckData, setRefCheckData] = useState<any[]>([]);
-
-  useEffect(() => {
-    const unRuleVerification = unRuleVerificationData.map((item: any) => {
-      return {
-        id: item['@refObjectId'],
-        version: item['@version'],
-        type: 1,
-      };
-    });
-    const nonExistentRef = nonExistentRefData.map((item: any) => {
-      return {
-        id: item['@refObjectId'],
-        version: item['@version'],
-        type: 2,
-      };
-    });
-
-    setRefCheckData([...unRuleVerification, ...nonExistentRef]);
-  }, [unRuleVerificationData, nonExistentRefData]);
 
   const handletFromData = async () => {
     if (fromData?.id) {
@@ -202,7 +184,7 @@ const ProcessEdit: FC<Props> = ({
     const userTeamId = await getUserTeamId();
     const refObjs = getAllRefObj(processDetail);
 
-    await checkReferences(
+    const path = await checkReferences(
       refObjs,
       new Set<string>(),
       userTeamId,
@@ -210,10 +192,34 @@ const ProcessEdit: FC<Props> = ({
       underReview,
       unRuleVerification,
       nonExistentRef,
+      new ReffPath(
+        {
+          '@refObjectId': id,
+          '@version': version,
+          '@type': 'process data set',
+        },
+        processDetail?.ruleVerification,
+        false,
+      ),
     );
 
-    setNonExistentRefData(nonExistentRef);
-    setUnRuleVerificationData(unRuleVerification);
+    const problemNodes = path?.findProblemNodes();
+    console.log('problemNodes', problemNodes);
+
+    if (problemNodes && problemNodes.length > 0) {
+      let result = problemNodes.map((item: any) => {
+        return {
+          id: item['@refObjectId'],
+          version: item['@version'],
+          ruleVerification: item.ruleVerification,
+          nonExistent: item.nonExistent,
+        };
+      });
+      setRefCheckData(result);
+    }
+
+    // setNonExistentRefData(nonExistentRef);
+    // setUnRuleVerificationData(unRuleVerification);
     if (
       (nonExistentRef && nonExistentRef.length > 0) ||
       (unRuleVerification && unRuleVerification.length > 0) ||
@@ -228,7 +234,7 @@ const ProcessEdit: FC<Props> = ({
         );
       }
       setSpinning(false);
-      return { checkResult:false, unReview };
+      return { checkResult: false, unReview };
     }
 
     if (processDetail.stateCode >= 20) {
@@ -239,7 +245,7 @@ const ProcessEdit: FC<Props> = ({
         }),
       );
       setSpinning(false);
-      return { checkResult:false, unReview };
+      return { checkResult: false, unReview };
     }
     setSpinning(false);
     return { checkResult, unReview };
@@ -315,7 +321,6 @@ const ProcessEdit: FC<Props> = ({
         reviewId,
       );
       if (result?.error) return;
-
       await updateUnReviewToUnderReview(unReview, reviewId);
       message.success(
         intl.formatMessage({
@@ -363,8 +368,8 @@ const ProcessEdit: FC<Props> = ({
   useEffect(() => {
     if (!drawerVisible) {
       setShowRules(false);
-      setUnRuleVerificationData([]);
-      setNonExistentRefData([]);
+      // setUnRuleVerificationData([]);
+      // setNonExistentRefData([]);
       return;
     }
     onReset();

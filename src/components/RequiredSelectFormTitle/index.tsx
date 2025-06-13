@@ -36,12 +36,12 @@ const RequiredSelectFormTitle = ({
             })}
           {errRef && (
             <span style={{ color: token.colorError, marginLeft: '5px', fontWeight: 'normal' }}>
-              {errRef?.type === 1 ? (
+              {errRef?.ruleVerification === false ? (
                 <FormattedMessage
                   id='pages.select.unRuleVerification'
                   defaultMessage='Data is incomplete'
                 />
-              ) : errRef?.type === 2 ? (
+              ) : errRef?.nonExistent === true ? (
                 <FormattedMessage
                   id='pages.select.nonExistentRef'
                   defaultMessage='Data does not exist'

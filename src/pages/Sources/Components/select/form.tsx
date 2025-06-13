@@ -1,5 +1,5 @@
 import RequiredSelectFormTitle from '@/components/RequiredSelectFormTitle';
-import { useRefCheckContext } from '@/contexts/refCheckContext';
+import { RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
 import { useUpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import { getLocalValueProps, validateRefObjectId } from '@/pages/Utils';
 import { getRefData } from '@/services/general/api';
@@ -12,7 +12,6 @@ import React, { FC, ReactNode, useEffect, useState } from 'react';
 import SourceEdit from '../edit';
 import SourceView from '../view';
 import SourceSelectDrawer from './drawer';
-
 const { TextArea } = Input;
 
 type Props = {
@@ -38,7 +37,7 @@ const SourceSelectForm: FC<Props> = ({
 }) => {
   const [id, setId] = useState<string | undefined>(undefined);
   const [version, setVersion] = useState<string | undefined>(undefined);
-  const [errRef, setErrRef] = useState<{ id: string; version: string; type: number } | null>(null);
+  const [errRef, setErrRef] = useState<RefCheckType | null>(null);
   const refCheckData = useRefCheckContext();
 
   const [refData, setRefData] = useState<any>(null);
@@ -51,10 +50,10 @@ const SourceSelectForm: FC<Props> = ({
         const ref = refCheckData.find((item: any) => item.id === id && item.version === version);
         if (ref) {
           setErrRef(ref);
-        }else{
+        } else {
           setErrRef(null);
         }
-      }else{
+      } else {
         setErrRef(null);
       }
     }
@@ -171,12 +170,12 @@ const SourceSelectForm: FC<Props> = ({
             {label}{' '}
             {errRef && (
               <span style={{ color: token.colorError, marginLeft: '5px', fontWeight: 'normal' }}>
-                {errRef?.type === 1 ? (
+                {errRef?.ruleVerification === false ? (
                   <FormattedMessage
                     id='pages.select.unRuleVerification'
                     defaultMessage='Data is incomplete'
                   />
-                ) : errRef?.type === 2 ? (
+                ) : errRef?.nonExistent === true ? (
                   <FormattedMessage
                     id='pages.select.nonExistentRef'
                     defaultMessage='Data does not exist'

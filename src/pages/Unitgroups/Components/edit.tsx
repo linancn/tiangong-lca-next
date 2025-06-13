@@ -1,4 +1,4 @@
-import { RefCheckContext } from '@/contexts/refCheckContext';
+import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import type { refDataType } from '@/pages/Utils/review';
 import { checkData } from '@/pages/Utils/review';
@@ -13,7 +13,6 @@ import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { UnitGroupForm } from './form';
-
 type Props = {
   id: string;
   version: string;
@@ -39,6 +38,7 @@ const UnitGroupEdit: FC<Props> = ({
   const [spinning, setSpinning] = useState(false);
   const [showRules, setShowRules] = useState<boolean>(false);
   const [refCheckData, setRefCheckData] = useState<any[]>([]);
+  const parentRefCheckData = useRefCheckContext();
   const intl = useIntl();
   const [referenceValue, setReferenceValue] = useState(0);
   const updateReference = async () => {
@@ -132,6 +132,22 @@ const UnitGroupEdit: FC<Props> = ({
       unRuleVerification,
       nonExistentRef,
     );
+    const units = fromData.units;
+    if (!units?.unit || !Array.isArray(units.unit) || units.unit.length === 0) {
+      message.error(
+        intl.formatMessage({
+          id: 'pages.unitgroups.validator.unit.required',
+          defaultMessage: 'Please select unit',
+        }),
+      );
+    } else if (units.unit.filter((item: any) => item?.quantitativeReference).length !== 1) {
+      message.error(
+        intl.formatMessage({
+          id: 'pages.unitgroups.validator.unit.quantitativeReference.required',
+          defaultMessage: 'Unit needs to have exactly one quantitative reference open',
+        }),
+      );
+    }
     const unRuleVerificationData = unRuleVerification.map((item: any) => {
       return {
         id: item['@refObjectId'],
@@ -231,7 +247,7 @@ const UnitGroupEdit: FC<Props> = ({
       >
         <Spin spinning={spinning}>
           <UpdateReferenceContext.Provider value={{ referenceValue }}>
-            <RefCheckContext.Provider value={refCheckData}>
+            <RefCheckContext.Provider value={[...parentRefCheckData, ...refCheckData]}>
               <ProForm
                 formRef={formRefEdit}
                 initialValues={initData}
