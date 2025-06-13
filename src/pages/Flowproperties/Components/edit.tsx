@@ -109,6 +109,7 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
 
   const handleCheckData = async () => {
     setSpinning(true);
+    setShowRules(true);
     const unRuleVerification: refDataType[] = [];
     const nonExistentRef: refDataType[] = [];
     await checkData(
@@ -136,7 +137,6 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
     });
 
     setRefCheckData([...unRuleVerificationData, ...nonExistentRefData]);
-    setShowRules(true);
     setSpinning(false);
   };
 

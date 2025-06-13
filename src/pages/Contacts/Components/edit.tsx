@@ -90,6 +90,7 @@ const ContactEdit: FC<Props> = ({
 
   const handleCheckData = async () => {
     setSpinning(true);
+    setShowRules(true);
     const unRuleVerification: refDataType[] = [];
     const nonExistentRef: refDataType[] = [];
     await checkData(
@@ -117,7 +118,6 @@ const ContactEdit: FC<Props> = ({
     });
 
     setRefCheckData([...unRuleVerificationData, ...nonExistentRefData]);
-    setShowRules(true);
     setSpinning(false);
   };
   return (

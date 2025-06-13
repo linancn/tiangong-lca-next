@@ -161,7 +161,7 @@ const ProcessEdit: FC<Props> = ({
   const handleCheckData = async (processDetail: any) => {
     setSpinning(true);
     setShowRules(true);
-    const { checkResult, tabName } = checkRequiredFields(requiredFields, fromData);
+    let { checkResult, tabName } = checkRequiredFields(requiredFields, fromData);
     if (!checkResult) {
       await setActiveTabKey(tabName);
       setTimeout(() => {
@@ -176,6 +176,7 @@ const ProcessEdit: FC<Props> = ({
             defaultMessage: 'Please select exchanges',
           }),
         );
+        checkResult = false;
         await setActiveTabKey('exchanges');
       } else if (
         exchanges?.exchange.filter((item: any) => item?.quantitativeReference).length !== 1
@@ -186,6 +187,7 @@ const ProcessEdit: FC<Props> = ({
             defaultMessage: 'Exchange needs to have exactly one quantitative reference open',
           }),
         );
+        checkResult = false;
         await setActiveTabKey('exchanges');
       }
     }
@@ -226,7 +228,7 @@ const ProcessEdit: FC<Props> = ({
         );
       }
       setSpinning(false);
-      return { checkResult, unReview };
+      return { checkResult:false, unReview };
     }
 
     if (processDetail.stateCode >= 20) {
@@ -237,7 +239,7 @@ const ProcessEdit: FC<Props> = ({
         }),
       );
       setSpinning(false);
-      return { checkResult, unReview };
+      return { checkResult:false, unReview };
     }
     setSpinning(false);
     return { checkResult, unReview };
@@ -275,8 +277,8 @@ const ProcessEdit: FC<Props> = ({
         setSpinning(false);
         setDrawerVisible(false);
         setViewDrawerVisible(false);
+        actionRef?.current?.reload();
       }
-      actionRef?.current?.reload();
     } else {
       setSpinning(false);
       message.error(updateResult?.error?.message);

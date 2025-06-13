@@ -120,6 +120,7 @@ const UnitGroupEdit: FC<Props> = ({
 
   const handleCheckData = async () => {
     setSpinning(true);
+    setShowRules(true);
     const unRuleVerification: refDataType[] = [];
     const nonExistentRef: refDataType[] = [];
     await checkData(
@@ -147,7 +148,6 @@ const UnitGroupEdit: FC<Props> = ({
     });
 
     setRefCheckData([...unRuleVerificationData, ...nonExistentRefData]);
-    setShowRules(true);
     setSpinning(false);
   };
 

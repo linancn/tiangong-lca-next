@@ -51,7 +51,11 @@ const SourceSelectForm: FC<Props> = ({
         const ref = refCheckData.find((item: any) => item.id === id && item.version === version);
         if (ref) {
           setErrRef(ref);
+        }else{
+          setErrRef(null);
         }
+      }else{
+        setErrRef(null);
       }
     }
   }, [id, version, refCheckData]);

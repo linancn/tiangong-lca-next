@@ -44,10 +44,14 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
         const ref = refCheckData.find((item: any) => item.id === id && item.version === version);
         if (ref) {
           setErrRef(ref);
+        }else{
+          setErrRef(null);
         }
+      }else{
+        setErrRef(null);
       }
     }
-  }, [id, version]);
+  }, [id, version,refCheckData]);
 
   const handletUnitgroupsData = (rowId: string, rowVersion: string) => {
     getUnitGroupDetail(rowId, rowVersion).then(async (result: any) => {

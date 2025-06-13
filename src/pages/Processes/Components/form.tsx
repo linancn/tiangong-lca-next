@@ -36,6 +36,7 @@ import {
   workflowAndPublicationStatusOptions,
 } from './optiondata';
 import ReveiwItemForm from './Review/form';
+import { useRefCheckContext } from '@/contexts/refCheckContext';
 
 type Props = {
   lang: string;
@@ -62,6 +63,7 @@ export const ProcessForm: FC<Props> = ({
   formType,
   showRules = false,
 }) => {
+  const refCheckData = useRefCheckContext();
   const actionRefExchangeTableInput = useRef<ActionType>();
   const actionRefExchangeTableOutput = useRef<ActionType>();
   const [baseNameError, setBaseNameError] = useState(false);
@@ -1817,6 +1819,15 @@ export const ProcessForm: FC<Props> = ({
                     showSizeChanger: false,
                     pageSize: 10,
                   }}
+                  rowClassName={(record) => {
+                    const isInRefCheck = refCheckData?.some(
+                      (item: any) =>
+                        item.id === record.referenceToFlowDataSetId &&
+                        item.version === record.referenceToFlowDataSetVersion,
+                    );
+                    return isInRefCheck ? 'error-row' : '';
+                  }}
+                  className="process-exchange-table"
                   toolBarRender={() => {
                     return [
                       <ProcessExchangeCreate
@@ -1887,6 +1898,15 @@ export const ProcessForm: FC<Props> = ({
                     showSizeChanger: false,
                     pageSize: 10,
                   }}
+                  rowClassName={(record) => {
+                    const isInRefCheck = refCheckData?.some(
+                      (item: any) =>
+                        item.id === record.referenceToFlowDataSetId &&
+                        item.version === record.referenceToFlowDataSetVersion,
+                    );
+                    return isInRefCheck ? 'error-row' : '';
+                  }}
+                  className="process-exchange-table"
                   toolBarRender={() => {
                     return [
                       <ProcessExchangeCreate

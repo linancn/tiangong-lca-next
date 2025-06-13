@@ -1,6 +1,6 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import FlowpropertiesSelectForm from '@/pages/Flowproperties/Components/select/form';
-// import { getRules } from '@/pages/Utils';
+import { getRules } from '@/pages/Utils';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -21,7 +21,7 @@ import {
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
-// import schema from '../../flows_schema.json';
+import schema from '../../flows_schema.json';
 import { dataDerivationTypeStatusOptions, uncertaintyDistributionTypeOptions } from '../optiondata';
 
 type Props = {
@@ -32,6 +32,7 @@ type Props = {
   actionRef: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
   onData: (data: any) => void;
+  showRules?: boolean;
 };
 const PropertyEdit: FC<Props> = ({
   id,
@@ -41,6 +42,7 @@ const PropertyEdit: FC<Props> = ({
   actionRef,
   setViewDrawerVisible,
   onData,
+  showRules = false,
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
@@ -83,8 +85,8 @@ const PropertyEdit: FC<Props> = ({
         getContainer={() => document.body}
         title={
           <FormattedMessage
-            id='pages.process.exchange.drawer.title.edit'
-            defaultMessage='Edit Exchange'
+            id='pages.flowproperty.drawer.title.edit'
+            defaultMessage='Edit Flow Property'
           />
         }
         width='90%'
@@ -152,11 +154,11 @@ const PropertyEdit: FC<Props> = ({
               drawerVisible={drawerVisible}
               formRef={formRefEdit}
               onData={handletFromData}
-              // rules={getRules(
-              //   schema['flowDataSet']['flowProperties']['flowProperty'][
-              //     'referenceToFlowPropertyDataSet'
-              //   ]['rules'],
-              // )}
+              rules={showRules?getRules(
+                schema['flowDataSet']['flowProperties']['flowProperty'][
+                  'referenceToFlowPropertyDataSet'
+                ]['@refObjectId']['rules'],
+              ):[]}
             />
             <br />
             <Form.Item
@@ -167,9 +169,9 @@ const PropertyEdit: FC<Props> = ({
                 />
               }
               name={['meanValue']}
-              // rules={getRules(
-              //   schema['flowDataSet']['flowProperties']['flowProperty']['meanValue']['rules'],
-              // )}
+              rules={showRules?getRules(
+                schema['flowDataSet']['flowProperties']['flowProperty']['meanValue']['rules'],
+              ):[]}
             >
               <Input />
             </Form.Item>

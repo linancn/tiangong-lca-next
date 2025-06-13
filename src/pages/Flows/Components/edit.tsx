@@ -128,6 +128,7 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
 
   const handleCheckData = async () => {
     setSpinning(true);
+    setShowRules(true);
     const unRuleVerification: refDataType[] = [];
     const nonExistentRef: refDataType[] = [];
     await checkData(
@@ -154,8 +155,32 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
       };
     });
 
+    const flowProperties  = fromData?.flowProperties;
+    if (
+      !flowProperties ||
+      !flowProperties?.flowProperty ||
+      flowProperties?.flowProperty?.length === 0
+    ) {
+      message.error(
+        intl.formatMessage({
+          id: 'pages.flow.validator.flowProperties.required',
+          defaultMessage: 'Please select flow properties',
+        }),
+      );
+    } else if (
+      flowProperties.flowProperty.filter((item: any) => item?.quantitativeReference)
+        .length !== 1
+    ) {
+      message.error(
+        intl.formatMessage({
+          id: 'pages.flow.validator.flowProperties.quantitativeReference.required',
+          defaultMessage:
+            'Flow property needs to have exactly one quantitative reference open',
+        }),
+      );
+    }
+
     setRefCheckData([...unRuleVerificationData, ...nonExistentRefData]);
-    setShowRules(true);
     setSpinning(false);
   };
   return (

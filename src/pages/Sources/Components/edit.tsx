@@ -171,6 +171,7 @@ const SourceEdit: FC<Props> = ({
   }, [drawerVisible]);
   const handleCheckData = async () => {
     setSpinning(true);
+    setShowRules(true);
     const unRuleVerification: refDataType[] = [];
     const nonExistentRef: refDataType[] = [];
     await checkData(
@@ -198,7 +199,6 @@ const SourceEdit: FC<Props> = ({
     });
 
     setRefCheckData([...unRuleVerificationData, ...nonExistentRefData]);
-    setShowRules(true);
     setSpinning(false);
   };
   return (
