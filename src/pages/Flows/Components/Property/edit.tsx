@@ -154,11 +154,15 @@ const PropertyEdit: FC<Props> = ({
               drawerVisible={drawerVisible}
               formRef={formRefEdit}
               onData={handletFromData}
-              rules={showRules?getRules(
-                schema['flowDataSet']['flowProperties']['flowProperty'][
-                  'referenceToFlowPropertyDataSet'
-                ]['@refObjectId']['rules'],
-              ):[]}
+              rules={
+                showRules
+                  ? getRules(
+                      schema['flowDataSet']['flowProperties']['flowProperty'][
+                        'referenceToFlowPropertyDataSet'
+                      ]['@refObjectId']['rules'],
+                    )
+                  : []
+              }
             />
             <br />
             <Form.Item
@@ -169,9 +173,13 @@ const PropertyEdit: FC<Props> = ({
                 />
               }
               name={['meanValue']}
-              rules={showRules?getRules(
-                schema['flowDataSet']['flowProperties']['flowProperty']['meanValue']['rules'],
-              ):[]}
+              rules={
+                showRules
+                  ? getRules(
+                      schema['flowDataSet']['flowProperties']['flowProperty']['meanValue']['rules'],
+                    )
+                  : []
+              }
             >
               <Input />
             </Form.Item>

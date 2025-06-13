@@ -120,11 +120,15 @@ const PropertyCreate: FC<Props> = ({ lang, onData, showRules = false }) => {
               drawerVisible={drawerVisible}
               formRef={formRefCreate}
               onData={handletFromData}
-              rules={showRules?getRules(
-                schema['flowDataSet']['flowProperties']['flowProperty'][
-                  'referenceToFlowPropertyDataSet'
-                ]['@refObjectId']['rules'],
-              ):[]}
+              rules={
+                showRules
+                  ? getRules(
+                      schema['flowDataSet']['flowProperties']['flowProperty'][
+                        'referenceToFlowPropertyDataSet'
+                      ]['@refObjectId']['rules'],
+                    )
+                  : []
+              }
             />
             <br />
             <Form.Item
@@ -135,9 +139,13 @@ const PropertyCreate: FC<Props> = ({ lang, onData, showRules = false }) => {
                 />
               }
               name={['meanValue']}
-              rules={showRules?getRules(
-                schema['flowDataSet']['flowProperties']['flowProperty']['meanValue']['rules'],
-              ):[]}
+              rules={
+                showRules
+                  ? getRules(
+                      schema['flowDataSet']['flowProperties']['flowProperty']['meanValue']['rules'],
+                    )
+                  : []
+              }
             >
               <Input />
             </Form.Item>
