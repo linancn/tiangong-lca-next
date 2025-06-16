@@ -273,7 +273,7 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
             lang={lang}
             title={
               <FormattedMessage
-                id='pages.flowproperties.view.administrativeInformation.referenceToOwnershipOfDataSet'
+                id='pages.FlowProperties.view.administrativeInformation.referenceToOwnershipOfDataSet'
                 defaultMessage='Owner of data set'
               />
             }
