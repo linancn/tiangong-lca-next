@@ -37,16 +37,36 @@ const FlowsSelectForm: FC<Props> = ({
 }) => {
   const [id, setId] = useState<string | undefined>(undefined);
   const [version, setVersion] = useState<string | undefined>(undefined);
+  const [dataUserId, setDataUserId] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
   const [ruleErrorState, setRuleErrorState] = useState(false);
   const [refData, setRefData] = useState<any>(null);
   const [errRef, setErrRef] = useState<RefCheckType | null>(null);
   const refCheckContext = useRefCheckContext();
 
+  const updateErrRefByDetail = (data: any) => {
+    if (
+      data?.ruleVerification === false &&
+      data?.stateCode !== 100 &&
+      data?.stateCode !== 200 &&
+      refCheckContext?.refCheckData?.length
+    ) {
+      setErrRef({
+        id: data?.id,
+        version: data?.version,
+        ruleVerification: data?.ruleVerification,
+        nonExistent: false,
+      });
+    } else {
+      setErrRef(null);
+    }
+  };
   useEffect(() => {
-    if (id && version) {
+    if (id && version && !refData) {
       getRefData(id, version, 'flows', '').then((result: any) => {
+        setDataUserId(result?.data?.userId);
         setRefData({ ...result.data });
+        updateErrRefByDetail(result?.data);
       });
       if (refCheckContext?.refCheckData?.length) {
         const ref = refCheckContext?.refCheckData?.find(
@@ -65,6 +85,8 @@ const FlowsSelectForm: FC<Props> = ({
 
   const handletFlowsData = (rowId: string, rowVersion: string) => {
     getFlowDetail(rowId, rowVersion).then(async (result: any) => {
+      setDataUserId(result?.data?.userId);
+      updateErrRefByDetail(result?.data);
       const selectedData = genFlowFromData(result.data?.json?.flowDataSet ?? {});
       await formRef.current?.setFieldValue(name, {
         '@refObjectId': rowId,
@@ -187,8 +209,14 @@ const FlowsSelectForm: FC<Props> = ({
             </Button>
           )}
           {id && <FlowsView lang={lang} id={id} version={version ?? ''} buttonType='text' />}
-          {id && refData?.userId === sessionStorage.getItem('userId') && (
-            <FlowsEdit lang={lang} id={id} version={version ?? ''} buttonType='' />
+          {id && dataUserId === sessionStorage.getItem('userId') && (
+            <FlowsEdit
+              updateErrRef={(data: any) => setErrRef(data)}
+              lang={lang}
+              id={id}
+              version={version ?? ''}
+              buttonType=''
+            />
           )}
           {id && (
             <Button

@@ -136,7 +136,6 @@ export const checkReferences = async (
       const refData = refResult?.data;
       if (refData?.stateCode !== 100 && refData?.stateCode !== 200) {
         currentPath = new ReffPath(ref, refResult?.data?.ruleVerification, !refResult.success);
-
         if (parentPath) {
           parentPath.addChild(currentPath);
         }
@@ -187,6 +186,10 @@ export const checkReferences = async (
         );
       }
     } else {
+      currentPath = new ReffPath(ref, true, true);
+      if (parentPath) {
+        parentPath.addChild(currentPath);
+      }
       if (
         !nonExistentRef.find(
           (item) =>

@@ -20,6 +20,7 @@ type Props = {
   lang: string;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  updateErrRef?: (data: any) => void;
 };
 const UnitGroupEdit: FC<Props> = ({
   id,
@@ -28,6 +29,7 @@ const UnitGroupEdit: FC<Props> = ({
   lang,
   actionRef,
   setViewDrawerVisible,
+  updateErrRef = () => {},
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
@@ -250,7 +252,6 @@ const UnitGroupEdit: FC<Props> = ({
             <RefCheckContext.Provider
               value={{
                 refCheckData: [...parentRefCheckContext.refCheckData, ...refCheckData],
-                updateRefCheckStatus: () => {},
               }}
             >
               <ProForm
@@ -266,31 +267,22 @@ const UnitGroupEdit: FC<Props> = ({
                 }}
                 onFinish={async () => {
                   const units = fromData.units;
-                  // if (!units?.unit || !Array.isArray(units.unit) || units.unit.length === 0) {
-                  //   message.error(
-                  //     intl.formatMessage({
-                  //       id: 'pages.unitgroups.validator.unit.required',
-                  //       defaultMessage: 'Please select unit',
-                  //     }),
-                  //   );
-                  //   return false;
-                  // } else if (
-                  //   units.unit.filter((item: any) => item?.quantitativeReference).length !== 1
-                  // ) {
-                  //   message.error(
-                  //     intl.formatMessage({
-                  //       id: 'pages.unitgroups.validator.unit.quantitativeReference.required',
-                  //       defaultMessage: 'Unit needs to have exactly one quantitative reference open',
-                  //     }),
-                  //   );
-                  //   return false;
-                  // }
                   const formFieldsValue = {
                     ...formRefEdit.current?.getFieldsValue(),
                     units,
                   };
                   const updateResult = await updateUnitGroup(id, version, formFieldsValue);
                   if (updateResult?.data) {
+                    if (updateResult?.data[0]?.rule_verification === true) {
+                      updateErrRef(null);
+                    } else {
+                      updateErrRef({
+                        id: id,
+                        version: version,
+                        ruleVerification: updateResult?.data[0]?.rule_verification,
+                        nonExistent: false,
+                      });
+                    }
                     message.success(
                       intl.formatMessage({
                         id: 'pages.button.create.success',

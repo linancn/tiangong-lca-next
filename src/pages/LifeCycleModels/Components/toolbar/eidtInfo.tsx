@@ -367,7 +367,6 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
             <RefCheckContext.Provider
               value={{
                 refCheckData: [...parentRefCheckContext.refCheckData, ...refCheckData],
-                updateRefCheckStatus: () => {},
               }}
             >
               <ProForm

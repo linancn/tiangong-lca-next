@@ -20,6 +20,7 @@ type Props = {
   actionRef?: React.MutableRefObject<ActionType | undefined>;
   lang: string;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  updateErrRef?: (data: any) => void;
 };
 
 const ContactEdit: FC<Props> = ({
@@ -29,6 +30,7 @@ const ContactEdit: FC<Props> = ({
   actionRef,
   lang,
   setViewDrawerVisible,
+  updateErrRef = () => {},
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
@@ -192,7 +194,6 @@ const ContactEdit: FC<Props> = ({
             <RefCheckContext.Provider
               value={{
                 refCheckData: [...parentRefCheckContext.refCheckData, ...refCheckData],
-                updateRefCheckStatus: () => {},
               }}
             >
               <ProForm
@@ -211,7 +212,16 @@ const ContactEdit: FC<Props> = ({
                   const formFieldsValue = formRefEdit.current?.getFieldsValue();
                   const updateResult = await updateContact(id, version, formFieldsValue);
                   if (updateResult?.data) {
-                    parentRefCheckContext?.updateRefCheckStatus(true);
+                    if (updateResult?.data[0]?.rule_verification === true) {
+                      updateErrRef(null);
+                    } else {
+                      updateErrRef({
+                        id: id,
+                        version: version,
+                        ruleVerification: updateResult?.data[0]?.rule_verification,
+                        nonExistent: false,
+                      });
+                    }
                     message.success(
                       intl.formatMessage({
                         id: 'pages.button.create.success',

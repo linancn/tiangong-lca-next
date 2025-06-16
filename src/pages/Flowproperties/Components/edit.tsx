@@ -37,8 +37,16 @@ type Props = {
   buttonType: string;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
   lang: string;
+  updateErrRef?: (data: any) => void;
 };
-const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
+const FlowpropertiesEdit: FC<Props> = ({
+  id,
+  version,
+  buttonType,
+  actionRef,
+  lang,
+  updateErrRef = () => {},
+}) => {
   const formRefEdit = useRef<ProFormInstance>();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('flowPropertiesInformation');
@@ -215,7 +223,6 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
             <RefCheckContext.Provider
               value={{
                 refCheckData: [...parentRefCheckContext.refCheckData, ...refCheckData],
-                updateRefCheckStatus: () => {},
               }}
             >
               <ProForm
@@ -230,6 +237,16 @@ const FlowpropertiesEdit: FC<Props> = ({ id, version, buttonType, actionRef, lan
                   const formFieldsValue = formRefEdit.current?.getFieldsValue();
                   const updateResult = await updateFlowproperties(id, version, formFieldsValue);
                   if (updateResult?.data) {
+                    if (updateResult?.data[0]?.rule_verification === true) {
+                      updateErrRef(null);
+                    } else {
+                      updateErrRef({
+                        id: id,
+                        version: version,
+                        ruleVerification: updateResult?.data[0]?.rule_verification,
+                        nonExistent: false,
+                      });
+                    }
                     message.success(
                       intl.formatMessage({
                         id: 'pages.flowproperty.editsuccess',

@@ -455,17 +455,6 @@ export const UnitGroupForm: FC<Props> = ({
         }}
         dataSource={genUnitTableData(unitDataSource, lang)}
         columns={unitColumns}
-        rowClassName={(record) => {
-          console.log('record', record);
-          // const isInRefCheck = refCheckData?.some(
-          //   (item: any) =>
-          //     item.id === record.quantitativeReferenceId &&
-          //     item.version === record.quantitativeReferenceVersion,
-          // );
-          // return isInRefCheck ? 'error-row' : '';
-          return 'error-row';
-        }}
-        className='unit-table'
       ></ProTable>
     ),
   };

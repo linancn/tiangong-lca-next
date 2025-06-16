@@ -38,13 +38,13 @@ export async function getDataDetail(id: string, version: string, table: string) 
     if (version && version.length === 9) {
       result = await supabase
         .from(table)
-        .select('json,version, modified_at')
+        .select('json,version, modified_at,id,state_code,rule_verification,user_id')
         .eq('id', id)
         .eq('version', version);
       if (result.data === null || result.data.length === 0) {
         result = await supabase
           .from(table)
-          .select('json,version, modified_at')
+          .select('json,version, modified_at,id,state_code,rule_verification,user_id')
           .eq('id', id)
           .order('version', { ascending: false })
           .range(0, 0);
@@ -52,7 +52,7 @@ export async function getDataDetail(id: string, version: string, table: string) 
     } else {
       result = await supabase
         .from(table)
-        .select('json,version, modified_at')
+        .select('json,version, modified_at,id,state_code,rule_verification,user_id')
         .eq('id', id)
         .order('version', { ascending: false })
         .range(0, 0);
@@ -65,6 +65,9 @@ export async function getDataDetail(id: string, version: string, table: string) 
           version: data.version,
           json: data.json,
           modifiedAt: data?.modified_at,
+          stateCode: data?.state_code,
+          ruleVerification: data?.rule_verification,
+          userId: data?.user_id,
         },
         success: true,
       });

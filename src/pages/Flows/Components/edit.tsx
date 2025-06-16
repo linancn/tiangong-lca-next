@@ -20,8 +20,16 @@ type Props = {
   buttonType: string;
   lang: string;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
+  updateErrRef?: (data: any) => void;
 };
-const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
+const FlowsEdit: FC<Props> = ({
+  id,
+  version,
+  buttonType,
+  actionRef,
+  lang,
+  updateErrRef = () => {},
+}) => {
   const formRefEdit = useRef<ProFormInstance>();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('flowInformation');
@@ -253,7 +261,6 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
             <RefCheckContext.Provider
               value={{
                 refCheckData: [...parentRefCheckContext.refCheckData, ...refCheckData],
-                updateRefCheckStatus: () => {},
               }}
             >
               <ProForm
@@ -297,6 +304,16 @@ const FlowsEdit: FC<Props> = ({ id, version, buttonType, actionRef, lang }) => {
                     flowProperties,
                   });
                   if (updateResult?.data) {
+                    if (updateResult?.data[0]?.rule_verification === true) {
+                      updateErrRef(null);
+                    } else {
+                      updateErrRef({
+                        id: id,
+                        version: version,
+                        ruleVerification: updateResult?.data[0]?.rule_verification,
+                        nonExistent: false,
+                      });
+                    }
                     message.success(
                       intl.formatMessage({
                         id: 'pages.flows.editsuccess',

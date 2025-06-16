@@ -23,6 +23,7 @@ type Props = {
   buttonType: string;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  updateErrRef?: (data: any) => void;
 };
 
 const SourceEdit: FC<Props> = ({
@@ -32,6 +33,7 @@ const SourceEdit: FC<Props> = ({
   actionRef,
   lang,
   setViewDrawerVisible,
+  updateErrRef = () => {},
 }) => {
   const intl = useIntl();
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -138,6 +140,16 @@ const SourceEdit: FC<Props> = ({
     });
 
     if (result?.data) {
+      if (result?.data[0]?.rule_verification === true) {
+        updateErrRef(null);
+      } else {
+        updateErrRef({
+          id: id,
+          version: version,
+          ruleVerification: result?.data[0]?.rule_verification,
+          nonExistent: false,
+        });
+      }
       if (fileListWithUUID.length > 0) {
         fileListWithUUID.forEach(async (file) => {
           if (file.newUid) {
@@ -271,7 +283,6 @@ const SourceEdit: FC<Props> = ({
             <RefCheckContext.Provider
               value={{
                 refCheckData: [...parentRefCheckContext.refCheckData, ...refCheckData],
-                updateRefCheckStatus: () => {},
               }}
             >
               <ProForm
