@@ -148,7 +148,7 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
             {record.isFromLifeCycle ? (
               <ReviewLifeCycleModelsDetail
                 tabType='assigned'
-                type='edit'
+                type='view'
                 actionRef={actionRef}
                 id={record.json?.data?.id}
                 version={record.json?.data?.version}
@@ -158,7 +158,7 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
             ) : (
               <ReviewProcessDetail
                 tabType='assigned'
-                type='edit'
+                type='view'
                 actionRef={actionRef}
                 id={record.json?.data?.id}
                 version={record.json?.data?.version}
