@@ -2,15 +2,18 @@ import { getThumbFileUrls } from '@/services/supabase/storage';
 import { getTeamMessageApi } from '@/services/teams/api';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { Button, Card, Descriptions, Drawer, Image, Space, Spin, Tooltip } from 'antd';
+import type { ButtonType } from 'antd/es/button';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
+
 type Props = {
   id: string;
   buttonType: string;
+  buttonTypeProp?: ButtonType;
 };
 
-const TeamView: FC<Props> = ({ id, buttonType }) => {
+const TeamView: FC<Props> = ({ id, buttonType, buttonTypeProp = 'default' }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<any>({});
@@ -166,7 +169,13 @@ const TeamView: FC<Props> = ({ id, buttonType }) => {
         <Tooltip
           title={<FormattedMessage id='component.allTeams.table.view' defaultMessage='View' />}
         >
-          <Button shape='circle' icon={<ProfileOutlined />} size='small' onClick={onView} />
+          <Button
+            shape='circle'
+            type={buttonTypeProp}
+            icon={<ProfileOutlined />}
+            size='small'
+            onClick={onView}
+          />
         </Tooltip>
       ) : (
         <Button onClick={onView}>

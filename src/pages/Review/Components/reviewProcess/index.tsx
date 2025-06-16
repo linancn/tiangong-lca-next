@@ -1,4 +1,4 @@
-import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
+// import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 
 import { getAllRefObj, getRefTableName } from '@/pages/Utils/review';
 import { getCommentApi, updateCommentApi } from '@/services/comments/api';
@@ -158,6 +158,30 @@ const ReviewProcessDetail: FC<Props> = ({
         100,
       );
     }
+  };
+
+  const temporarySave = async () => {
+    const fieldsValue = formRefEdit.current?.getFieldsValue();
+    const submitData = {
+      modellingAndValidation: {
+        complianceDeclarations: fieldsValue?.modellingAndValidation?.complianceDeclarations,
+        validation: fieldsValue?.modellingAndValidation?.validation,
+      },
+    };
+
+    setSpinning(true);
+    const { error } = await updateCommentApi(reviewId, { json: submitData }, tabType);
+    if (!error) {
+      message.success(
+        intl.formatMessage({
+          id: 'pages.review.temporarySaveSuccess',
+          defaultMessage: 'Temporary save successfully',
+        }),
+      );
+      setDrawerVisible(false);
+      actionRef?.current?.reload();
+    }
+    setSpinning(false);
   };
 
   const approveReview = async () => {
@@ -335,68 +359,77 @@ const ReviewProcessDetail: FC<Props> = ({
                 />
               </Button>
             </Space>
+          ) : tabType === 'review' ? (
+            <Space className={styles.footer_right}>
+              <Button onClick={temporarySave}>
+                <FormattedMessage id='pages.button.temporarySave' defaultMessage='Temporary Save' />
+              </Button>
+              <Button type='primary' onClick={() => formRefEdit.current?.submit()}>
+                <FormattedMessage id='pages.button.save' defaultMessage='Save' />
+              </Button>
+            </Space>
           ) : null
         }
       >
         <Spin spinning={spinning}>
-          <UpdateReferenceContext.Provider>
-            <ProForm
-              formRef={formRefEdit}
-              initialValues={initData}
-              onValuesChange={(_, allValues) => {
-                setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
-              }}
-              submitter={{
-                render: () => {
-                  return [];
+          {/* <UpdateReferenceContext.Provider> */}
+          <ProForm
+            formRef={formRefEdit}
+            initialValues={initData}
+            onValuesChange={(_, allValues) => {
+              setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+            }}
+            submitter={{
+              render: () => {
+                return [];
+              },
+            }}
+            onFinish={async () => {
+              const fieldsValue = formRefEdit.current?.getFieldsValue();
+              const submitData = {
+                modellingAndValidation: {
+                  complianceDeclarations:
+                    fieldsValue?.modellingAndValidation?.complianceDeclarations,
+                  validation: fieldsValue?.modellingAndValidation?.validation,
                 },
-              }}
-              onFinish={async () => {
-                const fieldsValue = formRefEdit.current?.getFieldsValue();
-                const submitData = {
-                  modellingAndValidation: {
-                    complianceDeclarations:
-                      fieldsValue?.modellingAndValidation?.complianceDeclarations,
-                    validation: fieldsValue?.modellingAndValidation?.validation,
-                  },
-                };
+              };
 
-                setSpinning(true);
-                const { error } = await updateCommentApi(
-                  reviewId,
-                  { json: submitData, state_code: 1 },
-                  tabType,
+              setSpinning(true);
+              const { error } = await updateCommentApi(
+                reviewId,
+                { json: submitData, state_code: 1 },
+                tabType,
+              );
+              if (!error) {
+                message.success(
+                  intl.formatMessage({
+                    id: 'pages.review.ReviewProcessDetail.edit.success',
+                    defaultMessage: 'Review submitted successfully',
+                  }),
                 );
-                if (!error) {
-                  message.success(
-                    intl.formatMessage({
-                      id: 'pages.review.ReviewProcessDetail.edit.success',
-                      defaultMessage: 'Review submitted successfully',
-                    }),
-                  );
-                  setDrawerVisible(false);
-                  actionRef?.current?.reload();
-                }
-                setSpinning(false);
-                return true;
-              }}
-            >
-              <TabsDetail
-                initData={initData}
-                lang={lang}
-                activeTabKey={activeTabKey}
-                formRef={formRefEdit}
-                onData={handletFromData}
-                onExchangeData={handletExchangeData}
-                onTabChange={onTabChange}
-                exchangeDataSource={exchangeDataSource}
-                type={type}
-              />
-              <Form.Item name='id' hidden>
-                <Input />
-              </Form.Item>
-            </ProForm>
-          </UpdateReferenceContext.Provider>
+                setDrawerVisible(false);
+                actionRef?.current?.reload();
+              }
+              setSpinning(false);
+              return true;
+            }}
+          >
+            <TabsDetail
+              initData={initData}
+              lang={lang}
+              activeTabKey={activeTabKey}
+              formRef={formRefEdit}
+              onData={handletFromData}
+              onExchangeData={handletExchangeData}
+              onTabChange={onTabChange}
+              exchangeDataSource={exchangeDataSource}
+              type={type}
+            />
+            <Form.Item name='id' hidden>
+              <Input />
+            </Form.Item>
+          </ProForm>
+          {/* </UpdateReferenceContext.Provider> */}
         </Spin>
       </Drawer>
     </>

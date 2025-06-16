@@ -249,7 +249,6 @@ const ProcessEdit: FC<Props> = ({
       setSpinning(false);
       return { checkResult: false, unReview };
     }
-    setSpinning(false);
     return { checkResult, unReview };
   };
 
@@ -311,6 +310,7 @@ const ProcessEdit: FC<Props> = ({
     const { checkResult, unReview } = await handleCheckData(processDetail);
 
     if (checkResult) {
+      setSpinning(true);
       const reviewId = v4();
       const result = await updateReviewsAfterCheckData(
         processDetail.teamId,

@@ -85,7 +85,9 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
         return [
           <span key={0}>
             {row.teamName}
-            {row?.json?.team?.id && <TeamView id={row?.json?.team?.id} buttonType='icon' />}
+            {row?.json?.team?.id && (
+              <TeamView buttonTypeProp='text' id={row?.json?.team?.id} buttonType='icon' />
+            )}
           </span>,
         ];
       },
@@ -101,7 +103,7 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
         return [
           <span key={0}>
             {row.userName}
-            <AccountView userId={row.json?.user?.id} buttonType='icon' />
+            <AccountView userId={row.json?.user?.id} buttonType='icon' buttonTypeProp='text' />
           </span>,
         ];
       },

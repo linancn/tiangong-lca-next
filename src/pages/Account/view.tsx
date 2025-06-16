@@ -7,6 +7,7 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 import { Button, Card, Descriptions, Drawer, Spin, Tooltip } from 'antd';
+import type { ButtonType } from 'antd/es/button';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
@@ -14,9 +15,10 @@ import { FormattedMessage, useIntl } from 'umi';
 type Props = {
   buttonType?: string;
   userId?: string;
+  buttonTypeProp?: ButtonType;
 };
 
-const AccountView: FC<Props> = ({ buttonType = 'icon' }) => {
+const AccountView: FC<Props> = ({ buttonType = 'icon', buttonTypeProp = 'default' }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<API.CurrentUser | null>(null);
@@ -91,7 +93,13 @@ const AccountView: FC<Props> = ({ buttonType = 'icon' }) => {
         <Tooltip
           title={<FormattedMessage id='pages.account.view.tooltip' defaultMessage='View Account' />}
         >
-          <Button shape='circle' icon={<ProfileOutlined />} size='small' onClick={onView} />
+          <Button
+            shape='circle'
+            type={buttonTypeProp}
+            icon={<ProfileOutlined />}
+            size='small'
+            onClick={onView}
+          />
         </Tooltip>
       ) : (
         <Button onClick={onView}>
