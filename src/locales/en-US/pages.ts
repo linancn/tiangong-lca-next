@@ -1,4 +1,7 @@
 export default {
+  'pages.select.unRuleVerification': 'Data is incomplete',
+  'pages.select.nonExistentRef': 'Data does not exist',
+
   'pages.layouts.userLayout.title': '',
   'pages.404.buttonText': 'Back Home',
   'pages.404.subTitle': 'Sorry, the page you visited does not exist.',
@@ -150,7 +153,11 @@ export default {
   'pages.account.apiKey.generated.success': 'API Key generated successfully!',
   'pages.account.apiKey.generateError': 'A system error occurred while generating the API key. Please try again later.',
   'pages.account.password.currentPassword.tooltip': 'Please enter your current account password to verify your identity and generate the API Key.',
-
+  'pages.account.info.title': 'Account Information',
+  'pages.account.profile.userid': 'User ID',
+  'pages.account.view.tooltip': 'View Account',
+  'pages.account.view.button': 'View Account',
+  'pages.account.drawer.title.view': 'View Account Information',
   'pages.login.passwordForgot.tab': 'Account',
 
   // Team Management

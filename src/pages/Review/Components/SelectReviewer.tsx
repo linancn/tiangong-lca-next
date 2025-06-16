@@ -3,7 +3,7 @@ import { getReviewerIdsApi, updateReviewApi } from '@/services/reviews/api';
 import { getReviewMembersApi } from '@/services/roles/api';
 import { TeamMemberTable } from '@/services/teams/data';
 import styles from '@/style/custom.less';
-import { AuditOutlined, CloseOutlined } from '@ant-design/icons';
+import { CloseOutlined, UsergroupAddOutlined } from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
 import { Button, Drawer, message, Space, Spin, Tooltip } from 'antd';
@@ -83,7 +83,7 @@ export default function SelectReviewer({ reviewIds, actionRef }: SelectReviewerP
 
   const handleTemporarySave = async () => {
     setSpinning(true);
-    const { error, data } = await updateReviewApi(reviewIds, {
+    const { error } = await updateReviewApi(reviewIds, {
       reviewer_id: selectedRowKeys,
     });
     if (!error) {
@@ -93,7 +93,6 @@ export default function SelectReviewer({ reviewIds, actionRef }: SelectReviewerP
           defaultMessage: 'Temporary save success',
         }),
       );
-      await addComment(data);
     }
     setSpinning(false);
   };
@@ -127,10 +126,11 @@ export default function SelectReviewer({ reviewIds, actionRef }: SelectReviewerP
         }
       >
         <Button
+          style={{ width: 'inherit' }}
           onClick={() => setDrawerVisible(true)}
           type='text'
-          icon={<AuditOutlined />}
-          size='small'
+          icon={<UsergroupAddOutlined />}
+          size='large'
         />
       </Tooltip>
       <Spin spinning={spinning}>

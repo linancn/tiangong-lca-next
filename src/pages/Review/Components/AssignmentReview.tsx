@@ -1,10 +1,15 @@
+import TeamView from '@/components/AllTeams/view';
+import AccountView from '@/pages/Account/view';
+import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
+import ProcessView from '@/pages/Processes/Components/view';
 import { ListPagination } from '@/services/general/data';
-import { getReviewsApi } from '@/services/reviews/api';
+import { getReviewsTableData } from '@/services/reviews/api';
 import { ReviewsTable } from '@/services/reviews/data';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
-import { Space, Tooltip } from 'antd';
+import { Space } from 'antd';
 import { useState } from 'react';
+import RejectReview from './RejectReview';
 import ReviewLifeCycleModelsDetail from './reviewLifeCycleModels';
 import ReviewProcessDetail from './reviewProcess';
 import SelectReviewer from './SelectReviewer';
@@ -26,7 +31,7 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
     setSelectedRowKeys(keys);
   };
 
-  const processColumns: ProColumns<ReviewsTable>[] = [
+  const columns: ProColumns<ReviewsTable>[] = [
     {
       title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
       dataIndex: 'index',
@@ -34,58 +39,106 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
       search: false,
     },
     {
-      title: <FormattedMessage id='pages.table.title.name' defaultMessage='Name' />,
-      dataIndex: 'name',
+      title: (
+        <FormattedMessage
+          id='pages.review.table.column.processName'
+          defaultMessage='Process Name'
+        />
+      ),
+      dataIndex: 'processName',
       sorter: false,
       search: false,
       render: (_, row) => {
         return [
-          <Tooltip key={0} placement='topLeft'>
-            {row.processes.name}
-          </Tooltip>,
+          <div key={0} style={{ display: 'flex' }}>
+            {row.processName}
+            {row?.isFromLifeCycle ? (
+              <LifeCycleModelView
+                id={row?.json?.data?.id}
+                version={row?.json?.data?.version}
+                lang={lang}
+                buttonType='icon'
+                buttonTypeProp='text'
+              />
+            ) : (
+              <ProcessView
+                id={row?.json?.data?.id}
+                version={row?.json?.data?.version}
+                lang={lang}
+                buttonType='icon'
+                disabled={false}
+                buttonTypeProp='text'
+              />
+            )}
+          </div>,
         ];
       },
     },
     {
       title: (
-        <FormattedMessage id='pages.table.title.classification' defaultMessage='Classification' />
+        <FormattedMessage id='pages.review.table.column.teamName' defaultMessage='Team Name' />
       ),
-      dataIndex: 'classification',
+      dataIndex: 'teamName',
       sorter: false,
       search: false,
       render: (_, row) => {
-        return [<span key={0}>{row.processes.classification}</span>];
+        return [
+          <span key={0}>
+            {row.teamName}
+            {row?.json?.team?.id && (
+              <TeamView buttonTypeProp='text' id={row?.json?.team?.id} buttonType='icon' />
+            )}
+          </span>,
+        ];
       },
     },
     {
-      title: <FormattedMessage id='pages.process.referenceYear' defaultMessage='Reference year' />,
-      dataIndex: 'referenceYear',
+      title: (
+        <FormattedMessage id='pages.review.table.column.userName' defaultMessage='User Name' />
+      ),
+      dataIndex: 'userName',
       sorter: false,
       search: false,
       render: (_, row) => {
-        return [<span key={0}>{row.processes.referenceYear}</span>];
+        return [
+          <span key={0}>
+            {row.userName}
+            <AccountView userId={row.json?.user?.id} buttonType='icon' buttonTypeProp='text' />
+          </span>,
+        ];
       },
     },
     {
-      title: <FormattedMessage id='pages.process.location' defaultMessage='Location' />,
-      dataIndex: 'location',
+      title: (
+        <FormattedMessage id='pages.review.table.column.createAt' defaultMessage='Create At' />
+      ),
+      dataIndex: 'createAt',
       sorter: false,
       search: false,
-      render: (_, row) => {
-        return [<span key={0}>{row.processes.location}</span>];
-      },
-    },
-    {
-      title: <FormattedMessage id='pages.table.title.updatedAt' defaultMessage='Updated at' />,
-      dataIndex: 'modifiedAt',
       valueType: 'dateTime',
-      sorter: false,
-      search: false,
     },
   ];
 
+  if (tableType === 'unassigned') {
+    columns.push({
+      title: <FormattedMessage id='pages.review.actions' defaultMessage='Actions' />,
+      dataIndex: 'actions',
+      search: false,
+      render: (_, record) => {
+        return [
+          <RejectReview
+            isModel={record.isFromLifeCycle}
+            dataId={record.json?.data?.id}
+            dataVersion={record.json?.data?.version}
+            reviewId={record.id}
+            key={0}
+          />,
+        ];
+      },
+    });
+  }
   if (tableType === 'assigned') {
-    processColumns.push({
+    columns.push({
       title: <FormattedMessage id='pages.review.actions' defaultMessage='Actions' />,
       dataIndex: 'actions',
       search: false,
@@ -95,20 +148,20 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
             {record.isFromLifeCycle ? (
               <ReviewLifeCycleModelsDetail
                 tabType='assigned'
-                type='view'
+                type='edit'
                 actionRef={actionRef}
-                id={record.data_id}
-                version={record.data_version}
+                id={record.json?.data?.id}
+                version={record.json?.data?.version}
                 lang={lang}
                 reviewId={record.id}
               />
             ) : (
               <ReviewProcessDetail
                 tabType='assigned'
-                type='view'
+                type='edit'
                 actionRef={actionRef}
-                id={record.data_id}
-                version={record.data_version}
+                id={record.json?.data?.id}
+                version={record.json?.data?.version}
                 lang={lang}
                 reviewId={record.id}
               />
@@ -120,7 +173,7 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
   }
 
   if (tableType === 'review') {
-    processColumns.push({
+    columns.push({
       title: <FormattedMessage id='pages.review.actions' defaultMessage='Actions' />,
       dataIndex: 'actions',
       search: false,
@@ -131,8 +184,8 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
               <>
                 <ReviewLifeCycleModelsDetail
                   type='edit'
-                  id={record.data_id}
-                  version={record.data_version}
+                  id={record.json?.data?.id}
+                  version={record.json?.data?.version}
                   lang={lang}
                   reviewId={record.id}
                   tabType='review'
@@ -143,8 +196,8 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
                   reviewId={record.id}
                   tabType='review'
                   type='view'
-                  id={record.data_id}
-                  version={record.data_version}
+                  id={record.json?.data?.id}
+                  version={record.json?.data?.version}
                   lang={lang}
                   actionRef={actionRef}
                 />
@@ -155,8 +208,8 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
                   tabType='review'
                   type='edit'
                   actionRef={actionRef}
-                  id={record.data_id}
-                  version={record.data_version}
+                  id={record.json?.data?.id}
+                  version={record.json?.data?.version}
                   lang={lang}
                   reviewId={record.id}
                 />
@@ -164,8 +217,8 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
                   tabType='review'
                   type='view'
                   actionRef={actionRef}
-                  id={record.data_id}
-                  version={record.data_version}
+                  id={record.json?.data?.id}
+                  version={record.json?.data?.version}
                   lang={lang}
                   reviewId={record.id}
                 />
@@ -180,7 +233,7 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
   return (
     <ProTable<ReviewsTable, ListPagination>
       loading={tableLoading}
-      columns={processColumns}
+      columns={columns}
       rowKey='id'
       search={false}
       pagination={{
@@ -223,7 +276,7 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
           }
           setTableLoading(true);
           setSelectedRowKeys([]);
-          return await getReviewsApi(params, sort, tableType, lang);
+          return await getReviewsTableData(params, sort, tableType, lang);
         } catch (error) {
           console.error(error);
           return {

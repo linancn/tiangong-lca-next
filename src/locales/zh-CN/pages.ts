@@ -1,4 +1,7 @@
 export default {
+  'pages.select.unRuleVerification': '数据不完整',
+  'pages.select.nonExistentRef': '数据不存在',
+
   'pages.button.deleteMessage': '您确定要删除此数据吗？',
   'pages.layouts.userLayout.title': '',
   'pages.404.buttonText': '返回首页',
@@ -150,7 +153,11 @@ export default {
   'pages.account.apiKey.generated.success': 'API Key 生成成功！',
   'pages.account.apiKey.generateError': '生成 API Key 时发生系统错误，请稍后重试。',
   'pages.account.password.currentPassword.tooltip': '请输入当前账户密码以验证您的身份并生成 API Key。',
-
+  'pages.account.info.title': '账户信息',
+  'pages.account.profile.userid': '用户ID',
+  'pages.account.view.tooltip': '查看账户',
+  'pages.account.view.button': '查看账户',
+  'pages.account.drawer.title.view': '查看账户信息',
   'pages.login.passwordForgot.tab': '账户',
 
   'pages.team.editsuccess': '修改成功！',
