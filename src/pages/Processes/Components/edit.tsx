@@ -193,7 +193,7 @@ const ProcessEdit: FC<Props> = ({
         });
         setFromData({ ...dataSet, id: id });
         setExchangeDataSource(dataSet?.exchanges?.exchange ?? []);
-        formRefEdit.current?.resetFields();
+        // formRefEdit.current?.resetFields();
         formRefEdit.current?.setFieldsValue({
           ...dataSet,
           id: id,

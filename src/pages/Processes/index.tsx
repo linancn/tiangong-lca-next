@@ -11,6 +11,7 @@ import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
 import ExportData from '@/components/ExportData';
 import ImportData from '@/components/ImportData';
+import TableFilter from '@/components/TableFilter';
 import LifeCycleModelCreate from '@/pages/LifeCycleModels/Components/create';
 import LifeCycleModelEdit from '@/pages/LifeCycleModels/Components/edit';
 import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
@@ -40,6 +41,7 @@ const getProcesstypeOfDataSetOptions = (value: string) => {
 
 const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<any>('');
+  const [stateCode, setStateCode] = useState<string | number>('all');
   const [team, setTeam] = useState<any>(null);
   const [importData, setImportData] = useState<any>(null);
   const [openAI, setOpenAI] = useState<boolean>(false);
@@ -383,6 +385,13 @@ const TableList: FC = () => {
         toolBarRender={() => {
           if (dataSource === 'my') {
             return [
+              <TableFilter
+                key={2}
+                onChange={async (val) => {
+                  await setStateCode(val);
+                  actionRef.current?.reload();
+                }}
+              />,
               <ProcessCreate
                 isInToolbar={true}
                 importData={importData}
@@ -405,9 +414,9 @@ const TableList: FC = () => {
         ) => {
           if (keyWord.length > 0) {
             if (openAI) {
-              return process_hybrid_search(params, lang, dataSource, keyWord, {});
+              return process_hybrid_search(params, lang, dataSource, keyWord, {}, stateCode);
             }
-            return getProcessTablePgroongaSearch(params, lang, dataSource, keyWord, {});
+            return getProcessTablePgroongaSearch(params, lang, dataSource, keyWord, {}, stateCode);
           }
 
           const sortFields: Record<string, string> = {
@@ -426,7 +435,7 @@ const TableList: FC = () => {
             }
           }
 
-          return getProcessTableAll(params, convertedSort, lang, dataSource, tid ?? '');
+          return getProcessTableAll(params, convertedSort, lang, dataSource, tid ?? '', stateCode);
         }}
         columns={processColumns}
       />
