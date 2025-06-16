@@ -123,7 +123,7 @@ export default {
   'pages.account.newPassword.strengthWeak': '强度：弱',
   'pages.account.newPassword.strengthMedium': '强度：中',
   'pages.account.newPassword.strengthStrong': '强度：强',
-  'pages.account.newPassword.placeholder': '新密码',
+  'pages.account.newPassword.placeholder': '当前密码',
   'pages.account.newPassword.validation': '密码无效！',
   'pages.account.newPassword.required': '请输入新密码！',
   'pages.account.currentPassword.required': '请输入当前密码！',
