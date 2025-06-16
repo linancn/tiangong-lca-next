@@ -204,7 +204,6 @@ const ProcessEdit: FC<Props> = ({
     );
 
     const problemNodes = path?.findProblemNodes();
-    console.log('problemNodes', problemNodes);
 
     if (problemNodes && problemNodes.length > 0) {
       let result = problemNodes.map((item: any) => {
