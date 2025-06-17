@@ -89,7 +89,7 @@ export async function changePassword(body: any, options?: { [key: string]: any }
     if (error) {
       return {
         status: 'error',
-        message: error.message,
+        message: 'User not found',
         type: body.type,
         currentAuthority: 'guest',
       };
@@ -99,7 +99,7 @@ export async function changePassword(body: any, options?: { [key: string]: any }
   } else {
     return {
       status: 'error',
-      message: 'pages.account.currentPassword.invalid',
+      message: 'Password incorrect',
       type: body.type,
       currentAuthority: 'guest',
     };
