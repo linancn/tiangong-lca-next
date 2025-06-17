@@ -99,7 +99,7 @@ export async function changePassword(body: any, options?: { [key: string]: any }
   } else {
     return {
       status: 'error',
-      message: 'Invalid current password',
+      message: 'pages.account.currentPassword.invalid',
       type: body.type,
       currentAuthority: 'guest',
     };

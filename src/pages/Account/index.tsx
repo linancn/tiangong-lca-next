@@ -127,7 +127,11 @@ const Profile: FC = () => {
                 }),
               );
             } else {
-              message.error(msg.message);
+              const errorMsg =
+                msg.message && typeof msg.message === 'string' && msg.message.startsWith('pages.')
+                  ? intl.formatMessage({ id: msg.message })
+                  : msg.message;
+              message.error(String(errorMsg));
             }
           } catch (error) {
             message.error(
@@ -152,6 +156,12 @@ const Profile: FC = () => {
             <FormattedMessage
               id='pages.account.password.currentPassword'
               defaultMessage='Current Password'
+            />
+          }
+          tooltip={
+            <FormattedMessage
+              id='pages.account.password.currentPassword.tooltip'
+              defaultMessage='Please enter your current account password to verify your identity.'
             />
           }
           rules={[
@@ -539,7 +549,7 @@ const Profile: FC = () => {
             }
             tooltip={
               <FormattedMessage
-                id='pages.account.password.currentPassword.tooltip'
+                id='pages.account.apiKey.currentPassword.tooltip'
                 defaultMessage='Please enter your current account password to verify your identity and generate the API Key.'
               />
             }
@@ -594,8 +604,8 @@ const Profile: FC = () => {
               },
             }}
             placeholder={intl.formatMessage({
-              id: 'pages.account.newPassword.placeholder',
-              defaultMessage: 'New Password',
+              id: 'pages.account.apiKey.currentPassword',
+              defaultMessage: 'Current Password',
             })}
             rules={[
               {
