@@ -97,6 +97,7 @@ export default {
   'pages.searchTable.batchDeletion': 'batch deletion',
   'pages.searchTable.batchApproval': 'batch approval',
 
+  'pages.account.userNotFound': 'User not found',
   'pages.account.profile.nickName': 'Nickname',
   'pages.account.profile.nickName.tooltip': 'The name you prefer to be called',
   'pages.account.profile.role': 'Role',
@@ -126,8 +127,9 @@ export default {
   'pages.account.newPassword.placeholder': 'New Password',
   'pages.account.newPassword.validation': 'Password is invalid!',
   'pages.account.newPassword.required': 'Please input the new password!',
+  'pages.account.currentPassword.placeholder': 'Current Password',
   'pages.account.currentPassword.required': 'Please input the current password!',
-  'pages.account.currentPassword.invalid': 'Invalid current password',
+  'pages.account.currentPassword.invalid': 'Invalid password',
   'pages.account.password.currentPassword.tooltip': 'Please enter your current account password to verify your identity.',
   'pages.account.confirmNewPassword.required': 'Please input the new password again!',
   'pages.account.passwordsDoNotMatch': 'The two passwords that you entered do not match!',

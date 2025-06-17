@@ -98,6 +98,7 @@ export default {
   'pages.searchTable.batchDeletion': '批量删除',
   'pages.searchTable.batchApproval': '批量审批',
 
+  'pages.account.userNotFound': '用户未找到',
   'pages.account.profile.nickName': '昵称',
   'pages.account.profile.nickName.tooltip': '您希望被称呼的名字',
   'pages.account.profile.role': '角色',
@@ -126,8 +127,9 @@ export default {
   'pages.account.newPassword.placeholder': '新密码',
   'pages.account.newPassword.validation': '密码无效！',
   'pages.account.newPassword.required': '请输入新密码！',
+  'pages.account.currentPassword.placeholder': '当前密码',
   'pages.account.currentPassword.required': '请输入当前密码！',
-  'pages.account.currentPassword.invalid': '当前密码错误',
+  'pages.account.currentPassword.invalid': '密码错误',
   'pages.account.password.currentPassword.tooltip': '请输入当前账户密码以验证您的身份',
   'pages.account.confirmNewPassword.required': '请再次输入新密码！',
   'pages.account.passwordsDoNotMatch': '两次输入的密码不一致！',

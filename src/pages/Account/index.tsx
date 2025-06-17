@@ -126,12 +126,24 @@ const Profile: FC = () => {
                   defaultMessage: 'Password changed successfully!',
                 }),
               );
-            } else {
-              const errorMsg =
-                msg.message && typeof msg.message === 'string' && msg.message.startsWith('pages.')
-                  ? intl.formatMessage({ id: msg.message })
-                  : msg.message;
-              message.error(String(errorMsg));
+            } else if (msg.status === 'error') {
+              if (msg.message === 'User not found') {
+                message.error(
+                  intl.formatMessage({
+                    id: 'pages.account.userNotFound',
+                    defaultMessage: 'User not found',
+                  }),
+                );
+              } else if (msg.message === 'Password incorrect') {
+                message.error(
+                  intl.formatMessage({
+                    id: 'pages.account.currentPassword.invalid',
+                    defaultMessage: 'Invalid current password',
+                  }),
+                );
+              } else {
+                message.error(msg.message);
+              }
             }
           } catch (error) {
             message.error(
@@ -177,7 +189,13 @@ const Profile: FC = () => {
           ]}
           hasFeedback
         >
-          <Input.Password prefix={<LockOutlined />} />
+          <Input.Password
+            prefix={<LockOutlined />}
+            placeholder={intl.formatMessage({
+              id: 'pages.account.currentPassword.placeholder',
+              defaultMessage: 'Current Password',
+            })}
+          />
         </Form.Item>
 
         <ProFormText.Password
