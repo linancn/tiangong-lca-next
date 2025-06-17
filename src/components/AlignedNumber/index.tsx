@@ -25,9 +25,12 @@ function toSuperscript(num: string) {
 function trimTrailingZeros(s: string) {
   // Remove unnecessary trailing zeros and decimal point
   if (s.indexOf('.') === -1) return s;
-  return s
-    .replace(/\.?(0+)(e[+-]?\d+)?$/, (match, zeros, exp) => (exp ? exp : ''))
-    .replace(/\.0+$/, '');
+
+  if (s.includes('e')) {
+    return s.replace(/(\.\d*?)0+(e[+-]?\d+)$/, '$1$2').replace(/\.e/, 'e');
+  }
+
+  return s.replace(/\.?0+$/, '');
 }
 
 const AlignedNumber = ({ number, precision = 4 }: { number: number; precision?: number }) => {
@@ -48,8 +51,7 @@ const AlignedNumber = ({ number, precision = 4 }: { number: number; precision?: 
     const match = expStr.match(/^([\d.]+)e([+-]?\d+)$/);
     if (match) {
       const base = match[1];
-      let exp = match[2];
-      if (exp.startsWith('+')) exp = exp.slice(1); // 去掉+号
+      let exp = match[2].replace(/^\+/, '');
       strValue = `${base}×10${toSuperscript(exp)}`;
     } else {
       strValue = expStr;
