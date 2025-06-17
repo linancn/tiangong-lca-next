@@ -6,6 +6,7 @@ import SourceSelectForm from '@/pages/Sources/Components/select/form';
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import RequiredMark from '@/components/RequiredMark';
+import { useRefCheckContext } from '@/contexts/refCheckContext';
 import { getRules } from '@/pages/Utils';
 import { FlowpropertyTabTable } from '@/services/flows/data';
 import { genFlowPropertyTabTableData } from '@/services/flows/util';
@@ -52,6 +53,7 @@ export const FlowForm: FC<Props> = ({
   formType,
   showRules = false,
 }) => {
+  const refCheckContext = useRefCheckContext();
   const [thisFlowType, setThisFlowType] = useState<string | undefined>(flowType);
   const actionRefPropertyTable = useRef<ActionType>();
   const { token } = theme.useToken();
@@ -210,6 +212,7 @@ export const FlowForm: FC<Props> = ({
               actionRef={actionRefPropertyTable}
               onData={onPropertyData}
               setViewDrawerVisible={() => {}}
+              showRules={showRules}
             />
             <PropertyDelete
               id={row.dataSetInternalID}
@@ -885,8 +888,24 @@ export const FlowForm: FC<Props> = ({
           showSizeChanger: false,
           pageSize: 10,
         }}
+        rowClassName={(record) => {
+          const isInRefCheck = refCheckContext?.refCheckData?.some(
+            (item: any) =>
+              item.id === record.referenceToFlowPropertyDataSetId &&
+              item.version === record.referenceToFlowPropertyDataSetVersion,
+          );
+          return isInRefCheck ? 'error-row' : '';
+        }}
+        className='flow-property-table'
         toolBarRender={() => {
-          return [<PropertyCreate key={0} lang={lang} onData={onPropertyDataCreate} />];
+          return [
+            <PropertyCreate
+              key={0}
+              lang={lang}
+              onData={onPropertyDataCreate}
+              showRules={showRules}
+            />,
+          ];
         }}
         // dataSource={genFlowPropertyTabTableData(propertyDataSource, lang)}
         dataSource={dataSource}

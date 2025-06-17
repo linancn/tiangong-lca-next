@@ -1,11 +1,9 @@
-import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
-import { getFlowDetail } from '@/services/flows/api';
-import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
+// import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 
-import { getAllRefObj, getRefTableName } from '@/pages/Utils';
+import { getAllRefObj, getRefTableName } from '@/pages/Utils/review';
 import { getCommentApi, updateCommentApi } from '@/services/comments/api';
 import { getRefData, updateStateCodeApi } from '@/services/general/api';
-import { getProcessDetail, updateProcessJsonApi } from '@/services/processes/api';
+import { getProcessDetail, updateProcessApi } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
 import { updateReviewApi } from '@/services/reviews/api';
 import { getUserTeamId } from '@/services/roles/api';
@@ -45,7 +43,6 @@ const ReviewProcessDetail: FC<Props> = ({
   const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
   const [spinning, setSpinning] = useState(false);
   const intl = useIntl();
-  const [referenceValue, setReferenceValue] = useState(0);
   const [approveReviewDisabled, setApproveReviewDisabled] = useState(true);
 
   const handletFromData = () => {
@@ -59,37 +56,6 @@ const ReviewProcessDetail: FC<Props> = ({
 
   const handletExchangeData = (data: any) => {
     if (fromData?.id) setExchangeDataSource([...data]);
-  };
-
-  const updateReference = async () => {
-    const newExchangeDataSource = await Promise.all(
-      exchangeDataSource.map(async (item: any) => {
-        const refObjectId = item?.referenceToFlowDataSet?.['@refObjectId'] ?? '';
-        const version = item?.referenceToFlowDataSet?.['@version'] ?? '';
-
-        const result = await getFlowDetail(refObjectId, version);
-
-        if (!result?.data) {
-          return item;
-        }
-
-        const refData = genFlowFromData(result.data?.json?.flowDataSet ?? {});
-
-        return {
-          ...item,
-          referenceToFlowDataSet: {
-            ...item?.referenceToFlowDataSet,
-            '@version': result.data?.version ?? '',
-            'common:shortDescription': genFlowNameJson(
-              refData?.flowInformation?.dataSetInformation?.name,
-            ),
-          },
-        };
-      }),
-    );
-
-    setExchangeDataSource(newExchangeDataSource);
-    setReferenceValue(referenceValue + 1);
   };
 
   const onTabChange = (key: string) => {
@@ -138,7 +104,7 @@ const ReviewProcessDetail: FC<Props> = ({
             : [_compliance, ...allCompliance],
         },
       };
-      await updateProcessJsonApi(id, version, json);
+      await updateProcessApi(id, version, { json_ordered: json });
     }
   };
 
@@ -194,6 +160,30 @@ const ReviewProcessDetail: FC<Props> = ({
     }
   };
 
+  const temporarySave = async () => {
+    const fieldsValue = formRefEdit.current?.getFieldsValue();
+    const submitData = {
+      modellingAndValidation: {
+        complianceDeclarations: fieldsValue?.modellingAndValidation?.complianceDeclarations,
+        validation: fieldsValue?.modellingAndValidation?.validation,
+      },
+    };
+
+    setSpinning(true);
+    const { error } = await updateCommentApi(reviewId, { json: submitData }, tabType);
+    if (!error) {
+      message.success(
+        intl.formatMessage({
+          id: 'pages.review.temporarySaveSuccess',
+          defaultMessage: 'Temporary save successfully',
+        }),
+      );
+      setDrawerVisible(false);
+      actionRef?.current?.reload();
+    }
+    setSpinning(false);
+  };
+
   const approveReview = async () => {
     setSpinning(true);
     const { error } = await updateCommentApi(
@@ -203,9 +193,17 @@ const ReviewProcessDetail: FC<Props> = ({
       },
       tabType,
     );
-
+    // const oldReviews = await getReviewsDetail(reviewId);
+    // const {json:oldReviewJson} = oldReviews??{};
     const { error: error2 } = await updateReviewApi([reviewId], {
       state_code: 2,
+      // json:{
+      //   ...oldReviewJson,
+      //   comment:{
+      //     ...oldReviewJson?.comment??{},
+      //     result:2,
+      //   }
+      // }
     });
 
     await updateReviewDataToPublic(id, version);
@@ -249,7 +247,7 @@ const ReviewProcessDetail: FC<Props> = ({
         if (result?.data?.json?.processDataSet) {
           const _compliance =
             result.data.json.processDataSet?.modellingAndValidation?.complianceDeclarations
-              .compliance;
+              ?.compliance;
           const _review =
             result.data.json.processDataSet?.modellingAndValidation?.validation?.review;
           result.data.json.processDataSet.modellingAndValidation = {
@@ -260,7 +258,9 @@ const ReviewProcessDetail: FC<Props> = ({
                   ? [...(allCompliance.length ? allCompliance : [{}])]
                   : Array.isArray(_compliance)
                     ? [..._compliance, ...allCompliance]
-                    : [_compliance, ...allCompliance],
+                    : _compliance
+                      ? [_compliance, ...allCompliance]
+                      : [...allCompliance],
             },
             validation: {
               review:
@@ -276,7 +276,9 @@ const ReviewProcessDetail: FC<Props> = ({
                     ]
                   : Array.isArray(_review)
                     ? [..._review, ...allReviews]
-                    : [_review, ...allReviews],
+                    : _review
+                      ? [_review, ...allReviews]
+                      : [...allReviews],
             },
           };
         }
@@ -308,30 +310,6 @@ const ReviewProcessDetail: FC<Props> = ({
       },
     });
   }, [exchangeDataSource]);
-
-  const temporarySave = async () => {
-    const fieldsValue = formRefEdit.current?.getFieldsValue();
-    const submitData = {
-      modellingAndValidation: {
-        complianceDeclarations: fieldsValue?.modellingAndValidation?.complianceDeclarations,
-        validation: fieldsValue?.modellingAndValidation?.validation,
-      },
-    };
-
-    setSpinning(true);
-    const { error } = await updateCommentApi(reviewId, { json: submitData }, tabType);
-    if (!error) {
-      message.success(
-        intl.formatMessage({
-          id: 'pages.review.temporarySaveSuccess',
-          defaultMessage: 'Temporary save successfully',
-        }),
-      );
-      setDrawerVisible(false);
-      actionRef?.current?.reload();
-    }
-    setSpinning(false);
-  };
 
   return (
     <>
@@ -376,31 +354,7 @@ const ReviewProcessDetail: FC<Props> = ({
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         footer={
-          type === 'edit' ? (
-            <Space size={'middle'} className={styles.footer_right}>
-              <>
-                <Button
-                  onClick={() => {
-                    updateReference();
-                  }}
-                >
-                  <FormattedMessage
-                    id='pages.button.updateReference'
-                    defaultMessage='Update reference'
-                  />
-                </Button>
-              </>
-              <Button onClick={() => setDrawerVisible(false)}>
-                <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
-              </Button>
-              <Button onClick={temporarySave}>
-                <FormattedMessage id='pages.button.temporarySave' />
-              </Button>
-              <Button onClick={() => formRefEdit.current?.submit()} type='primary'>
-                <FormattedMessage id='pages.button.save' defaultMessage='Save' />
-              </Button>
-            </Space>
-          ) : tabType === 'assigned' ? (
+          tabType === 'assigned' ? (
             <Space className={styles.footer_right}>
               <Button disabled={approveReviewDisabled} type='primary' onClick={approveReview}>
                 <FormattedMessage
@@ -409,70 +363,77 @@ const ReviewProcessDetail: FC<Props> = ({
                 />
               </Button>
             </Space>
-          ) : (
-            <></>
-          )
+          ) : tabType === 'review' ? (
+            <Space className={styles.footer_right}>
+              <Button onClick={temporarySave}>
+                <FormattedMessage id='pages.button.temporarySave' defaultMessage='Temporary Save' />
+              </Button>
+              <Button type='primary' onClick={() => formRefEdit.current?.submit()}>
+                <FormattedMessage id='pages.button.save' defaultMessage='Save' />
+              </Button>
+            </Space>
+          ) : null
         }
       >
         <Spin spinning={spinning}>
-          <UpdateReferenceContext.Provider value={{ referenceValue }}>
-            <ProForm
-              formRef={formRefEdit}
-              initialValues={initData}
-              onValuesChange={(_, allValues) => {
-                setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
-              }}
-              submitter={{
-                render: () => {
-                  return [];
+          {/* <UpdateReferenceContext.Provider> */}
+          <ProForm
+            formRef={formRefEdit}
+            initialValues={initData}
+            onValuesChange={(_, allValues) => {
+              setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+            }}
+            submitter={{
+              render: () => {
+                return [];
+              },
+            }}
+            onFinish={async () => {
+              const fieldsValue = formRefEdit.current?.getFieldsValue();
+              const submitData = {
+                modellingAndValidation: {
+                  complianceDeclarations:
+                    fieldsValue?.modellingAndValidation?.complianceDeclarations,
+                  validation: fieldsValue?.modellingAndValidation?.validation,
                 },
-              }}
-              onFinish={async () => {
-                const fieldsValue = formRefEdit.current?.getFieldsValue();
-                const submitData = {
-                  modellingAndValidation: {
-                    complianceDeclarations:
-                      fieldsValue?.modellingAndValidation?.complianceDeclarations,
-                    validation: fieldsValue?.modellingAndValidation?.validation,
-                  },
-                };
+              };
 
-                setSpinning(true);
-                const { error } = await updateCommentApi(
-                  reviewId,
-                  { json: submitData, state_code: 1 },
-                  tabType,
+              setSpinning(true);
+              const { error } = await updateCommentApi(
+                reviewId,
+                { json: submitData, state_code: 1 },
+                tabType,
+              );
+              if (!error) {
+                message.success(
+                  intl.formatMessage({
+                    id: 'pages.review.ReviewProcessDetail.edit.success',
+                    defaultMessage: 'Review submitted successfully',
+                  }),
                 );
-                if (!error) {
-                  message.success(
-                    intl.formatMessage({
-                      id: 'pages.review.ReviewProcessDetail.edit.success',
-                      defaultMessage: 'Review submitted successfully',
-                    }),
-                  );
-                  setDrawerVisible(false);
-                  actionRef?.current?.reload();
-                }
-                setSpinning(false);
-                return true;
-              }}
-            >
-              <TabsDetail
-                initData={initData}
-                lang={lang}
-                activeTabKey={activeTabKey}
-                formRef={formRefEdit}
-                onData={handletFromData}
-                onExchangeData={handletExchangeData}
-                onTabChange={onTabChange}
-                exchangeDataSource={exchangeDataSource}
-                type={type}
-              />
-              <Form.Item name='id' hidden>
-                <Input />
-              </Form.Item>
-            </ProForm>
-          </UpdateReferenceContext.Provider>
+                setDrawerVisible(false);
+                actionRef?.current?.reload();
+              }
+              setSpinning(false);
+              return true;
+            }}
+          >
+            <TabsDetail
+              initData={initData}
+              lang={lang}
+              activeTabKey={activeTabKey}
+              formRef={formRefEdit}
+              onData={handletFromData}
+              onExchangeData={handletExchangeData}
+              onTabChange={onTabChange}
+              exchangeDataSource={exchangeDataSource}
+              type={type}
+            />
+            <Form.Item name='id' hidden>
+              <Input />
+            </Form.Item>
+          </ProForm>
+          {/* </UpdateReferenceContext.Provider> */}
         </Spin>
       </Drawer>
     </>

@@ -13,6 +13,8 @@ import { genProcessExchangeTableData, genProcessFromData } from '@/services/proc
 import { CloseOutlined, ProductOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Collapse, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
+import type { ButtonType } from 'antd/es/button';
+
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -44,6 +46,7 @@ type Props = {
   buttonType: string;
   disabled: boolean;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
+  buttonTypeProp?: ButtonType;
 };
 
 const getProcesstypeOfDataSetOptions = (value: string) => {
@@ -91,7 +94,14 @@ const getCompletenessElementaryFlowsValueOptions = (value: string) => {
   return option ? option.label : '-';
 };
 
-const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => {
+const ProcessView: FC<Props> = ({
+  id,
+  version,
+  buttonType,
+  lang,
+  disabled,
+  buttonTypeProp = 'default',
+}) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   // const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [activeTabKey, setActiveTabKey] = useState<string>('processInformation');
@@ -1650,7 +1660,13 @@ const ProcessView: FC<Props> = ({ id, version, buttonType, lang, disabled }) => 
         </Tooltip>
       ) : buttonType === 'icon' ? (
         <Tooltip title={<FormattedMessage id='pages.button.view' defaultMessage='View' />}>
-          <Button shape='circle' icon={<ProfileOutlined />} size='small' onClick={onView} />
+          <Button
+            shape='circle'
+            type={buttonTypeProp}
+            icon={<ProfileOutlined />}
+            size='small'
+            onClick={onView}
+          />
         </Tooltip>
       ) : (
         <Button onClick={onView}>

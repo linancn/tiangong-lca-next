@@ -37,29 +37,13 @@ export async function updateProcess(id: string, version: string, data: any) {
   return updateResult;
 }
 
-export async function updateProcessJsonApi(id: string, version: string, data: any) {
-  const newData = genProcessJsonOrdered(id, data);
+export async function updateProcessApi(id: string, version: string, data: any) {
   const updateResult = await supabase
     .from('processes')
-    .update({ json: newData })
+    .update(data)
     .eq('id', id)
     .eq('version', version)
     .select();
-  return updateResult;
-}
-
-export async function updateProcessStateCode(
-  id: string,
-  version: string,
-  reviewId: string,
-  stateCode: number,
-) {
-  const updateResult = await supabase
-    .from('processes')
-    .update({ state_code: stateCode, review_id: reviewId })
-    .eq('id', id)
-    .eq('version', version)
-    .select('state_code');
   return updateResult;
 }
 
@@ -730,13 +714,13 @@ export async function getProcessDetail(id: string, version: string) {
     if (version && version.length === 9) {
       result = await supabase
         .from('processes')
-        .select('json,version, modified_at,state_code,rule_verification')
+        .select('json,version, modified_at,state_code,rule_verification,team_id,reviews')
         .eq('id', id)
         .eq('version', version);
     } else {
       result = await supabase
         .from('processes')
-        .select('json,version, modified_at,state_code,rule_verification')
+        .select('json,version, modified_at,state_code,rule_verification,team_id,reviews')
         .eq('id', id)
         .order('version', { ascending: false })
         .range(0, 0);
@@ -751,6 +735,8 @@ export async function getProcessDetail(id: string, version: string) {
           modifiedAt: data?.modified_at,
           stateCode: data?.state_code,
           ruleVerification: data?.rule_verification,
+          teamId: data?.team_id,
+          reviews: data?.reviews,
         },
         success: true,
       });
