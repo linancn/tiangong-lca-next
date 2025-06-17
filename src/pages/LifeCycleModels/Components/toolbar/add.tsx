@@ -181,10 +181,13 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
             },
             sort,
           ) => {
+            let result;
             if (tgKeyWord.length > 0) {
-              return getProcessTablePgroongaSearch(params, lang, 'tg', tgKeyWord, {});
+              result = await getProcessTablePgroongaSearch(params, lang, 'tg', tgKeyWord, {});
+            } else {
+              result = await getProcessTableAll(params, sort, lang, 'tg', []);
             }
-            return getProcessTableAll(params, sort, lang, 'tg', []);
+            return result || { data: [], success: false };
           }}
           columns={processColumns}
           rowSelection={{
@@ -226,10 +229,13 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
             },
             sort,
           ) => {
+            let result;
             if (myKeyWord.length > 0) {
-              return getProcessTablePgroongaSearch(params, lang, 'my', myKeyWord, {});
+              result = await getProcessTablePgroongaSearch(params, lang, 'my', myKeyWord, {});
+            } else {
+              result = await getProcessTableAll(params, sort, lang, 'my', []);
             }
-            return getProcessTableAll(params, sort, lang, 'my', []);
+            return result || { data: [], success: false };
           }}
           columns={processColumns}
           rowSelection={{
