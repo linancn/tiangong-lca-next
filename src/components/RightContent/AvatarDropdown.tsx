@@ -13,7 +13,6 @@ import { outLogin } from '@/services/ant-design-pro/api';
 import { getUserRoles } from '@/services/roles/api';
 import { Button, Modal, Spin, theme } from 'antd';
 import { createStyles } from 'antd-style';
-import { stringify } from 'querystring';
 import type { MenuInfo } from 'rc-menu/lib/interface';
 import { flushSync } from 'react-dom';
 import { FormattedMessage } from 'umi';
@@ -88,11 +87,11 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
     const redirect = urlParams.get('redirect');
     // Note: There may be security issues, please note
     if (window.location.pathname !== '/user/login' && !redirect) {
+      const params = new URLSearchParams();
+      params.set('redirect', pathname + search);
       history.replace({
         pathname: '/user/login',
-        search: stringify({
-          redirect: pathname + search,
-        }),
+        search: params.toString(),
       });
     }
   };

@@ -64,8 +64,6 @@
     "bignumber.js": "^9.3.0",
     "classnames": "^2.5.1",
     "dotenv": "^16.5.0",
-    "omit.js": "^2.0.2",
-    "querystring": "^0.2.1",
     "react-countup": "^6.5.3",
     "react-dom": "^18.3.1",
     "react": "^18.3.1",
