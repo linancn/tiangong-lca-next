@@ -134,7 +134,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
         }),
       );
       setSpinning(false);
-      return { checkResult, unReview };
+      return { checkResult: false, unReview };
     }
 
     dealModel(modelDetail?.data, unReview, underReview, unRuleVerification);
@@ -209,10 +209,6 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
       (unRuleVerification && unRuleVerification.length > 0) ||
       (underReview && underReview.length > 0)
     ) {
-      if (!drawerVisible) {
-        setDrawerVisible(true);
-        onReset();
-      }
       if (underReview && underReview.length > 0) {
         message.error(
           intl.formatMessage({
@@ -222,7 +218,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
         );
       }
       setSpinning(false);
-      return { checkResult, unReview };
+      return { checkResult: false, unReview };
     }
 
     if (modelDetail?.data?.state_code >= 20) {
@@ -233,7 +229,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
         }),
       );
       setSpinning(false);
-      return { checkResult, unReview };
+      return { checkResult: false, unReview };
     }
     setSpinning(false);
     return { checkResult, unReview };
