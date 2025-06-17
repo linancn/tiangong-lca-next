@@ -24,6 +24,7 @@ import {
   dealProcress,
   getAllProcessesOfModel,
   getAllRefObj,
+  ReffPath,
   updateReviewsAfterCheckData,
   updateUnReviewToUnderReview,
 } from '@/pages/Utils/review';
@@ -48,39 +49,16 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
   const [referenceValue, setReferenceValue] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [showRules, setShowRules] = useState<boolean>(false);
-  const [unRuleVerificationData, setUnRuleVerificationData] = useState<any[]>([]);
-  const [nonExistentRefData, setNonExistentRefData] = useState<any[]>([]);
   const [refCheckData, setRefCheckData] = useState<any[]>([]);
   const parentRefCheckContext = useRefCheckContext();
   const intl = useIntl();
   let modelDetail: any;
 
   useEffect(() => {
-    const unRuleVerification = unRuleVerificationData.map((item: any) => {
-      return {
-        id: item['@refObjectId'],
-        version: item['@version'],
-        type: 1,
-      };
-    });
-    const nonExistentRef = nonExistentRefData.map((item: any) => {
-      return {
-        id: item['@refObjectId'],
-        version: item['@version'],
-        type: 2,
-      };
-    });
-
-    setRefCheckData([...unRuleVerification, ...nonExistentRef]);
-  }, [unRuleVerificationData, nonExistentRefData]);
-
-  useEffect(() => {
     if (showRules) {
-      setTimeout(() => {
-        formRefEdit.current?.validateFields();
-      });
+      formRefEdit.current?.validateFields();
     }
-  }, [showRules]);
+  }, [showRules, activeTabKey]);
 
   const updateReference = async () => {
     setReferenceValue(referenceValue + 1);
@@ -139,16 +117,6 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
     modelDetail = await getLifeCycleModelDetail(data.id, data.version);
     setShowRules(true);
     const { checkResult, tabName } = checkRequiredFields(requiredFields, data ?? fromData);
-    if (!checkResult) {
-      if (!drawerVisible) {
-        setDrawerVisible(true);
-        onReset();
-      }
-      await setActiveTabKey(tabName);
-      setTimeout(() => {
-        formRefEdit.current?.validateFields();
-      }, 100);
-    }
 
     const userTeamId = await getUserTeamId();
     const refObjs = getAllRefObj(data);
@@ -172,7 +140,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
     dealModel(modelDetail?.data, unReview, underReview, unRuleVerification);
 
     const refsSet = new Set<string>();
-    await checkReferences(
+    const path = await checkReferences(
       refObjs,
       refsSet,
       userTeamId,
@@ -180,7 +148,31 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
       underReview,
       unRuleVerification,
       nonExistentRef,
+      new ReffPath(
+        {
+          '@refObjectId': data.id,
+          '@version': data.version,
+          '@type': 'life cycle model data set',
+        },
+        modelDetail?.data?.rule_verification,
+        false,
+      ),
     );
+    const problemNodes = path?.findProblemNodes();
+
+    if (problemNodes && problemNodes.length > 0) {
+      let result = problemNodes.map((item: any) => {
+        return {
+          id: item['@refObjectId'],
+          version: item['@version'],
+          ruleVerification: item.ruleVerification,
+          nonExistent: item.nonExistent,
+        };
+      });
+      setRefCheckData(result);
+    } else {
+      setRefCheckData([]);
+    }
 
     const allProcesses = await getAllProcessesOfModel(modelDetail?.data);
     for (const process of allProcesses) {
@@ -202,9 +194,16 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
         nonExistentRef,
       );
     }
-
-    setNonExistentRefData(nonExistentRef);
-    setUnRuleVerificationData(unRuleVerification);
+    if (!checkResult) {
+      if (!drawerVisible) {
+        setDrawerVisible(true);
+        onReset();
+      }
+      await setActiveTabKey(tabName);
+      setTimeout(() => {
+        formRefEdit.current?.validateFields();
+      }, 200);
+    }
     if (
       (nonExistentRef && nonExistentRef.length > 0) ||
       (unRuleVerification && unRuleVerification.length > 0) ||
