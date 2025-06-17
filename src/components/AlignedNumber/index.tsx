@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 
 // Use scientific notation only for very large/small numbers
-const EXP_POS_THRESHOLD = 1e6; // 10 million
+const EXP_POS_THRESHOLD = 1e6; // 1 million
 const EXP_NEG_THRESHOLD = 1e-5; // 0.00001
 
 function toSuperscript(num: string) {
