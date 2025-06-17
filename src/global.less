@@ -60,14 +60,14 @@ ol {
 }
 
 .decimal-align {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  text-align: right;
+  display: inline;
   font-feature-settings: 'tnum';
   font-variant-numeric: tabular-nums;
-  .int {
+  .int,
+  .dec,
+  .exp {
     text-align: right;
-  }
-  .dec {
-    text-align: left;
+    display: inline;
   }
 }

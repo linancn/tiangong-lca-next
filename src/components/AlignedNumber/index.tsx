@@ -1,26 +1,65 @@
 import BigNumber from 'bignumber.js';
 
-const AlignedNumber = ({ number, precision = 4 }: { number: number; precision?: number }) => {
-  const value = new BigNumber(number).toExponential(precision);
-  const strValue = String(value);
-  const hasDecimal = strValue.includes('.');
-  const [intPart, decPart = ''] = strValue.split('.');
+// Use scientific notation only for very large/small numbers
+const EXP_POS_THRESHOLD = 1e6; // 10 million
+const EXP_NEG_THRESHOLD = 1e-5; // 0.00001
 
-  return (
-    <>
-      {isNaN(number) ? (
-        <span style={{ textAlign: 'right' }}>-</span>
-      ) : (
-        <div className='decimal-align'>
-          <span className='int'>{intPart}</span>
-          <span className='dec'>
-            {hasDecimal ? '.' : ''}
-            {decPart}
-          </span>
-        </div>
-      )}
-    </>
-  );
+function toSuperscript(num: string) {
+  const map: Record<string, string> = {
+    '0': '⁰',
+    '1': '¹',
+    '2': '²',
+    '3': '³',
+    '4': '⁴',
+    '5': '⁵',
+    '6': '⁶',
+    '7': '⁷',
+    '8': '⁸',
+    '9': '⁹',
+    '+': '',
+    '-': '⁻',
+  };
+  return num.replace(/[0-9+-]/g, (c) => map[c] || c);
+}
+
+function trimTrailingZeros(s: string) {
+  // Remove unnecessary trailing zeros and decimal point
+  if (s.indexOf('.') === -1) return s;
+  return s
+    .replace(/\.?(0+)(e[+-]?\d+)?$/, (match, zeros, exp) => (exp ? exp : ''))
+    .replace(/\.0+$/, '');
+}
+
+const AlignedNumber = ({ number, precision = 4 }: { number: number; precision?: number }) => {
+  if (number === null || number === undefined || isNaN(number)) {
+    return <span style={{ textAlign: 'right', display: 'inline-block', width: '100%' }}>-</span>;
+  }
+
+  const bn = new BigNumber(number);
+  let strValue = '';
+
+  // Determine if scientific notation is needed
+  if (
+    (!bn.isZero() && bn.abs().gte(EXP_POS_THRESHOLD)) ||
+    (!bn.isZero() && bn.abs().lte(EXP_NEG_THRESHOLD))
+  ) {
+    // 科学计数法格式化为 2.90×10⁸
+    const expStr = trimTrailingZeros(bn.toExponential(precision));
+    const match = expStr.match(/^([\d.]+)e([+-]?\d+)$/);
+    if (match) {
+      const base = match[1];
+      let exp = match[2];
+      if (exp.startsWith('+')) exp = exp.slice(1); // 去掉+号
+      strValue = `${base}×10${toSuperscript(exp)}`;
+    } else {
+      strValue = expStr;
+    }
+  } else {
+    // Automatically remove unnecessary zeros; do not show decimal point for integers
+    strValue = trimTrailingZeros(bn.toFormat(precision));
+  }
+
+  return <span className='decimal-align'>{strValue}</span>;
 };
 
 export default AlignedNumber;
