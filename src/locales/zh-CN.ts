@@ -3,6 +3,7 @@ import component_allTeams from './zh-CN/component_allTeams';
 import component_allVersions from './zh-CN/component_allVersions';
 import component_contributeData from './zh-CN/component_contributeData';
 import importData from './zh-CN/component_importData';
+import component_rejectReview from './zh-CN/component_rejectReview';
 import globalHeader from './zh-CN/globalHeader';
 import menu from './zh-CN/menu';
 import pages from './zh-CN/pages';
@@ -56,4 +57,5 @@ export default {
   ...pages_manageSystem,
   ...pages_review,
   ...importData,
+  ...component_rejectReview,
 };

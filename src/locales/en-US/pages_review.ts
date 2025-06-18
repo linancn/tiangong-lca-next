@@ -1,7 +1,14 @@
 export default {
   'pages.review.title': 'Review Management',
-  'pages.review.tabs.review': 'Review Management',
+  'pages.review.tabs.unassigned': 'Unassigned Task',
+  'pages.review.tabs.assigned': 'Assigned Task',
+  'pages.review.tabs.review': 'Review Task',
   'pages.review.tabs.members': 'Member Management',
+
+  'pages.review.table.column.processName': 'Process Name',
+  'pages.review.table.column.teamName': 'Team Name',
+  'pages.review.table.column.userName': 'User Name',
+  'pages.review.table.column.createAt': 'Create At',
 
   'pages.review.members.email': 'Email',
   'pages.review.members.memberName': 'Member Name',
