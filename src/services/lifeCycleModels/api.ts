@@ -14,6 +14,7 @@ import {
 import { getILCDClassification } from '../ilcd/api';
 import { genProcessName } from '../processes/util';
 import { genLifeCycleModelJsonOrdered, genLifeCycleModelProcess } from './util';
+import { getProcessesByIdsAndVersions } from '../processes/api';
 
 const updateLifeCycleModelProcess = async (
   id: string,
@@ -526,6 +527,23 @@ export async function lifeCycleModel_hybrid_search(
 
   return result;
 }
+export async function getLifeCyclesByIds(ids: string[]) {
+  const result = await supabase
+    .from('lifecyclemodels')
+    .select(
+      `
+      id,
+    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->name,
+    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
+    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->"common:generalComment",
+    version,
+    modified_at,
+    team_id
+    `,
+    )
+    .in('id', ids);
+  return result;
+}
 
 export async function getLifeCycleModelDetail(
   id: string,
@@ -554,6 +572,33 @@ export async function getLifeCycleModelDetail(
     .eq('version', version);
   if (result.data && result.data.length > 0) {
     const data = result.data[0];
+    let procressIds: string[] = [];
+    let procressVersion: string[] = [];
+    data?.json_tg?.xflow?.nodes?.forEach((node: any) => {
+      procressIds.push(node?.data?.id);
+      procressVersion.push(node?.data?.version);
+    });
+    
+    const  [procresses, models] = await Promise.all([
+      getProcessesByIdsAndVersions(procressIds,procressVersion),
+      getLifeCyclesByIds(procressIds),
+    ]);
+
+    data?.json_tg?.xflow?.nodes?.forEach((node: any) => {
+      const model = models?.data?.find((model: any) => model?.id === node?.data?.id && model?.version === node?.data?.version);
+      if(model){
+        node.isLifecycleModels = true;
+      }else{
+        node.isLifecycleModels = false;
+      }
+      const procress = procresses?.data?.find((procress: any) => procress?.id === node?.data?.id && procress?.version === node?.data?.version);
+      if(procress?.user_id === sessionStorage.getItem('userId')){
+        node.isMyProcess = true;
+      }else{
+        node.isMyProcess = false;
+      }
+    })
+
     return Promise.resolve({
       data: {
         id: id,
@@ -587,20 +632,4 @@ export async function updateLifeCycleModelStateCode(
   return result;
 }
 
-export async function getLifeCyclesByIds(ids: string[]) {
-  const result = await supabase
-    .from('lifecyclemodels')
-    .select(
-      `
-      id,
-    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->name,
-    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
-    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->"common:generalComment",
-    version,
-    modified_at,
-    team_id
-    `,
-    )
-    .in('id', ids);
-  return result;
-}
+

@@ -14,6 +14,7 @@ type Props = {
   lang: string;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
   buttonTypeProp?: ButtonType;
+  disabled?: boolean;
 };
 const LifeCycleModelView: FC<Props> = ({
   id,
@@ -22,6 +23,7 @@ const LifeCycleModelView: FC<Props> = ({
   lang,
   actionRef,
   buttonTypeProp = 'default',
+  disabled = false,
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const { token } = theme.useToken();
@@ -51,7 +53,26 @@ const LifeCycleModelView: FC<Props> = ({
 
   return (
     <>
-      {buttonType === 'icon' ? (
+      {buttonType === 'toolIcon' ? (
+        <Tooltip
+          title={
+            <FormattedMessage
+              id='pages.button.model.lifecyclemodel'
+              defaultMessage='Lifecycle model infomation'
+            ></FormattedMessage>
+          }
+          placement='left'
+        >
+          <Button
+            type='primary'
+            size='small'
+            style={{ boxShadow: 'none' }}
+            icon={<ProfileOutlined />}
+            onClick={onView}
+            disabled={disabled}
+          />
+        </Tooltip>
+      ): buttonType === 'icon' ? (
         <Tooltip title={<FormattedMessage id='pages.button.view' defaultMessage='View' />}>
           <Button
             shape='circle'

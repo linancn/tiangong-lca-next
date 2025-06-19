@@ -17,6 +17,7 @@ import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 're
 import { FormattedMessage, useIntl } from 'umi';
 import { LifeCycleModelForm } from '../form';
 // const { TextArea } = Input;
+import type { refDataType } from '@/pages/Utils/review';
 import {
   checkReferences,
   checkRequiredFields,
@@ -113,18 +114,22 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
     onReset();
   }, [drawerVisible]);
 
-  const handleCheckData = async () => {
+  const handleCheckData: () => Promise<{
+    checkResult: boolean;
+    unReview: refDataType[];
+    unRuleVerificationProcess: refDataType[];
+  }> = async () => {
     modelDetail = await getLifeCycleModelDetail(data.id, data.version);
     setShowRules(true);
     const { checkResult, tabName } = checkRequiredFields(requiredFields, data ?? fromData);
 
     const userTeamId = await getUserTeamId();
-    const refObjs = getAllRefObj(data);
 
-    const unReview: any[] = []; //stateCode < 20
-    const underReview: any[] = []; //stateCode >= 20 && stateCode < 100
-    const unRuleVerification: any[] = [];
-    const nonExistentRef: any[] = [];
+    const unReview: refDataType[] = []; //stateCode < 20
+    const underReview: refDataType[] = []; //stateCode >= 20 && stateCode < 100
+    const unRuleVerification: refDataType[] = [];
+    const nonExistentRef: refDataType[] = [];
+    const unRuleVerificationProcess: refDataType[] = [];
 
     if (!modelDetail) {
       message.error(
@@ -134,15 +139,14 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
         }),
       );
       setSpinning(false);
-      return { checkResult: false, unReview };
+      return { checkResult: false, unReview, unRuleVerificationProcess };
     }
 
     dealModel(modelDetail?.data, unReview, underReview, unRuleVerification);
-
-    const refsSet = new Set<string>();
+    const refObjs = getAllRefObj(modelDetail?.data);
     const path = await checkReferences(
       refObjs,
-      refsSet,
+      new Set<string>(),
       userTeamId,
       unReview,
       underReview,
@@ -152,7 +156,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
         {
           '@refObjectId': data.id,
           '@version': data.version,
-          '@type': 'life cycle model data set',
+          '@type': 'lifeCycleModel data set',
         },
         modelDetail?.data?.rule_verification,
         false,
@@ -184,15 +188,35 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
       dealProcress(processDetail?.data, unReview, underReview, unRuleVerification, nonExistentRef);
 
       const processRefObjs = getAllRefObj(processDetail?.data?.json);
-      await checkReferences(
+      const processPath = await checkReferences(
         processRefObjs,
-        refsSet,
+        new Set<string>(),
         userTeamId,
         unReview,
         underReview,
         unRuleVerification,
         nonExistentRef,
+        new ReffPath(
+          {
+            '@refObjectId': process.id,
+            '@version': process.version,
+            '@type': 'process data set',
+          },
+          processDetail?.data?.ruleVerification,
+          false,
+        )
       );
+      const processProblemNodes = processPath?.findProblemNodes();
+      if (
+        ![100, 200].includes(processDetail?.data?.stateCode) &&
+        (processDetail?.data?.ruleVerification === false||processProblemNodes?.length)
+      ) {
+        unRuleVerificationProcess.push({
+          '@refObjectId': process.id,
+          '@version': process.version,
+          '@type': 'process data set',
+        });
+      }
     }
     if (!checkResult) {
       if (!drawerVisible) {
@@ -218,7 +242,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
         );
       }
       setSpinning(false);
-      return { checkResult: false, unReview };
+      return { checkResult: false, unReview, unRuleVerificationProcess };
     }
 
     if (modelDetail?.data?.state_code >= 20) {
@@ -229,13 +253,13 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
         }),
       );
       setSpinning(false);
-      return { checkResult: false, unReview };
+      return { checkResult: false, unReview, unRuleVerificationProcess };
     }
     setSpinning(false);
-    return { checkResult, unReview };
+    return { checkResult, unReview, unRuleVerificationProcess };
   };
 
-  const submitReview = async (unReview: any[]) => {
+  const submitReview = async (unReview: refDataType[]) => {
     setSpinning(true);
 
     const reviewId = v4();

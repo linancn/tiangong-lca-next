@@ -56,8 +56,6 @@ const ContactSelectForm: FC<Props> = ({
         ruleVerification: data?.ruleVerification,
         nonExistent: false,
       });
-    } else {
-      setErrRef(null);
     }
   };
 

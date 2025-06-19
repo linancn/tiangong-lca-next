@@ -13,8 +13,10 @@ type Props = {
   buttonType: string;
   lang: string;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
+  disabled?: boolean;
+  hideReviewButton?: boolean;
 };
-const LifeCycleModelEdit: FC<Props> = ({ id, version, buttonType, lang, actionRef }) => {
+const LifeCycleModelEdit: FC<Props> = ({ id, version, buttonType, lang, actionRef, disabled = false, hideReviewButton = false }) => {
   const [isSave, setIsSave] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
 
@@ -49,7 +51,26 @@ const LifeCycleModelEdit: FC<Props> = ({ id, version, buttonType, lang, actionRe
 
   return (
     <>
-      {buttonType === 'icon' ? (
+      {buttonType === 'toolIcon' ? (
+        <Tooltip
+          title={
+            <FormattedMessage
+              id='pages.button.model.lifecyclemodel'
+              defaultMessage='Lifecycle model infomation'
+            ></FormattedMessage>
+          }
+          placement='left'
+        >
+          <Button
+            type='primary'
+            size='small'
+            style={{ boxShadow: 'none' }}
+            icon={<FormOutlined />}
+            onClick={onEdit}
+            disabled={disabled}
+          />
+        </Tooltip>
+      ) :buttonType === 'icon' ? (
         <Tooltip title={<FormattedMessage id='pages.button.edit' defaultMessage='Edit' />}>
           <Button shape='circle' icon={<FormOutlined />} size='small' onClick={onEdit} />
         </Tooltip>
@@ -130,6 +151,7 @@ const LifeCycleModelEdit: FC<Props> = ({ id, version, buttonType, lang, actionRe
                 isSave={isSave}
                 setIsSave={setIsSave}
                 action={'edit'}
+                hideReviewButton={hideReviewButton}
               />
             </Sider>
           </Layout>

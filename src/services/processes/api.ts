@@ -774,3 +774,12 @@ export async function getProcessExchange(
     total: data.length ?? 0,
   });
 }
+
+export async function getProcessesByIdsAndVersions(ids: string[], versions: string[]) {
+  const result = await supabase
+    .from('processes')
+    .select('id,json,version, modified_at,user_id')
+    .in('id', ids)
+    .in('version', versions);
+  return result;
+}

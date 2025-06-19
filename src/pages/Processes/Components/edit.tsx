@@ -43,6 +43,9 @@ type Props = {
   buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined> | undefined;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  disabled?: boolean;
+  hideReviewButton?: boolean;
+  updateNodeCb?: (ruleVerification: boolean,id:string,version:string) => void;
 };
 const ProcessEdit: FC<Props> = ({
   id,
@@ -51,6 +54,9 @@ const ProcessEdit: FC<Props> = ({
   buttonType,
   actionRef,
   setViewDrawerVisible,
+  disabled = false,
+  hideReviewButton = false,
+  updateNodeCb = () => {},
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
@@ -273,6 +279,7 @@ const ProcessEdit: FC<Props> = ({
           id: id,
         });
       }
+      updateNodeCb(updateResult.data[0]?.rule_verification,id, version);
       message.success(
         intl.formatMessage({
           id: 'pages.button.save.success',
@@ -392,7 +399,26 @@ const ProcessEdit: FC<Props> = ({
 
   return (
     <>
-      {buttonType === 'tool' ? (
+      {buttonType === 'toolIcon' ? (
+        <Tooltip
+          title={
+            <FormattedMessage
+              id='pages.button.model.process'
+              defaultMessage='Process infomation'
+            ></FormattedMessage>
+          }
+          placement='left'
+        >
+          <Button
+            type='primary'
+            size='small'
+            style={{ boxShadow: 'none' }}
+            icon={<FormOutlined />}
+            onClick={onEdit}
+            disabled={disabled}
+          />
+        </Tooltip>
+      ) : buttonType === 'tool' ? (
         <Tooltip
           title={<FormattedMessage id='pages.button.model.result' defaultMessage='Model result' />}
           placement='left'
@@ -443,13 +469,15 @@ const ProcessEdit: FC<Props> = ({
               <FormattedMessage id='pages.button.check' defaultMessage='Data check' />
             </Button>
             <>
-              <Button
-                onClick={() => {
-                  submitReview();
-                }}
-              >
-                <FormattedMessage id='pages.button.review' defaultMessage='Submit for review' />
-              </Button>
+              {!hideReviewButton && (
+                <Button
+                  onClick={() => {
+                    submitReview();
+                  }}
+                >
+                  <FormattedMessage id='pages.button.review' defaultMessage='Submit for review' />
+                </Button>
+              )}
               <Button
                 onClick={() => {
                   updateReference();

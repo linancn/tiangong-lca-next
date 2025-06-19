@@ -281,4 +281,8 @@ export default {
   'pages.lifecyclemodel.validator.referenceToOwnershipOfDataSet.required': '请输入数据集拥有者',
   'pages.lifecyclemodel.validator.copyright.required': '请输入版权',
   'pages.lifecyclemodel.validator.licenseType.required': '请输入许可类型',
+  'pages.lifecyclemodel.validator.nodes.required': '请添加节点',
+  'pages.lifecyclemodel.validator.nodes.quantitativeReference.required': '请选择一个节点作为参考',
+  'pages.lifecyclemodel.validator.exchanges.required': '请添加连接线',
+  'pages.lifecyclemodel.validator.exchanges.required.length': '请将连接线补充完整',
 };
