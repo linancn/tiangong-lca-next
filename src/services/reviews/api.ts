@@ -78,16 +78,26 @@ export async function getReviewsTableData(
       });
     }
 
-    const processIds = result?.data.map((i) => i?.json?.data?.id);
+    const processIds: string[] = [];
+    result?.data.forEach((i) => {
+      const id = i?.json?.data?.id;
+      if (id) {
+        processIds.push(id);
+      }
+    });
     const modelResult = await getLifeCyclesByIds(processIds);
-
     let data = result?.data.map((i: any) => {
-      const model = modelResult?.data?.find((j) => j.id === i.id && j.version === i.version);
+      const model = modelResult?.data?.find(
+        (j) => j.id === i?.json?.data?.id && j.version === i?.json?.data?.version,
+      );
       return {
         key: i.id,
         id: i.id,
         isFromLifeCycle: model ? true : false,
-        processName: genProcessName(i?.json?.data?.name ?? {}, lang) || '-',
+        name:
+          (model
+            ? genProcessName(model?.name ?? {}, lang)
+            : genProcessName(i?.json?.data?.name ?? {}, lang)) || '-',
         teamName: getLangText(i?.json?.team?.name ?? {}, lang),
         userName: i?.json?.user?.name ?? '-',
         createAt: new Date(i.created_at).toISOString(),

@@ -271,15 +271,16 @@ export const dealModel = (
   unReview: refDataType[],
   underReview: refDataType[],
   unRuleVerification: refDataType[],
+  nonExistentRef: refDataType[],
 ) => {
-  if (modelDetail?.state_code < 20) {
+  if (modelDetail?.stateCode < 20) {
     unReview.push({
       '@type': 'lifeCycleModel data set',
       '@refObjectId': modelDetail?.id,
       '@version': modelDetail?.version,
     });
   }
-  if (modelDetail?.state_code >= 20 && modelDetail?.state_code < 100) {
+  if (modelDetail?.stateCode >= 20 && modelDetail?.stateCode < 100) {
     underReview.push({
       '@type': 'lifeCycleModel data set',
       '@refObjectId': modelDetail?.id,
@@ -287,9 +288,9 @@ export const dealModel = (
     });
   }
   if (
-    !modelDetail?.rule_verification &&
-    modelDetail?.state_code !== 100 &&
-    modelDetail?.state_code !== 200
+    !modelDetail?.ruleVerification &&
+    modelDetail?.stateCode !== 100 &&
+    modelDetail?.stateCode !== 200
   ) {
     unRuleVerification.unshift({
       '@type': 'lifeCycleModel data set',
@@ -297,16 +298,13 @@ export const dealModel = (
       '@version': modelDetail?.version,
     });
   }
-};
-
-export const getAllProcessesOfModel = async (modelDetail: any) => {
-  const processes: any[] = [{ id: modelDetail.id, version: modelDetail.version }];
-  modelDetail?.json_tg?.xflow?.nodes?.forEach((item: any) => {
-    if (item.data) {
-      processes.push(item.data);
-    }
-  });
-  return processes;
+  if (!modelDetail) {
+    nonExistentRef.push({
+      '@type': 'lifeCycleModel data set',
+      '@refObjectId': modelDetail?.id,
+      '@version': modelDetail?.version,
+    });
+  }
 };
 
 export const updateReviewsAfterCheckData = async (teamId: string, data: any, reviewId: string) => {

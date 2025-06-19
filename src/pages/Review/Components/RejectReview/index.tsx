@@ -3,7 +3,6 @@ import {
   checkReferences,
   dealModel,
   dealProcress,
-  getAllProcessesOfModel,
   getAllRefObj,
   getRefTableName,
 } from '@/pages/Utils/review';
@@ -86,15 +85,26 @@ const RejectReview: React.FC<RejectReviewProps> = ({ reviewId, dataId, dataVersi
   };
 
   const hendleRejectModel = async () => {
-    const modelDetail = await getLifeCycleModelDetail(dataId, dataVersion);
-    if (!modelDetail) {
+    const { data: modelDetail, success } = await getLifeCycleModelDetail(dataId, dataVersion);
+    if (!success) {
       return;
     }
     const unReview: any[] = []; // stateCode < 20
     const underReview: any[] = []; // stateCode >= 20 && stateCode < 100
     const unRuleVerification: any[] = [];
     const nonExistentRef: any[] = [];
-    dealModel(modelDetail?.data, unReview, underReview, unRuleVerification);
+    dealModel(modelDetail, unReview, underReview, unRuleVerification, nonExistentRef);
+    const { data: sameProcressWithModel } = await getProcessDetail(
+      modelDetail?.id,
+      modelDetail?.version,
+    );
+    if (sameProcressWithModel?.stateCode >= 20 && sameProcressWithModel?.stateCode < 100) {
+      underReview.push({
+        '@refObjectId': sameProcressWithModel?.id,
+        '@version': sameProcressWithModel?.version,
+        '@type': 'process data set',
+      });
+    }
 
     const refObjs = getAllRefObj(modelDetail);
     const userTeamId = await getUserTeamId();
@@ -109,26 +119,6 @@ const RejectReview: React.FC<RejectReviewProps> = ({ reviewId, dataId, dataVersi
       nonExistentRef,
     );
 
-    const allProcesses = await getAllProcessesOfModel(modelDetail?.data);
-    for (const process of allProcesses) {
-      const modelOfProcess = await getLifeCycleModelDetail(process.id, process.version);
-      if (modelOfProcess) {
-        dealModel(modelOfProcess?.data, unReview, underReview, unRuleVerification);
-      }
-      const processDetail = await getProcessDetail(process.id, process.version);
-      dealProcress(processDetail?.data, unReview, underReview, unRuleVerification, nonExistentRef);
-
-      const processRefObjs = getAllRefObj(processDetail?.data?.json);
-      await checkReferences(
-        processRefObjs,
-        refsMap,
-        userTeamId,
-        unReview,
-        underReview,
-        unRuleVerification,
-        nonExistentRef,
-      );
-    }
     await updateUnderReviewToUnReview(underReview);
   };
 

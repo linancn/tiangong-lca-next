@@ -638,9 +638,12 @@ export function getRuleVerification(schema: any, data: any) {
       'lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes.processInstance';
     if (path.includes(`${baseProcessInstancePath}.0.connections`)) {
       if (!value) {
-        value = getValueByPath(data, `${baseProcessInstancePath}`)?.find(
-          (item: any) => item.connections,
-        );
+        let instance = getValueByPath(data, `${baseProcessInstancePath}`);
+        if (instance) {
+          value = (Array.isArray(instance) ? instance : [instance]).find(
+            (item: any) => item.connections,
+          );
+        }
       }
     }
 

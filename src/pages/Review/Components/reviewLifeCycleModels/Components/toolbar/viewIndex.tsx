@@ -356,7 +356,9 @@ const ToolbarView: FC<Props> = ({
                     ? [...(allCompliance.length ? allCompliance : [{}])]
                     : Array.isArray(_compliance)
                       ? [..._compliance, ...allCompliance]
-                      : [_compliance, ...allCompliance],
+                      : _compliance
+                        ? [...allCompliance, _compliance]
+                        : [...allCompliance],
               },
               validation: {
                 review:
@@ -372,7 +374,9 @@ const ToolbarView: FC<Props> = ({
                       ]
                     : Array.isArray(_review)
                       ? [..._review, ...allReviews]
-                      : [_review, ...allReviews],
+                      : _review
+                        ? [_review, ...allReviews]
+                        : [...allReviews],
               },
             };
           }

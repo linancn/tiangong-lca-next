@@ -143,13 +143,19 @@ const ToolbarViewInfo: FC<Props> = ({
         ...process?.json?.processDataSet?.modellingAndValidation,
         validation: {
           ...process?.json?.processDataSet?.modellingAndValidation?.validation,
-          review: Array.isArray(_review) ? [..._review, ...allReviews] : [_review, ...allReviews],
+          review: Array.isArray(_review)
+            ? [..._review, ...allReviews]
+            : _review
+              ? [_review, ...allReviews]
+              : [...allReviews],
         },
         complianceDeclarations: {
           ...process?.json?.processDataSet?.modellingAndValidation?.complianceDeclarations,
           compliance: Array.isArray(_compliance)
             ? [..._compliance, ...allCompliance]
-            : [_compliance, ...allCompliance],
+            : _compliance
+              ? [_compliance, ...allCompliance]
+              : [...allCompliance],
         },
       };
       await updateProcess(process?.id, process?.version, json);
@@ -186,17 +192,28 @@ const ToolbarViewInfo: FC<Props> = ({
         ...lifeCycleModel?.json?.lifeCycleModelDataSet?.modellingAndValidation,
         validation: {
           ...lifeCycleModel?.json?.lifeCycleModelDataSet?.modellingAndValidation?.validation,
-          review: Array.isArray(_review) ? [..._review, ...allReviews] : [_review, ...allReviews],
+          review: Array.isArray(_review)
+            ? [..._review, ...allReviews]
+            : _review
+              ? [_review, ...allReviews]
+              : [...allReviews],
         },
         complianceDeclarations: {
           ...lifeCycleModel?.json?.lifeCycleModelDataSet?.modellingAndValidation
             ?.complianceDeclarations,
           compliance: Array.isArray(_compliance)
             ? [..._compliance, ...allCompliance]
-            : [_compliance, ...allCompliance],
+            : _compliance
+              ? [_compliance, ...allCompliance]
+              : [...allCompliance],
         },
       };
-      await updateLifeCycleModelJsonApi(modelId, modelVersion, json);
+      const { data: newLifeCycleModel } = await updateLifeCycleModelJsonApi(
+        modelId,
+        modelVersion,
+        json,
+      );
+      return newLifeCycleModel;
     }
   };
 
@@ -229,47 +246,28 @@ const ToolbarViewInfo: FC<Props> = ({
 
     const { data: lifeCycleModel, success } = await getLifeCycleModelDetail(modelId, modelVersion);
     if (success) {
-      await updateLifeCycleModelJson(lifeCycleModel);
-      if (lifeCycleModel?.state_code !== 100 && lifeCycleModel?.state_code !== 200) {
+      const newLifeCycleModel = await updateLifeCycleModelJson(lifeCycleModel);
+      const { data: sameProcressWithModel } = await getProcessDetail(modelId, modelVersion);
+      if (sameProcressWithModel) {
+        await updateProcessJson(sameProcressWithModel);
+        if (sameProcressWithModel?.stateCode !== 100 && sameProcressWithModel?.stateCode !== 200) {
+          result.push({
+            '@refObjectId': sameProcressWithModel?.id,
+            '@version': sameProcressWithModel?.version,
+            '@type': 'process data set',
+          });
+        }
+      }
+      if (lifeCycleModel?.stateCode !== 100 && lifeCycleModel?.stateCode !== 200) {
         result.push({
           '@refObjectId': modelId,
           '@version': modelVersion,
           '@type': 'lifeCycleModel data set',
         });
       }
-      const modelRefs = getAllRefObj(lifeCycleModel?.json);
+      const modelRefs = getAllRefObj(newLifeCycleModel);
       if (modelRefs.length) {
         await getReferences(modelRefs);
-      }
-
-      const getAllProcesses = (lifeCycleModelDetail: any) => {
-        const processes: any[] = [{ id: modelId, version: modelVersion }];
-        lifeCycleModelDetail?.json_tg?.xflow?.nodes?.forEach((item: any) => {
-          if (item.data) {
-            processes.push(item.data);
-          }
-        });
-        return processes;
-      };
-      const allProcesses = getAllProcesses(lifeCycleModel);
-      for (const item of allProcesses) {
-        const { data: process, success } = await getProcessDetail(item.id, item.version);
-        if (item.id === modelId && item.version === modelVersion) {
-          await updateProcessJson(process);
-        }
-        if (success) {
-          if (process?.stateCode !== 100 && process?.stateCode !== 200) {
-            result.push({
-              '@refObjectId': process?.id,
-              '@version': process?.version,
-              '@type': 'process data set',
-            });
-          }
-        }
-        const refs = getAllRefObj(process?.json);
-        if (refs.length) {
-          await getReferences(refs);
-        }
       }
     }
     for (const item of result) {
@@ -1785,7 +1783,29 @@ const ToolbarViewInfo: FC<Props> = ({
             />
           ),
         };
+  const temporarySave = async () => {
+    const fieldsValue = formRef.current?.getFieldsValue();
+    const submitData = {
+      modellingAndValidation: {
+        complianceDeclarations: fieldsValue?.modellingAndValidation?.complianceDeclarations,
+        validation: fieldsValue?.modellingAndValidation?.validation,
+      },
+    };
 
+    setSpinning(true);
+    const { error } = await updateCommentApi(reviewId, { json: submitData }, tabType);
+    if (!error) {
+      message.success(
+        intl.formatMessage({
+          id: 'pages.review.temporarySaveSuccess',
+          defaultMessage: 'Temporary save successfully',
+        }),
+      );
+      setDrawerVisible(false);
+      actionRef?.current?.reload();
+    }
+    setSpinning(false);
+  };
   return (
     <>
       <Tooltip
@@ -1833,6 +1853,18 @@ const ToolbarViewInfo: FC<Props> = ({
                   id='pages.review.ReviewProcessDetail.assigned.save'
                   defaultMessage='Approve Review'
                 />
+              </Button>
+            </Space>
+          ) : tabType === 'review' ? (
+            <Space size={'middle'} className={styles.footer_right}>
+              <Button onClick={() => setDrawerVisible(false)}>
+                <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
+              </Button>
+              <Button onClick={temporarySave}>
+                <FormattedMessage id='pages.button.temporarySave' />
+              </Button>
+              <Button onClick={() => formRef.current?.submit()} type='primary'>
+                <FormattedMessage id='pages.button.save' defaultMessage='Save' />
               </Button>
             </Space>
           ) : null

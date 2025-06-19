@@ -22,12 +22,14 @@ import {
   checkReferences,
   checkRequiredFields,
   dealModel,
+  dealProcress,
   getAllRefObj,
   ReffPath,
   updateReviewsAfterCheckData,
   updateUnReviewToUnderReview,
 } from '@/pages/Utils/review';
 import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
+import { getProcessDetail } from '@/services/processes/api';
 
 import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
 import { getUserTeamId } from '@/services/roles/api';
@@ -176,7 +178,10 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
       return { checkResult: false, unReview };
     }
 
-    dealModel(modelDetail?.data, unReview, underReview, unRuleVerification);
+    const { data: sameProcressWithModel } = await getProcessDetail(data.id, data.version);
+    dealModel(modelDetail?.data, unReview, underReview, unRuleVerification, nonExistentRef);
+    dealProcress(sameProcressWithModel, unReview, underReview, unRuleVerification, nonExistentRef);
+
     const refObjs = getAllRefObj(modelDetail?.data);
     const path = await checkReferences(
       refObjs,
@@ -192,7 +197,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
           '@version': data.version,
           '@type': 'lifeCycleModel data set',
         },
-        modelDetail?.data?.rule_verification,
+        modelDetail?.data?.ruleVerification,
         false,
       ),
     );
@@ -239,7 +244,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
       return { checkResult: false, unReview, problemNodes };
     }
 
-    if (modelDetail?.data?.state_code >= 20) {
+    if (modelDetail?.data?.stateCode >= 20) {
       message.error(
         intl.formatMessage({
           id: 'pages.process.review.submitError',

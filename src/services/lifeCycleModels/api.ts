@@ -556,8 +556,8 @@ export async function getLifeCycleModelDetail(
         version: string;
         json: any;
         json_tg: any;
-        state_code: number;
-        rule_verification: any;
+        stateCode: number;
+        ruleVerification: any;
       };
       success: true;
     }
@@ -615,8 +615,8 @@ export async function getLifeCycleModelDetail(
         version: version,
         json: data.json,
         json_tg: data?.json_tg,
-        state_code: data?.state_code,
-        rule_verification: data?.rule_verification,
+        stateCode: data?.state_code,
+        ruleVerification: data?.rule_verification,
         teamId: data?.team_id,
       },
       success: true,
