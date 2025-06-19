@@ -74,7 +74,7 @@ const RejectReview: React.FC<RejectReviewProps> = ({ reviewId, dataId, dataVersi
     const refObjs = getAllRefObj(processDetail);
     await checkReferences(
       refObjs,
-      new Set<string>(),
+      new Map<string, any>(),
       userTeamId,
       unReview,
       underReview,
@@ -98,10 +98,10 @@ const RejectReview: React.FC<RejectReviewProps> = ({ reviewId, dataId, dataVersi
 
     const refObjs = getAllRefObj(modelDetail);
     const userTeamId = await getUserTeamId();
-    const refsSet = new Set<string>();
+    const refsMap = new Map<string, any>();
     await checkReferences(
       refObjs,
-      refsSet,
+      refsMap,
       userTeamId,
       unReview,
       underReview,
@@ -121,7 +121,7 @@ const RejectReview: React.FC<RejectReviewProps> = ({ reviewId, dataId, dataVersi
       const processRefObjs = getAllRefObj(processDetail?.data?.json);
       await checkReferences(
         processRefObjs,
-        refsSet,
+        refsMap,
         userTeamId,
         unReview,
         underReview,

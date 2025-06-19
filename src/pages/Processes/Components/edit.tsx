@@ -1,5 +1,6 @@
 import { RefCheckContext } from '@/contexts/refCheckContext';
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
+import type { refDataType } from '@/pages/Utils/review';
 import {
   ReffPath,
   checkReferences,
@@ -45,7 +46,7 @@ type Props = {
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
   disabled?: boolean;
   hideReviewButton?: boolean;
-  updateNodeCb?: (ruleVerification: boolean, id: string, version: string) => void;
+  updateNodeCb?: (ref: refDataType) => Promise<void>;
 };
 const ProcessEdit: FC<Props> = ({
   id,
@@ -192,7 +193,7 @@ const ProcessEdit: FC<Props> = ({
 
     const path = await checkReferences(
       refObjs,
-      new Set<string>(),
+      new Map<string, any>(),
       userTeamId,
       unReview,
       underReview,
@@ -279,7 +280,11 @@ const ProcessEdit: FC<Props> = ({
           id: id,
         });
       }
-      updateNodeCb(updateResult.data[0]?.rule_verification, id, version);
+      updateNodeCb({
+        '@refObjectId': id,
+        '@version': version,
+        '@type': 'process data set',
+      });
       message.success(
         intl.formatMessage({
           id: 'pages.button.save.success',

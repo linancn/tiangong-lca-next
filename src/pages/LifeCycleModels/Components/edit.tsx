@@ -1,3 +1,4 @@
+import type { refDataType } from '@/pages/Utils/review';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
 import { Grid, Transform, XFlow, XFlowGraph } from '@antv/xflow';
@@ -15,6 +16,7 @@ type Props = {
   actionRef?: React.MutableRefObject<ActionType | undefined>;
   disabled?: boolean;
   hideReviewButton?: boolean;
+  updateNodeCb?: (ref: refDataType) => Promise<void>;
 };
 const LifeCycleModelEdit: FC<Props> = ({
   id,
@@ -24,6 +26,7 @@ const LifeCycleModelEdit: FC<Props> = ({
   actionRef,
   disabled = false,
   hideReviewButton = false,
+  updateNodeCb,
 }) => {
   const [isSave, setIsSave] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -160,6 +163,7 @@ const LifeCycleModelEdit: FC<Props> = ({
                 setIsSave={setIsSave}
                 action={'edit'}
                 hideReviewButton={hideReviewButton}
+                updateNodeCb={updateNodeCb}
               />
             </Sider>
           </Layout>

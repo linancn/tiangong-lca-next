@@ -22,8 +22,6 @@ import {
   checkReferences,
   checkRequiredFields,
   dealModel,
-  dealProcress,
-  getAllProcessesOfModel,
   getAllRefObj,
   ReffPath,
   updateReviewsAfterCheckData,
@@ -32,7 +30,6 @@ import {
 import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
 
 import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
-import { getProcessDetail } from '@/services/processes/api';
 import { getUserTeamId } from '@/services/roles/api';
 import { v4 } from 'uuid';
 import requiredFields from '../../requiredFields';
@@ -114,11 +111,49 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
     onReset();
   }, [drawerVisible]);
 
-  const handleCheckData: () => Promise<{
+  const handleCheckData: (
+    nodes: any[],
+    edges: any[],
+  ) => Promise<{
     checkResult: boolean;
     unReview: refDataType[];
-    unRuleVerificationProcess: refDataType[];
-  }> = async () => {
+    problemNodes?: refDataType[];
+  }> = async (nodes: any[], edges: any[]) => {
+    if (nodes?.length) {
+      const quantitativeReferenceProcress = nodes.find(
+        (node) => node?.data?.quantitativeReference === '1',
+      );
+      if (!quantitativeReferenceProcress) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.lifecyclemodel.validator.nodes.quantitativeReference.required',
+            defaultMessage: 'Please select a node as reference',
+          }),
+        );
+        setSpinning(false);
+        return { checkResult: false, unReview: [] };
+      }
+    } else {
+      message.error(
+        intl.formatMessage({
+          id: 'pages.lifecyclemodel.validator.nodes.required',
+          defaultMessage: 'Please add node',
+        }),
+      );
+      setSpinning(false);
+      return { checkResult: false, unReview: [] };
+    }
+    if (!edges?.length) {
+      message.error(
+        intl.formatMessage({
+          id: 'pages.lifecyclemodel.validator.exchanges.required',
+          defaultMessage: 'Please add connection line',
+        }),
+      );
+      setSpinning(false);
+      return { checkResult: false, unReview: [] };
+    }
+
     modelDetail = await getLifeCycleModelDetail(data.id, data.version);
     setShowRules(true);
     const { checkResult, tabName } = checkRequiredFields(requiredFields, data ?? fromData);
@@ -129,7 +164,6 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
     const underReview: refDataType[] = []; //stateCode >= 20 && stateCode < 100
     const unRuleVerification: refDataType[] = [];
     const nonExistentRef: refDataType[] = [];
-    const unRuleVerificationProcess: refDataType[] = [];
 
     if (!modelDetail) {
       message.error(
@@ -139,14 +173,14 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
         }),
       );
       setSpinning(false);
-      return { checkResult: false, unReview, unRuleVerificationProcess };
+      return { checkResult: false, unReview };
     }
 
     dealModel(modelDetail?.data, unReview, underReview, unRuleVerification);
     const refObjs = getAllRefObj(modelDetail?.data);
     const path = await checkReferences(
       refObjs,
-      new Set<string>(),
+      new Map<string, any>(),
       userTeamId,
       unReview,
       underReview,
@@ -178,46 +212,6 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
       setRefCheckData([]);
     }
 
-    const allProcesses = await getAllProcessesOfModel(modelDetail?.data);
-    for (const process of allProcesses) {
-      const modelOfProcess = await getLifeCycleModelDetail(process.id, process.version);
-      if (modelOfProcess) {
-        dealModel(modelOfProcess?.data, unReview, underReview, unRuleVerification);
-      }
-      const processDetail = await getProcessDetail(process.id, process.version);
-      dealProcress(processDetail?.data, unReview, underReview, unRuleVerification, nonExistentRef);
-
-      const processRefObjs = getAllRefObj(processDetail?.data?.json);
-      const processPath = await checkReferences(
-        processRefObjs,
-        new Set<string>(),
-        userTeamId,
-        unReview,
-        underReview,
-        unRuleVerification,
-        nonExistentRef,
-        new ReffPath(
-          {
-            '@refObjectId': process.id,
-            '@version': process.version,
-            '@type': 'process data set',
-          },
-          processDetail?.data?.ruleVerification,
-          false,
-        ),
-      );
-      const processProblemNodes = processPath?.findProblemNodes();
-      if (
-        ![100, 200].includes(processDetail?.data?.stateCode) &&
-        (processDetail?.data?.ruleVerification === false || processProblemNodes?.length)
-      ) {
-        unRuleVerificationProcess.push({
-          '@refObjectId': process.id,
-          '@version': process.version,
-          '@type': 'process data set',
-        });
-      }
-    }
     if (!checkResult) {
       if (!drawerVisible) {
         setDrawerVisible(true);
@@ -242,7 +236,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
         );
       }
       setSpinning(false);
-      return { checkResult: false, unReview, unRuleVerificationProcess };
+      return { checkResult: false, unReview, problemNodes };
     }
 
     if (modelDetail?.data?.state_code >= 20) {
@@ -253,10 +247,10 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
         }),
       );
       setSpinning(false);
-      return { checkResult: false, unReview, unRuleVerificationProcess };
+      return { checkResult: false, unReview, problemNodes };
     }
     setSpinning(false);
-    return { checkResult, unReview, unRuleVerificationProcess };
+    return { checkResult, unReview, problemNodes };
   };
 
   const submitReview = async (unReview: refDataType[]) => {
@@ -344,9 +338,9 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
             )} */}
             {action === 'edit' ? (
               <>
-                <Button onClick={() => handleCheckData()}>
+                {/* <Button onClick={() => handleCheckData()}>
                   <FormattedMessage id='pages.button.check' defaultMessage='Data check' />
-                </Button>
+                </Button> */}
 
                 <Button
                   onClick={() => {

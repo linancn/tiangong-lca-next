@@ -548,6 +548,7 @@ export async function getLifeCyclesByIds(ids: string[]) {
 export async function getLifeCycleModelDetail(
   id: string,
   version: string,
+  setIsFromLifeCycle = false,
 ): Promise<
   | {
       data: {
@@ -572,37 +573,41 @@ export async function getLifeCycleModelDetail(
     .eq('version', version);
   if (result.data && result.data.length > 0) {
     const data = result.data[0];
-    let procressIds: string[] = [];
-    let procressVersion: string[] = [];
-    data?.json_tg?.xflow?.nodes?.forEach((node: any) => {
-      procressIds.push(node?.data?.id);
-      procressVersion.push(node?.data?.version);
-    });
+    if (setIsFromLifeCycle) {
+      let procressIds: string[] = [];
+      let procressVersion: string[] = [];
+      data?.json_tg?.xflow?.nodes?.forEach((node: any) => {
+        procressIds.push(node?.data?.id);
+        procressVersion.push(node?.data?.version);
+      });
 
-    const [procresses, models] = await Promise.all([
-      getProcessesByIdsAndVersions(procressIds, procressVersion),
-      getLifeCyclesByIds(procressIds),
-    ]);
+      if (procressIds.length > 0) {
+        const [procresses, models] = await Promise.all([
+          getProcessesByIdsAndVersions(procressIds, procressVersion),
+          getLifeCyclesByIds(procressIds),
+        ]);
 
-    data?.json_tg?.xflow?.nodes?.forEach((node: any) => {
-      const model = models?.data?.find(
-        (model: any) => model?.id === node?.data?.id && model?.version === node?.data?.version,
-      );
-      if (model) {
-        node.isLifecycleModels = true;
-      } else {
-        node.isLifecycleModels = false;
+        data?.json_tg?.xflow?.nodes?.forEach((node: any) => {
+          const model = models?.data?.find(
+            (model: any) => model?.id === node?.data?.id && model?.version === node?.data?.version,
+          );
+          if (model) {
+            node.isFromLifeCycle = true;
+          } else {
+            node.isFromLifeCycle = false;
+          }
+          const procress = procresses?.data?.find(
+            (procress: any) =>
+              procress?.id === node?.data?.id && procress?.version === node?.data?.version,
+          );
+          if (procress?.user_id === sessionStorage.getItem('userId')) {
+            node.isMyProcess = true;
+          } else {
+            node.isMyProcess = false;
+          }
+        });
       }
-      const procress = procresses?.data?.find(
-        (procress: any) =>
-          procress?.id === node?.data?.id && procress?.version === node?.data?.version,
-      );
-      if (procress?.user_id === sessionStorage.getItem('userId')) {
-        node.isMyProcess = true;
-      } else {
-        node.isMyProcess = false;
-      }
-    });
+    }
 
     return Promise.resolve({
       data: {

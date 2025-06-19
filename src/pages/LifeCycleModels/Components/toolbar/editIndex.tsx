@@ -1,6 +1,8 @@
 import ProcessEdit from '@/pages/Processes/Components/edit';
 import ProcessView from '@/pages/Processes/Components/view';
 import type { refDataType } from '@/pages/Utils/review';
+import { checkReferences, getAllRefObj, ReffPath } from '@/pages/Utils/review';
+import { getRefData } from '@/services/general/api';
 import { initVersion } from '@/services/general/data';
 import { formatDateTime, getLangText } from '@/services/general/util';
 import {
@@ -16,6 +18,7 @@ import {
 } from '@/services/lifeCycleModels/util';
 import { getProcessDetail, getProcessDetailByIdAndVersion } from '@/services/processes/api';
 import { genProcessFromData, genProcessName, genProcessNameJson } from '@/services/processes/util';
+import { getUserTeamId } from '@/services/roles/api';
 import {
   CheckCircleOutlined,
   CopyOutlined,
@@ -24,7 +27,7 @@ import {
   SendOutlined,
 } from '@ant-design/icons';
 import { useGraphEvent, useGraphStore } from '@antv/xflow';
-import { Button, Space, Spin, Tooltip, message, theme } from 'antd';
+import { Button, message, Space, Spin, theme, Tooltip } from 'antd';
 import { FC, useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
@@ -49,6 +52,7 @@ type Props = {
   importData?: any;
   onClose?: () => void;
   hideReviewButton?: boolean;
+  updateNodeCb?: (ref: refDataType) => Promise<void>;
 };
 
 const ToolbarEdit: FC<Props> = ({
@@ -63,13 +67,14 @@ const ToolbarEdit: FC<Props> = ({
   importData,
   onClose = () => {},
   hideReviewButton = false,
+  updateNodeCb = () => {},
 }) => {
   const [thisId, setThisId] = useState(id);
   const [thisVersion, setThisVersion] = useState(version);
   const [thisAction, setThisAction] = useState(action);
   const [spinning, setSpinning] = useState(false);
   const [infoData, setInfoData] = useState<any>({});
-  const [unRuleVerificationProcess, setUnRuleVerificationProcess] = useState<refDataType[]>([]);
+  const [problemNodes, setProblemNodes] = useState<refDataType[]>([]);
 
   const [targetAmountDrawerVisible, setTargetAmountDrawerVisible] = useState(false);
   const [ioPortSelectorDirection, setIoPortSelectorDirection] = useState('');
@@ -896,7 +901,7 @@ const ToolbarEdit: FC<Props> = ({
       onClose();
       setInfoData({});
       setNodeCount(0);
-      setUnRuleVerificationProcess([]);
+      setProblemNodes([]);
       return;
     }
     if (importData && importData.length > 0) {
@@ -947,7 +952,7 @@ const ToolbarEdit: FC<Props> = ({
     if (id !== '') {
       setIsSave(false);
       setSpinning(true);
-      getLifeCycleModelDetail(id, version).then(async (result: any) => {
+      getLifeCycleModelDetail(id, version, true).then(async (result: any) => {
         const fromData = genLifeCycleModelInfoFromData(
           result.data?.json?.lifeCycleModelDataSet ?? {},
         );
@@ -1051,7 +1056,7 @@ const ToolbarEdit: FC<Props> = ({
 
   useEffect(() => {
     nodes.forEach((node) => {
-      const isErrNode = unRuleVerificationProcess.find(
+      const isErrNode = problemNodes.find(
         (item: any) =>
           item['@refObjectId'] === node.data.id && item['@version'] === node.data.version,
       );
@@ -1077,62 +1082,66 @@ const ToolbarEdit: FC<Props> = ({
         });
       }
     });
-  }, [unRuleVerificationProcess]);
+  }, [problemNodes]);
 
-  const handleUpdateNode = (ruleVerification: boolean, id: string, version: string) => {
-    const process = unRuleVerificationProcess.filter(
-      (item: refDataType) => item['@refObjectId'] !== id || item['@version'] !== version,
-    );
-    setUnRuleVerificationProcess(process);
+  const handleUpdateNode = async (ref: refDataType) => {
+    setSpinning(true);
+    const selectedNode = nodes.find((node) => node.selected);
+    if (selectedNode) {
+      const { data: procressDetail } = await getRefData(
+        ref['@refObjectId'],
+        ref['@version'],
+        'process data set',
+      );
+      const refObjs = getAllRefObj(procressDetail);
+      const userTeamId = await getUserTeamId();
+
+      const path = await checkReferences(
+        refObjs,
+        new Map<string, any>(),
+        userTeamId,
+        [],
+        [],
+        [],
+        [],
+        new ReffPath(
+          {
+            '@refObjectId': selectedNode.data.id,
+            '@version': selectedNode.data.version,
+            '@type': 'process data set',
+          },
+          procressDetail?.ruleVerification,
+          false,
+        ),
+      );
+      const problemNodesofSelectedNode = path?.findProblemNodes();
+      if (!problemNodesofSelectedNode?.length) {
+        setProblemNodes(
+          problemNodes.filter(
+            (item: refDataType) =>
+              item['@refObjectId'] !== selectedNode.data.id ||
+              item['@version'] !== selectedNode.data.version,
+          ),
+        );
+      }
+    }
+    setSpinning(false);
   };
 
   const handleCheckData = async () => {
     setSpinning(true);
-    await editInfoRef.current?.handleCheckData();
+    await editInfoRef.current?.handleCheckData(nodes, edges);
     setSpinning(false);
   };
 
   const handelSubmitReview = async () => {
     setSpinning(true);
     await saveData(false);
-    if (nodes?.length) {
-      const quantitativeReferenceProcress = nodes.find(
-        (node) => node?.data?.quantitativeReference === '1',
-      );
-      if (!quantitativeReferenceProcress) {
-        message.error(
-          intl.formatMessage({
-            id: 'pages.lifecyclemodel.validator.nodes.quantitativeReference.required',
-            defaultMessage: 'Please select a node as reference',
-          }),
-        );
-        setSpinning(false);
-        return;
-      }
-    } else {
-      message.error(
-        intl.formatMessage({
-          id: 'pages.lifecyclemodel.validator.nodes.required',
-          defaultMessage: 'Please add node',
-        }),
-      );
-      setSpinning(false);
-      return;
-    }
-    if (!edges?.length) {
-      message.error(
-        intl.formatMessage({
-          id: 'pages.lifecyclemodel.validator.exchanges.required',
-          defaultMessage: 'Please add connection line',
-        }),
-      );
-      setSpinning(false);
-      return;
-    }
-
-    const { checkResult, unReview, unRuleVerificationProcess } =
-      await editInfoRef.current?.handleCheckData();
-    setUnRuleVerificationProcess(unRuleVerificationProcess);
+    const { checkResult, unReview, problemNodes } = await editInfoRef.current?.handleCheckData(
+      nodes,
+      edges,
+    );
+    setProblemNodes(problemNodes);
 
     if (checkResult) {
       await editInfoRef.current?.submitReview(unReview);
@@ -1142,10 +1151,9 @@ const ToolbarEdit: FC<Props> = ({
 
   const getShowTool = () => {
     const selectedNode = nodes.find((node) => node.selected);
-    console.log(selectedNode, 'selectedNode');
 
     if (selectedNode?.isMyProcess) {
-      if (selectedNode?.isLifecycleModels) {
+      if (selectedNode?.isFromLifeCycle) {
         return (
           <LifeCycleModelEdit
             id={selectedNode?.data?.id ?? ''}
@@ -1155,6 +1163,7 @@ const ToolbarEdit: FC<Props> = ({
             buttonType={'toolIcon'}
             disabled={!selectedNode}
             hideReviewButton={true}
+            updateNodeCb={handleUpdateNode}
           />
         );
       } else {
@@ -1173,7 +1182,7 @@ const ToolbarEdit: FC<Props> = ({
         );
       }
     } else {
-      if (selectedNode?.isLifecycleModels) {
+      if (selectedNode?.isFromLifeCycle) {
         return (
           <LifeCycleModelView
             id={selectedNode?.data?.id ?? ''}
@@ -1282,7 +1291,14 @@ const ToolbarEdit: FC<Props> = ({
           size='small'
           icon={<SaveOutlined />}
           style={{ boxShadow: 'none' }}
-          onClick={() => saveData(true)}
+          onClick={() => {
+            saveData(true);
+            updateNodeCb({
+              '@refObjectId': id,
+              '@version': version,
+              '@type': 'lifeCycleModel data set',
+            });
+          }}
         />
       </Tooltip>
       <br />

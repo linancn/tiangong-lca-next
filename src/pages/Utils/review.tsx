@@ -112,7 +112,7 @@ export class ReffPath {
 
 export const checkReferences = async (
   refs: any[],
-  checkedIds: Set<string>,
+  refMaps: Map<string, any>,
   userTeamId: string,
   unReview: refDataType[],
   underReview: refDataType[],
@@ -121,21 +121,30 @@ export const checkReferences = async (
   parentPath?: ReffPath,
 ): Promise<ReffPath | undefined> => {
   for (const ref of refs) {
-    if (checkedIds.has(ref['@refObjectId'])) continue;
-    checkedIds.add(ref['@refObjectId']);
+    if (refMaps.has(`${ref['@refObjectId']}:${ref['@version']}`)) {
+      const refData = refMaps.get(`${ref['@refObjectId']}:${ref['@version']}`);
 
+      if (refData?.stateCode !== 100 && refData?.stateCode !== 200) {
+        const currentPath = new ReffPath(ref, refData?.ruleVerification, false);
+        if (parentPath) {
+          parentPath.addChild(currentPath);
+        }
+      }
+      continue;
+    }
     const refResult = await getRefData(
       ref['@refObjectId'],
       ref['@version'],
       getRefTableName(ref['@type']),
       userTeamId,
     );
+    refMaps.set(`${ref['@refObjectId']}:${ref['@version']}`, refResult?.data);
 
     let currentPath: ReffPath | undefined;
     if (refResult.success) {
       const refData = refResult?.data;
       if (refData?.stateCode !== 100 && refData?.stateCode !== 200) {
-        currentPath = new ReffPath(ref, refResult?.data?.ruleVerification, !refResult.success);
+        currentPath = new ReffPath(ref, refData?.ruleVerification, !refResult.success);
         if (parentPath) {
           parentPath.addChild(currentPath);
         }
@@ -176,7 +185,7 @@ export const checkReferences = async (
         const subRefs = getAllRefObj(json);
         await checkReferences(
           subRefs,
-          checkedIds,
+          refMaps,
           userTeamId,
           unReview,
           underReview,
@@ -215,7 +224,15 @@ export const checkData = async (
   );
   if (detail) {
     const refs = getAllRefObj(detail?.json);
-    await checkReferences(refs, new Set(), '', [], [], unRuleVerification, nonExistentRef);
+    await checkReferences(
+      refs,
+      new Map<string, any>(),
+      '',
+      [],
+      [],
+      unRuleVerification,
+      nonExistentRef,
+    );
   }
 };
 
