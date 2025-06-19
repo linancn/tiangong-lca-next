@@ -236,10 +236,10 @@ const ToolbarViewInfo: FC<Props> = ({
           const refData = refResult?.data;
           if (refData?.stateCode !== 100 && refData?.stateCode !== 200) {
             result.push(ref);
+            const json = refData?.json;
+            const subRefs = getAllRefObj(json);
+            await getReferences(subRefs, checkedIds);
           }
-          const json = refData?.json;
-          const subRefs = getAllRefObj(json);
-          await getReferences(subRefs, checkedIds);
         }
       }
     };
@@ -247,6 +247,13 @@ const ToolbarViewInfo: FC<Props> = ({
     const { data: lifeCycleModel, success } = await getLifeCycleModelDetail(modelId, modelVersion);
     if (success) {
       const newLifeCycleModel = await updateLifeCycleModelJson(lifeCycleModel);
+      if (lifeCycleModel?.stateCode !== 100 && lifeCycleModel?.stateCode !== 200) {
+        result.push({
+          '@refObjectId': modelId,
+          '@version': modelVersion,
+          '@type': 'lifeCycleModel data set',
+        });
+      }
       const { data: sameProcressWithModel } = await getProcessDetail(modelId, modelVersion);
       if (sameProcressWithModel) {
         await updateProcessJson(sameProcressWithModel);
@@ -258,16 +265,28 @@ const ToolbarViewInfo: FC<Props> = ({
           });
         }
       }
-      if (lifeCycleModel?.stateCode !== 100 && lifeCycleModel?.stateCode !== 200) {
-        result.push({
-          '@refObjectId': modelId,
-          '@version': modelVersion,
-          '@type': 'lifeCycleModel data set',
-        });
-      }
+
       const modelRefs = getAllRefObj(newLifeCycleModel);
       if (modelRefs.length) {
         await getReferences(modelRefs);
+        const procressRefs = modelRefs.filter((item) => item['@type'] === 'process data set');
+        for (const procress of procressRefs) {
+          const { data: sameModeWithProcress, success } = await getLifeCycleModelDetail(
+            procress['@refObjectId'],
+            procress['@version'],
+          );
+          if (
+            success &&
+            sameModeWithProcress?.stateCode !== 100 &&
+            sameModeWithProcress?.stateCode !== 200
+          ) {
+            result.push({
+              '@refObjectId': sameModeWithProcress?.id,
+              '@version': sameModeWithProcress?.version,
+              '@type': 'lifeCycleModel data set',
+            });
+          }
+        }
       }
     }
     for (const item of result) {

@@ -1,4 +1,5 @@
 import { getRefData, getReviewsOfData, updateDateToReviewState } from '@/services/general/api';
+import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
 import { addReviewsApi } from '@/services/reviews/api';
 import { getTeamMessageApi } from '@/services/teams/api';
 import { getUsersByIds } from '@/services/users/api';
@@ -304,6 +305,25 @@ export const dealModel = (
       '@refObjectId': modelDetail?.id,
       '@version': modelDetail?.version,
     });
+  }
+};
+
+export const dealSameModelWithProcress = async (
+  refObjs: refDataType[],
+  unReview: refDataType[],
+  underReview: refDataType[],
+  unRuleVerification: refDataType[],
+  nonExistentRef: refDataType[],
+) => {
+  const procressRefs = refObjs.filter((item) => item['@type'] === 'process data set');
+  for (const procress of procressRefs) {
+    const { data: sameModeWithProcress } = await getLifeCycleModelDetail(
+      procress['@refObjectId'],
+      procress['@version'],
+    );
+    if (sameModeWithProcress) {
+      dealModel(sameModeWithProcress, unReview, underReview, unRuleVerification, nonExistentRef);
+    }
   }
 };
 

@@ -23,6 +23,7 @@ import {
   checkRequiredFields,
   dealModel,
   dealProcress,
+  dealSameModelWithProcress,
   getAllRefObj,
   ReffPath,
   updateReviewsAfterCheckData,
@@ -216,7 +217,13 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
     } else {
       setRefCheckData([]);
     }
-
+    await dealSameModelWithProcress(
+      refObjs,
+      unReview,
+      underReview,
+      unRuleVerification,
+      nonExistentRef,
+    );
     if (!checkResult) {
       if (!drawerVisible) {
         setDrawerVisible(true);

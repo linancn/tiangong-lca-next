@@ -3,6 +3,7 @@ import {
   checkReferences,
   dealModel,
   dealProcress,
+  dealSameModelWithProcress,
   getAllRefObj,
   getRefTableName,
 } from '@/pages/Utils/review';
@@ -98,13 +99,7 @@ const RejectReview: React.FC<RejectReviewProps> = ({ reviewId, dataId, dataVersi
       modelDetail?.id,
       modelDetail?.version,
     );
-    if (sameProcressWithModel?.stateCode >= 20 && sameProcressWithModel?.stateCode < 100) {
-      underReview.push({
-        '@refObjectId': sameProcressWithModel?.id,
-        '@version': sameProcressWithModel?.version,
-        '@type': 'process data set',
-      });
-    }
+    dealProcress(sameProcressWithModel, unReview, underReview, unRuleVerification, nonExistentRef);
 
     const refObjs = getAllRefObj(modelDetail);
     const userTeamId = await getUserTeamId();
@@ -113,6 +108,13 @@ const RejectReview: React.FC<RejectReviewProps> = ({ reviewId, dataId, dataVersi
       refObjs,
       refsMap,
       userTeamId,
+      unReview,
+      underReview,
+      unRuleVerification,
+      nonExistentRef,
+    );
+    await dealSameModelWithProcress(
+      refObjs,
       unReview,
       underReview,
       unRuleVerification,
