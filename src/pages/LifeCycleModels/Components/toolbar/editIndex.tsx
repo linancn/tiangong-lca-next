@@ -1,7 +1,6 @@
 import ProcessEdit from '@/pages/Processes/Components/edit';
 import ProcessView from '@/pages/Processes/Components/view';
-import LifeCycleModelEdit from '../edit';
-import LifeCycleModelView from '../view';
+import type { refDataType } from '@/pages/Utils/review';
 import { initVersion } from '@/services/general/data';
 import { formatDateTime, getLangText } from '@/services/general/util';
 import {
@@ -17,19 +16,26 @@ import {
 } from '@/services/lifeCycleModels/util';
 import { getProcessDetail, getProcessDetailByIdAndVersion } from '@/services/processes/api';
 import { genProcessFromData, genProcessName, genProcessNameJson } from '@/services/processes/util';
-import { CheckCircleOutlined, CopyOutlined, DeleteOutlined, SaveOutlined, SendOutlined } from '@ant-design/icons';
+import {
+  CheckCircleOutlined,
+  CopyOutlined,
+  DeleteOutlined,
+  SaveOutlined,
+  SendOutlined,
+} from '@ant-design/icons';
 import { useGraphEvent, useGraphStore } from '@antv/xflow';
 import { Button, Space, Spin, Tooltip, message, theme } from 'antd';
 import { FC, useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
+import LifeCycleModelEdit from '../edit';
+import LifeCycleModelView from '../view';
 import ModelToolbarAdd from './add';
 import { Control } from './control';
 import TargetAmount from './editTargetAmount';
 import ToolbarEditInfo from './eidtInfo';
 import EdgeExhange from './Exchange/index';
 import IoPortSelect from './Exchange/ioPortSelect';
-import type { refDataType } from '@/pages/Utils/review';
 
 type Props = {
   id: string;
@@ -55,7 +61,7 @@ const ToolbarEdit: FC<Props> = ({
   setIsSave,
   actionType,
   importData,
-  onClose = () => { },
+  onClose = () => {},
   hideReviewButton = false,
 }) => {
   const [thisId, setThisId] = useState(id);
@@ -655,8 +661,8 @@ const ToolbarEdit: FC<Props> = ({
               if (ids.length < 2) return false;
               return (
                 (i?.exchangeDirection ?? '-').toUpperCase() +
-                ':' +
-                (i?.referenceToFlowDataSet?.['@refObjectId'] ?? '-') ===
+                  ':' +
+                  (i?.referenceToFlowDataSet?.['@refObjectId'] ?? '-') ===
                 ids[0].toUpperCase() + ':' + (ids[ids.length - 1] ?? '-')
               );
             });
@@ -762,7 +768,7 @@ const ToolbarEdit: FC<Props> = ({
     };
 
     if (thisAction === 'edit') {
-      const result = await updateLifeCycleModel({ ...newData, id: thisId, version: thisVersion })
+      const result = await updateLifeCycleModel({ ...newData, id: thisId, version: thisVersion });
       if (result?.data) {
         setInfoData({ ...newData, id: thisId, version: thisVersion });
         message.success(
@@ -780,7 +786,7 @@ const ToolbarEdit: FC<Props> = ({
       if (setLoadingData) setSpinning(false);
     } else if (thisAction === 'create') {
       const newId = actionType === 'createVersion' ? thisId : v4();
-      const result = await createLifeCycleModel({ ...newData, id: newId })
+      const result = await createLifeCycleModel({ ...newData, id: newId });
       if (result.data) {
         message.success(
           intl.formatMessage({
@@ -1074,13 +1080,15 @@ const ToolbarEdit: FC<Props> = ({
   }, [unRuleVerificationProcess]);
 
   const handleUpdateNode = (ruleVerification: boolean, id: string, version: string) => {
-    const process = unRuleVerificationProcess.filter((item: refDataType) => item['@refObjectId'] !== id || item['@version'] !== version);
+    const process = unRuleVerificationProcess.filter(
+      (item: refDataType) => item['@refObjectId'] !== id || item['@version'] !== version,
+    );
     setUnRuleVerificationProcess(process);
   };
 
   const handleCheckData = async () => {
     setSpinning(true);
-    await editInfoRef.current?.handleCheckData()
+    await editInfoRef.current?.handleCheckData();
     setSpinning(false);
   };
 
@@ -1088,33 +1096,42 @@ const ToolbarEdit: FC<Props> = ({
     setSpinning(true);
     await saveData(false);
     if (nodes?.length) {
-      const quantitativeReferenceProcress = nodes.find((node) => node?.data?.quantitativeReference === '1');
+      const quantitativeReferenceProcress = nodes.find(
+        (node) => node?.data?.quantitativeReference === '1',
+      );
       if (!quantitativeReferenceProcress) {
-        message.error(intl.formatMessage({
-          id: 'pages.lifecyclemodel.validator.nodes.quantitativeReference.required',
-          defaultMessage: 'Please select a node as reference',
-        }));
+        message.error(
+          intl.formatMessage({
+            id: 'pages.lifecyclemodel.validator.nodes.quantitativeReference.required',
+            defaultMessage: 'Please select a node as reference',
+          }),
+        );
         setSpinning(false);
         return;
       }
     } else {
-      message.error(intl.formatMessage({
-        id: 'pages.lifecyclemodel.validator.nodes.required',
-        defaultMessage: 'Please add node',
-      }));
+      message.error(
+        intl.formatMessage({
+          id: 'pages.lifecyclemodel.validator.nodes.required',
+          defaultMessage: 'Please add node',
+        }),
+      );
       setSpinning(false);
       return;
     }
     if (!edges?.length) {
-      message.error(intl.formatMessage({
-        id: 'pages.lifecyclemodel.validator.exchanges.required',
-        defaultMessage: 'Please add connection line',
-      }));
+      message.error(
+        intl.formatMessage({
+          id: 'pages.lifecyclemodel.validator.exchanges.required',
+          defaultMessage: 'Please add connection line',
+        }),
+      );
       setSpinning(false);
       return;
     }
-   
-    const { checkResult, unReview, unRuleVerificationProcess } = await editInfoRef.current?.handleCheckData();
+
+    const { checkResult, unReview, unRuleVerificationProcess } =
+      await editInfoRef.current?.handleCheckData();
     setUnRuleVerificationProcess(unRuleVerificationProcess);
 
     if (checkResult) {
@@ -1125,53 +1142,61 @@ const ToolbarEdit: FC<Props> = ({
 
   const getShowTool = () => {
     const selectedNode = nodes.find((node) => node.selected);
-    console.log(selectedNode, 'selectedNode')
+    console.log(selectedNode, 'selectedNode');
 
     if (selectedNode?.isMyProcess) {
       if (selectedNode?.isLifecycleModels) {
-        return <LifeCycleModelEdit
-          id={selectedNode?.data?.id ?? ''}
-          version={selectedNode?.data?.version ?? ''}
-          lang={lang}
-          actionRef={undefined}
-          buttonType={'toolIcon'}
-          disabled={!selectedNode}
-          hideReviewButton={true}
-        />
+        return (
+          <LifeCycleModelEdit
+            id={selectedNode?.data?.id ?? ''}
+            version={selectedNode?.data?.version ?? ''}
+            lang={lang}
+            actionRef={undefined}
+            buttonType={'toolIcon'}
+            disabled={!selectedNode}
+            hideReviewButton={true}
+          />
+        );
       } else {
-        return <ProcessEdit
-          id={selectedNode?.data?.id ?? ''}
-          version={selectedNode?.data?.version ?? ''}
-          buttonType={'toolIcon'}
-          lang={lang}
-          disabled={!selectedNode}
-          actionRef={undefined}
-          setViewDrawerVisible={() => { }}
-          hideReviewButton={true}
-          updateNodeCb={handleUpdateNode}
-        />
+        return (
+          <ProcessEdit
+            id={selectedNode?.data?.id ?? ''}
+            version={selectedNode?.data?.version ?? ''}
+            buttonType={'toolIcon'}
+            lang={lang}
+            disabled={!selectedNode}
+            actionRef={undefined}
+            setViewDrawerVisible={() => {}}
+            hideReviewButton={true}
+            updateNodeCb={handleUpdateNode}
+          />
+        );
       }
     } else {
       if (selectedNode?.isLifecycleModels) {
-        return <LifeCycleModelView
-          id={selectedNode?.data?.id ?? ''}
-          version={selectedNode?.data?.version ?? ''}
-          lang={lang}
-          actionRef={undefined}
-          buttonType={'toolIcon'}
-          disabled={!selectedNode}
-        />
+        return (
+          <LifeCycleModelView
+            id={selectedNode?.data?.id ?? ''}
+            version={selectedNode?.data?.version ?? ''}
+            lang={lang}
+            actionRef={undefined}
+            buttonType={'toolIcon'}
+            disabled={!selectedNode}
+          />
+        );
       } else {
-        return <ProcessView
-          id={selectedNode?.data?.id ?? ''}
-          version={selectedNode?.data?.version ?? ''}
-          buttonType={'toolIcon'}
-          lang={lang}
-          disabled={!selectedNode}
-        />
+        return (
+          <ProcessView
+            id={selectedNode?.data?.id ?? ''}
+            version={selectedNode?.data?.version ?? ''}
+            buttonType={'toolIcon'}
+            lang={lang}
+            disabled={!selectedNode}
+          />
+        );
       }
     }
-  }
+  };
 
   return (
     <Space direction='vertical' size={'middle'}>
@@ -1282,7 +1307,7 @@ const ToolbarEdit: FC<Props> = ({
           onClick={handleCheckData}
         />
       </Tooltip>
-      {showReview&&!hideReviewButton ? (
+      {showReview && !hideReviewButton ? (
         <Tooltip
           title={<FormattedMessage id='pages.button.review' defaultMessage='Submit for review' />}
           placement='left'

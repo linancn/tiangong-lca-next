@@ -288,5 +288,4 @@ export default {
   'pages.lifecyclemodel.validator.nodes.quantitativeReference.required': 'Please select a node as reference',
   'pages.lifecyclemodel.validator.exchanges.required': 'Please add connection line',
   'pages.lifecyclemodel.validator.exchanges.required.length': 'Please complete the connection line',
-
 };

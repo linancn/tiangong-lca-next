@@ -72,7 +72,7 @@ const LifeCycleModelView: FC<Props> = ({
             disabled={disabled}
           />
         </Tooltip>
-      ): buttonType === 'icon' ? (
+      ) : buttonType === 'icon' ? (
         <Tooltip title={<FormattedMessage id='pages.button.view' defaultMessage='View' />}>
           <Button
             shape='circle'

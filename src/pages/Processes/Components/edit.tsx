@@ -45,7 +45,7 @@ type Props = {
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
   disabled?: boolean;
   hideReviewButton?: boolean;
-  updateNodeCb?: (ruleVerification: boolean,id:string,version:string) => void;
+  updateNodeCb?: (ruleVerification: boolean, id: string, version: string) => void;
 };
 const ProcessEdit: FC<Props> = ({
   id,
@@ -279,7 +279,7 @@ const ProcessEdit: FC<Props> = ({
           id: id,
         });
       }
-      updateNodeCb(updateResult.data[0]?.rule_verification,id, version);
+      updateNodeCb(updateResult.data[0]?.rule_verification, id, version);
       message.success(
         intl.formatMessage({
           id: 'pages.button.save.success',

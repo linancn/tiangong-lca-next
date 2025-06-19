@@ -12,9 +12,9 @@ import {
   jsonToList,
 } from '../general/util';
 import { getILCDClassification } from '../ilcd/api';
+import { getProcessesByIdsAndVersions } from '../processes/api';
 import { genProcessName } from '../processes/util';
 import { genLifeCycleModelJsonOrdered, genLifeCycleModelProcess } from './util';
-import { getProcessesByIdsAndVersions } from '../processes/api';
 
 const updateLifeCycleModelProcess = async (
   id: string,
@@ -578,26 +578,31 @@ export async function getLifeCycleModelDetail(
       procressIds.push(node?.data?.id);
       procressVersion.push(node?.data?.version);
     });
-    
-    const  [procresses, models] = await Promise.all([
-      getProcessesByIdsAndVersions(procressIds,procressVersion),
+
+    const [procresses, models] = await Promise.all([
+      getProcessesByIdsAndVersions(procressIds, procressVersion),
       getLifeCyclesByIds(procressIds),
     ]);
 
     data?.json_tg?.xflow?.nodes?.forEach((node: any) => {
-      const model = models?.data?.find((model: any) => model?.id === node?.data?.id && model?.version === node?.data?.version);
-      if(model){
+      const model = models?.data?.find(
+        (model: any) => model?.id === node?.data?.id && model?.version === node?.data?.version,
+      );
+      if (model) {
         node.isLifecycleModels = true;
-      }else{
+      } else {
         node.isLifecycleModels = false;
       }
-      const procress = procresses?.data?.find((procress: any) => procress?.id === node?.data?.id && procress?.version === node?.data?.version);
-      if(procress?.user_id === sessionStorage.getItem('userId')){
+      const procress = procresses?.data?.find(
+        (procress: any) =>
+          procress?.id === node?.data?.id && procress?.version === node?.data?.version,
+      );
+      if (procress?.user_id === sessionStorage.getItem('userId')) {
         node.isMyProcess = true;
-      }else{
+      } else {
         node.isMyProcess = false;
       }
-    })
+    });
 
     return Promise.resolve({
       data: {
@@ -631,5 +636,3 @@ export async function updateLifeCycleModelStateCode(
     .select('state_code');
   return result;
 }
-
-

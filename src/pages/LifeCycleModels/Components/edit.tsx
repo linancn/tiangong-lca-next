@@ -16,7 +16,15 @@ type Props = {
   disabled?: boolean;
   hideReviewButton?: boolean;
 };
-const LifeCycleModelEdit: FC<Props> = ({ id, version, buttonType, lang, actionRef, disabled = false, hideReviewButton = false }) => {
+const LifeCycleModelEdit: FC<Props> = ({
+  id,
+  version,
+  buttonType,
+  lang,
+  actionRef,
+  disabled = false,
+  hideReviewButton = false,
+}) => {
   const [isSave, setIsSave] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
 
@@ -70,7 +78,7 @@ const LifeCycleModelEdit: FC<Props> = ({ id, version, buttonType, lang, actionRe
             disabled={disabled}
           />
         </Tooltip>
-      ) :buttonType === 'icon' ? (
+      ) : buttonType === 'icon' ? (
         <Tooltip title={<FormattedMessage id='pages.button.edit' defaultMessage='Edit' />}>
           <Button shape='circle' icon={<FormOutlined />} size='small' onClick={onEdit} />
         </Tooltip>

@@ -204,12 +204,12 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
           },
           processDetail?.data?.ruleVerification,
           false,
-        )
+        ),
       );
       const processProblemNodes = processPath?.findProblemNodes();
       if (
         ![100, 200].includes(processDetail?.data?.stateCode) &&
-        (processDetail?.data?.ruleVerification === false||processProblemNodes?.length)
+        (processDetail?.data?.ruleVerification === false || processProblemNodes?.length)
       ) {
         unRuleVerificationProcess.push({
           '@refObjectId': process.id,
