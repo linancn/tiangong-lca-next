@@ -129,7 +129,7 @@ export const dealProcress = (
     underReview.push(procressRef);
   }
   if (
-    !processDetail?.ruleVerification &&
+    processDetail?.ruleVerification === false &&
     processDetail.stateCode !== 100 &&
     processDetail.stateCode !== 200
   ) {
@@ -162,7 +162,7 @@ export const dealModel = (
     });
   }
   if (
-    !modelDetail?.ruleVerification &&
+    modelDetail?.ruleVerification === false &&
     modelDetail?.stateCode !== 100 &&
     modelDetail?.stateCode !== 200
   ) {
@@ -211,7 +211,7 @@ export const checkReferences = async (
     refMaps.set(`${ref['@refObjectId']}:${ref['@version']}`, refResult?.data);
 
     let currentPath: ReffPath | undefined;
-    if (refResult.success) {
+    if (refResult.success && refResult?.data) {
       const refData = refResult?.data;
       if (refData?.stateCode !== 100 && refData?.stateCode !== 200) {
         currentPath = new ReffPath(ref, refData?.ruleVerification, !refResult.success);
@@ -219,7 +219,11 @@ export const checkReferences = async (
           parentPath.addChild(currentPath);
         }
       }
-      if (!refData?.ruleVerification && refData?.stateCode !== 100 && refData?.stateCode !== 200) {
+      if (
+        refData?.ruleVerification === false &&
+        refData?.stateCode !== 100 &&
+        refData?.stateCode !== 200
+      ) {
         if (
           !unRuleVerification.find(
             (item) =>
@@ -299,7 +303,8 @@ export const checkReferences = async (
         !nonExistentRef.find(
           (item) =>
             item['@refObjectId'] === ref['@refObjectId'] && item['@version'] === ref['@version'],
-        )
+        ) &&
+        ref['@type'] !== 'lifeCycleModel data set'
       ) {
         nonExistentRef.push(ref);
       }

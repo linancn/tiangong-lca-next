@@ -1137,7 +1137,7 @@ const ToolbarEdit: FC<Props> = ({
 
   const handelSubmitReview = async () => {
     setSpinning(true);
-    await saveData(false);
+    // await saveData(false);
     const { checkResult, unReview, problemNodes } = await editInfoRef.current?.handleCheckData(
       nodes,
       edges,

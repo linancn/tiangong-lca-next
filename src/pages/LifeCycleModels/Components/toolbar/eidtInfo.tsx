@@ -251,16 +251,6 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
       return { checkResult: false, unReview, problemNodes };
     }
 
-    if (modelDetail?.data?.stateCode >= 20) {
-      message.error(
-        intl.formatMessage({
-          id: 'pages.process.review.submitError',
-          defaultMessage: 'Submit review failed',
-        }),
-      );
-      setSpinning(false);
-      return { checkResult: false, unReview, problemNodes };
-    }
     setSpinning(false);
     return { checkResult, unReview, problemNodes };
   };
