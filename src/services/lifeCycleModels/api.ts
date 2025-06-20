@@ -129,6 +129,12 @@ export async function updateLifeCycleModelJsonApi(id: string, version: string, d
     .eq('id', id)
     .eq('version', version)
     .select();
+  if (updateResult?.data && updateResult?.data?.length > 0) {
+    const refNode = updateResult?.data[0]?.json_tg?.xflow?.nodes?.find(
+      (i: any) => i?.data?.quantitativeReference === '1',
+    );
+    updateLifeCycleModelProcess(id, version, refNode, data);
+  }
   return updateResult;
 }
 

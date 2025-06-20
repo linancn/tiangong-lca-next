@@ -37,7 +37,7 @@ import {
   getLifeCycleModelDetail,
   updateLifeCycleModelJsonApi,
 } from '@/services/lifeCycleModels/api';
-import { getProcessDetail, updateProcess } from '@/services/processes/api';
+import { getProcessDetail } from '@/services/processes/api';
 import { getUserTeamId } from '@/services/roles/api';
 
 type Props = {
@@ -115,52 +115,52 @@ const ToolbarViewInfo: FC<Props> = ({
     setActiveTabKey(key);
   };
 
-  const updateProcessJson = async (process: any) => {
-    const { data: commentData, error } = await getCommentApi(reviewId, tabType);
-    if (!error && commentData && commentData.length) {
-      const allReviews: any[] = [];
-      commentData.forEach((item: any) => {
-        if (item?.json?.modellingAndValidation?.validation?.review[0]) {
-          allReviews.push(item?.json?.modellingAndValidation.validation.review[0]);
-        }
-      });
-      const allCompliance: any[] = [];
-      commentData.forEach((item: any) => {
-        if (item?.json?.modellingAndValidation?.complianceDeclarations?.compliance[0]) {
-          allCompliance.push(
-            item?.json?.modellingAndValidation.complianceDeclarations.compliance[0],
-          );
-        }
-      });
+  // const updateProcessJson = async (process: any) => {
+  //   const { data: commentData, error } = await getCommentApi(reviewId, tabType);
+  //   if (!error && commentData && commentData.length) {
+  //     const allReviews: any[] = [];
+  //     commentData.forEach((item: any) => {
+  //       if (item?.json?.modellingAndValidation?.validation?.review[0]) {
+  //         allReviews.push(item?.json?.modellingAndValidation.validation.review[0]);
+  //       }
+  //     });
+  //     const allCompliance: any[] = [];
+  //     commentData.forEach((item: any) => {
+  //       if (item?.json?.modellingAndValidation?.complianceDeclarations?.compliance[0]) {
+  //         allCompliance.push(
+  //           item?.json?.modellingAndValidation.complianceDeclarations.compliance[0],
+  //         );
+  //       }
+  //     });
 
-      const _review = process?.json?.processDataSet?.modellingAndValidation?.validation?.review;
-      const _compliance =
-        process?.json?.processDataSet?.modellingAndValidation?.complianceDeclarations?.compliance;
-      const json = {
-        ...process?.json,
-      };
-      json.processDataSet.modellingAndValidation = {
-        ...process?.json?.processDataSet?.modellingAndValidation,
-        validation: {
-          ...process?.json?.processDataSet?.modellingAndValidation?.validation,
-          review: Array.isArray(_review)
-            ? [..._review, ...allReviews]
-            : _review
-              ? [_review, ...allReviews]
-              : [...allReviews],
-        },
-        complianceDeclarations: {
-          ...process?.json?.processDataSet?.modellingAndValidation?.complianceDeclarations,
-          compliance: Array.isArray(_compliance)
-            ? [..._compliance, ...allCompliance]
-            : _compliance
-              ? [_compliance, ...allCompliance]
-              : [...allCompliance],
-        },
-      };
-      await updateProcess(process?.id, process?.version, json);
-    }
-  };
+  //     const _review = process?.json?.processDataSet?.modellingAndValidation?.validation?.review;
+  //     const _compliance =
+  //       process?.json?.processDataSet?.modellingAndValidation?.complianceDeclarations?.compliance;
+  //     const json = {
+  //       ...process?.json,
+  //     };
+  //     json.processDataSet.modellingAndValidation = {
+  //       ...process?.json?.processDataSet?.modellingAndValidation,
+  //       validation: {
+  //         ...process?.json?.processDataSet?.modellingAndValidation?.validation,
+  //         review: Array.isArray(_review)
+  //           ? [..._review, ...allReviews]
+  //           : _review
+  //             ? [_review, ...allReviews]
+  //             : [...allReviews],
+  //       },
+  //       complianceDeclarations: {
+  //         ...process?.json?.processDataSet?.modellingAndValidation?.complianceDeclarations,
+  //         compliance: Array.isArray(_compliance)
+  //           ? [..._compliance, ...allCompliance]
+  //           : _compliance
+  //             ? [_compliance, ...allCompliance]
+  //             : [...allCompliance],
+  //       },
+  //     };
+  //     await updateProcess(process?.id, process?.version, json);
+  //   }
+  // };
 
   const updateLifeCycleModelJson = async (lifeCycleModel: any) => {
     const { data: commentData, error } = await getCommentApi(reviewId, tabType);
@@ -232,13 +232,23 @@ const ToolbarViewInfo: FC<Props> = ({
           teamId,
         );
 
-        if (refResult.success) {
+        if (refResult.success && refResult?.data) {
           const refData = refResult?.data;
           if (refData?.stateCode !== 100 && refData?.stateCode !== 200) {
             result.push(ref);
             const json = refData?.json;
             const subRefs = getAllRefObj(json);
             await getReferences(subRefs, checkedIds);
+          }
+          if (ref['@type'] === 'process data set') {
+            const { data: sameModelWithProcress } = await getLifeCycleModelDetail(
+              ref['@refObjectId'],
+              ref['@version'],
+            );
+            if (sameModelWithProcress) {
+              const modelRefs = getAllRefObj(sameModelWithProcress);
+              await getReferences(modelRefs, checkedIds);
+            }
           }
         }
       }
@@ -256,7 +266,6 @@ const ToolbarViewInfo: FC<Props> = ({
       }
       const { data: sameProcressWithModel } = await getProcessDetail(modelId, modelVersion);
       if (sameProcressWithModel) {
-        await updateProcessJson(sameProcressWithModel);
         if (sameProcressWithModel?.stateCode !== 100 && sameProcressWithModel?.stateCode !== 200) {
           result.push({
             '@refObjectId': sameProcressWithModel?.id,
