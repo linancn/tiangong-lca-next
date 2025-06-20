@@ -110,7 +110,76 @@ export class ReffPath {
     return result.map(({ ...rest }) => rest);
   }
 }
+export const dealProcress = (
+  processDetail: any,
+  unReview: refDataType[],
+  underReview: refDataType[],
+  unRuleVerification: refDataType[],
+  nonExistentRef: refDataType[],
+) => {
+  const procressRef = {
+    '@type': 'process data set',
+    '@refObjectId': processDetail.id,
+    '@version': processDetail.version,
+  };
+  if (processDetail.stateCode < 20) {
+    unReview.push(procressRef);
+  }
+  if (processDetail.stateCode >= 20 && processDetail.stateCode < 100) {
+    underReview.push(procressRef);
+  }
+  if (
+    !processDetail?.ruleVerification &&
+    processDetail.stateCode !== 100 &&
+    processDetail.stateCode !== 200
+  ) {
+    unRuleVerification.unshift(procressRef);
+  }
+  if (!processDetail) {
+    nonExistentRef.push(procressRef);
+  }
+};
 
+export const dealModel = (
+  modelDetail: any,
+  unReview: refDataType[],
+  underReview: refDataType[],
+  unRuleVerification: refDataType[],
+  nonExistentRef: refDataType[],
+) => {
+  if (modelDetail?.stateCode < 20) {
+    unReview.push({
+      '@type': 'lifeCycleModel data set',
+      '@refObjectId': modelDetail?.id,
+      '@version': modelDetail?.version,
+    });
+  }
+  if (modelDetail?.stateCode >= 20 && modelDetail?.stateCode < 100) {
+    underReview.push({
+      '@type': 'lifeCycleModel data set',
+      '@refObjectId': modelDetail?.id,
+      '@version': modelDetail?.version,
+    });
+  }
+  if (
+    !modelDetail?.ruleVerification &&
+    modelDetail?.stateCode !== 100 &&
+    modelDetail?.stateCode !== 200
+  ) {
+    unRuleVerification.unshift({
+      '@type': 'lifeCycleModel data set',
+      '@refObjectId': modelDetail?.id,
+      '@version': modelDetail?.version,
+    });
+  }
+  if (!modelDetail) {
+    nonExistentRef.push({
+      '@type': 'lifeCycleModel data set',
+      '@refObjectId': modelDetail?.id,
+      '@version': modelDetail?.version,
+    });
+  }
+};
 export const checkReferences = async (
   refs: any[],
   refMaps: Map<string, any>,
@@ -195,6 +264,32 @@ export const checkReferences = async (
           currentPath,
         );
       }
+      if (ref['@type'] === 'process data set') {
+        const { data: sameModelWithProcress } = await getLifeCycleModelDetail(
+          ref['@refObjectId'],
+          ref['@version'],
+        );
+        if (sameModelWithProcress) {
+          dealModel(
+            sameModelWithProcress,
+            unReview,
+            underReview,
+            unRuleVerification,
+            nonExistentRef,
+          );
+          const modelRefs = getAllRefObj(sameModelWithProcress);
+          await checkReferences(
+            modelRefs,
+            refMaps,
+            userTeamId,
+            unReview,
+            underReview,
+            unRuleVerification,
+            nonExistentRef,
+            currentPath,
+          );
+        }
+      }
     } else {
       currentPath = new ReffPath(ref, true, true);
       if (parentPath) {
@@ -234,77 +329,6 @@ export const checkData = async (
       unRuleVerification,
       nonExistentRef,
     );
-  }
-};
-
-export const dealProcress = (
-  processDetail: any,
-  unReview: refDataType[],
-  underReview: refDataType[],
-  unRuleVerification: refDataType[],
-  nonExistentRef: refDataType[],
-) => {
-  const procressRef = {
-    '@type': 'process data set',
-    '@refObjectId': processDetail.id,
-    '@version': processDetail.version,
-  };
-  if (processDetail.stateCode < 20) {
-    unReview.push(procressRef);
-  }
-  if (processDetail.stateCode >= 20 && processDetail.stateCode < 100) {
-    underReview.push(procressRef);
-  }
-  if (
-    !processDetail?.ruleVerification &&
-    processDetail.stateCode !== 100 &&
-    processDetail.stateCode !== 200
-  ) {
-    unRuleVerification.unshift(procressRef);
-  }
-  if (!processDetail) {
-    nonExistentRef.push(procressRef);
-  }
-};
-
-export const dealModel = (
-  modelDetail: any,
-  unReview: refDataType[],
-  underReview: refDataType[],
-  unRuleVerification: refDataType[],
-  nonExistentRef: refDataType[],
-) => {
-  if (modelDetail?.stateCode < 20) {
-    unReview.push({
-      '@type': 'lifeCycleModel data set',
-      '@refObjectId': modelDetail?.id,
-      '@version': modelDetail?.version,
-    });
-  }
-  if (modelDetail?.stateCode >= 20 && modelDetail?.stateCode < 100) {
-    underReview.push({
-      '@type': 'lifeCycleModel data set',
-      '@refObjectId': modelDetail?.id,
-      '@version': modelDetail?.version,
-    });
-  }
-  if (
-    !modelDetail?.ruleVerification &&
-    modelDetail?.stateCode !== 100 &&
-    modelDetail?.stateCode !== 200
-  ) {
-    unRuleVerification.unshift({
-      '@type': 'lifeCycleModel data set',
-      '@refObjectId': modelDetail?.id,
-      '@version': modelDetail?.version,
-    });
-  }
-  if (!modelDetail) {
-    nonExistentRef.push({
-      '@type': 'lifeCycleModel data set',
-      '@refObjectId': modelDetail?.id,
-      '@version': modelDetail?.version,
-    });
   }
 };
 

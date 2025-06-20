@@ -1,7 +1,7 @@
 import ProcessEdit from '@/pages/Processes/Components/edit';
 import ProcessView from '@/pages/Processes/Components/view';
 import type { refDataType } from '@/pages/Utils/review';
-import { checkReferences, getAllRefObj, ReffPath } from '@/pages/Utils/review';
+import { checkReferences, getAllRefObj, getRefTableName, ReffPath } from '@/pages/Utils/review';
 import { getRefData } from '@/services/general/api';
 import { initVersion } from '@/services/general/data';
 import { formatDateTime, getLangText } from '@/services/general/util';
@@ -1091,7 +1091,7 @@ const ToolbarEdit: FC<Props> = ({
       const { data: procressDetail } = await getRefData(
         ref['@refObjectId'],
         ref['@version'],
-        'process data set',
+        getRefTableName(ref['@type']),
       );
       const refObjs = getAllRefObj(procressDetail);
       const userTeamId = await getUserTeamId();
@@ -1130,7 +1130,8 @@ const ToolbarEdit: FC<Props> = ({
 
   const handleCheckData = async () => {
     setSpinning(true);
-    await editInfoRef.current?.handleCheckData(nodes, edges);
+    const { problemNodes } = await editInfoRef.current?.handleCheckData(nodes, edges);
+    setProblemNodes(problemNodes ?? []);
     setSpinning(false);
   };
 
