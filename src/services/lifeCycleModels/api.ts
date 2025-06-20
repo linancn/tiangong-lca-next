@@ -549,7 +549,7 @@ export async function getLifeCycleModelDetail(
 > {
   const result = await supabase
     .from('lifecyclemodels')
-    .select('json, json_tg,state_code,rule_verification')
+    .select('json, json_tg,state_code,rule_verification,team_id')
     .eq('id', id)
     .eq('version', version);
   if (result.data && result.data.length > 0) {
@@ -562,6 +562,7 @@ export async function getLifeCycleModelDetail(
         json_tg: data?.json_tg,
         state_code: data?.state_code,
         rule_verification: data?.rule_verification,
+        teamId: data?.team_id,
       },
       success: true,
     });

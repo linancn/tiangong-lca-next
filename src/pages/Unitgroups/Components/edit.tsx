@@ -1,4 +1,7 @@
+import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
+import type { refDataType } from '@/pages/Utils/review';
+import { checkData } from '@/pages/Utils/review';
 import { getUnitGroupDetail, updateUnitGroup } from '@/services/unitgroups/api';
 import { UnitTable } from '@/services/unitgroups/data';
 import { genUnitGroupFromData } from '@/services/unitgroups/util';
@@ -10,7 +13,6 @@ import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { UnitGroupForm } from './form';
-
 type Props = {
   id: string;
   version: string;
@@ -18,6 +20,7 @@ type Props = {
   lang: string;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  updateErrRef?: (data: any) => void;
 };
 const UnitGroupEdit: FC<Props> = ({
   id,
@@ -26,6 +29,7 @@ const UnitGroupEdit: FC<Props> = ({
   lang,
   actionRef,
   setViewDrawerVisible,
+  updateErrRef = () => {},
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
@@ -35,6 +39,8 @@ const UnitGroupEdit: FC<Props> = ({
   const [unitDataSource, setUnitDataSource] = useState<UnitTable[]>([]);
   const [spinning, setSpinning] = useState(false);
   const [showRules, setShowRules] = useState<boolean>(false);
+  const [refCheckData, setRefCheckData] = useState<any[]>([]);
+  const parentRefCheckContext = useRefCheckContext();
   const intl = useIntl();
   const [referenceValue, setReferenceValue] = useState(0);
   const updateReference = async () => {
@@ -114,6 +120,55 @@ const UnitGroupEdit: FC<Props> = ({
     });
   }, [unitDataSource]);
 
+  const handleCheckData = async () => {
+    setSpinning(true);
+    setShowRules(true);
+    const unRuleVerification: refDataType[] = [];
+    const nonExistentRef: refDataType[] = [];
+    await checkData(
+      {
+        '@type': 'flow property data set',
+        '@refObjectId': id,
+        '@version': version,
+      },
+      unRuleVerification,
+      nonExistentRef,
+    );
+    const units = fromData.units;
+    if (!units?.unit || !Array.isArray(units.unit) || units.unit.length === 0) {
+      message.error(
+        intl.formatMessage({
+          id: 'pages.unitgroups.validator.unit.required',
+          defaultMessage: 'Please select unit',
+        }),
+      );
+    } else if (units.unit.filter((item: any) => item?.quantitativeReference).length !== 1) {
+      message.error(
+        intl.formatMessage({
+          id: 'pages.unitgroups.validator.unit.quantitativeReference.required',
+          defaultMessage: 'Unit needs to have exactly one quantitative reference open',
+        }),
+      );
+    }
+    const unRuleVerificationData = unRuleVerification.map((item: any) => {
+      return {
+        id: item['@refObjectId'],
+        version: item['@version'],
+        type: 1,
+      };
+    });
+    const nonExistentRefData = nonExistentRef.map((item: any) => {
+      return {
+        id: item['@refObjectId'],
+        version: item['@version'],
+        type: 2,
+      };
+    });
+
+    setRefCheckData([...unRuleVerificationData, ...nonExistentRefData]);
+    setSpinning(false);
+  };
+
   return (
     <>
       {buttonType === 'icon' ? (
@@ -123,7 +178,7 @@ const UnitGroupEdit: FC<Props> = ({
           <Button shape='circle' icon={<FormOutlined />} size='small' onClick={onEdit}></Button>
         </Tooltip>
       ) : (
-        <Button size='small' onClick={onEdit}>
+        <Button onClick={onEdit}>
           <FormattedMessage
             id={buttonType ? buttonType : 'pages.button.edit'}
             defaultMessage='Edit'
@@ -157,11 +212,7 @@ const UnitGroupEdit: FC<Props> = ({
         }}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
-            <Button
-              onClick={() => {
-                setShowRules(true);
-              }}
-            >
+            <Button onClick={handleCheckData}>
               <FormattedMessage id='pages.button.check' defaultMessage='Data check' />
             </Button>
             <Button
@@ -198,72 +249,69 @@ const UnitGroupEdit: FC<Props> = ({
       >
         <Spin spinning={spinning}>
           <UpdateReferenceContext.Provider value={{ referenceValue }}>
-            <ProForm
-              formRef={formRefEdit}
-              initialValues={initData}
-              onValuesChange={(_, allValues) => {
-                setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
-              }}
-              submitter={{
-                render: () => {
-                  return [];
-                },
-              }}
-              onFinish={async () => {
-                const units = fromData.units;
-                // if (!units?.unit || !Array.isArray(units.unit) || units.unit.length === 0) {
-                //   message.error(
-                //     intl.formatMessage({
-                //       id: 'pages.unitgroups.validator.unit.required',
-                //       defaultMessage: 'Please select unit',
-                //     }),
-                //   );
-                //   return false;
-                // } else if (
-                //   units.unit.filter((item: any) => item?.quantitativeReference).length !== 1
-                // ) {
-                //   message.error(
-                //     intl.formatMessage({
-                //       id: 'pages.unitgroups.validator.unit.quantitativeReference.required',
-                //       defaultMessage: 'Unit needs to have exactly one quantitative reference open',
-                //     }),
-                //   );
-                //   return false;
-                // }
-                const formFieldsValue = {
-                  ...formRefEdit.current?.getFieldsValue(),
-                  units,
-                };
-                const updateResult = await updateUnitGroup(id, version, formFieldsValue);
-                if (updateResult?.data) {
-                  message.success(
-                    intl.formatMessage({
-                      id: 'pages.button.create.success',
-                      defaultMessage: 'Created successfully!',
-                    }),
-                  );
-                  setDrawerVisible(false);
-                  setViewDrawerVisible(false);
-                  setActiveTabKey('unitGroupInformation');
-                  actionRef?.current?.reload();
-                } else {
-                  message.error(updateResult?.error?.message);
-                }
-                return true;
+            <RefCheckContext.Provider
+              value={{
+                refCheckData: [...parentRefCheckContext.refCheckData, ...refCheckData],
               }}
             >
-              <UnitGroupForm
-                lang={lang}
-                activeTabKey={activeTabKey}
+              <ProForm
                 formRef={formRefEdit}
-                onData={handletFromData}
-                onUnitData={handletUnitData}
-                onUnitDataCreate={handletUnitDataCreate}
-                onTabChange={onTabChange}
-                unitDataSource={unitDataSource}
-                showRules={showRules}
-              />
-            </ProForm>
+                initialValues={initData}
+                onValuesChange={(_, allValues) => {
+                  setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+                }}
+                submitter={{
+                  render: () => {
+                    return [];
+                  },
+                }}
+                onFinish={async () => {
+                  const units = fromData.units;
+                  const formFieldsValue = {
+                    ...formRefEdit.current?.getFieldsValue(),
+                    units,
+                  };
+                  const updateResult = await updateUnitGroup(id, version, formFieldsValue);
+                  if (updateResult?.data) {
+                    if (updateResult?.data[0]?.rule_verification === true) {
+                      updateErrRef(null);
+                    } else {
+                      updateErrRef({
+                        id: id,
+                        version: version,
+                        ruleVerification: updateResult?.data[0]?.rule_verification,
+                        nonExistent: false,
+                      });
+                    }
+                    message.success(
+                      intl.formatMessage({
+                        id: 'pages.button.create.success',
+                        defaultMessage: 'Created successfully!',
+                      }),
+                    );
+                    setDrawerVisible(false);
+                    setViewDrawerVisible(false);
+                    setActiveTabKey('unitGroupInformation');
+                    actionRef?.current?.reload();
+                  } else {
+                    message.error(updateResult?.error?.message);
+                  }
+                  return true;
+                }}
+              >
+                <UnitGroupForm
+                  lang={lang}
+                  activeTabKey={activeTabKey}
+                  formRef={formRefEdit}
+                  onData={handletFromData}
+                  onUnitData={handletUnitData}
+                  onUnitDataCreate={handletUnitDataCreate}
+                  onTabChange={onTabChange}
+                  unitDataSource={unitDataSource}
+                  showRules={showRules}
+                />
+              </ProForm>
+            </RefCheckContext.Provider>
           </UpdateReferenceContext.Provider>
           <Collapse
             items={[

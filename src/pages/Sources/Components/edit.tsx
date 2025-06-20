@@ -1,4 +1,7 @@
+import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
+import type { refDataType } from '@/pages/Utils/review';
+import { checkData } from '@/pages/Utils/review';
 import { getSourceDetail, updateSource } from '@/services/sources/api';
 import { genSourceFromData } from '@/services/sources/util';
 import { supabaseStorageBucket } from '@/services/supabase/key';
@@ -13,7 +16,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
 import { SourceForm } from './form';
-
 type Props = {
   id: string;
   version: string;
@@ -21,6 +23,7 @@ type Props = {
   buttonType: string;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  updateErrRef?: (data: any) => void;
 };
 
 const SourceEdit: FC<Props> = ({
@@ -30,6 +33,7 @@ const SourceEdit: FC<Props> = ({
   actionRef,
   lang,
   setViewDrawerVisible,
+  updateErrRef = () => {},
 }) => {
   const intl = useIntl();
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -43,7 +47,8 @@ const SourceEdit: FC<Props> = ({
   const [loadFiles, setLoadFiles] = useState<any[]>([]);
   const [referenceValue, setReferenceValue] = useState(0);
   const [showRules, setShowRules] = useState<boolean>(false);
-
+  const [refCheckData, setRefCheckData] = useState<any[]>([]);
+  const parentRefCheckContext = useRefCheckContext();
   useEffect(() => {
     if (showRules) {
       setTimeout(() => {
@@ -135,6 +140,16 @@ const SourceEdit: FC<Props> = ({
     });
 
     if (result?.data) {
+      if (result?.data[0]?.rule_verification === true) {
+        updateErrRef(null);
+      } else {
+        updateErrRef({
+          id: id,
+          version: version,
+          ruleVerification: result?.data[0]?.rule_verification,
+          nonExistent: false,
+        });
+      }
       if (fileListWithUUID.length > 0) {
         fileListWithUUID.forEach(async (file) => {
           if (file.newUid) {
@@ -166,7 +181,38 @@ const SourceEdit: FC<Props> = ({
     }
     onReset();
   }, [drawerVisible]);
+  const handleCheckData = async () => {
+    setSpinning(true);
+    setShowRules(true);
+    const unRuleVerification: refDataType[] = [];
+    const nonExistentRef: refDataType[] = [];
+    await checkData(
+      {
+        '@type': 'flow property data set',
+        '@refObjectId': id,
+        '@version': version,
+      },
+      unRuleVerification,
+      nonExistentRef,
+    );
+    const unRuleVerificationData = unRuleVerification.map((item: any) => {
+      return {
+        id: item['@refObjectId'],
+        version: item['@version'],
+        type: 1,
+      };
+    });
+    const nonExistentRefData = nonExistentRef.map((item: any) => {
+      return {
+        id: item['@refObjectId'],
+        version: item['@version'],
+        type: 2,
+      };
+    });
 
+    setRefCheckData([...unRuleVerificationData, ...nonExistentRefData]);
+    setSpinning(false);
+  };
   return (
     <>
       {buttonType === 'icon' ? (
@@ -201,11 +247,7 @@ const SourceEdit: FC<Props> = ({
         onClose={() => setDrawerVisible(false)}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
-            <Button
-              onClick={() => {
-                setShowRules(true);
-              }}
-            >
+            <Button onClick={handleCheckData}>
               <FormattedMessage id='pages.button.check' defaultMessage='Data check' />
             </Button>
             <Button
@@ -238,32 +280,38 @@ const SourceEdit: FC<Props> = ({
       >
         <Spin spinning={spinning}>
           <UpdateReferenceContext.Provider value={{ referenceValue }}>
-            <ProForm
-              formRef={formRefEdit}
-              initialValues={initData}
-              onValuesChange={(_, allValues) => {
-                setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+            <RefCheckContext.Provider
+              value={{
+                refCheckData: [...parentRefCheckContext.refCheckData, ...refCheckData],
               }}
-              submitter={{
-                render: () => {
-                  return [];
-                },
-              }}
-              onFinish={onSubmit}
             >
-              <SourceForm
-                lang={lang}
-                activeTabKey={activeTabKey}
+              <ProForm
                 formRef={formRefEdit}
-                onData={handletFromData}
-                onTabChange={onTabChange}
-                loadFiles={loadFiles}
-                setLoadFiles={setLoadFiles}
-                fileList={fileList}
-                setFileList={setFileList}
-                showRules={showRules}
-              />
-            </ProForm>
+                initialValues={initData}
+                onValuesChange={(_, allValues) => {
+                  setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+                }}
+                submitter={{
+                  render: () => {
+                    return [];
+                  },
+                }}
+                onFinish={onSubmit}
+              >
+                <SourceForm
+                  lang={lang}
+                  activeTabKey={activeTabKey}
+                  formRef={formRefEdit}
+                  onData={handletFromData}
+                  onTabChange={onTabChange}
+                  loadFiles={loadFiles}
+                  setLoadFiles={setLoadFiles}
+                  fileList={fileList}
+                  setFileList={setFileList}
+                  showRules={showRules}
+                />
+              </ProForm>
+            </RefCheckContext.Provider>
           </UpdateReferenceContext.Provider>
           <Collapse
             items={[

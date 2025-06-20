@@ -17,19 +17,24 @@ import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 're
 import { FormattedMessage, useIntl } from 'umi';
 import { LifeCycleModelForm } from '../form';
 // const { TextArea } = Input;
-import { checkRequiredFields, getAllRefObj, getRefTableName } from '@/pages/Utils';
-import { getRefData, updateReviewIdAndStateCode } from '@/services/general/api';
 import {
-  getLifeCycleModelDetail,
-  updateLifeCycleModelStateCode,
-} from '@/services/lifeCycleModels/api';
-import { getProcessDetail, updateProcessStateCode } from '@/services/processes/api';
-import { addReviewsApi } from '@/services/reviews/api';
+  checkReferences,
+  checkRequiredFields,
+  dealModel,
+  dealProcress,
+  getAllProcessesOfModel,
+  getAllRefObj,
+  ReffPath,
+  updateReviewsAfterCheckData,
+  updateUnReviewToUnderReview,
+} from '@/pages/Utils/review';
+import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
+
+import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
+import { getProcessDetail } from '@/services/processes/api';
 import { getUserTeamId } from '@/services/roles/api';
 import { v4 } from 'uuid';
 import requiredFields from '../../requiredFields';
-const { Paragraph } = Typography;
-
 type Props = {
   lang: string;
   data: any;
@@ -44,17 +49,16 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
   const [referenceValue, setReferenceValue] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [showRules, setShowRules] = useState<boolean>(false);
-  const [unRuleVerificationData, setUnRuleVerificationData] = useState<any[]>([]);
-  const [nonExistentRefData, setNonExistentRefData] = useState<any[]>([]);
+  const [refCheckData, setRefCheckData] = useState<any[]>([]);
+  const parentRefCheckContext = useRefCheckContext();
   const intl = useIntl();
+  let modelDetail: any;
 
   useEffect(() => {
     if (showRules) {
-      setTimeout(() => {
-        formRefEdit.current?.validateFields();
-      });
+      formRefEdit.current?.validateFields();
     }
-  }, [showRules]);
+  }, [showRules, activeTabKey]);
 
   const updateReference = async () => {
     setReferenceValue(referenceValue + 1);
@@ -109,9 +113,87 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
     onReset();
   }, [drawerVisible]);
 
-  const handleCheckData = async (data?: any) => {
+  const handleCheckData = async () => {
+    modelDetail = await getLifeCycleModelDetail(data.id, data.version);
     setShowRules(true);
     const { checkResult, tabName } = checkRequiredFields(requiredFields, data ?? fromData);
+
+    const userTeamId = await getUserTeamId();
+    const refObjs = getAllRefObj(data);
+
+    const unReview: any[] = []; //stateCode < 20
+    const underReview: any[] = []; //stateCode >= 20 && stateCode < 100
+    const unRuleVerification: any[] = [];
+    const nonExistentRef: any[] = [];
+
+    if (!modelDetail) {
+      message.error(
+        intl.formatMessage({
+          id: 'pages.process.review.submitError',
+          defaultMessage: 'Submit review failed',
+        }),
+      );
+      setSpinning(false);
+      return { checkResult: false, unReview };
+    }
+
+    dealModel(modelDetail?.data, unReview, underReview, unRuleVerification);
+
+    const refsSet = new Set<string>();
+    const path = await checkReferences(
+      refObjs,
+      refsSet,
+      userTeamId,
+      unReview,
+      underReview,
+      unRuleVerification,
+      nonExistentRef,
+      new ReffPath(
+        {
+          '@refObjectId': data.id,
+          '@version': data.version,
+          '@type': 'life cycle model data set',
+        },
+        modelDetail?.data?.rule_verification,
+        false,
+      ),
+    );
+    const problemNodes = path?.findProblemNodes();
+
+    if (problemNodes && problemNodes.length > 0) {
+      let result = problemNodes.map((item: any) => {
+        return {
+          id: item['@refObjectId'],
+          version: item['@version'],
+          ruleVerification: item.ruleVerification,
+          nonExistent: item.nonExistent,
+        };
+      });
+      setRefCheckData(result);
+    } else {
+      setRefCheckData([]);
+    }
+
+    const allProcesses = await getAllProcessesOfModel(modelDetail?.data);
+    for (const process of allProcesses) {
+      const modelOfProcess = await getLifeCycleModelDetail(process.id, process.version);
+      if (modelOfProcess) {
+        dealModel(modelOfProcess?.data, unReview, underReview, unRuleVerification);
+      }
+      const processDetail = await getProcessDetail(process.id, process.version);
+      dealProcress(processDetail?.data, unReview, underReview, unRuleVerification, nonExistentRef);
+
+      const processRefObjs = getAllRefObj(processDetail?.data?.json);
+      await checkReferences(
+        processRefObjs,
+        refsSet,
+        userTeamId,
+        unReview,
+        underReview,
+        unRuleVerification,
+        nonExistentRef,
+      );
+    }
     if (!checkResult) {
       if (!drawerVisible) {
         setDrawerVisible(true);
@@ -120,176 +202,13 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
       await setActiveTabKey(tabName);
       setTimeout(() => {
         formRefEdit.current?.validateFields();
-      }, 100);
-      return { checkResult, tabName };
+      }, 200);
     }
-    message.success(
-      intl.formatMessage({
-        id: 'pages.button.check.success',
-        defaultMessage: 'Data check successfully!',
-      }),
-    );
-    return { checkResult, tabName };
-  };
-
-  const submitReview = async () => {
-    setSpinning(true);
-    const teamId = await getUserTeamId();
-
-    const refObjs = getAllRefObj(data);
-    const unReview: any[] = []; //stateCode < 20
-    const underReview: any[] = []; //stateCode >= 20 && stateCode < 100
-    const unReviewProcesses: any[] = [];
-    const unRuleVerification: any[] = [];
-    const nonExistentRef: any[] = [];
-
-    let lifeCycleModelDetail: any = {};
-
-    const getAllProcesses = async () => {
-      lifeCycleModelDetail = await getLifeCycleModelDetail(data.id, data.version);
-      if (
-        lifeCycleModelDetail?.data?.state_code >= 20 &&
-        lifeCycleModelDetail?.data?.state_code < 100
-      ) {
-        underReview.push(lifeCycleModelDetail);
-        // message.error(
-        //   intl.formatMessage({
-        //     id: 'pages.process.review.error',
-        //     defaultMessage: 'Referenced data is under review, cannot initiate another review',
-        //   }),
-        // );
-        // return false;
-      }
-      const processes: any[] = [{ id: data.id, version: data.version }];
-      lifeCycleModelDetail?.data?.json_tg?.xflow?.nodes?.forEach((item: any) => {
-        if (item.data) {
-          processes.push(item.data);
-        }
-      });
-      return processes;
-    };
-
-    const checkReferences = async (refs: any[], checkedIds = new Set<string>()) => {
-      for (const ref of refs) {
-        if (checkedIds.has(ref['@refObjectId'])) continue;
-        checkedIds.add(ref['@refObjectId']);
-
-        const refResult = await getRefData(
-          ref['@refObjectId'],
-          ref['@version'],
-          getRefTableName(ref['@type']),
-          teamId,
-        );
-        if (refResult.success) {
-          const refData = refResult?.data;
-          if (
-            !refData?.ruleVerification &&
-            refData?.stateCode !== 100 &&
-            refData?.stateCode !== 200
-          ) {
-            if (
-              !unRuleVerification.find(
-                (item) =>
-                  item['@refObjectId'] === ref['@refObjectId'] &&
-                  item['@version'] === ref['@version'],
-              )
-            ) {
-              unRuleVerification.push(ref);
-            }
-          }
-          if (refData?.stateCode >= 20 && refData?.stateCode < 100) {
-            if (
-              !underReview.find(
-                (item) =>
-                  item['@refObjectId'] === ref['@refObjectId'] &&
-                  item['@version'] === ref['@version'],
-              )
-            ) {
-              underReview.push(ref);
-            }
-          }
-
-          if (refData?.stateCode < 20) {
-            const json = refData?.json;
-            if (
-              !unReview.find(
-                (item) =>
-                  item['@refObjectId'] === ref['@refObjectId'] &&
-                  item['@version'] === ref['@version'],
-              )
-            ) {
-              unReview.push(ref);
-            }
-
-            const subRefs = getAllRefObj(json);
-            await checkReferences(subRefs, checkedIds);
-          }
-        } else {
-          if (
-            !nonExistentRef.find(
-              (item) =>
-                item['@refObjectId'] === ref['@refObjectId'] &&
-                item['@version'] === ref['@version'],
-            )
-          ) {
-            nonExistentRef.push(ref);
-          }
-        }
-      }
-    };
-
-    await checkReferences(refObjs);
-
-    const allProcesses = await getAllProcesses();
-
-    for (const process of allProcesses) {
-      const processDetail = await getProcessDetail(process.id, process.version);
-      if (
-        !processDetail?.data?.ruleVerification &&
-        processDetail?.data?.stateCode !== 100 &&
-        processDetail?.data?.stateCode !== 200
-      ) {
-        unRuleVerification.unshift({
-          '@type': 'process data set',
-          '@refObjectId': processDetail?.data?.id,
-          '@version': processDetail?.data?.version,
-        });
-      }
-      if (processDetail?.data?.stateCode < 20) {
-        unReviewProcesses.push(process);
-      } else if (processDetail?.data?.stateCode >= 20 && processDetail?.data?.stateCode < 100) {
-        underReview.push(processDetail);
-      }
-      const processRefObjs = getAllRefObj(processDetail?.data?.json);
-      await checkReferences(processRefObjs);
-    }
-    if (
-      !lifeCycleModelDetail?.data?.rule_verification &&
-      lifeCycleModelDetail?.data?.state_code !== 100 &&
-      lifeCycleModelDetail?.data?.state_code !== 200
-    ) {
-      unRuleVerification.unshift({
-        '@type': 'lifeCycleModel data set',
-        '@refObjectId': lifeCycleModelDetail?.data?.id,
-        '@version': lifeCycleModelDetail?.data?.version,
-      });
-    }
-
     if (
       (nonExistentRef && nonExistentRef.length > 0) ||
       (unRuleVerification && unRuleVerification.length > 0) ||
       (underReview && underReview.length > 0)
     ) {
-      if (!drawerVisible) {
-        setDrawerVisible(true);
-        onReset();
-      }
-      if (nonExistentRef && nonExistentRef.length > 0) {
-        setNonExistentRefData(nonExistentRef);
-      }
-      if (unRuleVerification && unRuleVerification.length > 0) {
-        setUnRuleVerificationData(unRuleVerification);
-      }
       if (underReview && underReview.length > 0) {
         message.error(
           intl.formatMessage({
@@ -299,13 +218,10 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
         );
       }
       setSpinning(false);
-      return;
+      return { checkResult: false, unReview };
     }
 
-    const reviewId = v4();
-    const result = await addReviewsApi(reviewId, data.id, data.version);
-    if (result?.error) return;
-    if (lifeCycleModelDetail?.data?.state_code >= 20) {
+    if (modelDetail?.data?.state_code >= 20) {
       message.error(
         intl.formatMessage({
           id: 'pages.process.review.submitError',
@@ -313,31 +229,32 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
         }),
       );
       setSpinning(false);
-      return;
+      return { checkResult: false, unReview };
     }
-    const lifeCycleModelStateCode = 20;
+    setSpinning(false);
+    return { checkResult, unReview };
+  };
 
-    await updateLifeCycleModelStateCode(data.id, data.version, lifeCycleModelStateCode);
+  const submitReview = async (unReview: any[]) => {
+    setSpinning(true);
 
-    if (unReviewProcesses.length > 0) {
-      for (const process of unReviewProcesses) {
-        await updateProcessStateCode(
-          process.id,
-          process.version,
-          reviewId,
-          lifeCycleModelStateCode,
-        );
-      }
-    }
-    unReview.forEach(async (item: any) => {
-      await updateReviewIdAndStateCode(
-        reviewId,
-        item['@refObjectId'],
-        item['@version'],
-        getRefTableName(item['@type']),
-        lifeCycleModelStateCode,
-      );
-    });
+    const reviewId = v4();
+    const result = await updateReviewsAfterCheckData(
+      modelDetail?.data?.teamId,
+      {
+        id: data.id,
+        version: data.version,
+        name:
+          modelDetail?.data?.json?.lifeCycleModelDataSet?.lifeCycleModelInformation
+            ?.dataSetInformation?.name ?? {},
+      },
+      reviewId,
+    );
+
+    if (result?.error) return;
+
+    await updateUnReviewToUnderReview(unReview, reviewId);
+
     message.success(
       intl.formatMessage({
         id: 'pages.process.review.submitSuccess',
@@ -345,6 +262,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
       }),
     );
     setDrawerVisible(false);
+    setSpinning(false);
   };
 
   useImperativeHandle(ref, () => ({
@@ -402,7 +320,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
             )} */}
             {action === 'edit' ? (
               <>
-                <Button onClick={() => handleCheckData(fromData)}>
+                <Button onClick={() => handleCheckData()}>
                   <FormattedMessage id='pages.button.check' defaultMessage='Data check' />
                 </Button>
 
@@ -440,112 +358,69 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
         }
       >
         <Spin spinning={spinning}>
-          {unRuleVerificationData && unRuleVerificationData.length > 0 && (
-            <>
-              <Collapse
-                items={[
-                  {
-                    key: '1',
-                    label: intl.formatMessage({
-                      id: 'pages.process.review.unRuleVerification.tip',
-                      defaultMessage:
-                        'The following data is incomplete, please modify and resubmit for review',
-                    }),
-                    children: (
-                      <Typography>
-                        {unRuleVerificationData.map((item: any) => (
-                          <Paragraph
-                            key={item['@refObjectId']}
-                          >{`${item['@type']} : ${item['@refObjectId']}`}</Paragraph>
-                        ))}
-                      </Typography>
-                    ),
-                  },
-                ]}
-              />
-              <br />
-            </>
-          )}
-          {nonExistentRefData && nonExistentRefData.length > 0 && (
-            <>
-              <Collapse
-                items={[
-                  {
-                    key: '1',
-                    label: intl.formatMessage({
-                      id: 'pages.process.review.nonExistentRefData.tip',
-                      defaultMessage:
-                        'The following data is incomplete, please modify and resubmit for review',
-                    }),
-                    children: (
-                      <Typography>
-                        {nonExistentRefData.map((item: any) => (
-                          <Paragraph
-                            key={item['@refObjectId']}
-                          >{`${item['@type']} : ${item['@refObjectId']}`}</Paragraph>
-                        ))}
-                      </Typography>
-                    ),
-                  },
-                ]}
-              />
-              <br />
-            </>
-          )}
           <UpdateReferenceContext.Provider value={{ referenceValue }}>
-            <ProForm
-              formRef={formRefEdit}
-              initialValues={data}
-              onValuesChange={async (_, allValues) => {
-                if (activeTabKey === 'validation') {
-                  await setFromData({
-                    ...fromData,
-                    modellingAndValidation: {
-                      ...fromData?.modellingAndValidation,
-                      validation: { ...allValues?.modellingAndValidation?.validation },
-                    },
-                  });
-                } else if (activeTabKey === 'complianceDeclarations') {
-                  await setFromData({
-                    ...fromData,
-                    modellingAndValidation: {
-                      ...fromData?.modellingAndValidation,
-                      complianceDeclarations: {
-                        ...allValues?.modellingAndValidation?.complianceDeclarations,
-                      },
-                    },
-                  });
-                } else {
-                  await setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
-                }
-              }}
-              submitter={{
-                render: () => {
-                  return [];
-                },
-              }}
-              onFinish={async () => {
-                // if (!checkResult) {
-                //   await setActiveTabKey(tabName);
-                //   formRefEdit.current?.validateFields();
-                //   return false;
-                // }
-                onData({ ...fromData });
-                formRefEdit.current?.resetFields();
-                setDrawerVisible(false);
-                return true;
+            <RefCheckContext.Provider
+              value={{
+                refCheckData: [...parentRefCheckContext.refCheckData, ...refCheckData],
               }}
             >
-              <LifeCycleModelForm
-                formType={action}
-                lang={lang}
-                activeTabKey={activeTabKey}
+              <ProForm
                 formRef={formRefEdit}
-                onTabChange={onTabChange}
-                onData={handletFromData}
-                showRules={showRules}
-              />
-            </ProForm>
+                initialValues={data}
+                onValuesChange={async (_, allValues) => {
+                  if (activeTabKey === 'validation') {
+                    await setFromData({
+                      ...fromData,
+                      modellingAndValidation: {
+                        ...fromData?.modellingAndValidation,
+                        validation: { ...allValues?.modellingAndValidation?.validation },
+                      },
+                    });
+                  } else if (activeTabKey === 'complianceDeclarations') {
+                    await setFromData({
+                      ...fromData,
+                      modellingAndValidation: {
+                        ...fromData?.modellingAndValidation,
+                        complianceDeclarations: {
+                          ...allValues?.modellingAndValidation?.complianceDeclarations,
+                        },
+                      },
+                    });
+                  } else {
+                    await setFromData({
+                      ...fromData,
+                      [activeTabKey]: allValues[activeTabKey] ?? {},
+                    });
+                  }
+                }}
+                submitter={{
+                  render: () => {
+                    return [];
+                  },
+                }}
+                onFinish={async () => {
+                  // if (!checkResult) {
+                  //   await setActiveTabKey(tabName);
+                  //   formRefEdit.current?.validateFields();
+                  //   return false;
+                  // }
+                  onData({ ...fromData });
+                  formRefEdit.current?.resetFields();
+                  setDrawerVisible(false);
+                  return true;
+                }}
+              >
+                <LifeCycleModelForm
+                  formType={action}
+                  lang={lang}
+                  activeTabKey={activeTabKey}
+                  formRef={formRefEdit}
+                  onTabChange={onTabChange}
+                  onData={handletFromData}
+                  showRules={showRules}
+                />
+              </ProForm>
+            </RefCheckContext.Provider>
           </UpdateReferenceContext.Provider>
           <Collapse
             items={[

@@ -38,13 +38,13 @@ export async function getDataDetail(id: string, version: string, table: string) 
     if (version && version.length === 9) {
       result = await supabase
         .from(table)
-        .select('json,version, modified_at')
+        .select('json,version, modified_at,id,state_code,rule_verification,user_id')
         .eq('id', id)
         .eq('version', version);
       if (result.data === null || result.data.length === 0) {
         result = await supabase
           .from(table)
-          .select('json,version, modified_at')
+          .select('json,version, modified_at,id,state_code,rule_verification,user_id')
           .eq('id', id)
           .order('version', { ascending: false })
           .range(0, 0);
@@ -52,7 +52,7 @@ export async function getDataDetail(id: string, version: string, table: string) 
     } else {
       result = await supabase
         .from(table)
-        .select('json,version, modified_at')
+        .select('json,version, modified_at,id,state_code,rule_verification,user_id')
         .eq('id', id)
         .order('version', { ascending: false })
         .range(0, 0);
@@ -65,6 +65,9 @@ export async function getDataDetail(id: string, version: string, table: string) 
           version: data.version,
           json: data.json,
           modifiedAt: data?.modified_at,
+          stateCode: data?.state_code,
+          ruleVerification: data?.rule_verification,
+          userId: data?.user_id,
         },
         success: true,
       });
@@ -76,7 +79,7 @@ export async function getDataDetail(id: string, version: string, table: string) 
   });
 }
 
-export async function getRefData(id: string, version: string, table: string, teamId: string) {
+export async function getRefData(id: string, version: string, table: string, teamId?: string) {
   if (!table) {
     return Promise.resolve({
       data: null,
@@ -139,40 +142,19 @@ export async function updateStateCodeApi(
   return result;
 }
 
-export async function updateReviewIdAndStateCode(
-  reviewId: string,
+export async function getReviewsOfData(id: string, version: string, table: string) {
+  let result = await supabase.from(table).select('reviews').eq('id', id).eq('version', version);
+  return result.data?.[0]?.reviews ?? [];
+}
+export async function updateDateToReviewState(
   id: string,
   version: string,
   table: string,
-  stateCode: number,
+  data: any,
 ) {
   if (!table) return;
-  let result: any = {};
-  if (id && id.length === 36) {
-    if (version && version.length === 9) {
-      result = await supabase
-        .from(table)
-        .update({ review_id: reviewId, state_code: stateCode })
-        .eq('id', id)
-        .eq('version', version)
-        .select();
-      if (result.data === null || result.data.length === 0) {
-        result = await supabase
-          .from(table)
-          .update({ review_id: reviewId, state_code: stateCode })
-          .eq('id', id)
-          .order('version', { ascending: false })
-          .range(0, 0);
-      }
-    } else {
-      result = await supabase
-        .from(table)
-        .update({ review_id: reviewId, state_code: stateCode })
-        .eq('id', id)
-        .order('version', { ascending: false })
-        .range(0, 0);
-    }
-  }
+  let result = await supabase.from(table).update(data).eq('id', id).eq('version', version).select();
+  return result;
 }
 
 // Get the team id of the user when the user is not an invited user and  is not a rejected user

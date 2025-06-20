@@ -1,4 +1,5 @@
 import RequiredSelectFormTitle from '@/components/RequiredSelectFormTitle';
+import { RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
 import { useUpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import { validateRefObjectId } from '@/pages/Utils';
 import { getContactDetail } from '@/services/contacts/api';
@@ -12,7 +13,6 @@ import { FormattedMessage } from 'umi';
 import ContactEdit from '../edit';
 import ContactView from '../view';
 import ContactSelectDrawer from './drawer';
-
 const { TextArea } = Input;
 
 type Props = {
@@ -36,21 +36,57 @@ const ContactSelectForm: FC<Props> = ({
 }) => {
   const [id, setId] = useState<string | undefined>(undefined);
   const [version, setVersion] = useState<string | undefined>(undefined);
+  const [dataUserId, setDataUserId] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
   const { referenceValue } = useUpdateReferenceContext() as { referenceValue: number };
   const [ruleErrorState, setRuleErrorState] = useState(false);
   const [refData, setRefData] = useState<any>(null);
+  const [errRef, setErrRef] = useState<RefCheckType | null>(null);
+  const refCheckContext = useRefCheckContext();
+  const updateErrRefByDetail = (data: any) => {
+    if (
+      data?.ruleVerification === false &&
+      data?.stateCode !== 100 &&
+      data?.stateCode !== 200 &&
+      refCheckContext?.refCheckData?.length
+    ) {
+      setErrRef({
+        id: data?.id,
+        version: data?.version,
+        ruleVerification: data?.ruleVerification,
+        nonExistent: false,
+      });
+    } else {
+      setErrRef(null);
+    }
+  };
 
   useEffect(() => {
-    if (id && version) {
+    if (id && version && !refData) {
       getRefData(id, version, 'contacts', '').then((result: any) => {
         setRefData({ ...result.data });
+        setDataUserId(result?.data?.userId);
+        updateErrRefByDetail(result?.data);
       });
+      if (refCheckContext?.refCheckData?.length) {
+        const ref = refCheckContext?.refCheckData?.find(
+          (item: any) => item.id === id && item.version === version,
+        );
+        if (ref) {
+          setErrRef(ref);
+        } else {
+          setErrRef(null);
+        }
+      } else {
+        setErrRef(null);
+      }
     }
-  }, [id, version]);
+  }, [id, version, refCheckContext]);
 
   const handletContactData = (rowId: string, rowVersion: string) => {
     getContactDetail(rowId, rowVersion).then(async (result: any) => {
+      updateErrRefByDetail(result?.data);
+      setDataUserId(result?.data?.userId);
       const selectedData = genContactFromData(result.data?.json?.contactDataSet ?? {});
       if (parentName) {
         await formRef.current?.setFieldValue([...parentName, ...name], {
@@ -105,15 +141,36 @@ const ContactSelectForm: FC<Props> = ({
   return (
     <Card
       size='small'
+      style={errRef ? { border: `1px solid ${token.colorError}` } : {}}
       title={
         isRequired ? (
           <RequiredSelectFormTitle
             label={label}
             ruleErrorState={ruleErrorState}
             requiredRules={requiredRules}
+            errRef={errRef}
           />
         ) : (
-          label
+          <>
+            {label}{' '}
+            {errRef && (
+              <span style={{ color: token.colorError, marginLeft: '5px', fontWeight: 'normal' }}>
+                {errRef?.ruleVerification === false ? (
+                  <FormattedMessage
+                    id='pages.select.unRuleVerification'
+                    defaultMessage='Data is incomplete'
+                  />
+                ) : errRef?.nonExistent === true ? (
+                  <FormattedMessage
+                    id='pages.select.nonExistentRef'
+                    defaultMessage='Data does not exist'
+                  />
+                ) : (
+                  ''
+                )}
+              </span>
+            )}
+          </>
         )
       }
     >
@@ -166,13 +223,14 @@ const ContactSelectForm: FC<Props> = ({
             </Button>
           )}
           {id && <ContactView lang={lang} id={id} version={version ?? ''} buttonType='text' />}
-          {id && refData?.userId === sessionStorage.getItem('userId') && (
+          {id && dataUserId === sessionStorage.getItem('userId') && (
             <ContactEdit
               lang={lang}
               id={id}
               version={version ?? ''}
               buttonType=''
               setViewDrawerVisible={() => {}}
+              updateErrRef={(data: any) => setErrRef(data)}
             />
           )}
           {id && (
