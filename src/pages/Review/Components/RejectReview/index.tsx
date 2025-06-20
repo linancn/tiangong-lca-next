@@ -3,7 +3,6 @@ import {
   checkReferences,
   dealModel,
   dealProcress,
-  dealSameModelWithProcress,
   getAllRefObj,
   getRefTableName,
 } from '@/pages/Utils/review';
@@ -108,13 +107,6 @@ const RejectReview: React.FC<RejectReviewProps> = ({ reviewId, dataId, dataVersi
       refObjs,
       refsMap,
       userTeamId,
-      unReview,
-      underReview,
-      unRuleVerification,
-      nonExistentRef,
-    );
-    await dealSameModelWithProcress(
-      refObjs,
       unReview,
       underReview,
       unRuleVerification,

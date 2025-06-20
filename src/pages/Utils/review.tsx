@@ -337,25 +337,6 @@ export const checkData = async (
   }
 };
 
-export const dealSameModelWithProcress = async (
-  refObjs: refDataType[],
-  unReview: refDataType[],
-  underReview: refDataType[],
-  unRuleVerification: refDataType[],
-  nonExistentRef: refDataType[],
-) => {
-  const procressRefs = refObjs.filter((item) => item['@type'] === 'process data set');
-  for (const procress of procressRefs) {
-    const { data: sameModeWithProcress } = await getLifeCycleModelDetail(
-      procress['@refObjectId'],
-      procress['@version'],
-    );
-    if (sameModeWithProcress) {
-      dealModel(sameModeWithProcress, unReview, underReview, unRuleVerification, nonExistentRef);
-    }
-  }
-};
-
 export const updateReviewsAfterCheckData = async (teamId: string, data: any, reviewId: string) => {
   const team = await getTeamMessageApi(teamId);
   const user = await getUsersByIds([sessionStorage.getItem('userId') ?? '']);
