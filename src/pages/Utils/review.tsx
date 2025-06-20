@@ -190,9 +190,33 @@ export const checkReferences = async (
   nonExistentRef: refDataType[],
   parentPath?: ReffPath,
 ): Promise<ReffPath | undefined> => {
+  let currentPath: ReffPath | undefined;
+  const handelSameModelWithProcress = async (ref: refDataType) => {
+    if (ref['@type'] === 'process data set') {
+      const { data: sameModelWithProcress, success } = await getLifeCycleModelDetail(
+        ref['@refObjectId'],
+        ref['@version'],
+      );
+      if (sameModelWithProcress && success) {
+        dealModel(sameModelWithProcress, unReview, underReview, unRuleVerification, nonExistentRef);
+        const modelRefs = getAllRefObj(sameModelWithProcress);
+        await checkReferences(
+          modelRefs,
+          refMaps,
+          userTeamId,
+          unReview,
+          underReview,
+          unRuleVerification,
+          nonExistentRef,
+          currentPath,
+        );
+      }
+    }
+  };
+
   for (const ref of refs) {
-    if (refMaps.has(`${ref['@refObjectId']}:${ref['@version']}`)) {
-      const refData = refMaps.get(`${ref['@refObjectId']}:${ref['@version']}`);
+    if (refMaps.has(`${ref['@refObjectId']}:${ref['@version']}:${ref['@type']}`)) {
+      const refData = refMaps.get(`${ref['@refObjectId']}:${ref['@version']}:${ref['@type']}`);
 
       if (refData?.stateCode !== 100 && refData?.stateCode !== 200) {
         const currentPath = new ReffPath(ref, refData?.ruleVerification, false);
@@ -200,6 +224,7 @@ export const checkReferences = async (
           parentPath.addChild(currentPath);
         }
       }
+      await handelSameModelWithProcress(ref);
       continue;
     }
     const refResult = await getRefData(
@@ -208,9 +233,8 @@ export const checkReferences = async (
       getRefTableName(ref['@type']),
       userTeamId,
     );
-    refMaps.set(`${ref['@refObjectId']}:${ref['@version']}`, refResult?.data);
+    refMaps.set(`${ref['@refObjectId']}:${ref['@version']}:${ref['@type']}`, refResult?.data);
 
-    let currentPath: ReffPath | undefined;
     if (refResult.success && refResult?.data) {
       const refData = refResult?.data;
       if (refData?.stateCode !== 100 && refData?.stateCode !== 200) {
@@ -268,32 +292,7 @@ export const checkReferences = async (
           currentPath,
         );
       }
-      if (ref['@type'] === 'process data set') {
-        const { data: sameModelWithProcress } = await getLifeCycleModelDetail(
-          ref['@refObjectId'],
-          ref['@version'],
-        );
-        if (sameModelWithProcress) {
-          dealModel(
-            sameModelWithProcress,
-            unReview,
-            underReview,
-            unRuleVerification,
-            nonExistentRef,
-          );
-          const modelRefs = getAllRefObj(sameModelWithProcress);
-          await checkReferences(
-            modelRefs,
-            refMaps,
-            userTeamId,
-            unReview,
-            underReview,
-            unRuleVerification,
-            nonExistentRef,
-            currentPath,
-          );
-        }
-      }
+      await handelSameModelWithProcress(ref);
     } else {
       currentPath = new ReffPath(ref, true, true);
       if (parentPath) {

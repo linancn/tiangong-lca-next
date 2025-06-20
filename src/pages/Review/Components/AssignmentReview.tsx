@@ -132,6 +132,7 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
             dataVersion={record.json?.data?.version}
             reviewId={record.id}
             key={0}
+            actionRef={actionRef}
           />,
         ];
       },

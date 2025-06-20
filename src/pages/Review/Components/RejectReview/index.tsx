@@ -1,12 +1,6 @@
 import type { refDataType } from '@/pages/Utils/review';
-import {
-  checkReferences,
-  dealModel,
-  dealProcress,
-  getAllRefObj,
-  getRefTableName,
-} from '@/pages/Utils/review';
-import { updateDateToReviewState } from '@/services/general/api';
+import { dealModel, dealProcress, getAllRefObj, getRefTableName } from '@/pages/Utils/review';
+import { getRefData, updateDateToReviewState } from '@/services/general/api';
 import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
 import { getProcessDetail } from '@/services/processes/api';
 import { getReviewsDetail, updateReviewApi } from '@/services/reviews/api';
@@ -21,9 +15,16 @@ interface RejectReviewProps {
   dataId: string;
   dataVersion: string;
   isModel: boolean;
+  actionRef: any;
 }
 
-const RejectReview: React.FC<RejectReviewProps> = ({ reviewId, dataId, dataVersion, isModel }) => {
+const RejectReview: React.FC<RejectReviewProps> = ({
+  reviewId,
+  dataId,
+  dataVersion,
+  isModel,
+  actionRef,
+}) => {
   const formRef = useRef<FormInstance>(null);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -32,6 +33,7 @@ const RejectReview: React.FC<RejectReviewProps> = ({ reviewId, dataId, dataVersi
   useEffect(() => {
     if (!open) {
       formRef?.current?.resetFields();
+      actionRef?.current?.reload();
     }
   }, [open]);
 
@@ -57,6 +59,74 @@ const RejectReview: React.FC<RejectReviewProps> = ({ reviewId, dataId, dataVersi
     }
   };
 
+  const getUnderReviewReferences = async (
+    refs: any[],
+    refMaps: Map<string, any>,
+    userTeamId: string,
+    underReview: refDataType[],
+  ): Promise<undefined> => {
+    const handelSameModelWithProcress = async (ref: refDataType) => {
+      if (ref['@type'] === 'process data set') {
+        const { data: sameModelWithProcress, success } = await getLifeCycleModelDetail(
+          ref['@refObjectId'],
+          ref['@version'],
+        );
+        if (success && sameModelWithProcress) {
+          if (
+            sameModelWithProcress?.stateCode >= 20 &&
+            sameModelWithProcress?.stateCode < 100 &&
+            !underReview.find(
+              (item) =>
+                item['@refObjectId'] === ref['@refObjectId'] &&
+                item['@version'] === ref['@version'],
+            )
+          ) {
+            underReview.push({
+              '@type': 'lifeCycleModel data set',
+              '@refObjectId': sameModelWithProcress?.id,
+              '@version': sameModelWithProcress?.version,
+            });
+          }
+          const modelRefs = getAllRefObj(sameModelWithProcress);
+          await getUnderReviewReferences(modelRefs, refMaps, userTeamId, underReview);
+        }
+      }
+    };
+    for (const ref of refs) {
+      if (ref['@refObjectId'] === '2f1b6fc4-7ebe-445d-ad66-e90e2ef2bb34') {
+        console.log('ref', ref);
+      }
+      if (refMaps.has(`${ref['@refObjectId']}:${ref['@version']}:${ref['@type']}`)) {
+        await handelSameModelWithProcress(ref);
+        continue;
+      }
+      const refResult = await getRefData(
+        ref['@refObjectId'],
+        ref['@version'],
+        getRefTableName(ref['@type']),
+        userTeamId,
+      );
+      refMaps.set(`${ref['@refObjectId']}:${ref['@version']}:${ref['@type']}`, refResult?.data);
+
+      if (refResult.success && refResult?.data) {
+        const refData = refResult?.data;
+        if (refData?.stateCode >= 20 && refData?.stateCode < 100) {
+          if (
+            !underReview.find(
+              (item) =>
+                item['@refObjectId'] === ref['@refObjectId'] &&
+                item['@version'] === ref['@version'],
+            )
+          ) {
+            underReview.push(ref);
+            await getUnderReviewReferences(getAllRefObj(refData), refMaps, userTeamId, underReview);
+          }
+        }
+        await handelSameModelWithProcress(ref);
+      }
+    }
+  };
+
   const hendleRejectProcress = async () => {
     const { data: processDetail } = await getProcessDetail(dataId, dataVersion);
     if (!processDetail) {
@@ -71,15 +141,7 @@ const RejectReview: React.FC<RejectReviewProps> = ({ reviewId, dataId, dataVersi
 
     const userTeamId = await getUserTeamId();
     const refObjs = getAllRefObj(processDetail);
-    await checkReferences(
-      refObjs,
-      new Map<string, any>(),
-      userTeamId,
-      unReview,
-      underReview,
-      unRuleVerification,
-      nonExistentRef,
-    );
+    await getUnderReviewReferences(refObjs, new Map<string, any>(), userTeamId, underReview);
 
     await updateUnderReviewToUnReview(underReview);
   };
@@ -103,16 +165,7 @@ const RejectReview: React.FC<RejectReviewProps> = ({ reviewId, dataId, dataVersi
     const refObjs = getAllRefObj(modelDetail);
     const userTeamId = await getUserTeamId();
     const refsMap = new Map<string, any>();
-    await checkReferences(
-      refObjs,
-      refsMap,
-      userTeamId,
-      unReview,
-      underReview,
-      unRuleVerification,
-      nonExistentRef,
-    );
-
+    await getUnderReviewReferences(refObjs, refsMap, userTeamId, underReview);
     await updateUnderReviewToUnReview(underReview);
   };
 
