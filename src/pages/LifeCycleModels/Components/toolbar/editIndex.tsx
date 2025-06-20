@@ -1141,7 +1141,7 @@ const ToolbarEdit: FC<Props> = ({
       nodes,
       edges,
     );
-    setProblemNodes(problemNodes);
+    setProblemNodes(problemNodes ?? []);
 
     if (checkResult) {
       await editInfoRef.current?.submitReview(unReview);
