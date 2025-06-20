@@ -17,21 +17,21 @@ import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 're
 import { FormattedMessage, useIntl } from 'umi';
 import { LifeCycleModelForm } from '../form';
 // const { TextArea } = Input;
+import type { refDataType } from '@/pages/Utils/review';
 import {
   checkReferences,
   checkRequiredFields,
   dealModel,
   dealProcress,
-  getAllProcessesOfModel,
   getAllRefObj,
   ReffPath,
   updateReviewsAfterCheckData,
   updateUnReviewToUnderReview,
 } from '@/pages/Utils/review';
 import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
+import { getProcessDetail } from '@/services/processes/api';
 
 import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
-import { getProcessDetail } from '@/services/processes/api';
 import { getUserTeamId } from '@/services/roles/api';
 import { v4 } from 'uuid';
 import requiredFields from '../../requiredFields';
@@ -113,18 +113,59 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
     onReset();
   }, [drawerVisible]);
 
-  const handleCheckData = async () => {
+  const handleCheckData: (
+    nodes: any[],
+    edges: any[],
+  ) => Promise<{
+    checkResult: boolean;
+    unReview: refDataType[];
+    problemNodes?: refDataType[];
+  }> = async (nodes: any[], edges: any[]) => {
+    if (nodes?.length) {
+      const quantitativeReferenceProcress = nodes.find(
+        (node) => node?.data?.quantitativeReference === '1',
+      );
+      if (!quantitativeReferenceProcress) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.lifecyclemodel.validator.nodes.quantitativeReference.required',
+            defaultMessage: 'Please select a node as reference',
+          }),
+        );
+        setSpinning(false);
+        return { checkResult: false, unReview: [] };
+      }
+    } else {
+      message.error(
+        intl.formatMessage({
+          id: 'pages.lifecyclemodel.validator.nodes.required',
+          defaultMessage: 'Please add node',
+        }),
+      );
+      setSpinning(false);
+      return { checkResult: false, unReview: [] };
+    }
+    if (!edges?.length) {
+      message.error(
+        intl.formatMessage({
+          id: 'pages.lifecyclemodel.validator.exchanges.required',
+          defaultMessage: 'Please add connection line',
+        }),
+      );
+      setSpinning(false);
+      return { checkResult: false, unReview: [] };
+    }
+
     modelDetail = await getLifeCycleModelDetail(data.id, data.version);
     setShowRules(true);
     const { checkResult, tabName } = checkRequiredFields(requiredFields, data ?? fromData);
 
     const userTeamId = await getUserTeamId();
-    const refObjs = getAllRefObj(data);
 
-    const unReview: any[] = []; //stateCode < 20
-    const underReview: any[] = []; //stateCode >= 20 && stateCode < 100
-    const unRuleVerification: any[] = [];
-    const nonExistentRef: any[] = [];
+    const unReview: refDataType[] = []; //stateCode < 20
+    const underReview: refDataType[] = []; //stateCode >= 20 && stateCode < 100
+    const unRuleVerification: refDataType[] = [];
+    const nonExistentRef: refDataType[] = [];
 
     if (!modelDetail) {
       message.error(
@@ -137,12 +178,14 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
       return { checkResult: false, unReview };
     }
 
-    dealModel(modelDetail?.data, unReview, underReview, unRuleVerification);
+    const { data: sameProcressWithModel } = await getProcessDetail(data.id, data.version);
+    dealModel(modelDetail?.data, unReview, underReview, unRuleVerification, nonExistentRef);
+    dealProcress(sameProcressWithModel, unReview, underReview, unRuleVerification, nonExistentRef);
 
-    const refsSet = new Set<string>();
+    const refObjs = getAllRefObj(modelDetail?.data);
     const path = await checkReferences(
       refObjs,
-      refsSet,
+      new Map<string, any>(),
       userTeamId,
       unReview,
       underReview,
@@ -152,9 +195,9 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
         {
           '@refObjectId': data.id,
           '@version': data.version,
-          '@type': 'life cycle model data set',
+          '@type': 'lifeCycleModel data set',
         },
-        modelDetail?.data?.rule_verification,
+        modelDetail?.data?.ruleVerification,
         false,
       ),
     );
@@ -174,26 +217,6 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
       setRefCheckData([]);
     }
 
-    const allProcesses = await getAllProcessesOfModel(modelDetail?.data);
-    for (const process of allProcesses) {
-      const modelOfProcess = await getLifeCycleModelDetail(process.id, process.version);
-      if (modelOfProcess) {
-        dealModel(modelOfProcess?.data, unReview, underReview, unRuleVerification);
-      }
-      const processDetail = await getProcessDetail(process.id, process.version);
-      dealProcress(processDetail?.data, unReview, underReview, unRuleVerification, nonExistentRef);
-
-      const processRefObjs = getAllRefObj(processDetail?.data?.json);
-      await checkReferences(
-        processRefObjs,
-        refsSet,
-        userTeamId,
-        unReview,
-        underReview,
-        unRuleVerification,
-        nonExistentRef,
-      );
-    }
     if (!checkResult) {
       if (!drawerVisible) {
         setDrawerVisible(true);
@@ -218,24 +241,14 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
         );
       }
       setSpinning(false);
-      return { checkResult: false, unReview };
+      return { checkResult: false, unReview, problemNodes };
     }
 
-    if (modelDetail?.data?.state_code >= 20) {
-      message.error(
-        intl.formatMessage({
-          id: 'pages.process.review.submitError',
-          defaultMessage: 'Submit review failed',
-        }),
-      );
-      setSpinning(false);
-      return { checkResult: false, unReview };
-    }
     setSpinning(false);
-    return { checkResult, unReview };
+    return { checkResult, unReview, problemNodes };
   };
 
-  const submitReview = async (unReview: any[]) => {
+  const submitReview = async (unReview: refDataType[]) => {
     setSpinning(true);
 
     const reviewId = v4();
@@ -320,9 +333,9 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
             )} */}
             {action === 'edit' ? (
               <>
-                <Button onClick={() => handleCheckData()}>
+                {/* <Button onClick={() => handleCheckData()}>
                   <FormattedMessage id='pages.button.check' defaultMessage='Data check' />
-                </Button>
+                </Button> */}
 
                 <Button
                   onClick={() => {

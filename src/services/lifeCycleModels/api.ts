@@ -12,6 +12,7 @@ import {
   jsonToList,
 } from '../general/util';
 import { getILCDClassification } from '../ilcd/api';
+import { getProcessesByIdsAndVersions } from '../processes/api';
 import { genProcessName } from '../processes/util';
 import { genLifeCycleModelJsonOrdered, genLifeCycleModelProcess } from './util';
 
@@ -128,6 +129,12 @@ export async function updateLifeCycleModelJsonApi(id: string, version: string, d
     .eq('id', id)
     .eq('version', version)
     .select();
+  if (updateResult?.data && updateResult?.data?.length > 0) {
+    const refNode = updateResult?.data[0]?.json_tg?.xflow?.nodes?.find(
+      (i: any) => i?.data?.quantitativeReference === '1',
+    );
+    updateLifeCycleModelProcess(id, version, refNode, data);
+  }
   return updateResult;
 }
 
@@ -526,10 +533,28 @@ export async function lifeCycleModel_hybrid_search(
 
   return result;
 }
+export async function getLifeCyclesByIds(ids: string[]) {
+  const result = await supabase
+    .from('lifecyclemodels')
+    .select(
+      `
+      id,
+    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->name,
+    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
+    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->"common:generalComment",
+    version,
+    modified_at,
+    team_id
+    `,
+    )
+    .in('id', ids);
+  return result;
+}
 
 export async function getLifeCycleModelDetail(
   id: string,
   version: string,
+  setIsFromLifeCycle = false,
 ): Promise<
   | {
       data: {
@@ -537,8 +562,8 @@ export async function getLifeCycleModelDetail(
         version: string;
         json: any;
         json_tg: any;
-        state_code: number;
-        rule_verification: any;
+        stateCode: number;
+        ruleVerification: any;
       };
       success: true;
     }
@@ -554,14 +579,50 @@ export async function getLifeCycleModelDetail(
     .eq('version', version);
   if (result.data && result.data.length > 0) {
     const data = result.data[0];
+    if (setIsFromLifeCycle) {
+      let procressIds: string[] = [];
+      let procressVersion: string[] = [];
+      data?.json_tg?.xflow?.nodes?.forEach((node: any) => {
+        procressIds.push(node?.data?.id);
+        procressVersion.push(node?.data?.version);
+      });
+
+      if (procressIds.length > 0) {
+        const [procresses, models] = await Promise.all([
+          getProcessesByIdsAndVersions(procressIds, procressVersion),
+          getLifeCyclesByIds(procressIds),
+        ]);
+
+        data?.json_tg?.xflow?.nodes?.forEach((node: any) => {
+          const model = models?.data?.find(
+            (model: any) => model?.id === node?.data?.id && model?.version === node?.data?.version,
+          );
+          if (model) {
+            node.isFromLifeCycle = true;
+          } else {
+            node.isFromLifeCycle = false;
+          }
+          const procress = procresses?.data?.find(
+            (procress: any) =>
+              procress?.id === node?.data?.id && procress?.version === node?.data?.version,
+          );
+          if (procress?.user_id === sessionStorage.getItem('userId')) {
+            node.isMyProcess = true;
+          } else {
+            node.isMyProcess = false;
+          }
+        });
+      }
+    }
+
     return Promise.resolve({
       data: {
         id: id,
         version: version,
         json: data.json,
         json_tg: data?.json_tg,
-        state_code: data?.state_code,
-        rule_verification: data?.rule_verification,
+        stateCode: data?.state_code,
+        ruleVerification: data?.rule_verification,
         teamId: data?.team_id,
       },
       success: true,
@@ -584,23 +645,5 @@ export async function updateLifeCycleModelStateCode(
     .eq('id', id)
     .eq('version', version)
     .select('state_code');
-  return result;
-}
-
-export async function getLifeCyclesByIds(ids: string[]) {
-  const result = await supabase
-    .from('lifecyclemodels')
-    .select(
-      `
-      id,
-    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->name,
-    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
-    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->"common:generalComment",
-    version,
-    modified_at,
-    team_id
-    `,
-    )
-    .in('id', ids);
   return result;
 }
