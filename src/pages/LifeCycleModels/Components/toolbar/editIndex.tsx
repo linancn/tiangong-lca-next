@@ -1,4 +1,8 @@
+import ProcessEdit from '@/pages/Processes/Components/edit';
 import ProcessView from '@/pages/Processes/Components/view';
+import type { refDataType } from '@/pages/Utils/review';
+import { checkReferences, getAllRefObj, getRefTableName, ReffPath } from '@/pages/Utils/review';
+import { getRefData } from '@/services/general/api';
 import { initVersion } from '@/services/general/data';
 import { formatDateTime, getLangText } from '@/services/general/util';
 import {
@@ -14,12 +18,21 @@ import {
 } from '@/services/lifeCycleModels/util';
 import { getProcessDetail, getProcessDetailByIdAndVersion } from '@/services/processes/api';
 import { genProcessFromData, genProcessName, genProcessNameJson } from '@/services/processes/util';
-import { CheckCircleOutlined, CopyOutlined, DeleteOutlined, SaveOutlined } from '@ant-design/icons';
+import { getUserTeamId } from '@/services/roles/api';
+import {
+  CheckCircleOutlined,
+  CopyOutlined,
+  DeleteOutlined,
+  SaveOutlined,
+  SendOutlined,
+} from '@ant-design/icons';
 import { useGraphEvent, useGraphStore } from '@antv/xflow';
-import { Button, Space, Spin, Tooltip, message, theme } from 'antd';
+import { Button, message, Space, Spin, theme, Tooltip } from 'antd';
 import { FC, useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
+import LifeCycleModelEdit from '../edit';
+import LifeCycleModelView from '../view';
 import ModelToolbarAdd from './add';
 import { Control } from './control';
 import TargetAmount from './editTargetAmount';
@@ -38,6 +51,8 @@ type Props = {
   actionType?: 'create' | 'copy' | 'createVersion';
   importData?: any;
   onClose?: () => void;
+  hideReviewButton?: boolean;
+  updateNodeCb?: (ref: refDataType) => Promise<void>;
 };
 
 const ToolbarEdit: FC<Props> = ({
@@ -51,12 +66,15 @@ const ToolbarEdit: FC<Props> = ({
   actionType,
   importData,
   onClose = () => {},
+  hideReviewButton = false,
+  updateNodeCb = () => {},
 }) => {
   const [thisId, setThisId] = useState(id);
   const [thisVersion, setThisVersion] = useState(version);
   const [thisAction, setThisAction] = useState(action);
   const [spinning, setSpinning] = useState(false);
   const [infoData, setInfoData] = useState<any>({});
+  const [problemNodes, setProblemNodes] = useState<refDataType[]>([]);
 
   const [targetAmountDrawerVisible, setTargetAmountDrawerVisible] = useState(false);
   const [ioPortSelectorDirection, setIoPortSelectorDirection] = useState('');
@@ -755,42 +773,40 @@ const ToolbarEdit: FC<Props> = ({
     };
 
     if (thisAction === 'edit') {
-      updateLifeCycleModel({ ...newData, id: thisId, version: thisVersion }).then((result: any) => {
-        if (result.data) {
-          setInfoData({ ...newData, id: thisId, version: thisVersion });
-          message.success(
-            intl.formatMessage({
-              id: 'pages.flows.savesuccess',
-              defaultMessage: 'Save successfully',
-            }),
-          );
-          setThisId(result.data?.[0]?.id);
-          setThisVersion(result.data?.[0]?.version);
-          saveCallback();
-        } else {
-          message.error(result.error.message);
-        }
-        if (setLoadingData) setSpinning(false);
-      });
+      const result = await updateLifeCycleModel({ ...newData, id: thisId, version: thisVersion });
+      if (result?.data) {
+        setInfoData({ ...newData, id: thisId, version: thisVersion });
+        message.success(
+          intl.formatMessage({
+            id: 'pages.flows.savesuccess',
+            defaultMessage: 'Save successfully',
+          }),
+        );
+        setThisId(result.data?.[0]?.id);
+        setThisVersion(result.data?.[0]?.version);
+        saveCallback();
+      } else {
+        message.error(result?.error?.message);
+      }
+      if (setLoadingData) setSpinning(false);
     } else if (thisAction === 'create') {
       const newId = actionType === 'createVersion' ? thisId : v4();
-      createLifeCycleModel({ ...newData, id: newId }).then((result: any) => {
-        if (result.data) {
-          message.success(
-            intl.formatMessage({
-              id: 'pages.button.create.success',
-              defaultMessage: 'Created successfully!',
-            }),
-          );
-          setThisAction('edit');
-          setThisId(result.data?.[0]?.id);
-          setThisVersion(result.data?.[0]?.version);
-          saveCallback();
-        } else {
-          message.error(result.error.message);
-        }
-        if (setLoadingData) setSpinning(false);
-      });
+      const result = await createLifeCycleModel({ ...newData, id: newId });
+      if (result.data) {
+        message.success(
+          intl.formatMessage({
+            id: 'pages.button.create.success',
+            defaultMessage: 'Created successfully!',
+          }),
+        );
+        setThisAction('edit');
+        setThisId(result.data?.[0]?.id);
+        setThisVersion(result.data?.[0]?.version);
+        saveCallback();
+      } else {
+        message.error(result.error.message);
+      }
+      if (setLoadingData) setSpinning(false);
     }
     return true;
   };
@@ -885,6 +901,7 @@ const ToolbarEdit: FC<Props> = ({
       onClose();
       setInfoData({});
       setNodeCount(0);
+      setProblemNodes([]);
       return;
     }
     if (importData && importData.length > 0) {
@@ -935,7 +952,7 @@ const ToolbarEdit: FC<Props> = ({
     if (id !== '') {
       setIsSave(false);
       setSpinning(true);
-      getLifeCycleModelDetail(id, version).then(async (result: any) => {
+      getLifeCycleModelDetail(id, version, true).then(async (result: any) => {
         const fromData = genLifeCycleModelInfoFromData(
           result.data?.json?.lifeCycleModelDataSet ?? {},
         );
@@ -1037,14 +1054,158 @@ const ToolbarEdit: FC<Props> = ({
     });
   }, [nodeCount]);
 
-  const handelSubmitReview = async () => {
-    await saveData(false);
+  useEffect(() => {
+    nodes.forEach((node) => {
+      const isErrNode = problemNodes.find(
+        (item: any) =>
+          item['@refObjectId'] === node.data.id && item['@version'] === node.data.version,
+      );
+      if (isErrNode) {
+        updateNode(node.id ?? '', {
+          attrs: {
+            ...nodeAttrs,
+            body: {
+              ...nodeAttrs.body,
+              stroke: token.colorError,
+            },
+          },
+        });
+      } else {
+        updateNode(node.id ?? '', {
+          attrs: {
+            ...nodeAttrs,
+            body: {
+              ...nodeAttrs.body,
+              stroke: token.colorPrimary,
+            },
+          },
+        });
+      }
+    });
+  }, [problemNodes]);
+
+  const handleUpdateNode = async (ref: refDataType) => {
     setSpinning(true);
-    const { checkResult, unReview } = await editInfoRef.current?.handleCheckData();
+    const selectedNode = nodes.find((node) => node.selected);
+    if (selectedNode) {
+      const { data: procressDetail } = await getRefData(
+        ref['@refObjectId'],
+        ref['@version'],
+        getRefTableName(ref['@type']),
+      );
+      const refObjs = getAllRefObj(procressDetail);
+      const userTeamId = await getUserTeamId();
+
+      const path = await checkReferences(
+        refObjs,
+        new Map<string, any>(),
+        userTeamId,
+        [],
+        [],
+        [],
+        [],
+        new ReffPath(
+          {
+            '@refObjectId': selectedNode.data.id,
+            '@version': selectedNode.data.version,
+            '@type': 'process data set',
+          },
+          procressDetail?.ruleVerification,
+          false,
+        ),
+      );
+      const problemNodesofSelectedNode = path?.findProblemNodes();
+      if (!problemNodesofSelectedNode?.length) {
+        setProblemNodes(
+          problemNodes.filter(
+            (item: refDataType) =>
+              item['@refObjectId'] !== selectedNode.data.id ||
+              item['@version'] !== selectedNode.data.version,
+          ),
+        );
+      }
+    }
+    setSpinning(false);
+  };
+
+  const handleCheckData = async () => {
+    setSpinning(true);
+    const { problemNodes } = await editInfoRef.current?.handleCheckData(nodes, edges);
+    setProblemNodes(problemNodes ?? []);
+    setSpinning(false);
+  };
+
+  const handelSubmitReview = async () => {
+    setSpinning(true);
+    await saveData(false);
+    const { checkResult, unReview, problemNodes } = await editInfoRef.current?.handleCheckData(
+      nodes,
+      edges,
+    );
+    setProblemNodes(problemNodes ?? []);
+
     if (checkResult) {
       await editInfoRef.current?.submitReview(unReview);
     }
     setSpinning(false);
+  };
+
+  const getShowTool = () => {
+    const selectedNode = nodes.find((node) => node.selected);
+
+    if (selectedNode?.isMyProcess) {
+      if (selectedNode?.isFromLifeCycle) {
+        return (
+          <LifeCycleModelEdit
+            id={selectedNode?.data?.id ?? ''}
+            version={selectedNode?.data?.version ?? ''}
+            lang={lang}
+            actionRef={undefined}
+            buttonType={'toolIcon'}
+            disabled={!selectedNode}
+            hideReviewButton={true}
+            updateNodeCb={handleUpdateNode}
+          />
+        );
+      } else {
+        return (
+          <ProcessEdit
+            id={selectedNode?.data?.id ?? ''}
+            version={selectedNode?.data?.version ?? ''}
+            buttonType={'toolIcon'}
+            lang={lang}
+            disabled={!selectedNode}
+            actionRef={undefined}
+            setViewDrawerVisible={() => {}}
+            hideReviewButton={true}
+            updateNodeCb={handleUpdateNode}
+          />
+        );
+      }
+    } else {
+      if (selectedNode?.isFromLifeCycle) {
+        return (
+          <LifeCycleModelView
+            id={selectedNode?.data?.id ?? ''}
+            version={selectedNode?.data?.version ?? ''}
+            lang={lang}
+            actionRef={undefined}
+            buttonType={'toolIcon'}
+            disabled={!selectedNode}
+          />
+        );
+      } else {
+        return (
+          <ProcessView
+            id={selectedNode?.data?.id ?? ''}
+            version={selectedNode?.data?.version ?? ''}
+            buttonType={'toolIcon'}
+            lang={lang}
+            disabled={!selectedNode}
+          />
+        );
+      }
+    }
   };
 
   return (
@@ -1056,13 +1217,7 @@ const ToolbarEdit: FC<Props> = ({
         onData={updateInfoData}
         lang={lang}
       />
-      <ProcessView
-        id={nodes.find((node) => node.selected)?.data?.id ?? ''}
-        version={nodes.find((node) => node.selected)?.data?.version ?? ''}
-        buttonType={'toolIcon'}
-        lang={lang}
-        disabled={!nodes.find((node) => node.selected)}
-      />
+      {getShowTool()}
       <EdgeExhange
         lang={lang}
         disabled={!edges.find((edge) => edge.selected)}
@@ -1137,7 +1292,14 @@ const ToolbarEdit: FC<Props> = ({
           size='small'
           icon={<SaveOutlined />}
           style={{ boxShadow: 'none' }}
-          onClick={() => saveData(true)}
+          onClick={() => {
+            saveData(true);
+            updateNodeCb({
+              '@refObjectId': id,
+              '@version': version,
+              '@type': 'lifeCycleModel data set',
+            });
+          }}
         />
       </Tooltip>
       <br />
@@ -1150,7 +1312,19 @@ const ToolbarEdit: FC<Props> = ({
         actionRef={undefined}
         disabled={false}
       />
-      {showReview ? (
+      <Tooltip
+        title={<FormattedMessage id='pages.button.check' defaultMessage='Data check' />}
+        placement='left'
+      >
+        <Button
+          type='primary'
+          size='small'
+          icon={<CheckCircleOutlined />}
+          style={{ boxShadow: 'none' }}
+          onClick={handleCheckData}
+        />
+      </Tooltip>
+      {showReview && !hideReviewButton ? (
         <Tooltip
           title={<FormattedMessage id='pages.button.review' defaultMessage='Submit for review' />}
           placement='left'
@@ -1158,7 +1332,7 @@ const ToolbarEdit: FC<Props> = ({
           <Button
             type='primary'
             size='small'
-            icon={<CheckCircleOutlined />}
+            icon={<SendOutlined />}
             style={{ boxShadow: 'none' }}
             onClick={handelSubmitReview}
           />

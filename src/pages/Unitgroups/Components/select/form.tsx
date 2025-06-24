@@ -47,8 +47,6 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
         ruleVerification: data?.ruleVerification,
         nonExistent: false,
       });
-    } else {
-      setErrRef(null);
     }
   };
   useEffect(() => {

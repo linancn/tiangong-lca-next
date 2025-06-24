@@ -1,7 +1,7 @@
 export type ReviewsTable = {
   key: string;
   id: string;
-  processName: string;
+  name: string;
   teamName: string;
   userName: string;
   createAt: string;

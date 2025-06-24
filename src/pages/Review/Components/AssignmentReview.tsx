@@ -51,7 +51,7 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
       render: (_, row) => {
         return [
           <div key={0} style={{ display: 'flex' }}>
-            {row.processName}
+            {row.name}
             {row?.isFromLifeCycle ? (
               <LifeCycleModelView
                 id={row?.json?.data?.id}
@@ -132,6 +132,7 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
             dataVersion={record.json?.data?.version}
             reviewId={record.id}
             key={0}
+            actionRef={actionRef}
           />,
         ];
       },

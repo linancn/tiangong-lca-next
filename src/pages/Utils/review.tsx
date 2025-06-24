@@ -1,4 +1,5 @@
 import { getRefData, getReviewsOfData, updateDateToReviewState } from '@/services/general/api';
+import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
 import { addReviewsApi } from '@/services/reviews/api';
 import { getTeamMessageApi } from '@/services/teams/api';
 import { getUsersByIds } from '@/services/users/api';
@@ -109,10 +110,79 @@ export class ReffPath {
     return result.map(({ ...rest }) => rest);
   }
 }
+export const dealProcress = (
+  processDetail: any,
+  unReview: refDataType[],
+  underReview: refDataType[],
+  unRuleVerification: refDataType[],
+  nonExistentRef: refDataType[],
+) => {
+  const procressRef = {
+    '@type': 'process data set',
+    '@refObjectId': processDetail.id,
+    '@version': processDetail.version,
+  };
+  if (processDetail.stateCode < 20) {
+    unReview.push(procressRef);
+  }
+  if (processDetail.stateCode >= 20 && processDetail.stateCode < 100) {
+    underReview.push(procressRef);
+  }
+  if (
+    processDetail?.ruleVerification === false &&
+    processDetail.stateCode !== 100 &&
+    processDetail.stateCode !== 200
+  ) {
+    unRuleVerification.unshift(procressRef);
+  }
+  if (!processDetail) {
+    nonExistentRef.push(procressRef);
+  }
+};
 
+export const dealModel = (
+  modelDetail: any,
+  unReview: refDataType[],
+  underReview: refDataType[],
+  unRuleVerification: refDataType[],
+  nonExistentRef: refDataType[],
+) => {
+  if (modelDetail?.stateCode < 20) {
+    unReview.push({
+      '@type': 'lifeCycleModel data set',
+      '@refObjectId': modelDetail?.id,
+      '@version': modelDetail?.version,
+    });
+  }
+  if (modelDetail?.stateCode >= 20 && modelDetail?.stateCode < 100) {
+    underReview.push({
+      '@type': 'lifeCycleModel data set',
+      '@refObjectId': modelDetail?.id,
+      '@version': modelDetail?.version,
+    });
+  }
+  if (
+    modelDetail?.ruleVerification === false &&
+    modelDetail?.stateCode !== 100 &&
+    modelDetail?.stateCode !== 200
+  ) {
+    unRuleVerification.unshift({
+      '@type': 'lifeCycleModel data set',
+      '@refObjectId': modelDetail?.id,
+      '@version': modelDetail?.version,
+    });
+  }
+  if (!modelDetail) {
+    nonExistentRef.push({
+      '@type': 'lifeCycleModel data set',
+      '@refObjectId': modelDetail?.id,
+      '@version': modelDetail?.version,
+    });
+  }
+};
 export const checkReferences = async (
   refs: any[],
-  checkedIds: Set<string>,
+  refMaps: Map<string, any>,
   userTeamId: string,
   unReview: refDataType[],
   underReview: refDataType[],
@@ -120,27 +190,64 @@ export const checkReferences = async (
   nonExistentRef: refDataType[],
   parentPath?: ReffPath,
 ): Promise<ReffPath | undefined> => {
-  for (const ref of refs) {
-    if (checkedIds.has(ref['@refObjectId'])) continue;
-    checkedIds.add(ref['@refObjectId']);
+  let currentPath: ReffPath | undefined;
+  const handelSameModelWithProcress = async (ref: refDataType) => {
+    if (ref['@type'] === 'process data set') {
+      const { data: sameModelWithProcress, success } = await getLifeCycleModelDetail(
+        ref['@refObjectId'],
+        ref['@version'],
+      );
+      if (sameModelWithProcress && success) {
+        dealModel(sameModelWithProcress, unReview, underReview, unRuleVerification, nonExistentRef);
+        const modelRefs = getAllRefObj(sameModelWithProcress);
+        await checkReferences(
+          modelRefs,
+          refMaps,
+          userTeamId,
+          unReview,
+          underReview,
+          unRuleVerification,
+          nonExistentRef,
+          currentPath,
+        );
+      }
+    }
+  };
 
+  for (const ref of refs) {
+    if (refMaps.has(`${ref['@refObjectId']}:${ref['@version']}:${ref['@type']}`)) {
+      const refData = refMaps.get(`${ref['@refObjectId']}:${ref['@version']}:${ref['@type']}`);
+
+      if (refData?.stateCode !== 100 && refData?.stateCode !== 200) {
+        const currentPath = new ReffPath(ref, refData?.ruleVerification, false);
+        if (parentPath) {
+          parentPath.addChild(currentPath);
+        }
+      }
+      await handelSameModelWithProcress(ref);
+      continue;
+    }
     const refResult = await getRefData(
       ref['@refObjectId'],
       ref['@version'],
       getRefTableName(ref['@type']),
       userTeamId,
     );
+    refMaps.set(`${ref['@refObjectId']}:${ref['@version']}:${ref['@type']}`, refResult?.data);
 
-    let currentPath: ReffPath | undefined;
-    if (refResult.success) {
+    if (refResult.success && refResult?.data) {
       const refData = refResult?.data;
       if (refData?.stateCode !== 100 && refData?.stateCode !== 200) {
-        currentPath = new ReffPath(ref, refResult?.data?.ruleVerification, !refResult.success);
+        currentPath = new ReffPath(ref, refData?.ruleVerification, !refResult.success);
         if (parentPath) {
           parentPath.addChild(currentPath);
         }
       }
-      if (!refData?.ruleVerification && refData?.stateCode !== 100 && refData?.stateCode !== 200) {
+      if (
+        refData?.ruleVerification === false &&
+        refData?.stateCode !== 100 &&
+        refData?.stateCode !== 200
+      ) {
         if (
           !unRuleVerification.find(
             (item) =>
@@ -176,7 +283,7 @@ export const checkReferences = async (
         const subRefs = getAllRefObj(json);
         await checkReferences(
           subRefs,
-          checkedIds,
+          refMaps,
           userTeamId,
           unReview,
           underReview,
@@ -185,6 +292,7 @@ export const checkReferences = async (
           currentPath,
         );
       }
+      await handelSameModelWithProcress(ref);
     } else {
       currentPath = new ReffPath(ref, true, true);
       if (parentPath) {
@@ -194,7 +302,8 @@ export const checkReferences = async (
         !nonExistentRef.find(
           (item) =>
             item['@refObjectId'] === ref['@refObjectId'] && item['@version'] === ref['@version'],
-        )
+        ) &&
+        ref['@type'] !== 'lifeCycleModel data set'
       ) {
         nonExistentRef.push(ref);
       }
@@ -215,81 +324,16 @@ export const checkData = async (
   );
   if (detail) {
     const refs = getAllRefObj(detail?.json);
-    await checkReferences(refs, new Set(), '', [], [], unRuleVerification, nonExistentRef);
+    await checkReferences(
+      refs,
+      new Map<string, any>(),
+      '',
+      [],
+      [],
+      unRuleVerification,
+      nonExistentRef,
+    );
   }
-};
-
-export const dealProcress = (
-  processDetail: any,
-  unReview: refDataType[],
-  underReview: refDataType[],
-  unRuleVerification: refDataType[],
-  nonExistentRef: refDataType[],
-) => {
-  const procressRef = {
-    '@type': 'process data set',
-    '@refObjectId': processDetail.id,
-    '@version': processDetail.version,
-  };
-  if (processDetail.stateCode < 20) {
-    unReview.push(procressRef);
-  }
-  if (processDetail.stateCode >= 20 && processDetail.stateCode < 100) {
-    underReview.push(procressRef);
-  }
-  if (
-    !processDetail?.ruleVerification &&
-    processDetail.stateCode !== 100 &&
-    processDetail.stateCode !== 200
-  ) {
-    unRuleVerification.unshift(procressRef);
-  }
-  if (!processDetail) {
-    nonExistentRef.push(procressRef);
-  }
-};
-
-export const dealModel = (
-  modelDetail: any,
-  unReview: refDataType[],
-  underReview: refDataType[],
-  unRuleVerification: refDataType[],
-) => {
-  if (modelDetail?.state_code < 20) {
-    unReview.push({
-      '@type': 'lifeCycleModel data set',
-      '@refObjectId': modelDetail?.id,
-      '@version': modelDetail?.version,
-    });
-  }
-  if (modelDetail?.state_code >= 20 && modelDetail?.state_code < 100) {
-    underReview.push({
-      '@type': 'lifeCycleModel data set',
-      '@refObjectId': modelDetail?.id,
-      '@version': modelDetail?.version,
-    });
-  }
-  if (
-    !modelDetail?.rule_verification &&
-    modelDetail?.state_code !== 100 &&
-    modelDetail?.state_code !== 200
-  ) {
-    unRuleVerification.unshift({
-      '@type': 'lifeCycleModel data set',
-      '@refObjectId': modelDetail?.id,
-      '@version': modelDetail?.version,
-    });
-  }
-};
-
-export const getAllProcessesOfModel = async (modelDetail: any) => {
-  const processes: any[] = [{ id: modelDetail.id, version: modelDetail.version }];
-  modelDetail?.json_tg?.xflow?.nodes?.forEach((item: any) => {
-    if (item.data) {
-      processes.push(item.data);
-    }
-  });
-  return processes;
 };
 
 export const updateReviewsAfterCheckData = async (teamId: string, data: any, reviewId: string) => {

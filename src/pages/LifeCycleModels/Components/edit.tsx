@@ -1,3 +1,4 @@
+import type { refDataType } from '@/pages/Utils/review';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
 import { Grid, Transform, XFlow, XFlowGraph } from '@antv/xflow';
@@ -13,8 +14,20 @@ type Props = {
   buttonType: string;
   lang: string;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
+  disabled?: boolean;
+  hideReviewButton?: boolean;
+  updateNodeCb?: (ref: refDataType) => Promise<void>;
 };
-const LifeCycleModelEdit: FC<Props> = ({ id, version, buttonType, lang, actionRef }) => {
+const LifeCycleModelEdit: FC<Props> = ({
+  id,
+  version,
+  buttonType,
+  lang,
+  actionRef,
+  disabled = false,
+  hideReviewButton = false,
+  updateNodeCb,
+}) => {
   const [isSave, setIsSave] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
 
@@ -49,7 +62,26 @@ const LifeCycleModelEdit: FC<Props> = ({ id, version, buttonType, lang, actionRe
 
   return (
     <>
-      {buttonType === 'icon' ? (
+      {buttonType === 'toolIcon' ? (
+        <Tooltip
+          title={
+            <FormattedMessage
+              id='pages.button.model.lifecyclemodel'
+              defaultMessage='Lifecycle model infomation'
+            ></FormattedMessage>
+          }
+          placement='left'
+        >
+          <Button
+            type='primary'
+            size='small'
+            style={{ boxShadow: 'none' }}
+            icon={<FormOutlined />}
+            onClick={onEdit}
+            disabled={disabled}
+          />
+        </Tooltip>
+      ) : buttonType === 'icon' ? (
         <Tooltip title={<FormattedMessage id='pages.button.edit' defaultMessage='Edit' />}>
           <Button shape='circle' icon={<FormOutlined />} size='small' onClick={onEdit} />
         </Tooltip>
@@ -130,6 +162,8 @@ const LifeCycleModelEdit: FC<Props> = ({ id, version, buttonType, lang, actionRe
                 isSave={isSave}
                 setIsSave={setIsSave}
                 action={'edit'}
+                hideReviewButton={hideReviewButton}
+                updateNodeCb={updateNodeCb}
               />
             </Sider>
           </Layout>
