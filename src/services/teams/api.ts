@@ -1,4 +1,5 @@
 import { supabase } from '@/services/supabase';
+import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/lib/table/interface';
 import { addRoleApi, getRoleByuserId, getTeamRoles, getUserIdsByTeamIds } from '../roles/api';
 import { getUserEmailByUserIds, getUserIdByEmail, getUsersByIds } from '../users/api';
@@ -100,7 +101,17 @@ export async function getAllTableTeams(
   }
 }
 export async function updateTeamRank(id: string, rank: number) {
-  const result = await supabase.from('teams').update({ rank }).eq('id', id);
+  let result: any = {};
+  const session = await supabase.auth.getSession();
+  if (session.data.session) {
+    result = await supabase.functions.invoke('update_team', {
+      headers: {
+        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+      },
+      body: { id, data: { rank } },
+      region: FunctionRegion.UsEast1,
+    });
+  }
   return result;
 }
 
@@ -136,18 +147,30 @@ export async function getTeamById(id: string) {
 
 export async function editTeamMessage(id: string, data: any, rank?: number, is_public?: boolean) {
   if (typeof rank !== 'undefined') {
-    const result = await supabase
-      .from('teams')
-      .update({ json: data, rank, is_public })
-      .eq('id', id)
-      .select();
+    let result: any = {};
+    const session = await supabase.auth.getSession();
+    if (session.data.session) {
+      result = await supabase.functions.invoke('update_team', {
+        headers: {
+          Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+        },
+        body: { id, data: { json: data, rank, is_public } },
+        region: FunctionRegion.UsEast1,
+      });
+    }
     return result;
   } else {
-    const result = await supabase
-      .from('teams')
-      .update({ json: data, is_public })
-      .eq('id', id)
-      .select();
+    let result: any = {};
+    const session = await supabase.auth.getSession();
+    if (session.data.session) {
+      result = await supabase.functions.invoke('update_team', {
+        headers: {
+          Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+        },
+        body: { id, data: { json: data, is_public } },
+        region: FunctionRegion.UsEast1,
+      });
+    }
     return result;
   }
 }

@@ -1,4 +1,5 @@
 import { supabase } from '@/services/supabase';
+import { FunctionRegion } from '@supabase/supabase-js';
 import { message } from 'antd';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getLocale } from 'umi';
@@ -132,12 +133,18 @@ export async function updateStateCodeApi(
 ) {
   if (!table) return;
   let result: any = {};
-  if (id && version) {
-    result = await supabase
-      .from(table)
-      .update({ state_code: stateCode })
-      .eq('id', id)
-      .eq('version', version);
+  const session = await supabase.auth.getSession();
+  if (session.data.session) {
+    result = await supabase.functions.invoke('update_data', {
+      headers: {
+        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+      },
+      body: { id, version, table, data: { state_code: stateCode } },
+      region: FunctionRegion.UsEast1,
+    });
+  }
+  if (result.error) {
+    console.log('error', result.error);
   }
   return result;
 }
@@ -153,7 +160,20 @@ export async function updateDateToReviewState(
   data: any,
 ) {
   if (!table) return;
-  let result = await supabase.from(table).update(data).eq('id', id).eq('version', version).select();
+  let result: any = {};
+  const session = await supabase.auth.getSession();
+  if (session.data.session) {
+    result = await supabase.functions.invoke('update_data', {
+      headers: {
+        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+      },
+      body: { id, version, table, data },
+      region: FunctionRegion.UsEast1,
+    });
+  }
+  if (result.error) {
+    console.log('error', result.error);
+  }
   return result;
 }
 
@@ -181,12 +201,20 @@ export async function getTeamIdByUserId() {
 export async function contributeSource(tableName: string, id: string, version: string) {
   const teamId = await getTeamIdByUserId();
   if (teamId) {
-    const result = await supabase
-      .from(tableName)
-      .update({ team_id: teamId })
-      .eq('id', id)
-      .eq('version', version);
-
+    let result: any = {};
+    const session = await supabase.auth.getSession();
+    if (session.data.session) {
+      result = await supabase.functions.invoke('update_data', {
+        headers: {
+          Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+        },
+        body: { id, version, table: tableName, data: { team_id: teamId } },
+        region: FunctionRegion.UsEast1,
+      });
+    }
+    if (result.error) {
+      console.log('error', result.error);
+    }
     return result;
   } else {
     message.error(

@@ -234,7 +234,7 @@ const ContactEdit: FC<Props> = ({
                   } else {
                     message.error(updateResult?.error?.message);
                   }
-                  setSpinning(true);
+                  setSpinning(false);
                   return true;
                 }}
               >

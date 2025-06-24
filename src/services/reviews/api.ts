@@ -1,7 +1,9 @@
 import { getLifeCyclesByIds } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
+import { FunctionRegion } from '@supabase/supabase-js';
 import { getLangText } from '../general/util';
 import { genProcessName } from '../processes/util';
+
 export async function addReviewsApi(id: string, data: any) {
   const { error } = await supabase
     .from('reviews')
@@ -15,8 +17,17 @@ export async function addReviewsApi(id: string, data: any) {
 }
 
 export async function updateReviewApi(reviewIds: React.Key[], data: any) {
-  let query = supabase.from('reviews').update(data).in('id', reviewIds).select();
-  const result = await query;
+  let result: any = {};
+  const session = await supabase.auth.getSession();
+  if (session.data.session) {
+    result = await supabase.functions.invoke('update_review', {
+      headers: {
+        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+      },
+      body: { reviewIds, data },
+      region: FunctionRegion.UsEast1,
+    });
+  }
   return result;
 }
 
