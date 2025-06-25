@@ -119,6 +119,8 @@ const Team = () => {
         description: description || [],
         rank: data[0]?.rank,
         is_public: data[0]?.is_public,
+        lightLogo: data[0]?.json?.lightLogo,
+        darkLogo: data[0]?.json?.darkLogo,
       };
 
       setBeforeLightLogoPath(data[0]?.json?.lightLogo);
@@ -325,10 +327,16 @@ const Team = () => {
 
         setTeamInfoSpinning(true);
 
-        const lightLogoPath = await uploadLogo(lightLogo, 'lightLogo');
-        const darkLogoPath = await uploadLogo(darkLogo, 'darkLogo');
-        values.lightLogo = lightLogoPath ? `../sys-files/${lightLogoPath}` : null;
-        values.darkLogo = darkLogoPath ? `../sys-files/${darkLogoPath}` : null;
+        const lightLogoPath =
+          typeof lightLogo[0] === 'string'
+            ? lightLogo[0]
+            : await uploadLogo(lightLogo, 'lightLogo');
+        const darkLogoPath =
+          typeof darkLogo[0] === 'string' ? darkLogo[0] : await uploadLogo(darkLogo, 'darkLogo');
+        values.lightLogo =
+          typeof lightLogo[0] === 'string' ? lightLogo[0] : `../sys-files/${lightLogoPath}`;
+        values.darkLogo =
+          typeof darkLogo[0] === 'string' ? darkLogo[0] : `../sys-files/${darkLogoPath}`;
 
         if (action === 'edit') {
           if (!teamId) return;
