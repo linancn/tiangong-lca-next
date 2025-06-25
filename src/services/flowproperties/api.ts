@@ -48,7 +48,7 @@ export async function updateFlowproperties(id: string, version: string, data: an
   if (result.error) {
     console.log('error', result.error);
   }
-  return result;
+  return result?.data;
 }
 
 export async function deleteFlowproperties(id: string, version: string) {

@@ -255,6 +255,7 @@ const ProcessEdit: FC<Props> = ({
       setSpinning(false);
       return { checkResult: false, unReview };
     }
+    setSpinning(false);
     return { checkResult, unReview };
   };
 

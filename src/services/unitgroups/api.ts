@@ -48,7 +48,7 @@ export async function updateUnitGroup(id: string, version: string, data: any) {
   if (result.error) {
     console.log('error', result.error);
   }
-  return result;
+  return result?.data;
 }
 
 export async function deleteUnitGroup(id: string, version: string) {

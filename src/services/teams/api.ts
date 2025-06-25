@@ -112,7 +112,7 @@ export async function updateTeamRank(id: string, rank: number) {
       region: FunctionRegion.UsEast1,
     });
   }
-  return result;
+  return result?.data;
 }
 
 export async function updateSort(params: { id: string; rank: number }[]) {
@@ -158,7 +158,7 @@ export async function editTeamMessage(id: string, data: any, rank?: number, is_p
         region: FunctionRegion.UsEast1,
       });
     }
-    return result;
+    return result?.data;
   } else {
     let result: any = {};
     const session = await supabase.auth.getSession();
@@ -171,7 +171,7 @@ export async function editTeamMessage(id: string, data: any, rank?: number, is_p
         region: FunctionRegion.UsEast1,
       });
     }
-    return result;
+    return result?.data;
   }
 }
 

@@ -28,7 +28,7 @@ export async function updateReviewApi(reviewIds: React.Key[], data: any) {
       region: FunctionRegion.UsEast1,
     });
   }
-  return result;
+  return result?.data;
 }
 
 export async function getReviewerIdsApi(reviewIds: React.Key[]) {

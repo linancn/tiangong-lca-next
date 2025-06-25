@@ -42,7 +42,7 @@ export async function updateFlows(id: string, version: string, data: any) {
   if (result.error) {
     console.log('error', result.error);
   }
-  return result;
+  return result?.data;
 }
 
 export async function deleteFlows(id: string, version: string) {

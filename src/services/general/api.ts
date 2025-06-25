@@ -146,7 +146,7 @@ export async function updateStateCodeApi(
   if (result.error) {
     console.log('error', result.error);
   }
-  return result;
+  return result?.data;
 }
 
 export async function getReviewsOfData(id: string, version: string, table: string) {
@@ -174,7 +174,7 @@ export async function updateDateToReviewState(
   if (result.error) {
     console.log('error', result.error);
   }
-  return result;
+  return result?.data;
 }
 
 // Get the team id of the user when the user is not an invited user and  is not a rejected user
@@ -215,7 +215,7 @@ export async function contributeSource(tableName: string, id: string, version: s
     if (result.error) {
       console.log('error', result.error);
     }
-    return result;
+    return result?.data;
   } else {
     message.error(
       getLocale() === 'zh-CN' ? '您不是任何团队的成员' : 'You are not a member of any team',

@@ -55,7 +55,7 @@ const updateLifeCycleModelProcess = async (
     if (uResult.error) {
       console.log('error', uResult.error);
     }
-    return uResult;
+    return uResult?.data;
   } else {
     const oldData = {
       processDataSet: {
@@ -143,7 +143,7 @@ export async function updateLifeCycleModel(data: any) {
     }
     const refNode = data?.model?.nodes.find((i: any) => i?.data?.quantitativeReference === '1');
     updateLifeCycleModelProcess(data.id, data.version, refNode, newData);
-    return updateResult;
+    return updateResult?.data;
   }
   return null;
 }
@@ -169,7 +169,7 @@ export async function updateLifeCycleModelJsonApi(id: string, version: string, d
     );
     updateLifeCycleModelProcess(id, version, refNode, data);
   }
-  return updateResult;
+  return updateResult?.data;
 }
 
 export async function deleteLifeCycleModel(id: string, version: string) {

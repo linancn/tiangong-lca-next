@@ -151,7 +151,7 @@ export async function updateRoleApi(
   if (result.error) {
     console.log('error', result.error);
   }
-  return result;
+  return result?.data;
 }
 
 export async function delRoleApi(teamId: string, userId: string) {
@@ -174,7 +174,7 @@ export async function reInvitedApi(userId: string, teamId: string) {
   if (result.error) {
     console.log('error', result.error);
   }
-  return result.error;
+  return result?.data?.error;
 }
 
 export async function rejectTeamInvitationApi(teamId: string, userId: string) {
@@ -194,7 +194,7 @@ export async function rejectTeamInvitationApi(teamId: string, userId: string) {
   }
   return {
     success: !result.error,
-    error: result.error,
+    error: result?.data?.error,
   };
 }
 
@@ -215,7 +215,7 @@ export async function acceptTeamInvitationApi(teamId: string, userId: string) {
   }
   return {
     success: !result.error,
-    ...result,
+    ...result?.data,
   };
 }
 

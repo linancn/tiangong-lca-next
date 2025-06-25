@@ -25,7 +25,7 @@ export async function updateCommentApi(
   if (result.error) {
     console.log('error', result.error);
   }
-  return result;
+  return result?.data;
 }
 
 export async function getCommentApi(reviewId: string, actionType: 'assigned' | 'review') {
