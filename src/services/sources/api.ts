@@ -27,13 +27,21 @@ export async function createSource(id: string, data: any) {
 export async function updateSource(id: string, version: string, data: any) {
   const newData = genSourceJsonOrdered(id, data);
   const rule_verification = getRuleVerification(schema, newData);
-  const updateResult = await supabase
-    .from('sources')
-    .update({ json_ordered: newData, rule_verification })
-    .eq('id', id)
-    .eq('version', version)
-    .select();
-  return updateResult;
+  let result: any = {};
+  const session = await supabase.auth.getSession();
+  if (session.data.session) {
+    result = await supabase.functions.invoke('update_data', {
+      headers: {
+        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+      },
+      body: { id, version, table: 'sources', data: { json_ordered: newData, rule_verification } },
+      region: FunctionRegion.UsEast1,
+    });
+  }
+  if (result.error) {
+    console.log('error', result.error);
+  }
+  return result?.data;
 }
 
 export async function deleteSource(id: string, version: string) {

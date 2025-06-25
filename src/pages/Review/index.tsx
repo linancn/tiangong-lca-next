@@ -17,6 +17,8 @@ import AssignmentReview from './Components/AssignmentReview';
 const Review = () => {
   const [activeTabKey, setActiveTabKey] = useState('unassigned');
   const [loading, setLoading] = useState(false);
+  const [adminLoading, setAdminLoading] = useState<string | null>(null);
+  const [memberLoading, setMemberLoading] = useState<string | null>(null);
   const [membersLoading, setMembersLoading] = useState(false);
   const [userData, setUserData] = useState<{ user_id: string; role: string } | null>(null);
   const actionRef = useRef<any>();
@@ -63,6 +65,11 @@ const Review = () => {
       userId: string,
       role: 'review-admin' | 'review-member',
     ) => {
+      if (role === 'review-admin') {
+        setAdminLoading(userId);
+      } else {
+        setMemberLoading(userId);
+      }
       try {
         const { error } = await updateRoleApi(teamId, userId, role);
         if (error) {
@@ -83,6 +90,12 @@ const Review = () => {
         }
       } catch (error) {
         console.error(error);
+      } finally {
+        if (role === 'review-admin') {
+          setAdminLoading(null);
+        } else {
+          setMemberLoading(null);
+        }
       }
     };
 
@@ -184,6 +197,7 @@ const Review = () => {
                   size='small'
                   icon={<CrownOutlined />}
                   onClick={() => updateRole(record?.team_id, record?.user_id, 'review-admin')}
+                  loading={adminLoading === record?.user_id}
                 />
               </Tooltip>
             }
@@ -202,6 +216,7 @@ const Review = () => {
                   size='small'
                   icon={<UserOutlined />}
                   onClick={() => updateRole(record?.team_id, record?.user_id, 'review-member')}
+                  loading={memberLoading === record?.user_id}
                 />
               </Tooltip>
             }

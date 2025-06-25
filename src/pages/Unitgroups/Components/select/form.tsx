@@ -108,9 +108,10 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
     }
   }, [referenceValue]);
   useEffect(() => {
-    setId(undefined);
-    if (formRef.current?.getFieldValue([...name, '@refObjectId'])) {
-      setId(formRef.current?.getFieldValue([...name, '@refObjectId']));
+    // setId(undefined);
+    const refObjectId = formRef.current?.getFieldValue([...name, '@refObjectId']);
+    if (refObjectId && refObjectId !== id) {
+      setId(refObjectId);
       setVersion(formRef.current?.getFieldValue([...name, '@version']));
       getReferenceUnit(
         formRef.current?.getFieldValue([...name, '@refObjectId']),

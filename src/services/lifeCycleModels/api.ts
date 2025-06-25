@@ -36,13 +36,26 @@ const updateLifeCycleModelProcess = async (
       oldData,
     );
     const rule_verification = getRuleVerification(processSchema, newData);
-    const uResult = await supabase
-      .from('processes')
-      .update({ json_ordered: newData, rule_verification })
-      .eq('id', id)
-      .eq('version', version)
-      .select();
-    return uResult;
+    let uResult: any = {};
+    const session = await supabase.auth.getSession();
+    if (session.data.session) {
+      uResult = await supabase.functions.invoke('update_data', {
+        headers: {
+          Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+        },
+        body: {
+          id,
+          version,
+          table: 'processes',
+          data: { json_ordered: newData, rule_verification },
+        },
+        region: FunctionRegion.UsEast1,
+      });
+    }
+    if (uResult.error) {
+      console.log('error', uResult.error);
+    }
+    return uResult?.data;
   } else {
     const oldData = {
       processDataSet: {
@@ -109,33 +122,54 @@ export async function updateLifeCycleModel(data: any) {
     const oldData = result.data[0].json;
     const newData = genLifeCycleModelJsonOrdered(data.id, data, oldData);
     const rule_verification = getRuleVerification(schema, newData);
-    const updateResult = await supabase
-      .from('lifecyclemodels')
-      .update({ json_ordered: newData, json_tg: { xflow: data?.model }, rule_verification })
-      .eq('id', data.id)
-      .eq('version', data.version)
-      .select();
+    let updateResult: any = {};
+    const session = await supabase.auth.getSession();
+    if (session.data.session) {
+      updateResult = await supabase.functions.invoke('update_data', {
+        headers: {
+          Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+        },
+        body: {
+          id: data.id,
+          version: data.version,
+          table: 'lifecyclemodels',
+          data: { json_ordered: newData, json_tg: { xflow: data?.model }, rule_verification },
+        },
+        region: FunctionRegion.UsEast1,
+      });
+    }
+    if (updateResult.error) {
+      console.log('error', updateResult.error);
+    }
     const refNode = data?.model?.nodes.find((i: any) => i?.data?.quantitativeReference === '1');
     updateLifeCycleModelProcess(data.id, data.version, refNode, newData);
-    return updateResult;
+    return updateResult?.data;
   }
   return null;
 }
 
 export async function updateLifeCycleModelJsonApi(id: string, version: string, data: any) {
-  const updateResult = await supabase
-    .from('lifecyclemodels')
-    .update({ json: data })
-    .eq('id', id)
-    .eq('version', version)
-    .select();
+  let updateResult: any = {};
+  const session = await supabase.auth.getSession();
+  if (session.data.session) {
+    updateResult = await supabase.functions.invoke('update_data', {
+      headers: {
+        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+      },
+      body: { id, version, table: 'lifecyclemodels', data: { json: data } },
+      region: FunctionRegion.UsEast1,
+    });
+  }
+  if (updateResult.error) {
+    console.log('error', updateResult.error);
+  }
   if (updateResult?.data && updateResult?.data?.length > 0) {
     const refNode = updateResult?.data[0]?.json_tg?.xflow?.nodes?.find(
       (i: any) => i?.data?.quantitativeReference === '1',
     );
     updateLifeCycleModelProcess(id, version, refNode, data);
   }
-  return updateResult;
+  return updateResult?.data;
 }
 
 export async function deleteLifeCycleModel(id: string, version: string) {
@@ -632,18 +666,4 @@ export async function getLifeCycleModelDetail(
     data: {},
     success: false,
   });
-}
-
-export async function updateLifeCycleModelStateCode(
-  id: string,
-  version: string,
-  stateCode: number,
-) {
-  const result = await supabase
-    .from('lifecyclemodels')
-    .update({ state_code: stateCode })
-    .eq('id', id)
-    .eq('version', version)
-    .select('state_code');
-  return result;
 }
