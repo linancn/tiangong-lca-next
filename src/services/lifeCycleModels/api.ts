@@ -12,6 +12,7 @@ import {
   jsonToList,
 } from '../general/util';
 import { getILCDClassification } from '../ilcd/api';
+import { getProcessesByIdsAndVersions } from '../processes/api';
 import { genProcessName } from '../processes/util';
 import { genLifeCycleModelJsonOrdered, genLifeCycleModelProcess } from './util';
 
@@ -35,13 +36,26 @@ const updateLifeCycleModelProcess = async (
       oldData,
     );
     const rule_verification = getRuleVerification(processSchema, newData);
-    const uResult = await supabase
-      .from('processes')
-      .update({ json_ordered: newData, rule_verification })
-      .eq('id', id)
-      .eq('version', version)
-      .select();
-    return uResult;
+    let uResult: any = {};
+    const session = await supabase.auth.getSession();
+    if (session.data.session) {
+      uResult = await supabase.functions.invoke('update_data', {
+        headers: {
+          Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+        },
+        body: {
+          id,
+          version,
+          table: 'processes',
+          data: { json_ordered: newData, rule_verification },
+        },
+        region: FunctionRegion.UsEast1,
+      });
+    }
+    if (uResult.error) {
+      console.log('error', uResult.error);
+    }
+    return uResult?.data;
   } else {
     const oldData = {
       processDataSet: {
@@ -108,27 +122,54 @@ export async function updateLifeCycleModel(data: any) {
     const oldData = result.data[0].json;
     const newData = genLifeCycleModelJsonOrdered(data.id, data, oldData);
     const rule_verification = getRuleVerification(schema, newData);
-    const updateResult = await supabase
-      .from('lifecyclemodels')
-      .update({ json_ordered: newData, json_tg: { xflow: data?.model }, rule_verification })
-      .eq('id', data.id)
-      .eq('version', data.version)
-      .select();
+    let updateResult: any = {};
+    const session = await supabase.auth.getSession();
+    if (session.data.session) {
+      updateResult = await supabase.functions.invoke('update_data', {
+        headers: {
+          Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+        },
+        body: {
+          id: data.id,
+          version: data.version,
+          table: 'lifecyclemodels',
+          data: { json_ordered: newData, json_tg: { xflow: data?.model }, rule_verification },
+        },
+        region: FunctionRegion.UsEast1,
+      });
+    }
+    if (updateResult.error) {
+      console.log('error', updateResult.error);
+    }
     const refNode = data?.model?.nodes.find((i: any) => i?.data?.quantitativeReference === '1');
     updateLifeCycleModelProcess(data.id, data.version, refNode, newData);
-    return updateResult;
+    return updateResult?.data;
   }
   return null;
 }
 
 export async function updateLifeCycleModelJsonApi(id: string, version: string, data: any) {
-  const updateResult = await supabase
-    .from('lifecyclemodels')
-    .update({ json: data })
-    .eq('id', id)
-    .eq('version', version)
-    .select();
-  return updateResult;
+  let updateResult: any = {};
+  const session = await supabase.auth.getSession();
+  if (session.data.session) {
+    updateResult = await supabase.functions.invoke('update_data', {
+      headers: {
+        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+      },
+      body: { id, version, table: 'lifecyclemodels', data: { json: data } },
+      region: FunctionRegion.UsEast1,
+    });
+  }
+  if (updateResult.error) {
+    console.log('error', updateResult.error);
+  }
+  if (updateResult?.data && updateResult?.data?.length > 0) {
+    const refNode = updateResult?.data[0]?.json_tg?.xflow?.nodes?.find(
+      (i: any) => i?.data?.quantitativeReference === '1',
+    );
+    updateLifeCycleModelProcess(id, version, refNode, data);
+  }
+  return updateResult?.data;
 }
 
 export async function deleteLifeCycleModel(id: string, version: string) {
@@ -526,67 +567,6 @@ export async function lifeCycleModel_hybrid_search(
 
   return result;
 }
-
-export async function getLifeCycleModelDetail(
-  id: string,
-  version: string,
-): Promise<
-  | {
-      data: {
-        id: string;
-        version: string;
-        json: any;
-        json_tg: any;
-        state_code: number;
-        rule_verification: any;
-      };
-      success: true;
-    }
-  | {
-      data: object;
-      success: false;
-    }
-> {
-  const result = await supabase
-    .from('lifecyclemodels')
-    .select('json, json_tg,state_code,rule_verification,team_id')
-    .eq('id', id)
-    .eq('version', version);
-  if (result.data && result.data.length > 0) {
-    const data = result.data[0];
-    return Promise.resolve({
-      data: {
-        id: id,
-        version: version,
-        json: data.json,
-        json_tg: data?.json_tg,
-        state_code: data?.state_code,
-        rule_verification: data?.rule_verification,
-        teamId: data?.team_id,
-      },
-      success: true,
-    });
-  }
-  return Promise.resolve({
-    data: {},
-    success: false,
-  });
-}
-
-export async function updateLifeCycleModelStateCode(
-  id: string,
-  version: string,
-  stateCode: number,
-) {
-  const result = await supabase
-    .from('lifecyclemodels')
-    .update({ state_code: stateCode })
-    .eq('id', id)
-    .eq('version', version)
-    .select('state_code');
-  return result;
-}
-
 export async function getLifeCyclesByIds(ids: string[]) {
   const result = await supabase
     .from('lifecyclemodels')
@@ -603,4 +583,87 @@ export async function getLifeCyclesByIds(ids: string[]) {
     )
     .in('id', ids);
   return result;
+}
+
+export async function getLifeCycleModelDetail(
+  id: string,
+  version: string,
+  setIsFromLifeCycle = false,
+): Promise<
+  | {
+      data: {
+        id: string;
+        version: string;
+        json: any;
+        json_tg: any;
+        stateCode: number;
+        ruleVerification: any;
+      };
+      success: true;
+    }
+  | {
+      data: object;
+      success: false;
+    }
+> {
+  const result = await supabase
+    .from('lifecyclemodels')
+    .select('json, json_tg,state_code,rule_verification,team_id')
+    .eq('id', id)
+    .eq('version', version);
+  if (result.data && result.data.length > 0) {
+    const data = result.data[0];
+    if (setIsFromLifeCycle) {
+      let procressIds: string[] = [];
+      let procressVersion: string[] = [];
+      data?.json_tg?.xflow?.nodes?.forEach((node: any) => {
+        procressIds.push(node?.data?.id);
+        procressVersion.push(node?.data?.version);
+      });
+
+      if (procressIds.length > 0) {
+        const [procresses, models] = await Promise.all([
+          getProcessesByIdsAndVersions(procressIds, procressVersion),
+          getLifeCyclesByIds(procressIds),
+        ]);
+
+        data?.json_tg?.xflow?.nodes?.forEach((node: any) => {
+          const model = models?.data?.find(
+            (model: any) => model?.id === node?.data?.id && model?.version === node?.data?.version,
+          );
+          if (model) {
+            node.isFromLifeCycle = true;
+          } else {
+            node.isFromLifeCycle = false;
+          }
+          const procress = procresses?.data?.find(
+            (procress: any) =>
+              procress?.id === node?.data?.id && procress?.version === node?.data?.version,
+          );
+          if (procress?.user_id === sessionStorage.getItem('userId')) {
+            node.isMyProcess = true;
+          } else {
+            node.isMyProcess = false;
+          }
+        });
+      }
+    }
+
+    return Promise.resolve({
+      data: {
+        id: id,
+        version: version,
+        json: data.json,
+        json_tg: data?.json_tg,
+        stateCode: data?.state_code,
+        ruleVerification: data?.rule_verification,
+        teamId: data?.team_id,
+      },
+      success: true,
+    });
+  }
+  return Promise.resolve({
+    data: {},
+    success: false,
+  });
 }

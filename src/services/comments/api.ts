@@ -1,4 +1,5 @@
 import { supabase } from '@/services/supabase';
+import { FunctionRegion } from '@supabase/supabase-js';
 
 export async function addCommentApi(data: any) {
   const { error } = await supabase.from('comments').upsert(data).select();
@@ -10,22 +11,21 @@ export async function updateCommentApi(
   data: any,
   tabType: 'assigned' | 'review',
 ) {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const userId = user?.id;
-
-  if (!userId) {
-    return { error: true };
+  let result: any = {};
+  const session = await supabase.auth.getSession();
+  if (session.data.session) {
+    result = await supabase.functions.invoke('update_comment', {
+      headers: {
+        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+      },
+      body: { id: reviewId, data, tabType },
+      region: FunctionRegion.UsEast1,
+    });
   }
-
-  const query = supabase.from('comments').update(data).eq('review_id', reviewId);
-
-  if (tabType === 'review') {
-    query.eq('reviewer_id', userId);
+  if (result.error) {
+    console.log('error', result.error);
   }
-  const { error } = await query;
-  return { error };
+  return result?.data;
 }
 
 export async function getCommentApi(reviewId: string, actionType: 'assigned' | 'review') {

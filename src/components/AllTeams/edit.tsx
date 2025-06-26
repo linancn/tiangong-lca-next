@@ -106,7 +106,11 @@ const TeamEdit: FC<Props> = ({
           { '#text': '', '@xml:lang': 'zh' },
           { '#text': '', '@xml:lang': 'en' },
         ],
+        lightLogo: teamData.json?.lightLogo,
+        darkLogo: teamData.json?.darkLogo,
       };
+      setLightLogo(teamData.json?.lightLogo);
+      setDarkLogo(teamData.json?.darkLogo);
 
       formRefEdit.current?.setFieldsValue({ ...formValues });
       setFromData({
@@ -185,19 +189,25 @@ const TeamEdit: FC<Props> = ({
             onFinish={async () => {
               setSpinning(true);
               const formValues = formRefEdit.current?.getFieldsValue() ?? {};
-              if (!lightLogo.length) {
+              if (!lightLogo?.length) {
                 handleRemoveLogo('lightLogo');
                 formValues.lightLogo = null;
               } else {
-                const lightLogoPath = await uploadLogo(lightLogo, 'lightLogo');
-                formValues.lightLogo = lightLogoPath ? `../sys-files/${lightLogoPath}` : null;
+                const lightLogoPath =
+                  typeof lightLogo === 'string'
+                    ? lightLogo
+                    : await uploadLogo(lightLogo, 'lightLogo');
+                formValues.lightLogo =
+                  typeof lightLogo === 'string' ? lightLogo : `../sys-files/${lightLogoPath}`;
               }
-              if (!darkLogo.length) {
+              if (!darkLogo?.length) {
                 handleRemoveLogo('darkLogo');
                 formValues.darkLogo = null;
               } else {
-                const darkLogoPath = await uploadLogo(darkLogo, 'darkLogo');
-                formValues.darkLogo = darkLogoPath ? `../sys-files/${darkLogoPath}` : null;
+                const darkLogoPath =
+                  typeof darkLogo === 'string' ? darkLogo : await uploadLogo(darkLogo, 'darkLogo');
+                formValues.darkLogo =
+                  typeof darkLogo === 'string' ? darkLogo : `../sys-files/${darkLogoPath}`;
               }
               const updateResult = await editTeamMessage(id, formValues);
               if (updateResult?.data) {

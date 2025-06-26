@@ -1,5 +1,6 @@
 import { RefCheckContext } from '@/contexts/refCheckContext';
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
+import type { refDataType } from '@/pages/Utils/review';
 import {
   ReffPath,
   checkReferences,
@@ -43,6 +44,9 @@ type Props = {
   buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined> | undefined;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  disabled?: boolean;
+  hideReviewButton?: boolean;
+  updateNodeCb?: (ref: refDataType) => Promise<void>;
 };
 const ProcessEdit: FC<Props> = ({
   id,
@@ -51,6 +55,9 @@ const ProcessEdit: FC<Props> = ({
   buttonType,
   actionRef,
   setViewDrawerVisible,
+  disabled = false,
+  hideReviewButton = false,
+  updateNodeCb = () => {},
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
@@ -186,7 +193,7 @@ const ProcessEdit: FC<Props> = ({
 
     const path = await checkReferences(
       refObjs,
-      new Set<string>(),
+      new Map<string, any>(),
       userTeamId,
       unReview,
       underReview,
@@ -248,6 +255,7 @@ const ProcessEdit: FC<Props> = ({
       setSpinning(false);
       return { checkResult: false, unReview };
     }
+    setSpinning(false);
     return { checkResult, unReview };
   };
 
@@ -273,6 +281,11 @@ const ProcessEdit: FC<Props> = ({
           id: id,
         });
       }
+      updateNodeCb({
+        '@refObjectId': id,
+        '@version': version,
+        '@type': 'process data set',
+      });
       message.success(
         intl.formatMessage({
           id: 'pages.button.save.success',
@@ -392,7 +405,26 @@ const ProcessEdit: FC<Props> = ({
 
   return (
     <>
-      {buttonType === 'tool' ? (
+      {buttonType === 'toolIcon' ? (
+        <Tooltip
+          title={
+            <FormattedMessage
+              id='pages.button.model.process'
+              defaultMessage='Process infomation'
+            ></FormattedMessage>
+          }
+          placement='left'
+        >
+          <Button
+            type='primary'
+            size='small'
+            style={{ boxShadow: 'none' }}
+            icon={<FormOutlined />}
+            onClick={onEdit}
+            disabled={disabled}
+          />
+        </Tooltip>
+      ) : buttonType === 'tool' ? (
         <Tooltip
           title={<FormattedMessage id='pages.button.model.result' defaultMessage='Model result' />}
           placement='left'
@@ -443,13 +475,15 @@ const ProcessEdit: FC<Props> = ({
               <FormattedMessage id='pages.button.check' defaultMessage='Data check' />
             </Button>
             <>
-              <Button
-                onClick={() => {
-                  submitReview();
-                }}
-              >
-                <FormattedMessage id='pages.button.review' defaultMessage='Submit for review' />
-              </Button>
+              {!hideReviewButton && (
+                <Button
+                  onClick={() => {
+                    submitReview();
+                  }}
+                >
+                  <FormattedMessage id='pages.button.review' defaultMessage='Submit for review' />
+                </Button>
+              )}
               <Button
                 onClick={() => {
                   updateReference();

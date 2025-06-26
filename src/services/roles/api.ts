@@ -1,6 +1,7 @@
 import { supabase } from '@/services/supabase';
 import { addTeam } from '@/services/teams/api';
 import { getUserIdByEmail, getUsersByIds } from '@/services/users/api';
+import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/lib/table/interface';
 
 export async function getUserTeamId() {
@@ -136,13 +137,21 @@ export async function updateRoleApi(
   userId: string,
   role: 'admin' | 'member' | 'review-admin' | 'review-member',
 ) {
-  const result = await supabase
-    .from('roles')
-    .update({ role })
-    .eq('team_id', teamId)
-    .eq('user_id', userId)
-    .select();
-  return result;
+  let result: any = {};
+  const session = await supabase.auth.getSession();
+  if (session.data.session) {
+    result = await supabase.functions.invoke('update_role', {
+      headers: {
+        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+      },
+      body: { teamId, userId, data: { role } },
+      region: FunctionRegion.UsEast1,
+    });
+  }
+  if (result.error) {
+    console.log('error', result.error);
+  }
+  return result?.data;
 }
 
 export async function delRoleApi(teamId: string, userId: string) {
@@ -151,49 +160,62 @@ export async function delRoleApi(teamId: string, userId: string) {
 }
 
 export async function reInvitedApi(userId: string, teamId: string) {
-  const { error } = await supabase
-    .from('roles')
-    .update({ role: 'is_invited' })
-    .eq('user_id', userId)
-    .eq('team_id', teamId);
-  return error;
+  let result: any = {};
+  const session = await supabase.auth.getSession();
+  if (session.data.session) {
+    result = await supabase.functions.invoke('update_role', {
+      headers: {
+        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+      },
+      body: { teamId, userId, data: { role: 'is_invited' } },
+      region: FunctionRegion.UsEast1,
+    });
+  }
+  if (result.error) {
+    console.log('error', result.error);
+  }
+  return result?.data?.error;
 }
 
 export async function rejectTeamInvitationApi(teamId: string, userId: string) {
-  const { error } = await supabase
-    .from('roles')
-    .update({ role: 'rejected' })
-    .eq('user_id', userId)
-    .eq('team_id', teamId);
-
-  if (error) {
-    return {
-      success: false,
-      error,
-    };
+  let result: any = {};
+  const session = await supabase.auth.getSession();
+  if (session.data.session) {
+    result = await supabase.functions.invoke('update_role', {
+      headers: {
+        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+      },
+      body: { teamId, userId, data: { role: 'rejected' } },
+      region: FunctionRegion.UsEast1,
+    });
+  }
+  if (result.error) {
+    console.log('error', result.error);
   }
   return {
-    success: true,
+    success: !result.error,
+    error: result?.data?.error,
   };
 }
 
 export async function acceptTeamInvitationApi(teamId: string, userId: string) {
-  const { data, error } = await supabase
-    .from('roles')
-    .update({ role: 'member' })
-    .eq('team_id', teamId)
-    .eq('user_id', userId);
-
-  if (error) {
-    return {
-      success: false,
-      error,
-    };
+  let result: any = {};
+  const session = await supabase.auth.getSession();
+  if (session.data.session) {
+    result = await supabase.functions.invoke('update_role', {
+      headers: {
+        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+      },
+      body: { teamId, userId, data: { role: 'member' } },
+      region: FunctionRegion.UsEast1,
+    });
   }
-
+  if (result.error) {
+    console.log('error', result.error);
+  }
   return {
-    success: true,
-    data,
+    success: !result.error,
+    ...result?.data,
   };
 }
 

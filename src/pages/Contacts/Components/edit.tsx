@@ -224,8 +224,8 @@ const ContactEdit: FC<Props> = ({
                     }
                     message.success(
                       intl.formatMessage({
-                        id: 'pages.button.create.success',
-                        defaultMessage: 'Created successfully!',
+                        id: 'pages.button.save.success',
+                        defaultMessage: 'Save successfully!',
                       }),
                     );
                     setDrawerVisible(false);
@@ -234,7 +234,7 @@ const ContactEdit: FC<Props> = ({
                   } else {
                     message.error(updateResult?.error?.message);
                   }
-                  setSpinning(true);
+                  setSpinning(false);
                   return true;
                 }}
               >

@@ -1,7 +1,9 @@
 import { getLifeCyclesByIds } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
+import { FunctionRegion } from '@supabase/supabase-js';
 import { getLangText } from '../general/util';
 import { genProcessName } from '../processes/util';
+
 export async function addReviewsApi(id: string, data: any) {
   const { error } = await supabase
     .from('reviews')
@@ -15,9 +17,18 @@ export async function addReviewsApi(id: string, data: any) {
 }
 
 export async function updateReviewApi(reviewIds: React.Key[], data: any) {
-  let query = supabase.from('reviews').update(data).in('id', reviewIds).select();
-  const result = await query;
-  return result;
+  let result: any = {};
+  const session = await supabase.auth.getSession();
+  if (session.data.session) {
+    result = await supabase.functions.invoke('update_review', {
+      headers: {
+        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+      },
+      body: { reviewIds, data },
+      region: FunctionRegion.UsEast1,
+    });
+  }
+  return result?.data;
 }
 
 export async function getReviewerIdsApi(reviewIds: React.Key[]) {
@@ -78,16 +89,26 @@ export async function getReviewsTableData(
       });
     }
 
-    const processIds = result?.data.map((i) => i?.json?.data?.id);
+    const processIds: string[] = [];
+    result?.data.forEach((i) => {
+      const id = i?.json?.data?.id;
+      if (id) {
+        processIds.push(id);
+      }
+    });
     const modelResult = await getLifeCyclesByIds(processIds);
-
     let data = result?.data.map((i: any) => {
-      const model = modelResult?.data?.find((j) => j.id === i.id && j.version === i.version);
+      const model = modelResult?.data?.find(
+        (j) => j.id === i?.json?.data?.id && j.version === i?.json?.data?.version,
+      );
       return {
         key: i.id,
         id: i.id,
         isFromLifeCycle: model ? true : false,
-        processName: genProcessName(i?.json?.data?.name ?? {}, lang) || '-',
+        name:
+          (model
+            ? genProcessName(model?.name ?? {}, lang)
+            : genProcessName(i?.json?.data?.name ?? {}, lang)) || '-',
         teamName: getLangText(i?.json?.team?.name ?? {}, lang),
         userName: i?.json?.user?.name ?? '-',
         createAt: new Date(i.created_at).toISOString(),

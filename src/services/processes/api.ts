@@ -28,23 +28,39 @@ export async function createProcess(id: string, data: any) {
 export async function updateProcess(id: string, version: string, data: any) {
   const newData = genProcessJsonOrdered(id, data);
   const rule_verification = getRuleVerification(schema, newData);
-  const updateResult = await supabase
-    .from('processes')
-    .update({ json_ordered: newData, rule_verification })
-    .eq('id', id)
-    .eq('version', version)
-    .select();
-  return updateResult;
+  let result: any = {};
+  const session = await supabase.auth.getSession();
+  if (session.data.session) {
+    result = await supabase.functions.invoke('update_data', {
+      headers: {
+        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+      },
+      body: { id, version, table: 'processes', data: { json_ordered: newData, rule_verification } },
+      region: FunctionRegion.UsEast1,
+    });
+  }
+  if (result.error) {
+    console.log('error', result.error);
+  }
+  return result?.data;
 }
 
 export async function updateProcessApi(id: string, version: string, data: any) {
-  const updateResult = await supabase
-    .from('processes')
-    .update(data)
-    .eq('id', id)
-    .eq('version', version)
-    .select();
-  return updateResult;
+  let result: any = {};
+  const session = await supabase.auth.getSession();
+  if (session.data.session) {
+    result = await supabase.functions.invoke('update_data', {
+      headers: {
+        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+      },
+      body: { id, version, table: 'processes', data },
+      region: FunctionRegion.UsEast1,
+    });
+  }
+  if (result.error) {
+    console.log('error', result.error);
+  }
+  return result?.data;
 }
 
 export async function getProcessTableAll(
@@ -773,4 +789,13 @@ export async function getProcessExchange(
     success: true,
     total: data.length ?? 0,
   });
+}
+
+export async function getProcessesByIdsAndVersions(ids: string[], versions: string[]) {
+  const result = await supabase
+    .from('processes')
+    .select('id,json,version, modified_at,user_id')
+    .in('id', ids)
+    .in('version', versions);
+  return result;
 }

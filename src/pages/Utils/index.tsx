@@ -2,23 +2,23 @@ import { ProColumns, ProFormInstance } from '@ant-design/pro-components';
 import { FormattedMessage } from 'umi';
 
 // 原生 JavaScript 实现 lodash 的 get 函数
-function get(obj: any, path: string, defaultValue?: any): any {
-  if (!obj || typeof obj !== 'object') {
-    return defaultValue;
-  }
+// function get(obj: any, path: string, defaultValue?: any): any {
+//   if (!obj || typeof obj !== 'object') {
+//     return defaultValue;
+//   }
 
-  const keys = path.split('.');
-  let result = obj;
+//   const keys = path.split('.');
+//   let result = obj;
 
-  for (const key of keys) {
-    if (result === null || result === undefined || typeof result !== 'object' || !(key in result)) {
-      return defaultValue;
-    }
-    result = result[key];
-  }
+//   for (const key of keys) {
+//     if (result === null || result === undefined || typeof result !== 'object' || !(key in result)) {
+//       return defaultValue;
+//     }
+//     result = result[key];
+//   }
 
-  return result;
-}
+//   return result;
+// }
 
 export function getDataTitle(dataSource: string) {
   if (dataSource === 'my') {
