@@ -44,7 +44,7 @@ const AlignedNumber = ({ number, precision = 4 }: { number: number; precision?: 
   // Determine if scientific notation is needed
   if (
     (!bn.isZero() && bn.abs().gte(EXP_POS_THRESHOLD)) ||
-    (!bn.isZero() && bn.abs().lte(EXP_NEG_THRESHOLD))
+    (!bn.isZero() && bn.abs().lt(EXP_NEG_THRESHOLD))
   ) {
     // 科学计数法格式化为 2.90×10⁸
     const expStr = trimTrailingZeros(bn.toExponential(precision));
@@ -57,8 +57,18 @@ const AlignedNumber = ({ number, precision = 4 }: { number: number; precision?: 
       strValue = expStr;
     }
   } else {
-    // Automatically remove unnecessary zeros; do not show decimal point for integers
-    strValue = trimTrailingZeros(bn.toFormat(precision));
+    // For small decimals between EXP_NEG_THRESHOLD and 1, use more decimal places to avoid rounding to 0
+    if (!bn.isZero() && bn.abs().lt(1) && bn.abs().gte(EXP_NEG_THRESHOLD)) {
+      // Calculate needed decimal places for small numbers
+      const decimalPlaces = Math.max(
+        precision,
+        -Math.floor(Math.log10(bn.abs().toNumber())) + precision - 1,
+      );
+      strValue = trimTrailingZeros(bn.toFormat(decimalPlaces));
+    } else {
+      // Automatically remove unnecessary zeros; do not show decimal point for integers
+      strValue = trimTrailingZeros(bn.toFormat(precision));
+    }
   }
 
   return <span className='decimal-align'>{strValue}</span>;
