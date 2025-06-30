@@ -3,7 +3,24 @@ import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
 import { addReviewsApi } from '@/services/reviews/api';
 import { getTeamMessageApi } from '@/services/teams/api';
 import { getUsersByIds } from '@/services/users/api';
-import { get } from 'lodash';
+
+function get(obj: any, path: string, defaultValue?: any): any {
+  if (!obj || typeof obj !== 'object') {
+    return defaultValue;
+  }
+
+  const keys = path.split('.');
+  let result = obj;
+
+  for (const key of keys) {
+    if (result === null || result === undefined || typeof result !== 'object' || !(key in result)) {
+      return defaultValue;
+    }
+    result = result[key];
+  }
+
+  return result;
+}
 
 export type refDataType = {
   '@type': string;
