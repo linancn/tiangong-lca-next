@@ -300,7 +300,13 @@ const ProcessEdit: FC<Props> = ({
       }
     } else {
       setSpinning(false);
-      message.error(updateResult?.error?.message);
+      message.error(
+        updateResult?.error?.message ??
+          intl.formatMessage({
+            id: 'pages.action.error',
+            defaultMessage: 'Action failed',
+          }),
+      );
     }
     return true;
   };
