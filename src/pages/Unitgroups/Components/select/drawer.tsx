@@ -1,3 +1,4 @@
+import { toSuperscript } from '@/components/AlignedNumber';
 import { ListPagination } from '@/services/general/data';
 import { getUnitGroupTableAll, getUnitGroupTablePgroongaSearch } from '@/services/unitgroups/api';
 import { UnitGroupTable } from '@/services/unitgroups/data';
@@ -116,7 +117,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
       search: false,
       render: (_, row) => [
         <Tooltip key={0} placement='topLeft' title={row.refUnitGeneralComment}>
-          {row.refUnitName}
+          {toSuperscript(row.refUnitName ?? '-')}
         </Tooltip>,
       ],
     },

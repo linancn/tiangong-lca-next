@@ -1,9 +1,11 @@
+import { toSuperscript } from '@/components/AlignedNumber';
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import { getReferenceUnit } from '@/services/unitgroups/api';
 import { Card, Descriptions, Divider, Space } from 'antd';
 import { FC, ReactNode, useEffect, useState } from 'react';
 import { FormattedMessage, getLocale } from 'umi';
 import UnitGroupView from '../view';
+
 type Props = {
   title: ReactNode | string;
   data: any;
@@ -111,7 +113,7 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
             }
             styles={{ label: { width: '160px' } }}
           >
-            {refUnit?.refUnitName ?? '-'}
+            {toSuperscript(refUnit?.refUnitName ?? '-')}
           </Descriptions.Item>
         </Descriptions>
         <br />
