@@ -84,4 +84,6 @@ export default {
   'pages.table.filter.unreviewed': '未审查',
   'pages.table.filter.reviewing': '正在审查',
   'pages.table.filter.reviewed': '已审查',
+
+  'pages.action.error': '操作失败',
 };

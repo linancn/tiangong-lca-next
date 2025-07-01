@@ -1,3 +1,4 @@
+import { toSuperscript } from '@/components/AlignedNumber';
 import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
 import ExportData from '@/components/ExportData';
@@ -71,11 +72,13 @@ const TableList: FC = () => {
       dataIndex: 'refUnitName',
       sorter: false,
       search: false,
-      render: (_, row) => [
-        <Tooltip key={0} placement='topLeft' title={row.refUnitGeneralComment}>
-          {row.refUnitName}
-        </Tooltip>,
-      ],
+      render: (_, row) => {
+        return [
+          <Tooltip key={0} placement='topLeft' title={row.refUnitGeneralComment}>
+            {toSuperscript(row.refUnitName)}
+          </Tooltip>,
+        ];
+      },
     },
     {
       title: (
