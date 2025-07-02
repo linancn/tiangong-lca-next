@@ -241,6 +241,171 @@ export async function getProcessTableAll(
   };
 }
 
+export async function getConnectableProcessesTable(
+  params: {
+    current?: number;
+    pageSize?: number;
+  },
+  sort: Record<string, SortOrder>,
+  lang: string,
+  dataSource: string,
+  tid: string | [],
+  portId: string,
+  flowVersion: string,
+) {
+  const sortBy = Object.keys(sort)[0] ?? 'modified_at';
+  const orderBy = sort[sortBy] ?? 'descend';
+  const direction = portId.split(':')[0];
+  const flowId = portId.split(':').pop();
+  if (!flowId) {
+    return { data: [], success: true };
+  }
+
+  const selectStr = `
+      id,
+      json->processDataSet->processInformation->dataSetInformation->name,
+      json->processDataSet->processInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
+      json->processDataSet->processInformation->dataSetInformation->"common:generalComment",
+      json->processDataSet->processInformation->time->>"common:referenceYear",
+      json->processDataSet->modellingAndValidation->LCIMethodAndAllocation->typeOfDataSet,
+      json->processDataSet->processInformation->geography->locationOfOperationSupplyOrProduction->>"@location",
+      json->processDataSet->exchanges->exchange,
+      version,
+      modified_at,
+      team_id
+    `;
+
+  const tableName = 'processes';
+
+  let query = supabase
+    .from(tableName)
+    .select(selectStr, { count: 'exact' })
+    .order(sortBy, { ascending: orderBy === 'ascend' })
+    .range(
+      ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
+      (params.current ?? 1) * (params.pageSize ?? 10) - 1,
+    );
+
+  const baseFlowRef = flowVersion
+    ? { '@refObjectId': flowId, '@version': flowVersion }
+    : { '@refObjectId': flowId };
+
+  query = query.filter(
+    'json->processDataSet->exchanges->exchange',
+    'cs',
+    JSON.stringify([{ referenceToFlowDataSet: baseFlowRef }]),
+  );
+
+  if (dataSource === 'tg') {
+    query = query.eq('state_code', 100);
+    if (tid.length > 0) {
+      query = query.eq('team_id', tid);
+    }
+  } else if (dataSource === 'co') {
+    query = query.eq('state_code', 200);
+    if (tid.length > 0) {
+      query = query.eq('team_id', tid);
+    }
+  } else if (dataSource === 'my') {
+    const session = await supabase.auth.getSession();
+    if (session.data.session) {
+      query = query.eq('user_id', session?.data?.session?.user?.id);
+    } else {
+      return { data: [], success: false };
+    }
+  } else if (dataSource === 'te') {
+    const teamId = await getTeamIdByUserId();
+    if (teamId) {
+      query = query.eq('team_id', teamId);
+    } else {
+      return { data: [], success: true };
+    }
+  }
+
+  const result = await query;
+
+  if (result?.error) {
+    console.error('error', result?.error);
+    return { data: [], success: false, error: result?.error };
+  }
+
+  if (!result?.data || result?.data.length === 0) {
+    return { data: [], success: true };
+  }
+  const exchangeDirection = direction.toLowerCase() === 'input' ? 'output' : 'input';
+  const filteredData = result.data.filter((i: any) =>
+    i.exchange.find(
+      (j: any) =>
+        j?.exchangeDirection?.toLowerCase() === exchangeDirection &&
+        j?.referenceToFlowDataSet?.['@refObjectId'] === flowId &&
+        (flowVersion ? j?.referenceToFlowDataSet?.['@version'] === flowVersion : true),
+    ),
+  );
+  result.data = [...filteredData];
+
+  const locations = Array.from(new Set(result.data.map((i: any) => i['@location'])));
+  const processIds = result.data.map((i: any) => i.id);
+  const [locationRes, classificationRes, lifeCycleResult] = await Promise.all([
+    getILCDLocationByValues(lang, locations),
+    lang === 'zh' ? getILCDClassification('Process', lang, ['all']) : Promise.resolve(null),
+    getLifeCyclesByIds(processIds),
+  ]);
+  const locationDataArr = locationRes.data || [];
+  const locationMap = new Map(locationDataArr.map((l: any) => [l['@value'], l['#text']]));
+  const classificationData = classificationRes?.data;
+
+  let data: any[] = result.data.map((i: any) => {
+    try {
+      const classifications = jsonToList(i['common:class']);
+      let classification;
+      if (lang === 'zh') {
+        const classificationZH = genClassificationZH(classifications, classificationData);
+        classification = classificationToString(classificationZH ?? {});
+      } else {
+        classification = classificationToString(classifications);
+      }
+      let location = i['@location'];
+      if (locationMap.has(location)) {
+        location = locationMap.get(location);
+      }
+      return {
+        key: i.id + ':' + i.version,
+        id: i.id,
+        version: i.version,
+        lang: lang,
+        name: genProcessName(i.name ?? {}, lang),
+        generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
+        classification,
+        typeOfDataSet: i.typeOfDataSet ?? '-',
+        referenceYear: i['common:referenceYear'] ?? '-',
+        location: location ?? '-',
+        modifiedAt: new Date(i.modified_at),
+        teamId: i?.team_id,
+      };
+    } catch (e) {
+      console.error(e);
+      return { id: i.id };
+    }
+  });
+
+  if (lifeCycleResult.data && lifeCycleResult.data.length > 0) {
+    const lifeCycleMap = new Map(
+      lifeCycleResult.data.map((i: any) => [i.id + ':' + i.version, true]),
+    );
+    data.forEach((i) => {
+      if (lifeCycleMap.has(i.id + ':' + i.version)) {
+        i.isFromLifeCycle = true;
+      }
+    });
+  }
+
+  return {
+    data,
+    page: params?.current ?? 1,
+    success: true,
+    total: result?.count ?? 0,
+  };
+}
 // export async function getProcessTableAllByTeam(
 //   params: {
 //     current?: number;

@@ -13,11 +13,13 @@ import { useGraphEvent, useGraphStore } from '@antv/xflow';
 import { Space, Spin, theme } from 'antd';
 import { FC, useEffect, useState } from 'react';
 import { useIntl } from 'umi';
+import ConnectableProcesses from '../connectableProcesses';
 import { Control } from './control';
 import EdgeExhange from './Exchange/index';
 import IoPortView from './Exchange/ioPortView';
 import ToolbarViewInfo from './viewInfo';
 import TargetAmount from './viewTargetAmount';
+
 type Props = {
   id: string;
   version: string;
@@ -34,6 +36,9 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
   const [ioPortSelectorDirection, setIoPortSelectorDirection] = useState('');
   const [ioPortSelectorNode, setIoPortSelectorNode] = useState<any>({});
   const [ioPortSelectorDrawerVisible, setIoPortSelectorDrawerVisible] = useState(false);
+  const [connectableProcessesDrawerVisible, setConnectableProcessesDrawerVisible] = useState(false);
+  const [connectableProcessesPortId, setConnectableProcessesPortId] = useState<any>('');
+  const [connectableProcessesFlowVersion, setConnectableProcessesFlowVersion] = useState<any>('');
 
   const modelData = useGraphStore((state) => state.initData);
   const updateNode = useGraphStore((state) => state.updateNode);
@@ -297,7 +302,48 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
     },
     items: [],
   };
+  useGraphEvent('node:click', (evt) => {
+    const node = evt.node;
+    const event = evt.e;
 
+    if (node.isNode()) {
+      if (event && event.target) {
+        const target = event.target as HTMLElement;
+        const textContent = target.textContent;
+
+        if (textContent) {
+          const targetElement = event.target as HTMLElement;
+          const parentElement = targetElement.parentElement;
+          const grandParentElement = parentElement?.parentElement;
+
+          let clickedPortId = null;
+          if (grandParentElement) {
+            const firstChild = grandParentElement.firstElementChild;
+
+            if (firstChild && firstChild.tagName === 'circle') {
+              const portAttr = firstChild.getAttribute('port');
+
+              if (portAttr) {
+                clickedPortId = portAttr;
+              }
+            }
+          }
+
+          let matchedPort = null;
+          if (clickedPortId) {
+            const ports = node.getPorts();
+            matchedPort = ports.find((port: any) => port.id === clickedPortId);
+
+            if (matchedPort) {
+              setConnectableProcessesDrawerVisible(true);
+              setConnectableProcessesPortId(clickedPortId);
+              setConnectableProcessesFlowVersion(matchedPort?.data?.flowVersion);
+            }
+          }
+        }
+      }
+    }
+  });
   useGraphEvent('edge:added', (evt) => {
     const edge = evt.edge;
     removeEdges([edge.id]);
@@ -423,6 +469,14 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
         direction={ioPortSelectorDirection}
         drawerVisible={ioPortSelectorDrawerVisible}
         onDrawerVisible={setIoPortSelectorDrawerVisible}
+      />
+      <ConnectableProcesses
+        lang={lang}
+        drawerVisible={connectableProcessesDrawerVisible}
+        setDrawerVisible={setConnectableProcessesDrawerVisible}
+        portId={connectableProcessesPortId}
+        flowVersion={connectableProcessesFlowVersion}
+        readOnly={true}
       />
     </Space>
   );

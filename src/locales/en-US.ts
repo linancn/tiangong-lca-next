@@ -1,6 +1,7 @@
 import component from './en-US/component';
 import component_allTeams from './en-US/component_allTeams';
 import component_allVersions from './en-US/component_allVersions';
+import component_connectableProcesses from './en-US/component_connectableProcesses';
 import component_contributeData from './en-US/component_contributeData';
 import importData from './en-US/component_importData';
 import component_rejectReview from './en-US/component_rejectReview';
@@ -58,4 +59,5 @@ export default {
   ...pages_review,
   ...importData,
   ...component_rejectReview,
+  ...component_connectableProcesses,
 };
