@@ -1,3 +1,4 @@
+import { toSuperscript } from '@/components/AlignedNumber';
 import RequiredSelectFormTitle from '@/components/RequiredSelectFormTitle';
 import { RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
 import { useUpdateReferenceContext } from '@/contexts/updateReferenceContext';
@@ -13,6 +14,7 @@ import { FormattedMessage } from 'umi';
 import UnitgroupsEdit from '../edit';
 import UnitgroupsView from '../view';
 import UnitgroupsSelectDrawer from './drawer';
+
 const { TextArea } = Input;
 
 type Props = {
@@ -92,7 +94,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
         'common:shortDescription':
           selectedData?.unitGroupInformation?.dataSetInformation?.['common:name'] ?? [],
         refUnit: {
-          name: refUnit?.name ?? '',
+          name: toSuperscript(refUnit?.name ?? ''),
           generalComment: refUnit?.generalComment ?? [],
         },
       });
@@ -118,7 +120,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
         formRef.current?.getFieldValue([...name, '@version']),
       ).then((res: any) => {
         formRef.current?.setFieldValue([...name, 'refUnit'], {
-          name: res?.data?.refUnitName ?? '',
+          name: toSuperscript(res?.data?.refUnitName ?? ''),
           generalComment: res?.data?.refUnitGeneralComment ?? [],
         });
       });

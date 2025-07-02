@@ -1,6 +1,7 @@
 import component from './zh-CN/component';
 import component_allTeams from './zh-CN/component_allTeams';
 import component_allVersions from './zh-CN/component_allVersions';
+import component_connectableProcesses from './zh-CN/component_connectableProcesses';
 import component_contributeData from './zh-CN/component_contributeData';
 import importData from './zh-CN/component_importData';
 import component_rejectReview from './zh-CN/component_rejectReview';
@@ -58,4 +59,5 @@ export default {
   ...pages_review,
   ...importData,
   ...component_rejectReview,
+  ...component_connectableProcesses,
 };

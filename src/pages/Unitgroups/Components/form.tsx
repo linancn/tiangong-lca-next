@@ -20,6 +20,7 @@ import UnitEdit from './Unit/edit';
 import UnitView from './Unit/view';
 import { complianceOptions } from './optiondata';
 // import UnitGroupSelectFrom from './select/form';
+import { toSuperscript } from '@/components/AlignedNumber';
 
 type Props = {
   lang: string;
@@ -101,6 +102,9 @@ export const UnitGroupForm: FC<Props> = ({
       ),
       dataIndex: 'name',
       search: false,
+      render: (_, row) => {
+        return [<span key={0}>{toSuperscript(row.name)}</span>];
+      },
     },
     {
       title: (

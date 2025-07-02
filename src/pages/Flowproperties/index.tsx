@@ -18,6 +18,7 @@ import { getTeamById } from '@/services/teams/api';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 // import ReferenceUnit from '../Unitgroups/Components/Unit/reference';
+import { toSuperscript } from '@/components/AlignedNumber';
 import ExportData from '@/components/ExportData';
 import ImportData from '@/components/ImportData';
 import TableFilter from '@/components/TableFilter';
@@ -93,7 +94,7 @@ const TableList: FC = () => {
               placement='topLeft'
               title={getLangText(row.refUnitRes?.refUnitGeneralComment, lang)}
             >
-              {row.refUnitRes?.refUnitName}
+              {toSuperscript(row.refUnitRes?.refUnitName)}
             </Tooltip>
             )
           </span>,
