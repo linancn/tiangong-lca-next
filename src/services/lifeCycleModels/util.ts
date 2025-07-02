@@ -1542,10 +1542,13 @@ export function genLifeCycleModelData(data: any, lang: string) {
                 attrs: {
                   ...item?.attrs,
                   text: {
-                    text: genPortLabel(itemText ?? '', lang, nodeWidth),
+                    text: `${genPortLabel(itemText ?? '', lang, nodeWidth)}`,
                     title: itemText,
+                    cursor: 'pointer',
                   },
                 },
+                data: item?.data,
+                tools: [{ id: 'portTool' }],
               };
             }),
           },
