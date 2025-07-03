@@ -1,12 +1,16 @@
 import ProcessCreate from '@/pages/Processes/Components/create';
 import ProcessView from '@/pages/Processes/Components/view';
 import { ListPagination } from '@/services/general/data';
-import { getProcessTableAll, getProcessTablePgroongaSearch } from '@/services/processes/api';
+import {
+  getProcessTableAll,
+  getProcessTablePgroongaSearch,
+  process_hybrid_search,
+} from '@/services/processes/api';
 import { ProcessTable } from '@/services/processes/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Button, Card, Drawer, Input, Space, Tooltip } from 'antd';
+import { Button, Card, Checkbox, Col, Drawer, Input, Row, Space, Tooltip } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC, Key } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
@@ -23,6 +27,7 @@ const { Search } = Input;
 const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
   const [tgKeyWord, setTgKeyWord] = useState<any>('');
   const [myKeyWord, setMyKeyWord] = useState<any>('');
+  const [openAI, setOpenAI] = useState<boolean>(false);
 
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
@@ -157,15 +162,32 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
     tg: (
       <>
         <Card>
-          <Search
-            name={'tg'}
-            size={'large'}
-            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
-            value={tgKeyWord}
-            onChange={handleTgKeyWordChange}
-            onSearch={onTgSearch}
-            enterButton
-          />
+          <Row align={'middle'}>
+            <Col flex='auto' style={{ marginRight: '10px' }}>
+              <Search
+                name={'tg'}
+                size={'large'}
+                placeholder={
+                  openAI
+                    ? intl.formatMessage({ id: 'pages.search.placeholder' })
+                    : intl.formatMessage({ id: 'pages.search.keyWord' })
+                }
+                value={tgKeyWord}
+                onChange={handleTgKeyWordChange}
+                onSearch={onTgSearch}
+                enterButton
+              />
+            </Col>
+            <Col flex='100px'>
+              <Checkbox
+                onChange={(e) => {
+                  setOpenAI(e.target.checked);
+                }}
+              >
+                <FormattedMessage id='pages.search.openAI' defaultMessage='AI Search' />
+              </Checkbox>
+            </Col>
+          </Row>
         </Card>
         <ProTable<ProcessTable, ListPagination>
           actionRef={tgActionRefSelect}
@@ -183,6 +205,9 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
           ) => {
             let result;
             if (tgKeyWord.length > 0) {
+              if (openAI) {
+                return process_hybrid_search(params, lang, 'tg', tgKeyWord, {});
+              }
               result = await getProcessTablePgroongaSearch(params, lang, 'tg', tgKeyWord, {});
             } else {
               result = await getProcessTableAll(params, sort, lang, 'tg', []);
@@ -202,15 +227,28 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
     my: (
       <>
         <Card>
-          <Search
-            name={'my'}
-            size={'large'}
-            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
-            value={myKeyWord}
-            onChange={handleMyKeyWordChange}
-            onSearch={onMySearch}
-            enterButton
-          />
+          <Row align={'middle'}>
+            <Col flex='auto' style={{ marginRight: '10px' }}>
+              <Search
+                name={'my'}
+                size={'large'}
+                placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+                value={myKeyWord}
+                onChange={handleMyKeyWordChange}
+                onSearch={onMySearch}
+                enterButton
+              />
+            </Col>
+            <Col flex='100px'>
+              <Checkbox
+                onChange={(e) => {
+                  setOpenAI(e.target.checked);
+                }}
+              >
+                <FormattedMessage id='pages.search.openAI' defaultMessage='AI Search' />
+              </Checkbox>
+            </Col>
+          </Row>
         </Card>
         <ProTable<ProcessTable, ListPagination>
           actionRef={myActionRefSelect}
@@ -231,6 +269,9 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
           ) => {
             let result;
             if (myKeyWord.length > 0) {
+              if (openAI) {
+                return process_hybrid_search(params, lang, 'my', myKeyWord, {});
+              }
               result = await getProcessTablePgroongaSearch(params, lang, 'my', myKeyWord, {});
             } else {
               result = await getProcessTableAll(params, sort, lang, 'my', []);
