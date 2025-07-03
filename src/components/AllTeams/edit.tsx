@@ -3,7 +3,7 @@ import { editTeamMessage, getTeamMessageApi } from '@/services/teams/api';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
-import { Button, Collapse, Drawer, Space, Spin, Tooltip, Typography, message } from 'antd';
+import { Button, Drawer, Space, Spin, Tooltip, message } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
@@ -238,19 +238,6 @@ const TeamEdit: FC<Props> = ({
               onLogoChange={handletLogoChange}
             />
           </ProForm>
-          <Collapse
-            items={[
-              {
-                key: '1',
-                label: 'JSON Data',
-                children: (
-                  <Typography>
-                    <pre>{JSON.stringify(fromData, null, 2)}</pre>
-                  </Typography>
-                ),
-              },
-            ]}
-          />
         </Spin>
       </Drawer>
     </>
