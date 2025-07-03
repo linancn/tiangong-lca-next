@@ -5,7 +5,7 @@ import { genUnitGroupFromData } from '@/services/unitgroups/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, CopyOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
-import { Button, Collapse, Drawer, message, Space, Spin, Tooltip, Typography } from 'antd';
+import { Button, Drawer, message, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
@@ -299,19 +299,6 @@ const UnitGroupCreate: FC<CreateProps> = ({
             />
           </ProForm>
         </Spin>
-        <Collapse
-          items={[
-            {
-              key: '1',
-              label: 'JSON Data',
-              children: (
-                <Typography>
-                  <pre>{JSON.stringify(fromData, null, 2)}</pre>
-                </Typography>
-              ),
-            },
-          ]}
-        />
       </Drawer>
     </>
   );

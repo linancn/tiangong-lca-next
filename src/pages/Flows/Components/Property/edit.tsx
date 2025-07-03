@@ -7,7 +7,6 @@ import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components
 import {
   Button,
   Card,
-  Collapse,
   Drawer,
   Form,
   Input,
@@ -16,7 +15,6 @@ import {
   Space,
   Switch,
   Tooltip,
-  Typography,
 } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -271,19 +269,6 @@ const PropertyEdit: FC<Props> = ({
             </Form.Item>
           </Space>
         </ProForm>
-        <Collapse
-          items={[
-            {
-              key: '1',
-              label: 'JSON Data',
-              children: (
-                <Typography>
-                  <pre>{JSON.stringify(fromData, null, 2)}</pre>
-                </Typography>
-              ),
-            },
-          ]}
-        />
       </Drawer>
     </>
   );

@@ -9,7 +9,7 @@ import { getThumbFileUrls, removeFile, uploadFile } from '@/services/supabase/st
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
-import { Button, Collapse, Drawer, Space, Spin, Tooltip, Typography, message } from 'antd';
+import { Button, Drawer, Space, Spin, Tooltip, message } from 'antd';
 import path from 'path';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -313,19 +313,6 @@ const SourceEdit: FC<Props> = ({
               </ProForm>
             </RefCheckContext.Provider>
           </UpdateReferenceContext.Provider>
-          <Collapse
-            items={[
-              {
-                key: '1',
-                label: 'JSON Data',
-                children: (
-                  <Typography>
-                    <pre>{JSON.stringify(fromData, null, 2)}</pre>
-                  </Typography>
-                ),
-              },
-            ]}
-          />
         </Spin>
       </Drawer>
     </>
