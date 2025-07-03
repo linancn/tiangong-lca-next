@@ -4,7 +4,7 @@ import BigNumber from 'bignumber.js';
 const EXP_POS_THRESHOLD = 1e6; // 1 million
 const EXP_NEG_THRESHOLD = 1e-5; // 0.00001
 
-function toSuperscript(num: string) {
+export function toSuperscript(num: string) {
   const map: Record<string, string> = {
     '0': '⁰',
     '1': '¹',

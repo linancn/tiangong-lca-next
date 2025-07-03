@@ -1,3 +1,4 @@
+import { toSuperscript } from '@/components/AlignedNumber';
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
@@ -61,6 +62,9 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
       ),
       dataIndex: 'name',
       search: false,
+      render: (_, row) => {
+        return [<span key={0}>{toSuperscript(row.name)}</span>];
+      },
     },
     {
       title: (

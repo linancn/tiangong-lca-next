@@ -95,13 +95,19 @@ const ReviewProcessDetail: FC<Props> = ({
         ...process?.json?.processDataSet?.modellingAndValidation,
         validation: {
           ...process?.json?.processDataSet?.modellingAndValidation?.validation,
-          review: Array.isArray(_review) ? [..._review, ...allReviews] : [_review, ...allReviews],
+          review: Array.isArray(_review)
+            ? [..._review, ...allReviews]
+            : _review
+              ? [_review, ...allReviews]
+              : [...allReviews],
         },
         complianceDeclarations: {
           ...process?.json?.processDataSet?.modellingAndValidation?.complianceDeclarations,
           compliance: Array.isArray(_compliance)
             ? [..._compliance, ...allCompliance]
-            : [_compliance, ...allCompliance],
+            : _compliance
+              ? [_compliance, ...allCompliance]
+              : [...allCompliance],
         },
       };
       await updateProcessApi(id, version, { json_ordered: json });

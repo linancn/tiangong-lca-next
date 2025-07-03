@@ -170,11 +170,22 @@ const IoPortSelect: FC<Props> = ({
   useEffect(() => {
     if (!drawerVisible) return;
     setDataLoading(true);
-    setSelectedRowKeys(node?.ports?.items?.map((item: any) => item?.id ?? []));
+
     getProcessDetail(node?.data?.id, node?.data?.version).then(async (result: any) => {
       setExchangeDataSource([
         ...(genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? []),
       ]);
+      const selectedRowKeys: Key[] = [];
+      node?.ports?.items?.forEach((item: any) => {
+        const ids = item.id.split(':');
+        if (ids.length === 2 && ids[0]?.toUpperCase() === direction?.toUpperCase()) {
+          selectedRowKeys.push(`${ids[0]?.toUpperCase()}:${ids[1]}`);
+        }
+        if (ids.length === 3 && ids[0]?.toUpperCase() === direction?.toUpperCase()) {
+          selectedRowKeys.push(`${ids[0]?.toUpperCase()}:${ids[2]}`);
+        }
+      });
+      setSelectedRowKeys(selectedRowKeys);
       actionRefSelect.current?.reload();
       // setDataLoading(false);
     });

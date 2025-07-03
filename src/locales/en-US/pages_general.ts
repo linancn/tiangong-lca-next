@@ -85,4 +85,6 @@ export default {
   'pages.table.filter.unreviewed': 'Unreviewed',
   'pages.table.filter.reviewing': 'Reviewing',
   'pages.table.filter.reviewed': 'Reviewed',
+
+  'pages.action.error': 'Action failed',
 };

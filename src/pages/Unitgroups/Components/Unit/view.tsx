@@ -1,3 +1,4 @@
+import { toSuperscript } from '@/components/AlignedNumber';
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
@@ -64,7 +65,7 @@ const UnitView: FC<Props> = ({ id, data, buttonType }) => {
             }
             styles={{ label: { width: '160px' } }}
           >
-            {viewData.name ?? '-'}
+            {toSuperscript(viewData.name ?? '-')}
           </Descriptions.Item>
         </Descriptions>
         <br />

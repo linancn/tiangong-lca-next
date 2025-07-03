@@ -34,7 +34,7 @@ import ProcessView from './Components/view';
 
 const { Search } = Input;
 
-const getProcesstypeOfDataSetOptions = (value: string) => {
+export const getProcesstypeOfDataSetOptions = (value: string) => {
   const option = processtypeOfDataSetOptions.find((opt) => opt.value === value);
   return option ? option.label : '-';
 };
