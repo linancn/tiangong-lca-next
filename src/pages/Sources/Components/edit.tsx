@@ -49,6 +49,14 @@ const SourceEdit: FC<Props> = ({
   const [showRules, setShowRules] = useState<boolean>(false);
   const [refCheckData, setRefCheckData] = useState<any[]>([]);
   const parentRefCheckContext = useRefCheckContext();
+  const [refCheckContextValue, setRefCheckContextValue] = useState<any>({
+    refCheckData: [],
+  });
+  useEffect(() => {
+    setRefCheckContextValue({
+      refCheckData: [...parentRefCheckContext.refCheckData, ...refCheckData],
+    });
+  }, [refCheckData, parentRefCheckContext]);
   useEffect(() => {
     if (showRules) {
       setTimeout(() => {
@@ -282,11 +290,7 @@ const SourceEdit: FC<Props> = ({
       >
         <Spin spinning={spinning}>
           <UpdateReferenceContext.Provider value={{ referenceValue }}>
-            <RefCheckContext.Provider
-              value={{
-                refCheckData: [...parentRefCheckContext.refCheckData, ...refCheckData],
-              }}
-            >
+            <RefCheckContext.Provider value={refCheckContextValue}>
               <ProForm
                 formRef={formRefEdit}
                 initialValues={initData}

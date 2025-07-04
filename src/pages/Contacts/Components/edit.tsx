@@ -43,6 +43,15 @@ const ContactEdit: FC<Props> = ({
   const intl = useIntl();
   const [refCheckData, setRefCheckData] = useState<any[]>([]);
   const parentRefCheckContext = useRefCheckContext();
+  const [refCheckContextValue, setRefCheckContextValue] = useState<any>({
+    refCheckData: [],
+  });
+  useEffect(() => {
+    setRefCheckContextValue({
+      refCheckData: [...parentRefCheckContext.refCheckData, ...refCheckData],
+    });
+  }, [refCheckData, parentRefCheckContext]);
+
   useEffect(() => {
     if (showRules) {
       setTimeout(() => {
@@ -193,11 +202,7 @@ const ContactEdit: FC<Props> = ({
       >
         <Spin spinning={spinning}>
           <UpdateReferenceContext.Provider value={{ referenceValue }}>
-            <RefCheckContext.Provider
-              value={{
-                refCheckData: [...parentRefCheckContext.refCheckData, ...refCheckData],
-              }}
-            >
+            <RefCheckContext.Provider value={refCheckContextValue}>
               <ProForm
                 formRef={formRefEdit}
                 onValuesChange={(_, allValues) => {

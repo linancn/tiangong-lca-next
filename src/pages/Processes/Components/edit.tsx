@@ -61,6 +61,14 @@ const ProcessEdit: FC<Props> = ({
   const intl = useIntl();
   const [referenceValue, setReferenceValue] = useState(0);
   const [refCheckData, setRefCheckData] = useState<any[]>([]);
+  const [refCheckContextValue, setRefCheckContextValue] = useState<any>({
+    refCheckData: [],
+  });
+  useEffect(() => {
+    setRefCheckContextValue({
+      refCheckData: [...refCheckData],
+    });
+  }, [refCheckData]);
 
   const handletFromData = async () => {
     if (fromData?.id) {
@@ -512,11 +520,7 @@ const ProcessEdit: FC<Props> = ({
       >
         <Spin spinning={spinning}>
           <UpdateReferenceContext.Provider value={{ referenceValue }}>
-            <RefCheckContext.Provider
-              value={{
-                refCheckData: [...refCheckData],
-              }}
-            >
+            <RefCheckContext.Provider value={refCheckContextValue}>
               <ProForm
                 formRef={formRefEdit}
                 initialValues={initData}
