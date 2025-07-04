@@ -54,6 +54,8 @@ const SourceSelectForm: FC<Props> = ({
         ruleVerification: data?.ruleVerification,
         nonExistent: false,
       });
+    } else {
+      setErrRef(null);
     }
   };
   useEffect(() => {
