@@ -31,6 +31,7 @@ export default {
   'pages.button.save': 'Save',
   'pages.button.check': 'Data check',
   'pages.button.check.success': 'Data check successfully!',
+  'pages.button.check.error': 'Data check failed, please check the data!',
   'pages.button.review': 'Sumit for review',
   'pages.button.select': 'Select',
   'pages.button.reselect': 'Reselect',

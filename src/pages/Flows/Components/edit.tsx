@@ -52,13 +52,13 @@ const FlowsEdit: FC<Props> = ({
     });
   }, [refCheckData, parentRefCheckContext]);
 
-  useEffect(() => {
-    if (showRules) {
-      setTimeout(() => {
-        formRefEdit.current?.validateFields();
-      });
-    }
-  }, [showRules]);
+  // useEffect(() => {
+  //   if (showRules) {
+  //     setTimeout(() => {
+  //       formRefEdit.current?.validateFields();
+  //     });
+  //   }
+  // }, [showRules]);
 
   const updateReference = async () => {
     propertyDataSource.forEach(async (property: any, index: number) => {
@@ -196,6 +196,34 @@ const FlowsEdit: FC<Props> = ({
           defaultMessage: 'Flow property needs to have exactly one quantitative reference open',
         }),
       );
+    } else {
+      formRefEdit.current
+        ?.validateFields()
+        .then(() => {
+          if (unRuleVerificationData.length === 0 && nonExistentRefData.length === 0) {
+            message.success(
+              intl.formatMessage({
+                id: 'pages.button.check.success',
+                defaultMessage: 'Data check successfully!',
+              }),
+            );
+          } else {
+            message.error(
+              intl.formatMessage({
+                id: 'pages.button.check.error',
+                defaultMessage: 'Data check failed!',
+              }),
+            );
+          }
+        })
+        .catch(() => {
+          message.error(
+            intl.formatMessage({
+              id: 'pages.button.check.error',
+              defaultMessage: 'Data check failed!',
+            }),
+          );
+        });
     }
 
     setRefCheckData([...unRuleVerificationData, ...nonExistentRefData]);

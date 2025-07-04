@@ -52,13 +52,13 @@ const ContactEdit: FC<Props> = ({
     });
   }, [refCheckData, parentRefCheckContext]);
 
-  useEffect(() => {
-    if (showRules) {
-      setTimeout(() => {
-        formRefEdit.current?.validateFields();
-      });
-    }
-  }, [showRules]);
+  // useEffect(() => {
+  //   if (showRules) {
+  //     setTimeout(() => {
+  //       formRefEdit.current?.validateFields();
+  //     });
+  //   }
+  // }, [showRules]);
 
   const onEdit = useCallback(() => {
     setDrawerVisible(true);
@@ -130,6 +130,33 @@ const ContactEdit: FC<Props> = ({
         nonExistent: true,
       };
     });
+    formRefEdit.current
+      ?.validateFields()
+      .then(() => {
+        if (unRuleVerificationData.length === 0 && nonExistentRefData.length === 0) {
+          message.success(
+            intl.formatMessage({
+              id: 'pages.button.check.success',
+              defaultMessage: 'Data check successfully!',
+            }),
+          );
+        } else {
+          message.error(
+            intl.formatMessage({
+              id: 'pages.button.check.error',
+              defaultMessage: 'Data check failed!',
+            }),
+          );
+        }
+      })
+      .catch(() => {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.button.check.error',
+            defaultMessage: 'Data check failed!',
+          }),
+        );
+      });
 
     setRefCheckData([...unRuleVerificationData, ...nonExistentRefData]);
     setSpinning(false);

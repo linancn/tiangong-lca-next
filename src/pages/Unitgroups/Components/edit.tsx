@@ -55,13 +55,13 @@ const UnitGroupEdit: FC<Props> = ({
     setReferenceValue(referenceValue + 1);
   };
 
-  useEffect(() => {
-    if (showRules) {
-      setTimeout(() => {
-        formRefEdit.current?.validateFields();
-      });
-    }
-  }, [showRules]);
+  // useEffect(() => {
+  //   if (showRules) {
+  //     setTimeout(() => {
+  //       formRefEdit.current?.validateFields();
+  //     });
+  //   }
+  // }, [showRules]);
 
   const handletFromData = () => {
     if (fromData)
@@ -157,6 +157,34 @@ const UnitGroupEdit: FC<Props> = ({
           defaultMessage: 'Unit needs to have exactly one quantitative reference open',
         }),
       );
+    } else {
+      formRefEdit.current
+        ?.validateFields()
+        .then(() => {
+          if (unRuleVerification.length === 0 && nonExistentRef.length === 0) {
+            message.success(
+              intl.formatMessage({
+                id: 'pages.button.check.success',
+                defaultMessage: 'Data check successfully!',
+              }),
+            );
+          } else {
+            message.error(
+              intl.formatMessage({
+                id: 'pages.button.check.error',
+                defaultMessage: 'Data check failed!',
+              }),
+            );
+          }
+        })
+        .catch(() => {
+          message.error(
+            intl.formatMessage({
+              id: 'pages.button.check.error',
+              defaultMessage: 'Data check failed!',
+            }),
+          );
+        });
     }
     const unRuleVerificationData = unRuleVerification.map((item: any) => {
       return {
