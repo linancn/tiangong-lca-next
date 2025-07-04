@@ -10,7 +10,9 @@
     "resolveJsonModule": true,
     "isolatedModules": false,
     "noEmitOnError": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true
   },
   "include": ["electron/**/*.ts"]
 }
