@@ -199,14 +199,16 @@ const SourceEdit: FC<Props> = ({
       return {
         id: item['@refObjectId'],
         version: item['@version'],
-        type: 1,
+        ruleVerification: false,
+        nonExistent: false,
       };
     });
     const nonExistentRefData = nonExistentRef.map((item: any) => {
       return {
         id: item['@refObjectId'],
         version: item['@version'],
-        type: 2,
+        ruleVerification: true,
+        nonExistent: true,
       };
     });
 
