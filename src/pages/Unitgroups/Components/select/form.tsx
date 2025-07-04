@@ -41,7 +41,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
       data?.ruleVerification === false &&
       data?.stateCode !== 100 &&
       data?.stateCode !== 200 &&
-      refCheckContext?.refCheckData?.length
+      rules?.length
     ) {
       setErrRef({
         id: data?.id,
