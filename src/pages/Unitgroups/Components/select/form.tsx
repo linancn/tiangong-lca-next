@@ -60,20 +60,23 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
         setDataUserId(result?.data?.userId);
         updateErrRefByDetail(result?.data);
       });
-      if (refCheckContext?.refCheckData?.length) {
-        const ref = refCheckContext?.refCheckData?.find(
-          (item: any) => item.id === id && item.version === version,
-        );
-        if (ref) {
-          setErrRef(ref);
-        } else {
-          setErrRef(null);
-        }
+    }
+  }, [id, version]);
+
+  useEffect(() => {
+    if (refCheckContext?.refCheckData?.length) {
+      const ref = refCheckContext?.refCheckData?.find(
+        (item: any) => item.id === id && item.version === version,
+      );
+      if (ref) {
+        setErrRef(ref);
       } else {
         setErrRef(null);
       }
+    } else {
+      setErrRef(null);
     }
-  }, [id, version, refCheckContext]);
+  }, [refCheckContext]);
 
   const handletUnitgroupsData = (rowId: string, rowVersion: string) => {
     getUnitGroupDetail(rowId, rowVersion).then(async (result: any) => {

@@ -68,20 +68,22 @@ const FlowsSelectForm: FC<Props> = ({
         setRefData({ ...result.data });
         updateErrRefByDetail(result?.data);
       });
-      if (refCheckContext?.refCheckData?.length) {
-        const ref = refCheckContext?.refCheckData?.find(
-          (item: any) => item.id === id && item.version === version,
-        );
-        if (ref) {
-          setErrRef(ref);
-        } else {
-          setErrRef(null);
-        }
+    }
+  }, [id, version]);
+  useEffect(() => {
+    if (refCheckContext?.refCheckData?.length) {
+      const ref = refCheckContext?.refCheckData?.find(
+        (item: any) => item.id === id && item.version === version,
+      );
+      if (ref) {
+        setErrRef(ref);
       } else {
         setErrRef(null);
       }
+    } else {
+      setErrRef(null);
     }
-  }, [id, version, refCheckContext]);
+  }, [refCheckContext]);
 
   const handletFlowsData = (rowId: string, rowVersion: string) => {
     getFlowDetail(rowId, rowVersion).then(async (result: any) => {
