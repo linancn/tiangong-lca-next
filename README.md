@@ -1,6 +1,6 @@
 # TianGong LCA Data Platform
 
-[English](./README.md) | [中文](./README_CN.md)
+[English](https://github.com/linancn/tiangong-lca-next/blob/main/README.md) | [中文](https://github.com/linancn/tiangong-lca-next/blob/main/README_CN.md)
 
 **TianGong LCA Data Platform** is a **fully open-source** Life Cycle Assessment (LCA) data management platform, offering **free** cloud services as well as private deployment options. With TianGong, you can:
 
