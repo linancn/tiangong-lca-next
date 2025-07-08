@@ -6,7 +6,6 @@ import { CloseOutlined, CopyOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
 import {
   Button,
-  Collapse,
   // DatePicker,
   Drawer,
   message,
@@ -14,7 +13,6 @@ import {
   Space,
   Spin,
   Tooltip,
-  Typography,
 } from 'antd';
 import type { FC } from 'react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -278,19 +276,6 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
             />
           </ProForm>
         </Spin>
-        <Collapse
-          items={[
-            {
-              key: '1',
-              label: 'JSON Data',
-              children: (
-                <Typography>
-                  <pre>{JSON.stringify(fromData, null, 2)}</pre>
-                </Typography>
-              ),
-            },
-          ]}
-        />
       </Drawer>
     </>
   );

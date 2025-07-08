@@ -8,14 +8,12 @@ import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components
 
 import {
   Button,
-  Collapse,
   Drawer,
   // Select,
   Space,
   Spin,
   // Spin,
   Tooltip,
-  Typography,
   message,
 } from 'antd';
 import type { FC } from 'react';
@@ -278,19 +276,6 @@ const FlowpropertiesEdit: FC<Props> = ({
               </ProForm>
             </RefCheckContext.Provider>
           </UpdateReferenceContext.Provider>
-          <Collapse
-            items={[
-              {
-                key: '1',
-                label: 'JSON Data',
-                children: (
-                  <Typography>
-                    <pre>{JSON.stringify(fromData, null, 2)}</pre>
-                  </Typography>
-                ),
-              },
-            ]}
-          />
         </Spin>
       </Drawer>
     </>
