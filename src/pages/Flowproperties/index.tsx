@@ -364,7 +364,14 @@ const TableList: FC = () => {
               keyWord,
               {},
               stateCode,
-            );
+            ).then((res) => {
+              return getUnitData('unitgroup', res?.data ?? []).then((refUnitGroupResp: any) => {
+                return {
+                  ...res,
+                  data: refUnitGroupResp ?? [],
+                };
+              });
+            });
           }
           return getFlowpropertyTableAll(params, sort, lang, dataSource, tid ?? '', stateCode).then(
             (res) => {
