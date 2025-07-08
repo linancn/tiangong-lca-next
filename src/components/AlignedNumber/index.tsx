@@ -5,6 +5,10 @@ const EXP_POS_THRESHOLD = 1e6; // 1 million
 const EXP_NEG_THRESHOLD = 1e-5; // 0.00001
 
 export function toSuperscript(num: string) {
+  // Add null/undefined check
+  if (!num || typeof num !== 'string') {
+    return '';
+  }
   const map: Record<string, string> = {
     '0': '⁰',
     '1': '¹',
