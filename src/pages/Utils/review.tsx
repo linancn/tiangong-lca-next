@@ -52,9 +52,14 @@ export const getRefTableName = (type: string) => {
 
 export const getAllRefObj = (obj: any): any[] => {
   const result: any[] = [];
+  const visited = new WeakSet();
 
   const traverse = (current: any) => {
     if (!current || typeof current !== 'object') return;
+
+    // Prevent circular references
+    if (visited.has(current)) return;
+    visited.add(current);
 
     if ('@refObjectId' in current && current['@refObjectId'] && current['@version']) {
       result.push(current);
