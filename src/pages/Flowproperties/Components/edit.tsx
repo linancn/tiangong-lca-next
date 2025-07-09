@@ -199,6 +199,7 @@ const FlowpropertiesEdit: FC<Props> = ({
         )}
       </Tooltip>
       <Drawer
+        destroyOnClose={true}
         getContainer={() => document.body}
         title={
           <FormattedMessage
@@ -265,6 +266,7 @@ const FlowpropertiesEdit: FC<Props> = ({
                   },
                 }}
                 onFinish={async () => {
+                  setSpinning(true);
                   const formFieldsValue = formRefEdit.current?.getFieldsValue();
                   const updateResult = await updateFlowproperties(id, version, formFieldsValue);
                   if (updateResult?.data) {
@@ -291,6 +293,7 @@ const FlowpropertiesEdit: FC<Props> = ({
                   } else {
                     message.error(updateResult?.error?.message);
                   }
+                  setSpinning(false);
                   return true;
                 }}
                 onValuesChange={(_, allValues) => {

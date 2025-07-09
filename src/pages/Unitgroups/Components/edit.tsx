@@ -135,7 +135,7 @@ const UnitGroupEdit: FC<Props> = ({
     const nonExistentRef: refDataType[] = [];
     await checkData(
       {
-        '@type': 'flow property data set',
+        '@type': 'unit group data set',
         '@refObjectId': id,
         '@version': version,
       },
@@ -226,6 +226,7 @@ const UnitGroupEdit: FC<Props> = ({
 
       <Drawer
         getContainer={() => document.body}
+        destroyOnClose={true}
         title={
           <FormattedMessage
             id={'pages.unitgroup.drawer.title.edit'}

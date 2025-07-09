@@ -19,7 +19,7 @@ export function toSuperscript(num: string) {
     '+': '',
     '-': '⁻',
   };
-  return num.replace(/[0-9+-]/g, (c) => map[c] || c);
+  return num?.replace(/[0-9+-]/g, (c) => map[c] || c);
 }
 
 function trimTrailingZeros(s: string) {

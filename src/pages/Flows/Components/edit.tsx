@@ -151,7 +151,7 @@ const FlowsEdit: FC<Props> = ({
     const nonExistentRef: refDataType[] = [];
     await checkData(
       {
-        '@type': 'flow property data set',
+        '@type': 'flow data set',
         '@refObjectId': id,
         '@version': version,
       },
@@ -306,6 +306,7 @@ const FlowsEdit: FC<Props> = ({
                   },
                 }}
                 onFinish={async () => {
+                  setSpinning(true);
                   const fieldsValue = formRefEdit.current?.getFieldsValue();
                   const flowProperties = fromData?.flowProperties;
                   // if (
@@ -360,6 +361,7 @@ const FlowsEdit: FC<Props> = ({
                   } else {
                     message.error(updateResult?.error?.message);
                   }
+                  setSpinning(false);
                   return true;
                 }}
                 onValuesChange={(_, allValues) => {
