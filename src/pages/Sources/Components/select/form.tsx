@@ -70,7 +70,9 @@ const SourceSelectForm: FC<Props> = ({
   useEffect(() => {
     if (refCheckContext?.refCheckData?.length) {
       const ref = refCheckContext?.refCheckData?.find(
-        (item: any) => item.id === id && item.version === version,
+        (item: any) =>
+          (item.id === id && item.version === version) ||
+          (item.id === refData?.id && item.version === refData?.version),
       );
       if (ref) {
         setErrRef(ref);
@@ -80,7 +82,7 @@ const SourceSelectForm: FC<Props> = ({
     } else {
       setErrRef(null);
     }
-  }, [refCheckContext]);
+  }, [refCheckContext, refData]);
 
   const { token } = theme.useToken();
   const { referenceValue } = useUpdateReferenceContext() as { referenceValue: number };
@@ -164,7 +166,7 @@ const SourceSelectForm: FC<Props> = ({
   }, [defaultSourceName]);
 
   useEffect(() => {
-    setId(undefined);
+    // setId(undefined);
     if (parentName) {
       setId(formRef.current?.getFieldValue([...parentName, ...name, '@refObjectId']));
       setVersion(formRef.current?.getFieldValue([...parentName, ...name, '@version']));

@@ -75,7 +75,9 @@ const FlowpropertiesSelectForm: FC<Props> = ({
   useEffect(() => {
     if (refCheckContext?.refCheckData?.length) {
       const ref = refCheckContext?.refCheckData?.find(
-        (item: any) => item.id === id && item.version === version,
+        (item: any) =>
+          (item.id === id && item.version === version) ||
+          (item.id === refData?.id && item.version === refData?.version),
       );
       if (ref) {
         setErrRef(ref);
@@ -85,7 +87,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
     } else {
       setErrRef(null);
     }
-  }, [refCheckContext]);
+  }, [refCheckContext, refData]);
 
   const handletFlowpropertyData = (rowId: string, rowVersion: string) => {
     getFlowpropertyDetail(rowId, rowVersion ?? '').then(async (result: any) => {
