@@ -4,14 +4,12 @@ import { CloseOutlined, InfoOutlined } from '@ant-design/icons';
 import { ProForm, ProFormInstance } from '@ant-design/pro-components';
 import {
   Button,
-  Collapse,
   Drawer,
   message,
   // Input,
   Space,
   Spin,
   Tooltip,
-  Typography,
 } from 'antd';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
@@ -435,19 +433,6 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
               </ProForm>
             </RefCheckContext.Provider>
           </UpdateReferenceContext.Provider>
-          <Collapse
-            items={[
-              {
-                key: '1',
-                label: 'JSON Data',
-                children: (
-                  <Typography>
-                    <pre>{JSON.stringify(fromData, null, 2)}</pre>
-                  </Typography>
-                ),
-              },
-            ]}
-          />
         </Spin>
       </Drawer>
     </>

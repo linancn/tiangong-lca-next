@@ -2,18 +2,7 @@ import LangTextItemForm from '@/components/LangTextItem/form';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
-import {
-  Button,
-  Card,
-  Collapse,
-  Drawer,
-  Form,
-  Input,
-  Space,
-  Switch,
-  Tooltip,
-  Typography,
-} from 'antd';
+import { Button, Card, Drawer, Form, Input, Space, Switch, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -182,19 +171,6 @@ const UnitEdit: FC<Props> = ({ id, data, buttonType, actionRef, setViewDrawerVis
             </Form.Item>
           </Space>
         </ProForm>
-        <Collapse
-          items={[
-            {
-              key: '1',
-              label: 'JSON Data',
-              children: (
-                <Typography>
-                  <pre>{JSON.stringify(fromData, null, 2)}</pre>
-                </Typography>
-              ),
-            },
-          ]}
-        />
       </Drawer>
     </>
   );

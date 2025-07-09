@@ -7,20 +7,7 @@ import { getRules } from '@/pages/Utils';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { ProForm, ProFormInstance } from '@ant-design/pro-components';
-import {
-  Button,
-  Card,
-  Collapse,
-  Divider,
-  Drawer,
-  Form,
-  Input,
-  Select,
-  Space,
-  Switch,
-  Tooltip,
-  Typography,
-} from 'antd';
+import { Button, Card, Divider, Drawer, Form, Input, Select, Space, Switch, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -479,19 +466,6 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData, showRules =
             </Card>
           </Space>
         </ProForm>
-        <Collapse
-          items={[
-            {
-              key: '1',
-              label: 'JSON Data',
-              children: (
-                <Typography>
-                  <pre>{JSON.stringify(fromData, null, 2)}</pre>
-                </Typography>
-              ),
-            },
-          ]}
-        />
       </Drawer>
     </>
   );
