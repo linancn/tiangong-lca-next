@@ -105,6 +105,7 @@ const SourceEdit: FC<Props> = ({
   };
 
   const onSubmit = async () => {
+    setSpinning(true);
     if (fileList0.length > 0) {
       const nonExistentFiles = fileList0.filter(
         (file0) => !fileList.some((file) => file.uid === file0.uid),
@@ -178,7 +179,7 @@ const SourceEdit: FC<Props> = ({
     } else {
       message.error(result?.error?.message);
     }
-
+    setSpinning(false);
     return true;
   };
 
@@ -196,7 +197,7 @@ const SourceEdit: FC<Props> = ({
     const nonExistentRef: refDataType[] = [];
     await checkData(
       {
-        '@type': 'flow property data set',
+        '@type': 'source data set',
         '@refObjectId': id,
         '@version': version,
       },
@@ -266,6 +267,7 @@ const SourceEdit: FC<Props> = ({
 
       <Drawer
         getContainer={() => document.body}
+        destroyOnClose={true}
         title={
           <FormattedMessage id='pages.source.drawer.title.edit' defaultMessage='Edit Source' />
         }
