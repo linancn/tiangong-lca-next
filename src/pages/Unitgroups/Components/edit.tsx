@@ -128,8 +128,46 @@ const UnitGroupEdit: FC<Props> = ({
     });
   }, [unitDataSource]);
 
+  const handleSubmit = async (autoClose: boolean) => {
+    if (autoClose) setSpinning(true);
+    const units = fromData.units;
+    const formFieldsValue = {
+      ...formRefEdit.current?.getFieldsValue(),
+      units,
+    };
+    const updateResult = await updateUnitGroup(id, version, formFieldsValue);
+    if (updateResult?.data) {
+      if (updateResult?.data[0]?.rule_verification === true) {
+        updateErrRef(null);
+      } else {
+        updateErrRef({
+          id: id,
+          version: version,
+          ruleVerification: updateResult?.data[0]?.rule_verification,
+          nonExistent: false,
+        });
+      }
+      message.success(
+        intl.formatMessage({
+          id: 'pages.button.create.success',
+          defaultMessage: 'Created successfully!',
+        }),
+      );
+      if (autoClose) {
+        setDrawerVisible(false);
+        setViewDrawerVisible(false);
+      }
+      setActiveTabKey('unitGroupInformation');
+      actionRef?.current?.reload();
+    } else {
+      message.error(updateResult?.error?.message);
+    }
+    return true;
+  };
+
   const handleCheckData = async () => {
     setSpinning(true);
+    await handleSubmit(false);
     setShowRules(true);
     const unRuleVerification: refDataType[] = [];
     const nonExistentRef: refDataType[] = [];
@@ -275,9 +313,9 @@ const UnitGroupEdit: FC<Props> = ({
               <FormattedMessage id="pages.button.reset" defaultMessage="Reset"></FormattedMessage>
             </Button> */}
             <Button
-              onClick={() => {
+              onClick={async () => {
                 setShowRules(false);
-                formRefEdit.current?.submit();
+                await handleSubmit(true);
               }}
               type='primary'
             >
@@ -300,39 +338,7 @@ const UnitGroupEdit: FC<Props> = ({
                     return [];
                   },
                 }}
-                onFinish={async () => {
-                  const units = fromData.units;
-                  const formFieldsValue = {
-                    ...formRefEdit.current?.getFieldsValue(),
-                    units,
-                  };
-                  const updateResult = await updateUnitGroup(id, version, formFieldsValue);
-                  if (updateResult?.data) {
-                    if (updateResult?.data[0]?.rule_verification === true) {
-                      updateErrRef(null);
-                    } else {
-                      updateErrRef({
-                        id: id,
-                        version: version,
-                        ruleVerification: updateResult?.data[0]?.rule_verification,
-                        nonExistent: false,
-                      });
-                    }
-                    message.success(
-                      intl.formatMessage({
-                        id: 'pages.button.create.success',
-                        defaultMessage: 'Created successfully!',
-                      }),
-                    );
-                    setDrawerVisible(false);
-                    setViewDrawerVisible(false);
-                    setActiveTabKey('unitGroupInformation');
-                    actionRef?.current?.reload();
-                  } else {
-                    message.error(updateResult?.error?.message);
-                  }
-                  return true;
-                }}
+                onFinish={() => handleSubmit(true)}
               >
                 <UnitGroupForm
                   lang={lang}

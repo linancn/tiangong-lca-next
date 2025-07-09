@@ -100,8 +100,42 @@ const ContactEdit: FC<Props> = ({
     onReset();
   }, [drawerVisible]);
 
+  const handleSubmit = async (autoClose: boolean) => {
+    if (autoClose) setSpinning(true);
+    const formFieldsValue = formRefEdit.current?.getFieldsValue();
+    const updateResult = await updateContact(id, version, formFieldsValue);
+    if (updateResult?.data) {
+      if (updateResult?.data[0]?.rule_verification === true) {
+        updateErrRef(null);
+      } else {
+        updateErrRef({
+          id: id,
+          version: version,
+          ruleVerification: updateResult?.data[0]?.rule_verification,
+          nonExistent: false,
+        });
+      }
+      message.success(
+        intl.formatMessage({
+          id: 'pages.button.save.success',
+          defaultMessage: 'Save successfully!',
+        }),
+      );
+      if (autoClose) {
+        setDrawerVisible(false);
+        setViewDrawerVisible(false);
+      }
+      actionRef?.current?.reload();
+    } else {
+      message.error(updateResult?.error?.message);
+    }
+    if (autoClose) setSpinning(false);
+    return true;
+  };
+
   const handleCheckData = async () => {
     setSpinning(true);
+    await handleSubmit(false);
     setShowRules(true);
     const unRuleVerification: refDataType[] = [];
     const nonExistentRef: refDataType[] = [];
@@ -161,6 +195,7 @@ const ContactEdit: FC<Props> = ({
     setRefCheckData([...unRuleVerificationData, ...nonExistentRefData]);
     setSpinning(false);
   };
+
   return (
     <>
       {buttonType === 'icon' ? (
@@ -216,9 +251,9 @@ const ContactEdit: FC<Props> = ({
               <FormattedMessage id="pages.button.reset" defaultMessage="Reset" />
             </Button> */}
             <Button
-              onClick={() => {
+              onClick={async () => {
                 setShowRules(false);
-                formRefEdit.current?.submit();
+                await handleSubmit(true);
               }}
               type='primary'
             >
@@ -241,36 +276,7 @@ const ContactEdit: FC<Props> = ({
                   },
                 }}
                 initialValues={initData}
-                onFinish={async () => {
-                  setSpinning(true);
-                  const formFieldsValue = formRefEdit.current?.getFieldsValue();
-                  const updateResult = await updateContact(id, version, formFieldsValue);
-                  if (updateResult?.data) {
-                    if (updateResult?.data[0]?.rule_verification === true) {
-                      updateErrRef(null);
-                    } else {
-                      updateErrRef({
-                        id: id,
-                        version: version,
-                        ruleVerification: updateResult?.data[0]?.rule_verification,
-                        nonExistent: false,
-                      });
-                    }
-                    message.success(
-                      intl.formatMessage({
-                        id: 'pages.button.save.success',
-                        defaultMessage: 'Save successfully!',
-                      }),
-                    );
-                    setDrawerVisible(false);
-                    setViewDrawerVisible(false);
-                    actionRef?.current?.reload();
-                  } else {
-                    message.error(updateResult?.error?.message);
-                  }
-                  setSpinning(false);
-                  return true;
-                }}
+                onFinish={() => handleSubmit(true)}
               >
                 <ContactForm
                   lang={lang}

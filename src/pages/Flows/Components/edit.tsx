@@ -144,8 +144,43 @@ const FlowsEdit: FC<Props> = ({
     onReset();
   }, [drawerVisible]);
 
+  const handleSubmit = async (autoClose: boolean) => {
+    if (autoClose) setSpinning(true);
+    const fieldsValue = formRefEdit.current?.getFieldsValue();
+    const flowProperties = fromData?.flowProperties;
+    const updateResult = await updateFlows(id, version, {
+      ...fieldsValue,
+      flowProperties,
+    });
+    if (updateResult?.data) {
+      if (updateResult?.data[0]?.rule_verification === true) {
+        updateErrRef(null);
+      } else {
+        updateErrRef({
+          id: id,
+          version: version,
+          ruleVerification: updateResult?.data[0]?.rule_verification,
+          nonExistent: false,
+        });
+      }
+      message.success(
+        intl.formatMessage({
+          id: 'pages.flows.editsuccess',
+          defaultMessage: 'Edit successfully!',
+        }),
+      );
+      if (autoClose) setDrawerVisible(false);
+      setActiveTabKey('flowInformation');
+      actionRef?.current?.reload();
+    } else {
+      message.error(updateResult?.error?.message);
+    }
+    if (autoClose) setSpinning(false);
+    return true;
+  };
   const handleCheckData = async () => {
     setSpinning(true);
+    await handleSubmit(false);
     setShowRules(true);
     const unRuleVerification: refDataType[] = [];
     const nonExistentRef: refDataType[] = [];
@@ -283,9 +318,9 @@ const FlowsEdit: FC<Props> = ({
               <FormattedMessage id="pages.button.reset" defaultMessage="Reset" />
             </Button> */}
             <Button
-              onClick={() => {
+              onClick={async () => {
                 setShowRules(false);
-                formRefEdit.current?.submit();
+                await handleSubmit(true);
               }}
               type='primary'
             >
@@ -305,65 +340,7 @@ const FlowsEdit: FC<Props> = ({
                     return [];
                   },
                 }}
-                onFinish={async () => {
-                  setSpinning(true);
-                  const fieldsValue = formRefEdit.current?.getFieldsValue();
-                  const flowProperties = fromData?.flowProperties;
-                  // if (
-                  //   !flowProperties ||
-                  //   !flowProperties?.flowProperty ||
-                  //   flowProperties?.flowProperty?.length === 0
-                  // ) {
-                  //   message.error(
-                  //     intl.formatMessage({
-                  //       id: 'pages.flow.validator.flowProperties.required',
-                  //       defaultMessage: 'Please select flow properties',
-                  //     }),
-                  //   );
-                  //   return true;
-                  // } else if (
-                  //   flowProperties.flowProperty.filter((item: any) => item?.quantitativeReference)
-                  //     .length !== 1
-                  // ) {
-                  //   message.error(
-                  //     intl.formatMessage({
-                  //       id: 'pages.flow.validator.flowProperties.quantitativeReference.required',
-                  //       defaultMessage:
-                  //         'Flow property needs to have exactly one quantitative reference open',
-                  //     }),
-                  //   );
-                  //   return false;
-                  // }
-                  const updateResult = await updateFlows(id, version, {
-                    ...fieldsValue,
-                    flowProperties,
-                  });
-                  if (updateResult?.data) {
-                    if (updateResult?.data[0]?.rule_verification === true) {
-                      updateErrRef(null);
-                    } else {
-                      updateErrRef({
-                        id: id,
-                        version: version,
-                        ruleVerification: updateResult?.data[0]?.rule_verification,
-                        nonExistent: false,
-                      });
-                    }
-                    message.success(
-                      intl.formatMessage({
-                        id: 'pages.flows.editsuccess',
-                        defaultMessage: 'Edit successfully!',
-                      }),
-                    );
-                    setDrawerVisible(false);
-                    setActiveTabKey('flowInformation');
-                    actionRef?.current?.reload();
-                  } else {
-                    message.error(updateResult?.error?.message);
-                  }
-                  setSpinning(false);
-                  return true;
-                }}
+                onFinish={() => handleSubmit(true)}
                 onValuesChange={(_, allValues) => {
                   setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
                 }}

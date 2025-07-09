@@ -104,8 +104,8 @@ const SourceEdit: FC<Props> = ({
     });
   };
 
-  const onSubmit = async () => {
-    setSpinning(true);
+  const handleSubmit = async (autoClose: boolean) => {
+    if (autoClose) setSpinning(true);
     if (fileList0.length > 0) {
       const nonExistentFiles = fileList0.filter(
         (file0) => !fileList.some((file) => file.uid === file0.uid),
@@ -173,13 +173,13 @@ const SourceEdit: FC<Props> = ({
           defaultMessage: 'Saved Successfully!',
         }),
       );
-      formRefEdit.current?.resetFields();
-      setDrawerVisible(false);
+      if (autoClose) formRefEdit.current?.resetFields();
+      if (autoClose) setDrawerVisible(false);
       reload();
     } else {
       message.error(result?.error?.message);
     }
-    setSpinning(false);
+    if (autoClose) setSpinning(false);
     return true;
   };
 
@@ -192,6 +192,7 @@ const SourceEdit: FC<Props> = ({
   }, [drawerVisible]);
   const handleCheckData = async () => {
     setSpinning(true);
+    await handleSubmit(false);
     setShowRules(true);
     const unRuleVerification: refDataType[] = [];
     const nonExistentRef: refDataType[] = [];
@@ -305,9 +306,9 @@ const SourceEdit: FC<Props> = ({
               <FormattedMessage id="pages.button.reset" defaultMessage="Reset" />
             </Button> */}
             <Button
-              onClick={() => {
+              onClick={async () => {
                 setShowRules(false);
-                formRefEdit.current?.submit();
+                await handleSubmit(true);
               }}
               type='primary'
             >
@@ -330,7 +331,7 @@ const SourceEdit: FC<Props> = ({
                     return [];
                   },
                 }}
-                onFinish={onSubmit}
+                onFinish={() => handleSubmit(true)}
               >
                 <SourceForm
                   lang={lang}
