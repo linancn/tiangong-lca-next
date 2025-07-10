@@ -1,7 +1,7 @@
 import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import type { refDataType } from '@/pages/Utils/review';
-import { checkData } from '@/pages/Utils/review';
+import { ReffPath, checkData, getErrRefTab } from '@/pages/Utils/review';
 import { getUnitGroupDetail, updateUnitGroup } from '@/services/unitgroups/api';
 import { UnitTable } from '@/services/unitgroups/data';
 import { genUnitGroupFromData } from '@/services/unitgroups/util';
@@ -162,15 +162,27 @@ const UnitGroupEdit: FC<Props> = ({
     } else {
       message.error(updateResult?.error?.message);
     }
+    if (!autoClose) {
+      return updateResult;
+    }
     return true;
   };
 
   const handleCheckData = async () => {
     setSpinning(true);
-    await handleSubmit(false);
+    const updateResult = await handleSubmit(false);
     setShowRules(true);
     const unRuleVerification: refDataType[] = [];
     const nonExistentRef: refDataType[] = [];
+    const pathRef = new ReffPath(
+      {
+        '@type': 'unit group data set',
+        '@refObjectId': id,
+        '@version': version,
+      },
+      updateResult?.data[0]?.rule_verification,
+      false,
+    );
     await checkData(
       {
         '@type': 'unit group data set',
@@ -179,7 +191,22 @@ const UnitGroupEdit: FC<Props> = ({
       },
       unRuleVerification,
       nonExistentRef,
+      pathRef,
     );
+    const problemNodes = pathRef?.findProblemNodes() ?? [];
+    if (problemNodes && problemNodes.length > 0) {
+      let result = problemNodes.map((item: any) => {
+        return {
+          id: item['@refObjectId'],
+          version: item['@version'],
+          ruleVerification: item.ruleVerification,
+          nonExistent: item.nonExistent,
+        };
+      });
+      setRefCheckData(result);
+    } else {
+      setRefCheckData([]);
+    }
     const units = fromData.units;
     if (!units?.unit || !Array.isArray(units.unit) || units.unit.length === 0) {
       message.error(
@@ -196,10 +223,35 @@ const UnitGroupEdit: FC<Props> = ({
         }),
       );
     } else {
+      const errTabNames: string[] = [];
+      nonExistentRef.forEach((item: any) => {
+        const tabName = getErrRefTab(item, initData);
+        if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+      });
+      unRuleVerification.forEach((item: any) => {
+        const tabName = getErrRefTab(item, initData);
+        if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+      });
+      problemNodes.forEach((item: any) => {
+        const tabName = getErrRefTab(item, initData);
+        if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+      });
       formRefEdit.current
         ?.validateFields()
-        .then(() => {
-          if (unRuleVerification.length === 0 && nonExistentRef.length === 0) {
+        .then(() => {})
+        .catch((err: any) => {
+          const errorFields = err?.errorFields ?? [];
+          errorFields.forEach((item: any) => {
+            const tabName = item?.name[0];
+            if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+          });
+        })
+        .finally(() => {
+          if (
+            unRuleVerification.length === 0 &&
+            nonExistentRef.length === 0 &&
+            errTabNames.length === 0
+          ) {
             message.success(
               intl.formatMessage({
                 id: 'pages.button.check.success',
@@ -207,41 +259,33 @@ const UnitGroupEdit: FC<Props> = ({
               }),
             );
           } else {
-            message.error(
-              intl.formatMessage({
-                id: 'pages.button.check.error',
-                defaultMessage: 'Data check failed!',
-              }),
-            );
+            if (errTabNames && errTabNames.length > 0) {
+              message.error(
+                errTabNames
+                  .map((tab: any) =>
+                    intl.formatMessage({
+                      id: `pages.contact.${tab}`,
+                      defaultMessage: tab,
+                    }),
+                  )
+                  .join('，') +
+                  '：' +
+                  intl.formatMessage({
+                    id: 'pages.button.check.error',
+                    defaultMessage: 'Data check failed!',
+                  }),
+              );
+            } else {
+              message.error(
+                intl.formatMessage({
+                  id: 'pages.button.check.error',
+                  defaultMessage: 'Data check failed!',
+                }),
+              );
+            }
           }
-        })
-        .catch(() => {
-          message.error(
-            intl.formatMessage({
-              id: 'pages.button.check.error',
-              defaultMessage: 'Data check failed!',
-            }),
-          );
         });
     }
-    const unRuleVerificationData = unRuleVerification.map((item: any) => {
-      return {
-        id: item['@refObjectId'],
-        version: item['@version'],
-        ruleVerification: false,
-        nonExistent: false,
-      };
-    });
-    const nonExistentRefData = nonExistentRef.map((item: any) => {
-      return {
-        id: item['@refObjectId'],
-        version: item['@version'],
-        ruleVerification: true,
-        nonExistent: true,
-      };
-    });
-
-    setRefCheckData([...unRuleVerificationData, ...nonExistentRefData]);
     setSpinning(false);
   };
 

@@ -338,6 +338,7 @@ export const checkData = async (
   data: refDataType,
   unRuleVerification: refDataType[],
   nonExistentRef: refDataType[],
+  pathRef: ReffPath,
 ) => {
   const { data: detail } = await getRefData(
     data['@refObjectId'],
@@ -354,6 +355,7 @@ export const checkData = async (
       [],
       unRuleVerification,
       nonExistentRef,
+      pathRef,
     );
   }
 };

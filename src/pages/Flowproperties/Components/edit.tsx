@@ -28,6 +28,7 @@ import { FormattedMessage, useIntl } from 'umi';
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import { genFlowpropertyFromData } from '@/services/flowproperties/util';
 
+import { ReffPath, getErrRefTab } from '@/pages/Utils/review';
 import { FlowpropertyForm } from './form';
 type Props = {
   id: string;
@@ -151,15 +152,27 @@ const FlowpropertiesEdit: FC<Props> = ({
       message.error(updateResult?.error?.message);
     }
     if (autoClose) setSpinning(false);
+    if (!autoClose) {
+      return updateResult;
+    }
     return true;
   };
 
   const handleCheckData = async () => {
     setSpinning(true);
-    await handleSubmit(false);
+    const updateResult = await handleSubmit(false);
     setShowRules(true);
     const unRuleVerification: refDataType[] = [];
     const nonExistentRef: refDataType[] = [];
+    const pathRef = new ReffPath(
+      {
+        '@type': 'flow property data set',
+        '@refObjectId': id,
+        '@version': version,
+      },
+      updateResult?.data[0]?.rule_verification,
+      false,
+    );
     await checkData(
       {
         '@type': 'flow property data set',
@@ -168,7 +181,22 @@ const FlowpropertiesEdit: FC<Props> = ({
       },
       unRuleVerification,
       nonExistentRef,
+      pathRef,
     );
+    const problemNodes = pathRef?.findProblemNodes() ?? [];
+    if (problemNodes && problemNodes.length > 0) {
+      let result = problemNodes.map((item: any) => {
+        return {
+          id: item['@refObjectId'],
+          version: item['@version'],
+          ruleVerification: item.ruleVerification,
+          nonExistent: item.nonExistent,
+        };
+      });
+      setRefCheckData(result);
+    } else {
+      setRefCheckData([]);
+    }
     const unRuleVerificationData = unRuleVerification.map((item: any) => {
       return {
         id: item['@refObjectId'],
@@ -185,10 +213,35 @@ const FlowpropertiesEdit: FC<Props> = ({
         nonExistent: true,
       };
     });
+    const errTabNames: string[] = [];
+    nonExistentRef.forEach((item: any) => {
+      const tabName = getErrRefTab(item, initData);
+      if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+    });
+    unRuleVerification.forEach((item: any) => {
+      const tabName = getErrRefTab(item, initData);
+      if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+    });
+    problemNodes.forEach((item: any) => {
+      const tabName = getErrRefTab(item, initData);
+      if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+    });
     formRefEdit.current
       ?.validateFields()
-      .then(() => {
-        if (unRuleVerificationData.length === 0 && nonExistentRefData.length === 0) {
+      .then(() => {})
+      .catch((err: any) => {
+        const errorFields = err?.errorFields ?? [];
+        errorFields.forEach((item: any) => {
+          const tabName = item?.name[0];
+          if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+        });
+      })
+      .finally(() => {
+        if (
+          unRuleVerificationData.length === 0 &&
+          nonExistentRefData.length === 0 &&
+          errTabNames.length === 0
+        ) {
           message.success(
             intl.formatMessage({
               id: 'pages.button.check.success',
@@ -196,23 +249,32 @@ const FlowpropertiesEdit: FC<Props> = ({
             }),
           );
         } else {
-          message.error(
-            intl.formatMessage({
-              id: 'pages.button.check.error',
-              defaultMessage: 'Data check failed!',
-            }),
-          );
+          if (errTabNames && errTabNames.length > 0) {
+            message.error(
+              errTabNames
+                .map((tab: any) =>
+                  intl.formatMessage({
+                    id: `pages.contact.${tab}`,
+                    defaultMessage: tab,
+                  }),
+                )
+                .join('，') +
+                '：' +
+                intl.formatMessage({
+                  id: 'pages.button.check.error',
+                  defaultMessage: 'Data check failed!',
+                }),
+            );
+          } else {
+            message.error(
+              intl.formatMessage({
+                id: 'pages.button.check.error',
+                defaultMessage: 'Data check failed!',
+              }),
+            );
+          }
         }
-      })
-      .catch(() => {
-        message.error(
-          intl.formatMessage({
-            id: 'pages.button.check.error',
-            defaultMessage: 'Data check failed!',
-          }),
-        );
       });
-    setRefCheckData([...unRuleVerificationData, ...nonExistentRefData]);
     setSpinning(false);
   };
 
