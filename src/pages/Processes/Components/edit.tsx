@@ -4,16 +4,17 @@ import type { refDataType } from '@/pages/Utils/review';
 import {
   ReffPath,
   checkReferences,
-  checkRequiredFields,
   dealProcress,
   getAllRefObj,
+  getErrRefTab,
   updateReviewsAfterCheckData,
   updateUnReviewToUnderReview,
 } from '@/pages/Utils/review';
 import { getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
+import { getRuleVerification } from '@/services/general/util';
 import { getProcessDetail, updateProcess } from '@/services/processes/api';
-import { genProcessFromData } from '@/services/processes/util';
+import { genProcessFromData, genProcessJsonOrdered } from '@/services/processes/util';
 import { getUserTeamId } from '@/services/roles/api';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined, ProductOutlined } from '@ant-design/icons';
@@ -23,7 +24,7 @@ import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
-import requiredFields from '../requiredFields';
+import schema from '../processes_schema.json';
 import { ProcessForm } from './form';
 
 type Props = {
@@ -198,8 +199,8 @@ const ProcessEdit: FC<Props> = ({
   const handleCheckData = async (processDetail: any) => {
     setSpinning(true);
     setShowRules(true);
-    let { checkResult, errTabNames } = checkRequiredFields(requiredFields, processDetail);
-    if (!checkResult) {
+    let { valid, errors } = getRuleVerification(schema, genProcessJsonOrdered(id, processDetail));
+    if (!valid) {
       setTimeout(() => {
         formRefEdit.current?.validateFields();
       }, 200);
@@ -212,7 +213,7 @@ const ProcessEdit: FC<Props> = ({
             defaultMessage: 'Please select exchanges',
           }),
         );
-        checkResult = false;
+        valid = false;
         await setActiveTabKey('exchanges');
       } else if (
         exchanges?.exchange.filter((item: any) => item?.quantitativeReference).length !== 1
@@ -223,7 +224,7 @@ const ProcessEdit: FC<Props> = ({
             defaultMessage: 'Exchange needs to have exactly one quantitative reference open',
           }),
         );
-        checkResult = false;
+        valid = false;
         await setActiveTabKey('exchanges');
       }
     }
@@ -257,7 +258,7 @@ const ProcessEdit: FC<Props> = ({
       ),
     );
 
-    const problemNodes = path?.findProblemNodes();
+    const problemNodes = path?.findProblemNodes() ?? [];
 
     if (problemNodes && problemNodes.length > 0) {
       let result = problemNodes.map((item: any) => {
@@ -288,7 +289,7 @@ const ProcessEdit: FC<Props> = ({
           }),
         );
       } else {
-        checkResult = false;
+        valid = false;
       }
       setSpinning(false);
       // return { checkResult, unReview };
@@ -302,11 +303,11 @@ const ProcessEdit: FC<Props> = ({
         }),
       );
       setSpinning(false);
-      checkResult = false;
+      valid = false;
       // return { checkResult, unReview };
     }
 
-    if (checkResult && nonExistentRef?.length === 0 && unRuleVerification.length === 0) {
+    if (valid && nonExistentRef?.length === 0 && unRuleVerification.length === 0) {
       message.success(
         intl.formatMessage({
           id: 'pages.button.check.success',
@@ -315,10 +316,27 @@ const ProcessEdit: FC<Props> = ({
       );
       setSpinning(false);
     } else {
-      if (errTabNames.length > 0) {
+      const errTabNames: string[] = [];
+      errors.forEach((err: any) => {
+        const tabName = err?.path?.split('.')[1];
+        if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+      });
+      nonExistentRef.forEach((item: any) => {
+        const tabName = getErrRefTab(item, processDetail);
+        if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+      });
+      unRuleVerification.forEach((item: any) => {
+        const tabName = getErrRefTab(item, processDetail);
+        if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+      });
+      problemNodes.forEach((item: any) => {
+        const tabName = getErrRefTab(item, processDetail);
+        if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+      });
+      if (errTabNames && errTabNames.length > 0) {
         message.error(
           errTabNames
-            .map((tab) =>
+            .map((tab: any) =>
               intl.formatMessage({
                 id: `pages.process.view.${tab}`,
                 defaultMessage: tab,
@@ -341,10 +359,10 @@ const ProcessEdit: FC<Props> = ({
       }
 
       setSpinning(false);
-      return { checkResult, unReview };
+      return { checkResult: valid, unReview };
     }
     setSpinning(false);
-    return { checkResult, unReview };
+    return { checkResult: valid, unReview };
   };
 
   const submitReview = async () => {
@@ -361,7 +379,7 @@ const ProcessEdit: FC<Props> = ({
       setSpinning(false);
       return;
     }
-    const { checkResult, unReview } = await handleCheckData(processDetail?.json?.processDataSet);
+    const { checkResult, unReview } = await handleCheckData(fromData);
 
     if (checkResult) {
       setSpinning(true);
@@ -518,18 +536,7 @@ const ProcessEdit: FC<Props> = ({
               onClick={async () => {
                 setSpinning(true);
                 await handleSubmit(false);
-                const { data: processDetail } = await getProcessDetail(id, version);
-                if (!processDetail) {
-                  message.error(
-                    intl.formatMessage({
-                      id: 'pages.process.review.submitError',
-                      defaultMessage: 'Submit review failed',
-                    }),
-                  );
-                  setSpinning(false);
-                  return;
-                }
-                await handleCheckData(processDetail?.json?.processDataSet);
+                await handleCheckData(fromData);
               }}
             >
               <FormattedMessage id='pages.button.check' defaultMessage='Data check' />

@@ -517,3 +517,52 @@ export const checkRequiredFields = (requiredFields: any, formData: any) => {
 
   return { checkResult: errTabNames.length === 0, errTabNames };
 };
+
+export function getErrRefTab(ref: refDataType, data: any): string | null {
+  if (!data || !ref) {
+    return null;
+  }
+
+  const visited = new WeakSet();
+
+  const findRefInObject = (obj: any, path: string[] = []): string | null => {
+    if (!obj || typeof obj !== 'object') {
+      return null;
+    }
+
+    if (visited.has(obj)) {
+      return null;
+    }
+    visited.add(obj);
+
+    if (obj['@refObjectId'] && obj['@version'] && obj['@type']) {
+      if (obj['@refObjectId'] === ref['@refObjectId'] && obj['@version'] === ref['@version']) {
+        return path[0] || null;
+      }
+    }
+
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        const value = obj[key];
+
+        if (Array.isArray(value)) {
+          for (let i = 0; i < value.length; i++) {
+            const result = findRefInObject(value[i], [...path, key]);
+            if (result) {
+              return result;
+            }
+          }
+        } else if (typeof value === 'object' && value !== null) {
+          const result = findRefInObject(value, [...path, key]);
+          if (result) {
+            return result;
+          }
+        }
+      }
+    }
+
+    return null;
+  };
+
+  return findRefInObject(data);
+}
