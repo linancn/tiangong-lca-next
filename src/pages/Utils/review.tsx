@@ -454,50 +454,66 @@ const checkComplianceFields = (data: any) => {
 };
 
 export const checkRequiredFields = (requiredFields: any, formData: any) => {
+  const errTabNames: string[] = [];
+  const collectedTabNames = new Set<string>();
+
   if (!formData || Object.keys(formData).length === 0) {
-    return { checkResult: false, tabName: '' };
+    return { checkResult: false, errTabNames };
   }
+  const collectErrTabNames = (tabName: string) => {
+    if (tabName && tabName?.length && !collectedTabNames.has(tabName)) {
+      errTabNames.push(tabName);
+      collectedTabNames.add(tabName);
+    }
+  };
   for (let field of Object.keys(requiredFields)) {
     const value = get(formData, field);
     if (field === 'modellingAndValidation.validation.review') {
       const { checkResult, tabName } = checkValidationFields(value);
       if (!checkResult) {
-        return { checkResult, tabName };
+        collectErrTabNames(tabName ?? '');
+        // return { checkResult, tabName };
       }
     }
 
     if (field === 'modellingAndValidation.complianceDeclarations.compliance') {
       const { checkResult, tabName } = checkComplianceFields(value);
       if (!checkResult) {
-        return { checkResult, tabName };
+        collectErrTabNames(tabName ?? '');
+        // return { checkResult, tabName };
       }
     }
 
     if (field.includes('common:classification.common:class')) {
       if (!value || (value?.id ?? []).some((item: any) => !item)) {
-        return { checkResult: false, tabName: requiredFields[field] };
+        collectErrTabNames(requiredFields[field] ?? '');
+        // return { checkResult: false, tabName: requiredFields[field] };
       }
     }
     if (!value) {
-      return { checkResult: false, tabName: requiredFields[field] };
+      collectErrTabNames(requiredFields[field] ?? '');
+      // return { checkResult: false, tabName: requiredFields[field] };
     }
 
     if (Array.isArray(value) && (value.length === 0 || value.every((item) => !item))) {
-      return { checkResult: false, tabName: requiredFields[field] };
+      collectErrTabNames(requiredFields[field] ?? '');
+      // return { checkResult: false, tabName: requiredFields[field] };
     }
 
     if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
       if (Object.keys(value).length === 0) {
-        return { checkResult: false, tabName: requiredFields[field] };
+        collectErrTabNames(requiredFields[field] ?? '');
+        // return { checkResult: false, tabName: requiredFields[field] };
       }
       const allPropsEmpty = Object.values(value).every(
         (propValue) => propValue === undefined || propValue === null,
       );
       if (allPropsEmpty) {
-        return { checkResult: false, tabName: requiredFields[field] };
+        collectErrTabNames(requiredFields[field] ?? '');
+        // return { checkResult: false, tabName: requiredFields[field] };
       }
     }
   }
 
-  return { checkResult: true, tabName: null };
+  return { checkResult: errTabNames.length === 0, errTabNames };
 };

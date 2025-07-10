@@ -143,13 +143,63 @@ const ProcessEdit: FC<Props> = ({
     setExchangeDataSource(newExchangeDataSource);
     setReferenceValue(referenceValue + 1);
   };
+  const handleSubmit = async (closeDrawer: boolean) => {
+    if (closeDrawer) setSpinning(true);
+    const updateResult = await updateProcess(id, version, {
+      ...fromData,
+    });
+    if (updateResult?.data) {
+      if (!closeDrawer) {
+        const dataSet = genProcessFromData(updateResult.data[0]?.json?.processDataSet ?? {});
+        setInitData({
+          ...dataSet,
+          id: id,
+          stateCode: updateResult.data[0]?.state_code,
+          ruleVerification: updateResult.data[0]?.rule_verification,
+        });
+        setFromData({ ...dataSet, id: id });
+        setExchangeDataSource(dataSet?.exchanges?.exchange ?? []);
+        // formRefEdit.current?.resetFields();
+        formRefEdit.current?.setFieldsValue({
+          ...dataSet,
+          id: id,
+        });
+      }
+      updateNodeCb({
+        '@refObjectId': id,
+        '@version': version,
+        '@type': 'process data set',
+      });
+      message.success(
+        intl.formatMessage({
+          id: 'pages.button.save.success',
+          defaultMessage: 'Save successfully!',
+        }),
+      );
+      if (closeDrawer) {
+        setSpinning(false);
+        setDrawerVisible(false);
+        setViewDrawerVisible(false);
+        actionRef?.current?.reload();
+      }
+    } else {
+      setSpinning(false);
+      message.error(
+        updateResult?.error?.message ??
+          intl.formatMessage({
+            id: 'pages.action.error',
+            defaultMessage: 'Action failed',
+          }),
+      );
+    }
+    return true;
+  };
 
   const handleCheckData = async (processDetail: any) => {
     setSpinning(true);
     setShowRules(true);
-    let { checkResult, tabName } = checkRequiredFields(requiredFields, fromData);
+    let { checkResult, errTabNames } = checkRequiredFields(requiredFields, processDetail);
     if (!checkResult) {
-      await setActiveTabKey(tabName);
       setTimeout(() => {
         formRefEdit.current?.validateFields();
       }, 200);
@@ -237,9 +287,11 @@ const ProcessEdit: FC<Props> = ({
             defaultMessage: 'Referenced data is under review, cannot initiate another review',
           }),
         );
+      } else {
+        checkResult = false;
       }
       setSpinning(false);
-      return { checkResult: false, unReview };
+      // return { checkResult, unReview };
     }
 
     if (processDetail.stateCode >= 20) {
@@ -250,62 +302,49 @@ const ProcessEdit: FC<Props> = ({
         }),
       );
       setSpinning(false);
-      return { checkResult: false, unReview };
+      checkResult = false;
+      // return { checkResult, unReview };
+    }
+
+    if (checkResult && nonExistentRef?.length === 0 && unRuleVerification.length === 0) {
+      message.success(
+        intl.formatMessage({
+          id: 'pages.button.check.success',
+          defaultMessage: 'Data check successfully!',
+        }),
+      );
+      setSpinning(false);
+    } else {
+      if (errTabNames.length > 0) {
+        message.error(
+          errTabNames
+            .map((tab) =>
+              intl.formatMessage({
+                id: `pages.process.view.${tab}`,
+                defaultMessage: tab,
+              }),
+            )
+            .join('，') +
+            '：' +
+            intl.formatMessage({
+              id: 'pages.button.check.error',
+              defaultMessage: 'Data check failed!',
+            }),
+        );
+      } else {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.button.check.error',
+            defaultMessage: 'Data check failed!',
+          }),
+        );
+      }
+
+      setSpinning(false);
+      return { checkResult, unReview };
     }
     setSpinning(false);
     return { checkResult, unReview };
-  };
-
-  const handleSubmit = async (closeDrawer: boolean) => {
-    if (closeDrawer) setSpinning(true);
-    const updateResult = await updateProcess(id, version, {
-      ...fromData,
-    });
-    if (updateResult?.data) {
-      if (!closeDrawer) {
-        const dataSet = genProcessFromData(updateResult.data[0]?.json?.processDataSet ?? {});
-        setInitData({
-          ...dataSet,
-          id: id,
-          stateCode: updateResult.data[0]?.state_code,
-          ruleVerification: updateResult.data[0]?.rule_verification,
-        });
-        setFromData({ ...dataSet, id: id });
-        setExchangeDataSource(dataSet?.exchanges?.exchange ?? []);
-        // formRefEdit.current?.resetFields();
-        formRefEdit.current?.setFieldsValue({
-          ...dataSet,
-          id: id,
-        });
-      }
-      updateNodeCb({
-        '@refObjectId': id,
-        '@version': version,
-        '@type': 'process data set',
-      });
-      message.success(
-        intl.formatMessage({
-          id: 'pages.button.save.success',
-          defaultMessage: 'Save successfully!',
-        }),
-      );
-      if (closeDrawer) {
-        setSpinning(false);
-        setDrawerVisible(false);
-        setViewDrawerVisible(false);
-        actionRef?.current?.reload();
-      }
-    } else {
-      setSpinning(false);
-      message.error(
-        updateResult?.error?.message ??
-          intl.formatMessage({
-            id: 'pages.action.error',
-            defaultMessage: 'Action failed',
-          }),
-      );
-    }
-    return true;
   };
 
   const submitReview = async () => {
@@ -454,6 +493,7 @@ const ProcessEdit: FC<Props> = ({
       )}
       <Drawer
         getContainer={() => document.body}
+        destroyOnClose={true}
         title={
           <FormattedMessage
             id={'pages.process.drawer.title.edit'}
@@ -474,7 +514,24 @@ const ProcessEdit: FC<Props> = ({
         onClose={() => setDrawerVisible(false)}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
-            <Button onClick={() => handleCheckData(initData)}>
+            <Button
+              onClick={async () => {
+                setSpinning(true);
+                await handleSubmit(false);
+                const { data: processDetail } = await getProcessDetail(id, version);
+                if (!processDetail) {
+                  message.error(
+                    intl.formatMessage({
+                      id: 'pages.process.review.submitError',
+                      defaultMessage: 'Submit review failed',
+                    }),
+                  );
+                  setSpinning(false);
+                  return;
+                }
+                await handleCheckData(processDetail?.json?.processDataSet);
+              }}
+            >
               <FormattedMessage id='pages.button.check' defaultMessage='Data check' />
             </Button>
             <>
