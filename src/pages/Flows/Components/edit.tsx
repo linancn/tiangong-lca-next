@@ -5,6 +5,7 @@ import { ReffPath, checkData, getErrRefTab } from '@/pages/Utils/review';
 import { getFlowpropertyDetail } from '@/services/flowproperties/api';
 import { getFlowDetail, updateFlows } from '@/services/flows/api';
 import { genFlowFromData } from '@/services/flows/util';
+import { getRuleVerification } from '@/services/general/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -12,7 +13,9 @@ import { Button, Drawer, Space, Spin, Tooltip, message } from 'antd';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
+import schema from '../flows_schema.json';
 import { FlowForm } from './form';
+
 type Props = {
   id: string;
   version: string;
@@ -183,6 +186,7 @@ const FlowsEdit: FC<Props> = ({
   const handleCheckData = async () => {
     setSpinning(true);
     const updateResult = await handleSubmit(false);
+    let { errors } = getRuleVerification(schema, updateResult?.data[0]?.json);
     setShowRules(true);
     const unRuleVerification: refDataType[] = [];
     const nonExistentRef: refDataType[] = [];
@@ -269,6 +273,10 @@ const FlowsEdit: FC<Props> = ({
       });
       problemNodes.forEach((item: any) => {
         const tabName = getErrRefTab(item, initData);
+        if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+      });
+      errors.forEach((err: any) => {
+        const tabName = err?.path?.split('.')[1];
         if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
       });
       formRefEdit.current
