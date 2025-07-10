@@ -16,7 +16,7 @@ import { genProcessJsonOrdered, genProcessName } from './util';
 
 export async function createProcess(id: string, data: any) {
   const newData = genProcessJsonOrdered(id, data);
-  const rule_verification = getRuleVerification(schema, newData);
+  const rule_verification = getRuleVerification(schema, newData)?.valid;
   // const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('processes')
@@ -27,7 +27,7 @@ export async function createProcess(id: string, data: any) {
 
 export async function updateProcess(id: string, version: string, data: any) {
   const newData = genProcessJsonOrdered(id, data);
-  const rule_verification = getRuleVerification(schema, newData);
+  const rule_verification = getRuleVerification(schema, newData)?.valid;
   let result: any = {};
   const session = await supabase.auth.getSession();
   if (session.data.session) {

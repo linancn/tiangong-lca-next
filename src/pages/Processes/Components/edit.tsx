@@ -361,7 +361,7 @@ const ProcessEdit: FC<Props> = ({
       setSpinning(false);
       return;
     }
-    const { checkResult, unReview } = await handleCheckData(processDetail);
+    const { checkResult, unReview } = await handleCheckData(processDetail?.json?.processDataSet);
 
     if (checkResult) {
       setSpinning(true);

@@ -580,7 +580,11 @@ export function getRuleVerification(schema: any, data: any) {
         }
       }
 
-      if (schemaValue && typeof schemaValue === 'object' && !schemaValue.rules) {
+      if (Array.isArray(schemaValue)) {
+        if (schemaValue.length > 0) {
+          collectRequiredPaths(schemaValue[0], `${currentPath}.0`);
+        }
+      } else if (schemaValue && typeof schemaValue === 'object' && !schemaValue.rules) {
         collectRequiredPaths(schemaValue, currentPath);
       }
     });
@@ -625,6 +629,47 @@ export function getRuleVerification(schema: any, data: any) {
       value = value.value;
     }
 
+    let shouldSkipValidation = false;
+    if (path.includes('.0.')) {
+      const pathParts = path.split('.');
+      const arrayIndex = pathParts.findIndex((part) => part === '0');
+      if (arrayIndex !== -1) {
+        const arrayPath = pathParts.slice(0, arrayIndex).join('.');
+        const remainingPath = pathParts.slice(arrayIndex + 1).join('.');
+
+        const arrayData = getValueByPath(data, arrayPath);
+
+        if (Array.isArray(arrayData) && arrayData.length > 0) {
+          let allValid = true;
+          for (let i = 0; i < arrayData.length; i++) {
+            const itemPath = `${arrayPath}.${i}.${remainingPath}`;
+            let itemValue = getValueByPath(data, itemPath);
+
+            if (itemValue && typeof itemValue === 'object' && itemValue.value !== undefined) {
+              itemValue = itemValue.value;
+            }
+
+            if (isEmpty(itemValue)) {
+              allValid = false;
+              result.valid = false;
+              result.errors.push({
+                path: itemPath,
+                message: rule.defaultMessage || rule.messageKey,
+                rule: 'required',
+              });
+            }
+          }
+
+          if (allValid) {
+            shouldSkipValidation = true;
+          }
+        }
+      }
+    }
+    if (shouldSkipValidation) {
+      return;
+    }
+
     if (path.includes('common:class')) {
       if (!value) {
         const classPath = path.includes('common:class.0')
@@ -665,5 +710,5 @@ export function getRuleVerification(schema: any, data: any) {
     console.log('getRuleVerificationFalse', result);
   }
 
-  return result.valid;
+  return result;
 }
