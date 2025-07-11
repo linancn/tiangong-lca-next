@@ -95,6 +95,7 @@ const ContactEdit: FC<Props> = ({
   useEffect(() => {
     if (!drawerVisible) {
       setShowRules(false);
+      setRefCheckContextValue({refCheckData: []})
       return;
     }
     onReset();

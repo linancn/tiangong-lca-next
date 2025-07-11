@@ -140,6 +140,7 @@ const FlowsEdit: FC<Props> = ({
 
   useEffect(() => {
     if (!drawerVisible) {
+      setRefCheckContextValue({refCheckData: []})
       setShowRules(false);
       return;
     }

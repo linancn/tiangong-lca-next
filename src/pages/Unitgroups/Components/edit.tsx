@@ -113,6 +113,7 @@ const UnitGroupEdit: FC<Props> = ({
 
   useEffect(() => {
     if (!drawerVisible) {
+      setRefCheckContextValue({refCheckData: []})
       setShowRules(false);
       return;
     }
