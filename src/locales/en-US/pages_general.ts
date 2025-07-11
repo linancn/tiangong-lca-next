@@ -88,4 +88,5 @@ export default {
   'pages.table.filter.reviewed': 'Reviewed',
 
   'pages.action.error': 'Action failed',
+  'pages.review.underReview': 'Data is under review, save failed',
 };

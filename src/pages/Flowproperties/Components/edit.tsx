@@ -149,7 +149,16 @@ const FlowpropertiesEdit: FC<Props> = ({
       setActiveTabKey('flowPropertiesInformation');
       actionRef?.current?.reload();
     } else {
-      message.error(updateResult?.error?.message);
+      if (updateResult?.error?.message === 'The data is under review.') {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.review.underReview',
+            defaultMessage: 'Data is under review, save failed',
+          }),
+        );
+      } else {
+        message.error(updateResult?.error?.message);
+      }
     }
     if (autoClose) setSpinning(false);
     if (!autoClose) {

@@ -184,14 +184,17 @@ const ProcessEdit: FC<Props> = ({
         actionRef?.current?.reload();
       }
     } else {
-      if (closeDrawer) setSpinning(false);
-      message.error(
-        updateResult?.error?.message ??
+      if (updateResult?.error?.message === 'The data is under review.') {
+        message.error(
           intl.formatMessage({
-            id: 'pages.action.error',
-            defaultMessage: 'Action failed',
+            id: 'pages.review.underReview',
+            defaultMessage: 'Data is under review, save failed',
           }),
-      );
+        );
+      } else {
+        message.error(updateResult?.error?.message);
+      }
+      if (closeDrawer) setSpinning(false);
     }
     if (!closeDrawer) {
       return updateResult;

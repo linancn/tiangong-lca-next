@@ -177,7 +177,16 @@ const SourceEdit: FC<Props> = ({
       if (autoClose) setDrawerVisible(false);
       reload();
     } else {
-      message.error(result?.error?.message);
+      if (result?.error?.message === 'The data is under review.') {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.review.underReview',
+            defaultMessage: 'Data is under review, save failed',
+          }),
+        );
+      } else {
+        message.error(result?.error?.message);
+      }
     }
     if (autoClose) setSpinning(false);
     if (!autoClose) {
