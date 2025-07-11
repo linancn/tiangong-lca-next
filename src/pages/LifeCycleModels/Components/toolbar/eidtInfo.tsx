@@ -164,7 +164,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
 
     modelDetail = await getLifeCycleModelDetail(data.id, data.version);
     setShowRules(true);
-    const { checkResult, tabName } = checkRequiredFields(requiredFields, data ?? fromData);
+    const { checkResult } = checkRequiredFields(requiredFields, data ?? fromData);
 
     const userTeamId = await getUserTeamId();
 
@@ -228,7 +228,6 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
         setDrawerVisible(true);
         onReset();
       }
-      await setActiveTabKey(tabName);
       setTimeout(() => {
         formRefEdit.current?.validateFields();
       }, 200);

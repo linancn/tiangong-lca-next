@@ -196,6 +196,10 @@ const SourceEdit: FC<Props> = ({
   const handleCheckData = async () => {
     setSpinning(true);
     const updateResult = await handleSubmit(false);
+    if (updateResult.error) {
+      setSpinning(false);
+      return;
+    }
     setShowRules(true);
     const unRuleVerification: refDataType[] = [];
     const nonExistentRef: refDataType[] = [];

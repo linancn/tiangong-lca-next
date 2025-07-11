@@ -186,6 +186,10 @@ const FlowsEdit: FC<Props> = ({
   const handleCheckData = async () => {
     setSpinning(true);
     const updateResult = await handleSubmit(false);
+    if (updateResult.error) {
+      setSpinning(false);
+      return;
+    }
     let { errors } = getRuleVerification(schema, updateResult?.data[0]?.json);
     setShowRules(true);
     const unRuleVerification: refDataType[] = [];
