@@ -253,7 +253,8 @@ const FlowpropertiesEdit: FC<Props> = ({
         if (
           unRuleVerificationData.length === 0 &&
           nonExistentRefData.length === 0 &&
-          errTabNames.length === 0
+          errTabNames.length === 0 &&
+          problemNodes.length === 0
         ) {
           message.success(
             intl.formatMessage({

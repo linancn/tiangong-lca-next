@@ -623,6 +623,9 @@ export function getRuleVerification(schema: any, data: any) {
   collectRequiredPaths(schema);
 
   requiredPaths.forEach(({ path, rule }) => {
+    if (path.includes('quantitativeReference')) {
+      return;
+    }
     let value = getValueByPath(data, path);
 
     if (value && typeof value === 'object' && value.value !== undefined) {

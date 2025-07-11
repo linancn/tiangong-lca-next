@@ -203,6 +203,7 @@ const ProcessEdit: FC<Props> = ({
   };
 
   const handleCheckData = async (processDetail: any) => {
+    console.log('processDetail', processDetail);
     setSpinning(true);
     setShowRules(true);
     let { valid, errors } = getRuleVerification(schema, genProcessJsonOrdered(id, processDetail));
@@ -311,8 +312,16 @@ const ProcessEdit: FC<Props> = ({
       valid = false;
       // return { checkResult, unReview };
     }
-
-    if (valid && nonExistentRef?.length === 0 && unRuleVerification.length === 0) {
+    console.log('problemNodes', problemNodes);
+    console.log('nonExistentRef', nonExistentRef);
+    console.log('unRuleVerification', unRuleVerification);
+    console.log('valid', valid);
+    if (
+      valid &&
+      nonExistentRef?.length === 0 &&
+      unRuleVerification.length === 0 &&
+      problemNodes.length === 0
+    ) {
       message.success(
         intl.formatMessage({
           id: 'pages.button.check.success',
@@ -372,7 +381,7 @@ const ProcessEdit: FC<Props> = ({
 
   const submitReview = async () => {
     setSpinning(true);
-    await handleSubmit(false);
+    const updateResult = await handleSubmit(false);
     const { data: processDetail } = await getProcessDetail(id, version);
     if (!processDetail) {
       message.error(
@@ -384,7 +393,13 @@ const ProcessEdit: FC<Props> = ({
       setSpinning(false);
       return;
     }
-    const { checkResult, unReview } = await handleCheckData(fromData);
+    const { checkResult, unReview } = await handleCheckData({
+      id: updateResult.data[0]?.id,
+      version: updateResult.data[0]?.version,
+      ...genProcessFromData(updateResult.data[0]?.json?.processDataSet),
+      ruleVerification: updateResult.data[0]?.rule_verification,
+      stateCode: updateResult.data[0]?.state_code,
+    });
 
     if (checkResult) {
       setSpinning(true);
@@ -545,7 +560,14 @@ const ProcessEdit: FC<Props> = ({
                   setSpinning(false);
                   return;
                 }
-                await handleCheckData(fromData);
+
+                await handleCheckData({
+                  id: updateResult.data[0]?.id,
+                  version: updateResult.data[0]?.version,
+                  ...genProcessFromData(updateResult.data[0]?.json?.processDataSet),
+                  ruleVerification: updateResult.data[0]?.rule_verification,
+                  stateCode: updateResult.data[0]?.state_code,
+                });
               }}
             >
               <FormattedMessage id='pages.button.check' defaultMessage='Data check' />

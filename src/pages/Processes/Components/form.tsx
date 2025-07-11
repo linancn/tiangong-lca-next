@@ -1833,7 +1833,7 @@ export const ProcessForm: FC<Props> = ({
                       record.dataDerivationTypeStatus &&
                       record.dataDerivationTypeStatus !== '-';
 
-                    return isInRefCheck || (!isFormComplete && showRules) ? 'error-row' : '';
+                    return showRules && (isInRefCheck || !isFormComplete) ? 'error-row' : '';
                   }}
                   className='process-exchange-table'
                   toolBarRender={() => {
@@ -1919,7 +1919,7 @@ export const ProcessForm: FC<Props> = ({
                       record.resultingAmount !== '-' &&
                       record.dataDerivationTypeStatus &&
                       record.dataDerivationTypeStatus !== '-';
-                    return isInRefCheck || (!isFormComplete && showRules) ? 'error-row' : '';
+                    return showRules && (isInRefCheck || !isFormComplete) ? 'error-row' : '';
                   }}
                   className='process-exchange-table'
                   toolBarRender={() => {

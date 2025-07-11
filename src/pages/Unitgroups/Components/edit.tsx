@@ -263,7 +263,8 @@ const UnitGroupEdit: FC<Props> = ({
           if (
             unRuleVerification.length === 0 &&
             nonExistentRef.length === 0 &&
-            errTabNames.length === 0
+            errTabNames.length === 0 &&
+            problemNodes.length === 0
           ) {
             message.success(
               intl.formatMessage({
