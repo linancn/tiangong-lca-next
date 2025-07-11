@@ -666,6 +666,48 @@ export function getRuleVerification(schema: any, data: any) {
         }
       }
     }
+
+    if (path.startsWith('flowDataSet.flowProperties.flowProperty')) {
+      const flowPropertyPath = 'flowDataSet.flowProperties.flowProperty';
+      const flowPropertyArray = getValueByPath(data, flowPropertyPath);
+
+      if (Array.isArray(flowPropertyArray) && flowPropertyArray.length > 0) {
+        const remainingPath = path.substring(flowPropertyPath.length + 1);
+
+        let allValid = true;
+        for (let i = 0; i < flowPropertyArray.length; i++) {
+          const itemPath = `${flowPropertyPath}.${i}${remainingPath ? '.' + remainingPath : ''}`;
+          let itemValue = getValueByPath(data, itemPath);
+
+          if (itemValue && typeof itemValue === 'object' && itemValue.value !== undefined) {
+            itemValue = itemValue.value;
+          }
+
+          if (isEmpty(itemValue)) {
+            allValid = false;
+            result.valid = false;
+            result.errors.push({
+              path: itemPath,
+              message: rule.defaultMessage || rule.messageKey,
+              rule: 'required',
+            });
+          }
+        }
+
+        if (allValid) {
+          shouldSkipValidation = true;
+        }
+      } else if (
+        flowPropertyArray &&
+        typeof flowPropertyArray === 'object' &&
+        !Array.isArray(flowPropertyArray)
+      ) {
+        if (!isEmpty(value)) {
+          shouldSkipValidation = true;
+        }
+      }
+    }
+
     if (shouldSkipValidation) {
       return;
     }
