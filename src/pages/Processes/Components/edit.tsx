@@ -462,6 +462,7 @@ const ProcessEdit: FC<Props> = ({
   useEffect(() => {
     if (!drawerVisible) {
       setShowRules(false);
+      setRefCheckData([]);
       // setUnRuleVerificationData([]);
       // setNonExistentRefData([]);
       return;
