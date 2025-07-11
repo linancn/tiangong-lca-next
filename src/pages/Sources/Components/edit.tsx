@@ -302,7 +302,7 @@ const SourceEdit: FC<Props> = ({
               errTabNames
                 .map((tab: any) =>
                   intl.formatMessage({
-                    id: `pages.contact.${tab}`,
+                    id: `pages.source.view.${tab}`,
                     defaultMessage: tab,
                   }),
                 )

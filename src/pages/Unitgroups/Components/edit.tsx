@@ -149,8 +149,8 @@ const UnitGroupEdit: FC<Props> = ({
       }
       message.success(
         intl.formatMessage({
-          id: 'pages.button.create.success',
-          defaultMessage: 'Created successfully!',
+          id: 'pages.button.save.success',
+          defaultMessage: 'Saved successfully!',
         }),
       );
       if (autoClose) {
@@ -277,7 +277,7 @@ const UnitGroupEdit: FC<Props> = ({
                 errTabNames
                   .map((tab: any) =>
                     intl.formatMessage({
-                      id: `pages.contact.${tab}`,
+                      id: `pages.unitgroup.${tab}`,
                       defaultMessage: tab,
                     }),
                   )

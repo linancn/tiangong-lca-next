@@ -35,6 +35,7 @@ export default {
   'pages.flow.view.administrativeInformation.referenceToPersonOrEntityEnteringTheData': 'Data entry by:',
   'pages.flow.view.administrativeInformation.referenceToOwnershipOfDataSet': 'Owner of data set',
   'pages.flow.view.administrativeInformation': 'Administrative information',
+  'pages.flow.view.flowProperties': 'Flow property',
   'pages.flow.view.flowInformation.name': 'Name',
   'pages.flow.view.flowInformation.baseName': 'Base name',
   'pages.flow.view.flowInformation.treatmentStandardsRoutes': 'Treatment, standards, routes',

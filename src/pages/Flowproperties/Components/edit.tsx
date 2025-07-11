@@ -141,8 +141,8 @@ const FlowpropertiesEdit: FC<Props> = ({
       }
       message.success(
         intl.formatMessage({
-          id: 'pages.flowproperty.editsuccess',
-          defaultMessage: 'Edit flowproperties successfully!',
+          id: 'pages.button.save.success',
+          defaultMessage: 'Saved successfully!',
         }),
       );
       if (autoClose) setDrawerVisible(false);
@@ -267,7 +267,7 @@ const FlowpropertiesEdit: FC<Props> = ({
               errTabNames
                 .map((tab: any) =>
                   intl.formatMessage({
-                    id: `pages.contact.${tab}`,
+                    id: `pages.FlowProperties.view.${tab}`,
                     defaultMessage: tab,
                   }),
                 )

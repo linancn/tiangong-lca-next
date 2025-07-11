@@ -167,8 +167,8 @@ const FlowsEdit: FC<Props> = ({
       }
       message.success(
         intl.formatMessage({
-          id: 'pages.flows.editsuccess',
-          defaultMessage: 'Edit successfully!',
+          id: 'pages.button.save.success',
+          defaultMessage: 'Saved successfully!',
         }),
       );
       if (autoClose) setDrawerVisible(false);
@@ -195,7 +195,7 @@ const FlowsEdit: FC<Props> = ({
   const handleCheckData = async () => {
     setSpinning(true);
     const updateResult = await handleSubmit(false);
-    if (updateResult.error) {
+    if (updateResult?.error) {
       setSpinning(false);
       return;
     }
@@ -320,7 +320,7 @@ const FlowsEdit: FC<Props> = ({
                 errTabNames
                   .map((tab: any) =>
                     intl.formatMessage({
-                      id: `pages.contact.${tab}`,
+                      id: `pages.flow.view.${tab}`,
                       defaultMessage: tab,
                     }),
                   )
