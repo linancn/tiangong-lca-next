@@ -203,7 +203,6 @@ const ProcessEdit: FC<Props> = ({
   };
 
   const handleCheckData = async (processDetail: any) => {
-    console.log('processDetail', processDetail);
     setSpinning(true);
     setShowRules(true);
     let { valid, errors } = getRuleVerification(schema, genProcessJsonOrdered(id, processDetail));
@@ -312,10 +311,6 @@ const ProcessEdit: FC<Props> = ({
       valid = false;
       // return { checkResult, unReview };
     }
-    console.log('problemNodes', problemNodes);
-    console.log('nonExistentRef', nonExistentRef);
-    console.log('unRuleVerification', unRuleVerification);
-    console.log('valid', valid);
     if (
       valid &&
       nonExistentRef?.length === 0 &&
