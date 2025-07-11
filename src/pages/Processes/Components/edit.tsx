@@ -184,7 +184,7 @@ const ProcessEdit: FC<Props> = ({
         actionRef?.current?.reload();
       }
     } else {
-      setSpinning(false);
+      if (closeDrawer) setSpinning(false);
       message.error(
         updateResult?.error?.message ??
           intl.formatMessage({
@@ -192,6 +192,9 @@ const ProcessEdit: FC<Props> = ({
             defaultMessage: 'Action failed',
           }),
       );
+    }
+    if (!closeDrawer) {
+      return updateResult;
     }
     return true;
   };
@@ -288,9 +291,8 @@ const ProcessEdit: FC<Props> = ({
             defaultMessage: 'Referenced data is under review, cannot initiate another review',
           }),
         );
-      } else {
-        valid = false;
       }
+      valid = false;
       setSpinning(false);
       // return { checkResult, unReview };
     }
@@ -535,7 +537,11 @@ const ProcessEdit: FC<Props> = ({
             <Button
               onClick={async () => {
                 setSpinning(true);
-                await handleSubmit(false);
+                const updateResult = await handleSubmit(false);
+                if (updateResult.error) {
+                  setSpinning(false);
+                  return;
+                }
                 await handleCheckData(fromData);
               }}
             >
