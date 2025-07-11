@@ -81,7 +81,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
       );
       if (ref) {
         setErrRef(ref);
-      } else {
+      } else if (refData&&refData?.id !== errRef?.id){
         setErrRef(null);
       }
     } else {
