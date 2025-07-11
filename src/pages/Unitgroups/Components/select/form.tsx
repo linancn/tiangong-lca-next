@@ -72,7 +72,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
       );
       if (ref) {
         setErrRef(ref);
-      } else if (refData&&refData?.id !== errRef?.id){
+      } else if (refData && refData?.id !== errRef?.id) {
         setErrRef(null);
       }
     } else {

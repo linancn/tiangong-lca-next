@@ -72,7 +72,7 @@ const ContactSelectForm: FC<Props> = ({
   }, [id, version]);
 
   useEffect(() => {
-    if (refCheckContext?.refCheckData?.length ) {
+    if (refCheckContext?.refCheckData?.length) {
       const ref = refCheckContext?.refCheckData?.find(
         (item: any) =>
           (item.id === id && item.version === version) ||
@@ -80,7 +80,7 @@ const ContactSelectForm: FC<Props> = ({
       );
       if (ref) {
         setErrRef(ref);
-      } else if (refData&&refData?.id !== errRef?.id) {
+      } else if (refData && refData?.id !== errRef?.id) {
         setErrRef(null);
       }
     } else {
