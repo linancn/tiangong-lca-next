@@ -113,7 +113,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
 
   useEffect(() => {
     if (!drawerVisible) {
-      setRefCheckContextValue({refCheckData: []})
+      setRefCheckContextValue({ refCheckData: [] });
       setShowRules(false);
       return;
     }

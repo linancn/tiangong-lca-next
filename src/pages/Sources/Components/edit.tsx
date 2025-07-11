@@ -197,7 +197,7 @@ const SourceEdit: FC<Props> = ({
 
   useEffect(() => {
     if (!drawerVisible) {
-      setRefCheckContextValue({refCheckData: []})
+      setRefCheckContextValue({ refCheckData: [] });
       setShowRules(false);
       return;
     }
