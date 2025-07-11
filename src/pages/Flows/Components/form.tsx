@@ -894,7 +894,8 @@ export const FlowForm: FC<Props> = ({
               item.id === record.referenceToFlowPropertyDataSetId &&
               item.version === record.referenceToFlowPropertyDataSetVersion,
           );
-          return isInRefCheck ? 'error-row' : '';
+          const isFormComplete = record.meanValue;
+          return isInRefCheck || (!isFormComplete && showRules) ? 'error-row' : '';
         }}
         className='flow-property-table'
         toolBarRender={() => {

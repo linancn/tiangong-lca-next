@@ -1,7 +1,7 @@
 import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import type { refDataType } from '@/pages/Utils/review';
-import { checkData } from '@/pages/Utils/review';
+import { ReffPath, checkData, getErrRefTab } from '@/pages/Utils/review';
 import { getSourceDetail, updateSource } from '@/services/sources/api';
 import { genSourceFromData } from '@/services/sources/util';
 import { supabaseStorageBucket } from '@/services/supabase/key';
@@ -49,13 +49,21 @@ const SourceEdit: FC<Props> = ({
   const [showRules, setShowRules] = useState<boolean>(false);
   const [refCheckData, setRefCheckData] = useState<any[]>([]);
   const parentRefCheckContext = useRefCheckContext();
+  const [refCheckContextValue, setRefCheckContextValue] = useState<any>({
+    refCheckData: [],
+  });
   useEffect(() => {
-    if (showRules) {
-      setTimeout(() => {
-        formRefEdit.current?.validateFields();
-      });
-    }
-  }, [showRules]);
+    setRefCheckContextValue({
+      refCheckData: [...parentRefCheckContext.refCheckData, ...refCheckData],
+    });
+  }, [refCheckData, parentRefCheckContext]);
+  // useEffect(() => {
+  //   if (showRules) {
+  //     setTimeout(() => {
+  //       formRefEdit.current?.validateFields();
+  //     });
+  //   }
+  // }, [showRules]);
 
   const updateReference = async () => {
     setReferenceValue(referenceValue + 1);
@@ -96,7 +104,8 @@ const SourceEdit: FC<Props> = ({
     });
   };
 
-  const onSubmit = async () => {
+  const handleSubmit = async (autoClose: boolean) => {
+    if (autoClose) setSpinning(true);
     if (fileList0.length > 0) {
       const nonExistentFiles = fileList0.filter(
         (file0) => !fileList.some((file) => file.uid === file0.uid),
@@ -164,13 +173,25 @@ const SourceEdit: FC<Props> = ({
           defaultMessage: 'Saved Successfully!',
         }),
       );
-      formRefEdit.current?.resetFields();
-      setDrawerVisible(false);
+      if (autoClose) formRefEdit.current?.resetFields();
+      if (autoClose) setDrawerVisible(false);
       reload();
     } else {
-      message.error(result?.error?.message);
+      if (result?.error?.message === 'The data is under review.') {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.review.underReview',
+            defaultMessage: 'Data is under review, save failed',
+          }),
+        );
+      } else {
+        message.error(result?.error?.message);
+      }
     }
-
+    if (autoClose) setSpinning(false);
+    if (!autoClose) {
+      return result;
+    }
     return true;
   };
 
@@ -183,34 +204,125 @@ const SourceEdit: FC<Props> = ({
   }, [drawerVisible]);
   const handleCheckData = async () => {
     setSpinning(true);
+    const updateResult = await handleSubmit(false);
+    if (updateResult.error) {
+      setSpinning(false);
+      return;
+    }
     setShowRules(true);
     const unRuleVerification: refDataType[] = [];
     const nonExistentRef: refDataType[] = [];
+    const pathRef = new ReffPath(
+      {
+        '@type': 'source data set',
+        '@refObjectId': id,
+        '@version': version,
+      },
+      updateResult?.data[0]?.rule_verification,
+      false,
+    );
     await checkData(
       {
-        '@type': 'flow property data set',
+        '@type': 'source data set',
         '@refObjectId': id,
         '@version': version,
       },
       unRuleVerification,
       nonExistentRef,
+      pathRef,
     );
+    const problemNodes = pathRef?.findProblemNodes() ?? [];
+    if (problemNodes && problemNodes.length > 0) {
+      let result = problemNodes.map((item: any) => {
+        return {
+          id: item['@refObjectId'],
+          version: item['@version'],
+          ruleVerification: item.ruleVerification,
+          nonExistent: item.nonExistent,
+        };
+      });
+      setRefCheckData(result);
+    } else {
+      setRefCheckData([]);
+    }
     const unRuleVerificationData = unRuleVerification.map((item: any) => {
       return {
         id: item['@refObjectId'],
         version: item['@version'],
-        type: 1,
+        ruleVerification: false,
+        nonExistent: false,
       };
     });
     const nonExistentRefData = nonExistentRef.map((item: any) => {
       return {
         id: item['@refObjectId'],
         version: item['@version'],
-        type: 2,
+        ruleVerification: true,
+        nonExistent: true,
       };
     });
-
-    setRefCheckData([...unRuleVerificationData, ...nonExistentRefData]);
+    const errTabNames: string[] = [];
+    nonExistentRef.forEach((item: any) => {
+      const tabName = getErrRefTab(item, initData);
+      if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+    });
+    unRuleVerification.forEach((item: any) => {
+      const tabName = getErrRefTab(item, initData);
+      if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+    });
+    problemNodes.forEach((item: any) => {
+      const tabName = getErrRefTab(item, initData);
+      if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+    });
+    formRefEdit.current
+      ?.validateFields()
+      .then(() => {})
+      .catch((err: any) => {
+        const errorFields = err?.errorFields ?? [];
+        errorFields.forEach((item: any) => {
+          const tabName = item?.name[0];
+          if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+        });
+      })
+      .finally(() => {
+        if (
+          unRuleVerificationData.length === 0 &&
+          nonExistentRefData.length === 0 &&
+          errTabNames.length === 0
+        ) {
+          message.success(
+            intl.formatMessage({
+              id: 'pages.button.check.success',
+              defaultMessage: 'Data check successfully!',
+            }),
+          );
+        } else {
+          if (errTabNames && errTabNames.length > 0) {
+            message.error(
+              errTabNames
+                .map((tab: any) =>
+                  intl.formatMessage({
+                    id: `pages.source.view.${tab}`,
+                    defaultMessage: tab,
+                  }),
+                )
+                .join('，') +
+                '：' +
+                intl.formatMessage({
+                  id: 'pages.button.check.error',
+                  defaultMessage: 'Data check failed!',
+                }),
+            );
+          } else {
+            message.error(
+              intl.formatMessage({
+                id: 'pages.button.check.error',
+                defaultMessage: 'Data check failed!',
+              }),
+            );
+          }
+        }
+      });
     setSpinning(false);
   };
   return (
@@ -230,6 +342,7 @@ const SourceEdit: FC<Props> = ({
 
       <Drawer
         getContainer={() => document.body}
+        destroyOnClose={true}
         title={
           <FormattedMessage id='pages.source.drawer.title.edit' defaultMessage='Edit Source' />
         }
@@ -267,9 +380,9 @@ const SourceEdit: FC<Props> = ({
               <FormattedMessage id="pages.button.reset" defaultMessage="Reset" />
             </Button> */}
             <Button
-              onClick={() => {
+              onClick={async () => {
                 setShowRules(false);
-                formRefEdit.current?.submit();
+                await handleSubmit(true);
               }}
               type='primary'
             >
@@ -280,11 +393,7 @@ const SourceEdit: FC<Props> = ({
       >
         <Spin spinning={spinning}>
           <UpdateReferenceContext.Provider value={{ referenceValue }}>
-            <RefCheckContext.Provider
-              value={{
-                refCheckData: [...parentRefCheckContext.refCheckData, ...refCheckData],
-              }}
-            >
+            <RefCheckContext.Provider value={refCheckContextValue}>
               <ProForm
                 formRef={formRefEdit}
                 initialValues={initData}
@@ -296,7 +405,7 @@ const SourceEdit: FC<Props> = ({
                     return [];
                   },
                 }}
-                onFinish={onSubmit}
+                onFinish={() => handleSubmit(true)}
               >
                 <SourceForm
                   lang={lang}

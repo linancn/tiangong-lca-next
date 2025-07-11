@@ -1825,7 +1825,15 @@ export const ProcessForm: FC<Props> = ({
                         item.id === record.referenceToFlowDataSetId &&
                         item.version === record.referenceToFlowDataSetVersion,
                     );
-                    return isInRefCheck ? 'error-row' : '';
+                    const isFormComplete =
+                      record.meanAmount &&
+                      record.meanAmount !== '-' &&
+                      record.resultingAmount &&
+                      record.resultingAmount !== '-' &&
+                      record.dataDerivationTypeStatus &&
+                      record.dataDerivationTypeStatus !== '-';
+
+                    return isInRefCheck || (!isFormComplete && showRules) ? 'error-row' : '';
                   }}
                   className='process-exchange-table'
                   toolBarRender={() => {
@@ -1904,7 +1912,14 @@ export const ProcessForm: FC<Props> = ({
                         item.id === record.referenceToFlowDataSetId &&
                         item.version === record.referenceToFlowDataSetVersion,
                     );
-                    return isInRefCheck ? 'error-row' : '';
+                    const isFormComplete =
+                      record.meanAmount &&
+                      record.meanAmount !== '-' &&
+                      record.resultingAmount &&
+                      record.resultingAmount !== '-' &&
+                      record.dataDerivationTypeStatus &&
+                      record.dataDerivationTypeStatus !== '-';
+                    return isInRefCheck || (!isFormComplete && showRules) ? 'error-row' : '';
                   }}
                   className='process-exchange-table'
                   toolBarRender={() => {

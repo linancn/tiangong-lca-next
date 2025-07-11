@@ -1,7 +1,7 @@
 import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import type { refDataType } from '@/pages/Utils/review';
-import { checkData } from '@/pages/Utils/review';
+import { ReffPath, checkData, getErrRefTab } from '@/pages/Utils/review';
 import { getUnitGroupDetail, updateUnitGroup } from '@/services/unitgroups/api';
 import { UnitTable } from '@/services/unitgroups/data';
 import { genUnitGroupFromData } from '@/services/unitgroups/util';
@@ -41,19 +41,27 @@ const UnitGroupEdit: FC<Props> = ({
   const [showRules, setShowRules] = useState<boolean>(false);
   const [refCheckData, setRefCheckData] = useState<any[]>([]);
   const parentRefCheckContext = useRefCheckContext();
+  const [refCheckContextValue, setRefCheckContextValue] = useState<any>({
+    refCheckData: [],
+  });
+  useEffect(() => {
+    setRefCheckContextValue({
+      refCheckData: [...parentRefCheckContext.refCheckData, ...refCheckData],
+    });
+  }, [refCheckData, parentRefCheckContext]);
   const intl = useIntl();
   const [referenceValue, setReferenceValue] = useState(0);
   const updateReference = async () => {
     setReferenceValue(referenceValue + 1);
   };
 
-  useEffect(() => {
-    if (showRules) {
-      setTimeout(() => {
-        formRefEdit.current?.validateFields();
-      });
-    }
-  }, [showRules]);
+  // useEffect(() => {
+  //   if (showRules) {
+  //     setTimeout(() => {
+  //       formRefEdit.current?.validateFields();
+  //     });
+  //   }
+  // }, [showRules]);
 
   const handletFromData = () => {
     if (fromData)
@@ -120,20 +128,98 @@ const UnitGroupEdit: FC<Props> = ({
     });
   }, [unitDataSource]);
 
+  const handleSubmit = async (autoClose: boolean) => {
+    if (autoClose) setSpinning(true);
+    const units = fromData.units;
+    const formFieldsValue = {
+      ...formRefEdit.current?.getFieldsValue(),
+      units,
+    };
+    const updateResult = await updateUnitGroup(id, version, formFieldsValue);
+    if (updateResult?.data) {
+      if (updateResult?.data[0]?.rule_verification === true) {
+        updateErrRef(null);
+      } else {
+        updateErrRef({
+          id: id,
+          version: version,
+          ruleVerification: updateResult?.data[0]?.rule_verification,
+          nonExistent: false,
+        });
+      }
+      message.success(
+        intl.formatMessage({
+          id: 'pages.button.save.success',
+          defaultMessage: 'Saved successfully!',
+        }),
+      );
+      if (autoClose) {
+        setDrawerVisible(false);
+        setViewDrawerVisible(false);
+      }
+      setActiveTabKey('unitGroupInformation');
+      actionRef?.current?.reload();
+    } else {
+      if (updateResult?.error?.message === 'The data is under review.') {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.review.underReview',
+            defaultMessage: 'Data is under review, save failed',
+          }),
+        );
+      } else {
+        message.error(updateResult?.error?.message);
+      }
+    }
+    if (!autoClose) {
+      return updateResult;
+    }
+    return true;
+  };
+
   const handleCheckData = async () => {
     setSpinning(true);
+    const updateResult = await handleSubmit(false);
+    if (updateResult.error) {
+      setSpinning(false);
+      return;
+    }
     setShowRules(true);
     const unRuleVerification: refDataType[] = [];
     const nonExistentRef: refDataType[] = [];
+    const pathRef = new ReffPath(
+      {
+        '@type': 'unit group data set',
+        '@refObjectId': id,
+        '@version': version,
+      },
+      updateResult?.data[0]?.rule_verification,
+      false,
+    );
     await checkData(
       {
-        '@type': 'flow property data set',
+        '@type': 'unit group data set',
         '@refObjectId': id,
         '@version': version,
       },
       unRuleVerification,
       nonExistentRef,
+      pathRef,
     );
+    const problemNodes = pathRef?.findProblemNodes() ?? [];
+    if (problemNodes && problemNodes.length > 0) {
+      let result = problemNodes.map((item: any) => {
+        return {
+          id: item['@refObjectId'],
+          version: item['@version'],
+          ruleVerification: item.ruleVerification,
+          nonExistent: item.nonExistent,
+        };
+      });
+      setRefCheckData(result);
+    } else {
+      setRefCheckData([]);
+    }
     const units = fromData.units;
     if (!units?.unit || !Array.isArray(units.unit) || units.unit.length === 0) {
       message.error(
@@ -149,23 +235,70 @@ const UnitGroupEdit: FC<Props> = ({
           defaultMessage: 'Unit needs to have exactly one quantitative reference open',
         }),
       );
+    } else {
+      const errTabNames: string[] = [];
+      nonExistentRef.forEach((item: any) => {
+        const tabName = getErrRefTab(item, initData);
+        if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+      });
+      unRuleVerification.forEach((item: any) => {
+        const tabName = getErrRefTab(item, initData);
+        if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+      });
+      problemNodes.forEach((item: any) => {
+        const tabName = getErrRefTab(item, initData);
+        if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+      });
+      formRefEdit.current
+        ?.validateFields()
+        .then(() => {})
+        .catch((err: any) => {
+          const errorFields = err?.errorFields ?? [];
+          errorFields.forEach((item: any) => {
+            const tabName = item?.name[0];
+            if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+          });
+        })
+        .finally(() => {
+          if (
+            unRuleVerification.length === 0 &&
+            nonExistentRef.length === 0 &&
+            errTabNames.length === 0
+          ) {
+            message.success(
+              intl.formatMessage({
+                id: 'pages.button.check.success',
+                defaultMessage: 'Data check successfully!',
+              }),
+            );
+          } else {
+            if (errTabNames && errTabNames.length > 0) {
+              message.error(
+                errTabNames
+                  .map((tab: any) =>
+                    intl.formatMessage({
+                      id: `pages.unitgroup.${tab}`,
+                      defaultMessage: tab,
+                    }),
+                  )
+                  .join('，') +
+                  '：' +
+                  intl.formatMessage({
+                    id: 'pages.button.check.error',
+                    defaultMessage: 'Data check failed!',
+                  }),
+              );
+            } else {
+              message.error(
+                intl.formatMessage({
+                  id: 'pages.button.check.error',
+                  defaultMessage: 'Data check failed!',
+                }),
+              );
+            }
+          }
+        });
     }
-    const unRuleVerificationData = unRuleVerification.map((item: any) => {
-      return {
-        id: item['@refObjectId'],
-        version: item['@version'],
-        type: 1,
-      };
-    });
-    const nonExistentRefData = nonExistentRef.map((item: any) => {
-      return {
-        id: item['@refObjectId'],
-        version: item['@version'],
-        type: 2,
-      };
-    });
-
-    setRefCheckData([...unRuleVerificationData, ...nonExistentRefData]);
     setSpinning(false);
   };
 
@@ -188,6 +321,7 @@ const UnitGroupEdit: FC<Props> = ({
 
       <Drawer
         getContainer={() => document.body}
+        destroyOnClose={true}
         title={
           <FormattedMessage
             id={'pages.unitgroup.drawer.title.edit'}
@@ -236,9 +370,9 @@ const UnitGroupEdit: FC<Props> = ({
               <FormattedMessage id="pages.button.reset" defaultMessage="Reset"></FormattedMessage>
             </Button> */}
             <Button
-              onClick={() => {
+              onClick={async () => {
                 setShowRules(false);
-                formRefEdit.current?.submit();
+                await handleSubmit(true);
               }}
               type='primary'
             >
@@ -249,11 +383,7 @@ const UnitGroupEdit: FC<Props> = ({
       >
         <Spin spinning={spinning}>
           <UpdateReferenceContext.Provider value={{ referenceValue }}>
-            <RefCheckContext.Provider
-              value={{
-                refCheckData: [...parentRefCheckContext.refCheckData, ...refCheckData],
-              }}
-            >
+            <RefCheckContext.Provider value={refCheckContextValue}>
               <ProForm
                 formRef={formRefEdit}
                 initialValues={initData}
@@ -265,39 +395,7 @@ const UnitGroupEdit: FC<Props> = ({
                     return [];
                   },
                 }}
-                onFinish={async () => {
-                  const units = fromData.units;
-                  const formFieldsValue = {
-                    ...formRefEdit.current?.getFieldsValue(),
-                    units,
-                  };
-                  const updateResult = await updateUnitGroup(id, version, formFieldsValue);
-                  if (updateResult?.data) {
-                    if (updateResult?.data[0]?.rule_verification === true) {
-                      updateErrRef(null);
-                    } else {
-                      updateErrRef({
-                        id: id,
-                        version: version,
-                        ruleVerification: updateResult?.data[0]?.rule_verification,
-                        nonExistent: false,
-                      });
-                    }
-                    message.success(
-                      intl.formatMessage({
-                        id: 'pages.button.create.success',
-                        defaultMessage: 'Created successfully!',
-                      }),
-                    );
-                    setDrawerVisible(false);
-                    setViewDrawerVisible(false);
-                    setActiveTabKey('unitGroupInformation');
-                    actionRef?.current?.reload();
-                  } else {
-                    message.error(updateResult?.error?.message);
-                  }
-                  return true;
-                }}
+                onFinish={() => handleSubmit(true)}
               >
                 <UnitGroupForm
                   lang={lang}

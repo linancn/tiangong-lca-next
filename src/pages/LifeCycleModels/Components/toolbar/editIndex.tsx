@@ -797,7 +797,16 @@ const ToolbarEdit: FC<Props> = ({
         setThisVersion(result.data?.[0]?.version);
         saveCallback();
       } else {
-        message.error(result?.error?.message);
+        if (result?.error?.message === 'The data is under review.') {
+          message.error(
+            intl.formatMessage({
+              id: 'pages.review.underReview',
+              defaultMessage: 'Data is under review, save failed',
+            }),
+          );
+        } else {
+          message.error(result?.error?.message);
+        }
       }
       if (setLoadingData) setSpinning(false);
     } else if (thisAction === 'create') {
@@ -1184,6 +1193,7 @@ const ToolbarEdit: FC<Props> = ({
 
   const handleCheckData = async () => {
     setSpinning(true);
+    await saveData(false);
     const { problemNodes } = await editInfoRef.current?.handleCheckData(nodes, edges);
     setProblemNodes(problemNodes ?? []);
     setSpinning(false);

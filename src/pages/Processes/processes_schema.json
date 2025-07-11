@@ -256,7 +256,7 @@
       },
       "technology": {
         "technologyDescriptionAndIncludedProcesses": {
-          "values": [
+          "value": [
             {
               "@xml:lang": "str",
               "#text": "str"
@@ -387,7 +387,7 @@
       },
       "dataSourcesTreatmentAndRepresentativeness": {
         "dataCutOffAndCompletenessPrinciples": {
-          "values": [
+          "value": [
             {
               "@xml:lang": "str",
               "#text": "str"

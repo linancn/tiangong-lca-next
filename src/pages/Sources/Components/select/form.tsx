@@ -46,7 +46,7 @@ const SourceSelectForm: FC<Props> = ({
       data?.ruleVerification === false &&
       data?.stateCode !== 100 &&
       data?.stateCode !== 200 &&
-      refCheckContext?.refCheckData?.length
+      rules?.length
     ) {
       setErrRef({
         id: data?.id,
@@ -54,6 +54,8 @@ const SourceSelectForm: FC<Props> = ({
         ruleVerification: data?.ruleVerification,
         nonExistent: false,
       });
+    } else {
+      setErrRef(null);
     }
   };
   useEffect(() => {
@@ -63,20 +65,24 @@ const SourceSelectForm: FC<Props> = ({
         setDataUserId(result?.data?.userId);
         updateErrRefByDetail(result?.data);
       });
-      if (refCheckContext?.refCheckData?.length) {
-        const ref = refCheckContext?.refCheckData?.find(
-          (item: any) => item.id === id && item.version === version,
-        );
-        if (ref) {
-          setErrRef(ref);
-        } else {
-          setErrRef(null);
-        }
+    }
+  }, [id, version]);
+  useEffect(() => {
+    if (refCheckContext?.refCheckData?.length) {
+      const ref = refCheckContext?.refCheckData?.find(
+        (item: any) =>
+          (item.id === id && item.version === version) ||
+          (item.id === refData?.id && item.version === refData?.version),
+      );
+      if (ref) {
+        setErrRef(ref);
       } else {
         setErrRef(null);
       }
+    } else {
+      setErrRef(null);
     }
-  }, [id, version, refCheckContext]);
+  }, [refCheckContext, refData]);
 
   const { token } = theme.useToken();
   const { referenceValue } = useUpdateReferenceContext() as { referenceValue: number };
@@ -160,7 +166,7 @@ const SourceSelectForm: FC<Props> = ({
   }, [defaultSourceName]);
 
   useEffect(() => {
-    setId(undefined);
+    // setId(undefined);
     if (parentName) {
       setId(formRef.current?.getFieldValue([...parentName, ...name, '@refObjectId']));
       setVersion(formRef.current?.getFieldValue([...parentName, ...name, '@version']));

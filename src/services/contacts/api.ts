@@ -16,7 +16,7 @@ import { genContactJsonOrdered } from './util';
 
 export async function createContact(id: string, data: any) {
   const newData = genContactJsonOrdered(id, data);
-  const rule_verification = getRuleVerification(schema, newData);
+  const rule_verification = getRuleVerification(schema, newData)?.valid;
   // const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('contacts')
@@ -27,7 +27,7 @@ export async function createContact(id: string, data: any) {
 
 export async function updateContact(id: string, version: string, data: any) {
   const newData = genContactJsonOrdered(id, data);
-  const rule_verification = getRuleVerification(schema, newData);
+  const rule_verification = getRuleVerification(schema, newData)?.valid;
   let result: any = {};
   const session = await supabase.auth.getSession();
   if (session.data.session) {
