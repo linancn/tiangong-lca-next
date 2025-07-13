@@ -35,6 +35,7 @@ export default {
   'pages.flow.view.administrativeInformation.referenceToPersonOrEntityEnteringTheData': '数据录入人',
   'pages.flow.view.administrativeInformation.referenceToOwnershipOfDataSet': '数据集拥有者',
   'pages.flow.view.administrativeInformation': '管理信息',
+  'pages.flow.view.flowProperties': '流属性',
   'pages.flow.view.flowInformation.name': '名称',
   'pages.flow.view.flowInformation.baseName': '基础名称',
   'pages.flow.view.flowInformation.treatmentStandardsRoutes': '处理、标准、路线',

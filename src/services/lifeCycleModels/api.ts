@@ -35,7 +35,7 @@ const updateLifeCycleModelProcess = async (
       data?.lifeCycleModelDataSet,
       oldData,
     );
-    const rule_verification = getRuleVerification(processSchema, newData);
+    const rule_verification = getRuleVerification(processSchema, newData)?.valid;
     let uResult: any = {};
     const session = await supabase.auth.getSession();
     if (session.data.session) {
@@ -74,7 +74,7 @@ const updateLifeCycleModelProcess = async (
       data?.lifeCycleModelDataSet,
       oldData,
     );
-    const rule_verification = getRuleVerification(processSchema, newData);
+    const rule_verification = getRuleVerification(processSchema, newData)?.valid;
     const cResult = await supabase
       .from('processes')
       .insert([{ id: id, json_ordered: newData, rule_verification }])
@@ -97,7 +97,7 @@ export async function createLifeCycleModel(data: any) {
     },
   };
   const newData = genLifeCycleModelJsonOrdered(data.id, data, oldData);
-  const rule_verification = getRuleVerification(schema, newData);
+  const rule_verification = getRuleVerification(schema, newData)?.valid;
   // const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('lifecyclemodels')
@@ -121,7 +121,7 @@ export async function updateLifeCycleModel(data: any) {
   if (result.data && result.data.length === 1) {
     const oldData = result.data[0].json;
     const newData = genLifeCycleModelJsonOrdered(data.id, data, oldData);
-    const rule_verification = getRuleVerification(schema, newData);
+    const rule_verification = getRuleVerification(schema, newData)?.valid;
     let updateResult: any = {};
     const session = await supabase.auth.getSession();
     if (session.data.session) {
