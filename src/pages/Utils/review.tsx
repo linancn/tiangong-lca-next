@@ -52,9 +52,14 @@ export const getRefTableName = (type: string) => {
 
 export const getAllRefObj = (obj: any): any[] => {
   const result: any[] = [];
+  const visited = new WeakSet();
 
   const traverse = (current: any) => {
     if (!current || typeof current !== 'object') return;
+
+    // Prevent circular references
+    if (visited.has(current)) return;
+    visited.add(current);
 
     if ('@refObjectId' in current && current['@refObjectId'] && current['@version']) {
       result.push(current);
@@ -333,6 +338,7 @@ export const checkData = async (
   data: refDataType,
   unRuleVerification: refDataType[],
   nonExistentRef: refDataType[],
+  pathRef: ReffPath,
 ) => {
   const { data: detail } = await getRefData(
     data['@refObjectId'],
@@ -349,6 +355,7 @@ export const checkData = async (
       [],
       unRuleVerification,
       nonExistentRef,
+      pathRef,
     );
   }
 };
@@ -449,50 +456,115 @@ const checkComplianceFields = (data: any) => {
 };
 
 export const checkRequiredFields = (requiredFields: any, formData: any) => {
+  const errTabNames: string[] = [];
+  const collectedTabNames = new Set<string>();
+
   if (!formData || Object.keys(formData).length === 0) {
-    return { checkResult: false, tabName: '' };
+    return { checkResult: false, errTabNames };
   }
+  const collectErrTabNames = (tabName: string) => {
+    if (tabName && tabName?.length && !collectedTabNames.has(tabName)) {
+      errTabNames.push(tabName);
+      collectedTabNames.add(tabName);
+    }
+  };
   for (let field of Object.keys(requiredFields)) {
     const value = get(formData, field);
     if (field === 'modellingAndValidation.validation.review') {
       const { checkResult, tabName } = checkValidationFields(value);
       if (!checkResult) {
-        return { checkResult, tabName };
+        collectErrTabNames(tabName ?? '');
+        // return { checkResult, tabName };
       }
     }
 
     if (field === 'modellingAndValidation.complianceDeclarations.compliance') {
       const { checkResult, tabName } = checkComplianceFields(value);
       if (!checkResult) {
-        return { checkResult, tabName };
+        collectErrTabNames(tabName ?? '');
+        // return { checkResult, tabName };
       }
     }
 
     if (field.includes('common:classification.common:class')) {
       if (!value || (value?.id ?? []).some((item: any) => !item)) {
-        return { checkResult: false, tabName: requiredFields[field] };
+        collectErrTabNames(requiredFields[field] ?? '');
+        // return { checkResult: false, tabName: requiredFields[field] };
       }
     }
     if (!value) {
-      return { checkResult: false, tabName: requiredFields[field] };
+      collectErrTabNames(requiredFields[field] ?? '');
+      // return { checkResult: false, tabName: requiredFields[field] };
     }
 
     if (Array.isArray(value) && (value.length === 0 || value.every((item) => !item))) {
-      return { checkResult: false, tabName: requiredFields[field] };
+      collectErrTabNames(requiredFields[field] ?? '');
+      // return { checkResult: false, tabName: requiredFields[field] };
     }
 
     if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
       if (Object.keys(value).length === 0) {
-        return { checkResult: false, tabName: requiredFields[field] };
+        collectErrTabNames(requiredFields[field] ?? '');
+        // return { checkResult: false, tabName: requiredFields[field] };
       }
       const allPropsEmpty = Object.values(value).every(
         (propValue) => propValue === undefined || propValue === null,
       );
       if (allPropsEmpty) {
-        return { checkResult: false, tabName: requiredFields[field] };
+        collectErrTabNames(requiredFields[field] ?? '');
+        // return { checkResult: false, tabName: requiredFields[field] };
       }
     }
   }
 
-  return { checkResult: true, tabName: null };
+  return { checkResult: errTabNames.length === 0, errTabNames };
 };
+
+export function getErrRefTab(ref: refDataType, data: any): string | null {
+  if (!data || !ref) {
+    return null;
+  }
+
+  const visited = new WeakSet();
+
+  const findRefInObject = (obj: any, path: string[] = []): string | null => {
+    if (!obj || typeof obj !== 'object') {
+      return null;
+    }
+
+    if (visited.has(obj)) {
+      return null;
+    }
+    visited.add(obj);
+
+    if (obj['@refObjectId'] && obj['@version'] && obj['@type']) {
+      if (obj['@refObjectId'] === ref['@refObjectId'] && obj['@version'] === ref['@version']) {
+        return path[0] || null;
+      }
+    }
+
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        const value = obj[key];
+
+        if (Array.isArray(value)) {
+          for (let i = 0; i < value.length; i++) {
+            const result = findRefInObject(value[i], [...path, key]);
+            if (result) {
+              return result;
+            }
+          }
+        } else if (typeof value === 'object' && value !== null) {
+          const result = findRefInObject(value, [...path, key]);
+          if (result) {
+            return result;
+          }
+        }
+      }
+    }
+
+    return null;
+  };
+
+  return findRefInObject(data);
+}

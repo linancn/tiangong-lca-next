@@ -15,7 +15,7 @@ import { getILCDClassification } from '../ilcd/api';
 import { genSourceJsonOrdered } from './util';
 export async function createSource(id: string, data: any) {
   const newData = genSourceJsonOrdered(id, data);
-  const rule_verification = getRuleVerification(schema, newData);
+  const rule_verification = getRuleVerification(schema, newData)?.valid;
   // const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('sources')
@@ -26,7 +26,7 @@ export async function createSource(id: string, data: any) {
 
 export async function updateSource(id: string, version: string, data: any) {
   const newData = genSourceJsonOrdered(id, data);
-  const rule_verification = getRuleVerification(schema, newData);
+  const rule_verification = getRuleVerification(schema, newData)?.valid;
   let result: any = {};
   const session = await supabase.auth.getSession();
   if (session.data.session) {

@@ -48,7 +48,7 @@ const ContactSelectForm: FC<Props> = ({
       data?.ruleVerification === false &&
       data?.stateCode !== 100 &&
       data?.stateCode !== 200 &&
-      refCheckContext?.refCheckData?.length
+      rules?.length
     ) {
       setErrRef({
         id: data?.id,
@@ -56,6 +56,8 @@ const ContactSelectForm: FC<Props> = ({
         ruleVerification: data?.ruleVerification,
         nonExistent: false,
       });
+    } else {
+      setErrRef(null);
     }
   };
 
@@ -66,20 +68,25 @@ const ContactSelectForm: FC<Props> = ({
         setDataUserId(result?.data?.userId);
         updateErrRefByDetail(result?.data);
       });
-      if (refCheckContext?.refCheckData?.length) {
-        const ref = refCheckContext?.refCheckData?.find(
-          (item: any) => item.id === id && item.version === version,
-        );
-        if (ref) {
-          setErrRef(ref);
-        } else {
-          setErrRef(null);
-        }
-      } else {
+    }
+  }, [id, version]);
+
+  useEffect(() => {
+    if (refCheckContext?.refCheckData?.length) {
+      const ref = refCheckContext?.refCheckData?.find(
+        (item: any) =>
+          (item.id === id && item.version === version) ||
+          (item.id === refData?.id && item.version === refData?.version),
+      );
+      if (ref) {
+        setErrRef(ref);
+      } else if (refData && refData?.id !== errRef?.id) {
         setErrRef(null);
       }
+    } else {
+      setErrRef(null);
     }
-  }, [id, version, refCheckContext]);
+  }, [refCheckContext, refData]);
 
   const handletContactData = (rowId: string, rowVersion: string) => {
     getContactDetail(rowId, rowVersion).then(async (result: any) => {

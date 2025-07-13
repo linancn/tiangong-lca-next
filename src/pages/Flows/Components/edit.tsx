@@ -1,10 +1,11 @@
 import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import type { refDataType } from '@/pages/Utils/review';
-import { checkData } from '@/pages/Utils/review';
+import { ReffPath, checkData, getErrRefTab } from '@/pages/Utils/review';
 import { getFlowpropertyDetail } from '@/services/flowproperties/api';
 import { getFlowDetail, updateFlows } from '@/services/flows/api';
 import { genFlowFromData } from '@/services/flows/util';
+import { getRuleVerification } from '@/services/general/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -12,6 +13,7 @@ import { Button, Drawer, Space, Spin, Tooltip, message } from 'antd';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
+import schema from '../flows_schema.json';
 import { FlowForm } from './form';
 
 type Props = {
@@ -43,14 +45,22 @@ const FlowsEdit: FC<Props> = ({
   const [referenceValue, setReferenceValue] = useState(0);
   const [refCheckData, setRefCheckData] = useState<any[]>([]);
   const parentRefCheckContext = useRefCheckContext();
-
+  const [refCheckContextValue, setRefCheckContextValue] = useState<any>({
+    refCheckData: [],
+  });
   useEffect(() => {
-    if (showRules) {
-      setTimeout(() => {
-        formRefEdit.current?.validateFields();
-      });
-    }
-  }, [showRules]);
+    setRefCheckContextValue({
+      refCheckData: [...parentRefCheckContext.refCheckData, ...refCheckData],
+    });
+  }, [refCheckData, parentRefCheckContext]);
+
+  // useEffect(() => {
+  //   if (showRules) {
+  //     setTimeout(() => {
+  //       formRefEdit.current?.validateFields();
+  //     });
+  //   }
+  // }, [showRules]);
 
   const updateReference = async () => {
     propertyDataSource.forEach(async (property: any, index: number) => {
@@ -130,38 +140,117 @@ const FlowsEdit: FC<Props> = ({
 
   useEffect(() => {
     if (!drawerVisible) {
+      setRefCheckContextValue({ refCheckData: [] });
       setShowRules(false);
       return;
     }
     onReset();
   }, [drawerVisible]);
 
+  const handleSubmit = async (autoClose: boolean) => {
+    if (autoClose) setSpinning(true);
+    const fieldsValue = formRefEdit.current?.getFieldsValue();
+    const flowProperties = fromData?.flowProperties;
+    const updateResult = await updateFlows(id, version, {
+      ...fieldsValue,
+      flowProperties,
+    });
+    if (updateResult?.data) {
+      if (updateResult?.data[0]?.rule_verification === true) {
+        updateErrRef(null);
+      } else {
+        updateErrRef({
+          id: id,
+          version: version,
+          ruleVerification: updateResult?.data[0]?.rule_verification,
+          nonExistent: false,
+        });
+      }
+      message.success(
+        intl.formatMessage({
+          id: 'pages.button.save.success',
+          defaultMessage: 'Saved successfully!',
+        }),
+      );
+      if (autoClose) setDrawerVisible(false);
+      setActiveTabKey('flowInformation');
+      actionRef?.current?.reload();
+    } else {
+      if (updateResult?.error?.message === 'The data is under review.') {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.review.underReview',
+            defaultMessage: 'Data is under review, save failed',
+          }),
+        );
+      } else {
+        message.error(updateResult?.error?.message);
+      }
+    }
+    if (autoClose) setSpinning(false);
+    if (!autoClose) {
+      return updateResult;
+    }
+    return true;
+  };
   const handleCheckData = async () => {
     setSpinning(true);
+    const updateResult = await handleSubmit(false);
+    if (updateResult?.error) {
+      setSpinning(false);
+      return;
+    }
+    let { errors } = getRuleVerification(schema, updateResult?.data[0]?.json);
     setShowRules(true);
     const unRuleVerification: refDataType[] = [];
     const nonExistentRef: refDataType[] = [];
+    const pathRef = new ReffPath(
+      {
+        '@type': 'contact data set',
+        '@refObjectId': id,
+        '@version': version,
+      },
+      updateResult?.data[0]?.rule_verification,
+      false,
+    );
     await checkData(
       {
-        '@type': 'flow property data set',
+        '@type': 'flow data set',
         '@refObjectId': id,
         '@version': version,
       },
       unRuleVerification,
       nonExistentRef,
+      pathRef,
     );
+    const problemNodes = pathRef?.findProblemNodes() ?? [];
+    if (problemNodes && problemNodes.length > 0) {
+      let result = problemNodes.map((item: any) => {
+        return {
+          id: item['@refObjectId'],
+          version: item['@version'],
+          ruleVerification: item.ruleVerification,
+          nonExistent: item.nonExistent,
+        };
+      });
+      setRefCheckData(result);
+    } else {
+      setRefCheckData([]);
+    }
     const unRuleVerificationData = unRuleVerification.map((item: any) => {
       return {
         id: item['@refObjectId'],
         version: item['@version'],
-        type: 1,
+        ruleVerification: false,
+        nonExistent: false,
       };
     });
     const nonExistentRefData = nonExistentRef.map((item: any) => {
       return {
         id: item['@refObjectId'],
         version: item['@version'],
-        type: 2,
+        ruleVerification: true,
+        nonExistent: true,
       };
     });
 
@@ -186,9 +275,75 @@ const FlowsEdit: FC<Props> = ({
           defaultMessage: 'Flow property needs to have exactly one quantitative reference open',
         }),
       );
+    } else {
+      const errTabNames: string[] = [];
+      nonExistentRef.forEach((item: any) => {
+        const tabName = getErrRefTab(item, initData);
+        if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+      });
+      unRuleVerification.forEach((item: any) => {
+        const tabName = getErrRefTab(item, initData);
+        if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+      });
+      problemNodes.forEach((item: any) => {
+        const tabName = getErrRefTab(item, initData);
+        if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+      });
+      errors.forEach((err: any) => {
+        const tabName = err?.path?.split('.')[1];
+        if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+      });
+      formRefEdit.current
+        ?.validateFields()
+        .then(() => {})
+        .catch((err: any) => {
+          const errorFields = err?.errorFields ?? [];
+          errorFields.forEach((item: any) => {
+            const tabName = item?.name[0];
+            if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+          });
+        })
+        .finally(() => {
+          if (
+            unRuleVerificationData.length === 0 &&
+            nonExistentRefData.length === 0 &&
+            errTabNames.length === 0 &&
+            problemNodes.length === 0
+          ) {
+            message.success(
+              intl.formatMessage({
+                id: 'pages.button.check.success',
+                defaultMessage: 'Data check successfully!',
+              }),
+            );
+          } else {
+            if (errTabNames && errTabNames.length > 0) {
+              message.error(
+                errTabNames
+                  .map((tab: any) =>
+                    intl.formatMessage({
+                      id: `pages.flow.view.${tab}`,
+                      defaultMessage: tab,
+                    }),
+                  )
+                  .join('，') +
+                  '：' +
+                  intl.formatMessage({
+                    id: 'pages.button.check.error',
+                    defaultMessage: 'Data check failed!',
+                  }),
+              );
+            } else {
+              message.error(
+                intl.formatMessage({
+                  id: 'pages.button.check.error',
+                  defaultMessage: 'Data check failed!',
+                }),
+              );
+            }
+          }
+        });
     }
-
-    setRefCheckData([...unRuleVerificationData, ...nonExistentRefData]);
     setSpinning(false);
   };
   return (
@@ -245,9 +400,9 @@ const FlowsEdit: FC<Props> = ({
               <FormattedMessage id="pages.button.reset" defaultMessage="Reset" />
             </Button> */}
             <Button
-              onClick={() => {
+              onClick={async () => {
                 setShowRules(false);
-                formRefEdit.current?.submit();
+                await handleSubmit(true);
               }}
               type='primary'
             >
@@ -258,11 +413,7 @@ const FlowsEdit: FC<Props> = ({
       >
         <Spin spinning={spinning}>
           <UpdateReferenceContext.Provider value={{ referenceValue }}>
-            <RefCheckContext.Provider
-              value={{
-                refCheckData: [...parentRefCheckContext.refCheckData, ...refCheckData],
-              }}
-            >
+            <RefCheckContext.Provider value={refCheckContextValue}>
               <ProForm
                 formRef={formRefEdit}
                 initialValues={initData}
@@ -271,63 +422,7 @@ const FlowsEdit: FC<Props> = ({
                     return [];
                   },
                 }}
-                onFinish={async () => {
-                  const fieldsValue = formRefEdit.current?.getFieldsValue();
-                  const flowProperties = fromData?.flowProperties;
-                  // if (
-                  //   !flowProperties ||
-                  //   !flowProperties?.flowProperty ||
-                  //   flowProperties?.flowProperty?.length === 0
-                  // ) {
-                  //   message.error(
-                  //     intl.formatMessage({
-                  //       id: 'pages.flow.validator.flowProperties.required',
-                  //       defaultMessage: 'Please select flow properties',
-                  //     }),
-                  //   );
-                  //   return true;
-                  // } else if (
-                  //   flowProperties.flowProperty.filter((item: any) => item?.quantitativeReference)
-                  //     .length !== 1
-                  // ) {
-                  //   message.error(
-                  //     intl.formatMessage({
-                  //       id: 'pages.flow.validator.flowProperties.quantitativeReference.required',
-                  //       defaultMessage:
-                  //         'Flow property needs to have exactly one quantitative reference open',
-                  //     }),
-                  //   );
-                  //   return false;
-                  // }
-                  const updateResult = await updateFlows(id, version, {
-                    ...fieldsValue,
-                    flowProperties,
-                  });
-                  if (updateResult?.data) {
-                    if (updateResult?.data[0]?.rule_verification === true) {
-                      updateErrRef(null);
-                    } else {
-                      updateErrRef({
-                        id: id,
-                        version: version,
-                        ruleVerification: updateResult?.data[0]?.rule_verification,
-                        nonExistent: false,
-                      });
-                    }
-                    message.success(
-                      intl.formatMessage({
-                        id: 'pages.flows.editsuccess',
-                        defaultMessage: 'Edit successfully!',
-                      }),
-                    );
-                    setDrawerVisible(false);
-                    setActiveTabKey('flowInformation');
-                    actionRef?.current?.reload();
-                  } else {
-                    message.error(updateResult?.error?.message);
-                  }
-                  return true;
-                }}
+                onFinish={() => handleSubmit(true)}
                 onValuesChange={(_, allValues) => {
                   setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
                 }}

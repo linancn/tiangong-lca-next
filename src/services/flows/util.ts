@@ -570,7 +570,6 @@ export function genFlowPropertyTabTableData(data: any, lang: string) {
       }
       dataList = data;
     }
-
     return dataList?.map((item: any) => {
       return removeEmptyObjects({
         key: item?.['@dataSetInternalID'] ?? '-',

@@ -103,6 +103,7 @@ const ProcessExchangeEdit: FC<Props> = ({
       />
       <Drawer
         getContainer={() => document.body}
+        destroyOnClose={true}
         title={
           <FormattedMessage
             id='pages.process.exchange.drawer.title.edit'

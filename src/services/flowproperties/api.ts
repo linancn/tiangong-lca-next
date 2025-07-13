@@ -16,7 +16,7 @@ import { genFlowpropertyJsonOrdered } from './util';
 
 export async function createFlowproperties(id: string, data: any) {
   const newData = genFlowpropertyJsonOrdered(id, data);
-  const rule_verification = getRuleVerification(schema, newData);
+  const rule_verification = getRuleVerification(schema, newData)?.valid;
   // const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('flowproperties')
@@ -27,7 +27,7 @@ export async function createFlowproperties(id: string, data: any) {
 
 export async function updateFlowproperties(id: string, version: string, data: any) {
   const newData = genFlowpropertyJsonOrdered(id, data);
-  const rule_verification = getRuleVerification(schema, newData);
+  const rule_verification = getRuleVerification(schema, newData)?.valid;
 
   let result: any = {};
   const session = await supabase.auth.getSession();

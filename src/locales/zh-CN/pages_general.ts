@@ -30,6 +30,7 @@ export default {
   'pages.button.save': '保存',
   'pages.button.check': '数据校验',
   'pages.button.check.success': '数据校验成功!',
+  'pages.button.check.error': '数据校验失败,请检查数据!',
   'pages.button.review': '提交审核',
   'pages.button.select': '选择',
   'pages.button.reselect': '重选',
@@ -86,4 +87,5 @@ export default {
   'pages.table.filter.reviewed': '已审查',
 
   'pages.action.error': '操作失败',
+  'pages.review.underReview': '数据正在审核中，保存失败',
 };

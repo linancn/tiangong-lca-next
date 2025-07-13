@@ -234,7 +234,17 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
             sort,
           ) => {
             if (tgKeyWord.length > 0) {
-              return getFlowpropertyTablePgroongaSearch(params, lang, 'tg', tgKeyWord, {});
+              return getFlowpropertyTablePgroongaSearch(params, lang, 'tg', tgKeyWord, {}).then(
+                (res) => {
+                  return getUnitData('unitgroup', res?.data).then((unitRes: any) => {
+                    return {
+                      ...res,
+                      data: unitRes,
+                      success: true,
+                    };
+                  });
+                },
+              );
             }
             return getFlowpropertyTableAll(params, sort, lang, 'tg', []).then((res: any) => {
               return getUnitData('unitgroup', res?.data).then((unitRes: any) => {
@@ -284,7 +294,17 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
             sort,
           ) => {
             if (teKeyWord.length > 0) {
-              return getFlowpropertyTablePgroongaSearch(params, lang, 'te', teKeyWord, {});
+              return getFlowpropertyTablePgroongaSearch(params, lang, 'te', teKeyWord, {}).then(
+                (res) => {
+                  return getUnitData('unitgroup', res?.data).then((unitRes: any) => {
+                    return {
+                      ...res,
+                      data: unitRes,
+                      success: true,
+                    };
+                  });
+                },
+              );
             }
             return getFlowpropertyTableAll(params, sort, lang, 'te', []).then((res: any) => {
               return getUnitData('unitgroup', res?.data).then((unitRes: any) => {
@@ -337,7 +357,17 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
             sort,
           ) => {
             if (myKeyWord.length > 0) {
-              return getFlowpropertyTablePgroongaSearch(params, lang, 'my', myKeyWord, {});
+              return getFlowpropertyTablePgroongaSearch(params, lang, 'my', myKeyWord, {}).then(
+                (res) => {
+                  return getUnitData('unitgroup', res?.data).then((unitRes: any) => {
+                    return {
+                      ...res,
+                      data: unitRes,
+                      success: true,
+                    };
+                  });
+                },
+              );
             }
             return getFlowpropertyTableAll(params, sort, lang, 'my', []).then((res: any) => {
               return getUnitData('unitgroup', res?.data).then((unitRes: any) => {

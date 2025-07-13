@@ -34,7 +34,7 @@ const RequiredSelectFormTitle = ({
                 </span>
               );
             })}
-          {errRef && (
+          {!ruleErrorState && errRef && (
             <span style={{ color: token.colorError, marginLeft: '5px', fontWeight: 'normal' }}>
               {errRef?.ruleVerification === false ? (
                 <FormattedMessage

@@ -49,6 +49,14 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
   const [showRules, setShowRules] = useState<boolean>(false);
   const [refCheckData, setRefCheckData] = useState<any[]>([]);
   const parentRefCheckContext = useRefCheckContext();
+  const [refCheckContextValue, setRefCheckContextValue] = useState<any>({
+    refCheckData: [],
+  });
+  useEffect(() => {
+    setRefCheckContextValue({
+      refCheckData: [...parentRefCheckContext.refCheckData, ...refCheckData],
+    });
+  }, [refCheckData, parentRefCheckContext]);
   const intl = useIntl();
   let modelDetail: any;
 
@@ -105,6 +113,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
 
   useEffect(() => {
     if (!drawerVisible) {
+      setRefCheckContextValue({ refCheckData: [] });
       setShowRules(false);
       return;
     }
@@ -156,7 +165,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
 
     modelDetail = await getLifeCycleModelDetail(data.id, data.version);
     setShowRules(true);
-    const { checkResult, tabName } = checkRequiredFields(requiredFields, data ?? fromData);
+    const { checkResult } = checkRequiredFields(requiredFields, data ?? fromData);
 
     const userTeamId = await getUserTeamId();
 
@@ -220,7 +229,6 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
         setDrawerVisible(true);
         onReset();
       }
-      await setActiveTabKey(tabName);
       setTimeout(() => {
         formRefEdit.current?.validateFields();
       }, 200);
@@ -370,11 +378,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
       >
         <Spin spinning={spinning}>
           <UpdateReferenceContext.Provider value={{ referenceValue }}>
-            <RefCheckContext.Provider
-              value={{
-                refCheckData: [...parentRefCheckContext.refCheckData, ...refCheckData],
-              }}
-            >
+            <RefCheckContext.Provider value={refCheckContextValue}>
               <ProForm
                 formRef={formRefEdit}
                 initialValues={data}
