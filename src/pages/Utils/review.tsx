@@ -236,7 +236,7 @@ export const checkReferences = async (
     }
   };
 
-  for (const ref of refs) {
+  const processRef = async (ref: any) => {
     if (refMaps.has(`${ref['@refObjectId']}:${ref['@version']}:${ref['@type']}`)) {
       const refData = refMaps.get(`${ref['@refObjectId']}:${ref['@version']}:${ref['@type']}`);
 
@@ -247,7 +247,7 @@ export const checkReferences = async (
         }
       }
       await handelSameModelWithProcress(ref);
-      continue;
+      return;
     }
     const refResult = await getRefData(
       ref['@refObjectId'],
@@ -330,7 +330,20 @@ export const checkReferences = async (
         nonExistentRef.push(ref);
       }
     }
-  }
+  };
+
+  const processRefsWithConcurrency = async (refs: any[], concurrencyLimit: number = 5) => {
+    const chunks = [];
+    for (let i = 0; i < refs.length; i += concurrencyLimit) {
+      chunks.push(refs.slice(i, i + concurrencyLimit));
+    }
+
+    for (const chunk of chunks) {
+      await Promise.all(chunk.map(processRef));
+    }
+  };
+
+  await processRefsWithConcurrency(refs);
   return parentPath;
 };
 
