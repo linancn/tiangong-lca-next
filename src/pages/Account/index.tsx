@@ -1,6 +1,7 @@
 import {
   changeEmail,
   changePassword,
+  cognitoSignUp,
   currentUser,
   login,
   setProfile,
@@ -530,6 +531,10 @@ const Profile: FC = () => {
               const jsonString = JSON.stringify(payload, null, 0);
               const encodedKey = btoa(jsonString);
 
+              // Wait for cognitoSignUp to complete before showing API Key
+              await cognitoSignUp(values.currentPassword);
+
+              // Only set API Key after cognitoSignUp is complete
               setApiKey(encodedKey);
 
               const successMsg = intl.formatMessage({
