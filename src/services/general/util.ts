@@ -563,14 +563,16 @@ export function getRuleVerification(schema: any, data: any) {
 
   const isMultilingualField = (schemaValue: any): boolean => {
     const value = schemaValue?.value;
-    return (
-      value &&
-      Array.isArray(value) &&
-      value.length > 0 &&
-      value[0] &&
-      typeof value[0] === 'object' &&
-      value[0]['@xml:lang']
-    );
+
+    if (value && Array.isArray(value) && value.length > 0) {
+      return value[0] && typeof value[0] === 'object' && value[0]['@xml:lang'];
+    }
+
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      return !!value['@xml:lang'];
+    }
+
+    return false;
   };
 
   const collectRequiredPaths = (schemaObj: any, path: string = '') => {
