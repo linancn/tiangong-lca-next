@@ -107,9 +107,6 @@ const RejectReview: React.FC<RejectReviewProps> = ({
     };
 
     const processRef = async (ref: any) => {
-      if (ref['@refObjectId'] === '2f1b6fc4-7ebe-445d-ad66-e90e2ef2bb34') {
-        console.log('ref', ref);
-      }
       if (refMaps.has(`${ref['@refObjectId']}:${ref['@version']}:${ref['@type']}`)) {
         await handelSameModelWithProcress(ref);
         return;
