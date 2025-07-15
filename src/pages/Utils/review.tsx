@@ -396,29 +396,62 @@ export const updateReviewsAfterCheckData = async (teamId: string, data: any, rev
 };
 
 export const updateUnReviewToUnderReview = async (unReview: refDataType[], reviewId: string) => {
-  for (const item of unReview) {
-    const oldReviews = await getReviewsOfData(
-      item['@refObjectId'],
-      item['@version'],
-      getRefTableName(item['@type']),
-    );
-    const updateData = {
-      state_code: 20,
-      reviews: [
-        ...oldReviews,
-        {
-          key: oldReviews?.length,
-          id: reviewId,
-        },
-      ],
-    };
-    await updateDateToReviewState(
-      item['@refObjectId'],
-      item['@version'],
-      getRefTableName(item['@type']),
-      updateData,
-    );
+  const concurrencyLimit = 5;
+  const pendingRequests = new Set<Promise<any>>();
+  const queue = [...unReview];
+  const results: any[] = [];
+
+  const processItem = async (item: refDataType) => {
+    try {
+      const oldReviews = await getReviewsOfData(
+        item['@refObjectId'],
+        item['@version'],
+        getRefTableName(item['@type']),
+      );
+      const updateData = {
+        state_code: 20,
+        reviews: [
+          ...oldReviews,
+          {
+            key: oldReviews?.length,
+            id: reviewId,
+          },
+        ],
+      };
+      const result = await updateDateToReviewState(
+        item['@refObjectId'],
+        item['@version'],
+        getRefTableName(item['@type']),
+        updateData,
+      );
+      return { success: true, result, item };
+    } catch (error) {
+      return { success: false, error, item };
+    }
+  };
+
+  const addNextRequest = () => {
+    if (queue.length > 0 && pendingRequests.size < concurrencyLimit) {
+      const item = queue.shift()!;
+      const requestPromise = processItem(item).then((result) => {
+        results.push(result);
+        pendingRequests.delete(requestPromise);
+        addNextRequest();
+        return result;
+      });
+      pendingRequests.add(requestPromise);
+    }
+  };
+
+  for (let i = 0; i < Math.min(concurrencyLimit, unReview.length); i++) {
+    addNextRequest();
   }
+
+  while (pendingRequests.size > 0) {
+    await Promise.race(pendingRequests);
+  }
+
+  return results;
 };
 
 const checkValidationFields = (data: any) => {
