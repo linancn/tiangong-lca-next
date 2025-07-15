@@ -557,7 +557,14 @@ export function getDataSource(pathname: string) {
 }
 
 export function getRuleVerification(schema: any, data: any) {
-  const result: any = { valid: true, errors: [] };
+  const result: {
+    valid: boolean;
+    errors: {
+      path: string;
+      message: string;
+      rule: string;
+    }[];
+  } = { valid: true, errors: [] };
   const requiredPaths: Array<{ path: string; rule: any }> = [];
   const multilingualPaths: Array<{ path: string; rule: any }> = [];
 
