@@ -588,6 +588,12 @@ export function getRuleVerification(schema: any, data: any) {
     Object.keys(schemaObj).forEach((key) => {
       const currentPath = path ? `${path}.${key}` : key;
       const schemaValue = schemaObj[key];
+      if (
+        path.includes('modellingAndValidation.validation.review') ||
+        path.includes('modellingAndValidation.complianceDeclarations.compliance')
+      ) {
+        return;
+      }
 
       if (schemaValue?.rules) {
         const requiredRule = schemaValue.rules.find((rule: any) => rule.required);
@@ -783,11 +789,7 @@ export function getRuleVerification(schema: any, data: any) {
       }
     }
 
-    if (
-      isEmpty(value) &&
-      !path.includes('modellingAndValidation.validation.review') &&
-      !path.includes('modellingAndValidation.complianceDeclarations.compliance')
-    ) {
+    if (isEmpty(value)) {
       result.valid = false;
       result.errors.push({
         path,

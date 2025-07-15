@@ -4,6 +4,59 @@ import { addReviewsApi } from '@/services/reviews/api';
 import { getTeamMessageApi } from '@/services/teams/api';
 import { getUsersByIds } from '@/services/users/api';
 
+export class ConcurrencyController {
+  private maxConcurrency: number;
+  private running: number = 0;
+  private queue: (() => Promise<any>)[] = [];
+
+  constructor(maxConcurrency: number = 5) {
+    this.maxConcurrency = maxConcurrency;
+  }
+
+  async add<T>(task: () => Promise<T>): Promise<T> {
+    let outerResolve: (value: T | PromiseLike<T>) => void = () => {};
+    let outerReject: (reason?: any) => void = () => {};
+
+    const promise = new Promise<T>((resolve, reject) => {
+      outerResolve = resolve;
+      outerReject = reject;
+    });
+
+    const wrappedTask = async () => {
+      try {
+        const result = await task();
+        outerResolve(result);
+      } catch (error) {
+        outerReject(error);
+      } finally {
+        this.running--;
+        this.processQueue();
+      }
+    };
+    this.queue.push(wrappedTask);
+    this.processQueue();
+    return promise;
+  }
+
+  private processQueue() {
+    while (this.running < this.maxConcurrency && this.queue.length > 0) {
+      const task = this.queue.shift();
+      if (task) {
+        this.running++;
+        task();
+      }
+    }
+  }
+
+  async waitForAll(): Promise<void> {
+    while (this.running > 0 || this.queue.length > 0) {
+      await new Promise<void>((resolve) => {
+        setTimeout(() => resolve(), 10);
+      });
+    }
+  }
+}
+
 function get(obj: any, path: string, defaultValue?: any): any {
   if (!obj || typeof obj !== 'object') {
     return defaultValue;
@@ -332,18 +385,13 @@ export const checkReferences = async (
     }
   };
 
-  const processRefsWithConcurrency = async (refs: any[], concurrencyLimit: number = 5) => {
-    const chunks = [];
-    for (let i = 0; i < refs.length; i += concurrencyLimit) {
-      chunks.push(refs.slice(i, i + concurrencyLimit));
-    }
+  const controller = new ConcurrencyController(5);
 
-    for (const chunk of chunks) {
-      await Promise.all(chunk.map(processRef));
-    }
-  };
+  for (const ref of refs) {
+    controller.add(() => processRef(ref));
+  }
 
-  await processRefsWithConcurrency(refs);
+  await controller.waitForAll();
   return parentPath;
 };
 
@@ -396,9 +444,7 @@ export const updateReviewsAfterCheckData = async (teamId: string, data: any, rev
 };
 
 export const updateUnReviewToUnderReview = async (unReview: refDataType[], reviewId: string) => {
-  const concurrencyLimit = 5;
-  const pendingRequests = new Set<Promise<any>>();
-  const queue = [...unReview];
+  const controller = new ConcurrencyController(5);
   const results: any[] = [];
 
   const processItem = async (item: refDataType) => {
@@ -430,27 +476,15 @@ export const updateUnReviewToUnderReview = async (unReview: refDataType[], revie
     }
   };
 
-  const addNextRequest = () => {
-    if (queue.length > 0 && pendingRequests.size < concurrencyLimit) {
-      const item = queue.shift()!;
-      const requestPromise = processItem(item).then((result) => {
-        results.push(result);
-        pendingRequests.delete(requestPromise);
-        addNextRequest();
-        return result;
-      });
-      pendingRequests.add(requestPromise);
-    }
-  };
-
-  for (let i = 0; i < Math.min(concurrencyLimit, unReview.length); i++) {
-    addNextRequest();
+  for (const item of unReview) {
+    controller.add(async () => {
+      const result = await processItem(item);
+      results.push(result);
+      return result;
+    });
   }
 
-  while (pendingRequests.size > 0) {
-    await Promise.race(pendingRequests);
-  }
-
+  await controller.waitForAll();
   return results;
 };
 

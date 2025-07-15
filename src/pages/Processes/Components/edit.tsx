@@ -27,17 +27,6 @@ import { v4 } from 'uuid';
 import schema from '../processes_schema.json';
 import { ProcessForm } from './form';
 
-const modifiedSchema = {
-  ...schema,
-};
-
-if ('validation' in modifiedSchema.processDataSet.modellingAndValidation) {
-  delete (modifiedSchema.processDataSet.modellingAndValidation as any).validation;
-}
-if ('complianceDeclarations' in modifiedSchema.processDataSet.modellingAndValidation) {
-  delete (modifiedSchema.processDataSet.modellingAndValidation as any).complianceDeclarations;
-}
-
 type Props = {
   id: string;
   version: string;
@@ -216,10 +205,7 @@ const ProcessEdit: FC<Props> = ({
   const handleCheckData = async (processDetail: any) => {
     setSpinning(true);
     setShowRules(true);
-    let { valid, errors } = getRuleVerification(
-      modifiedSchema,
-      genProcessJsonOrdered(id, processDetail),
-    );
+    let { valid, errors } = getRuleVerification(schema, genProcessJsonOrdered(id, processDetail));
     if (!valid) {
       setTimeout(() => {
         formRefEdit.current?.validateFields();
@@ -399,6 +385,10 @@ const ProcessEdit: FC<Props> = ({
           defaultMessage: 'Submit review failed',
         }),
       );
+      setSpinning(false);
+      return;
+    }
+    if (!updateResult.data) {
       setSpinning(false);
       return;
     }
