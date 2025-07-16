@@ -184,6 +184,19 @@ export async function cognitoSignUp(password: string) {
   }
 }
 
+export async function cognitoChangePassword(password: string) {
+  const session = await supabase.auth.getSession();
+  if (session.data.session) {
+    await supabase.functions.invoke('change_password_cognito', {
+      headers: {
+        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+      },
+      body: { password },
+      region: FunctionRegion.UsEast1,
+    });
+  }
+}
+
 /** 此处后端没有提供注释 GET /api/notices */
 export async function getNotices(options?: { [key: string]: any }) {
   return request<API.NoticeIconList>('/api/notices', {
