@@ -88,4 +88,5 @@ export default {
 
   'pages.action.error': '操作失败',
   'pages.review.underReview': '数据正在审核中，保存失败',
+  'pages.review.openData': '此数据为开放数据，保存失败',
 };

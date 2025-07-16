@@ -4,6 +4,59 @@ import { addReviewsApi } from '@/services/reviews/api';
 import { getTeamMessageApi } from '@/services/teams/api';
 import { getUsersByIds } from '@/services/users/api';
 
+export class ConcurrencyController {
+  private maxConcurrency: number;
+  private running: number = 0;
+  private queue: (() => Promise<any>)[] = [];
+
+  constructor(maxConcurrency: number = 5) {
+    this.maxConcurrency = maxConcurrency;
+  }
+
+  async add<T>(task: () => Promise<T>): Promise<T> {
+    let outerResolve: (value: T | PromiseLike<T>) => void = () => {};
+    let outerReject: (reason?: any) => void = () => {};
+
+    const promise = new Promise<T>((resolve, reject) => {
+      outerResolve = resolve;
+      outerReject = reject;
+    });
+
+    const wrappedTask = async () => {
+      try {
+        const result = await task();
+        outerResolve(result);
+      } catch (error) {
+        outerReject(error);
+      } finally {
+        this.running--;
+        this.processQueue();
+      }
+    };
+    this.queue.push(wrappedTask);
+    this.processQueue();
+    return promise;
+  }
+
+  private processQueue() {
+    while (this.running < this.maxConcurrency && this.queue.length > 0) {
+      const task = this.queue.shift();
+      if (task) {
+        this.running++;
+        task();
+      }
+    }
+  }
+
+  async waitForAll(): Promise<void> {
+    while (this.running > 0 || this.queue.length > 0) {
+      await new Promise<void>((resolve) => {
+        setTimeout(() => resolve(), 10);
+      });
+    }
+  }
+}
+
 function get(obj: any, path: string, defaultValue?: any): any {
   if (!obj || typeof obj !== 'object') {
     return defaultValue;
@@ -236,7 +289,7 @@ export const checkReferences = async (
     }
   };
 
-  for (const ref of refs) {
+  const processRef = async (ref: any) => {
     if (refMaps.has(`${ref['@refObjectId']}:${ref['@version']}:${ref['@type']}`)) {
       const refData = refMaps.get(`${ref['@refObjectId']}:${ref['@version']}:${ref['@type']}`);
 
@@ -247,7 +300,7 @@ export const checkReferences = async (
         }
       }
       await handelSameModelWithProcress(ref);
-      continue;
+      return;
     }
     const refResult = await getRefData(
       ref['@refObjectId'],
@@ -330,7 +383,15 @@ export const checkReferences = async (
         nonExistentRef.push(ref);
       }
     }
+  };
+
+  const controller = new ConcurrencyController(5);
+
+  for (const ref of refs) {
+    controller.add(() => processRef(ref));
   }
+
+  await controller.waitForAll();
   return parentPath;
 };
 
@@ -383,29 +444,48 @@ export const updateReviewsAfterCheckData = async (teamId: string, data: any, rev
 };
 
 export const updateUnReviewToUnderReview = async (unReview: refDataType[], reviewId: string) => {
+  const controller = new ConcurrencyController(5);
+  const results: any[] = [];
+
+  const processItem = async (item: refDataType) => {
+    try {
+      const oldReviews = await getReviewsOfData(
+        item['@refObjectId'],
+        item['@version'],
+        getRefTableName(item['@type']),
+      );
+      const updateData = {
+        state_code: 20,
+        reviews: [
+          ...oldReviews,
+          {
+            key: oldReviews?.length,
+            id: reviewId,
+          },
+        ],
+      };
+      const result = await updateDateToReviewState(
+        item['@refObjectId'],
+        item['@version'],
+        getRefTableName(item['@type']),
+        updateData,
+      );
+      return { success: true, result, item };
+    } catch (error) {
+      return { success: false, error, item };
+    }
+  };
+
   for (const item of unReview) {
-    const oldReviews = await getReviewsOfData(
-      item['@refObjectId'],
-      item['@version'],
-      getRefTableName(item['@type']),
-    );
-    const updateData = {
-      state_code: 20,
-      reviews: [
-        ...oldReviews,
-        {
-          key: oldReviews?.length,
-          id: reviewId,
-        },
-      ],
-    };
-    await updateDateToReviewState(
-      item['@refObjectId'],
-      item['@version'],
-      getRefTableName(item['@type']),
-      updateData,
-    );
+    controller.add(async () => {
+      const result = await processItem(item);
+      results.push(result);
+      return result;
+    });
   }
+
+  await controller.waitForAll();
+  return results;
 };
 
 const checkValidationFields = (data: any) => {

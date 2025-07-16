@@ -177,7 +177,14 @@ const SourceEdit: FC<Props> = ({
       if (autoClose) setDrawerVisible(false);
       reload();
     } else {
-      if (result?.error?.message === 'The data is under review.') {
+      if (result?.error?.state_code === 100) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.review.openData',
+            defaultMessage: 'This data is open data, save failed',
+          }),
+        );
+      } else if (result?.error?.state_code === 20) {
         message.error(
           intl.formatMessage({
             id: 'pages.review.underReview',

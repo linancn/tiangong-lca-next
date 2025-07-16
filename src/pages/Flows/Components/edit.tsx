@@ -176,7 +176,14 @@ const FlowsEdit: FC<Props> = ({
       setActiveTabKey('flowInformation');
       actionRef?.current?.reload();
     } else {
-      if (updateResult?.error?.message === 'The data is under review.') {
+      if (updateResult?.error?.state_code === 100) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.review.openData',
+            defaultMessage: 'This data is open data, save failed',
+          }),
+        );
+      } else if (updateResult?.error?.state_code === 20) {
         message.error(
           intl.formatMessage({
             id: 'pages.review.underReview',

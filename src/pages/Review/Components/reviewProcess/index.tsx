@@ -1,6 +1,6 @@
 // import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 
-import { getAllRefObj, getRefTableName } from '@/pages/Utils/review';
+import { ConcurrencyController, getAllRefObj, getRefTableName } from '@/pages/Utils/review';
 import { getCommentApi, updateCommentApi } from '@/services/comments/api';
 import { getRefData, updateStateCodeApi } from '@/services/general/api';
 import { getProcessDetail, updateProcessApi } from '@/services/processes/api';
@@ -116,6 +116,7 @@ const ReviewProcessDetail: FC<Props> = ({
 
   const updateReviewDataToPublic = async (id: string, version: string) => {
     const result = [];
+    const controller = new ConcurrencyController(5);
     const { data: process, success } = await getProcessDetail(id, version);
     if (success) {
       await updateProcessJson(process);
@@ -130,40 +131,48 @@ const ReviewProcessDetail: FC<Props> = ({
       const refs = getAllRefObj(process?.json);
       if (refs.length) {
         const teamId = await getUserTeamId();
-        const getReferences = async (refs: any[], checkedIds = new Set<string>()) => {
+        const getReferences = (refs: any[], checkedIds = new Set<string>()) => {
           for (const ref of refs) {
             if (checkedIds.has(ref['@refObjectId'])) continue;
             checkedIds.add(ref['@refObjectId']);
 
-            const refResult = await getRefData(
-              ref['@refObjectId'],
-              ref['@version'],
-              getRefTableName(ref['@type']),
-              teamId,
-            );
+            controller.add(async () => {
+              const refResult = await getRefData(
+                ref['@refObjectId'],
+                ref['@version'],
+                getRefTableName(ref['@type']),
+                teamId,
+              );
 
-            if (refResult.success) {
-              const refData = refResult?.data;
-              if (refData?.stateCode !== 100 && refData?.stateCode !== 200) {
-                result.push(ref);
+              if (refResult.success) {
+                const refData = refResult?.data;
+                if (refData?.stateCode !== 100 && refData?.stateCode !== 200) {
+                  result.push(ref);
+                }
+                const json = refData?.json;
+                const subRefs = getAllRefObj(json);
+                if (subRefs.length) {
+                  getReferences(subRefs, checkedIds);
+                }
               }
-              const json = refData?.json;
-              const subRefs = getAllRefObj(json);
-              await getReferences(subRefs, checkedIds);
-            }
+            });
           }
         };
-        await getReferences(refs);
+        getReferences(refs);
+        await controller.waitForAll();
       }
     }
     for (const item of result) {
-      await updateStateCodeApi(
-        item['@refObjectId'] ?? '',
-        item['@version'] ?? '',
-        getRefTableName(item['@type'] ?? ''),
-        100,
-      );
+      controller.add(async () => {
+        await updateStateCodeApi(
+          item['@refObjectId'] ?? '',
+          item['@version'] ?? '',
+          getRefTableName(item['@type'] ?? ''),
+          100,
+        );
+      });
     }
+    await controller.waitForAll();
   };
 
   const temporarySave = async () => {
