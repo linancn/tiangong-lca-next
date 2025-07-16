@@ -89,4 +89,5 @@ export default {
 
   'pages.action.error': 'Action failed',
   'pages.review.underReview': 'Data is under review, save failed',
+  'pages.review.openData': 'This data is open data, save failed',
 };
