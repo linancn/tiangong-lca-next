@@ -9,7 +9,7 @@ export async function getUserTeamId() {
   const { data } = await supabase
     .from('roles')
     .select(
-      ` 
+      `
       user_id,
       team_id,
       role
@@ -100,7 +100,7 @@ export async function getTeamInvitationStatusApi() {
       .select('*')
       .eq('user_id', userResult.user.id)
       .neq('team_id', '00000000-0000-0000-0000-000000000000')
-      .single();
+      .maybeSingle();
 
     if (roleError) {
       return {
@@ -228,7 +228,7 @@ export async function getSystemUserRoleApi() {
       .select('user_id,role')
       .eq('user_id', session?.data?.session?.user?.id)
       .eq('team_id', '00000000-0000-0000-0000-000000000000')
-      .single();
+      .maybeSingle();
 
     if (error) {
       throw error;
@@ -328,7 +328,7 @@ export async function getReviewUserRoleApi() {
       .eq('user_id', session?.data?.session?.user?.id)
       .eq('team_id', '00000000-0000-0000-0000-000000000000')
       .in('role', ['review-admin', 'review-member'])
-      .single();
+      .maybeSingle();
 
     if (error) {
       throw error;
