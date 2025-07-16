@@ -110,7 +110,7 @@ export async function changePassword(body: any, options?: { [key: string]: any }
 export async function changeEmail(body: any, options?: { [key: string]: any }) {
   if (body.email !== null) {
     const { error } = await supabase.auth.updateUser({
-      email: body.confirmNewEmail ?? '',
+      email: body.newEmail ?? '',
     });
     if (error) {
       return {
@@ -192,6 +192,19 @@ export async function cognitoChangePassword(password: string) {
         Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
       },
       body: { password },
+      region: FunctionRegion.UsEast1,
+    });
+  }
+}
+
+export async function cognitoChangeEmail(newEmail: string) {
+  const session = await supabase.auth.getSession();
+  if (session.data.session) {
+    await supabase.functions.invoke('change_email_cognito', {
+      headers: {
+        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+      },
+      body: { newEmail },
       region: FunctionRegion.UsEast1,
     });
   }

@@ -1,6 +1,7 @@
 import {
   changeEmail,
   changePassword,
+  cognitoChangeEmail,
   cognitoChangePassword,
   cognitoSignUp,
   currentUser,
@@ -368,6 +369,7 @@ const Profile: FC = () => {
         onFinish={async (value) => {
           setSpinning(true);
           try {
+            await cognitoChangeEmail(value.newEmail);
             const msg = await changeEmail(value);
             if (msg.status === 'ok') {
               formRefEdit.current?.resetFields();
