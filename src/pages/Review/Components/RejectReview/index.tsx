@@ -75,9 +75,10 @@ const RejectReview: React.FC<RejectReviewProps> = ({
     refMaps: Map<string, any>,
     userTeamId: string,
     underReview: refDataType[],
+    requestKeysSet?: Set<string>,
   ): Promise<undefined> => {
     const controller = new ConcurrencyController(5);
-
+    const requestKeys = requestKeysSet || new Set<string>();
     const handelSameModelWithProcress = async (ref: refDataType) => {
       if (ref['@type'] === 'process data set') {
         const { data: sameModelWithProcress, success } = await getLifeCycleModelDetail(
@@ -101,7 +102,7 @@ const RejectReview: React.FC<RejectReviewProps> = ({
             });
           }
           const modelRefs = getAllRefObj(sameModelWithProcress);
-          await getUnderReviewReferences(modelRefs, refMaps, userTeamId, underReview);
+          await getUnderReviewReferences(modelRefs, refMaps, userTeamId, underReview, requestKeys);
         }
       }
     };
@@ -130,7 +131,13 @@ const RejectReview: React.FC<RejectReviewProps> = ({
             )
           ) {
             underReview.push(ref);
-            await getUnderReviewReferences(getAllRefObj(refData), refMaps, userTeamId, underReview);
+            await getUnderReviewReferences(
+              getAllRefObj(refData),
+              refMaps,
+              userTeamId,
+              underReview,
+              requestKeys,
+            );
           }
         }
         await handelSameModelWithProcress(ref);
@@ -138,7 +145,11 @@ const RejectReview: React.FC<RejectReviewProps> = ({
     };
 
     for (const ref of refs) {
-      controller.add(() => processRef(ref));
+      const key = `${ref['@refObjectId']}:${ref['@version']}:${ref['@type']}`;
+      if (!requestKeys.has(key)) {
+        requestKeys.add(key);
+        controller.add(() => processRef(ref));
+      }
     }
 
     await controller.waitForAll();
