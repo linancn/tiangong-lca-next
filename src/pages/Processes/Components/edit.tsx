@@ -304,7 +304,7 @@ const ProcessEdit: FC<Props> = ({
       }
       valid = false;
       setSpinning(false);
-      // return { checkResult, unReview };
+      return { checkResult: valid, unReview };
     }
 
     if (processDetail.stateCode >= 20) {
