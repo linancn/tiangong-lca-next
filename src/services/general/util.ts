@@ -557,8 +557,30 @@ export function getDataSource(pathname: string) {
 }
 
 export function getRuleVerification(schema: any, data: any) {
-  const result: any = { valid: true, errors: [] };
+  const result: {
+    valid: boolean;
+    errors: {
+      path: string;
+      message: string;
+      rule: string;
+    }[];
+  } = { valid: true, errors: [] };
   const requiredPaths: Array<{ path: string; rule: any }> = [];
+  const multilingualPaths: Array<{ path: string; rule: any }> = [];
+
+  const isMultilingualField = (schemaValue: any): boolean => {
+    const value = schemaValue?.value;
+
+    if (value && Array.isArray(value) && value.length > 0) {
+      return value[0] && typeof value[0] === 'object' && value[0]['@xml:lang'];
+    }
+
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      return !!value['@xml:lang'];
+    }
+
+    return false;
+  };
 
   const collectRequiredPaths = (schemaObj: any, path: string = '') => {
     if (!schemaObj || typeof schemaObj !== 'object') return;
@@ -566,16 +588,30 @@ export function getRuleVerification(schema: any, data: any) {
     Object.keys(schemaObj).forEach((key) => {
       const currentPath = path ? `${path}.${key}` : key;
       const schemaValue = schemaObj[key];
+      if (
+        path.includes('modellingAndValidation.validation.review') ||
+        path.includes('modellingAndValidation.complianceDeclarations.compliance')
+      ) {
+        return;
+      }
 
-      if (schemaValue && schemaValue.rules) {
-        const rules = schemaValue.rules;
-        for (const rule of rules) {
-          if (rule.required) {
-            requiredPaths.push({
+      if (schemaValue?.rules) {
+        const requiredRule = schemaValue.rules.find((rule: any) => rule.required);
+
+        if (requiredRule) {
+          requiredPaths.push({
+            path: currentPath,
+            rule: requiredRule,
+          });
+
+          if (isMultilingualField(schemaValue)) {
+            multilingualPaths.push({
               path: currentPath,
-              rule: rule,
+              rule: {
+                messageKey: 'validator.lang.mustBeEnglish',
+                defaultMessage: 'English is a required language',
+              },
             });
-            break;
           }
         }
       }
@@ -617,6 +653,22 @@ export function getRuleVerification(schema: any, data: any) {
     if (typeof value === 'string' && value.trim() === '') return true;
     if (Array.isArray(value) && value.length === 0) return true;
     if (typeof value === 'object' && Object.keys(value).length === 0) return true;
+    return false;
+  };
+
+  const hasEnglishEntry = (value: any) => {
+    if (!value) return false;
+
+    if (Array.isArray(value)) {
+      return value.some(
+        (item: any) => item && typeof item === 'object' && item['@xml:lang'] === 'en',
+      );
+    }
+
+    if (typeof value === 'object' && value['@xml:lang'] === 'en') {
+      return true;
+    }
+
     return false;
   };
 
@@ -737,16 +789,29 @@ export function getRuleVerification(schema: any, data: any) {
       }
     }
 
-    if (
-      isEmpty(value) &&
-      !path.includes('modellingAndValidation.validation.review') &&
-      !path.includes('modellingAndValidation.complianceDeclarations.compliance')
-    ) {
+    if (isEmpty(value)) {
       result.valid = false;
       result.errors.push({
         path,
         message: rule.defaultMessage || rule.messageKey,
         rule: 'required',
+      });
+    }
+  });
+
+  multilingualPaths.forEach(({ path, rule }) => {
+    let value = getValueByPath(data, path);
+
+    if (value && typeof value === 'object' && value.value !== undefined) {
+      value = value.value;
+    }
+
+    if (!hasEnglishEntry(value)) {
+      result.valid = false;
+      result.errors.push({
+        path,
+        message: rule.defaultMessage,
+        rule: 'english_required',
       });
     }
   });
