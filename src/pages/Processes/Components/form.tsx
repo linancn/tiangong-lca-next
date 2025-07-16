@@ -10,11 +10,14 @@ import { getRules } from '@/pages/Utils';
 import { getFlowStateCodeByIdsAndVersions } from '@/services/flows/api';
 import { ListPagination } from '@/services/general/data';
 import { getUnitData } from '@/services/general/util';
+import { LCIAResultTable } from '@/services/lciaMethods/data';
 import { getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData } from '@/services/processes/util';
+import { CalculatorOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
-import { Card, Collapse, Divider, Form, Input, Select, Space, theme } from 'antd';
+import { Button, Card, Collapse, Divider, Form, Input, Select, Space, theme, Tooltip } from 'antd';
+import pako from 'pako';
 import { useEffect, useRef, useState, type FC } from 'react';
 import { FormattedMessage } from 'umi';
 import schema from '../processes_schema.json';
@@ -66,6 +69,7 @@ export const ProcessForm: FC<Props> = ({
   const refCheckContext = useRefCheckContext();
   const actionRefExchangeTableInput = useRef<ActionType>();
   const actionRefExchangeTableOutput = useRef<ActionType>();
+  const actionRefLciaResultTable = useRef<ActionType>();
   const [baseNameError, setBaseNameError] = useState(false);
   const [treatmentStandardsRoutesError, setTreatmentStandardsRoutesError] = useState(false);
   const [mixAndLocationTypesError, setMixAndLocationTypesError] = useState(false);
@@ -77,6 +81,9 @@ export const ProcessForm: FC<Props> = ({
     useState(false);
   const [intendedApplicationsError, setIntendedApplicationsError] = useState(false);
   const [generalCommentError, setGeneralCommentError] = useState(false);
+
+  const [lciaResultDataSource, setLciaResultDataSource] = useState<LCIAResultTable[]>([]);
+
   const { token } = theme.useToken();
   const tabList = [
     {
@@ -109,6 +116,10 @@ export const ProcessForm: FC<Props> = ({
     {
       key: 'exchanges',
       tab: <FormattedMessage id='pages.process.view.exchanges' defaultMessage='Exchanges' />,
+    },
+    {
+      key: 'lciaResults',
+      tab: <FormattedMessage id='pages.process.view.lciaresults' defaultMessage='LCIA Results' />,
     },
     {
       key: 'validation',
@@ -159,6 +170,52 @@ export const ProcessForm: FC<Props> = ({
           </Space>,
         ];
       },
+    },
+  ];
+  const lciaResultColumns: ProColumns<LCIAResultTable>[] = [
+    {
+      title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
+      dataIndex: 'index',
+      valueType: 'index',
+      search: false,
+    },
+    {
+      title: (
+        <FormattedMessage
+          id='pages.process.view.lciaresults.shortDescription'
+          defaultMessage='LCIA'
+        />
+      ),
+      dataIndex: 'Name',
+      search: false,
+      render: (_, row) => {
+        return [
+          <Tooltip key={0} placement='topLeft' title={row.generalComment}>
+            {row.shortDescription}
+          </Tooltip>,
+        ];
+      },
+    },
+
+    {
+      title: (
+        <FormattedMessage
+          id='pages.process.view.lciaresults.meanAmount'
+          defaultMessage='Mean amount'
+        />
+      ),
+      dataIndex: 'meanAmount',
+      search: false,
+    },
+    {
+      title: (
+        <FormattedMessage
+          id='pages.process.view.lciaresults.referenceToLCIAMethodDataSetVersion'
+          defaultMessage='Reference to LCIA method data set version'
+        />
+      ),
+      dataIndex: 'Version',
+      search: false,
     },
   ];
   const tabContent: { [key: string]: JSX.Element } = {
@@ -1978,6 +2035,77 @@ export const ProcessForm: FC<Props> = ({
         />
       </>
     ),
+    lciaResults: (
+      <ProTable<LCIAResultTable, ListPagination>
+        actionRef={actionRefLciaResultTable}
+        search={false}
+        toolBarRender={() => [
+          <Button
+            size={'middle'}
+            type='text'
+            key='calculator'
+            icon={<CalculatorOutlined />}
+            onClick={async () => {
+              let lciaResults = [];
+              try {
+                const response = await fetch('/lciamethods/list.json');
+                if (response.ok) {
+                  const listData = await response.json();
+                  for (const file of listData.files) {
+                    try {
+                      const gzResponse = await fetch(`/lciamethods/${file.filename}`);
+                      if (gzResponse.ok) {
+                        const gzArrayBuffer = await gzResponse.arrayBuffer();
+                        const decompressed = pako.inflate(new Uint8Array(gzArrayBuffer), {
+                          to: 'string',
+                        });
+                        const jsonData = JSON.parse(decompressed);
+                        const factors =
+                          jsonData?.LCIAMethodDataSet?.characterisationFactors?.factor || [];
+                        let sumLCIA = 0;
+                        exchangeDataSource.forEach((exchange: any) => {
+                          const factor = factors.find((f: any) => {
+                            return (
+                              String(f.exchangeDirection || '').toLowerCase() ===
+                                String(exchange.exchangeDirection || '').toLowerCase() &&
+                              f.referenceToFlowDataSet?.['@refObjectId'] ===
+                                exchange.referenceToFlowDataSet?.['@refObjectId']
+                              //  && f.referenceToFlowDataSet?.['@version'] === exchange.referenceToFlowDataSet?.['@version']
+                            );
+                          });
+                          if (factor) {
+                            const exchangeAmount = exchange.meanAmount || 0;
+                            const factorValue = factor.meanValue || 0;
+                            sumLCIA += exchangeAmount * factorValue;
+                          }
+                          console.log('Processing exchange:', exchange);
+                          console.log('Found factor:', factor);
+                        });
+                        if (sumLCIA !== 0) {
+                          const lciaResult = {};
+                          lciaResults.push(lciaResult);
+                        }
+                      } else {
+                        //
+                      }
+                    } catch (fileError) {
+                      //
+                    }
+                  }
+                } else {
+                  console.error('Failed to load LCIA methods list:', response.status);
+                }
+              } catch (error) {
+                console.error('Error in LCIA methods processing:', error);
+              }
+              setLciaResultDataSource([]);
+            }}
+          />,
+        ]}
+        dataSource={lciaResultDataSource}
+        columns={lciaResultColumns}
+      />
+    ),
     validation: (
       <ReveiwItemForm
         showRules={showRules}
@@ -2002,6 +2130,10 @@ export const ProcessForm: FC<Props> = ({
     actionRefExchangeTableInput.current?.reload();
     actionRefExchangeTableOutput.current?.reload();
   }, [exchangeDataSource]);
+
+  useEffect(() => {
+    actionRefLciaResultTable.current?.reload();
+  }, [lciaResultDataSource]);
 
   return (
     <Card

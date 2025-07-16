@@ -155,6 +155,10 @@ export default {
   'pages.process.view.administrativeInformation.accessRestrictions': '访问和使用限制',
 
   'pages.process.view.exchanges': '输入/输出',
+  'pages.process.view.lciaresults': 'LCIA 结果',
+  'pages.process.view.lciaresults.shortDescription': 'LCIA',
+  'pages.process.view.lciaresults.meanAmount': '平均量',
+  'pages.process.view.lciaresults.referenceToLCIAMethodDataSetVersion': '版本',
   'processExchange.exchangeDirection': '输入/输出方向',
   'processExchange.resultingAmount': '结果量',
   'processExchange.meanAmount': '平均量',
