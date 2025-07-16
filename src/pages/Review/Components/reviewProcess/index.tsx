@@ -131,31 +131,40 @@ const ReviewProcessDetail: FC<Props> = ({
       const refs = getAllRefObj(process?.json);
       if (refs.length) {
         const teamId = await getUserTeamId();
-        const getReferences = (refs: any[], checkedIds = new Set<string>()) => {
+        const getReferences = (
+          refs: any[],
+          checkedIds = new Set<string>(),
+          requestKeysSet?: Set<string>,
+        ) => {
+          const requestKeys = requestKeysSet || new Set<string>();
           for (const ref of refs) {
             if (checkedIds.has(ref['@refObjectId'])) continue;
             checkedIds.add(ref['@refObjectId']);
 
-            controller.add(async () => {
-              const refResult = await getRefData(
-                ref['@refObjectId'],
-                ref['@version'],
-                getRefTableName(ref['@type']),
-                teamId,
-              );
+            const key = `${ref['@refObjectId']}:${ref['@version']}:${ref['@type']}`;
+            if (!requestKeys.has(key)) {
+              requestKeys.add(key);
+              controller.add(async () => {
+                const refResult = await getRefData(
+                  ref['@refObjectId'],
+                  ref['@version'],
+                  getRefTableName(ref['@type']),
+                  teamId,
+                );
 
-              if (refResult.success) {
-                const refData = refResult?.data;
-                if (refData?.stateCode !== 100 && refData?.stateCode !== 200) {
-                  result.push(ref);
+                if (refResult.success) {
+                  const refData = refResult?.data;
+                  if (refData?.stateCode !== 100 && refData?.stateCode !== 200) {
+                    result.push(ref);
+                  }
+                  const json = refData?.json;
+                  const subRefs = getAllRefObj(json);
+                  if (subRefs.length) {
+                    getReferences(subRefs, checkedIds, requestKeys);
+                  }
                 }
-                const json = refData?.json;
-                const subRefs = getAllRefObj(json);
-                if (subRefs.length) {
-                  getReferences(subRefs, checkedIds);
-                }
-              }
-            });
+              });
+            }
           }
         };
         getReferences(refs);

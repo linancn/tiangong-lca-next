@@ -294,6 +294,8 @@ const ProcessEdit: FC<Props> = ({
       (unRuleVerification && unRuleVerification.length > 0) ||
       (underReview && underReview.length > 0)
     ) {
+      valid = false;
+      setSpinning(false);
       if (underReview && underReview.length > 0) {
         message.error(
           intl.formatMessage({
@@ -301,10 +303,8 @@ const ProcessEdit: FC<Props> = ({
             defaultMessage: 'Referenced data is under review, cannot initiate another review',
           }),
         );
+        return { checkResult: valid, unReview };
       }
-      valid = false;
-      setSpinning(false);
-      // return { checkResult, unReview };
     }
 
     if (processDetail.stateCode >= 20) {
