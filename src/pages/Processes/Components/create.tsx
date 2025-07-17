@@ -11,6 +11,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
 // import requiredFields from '../requiredFields';
+import { LCIAResultTable } from '@/services/lciaMethods/data';
 import { ProcessForm } from './form';
 
 type Props = {
@@ -199,6 +200,18 @@ const ProcessCreate: FC<CreateProps> = ({
     setFromData({ ...fromData, exchanges: { exchange: exchangeDataSource } });
   }, [exchangeDataSource]);
 
+  const handleLciaResults = (result: LCIAResultTable[]) => {
+    setFromData({
+      ...fromData,
+      LCIAResults: {
+        LCIAResult: result.map((item) => ({
+          referenceToLCIAMethodDataSet: item.referenceToLCIAMethodDataSet,
+          meanAmount: item.meanAmount,
+        })),
+      },
+    });
+  };
+
   return (
     <>
       <Tooltip
@@ -367,6 +380,8 @@ const ProcessCreate: FC<CreateProps> = ({
               onExchangeDataCreate={handletExchangeDataCreate}
               onTabChange={onTabChange}
               exchangeDataSource={exchangeDataSource}
+              lciaResults={fromData?.LCIAResults?.LCIAResult ?? []}
+              onLciaResults={handleLciaResults}
             />
           </ProForm>
         </Spin>

@@ -13,6 +13,7 @@ import {
 import { getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
 import { getRuleVerification } from '@/services/general/util';
+import { LCIAResultTable } from '@/services/lciaMethods/data';
 import { getProcessDetail, updateProcess } from '@/services/processes/api';
 import { genProcessFromData, genProcessJsonOrdered } from '@/services/processes/util';
 import { getUserTeamId } from '@/services/roles/api';
@@ -490,6 +491,18 @@ const ProcessEdit: FC<Props> = ({
     });
   }, [exchangeDataSource]);
 
+  const handleLciaResults = (result: LCIAResultTable[]) => {
+    setFromData({
+      ...fromData,
+      LCIAResults: {
+        LCIAResult: result.map((item) => ({
+          referenceToLCIAMethodDataSet: item.referenceToLCIAMethodDataSet,
+          meanAmount: item.meanAmount,
+        })),
+      },
+    });
+  };
+
   return (
     <>
       {buttonType === 'toolIcon' ? (
@@ -669,6 +682,8 @@ const ProcessEdit: FC<Props> = ({
                   onTabChange={onTabChange}
                   exchangeDataSource={exchangeDataSource}
                   showRules={showRules}
+                  lciaResults={fromData?.LCIAResults?.LCIAResult ?? []}
+                  onLciaResults={handleLciaResults}
                 />
                 <Form.Item name='id' hidden>
                   <Input />

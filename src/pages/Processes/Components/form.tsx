@@ -51,7 +51,9 @@ type Props = {
   onExchangeData: (data: any) => void;
   onExchangeDataCreate: (data: any) => void;
   onTabChange: (key: string) => void;
+  onLciaResults: (result: LCIAResultTable[]) => void;
   exchangeDataSource: ProcessExchangeTable[];
+  lciaResults: LCIAResultTable[];
   formType?: string;
   showRules?: boolean;
 };
@@ -64,9 +66,11 @@ export const ProcessForm: FC<Props> = ({
   onExchangeData,
   onExchangeDataCreate,
   onTabChange,
+  onLciaResults,
   exchangeDataSource,
   formType,
   showRules = false,
+  lciaResults,
 }) => {
   const refCheckContext = useRefCheckContext();
   const actionRefExchangeTableInput = useRef<ActionType>();
@@ -84,10 +88,11 @@ export const ProcessForm: FC<Props> = ({
   const [intendedApplicationsError, setIntendedApplicationsError] = useState(false);
   const [generalCommentError, setGeneralCommentError] = useState(false);
 
-  const [lciaResultDataSource, setLciaResultDataSource] = useState<LCIAResultTable[]>([]);
+  // const [lciaResultDataSource, setLciaResultDataSource] = useState<LCIAResultTable[]>(lciaResults);
   const [lciaResultDataSourceLoading, setLciaResultDataSourceLoading] = useState(false);
 
   const { token } = theme.useToken();
+
   const tabList = [
     {
       key: 'processInformation',
@@ -330,7 +335,7 @@ export const ProcessForm: FC<Props> = ({
     }
 
     // console.log(`Total LCIA results calculated: ${lciaResults.length}`,lciaResults);
-    setLciaResultDataSource(lciaResults);
+    onLciaResults(lciaResults);
     setLciaResultDataSourceLoading(false);
   };
   const tabContent: { [key: string]: JSX.Element } = {
@@ -2152,7 +2157,6 @@ export const ProcessForm: FC<Props> = ({
     ),
     lciaResults: (
       <ProTable<LCIAResultTable, ListPagination>
-        key={lciaResultDataSource.length}
         actionRef={actionRefLciaResultTable}
         rowKey={(record) => record.key}
         search={false}
@@ -2166,7 +2170,7 @@ export const ProcessForm: FC<Props> = ({
             onClick={getLCIAResult}
           />,
         ]}
-        dataSource={lciaResultDataSource}
+        dataSource={lciaResults}
         columns={lciaResultColumns}
       />
     ),
@@ -2197,7 +2201,7 @@ export const ProcessForm: FC<Props> = ({
 
   useEffect(() => {
     actionRefLciaResultTable.current?.reload();
-  }, [lciaResultDataSource]);
+  }, [lciaResults]);
 
   return (
     <Card
