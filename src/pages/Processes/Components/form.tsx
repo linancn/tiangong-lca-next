@@ -4,20 +4,21 @@ import LocationTextItemForm from '@/components/LocationTextItem/form';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
+import AlignedNumber from '@/components/AlignedNumber';
 import RequiredMark from '@/components/RequiredMark';
 import { useRefCheckContext } from '@/contexts/refCheckContext';
 import { getRules } from '@/pages/Utils';
 import { getFlowStateCodeByIdsAndVersions } from '@/services/flows/api';
 import { ListPagination } from '@/services/general/data';
-import { getUnitData } from '@/services/general/util';
+import { getLangText, getUnitData } from '@/services/general/util';
 import { LCIAResultTable } from '@/services/lciaMethods/data';
+import LCIAResultCalculation from '@/services/lciaMethods/LCIAResultCalculation';
 import { getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData } from '@/services/processes/util';
 import { CalculatorOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Collapse, Divider, Form, Input, Select, Space, theme, Tooltip } from 'antd';
-import pako from 'pako';
 import { useEffect, useRef, useState, type FC } from 'react';
 import { FormattedMessage } from 'umi';
 import schema from '../processes_schema.json';
@@ -49,7 +50,9 @@ type Props = {
   onExchangeData: (data: any) => void;
   onExchangeDataCreate: (data: any) => void;
   onTabChange: (key: string) => void;
+  onLciaResults: (result: LCIAResultTable[]) => void;
   exchangeDataSource: ProcessExchangeTable[];
+  lciaResults: LCIAResultTable[];
   formType?: string;
   showRules?: boolean;
 };
@@ -62,9 +65,11 @@ export const ProcessForm: FC<Props> = ({
   onExchangeData,
   onExchangeDataCreate,
   onTabChange,
+  onLciaResults,
   exchangeDataSource,
   formType,
   showRules = false,
+  lciaResults,
 }) => {
   const refCheckContext = useRefCheckContext();
   const actionRefExchangeTableInput = useRef<ActionType>();
@@ -82,9 +87,11 @@ export const ProcessForm: FC<Props> = ({
   const [intendedApplicationsError, setIntendedApplicationsError] = useState(false);
   const [generalCommentError, setGeneralCommentError] = useState(false);
 
-  const [lciaResultDataSource, setLciaResultDataSource] = useState<LCIAResultTable[]>([]);
+  // const [lciaResultDataSource, setLciaResultDataSource] = useState<LCIAResultTable[]>(lciaResults);
+  const [lciaResultDataSourceLoading, setLciaResultDataSourceLoading] = useState(false);
 
   const { token } = theme.useToken();
+
   const tabList = [
     {
       key: 'processInformation',
@@ -178,6 +185,7 @@ export const ProcessForm: FC<Props> = ({
       dataIndex: 'index',
       valueType: 'index',
       search: false,
+      width: 70,
     },
     {
       title: (
@@ -188,11 +196,12 @@ export const ProcessForm: FC<Props> = ({
       ),
       dataIndex: 'Name',
       search: false,
+      width: 500,
       render: (_, row) => {
         return [
-          <Tooltip key={0} placement='topLeft' title={row.generalComment}>
-            {row.shortDescription}
-          </Tooltip>,
+          <span key={0}>
+            {getLangText(row?.referenceToLCIAMethodDataSet?.['common:shortDescription'], lang)}
+          </span>,
         ];
       },
     },
@@ -206,6 +215,9 @@ export const ProcessForm: FC<Props> = ({
       ),
       dataIndex: 'meanAmount',
       search: false,
+      render: (_, row) => {
+        return [<AlignedNumber key={0} number={row.meanAmount} />];
+      },
     },
     {
       title: (
@@ -216,8 +228,21 @@ export const ProcessForm: FC<Props> = ({
       ),
       dataIndex: 'Version',
       search: false,
+      render: (_, row) => {
+        return [
+          <Tooltip key={0} placement='topLeft' title={row.referenceToLCIAMethodDataSet['@version']}>
+            {row.referenceToLCIAMethodDataSet['@version']}
+          </Tooltip>,
+        ];
+      },
     },
   ];
+  const getLCIAResult = async () => {
+    setLciaResultDataSourceLoading(true);
+    const lciaResults = await LCIAResultCalculation(exchangeDataSource);
+    onLciaResults(lciaResults ?? []);
+    setLciaResultDataSourceLoading(false);
+  };
   const tabContent: { [key: string]: JSX.Element } = {
     processInformation: (
       <Space direction='vertical' style={{ width: '100%' }}>
@@ -2038,71 +2063,19 @@ export const ProcessForm: FC<Props> = ({
     lciaResults: (
       <ProTable<LCIAResultTable, ListPagination>
         actionRef={actionRefLciaResultTable}
+        rowKey={(record) => record.key}
         search={false}
+        loading={lciaResultDataSourceLoading}
         toolBarRender={() => [
           <Button
             size={'middle'}
             type='text'
             key='calculator'
             icon={<CalculatorOutlined />}
-            onClick={async () => {
-              let lciaResults = [];
-              try {
-                const response = await fetch('/lciamethods/list.json');
-                if (response.ok) {
-                  const listData = await response.json();
-                  for (const file of listData.files) {
-                    try {
-                      const gzResponse = await fetch(`/lciamethods/${file.filename}`);
-                      if (gzResponse.ok) {
-                        const gzArrayBuffer = await gzResponse.arrayBuffer();
-                        const decompressed = pako.inflate(new Uint8Array(gzArrayBuffer), {
-                          to: 'string',
-                        });
-                        const jsonData = JSON.parse(decompressed);
-                        const factors =
-                          jsonData?.LCIAMethodDataSet?.characterisationFactors?.factor || [];
-                        let sumLCIA = 0;
-                        exchangeDataSource.forEach((exchange: any) => {
-                          const factor = factors.find((f: any) => {
-                            return (
-                              String(f.exchangeDirection || '').toLowerCase() ===
-                                String(exchange.exchangeDirection || '').toLowerCase() &&
-                              f.referenceToFlowDataSet?.['@refObjectId'] ===
-                                exchange.referenceToFlowDataSet?.['@refObjectId']
-                              //  && f.referenceToFlowDataSet?.['@version'] === exchange.referenceToFlowDataSet?.['@version']
-                            );
-                          });
-                          if (factor) {
-                            const exchangeAmount = exchange.meanAmount || 0;
-                            const factorValue = factor.meanValue || 0;
-                            sumLCIA += exchangeAmount * factorValue;
-                          }
-                          console.log('Processing exchange:', exchange);
-                          console.log('Found factor:', factor);
-                        });
-                        if (sumLCIA !== 0) {
-                          const lciaResult = {};
-                          lciaResults.push(lciaResult);
-                        }
-                      } else {
-                        //
-                      }
-                    } catch (fileError) {
-                      //
-                    }
-                  }
-                } else {
-                  console.error('Failed to load LCIA methods list:', response.status);
-                }
-              } catch (error) {
-                console.error('Error in LCIA methods processing:', error);
-              }
-              setLciaResultDataSource([]);
-            }}
+            onClick={getLCIAResult}
           />,
         ]}
-        dataSource={lciaResultDataSource}
+        dataSource={lciaResults}
         columns={lciaResultColumns}
       />
     ),
@@ -2133,7 +2106,7 @@ export const ProcessForm: FC<Props> = ({
 
   useEffect(() => {
     actionRefLciaResultTable.current?.reload();
-  }, [lciaResultDataSource]);
+  }, [lciaResults]);
 
   return (
     <Card

@@ -114,8 +114,16 @@ export const getAllRefObj = (obj: any): any[] => {
     if (visited.has(current)) return;
     visited.add(current);
 
-    if ('@refObjectId' in current && current['@refObjectId'] && current['@version']) {
-      result.push(current);
+    if (
+      '@refObjectId' in current &&
+      current['@refObjectId'] &&
+      current['@version'] &&
+      current['@type']
+    ) {
+      const tableName = getRefTableName(current['@type']);
+      if (tableName !== undefined) {
+        result.push(current);
+      }
     }
 
     if (Array.isArray(current)) {
