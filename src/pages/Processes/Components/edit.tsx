@@ -496,6 +496,7 @@ const ProcessEdit: FC<Props> = ({
       ...fromData,
       LCIAResults: {
         LCIAResult: result.map((item) => ({
+          key: item.key,
           referenceToLCIAMethodDataSet: item.referenceToLCIAMethodDataSet,
           meanAmount: item.meanAmount,
         })),
