@@ -12,7 +12,7 @@ import { getFlowStateCodeByIdsAndVersions } from '@/services/flows/api';
 import { ListPagination } from '@/services/general/data';
 import { getLangText, getUnitData } from '@/services/general/util';
 import { LCIAResultTable } from '@/services/lciaMethods/data';
-import LCIAResultCalculation from '@/services/lciaMethods/LCIAResultCalculation';
+import LCIAResultCalculation from '@/services/lciaMethods/util';
 import { getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData } from '@/services/processes/util';

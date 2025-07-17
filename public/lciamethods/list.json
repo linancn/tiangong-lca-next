@@ -4,7 +4,7 @@
         "totalFiles": 25,
         "totalSize": "16M",
         "format": "gzip compressed JSON",
-        "lastUpdated": "2025-07-15",
+        "lastUpdated": "2025-07-18",
         "compressionRatio": "91%",
         "originalSize": "181M"
     },
@@ -14,175 +14,200 @@
             "id": "6209b35f-9447-40b5-b68c-a1099e3674a0",
             "version": "01.00.000",
             "size": "37.9KB",
-            "description": "Climate change"
+            "description": "Climate change",
+            "impactModelName": "Baseline model of 100 years of the IPCC"
         },
         {
             "filename": "706261af-a357-4cc0-a50a-f3033fcbd556_01.00.000.json.gz",
             "id": "706261af-a357-4cc0-a50a-f3033fcbd556",
             "version": "01.00.000",
             "size": "2.7KB",
-            "description": "Climate change-Biogenic"
+            "description": "Climate change-Biogenic",
+            "impactModelName": "Baseline model of 100 years of the IPCC"
         },
         {
             "filename": "7fce5b3a-66b8-4ce1-91e8-a925aee1f186_01.00.000.json.gz",
             "id": "7fce5b3a-66b8-4ce1-91e8-a925aee1f186",
             "version": "01.00.000",
             "size": "36.8KB",
-            "description": "Climate change-Fossil"
+            "description": "Climate change-Fossil",
+            "impactModelName": "Baseline model of 100 years of the IPCC"
         },
         {
             "filename": "14af9ca7-aa1d-4832-b1d9-ab05a06dcb12_01.00.000.json.gz",
             "id": "14af9ca7-aa1d-4832-b1d9-ab05a06dcb12",
             "version": "01.00.000",
             "size": "2.8KB",
-            "description": "Climate change-Land use and land use change"
+            "description": "Climate change-Land use and land use change",
+            "impactModelName": "Baseline model of 100 years of the IPCC"
         },
         {
             "filename": "2299222a-bbd8-474f-9d4f-4dd1f18aea7c_01.01.000.json.gz",
             "id": "2299222a-bbd8-474f-9d4f-4dd1f18aea7c",
             "version": "01.01.000",
             "size": "550KB",
-            "description": "Human toxicity, cancer"
+            "description": "Human toxicity, cancer",
+            "impactModelName": "USEtox™"
         },
         {
             "filename": "01500b74-7ffb-463e-9bd4-72f17c2263ff_01.00.000.json.gz",
             "id": "01500b74-7ffb-463e-9bd4-72f17c2263ff",
             "version": "01.00.000",
             "size": "15.3KB",
-            "description": "Human toxicity, cancer_inorganics"
+            "description": "Human toxicity, cancer_inorganics",
+            "impactModelName": "USEtox™"
         },
         {
             "filename": "9ec743ea-6b00-400d-a53b-61547a3fc03c_01.01.000.json.gz",
             "id": "9ec743ea-6b00-400d-a53b-61547a3fc03c",
             "version": "01.01.000",
             "size": "535KB",
-            "description": "Human toxicity, cancer_organics"
+            "description": "Human toxicity, cancer_organics",
+            "impactModelName": "USEtox™"
         },
         {
             "filename": "7cfdcfcf-b222-4b26-888a-a55f9fbf7ac8_01.00.000.json.gz",
             "id": "7cfdcfcf-b222-4b26-888a-a55f9fbf7ac8",
             "version": "01.00.000",
             "size": "2.4MB",
-            "description": "Human toxicity, non-cancer"
+            "description": "Human toxicity, non-cancer",
+            "impactModelName": "USEtox 2.1™"
         },
         {
             "filename": "9d1d43a2-e1aa-4c16-acd4-3dd8a6a2fb85_01.00.000.json.gz",
             "id": "9d1d43a2-e1aa-4c16-acd4-3dd8a6a2fb85",
             "version": "01.00.000",
             "size": "191KB",
-            "description": "Human toxicity, non-cancer_inorganics"
+            "description": "Human toxicity, non-cancer_inorganics",
+            "impactModelName": "USEtox 2.1™"
         },
         {
             "filename": "8c3141e9-1f15-43b5-bff2-182e49893a46_01.00.000.json.gz",
             "id": "8c3141e9-1f15-43b5-bff2-182e49893a46",
             "version": "01.00.000",
             "size": "2.2MB",
-            "description": "Human toxicity, non-cancer_organics"
+            "description": "Human toxicity, non-cancer_organics",
+            "impactModelName": "USEtox 2.1™"
         },
         {
             "filename": "05316e7a-b254-4bea-9cf0-6bf33eb5c630_01.00.000.json.gz",
             "id": "05316e7a-b254-4bea-9cf0-6bf33eb5c630",
             "version": "01.00.000",
             "size": "4.2MB",
-            "description": "Ecotoxicity, freshwater"
+            "description": "Ecotoxicity, freshwater",
+            "impactModelName": "USEtox™"
         },
         {
             "filename": "dacd48b5-4da5-49aa-aff4-cd5f5495c037_01.00.000.json.gz",
             "id": "dacd48b5-4da5-49aa-aff4-cd5f5495c037",
             "version": "01.00.000",
             "size": "281KB",
-            "description": "Ecotoxicity, freshwater_inorganics"
+            "description": "Ecotoxicity, freshwater_inorganics",
+            "impactModelName": "USEtox™"
         },
         {
             "filename": "fd530f00-9325-424a-92ef-aaac67922fd9_01.00.000.json.gz",
             "id": "fd530f00-9325-424a-92ef-aaac67922fd9",
             "version": "01.00.000",
             "size": "3.9MB",
-            "description": "Ecotoxicity, freshwater_organics"
+            "description": "Ecotoxicity, freshwater_organics",
+            "impactModelName": "USEtox™"
         },
         {
             "filename": "b5c619fa-def3-11e6-bf01-fe55135034f3_02.00.010.json.gz",
             "id": "b5c619fa-def3-11e6-bf01-fe55135034f3",
             "version": "02.00.010",
             "size": "9.2KB",
-            "description": "Eutrophication marine"
+            "description": "Eutrophication marine",
+            "impactModelName": "CARMEN model for waterborne emissions and EUTREND for airborne emissions."
         },
         {
             "filename": "b53ec18f-7377-4ad3-86eb-cc3f4f276b2b_01.00.010.json.gz",
             "id": "b53ec18f-7377-4ad3-86eb-cc3f4f276b2b",
             "version": "01.00.010",
             "size": "4.6KB",
-            "description": "Eutrophication, freshwater"
+            "description": "Eutrophication, freshwater",
+            "impactModelName": "CARMEN model for waterborne emissions and EUTREND for airborne emissions."
         },
         {
             "filename": "b5c614d2-def3-11e6-bf01-fe55135034f3_01.02.009.json.gz",
             "id": "b5c614d2-def3-11e6-bf01-fe55135034f3",
             "version": "01.02.009",
             "size": "9.5KB",
-            "description": "Eutrophication, terrestrial"
+            "description": "Eutrophication, terrestrial",
+            "impactModelName": "Accumulated Exceedance method (combination of models)."
         },
         {
             "filename": "b2ad6110-c78d-11e6-9d9d-cec0c932ce01_01.00.010.json.gz",
             "id": "b2ad6110-c78d-11e6-9d9d-cec0c932ce01",
             "version": "01.00.010",
             "size": "2.4KB",
-            "description": "Resource use, fossils"
+            "description": "Resource use, fossils",
+            "impactModelName": "Abiotic resource depletion (ADP fossil)"
         },
         {
             "filename": "b2ad6494-c78d-11e6-9d9d-cec0c932ce01_01.00.010.json.gz",
             "id": "b2ad6494-c78d-11e6-9d9d-cec0c932ce01",
             "version": "01.00.010",
             "size": "3.4KB",
-            "description": "Resource use, minerals and metals"
+            "description": "Resource use, minerals and metals",
+            "impactModelName": "Abiotic resource depletion (ADP ultimate reserve)"
         },
         {
             "filename": "b2ad66ce-c78d-11e6-9d9d-cec0c932ce01_03.00.014.json.gz",
             "id": "b2ad66ce-c78d-11e6-9d9d-cec0c932ce01",
             "version": "03.00.014",
             "size": "27.3KB",
-            "description": "Water use"
+            "description": "Water use",
+            "impactModelName": "AWARE 100 (Available water Remaining)"
         },
         {
             "filename": "b2ad6890-c78d-11e6-9d9d-cec0c932ce01_01.00.010.json.gz",
             "id": "b2ad6890-c78d-11e6-9d9d-cec0c932ce01",
             "version": "01.00.010",
             "size": "540KB",
-            "description": "Land use"
+            "description": "Land use",
+            "impactModelName": "Soil quality index"
         },
         {
             "filename": "b5c611c6-def3-11e6-bf01-fe55135034f3_01.04.000.json.gz",
             "id": "b5c611c6-def3-11e6-bf01-fe55135034f3",
             "version": "01.04.000",
             "size": "16.1KB",
-            "description": "Acidification"
+            "description": "Acidification",
+            "impactModelName": "Accumulated Exceedance method (combination of models)."
         },
         {
             "filename": "b5c629d6-def3-11e6-bf01-fe55135034f3_02.00.012.json.gz",
             "id": "b5c629d6-def3-11e6-bf01-fe55135034f3",
             "version": "02.00.012",
             "size": "5.8KB",
-            "description": "Ozone depletion"
+            "description": "Ozone depletion",
+            "impactModelName": "1999 WMO assessment of ozone depletion (World Meteorological Organization 1999)."
         },
         {
             "filename": "b5c632be-def3-11e6-bf01-fe55135034f3_01.00.011.json.gz",
             "id": "b5c632be-def3-11e6-bf01-fe55135034f3",
             "version": "01.00.011",
             "size": "7.2KB",
-            "description": "Ionising radiation, human health"
+            "description": "Ionising radiation, human health",
+            "impactModelName": "Unknown"
         },
         {
             "filename": "b5c610fe-def3-11e6-bf01-fe55135034f3_02.01.000.json.gz",
             "id": "b5c610fe-def3-11e6-bf01-fe55135034f3",
             "version": "02.01.000",
             "size": "29.5KB",
-            "description": "Photochemical ozone formation - human health"
+            "description": "Photochemical ozone formation - human health",
+            "impactModelName": "LOTOS-EUROS"
         },
         {
             "filename": "b5c602c6-def3-11e6-bf01-fe55135034f3_02.00.011.json.gz",
             "id": "b5c602c6-def3-11e6-bf01-fe55135034f3",
             "version": "02.00.011",
             "size": "12.1KB",
-            "description": "EF-particulate Matter"
+            "description": "EF-particulate Matter",
+            "impactModelName": "Unknown"
         }
     ]
 }

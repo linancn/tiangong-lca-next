@@ -14,6 +14,8 @@ const LCIAResultCalculation = async (exchangeDataSource: any) => {
 
     const listData = await response.json();
 
+    const useDecompressionStream = 'DecompressionStream' in window;
+
     for (const file of listData.files) {
       try {
         const gzResponse = await fetch(`/lciamethods/${file.filename}`);
@@ -23,9 +25,26 @@ const LCIAResultCalculation = async (exchangeDataSource: any) => {
         }
 
         const gzArrayBuffer = await gzResponse.arrayBuffer();
-        const decompressed = pako.inflate(new Uint8Array(gzArrayBuffer), {
-          to: 'string',
-        });
+
+        let decompressed: string;
+        if (useDecompressionStream) {
+          // Use native DecompressionStream API with stream processing
+          const stream = new ReadableStream({
+            start(controller) {
+              controller.enqueue(new Uint8Array(gzArrayBuffer));
+              controller.close();
+            },
+          });
+
+          const decompressedStream = stream.pipeThrough(new DecompressionStream('gzip'));
+          decompressed = await new Response(decompressedStream).text();
+        } else {
+          // Fallback to pako for older browsers
+          decompressed = pako.inflate(new Uint8Array(gzArrayBuffer), {
+            to: 'string',
+          });
+        }
+
         const jsonData = JSON.parse(decompressed);
 
         const lciaMethodDataSet = jsonData?.LCIAMethodDataSet;
