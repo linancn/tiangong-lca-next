@@ -1,8 +1,16 @@
 export type LCIAResultTable = {
   key: string;
-  referenceToLCIAMethodDataSetId: string;
-  referenceToLCIAMethodDataSetVersion: string;
-  shortDescription: string;
-  meanAmount: string;
-  generalComment: string;
+  referenceToLCIAMethodDataSet: {
+    '@refObjectId': string;
+    '@type': string;
+    '@uri': string;
+    '@version': string;
+    'common:shortDescription': [
+      {
+        '@xml:lang': string;
+        '#text': string;
+      },
+    ];
+  };
+  meanAmount: number;
 };

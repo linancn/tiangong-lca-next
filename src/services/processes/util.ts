@@ -755,6 +755,9 @@ export function genProcessJsonOrdered(id: string, data: any) {
       exchanges: {
         exchange: exchange,
       },
+      LCIAResults: {
+        LCIAResult: data?.LCIAResults?.LCIAResult ?? [],
+      },
     },
   });
 }
@@ -1514,6 +1517,9 @@ export function genProcessFromData(data: any) {
           };
         }
       }),
+    },
+    LCIAResults: {
+      LCIAResult: data?.LCIAResults?.LCIAResult ?? [],
     },
   });
 }
