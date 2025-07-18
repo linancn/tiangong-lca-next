@@ -4,17 +4,21 @@ import LocationTextItemForm from '@/components/LocationTextItem/form';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
+import AlignedNumber from '@/components/AlignedNumber';
 import RequiredMark from '@/components/RequiredMark';
 import { useRefCheckContext } from '@/contexts/refCheckContext';
 import { getRules } from '@/pages/Utils';
 import { getFlowStateCodeByIdsAndVersions } from '@/services/flows/api';
 import { ListPagination } from '@/services/general/data';
-import { getUnitData } from '@/services/general/util';
+import { getLangText, getUnitData } from '@/services/general/util';
+import { LCIAResultTable } from '@/services/lciaMethods/data';
+import LCIAResultCalculation from '@/services/lciaMethods/util';
 import { getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData } from '@/services/processes/util';
+import { CalculatorOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
-import { Card, Collapse, Divider, Form, Input, Select, Space, theme } from 'antd';
+import { Button, Card, Collapse, Divider, Form, Input, Select, Space, theme, Tooltip } from 'antd';
 import { useEffect, useRef, useState, type FC } from 'react';
 import { FormattedMessage } from 'umi';
 import schema from '../processes_schema.json';
@@ -46,7 +50,9 @@ type Props = {
   onExchangeData: (data: any) => void;
   onExchangeDataCreate: (data: any) => void;
   onTabChange: (key: string) => void;
+  onLciaResults: (result: LCIAResultTable[]) => void;
   exchangeDataSource: ProcessExchangeTable[];
+  lciaResults: LCIAResultTable[];
   formType?: string;
   showRules?: boolean;
 };
@@ -59,13 +65,16 @@ export const ProcessForm: FC<Props> = ({
   onExchangeData,
   onExchangeDataCreate,
   onTabChange,
+  onLciaResults,
   exchangeDataSource,
   formType,
   showRules = false,
+  lciaResults,
 }) => {
   const refCheckContext = useRefCheckContext();
   const actionRefExchangeTableInput = useRef<ActionType>();
   const actionRefExchangeTableOutput = useRef<ActionType>();
+  const actionRefLciaResultTable = useRef<ActionType>();
   const [baseNameError, setBaseNameError] = useState(false);
   const [treatmentStandardsRoutesError, setTreatmentStandardsRoutesError] = useState(false);
   const [mixAndLocationTypesError, setMixAndLocationTypesError] = useState(false);
@@ -77,7 +86,12 @@ export const ProcessForm: FC<Props> = ({
     useState(false);
   const [intendedApplicationsError, setIntendedApplicationsError] = useState(false);
   const [generalCommentError, setGeneralCommentError] = useState(false);
+
+  // const [lciaResultDataSource, setLciaResultDataSource] = useState<LCIAResultTable[]>(lciaResults);
+  const [lciaResultDataSourceLoading, setLciaResultDataSourceLoading] = useState(false);
+
   const { token } = theme.useToken();
+
   const tabList = [
     {
       key: 'processInformation',
@@ -109,6 +123,10 @@ export const ProcessForm: FC<Props> = ({
     {
       key: 'exchanges',
       tab: <FormattedMessage id='pages.process.view.exchanges' defaultMessage='Exchanges' />,
+    },
+    {
+      key: 'lciaResults',
+      tab: <FormattedMessage id='pages.process.view.lciaresults' defaultMessage='LCIA Results' />,
     },
     {
       key: 'validation',
@@ -161,6 +179,70 @@ export const ProcessForm: FC<Props> = ({
       },
     },
   ];
+  const lciaResultColumns: ProColumns<LCIAResultTable>[] = [
+    {
+      title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
+      dataIndex: 'index',
+      valueType: 'index',
+      search: false,
+      width: 70,
+    },
+    {
+      title: (
+        <FormattedMessage
+          id='pages.process.view.lciaresults.shortDescription'
+          defaultMessage='LCIA'
+        />
+      ),
+      dataIndex: 'Name',
+      search: false,
+      width: 500,
+      render: (_, row) => {
+        return [
+          <span key={0}>
+            {getLangText(row?.referenceToLCIAMethodDataSet?.['common:shortDescription'], lang)}
+          </span>,
+        ];
+      },
+    },
+
+    {
+      title: (
+        <FormattedMessage
+          id='pages.process.view.lciaresults.meanAmount'
+          defaultMessage='Mean amount'
+        />
+      ),
+      dataIndex: 'meanAmount',
+      search: false,
+      render: (_, row) => {
+        return [<AlignedNumber key={0} number={row.meanAmount} />];
+      },
+    },
+    {
+      title: (
+        <FormattedMessage
+          id='pages.process.view.lciaresults.referenceToLCIAMethodDataSetVersion'
+          defaultMessage='Reference to LCIA method data set version'
+        />
+      ),
+      dataIndex: 'Version',
+      search: false,
+      render: (_, row) => {
+        return [
+          <Tooltip key={0} placement='topLeft' title={row.referenceToLCIAMethodDataSet['@version']}>
+            {row.referenceToLCIAMethodDataSet['@version']}
+          </Tooltip>,
+        ];
+      },
+    },
+  ];
+  const getLCIAResult = async () => {
+    setLciaResultDataSourceLoading(true);
+    const lciaResults = await LCIAResultCalculation(exchangeDataSource);
+    onLciaResults(lciaResults ?? []);
+    setLciaResultDataSourceLoading(false);
+  };
   const tabContent: { [key: string]: JSX.Element } = {
     processInformation: (
       <Space direction='vertical' style={{ width: '100%' }}>
@@ -1978,6 +2060,25 @@ export const ProcessForm: FC<Props> = ({
         />
       </>
     ),
+    lciaResults: (
+      <ProTable<LCIAResultTable, ListPagination>
+        actionRef={actionRefLciaResultTable}
+        rowKey={(record) => record.key}
+        search={false}
+        loading={lciaResultDataSourceLoading}
+        toolBarRender={() => [
+          <Button
+            size={'middle'}
+            type='text'
+            key='calculator'
+            icon={<CalculatorOutlined />}
+            onClick={getLCIAResult}
+          />,
+        ]}
+        dataSource={lciaResults}
+        columns={lciaResultColumns}
+      />
+    ),
     validation: (
       <ReveiwItemForm
         showRules={showRules}
@@ -2002,6 +2103,10 @@ export const ProcessForm: FC<Props> = ({
     actionRefExchangeTableInput.current?.reload();
     actionRefExchangeTableOutput.current?.reload();
   }, [exchangeDataSource]);
+
+  useEffect(() => {
+    actionRefLciaResultTable.current?.reload();
+  }, [lciaResults]);
 
   return (
     <Card

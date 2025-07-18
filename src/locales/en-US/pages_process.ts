@@ -73,6 +73,10 @@ export default {
   'pages.process.complianceDeclarations': 'Compliance declarations',
 
   'pages.process.view.exchanges': 'Inputs and Outputs',
+  'pages.process.view.lciaresults': 'LCIA Results',
+  'pages.process.view.lciaresults.shortDescription': 'LCIA',
+  'pages.process.view.lciaresults.meanAmount': 'Mean amount',
+  'pages.process.view.lciaresults.referenceToLCIAMethodDataSetVersion': 'Version',
 
   'pages.process.view.modellingAndValidation.typeOfDataSet': 'Type of data set',
   'pages.process.view.modellingAndValidation.lCIMethodAndAllocation': 'LCI method and allocation',

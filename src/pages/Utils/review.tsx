@@ -114,8 +114,16 @@ export const getAllRefObj = (obj: any): any[] => {
     if (visited.has(current)) return;
     visited.add(current);
 
-    if ('@refObjectId' in current && current['@refObjectId'] && current['@version']) {
-      result.push(current);
+    if (
+      '@refObjectId' in current &&
+      current['@refObjectId'] &&
+      current['@version'] &&
+      current['@type']
+    ) {
+      const tableName = getRefTableName(current['@type']);
+      if (tableName !== undefined) {
+        result.push(current);
+      }
     }
 
     if (Array.isArray(current)) {
@@ -264,8 +272,10 @@ export const checkReferences = async (
   unRuleVerification: refDataType[],
   nonExistentRef: refDataType[],
   parentPath?: ReffPath,
+  requestKeysSet?: Set<string>,
 ): Promise<ReffPath | undefined> => {
   let currentPath: ReffPath | undefined;
+  const requestKeys = requestKeysSet || new Set<string>();
   const handelSameModelWithProcress = async (ref: refDataType) => {
     if (ref['@type'] === 'process data set') {
       const { data: sameModelWithProcress, success } = await getLifeCycleModelDetail(
@@ -365,6 +375,7 @@ export const checkReferences = async (
           unRuleVerification,
           nonExistentRef,
           currentPath,
+          requestKeys,
         );
       }
       await handelSameModelWithProcress(ref);
@@ -386,9 +397,12 @@ export const checkReferences = async (
   };
 
   const controller = new ConcurrencyController(5);
-
   for (const ref of refs) {
-    controller.add(() => processRef(ref));
+    const key = `${ref['@refObjectId']}:${ref['@version']}:${ref['@type']}`;
+    if (!requestKeys.has(key)) {
+      requestKeys.add(key);
+      controller.add(() => processRef(ref));
+    }
   }
 
   await controller.waitForAll();

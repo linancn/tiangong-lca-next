@@ -661,11 +661,21 @@ export function getRuleVerification(schema: any, data: any) {
 
     if (Array.isArray(value)) {
       return value.some(
-        (item: any) => item && typeof item === 'object' && item['@xml:lang'] === 'en',
+        (item: any) =>
+          item &&
+          typeof item === 'object' &&
+          item['@xml:lang'] === 'en' &&
+          item['#text'] &&
+          item['#text'].trim() !== '',
       );
     }
 
-    if (typeof value === 'object' && value['@xml:lang'] === 'en') {
+    if (
+      typeof value === 'object' &&
+      value['@xml:lang'] === 'en' &&
+      value['#text'] &&
+      value['#text'].trim() !== ''
+    ) {
       return true;
     }
 
