@@ -127,13 +127,6 @@
           height: 14px;
         }
 
-        @media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
-          .ant-spin-blur {
-            background: #fff;
-            opacity: 0.5;
-          }
-        }
-
         @-webkit-keyframes antSpinMove {
           to {
             opacity: 1;

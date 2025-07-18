@@ -2,6 +2,7 @@ import { request } from '@umijs/max';
 // @ts-ignore
 /* eslint-disable */
 import { supabase } from '@/services/supabase';
+import { FunctionRegion } from '@supabase/supabase-js';
 
 /** 获取当前的用户 GET /api/currentUser */
 export async function currentUser(options?: { [key: string]: any }) {
@@ -109,7 +110,7 @@ export async function changePassword(body: any, options?: { [key: string]: any }
 export async function changeEmail(body: any, options?: { [key: string]: any }) {
   if (body.email !== null) {
     const { error } = await supabase.auth.updateUser({
-      email: body.confirmNewEmail ?? '',
+      email: body.newEmail ?? '',
     });
     if (error) {
       return {
@@ -167,6 +168,45 @@ export async function setProfile(body: any, options?: { [key: string]: any }) {
     return { status: 'error', message: error.message, type: body.type, currentAuthority: 'guest' };
   } else {
     return { status: 'ok', type: body.type, currentAuthority: data.user.role };
+  }
+}
+
+export async function cognitoSignUp(password: string) {
+  const session = await supabase.auth.getSession();
+  if (session.data.session) {
+    await supabase.functions.invoke('sign_up_cognito', {
+      headers: {
+        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+      },
+      body: { password },
+      region: FunctionRegion.UsEast1,
+    });
+  }
+}
+
+export async function cognitoChangePassword(password: string) {
+  const session = await supabase.auth.getSession();
+  if (session.data.session) {
+    await supabase.functions.invoke('change_password_cognito', {
+      headers: {
+        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+      },
+      body: { password },
+      region: FunctionRegion.UsEast1,
+    });
+  }
+}
+
+export async function cognitoChangeEmail(newEmail: string) {
+  const session = await supabase.auth.getSession();
+  if (session.data.session) {
+    await supabase.functions.invoke('change_email_cognito', {
+      headers: {
+        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+      },
+      body: { newEmail },
+      region: FunctionRegion.UsEast1,
+    });
   }
 }
 

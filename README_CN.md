@@ -1,6 +1,6 @@
 # 天工LCA数据平台
 
-[English](./README.md) | [中文](./README_CN.md)
+[English](https://github.com/linancn/tiangong-lca-next/blob/main/README.md) | [中文](https://github.com/linancn/tiangong-lca-next/blob/main/README_CN.md)
 
 天工LCA数据平台是**完全开源🚀**的生命周期评估(LCA)数据管理平台，提供**免费💰**的云端服务与私有化部署方案。通过本平台，您可以：
 
