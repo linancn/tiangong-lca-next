@@ -41,4 +41,4 @@ build
 
 # Temporary files
 *.log
-.cache 
+.cache

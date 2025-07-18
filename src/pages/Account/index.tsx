@@ -1,6 +1,9 @@
 import {
   changeEmail,
   changePassword,
+  cognitoChangeEmail,
+  cognitoChangePassword,
+  cognitoSignUp,
   currentUser,
   login,
   setProfile,
@@ -117,6 +120,7 @@ const Profile: FC = () => {
         onFinish={async (value) => {
           setSpinning(true);
           try {
+            await cognitoChangePassword(value.confirmNewPassword);
             const msg = await changePassword(value);
             if (msg.status === 'ok') {
               formRefEdit.current?.resetFields();
@@ -365,6 +369,7 @@ const Profile: FC = () => {
         onFinish={async (value) => {
           setSpinning(true);
           try {
+            await cognitoChangeEmail(value.newEmail);
             const msg = await changeEmail(value);
             if (msg.status === 'ok') {
               formRefEdit.current?.resetFields();
@@ -530,6 +535,10 @@ const Profile: FC = () => {
               const jsonString = JSON.stringify(payload, null, 0);
               const encodedKey = btoa(jsonString);
 
+              // Wait for cognitoSignUp to complete before showing API Key
+              await cognitoSignUp(values.currentPassword);
+
+              // Only set API Key after cognitoSignUp is complete
               setApiKey(encodedKey);
 
               const successMsg = intl.formatMessage({
