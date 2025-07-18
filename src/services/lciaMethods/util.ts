@@ -98,8 +98,8 @@ const LCIAResultCalculation = async (exchangeDataSource: any) => {
             key: file.id,
             referenceToLCIAMethodDataSet: {
               '@refObjectId': methodId,
-              '@type': 'lcia method data', //TODO
-              '@uri': `../lciamethods/${methodId}.xml`, //TODO
+              '@type': 'lCIA method data set',
+              '@uri': `../lciamethods/${methodId}.xml`,
               '@version': methodVersion,
               'common:shortDescription': methodName,
             },
