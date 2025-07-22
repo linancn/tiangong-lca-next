@@ -261,7 +261,7 @@ const SourceSelectForm: FC<Props> = ({
             </Button>
           )}
           {id && <SourceView lang={lang} id={id} version={version ?? ''} buttonType='text' />}
-          {id && dataUserId === initialState?.currentUser?.userid  && (
+          {id && dataUserId === initialState?.currentUser?.userid && (
             <SourceEdit
               lang={lang}
               id={id}

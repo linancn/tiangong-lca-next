@@ -2,8 +2,7 @@ import { getRefData, getReviewsOfData, updateDateToReviewState } from '@/service
 import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
 import { addReviewsApi } from '@/services/reviews/api';
 import { getTeamMessageApi } from '@/services/teams/api';
-import { getUsersByIds } from '@/services/users/api';
-import { getUserId } from '@/services/users/api';
+import { getUserId, getUsersByIds } from '@/services/users/api';
 
 export class ConcurrencyController {
   private maxConcurrency: number;

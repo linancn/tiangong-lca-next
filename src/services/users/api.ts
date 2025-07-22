@@ -45,6 +45,6 @@ export async function getUserId() {
   const { data, error } = await supabase.auth.getUser();
   if (error) {
     throw error;
-  };
+  }
   return data?.user?.id;
 }

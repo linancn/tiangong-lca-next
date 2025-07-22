@@ -218,7 +218,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
             </Button>
           )}
           {id && <FlowpropertyView lang={lang} id={id} version={version ?? ''} buttonType='text' />}
-          {id && dataUserId === initialState?.currentUser?.userid  && (
+          {id && dataUserId === initialState?.currentUser?.userid && (
             <FlowpropertiesEdit
               updateErrRef={(data: any) => setErrRef(data)}
               lang={lang}

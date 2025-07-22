@@ -222,7 +222,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
             </Button>
           )}
           {id && <UnitgroupsView lang={lang} id={id} version={version ?? ''} buttonType='text' />}
-          {id && dataUserId ===initialState?.currentUser?.userid  && (
+          {id && dataUserId === initialState?.currentUser?.userid && (
             <UnitgroupsEdit
               lang={lang}
               id={id}

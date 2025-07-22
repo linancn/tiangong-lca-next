@@ -14,8 +14,8 @@ import {
 import { getILCDClassification } from '../ilcd/api';
 import { getProcessesByIdsAndVersions } from '../processes/api';
 import { genProcessName } from '../processes/util';
-import { genLifeCycleModelJsonOrdered, genLifeCycleModelProcess } from './util';
 import { getUserId } from '../users/api';
+import { genLifeCycleModelJsonOrdered, genLifeCycleModelProcess } from './util';
 
 const updateLifeCycleModelProcess = async (
   id: string,

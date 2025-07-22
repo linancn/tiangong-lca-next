@@ -213,7 +213,7 @@ const FlowsSelectForm: FC<Props> = ({
             </Button>
           )}
           {id && <FlowsView lang={lang} id={id} version={version ?? ''} buttonType='text' />}
-          {id && dataUserId === initialState?.currentUser?.userid  && (
+          {id && dataUserId === initialState?.currentUser?.userid && (
             <FlowsEdit
               updateErrRef={(data: any) => setErrRef(data)}
               lang={lang}
