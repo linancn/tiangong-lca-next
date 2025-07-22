@@ -8,7 +8,7 @@ import {
   ProLayout,
 } from '@ant-design/pro-components';
 import { Alert, App, Button, ConfigProvider, Tabs, message, theme } from 'antd';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Helmet, SelectLang, history, useIntl, useModel } from 'umi';
 
 import { Footer } from '@/components';
@@ -132,7 +132,6 @@ const Login: React.FC = () => {
 
   const { status, type: loginType } = userLoginState;
   const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
-
 
   return (
     <App>
