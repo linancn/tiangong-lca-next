@@ -294,8 +294,6 @@ const LCIAResultCalculation = async (exchangeDataSource: any) => {
       listData = await getDecompressedMethod('list.json');
     }
 
-    console.log(`📋 Processing ${listData.files.length} LCIA methods`);
-
     for (const file of listData.files) {
       try {
         // First try to get from cache
@@ -332,32 +330,66 @@ const LCIAResultCalculation = async (exchangeDataSource: any) => {
           continue;
         }
 
+        // Build an index for fast factor lookup: flowId+direction -> factor
+        const factorIndex = new Map<string, any>();
+        factors.forEach((factor: any) => {
+          const flowId = factor.referenceToFlowDataSet?.['@refObjectId'];
+          const direction = String(factor.exchangeDirection || '').toLowerCase();
+          if (flowId && direction) {
+            const key = `${flowId}:${direction}`;
+            factorIndex.set(key, factor);
+          }
+        });
+
         let sumLCIA = new BigNumber(0);
         let matchedExchanges = 0;
 
         exchangeDataSource.forEach((exchange: any) => {
-          const matchingFactor = factors.find((factor: any) => {
-            const factorFlowId = factor.referenceToFlowDataSet?.['@refObjectId'];
-            const exchangeFlowId = exchange.referenceToFlowDataSet?.['@refObjectId'];
-            const factorDirection = String(factor.exchangeDirection || '').toLowerCase();
-            const exchangeDirection = String(exchange.exchangeDirection || '').toLowerCase();
+          const exchangeFlowId = exchange.referenceToFlowDataSet?.['@refObjectId'];
+          const exchangeDirection = String(exchange.exchangeDirection || '').toLowerCase();
 
-            return factorFlowId === exchangeFlowId && factorDirection === exchangeDirection;
-          });
+          if (exchangeFlowId && exchangeDirection) {
+            const key = `${exchangeFlowId}:${exchangeDirection}`;
+            const matchingFactor = factorIndex.get(key);
 
-          if (matchingFactor) {
-            const exchangeAmount = new BigNumber(exchange.meanAmount);
-            const factorValue = new BigNumber(matchingFactor.meanValue);
+            if (matchingFactor) {
+              const exchangeAmount = new BigNumber(exchange.meanAmount);
+              const factorValue = new BigNumber(matchingFactor.meanValue);
 
-            if (!exchangeAmount.isNaN() && !factorValue.isNaN()) {
-              const contribution = exchangeAmount.times(factorValue);
-              sumLCIA = sumLCIA.plus(contribution);
-              matchedExchanges++;
-
-              // console.log(`Matched exchange: ${exchange.referenceToFlowDataSet?.['@refObjectId']}, Amount: ${exchangeAmount.toString()}, Factor: ${factorValue.toString()}, Contribution: ${contribution.toString()}`);
+              if (!exchangeAmount.isNaN() && !factorValue.isNaN()) {
+                const contribution = exchangeAmount.times(factorValue);
+                sumLCIA = sumLCIA.plus(contribution);
+                matchedExchanges++;
+              }
             }
           }
         });
+
+        // Fallback: If no matches found with index, try original method for comparison
+        if (matchedExchanges === 0) {
+          exchangeDataSource.forEach((exchange: any) => {
+            const originalMatchingFactor = factors.find((factor: any) => {
+              const factorFlowId = factor.referenceToFlowDataSet?.['@refObjectId'];
+              const exchangeFlowId = exchange.referenceToFlowDataSet?.['@refObjectId'];
+              const factorDirection = String(factor.exchangeDirection || '').toLowerCase();
+              const exchangeDirection = String(exchange.exchangeDirection || '').toLowerCase();
+
+              return factorFlowId === exchangeFlowId && factorDirection === exchangeDirection;
+            });
+
+            if (originalMatchingFactor) {
+              const exchangeAmount = new BigNumber(exchange.meanAmount);
+              const factorValue = new BigNumber(originalMatchingFactor.meanValue);
+
+              if (!exchangeAmount.isNaN() && !factorValue.isNaN()) {
+                const contribution = exchangeAmount.times(factorValue);
+                sumLCIA = sumLCIA.plus(contribution);
+                matchedExchanges++;
+              }
+            }
+          });
+        }
+
         if (matchedExchanges > 0) {
           const lciaResult: LCIAResultTable = {
             key: file.id,
