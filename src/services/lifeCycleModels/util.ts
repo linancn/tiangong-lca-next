@@ -1614,7 +1614,7 @@ const calculateProcessExchange = (
           const dsModelProcess = modelProcesses.find(
             (p: any) => p?.['@dataSetInternalID'] === downstreamProcesses[0]?.['@id'],
           );
-          const connectionOutputFlow = dbPE.exchange?.find((e: any) => {
+          const connectionOutputFlow = dbPE?.exchange?.find((e: any) => {
             return (
               e?.referenceToFlowDataSet?.['@refObjectId'] === o?.['@flowUUID'] &&
               e?.exchangeDirection?.toUpperCase() === 'OUTPUT'
@@ -1777,7 +1777,7 @@ const calculateProcessExchange = (
   const newProcessExchange = {
     processId: modelProcess?.referenceToProcess?.['@refObjectId'],
     scalingFactor: scalingFactor,
-    exchange: dbPE.exchange,
+    exchange: dbPE?.exchange,
     connectionFlow: {
       outputFlowIds: outputFlowIds,
       inputFlowIds: inputFlowIds,

@@ -84,6 +84,13 @@ const TableList: FC = () => {
       dataIndex: 'classification',
       sorter: true,
       search: false,
+      render: (_, row) => {
+        return (
+          <div>
+            {row.classification && row.classification !== 'undefined' ? row.classification : '-'}
+          </div>
+        );
+      },
     },
     {
       title: (
