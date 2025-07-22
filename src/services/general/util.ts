@@ -157,14 +157,14 @@ export function genClassStr(
   const c = classification?.find((i) => i?.value === data?.[index]);
   if (c) {
     if (data.length > index + 1) {
-      return c?.label + ' / ' + genClassStr(data, index + 1, c?.children);
+      return c?.label + ' > ' + genClassStr(data, index + 1, c?.children);
     } else {
       return c?.label;
     }
   } else {
     if (data?.[index]) {
       if (data.length > index + 1) {
-        return data?.[index] + ' / ' + genClassStr(data, index + 1, []);
+        return data?.[index] + ' > ' + genClassStr(data, index + 1, []);
       } else {
         return data?.[index];
       }
@@ -279,7 +279,7 @@ export function classificationToString(classifications: any[]) {
     if (classifications && classifications.length > 0) {
       for (let i = 0; i < classifications.length; i++) {
         const filterList = classifications.find((c) => c['@level'] === i.toString());
-        classificationStr += filterList?.['#text'] + ' / ';
+        classificationStr += filterList?.['#text'] + ' > ';
       }
       classificationStr = classificationStr.slice(0, -3);
     } else {
