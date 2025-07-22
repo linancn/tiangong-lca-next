@@ -40,3 +40,11 @@ export async function getUserEmailByUserIds(userIds: string[]) {
     .in('id', userIds);
   return result.data ?? [];
 }
+
+export async function getUserId() {
+  const { data, error } = await supabase.auth.getUser();
+  if (error) {
+    throw error;
+  };
+  return data?.user?.id;
+}
