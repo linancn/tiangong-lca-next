@@ -74,6 +74,7 @@ export default {
 
   'pages.process.view.exchanges': 'Inputs and Outputs',
   'pages.process.view.lciaresults': 'LCIA Results',
+  'pages.process.view.lciaresults.calculate': 'Calculate LCIA Results',
   'pages.process.view.lciaresults.shortDescription': 'LCIA',
   'pages.process.view.lciaresults.meanAmount': 'Mean amount',
   'pages.process.view.lciaresults.referenceToLCIAMethodDataSetVersion': 'Version',

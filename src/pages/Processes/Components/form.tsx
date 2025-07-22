@@ -18,7 +18,7 @@ import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData } from '@/services/processes/util';
 import { CalculatorOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
-import { Button, Card, Collapse, Divider, Form, Input, Select, Space, theme, Tooltip } from 'antd';
+import { Card, Collapse, Divider, Form, Input, Select, Space, theme, Tooltip } from 'antd';
 import { useEffect, useRef, useState, type FC } from 'react';
 import { FormattedMessage } from 'umi';
 import schema from '../processes_schema.json';
@@ -2067,13 +2067,20 @@ export const ProcessForm: FC<Props> = ({
         search={false}
         loading={lciaResultDataSourceLoading}
         toolBarRender={() => [
-          <Button
-            size={'middle'}
-            type='text'
-            key='calculator'
-            icon={<CalculatorOutlined />}
-            onClick={getLCIAResult}
-          />,
+          <div key='calculate' className='ant-pro-table-list-toolbar-setting-item'>
+            <span onClick={getLCIAResult}>
+              <Tooltip
+                title={
+                  <FormattedMessage
+                    id='pages.process.view.lciaresults.calculate'
+                    defaultMessage='Calculate LCIA Results'
+                  />
+                }
+              >
+                <CalculatorOutlined />
+              </Tooltip>
+            </span>
+          </div>,
         ]}
         dataSource={lciaResults}
         columns={lciaResultColumns}
