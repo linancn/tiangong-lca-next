@@ -134,7 +134,7 @@ const Control = (props: ControlIProps) => {
     <Space
       direction='horizontal'
       size={'middle'}
-      style={{ position: 'absolute', right: 13, bottom: 5 }}
+      style={{ position: 'absolute', right: 55, bottom: 10 }}
     >
       {items.map((tool) => {
         if (tool === 'zoomTo') {
