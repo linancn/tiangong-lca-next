@@ -132,7 +132,7 @@ const Control = (props: ControlIProps) => {
 
   return (
     <Space
-      direction='vertical'
+      direction='horizontal'
       size={'middle'}
       style={{ position: 'absolute', right: 13, bottom: 5 }}
     >
@@ -156,7 +156,7 @@ const Control = (props: ControlIProps) => {
                   })}
                 </Space>
               }
-              placement='left'
+              placement='top'
             >
               {/* <button className="dropDownBtn">{`${Math.floor(zoom * 100)}%`}</button> */}
               <Button
@@ -172,7 +172,7 @@ const Control = (props: ControlIProps) => {
           );
         } else if (ControlActionList.includes(tool)) {
           return (
-            <Tooltip key={tool} title={ControlToolMap[tool].label} placement='left'>
+            <Tooltip key={tool} title={ControlToolMap[tool].label} placement='top'>
               <Button
                 type='primary'
                 size='small'

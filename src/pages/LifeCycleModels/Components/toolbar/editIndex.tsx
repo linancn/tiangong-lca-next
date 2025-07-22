@@ -1280,7 +1280,11 @@ const ToolbarEdit: FC<Props> = ({
   };
 
   return (
-    <Space direction='vertical' size={'middle'}>
+    <Space
+      direction='vertical'
+      size={'middle'}
+      style={{ height: '70vh', overflowY: 'auto', paddingRight: 10, paddingLeft: 10 }}
+    >
       <ToolbarEditInfo
         ref={editInfoRef}
         action={thisAction}
