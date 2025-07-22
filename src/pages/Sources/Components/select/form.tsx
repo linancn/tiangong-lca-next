@@ -6,7 +6,7 @@ import { getRefData } from '@/services/general/api';
 import { getSourceDetail } from '@/services/sources/api';
 import { genSourceFromData } from '@/services/sources/util';
 import { ProFormInstance } from '@ant-design/pro-components';
-import { FormattedMessage } from '@umijs/max';
+import { FormattedMessage, useModel } from '@umijs/max';
 import { Button, Card, Col, Divider, Form, Input, Row, Space, theme } from 'antd';
 import React, { FC, ReactNode, useEffect, useState } from 'react';
 import SourceEdit from '../edit';
@@ -41,6 +41,7 @@ const SourceSelectForm: FC<Props> = ({
   const [errRef, setErrRef] = useState<RefCheckType | null>(null);
   const refCheckContext = useRefCheckContext();
   const [refData, setRefData] = useState<any>(null);
+  const { initialState } = useModel('@@initialState');
   const updateErrRefByDetail = (data: any) => {
     if (
       data?.ruleVerification === false &&
@@ -260,7 +261,7 @@ const SourceSelectForm: FC<Props> = ({
             </Button>
           )}
           {id && <SourceView lang={lang} id={id} version={version ?? ''} buttonType='text' />}
-          {id && dataUserId === sessionStorage.getItem('userId') && (
+          {id && dataUserId === initialState?.currentUser?.userid && (
             <SourceEdit
               lang={lang}
               id={id}

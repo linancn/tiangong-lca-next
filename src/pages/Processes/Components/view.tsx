@@ -4,17 +4,24 @@ import LocationTextItemDescription from '@/components/LocationTextItem/descripti
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
+import AlignedNumber from '@/components/AlignedNumber';
 import { getFlowStateCodeByIdsAndVersions } from '@/services/flows/api';
 import { ListPagination } from '@/services/general/data';
-import { getUnitData } from '@/services/general/util';
+import { getLangText, getUnitData } from '@/services/general/util';
+import { LCIAResultTable } from '@/services/lciaMethods/data';
+import LCIAResultCalculation from '@/services/lciaMethods/util';
 import { getProcessDetail, getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData, genProcessFromData } from '@/services/processes/util';
-import { CloseOutlined, ProductOutlined, ProfileOutlined } from '@ant-design/icons';
+import {
+  CalculatorOutlined,
+  CloseOutlined,
+  ProductOutlined,
+  ProfileOutlined,
+} from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Collapse, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { ButtonType } from 'antd/es/button';
-
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -108,6 +115,8 @@ const ProcessView: FC<Props> = ({
   const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<any>({});
+  const [lciaResultDataSource, setLciaResultDataSource] = useState<LCIAResultTable[]>([]);
+  const [lciaResultDataSourceLoading, setLciaResultDataSourceLoading] = useState(false);
   const tabList = [
     {
       key: 'processInformation',
@@ -139,6 +148,10 @@ const ProcessView: FC<Props> = ({
     {
       key: 'exchanges',
       tab: <FormattedMessage id='pages.process.view.exchanges' defaultMessage='Exchanges' />,
+    },
+    {
+      key: 'lciaResults',
+      tab: <FormattedMessage id='pages.process.view.lciaresults' defaultMessage='LCIA Results' />,
     },
     {
       key: 'validation',
@@ -179,6 +192,70 @@ const ProcessView: FC<Props> = ({
       },
     },
   ];
+  const lciaResultColumns: ProColumns<LCIAResultTable>[] = [
+    {
+      title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
+      dataIndex: 'index',
+      valueType: 'index',
+      search: false,
+      width: 70,
+    },
+    {
+      title: (
+        <FormattedMessage
+          id='pages.process.view.lciaresults.shortDescription'
+          defaultMessage='LCIA'
+        />
+      ),
+      dataIndex: 'Name',
+      search: false,
+      width: 500,
+      render: (_, row) => {
+        return [
+          <span key={0}>
+            {getLangText(row?.referenceToLCIAMethodDataSet?.['common:shortDescription'], lang)}
+          </span>,
+        ];
+      },
+    },
+
+    {
+      title: (
+        <FormattedMessage
+          id='pages.process.view.lciaresults.meanAmount'
+          defaultMessage='Mean amount'
+        />
+      ),
+      dataIndex: 'meanAmount',
+      search: false,
+      render: (_, row) => {
+        return [<AlignedNumber key={0} number={row.meanAmount} />];
+      },
+    },
+    {
+      title: (
+        <FormattedMessage
+          id='pages.process.view.lciaresults.referenceToLCIAMethodDataSetVersion'
+          defaultMessage='Reference to LCIA method data set version'
+        />
+      ),
+      dataIndex: 'Version',
+      search: false,
+      render: (_, row) => {
+        return [
+          <Tooltip key={0} placement='topLeft' title={row.referenceToLCIAMethodDataSet['@version']}>
+            {row.referenceToLCIAMethodDataSet['@version']}
+          </Tooltip>,
+        ];
+      },
+    },
+  ];
+  const getLCIAResult = async () => {
+    setLciaResultDataSourceLoading(true);
+    const lciaResults = await LCIAResultCalculation(exchangeDataSource);
+    setLciaResultDataSource(lciaResults ?? []);
+    setLciaResultDataSourceLoading(false);
+  };
 
   const contentList: Record<string, React.ReactNode> = {
     processInformation: (
@@ -1582,6 +1659,23 @@ const ProcessView: FC<Props> = ({
         />
       </>
     ),
+    lciaResults: (
+      <ProTable<LCIAResultTable, ListPagination>
+        search={false}
+        loading={lciaResultDataSourceLoading}
+        toolBarRender={() => [
+          <Button
+            size={'middle'}
+            type='text'
+            key='calculator'
+            icon={<CalculatorOutlined />}
+            onClick={getLCIAResult}
+          />,
+        ]}
+        dataSource={lciaResultDataSource}
+        columns={lciaResultColumns}
+      />
+    ),
     validation: <ReviewItemView data={initData?.modellingAndValidation?.validation?.review} />,
     complianceDeclarations: (
       <ComplianceItemView
@@ -1595,10 +1689,10 @@ const ProcessView: FC<Props> = ({
     setActiveTabKey('processInformation');
     setSpinning(true);
     getProcessDetail(id, version).then(async (result: any) => {
-      setInitData({ ...genProcessFromData(result.data?.json?.processDataSet ?? {}), id: id });
-      setExchangeDataSource([
-        ...(genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? []),
-      ]);
+      const formData = genProcessFromData(result.data?.json?.processDataSet ?? {});
+      setInitData({ ...formData, id: id });
+      setExchangeDataSource([...(formData?.exchanges?.exchange ?? [])]);
+      setLciaResultDataSource(formData?.LCIAResults?.LCIAResult ?? []);
       // if (dataSource === 'my') {
       //   setFooterButtons(
       //     <>

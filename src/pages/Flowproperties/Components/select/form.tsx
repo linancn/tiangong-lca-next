@@ -9,7 +9,7 @@ import { getRefData } from '@/services/general/api';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Divider, Form, Input, Row, Space, theme } from 'antd';
 import React, { FC, ReactNode, useEffect, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useModel } from 'umi';
 import FlowpropertiesEdit from '../edit';
 import FlowpropertyView from '../view';
 import FlowpropertiesSelectDrawer from './drawer';
@@ -46,6 +46,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
   const [refData, setRefData] = useState<any>(null);
   const [errRef, setErrRef] = useState<RefCheckType | null>(null);
   const refCheckContext = useRefCheckContext();
+  const { initialState } = useModel('@@initialState');
   const updateErrRefByDetail = (data: any) => {
     if (
       data?.ruleVerification === false &&
@@ -217,7 +218,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
             </Button>
           )}
           {id && <FlowpropertyView lang={lang} id={id} version={version ?? ''} buttonType='text' />}
-          {id && dataUserId === sessionStorage.getItem('userId') && (
+          {id && dataUserId === initialState?.currentUser?.userid && (
             <FlowpropertiesEdit
               updateErrRef={(data: any) => setErrRef(data)}
               lang={lang}
