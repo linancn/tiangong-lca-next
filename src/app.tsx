@@ -7,6 +7,7 @@ import {
   Question,
   SelectLang,
 } from '@/components';
+import LCIACacheMonitor from '@/components/LCIACacheMonitor';
 import { Link, getIntl, history } from '@umijs/max';
 
 import { currentUser as queryCurrentUser } from '@/services/ant-design-pro/api';
@@ -91,6 +92,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
   };
   return {
     actionsRender: () => [
+      <LCIACacheMonitor key='LCIACacheMonitor' />,
       <DarkMode
         key='DarkMode'
         handleClick={handleClickFunction}
