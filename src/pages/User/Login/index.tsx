@@ -64,7 +64,6 @@ const Login: React.FC = () => {
           currentUser: userInfo,
         }));
       });
-      sessionStorage.setItem('userId', userInfo?.userid ?? '');
     }
   };
 
@@ -134,9 +133,6 @@ const Login: React.FC = () => {
   const { status, type: loginType } = userLoginState;
   const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
 
-  useEffect(() => {
-    sessionStorage.removeItem('userId');
-  }, []);
 
   return (
     <App>

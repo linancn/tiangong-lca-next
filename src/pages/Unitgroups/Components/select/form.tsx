@@ -10,7 +10,7 @@ import { genUnitGroupFromData } from '@/services/unitgroups/util';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Divider, Form, Input, Row, Space, theme } from 'antd';
 import React, { FC, ReactNode, useEffect, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useModel } from 'umi';
 import UnitgroupsEdit from '../edit';
 import UnitgroupsView from '../view';
 import UnitgroupsSelectDrawer from './drawer';
@@ -36,6 +36,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
   const [refData, setRefData] = useState<any>(null);
   const [errRef, setErrRef] = useState<RefCheckType | null>(null);
   const refCheckContext = useRefCheckContext();
+  const { initialState } = useModel('@@initialState');
   const updateErrRefByDetail = (data: any) => {
     if (
       data?.ruleVerification === false &&
@@ -221,7 +222,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
             </Button>
           )}
           {id && <UnitgroupsView lang={lang} id={id} version={version ?? ''} buttonType='text' />}
-          {id && dataUserId === sessionStorage.getItem('userId') && (
+          {id && dataUserId ===initialState?.currentUser?.userid  && (
             <UnitgroupsEdit
               lang={lang}
               id={id}

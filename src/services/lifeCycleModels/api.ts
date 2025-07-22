@@ -15,6 +15,7 @@ import { getILCDClassification } from '../ilcd/api';
 import { getProcessesByIdsAndVersions } from '../processes/api';
 import { genProcessName } from '../processes/util';
 import { genLifeCycleModelJsonOrdered, genLifeCycleModelProcess } from './util';
+import { getUserId } from '../users/api';
 
 const updateLifeCycleModelProcess = async (
   id: string,
@@ -612,6 +613,7 @@ export async function getLifeCycleModelDetail(
     .eq('id', id)
     .eq('version', version);
   if (result.data && result.data.length > 0) {
+    const userId = await getUserId();
     const data = result.data[0];
     if (setIsFromLifeCycle) {
       let procressIds: string[] = [];
@@ -640,7 +642,7 @@ export async function getLifeCycleModelDetail(
             (procress: any) =>
               procress?.id === node?.data?.id && procress?.version === node?.data?.version,
           );
-          if (procress?.user_id === sessionStorage.getItem('userId')) {
+          if (procress?.user_id === userId) {
             node.isMyProcess = true;
           } else {
             node.isMyProcess = false;

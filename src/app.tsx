@@ -17,7 +17,6 @@ import { SettingDrawer } from '@ant-design/pro-components';
 import type { RunTimeLayoutConfig } from '@umijs/max';
 import { default as defaultSettings } from '../config/defaultSettings';
 import { errorConfig } from './requestErrorConfig';
-import { getUserId } from './services/users/api';
 
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
@@ -32,14 +31,6 @@ export async function getInitialState(): Promise<{
   isDarkMode?: boolean;
   fetchUserInfo?: () => Promise<API.CurrentUser | null>;
 }> {
-  try{
-    const userId = await getUserId();
-    sessionStorage.setItem('userId', userId??'');
-  }catch(error){
-    history.replace({
-      pathname:loginPath,
-    });
-  }
   const fetchUserInfo = async (): Promise<API.CurrentUser | null> => {
     try {
       const msg = queryCurrentUser({

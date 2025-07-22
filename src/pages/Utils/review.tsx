@@ -3,6 +3,7 @@ import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
 import { addReviewsApi } from '@/services/reviews/api';
 import { getTeamMessageApi } from '@/services/teams/api';
 import { getUsersByIds } from '@/services/users/api';
+import { getUserId } from '@/services/users/api';
 
 export class ConcurrencyController {
   private maxConcurrency: number;
@@ -437,7 +438,8 @@ export const checkData = async (
 
 export const updateReviewsAfterCheckData = async (teamId: string, data: any, reviewId: string) => {
   const team = await getTeamMessageApi(teamId);
-  const user = await getUsersByIds([sessionStorage.getItem('userId') ?? '']);
+  const userId = await getUserId();
+  const user = await getUsersByIds([userId]);
   const reviewJson = {
     data,
     team: {
@@ -445,7 +447,7 @@ export const updateReviewsAfterCheckData = async (teamId: string, data: any, rev
       name: team?.data?.[0]?.json?.title,
     },
     user: {
-      id: sessionStorage.getItem('userId'),
+      id: userId,
       name: user?.[0]?.display_name,
       email: user?.[0]?.email,
     },
