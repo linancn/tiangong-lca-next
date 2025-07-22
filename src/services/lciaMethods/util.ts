@@ -108,8 +108,6 @@ export const getDecompressedMethod = async (filename: string): Promise<any | nul
  */
 export const cacheAndDecompressMethod = async (filename: string): Promise<boolean> => {
   try {
-    console.log(`📦 Downloading and decompressing: ${filename}`);
-
     // Download the file
     const response = await fetch(`/lciamethods/${filename}`);
     if (!response.ok) {
@@ -121,24 +119,17 @@ export const cacheAndDecompressMethod = async (filename: string): Promise<boolea
     let data: any;
     if (filename.endsWith('.json.gz')) {
       const arrayBuffer = await response.arrayBuffer();
-      const originalSize = arrayBuffer.byteLength;
       const decompressedText = await decompressGzip(arrayBuffer);
       data = JSON.parse(decompressedText);
-      console.log(
-        `✂️ Decompressed ${filename}: ${originalSize} bytes → ${decompressedText.length} chars`,
-      );
     } else {
       const text = await response.text();
-      const originalSize = text.length;
       data = JSON.parse(text);
-      console.log(`📄 Loaded ${filename}: ${originalSize} bytes`);
     }
 
     // Store in IndexedDB
     const db = await initDB();
     await storeDecompressedMethod(db, filename, data);
 
-    console.log(`✅ Cached decompressed: ${filename}`);
     return true;
   } catch (error) {
     console.error(`❌ Failed to cache and decompress ${filename}:`, error);
@@ -238,7 +229,6 @@ export const clearCache = async (): Promise<boolean> => {
       request.onsuccess = () => resolve();
     });
 
-    console.log('✅ LCIA cache cleared successfully (localStorage + IndexedDB)');
     return true;
   } catch (error) {
     console.error('❌ Failed to clear cache:', error);
@@ -251,7 +241,6 @@ export const clearCache = async (): Promise<boolean> => {
  */
 export const forceRefreshCache = async (): Promise<void> => {
   await clearCache();
-  console.log('🔄 Cache cleared. It will be rebuilt automatically with decompression.');
 };
 
 /**
@@ -295,19 +284,17 @@ const LCIAResultCalculation = async (exchangeDataSource: any) => {
     let listData = await getDecompressedMethod('list.json');
 
     if (!listData) {
-      // If not cached, fetch from network
-      const response = await fetch('/lciamethods/list.json');
-      if (!response.ok) {
-        console.error('Failed to load LCIA methods list:', response.status);
+      // If not cached, cache it first (this will download, decompress and store)
+      const cached = await cacheAndDecompressMethod('list.json');
+      if (!cached) {
+        console.error('Failed to load LCIA methods list');
         return;
       }
-      listData = await response.json();
-
-      // Cache the list for future use
-      await cacheAndDecompressMethod('list.json');
+      // Now get from cache
+      listData = await getDecompressedMethod('list.json');
     }
 
-    const useDecompressionStream = 'DecompressionStream' in window;
+    console.log(`📋 Processing ${listData.files.length} LCIA methods`);
 
     for (const file of listData.files) {
       try {
@@ -315,38 +302,14 @@ const LCIAResultCalculation = async (exchangeDataSource: any) => {
         let jsonData = await getDecompressedMethod(file.filename);
 
         if (!jsonData) {
-          // If not cached, fetch and decompress from network
-          const gzResponse = await fetch(`/lciamethods/${file.filename}`);
-          if (!gzResponse.ok) {
-            console.warn(`Failed to load file: ${file.filename}`);
+          // If not cached, cache it first (this will download, decompress and store)
+          const cached = await cacheAndDecompressMethod(file.filename);
+          if (!cached) {
+            console.warn(`Failed to cache file: ${file.filename}`);
             continue;
           }
-
-          const gzArrayBuffer = await gzResponse.arrayBuffer();
-
-          let decompressed: string;
-          if (useDecompressionStream) {
-            // Use native DecompressionStream API with stream processing
-            const stream = new ReadableStream({
-              start(controller) {
-                controller.enqueue(new Uint8Array(gzArrayBuffer));
-                controller.close();
-              },
-            });
-
-            const decompressedStream = stream.pipeThrough(new DecompressionStream('gzip'));
-            decompressed = await new Response(decompressedStream).text();
-          } else {
-            // Fallback to pako for older browsers
-            decompressed = pako.inflate(new Uint8Array(gzArrayBuffer), {
-              to: 'string',
-            });
-          }
-
-          jsonData = JSON.parse(decompressed);
-
-          // Cache the decompressed data for future use
-          await cacheAndDecompressMethod(file.filename);
+          // Now get from cache
+          jsonData = await getDecompressedMethod(file.filename);
         }
 
         const lciaMethodDataSet = jsonData?.LCIAMethodDataSet;
