@@ -1,6 +1,7 @@
 import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import ProcessExchangeView from '@/pages/Processes/Components/Exchange/view';
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
+import AlignedNumber from '@/components/AlignedNumber';
 import { ListPagination } from '@/services/general/data';
 import { getLangText, getUnitData } from '@/services/general/util';
 import { getProcessDetail, getProcessExchange } from '@/services/processes/api';
@@ -66,6 +67,9 @@ const IoPortSelect: FC<Props> = ({
       dataIndex: 'meanAmount',
       sorter: false,
       search: false,
+      render: (_, row) => {
+        return [<AlignedNumber key={0} number={Number(row.meanAmount)} />];
+      },
     },
     {
       title: (
@@ -74,6 +78,9 @@ const IoPortSelect: FC<Props> = ({
       dataIndex: 'resultingAmount',
       sorter: false,
       search: false,
+      render: (_, row) => {
+        return [<AlignedNumber key={0} number={Number(row.resultingAmount)} />];
+      },
     },
 
     {
