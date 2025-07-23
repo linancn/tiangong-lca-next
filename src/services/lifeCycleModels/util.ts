@@ -11,6 +11,7 @@ import {
   removeEmptyObjects,
   toAmountNumber,
 } from '../general/util';
+import LCIAResultCalculation from '../lciaMethods/util';
 import { genProcessName } from '../processes/util';
 import { supabase } from '../supabase';
 
@@ -1930,6 +1931,7 @@ export async function genLifeCycleModelProcess(id: string, refNode: any, data: a
       return e;
     }
   });
+  const LCIAResult = await LCIAResultCalculation(newExchanges);
 
   const newData = removeEmptyObjects({
     processDataSet: {
@@ -2487,6 +2489,9 @@ export async function genLifeCycleModelProcess(id: string, refNode: any, data: a
       },
       exchanges: {
         exchange: newExchanges,
+      },
+      LCIAResults: {
+        LCIAResult,
       },
     },
   });
