@@ -16,12 +16,7 @@ const FlowpropertiesSelectDescription: FC<Props> = ({ title, data, lang }) => {
   return (
     <Card size='small' title={title}>
       <Space direction='horizontal'>
-        <Descriptions
-          bordered
-          size={'small'}
-          column={1}
-          style={{ width: locale === 'zh-CN' ? '500px' : '620px' }}
-        >
+        <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
             key={0}
             label={
