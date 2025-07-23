@@ -1,14 +1,19 @@
 import { useEffect } from 'react';
+import {
+  cacheAndDecompressMethod,
+  getCacheManifest,
+  getCachedMethodList,
+} from '../../services/lciaMethods/util';
 
 const CACHE_KEY = 'lcia_methods_cache_manifest';
-const CACHE_VERSION = '1.0.0'; // Increment this when you want to force re-cache
+const CACHE_VERSION = '1.1.0'; // Increment this when you want to force re-cache
 
 const LCIACacheMonitor = () => {
   useEffect(() => {
     const cacheLciaMethods = async () => {
       try {
-        // Check if we've already cached these files in this browser session
-        const cachedManifest = localStorage.getItem(CACHE_KEY);
+        // Check if we've already cached these files
+        const cachedManifest = getCacheManifest();
         const currentManifest = {
           version: CACHE_VERSION,
           files: [
@@ -40,74 +45,105 @@ const LCIACacheMonitor = () => {
             'list.json',
           ],
           cachedAt: Date.now(),
+          decompressed: true,
         };
 
-        // Check if we need to cache (first time or version changed)
+        // Check if we need to cache
         let shouldCache = false;
         if (!cachedManifest) {
-          console.log('LCIA methods: No cache found, starting initial caching...');
           shouldCache = true;
         } else {
-          const parsed = JSON.parse(cachedManifest);
-          if (parsed.version !== currentManifest.version) {
-            console.log(
-              `LCIA methods: Version changed (${parsed.version} -> ${currentManifest.version}), re-caching...`,
-            );
+          if (cachedManifest.version !== currentManifest.version) {
             shouldCache = true;
-          } else if (JSON.stringify(parsed.files) !== JSON.stringify(currentManifest.files)) {
-            console.log('LCIA methods: File list changed, re-caching...');
+          } else if (
+            JSON.stringify(cachedManifest.files) !== JSON.stringify(currentManifest.files)
+          ) {
+            shouldCache = true;
+          } else if (!cachedManifest.decompressed) {
             shouldCache = true;
           } else {
-            const hoursSinceCache = (Date.now() - parsed.cachedAt) / (1000 * 60 * 60);
+            const hoursSinceCache = (Date.now() - cachedManifest.cachedAt) / (1000 * 60 * 60);
             if (hoursSinceCache > 24) {
-              console.log('LCIA methods: Cache is older than 24 hours, refreshing...');
               shouldCache = true;
             } else {
-              console.log('LCIA methods: Cache is up to date, skipping pre-caching.');
-              return;
+              // Verify that all files are actually in IndexedDB
+              const cachedFiles = await getCachedMethodList();
+              const missingFiles = currentManifest.files.filter(
+                (file) => !cachedFiles.includes(file),
+              );
+
+              if (missingFiles.length > 0) {
+                shouldCache = true;
+              } else {
+                console.log('✅ LCIA methods cache is up to date.');
+                return;
+              }
             }
           }
         }
 
         if (!shouldCache) return;
 
-        console.log('Starting LCIA methods pre-caching...');
-        let cachedCount = 0;
+        console.log('🎯 Starting LCIA methods caching...');
+        let successCount = 0;
+        let errorCount = 0;
 
-        for (const file of currentManifest.files) {
-          try {
-            // Use HEAD request first to check if file exists and get cache headers
-            const headResponse = await fetch(`/lciamethods/${file}`, { method: 'HEAD' });
-            if (headResponse.ok) {
-              // If HEAD is successful, do a GET request to cache the file
-              await fetch(`/lciamethods/${file}`);
-              cachedCount++;
-              console.log(`✓ Cached: ${file} (${cachedCount}/${currentManifest.files.length})`);
-            } else {
-              console.warn(`⚠️ File not found: ${file}`);
+        // Process files in batches to avoid overwhelming the browser
+        const batchSize = 3;
+        for (let i = 0; i < currentManifest.files.length; i += batchSize) {
+          const batch = currentManifest.files.slice(i, i + batchSize);
+
+          // Process batch in parallel
+          const batchPromises = batch.map(async (file) => {
+            try {
+              const success = await cacheAndDecompressMethod(file);
+              return success;
+            } catch (error) {
+              console.error(`Failed to cache ${file}:`, error);
+              return false;
             }
-          } catch (error) {
-            console.error(`❌ Failed to cache ${file}:`, error);
+          });
+
+          const results = await Promise.all(batchPromises);
+
+          // Update counters based on results
+          for (const success of results) {
+            if (success) {
+              successCount++;
+            } else {
+              errorCount++;
+            }
           }
 
-          // Add a small delay to avoid overwhelming the server
-          await new Promise((resolve) => {
-            setTimeout(resolve, 50);
-          });
+          // Small delay between batches
+          if (i + batchSize < currentManifest.files.length) {
+            await new Promise<void>((resolve) => {
+              setTimeout(() => {
+                resolve();
+              }, 100);
+            });
+          }
         }
 
-        // Save the cache manifest to localStorage
+        // Save the cache manifest
         localStorage.setItem(CACHE_KEY, JSON.stringify(currentManifest));
 
-        console.log(
-          `✅ LCIA methods pre-caching finished. Successfully cached ${cachedCount}/${currentManifest.files.length} files.`,
-        );
+        const totalFiles = currentManifest.files.length;
+        if (successCount === totalFiles) {
+          console.log(
+            `🎉 LCIA methods caching completed! ${successCount} files cached successfully.`,
+          );
+        } else {
+          console.log(
+            `⚠️  LCIA methods caching completed with issues: ${successCount}/${totalFiles} successful, ${errorCount} errors.`,
+          );
+        }
       } catch (error) {
-        console.error('Failed to pre-cache LCIA methods:', error);
+        console.error('❌ Failed to cache LCIA methods:', error);
       }
     };
 
-    // Start caching after the app has mounted and had a moment to settle.
+    // Start caching after the app has mounted
     const timer = setTimeout(() => {
       cacheLciaMethods();
     }, 3000); // 3-second delay
