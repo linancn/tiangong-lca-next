@@ -1,5 +1,4 @@
 import BigNumber from 'bignumber.js';
-import * as pako from 'pako';
 import { LCIAResultTable } from './data';
 
 // Enhanced LCIA Cache Management with Decompression
@@ -43,12 +42,27 @@ const initDB = (): Promise<IDBDatabase> => {
 };
 
 /**
- * Decompress gzipped content
+ * Decompress gzipped content using native browser API
  */
 const decompressGzip = async (gzipData: ArrayBuffer): Promise<string> => {
   try {
-    const decompressed = pako.ungzip(new Uint8Array(gzipData), { to: 'string' });
-    return decompressed;
+    // Check if DecompressionStream is supported (modern browsers)
+    if (typeof DecompressionStream !== 'undefined') {
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new Uint8Array(gzipData));
+          controller.close();
+        },
+      });
+
+      const decompressedStream = stream.pipeThrough(new DecompressionStream('gzip'));
+      const response = new Response(decompressedStream);
+      return await response.text();
+    } else {
+      throw new Error(
+        'DecompressionStream not supported in this browser. Please use a modern browser.',
+      );
+    }
   } catch (error) {
     throw new Error(`Failed to decompress data: ${error}`);
   }
