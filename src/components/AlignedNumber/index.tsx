@@ -37,8 +37,21 @@ function trimTrailingZeros(s: string) {
   return s.replace(/\.?0+$/, '');
 }
 
-const AlignedNumber = ({ number, precision = 4 }: { number: number; precision?: number }) => {
-  if (number === null || number === undefined || isNaN(number)) {
+const AlignedNumber = ({
+  value,
+  precision = 4,
+}: {
+  value: number | string;
+  precision?: number;
+}) => {
+  const number = Number(value);
+
+  if (
+    number === null ||
+    number === undefined ||
+    isNaN(number) ||
+    (typeof value === 'string' && value.trim() === '')
+  ) {
     return <span style={{ textAlign: 'right', display: 'inline-block', width: '100%' }}>-</span>;
   }
 

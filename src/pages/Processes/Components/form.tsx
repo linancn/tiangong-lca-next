@@ -216,7 +216,7 @@ export const ProcessForm: FC<Props> = ({
       dataIndex: 'meanAmount',
       search: false,
       render: (_, row) => {
-        return [<AlignedNumber key={0} number={row.meanAmount} />];
+        return [<AlignedNumber key={0} value={row.meanAmount} />];
       },
     },
     {
