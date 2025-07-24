@@ -321,6 +321,7 @@ const ProcessCreate: FC<CreateProps> = ({
               },
             }}
             onFinish={async () => {
+              setSpinning(true);
               // const { checkResult, tabName } = checkRequiredFields(requiredFields, fromData);
               // if (!checkResult) {
               //   await setActiveTabKey(tabName);
@@ -367,6 +368,7 @@ const ProcessCreate: FC<CreateProps> = ({
               } else {
                 message.error(result.error.message);
               }
+              setSpinning(false);
               return true;
             }}
           >

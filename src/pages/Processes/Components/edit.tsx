@@ -182,8 +182,8 @@ const ProcessEdit: FC<Props> = ({
         setSpinning(false);
         setDrawerVisible(false);
         setViewDrawerVisible(false);
-        actionRef?.current?.reload();
       }
+      actionRef?.current?.reload();
     } else {
       if (updateResult?.error?.state_code === 100) {
         message.error(
