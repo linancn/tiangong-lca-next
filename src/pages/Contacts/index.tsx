@@ -308,7 +308,6 @@ const TableList: FC = () => {
                 }}
               />,
               <ContactCreate
-                isInToolbar={true}
                 importData={importData}
                 onClose={() => setImportData(null)}
                 lang={lang}

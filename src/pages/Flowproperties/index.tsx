@@ -341,7 +341,6 @@ const TableList: FC = () => {
                 }}
               />,
               <FlowpropertiesCreate
-                isInToolbar={true}
                 importData={importData}
                 onClose={() => setImportData(null)}
                 lang={lang}

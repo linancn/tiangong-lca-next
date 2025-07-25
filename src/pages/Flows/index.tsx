@@ -332,7 +332,6 @@ const TableList: FC = () => {
                 }}
               />,
               <FlowsCreate
-                isInToolbar={true}
                 importData={importData}
                 onClose={() => setImportData(null)}
                 key={0}

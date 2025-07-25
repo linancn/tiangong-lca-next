@@ -1,3 +1,4 @@
+import ToolBarButton from '@/components/ToolBarButton';
 import { initVersion } from '@/services/general/data';
 import { formatDateTime } from '@/services/general/util';
 import { createUnitGroup, getUnitGroupDetail } from '@/services/unitgroups/api';
@@ -18,7 +19,6 @@ type Props = {
   actionType?: 'create' | 'copy' | 'createVersion';
   id?: string;
   version?: string;
-  isInToolbar?: boolean;
   importData?: any;
   onClose?: () => void;
 };
@@ -45,7 +45,6 @@ const UnitGroupCreate: FC<CreateProps> = ({
   version,
   importData,
   onClose = () => {},
-  isInToolbar = false,
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
@@ -188,15 +187,13 @@ const UnitGroupCreate: FC<CreateProps> = ({
             }}
           ></Button>
         ) : (
-          <Button
-            style={isInToolbar ? { width: 'inherit', paddingInline: '4px' } : {}}
-            size={isInToolbar ? 'large' : 'middle'}
-            type='text'
+          <ToolBarButton
             icon={<PlusOutlined />}
+            tooltip={<FormattedMessage id='pages.button.create' defaultMessage='Create' />}
             onClick={() => {
               setDrawerVisible(true);
             }}
-          ></Button>
+          />
         )}
       </Tooltip>
       <Drawer

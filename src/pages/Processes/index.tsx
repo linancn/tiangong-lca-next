@@ -400,7 +400,6 @@ const TableList: FC = () => {
                 }}
               />,
               <ProcessCreate
-                isInToolbar={true}
                 importData={importData}
                 onClose={() => setImportData(null)}
                 key={0}

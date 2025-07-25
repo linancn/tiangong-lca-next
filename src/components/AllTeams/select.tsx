@@ -1,3 +1,4 @@
+import ToolBarButton from '@/components/ToolBarButton';
 import { getLang, getLangText } from '@/services/general/util';
 import { getUnrankedTeams, updateSort } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
@@ -129,23 +130,34 @@ const SelectTeams: FC<SelectTeamsProps> = ({
           <FormattedMessage id='component.allTeams.select.button' defaultMessage='Select Team' />
         </Button>
       ) : (
-        <Tooltip
-          title={
+        <ToolBarButton
+          disabled={disabled}
+          icon={<PlusOutlined />}
+          tooltip={
             <FormattedMessage
               id='component.allTeams.table.select.tooltip'
               defaultMessage='Select Team'
             />
           }
-        >
-          <Button
-            disabled={disabled}
-            type='text'
-            shape='circle'
-            size='small'
-            icon={<PlusOutlined />}
-            onClick={showDrawer}
-          />
-        </Tooltip>
+          onClick={showDrawer}
+        />
+        // <Tooltip
+        //   title={
+        //     <FormattedMessage
+        //       id='component.allTeams.table.select.tooltip'
+        //       defaultMessage='Select Team'
+        //     />
+        //   }
+        // >
+        //   <Button
+        //     disabled={disabled}
+        //     type='text'
+        //     shape='circle'
+        //     size='small'
+        //     icon={<PlusOutlined />}
+        //     onClick={showDrawer}
+        //   />
+        // </Tooltip>
       )}
 
       <Drawer

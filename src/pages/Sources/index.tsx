@@ -306,7 +306,6 @@ const TableList: FC = () => {
                 }}
               />,
               <SourceCreate
-                isInToolbar={true}
                 importData={importData}
                 onClose={() => setImportData(null)}
                 lang={lang}

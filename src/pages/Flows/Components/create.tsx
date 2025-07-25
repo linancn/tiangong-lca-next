@@ -3,6 +3,7 @@ import { genFlowFromData } from '@/services/flows/util';
 import { formatDateTime } from '@/services/general/util';
 // import { getSourceDetail } from '@/services/sources/api';
 // import { genSourceFromData } from '@/services/sources/util';
+import ToolBarButton from '@/components/ToolBarButton';
 import styles from '@/style/custom.less';
 import { CloseOutlined, CopyOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -21,7 +22,6 @@ type Props = {
   version?: string;
   importData?: any;
   onClose?: () => void;
-  isInToolbar?: boolean;
 };
 
 // When type is 'copy' or 'createVersion', id and version are required parameters
@@ -46,7 +46,6 @@ const FlowsCreate: FC<CreateProps> = ({
   version,
   importData,
   onClose = () => {},
-  isInToolbar = false,
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
@@ -235,11 +234,9 @@ const FlowsCreate: FC<CreateProps> = ({
             }}
           ></Button>
         ) : (
-          <Button
-            style={isInToolbar ? { width: 'inherit', paddingInline: '4px' } : {}}
-            size={isInToolbar ? 'large' : 'middle'}
-            type='text'
+          <ToolBarButton
             icon={<PlusOutlined />}
+            tooltip={<FormattedMessage id='pages.button.create' defaultMessage='Create' />}
             onClick={() => {
               setDrawerVisible(true);
             }}

@@ -6,6 +6,7 @@ import SourceSelectForm from '@/pages/Sources/Components/select/form';
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import AlignedNumber from '@/components/AlignedNumber';
 import RequiredMark from '@/components/RequiredMark';
+import ToolBarButton from '@/components/ToolBarButton';
 import { useRefCheckContext } from '@/contexts/refCheckContext';
 import { getRules } from '@/pages/Utils';
 import { getFlowStateCodeByIdsAndVersions } from '@/services/flows/api';
@@ -2067,20 +2068,17 @@ export const ProcessForm: FC<Props> = ({
         search={false}
         loading={lciaResultDataSourceLoading}
         toolBarRender={() => [
-          <div key='calculate' className='ant-pro-table-list-toolbar-setting-item'>
-            <span onClick={getLCIAResult}>
-              <Tooltip
-                title={
-                  <FormattedMessage
-                    id='pages.process.view.lciaresults.calculate'
-                    defaultMessage='Calculate LCIA Results'
-                  />
-                }
-              >
-                <CalculatorOutlined />
-              </Tooltip>
-            </span>
-          </div>,
+          <ToolBarButton
+            key='calculate'
+            icon={<CalculatorOutlined />}
+            tooltip={
+              <FormattedMessage
+                id='pages.process.view.lciaresults.calculate'
+                defaultMessage='Calculate LCIA Results'
+              />
+            }
+            onClick={getLCIAResult}
+          />,
         ]}
         dataSource={lciaResults}
         columns={lciaResultColumns}
