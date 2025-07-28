@@ -1,3 +1,4 @@
+import ToolBarButton from '@/components/ToolBarButton';
 import { createContact, getContactDetail } from '@/services/contacts/api';
 import { genContactFromData } from '@/services/contacts/util';
 import { initVersion } from '@/services/general/data';
@@ -11,6 +12,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
 import { ContactForm } from './form';
+
 type Props = {
   lang: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
@@ -19,7 +21,6 @@ type Props = {
   version?: string;
   importData?: any;
   onClose?: () => void;
-  isInToolbar?: boolean;
 };
 
 // When type is 'copy' or 'createVersion', id and version are required parameters
@@ -44,7 +45,6 @@ const ContactCreate: FC<CreateProps> = ({
   version,
   importData,
   onClose = () => {},
-  isInToolbar = false,
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [fromData, setFromData] = useState<any>({});
@@ -162,11 +162,9 @@ const ContactCreate: FC<CreateProps> = ({
             }}
           />
         ) : (
-          <Button
-            style={isInToolbar ? { width: 'inherit', paddingInline: '4px' } : {}}
-            size={isInToolbar ? 'large' : 'middle'}
-            type='text'
+          <ToolBarButton
             icon={<PlusOutlined />}
+            tooltip={<FormattedMessage id='pages.button.create' defaultMessage='Create' />}
             onClick={() => {
               setDrawerVisible(true);
             }}

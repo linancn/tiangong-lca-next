@@ -15,6 +15,7 @@ type Props = {
 };
 const ProcessDelete: FC<Props> = ({ id, version, buttonType, actionRef, setViewDrawerVisible }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const intl = useIntl();
 
   const showModal = useCallback(() => {
@@ -22,21 +23,26 @@ const ProcessDelete: FC<Props> = ({ id, version, buttonType, actionRef, setViewD
   }, []);
 
   const handleOk = useCallback(() => {
-    deleteProcess(id, version).then(async (result: any) => {
-      if (result.status === 204) {
-        message.success(
-          intl.formatMessage({
-            id: 'pages.button.delete.success',
-            defaultMessage: 'Selected record has been deleted.',
-          }),
-        );
-        setViewDrawerVisible(false);
-        setIsModalVisible(false);
-        actionRef.current?.reload();
-      } else {
-        message.error(result.error.message ?? 'Error');
-      }
-    });
+    setIsDeleting(true);
+    deleteProcess(id, version)
+      .then(async (result: any) => {
+        if (result.status === 204) {
+          message.success(
+            intl.formatMessage({
+              id: 'pages.button.delete.success',
+              defaultMessage: 'Selected record has been deleted.',
+            }),
+          );
+          setViewDrawerVisible(false);
+          setIsModalVisible(false);
+          actionRef.current?.reload();
+        } else {
+          message.error(result.error.message ?? 'Error');
+        }
+      })
+      .finally(() => {
+        setIsDeleting(false);
+      });
   }, [actionRef, id, setViewDrawerVisible]);
 
   const handleCancel = useCallback(() => {
@@ -54,6 +60,7 @@ const ProcessDelete: FC<Props> = ({ id, version, buttonType, actionRef, setViewD
               open={isModalVisible}
               onOk={handleOk}
               onCancel={handleCancel}
+              confirmLoading={isDeleting}
             >
               <FormattedMessage
                 id='pages.button.deleteMessage.areyousureyouwanttodeletethisdata'
@@ -71,6 +78,7 @@ const ProcessDelete: FC<Props> = ({ id, version, buttonType, actionRef, setViewD
               open={isModalVisible}
               onOk={handleOk}
               onCancel={handleCancel}
+              confirmLoading={isDeleting}
             >
               <FormattedMessage
                 id='pages.button.deleteMessage'

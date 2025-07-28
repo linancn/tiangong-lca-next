@@ -1,21 +1,11 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
+import ToolBarButton from '@/components/ToolBarButton';
 import FlowpropertiesSelectForm from '@/pages/Flowproperties/Components/select/form';
 import { getRules } from '@/pages/Utils';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { ProForm, ProFormInstance } from '@ant-design/pro-components';
-import {
-  Button,
-  Card,
-  Drawer,
-  Form,
-  Input,
-  InputNumber,
-  Select,
-  Space,
-  Switch,
-  Tooltip,
-} from 'antd';
+import { Button, Card, Drawer, Form, Input, InputNumber, Select, Space, Switch } from 'antd';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -46,7 +36,14 @@ const PropertyCreate: FC<Props> = ({ lang, onData, showRules = false }) => {
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id='pages.button.create' defaultMessage='Create' />}>
+      <ToolBarButton
+        icon={<PlusOutlined />}
+        tooltip={<FormattedMessage id='pages.button.create' defaultMessage='Create' />}
+        onClick={() => {
+          setDrawerVisible(true);
+        }}
+      />
+      {/* <Tooltip title={<FormattedMessage id='pages.button.create' defaultMessage='Create' />}>
         <Button
           size={'middle'}
           type='text'
@@ -55,7 +52,7 @@ const PropertyCreate: FC<Props> = ({ lang, onData, showRules = false }) => {
             setDrawerVisible(true);
           }}
         />
-      </Tooltip>
+      </Tooltip> */}
       <Drawer
         destroyOnClose={true}
         getContainer={() => document.body}

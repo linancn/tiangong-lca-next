@@ -1,5 +1,6 @@
+import ToolBarButton from '@/components/ToolBarButton';
 import { InboxOutlined, UploadOutlined } from '@ant-design/icons';
-import { Button, Modal, Upload, message } from 'antd';
+import { Modal, Upload, message } from 'antd';
 import type { RcFile, UploadProps } from 'antd/es/upload';
 import type { FC } from 'react';
 import { useState } from 'react';
@@ -101,14 +102,18 @@ const ImportData: FC<ImportDataProps> = ({ onJsonData }) => {
 
   return (
     <>
-      <Button
+      {/* <Button
         style={{ width: 'inherit', paddingInline: '4px' }}
         onClick={showModal}
         size='large'
         icon={<UploadOutlined />}
         type='text'
-      ></Button>
-
+      ></Button> */}
+      <ToolBarButton
+        icon={<UploadOutlined />}
+        tooltip={<FormattedMessage id='component.importData.import' defaultMessage='Import' />}
+        onClick={showModal}
+      />
       <Modal
         title={intl.formatMessage({
           id: 'component.importData.title',

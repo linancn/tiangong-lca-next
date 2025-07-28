@@ -413,6 +413,7 @@ const ReviewProcessDetail: FC<Props> = ({
               },
             }}
             onFinish={async () => {
+              setSpinning(true);
               const fieldsValue = formRefEdit.current?.getFieldsValue();
               const submitData = {
                 modellingAndValidation: {
@@ -422,7 +423,6 @@ const ReviewProcessDetail: FC<Props> = ({
                 },
               };
 
-              setSpinning(true);
               const { error } = await updateCommentApi(
                 reviewId,
                 { json: submitData, state_code: 1 },

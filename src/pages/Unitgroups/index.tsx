@@ -329,7 +329,6 @@ const TableList: FC = () => {
                 }}
               />,
               <UnitGroupCreate
-                isInToolbar={true}
                 importData={importData}
                 onClose={() => setImportData(null)}
                 key={0}

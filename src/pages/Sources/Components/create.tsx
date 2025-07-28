@@ -1,3 +1,4 @@
+import ToolBarButton from '@/components/ToolBarButton';
 import { initVersion } from '@/services/general/data';
 import { formatDateTime } from '@/services/general/util';
 import { createSource, getSourceDetail } from '@/services/sources/api';
@@ -23,7 +24,6 @@ type Props = {
   version?: string;
   importData?: any;
   onClose?: () => void;
-  isInToolbar?: boolean;
 };
 
 // When type is 'copy' or 'createVersion', id and version are required parameters
@@ -48,7 +48,6 @@ const SourceCreate: FC<CreateProps> = ({
   version,
   importData,
   onClose = () => {},
-  isInToolbar = false,
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
@@ -262,11 +261,9 @@ const SourceCreate: FC<CreateProps> = ({
             }}
           />
         ) : (
-          <Button
-            style={isInToolbar ? { width: 'inherit', paddingInline: '4px' } : {}}
-            size={isInToolbar ? 'large' : 'middle'}
-            type='text'
+          <ToolBarButton
             icon={<PlusOutlined />}
+            tooltip={<FormattedMessage id='pages.button.create' defaultMessage='Create' />}
             onClick={() => {
               setDrawerVisible(true);
             }}

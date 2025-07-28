@@ -68,7 +68,7 @@ const IoPortSelect: FC<Props> = ({
       sorter: false,
       search: false,
       render: (_, row) => {
-        return [<AlignedNumber key={0} number={Number(row.meanAmount)} />];
+        return [<AlignedNumber key={0} value={row.meanAmount} />];
       },
     },
     {
@@ -79,7 +79,7 @@ const IoPortSelect: FC<Props> = ({
       sorter: false,
       search: false,
       render: (_, row) => {
-        return [<AlignedNumber key={0} number={Number(row.resultingAmount)} />];
+        return [<AlignedNumber key={0} value={row.resultingAmount} />];
       },
     },
 

@@ -142,7 +142,7 @@ export const FlowForm: FC<Props> = ({
       align: 'right',
       width: 140,
       render: (_: any, record: any) => {
-        return <AlignedNumber number={record.meanValue} />;
+        return <AlignedNumber value={record.meanValue} />;
       },
     },
     {

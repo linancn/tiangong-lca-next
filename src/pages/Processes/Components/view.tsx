@@ -9,16 +9,10 @@ import { getFlowStateCodeByIdsAndVersions } from '@/services/flows/api';
 import { ListPagination } from '@/services/general/data';
 import { getLangText, getUnitData } from '@/services/general/util';
 import { LCIAResultTable } from '@/services/lciaMethods/data';
-import LCIAResultCalculation from '@/services/lciaMethods/util';
 import { getProcessDetail, getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData, genProcessFromData } from '@/services/processes/util';
-import {
-  CalculatorOutlined,
-  CloseOutlined,
-  ProductOutlined,
-  ProfileOutlined,
-} from '@ant-design/icons';
+import { CloseOutlined, ProductOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Collapse, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { ButtonType } from 'antd/es/button';
@@ -116,7 +110,7 @@ const ProcessView: FC<Props> = ({
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<any>({});
   const [lciaResultDataSource, setLciaResultDataSource] = useState<LCIAResultTable[]>([]);
-  const [lciaResultDataSourceLoading, setLciaResultDataSourceLoading] = useState(false);
+  // const [lciaResultDataSourceLoading, setLciaResultDataSourceLoading] = useState(false);
   const tabList = [
     {
       key: 'processInformation',
@@ -229,7 +223,7 @@ const ProcessView: FC<Props> = ({
       dataIndex: 'meanAmount',
       search: false,
       render: (_, row) => {
-        return [<AlignedNumber key={0} number={row.meanAmount} />];
+        return [<AlignedNumber key={0} value={row.meanAmount} />];
       },
     },
     {
@@ -250,12 +244,12 @@ const ProcessView: FC<Props> = ({
       },
     },
   ];
-  const getLCIAResult = async () => {
-    setLciaResultDataSourceLoading(true);
-    const lciaResults = await LCIAResultCalculation(exchangeDataSource);
-    setLciaResultDataSource(lciaResults ?? []);
-    setLciaResultDataSourceLoading(false);
-  };
+  // const getLCIAResult = async () => {
+  //   setLciaResultDataSourceLoading(true);
+  //   const lciaResults = await LCIAResultCalculation(exchangeDataSource);
+  //   setLciaResultDataSource(lciaResults ?? []);
+  //   setLciaResultDataSourceLoading(false);
+  // };
 
   const contentList: Record<string, React.ReactNode> = {
     processInformation: (
@@ -1662,23 +1656,6 @@ const ProcessView: FC<Props> = ({
     lciaResults: (
       <ProTable<LCIAResultTable, ListPagination>
         search={false}
-        loading={lciaResultDataSourceLoading}
-        toolBarRender={() => [
-          <div key='calculate' className='ant-pro-table-list-toolbar-setting-item'>
-            <span onClick={getLCIAResult}>
-              <Tooltip
-                title={
-                  <FormattedMessage
-                    id='pages.process.view.lciaresults.calculate'
-                    defaultMessage='Calculate LCIA Results'
-                  />
-                }
-              >
-                <CalculatorOutlined />
-              </Tooltip>
-            </span>
-          </div>,
-        ]}
         dataSource={lciaResultDataSource}
         columns={lciaResultColumns}
       />

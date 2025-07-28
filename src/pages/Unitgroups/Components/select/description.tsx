@@ -26,12 +26,7 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
   return (
     <Card size='small' title={title}>
       <Space direction='horizontal'>
-        <Descriptions
-          bordered
-          size={'small'}
-          column={1}
-          style={{ width: locale === 'zh-CN' ? '520px' : '540px' }}
-        >
+        <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
             key={0}
             label={

@@ -301,7 +301,6 @@ const TableList: FC = () => {
                 }}
               />,
               <LifeCycleModelCreate
-                isInToolbar={true}
                 importData={importData}
                 onClose={() => setImportData(null)}
                 key={0}

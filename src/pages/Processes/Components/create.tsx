@@ -11,6 +11,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
 // import requiredFields from '../requiredFields';
+import ToolBarButton from '@/components/ToolBarButton';
 import { LCIAResultTable } from '@/services/lciaMethods/data';
 import { ProcessForm } from './form';
 
@@ -22,7 +23,6 @@ type Props = {
   version?: string;
   importData?: any;
   onClose?: () => void;
-  isInToolbar?: boolean;
 };
 
 // When type is 'copy' or 'createVersion', id and version are required parameters
@@ -47,7 +47,6 @@ const ProcessCreate: FC<CreateProps> = ({
   version,
   importData,
   onClose = () => {},
-  isInToolbar = false,
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
@@ -238,11 +237,9 @@ const ProcessCreate: FC<CreateProps> = ({
             }}
           ></Button>
         ) : (
-          <Button
-            style={isInToolbar ? { width: 'inherit', paddingInline: '4px' } : {}}
-            size={isInToolbar ? 'large' : 'middle'}
-            type='text'
+          <ToolBarButton
             icon={<PlusOutlined />}
+            tooltip={<FormattedMessage id='pages.button.create' defaultMessage='Create' />}
             onClick={() => {
               setDrawerVisible(true);
             }}
@@ -321,6 +318,7 @@ const ProcessCreate: FC<CreateProps> = ({
               },
             }}
             onFinish={async () => {
+              setSpinning(true);
               // const { checkResult, tabName } = checkRequiredFields(requiredFields, fromData);
               // if (!checkResult) {
               //   await setActiveTabKey(tabName);
@@ -367,6 +365,7 @@ const ProcessCreate: FC<CreateProps> = ({
               } else {
                 message.error(result.error.message);
               }
+              setSpinning(false);
               return true;
             }}
           >
