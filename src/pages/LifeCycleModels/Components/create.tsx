@@ -1,3 +1,4 @@
+import ToolBarButton from '@/components/ToolBarButton';
 import { CloseOutlined, CopyOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
 import { Grid, Transform, XFlow, XFlowGraph } from '@antv/xflow';
@@ -16,7 +17,6 @@ type Props = {
   version?: string;
   importData?: any;
   onClose?: () => void;
-  isInToolbar?: boolean;
 };
 
 // When type is 'copy' or 'createVersion', id and version are required parameters
@@ -42,7 +42,6 @@ const LifeCycleModelCreate: FC<CreateProps> = ({
   version,
   importData,
   onClose = () => {},
-  isInToolbar = false,
 }) => {
   const [isSave, setIsSave] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -111,11 +110,9 @@ const LifeCycleModelCreate: FC<CreateProps> = ({
           {actionType === 'copy' ? (
             <Button shape='circle' icon={<CopyOutlined />} size='small' onClick={onCreate}></Button>
           ) : (
-            <Button
-              style={isInToolbar ? { width: 'inherit', paddingInline: '4px' } : {}}
-              size={isInToolbar ? 'large' : 'middle'}
-              type='text'
+            <ToolBarButton
               icon={<PlusOutlined />}
+              tooltip={<FormattedMessage id='pages.button.create' defaultMessage='Create' />}
               onClick={onCreate}
             />
           )}

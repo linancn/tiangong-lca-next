@@ -84,6 +84,13 @@ const TableList: FC = () => {
       dataIndex: 'classification',
       sorter: true,
       search: false,
+      render: (_, row) => {
+        return (
+          <div>
+            {row.classification && row.classification !== 'undefined' ? row.classification : '-'}
+          </div>
+        );
+      },
     },
     {
       title: (
@@ -393,7 +400,6 @@ const TableList: FC = () => {
                 }}
               />,
               <ProcessCreate
-                isInToolbar={true}
                 importData={importData}
                 onClose={() => setImportData(null)}
                 key={0}

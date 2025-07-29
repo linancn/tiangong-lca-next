@@ -27,6 +27,7 @@ const { Search } = Input;
 const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
   const [tgKeyWord, setTgKeyWord] = useState<any>('');
   const [myKeyWord, setMyKeyWord] = useState<any>('');
+  const [teKeyWord, setTeKeyWord] = useState<any>('');
   const [openAI, setOpenAI] = useState<boolean>(false);
 
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -34,6 +35,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
   const [activeTabKey, setActiveTabKey] = useState<string>('tg');
   const tgActionRefSelect = useRef<ActionType>();
   const myActionRefSelect = useRef<ActionType>();
+  const teActionRefSelect = useRef<ActionType>();
 
   const intl = useIntl();
 
@@ -55,6 +57,10 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
       myActionRefSelect.current?.setPageInfo?.({ current: 1 });
       myActionRefSelect.current?.reload();
     }
+    if (key === 'te') {
+      teActionRefSelect.current?.setPageInfo?.({ current: 1 });
+      teActionRefSelect.current?.reload();
+    }
   };
 
   const onTgSearch: SearchProps['onSearch'] = async (value) => {
@@ -69,12 +75,22 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
     myActionRefSelect.current?.reload();
   };
 
+  const onTeSearch: SearchProps['onSearch'] = async (value) => {
+    await setTeKeyWord(value);
+    teActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    teActionRefSelect.current?.reload();
+  };
+
   const handleTgKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTgKeyWord(e.target.value);
   };
 
   const handleMyKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMyKeyWord(e.target.value);
+  };
+
+  const handleTeKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTeKeyWord(e.target.value);
   };
 
   const processColumns: ProColumns<ProcessTable>[] = [
@@ -156,6 +172,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
       tab: <FormattedMessage id='pages.tab.title.tgdata' defaultMessage='TianGong Data' />,
     },
     { key: 'my', tab: <FormattedMessage id='pages.tab.title.mydata' defaultMessage='My Data' /> },
+    { key: 'te', tab: <FormattedMessage id='pages.tab.title.tedata' defaultMessage='Team Data' /> },
   ];
 
   const databaseList: Record<string, React.ReactNode> = {
@@ -288,6 +305,67 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
         />
       </>
     ),
+    te: (
+      <>
+        <Card>
+          <Row align={'middle'}>
+            <Col flex='auto' style={{ marginRight: '10px' }}>
+              <Search
+                name={'te'}
+                size={'large'}
+                placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+                value={teKeyWord}
+                onChange={handleTeKeyWordChange}
+                onSearch={onTeSearch}
+                enterButton
+              />
+            </Col>
+            <Col flex='100px'>
+              <Checkbox
+                onChange={(e) => {
+                  setOpenAI(e.target.checked);
+                }}
+              >
+                <FormattedMessage id='pages.search.openAI' defaultMessage='AI Search' />
+              </Checkbox>
+            </Col>
+          </Row>
+        </Card>
+        <ProTable<ProcessTable, ListPagination>
+          actionRef={teActionRefSelect}
+          search={false}
+          pagination={{
+            showSizeChanger: false,
+            pageSize: 10,
+          }}
+          request={async (
+            params: {
+              pageSize: number;
+              current: number;
+            },
+            sort,
+          ) => {
+            let result;
+            if (teKeyWord.length > 0) {
+              if (openAI) {
+                return process_hybrid_search(params, lang, 'te', teKeyWord, {});
+              }
+              result = await getProcessTablePgroongaSearch(params, lang, 'te', teKeyWord, {});
+            } else {
+              result = await getProcessTableAll(params, sort, lang, 'te', []);
+            }
+            return result || { data: [], success: false };
+          }}
+          columns={processColumns}
+          rowSelection={{
+            alwaysShowAlert: true,
+            preserveSelectedRowKeys: true,
+            selectedRowKeys: selectedRowKeys,
+            onChange: onSelectChange,
+          }}
+        />
+      </>
+    ),
   };
 
   useEffect(() => {
@@ -339,6 +417,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
         footer={
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
+              x
               <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
             </Button>
             <Button

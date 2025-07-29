@@ -1,3 +1,4 @@
+import ToolBarButton from '@/components/ToolBarButton';
 import { ListPagination } from '@/services/general/data';
 import { getLang, getLangText } from '@/services/general/util';
 import {
@@ -258,28 +259,43 @@ const TableList: FC<TableListProps> = ({ systemUserRole, tableType }) => {
             onDragSortEnd={handleDragSortEnd}
             toolBarRender={() => [
               isDragged && (
-                <Tooltip
-                  key='saveRanks'
-                  title={
+                <ToolBarButton
+                  disabled={
+                    systemUserRole !== 'admin' &&
+                    systemUserRole !== 'owner' &&
+                    systemUserRole !== 'member'
+                  }
+                  icon={<SaveOutlined />}
+                  tooltip={
                     <FormattedMessage
                       id='component.allTeams.table.saveRanks.tooltip'
                       defaultMessage='Save Ranks'
                     />
                   }
-                >
-                  <Button
-                    disabled={
-                      systemUserRole !== 'admin' &&
-                      systemUserRole !== 'owner' &&
-                      systemUserRole !== 'member'
-                    }
-                    type='text'
-                    icon={<SaveOutlined />}
-                    shape='circle'
-                    size='small'
-                    onClick={handleSaveRanks}
-                  />
-                </Tooltip>
+                  onClick={handleSaveRanks}
+                />
+                // <Tooltip
+                //   key='saveRanks'
+                //   title={
+                //     <FormattedMessage
+                //       id='component.allTeams.table.saveRanks.tooltip'
+                //       defaultMessage='Save Ranks'
+                //     />
+                //   }
+                // >
+                //   <Button
+                //     disabled={
+                //       systemUserRole !== 'admin' &&
+                //       systemUserRole !== 'owner' &&
+                //       systemUserRole !== 'member'
+                //     }
+                //     type='text'
+                //     icon={<SaveOutlined />}
+                //     shape='circle'
+                //     size='small'
+                //     onClick={handleSaveRanks}
+                //   />
+                // </Tooltip>
               ),
               <Tooltip
                 key='select'

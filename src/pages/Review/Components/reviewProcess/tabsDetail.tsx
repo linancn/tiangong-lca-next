@@ -1,3 +1,4 @@
+import AlignedNumber from '@/components/AlignedNumber';
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import LocationTextItemDescription from '@/components/LocationTextItem/description';
@@ -16,7 +17,6 @@ import { FormattedMessage } from 'umi';
 import ComplianceItemForm from '../Compliance/form';
 import ComplianceItemView from '../Compliance/view';
 import ProcessExchangeView from '../Exchange/view';
-
 import ReveiwItemForm from '../ReviewForm/form';
 import ReviewItemView from '../ReviewForm/view';
 
@@ -177,6 +177,9 @@ export const TabsDetail: FC<Props> = ({
       dataIndex: 'meanAmount',
       sorter: false,
       search: false,
+      render: (_, row) => {
+        return [<AlignedNumber key={0} value={row.meanAmount} />];
+      },
     },
     {
       title: (
@@ -188,6 +191,9 @@ export const TabsDetail: FC<Props> = ({
       dataIndex: 'resultingAmount',
       sorter: false,
       search: false,
+      render: (_, row) => {
+        return [<AlignedNumber key={0} value={row.resultingAmount} />];
+      },
     },
     {
       title: (

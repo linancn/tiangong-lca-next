@@ -1,8 +1,9 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
+import ToolBarButton from '@/components/ToolBarButton';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { ProForm, ProFormInstance } from '@ant-design/pro-components';
-import { Button, Card, Drawer, Form, Input, Space, Switch, Tooltip } from 'antd';
+import { Button, Card, Drawer, Form, Input, Space, Switch } from 'antd';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -24,7 +25,14 @@ const UnitCreate: FC<Props> = ({ onData }) => {
 
   return (
     <>
-      <Tooltip
+      <ToolBarButton
+        icon={<PlusOutlined />}
+        tooltip={<FormattedMessage id='pages.button.create' defaultMessage='Create' />}
+        onClick={() => {
+          setDrawerVisible(true);
+        }}
+      />
+      {/* <Tooltip
         title={
           <FormattedMessage id='pages.button.create' defaultMessage='Create'></FormattedMessage>
         }
@@ -37,7 +45,7 @@ const UnitCreate: FC<Props> = ({ onData }) => {
             setDrawerVisible(true);
           }}
         ></Button>
-      </Tooltip>
+      </Tooltip> */}
       <Drawer
         getContainer={() => document.body}
         title={

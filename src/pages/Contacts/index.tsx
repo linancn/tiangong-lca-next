@@ -72,6 +72,13 @@ const TableList: FC = () => {
       dataIndex: 'classification',
       sorter: false,
       search: false,
+      render: (_, row) => {
+        return (
+          <div>
+            {row.classification && row.classification !== 'undefined' ? row.classification : '-'}
+          </div>
+        );
+      },
     },
     {
       title: <FormattedMessage id='pages.contact.email' defaultMessage='E-mail' />,
@@ -301,7 +308,6 @@ const TableList: FC = () => {
                 }}
               />,
               <ContactCreate
-                isInToolbar={true}
                 importData={importData}
                 onClose={() => setImportData(null)}
                 lang={lang}

@@ -11,6 +11,7 @@ import {
   removeEmptyObjects,
   toAmountNumber,
 } from '../general/util';
+import LCIAResultCalculation from '../lciaMethods/util';
 import { genProcessName } from '../processes/util';
 import { supabase } from '../supabase';
 
@@ -1614,7 +1615,7 @@ const calculateProcessExchange = (
           const dsModelProcess = modelProcesses.find(
             (p: any) => p?.['@dataSetInternalID'] === downstreamProcesses[0]?.['@id'],
           );
-          const connectionOutputFlow = dbPE.exchange?.find((e: any) => {
+          const connectionOutputFlow = dbPE?.exchange?.find((e: any) => {
             return (
               e?.referenceToFlowDataSet?.['@refObjectId'] === o?.['@flowUUID'] &&
               e?.exchangeDirection?.toUpperCase() === 'OUTPUT'
@@ -1777,7 +1778,7 @@ const calculateProcessExchange = (
   const newProcessExchange = {
     processId: modelProcess?.referenceToProcess?.['@refObjectId'],
     scalingFactor: scalingFactor,
-    exchange: dbPE.exchange,
+    exchange: dbPE?.exchange,
     connectionFlow: {
       outputFlowIds: outputFlowIds,
       inputFlowIds: inputFlowIds,
@@ -1930,6 +1931,7 @@ export async function genLifeCycleModelProcess(id: string, refNode: any, data: a
       return e;
     }
   });
+  const LCIAResult = await LCIAResultCalculation(newExchanges);
 
   const newData = removeEmptyObjects({
     processDataSet: {
@@ -2487,6 +2489,9 @@ export async function genLifeCycleModelProcess(id: string, refNode: any, data: a
       },
       exchanges: {
         exchange: newExchanges,
+      },
+      LCIAResults: {
+        LCIAResult,
       },
     },
   });
