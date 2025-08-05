@@ -7,3 +7,16 @@ export type LifeCycleModelTable = {
   modifiedAt: Date;
   teamId: string;
 };
+
+export type Up2DownEdge = {
+  flowUUID: string;
+  upstreamId: string;
+  upstreamProcessId: string;
+  upstreamProcessVersion: string;
+  downstreamId: string;
+  downstreamProcessId: string;
+  downstreamProcessVersion: string;
+  dependence?: string;
+  mainOutputFlowUUID: string;
+  mainInputFlowUUID: string;
+};
