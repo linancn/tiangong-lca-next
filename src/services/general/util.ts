@@ -14,6 +14,19 @@ export function removeEmptyObjects(obj: any) {
   return obj;
 }
 
+export function comparePercentDesc(a: string, b: string): number {
+  const numA = parseFloat(a.replace('%', ''));
+  const numB = parseFloat(b.replace('%', ''));
+  return numB - numA;
+}
+
+export function percentStringToNumber(str: string): number | null {
+  if (typeof str !== 'string') return null;
+  const match = str.match(/^(-?\d+(\.\d+)?)%$/);
+  if (!match) return null;
+  return parseFloat(match[1]) / 100;
+}
+
 export async function getUnitData(idType: string, data: any) {
   return new Promise((resolve) => {
     if (idType === 'flow') {
@@ -826,9 +839,9 @@ export function getRuleVerification(schema: any, data: any) {
     }
   });
 
-  if (!result.valid) {
-    console.log('getRuleVerificationFalse', result);
-  }
+  // if (!result.valid) {
+  //   console.log('getRuleVerificationFalse', result);
+  // }
 
   return result;
 }

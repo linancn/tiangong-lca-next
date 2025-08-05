@@ -1,28 +1,22 @@
-import { currentUser } from '@/services/ant-design-pro/api';
-import {
-  CloseOutlined,
-  IdcardOutlined,
-  MailOutlined,
-  ProfileOutlined,
-  UserOutlined,
-} from '@ant-design/icons';
+import { getUsersByIds } from '@/services/users/api';
+import { CloseOutlined, MailOutlined, ProfileOutlined, UserOutlined } from '@ant-design/icons';
 import { Button, Card, Descriptions, Drawer, Spin, Tooltip } from 'antd';
 import type { ButtonType } from 'antd/es/button';
 import type { FC } from 'react';
 import { useState } from 'react';
-import { FormattedMessage, useIntl } from 'umi';
+import { FormattedMessage } from 'umi';
 
 type Props = {
   buttonType?: string;
-  userId?: string;
+  userId: string;
   buttonTypeProp?: ButtonType;
 };
 
-const AccountView: FC<Props> = ({ buttonType = 'icon', buttonTypeProp = 'default' }) => {
+const AccountView: FC<Props> = ({ buttonType = 'icon', buttonTypeProp = 'default', userId }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [spinning, setSpinning] = useState(false);
-  const [initData, setInitData] = useState<API.CurrentUser | null>(null);
-  const intl = useIntl();
+  const [initData, setInitData] = useState<any>(null);
+  // const intl = useIntl();
 
   const accountContent: React.ReactNode = (
     <>
@@ -31,7 +25,7 @@ const AccountView: FC<Props> = ({ buttonType = 'icon', buttonTypeProp = 'default
           label={<FormattedMessage id='pages.account.profile.userid' defaultMessage='User ID' />}
           labelStyle={{ width: '120px' }}
         >
-          {initData?.userid || '-'}
+          {initData?.id || '-'}
         </Descriptions.Item>
       </Descriptions>
       <br />
@@ -49,7 +43,7 @@ const AccountView: FC<Props> = ({ buttonType = 'icon', buttonTypeProp = 'default
             <MailOutlined style={{ marginRight: 8 }} />
             {initData?.email || '-'}
           </Descriptions.Item>
-          <Descriptions.Item
+          {/* <Descriptions.Item
             label={<FormattedMessage id='pages.account.profile.role' defaultMessage='Role' />}
             labelStyle={{ width: '120px' }}
           >
@@ -60,7 +54,7 @@ const AccountView: FC<Props> = ({ buttonType = 'icon', buttonTypeProp = 'default
                   defaultMessage: initData.role,
                 })
               : '-'}
-          </Descriptions.Item>
+          </Descriptions.Item> */}
           <Descriptions.Item
             label={
               <FormattedMessage id='pages.account.profile.nickName' defaultMessage='Nickname' />
@@ -68,7 +62,7 @@ const AccountView: FC<Props> = ({ buttonType = 'icon', buttonTypeProp = 'default
             labelStyle={{ width: '120px' }}
           >
             <UserOutlined style={{ marginRight: 8 }} />
-            {initData?.name || '-'}
+            {initData?.display_name || '-'}
           </Descriptions.Item>
         </Descriptions>
       </Card>
@@ -78,9 +72,10 @@ const AccountView: FC<Props> = ({ buttonType = 'icon', buttonTypeProp = 'default
   const onView = () => {
     setDrawerVisible(true);
     setSpinning(true);
-    currentUser()
+    getUsersByIds([userId])
       .then((result) => {
-        setInitData(result);
+        console.log('result', result);
+        setInitData(result?.[0] ?? null);
       })
       .finally(() => {
         setSpinning(false);
