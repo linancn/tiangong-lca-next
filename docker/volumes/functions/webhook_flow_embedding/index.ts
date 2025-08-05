@@ -13,17 +13,21 @@ interface WebhookPayload {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+  // if (req.method === 'OPTIONS') {
+  //   return new Response('ok', { headers: corsHeaders });
+  // }
+
+  // Get the session or user object
+  const secretApiKey = req.headers.get('apikey');
+
+  // If no Authorization header, return error immediately
+  if (!secretApiKey) {
+    return new Response('Unauthorized Request', { status: 401 });
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('REMOTE_SUPABASE_URL') ?? Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('REMOTE_SUPABASE_SERVICE_ROLE_KEY') ??
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ??
-        '',
-    );
+    const supabaseUrl = Deno.env.get('REMOTE_SUPABASE_URL') ?? Deno.env.get('SUPABASE_URL') ?? '';
+    const supabaseClient = createClient(supabaseUrl, secretApiKey);
 
     const payload: WebhookPayload = await req.json();
     const { type, table, record } = payload;
@@ -43,16 +47,13 @@ Deno.serve(async (req) => {
     if (!jsonData) {
       throw new Error('No JSON data found in record');
     }
-    const supabaseUrl = Deno.env.get('REMOTE_SUPABASE_URL') ?? Deno.env.get('SUPABASE_URL') ?? '';
-    const supabaseAnonKey =
-      Deno.env.get('REMOTE_SUPABASE_ANON_KEY') ?? Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+
     const embeddingServiceUrl = `${supabaseUrl}/functions/v1/flow_embedding`;
     const response = await fetch(embeddingServiceUrl, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${supabaseAnonKey}`,
         'Content-Type': 'application/json',
-        x_key: `${Deno.env.get('X_KEY') ?? ''}`,
+        apikey: secretApiKey,
       },
       body: JSON.stringify(jsonData),
     });
@@ -62,9 +63,7 @@ Deno.serve(async (req) => {
       throw new Error(
         `Flow embedding service error:${JSON.stringify(
           response.json(),
-        )} ${response.statusText} ${response.status}, embeddingServiceUrl: ${embeddingServiceUrl}, supabaseAnonKey: ${supabaseAnonKey}, x_key: ${
-          Deno.env.get('X_KEY') ?? ''
-        }, data: ${JSON.stringify(jsonData)}`,
+        )} ${response.statusText} ${response.status}, embeddingServiceUrl: ${embeddingServiceUrl}, data: ${JSON.stringify(jsonData)}`,
       );
     }
 

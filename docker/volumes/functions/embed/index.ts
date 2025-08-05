@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
   }
 
   let user;
-  if (xKey === Deno.env.get('X_KEY')) {
+  if (xKey == Deno.env.get('X_KEY')) {
     // Allow user if xKey is present
     user = { role: 'authenticated' };
   } else {

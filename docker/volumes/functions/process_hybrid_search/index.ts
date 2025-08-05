@@ -1,3 +1,4 @@
+// Setup type definitions for built-in Supabase Runtime APIs
 import '@supabase/functions-js/edge-runtime.d.ts';
 
 import { ChatPromptTemplate } from '@langchain/core/prompts';
@@ -85,9 +86,9 @@ Deno.serve(async (req) => {
     [
       'system',
       `Field: Life Cycle Assessment (LCA)
-Task: Transform description of flows into three specific queries: SemanticQueryEN, FulltextQueryEN and FulltextQueryZH.`,
+Task: Transform description of processes into three specific queries: SemanticQueryEN, FulltextQueryEN and FulltextQueryZH.`,
     ],
-    ['human', 'Flow description: {input}'],
+    ['human', 'Process description: {input}'],
   ]);
 
   const chain = prompt.pipe(modelWithStructuredOutput);
@@ -108,7 +109,7 @@ Task: Transform description of flows into three specific queries: SemanticQueryE
   })) as number[];
   const vectorStr = `[${vectors.toString()}]`;
 
-  const { data, error } = await supabase.rpc('hybrid_search_flows', {
+  const { data, error } = await supabase.rpc('hybrid_search_processes', {
     query_text: queryFulltextString,
     query_embedding: vectorStr,
     ...(filter !== undefined ? { filter_condition: filter } : {}),
