@@ -36,6 +36,7 @@ const updateLifeCycleModelProcess = async (
       data?.lifeCycleModelDataSet,
       oldData,
     );
+    console.log('newData', newData);
     const rule_verification = getRuleVerification(processSchema, newData)?.valid;
     let uResult: any = {};
     const session = await supabase.auth.getSession();
