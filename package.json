@@ -57,7 +57,7 @@
     "@ant-design/pro-components": "^2.8.10",
     "@ant-design/pro-table": "^3.21.0",
     "@antv/xflow": "^2.1.13",
-    "@supabase/supabase-js": "^2.53.0",
+    "@supabase/supabase-js": "^2.54.0",
     "@umijs/route-utils": "^4.0.1",
     "antd": "^5.26.7",
     "antd-style": "^3.7.1",
