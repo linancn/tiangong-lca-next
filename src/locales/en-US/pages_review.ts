@@ -3,6 +3,7 @@ export default {
   'pages.review.tabs.unassigned': 'Unassigned Task',
   'pages.review.tabs.assigned': 'Assigned Task',
   'pages.review.tabs.review': 'Review Task',
+  'pages.review.tabs.rejected': 'Rejected',
   'pages.review.tabs.members': 'Member Management',
 
   'pages.review.table.column.processName': 'Process Name',
@@ -32,6 +33,24 @@ export default {
   'pages.review.members.addError.notRegistered': 'User not registered',
 
   'pages.review.drawer.title': 'Select Reviewer',
-  'pages.review.ReviewLifeCycleModelsDetail.edit.title': 'Review model',
-  'pages.review.ReviewLifeCycleModelsDetail.view.title': 'View review',
+  'pages.review.saveSuccess': 'Save successful',
+  'pages.review.temporarySaveSuccess': 'Temporary save successful',
+
+  'pages.review.selectReviewer.button': 'Assign Reviewer',
+
+  'pages.review.actions.view': 'View',
+  'pages.review.actions.review': 'Review',
+
+  'pages.review.ReviewProcessDetail.edit.title': 'Review Process',
+  'pages.review.ReviewProcessDetail.view.title': 'View Review',
+  'pages.review.ReviewProcessDetail.edit.success': 'Submit review successful',
+
+  'pages.review.ReviewProcessDetail.assigned.save': 'Review Approved',
+  'pages.review.ReviewProcessDetail.assigned.success': 'Review approval successful',
+
+  'pages.review.ReviewProcessDetail.assigned.reject': 'Review Rejected',
+  'pages.review.ReviewProcessDetail.assigned.reject.success': 'Review rejection successful',
+
+  'pages.review.ReviewLifeCycleModelsDetail.edit.title': 'Review Model',
+  'pages.review.ReviewLifeCycleModelsDetail.view.title': 'View Review',
 };

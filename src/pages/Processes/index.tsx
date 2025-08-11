@@ -45,12 +45,17 @@ const TableList: FC = () => {
   const [team, setTeam] = useState<any>(null);
   const [importData, setImportData] = useState<any>(null);
   const [openAI, setOpenAI] = useState<boolean>(false);
+  const [editDrawerVisible, setEditDrawerVisible] = useState<boolean>(false);
+  const [editId, setEditId] = useState<string>('');
+  const [editVersion, setEditVersion] = useState<string>('');
   const { token } = theme.useToken();
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
 
   const searchParams = new URLSearchParams(location.search);
   const tid = searchParams.get('tid');
+  const id = searchParams.get('id');
+  const version = searchParams.get('version');
 
   const intl = useIntl();
 
@@ -334,6 +339,20 @@ const TableList: FC = () => {
     });
   }, []);
 
+  useEffect(() => {
+    if (id && version && dataSource === 'my') {
+      setEditId(id);
+      setEditVersion(version);
+      setEditDrawerVisible(true);
+    }
+  }, [id, version, dataSource]);
+
+  const handleEditClose = () => {
+    setEditDrawerVisible(false);
+    setEditId('');
+    setEditVersion('');
+  };
+
   const onSearch: SearchProps['onSearch'] = (value) => {
     setKeyWord(value);
     actionRef.current?.setPageInfo?.({ current: 1 });
@@ -445,6 +464,18 @@ const TableList: FC = () => {
         }}
         columns={processColumns}
       />
+
+      {editDrawerVisible && editId && editVersion && (
+        <ProcessEdit
+          id={editId}
+          version={editVersion}
+          lang={lang}
+          buttonType={'icon'}
+          actionRef={actionRef}
+          setViewDrawerVisible={handleEditClose}
+          autoOpen={true}
+        />
+      )}
     </PageContainer>
   );
 };

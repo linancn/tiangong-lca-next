@@ -4,6 +4,7 @@ export default {
   'pages.review.tabs.unassigned': '待分配任务',
   'pages.review.tabs.assigned': '已分配任务',
   'pages.review.tabs.review': '审核任务',
+  'pages.review.tabs.rejected': '已驳回',
   'pages.review.tabs.members': '成员管理',
 
   'pages.review.table.column.processName': '过程名称',
@@ -46,6 +47,9 @@ export default {
 
   'pages.review.ReviewProcessDetail.assigned.save': '审核通过',
   'pages.review.ReviewProcessDetail.assigned.success': '审核通过成功',
+
+  'pages.review.ReviewProcessDetail.assigned.reject': '审核驳回',
+  'pages.review.ReviewProcessDetail.assigned.reject.success': '审核驳回成功',
 
   'pages.review.ReviewLifeCycleModelsDetail.edit.title': '审核模型',
   'pages.review.ReviewLifeCycleModelsDetail.view.title': '查看审核',

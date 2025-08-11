@@ -61,6 +61,8 @@ export default {
   'menu.mydata.models': '模型',
   'menu.mydata.products': '产品模型',
   'menu.mydata.processes': '过程',
+  'menu.lifeCycleModels': '生命周期模型',
+  'menu.processes': '过程',
   'menu.mydata.flows': '流',
   'menu.mydata.flowproperties': '流属性',
   'menu.mydata.unitgroups': '单位组',

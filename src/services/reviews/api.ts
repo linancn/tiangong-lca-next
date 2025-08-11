@@ -49,7 +49,7 @@ export async function getReviewsDetail(id: string) {
 export async function getReviewsTableData(
   params: { pageSize: number; current: number },
   sort: any,
-  type: 'unassigned' | 'assigned' | 'review',
+  type: 'unassigned' | 'assigned' | 'review' | 'rejected',
   lang: string,
 ) {
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
@@ -77,6 +77,13 @@ export async function getReviewsTableData(
     if (userId) {
       query = query.filter('reviewer_id', 'cs', `[${JSON.stringify(userId)}]`).eq('state_code', 1);
     }
+  }
+  if (type === 'rejected') {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const userId = user?.id;
+    query = query.eq('state_code', -1).filter('json->user->>id', 'eq', userId);
   }
   const result = await query;
 

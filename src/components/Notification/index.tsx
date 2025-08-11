@@ -1,109 +1,95 @@
-import {
-  acceptTeamInvitationApi,
-  getTeamInvitationStatusApi,
-  rejectTeamInvitationApi,
-} from '@/services/roles/api';
-import { getTeamById } from '@/services/teams/api';
+import { getTeamInvitationStatusApi } from '@/services/roles/api';
 import { MessageOutlined } from '@ant-design/icons';
-import { Badge, message, Modal, theme } from 'antd';
+import { Badge, Modal, Tabs, theme } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useIntl } from 'umi';
+import DataNotification from './DataNotification';
+import TeamNotification from './TeamNotification';
 
 const Notification: React.FC = () => {
-  const [teamTitle, setTeamTitle] = useState<any>([]);
   const [isBeInvited, setIsBeInvited] = useState<boolean>(false);
-  const [invitedInfo, setInvitedInfo] = useState<any>({});
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
   const { token } = theme.useToken();
   const intl = useIntl();
 
-  useEffect(() => {
-    getTeamInvitationStatusApi().then((res) => {
+  const checkTeamInvitation = async () => {
+    try {
+      const res = await getTeamInvitationStatusApi();
       if (res.success) {
         setIsBeInvited(res.data?.role === 'is_invited');
-        setInvitedInfo(res.data);
-        getTeamById(res.data?.team_id).then(({ success, data }) => {
-          if (success) {
-            setTeamTitle(data[0]?.json?.title);
-          }
-        });
       } else {
         setIsBeInvited(false);
       }
-    });
+    } catch (error) {
+      setIsBeInvited(false);
+    }
+  };
+
+  useEffect(() => {
+    checkTeamInvitation();
   }, []);
 
-  const handleAccept = async () => {
-    try {
-      const { success } = await acceptTeamInvitationApi(invitedInfo.team_id, invitedInfo.user_id);
-      if (success) {
-        setIsBeInvited(false);
-        message.success(intl.formatMessage({ id: 'teams.members.actionSuccess' }));
-      } else {
-        message.error(intl.formatMessage({ id: 'teams.members.actionError' }));
-      }
-    } catch (error) {
-      message.error(intl.formatMessage({ id: 'teams.members.actionError' }));
-    }
+  const handleIconClick = () => {
+    setModalVisible(true);
   };
 
-  const handelReject = async () => {
-    try {
-      const { success } = await rejectTeamInvitationApi(invitedInfo.team_id, invitedInfo.user_id);
-      if (success) {
-        message.success(intl.formatMessage({ id: 'teams.members.actionSuccess' }));
-        setIsBeInvited(false);
-      } else {
-        message.error(intl.formatMessage({ id: 'teams.members.actionError' }));
-      }
-    } catch (error) {
-      message.error(intl.formatMessage({ id: 'teams.members.actionError' }));
-    }
+  const handleModalClose = () => {
+    setModalVisible(false);
   };
+
+  const items = [
+    {
+      key: 'team',
+      label: intl.formatMessage({
+        id: 'notification.tabs.team',
+        defaultMessage: 'Team Notifications',
+      }),
+      children: <TeamNotification />,
+    },
+    {
+      key: 'data',
+      label: intl.formatMessage({
+        id: 'notification.tabs.data',
+        defaultMessage: 'Data Notifications',
+      }),
+      children: <DataNotification />,
+    },
+  ];
 
   return (
-    <Badge dot={isBeInvited} offset={[-5, 6]} size='small'>
-      <MessageOutlined
-        style={{ fontSize: 16, opacity: 0.5 }}
-        onClick={() => {
-          if (isBeInvited) {
-            Modal.confirm({
-              okButtonProps: {
-                type: 'primary',
-                style: { backgroundColor: token.colorPrimary },
-              },
-              cancelButtonProps: {
-                style: { borderColor: token.colorPrimary, color: token.colorPrimary },
-              },
-              title: intl.formatMessage({
-                id: 'teams.notification.team.invite.title',
-                defaultMessage: 'Team Invitation',
-              }),
-              content:
-                (intl.locale === 'zh-CN'
-                  ? (teamTitle?.find((item: any) => item['@xml:lang'] === 'zh')?.['#text'] ??
-                    teamTitle[0]?.['#text'])
-                  : (teamTitle?.find((item: any) => item['@xml:lang'] === 'en')?.['#text'] ??
-                    teamTitle[0]?.['#text'])) +
-                ' ' +
-                intl.formatMessage({
-                  id: 'teams.notification.team.invite.content',
-                  defaultMessage: 'has invited you to join, would you like to accept?',
-                }),
-              okText: intl.formatMessage({
-                id: 'teams.notification.team.invite.accept',
-                defaultMessage: 'Accept',
-              }),
-              cancelText: intl.formatMessage({
-                id: 'teams.notification.team.invite.reject',
-                defaultMessage: 'Reject',
-              }),
-              onOk: handleAccept,
-              onCancel: handelReject,
-            });
-          }
+    <>
+      <Badge dot={isBeInvited} offset={[-5, 6]} size='small'>
+        <MessageOutlined
+          style={{ fontSize: 16, opacity: 0.5, cursor: 'pointer' }}
+          onClick={handleIconClick}
+        />
+      </Badge>
+
+      <Modal
+        title={intl.formatMessage({
+          id: 'notification.title',
+          defaultMessage: 'Notifications',
+        })}
+        open={modalVisible}
+        onCancel={handleModalClose}
+        footer={null}
+        width={800}
+        okButtonProps={{
+          style: { backgroundColor: token.colorPrimary },
         }}
-      />
-    </Badge>
+        cancelButtonProps={{
+          style: { borderColor: token.colorPrimary, color: token.colorPrimary },
+        }}
+      >
+        <Tabs
+          items={items}
+          defaultActiveKey='team'
+          // onChange={() => {
+          //   checkTeamInvitation();
+          // }}
+        />
+      </Modal>
+    </>
   );
 };
 

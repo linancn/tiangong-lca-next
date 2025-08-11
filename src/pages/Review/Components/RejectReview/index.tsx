@@ -22,6 +22,7 @@ interface RejectReviewProps {
   dataVersion: string;
   isModel: boolean;
   actionRef: any;
+  buttonType?: 'icon' | 'text';
 }
 
 const RejectReview: React.FC<RejectReviewProps> = ({
@@ -30,6 +31,7 @@ const RejectReview: React.FC<RejectReviewProps> = ({
   dataVersion,
   isModel,
   actionRef,
+  buttonType = 'icon',
 }) => {
   const formRef = useRef<FormInstance>(null);
   const [open, setOpen] = useState(false);
@@ -242,14 +244,23 @@ const RejectReview: React.FC<RejectReviewProps> = ({
 
   return (
     <>
-      <Tooltip
-        title={intl.formatMessage({
-          id: 'component.rejectReview.button.tooltip',
-          defaultMessage: 'Reject',
-        })}
-      >
-        <Button size='small' shape='circle' icon={<FileExcelOutlined />} onClick={handleOpen} />
-      </Tooltip>
+      {buttonType === 'icon' ? (
+        <Tooltip
+          title={intl.formatMessage({
+            id: 'component.rejectReview.button.tooltip',
+            defaultMessage: 'Reject',
+          })}
+        >
+          <Button size='small' shape='circle' icon={<FileExcelOutlined />} onClick={handleOpen} />
+        </Tooltip>
+      ) : (
+        <Button onClick={handleOpen}>
+          <FormattedMessage
+            id='pages.review.ReviewProcessDetail.assigned.reject'
+            defaultMessage='Reject Review'
+          />
+        </Button>
+      )}
       <Modal
         title={
           <FormattedMessage

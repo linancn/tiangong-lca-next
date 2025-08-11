@@ -14,6 +14,7 @@ import { Button, Drawer, Form, Input, Space, Spin, Tooltip, message } from 'antd
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
+import RejectReview from '../RejectReview';
 import { TabsDetail } from './tabsDetail';
 
 type Props = {
@@ -386,6 +387,15 @@ const ReviewProcessDetail: FC<Props> = ({
                   defaultMessage='Approve Review'
                 />
               </Button>
+              <RejectReview
+                buttonType='text'
+                isModel={false}
+                dataId={id}
+                dataVersion={version}
+                reviewId={reviewId}
+                key={0}
+                actionRef={actionRef}
+              />
             </Space>
           ) : tabType === 'review' ? (
             <Space className={styles.footer_right}>
