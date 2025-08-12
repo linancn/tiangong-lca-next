@@ -91,6 +91,7 @@ const ReviewDetail: React.FC<ReviewDetailProps> = ({ processId, processVersion }
       search: false,
       sorter: false,
       width: 180,
+      valueType: 'dateTime',
     },
     {
       title: intl.formatMessage({

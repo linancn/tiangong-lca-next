@@ -1,3 +1,4 @@
+import { updateTeamNotificationTime } from '@/services/ant-design-pro/api';
 import {
   acceptTeamInvitationApi,
   getTeamInvitationStatusApi,
@@ -19,7 +20,11 @@ interface TeamNotificationItem {
   createTime: string;
 }
 
-const TeamNotification: React.FC = () => {
+interface TeamNotificationProps {
+  timeFilter: number;
+}
+
+const TeamNotification: React.FC<TeamNotificationProps> = ({ timeFilter }) => {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<TeamNotificationItem[]>([]);
   const intl = useIntl();
@@ -28,8 +33,9 @@ const TeamNotification: React.FC = () => {
   const fetchTeamNotifications = async () => {
     setLoading(true);
     try {
-      const res = await getTeamInvitationStatusApi();
+      const res = await getTeamInvitationStatusApi(timeFilter);
       if (res.success && res.data) {
+        await updateTeamNotificationTime();
         const teamData = await getTeamById(res.data.team_id);
         if (teamData.success && teamData.data?.[0]) {
           const teamTitle = teamData.data[0]?.json?.title;
@@ -62,7 +68,7 @@ const TeamNotification: React.FC = () => {
 
   useEffect(() => {
     fetchTeamNotifications();
-  }, []);
+  }, [timeFilter]);
 
   const handleAccept = async (record: TeamNotificationItem) => {
     try {

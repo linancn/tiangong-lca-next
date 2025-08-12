@@ -3,8 +3,9 @@ export type ReviewsTable = {
   id: string;
   name: string;
   teamName: string;
+  modifiedAt?: string;
   userName: string;
-  createAt: string;
+  createAt?: string;
   isFromLifeCycle: boolean;
   json: {
     data: {

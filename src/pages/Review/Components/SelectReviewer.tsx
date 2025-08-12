@@ -15,7 +15,7 @@ import { Button, Drawer, message, Space, Spin, Tooltip } from 'antd';
 import { useEffect, useState } from 'react';
 
 type SelectReviewerProps = {
-  reviewIds: string[];
+  reviewIds: React.Key[];
   actionRef: any;
 };
 

@@ -171,6 +171,24 @@ export async function setProfile(body: any, options?: { [key: string]: any }) {
   }
 }
 
+export async function updateTeamNotificationTime() {
+  const { error } = await supabase.auth.updateUser({
+    data: {
+      update_team_notification_time: new Date().getTime(),
+    },
+  });
+  return { error };
+}
+
+export async function updateDataNotificationTime() {
+  const { error } = await supabase.auth.updateUser({
+    data: {
+      update_data_notification_time: new Date().getTime(),
+    },
+  });
+  return { error };
+}
+
 export async function cognitoSignUp(password: string) {
   const session = await supabase.auth.getSession();
   if (session.data.session) {

@@ -1,4 +1,5 @@
-import { getReviewsTableData } from '@/services/reviews/api';
+import { updateDataNotificationTime } from '@/services/ant-design-pro/api';
+import { getNotifyReviews } from '@/services/reviews/api';
 import type { ReviewsTable } from '@/services/reviews/data';
 import { Button, Space, Table, Tag, Tooltip, theme } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
@@ -11,29 +12,40 @@ interface DataNotificationItem {
   name: string;
   teamName: string;
   userName: string;
-  createAt: string;
+  modifiedAt: string;
   isFromLifeCycle: boolean;
   status: 'unassigned' | 'assigned' | 'review' | 'rejected';
   rejectReason?: string;
   json: any;
 }
 
-const DataNotification: React.FC = () => {
+interface DataNotificationProps {
+  timeFilter: number;
+}
+
+const DataNotification: React.FC<DataNotificationProps> = ({ timeFilter }) => {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<DataNotificationItem[]>([]);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0,
+  });
   const intl = useIntl();
   const { token } = theme.useToken();
 
-  const fetchDataNotifications = async () => {
+  const fetchDataNotifications = async (page = 1, pageSize = 10) => {
     setLoading(true);
     try {
-      const rejectedRes = await getReviewsTableData(
-        { pageSize: 10, current: 1 },
-        {},
-        'rejected',
+      const rejectedRes = await getNotifyReviews(
+        { pageSize, current: page },
         intl.locale,
+        timeFilter,
       );
-
+      if (!rejectedRes.success) {
+        return;
+      }
+      await updateDataNotificationTime();
       const rejectedData =
         rejectedRes.data?.map((item: ReviewsTable) => ({
           key: item.id,
@@ -41,7 +53,7 @@ const DataNotification: React.FC = () => {
           name: item.name,
           teamName: item.teamName,
           userName: item.userName,
-          createAt: item.createAt,
+          modifiedAt: item.modifiedAt || '-',
           isFromLifeCycle: item.isFromLifeCycle,
           status: 'rejected' as const,
           rejectReason: (item.json as any)?.comment?.message || '',
@@ -49,6 +61,11 @@ const DataNotification: React.FC = () => {
         })) || [];
 
       setData(rejectedData);
+      setPagination({
+        current: page,
+        pageSize,
+        total: rejectedRes.total || 0,
+      });
     } catch (error) {
       console.error('获取数据通知失败:', error);
     } finally {
@@ -58,7 +75,11 @@ const DataNotification: React.FC = () => {
 
   useEffect(() => {
     fetchDataNotifications();
-  }, []);
+  }, [timeFilter]);
+
+  const handleTableChange = (page: number, pageSize: number) => {
+    fetchDataNotifications(page, pageSize);
+  };
 
   const getStatusTag = (status: string) => {
     const statusMap = {
@@ -114,12 +135,24 @@ const DataNotification: React.FC = () => {
     },
     {
       title: intl.formatMessage({
-        id: 'pages.review.table.createTime',
-        defaultMessage: 'Create Time',
+        id: 'pages.review.table.modifiedAt',
+        defaultMessage: 'Modified At',
       }),
-      dataIndex: 'createAt',
-      key: 'createAt',
-      render: (time: string) => new Date(time).toLocaleString(),
+      dataIndex: 'modifiedAt',
+      key: 'modifiedAt',
+      render: (time: string) => {
+        if (!time) return '';
+        const date = new Date(time);
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        const day = date.getDate();
+        const hour = date.getHours();
+        const minute = date.getMinutes();
+        const second = date.getSeconds();
+        return `${year}-${month}-${day} ${hour.toString().padStart(2, '0')}:${minute
+          .toString()
+          .padStart(2, '0')}:${second.toString().padStart(2, '0')}`;
+      },
     },
     {
       title: intl.formatMessage({ id: 'pages.review.table.actions', defaultMessage: 'Actions' }),
@@ -150,9 +183,17 @@ const DataNotification: React.FC = () => {
       dataSource={data}
       loading={loading}
       pagination={{
-        pageSize: 10,
-        showSizeChanger: false,
-        showQuickJumper: false,
+        current: pagination.current,
+        pageSize: pagination.pageSize,
+        total: pagination.total,
+        // showSizeChanger: true,
+        // showQuickJumper: true,
+        showTotal: (total, range) =>
+          intl.formatMessage(
+            { id: 'pages.pagination.showTotal', defaultMessage: 'Items {start}-{end} of {total}' },
+            { start: range[0], end: range[1], total },
+          ),
+        onChange: handleTableChange,
       }}
       size='small'
     />
