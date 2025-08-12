@@ -1,5 +1,6 @@
 {
   "imports": {
+    "@aws-sdk/client-cognito-identity-provider": "npm:/@aws-sdk/client-cognito-identity-provider",
     "@supabase/functions-js/edge-runtime.d.ts": "jsr:@supabase/functions-js/edge-runtime.d.ts",
     "@hono/hono": "jsr:@hono/hono",
     "@langchain/core/messages": "npm:/@langchain/core/messages",
@@ -16,6 +17,7 @@
     "@supabase/supabase-js@2": "jsr:@supabase/supabase-js@2",
     "@upstash/redis": "npm:/@upstash/redis",
     "@tavily/core": "npm:/@tavily/core",
+    "aws-jwt-verify": "npm:/aws-jwt-verify",
     "duck-duck-scrape": "npm:/duck-duck-scrape",
     "neo4j-driver": "https://deno.land/x/neo4j_driver_lite@5.27.0/mod.ts",
     "zod": "npm:/zod"
