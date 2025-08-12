@@ -265,14 +265,18 @@ export function getLangText(langTexts: any, lang: string) {
 }
 
 export function getLangJson(langTexts: any) {
-  if (langTexts) {
+  if (!langTexts) {
+    return {};
+  }
+  if (Array.isArray(langTexts)) {
     if (langTexts.length === 1) {
       return langTexts[0];
     } else if (langTexts.length > 1) {
       return langTexts;
     }
+  } else {
+    return langTexts;
   }
-  return {};
 }
 
 export function getLangList(langTexts: any) {
@@ -284,6 +288,21 @@ export function getLangList(langTexts: any) {
   } else {
     return [langTexts];
   }
+}
+
+export function mergeLangArrays(...arrays: any[][]): any[] {
+  if (arrays.length === 0) return [];
+
+  const langSets = arrays.map((arr) => new Set(arr.map((item) => item['@xml:lang'])));
+
+  const commonLangs = [...langSets[0]].filter((lang) => langSets.every((set) => set.has(lang)));
+
+  return commonLangs.map((lang) => {
+    const text = arrays
+      .map((arr) => arr.find((item) => item['@xml:lang'] === lang)?.['#text'] ?? '')
+      .join('');
+    return { '@xml:lang': lang, '#text': text };
+  });
 }
 
 export function classificationToString(classifications: any[]) {

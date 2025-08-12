@@ -67,6 +67,7 @@ export function genProcessJsonOrdered(id: string, data: any) {
         generalComment: getLangJson(item.generalComment),
       };
     }) ?? [];
+
   return removeEmptyObjects({
     processDataSet: {
       // '@xmlns:common': oldData.processDataSet?.['@xmlns:common'] ?? {},

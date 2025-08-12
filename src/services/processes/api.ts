@@ -929,3 +929,19 @@ export async function getProcessesByIdsAndVersions(ids: string[], versions: stri
     .in('version', versions);
   return result;
 }
+
+export async function validateProcessesByIdAndVersion(id: string, version: string) {
+  const resultVersion = await supabase
+    .from('processes')
+    .select('id,version')
+    .eq('id', id)
+    .eq('version', version);
+  if (resultVersion?.data && resultVersion.data.length > 0) {
+    return true;
+  }
+  const result = await supabase.from('processes').select('id,version').eq('id', id);
+  if (result?.data && result.data.length > 0) {
+    return true;
+  }
+  return false;
+}

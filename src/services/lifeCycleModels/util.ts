@@ -9,6 +9,7 @@ import {
   getLangText,
   jsonToList,
   listToJson,
+  mergeLangArrays,
   percentStringToNumber,
   removeEmptyObjects,
   toAmountNumber,
@@ -1699,82 +1700,6 @@ const calculateProcessExchange = (
   return newProcessExchanges;
 };
 
-// const getConnectedProcessExchanges = (
-//   baseNodeId: string,
-//   allocatedFraction: number,
-//   allocatedExchange: any,
-//   nonAllocatedExchanges: any[],
-//   allUp2DownEdges: Up2DownEdge[],
-//   calculatedProcessExchanges: any[],
-// ) => {
-//   let connectedProcessExchanges: any[] = [];
-
-//   const thisUpstreamEdges = allUp2DownEdges.filter((ud: Up2DownEdge) => {
-//     return (
-//       (ud?.upstreamId === baseNodeId && ud?.dependence === 'upstream')
-//     );
-//   });
-
-//   const thisDownstreamEdges = allUp2DownEdges.filter((ud: Up2DownEdge) => {
-//     return (
-//       (ud?.downstreamId === baseNodeId && ud?.dependence === 'downstream')
-//     );
-//   });
-
-//   const nonAllocatedInputExchangeIds = nonAllocatedExchanges.map((e: any) => {
-//     if (e?.exchangeDirection?.toUpperCase() === 'INPUT') {
-//       return e?.referenceToFlowDataSet?.['@refObjectId'];
-//     }
-//     return null;
-//   }).filter((e: any) => e !== null);
-
-//   const nonAllocatedOutputExchangeIds = nonAllocatedExchanges.map((e: any) => {
-//     if (e?.exchangeDirection?.toUpperCase() === 'OUTPUT') {
-//       return e?.referenceToFlowDataSet?.['@refObjectId'];
-//     }
-//     return null;
-//   }).filter((e: any) => e !== null);
-
-//   thisUpstreamEdges.forEach((ud: Up2DownEdge) => {
-//     if (nonAllocatedOutputExchangeIds.includes(ud?.flowUUID)) {
-//       const connectedProcessExchange = calculatedProcessExchanges.find((cpe: any) => {
-//         return cpe?.nodeId === ud?.downstreamId;
-//       });
-//       connectedProcessExchanges.push({
-//         ...connectedProcessExchange,
-//         scalingFactor: new BigNumber(allocatedFraction).times(connectedProcessExchange?.scalingFactor).toNumber(),
-//         exchanges: connectedProcessExchange?.exchanges?.map((e: any) => {
-//           return {
-//             ...e,
-//             meanAmount: new BigNumber(allocatedFraction).times(e?.meanAmount).toNumber(),
-//             resultingAmount: new BigNumber(allocatedFraction).times(e?.resultingAmount).toNumber(),
-//           };
-//         }),
-//       });
-//     }
-//   });
-
-//   thisDownstreamEdges.forEach((edge: Up2DownEdge) => {
-//     if (nonAllocatedInputExchangeIds.includes(edge?.flowUUID)) {
-//       const connectedProcessExchange = calculatedProcessExchanges.find((cpe: any) => {
-//         return cpe?.nodeId === edge?.upstreamId;
-//       });
-
-//       connectedProcessExchanges.push({
-//         ...connectedProcessExchange,
-//         scalingFactor: new BigNumber(allocatedFraction).times(connectedProcessExchange?.scalingFactor).toNumber(),
-//         exchanges: connectedProcessExchange?.exchanges?.map((e: any) => {
-//           return {
-//             ...e,
-//             meanAmount: new BigNumber(allocatedFraction).times(e?.meanAmount).toNumber(),
-//             resultingAmount: new BigNumber(allocatedFraction).times(e?.resultingAmount).toNumber(),
-//           };
-//         }),
-//       });
-//     }
-//   });
-// }
-
 const allocatedProcessExchange = (calculatedProcessExchanges: any[]) => {
   let childProcessExchanges: any[] = [];
   calculatedProcessExchanges.forEach((npe: any) => {
@@ -1978,7 +1903,12 @@ const sumProcessExchange = (processExchanges: any[]) => {
   return sumDataList;
 };
 
-export async function genLifeCycleModelProcess(id: string, refNode: any, data: any, oldData: any) {
+export async function genLifeCycleModelProcesses(
+  id: string,
+  refNode: any,
+  data: any,
+  oldSubmodels: any[],
+) {
   const mdProcessInstances = jsonToList(
     data?.lifeCycleModelInformation?.technology?.processes?.processInstance,
   );
@@ -2306,7 +2236,6 @@ export async function genLifeCycleModelProcess(id: string, refNode: any, data: a
   }
   if (refMdProcess && refDbProcess) {
     const calculatedProcessExchanges = calculateProcessExchange(
-      // refMdProcess?.['@dataSetInternalID'],
       refMdProcess,
       refDbProcess,
       scalingFactor,
@@ -2376,7 +2305,7 @@ export async function genLifeCycleModelProcess(id: string, refNode: any, data: a
         whileUnknown = false;
       }
       whileCount++;
-      if (whileCount > 3 * (unknownCount ?? 3)) {
+      if (whileCount > 3 + (unknownCount ?? 0) * 3) {
         console.error(`Too many iterations (${whileCount}), breaking out of the loop`);
         whileUnknown = false;
       }
@@ -2472,31 +2401,10 @@ export async function genLifeCycleModelProcess(id: string, refNode: any, data: a
                 },
               };
             }
-            const referenceToReferenceFlow = sumExchange?.find((e: any) => {
-              if (finalProductProcessExchange?.isAllocated) {
-                if (
-                  e?.referenceToFlowDataSet?.['@refObjectId'] ===
-                    finalProductProcessExchange?.allocatedExchangeFlowId &&
-                  e?.exchangeDirection?.toUpperCase() ===
-                    finalProductProcessExchange?.allocatedExchangeDirection?.toUpperCase()
-                ) {
-                  return true;
-                }
-              } else if (finalProductProcessExchange?.nodeId === referenceToReferenceProcess) {
-                if (
-                  e?.exchangeDirection?.toUpperCase() ===
-                    thisRefFlow?.exchangeDirection?.toUpperCase() &&
-                  e?.referenceToFlowDataSet?.['@refObjectId'] ===
-                    thisRefFlow?.referenceToFlowDataSet?.['@refObjectId']
-                ) {
-                  return true;
-                }
-              }
-              return false;
-            });
 
-            let newId = '';
-            let type = '';
+            let newId = v4();
+            let option = 'create';
+            let type = 'secondary';
             const newExchanges = sumExchange?.map((e: any) => {
               if (
                 finalProductProcessExchange?.nodeId === referenceToReferenceProcess &&
@@ -2506,6 +2414,7 @@ export async function genLifeCycleModelProcess(id: string, refNode: any, data: a
                   thisRefFlow?.exchangeDirection?.toUpperCase()
               ) {
                 newId = id;
+                option = 'update';
                 type = 'primary';
                 return {
                   ...e,
@@ -2513,39 +2422,96 @@ export async function genLifeCycleModelProcess(id: string, refNode: any, data: a
                   allocations: undefined,
                   meanAmount: targetAmount.toString(),
                   resultingAmount: targetAmount.toString(),
+                  quantitativeReference: true,
                 };
               } else {
-                type = 'secondary';
-                return {
-                  ...e,
-                  allocatedFraction: undefined,
-                  allocations: undefined,
-                  meanAmount: e?.meanAmount.toString(),
-                  resultingAmount: e?.resultingAmount.toString(),
-                };
+                if (
+                  finalProductProcessExchange?.isAllocated &&
+                  e?.referenceToFlowDataSet?.['@refObjectId'] ===
+                    finalProductProcessExchange?.allocatedExchangeFlowId &&
+                  e?.exchangeDirection?.toUpperCase() ===
+                    finalProductProcessExchange?.allocatedExchangeDirection?.toUpperCase()
+                ) {
+                  return {
+                    ...e,
+                    allocatedFraction: undefined,
+                    allocations: undefined,
+                    meanAmount: e?.meanAmount.toString(),
+                    resultingAmount: e?.resultingAmount.toString(),
+                    quantitativeReference: true,
+                  };
+                } else {
+                  return {
+                    ...e,
+                    allocatedFraction: undefined,
+                    allocations: undefined,
+                    meanAmount: e?.meanAmount.toString(),
+                    resultingAmount: e?.resultingAmount.toString(),
+                  };
+                }
               }
             });
 
             const LCIAResults = await LCIAResultCalculation(newExchanges);
 
+            if (type === 'secondary') {
+              const oldProcesses = oldSubmodels?.find(
+                (o: any) =>
+                  o.type === 'secondary' &&
+                  o.finalId.nodeId === finalId.nodeId &&
+                  o.finalId.processId === finalId.processId &&
+                  o.finalId.allocatedExchangeDirection === finalId.allocatedExchangeDirection &&
+                  o.finalId.allocatedExchangeFlowId === finalId.allocatedExchangeFlowId,
+              );
+              if (oldProcesses && oldProcesses.id.length > 0) {
+                option = 'update';
+                newId = oldProcesses.id;
+              }
+            }
+
+            const refExchange = newExchanges.find((e: any) => e?.quantitativeReference);
+
+            const subproductPrefix = [
+              { '@xml:lang': 'zh', '#text': '子产品: ' },
+              { '@xml:lang': 'en', '#text': 'Subproduct: ' },
+            ];
+            const subproductLeftBracket = [
+              { '@xml:lang': 'zh', '#text': '[' },
+              { '@xml:lang': 'en', '#text': '[' },
+            ];
+            const subproductRightBracket = [
+              { '@xml:lang': 'zh', '#text': '] ' },
+              { '@xml:lang': 'en', '#text': '] ' },
+            ];
+
+            const baseName =
+              type === 'primary'
+                ? data?.lifeCycleModelInformation?.dataSetInformation?.name?.baseName
+                : mergeLangArrays(
+                    subproductLeftBracket,
+                    subproductPrefix,
+                    refExchange.referenceToFlowDataSet['common:shortDescription'],
+                    subproductRightBracket,
+                    jsonToList(data?.lifeCycleModelInformation?.dataSetInformation?.name?.baseName),
+                  );
+
+            // const functionalUnitFlowProperties = type === 'primary' ? data?.lifeCycleModelInformation?.dataSetInformation?.name
+            //   ?.functionalUnitFlowProperties : refExchange.referenceToFlowDataSet["common:shortDescription"];
+
             const newData = removeEmptyObjects({
-              id: newId,
-              type: type,
-              finalId: finalId,
+              option: option,
+              modelInfo: {
+                id: newId,
+                type: type,
+                finalId: finalId,
+              },
               data: {
                 processDataSet: {
-                  '@xmlns:common': oldData.processDataSet?.['@xmlns:common'] ?? {},
-                  '@xmlns': oldData.processDataSet?.['@xmlns'] ?? {},
-                  '@xmlns:xsi': oldData.processDataSet?.['@xmlns:xsi'] ?? {},
-                  '@version': oldData.processDataSet['@version'] ?? {},
-                  '@xsi:schemaLocation': oldData.processDataSet['@xsi:schemaLocation'] ?? {},
-
                   processInformation: {
                     dataSetInformation: {
                       'common:UUID': newId,
                       name: {
-                        baseName:
-                          data?.lifeCycleModelInformation?.dataSetInformation?.name?.baseName,
+                        baseName: baseName,
                         treatmentStandardsRoutes:
                           data?.lifeCycleModelInformation?.dataSetInformation?.name
                             ?.treatmentStandardsRoutes,
@@ -2591,12 +2557,12 @@ export async function genLifeCycleModelProcess(id: string, refNode: any, data: a
                             ?.referenceToExternalDocumentation?.['common:shortDescription'],
                       },
                     },
-                    quantitativeReference: {
-                      '@type': refDbProcess?.quantitativeReference?.['@type'],
-                      referenceToReferenceFlow: referenceToReferenceFlow?.['@dataSetInternalID'],
-                      functionalUnitOrOther:
-                        refDbProcess?.quantitativeReference?.functionalUnitOrOther,
-                    },
+                    // quantitativeReference: {
+                    //   '@type': refDbProcess?.quantitativeReference?.['@type'],
+                    //   referenceToReferenceFlow: referenceToReferenceFlow?.['@dataSetInternalID'],
+                    //   functionalUnitOrOther:
+                    //     refDbProcess?.quantitativeReference?.functionalUnitOrOther,
+                    // },
                     time: {
                       'common:referenceYear':
                         data?.lifeCycleModelInformation?.time?.['common:referenceYear'] ?? {},
