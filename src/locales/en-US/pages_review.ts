@@ -34,7 +34,9 @@ export default {
 
   'pages.review.drawer.title': 'Select Reviewer',
   'pages.review.saveSuccess': 'Save successful',
+  'pages.review.saveError': 'Save failed',
   'pages.review.temporarySaveSuccess': 'Temporary save successful',
+  'pages.review.temporarySaveError': 'Temporary save failed',
 
   'pages.review.selectReviewer.button': 'Assign Reviewer',
 
@@ -53,4 +55,19 @@ export default {
 
   'pages.review.ReviewLifeCycleModelsDetail.edit.title': 'Review Model',
   'pages.review.ReviewLifeCycleModelsDetail.view.title': 'View Review',
+
+  // ReviewDetail component internationalization
+  'pages.reviewDetail.tooltip': 'View Review Logs',
+  'pages.reviewDetail.title': 'Review Logs',
+  'pages.reviewDetail.operator': 'Operator',
+  'pages.reviewDetail.time': 'Time',
+  'pages.reviewDetail.action': 'Action Details',
+
+  'pages.reviewDetail.submit_review': 'Submit Review',
+  'pages.reviewDetail.assign_reviewers_temporary': 'Assign Reviewers Temporarily',
+  'pages.reviewDetail.assign_reviewers': 'Assign Reviewers',
+  'pages.reviewDetail.submit_comments_temporary': 'Submit Comments Temporarily',
+  'pages.reviewDetail.submit_comments': 'Submit Comments',
+  'pages.reviewDetail.rejected': 'Reject Review',
+  'pages.reviewDetail.approved': 'Approve Review',
 };

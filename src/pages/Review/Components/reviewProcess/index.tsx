@@ -5,8 +5,9 @@ import { getCommentApi, updateCommentApi } from '@/services/comments/api';
 import { getRefData, updateStateCodeApi } from '@/services/general/api';
 import { getProcessDetail, updateProcessApi } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
-import { updateReviewApi } from '@/services/reviews/api';
+import { getReviewsDetail, updateReviewApi } from '@/services/reviews/api';
 import { getUserTeamId } from '@/services/roles/api';
+import { getUserId, getUsersByIds } from '@/services/users/api';
 import styles from '@/style/custom.less';
 import { AuditOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -184,29 +185,64 @@ const ReviewProcessDetail: FC<Props> = ({
     }
     await controller.waitForAll();
   };
+  const getNewReviewJson = async (action: string) => {
+    const userId = await getUserId();
+    const user = await getUsersByIds([userId]);
+    const reviewDetail = await getReviewsDetail(reviewId);
+    const updateJson = {
+      ...reviewDetail?.json,
+      logs: [
+        ...(reviewDetail?.json.logs ?? []),
+        {
+          action,
+          time: new Date(),
+          user: {
+            id: userId,
+            display_name: user?.[0]?.display_name,
+          },
+        },
+      ],
+    };
+    return updateJson;
+  };
 
   const temporarySave = async () => {
-    const fieldsValue = formRefEdit.current?.getFieldsValue();
-    const submitData = {
-      modellingAndValidation: {
-        complianceDeclarations: fieldsValue?.modellingAndValidation?.complianceDeclarations,
-        validation: fieldsValue?.modellingAndValidation?.validation,
-      },
-    };
+    try {
+      const fieldsValue = formRefEdit.current?.getFieldsValue();
+      const submitData = {
+        modellingAndValidation: {
+          complianceDeclarations: fieldsValue?.modellingAndValidation?.complianceDeclarations,
+          validation: fieldsValue?.modellingAndValidation?.validation,
+        },
+      };
 
-    setSpinning(true);
-    const { error } = await updateCommentApi(reviewId, { json: submitData }, tabType);
-    if (!error) {
-      message.success(
-        intl.formatMessage({
-          id: 'pages.review.temporarySaveSuccess',
-          defaultMessage: 'Temporary save successfully',
-        }),
-      );
-      setDrawerVisible(false);
-      actionRef?.current?.reload();
+      setSpinning(true);
+      const { error } = await updateCommentApi(reviewId, { json: submitData }, tabType);
+      if (!error) {
+        const newReviewJson = await getNewReviewJson('submit_comments_temporary');
+        const result = await updateReviewApi([reviewId], {
+          json: newReviewJson,
+        });
+
+        if (!result.error) {
+          message.success(
+            intl.formatMessage({
+              id: 'pages.review.temporarySaveSuccess',
+              defaultMessage: 'Temporary save successfully',
+            }),
+          );
+          setDrawerVisible(false);
+          actionRef?.current?.reload();
+        } else {
+          throw new Error('暂存失败');
+        }
+      }
+      setSpinning(false);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setSpinning(false);
     }
-    setSpinning(false);
   };
 
   const approveReview = async () => {
@@ -218,17 +254,11 @@ const ReviewProcessDetail: FC<Props> = ({
       },
       tabType,
     );
-    // const oldReviews = await getReviewsDetail(reviewId);
-    // const {json:oldReviewJson} = oldReviews??{};
+
+    const newReviewJson = await getNewReviewJson('approved');
     const { error: error2 } = await updateReviewApi([reviewId], {
       state_code: 2,
-      // json:{
-      //   ...oldReviewJson,
-      //   comment:{
-      //     ...oldReviewJson?.comment??{},
-      //     result:2,
-      //   }
-      // }
+      json: newReviewJson,
     });
 
     await updateReviewDataToPublic(id, version);
@@ -423,33 +453,46 @@ const ReviewProcessDetail: FC<Props> = ({
               },
             }}
             onFinish={async () => {
-              setSpinning(true);
-              const fieldsValue = formRefEdit.current?.getFieldsValue();
-              const submitData = {
-                modellingAndValidation: {
-                  complianceDeclarations:
-                    fieldsValue?.modellingAndValidation?.complianceDeclarations,
-                  validation: fieldsValue?.modellingAndValidation?.validation,
-                },
-              };
+              try {
+                setSpinning(true);
+                const fieldsValue = formRefEdit.current?.getFieldsValue();
+                const submitData = {
+                  modellingAndValidation: {
+                    complianceDeclarations:
+                      fieldsValue?.modellingAndValidation?.complianceDeclarations,
+                    validation: fieldsValue?.modellingAndValidation?.validation,
+                  },
+                };
 
-              const { error } = await updateCommentApi(
-                reviewId,
-                { json: submitData, state_code: 1 },
-                tabType,
-              );
-              if (!error) {
-                message.success(
-                  intl.formatMessage({
-                    id: 'pages.review.ReviewProcessDetail.edit.success',
-                    defaultMessage: 'Review submitted successfully',
-                  }),
+                const { error } = await updateCommentApi(
+                  reviewId,
+                  { json: submitData, state_code: 1 },
+                  tabType,
                 );
-                setDrawerVisible(false);
-                actionRef?.current?.reload();
+                if (!error) {
+                  const newReviewJson = await getNewReviewJson('submit_comments');
+                  const result = await updateReviewApi([reviewId], {
+                    json: newReviewJson,
+                  });
+
+                  if (!result.error) {
+                    message.success(
+                      intl.formatMessage({
+                        id: 'pages.review.ReviewProcessDetail.edit.success',
+                        defaultMessage: 'Review submitted successfully',
+                      }),
+                    );
+                    setDrawerVisible(false);
+                    actionRef?.current?.reload();
+                  }
+                  setSpinning(false);
+                  return true;
+                }
+              } catch (err) {
+                console.error(err);
+              } finally {
+                setSpinning(false);
               }
-              setSpinning(false);
-              return true;
             }}
           >
             <TabsDetail

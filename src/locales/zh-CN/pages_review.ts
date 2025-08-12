@@ -33,7 +33,9 @@ export default {
 
   'pages.review.drawer.title': '选择审核人员',
   'pages.review.saveSuccess': '保存成功',
+  'pages.review.saveError': '保存失败',
   'pages.review.temporarySaveSuccess': '暂存成功',
+  'pages.review.temporarySaveError': '暂存失败',
 
   'pages.review.selectReviewer.button': '分配审核人',
 
@@ -53,4 +55,19 @@ export default {
 
   'pages.review.ReviewLifeCycleModelsDetail.edit.title': '审核模型',
   'pages.review.ReviewLifeCycleModelsDetail.view.title': '查看审核',
+
+  // ReviewDetail 组件国际化
+  'pages.reviewDetail.tooltip': '查看审核日志',
+  'pages.reviewDetail.title': '审核日志',
+  'pages.reviewDetail.operator': '操作者',
+  'pages.reviewDetail.time': '时间',
+  'pages.reviewDetail.action': '操作详情',
+
+  'pages.reviewDetail.submit_review': '提交审核',
+  'pages.reviewDetail.assign_reviewers_temporary': '临时分配审核员',
+  'pages.reviewDetail.assign_reviewers': '分配审核员',
+  'pages.reviewDetail.submit_comments_temporary': '暂存评审数据',
+  'pages.reviewDetail.submit_comments': '提交评审数据',
+  'pages.reviewDetail.rejected': '驳回审核',
+  'pages.reviewDetail.approved': '通过审核',
 };

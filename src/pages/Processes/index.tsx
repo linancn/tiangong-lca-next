@@ -30,6 +30,7 @@ import ProcessCreate from './Components/create';
 import ProcessDelete from './Components/delete';
 import ProcessEdit from './Components/edit';
 import { processtypeOfDataSetOptions } from './Components/optiondata';
+import ReviewDetail from './Components/ReviewDetail';
 import ProcessView from './Components/view';
 
 const { Search } = Input;
@@ -227,6 +228,10 @@ const TableList: FC = () => {
                   color: token.colorPrimary,
                 }}
                 menus={[
+                  {
+                    key: 'logs',
+                    name: <ReviewDetail processId={row.id} processVersion={row.version} />,
+                  },
                   {
                     key: 'export',
                     name: <ExportData tableName='processes' id={row.id} version={row.version} />,

@@ -46,6 +46,11 @@ export async function getReviewsDetail(id: string) {
   return data;
 }
 
+export async function getReviewsDetailByReviewIds(reviewIds: string[]) {
+  const { data } = await supabase.from('reviews').select('*').in('id', reviewIds);
+  return data;
+}
+
 export async function getReviewsTableData(
   params: { pageSize: number; current: number },
   sort: any,
@@ -135,4 +140,13 @@ export async function getReviewsTableData(
     success: true,
     total: 0,
   });
+}
+
+export async function getReviewsByProcess(processId: string, processVersion: string) {
+  const result = await supabase
+    .from('reviews')
+    .select('*')
+    .filter('json->data->>id', 'eq', processId)
+    .filter('json->data->>version', 'eq', processVersion);
+  return result;
 }

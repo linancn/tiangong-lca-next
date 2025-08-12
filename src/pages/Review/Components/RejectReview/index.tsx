@@ -11,6 +11,7 @@ import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
 import { getProcessDetail } from '@/services/processes/api';
 import { getReviewsDetail, updateReviewApi } from '@/services/reviews/api';
 import { getUserTeamId } from '@/services/roles/api';
+import { getUserId, getUsersByIds } from '@/services/users/api';
 import { FileExcelOutlined } from '@ant-design/icons';
 import { FormattedMessage, useIntl } from '@umijs/max';
 import { Button, Form, FormInstance, Input, message, Modal, Tooltip } from 'antd';
@@ -205,6 +206,8 @@ const RejectReview: React.FC<RejectReviewProps> = ({
       setLoading(true);
       const oldReviews = await getReviewsDetail(reviewId);
       const { json: oldReviewJson } = oldReviews ?? {};
+      const userId = await getUserId();
+      const user = await getUsersByIds([userId]);
       const { error } = await updateReviewApi([reviewId], {
         state_code: -1,
         json: {
@@ -212,6 +215,17 @@ const RejectReview: React.FC<RejectReviewProps> = ({
           comment: {
             message: values.reason,
           },
+          logs: [
+            ...(oldReviewJson?.logs ?? []),
+            {
+              action: 'rejected',
+              time: new Date(),
+              user: {
+                id: userId,
+                display_name: user?.[0]?.display_name,
+              },
+            },
+          ],
         },
       });
 
