@@ -297,6 +297,16 @@ const ToolbarViewInfo: FC<Props> = ({
           }
         }
       }
+      const submodels = lifeCycleModel?.json_tg?.submodels;
+      if (submodels) {
+        submodels.forEach((item: any) => {
+          result.push({
+            '@refObjectId': item.id,
+            '@version': modelVersion,
+            '@type': 'process data set',
+          });
+        });
+      }
     }
     for (const item of result) {
       await updateStateCodeApi(

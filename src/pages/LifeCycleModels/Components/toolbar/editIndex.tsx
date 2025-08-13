@@ -33,6 +33,7 @@ import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
 import ConnectableProcesses from '../connectableProcesses';
 import LifeCycleModelEdit from '../edit';
+import ModelResult from '../modelResult';
 import LifeCycleModelView from '../view';
 import ModelToolbarAdd from './add';
 import { Control } from './control';
@@ -75,6 +76,7 @@ const ToolbarEdit: FC<Props> = ({
   const [thisAction, setThisAction] = useState(action);
   const [spinning, setSpinning] = useState(false);
   const [infoData, setInfoData] = useState<any>({});
+  const [jsonTg, setJsonTg] = useState<any>({});
   const [problemNodes, setProblemNodes] = useState<refDataType[]>([]);
 
   const [targetAmountDrawerVisible, setTargetAmountDrawerVisible] = useState(false);
@@ -972,6 +974,7 @@ const ToolbarEdit: FC<Props> = ({
       setInfoData({});
       setNodeCount(0);
       setProblemNodes([]);
+      setJsonTg({});
       return;
     }
     if (importData && importData.length > 0) {
@@ -1026,6 +1029,7 @@ const ToolbarEdit: FC<Props> = ({
         const fromData = genLifeCycleModelInfoFromData(
           result.data?.json?.lifeCycleModelDataSet ?? {},
         );
+        setJsonTg(result.data?.json_tg);
         setInfoData({ ...fromData, id: thisId, version: thisVersion });
         const model = genLifeCycleModelData(result.data?.json_tg ?? {}, lang);
         let initNodes = (model?.nodes ?? []).map((node: any) => {
@@ -1225,11 +1229,11 @@ const ToolbarEdit: FC<Props> = ({
     const selectedNode = nodes.find((node) => node.selected);
 
     if (selectedNode?.isMyProcess) {
-      if (selectedNode?.isFromLifeCycle) {
+      if (selectedNode?.modelData) {
         return (
           <LifeCycleModelEdit
-            id={selectedNode?.data?.id ?? ''}
-            version={selectedNode?.data?.version ?? ''}
+            id={selectedNode?.modelData?.id ?? ''}
+            version={selectedNode?.modelData?.version ?? ''}
             lang={lang}
             actionRef={undefined}
             buttonType={'toolIcon'}
@@ -1254,11 +1258,11 @@ const ToolbarEdit: FC<Props> = ({
         );
       }
     } else {
-      if (selectedNode?.isFromLifeCycle) {
+      if (selectedNode?.modelData) {
         return (
           <LifeCycleModelView
-            id={selectedNode?.data?.id ?? ''}
-            version={selectedNode?.data?.version ?? ''}
+            id={selectedNode?.modelData?.id ?? ''}
+            version={selectedNode?.modelData?.version ?? ''}
             lang={lang}
             actionRef={undefined}
             buttonType={'toolIcon'}
@@ -1379,14 +1383,15 @@ const ToolbarEdit: FC<Props> = ({
       </Tooltip>
       <br />
 
-      <ProcessView
+      {/* <ProcessView
         id={id ?? ''}
         version={version ?? ''}
         lang={lang}
         buttonType={'toolResultIcon'}
         actionRef={undefined}
         disabled={false}
-      />
+      /> */}
+      <ModelResult submodels={jsonTg?.submodels ?? []} modelVersion={version} lang={lang} />
       <Tooltip
         title={<FormattedMessage id='pages.button.check' defaultMessage='Data check' />}
         placement='left'
