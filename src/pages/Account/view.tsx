@@ -74,7 +74,6 @@ const AccountView: FC<Props> = ({ buttonType = 'icon', buttonTypeProp = 'default
     setSpinning(true);
     getUsersByIds([userId])
       .then((result) => {
-        console.log('result', result);
         setInitData(result?.[0] ?? null);
       })
       .finally(() => {
