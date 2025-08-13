@@ -7,7 +7,19 @@ import { getRules } from '@/pages/Utils';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ProForm, ProFormInstance } from '@ant-design/pro-components';
-import { Button, Card, Divider, Drawer, Form, Input, Select, Space, Switch, Tooltip } from 'antd';
+import {
+  Button,
+  Card,
+  Divider,
+  Drawer,
+  Form,
+  Input,
+  InputNumber,
+  Select,
+  Space,
+  Switch,
+  Tooltip,
+} from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -402,7 +414,13 @@ const ProcessExchangeEdit: FC<Props> = ({
                 }
                 name={['allocations', 'allocation', '@allocatedFraction']}
               >
-                <Input />
+                <InputNumber<number>
+                  style={{ width: '100%' }}
+                  min={0}
+                  max={100}
+                  formatter={(value) => `${value}%`}
+                  parser={(value) => value?.replace('%', '') as unknown as number}
+                />
               </Form.Item>
             </Card>
             <br />
