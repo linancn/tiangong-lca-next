@@ -251,6 +251,16 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
     }
 
     setSpinning(false);
+    const submodels = modelDetail?.data?.json_tg?.submodels;
+    if (submodels) {
+      submodels.forEach((item: any) => {
+        unReview.push({
+          '@refObjectId': item.id,
+          '@version': data.version,
+          '@type': 'process data set',
+        });
+      });
+    }
     return { checkResult, unReview, problemNodes };
   };
 
