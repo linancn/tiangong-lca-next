@@ -15,7 +15,7 @@ function createWindow() {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: true,
-      contextIsolation: false, // 根据需要设置
+      contextIsolation: false,
     },
   });
 
@@ -52,12 +52,12 @@ async function getFileResponse(filePath: string, defaultPath: string): Promise<R
     const extension = path.extname(filePath).toLowerCase();
     const mimeType = mimeTypes[extension] || 'text/plain';
 
-    return new Response(data, {
+    return new Response(new Uint8Array(data), {
       headers: { 'Content-Type': mimeType },
     });
   } catch (err) {
     const data = await fs.readFile(defaultPath);
-    return new Response(data, {
+    return new Response(new Uint8Array(data), {
       headers: { 'Content-Type': 'text/html' },
     });
   }
