@@ -1,4 +1,4 @@
-import { currentUser, forgotPasswordSendEmail } from '@/services/ant-design-pro/api';
+import { forgotPasswordSendEmail, getCurrentUser } from '@/services/auth';
 import { MailOutlined } from '@ant-design/icons';
 import { LoginForm, ProConfigProvider, ProFormText, ProLayout } from '@ant-design/pro-components';
 import { App, Button, ConfigProvider, Spin, Tabs, notification, theme } from 'antd';
@@ -10,14 +10,14 @@ import { FormattedMessage } from '@umijs/max';
 import Settings from '../../../../config/defaultSettings';
 
 const PasswordForgot: React.FC = () => {
-  const [initData, setInitData] = useState<API.CurrentUser>({});
+  const [initData, setInitData] = useState<Auth.CurrentUser>({});
   const [loading, setLoading] = useState<boolean>(false);
   const [sendComplete, setSendComplete] = useState(false);
   const [spinning, setSpinning] = useState(false);
   const intl = useIntl();
   const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
 
-  const handleSubmit = async (values: API.LoginParams) => {
+  const handleSubmit = async (values: Auth.LoginParams) => {
     try {
       setLoading(true);
       const msg = await forgotPasswordSendEmail(values);
@@ -56,7 +56,7 @@ const PasswordForgot: React.FC = () => {
 
   useEffect(() => {
     setSpinning(true);
-    currentUser().then((res) => {
+    getCurrentUser().then((res) => {
       setInitData(res ?? {});
       setSpinning(false);
     });
@@ -101,7 +101,7 @@ const PasswordForgot: React.FC = () => {
                   }
                   initialValues={initData}
                   onFinish={async (values) => {
-                    await handleSubmit(values as API.LoginParams);
+                    await handleSubmit(values as Auth.LoginParams);
                   }}
                   submitter={{
                     resetButtonProps: {

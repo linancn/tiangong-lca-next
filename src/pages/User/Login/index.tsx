@@ -1,4 +1,4 @@
-import { login, signUp } from '@/services/ant-design-pro/api';
+import { login, signUp } from '@/services/auth';
 import { LockOutlined, MailOutlined } from '@ant-design/icons';
 import {
   LoginForm,
@@ -45,7 +45,7 @@ const privacyPolicyLink = (
 );
 
 const Login: React.FC = () => {
-  const [userLoginState, setUserLoginState] = useState<API.LoginResult>({});
+  const [userLoginState, setUserLoginState] = useState<Auth.LoginResult>({});
   const [type, setType] = useState<string>('login');
   const [loading, setLoading] = useState<boolean>(false);
   const { initialState, setInitialState } = useModel('@@initialState');
@@ -67,7 +67,7 @@ const Login: React.FC = () => {
     }
   };
 
-  const handleSubmit = async (values: API.LoginParams) => {
+  const handleSubmit = async (values: Auth.LoginParams) => {
     try {
       if (type === 'register') {
         setLoading(true);
@@ -186,7 +186,7 @@ const Login: React.FC = () => {
                 initialValues={{ autoLogin: true }}
                 onFinish={async (values) => {
                   if (type === 'login') {
-                    await handleSubmit(values as API.LoginParams);
+                    await handleSubmit(values as Auth.LoginParams);
                   }
                 }}
                 submitter={

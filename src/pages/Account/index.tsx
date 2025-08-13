@@ -4,10 +4,10 @@ import {
   cognitoChangeEmail,
   cognitoChangePassword,
   cognitoSignUp,
-  currentUser,
+  getCurrentUser,
   login,
   setProfile,
-} from '@/services/ant-design-pro/api';
+} from '@/services/auth';
 import { IdcardOutlined, LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons';
 import { PageContainer, ProForm, ProFormInstance, ProFormText } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl, useModel } from '@umijs/max';
@@ -18,7 +18,7 @@ const Profile: FC = () => {
   const [activeTabKey, setActiveTabKey] = useState('baseInfo');
   const [spinning, setSpinning] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
-  const [initData, setInitData] = useState<API.CurrentUser | null>(null);
+  const [initData, setInitData] = useState<Auth.CurrentUser | null>(null);
   const [roleValue, setRoleValue] = useState<string>('');
   const [apiKey, setApiKey] = useState<string>('');
   const intl = useIntl();
@@ -680,7 +680,7 @@ const Profile: FC = () => {
 
   useEffect(() => {
     setSpinning(true);
-    currentUser().then((res) => {
+    getCurrentUser().then((res) => {
       setInitData(res);
       setRoleValue(
         intl.formatMessage({
