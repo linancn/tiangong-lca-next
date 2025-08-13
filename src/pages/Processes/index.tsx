@@ -172,10 +172,10 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              {row.isFromLifeCycle ? (
+              {row.modelData ? (
                 <LifeCycleModelView
-                  id={row.id}
-                  version={row.version}
+                  id={row.modelData.id}
+                  version={row.modelData.version}
                   lang={lang}
                   buttonType={'icon'}
                   actionRef={actionRef}
@@ -191,10 +191,10 @@ const TableList: FC = () => {
                   actionRef={actionRef}
                 />
               )}
-              {row.isFromLifeCycle ? (
+              {row.modelData ? (
                 <LifeCycleModelEdit
-                  id={row.id}
-                  version={row.version}
+                  id={row.modelData.id}
+                  version={row.modelData.version}
                   lang={lang}
                   actionRef={actionRef}
                   buttonType={'icon'}
@@ -230,11 +230,11 @@ const TableList: FC = () => {
                     key: 'copy',
                     name: (
                       <>
-                        {row.isFromLifeCycle ? (
+                        {row.modelData ? (
                           <LifeCycleModelCreate
                             actionType='copy'
-                            id={row.id}
-                            version={row.version}
+                            id={row.modelData.id}
+                            version={row.modelData.version}
                             lang={lang}
                             actionRef={actionRef}
                             buttonType={'icon'}
@@ -261,11 +261,11 @@ const TableList: FC = () => {
                             row.id,
                             row.version,
                           );
-                          if (row.isFromLifeCycle) {
+                          if (row.modelData) {
                             const { error: lifeCycleError } = await contributeSource(
                               'lifecyclemodels',
-                              row.id,
-                              row.version,
+                              row.modelData.id,
+                              row.modelData.version,
                             );
                             if (lifeCycleError || error) {
                               console.log(lifeCycleError);
