@@ -317,7 +317,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
               }
               labelStyle={{ width: '180px' }}
             >
-              {viewData?.allocations?.allocation['@allocatedFraction'] ?? '-'}
+              {viewData?.allocations?.allocation['@allocatedFraction'] ?? '-'}%
             </Descriptions.Item>
           </Descriptions>
         </Card>
