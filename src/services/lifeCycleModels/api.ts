@@ -244,15 +244,15 @@ export async function updateLifeCycleModelJsonApi(id: string, version: string, d
       headers: {
         Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
       },
-      body: { id, version, table: 'lifecyclemodels', data: { json: data } },
+      body: { id, version, table: 'lifecyclemodels', data: { json_ordered: data } },
       region: FunctionRegion.UsEast1,
     });
   }
   if (updateResult.error) {
     console.log('error', updateResult.error);
   }
-  if (updateResult?.data && updateResult?.data?.length > 0) {
-    const submodels = updateResult?.data[0]?.json_tg?.submodels;
+  if (updateResult?.data?.data && updateResult?.data?.data?.length > 0) {
+    const submodels = updateResult?.data?.data[0]?.json_tg?.submodels;
 
     if (submodels && submodels.length > 0) {
       const controller = new ConcurrencyController(3);
