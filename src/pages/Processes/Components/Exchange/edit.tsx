@@ -413,13 +413,22 @@ const ProcessExchangeEdit: FC<Props> = ({
                   />
                 }
                 name={['allocations', 'allocation', '@allocatedFraction']}
+                getValueFromEvent={(value) => {
+                  if (typeof value === 'number') {
+                    return `${value}%`;
+                  }
+                  if (typeof value === 'string' && !value.includes('%')) {
+                    return `${value}%`;
+                  }
+                  return value;
+                }}
               >
                 <InputNumber<number>
                   style={{ width: '100%' }}
                   min={0}
                   max={100}
-                  formatter={(value) => `${value}%`}
-                  parser={(value) => value?.replace('%', '') as unknown as number}
+                  // formatter={(value) => `${value}%`}
+                  // parser={(value) => value?.replace('%', '') as unknown as number}
                 />
               </Form.Item>
             </Card>
