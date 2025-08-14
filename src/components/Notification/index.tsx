@@ -44,7 +44,11 @@ const Notification: React.FC = () => {
   const { token } = theme.useToken();
   const intl = useIntl();
 
-  const updateShowDot = async () => {
+  const removeItemFromDotTabs = (item: 'team' | 'data') => {
+    setShowDotTabs((prev) => prev.filter((i) => i !== item));
+  };
+
+  const updateShowTabs = async () => {
     const auth = await getAuth();
     const update_team_notification_time =
       auth?.user?.user_metadata?.update_team_notification_time ?? 0;
@@ -52,12 +56,10 @@ const Notification: React.FC = () => {
       auth?.user?.user_metadata?.update_data_notification_time ?? 0;
     const latestReview = await getLatestReviewOfMine();
     const latestRoles = await getLatestRolesOfMine();
-    let show = false;
 
     if (update_data_notification_time && latestReview && latestReview.modified_at) {
       const reviewTime = new Date(latestReview.modified_at).getTime();
       if (reviewTime > update_data_notification_time) {
-        show = true;
         setShowDotTabs((prev) => [...prev, 'data']);
       }
     }
@@ -65,18 +67,17 @@ const Notification: React.FC = () => {
     if (update_team_notification_time && latestRoles && latestRoles.modified_at) {
       const rolesTime = new Date(latestRoles.modified_at).getTime();
       if (rolesTime > update_team_notification_time) {
-        show = true;
         setShowDotTabs((prev) => [...prev, 'team']);
       }
     }
-    if (!show) {
-      setShowDotTabs([]);
-    }
-    setShowDot(show);
   };
 
   useEffect(() => {
-    updateShowDot();
+    setShowDot(showDotTabs.length > 0);
+  }, [showDotTabs]);
+
+  useEffect(() => {
+    updateShowTabs();
   }, []);
 
   const handleIconClick = () => {
@@ -95,7 +96,7 @@ const Notification: React.FC = () => {
     {
       key: 'team',
       label: (
-        <Badge dot={showDotTabs.includes('team')} offset={[-5, 6]} size='small'>
+        <Badge dot={showDotTabs.includes('team')} offset={[5, 0]} size='small'>
           <span>
             {intl.formatMessage({
               id: 'notification.tabs.team',
@@ -104,12 +105,14 @@ const Notification: React.FC = () => {
           </span>
         </Badge>
       ),
-      children: <TeamNotification timeFilter={timeFilter} />,
+      children: (
+        <TeamNotification timeFilter={timeFilter} removeItemFromDotTabs={removeItemFromDotTabs} />
+      ),
     },
     {
       key: 'data',
       label: (
-        <Badge dot={showDotTabs.includes('data')} offset={[-5, 6]} size='small'>
+        <Badge dot={showDotTabs.includes('data')} offset={[5, 0]} size='small'>
           <span>
             {intl.formatMessage({
               id: 'notification.tabs.data',
@@ -118,7 +121,9 @@ const Notification: React.FC = () => {
           </span>
         </Badge>
       ),
-      children: <DataNotification timeFilter={timeFilter} />,
+      children: (
+        <DataNotification timeFilter={timeFilter} removeItemFromDotTabs={removeItemFromDotTabs} />
+      ),
     },
   ];
 

@@ -22,10 +22,15 @@ interface TeamNotificationItem {
 
 interface TeamNotificationProps {
   timeFilter: number;
+  removeItemFromDotTabs: (item: 'team' | 'data') => void;
 }
 
-const TeamNotification: React.FC<TeamNotificationProps> = ({ timeFilter }) => {
+const TeamNotification: React.FC<TeamNotificationProps> = ({
+  timeFilter,
+  removeItemFromDotTabs,
+}) => {
   const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [data, setData] = useState<TeamNotificationItem[]>([]);
   const intl = useIntl();
   const { token } = theme.useToken();
@@ -34,8 +39,10 @@ const TeamNotification: React.FC<TeamNotificationProps> = ({ timeFilter }) => {
     setLoading(true);
     try {
       const res = await getTeamInvitationStatusApi(timeFilter);
+
       if (res.success && res.data) {
         await updateTeamNotificationTime();
+        removeItemFromDotTabs('team');
         const teamData = await getTeamById(res.data.team_id);
         if (teamData.success && teamData.data?.[0]) {
           const teamTitle = teamData.data[0]?.json?.title;
@@ -58,9 +65,11 @@ const TeamNotification: React.FC<TeamNotificationProps> = ({ timeFilter }) => {
             },
           ]);
         }
+      } else {
+        setData([]);
       }
     } catch (error) {
-      console.error('获取团队通知失败:', error);
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -71,30 +80,36 @@ const TeamNotification: React.FC<TeamNotificationProps> = ({ timeFilter }) => {
   }, [timeFilter]);
 
   const handleAccept = async (record: TeamNotificationItem) => {
+    setActionLoading(`accept-${record.teamId}`);
     try {
       const { success } = await acceptTeamInvitationApi(record.teamId, record.userId);
       if (success) {
         message.success(intl.formatMessage({ id: 'teams.members.actionSuccess' }));
-        fetchTeamNotifications();
       } else {
         message.error(intl.formatMessage({ id: 'teams.members.actionError' }));
       }
     } catch (error) {
       message.error(intl.formatMessage({ id: 'teams.members.actionError' }));
+    } finally {
+      setActionLoading(null);
+      fetchTeamNotifications();
     }
   };
 
   const handleReject = async (record: TeamNotificationItem) => {
+    setActionLoading(`reject-${record.teamId}`);
     try {
       const { success } = await rejectTeamInvitationApi(record.teamId, record.userId);
       if (success) {
         message.success(intl.formatMessage({ id: 'teams.members.actionSuccess' }));
-        fetchTeamNotifications();
       } else {
         message.error(intl.formatMessage({ id: 'teams.members.actionError' }));
       }
     } catch (error) {
       message.error(intl.formatMessage({ id: 'teams.members.actionError' }));
+    } finally {
+      setActionLoading(null);
+      fetchTeamNotifications();
     }
   };
 
@@ -155,13 +170,22 @@ const TeamNotification: React.FC<TeamNotificationProps> = ({ timeFilter }) => {
         <Space>
           {record.role === 'is_invited' && (
             <>
-              <Button type='primary' size='small' onClick={() => handleAccept(record)}>
+              <Button
+                type='primary'
+                size='small'
+                loading={actionLoading === `accept-${record.teamId}`}
+                onClick={() => handleAccept(record)}
+              >
                 {intl.formatMessage({
                   id: 'teams.notification.team.invite.accept',
                   defaultMessage: 'Accept',
                 })}
               </Button>
-              <Button size='small' onClick={() => handleReject(record)}>
+              <Button
+                size='small'
+                loading={actionLoading === `reject-${record.teamId}`}
+                onClick={() => handleReject(record)}
+              >
                 {intl.formatMessage({
                   id: 'teams.notification.team.invite.reject',
                   defaultMessage: 'Reject',

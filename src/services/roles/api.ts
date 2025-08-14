@@ -99,7 +99,6 @@ export async function getTeamInvitationStatusApi(timeFilter: number = 3) {
       .from('roles')
       .select('*')
       .eq('user_id', userResult.user?.id)
-      .in('role', ['admin', 'member', 'is_invited'])
       .neq('team_id', '00000000-0000-0000-0000-000000000000')
       .order('modified_at', { ascending: false });
 

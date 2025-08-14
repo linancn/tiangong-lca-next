@@ -21,9 +21,13 @@ interface DataNotificationItem {
 
 interface DataNotificationProps {
   timeFilter: number;
+  removeItemFromDotTabs: (item: 'team' | 'data') => void;
 }
 
-const DataNotification: React.FC<DataNotificationProps> = ({ timeFilter }) => {
+const DataNotification: React.FC<DataNotificationProps> = ({
+  timeFilter,
+  removeItemFromDotTabs,
+}) => {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<DataNotificationItem[]>([]);
   const [pagination, setPagination] = useState({
@@ -46,6 +50,7 @@ const DataNotification: React.FC<DataNotificationProps> = ({ timeFilter }) => {
         return;
       }
       await updateDataNotificationTime();
+      removeItemFromDotTabs('data');
       const rejectedData =
         rejectedRes.data?.map((item: ReviewsTable) => ({
           key: item.id,
