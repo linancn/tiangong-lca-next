@@ -1,109 +1,172 @@
-import {
-  acceptTeamInvitationApi,
-  getTeamInvitationStatusApi,
-  rejectTeamInvitationApi,
-} from '@/services/roles/api';
-import { getTeamById } from '@/services/teams/api';
+import { getAuth } from '@/services/manageWelcomeTeams/api';
+import { getLatestReviewOfMine } from '@/services/reviews/api';
+import { getLatestRolesOfMine } from '@/services/roles/api';
 import { MessageOutlined } from '@ant-design/icons';
-import { Badge, message, Modal, theme } from 'antd';
+import { Badge, Modal, Select, Space, Tabs, theme } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useIntl } from 'umi';
+import DataNotification from './DataNotification';
+import TeamNotification from './TeamNotification';
+
+const TIME_FILTER_OPTIONS = (intl: any) => [
+  {
+    value: 3,
+    label: intl.formatMessage({
+      id: 'notification.timeFilter.3days',
+      defaultMessage: 'Last 3 Days',
+    }),
+  },
+  {
+    value: 7,
+    label: intl.formatMessage({
+      id: 'notification.timeFilter.7days',
+      defaultMessage: 'Last 7 Days',
+    }),
+  },
+  {
+    value: 30,
+    label: intl.formatMessage({
+      id: 'notification.timeFilter.30days',
+      defaultMessage: 'Last 30 Days',
+    }),
+  },
+  {
+    value: 0,
+    label: intl.formatMessage({ id: 'notification.timeFilter.all', defaultMessage: 'All' }),
+  },
+];
 
 const Notification: React.FC = () => {
-  const [teamTitle, setTeamTitle] = useState<any>([]);
-  const [isBeInvited, setIsBeInvited] = useState<boolean>(false);
-  const [invitedInfo, setInvitedInfo] = useState<any>({});
+  const [showDot, setShowDot] = useState<boolean>(false);
+  const [showDotTabs, setShowDotTabs] = useState<('team' | 'data')[]>([]);
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [timeFilter, setTimeFilter] = useState<number>(3);
   const { token } = theme.useToken();
   const intl = useIntl();
 
-  useEffect(() => {
-    getTeamInvitationStatusApi().then((res) => {
-      if (res.success) {
-        setIsBeInvited(res.data?.role === 'is_invited');
-        setInvitedInfo(res.data);
-        getTeamById(res.data?.team_id).then(({ success, data }) => {
-          if (success) {
-            setTeamTitle(data[0]?.json?.title);
-          }
-        });
-      } else {
-        setIsBeInvited(false);
+  const updateShowDot = async () => {
+    const auth = await getAuth();
+    const update_team_notification_time =
+      auth?.user?.user_metadata?.update_team_notification_time ?? 0;
+    const update_data_notification_time =
+      auth?.user?.user_metadata?.update_data_notification_time ?? 0;
+    const latestReview = await getLatestReviewOfMine();
+    const latestRoles = await getLatestRolesOfMine();
+    let show = false;
+
+    if (update_data_notification_time && latestReview && latestReview.modified_at) {
+      const reviewTime = new Date(latestReview.modified_at).getTime();
+      if (reviewTime > update_data_notification_time) {
+        show = true;
+        setShowDotTabs((prev) => [...prev, 'data']);
       }
-    });
+    }
+
+    if (update_team_notification_time && latestRoles && latestRoles.modified_at) {
+      const rolesTime = new Date(latestRoles.modified_at).getTime();
+      if (rolesTime > update_team_notification_time) {
+        show = true;
+        setShowDotTabs((prev) => [...prev, 'team']);
+      }
+    }
+    if (!show) {
+      setShowDotTabs([]);
+    }
+    setShowDot(show);
+  };
+
+  useEffect(() => {
+    updateShowDot();
   }, []);
 
-  const handleAccept = async () => {
-    try {
-      const { success } = await acceptTeamInvitationApi(invitedInfo.team_id, invitedInfo.user_id);
-      if (success) {
-        setIsBeInvited(false);
-        message.success(intl.formatMessage({ id: 'teams.members.actionSuccess' }));
-      } else {
-        message.error(intl.formatMessage({ id: 'teams.members.actionError' }));
-      }
-    } catch (error) {
-      message.error(intl.formatMessage({ id: 'teams.members.actionError' }));
-    }
+  const handleIconClick = () => {
+    setModalVisible(true);
   };
 
-  const handelReject = async () => {
-    try {
-      const { success } = await rejectTeamInvitationApi(invitedInfo.team_id, invitedInfo.user_id);
-      if (success) {
-        message.success(intl.formatMessage({ id: 'teams.members.actionSuccess' }));
-        setIsBeInvited(false);
-      } else {
-        message.error(intl.formatMessage({ id: 'teams.members.actionError' }));
-      }
-    } catch (error) {
-      message.error(intl.formatMessage({ id: 'teams.members.actionError' }));
-    }
+  const handleModalClose = () => {
+    setModalVisible(false);
   };
+
+  const handleTimeFilterChange = (value: number) => {
+    setTimeFilter(value);
+  };
+
+  const items = [
+    {
+      key: 'team',
+      label: (
+        <Badge dot={showDotTabs.includes('team')} offset={[-5, 6]} size='small'>
+          <span>
+            {intl.formatMessage({
+              id: 'notification.tabs.team',
+              defaultMessage: 'Team Notifications',
+            })}
+          </span>
+        </Badge>
+      ),
+      children: <TeamNotification timeFilter={timeFilter} />,
+    },
+    {
+      key: 'data',
+      label: (
+        <Badge dot={showDotTabs.includes('data')} offset={[-5, 6]} size='small'>
+          <span>
+            {intl.formatMessage({
+              id: 'notification.tabs.data',
+              defaultMessage: 'Data Notifications',
+            })}
+          </span>
+        </Badge>
+      ),
+      children: <DataNotification timeFilter={timeFilter} />,
+    },
+  ];
 
   return (
-    <Badge dot={isBeInvited} offset={[-5, 6]} size='small'>
-      <MessageOutlined
-        style={{ fontSize: 16, opacity: 0.5 }}
-        onClick={() => {
-          if (isBeInvited) {
-            Modal.confirm({
-              okButtonProps: {
-                type: 'primary',
-                style: { backgroundColor: token.colorPrimary },
-              },
-              cancelButtonProps: {
-                style: { borderColor: token.colorPrimary, color: token.colorPrimary },
-              },
-              title: intl.formatMessage({
-                id: 'teams.notification.team.invite.title',
-                defaultMessage: 'Team Invitation',
-              }),
-              content:
-                (intl.locale === 'zh-CN'
-                  ? (teamTitle?.find((item: any) => item['@xml:lang'] === 'zh')?.['#text'] ??
-                    teamTitle[0]?.['#text'])
-                  : (teamTitle?.find((item: any) => item['@xml:lang'] === 'en')?.['#text'] ??
-                    teamTitle[0]?.['#text'])) +
-                ' ' +
-                intl.formatMessage({
-                  id: 'teams.notification.team.invite.content',
-                  defaultMessage: 'has invited you to join, would you like to accept?',
-                }),
-              okText: intl.formatMessage({
-                id: 'teams.notification.team.invite.accept',
-                defaultMessage: 'Accept',
-              }),
-              cancelText: intl.formatMessage({
-                id: 'teams.notification.team.invite.reject',
-                defaultMessage: 'Reject',
-              }),
-              onOk: handleAccept,
-              onCancel: handelReject,
-            });
-          }
+    <>
+      <Badge dot={showDot} offset={[-5, 6]} size='small'>
+        <MessageOutlined
+          style={{ fontSize: 16, opacity: 0.5, cursor: 'pointer' }}
+          onClick={handleIconClick}
+        />
+      </Badge>
+
+      <Modal
+        title={
+          <Space>
+            <span>
+              {intl.formatMessage({
+                id: 'notification.title',
+                defaultMessage: 'Notifications',
+              })}
+            </span>
+          </Space>
+        }
+        open={modalVisible}
+        onCancel={handleModalClose}
+        footer={null}
+        width={800}
+        okButtonProps={{
+          style: { backgroundColor: token.colorPrimary },
         }}
-      />
-    </Badge>
+        cancelButtonProps={{
+          style: { borderColor: token.colorPrimary, color: token.colorPrimary },
+        }}
+      >
+        <div style={{ position: 'relative' }}>
+          <div style={{ position: 'absolute', top: 10, right: 0, zIndex: 9999 }}>
+            <Select
+              value={timeFilter}
+              onChange={handleTimeFilterChange}
+              options={TIME_FILTER_OPTIONS(intl)}
+              style={{ width: 120 }}
+              size='middle'
+            />
+          </div>
+          <Tabs items={items} defaultActiveKey='team' />
+        </div>
+      </Modal>
+    </>
   );
 };
 

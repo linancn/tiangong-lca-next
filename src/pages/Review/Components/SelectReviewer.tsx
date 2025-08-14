@@ -1,7 +1,12 @@
 import { addCommentApi } from '@/services/comments/api';
-import { getReviewerIdsApi, updateReviewApi } from '@/services/reviews/api';
+import {
+  getReviewerIdsApi,
+  getReviewsDetailByReviewIds,
+  updateReviewApi,
+} from '@/services/reviews/api';
 import { getReviewMembersApi } from '@/services/roles/api';
 import { TeamMemberTable } from '@/services/teams/data';
+import { getUserId, getUsersByIds } from '@/services/users/api';
 import styles from '@/style/custom.less';
 import { CloseOutlined, UsergroupAddOutlined } from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
@@ -83,36 +88,152 @@ export default function SelectReviewer({ reviewIds, actionRef }: SelectReviewerP
 
   const handleTemporarySave = async () => {
     setSpinning(true);
-    const { error } = await updateReviewApi(reviewIds, {
-      reviewer_id: selectedRowKeys,
-    });
-    if (!error) {
-      message.success(
+    try {
+      const reviews = await getReviewsDetailByReviewIds(reviewIds);
+
+      if (!reviews || reviews.length === 0) {
+        console.error('未找到对应的review数据');
+        return;
+      }
+      const userId = await getUserId();
+      const user = await getUsersByIds([userId]);
+      const updatePromises = reviews.map(async (review: any) => {
+        if (review && review.id) {
+          const updatedJson = {
+            ...review.json,
+            logs: [
+              ...(review.json.logs ?? []),
+              {
+                action: 'assign_reviewers_temporary',
+                time: new Date(),
+                user: {
+                  id: userId,
+                  display_name: user?.[0]?.display_name,
+                },
+              },
+            ],
+          };
+
+          const { error } = await updateReviewApi([review.id], {
+            reviewer_id: selectedRowKeys,
+            json: updatedJson,
+          });
+
+          if (error) {
+            console.error(`更新review ${review.id} 失败:`, error);
+            throw error;
+          }
+
+          return { id: review.id, success: true };
+        }
+        return { id: review?.id, success: false };
+      });
+
+      const results = await Promise.all(updatePromises);
+      const successCount = results.filter((result) => result.success).length;
+
+      if (successCount === reviews.length) {
+        message.success(
+          intl.formatMessage({
+            id: 'pages.review.temporarySaveSuccess',
+            defaultMessage: 'Temporary save success',
+          }),
+        );
+        setSelectedRowKeys([]);
+        setDrawerVisible(false);
+        actionRef.current?.reload();
+      } else {
+        throw new Error('部分保存成功，成功保存 ${successCount}/${reviews.length} 条记录');
+      }
+    } catch (error) {
+      console.error('临时保存失败:', error);
+      message.error(
         intl.formatMessage({
-          id: 'pages.review.temporarySaveSuccess',
-          defaultMessage: 'Temporary save success',
+          id: 'pages.review.temporarySaveError',
+          defaultMessage: 'Temporary save failed',
         }),
       );
+    } finally {
+      setSpinning(false);
     }
-    setSpinning(false);
   };
 
   const handleSave = async () => {
     setSpinning(true);
-    const { error, data } = await updateReviewApi(reviewIds, {
-      reviewer_id: selectedRowKeys,
-      state_code: 1,
-    });
-    if (!error) {
-      message.success(
+    try {
+      const reviews = await getReviewsDetailByReviewIds(reviewIds);
+
+      if (!reviews || reviews.length === 0) {
+        console.error('未找到对应的review数据');
+        return;
+      }
+      const userId = await getUserId();
+      const user = await getUsersByIds([userId]);
+
+      const updatePromises = reviews.map(async (review: any) => {
+        if (review && review.id) {
+          const updatedJson = {
+            ...review.json,
+            logs: [
+              ...(review.json.logs ?? []),
+              {
+                action: 'assign_reviewers',
+                time: new Date(),
+                user: {
+                  id: userId,
+                  display_name: user?.[0]?.display_name,
+                },
+              },
+            ],
+          };
+
+          const { error, data } = await updateReviewApi([review.id], {
+            reviewer_id: selectedRowKeys,
+            state_code: 1,
+            json: updatedJson,
+          });
+
+          if (error) {
+            console.error(`更新review ${review.id} 失败:`, error);
+            throw error;
+          }
+
+          return { id: review.id, success: true, data };
+        }
+        return { id: review?.id, success: false };
+      });
+
+      const results = await Promise.all(updatePromises);
+      const successResults = results.filter((result) => result.success);
+      const successCount = successResults.length;
+
+      if (successCount === reviews.length) {
+        message.success(
+          intl.formatMessage({
+            id: 'pages.review.saveSuccess',
+            defaultMessage: 'Save success',
+          }),
+        );
+
+        await addComment(successResults.map((result) => result.data).filter(Boolean));
+
+        setSelectedRowKeys([]);
+        setDrawerVisible(false);
+        actionRef.current?.reload();
+      } else {
+        throw new Error(`部分保存成功，成功保存 ${successCount}/${reviews.length} 条记录`);
+      }
+    } catch (error) {
+      console.error('保存失败:', error);
+      message.error(
         intl.formatMessage({
-          id: 'pages.review.saveSuccess',
-          defaultMessage: 'Save success',
+          id: 'pages.review.saveError',
+          defaultMessage: 'Save failed',
         }),
       );
-      await addComment(data);
+    } finally {
+      setSpinning(false);
     }
-    setSpinning(false);
   };
 
   return (

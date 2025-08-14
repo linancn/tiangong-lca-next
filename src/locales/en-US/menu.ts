@@ -61,6 +61,8 @@ export default {
   'menu.mydata.models': 'Models',
   'menu.mydata.products': 'Product Models',
   'menu.mydata.processes': 'Processes',
+  'menu.lifeCycleModels': 'Life Cycle Models',
+  'menu.processes': 'Processes',
   'menu.mydata.flows': 'Flows',
   'menu.mydata.flowproperties': 'Flow Properties',
   'menu.mydata.unitgroups': 'Unit Groups',
