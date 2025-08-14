@@ -51,6 +51,7 @@ export async function addRoleApi(userId: string, teamId: string, role: string) {
     user_id: userId,
     role,
     team_id: teamId,
+    modified_at: new Date().toISOString(),
   });
   return error;
 }
@@ -447,7 +448,7 @@ export async function getLatestRolesOfMine() {
     .in('role', ['admin', 'member', 'is_invited'])
     .order('modified_at', { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle();
 
   return data;
 }

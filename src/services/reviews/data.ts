@@ -7,6 +7,7 @@ export type ReviewsTable = {
   userName: string;
   createAt?: string;
   isFromLifeCycle: boolean;
+  stateCode?: number;
   json: {
     data: {
       id: string;

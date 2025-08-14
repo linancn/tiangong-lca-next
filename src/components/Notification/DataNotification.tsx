@@ -14,7 +14,7 @@ interface DataNotificationItem {
   userName: string;
   modifiedAt: string;
   isFromLifeCycle: boolean;
-  status: 'unassigned' | 'assigned' | 'review' | 'rejected';
+  stateCode?: number;
   rejectReason?: string;
   json: any;
 }
@@ -41,18 +41,18 @@ const DataNotification: React.FC<DataNotificationProps> = ({
   const fetchDataNotifications = async (page = 1, pageSize = 10) => {
     setLoading(true);
     try {
-      const rejectedRes = await getNotifyReviews(
+      const reviewsRes = await getNotifyReviews(
         { pageSize, current: page },
         intl.locale,
         timeFilter,
       );
-      if (!rejectedRes.success) {
+      if (!reviewsRes.success) {
         return;
       }
       await updateDataNotificationTime();
       removeItemFromDotTabs('data');
       const rejectedData =
-        rejectedRes.data?.map((item: ReviewsTable) => ({
+        reviewsRes.data?.map((item: ReviewsTable) => ({
           key: item.id,
           id: item.id,
           name: item.name,
@@ -60,8 +60,8 @@ const DataNotification: React.FC<DataNotificationProps> = ({
           userName: item.userName,
           modifiedAt: item.modifiedAt || '-',
           isFromLifeCycle: item.isFromLifeCycle,
-          status: 'rejected' as const,
           rejectReason: (item.json as any)?.comment?.message || '',
+          stateCode: item.stateCode,
           json: item.json,
         })) || [];
 
@@ -69,7 +69,7 @@ const DataNotification: React.FC<DataNotificationProps> = ({
       setPagination({
         current: page,
         pageSize,
-        total: rejectedRes.total || 0,
+        total: reviewsRes.total || 0,
       });
     } catch (error) {
       console.error('获取数据通知失败:', error);
@@ -86,19 +86,38 @@ const DataNotification: React.FC<DataNotificationProps> = ({
     fetchDataNotifications(page, pageSize);
   };
 
-  const getStatusTag = (status: string) => {
-    const statusMap = {
-      empty: {
-        color: 'gray',
-        text: intl.formatMessage({ id: 'teams.members.role.empty', defaultMessage: 'Empty' }),
-      },
-      rejected: {
-        color: 'red',
-        text: intl.formatMessage({ id: 'pages.review.tabs.rejected', defaultMessage: 'Rejected' }),
-      },
-    };
-    const { color, text } = statusMap[status as keyof typeof statusMap] || statusMap.empty;
-    return <Tag color={color}>{text}</Tag>;
+  const getStatusTag = (stateCode?: number) => {
+    switch (stateCode) {
+      case -1:
+        return {
+          color: token.red,
+          text: intl.formatMessage({
+            id: 'pages.review.data.rejected',
+            defaultMessage: 'Rejected',
+          }),
+        };
+      case 1:
+        return {
+          color: token.blue,
+          text: intl.formatMessage({
+            id: 'pages.review.data.assigned',
+            defaultMessage: 'Assigned',
+          }),
+        };
+      case 2:
+        return {
+          color: token.green,
+          text: intl.formatMessage({
+            id: 'pages.review.data.approved',
+            defaultMessage: 'Approved',
+          }),
+        };
+      default:
+        return {
+          color: token.colorTextDisabled,
+          text: intl.formatMessage({ id: 'teams.members.role.empty', defaultMessage: 'Empty' }),
+        };
+    }
   };
 
   const columns: ColumnsType<DataNotificationItem> = [
@@ -126,16 +145,13 @@ const DataNotification: React.FC<DataNotificationProps> = ({
       title: intl.formatMessage({ id: 'pages.review.table.status', defaultMessage: 'Status' }),
       dataIndex: 'status',
       key: 'status',
-      render: (status: string, record: DataNotificationItem) => {
-        const statusTag = getStatusTag(status);
-        if (status === 'rejected' && record.rejectReason) {
-          return (
-            <Tooltip title={record.rejectReason} placement='topLeft'>
-              {statusTag}
-            </Tooltip>
-          );
-        }
-        return statusTag;
+      render: (stateCode: number, record: DataNotificationItem) => {
+        const statusTag = getStatusTag(record.stateCode);
+        return (
+          <Tooltip title={record.rejectReason} placement='topLeft'>
+            <Tag color={statusTag.color}>{statusTag.text}</Tag>
+          </Tooltip>
+        );
       },
     },
     {

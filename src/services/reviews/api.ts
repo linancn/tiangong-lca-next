@@ -19,12 +19,16 @@ export async function addReviewsApi(id: string, data: any) {
 export async function updateReviewApi(reviewIds: React.Key[], data: any) {
   let result: any = {};
   const session = await supabase.auth.getSession();
+  const newData =
+    data?.state_code && [-1, 0, 1].includes(data.state_code)
+      ? { ...data, modified_at: new Date().toISOString() }
+      : data;
   if (session.data.session) {
     result = await supabase.functions.invoke('update_review', {
       headers: {
         Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
       },
-      body: { reviewIds, data },
+      body: { reviewIds, data: newData },
       region: FunctionRegion.UsEast1,
     });
   }
@@ -220,6 +224,7 @@ export async function getNotifyReviews(
         teamName: getLangText(i?.json?.team?.name ?? {}, lang),
         userName: i?.json?.user?.name ?? '-',
         modifiedAt: new Date(i.modified_at).toISOString(),
+        stateCode: i.state_code,
         json: i?.json,
       };
     });

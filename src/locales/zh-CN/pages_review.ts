@@ -7,6 +7,11 @@ export default {
   'pages.review.tabs.rejected': '已驳回',
   'pages.review.tabs.members': '成员管理',
 
+  'pages.review.data.approved': '已通过',
+  'pages.review.data.rejected': '已驳回',
+  'pages.review.data.assigned': '已分配',
+  'pages.review.data.empty': '暂无信息',
+
   'pages.review.table.column.processName': '过程名称',
   'pages.review.table.column.teamName': '团队名称',
   'pages.review.table.column.userName': '用户名称',

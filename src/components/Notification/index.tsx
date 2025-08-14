@@ -54,6 +54,7 @@ const Notification: React.FC = () => {
       auth?.user?.user_metadata?.update_team_notification_time ?? 0;
     const update_data_notification_time =
       auth?.user?.user_metadata?.update_data_notification_time ?? 0;
+
     const latestReview = await getLatestReviewOfMine();
     const latestRoles = await getLatestRolesOfMine();
 

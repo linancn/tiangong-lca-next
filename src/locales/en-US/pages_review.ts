@@ -6,6 +6,11 @@ export default {
   'pages.review.tabs.rejected': 'Rejected',
   'pages.review.tabs.members': 'Member Management',
 
+  'pages.review.data.approved': 'Approved',
+  'pages.review.data.rejected': 'Rejected',
+  'pages.review.data.assigned': 'Assigned',
+  'pages.review.data.empty': 'No information',
+
   'pages.review.table.column.processName': 'Process Name',
   'pages.review.table.column.teamName': 'Team Name',
   'pages.review.table.column.userName': 'User Name',
