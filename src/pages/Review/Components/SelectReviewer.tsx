@@ -68,17 +68,7 @@ export default function SelectReviewer({ reviewIds, actionRef }: SelectReviewerP
   ];
 
   const addComment = async (data: any) => {
-    const commentData: any[] = [];
-    data?.forEach((item: any) => {
-      item?.reviewer_id?.forEach((id: string) => {
-        commentData.push({
-          review_id: item?.id,
-          reviewer_id: id,
-          state_code: 0,
-        });
-      });
-    });
-    const { error } = await addCommentApi(commentData);
+    const { error } = await addCommentApi(data);
     if (!error) {
       setSelectedRowKeys([]);
       setDrawerVisible(false);
@@ -169,6 +159,7 @@ export default function SelectReviewer({ reviewIds, actionRef }: SelectReviewerP
       }
       const userId = await getUserId();
       const user = await getUsersByIds([userId]);
+      const commentData: any[] = [];
 
       const updatePromises = reviews.map(async (review: any) => {
         if (review && review.id) {
@@ -193,6 +184,14 @@ export default function SelectReviewer({ reviewIds, actionRef }: SelectReviewerP
             json: updatedJson,
           });
 
+          selectedRowKeys.forEach((userId) => {
+            commentData.push({
+              review_id: review.id,
+              reviewer_id: userId,
+              state_code: 0,
+            });
+          });
+
           if (error) {
             console.error(`更新review ${review.id} 失败:`, error);
             throw error;
@@ -215,7 +214,7 @@ export default function SelectReviewer({ reviewIds, actionRef }: SelectReviewerP
           }),
         );
 
-        await addComment(successResults.map((result) => result.data).filter(Boolean));
+        await addComment(commentData);
 
         setSelectedRowKeys([]);
         setDrawerVisible(false);
