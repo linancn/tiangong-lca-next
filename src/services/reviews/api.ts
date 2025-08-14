@@ -20,7 +20,7 @@ export async function updateReviewApi(reviewIds: React.Key[], data: any) {
   let result: any = {};
   const session = await supabase.auth.getSession();
   const newData =
-    data?.state_code && [-1, 0, 1].includes(data.state_code)
+    data?.state_code && [-1, 2, 1].includes(data.state_code)
       ? { ...data, modified_at: new Date().toISOString() }
       : data;
   if (session.data.session) {
