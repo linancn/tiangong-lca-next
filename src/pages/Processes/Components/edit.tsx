@@ -38,6 +38,7 @@ type Props = {
   disabled?: boolean;
   hideReviewButton?: boolean;
   updateNodeCb?: (ref: refDataType) => Promise<void>;
+  autoOpen?: boolean;
 };
 const ProcessEdit: FC<Props> = ({
   id,
@@ -49,6 +50,7 @@ const ProcessEdit: FC<Props> = ({
   disabled = false,
   hideReviewButton = false,
   updateNodeCb = () => {},
+  autoOpen = false,
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
@@ -71,6 +73,12 @@ const ProcessEdit: FC<Props> = ({
       refCheckData: [...refCheckData],
     });
   }, [refCheckData]);
+
+  useEffect(() => {
+    if (autoOpen && id && version) {
+      setDrawerVisible(true);
+    }
+  }, [autoOpen, id, version]);
 
   const handletFromData = async () => {
     if (fromData?.id) {

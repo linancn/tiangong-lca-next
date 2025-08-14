@@ -94,3 +94,25 @@ export async function reauthenticate(): Promise<Auth.LoginResult> {
   }
   return { status: 'ok', currentAuthority: data?.user?.role ?? 'guest' };
 }
+
+export async function updateTeamNotificationTime() {
+  const { error } = await supabase.auth.updateUser({
+    data: {
+      update_team_notification_time: new Date().getTime(),
+    },
+  });
+  return {
+    error,
+  };
+}
+
+export async function updateDataNotificationTime() {
+  const { error } = await supabase.auth.updateUser({
+    data: {
+      update_data_notification_time: new Date().getTime(),
+    },
+  });
+  return {
+    error,
+  };
+}

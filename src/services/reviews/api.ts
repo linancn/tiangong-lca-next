@@ -19,12 +19,16 @@ export async function addReviewsApi(id: string, data: any) {
 export async function updateReviewApi(reviewIds: React.Key[], data: any) {
   let result: any = {};
   const session = await supabase.auth.getSession();
+  const newData =
+    data?.state_code && [-1, 2, 1].includes(data.state_code)
+      ? { ...data, modified_at: new Date().toISOString() }
+      : data;
   if (session.data.session) {
     result = await supabase.functions.invoke('update_review', {
       headers: {
         Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
       },
-      body: { reviewIds, data },
+      body: { reviewIds, data: newData },
       region: FunctionRegion.UsEast1,
     });
   }
@@ -46,10 +50,15 @@ export async function getReviewsDetail(id: string) {
   return data;
 }
 
+export async function getReviewsDetailByReviewIds(reviewIds: React.Key[]) {
+  const { data } = await supabase.from('reviews').select('*').in('id', reviewIds);
+  return data;
+}
+
 export async function getReviewsTableData(
   params: { pageSize: number; current: number },
   sort: any,
-  type: 'unassigned' | 'assigned' | 'review',
+  type: 'unassigned' | 'assigned' | 'review' | 'rejected',
   lang: string,
 ) {
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
@@ -77,6 +86,13 @@ export async function getReviewsTableData(
     if (userId) {
       query = query.filter('reviewer_id', 'cs', `[${JSON.stringify(userId)}]`).eq('state_code', 1);
     }
+  }
+  if (type === 'rejected') {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const userId = user?.id;
+    query = query.eq('state_code', -1).filter('json->user->>id', 'eq', userId);
   }
   const result = await query;
 
@@ -112,6 +128,7 @@ export async function getReviewsTableData(
         teamName: getLangText(i?.json?.team?.name ?? {}, lang),
         userName: i?.json?.user?.name ?? '-',
         createAt: new Date(i.created_at).toISOString(),
+        modifiedAt: new Date(i?.modified_at).toISOString(),
         json: i?.json,
       };
     });
@@ -125,7 +142,125 @@ export async function getReviewsTableData(
   }
   return Promise.resolve({
     data: [],
-    success: true,
+    success: false,
     total: 0,
   });
+}
+
+export async function getReviewsByProcess(processId: string, processVersion: string) {
+  const result = await supabase
+    .from('reviews')
+    .select('*')
+    .filter('json->data->>id', 'eq', processId)
+    .filter('json->data->>version', 'eq', processVersion);
+  return result;
+}
+
+export async function getNotifyReviews(
+  params: { pageSize: number; current: number },
+  lang: string,
+  timeFilter: number = 3,
+) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const userId = user?.id;
+
+  if (!userId) {
+    return Promise.resolve({
+      data: [],
+      success: false,
+      total: 0,
+    });
+  }
+
+  let query = supabase
+    .from('reviews')
+    .select('*', { count: 'exact' })
+    .filter('json->user->>id', 'eq', userId)
+    .in('state_code', [1, -1, 2])
+    .order('modified_at', { ascending: false });
+
+  if (timeFilter > 0) {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - timeFilter);
+    query = query.gte('modified_at', cutoffDate.toISOString());
+  }
+
+  const result = await query.range(
+    ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
+    (params.current ?? 1) * (params.pageSize ?? 10) - 1,
+  );
+
+  if (result?.data) {
+    if (result?.data.length === 0) {
+      return Promise.resolve({
+        data: [],
+        success: true,
+        total: 0,
+      });
+    }
+
+    const processIds: string[] = [];
+    result?.data.forEach((i) => {
+      const id = i?.json?.data?.id;
+      if (id) {
+        processIds.push(id);
+      }
+    });
+    const modelResult = await getLifeCyclesByIds(processIds);
+    let data = result?.data.map((i: any) => {
+      const model = modelResult?.data?.find(
+        (j) => j.id === i?.json?.data?.id && j.version === i?.json?.data?.version,
+      );
+      return {
+        key: i.id,
+        id: i.id,
+        isFromLifeCycle: model ? true : false,
+        name:
+          (model
+            ? genProcessName(model?.name ?? {}, lang)
+            : genProcessName(i?.json?.data?.name ?? {}, lang)) || '-',
+        teamName: getLangText(i?.json?.team?.name ?? {}, lang),
+        userName: i?.json?.user?.name ?? '-',
+        modifiedAt: new Date(i.modified_at).toISOString(),
+        stateCode: i.state_code,
+        json: i?.json,
+      };
+    });
+
+    return Promise.resolve({
+      data: data,
+      page: params?.current ?? 1,
+      success: true,
+      total: result?.count ?? 0,
+    });
+  }
+  return Promise.resolve({
+    data: [],
+    success: false,
+    total: 0,
+  });
+}
+
+export async function getLatestReviewOfMine() {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const userId = user?.id;
+
+  if (!userId) {
+    return null;
+  }
+
+  const { data } = await supabase
+    .from('reviews')
+    .select('*')
+    .filter('json->user->>id', 'eq', userId)
+    .in('state_code', [1, 2, -1])
+    .order('modified_at', { ascending: false })
+    .limit(1)
+    .single();
+
+  return data;
 }

@@ -51,6 +51,7 @@ export async function addRoleApi(userId: string, teamId: string, role: string) {
     user_id: userId,
     role,
     team_id: teamId,
+    modified_at: new Date().toISOString(),
   });
   return error;
 }
@@ -87,7 +88,7 @@ export const getUserIdsByTeamIds = async (teamIds: string[]) => {
   return result.data ?? [];
 };
 
-export async function getTeamInvitationStatusApi() {
+export async function getTeamInvitationStatusApi(timeFilter: number = 3) {
   const { error, data: userResult } = await supabase.auth.getUser();
   if (error) {
     return {
@@ -95,12 +96,20 @@ export async function getTeamInvitationStatusApi() {
       data: null,
     };
   } else {
-    const { data: roleResult, error: roleError } = await supabase
+    let query = supabase
       .from('roles')
       .select('*')
-      .eq('user_id', userResult.user.id)
+      .eq('user_id', userResult.user?.id)
       .neq('team_id', '00000000-0000-0000-0000-000000000000')
-      .maybeSingle();
+      .order('modified_at', { ascending: false });
+
+    if (timeFilter > 0) {
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - timeFilter);
+      query = query.gte('modified_at', cutoffDate.toISOString());
+    }
+
+    const { data: roleResult, error: roleError } = await query.maybeSingle();
 
     if (roleError) {
       return {
@@ -420,4 +429,26 @@ export async function addReviewMemberApi(email: string) {
       success: false,
     };
   }
+}
+
+export async function getLatestRolesOfMine() {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const userId = user?.id;
+
+  if (!userId) {
+    return null;
+  }
+
+  const { data } = await supabase
+    .from('roles')
+    .select('*')
+    .eq('user_id', userId)
+    .in('role', ['admin', 'member', 'is_invited'])
+    .order('modified_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  return data;
 }
