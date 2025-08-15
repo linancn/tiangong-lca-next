@@ -27,6 +27,7 @@ export default {
   'teams.notification.team.invite.content': '团队邀请您进入，是否进入？',
   'teams.notification.team.invite.accept': '同意',
   'teams.notification.team.invite.reject': '拒绝',
+  'teams.members.role.empty': '暂无信息',
   'teams.members.role.invited': '邀请中',
   'teams.logo.typeError': '只能上传图片文件!',
   'teams.logo.uploadSuccess': '上传成功!',

@@ -11,6 +11,7 @@ import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
 import { getProcessDetail } from '@/services/processes/api';
 import { getReviewsDetail, updateReviewApi } from '@/services/reviews/api';
 import { getUserTeamId } from '@/services/roles/api';
+import { getUserId, getUsersByIds } from '@/services/users/api';
 import { FileExcelOutlined } from '@ant-design/icons';
 import { FormattedMessage, useIntl } from '@umijs/max';
 import { Button, Form, FormInstance, Input, message, Modal, Tooltip } from 'antd';
@@ -22,6 +23,7 @@ interface RejectReviewProps {
   dataVersion: string;
   isModel: boolean;
   actionRef: any;
+  buttonType?: 'icon' | 'text';
 }
 
 const RejectReview: React.FC<RejectReviewProps> = ({
@@ -30,6 +32,7 @@ const RejectReview: React.FC<RejectReviewProps> = ({
   dataVersion,
   isModel,
   actionRef,
+  buttonType = 'icon',
 }) => {
   const formRef = useRef<FormInstance>(null);
   const [open, setOpen] = useState(false);
@@ -213,6 +216,8 @@ const RejectReview: React.FC<RejectReviewProps> = ({
       setLoading(true);
       const oldReviews = await getReviewsDetail(reviewId);
       const { json: oldReviewJson } = oldReviews ?? {};
+      const userId = await getUserId();
+      const user = await getUsersByIds([userId]);
       const { error } = await updateReviewApi([reviewId], {
         state_code: -1,
         json: {
@@ -220,6 +225,17 @@ const RejectReview: React.FC<RejectReviewProps> = ({
           comment: {
             message: values.reason,
           },
+          logs: [
+            ...(oldReviewJson?.logs ?? []),
+            {
+              action: 'rejected',
+              time: new Date(),
+              user: {
+                id: userId,
+                display_name: user?.[0]?.display_name,
+              },
+            },
+          ],
         },
       });
 
@@ -252,14 +268,23 @@ const RejectReview: React.FC<RejectReviewProps> = ({
 
   return (
     <>
-      <Tooltip
-        title={intl.formatMessage({
-          id: 'component.rejectReview.button.tooltip',
-          defaultMessage: 'Reject',
-        })}
-      >
-        <Button size='small' shape='circle' icon={<FileExcelOutlined />} onClick={handleOpen} />
-      </Tooltip>
+      {buttonType === 'icon' ? (
+        <Tooltip
+          title={intl.formatMessage({
+            id: 'component.rejectReview.button.tooltip',
+            defaultMessage: 'Reject',
+          })}
+        >
+          <Button size='small' shape='circle' icon={<FileExcelOutlined />} onClick={handleOpen} />
+        </Tooltip>
+      ) : (
+        <Button onClick={handleOpen}>
+          <FormattedMessage
+            id='pages.review.ReviewProcessDetail.assigned.reject'
+            defaultMessage='Reject Review'
+          />
+        </Button>
+      )}
       <Modal
         title={
           <FormattedMessage
