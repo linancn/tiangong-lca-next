@@ -78,7 +78,7 @@
     "@umijs/lint": "^4.4.12",
     "@umijs/max": "^4.4.12",
     "cross-env": "^10.0.0",
-    "electron": "^37.2.6",
+    "electron": "^37.3.0",
     "electron-builder": "^26.0.12",
     "eslint": "^8.57.1",
     "gh-pages": "^6.3.0",
