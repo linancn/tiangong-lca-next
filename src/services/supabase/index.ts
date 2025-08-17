@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { supabaseAnonKey, supabaseUrl } from './key';
+import { supabasePublishableKey, supabaseUrl } from './key';
 
 const options = {
   auth: {
@@ -8,5 +8,4 @@ const options = {
     detectSessionInUrl: true,
   },
 };
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, options);
+export const supabase = createClient(supabaseUrl, supabasePublishableKey, options);

@@ -42,7 +42,6 @@ screenshot
 
 build
 .env.local
-.env
 
 # supabase
 supabase/*

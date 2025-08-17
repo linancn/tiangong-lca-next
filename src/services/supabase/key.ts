@@ -1,11 +1,5 @@
-export const supabaseUrl =
-  process.env.NEXT_PUBLIC_SUPABASE_URL_SELF_HOSTING ||
-  process.env.NEXT_PUBLIC_SUPABASE_URL ||
-  'http://kong:8000';
+export const supabaseUrl = process.env.SUPABASE_URL || '';
 
-export const supabaseAnonKey =
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY_SELF_HOSTING ||
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-  '';
+export const supabasePublishableKey = process.env.SUPABASE_PUBLISHABLE_KEY || '';
 
 export const supabaseStorageBucket = 'external_docs';
