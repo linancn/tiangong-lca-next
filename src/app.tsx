@@ -10,7 +10,7 @@ import {
 import LCIACacheMonitor from '@/components/LCIACacheMonitor';
 import { Link, getIntl, history } from '@umijs/max';
 
-import { currentUser as queryCurrentUser } from '@/services/ant-design-pro/api';
+import { getCurrentUser as queryCurrentUser } from '@/services/auth';
 import styles from '@/style/custom.less';
 import { LinkOutlined } from '@ant-design/icons';
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
@@ -27,16 +27,14 @@ const loginPath = '/user/login';
  * */
 export async function getInitialState(): Promise<{
   settings?: Partial<LayoutSettings>;
-  currentUser?: API.CurrentUser | null;
+  currentUser?: Auth.CurrentUser | null;
   loading?: boolean;
   isDarkMode?: boolean;
-  fetchUserInfo?: () => Promise<API.CurrentUser | null>;
+  fetchUserInfo?: () => Promise<Auth.CurrentUser | null>;
 }> {
-  const fetchUserInfo = async (): Promise<API.CurrentUser | null> => {
+  const fetchUserInfo = async (): Promise<Auth.CurrentUser | null> => {
     try {
-      const msg = queryCurrentUser({
-        skipErrorHandler: true,
-      });
+      const msg = await queryCurrentUser();
       return msg;
     } catch (error) {
       history.push(loginPath);

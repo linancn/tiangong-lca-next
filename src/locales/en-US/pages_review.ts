@@ -3,7 +3,13 @@ export default {
   'pages.review.tabs.unassigned': 'Unassigned Task',
   'pages.review.tabs.assigned': 'Assigned Task',
   'pages.review.tabs.review': 'Review Task',
+  'pages.review.tabs.rejected': 'Rejected',
   'pages.review.tabs.members': 'Member Management',
+
+  'pages.review.data.approved': 'Approved',
+  'pages.review.data.rejected': 'Rejected',
+  'pages.review.data.assigned': 'Assigned',
+  'pages.review.data.empty': 'No information',
 
   'pages.review.table.column.processName': 'Process Name',
   'pages.review.table.column.teamName': 'Team Name',
@@ -32,6 +38,41 @@ export default {
   'pages.review.members.addError.notRegistered': 'User not registered',
 
   'pages.review.drawer.title': 'Select Reviewer',
-  'pages.review.ReviewLifeCycleModelsDetail.edit.title': 'Review model',
-  'pages.review.ReviewLifeCycleModelsDetail.view.title': 'View review',
+  'pages.review.saveSuccess': 'Save successful',
+  'pages.review.saveError': 'Save failed',
+  'pages.review.temporarySaveSuccess': 'Temporary save successful',
+  'pages.review.temporarySaveError': 'Temporary save failed',
+
+  'pages.review.selectReviewer.button': 'Assign Reviewer',
+
+  'pages.review.actions.view': 'View',
+  'pages.review.actions.review': 'Review',
+
+  'pages.review.ReviewProcessDetail.edit.title': 'Review Process',
+  'pages.review.ReviewProcessDetail.view.title': 'View Review',
+  'pages.review.ReviewProcessDetail.edit.success': 'Submit review successful',
+
+  'pages.review.ReviewProcessDetail.assigned.save': 'Review Approved',
+  'pages.review.ReviewProcessDetail.assigned.success': 'Review approval successful',
+
+  'pages.review.ReviewProcessDetail.assigned.reject': 'Review Rejected',
+  'pages.review.ReviewProcessDetail.assigned.reject.success': 'Review rejection successful',
+
+  'pages.review.ReviewLifeCycleModelsDetail.edit.title': 'Review Model',
+  'pages.review.ReviewLifeCycleModelsDetail.view.title': 'View Review',
+
+  // ReviewDetail component internationalization
+  'pages.reviewDetail.tooltip': 'View Review Logs',
+  'pages.reviewDetail.title': 'Review Logs',
+  'pages.reviewDetail.operator': 'Operator',
+  'pages.reviewDetail.time': 'Time',
+  'pages.reviewDetail.action': 'Action Details',
+
+  'pages.reviewDetail.submit_review': 'Submit Review',
+  'pages.reviewDetail.assign_reviewers_temporary': 'Assign Reviewers Temporarily',
+  'pages.reviewDetail.assign_reviewers': 'Assign Reviewers',
+  'pages.reviewDetail.submit_comments_temporary': 'Submit Comments Temporarily',
+  'pages.reviewDetail.submit_comments': 'Submit Comments',
+  'pages.reviewDetail.rejected': 'Reject Review',
+  'pages.reviewDetail.approved': 'Approve Review',
 };

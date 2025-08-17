@@ -4,7 +4,13 @@ export default {
   'pages.review.tabs.unassigned': '待分配任务',
   'pages.review.tabs.assigned': '已分配任务',
   'pages.review.tabs.review': '审核任务',
+  'pages.review.tabs.rejected': '已驳回',
   'pages.review.tabs.members': '成员管理',
+
+  'pages.review.data.approved': '已通过',
+  'pages.review.data.rejected': '已驳回',
+  'pages.review.data.assigned': '已分配',
+  'pages.review.data.empty': '暂无信息',
 
   'pages.review.table.column.processName': '过程名称',
   'pages.review.table.column.teamName': '团队名称',
@@ -32,7 +38,9 @@ export default {
 
   'pages.review.drawer.title': '选择审核人员',
   'pages.review.saveSuccess': '保存成功',
+  'pages.review.saveError': '保存失败',
   'pages.review.temporarySaveSuccess': '暂存成功',
+  'pages.review.temporarySaveError': '暂存失败',
 
   'pages.review.selectReviewer.button': '分配审核人',
 
@@ -47,6 +55,24 @@ export default {
   'pages.review.ReviewProcessDetail.assigned.save': '审核通过',
   'pages.review.ReviewProcessDetail.assigned.success': '审核通过成功',
 
+  'pages.review.ReviewProcessDetail.assigned.reject': '审核驳回',
+  'pages.review.ReviewProcessDetail.assigned.reject.success': '审核驳回成功',
+
   'pages.review.ReviewLifeCycleModelsDetail.edit.title': '审核模型',
   'pages.review.ReviewLifeCycleModelsDetail.view.title': '查看审核',
+
+  // ReviewDetail 组件国际化
+  'pages.reviewDetail.tooltip': '查看审核日志',
+  'pages.reviewDetail.title': '审核日志',
+  'pages.reviewDetail.operator': '操作者',
+  'pages.reviewDetail.time': '时间',
+  'pages.reviewDetail.action': '操作详情',
+
+  'pages.reviewDetail.submit_review': '提交审核',
+  'pages.reviewDetail.assign_reviewers_temporary': '临时分配审核员',
+  'pages.reviewDetail.assign_reviewers': '分配审核员',
+  'pages.reviewDetail.submit_comments_temporary': '暂存评审数据',
+  'pages.reviewDetail.submit_comments': '提交评审数据',
+  'pages.reviewDetail.rejected': '驳回审核',
+  'pages.reviewDetail.approved': '通过审核',
 };

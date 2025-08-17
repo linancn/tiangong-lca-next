@@ -30,6 +30,7 @@ import ProcessCreate from './Components/create';
 import ProcessDelete from './Components/delete';
 import ProcessEdit from './Components/edit';
 import { processtypeOfDataSetOptions } from './Components/optiondata';
+import ReviewDetail from './Components/ReviewDetail';
 import ProcessView from './Components/view';
 
 const { Search } = Input;
@@ -45,12 +46,17 @@ const TableList: FC = () => {
   const [team, setTeam] = useState<any>(null);
   const [importData, setImportData] = useState<any>(null);
   const [openAI, setOpenAI] = useState<boolean>(false);
+  const [editDrawerVisible, setEditDrawerVisible] = useState<boolean>(false);
+  const [editId, setEditId] = useState<string>('');
+  const [editVersion, setEditVersion] = useState<string>('');
   const { token } = theme.useToken();
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
 
   const searchParams = new URLSearchParams(location.search);
   const tid = searchParams.get('tid');
+  const id = searchParams.get('id');
+  const version = searchParams.get('version');
 
   const intl = useIntl();
 
@@ -172,10 +178,10 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              {row.isFromLifeCycle ? (
+              {row.modelData ? (
                 <LifeCycleModelView
-                  id={row.id}
-                  version={row.version}
+                  id={row.modelData.id}
+                  version={row.modelData.version}
                   lang={lang}
                   buttonType={'icon'}
                   actionRef={actionRef}
@@ -191,10 +197,10 @@ const TableList: FC = () => {
                   actionRef={actionRef}
                 />
               )}
-              {row.isFromLifeCycle ? (
+              {row.modelData ? (
                 <LifeCycleModelEdit
-                  id={row.id}
-                  version={row.version}
+                  id={row.modelData.id}
+                  version={row.modelData.version}
                   lang={lang}
                   actionRef={actionRef}
                   buttonType={'icon'}
@@ -223,6 +229,10 @@ const TableList: FC = () => {
                 }}
                 menus={[
                   {
+                    key: 'logs',
+                    name: <ReviewDetail processId={row.id} processVersion={row.version} />,
+                  },
+                  {
                     key: 'export',
                     name: <ExportData tableName='processes' id={row.id} version={row.version} />,
                   },
@@ -230,11 +240,11 @@ const TableList: FC = () => {
                     key: 'copy',
                     name: (
                       <>
-                        {row.isFromLifeCycle ? (
+                        {row.modelData ? (
                           <LifeCycleModelCreate
                             actionType='copy'
-                            id={row.id}
-                            version={row.version}
+                            id={row.modelData.id}
+                            version={row.modelData.version}
                             lang={lang}
                             actionRef={actionRef}
                             buttonType={'icon'}
@@ -261,11 +271,11 @@ const TableList: FC = () => {
                             row.id,
                             row.version,
                           );
-                          if (row.isFromLifeCycle) {
+                          if (row.modelData) {
                             const { error: lifeCycleError } = await contributeSource(
                               'lifecyclemodels',
-                              row.id,
-                              row.version,
+                              row.modelData.id,
+                              row.modelData.version,
                             );
                             if (lifeCycleError || error) {
                               console.log(lifeCycleError);
@@ -333,6 +343,20 @@ const TableList: FC = () => {
       if (res.data.length > 0) setTeam(res.data[0]);
     });
   }, []);
+
+  useEffect(() => {
+    if (id && version && dataSource === 'my') {
+      setEditId(id);
+      setEditVersion(version);
+      setEditDrawerVisible(true);
+    }
+  }, [id, version, dataSource]);
+
+  const handleEditClose = () => {
+    setEditDrawerVisible(false);
+    setEditId('');
+    setEditVersion('');
+  };
 
   const onSearch: SearchProps['onSearch'] = (value) => {
     setKeyWord(value);
@@ -445,6 +469,18 @@ const TableList: FC = () => {
         }}
         columns={processColumns}
       />
+
+      {editDrawerVisible && editId && editVersion && (
+        <ProcessEdit
+          id={editId}
+          version={editVersion}
+          lang={lang}
+          buttonType={'icon'}
+          actionRef={actionRef}
+          setViewDrawerVisible={handleEditClose}
+          autoOpen={true}
+        />
+      )}
     </PageContainer>
   );
 };

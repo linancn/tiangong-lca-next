@@ -14,12 +14,12 @@ import { Space, Spin, theme } from 'antd';
 import { FC, useEffect, useState } from 'react';
 import { useIntl } from 'umi';
 // import ConnectableProcesses from '../connectableProcesses';
+import ModelResult from '../modelResult';
 import { Control } from './control';
 import EdgeExhange from './Exchange/index';
 import IoPortView from './Exchange/ioPortView';
 import ToolbarViewInfo from './viewInfo';
 import TargetAmount from './viewTargetAmount';
-
 type Props = {
   id: string;
   version: string;
@@ -31,7 +31,7 @@ type Props = {
 const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
   const [spinning, setSpinning] = useState(false);
   const [infoData, setInfoData] = useState<any>({});
-
+  const [jsonTg, setJsonTg] = useState<any>({});
   const [targetAmountDrawerVisible, setTargetAmountDrawerVisible] = useState(false);
   const [ioPortSelectorDirection, setIoPortSelectorDirection] = useState('');
   const [ioPortSelectorNode, setIoPortSelectorNode] = useState<any>({});
@@ -350,7 +350,10 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
   });
 
   useEffect(() => {
-    if (!drawerVisible) return;
+    if (!drawerVisible) {
+      setJsonTg({});
+      return;
+    }
     if (id && version) {
       setSpinning(true);
       getLifeCycleModelDetail(id, version).then(async (result: any) => {
@@ -358,6 +361,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
           result.data?.json?.lifeCycleModelDataSet ?? {},
         );
         setInfoData({ ...fromData, id: id });
+        setJsonTg(result.data?.json_tg);
         const model = genLifeCycleModelData(result.data?.json_tg ?? {}, lang);
         let initNodes = (model?.nodes ?? []).map((node: any) => {
           return {
@@ -454,13 +458,14 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
         onData={() => {}}
       />
       <br />
-      <ProcessView
+      {/* <ProcessView
         id={id ?? ''}
         version={version ?? ''}
         lang={lang}
         buttonType={'toolResultIcon'}
         disabled={false}
-      />
+      /> */}
+      <ModelResult submodels={jsonTg?.submodels ?? []} modelVersion={version} lang={lang} />
       <Control items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin']} />
       <Spin spinning={spinning} fullscreen />
       <IoPortView

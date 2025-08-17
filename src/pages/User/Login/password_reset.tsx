@@ -1,5 +1,5 @@
 import { Footer } from '@/components';
-import { currentUser, setPassword } from '@/services/ant-design-pro/api';
+import { getCurrentUser, setPassword } from '@/services/auth';
 
 import { LockOutlined, MailOutlined } from '@ant-design/icons';
 import { LoginForm, ProConfigProvider, ProFormText, ProLayout } from '@ant-design/pro-components';
@@ -18,7 +18,7 @@ const PasswordSet: FC = () => {
   const { token } = theme.useToken();
   const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
 
-  const handleSubmit = async (values: API.LoginParams) => {
+  const handleSubmit = async (values: Auth.LoginParams) => {
     try {
       setLoading(true);
       const msg = await setPassword(values);
@@ -48,7 +48,7 @@ const PasswordSet: FC = () => {
 
   useEffect(() => {
     if (spinning) {
-      currentUser().then((res) => {
+      getCurrentUser().then((res) => {
         if (!res?.userid) {
           // history.push('/#/user/login');
           return;
@@ -109,7 +109,7 @@ const PasswordSet: FC = () => {
                   name='password_reset'
                   fields={initData}
                   onFinish={async (values) => {
-                    await handleSubmit(values as API.LoginParams);
+                    await handleSubmit(values as Auth.LoginParams);
                   }}
                   submitter={{
                     resetButtonProps: {

@@ -1,5 +1,5 @@
 import schema from '@/pages/Processes/processes_schema.json';
-import { getLifeCyclesByIds } from '@/services/lifeCycleModels/api';
+import { getLifeCyclesByIds, getSubmodelsByProcessIds } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/es/table/interface';
@@ -146,7 +146,7 @@ export async function getProcessTableAll(
   const [locationRes, classificationRes, lifeCycleResult] = await Promise.all([
     getILCDLocationByValues(lang, locations),
     lang === 'zh' ? getILCDClassification('Process', lang, ['all']) : Promise.resolve(null),
-    getLifeCyclesByIds(processIds),
+    getSubmodelsByProcessIds(processIds),
   ]);
   const locationDataArr = locationRes.data || [];
   const locationMap = new Map(locationDataArr.map((l: any) => [l['@value'], l['#text']]));
@@ -187,13 +187,14 @@ export async function getProcessTableAll(
   });
 
   // 生命周期标记
-  if (lifeCycleResult.data && lifeCycleResult.data.length > 0) {
-    const lifeCycleMap = new Map(
-      lifeCycleResult.data.map((i: any) => [i.id + ':' + i.version, true]),
-    );
+  if (lifeCycleResult.data) {
     data.forEach((i) => {
-      if (lifeCycleMap.has(i.id + ':' + i.version)) {
-        i.isFromLifeCycle = true;
+      if (lifeCycleResult.data.hasOwnProperty(i.id)) {
+        const [modelId, modelVersion] = lifeCycleResult.data[i.id].split('_');
+        i.modelData = {
+          id: modelId,
+          version: modelVersion,
+        };
       }
     });
   }
@@ -928,4 +929,20 @@ export async function getProcessesByIdsAndVersions(ids: string[], versions: stri
     .in('id', ids)
     .in('version', versions);
   return result;
+}
+
+export async function validateProcessesByIdAndVersion(id: string, version: string) {
+  const resultVersion = await supabase
+    .from('processes')
+    .select('id,version')
+    .eq('id', id)
+    .eq('version', version);
+  if (resultVersion?.data && resultVersion.data.length > 0) {
+    return true;
+  }
+  const result = await supabase.from('processes').select('id,version').eq('id', id);
+  if (result?.data && result.data.length > 0) {
+    return true;
+  }
+  return false;
 }

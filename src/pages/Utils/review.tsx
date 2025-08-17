@@ -453,6 +453,16 @@ export const updateReviewsAfterCheckData = async (teamId: string, data: any, rev
     comment: {
       message: '',
     },
+    logs: [
+      {
+        action: 'submit_review',
+        time: new Date(),
+        user: {
+          id: userId,
+          display_name: user?.[0]?.display_name,
+        },
+      },
+    ],
   };
   const result = await addReviewsApi(reviewId, reviewJson);
   return result;

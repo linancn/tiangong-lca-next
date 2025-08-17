@@ -17,3 +17,63 @@ declare module 'react-fittext';
 declare module 'bizcharts-plugin-slider';
 
 declare const REACT_APP_ENV: 'test' | 'dev' | 'pre' | false;
+
+// Authentication related type definitions
+declare namespace Auth {
+  type CurrentUser = {
+    name?: string;
+    avatar?: string;
+    userid?: string;
+    teamid?: string;
+    email?: string;
+    signature?: string;
+    title?: string;
+    group?: string;
+    tags?: { key?: string; label?: string }[];
+    notifyCount?: number;
+    unreadCount?: number;
+    country?: string;
+    access?: string;
+    geographic?: {
+      province?: { label?: string; key?: string };
+      city?: { label?: string; key?: string };
+    };
+    address?: string;
+    phone?: string;
+    role?: string;
+  };
+
+  type LoginResult = {
+    status?: string;
+    type?: string;
+    currentAuthority?: string;
+    message?: string;
+  };
+
+  type LoginParams = {
+    email?: string;
+    username?: string;
+    password?: string;
+    confirmPassword?: string;
+    autoLogin?: boolean;
+    type?: string;
+  };
+
+  type PasswordChangeParams = {
+    email?: string;
+    currentPassword?: string;
+    confirmNewPassword?: string;
+    type?: string;
+  };
+
+  type EmailChangeParams = {
+    email?: string;
+    newEmail?: string;
+    type?: string;
+  };
+
+  type ProfileUpdateParams = {
+    name?: string;
+    type?: string;
+  };
+}

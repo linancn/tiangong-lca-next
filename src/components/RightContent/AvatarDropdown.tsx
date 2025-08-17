@@ -9,7 +9,7 @@ import {
 import { history, useIntl, useModel } from '@umijs/max';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { outLogin } from '@/services/ant-design-pro/api';
+import { logout } from '@/services/auth';
 import { getUserRoles } from '@/services/roles/api';
 import { Button, Modal, Spin, theme } from 'antd';
 import { createStyles } from 'antd-style';
@@ -77,13 +77,13 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
     getSystemUserRole();
   }, []);
   /**
-   * 退出登录，并且将当前的 url 保存
+   * Logout and save the current URL
    */
   const loginOut = async () => {
-    await outLogin();
+    await logout();
     const { search, pathname } = window.location;
     const urlParams = new URL(window.location.href).searchParams;
-    /** 此方法会跳转到 redirect 参数所在的位置 */
+    /** This method will redirect to the location specified by the redirect parameter */
     const redirect = urlParams.get('redirect');
     // Note: There may be security issues, please note
     if (window.location.pathname !== '/user/login' && !redirect) {
