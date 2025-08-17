@@ -1,41 +1,27 @@
 import { supabase } from '@/services/supabase';
 
 /**
- * Get current authenticated user information (use on first login)
- * First login: call supabase.auth.getUser() to obtain the initial user profile.
- * Later sessions: if you only need already issued claims, prefer getCurrentUserClaims() to avoid an extra fetch.
- * @returns Current user data or null if not authenticated
- */
-export async function getCurrentUser(): Promise<Auth.CurrentUser | null> {
-  const { data } = await supabase.auth.getUser();
-  if (data?.user === null) {
-    return null;
-  }
-  const user: Auth.CurrentUser = {
-    name: data?.user?.user_metadata?.display_name ?? data?.user?.email,
-    userid: data?.user?.id,
-    teamid: data?.user?.user_metadata?.team_id,
-    email: data?.user?.email,
-    role: data?.user?.role,
-  };
-  return user;
-}
-
-/**
  * Get current authenticated user information
  * @returns Current user data or null if not authenticated
  */
-export async function getCurrentUserClaims(): Promise<Auth.CurrentUser | null> {
+export async function getCurrentUser(): Promise<Auth.CurrentUser | null> {
+  // const { data: sessionData } = await supabase.auth.getSession();
+  // if (!sessionData?.session || !sessionData.session.user) {
+  //   return null;
+  // }
+
   const { data } = await supabase.auth.getClaims();
-  if (data?.claims === null) {
+  const claims: any = data?.claims;
+  if (!claims) {
     return null;
   }
+
   const user: Auth.CurrentUser = {
-    name: data?.claims?.user_metadata?.display_name ?? data?.claims?.email,
-    userid: data?.claims?.sub,
-    teamid: data?.claims?.user_metadata?.team_id,
-    email: data?.claims?.email,
-    role: data?.claims?.role,
+    name: claims?.user_metadata?.display_name ?? claims?.email,
+    userid: claims?.sub,
+    teamid: claims?.user_metadata?.team_id,
+    email: claims?.email,
+    role: claims?.role,
   };
   return user;
 }

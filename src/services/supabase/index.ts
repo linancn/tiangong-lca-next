@@ -3,7 +3,7 @@ import { supabaseAnonKey, supabaseUrl } from './key';
 
 const options = {
   auth: {
-    autorRefreshToken: true,
+    autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
   },
