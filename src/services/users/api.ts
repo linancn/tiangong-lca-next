@@ -1,3 +1,4 @@
+import { getCurrentUser } from '@/services/auth';
 import { supabase } from '@/services/supabase';
 
 export async function getUsersByIds(userIds: string[]) {
@@ -42,9 +43,6 @@ export async function getUserEmailByUserIds(userIds: string[]) {
 }
 
 export async function getUserId() {
-  const { data, error } = await supabase.auth.getUser();
-  if (error) {
-    throw error;
-  }
-  return data?.user?.id;
+  const user = await getCurrentUser();
+  return user?.userid ?? '';
 }

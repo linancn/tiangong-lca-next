@@ -1,6 +1,6 @@
 import { supabase } from '@/services/supabase';
 import { addTeam } from '@/services/teams/api';
-import { getUserIdByEmail, getUsersByIds } from '@/services/users/api';
+import { getUserId, getUserIdByEmail, getUsersByIds } from '@/services/users/api';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/lib/table/interface';
 
@@ -89,8 +89,8 @@ export const getUserIdsByTeamIds = async (teamIds: string[]) => {
 };
 
 export async function getTeamInvitationStatusApi(timeFilter: number = 3) {
-  const { error, data: userResult } = await supabase.auth.getUser();
-  if (error) {
+  const userId = await getUserId();
+  if (!userId?.length) {
     return {
       success: false,
       data: null,
@@ -99,7 +99,7 @@ export async function getTeamInvitationStatusApi(timeFilter: number = 3) {
     let query = supabase
       .from('roles')
       .select('*')
-      .eq('user_id', userResult.user?.id)
+      .eq('user_id', userId)
       .neq('team_id', '00000000-0000-0000-0000-000000000000')
       .order('modified_at', { ascending: false });
 
@@ -432,10 +432,7 @@ export async function addReviewMemberApi(email: string) {
 }
 
 export async function getLatestRolesOfMine() {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const userId = user?.id;
+  const userId = await getUserId();
 
   if (!userId) {
     return null;
