@@ -1,5 +1,6 @@
 import { getLifeCyclesByIds } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
+import { getUserId } from '@/services/users/api';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { getLangText } from '../general/util';
 import { genProcessName } from '../processes/util';
@@ -79,19 +80,13 @@ export async function getReviewsTableData(
     query = query.eq('state_code', 1);
   }
   if (type === 'review') {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    const userId = user?.id;
+    const userId = await getUserId();
     if (userId) {
       query = query.filter('reviewer_id', 'cs', `[${JSON.stringify(userId)}]`).eq('state_code', 1);
     }
   }
   if (type === 'rejected') {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    const userId = user?.id;
+    const userId = await getUserId();
     query = query.eq('state_code', -1).filter('json->user->>id', 'eq', userId);
   }
   const result = await query;
@@ -161,10 +156,7 @@ export async function getNotifyReviews(
   lang: string,
   timeFilter: number = 3,
 ) {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const userId = user?.id;
+  const userId = await getUserId();
 
   if (!userId) {
     return Promise.resolve({
@@ -244,10 +236,7 @@ export async function getNotifyReviews(
 }
 
 export async function getLatestReviewOfMine() {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const userId = user?.id;
+  const userId = await getUserId();
 
   if (!userId) {
     return null;

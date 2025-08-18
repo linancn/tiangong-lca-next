@@ -22,6 +22,8 @@ export async function getCurrentUser(): Promise<Auth.CurrentUser | null> {
     teamid: claims?.user_metadata?.team_id,
     email: claims?.email,
     role: claims?.role,
+    update_data_notification_time: claims?.user_metadata?.update_data_notification_time,
+    update_team_notification_time: claims?.user_metadata?.update_team_notification_time,
   };
   return user;
 }

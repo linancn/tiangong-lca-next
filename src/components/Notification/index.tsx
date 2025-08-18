@@ -1,4 +1,4 @@
-import { getAuth } from '@/services/manageWelcomeTeams/api';
+import { getCurrentUser } from '@/services/auth';
 import { getLatestReviewOfMine } from '@/services/reviews/api';
 import { getLatestRolesOfMine } from '@/services/roles/api';
 import { MessageOutlined } from '@ant-design/icons';
@@ -49,11 +49,9 @@ const Notification: React.FC = () => {
   };
 
   const updateShowTabs = async () => {
-    const auth = await getAuth();
-    const update_team_notification_time =
-      auth?.user?.user_metadata?.update_team_notification_time ?? 0;
-    const update_data_notification_time =
-      auth?.user?.user_metadata?.update_data_notification_time ?? 0;
+    const user = await getCurrentUser();
+    const update_team_notification_time = user?.update_team_notification_time ?? 0;
+    const update_data_notification_time = user?.update_data_notification_time ?? 0;
 
     const latestReview = await getLatestReviewOfMine();
     const latestRoles = await getLatestRolesOfMine();

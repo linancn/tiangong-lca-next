@@ -41,6 +41,8 @@ declare namespace Auth {
     address?: string;
     phone?: string;
     role?: string;
+    update_data_notification_time?: number;
+    update_team_notification_time?: number;
   };
 
   type LoginResult = {
