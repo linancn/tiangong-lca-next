@@ -1,12 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
-import { supabaseAnonKey, supabaseUrl } from './key';
+import { supabasePublishableKey, supabaseUrl } from './key';
 
 const options = {
   auth: {
-    autorRefreshToken: true,
+    autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
   },
 };
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, options);
+export const supabase = createClient(supabaseUrl, supabasePublishableKey, options);

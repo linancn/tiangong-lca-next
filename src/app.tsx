@@ -35,6 +35,10 @@ export async function getInitialState(): Promise<{
   const fetchUserInfo = async (): Promise<Auth.CurrentUser | null> => {
     try {
       const msg = await queryCurrentUser();
+      if (!msg) {
+        history.push(loginPath);
+        return null;
+      }
       return msg;
     } catch (error) {
       history.push(loginPath);
@@ -151,6 +155,11 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     // unAccessible: <div>unAccessible</div>,
     // 增加一个 loading 的状态
     childrenRender: (children) => {
+      // 初始渲染兜底：onPageChange 只在路由变化时触发，首次进入需要再判断一次
+      if (!initialState?.currentUser && history.location.pathname !== loginPath) {
+        history.push(loginPath);
+        return null;
+      }
       // if (initialState?.loading) return <PageLoading />;
       return (
         <>

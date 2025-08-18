@@ -5,16 +5,23 @@ import { supabase } from '@/services/supabase';
  * @returns Current user data or null if not authenticated
  */
 export async function getCurrentUser(): Promise<Auth.CurrentUser | null> {
-  const { data } = await supabase.auth.getUser();
-  if (data?.user === null) {
+  // const { data: sessionData } = await supabase.auth.getSession();
+  // if (!sessionData?.session || !sessionData.session.user) {
+  //   return null;
+  // }
+
+  const { data } = await supabase.auth.getClaims();
+  const claims: any = data?.claims;
+  if (!claims) {
     return null;
   }
+
   const user: Auth.CurrentUser = {
-    name: data?.user?.user_metadata?.display_name ?? data?.user?.email,
-    userid: data?.user?.id,
-    teamid: data?.user?.user_metadata?.team_id,
-    email: data?.user?.email,
-    role: data?.user?.role,
+    name: claims?.user_metadata?.display_name ?? claims?.email,
+    userid: claims?.sub,
+    teamid: claims?.user_metadata?.team_id,
+    email: claims?.email,
+    role: claims?.role,
   };
   return user;
 }

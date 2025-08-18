@@ -81,7 +81,7 @@ export default [
   {
     path: '/codata',
     name: 'codata',
-    icon: 'FileZipOutlined',
+    icon: 'FolderOutlined',
     routes: [
       {
         path: '/codata',
