@@ -1,4 +1,5 @@
 import { supabase } from '@/services/supabase';
+import { getUserId } from '@/services/users/api';
 import { FunctionRegion } from '@supabase/supabase-js';
 
 export async function addCommentApi(data: any) {
@@ -30,10 +31,7 @@ export async function updateCommentApi(
 
 export async function getCommentApi(reviewId: string, actionType: 'assigned' | 'review') {
   if (actionType === 'review') {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    const userId = user?.id;
+    const userId = await getUserId();
 
     if (!userId) {
       return { error: true, data: [] };
