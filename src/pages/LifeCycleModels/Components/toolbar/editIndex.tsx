@@ -506,7 +506,6 @@ const ToolbarEdit: FC<Props> = ({
   const getPortTextColor = (quantitativeReference: boolean, allocations: any) => {
     const num = allocations?.allocation?.['@allocatedFraction']?.split('%')[0];
     const allocatedFractionNum = Number(num);
-    console.log('allocatedFractionNum', allocatedFractionNum);
     if (allocatedFractionNum > 0 || quantitativeReference) {
       return token.colorPrimary;
     }
