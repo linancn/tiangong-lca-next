@@ -503,6 +503,23 @@ const ToolbarEdit: FC<Props> = ({
     }
   };
 
+  const getPortTextColor = (quantitativeReference: boolean, allocations: any) => {
+    const num = allocations?.allocation?.['@allocatedFraction']?.split('%')[0];
+    const allocatedFractionNum = Number(num);
+    console.log('allocatedFractionNum', allocatedFractionNum);
+    if (allocatedFractionNum > 0 || quantitativeReference) {
+      return token.colorPrimary;
+    }
+    return token.colorTextDescription;
+  };
+
+  const getPortTextStyle = (quantitativeReference: boolean) => {
+    if (quantitativeReference) {
+      return 'bold';
+    }
+    return 'normal';
+  };
+
   const updateNodePorts = (data: any) => {
     const group = ioPortSelectorDirection === 'Output' ? 'groupOutput' : 'groupInput';
 
@@ -533,6 +550,8 @@ const ToolbarEdit: FC<Props> = ({
             text: `${label !== labelSub ? labelSub + '...' : label}`,
             title: labelSub,
             cursor: 'pointer',
+            fill: getPortTextColor(item?.quantitativeReference, item?.allocations),
+            'font-weight': getPortTextStyle(item?.quantitativeReference),
           },
         },
         group: group,
@@ -540,6 +559,8 @@ const ToolbarEdit: FC<Props> = ({
           textLang: textLang,
           flowId: item?.referenceToFlowDataSet?.['@refObjectId'],
           flowVersion: item?.referenceToFlowDataSet?.['@version'],
+          quantitativeReference: item?.quantitativeReference,
+          allocations: item?.allocations,
         },
       };
     });
@@ -608,6 +629,8 @@ const ToolbarEdit: FC<Props> = ({
               text: `${genPortLabel(text ?? '', lang, nodeTemplate.width)}`,
               title: text,
               cursor: 'pointer',
+              fill: getPortTextColor(refExchange?.quantitativeReference, refExchange?.allocations),
+              'font-weight': getPortTextStyle(refExchange?.quantitativeReference),
             },
           },
           group:
@@ -618,6 +641,8 @@ const ToolbarEdit: FC<Props> = ({
             textLang: refExchange?.referenceToFlowDataSet?.['common:shortDescription'],
             flowId: refExchange?.referenceToFlowDataSet?.['@refObjectId'],
             flowVersion: refExchange?.referenceToFlowDataSet?.['@version'],
+            quantitativeReference: refExchange?.quantitativeReference,
+            allocations: refExchange?.allocations,
           },
         };
 
@@ -696,11 +721,17 @@ const ToolbarEdit: FC<Props> = ({
                     text: `${genPortLabel(newTitle, lang, nodeWidth)}`,
                     title: newTitle,
                     cursor: 'pointer',
+                    fill: getPortTextColor(newItem?.quantitativeReference, newItem?.allocations),
+                    'font-weight': getPortTextStyle(newItem?.quantitativeReference),
                   },
                 },
                 data: {
                   ...item?.data,
                   textLang: newItem?.referenceToFlowDataSet?.['common:shortDescription'],
+                  flowId: newItem?.referenceToFlowDataSet?.['@refObjectId'],
+                  flowVersion: newItem?.referenceToFlowDataSet?.['@version'],
+                  quantitativeReference: newItem?.quantitativeReference,
+                  allocations: newItem?.allocations,
                 },
               };
             } else {
@@ -711,6 +742,7 @@ const ToolbarEdit: FC<Props> = ({
                   text: {
                     text: '-',
                     title: '-',
+                    fill: token.colorTextDescription,
                   },
                 },
                 data: {
@@ -905,6 +937,8 @@ const ToolbarEdit: FC<Props> = ({
             ...item?.attrs?.text,
             text: `${genPortLabel(itemText ?? '', lang, nodeWidth)}`,
             cursor: 'pointer',
+            fill: getPortTextColor(item?.data?.quantitativeReference, item?.data?.allocations),
+            'font-weight': getPortTextStyle(item?.data?.quantitativeReference),
           },
         },
       };
@@ -982,13 +1016,31 @@ const ToolbarEdit: FC<Props> = ({
       setInfoData(formData);
       const model = genLifeCycleModelData(importData[0]?.json_tg ?? {}, lang);
       let initNodes = (model?.nodes ?? []).map((node: any) => {
+        const updatedPorts = {
+          ...node.ports,
+          groups: ports.groups,
+          items: (node.ports?.items ?? []).map((item: any) => {
+            return {
+              ...item,
+              attrs: {
+                ...item?.attrs,
+                text: {
+                  ...item?.attrs?.text,
+                  fill: getPortTextColor(
+                    item?.data?.quantitativeReference,
+                    item?.data?.allocations,
+                  ),
+                  'font-weight': getPortTextStyle(item?.data?.quantitativeReference),
+                },
+              },
+            };
+          }),
+        };
+
         return {
           ...node,
           attrs: nodeAttrs,
-          ports: {
-            ...node.ports,
-            groups: ports.groups,
-          },
+          ports: updatedPorts,
           tools: [
             node?.data?.quantitativeReference === '1' ? refTool : nonRefTool,
             nodeTitleTool(node?.width ?? 0, genProcessName(node?.data?.label, lang) ?? ''),
@@ -1033,13 +1085,31 @@ const ToolbarEdit: FC<Props> = ({
         setInfoData({ ...fromData, id: thisId, version: thisVersion });
         const model = genLifeCycleModelData(result.data?.json_tg ?? {}, lang);
         let initNodes = (model?.nodes ?? []).map((node: any) => {
+          const updatedPorts = {
+            ...node.ports,
+            groups: ports.groups,
+            items: (node.ports?.items ?? []).map((item: any) => {
+              return {
+                ...item,
+                attrs: {
+                  ...item?.attrs,
+                  text: {
+                    ...item?.attrs?.text,
+                    fill: getPortTextColor(
+                      item?.data?.quantitativeReference,
+                      item?.data?.allocations,
+                    ),
+                    'font-weight': getPortTextStyle(item?.data?.quantitativeReference),
+                  },
+                },
+              };
+            }),
+          };
+
           return {
             ...node,
             attrs: nodeAttrs,
-            ports: {
-              ...node.ports,
-              groups: ports.groups,
-            },
+            ports: updatedPorts,
             tools: [
               node?.data?.quantitativeReference === '1' ? refTool : nonRefTool,
               nodeTitleTool(node?.width ?? 0, genProcessName(node?.data?.label, lang) ?? ''),
