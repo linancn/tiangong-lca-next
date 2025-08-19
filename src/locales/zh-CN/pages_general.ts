@@ -65,6 +65,7 @@ export default {
   'pages.tab.title.mydata': '我的数据',
   'pages.tab.title.tedata': '团队数据',
   'pages.tab.title.tgdata': '天工数据',
+  'pages.tab.title.co': '商业数据',
 
   'pages.search.openAI': '智能推荐',
   'pages.search.keyWord': '全文检索：请输入一个或多个关键词。',

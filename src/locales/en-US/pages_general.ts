@@ -66,6 +66,7 @@ export default {
   'pages.tab.title.mydata': 'My Data',
   'pages.tab.title.tedata': 'Team Data',
   'pages.tab.title.tgdata': 'TianGong Data',
+  'pages.tab.title.co': 'Business Data',
 
   'pages.search.openAI': 'AI Recommendation',
   'pages.search.keyWord': 'Full-text search: Enter one or more keywords.',

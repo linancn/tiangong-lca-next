@@ -23,12 +23,14 @@ const { Search } = Input;
 
 const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }) => {
   const [tgKeyWord, setTgKeyWord] = useState<any>('');
+  const [coKeyWord, setCoKeyWord] = useState<any>('');
   const [myKeyWord, setMyKeyWord] = useState<any>('');
   const [teKeyWord, setTeKeyWord] = useState<any>('');
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [activeTabKey, setActiveTabKey] = useState<string>('tg');
   const tgActionRefSelect = useRef<ActionType>();
+  const coActionRefSelect = useRef<ActionType>();
   const myActionRefSelect = useRef<ActionType>();
   const teActionRefSelect = useRef<ActionType>();
 
@@ -48,6 +50,10 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData })
       await tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
       tgActionRefSelect.current?.reload();
     }
+    if (key === 'co') {
+      coActionRefSelect.current?.setPageInfo?.({ current: 1 });
+      coActionRefSelect.current?.reload();
+    }
     if (key === 'my') {
       myActionRefSelect.current?.setPageInfo?.({ current: 1 });
       myActionRefSelect.current?.reload();
@@ -64,6 +70,12 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData })
     tgActionRefSelect.current?.reload();
   };
 
+  const onCoSearch: SearchProps['onSearch'] = async (value) => {
+    await setCoKeyWord(value);
+    coActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    coActionRefSelect.current?.reload();
+  };
+
   const onTeSearch: SearchProps['onSearch'] = async (value) => {
     await setTeKeyWord(value);
     teActionRefSelect.current?.setPageInfo?.({ current: 1 });
@@ -78,6 +90,10 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData })
 
   const handleTgKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTgKeyWord(e.target.value);
+  };
+
+  const handleCoKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCoKeyWord(e.target.value);
   };
 
   const handleTeKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -181,6 +197,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData })
       key: 'tg',
       tab: <FormattedMessage id='pages.tab.title.tgdata' defaultMessage='TianGong Data' />,
     },
+    { key: 'co', tab: <FormattedMessage id='pages.tab.title.co' defaultMessage='Business Data' /> },
     { key: 'my', tab: <FormattedMessage id='pages.tab.title.mydata' defaultMessage='My Data' /> },
     { key: 'te', tab: <FormattedMessage id='pages.tab.title.tedata' defaultMessage='TE Data' /> },
   ];
@@ -262,6 +279,48 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData })
               return getSourceTablePgroongaSearch(params, lang, 'tg', tgKeyWord, {});
             }
             return getSourceTableAll(params, sort, lang, 'tg', []);
+          }}
+          columns={sourceColumns}
+          rowSelection={{
+            type: 'radio',
+            alwaysShowAlert: true,
+            selectedRowKeys,
+            onChange: onSelectChange,
+          }}
+        />
+      </>
+    ),
+    co: (
+      <>
+        <Card>
+          <Search
+            name={'co'}
+            size={'large'}
+            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+            value={coKeyWord}
+            onChange={handleCoKeyWordChange}
+            onSearch={onCoSearch}
+            enterButton
+          />
+        </Card>
+        <ProTable<SourceTable, ListPagination>
+          actionRef={coActionRefSelect}
+          search={false}
+          pagination={{
+            showSizeChanger: false,
+            pageSize: 10,
+          }}
+          request={async (
+            params: {
+              pageSize: number;
+              current: number;
+            },
+            sort,
+          ) => {
+            if (coKeyWord.length > 0) {
+              return getSourceTablePgroongaSearch(params, lang, 'co', coKeyWord, {});
+            }
+            return getSourceTableAll(params, sort, lang, 'co', []);
           }}
           columns={sourceColumns}
           rowSelection={{
