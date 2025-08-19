@@ -519,6 +519,14 @@ const ToolbarEdit: FC<Props> = ({
     return 'normal';
   };
 
+  const getPortLabelWithAllocation = (label: string, allocations: any) => {
+    const allocatedFraction = allocations?.allocation?.['@allocatedFraction'];
+    if (allocatedFraction) {
+      return `[${allocatedFraction}] ${label}`;
+    }
+    return label;
+  };
+
   const updateNodePorts = (data: any) => {
     const group = ioPortSelectorDirection === 'Output' ? 'groupOutput' : 'groupInput';
 
@@ -536,18 +544,19 @@ const ToolbarEdit: FC<Props> = ({
       const direction = ioPortSelectorDirection.toUpperCase();
       const flowUUID = item?.referenceToFlowDataSet?.['@refObjectId'] ?? '-';
       const label = getLangText(textLang, lang);
-
-      let labelSub = label?.substring(0, nodeWidth / 7 - 4);
+      const labelWithAllocation = getPortLabelWithAllocation(label, item?.allocations);
+      let labelSubWithAllocation = labelWithAllocation?.substring(0, nodeWidth / 7 - 4);
       if (lang === 'zh') {
-        labelSub = label?.substring(0, nodeWidth / 12 - 4);
+        labelSubWithAllocation = labelWithAllocation?.substring(0, nodeWidth / 12 - 4);
       }
+
       return {
         id: direction + ':' + flowUUID,
         args: { x: group === 'groupOutput' ? '100%' : 0, y: baseY + index * 20 },
         attrs: {
           text: {
-            text: `${label !== labelSub ? labelSub + '...' : label}`,
-            title: labelSub,
+            text: `${labelWithAllocation !== labelSubWithAllocation ? labelSubWithAllocation + '...' : labelWithAllocation}`,
+            title: labelWithAllocation,
             cursor: 'pointer',
             fill: getPortTextColor(item?.quantitativeReference, item?.allocations),
             'font-weight': getPortTextStyle(item?.quantitativeReference),
@@ -617,6 +626,7 @@ const ToolbarEdit: FC<Props> = ({
           refExchange?.referenceToFlowDataSet?.['common:shortDescription'],
           lang,
         );
+        const textWithAllocation = getPortLabelWithAllocation(text ?? '', refExchange?.allocations);
         const refPortItem = {
           id:
             (inOrOut ? 'INPUT' : 'OUTPUT') +
@@ -625,8 +635,8 @@ const ToolbarEdit: FC<Props> = ({
           args: { x: inOrOut ? 0 : '100%', y: 65 },
           attrs: {
             text: {
-              text: `${genPortLabel(text ?? '', lang, nodeTemplate.width)}`,
-              title: text,
+              text: `${genPortLabel(textWithAllocation ?? '', lang, nodeTemplate.width)}`,
+              title: textWithAllocation,
               cursor: 'pointer',
               fill: getPortTextColor(refExchange?.quantitativeReference, refExchange?.allocations),
               'font-weight': getPortTextStyle(refExchange?.quantitativeReference),
@@ -712,13 +722,17 @@ const ToolbarEdit: FC<Props> = ({
                 newItem?.referenceToFlowDataSet?.['common:shortDescription'],
                 lang,
               );
+              const newTitleWithAllocation = getPortLabelWithAllocation(
+                newTitle,
+                newItem?.allocations,
+              );
               return {
                 ...item,
                 attrs: {
                   ...item?.attrs,
                   text: {
-                    text: `${genPortLabel(newTitle, lang, nodeWidth)}`,
-                    title: newTitle,
+                    text: `${genPortLabel(newTitleWithAllocation, lang, nodeWidth)}`,
+                    title: newTitleWithAllocation,
                     cursor: 'pointer',
                     fill: getPortTextColor(newItem?.quantitativeReference, newItem?.allocations),
                     'font-weight': getPortTextStyle(newItem?.quantitativeReference),
@@ -929,12 +943,16 @@ const ToolbarEdit: FC<Props> = ({
     const label = genProcessName(node?.data?.label, lang);
     const newItems = node?.getPorts()?.map((item: any) => {
       const itemText = getLangText(item?.data?.textLang, lang);
+      const itemTextWithAllocation = getPortLabelWithAllocation(
+        itemText ?? '',
+        item?.data?.allocations,
+      );
       return {
         ...item,
         attrs: {
           text: {
             ...item?.attrs?.text,
-            text: `${genPortLabel(itemText ?? '', lang, nodeWidth)}`,
+            text: `${genPortLabel(itemTextWithAllocation ?? '', lang, nodeWidth)}`,
             cursor: 'pointer',
             fill: getPortTextColor(item?.data?.quantitativeReference, item?.data?.allocations),
             'font-weight': getPortTextStyle(item?.data?.quantitativeReference),
@@ -1019,12 +1037,18 @@ const ToolbarEdit: FC<Props> = ({
           ...node.ports,
           groups: ports.groups,
           items: (node.ports?.items ?? []).map((item: any) => {
+            const itemText = getLangText(item?.data?.textLang, lang);
+            const itemTextWithAllocation = getPortLabelWithAllocation(
+              itemText ?? '',
+              item?.data?.allocations,
+            );
             return {
               ...item,
               attrs: {
                 ...item?.attrs,
                 text: {
                   ...item?.attrs?.text,
+                  text: itemTextWithAllocation,
                   fill: getPortTextColor(
                     item?.data?.quantitativeReference,
                     item?.data?.allocations,
@@ -1088,12 +1112,18 @@ const ToolbarEdit: FC<Props> = ({
             ...node.ports,
             groups: ports.groups,
             items: (node.ports?.items ?? []).map((item: any) => {
+              const itemText = getLangText(item?.data?.textLang, lang);
+              const itemTextWithAllocation = getPortLabelWithAllocation(
+                itemText ?? '',
+                item?.data?.allocations,
+              );
               return {
                 ...item,
                 attrs: {
                   ...item?.attrs,
                   text: {
                     ...item?.attrs?.text,
+                    text: itemTextWithAllocation,
                     fill: getPortTextColor(
                       item?.data?.quantitativeReference,
                       item?.data?.allocations,
