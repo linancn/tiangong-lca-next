@@ -24,12 +24,14 @@ const { Search } = Input;
 
 const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }) => {
   const [tgKeyWord, setTgKeyWord] = useState<any>('');
+  const [coKeyWord, setCoKeyWord] = useState<any>('');
   const [myKeyWord, setMyKeyWord] = useState<any>('');
   const [teKeyWord, setTeKeyWord] = useState<any>('');
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [activeTabKey, setActiveTabKey] = useState<string>('tg');
   const tgActionRefSelect = useRef<ActionType>();
+  const coActionRefSelect = useRef<ActionType>();
   const myActionRefSelect = useRef<ActionType>();
   const teActionRefSelect = useRef<ActionType>();
   const intl = useIntl();
@@ -48,6 +50,10 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
       await tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
       tgActionRefSelect.current?.reload();
     }
+    if (key === 'co') {
+      coActionRefSelect.current?.setPageInfo?.({ current: 1 });
+      coActionRefSelect.current?.reload();
+    }
     if (key === 'my') {
       myActionRefSelect.current?.setPageInfo?.({ current: 1 });
       myActionRefSelect.current?.reload();
@@ -64,6 +70,12 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
     tgActionRefSelect.current?.reload();
   };
 
+  const onCoSearch: SearchProps['onSearch'] = async (value) => {
+    await setCoKeyWord(value);
+    coActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    coActionRefSelect.current?.reload();
+  };
+
   const onMySearch: SearchProps['onSearch'] = async (value) => {
     await setMyKeyWord(value);
     myActionRefSelect.current?.setPageInfo?.({ current: 1 });
@@ -78,6 +90,10 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
 
   const handleTgKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTgKeyWord(e.target.value);
+  };
+
+  const handleCoKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCoKeyWord(e.target.value);
   };
 
   const handleMyKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -210,6 +226,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
       key: 'tg',
       tab: <FormattedMessage id='pages.tab.title.tgdata' defaultMessage='TianGong Data' />,
     },
+    { key: 'co', tab: <FormattedMessage id='pages.tab.title.co' defaultMessage='Business Data' /> },
     { key: 'my', tab: <FormattedMessage id='pages.tab.title.mydata' defaultMessage='My Data' /> },
     { key: 'te', tab: <FormattedMessage id='pages.tab.title.tedata' defaultMessage='TE Data' /> },
   ];
@@ -234,6 +251,9 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
+          }}
+          toolBarRender={() => {
+            return [<UnitGroupCreate key={0} lang={lang} actionRef={myActionRefSelect} />];
           }}
           request={async (
             params: {
@@ -273,9 +293,6 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
         <ProTable<UnitGroupTable, ListPagination>
           actionRef={tgActionRefSelect}
           search={false}
-          toolBarRender={() => {
-            return [<UnitGroupCreate key={0} lang={lang} actionRef={tgActionRefSelect} />];
-          }}
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
@@ -291,6 +308,48 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
               return getUnitGroupTablePgroongaSearch(params, lang, 'tg', tgKeyWord, {});
             }
             return getUnitGroupTableAll(params, sort, lang, 'tg', []);
+          }}
+          columns={unitGroupColumns}
+          rowSelection={{
+            type: 'radio',
+            alwaysShowAlert: true,
+            selectedRowKeys,
+            onChange: onSelectChange,
+          }}
+        />
+      </>
+    ),
+    co: (
+      <>
+        <Card>
+          <Search
+            name={'co'}
+            size={'large'}
+            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+            value={coKeyWord}
+            onChange={handleCoKeyWordChange}
+            onSearch={onCoSearch}
+            enterButton
+          />
+        </Card>
+        <ProTable<UnitGroupTable, ListPagination>
+          actionRef={coActionRefSelect}
+          search={false}
+          pagination={{
+            showSizeChanger: false,
+            pageSize: 10,
+          }}
+          request={async (
+            params: {
+              pageSize: number;
+              current: number;
+            },
+            sort,
+          ) => {
+            if (coKeyWord.length > 0) {
+              return getUnitGroupTablePgroongaSearch(params, lang, 'co', coKeyWord, {});
+            }
+            return getUnitGroupTableAll(params, sort, lang, 'co', []);
           }}
           columns={unitGroupColumns}
           rowSelection={{
@@ -318,9 +377,6 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
         <ProTable<UnitGroupTable, ListPagination>
           actionRef={teActionRefSelect}
           search={false}
-          toolBarRender={() => {
-            return [<UnitGroupCreate key={0} lang={lang} actionRef={teActionRefSelect} />];
-          }}
           pagination={{
             showSizeChanger: false,
             pageSize: 10,

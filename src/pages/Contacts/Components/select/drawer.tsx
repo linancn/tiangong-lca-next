@@ -23,12 +23,14 @@ const { Search } = Input;
 
 const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }) => {
   const [tgKeyWord, setTgKeyWord] = useState<any>('');
+  const [coKeyWord, setCoKeyWord] = useState<any>('');
   const [myKeyWord, setMyKeyWord] = useState<any>('');
   const [teamKeyWord, setTeamKeyWord] = useState<any>('');
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [activeTabKey, setActiveTabKey] = useState<string>('tg');
   const tgActionRefSelect = useRef<ActionType>();
+  const coActionRefSelect = useRef<ActionType>();
   const myActionRefSelect = useRef<ActionType>();
   const teamActionRefSelect = useRef<ActionType>();
 
@@ -47,6 +49,10 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }
     if (key === 'tg') {
       await tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
       tgActionRefSelect.current?.reload();
+    }
+    if (key === 'co') {
+      coActionRefSelect.current?.setPageInfo?.({ current: 1 });
+      coActionRefSelect.current?.reload();
     }
     if (key === 'my') {
       myActionRefSelect.current?.setPageInfo?.({ current: 1 });
@@ -70,6 +76,12 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }
     teamActionRefSelect.current?.reload();
   };
 
+  const onCoSearch: SearchProps['onSearch'] = async (value) => {
+    await setCoKeyWord(value);
+    coActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    coActionRefSelect.current?.reload();
+  };
+
   const onMySearch: SearchProps['onSearch'] = async (value) => {
     await setMyKeyWord(value);
     myActionRefSelect.current?.setPageInfo?.({ current: 1 });
@@ -78,6 +90,10 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }
 
   const handleTgKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTgKeyWord(e.target.value);
+  };
+
+  const handleCoKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCoKeyWord(e.target.value);
   };
 
   const handleMyKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,6 +109,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }
       key: 'tg',
       tab: <FormattedMessage id='pages.tab.title.tgdata' defaultMessage='TianGong Data' />,
     },
+    { key: 'co', tab: <FormattedMessage id='pages.tab.title.co' defaultMessage='Business Data' /> },
     { key: 'my', tab: <FormattedMessage id='pages.tab.title.mydata' defaultMessage='My Data' /> },
     {
       key: 'te',
@@ -228,6 +245,48 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }
               return getContactTablePgroongaSearch(params, lang, 'tg', tgKeyWord, {});
             }
             return getContactTableAll(params, sort, lang, 'tg', []);
+          }}
+          columns={contactColumns}
+          rowSelection={{
+            type: 'radio',
+            alwaysShowAlert: true,
+            selectedRowKeys,
+            onChange: onSelectChange,
+          }}
+        />
+      </>
+    ),
+    co: (
+      <>
+        <Card>
+          <Search
+            name={'co'}
+            size={'large'}
+            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+            value={coKeyWord}
+            onChange={handleCoKeyWordChange}
+            onSearch={onCoSearch}
+            enterButton
+          />
+        </Card>
+        <ProTable<ContactTable, ListPagination>
+          actionRef={coActionRefSelect}
+          search={false}
+          pagination={{
+            showSizeChanger: false,
+            pageSize: 10,
+          }}
+          request={async (
+            params: {
+              pageSize: number;
+              current: number;
+            },
+            sort,
+          ) => {
+            if (coKeyWord.length > 0) {
+              return getContactTablePgroongaSearch(params, lang, 'co', coKeyWord, {});
+            }
+            return getContactTableAll(params, sort, lang, 'co', []);
           }}
           columns={contactColumns}
           rowSelection={{

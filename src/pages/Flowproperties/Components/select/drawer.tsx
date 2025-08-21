@@ -30,12 +30,14 @@ const { Search } = Input;
 
 const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, buttonText }) => {
   const [tgKeyWord, setTgKeyWord] = useState<any>('');
+  const [coKeyWord, setCoKeyWord] = useState<any>('');
   const [myKeyWord, setMyKeyWord] = useState<any>('');
   const [teKeyWord, setTeKeyWord] = useState<any>('');
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [activeTabKey, setActiveTabKey] = useState<string>('tg');
   const tgActionRefSelect = useRef<ActionType>();
+  const coActionRefSelect = useRef<ActionType>();
   const myActionRefSelect = useRef<ActionType>();
   const teActionRefSelect = useRef<ActionType>();
 
@@ -55,6 +57,10 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
       await tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
       tgActionRefSelect.current?.reload();
     }
+    if (key === 'co') {
+      coActionRefSelect.current?.setPageInfo?.({ current: 1 });
+      coActionRefSelect.current?.reload();
+    }
     if (key === 'my') {
       myActionRefSelect.current?.setPageInfo?.({ current: 1 });
       myActionRefSelect.current?.reload();
@@ -71,6 +77,12 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
     tgActionRefSelect.current?.reload();
   };
 
+  const onCoSearch: SearchProps['onSearch'] = async (value) => {
+    await setCoKeyWord(value);
+    coActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    coActionRefSelect.current?.reload();
+  };
+
   const onTeSearch: SearchProps['onSearch'] = async (value) => {
     await setTeKeyWord(value);
     teActionRefSelect.current?.setPageInfo?.({ current: 1 });
@@ -85,6 +97,10 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
 
   const handleTgKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTgKeyWord(e.target.value);
+  };
+
+  const handleCoKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCoKeyWord(e.target.value);
   };
 
   const handleMyKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -201,6 +217,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
       key: 'tg',
       tab: <FormattedMessage id='pages.tab.title.tgdata' defaultMessage='TianGong Data' />,
     },
+    { key: 'co', tab: <FormattedMessage id='pages.tab.title.co' defaultMessage='Business Data' /> },
     { key: 'my', tab: <FormattedMessage id='pages.tab.title.mydata' defaultMessage='My Data' /> },
     { key: 'te', tab: <FormattedMessage id='pages.tab.title.tedata' defaultMessage='TE Data' /> },
   ];
@@ -247,6 +264,66 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
               );
             }
             return getFlowpropertyTableAll(params, sort, lang, 'tg', []).then((res: any) => {
+              return getUnitData('unitgroup', res?.data).then((unitRes: any) => {
+                return {
+                  ...res,
+                  data: unitRes,
+                  success: true,
+                };
+              });
+            });
+          }}
+          columns={FlowpropertyColumns}
+          rowSelection={{
+            type: 'radio',
+            alwaysShowAlert: true,
+            selectedRowKeys,
+            onChange: onSelectChange,
+          }}
+        />
+      </>
+    ),
+    co: (
+      <>
+        <Card>
+          <Search
+            name={'co'}
+            size={'large'}
+            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+            value={coKeyWord}
+            onChange={handleCoKeyWordChange}
+            onSearch={onCoSearch}
+            enterButton
+          />
+        </Card>
+        <ProTable<FlowpropertyTable, ListPagination>
+          actionRef={coActionRefSelect}
+          search={false}
+          pagination={{
+            showSizeChanger: false,
+            pageSize: 10,
+          }}
+          request={async (
+            params: {
+              pageSize: number;
+              current: number;
+            },
+            sort,
+          ) => {
+            if (coKeyWord.length > 0) {
+              return getFlowpropertyTablePgroongaSearch(params, lang, 'co', coKeyWord, {}).then(
+                (res) => {
+                  return getUnitData('unitgroup', res?.data).then((unitRes: any) => {
+                    return {
+                      ...res,
+                      data: unitRes,
+                      success: true,
+                    };
+                  });
+                },
+              );
+            }
+            return getFlowpropertyTableAll(params, sort, lang, 'co', []).then((res: any) => {
               return getUnitData('unitgroup', res?.data).then((unitRes: any) => {
                 return {
                   ...res,
