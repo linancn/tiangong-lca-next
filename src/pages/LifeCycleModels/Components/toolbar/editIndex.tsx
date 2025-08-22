@@ -555,7 +555,7 @@ const ToolbarEdit: FC<Props> = ({
         args: { x: group === 'groupOutput' ? '100%' : 0, y: baseY + index * 20 },
         attrs: {
           text: {
-            text: `${labelWithAllocation !== labelSubWithAllocation ? labelSubWithAllocation + '...' : labelWithAllocation}`,
+            text: `${labelWithAllocation && labelWithAllocation.length > (lang === 'zh' ? nodeWidth / 12 - 4 : nodeWidth / 7 - 4) ? labelSubWithAllocation + '...' : labelWithAllocation}`,
             title: labelWithAllocation,
             cursor: 'pointer',
             fill: getPortTextColor(item?.quantitativeReference, item?.allocations),
@@ -694,10 +694,12 @@ const ToolbarEdit: FC<Props> = ({
   };
 
   const updateReference = async () => {
+    setSpinning(true);
+    let requestCount = 0;
     nodes.forEach((node) => {
       const nodeWidth = node?.size?.width ?? nodeTemplate.width;
-      getProcessDetail(node?.data?.id ?? '', node?.data?.version ?? '').then(
-        async (result: any) => {
+      getProcessDetail(node?.data?.id ?? '', node?.data?.version ?? '')
+        .then(async (result: any) => {
           const newLabel =
             result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name ?? {};
           const newShortDescription = genProcessNameJson(
@@ -783,8 +785,13 @@ const ToolbarEdit: FC<Props> = ({
               items: newItems,
             },
           });
-        },
-      );
+        })
+        .finally(() => {
+          requestCount++;
+          if (requestCount === nodes.length) {
+            setSpinning(false);
+          }
+        });
     });
   };
 
@@ -1048,7 +1055,8 @@ const ToolbarEdit: FC<Props> = ({
                 ...item?.attrs,
                 text: {
                   ...item?.attrs?.text,
-                  text: itemTextWithAllocation,
+                  text: `${genPortLabel(itemTextWithAllocation ?? '', lang, node?.width ?? nodeTemplate.width)}`,
+                  title: itemTextWithAllocation,
                   fill: getPortTextColor(
                     item?.data?.quantitativeReference,
                     item?.data?.allocations,
@@ -1123,7 +1131,8 @@ const ToolbarEdit: FC<Props> = ({
                   ...item?.attrs,
                   text: {
                     ...item?.attrs?.text,
-                    text: itemTextWithAllocation,
+                    text: `${genPortLabel(itemTextWithAllocation ?? '', lang, node?.width ?? nodeTemplate.width)}`,
+                    title: itemTextWithAllocation,
                     fill: getPortTextColor(
                       item?.data?.quantitativeReference,
                       item?.data?.allocations,
