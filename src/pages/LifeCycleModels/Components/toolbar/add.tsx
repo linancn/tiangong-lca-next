@@ -28,6 +28,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
   const [tgKeyWord, setTgKeyWord] = useState<any>('');
   const [myKeyWord, setMyKeyWord] = useState<any>('');
   const [teKeyWord, setTeKeyWord] = useState<any>('');
+  const [coKeyWord, setCoKeyWord] = useState<any>('');
   const [openAI, setOpenAI] = useState<boolean>(false);
 
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -36,6 +37,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
   const tgActionRefSelect = useRef<ActionType>();
   const myActionRefSelect = useRef<ActionType>();
   const teActionRefSelect = useRef<ActionType>();
+  const coActionRefSelect = useRef<ActionType>();
 
   const intl = useIntl();
 
@@ -53,6 +55,10 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
       await tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
       tgActionRefSelect.current?.reload();
     }
+    if (key === 'co') {
+      await coActionRefSelect.current?.setPageInfo?.({ current: 1 });
+      coActionRefSelect.current?.reload();
+    }
     if (key === 'my') {
       myActionRefSelect.current?.setPageInfo?.({ current: 1 });
       myActionRefSelect.current?.reload();
@@ -69,6 +75,12 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
     tgActionRefSelect.current?.reload();
   };
 
+  const onCoSearch: SearchProps['onSearch'] = async (value) => {
+    await setCoKeyWord(value);
+    coActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    coActionRefSelect.current?.reload();
+  };
+
   const onMySearch: SearchProps['onSearch'] = async (value) => {
     await setMyKeyWord(value);
     myActionRefSelect.current?.setPageInfo?.({ current: 1 });
@@ -83,6 +95,10 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
 
   const handleTgKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTgKeyWord(e.target.value);
+  };
+
+  const handleCoKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCoKeyWord(e.target.value);
   };
 
   const handleMyKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -171,6 +187,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
       key: 'tg',
       tab: <FormattedMessage id='pages.tab.title.tgdata' defaultMessage='TianGong Data' />,
     },
+    { key: 'co', tab: <FormattedMessage id='pages.tab.title.co' defaultMessage='Business Data' /> },
     { key: 'my', tab: <FormattedMessage id='pages.tab.title.mydata' defaultMessage='My Data' /> },
     { key: 'te', tab: <FormattedMessage id='pages.tab.title.tedata' defaultMessage='Team Data' /> },
   ];
@@ -228,6 +245,71 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
               result = await getProcessTablePgroongaSearch(params, lang, 'tg', tgKeyWord, {});
             } else {
               result = await getProcessTableAll(params, sort, lang, 'tg', []);
+            }
+            return result || { data: [], success: false };
+          }}
+          columns={processColumns}
+          rowSelection={{
+            alwaysShowAlert: true,
+            preserveSelectedRowKeys: true,
+            selectedRowKeys: selectedRowKeys,
+            onChange: onSelectChange,
+          }}
+        />
+      </>
+    ),
+    co: (
+      <>
+        <Card>
+          <Row align={'middle'}>
+            <Col flex='auto' style={{ marginRight: '10px' }}>
+              <Search
+                name={'co'}
+                size={'large'}
+                placeholder={
+                  openAI
+                    ? intl.formatMessage({ id: 'pages.search.placeholder' })
+                    : intl.formatMessage({ id: 'pages.search.keyWord' })
+                }
+                value={coKeyWord}
+                onChange={handleCoKeyWordChange}
+                onSearch={onCoSearch}
+                enterButton
+              />
+            </Col>
+            <Col flex='100px'>
+              <Checkbox
+                onChange={(e) => {
+                  setOpenAI(e.target.checked);
+                }}
+              >
+                <FormattedMessage id='pages.search.openAI' defaultMessage='AI Search' />
+              </Checkbox>
+            </Col>
+          </Row>
+        </Card>
+        <ProTable<ProcessTable, ListPagination>
+          actionRef={coActionRefSelect}
+          search={false}
+          pagination={{
+            showSizeChanger: false,
+            pageSize: 10,
+          }}
+          request={async (
+            params: {
+              pageSize: number;
+              current: number;
+            },
+            sort,
+          ) => {
+            let result;
+            if (coKeyWord.length > 0) {
+              if (openAI) {
+                return process_hybrid_search(params, lang, 'co', coKeyWord, {});
+              }
+              result = await getProcessTablePgroongaSearch(params, lang, 'co', coKeyWord, {});
+            } else {
+              result = await getProcessTableAll(params, sort, lang, 'co', []);
             }
             return result || { data: [], success: false };
           }}

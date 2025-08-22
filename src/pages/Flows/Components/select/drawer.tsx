@@ -31,6 +31,7 @@ const { Search } = Input;
 
 const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, onData }) => {
   const [tgKeyWord, setTgKeyWord] = useState<any>('');
+  const [coKeyWord, setCoKeyWord] = useState<any>('');
   const [myKeyWord, setMyKeyWord] = useState<any>('');
   const [teKeyWord, setTeKeyWord] = useState<any>('');
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -40,6 +41,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
   // const [dataSource, setDataSource] = useState<any>([]);
   // const [tableLoading, setTableLoading] = useState<boolean>(false);
   const tgActionRefSelect = useRef<ActionType>();
+  const coActionRefSelect = useRef<ActionType>();
   const myActionRefSelect = useRef<ActionType>();
   const teActionRefSelect = useRef<ActionType>();
 
@@ -59,6 +61,10 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
       await tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
       tgActionRefSelect.current?.reload();
     }
+    if (key === 'co') {
+      await coActionRefSelect.current?.setPageInfo?.({ current: 1 });
+      coActionRefSelect.current?.reload();
+    }
     if (key === 'te') {
       await teActionRefSelect.current?.setPageInfo?.({ current: 1 });
       teActionRefSelect.current?.reload();
@@ -73,6 +79,12 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
     await setTgKeyWord(value);
     tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
     tgActionRefSelect.current?.reload();
+  };
+
+  const onCoSearch: SearchProps['onSearch'] = async (value) => {
+    await setCoKeyWord(value);
+    coActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    coActionRefSelect.current?.reload();
   };
 
   const onTeSearch: SearchProps['onSearch'] = async (value) => {
@@ -95,6 +107,10 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
 
   const handleTgKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTgKeyWord(e.target.value);
+  };
+
+  const handleCoKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCoKeyWord(e.target.value);
   };
 
   const handleTeKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -207,6 +223,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
       key: 'tg',
       tab: <FormattedMessage id='pages.tab.title.tgdata' defaultMessage='TianGong Data' />,
     },
+    { key: 'co', tab: <FormattedMessage id='pages.tab.title.co' defaultMessage='Business Data' /> },
     { key: 'my', tab: <FormattedMessage id='pages.tab.title.mydata' defaultMessage='My Data' /> },
     { key: 'te', tab: <FormattedMessage id='pages.tab.title.tedata' defaultMessage='TE Data' /> },
   ];
@@ -272,6 +289,80 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
               });
             }
             return getFlowTableAll(params, sort, lang, 'tg', [], {
+              flowType: flowTypeFilter,
+              asInput: asInput,
+            });
+          }}
+          columns={FlowsColumns}
+          rowSelection={{
+            type: 'radio',
+            alwaysShowAlert: true,
+            selectedRowKeys,
+            onChange: onSelectChange,
+          }}
+        />
+      </>
+    ),
+    co: (
+      <>
+        <Card>
+          <Row align={'middle'}>
+            <Col flex='auto' style={{ marginRight: '10px' }}>
+              <Search
+                name={'co'}
+                size={'large'}
+                placeholder={
+                  openAI
+                    ? intl.formatMessage({ id: 'pages.search.placeholder' })
+                    : intl.formatMessage({ id: 'pages.search.keyWord' })
+                }
+                value={coKeyWord}
+                onChange={handleCoKeyWordChange}
+                onSearch={onCoSearch}
+                enterButton
+              />
+            </Col>
+            <Col flex='100px'>
+              <Checkbox
+                onChange={(e) => {
+                  setOpenAI(e.target.checked);
+                }}
+              >
+                <FormattedMessage id='pages.search.openAI' defaultMessage='AI Search' />
+              </Checkbox>
+            </Col>
+          </Row>
+        </Card>
+        <ProTable<FlowTable, ListPagination>
+          actionRef={coActionRefSelect}
+          // loading={tableLoading}
+          search={false}
+          pagination={{
+            showSizeChanger: false,
+            pageSize: 10,
+          }}
+          // dataSource={dataSource}
+          request={async (
+            params: {
+              pageSize: number;
+              current: number;
+            },
+            sort,
+            filter,
+          ) => {
+            const flowTypeFilter = filter?.flowType ? filter.flowType.join(',') : '';
+            if (coKeyWord.length > 0) {
+              if (openAI) {
+                return flow_hybrid_search(params, lang, 'co', coKeyWord, {
+                  flowType: flowTypeFilter,
+                });
+              }
+              return getFlowTablePgroongaSearch(params, lang, 'co', coKeyWord, {
+                flowType: flowTypeFilter,
+                asInput: asInput,
+              });
+            }
+            return getFlowTableAll(params, sort, lang, 'co', [], {
               flowType: flowTypeFilter,
               asInput: asInput,
             });

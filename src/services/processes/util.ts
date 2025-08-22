@@ -1541,6 +1541,7 @@ export function genProcessExchangeTableData(data: any, lang: string) {
           (item?.referenceToFlowDataSet?.['@refObjectId'] ?? '-'),
         dataSetInternalID: item?.['@dataSetInternalID'] ?? '-',
         exchangeDirection: item?.exchangeDirection ?? '-',
+        allocations: item?.allocations,
         referenceToFlowDataSetId: item?.referenceToFlowDataSet?.['@refObjectId'] ?? '-',
         referenceToFlowDataSetVersion: item?.referenceToFlowDataSet?.['@version'] ?? '-',
         referenceToFlowDataSet: getLangText(

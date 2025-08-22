@@ -32,6 +32,9 @@ const ConnectableProcesses: FC<Props> = ({
   const searchParams = new URLSearchParams(location.search);
   const tid = searchParams.get('tid');
   const tgActionRefSelect = useRef<ActionType>(null);
+  const teActionRefSelect = useRef<ActionType>(null); //team data
+  const coActionRefSelect = useRef<ActionType>(null);
+
   const myActionRefSelect = useRef<ActionType>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [activeTabKey, setActiveTabKey] = useState<string>('tg');
@@ -46,6 +49,14 @@ const ConnectableProcesses: FC<Props> = ({
     if (activeTabKey === 'tg') {
       tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
       tgActionRefSelect.current?.reload();
+    }
+    if (activeTabKey === 'co') {
+      coActionRefSelect.current?.setPageInfo?.({ current: 1 });
+      coActionRefSelect.current?.reload();
+    }
+    if (activeTabKey === 'te') {
+      teActionRefSelect.current?.setPageInfo?.({ current: 1 });
+      teActionRefSelect.current?.reload();
     }
     if (activeTabKey === 'my') {
       myActionRefSelect.current?.setPageInfo?.({ current: 1 });
@@ -130,7 +141,9 @@ const ConnectableProcesses: FC<Props> = ({
       key: 'tg',
       tab: <FormattedMessage id='pages.tab.title.tgdata' defaultMessage='TianGong Data' />,
     },
+    { key: 'co', tab: <FormattedMessage id='pages.tab.title.co' defaultMessage='Business Data' /> },
     { key: 'my', tab: <FormattedMessage id='pages.tab.title.mydata' defaultMessage='My Data' /> },
+    { key: 'te', tab: <FormattedMessage id='pages.tab.title.tedata' defaultMessage='Team Data' /> },
   ];
 
   const databaseList: Record<string, React.ReactNode> = {
@@ -172,6 +185,44 @@ const ConnectableProcesses: FC<Props> = ({
         />
       </>
     ),
+    co: (
+      <>
+        <ProTable<ProcessTable, ListPagination>
+          actionRef={coActionRefSelect}
+          search={false}
+          pagination={{
+            showSizeChanger: false,
+            pageSize: 10,
+          }}
+          request={async (
+            params: {
+              pageSize: number;
+              current: number;
+            },
+            sort,
+          ) => {
+            return getConnectableProcessesTable(
+              params,
+              sort,
+              lang,
+              'co',
+              tid ?? '',
+              portId,
+              flowVersion,
+            );
+          }}
+          columns={processColumns}
+          rowSelection={
+            !readOnly && {
+              alwaysShowAlert: true,
+              preserveSelectedRowKeys: true,
+              selectedRowKeys: selectedRowKeys,
+              onChange: onSelectChange,
+            }
+          }
+        />
+      </>
+    ),
     my: (
       <>
         <ProTable<ProcessTable, ListPagination>
@@ -193,6 +244,44 @@ const ConnectableProcesses: FC<Props> = ({
               sort,
               lang,
               'my',
+              tid ?? '',
+              portId,
+              flowVersion,
+            );
+          }}
+          columns={processColumns}
+          rowSelection={
+            !readOnly && {
+              alwaysShowAlert: true,
+              preserveSelectedRowKeys: true,
+              selectedRowKeys: selectedRowKeys,
+              onChange: onSelectChange,
+            }
+          }
+        />
+      </>
+    ),
+    te: (
+      <>
+        <ProTable<ProcessTable, ListPagination>
+          actionRef={teActionRefSelect}
+          search={false}
+          pagination={{
+            showSizeChanger: false,
+            pageSize: 10,
+          }}
+          request={async (
+            params: {
+              pageSize: number;
+              current: number;
+            },
+            sort,
+          ) => {
+            return getConnectableProcessesTable(
+              params,
+              sort,
+              lang,
+              'te',
               tid ?? '',
               portId,
               flowVersion,
