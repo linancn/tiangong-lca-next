@@ -694,10 +694,12 @@ const ToolbarEdit: FC<Props> = ({
   };
 
   const updateReference = async () => {
+    setSpinning(true);
+    let requestCount = 0;
     nodes.forEach((node) => {
       const nodeWidth = node?.size?.width ?? nodeTemplate.width;
-      getProcessDetail(node?.data?.id ?? '', node?.data?.version ?? '').then(
-        async (result: any) => {
+      getProcessDetail(node?.data?.id ?? '', node?.data?.version ?? '')
+        .then(async (result: any) => {
           const newLabel =
             result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name ?? {};
           const newShortDescription = genProcessNameJson(
@@ -783,8 +785,13 @@ const ToolbarEdit: FC<Props> = ({
               items: newItems,
             },
           });
-        },
-      );
+        })
+        .finally(() => {
+          requestCount++;
+          if (requestCount === nodes.length) {
+            setSpinning(false);
+          }
+        });
     });
   };
 
