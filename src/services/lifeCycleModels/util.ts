@@ -2490,7 +2490,7 @@ export async function genLifeCycleModelProcesses(
                 : mergeLangArrays(
                     subproductLeftBracket,
                     subproductPrefix,
-                    refExchange?.referenceToFlowDataSet['common:shortDescription'],
+                    jsonToList(refExchange?.referenceToFlowDataSet['common:shortDescription']),
                     subproductRightBracket,
                     jsonToList(data?.lifeCycleModelInformation?.dataSetInformation?.name?.baseName),
                   );
