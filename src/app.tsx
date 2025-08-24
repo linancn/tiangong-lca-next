@@ -21,6 +21,7 @@ import { errorConfig } from './requestErrorConfig';
 
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
+const unAuthorizedPath = ['/user/login/password_forgot'];
 
 /**
  * @see  https://umijs.org/zh-CN/plugins/plugin-initial-state
@@ -56,7 +57,7 @@ export async function getInitialState(): Promise<{
 
   // 如果不是登录页面，执行
   const { location } = history;
-  if (location.pathname !== loginPath) {
+  if (location.pathname !== loginPath && !unAuthorizedPath.includes(location.pathname)) {
     const currentUser = await fetchUserInfo();
     return {
       fetchUserInfo,
@@ -118,7 +119,11 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     onPageChange: () => {
       const { location } = history;
       // 如果没有登录，重定向到 login
-      if (!initialState?.currentUser && location.pathname !== loginPath) {
+      if (
+        !initialState?.currentUser &&
+        location.pathname !== loginPath &&
+        !unAuthorizedPath.includes(location.pathname)
+      ) {
         history.push(loginPath);
       }
     },
@@ -156,7 +161,11 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     // 增加一个 loading 的状态
     childrenRender: (children) => {
       // 初始渲染兜底：onPageChange 只在路由变化时触发，首次进入需要再判断一次
-      if (!initialState?.currentUser && history.location.pathname !== loginPath) {
+      if (
+        !initialState?.currentUser &&
+        history.location.pathname !== loginPath &&
+        !unAuthorizedPath.includes(history.location.pathname)
+      ) {
         history.push(loginPath);
         return null;
       }
