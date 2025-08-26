@@ -1,6 +1,13 @@
-// import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
-
-import { ConcurrencyController, getAllRefObj, getRefTableName } from '@/pages/Utils/review';
+import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
+import {
+  checkReferences,
+  ConcurrencyController,
+  getAllRefObj,
+  getRefTableName,
+  refDataType,
+  ReffPath,
+  updateUnReviewToUnderReview,
+} from '@/pages/Utils/review';
 import { getCommentApi, updateCommentApi } from '@/services/comments/api';
 import { getRefData, updateStateCodeApi } from '@/services/general/api';
 import { getProcessDetail, updateProcessApi } from '@/services/processes/api';
@@ -11,7 +18,7 @@ import { getUserId, getUsersByIds } from '@/services/users/api';
 import styles from '@/style/custom.less';
 import { AuditOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
-import { Button, Drawer, Form, Input, Space, Spin, Tooltip, message } from 'antd';
+import { Button, Drawer, Form, Input, message, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
@@ -46,6 +53,7 @@ const ReviewProcessDetail: FC<Props> = ({
   const [spinning, setSpinning] = useState(false);
   const intl = useIntl();
   const [approveReviewDisabled, setApproveReviewDisabled] = useState(true);
+  const [refCheckData, setRefCheckData] = useState<any[]>([]);
 
   const handletFromData = () => {
     if (fromData?.id) {
@@ -366,6 +374,51 @@ const ReviewProcessDetail: FC<Props> = ({
     });
   }, [exchangeDataSource]);
 
+  const updateCommentJsonRefsToUnderReview = async (data: any) => {
+    const refObjs = getAllRefObj(data);
+    const unReview: refDataType[] = []; //stateCode < 20
+    const underReview: refDataType[] = []; //stateCode >= 20 && stateCode < 100
+    const unRuleVerification: refDataType[] = [];
+    const nonExistentRef: refDataType[] = [];
+    const userTeamId = await getUserTeamId();
+    const path = await checkReferences(
+      refObjs,
+      new Map<string, any>(),
+      userTeamId,
+      unReview,
+      underReview,
+      unRuleVerification,
+      nonExistentRef,
+      new ReffPath(
+        {
+          '@refObjectId': '',
+          '@version': '',
+          '@type': '',
+        },
+        true,
+        false,
+      ),
+    );
+    const problemNodes = path?.findProblemNodes() ?? [];
+
+    if (problemNodes && problemNodes.length > 0) {
+      let result = problemNodes.map((item: any) => {
+        return {
+          id: item['@refObjectId'],
+          version: item['@version'],
+          ruleVerification: item.ruleVerification,
+          nonExistent: item.nonExistent,
+        };
+      });
+      setRefCheckData(result);
+      return false;
+    } else {
+      await updateUnReviewToUnderReview(unReview, reviewId);
+      setRefCheckData([]);
+      return true;
+    }
+  };
+
   return (
     <>
       {type === 'edit' ? (
@@ -440,77 +493,82 @@ const ReviewProcessDetail: FC<Props> = ({
         }
       >
         <Spin spinning={spinning}>
-          {/* <UpdateReferenceContext.Provider> */}
-          <ProForm
-            formRef={formRefEdit}
-            initialValues={initData}
-            onValuesChange={(_, allValues) => {
-              setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
-            }}
-            submitter={{
-              render: () => {
-                return [];
-              },
-            }}
-            onFinish={async () => {
-              try {
-                setSpinning(true);
-                const fieldsValue = formRefEdit.current?.getFieldsValue();
-                const submitData = {
-                  modellingAndValidation: {
-                    complianceDeclarations:
-                      fieldsValue?.modellingAndValidation?.complianceDeclarations,
-                    validation: fieldsValue?.modellingAndValidation?.validation,
-                  },
-                };
-
-                const { error } = await updateCommentApi(
-                  reviewId,
-                  { json: submitData, state_code: 1 },
-                  tabType,
-                );
-                if (!error) {
-                  const newReviewJson = await getNewReviewJson('submit_comments');
-                  const result = await updateReviewApi([reviewId], {
-                    json: newReviewJson,
-                  });
-
-                  if (!result.error) {
-                    message.success(
-                      intl.formatMessage({
-                        id: 'pages.review.ReviewProcessDetail.edit.success',
-                        defaultMessage: 'Review submitted successfully',
-                      }),
-                    );
-                    setDrawerVisible(false);
-                    actionRef?.current?.reload();
-                  }
-                  setSpinning(false);
-                  return true;
-                }
-              } catch (err) {
-                console.error(err);
-              } finally {
-                setSpinning(false);
-              }
-            }}
-          >
-            <TabsDetail
-              initData={initData}
-              lang={lang}
-              activeTabKey={activeTabKey}
+          <UpdateReferenceContext.Provider value={{ referenceValue: refCheckData }}>
+            <ProForm
               formRef={formRefEdit}
-              onData={handletFromData}
-              onExchangeData={handletExchangeData}
-              onTabChange={onTabChange}
-              exchangeDataSource={exchangeDataSource}
-              type={type}
-            />
-            <Form.Item name='id' hidden>
-              <Input />
-            </Form.Item>
-          </ProForm>
-          {/* </UpdateReferenceContext.Provider> */}
+              initialValues={initData}
+              onValuesChange={(_, allValues) => {
+                setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+              }}
+              submitter={{
+                render: () => {
+                  return [];
+                },
+              }}
+              onFinish={async () => {
+                try {
+                  setSpinning(true);
+                  const fieldsValue = formRefEdit.current?.getFieldsValue();
+                  const submitData = {
+                    modellingAndValidation: {
+                      complianceDeclarations:
+                        fieldsValue?.modellingAndValidation?.complianceDeclarations,
+                      validation: fieldsValue?.modellingAndValidation?.validation,
+                    },
+                  };
+                  const isRefCheck = await updateCommentJsonRefsToUnderReview(submitData);
+                  if (!isRefCheck) {
+                    setSpinning(false);
+                    return false;
+                  }
+
+                  const { error } = await updateCommentApi(
+                    reviewId,
+                    { json: submitData, state_code: 1 },
+                    tabType,
+                  );
+                  if (!error) {
+                    const newReviewJson = await getNewReviewJson('submit_comments');
+                    const result = await updateReviewApi([reviewId], {
+                      json: newReviewJson,
+                    });
+
+                    if (!result.error) {
+                      message.success(
+                        intl.formatMessage({
+                          id: 'pages.review.ReviewProcessDetail.edit.success',
+                          defaultMessage: 'Review submitted successfully',
+                        }),
+                      );
+                      setDrawerVisible(false);
+                      actionRef?.current?.reload();
+                    }
+                    setSpinning(false);
+                    return true;
+                  }
+                } catch (err) {
+                  console.error(err);
+                } finally {
+                  setSpinning(false);
+                }
+              }}
+            >
+              <TabsDetail
+                initData={initData}
+                lang={lang}
+                activeTabKey={activeTabKey}
+                formRef={formRefEdit}
+                onData={handletFromData}
+                onExchangeData={handletExchangeData}
+                onTabChange={onTabChange}
+                exchangeDataSource={exchangeDataSource}
+                type={type}
+              />
+              <Form.Item name='id' hidden>
+                <Input />
+              </Form.Item>
+            </ProForm>
+          </UpdateReferenceContext.Provider>
         </Spin>
       </Drawer>
     </>
