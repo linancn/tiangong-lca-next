@@ -429,3 +429,36 @@ export async function source_hybrid_search(
 export async function getSourceDetail(id: string, version: string) {
   return getDataDetail(id, version, 'sources');
 }
+
+export async function getSourcesByIdsAndVersions(
+  idVersionPairs: { id: string; version: string }[],
+) {
+  if (idVersionPairs.length === 0) {
+    return { data: [], error: null, foundCount: 0 };
+  }
+
+  const promises = idVersionPairs.map((pair) =>
+    supabase
+      .from('sources')
+      .select('id, version,state_code')
+      .eq('id', pair.id)
+      .eq('version', pair.version),
+  );
+
+  const results = await Promise.all(promises);
+
+  const allData: any[] = [];
+
+  results.forEach((result) => {
+    if (result.data && result.data.length > 0) {
+      allData.push(...result.data);
+    }
+  });
+
+  const hasError = results.some((result) => result.error);
+
+  return {
+    data: allData,
+    error: hasError ? results.find((result) => result.error)?.error : null,
+  };
+}

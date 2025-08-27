@@ -1,4 +1,4 @@
-import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
+import { RefCheckContext, RefCheckType } from '@/contexts/refCheckContext';
 import {
   checkReferences,
   ConcurrencyController,
@@ -400,8 +400,21 @@ const ReviewProcessDetail: FC<Props> = ({
       ),
     );
     const problemNodes = path?.findProblemNodes() ?? [];
+    const refCheckDataValue: RefCheckType[] = [];
 
-    if (problemNodes && problemNodes.length > 0) {
+    if (underReview.length > 0) {
+      refCheckDataValue.push(
+        ...underReview.map((item: any) => {
+          return {
+            id: item.id,
+            version: item.version,
+            ruleVerification: true,
+            nonExistent: false,
+            stateCode: 20,
+          };
+        }),
+      );
+    } else if (problemNodes && problemNodes.length > 0) {
       let result = problemNodes.map((item: any) => {
         return {
           id: item['@refObjectId'],
@@ -410,7 +423,12 @@ const ReviewProcessDetail: FC<Props> = ({
           nonExistent: item.nonExistent,
         };
       });
-      setRefCheckData(result);
+      refCheckDataValue.push(...result);
+    }
+
+    if (refCheckDataValue.length) {
+      setRefCheckData(refCheckDataValue);
+      setSpinning(false);
       return false;
     } else {
       await updateUnReviewToUnderReview(unReview, reviewId);
@@ -493,7 +511,7 @@ const ReviewProcessDetail: FC<Props> = ({
         }
       >
         <Spin spinning={spinning}>
-          <UpdateReferenceContext.Provider value={{ referenceValue: refCheckData }}>
+          <RefCheckContext.Provider value={{ refCheckData: refCheckData }}>
             <ProForm
               formRef={formRefEdit}
               initialValues={initData}
@@ -568,7 +586,7 @@ const ReviewProcessDetail: FC<Props> = ({
                 <Input />
               </Form.Item>
             </ProForm>
-          </UpdateReferenceContext.Provider>
+          </RefCheckContext.Provider>
         </Spin>
       </Drawer>
     </>

@@ -31,7 +31,15 @@ import ComplianceItemView from '../../../Compliance/view';
 import ReveiwItemForm from '../../../ReviewForm/form';
 import ReviewItemView from '../../../ReviewForm/view';
 
-import { getAllRefObj, getRefTableName } from '@/pages/Utils/review';
+import { RefCheckContext, RefCheckType } from '@/contexts/refCheckContext';
+import {
+  ReffPath,
+  checkReferences,
+  getAllRefObj,
+  getRefTableName,
+  refDataType,
+  updateUnReviewToUnderReview,
+} from '@/pages/Utils/review';
 import { getRefData, updateStateCodeApi } from '@/services/general/api';
 import {
   getLifeCycleModelDetail,
@@ -110,57 +118,11 @@ const ToolbarViewInfo: FC<Props> = ({
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('lifeCycleModelInformation');
   const [spinning, setSpinning] = useState(false);
+  const [refCheckData, setRefCheckData] = useState<RefCheckType[]>([]);
   const formRef = useRef<ProFormInstance>();
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
   };
-
-  // const updateProcessJson = async (process: any) => {
-  //   const { data: commentData, error } = await getCommentApi(reviewId, tabType);
-  //   if (!error && commentData && commentData.length) {
-  //     const allReviews: any[] = [];
-  //     commentData.forEach((item: any) => {
-  //       if (item?.json?.modellingAndValidation?.validation?.review[0]) {
-  //         allReviews.push(item?.json?.modellingAndValidation.validation.review[0]);
-  //       }
-  //     });
-  //     const allCompliance: any[] = [];
-  //     commentData.forEach((item: any) => {
-  //       if (item?.json?.modellingAndValidation?.complianceDeclarations?.compliance[0]) {
-  //         allCompliance.push(
-  //           item?.json?.modellingAndValidation.complianceDeclarations.compliance[0],
-  //         );
-  //       }
-  //     });
-
-  //     const _review = process?.json?.processDataSet?.modellingAndValidation?.validation?.review;
-  //     const _compliance =
-  //       process?.json?.processDataSet?.modellingAndValidation?.complianceDeclarations?.compliance;
-  //     const json = {
-  //       ...process?.json,
-  //     };
-  //     json.processDataSet.modellingAndValidation = {
-  //       ...process?.json?.processDataSet?.modellingAndValidation,
-  //       validation: {
-  //         ...process?.json?.processDataSet?.modellingAndValidation?.validation,
-  //         review: Array.isArray(_review)
-  //           ? [..._review, ...allReviews]
-  //           : _review
-  //             ? [_review, ...allReviews]
-  //             : [...allReviews],
-  //       },
-  //       complianceDeclarations: {
-  //         ...process?.json?.processDataSet?.modellingAndValidation?.complianceDeclarations,
-  //         compliance: Array.isArray(_compliance)
-  //           ? [..._compliance, ...allCompliance]
-  //           : _compliance
-  //             ? [_compliance, ...allCompliance]
-  //             : [...allCompliance],
-  //       },
-  //     };
-  //     await updateProcess(process?.id, process?.version, json);
-  //   }
-  // };
 
   const updateLifeCycleModelJson = async (lifeCycleModel: any) => {
     const { data: commentData, error } = await getCommentApi(reviewId, tabType);
@@ -1844,6 +1806,70 @@ const ToolbarViewInfo: FC<Props> = ({
     }
     setSpinning(false);
   };
+
+  const updateCommentJsonRefsToUnderReview = async (data: any) => {
+    const refObjs = getAllRefObj(data);
+    const unReview: refDataType[] = []; //stateCode < 20
+    const underReview: refDataType[] = []; //stateCode >= 20 && stateCode < 100
+    const unRuleVerification: refDataType[] = [];
+    const nonExistentRef: refDataType[] = [];
+    const userTeamId = await getUserTeamId();
+    const path = await checkReferences(
+      refObjs,
+      new Map<string, any>(),
+      userTeamId,
+      unReview,
+      underReview,
+      unRuleVerification,
+      nonExistentRef,
+      new ReffPath(
+        {
+          '@refObjectId': '',
+          '@version': '',
+          '@type': '',
+        },
+        true,
+        false,
+      ),
+    );
+    const problemNodes = path?.findProblemNodes() ?? [];
+    const refCheckDataValue: RefCheckType[] = [];
+
+    if (underReview.length > 0) {
+      refCheckDataValue.push(
+        ...underReview.map((item: any) => {
+          return {
+            id: item.id,
+            version: item.version,
+            ruleVerification: true,
+            nonExistent: false,
+            stateCode: item.state_code,
+          };
+        }),
+      );
+    } else if (problemNodes && problemNodes.length > 0) {
+      let result = problemNodes.map((item: any) => {
+        return {
+          id: item['@refObjectId'],
+          version: item['@version'],
+          ruleVerification: item.ruleVerification,
+          nonExistent: item.nonExistent,
+        };
+      });
+      refCheckDataValue.push(...result);
+    }
+
+    if (refCheckDataValue.length) {
+      setRefCheckData(refCheckDataValue);
+      setSpinning(false);
+      return false;
+    } else {
+      await updateUnReviewToUnderReview(unReview, reviewId);
+      setRefCheckData([]);
+      return true;
+    }
+  };
+
   return (
     <>
       <Tooltip
@@ -1915,50 +1941,56 @@ const ToolbarViewInfo: FC<Props> = ({
             activeTabKey={activeTabKey}
             onTabChange={onTabChange}
           >
-            <ProForm
-              initialValues={data}
-              formRef={formRef}
-              submitter={{
-                render: () => {
-                  return [];
-                },
-              }}
-              onFinish={async () => {
-                const fieldsValue = formRef.current?.getFieldsValue();
-                const submitData = {
-                  modellingAndValidation: {
-                    complianceDeclarations:
-                      fieldsValue?.modellingAndValidation?.complianceDeclarations,
-                    validation: fieldsValue?.modellingAndValidation?.validation,
+            <RefCheckContext.Provider value={{ refCheckData: refCheckData }}>
+              <ProForm
+                initialValues={data}
+                formRef={formRef}
+                submitter={{
+                  render: () => {
+                    return [];
                   },
-                };
-
-                setSpinning(true);
-                const { error } = await updateCommentApi(
-                  reviewId,
-                  { json: submitData, state_code: 1 },
-                  tabType,
-                );
-                if (!error) {
-                  message.success(
-                    intl.formatMessage({
-                      id: 'pages.review.ReviewProcessDetail.edit.success',
-                      defaultMessage: 'Review submitted successfully',
-                    }),
+                }}
+                onFinish={async () => {
+                  const fieldsValue = formRef.current?.getFieldsValue();
+                  const submitData = {
+                    modellingAndValidation: {
+                      complianceDeclarations:
+                        fieldsValue?.modellingAndValidation?.complianceDeclarations,
+                      validation: fieldsValue?.modellingAndValidation?.validation,
+                    },
+                  };
+                  setSpinning(true);
+                  const isRefCheck = await updateCommentJsonRefsToUnderReview(submitData);
+                  if (!isRefCheck) {
+                    setSpinning(false);
+                    return false;
+                  }
+                  const { error } = await updateCommentApi(
+                    reviewId,
+                    { json: submitData, state_code: 1 },
+                    tabType,
                   );
-                  setDrawerVisible(false);
-                  actionRef?.current?.reload();
-                }
-                setSpinning(false);
-                return true;
-              }}
-            >
-              {Object.keys(tabContent).map((key) => (
-                <div key={key} style={{ display: key === activeTabKey ? 'block' : 'none' }}>
-                  {tabContent[key]}
-                </div>
-              ))}
-            </ProForm>
+                  if (!error) {
+                    message.success(
+                      intl.formatMessage({
+                        id: 'pages.review.ReviewProcessDetail.edit.success',
+                        defaultMessage: 'Review submitted successfully',
+                      }),
+                    );
+                    setDrawerVisible(false);
+                    actionRef?.current?.reload();
+                  }
+                  setSpinning(false);
+                  return true;
+                }}
+              >
+                {Object.keys(tabContent).map((key) => (
+                  <div key={key} style={{ display: key === activeTabKey ? 'block' : 'none' }}>
+                    {tabContent[key]}
+                  </div>
+                ))}
+              </ProForm>
+            </RefCheckContext.Provider>
           </Card>
         </Spin>
       </Drawer>
