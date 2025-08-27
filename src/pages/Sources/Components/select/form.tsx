@@ -23,6 +23,7 @@ type Props = {
   onData: () => void;
   rules?: any[];
   defaultSourceName?: string;
+  type?: 'reviewReport';
 };
 
 const SourceSelectForm: FC<Props> = ({
@@ -34,6 +35,7 @@ const SourceSelectForm: FC<Props> = ({
   onData,
   rules = [],
   defaultSourceName,
+  type,
 }) => {
   const [id, setId] = useState<string | undefined>(undefined);
   const [version, setVersion] = useState<string | undefined>(undefined);
@@ -239,9 +241,17 @@ const SourceSelectForm: FC<Props> = ({
           <Input disabled={true} style={{ width: '350px', color: token.colorTextDescription }} />
         </Form.Item>
         <Space direction='horizontal' style={{ marginTop: '6px' }}>
-          {!id && <SourceSelectDrawer buttonType='text' lang={lang} onData={handletSourceData} />}
+          {!id && (
+            <SourceSelectDrawer
+              type={type}
+              buttonType='text'
+              lang={lang}
+              onData={handletSourceData}
+            />
+          )}
           {id && (
             <SourceSelectDrawer
+              type={type}
               buttonType='text'
               buttonText={<FormattedMessage id='pages.button.reselect' defaultMessage='Reselect' />}
               lang={lang}

@@ -109,6 +109,9 @@ export async function getSourceTableAll(
       });
     }
   } else if (dataSource === 'te') {
+    if (typeof stateCode === 'number') {
+      query = query.eq('state_code', stateCode);
+    }
     const teamId = await getTeamIdByUserId();
     if (teamId) {
       query = query.eq('team_id', teamId);
