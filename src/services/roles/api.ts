@@ -402,25 +402,17 @@ export async function getReviewMembersApi(params: any, sort: any, role?: string)
   }
 }
 
-export async function addReviewMemberApi(email: string) {
+export async function addReviewMemberApi(userId: string) {
   try {
-    const userId = await getUserIdByEmail(email);
     if (userId) {
       const addRoleError = await addRoleApi(
         userId,
         '00000000-0000-0000-0000-000000000000',
         'review-member',
       );
-      if (addRoleError) {
-        throw addRoleError;
-      }
       return {
-        success: true,
-      };
-    } else {
-      return {
-        success: false,
-        error: 'notRegistered',
+        success: !addRoleError,
+        error: addRoleError,
       };
     }
   } catch (error) {

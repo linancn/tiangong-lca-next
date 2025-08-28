@@ -10,6 +10,7 @@ import { getLangText, getUnitData } from '@/services/general/util';
 import { getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData } from '@/services/processes/util';
+import { getUserDetail } from '@/services/users/api';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
 import { Card, Collapse, Descriptions, Divider, Space, Tooltip } from 'antd';
 import { useEffect, useRef, type FC } from 'react';
@@ -99,6 +100,26 @@ export const TabsDetail: FC<Props> = ({
 }) => {
   const actionRefExchangeTableInput = useRef<ActionType>();
   const actionRefExchangeTableOutput = useRef<ActionType>();
+
+  useEffect(() => {
+    if (activeTabKey === 'validation') {
+      getUserDetail().then((res) => {
+        if (res.data?.contact) {
+          const contact = res.data?.contact;
+          formRef.current?.setFieldValue(
+            [
+              'modellingAndValidation',
+              'validation',
+              'review',
+              0,
+              'common:referenceToNameOfReviewerAndInstitution',
+            ],
+            contact,
+          );
+        }
+      });
+    }
+  }, [activeTabKey]);
 
   const tabList = [
     {
