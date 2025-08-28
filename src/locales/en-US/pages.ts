@@ -1,6 +1,7 @@
 export default {
   'pages.select.unRuleVerification': 'Data is incomplete',
   'pages.select.nonExistentRef': 'Data does not exist',
+  'pages.select.underReview': 'Data is under review',
 
   'pages.layouts.userLayout.title': '',
   'pages.404.buttonText': 'Back Home',

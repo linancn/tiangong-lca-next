@@ -20,9 +20,10 @@ type Props = {
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;
   showRules?: boolean;
+  type?: 'reviewReport';
 };
 
-const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData, showRules = false }) => {
+const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData, showRules = false, type }) => {
   const [reviewDetailsError, setReviewDetailsError] = useState(false);
   return (
     <Form.Item>
@@ -187,6 +188,7 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData, showRules = fa
                     />
                     <br />
                     <SourceSelectForm
+                      type={type}
                       parentName={name}
                       name={[subField.name, 'common:referenceToCompleteReviewReport']}
                       label={
