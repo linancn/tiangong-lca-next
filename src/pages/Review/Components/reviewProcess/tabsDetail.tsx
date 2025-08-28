@@ -102,7 +102,7 @@ export const TabsDetail: FC<Props> = ({
   const actionRefExchangeTableOutput = useRef<ActionType>();
 
   useEffect(() => {
-    if (activeTabKey === 'validation') {
+    if (activeTabKey === 'validation' && type === 'edit') {
       getUserDetail().then((res) => {
         if (res.data?.contact) {
           const contact = res.data?.contact;
