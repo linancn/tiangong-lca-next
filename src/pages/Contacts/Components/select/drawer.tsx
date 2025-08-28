@@ -400,7 +400,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }
             buttonText ?? <FormattedMessage id='pages.button.select' defaultMessage='Select' />
           }
         >
-          <Button shape='circle' icon={<DatabaseOutlined />} size='small' onClick={onSelect} />
+          <Button type='text' icon={<DatabaseOutlined />} size='small' onClick={onSelect} />
         </Tooltip>
       ) : (
         <Button onClick={onSelect}>
