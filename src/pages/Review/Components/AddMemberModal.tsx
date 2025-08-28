@@ -274,7 +274,12 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ open, onCancel, onSucce
                 id='pages.review.members.contactInfo'
                 defaultMessage='Contact Information'
               />
-              <ContactSelectDrawer buttonType='icon' lang={lang} onData={handletContactData} />
+              <ContactSelectDrawer
+                filterTabs={['tg']}
+                buttonType='icon'
+                lang={lang}
+                onData={handletContactData}
+              />
             </div>
           }
           style={{ marginTop: 16 }}
@@ -325,7 +330,12 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ open, onCancel, onSucce
                 id='pages.review.members.contactInfo'
                 defaultMessage='Contact Information'
               />
-              <ContactSelectDrawer buttonType='icon' lang={lang} onData={handletContactData} />
+              <ContactSelectDrawer
+                filterTabs={['tg']}
+                buttonType='icon'
+                lang={lang}
+                onData={handletContactData}
+              />
             </div>
           }
           style={{ marginTop: 16 }}
