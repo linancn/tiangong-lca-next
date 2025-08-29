@@ -161,5 +161,8 @@ export default defineConfig({
   define: {
     'process.env.SUPABASE_URL': process.env.SUPABASE_URL,
     'process.env.SUPABASE_PUBLISHABLE_KEY': process.env.SUPABASE_PUBLISHABLE_KEY,
+    'process.env.OPENAI_BASE_URL': process.env.OPENAI_BASE_URL,
+    'process.env.OPENAI_API_KEY': process.env.OPENAI_API_KEY,
+    'process.env.OPENAI_CHAT_MODEL': process.env.OPENAI_CHAT_MODEL,
   },
 });

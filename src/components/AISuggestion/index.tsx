@@ -1,19 +1,18 @@
+import { CopyOutlined } from '@ant-design/icons';
+import { createProcess, suggestData } from '@tiangong-lca/tidas-sdk';
 import { Button, message, Modal, Space, Spin, theme, Typography } from 'antd';
 import * as jsondiffpatch from 'jsondiffpatch';
 import React, { useEffect, useMemo, useState } from 'react';
 import './index.less';
-// import { createContact,suggestData } from '@tiangong-lca/tidas-sdk';
-import { getAISuggestion } from '@/services/general/api';
 const { Text, Title } = Typography;
 
 interface AISuggestionProps {
   originJson?: any;
-  AIJson?: any;
-  onValidate?: () => Promise<any>;
   disabled?: boolean;
   onAcceptChange?: (path: string, value: any) => void;
   onRejectChange?: (path: string) => void;
   onLatestJsonChange?: (latestJson: any) => void;
+  onClose?: () => void;
 }
 
 interface DiffItem {
@@ -26,23 +25,22 @@ interface DiffItem {
 
 const AISuggestion: React.FC<AISuggestionProps> = ({
   originJson,
-  AIJson,
   disabled = false,
   onAcceptChange,
   onRejectChange,
   onLatestJsonChange,
+  onClose = () => {},
 }) => {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [acceptedChanges, setAcceptedChanges] = useState<Set<string>>(new Set());
   const [rejectedChanges, setRejectedChanges] = useState<Set<string>>(new Set());
-  // const [AIJson, setAIJson] = useState<any>(null);
+  const [AIJson, setAIJson] = useState<any>(null);
   const { token } = theme.useToken();
-
   const getSuggestData = async () => {
-    console.log('获取suggest数据');
+    // console.log('获取suggest数据',JSON.parse(JSON.stringify(originJson)));
     setLoading(true);
-    const suggestResult = await getAISuggestion(originJson, 'conact', {
+    const suggestResult = await suggestData(JSON.stringify(createProcess(originJson)), 'process', {
       outputDiffSummary: true,
       outputDiffHTML: true,
       maxRetries: 1,
@@ -52,13 +50,17 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
         baseURL: process.env.OPENAI_BASE_URL,
       },
     });
-    console.log('suggestResult', suggestResult);
+    // console.log('suggestResult', suggestResult);
+    setAIJson(suggestResult?.data ?? {});
     setLoading(false);
   };
 
   useEffect(() => {
     if (modalVisible) {
       getSuggestData();
+    }
+    if (!modalVisible) {
+      onClose();
     }
   }, [modalVisible]);
 
@@ -205,27 +207,18 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
     message.warning(`已拒绝更改: ${path}`);
   };
 
+  const handleCopyToClipboard = async (content: any, label: string) => {
+    try {
+      const jsonString = JSON.stringify(content, null, 2);
+      await navigator.clipboard.writeText(jsonString);
+      message.success(`${label}已复制到剪贴板`);
+    } catch (err) {
+      message.error('复制失败，请手动复制');
+      console.error('复制失败:', err);
+    }
+  };
+
   const renderDiffContent = () => {
-    if (!originJson || !AIJson) {
-      return (
-        <div style={{ textAlign: 'center', padding: '40px 0' }}>
-          <Title level={4}>JSON 差异对比</Title>
-          <Text type='secondary'>请提供原始 JSON 和 AI JSON 数据进行对比</Text>
-        </div>
-      );
-    }
-
-    if (diffItems.length === 0) {
-      return (
-        <div style={{ textAlign: 'center', padding: '40px 0' }}>
-          <Title level={4} style={{ color: token.colorSuccess }}>
-            没有发现差异
-          </Title>
-          <Text type='secondary'>两个 JSON 对象完全相同</Text>
-        </div>
-      );
-    }
-
     // 创建差异路径集合，用于高亮显示
     const diffPaths = new Set(diffItems.map((item) => item.path));
     const diffPathMap = new Map();
@@ -497,6 +490,13 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
           <div className='diff-left-panel'>
             <div className='panel-header'>
               <Title level={5}>原始数据</Title>
+              <Button
+                type='text'
+                icon={<CopyOutlined />}
+                size='small'
+                onClick={() => handleCopyToClipboard(originJson, '原始数据')}
+                style={{ marginLeft: 'auto' }}
+              ></Button>
             </div>
             <div className='json-display'>
               <pre
@@ -519,6 +519,13 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
           <div className='diff-right-panel'>
             <div className='panel-header'>
               <Title level={5}>AI 建议数据</Title>
+              <Button
+                type='text'
+                icon={<CopyOutlined />}
+                size='small'
+                onClick={() => handleCopyToClipboard(AIJson, 'AI建议数据')}
+                style={{ marginLeft: 'auto' }}
+              ></Button>
             </div>
             <div className='json-display'>
               <pre
@@ -616,11 +623,7 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
         AI校验
       </Button>
       <Modal
-        title={
-          <Space>
-            <span>{originJson && AIJson ? 'JSON 差异对比' : 'AI 数据校验'}</span>
-          </Space>
-        }
+        title={<Space>AI 数据校验</Space>}
         open={modalVisible}
         onCancel={handleModalClose}
         footer={null}
@@ -633,7 +636,7 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
         }}
       >
         <Spin spinning={loading} tip='正在分析数据...'>
-          {originJson && AIJson ? renderDiffContent() : <></>}
+          {renderDiffContent()}
         </Spin>
       </Modal>
     </>
