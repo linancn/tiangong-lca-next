@@ -17,18 +17,24 @@ type Props = {
   buttonText?: any;
   lang: string;
   onData: (rowKey: string, version: string) => void;
+  filterTabs?: ('tg' | 'co' | 'my' | 'te')[];
 };
 
 const { Search } = Input;
 
-const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }) => {
+const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, filterTabs }) => {
   const [tgKeyWord, setTgKeyWord] = useState<any>('');
   const [coKeyWord, setCoKeyWord] = useState<any>('');
   const [myKeyWord, setMyKeyWord] = useState<any>('');
   const [teamKeyWord, setTeamKeyWord] = useState<any>('');
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
-  const [activeTabKey, setActiveTabKey] = useState<string>('tg');
+  const [activeTabKey, setActiveTabKey] = useState<string>(() => {
+    if (filterTabs && filterTabs.length > 0) {
+      return filterTabs[0];
+    }
+    return 'tg';
+  });
   const tgActionRefSelect = useRef<ActionType>();
   const coActionRefSelect = useRef<ActionType>();
   const myActionRefSelect = useRef<ActionType>();
@@ -104,7 +110,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }
     setTeamKeyWord(e.target.value);
   };
 
-  const tabList = [
+  const allTabList = [
     {
       key: 'tg',
       tab: <FormattedMessage id='pages.tab.title.tgdata' defaultMessage='TianGong Data' />,
@@ -116,6 +122,10 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }
       tab: <FormattedMessage id='pages.tab.title.tedata' defaultMessage='Team Data' />,
     },
   ];
+
+  const tabList = filterTabs
+    ? allTabList.filter((tab) => filterTabs.includes(tab.key as 'tg' | 'co' | 'my' | 'te'))
+    : allTabList;
 
   const contactColumns: ProColumns<ContactTable>[] = [
     {
@@ -392,6 +402,14 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }
     setSelectedRowKeys([]);
   }, [drawerVisible]);
 
+  // useEffect(() => {
+  //   if (filterTabs && filterTabs.length > 0) {
+  //     setActiveTabKey(filterTabs[0]);
+  //   } else {
+  //     setActiveTabKey('tg');
+  //   }
+  // }, [filterTabs]);
+
   return (
     <>
       {buttonType === 'icon' ? (
@@ -400,7 +418,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }
             buttonText ?? <FormattedMessage id='pages.button.select' defaultMessage='Select' />
           }
         >
-          <Button shape='circle' icon={<DatabaseOutlined />} size='small' onClick={onSelect} />
+          <Button type='text' icon={<DatabaseOutlined />} size='small' onClick={onSelect} />
         </Tooltip>
       ) : (
         <Button onClick={onSelect}>
