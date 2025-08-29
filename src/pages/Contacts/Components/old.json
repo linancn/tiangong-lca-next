@@ -1,0 +1,39 @@
+{
+  "contactDataSet": {
+    "@xmlns": "http://lca.jrc.it/ILCD/Contact",
+    "@version": "1.1",
+    "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+    "@xmlns:common": "http://lca.jrc.it/ILCD/Common",
+    "contactInformation": {
+      "dataSetInformation": {
+        "email": "liull0107@163.com",
+        "telephone": "13893279198",
+        "common:UUID": "11c1a2de-bbef-46d1-98b6-094b838474a7",
+        "common:name": {
+          "#text": "刘利利",
+          "@xml:lang": "zh"
+        },
+        "contactAddress": {
+          "#text": "中国地质大学（北京）",
+          "@xml:lang": "zh"
+        },
+        "common:shortName": {
+          "#text": "刘利利",
+          "@xml:lang": "zh"
+        },
+        "referenceToContact": {}
+      }
+    },
+    "@xsi:schemaLocation": "http://lca.jrc.it/ILCD/Contact ../../schemas/ILCD_ContactDataSet.xsd",
+    "administrativeInformation": {
+      "dataEntryBy": {
+        "common:timeStamp": "2025-03-09T14:22:01+08:00",
+        "common:referenceToDataSetFormat": {}
+      },
+      "publicationAndOwnership": {
+        "common:dataSetVersion": "01.01.000",
+        "common:referenceToPrecedingDataSetVersion": {}
+      }
+    }
+  }
+}

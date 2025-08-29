@@ -1,0 +1,334 @@
+.json-diff-container {
+  .diff-header {
+    text-align: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .diff-split-view {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .diff-left-panel,
+  .diff-right-panel {
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    padding: 12px 16px;
+    background-color: #fafafa;
+    border-bottom: 1px solid #f0f0f0;
+    text-align: center;
+  }
+
+  .json-display {
+    pre {
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+  }
+
+  .diff-legend {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 24px;
+    padding: 16px;
+    background-color: #fafafa;
+    border-radius: 6px;
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .legend-color {
+        width: 16px;
+        height: 16px;
+        border-radius: 3px;
+        border: 1px solid;
+
+        &.added {
+          background-color: #f6ffed;
+          border-color: #b7eb8f;
+        }
+
+        &.removed {
+          background-color: #fff2f0;
+          border-color: #ffccc7;
+        }
+
+        &.modified {
+          background-color: #e6f7ff;
+          border-color: #91d5ff;
+        }
+      }
+    }
+  }
+
+  .latest-json-panel {
+    margin-bottom: 24px;
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    overflow: hidden;
+
+    .panel-header {
+      padding: 12px 16px;
+      background-color: #fafafa;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .json-display {
+      pre {
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+    }
+
+    .diff-summary {
+      padding: 16px;
+      background-color: #fafafa;
+      border-top: 1px solid #f0f0f0;
+
+      .summary-stats {
+        display: flex;
+        justify-content: space-around;
+        gap: 16px;
+        flex-wrap: wrap;
+
+        .stat-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+
+          .stat-label {
+            font-size: 12px;
+            color: #666;
+          }
+
+          .stat-value {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            border: 1px solid;
+
+            &.accepted {
+              background-color: #f6ffed;
+              color: #52c41a;
+              border-color: #b7eb8f;
+            }
+
+            &.modified {
+              background-color: #e6f7ff;
+              color: #1890ff;
+              border-color: #91d5ff;
+            }
+
+            &.removed {
+              background-color: #fff2f0;
+              color: #ff4d4f;
+              border-color: #ffccc7;
+            }
+
+            &.rejected {
+              background-color: #fff7e6;
+              color: #fa8c16;
+              border-color: #ffd591;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .diff-items {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .diff-item {
+    margin-bottom: 16px;
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+
+    &.added {
+      border-left: 4px solid #52c41a;
+    }
+
+    &.removed {
+      border-left: 4px solid #ff4d4f;
+    }
+
+    &.modified {
+      border-left: 4px solid #1890ff;
+    }
+
+    &.processed {
+      opacity: 0.7;
+      background-color: #fafafa;
+    }
+
+    .diff-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background-color: #fafafa;
+      border-bottom: 1px solid #f0f0f0;
+
+      .diff-path {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+
+        .diff-type {
+          padding: 2px 8px;
+          border-radius: 4px;
+          font-size: 12px;
+          font-weight: 500;
+
+          &.added {
+            background-color: #f6ffed;
+            color: #52c41a;
+            border: 1px solid #b7eb8f;
+          }
+
+          &.removed {
+            background-color: #fff2f0;
+            color: #ff4d4f;
+            border: 1px solid #ffccc7;
+          }
+
+          &.modified {
+            background-color: #e6f7ff;
+            color: #1890ff;
+            border: 1px solid #91d5ff;
+          }
+        }
+      }
+
+      .diff-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .diff-status {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+
+        &.accepted {
+          background-color: #f6ffed;
+          color: #52c41a;
+          border: 1px solid #b7eb8f;
+        }
+
+        &.rejected {
+          background-color: #fff7e6;
+          color: #fa8c16;
+          border: 1px solid #ffd591;
+        }
+      }
+    }
+
+    .diff-content {
+      padding: 16px;
+
+      .diff-value {
+        margin-bottom: 12px;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+
+        pre {
+          margin: 8px 0 0 0;
+          padding: 12px;
+          background-color: #f5f5f5;
+          border-radius: 4px;
+          font-size: 12px;
+          line-height: 1.4;
+          overflow-x: auto;
+          white-space: pre-wrap;
+          word-break: break-word;
+        }
+
+        &.added pre {
+          background-color: #f6ffed;
+          border: 1px solid #b7eb8f;
+        }
+
+        &.removed pre {
+          background-color: #fff2f0;
+          border: 1px solid #ffccc7;
+        }
+
+        &.old pre {
+          background-color: #fff2f0;
+          border: 1px solid #ffccc7;
+        }
+
+        &.new pre {
+          background-color: #f6ffed;
+          border: 1px solid #b7eb8f;
+        }
+      }
+
+      .diff-values {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+
+        @media (max-width: 768px) {
+          grid-template-columns: 1fr;
+        }
+      }
+    }
+  }
+
+  .diff-summary {
+    text-align: center;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #f0f0f0;
+    color: #666;
+  }
+}
+
+// 滚动条样式
+.diff-items::-webkit-scrollbar {
+  width: 6px;
+}
+
+.diff-items::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.diff-items::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.diff-items::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}

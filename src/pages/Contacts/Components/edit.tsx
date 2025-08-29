@@ -1,3 +1,4 @@
+import AISuggestion from '@/components/AISuggestion';
 import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import type { refDataType } from '@/pages/Utils/review';
@@ -12,6 +13,8 @@ import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { ContactForm } from './form';
+import newJson from './new.json';
+import oldJson from './old.json';
 
 type Props = {
   id: string;
@@ -314,6 +317,7 @@ const ContactEdit: FC<Props> = ({
         onClose={() => setDrawerVisible(false)}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
+            <AISuggestion originJson={oldJson} AIJson={newJson} />
             <Button onClick={handleCheckData}>
               <FormattedMessage id='pages.button.check' defaultMessage='Data check' />
             </Button>
