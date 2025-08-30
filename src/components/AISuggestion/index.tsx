@@ -580,13 +580,13 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
       diffPathMap.set(item.path, item);
     });
 
-    // 新的并排渲染方法
+    // 新的并排渲染方法 - 使用双指针对齐算法
     const renderSideBySideDiff = () => {
       // 将JSON转换为行数组，用于对齐显示
       const leftLines = jsonToLines(originJson);
       const rightLines = jsonToLines(AIJson);
 
-      // 标记差异行
+      // 标记左边的差异行
       leftLines.forEach((line) => {
         const diffItem = diffPathMap.get(line.path);
         if (diffItem) {
@@ -595,6 +595,7 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
         }
       });
 
+      // 标记右边的差异行
       rightLines.forEach((line) => {
         const diffItem = diffPathMap.get(line.path);
         if (diffItem) {
@@ -602,6 +603,95 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
           line.diffType = diffItem.type;
         }
       });
+
+      // 使用双指针算法对齐
+      const alignedRows: Array<{ left: JsonLine | undefined; right: JsonLine | undefined }> = [];
+      let leftIdx = 0;
+      let rightIdx = 0;
+
+      while (leftIdx < leftLines.length || rightIdx < rightLines.length) {
+        const leftLine = leftLines[leftIdx];
+        const rightLine = rightLines[rightIdx];
+
+        if (!leftLine && !rightLine) {
+          break;
+        }
+
+        // 如果只剩左边的行
+        if (leftLine && !rightLine) {
+          alignedRows.push({ left: leftLine, right: undefined });
+          leftIdx++;
+          continue;
+        }
+
+        // 如果只剩右边的行
+        if (!leftLine && rightLine) {
+          alignedRows.push({ left: undefined, right: rightLine });
+          rightIdx++;
+          continue;
+        }
+
+        // 两边都有行，需要判断如何对齐
+        const leftDiff = leftLine ? diffPathMap.get(leftLine.path) : null;
+        const rightDiff = rightLine ? diffPathMap.get(rightLine.path) : null;
+
+        // 如果左边是删除的内容
+        if (leftDiff && leftDiff.type === 'removed') {
+          // 需要找到删除块的结束位置
+          const deletedPath = leftLine.path;
+          let endIdx = leftIdx;
+
+          // 找到所有属于这个删除块的行
+          while (endIdx < leftLines.length) {
+            const nextLine = leftLines[endIdx];
+            if (!nextLine.path.startsWith(deletedPath) && nextLine.path !== deletedPath) {
+              // 如果下一行不是删除内容的子路径，检查是否是删除内容的结束
+              const nextDiff = diffPathMap.get(nextLine.path);
+              if (!nextDiff || nextDiff.type !== 'removed') {
+                break;
+              }
+            }
+            endIdx++;
+          }
+
+          // 添加所有删除的行，右边留空
+          for (let i = leftIdx; i < endIdx; i++) {
+            alignedRows.push({ left: leftLines[i], right: undefined });
+          }
+          leftIdx = endIdx;
+        }
+        // 如果右边是新增的内容
+        else if (rightDiff && rightDiff.type === 'added') {
+          // 需要找到新增块的结束位置
+          const addedPath = rightLine.path;
+          let endIdx = rightIdx;
+
+          // 找到所有属于这个新增块的行
+          while (endIdx < rightLines.length) {
+            const nextLine = rightLines[endIdx];
+            if (!nextLine.path.startsWith(addedPath) && nextLine.path !== addedPath) {
+              // 如果下一行不是新增内容的子路径，检查是否是新增内容的结束
+              const nextDiff = diffPathMap.get(nextLine.path);
+              if (!nextDiff || nextDiff.type !== 'added') {
+                break;
+              }
+            }
+            endIdx++;
+          }
+
+          // 添加所有新增的行，左边留空
+          for (let i = rightIdx; i < endIdx; i++) {
+            alignedRows.push({ left: undefined, right: rightLines[i] });
+          }
+          rightIdx = endIdx;
+        }
+        // 其他情况（包括修改和无差异的内容）
+        else {
+          alignedRows.push({ left: leftLine, right: rightLine });
+          leftIdx++;
+          rightIdx++;
+        }
+      }
 
       // 渲染单行
       const renderLine = (line: JsonLine | undefined, isLeft: boolean) => {
@@ -753,41 +843,36 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
         );
       };
 
-      const maxLines = Math.max(leftLines.length, rightLines.length);
-      const rows = [];
-
-      for (let i = 0; i < maxLines; i++) {
-        rows.push(
+      const rows = alignedRows.map((row, index) => (
+        <div
+          key={index}
+          style={{
+            display: 'flex',
+            borderBottom: '1px solid #f0f0f0',
+            width: '100%',
+          }}
+        >
           <div
-            key={i}
             style={{
-              display: 'flex',
-              borderBottom: '1px solid #f0f0f0',
-              width: '100%',
+              width: '50%',
+              borderRight: '1px solid #e8e8e8',
+              overflow: 'hidden',
+              boxSizing: 'border-box',
             }}
           >
-            <div
-              style={{
-                width: '50%',
-                borderRight: '1px solid #e8e8e8',
-                overflow: 'hidden',
-                boxSizing: 'border-box',
-              }}
-            >
-              {renderLine(leftLines[i], true)}
-            </div>
-            <div
-              style={{
-                width: '50%',
-                overflow: 'hidden',
-                boxSizing: 'border-box',
-              }}
-            >
-              {renderLine(rightLines[i], false)}
-            </div>
-          </div>,
-        );
-      }
+            {renderLine(row.left, true)}
+          </div>
+          <div
+            style={{
+              width: '50%',
+              overflow: 'hidden',
+              boxSizing: 'border-box',
+            }}
+          >
+            {renderLine(row.right, false)}
+          </div>
+        </div>
+      ));
 
       return (
         <div
