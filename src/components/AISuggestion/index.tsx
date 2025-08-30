@@ -1,4 +1,4 @@
-import { CopyOutlined } from '@ant-design/icons';
+import { CheckOutlined, CloseOutlined, CopyOutlined } from '@ant-design/icons';
 import { createProcess, suggestData } from '@tiangong-lca/tidas-sdk';
 import { Button, message, Modal, Space, Spin, theme, Typography } from 'antd';
 import * as jsondiffpatch from 'jsondiffpatch';
@@ -23,6 +23,18 @@ interface DiffItem {
   displayPath: string;
 }
 
+interface JsonLine {
+  content: string;
+  lineNumber: number;
+  indent: number;
+  path: string;
+  isDiff?: boolean;
+  diffType?: 'added' | 'removed' | 'modified';
+  isCollapsible?: boolean;
+  isCollapsed?: boolean;
+  childCount?: number;
+}
+
 const AISuggestion: React.FC<AISuggestionProps> = ({
   originJson,
   disabled = false,
@@ -36,6 +48,9 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
   const [acceptedChanges, setAcceptedChanges] = useState<Set<string>>(new Set());
   const [rejectedChanges, setRejectedChanges] = useState<Set<string>>(new Set());
   const [AIJson, setAIJson] = useState<any>(null);
+
+  const leftPanelRef = React.useRef<HTMLDivElement>(null);
+  const rightPanelRef = React.useRef<HTMLDivElement>(null);
   const { token } = theme.useToken();
   const getSuggestData = async () => {
     // console.log('获取suggest数据',JSON.parse(JSON.stringify(originJson)));
@@ -82,15 +97,32 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
 
     const items: DiffItem[] = [];
 
-    const parseDelta = (deltaObj: any, path: string = '') => {
+    const parseDelta = (deltaObj: any, path: string = '', parentIsArray: boolean = false) => {
       if (!deltaObj || typeof deltaObj !== 'object') return;
 
       Object.keys(deltaObj).forEach((key) => {
         // 跳过数组标记
         if (key === '_t') return;
 
-        const currentPath = path ? `${path}.${key}` : key;
+        // 处理数组索引路径
+        let currentPath: string;
+        if (parentIsArray) {
+          // 如果key包含下划线，说明是数组移动操作，需要特殊处理
+          if (key.includes('_')) {
+            const actualIndex = key.split('_')[0];
+            currentPath = path ? `${path}[${actualIndex}]` : `[${actualIndex}]`;
+          } else {
+            currentPath = path ? `${path}[${key}]` : `[${key}]`;
+          }
+        } else {
+          // 对象属性使用 .key 格式
+          currentPath = path ? `${path}.${key}` : key;
+        }
+
         const value = deltaObj[key];
+
+        // 检查是否是数组类型的delta（包含_t: 'a'）
+        const isArrayDelta = typeof value === 'object' && value !== null && value._t === 'a';
 
         if (Array.isArray(value)) {
           if (value.length === 1) {
@@ -118,9 +150,23 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
               newValue: value[1],
               displayPath: currentPath,
             });
+          } else if (value.length === 3 && value[2] === 3) {
+            // 数组元素删除: [oldValue, 0, 3]
+            items.push({
+              path: currentPath,
+              type: 'removed',
+              oldValue: value[0],
+              displayPath: currentPath,
+            });
+          } else if (value.length === 3 && value[2] === 2) {
+            // 文本差异（暂不处理）
           }
+        } else if (isArrayDelta) {
+          // 处理数组内容的变化
+          parseDelta(value, currentPath, true);
         } else if (typeof value === 'object' && value !== null) {
-          parseDelta(value, currentPath);
+          // 递归处理嵌套对象
+          parseDelta(value, currentPath, false);
         }
       });
     };
@@ -129,6 +175,52 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
 
     return items;
   }, [originJson, AIJson, diffpatcher]);
+
+  // 初始化折叠路径 - 默认折叠没有差异的大对象/数组
+  useEffect(() => {
+    if (!originJson || !AIJson || diffItems.length === 0) return;
+
+    const diffPaths = new Set(diffItems.map((item) => item.path));
+    const pathsToCollapse = new Set<string>();
+
+    const findCollapsiblePaths = (obj: any, path: string = '') => {
+      if (!obj || typeof obj !== 'object') return;
+
+      // 检查当前路径及其子路径是否有差异
+      let hasDiff = false;
+      for (const diffPath of diffPaths) {
+        if (diffPath.startsWith(path)) {
+          hasDiff = true;
+          break;
+        }
+      }
+
+      // 如果没有差异且元素较多，添加到折叠列表
+      if (!hasDiff && path) {
+        // 不折叠根级别
+        if (Array.isArray(obj) && obj.length > 3) {
+          pathsToCollapse.add(path);
+        } else if (typeof obj === 'object' && Object.keys(obj).length > 5) {
+          pathsToCollapse.add(path);
+        }
+      }
+
+      // 递归处理子元素
+      if (Array.isArray(obj)) {
+        obj.forEach((item, index) => {
+          const childPath = path ? `${path}[${index}]` : `[${index}]`;
+          findCollapsiblePaths(item, childPath);
+        });
+      } else if (typeof obj === 'object') {
+        Object.keys(obj).forEach((key) => {
+          const childPath = path ? `${path}.${key}` : key;
+          findCollapsiblePaths(obj[key], childPath);
+        });
+      }
+    };
+
+    findCollapsiblePaths(originJson);
+  }, [originJson, AIJson, diffItems]);
 
   // 计算JSON结果
   const latestJson = useMemo(() => {
@@ -140,20 +232,86 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
       const isAccepted = acceptedChanges.has(item.path);
 
       if (isAccepted) {
-        const pathArray = item.path.split('.');
-        let current = result;
+        // 解析路径，支持数组索引格式 [index]
+        const pathParts: string[] = [];
+        let currentPathPart = '';
+        let inBracket = false;
 
-        for (let i = 0; i < pathArray.length - 1; i++) {
-          if (!current[pathArray[i]]) {
-            current[pathArray[i]] = {};
+        for (let i = 0; i < item.path.length; i++) {
+          const char = item.path[i];
+          if (char === '[') {
+            if (currentPathPart) {
+              pathParts.push(currentPathPart);
+              currentPathPart = '';
+            }
+            inBracket = true;
+          } else if (char === ']') {
+            if (inBracket && currentPathPart) {
+              pathParts.push(currentPathPart);
+              currentPathPart = '';
+            }
+            inBracket = false;
+          } else if (char === '.' && !inBracket) {
+            if (currentPathPart) {
+              pathParts.push(currentPathPart);
+              currentPathPart = '';
+            }
+          } else {
+            currentPathPart += char;
           }
-          current = current[pathArray[i]];
+        }
+        if (currentPathPart) {
+          pathParts.push(currentPathPart);
         }
 
+        // 应用变更
+        let current = result;
+        for (let i = 0; i < pathParts.length - 1; i++) {
+          const part = pathParts[i];
+          const isArrayIndex = /^\d+$/.test(part);
+
+          if (isArrayIndex) {
+            const index = parseInt(part, 10);
+            if (!Array.isArray(current)) {
+              current = [];
+            }
+            if (!current[index]) {
+              current[index] = {};
+            }
+            current = current[index];
+          } else {
+            if (!current[part]) {
+              current[part] = {};
+            }
+            current = current[part];
+          }
+        }
+
+        const lastPart = pathParts[pathParts.length - 1];
+        const isLastArrayIndex = /^\d+$/.test(lastPart);
+
         if (item.type === 'added' || item.type === 'modified') {
-          current[pathArray[pathArray.length - 1]] = item.newValue;
+          if (isLastArrayIndex) {
+            const index = parseInt(lastPart, 10);
+            if (!Array.isArray(current)) {
+              // 如果当前不是数组但需要设置数组元素，需要特殊处理
+              const parent = pathParts.length > 1 ? current : result;
+              parent[lastPart] = item.newValue;
+            } else {
+              current[index] = item.newValue;
+            }
+          } else {
+            current[lastPart] = item.newValue;
+          }
         } else if (item.type === 'removed') {
-          delete current[pathArray[pathArray.length - 1]];
+          if (isLastArrayIndex) {
+            const index = parseInt(lastPart, 10);
+            if (Array.isArray(current)) {
+              current.splice(index, 1);
+            }
+          } else {
+            delete current[lastPart];
+          }
         }
       }
     });
@@ -218,333 +376,522 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
     }
   };
 
+  // 同步滚动处理
+  const handleSyncScroll = (source: 'left' | 'right') => {
+    if (source === 'left' && leftPanelRef.current && rightPanelRef.current) {
+      rightPanelRef.current.scrollTop = leftPanelRef.current.scrollTop;
+      rightPanelRef.current.scrollLeft = leftPanelRef.current.scrollLeft;
+    } else if (source === 'right' && leftPanelRef.current && rightPanelRef.current) {
+      leftPanelRef.current.scrollTop = rightPanelRef.current.scrollTop;
+      leftPanelRef.current.scrollLeft = rightPanelRef.current.scrollLeft;
+    }
+  };
+
+  // // 切换折叠状态
+  // const toggleCollapse = (path: string) => {
+  //   setCollapsedPaths(prev => {
+  //     const newSet = new Set(prev);
+  //     if (newSet.has(path)) {
+  //       newSet.delete(path);
+  //     } else {
+  //       newSet.add(path);
+  //     }
+  //     return newSet;
+  //   });
+  // };
+
+  // // 检查对象是否含有差异
+  // const hasChildDifferences = (obj: any, path: string, diffPaths: Set<string>): boolean => {
+  //   if (!obj || typeof obj !== 'object') return false;
+
+  //   // 检查当前路径及其子路径
+  //   for (const diffPath of diffPaths) {
+  //     if (diffPath.startsWith(path)) {
+  //       return true;
+  //     }
+  //   }
+  //   return false;
+  // };
+
+  // 一键接受所有更改
+  const handleAcceptAll = () => {
+    const newAccepted = new Set<string>();
+    diffItems.forEach((item) => {
+      newAccepted.add(item.path);
+    });
+    setAcceptedChanges(newAccepted);
+    setRejectedChanges(new Set());
+    message.success(`已接受所有 ${diffItems.length} 个更改`);
+  };
+
+  // 一键拒绝所有更改
+  const handleRejectAll = () => {
+    const newRejected = new Set<string>();
+    diffItems.forEach((item) => {
+      newRejected.add(item.path);
+    });
+    setRejectedChanges(newRejected);
+    setAcceptedChanges(new Set());
+    message.warning(`已拒绝所有 ${diffItems.length} 个更改`);
+  };
+
+  // 将JSON转换为带行号的文本行
+  const jsonToLines = (obj: any, path: string = '', indent: number = 0): JsonLine[] => {
+    // const lines: JsonLine[] = [];
+    let lineNumber = 1;
+
+    const processValue = (
+      value: any,
+      currentPath: string,
+      currentIndent: number,
+      isPropertyValue: boolean = false,
+    ): JsonLine[] => {
+      const result: JsonLine[] = [];
+      const indentStr = isPropertyValue ? '' : '  '.repeat(currentIndent);
+
+      if (value === null || value === undefined) {
+        result.push({
+          content: `${indentStr}null`,
+          lineNumber: lineNumber++,
+          indent: currentIndent,
+          path: currentPath,
+        });
+      } else if (typeof value === 'string') {
+        result.push({
+          content: `${indentStr}"${value}"`,
+          lineNumber: lineNumber++,
+          indent: currentIndent,
+          path: currentPath,
+        });
+      } else if (typeof value === 'number' || typeof value === 'boolean') {
+        result.push({
+          content: `${indentStr}${value}`,
+          lineNumber: lineNumber++,
+          indent: currentIndent,
+          path: currentPath,
+        });
+      } else if (Array.isArray(value)) {
+        result.push({
+          content: `${indentStr}[`,
+          lineNumber: lineNumber++,
+          indent: currentIndent,
+          path: currentPath,
+          isCollapsible: value.length > 3,
+          childCount: value.length,
+        });
+
+        value.forEach((item, index) => {
+          const itemPath = currentPath ? `${currentPath}[${index}]` : `[${index}]`;
+          const itemLines = processValue(item, itemPath, currentIndent + 1, false);
+          result.push(...itemLines);
+          if (index < value.length - 1) {
+            result[result.length - 1].content += ',';
+          }
+        });
+
+        result.push({
+          content: `${'  '.repeat(currentIndent)}]`,
+          lineNumber: lineNumber++,
+          indent: currentIndent,
+          path: currentPath,
+        });
+      } else if (typeof value === 'object') {
+        result.push({
+          content: `${indentStr}{`,
+          lineNumber: lineNumber++,
+          indent: currentIndent,
+          path: currentPath,
+          isCollapsible: Object.keys(value).length > 5,
+          childCount: Object.keys(value).length,
+        });
+
+        const keys = Object.keys(value);
+        keys.forEach((key, index) => {
+          const keyPath = currentPath ? `${currentPath}.${key}` : key;
+          const keyIndent = '  '.repeat(currentIndent + 1);
+
+          // 处理值是否是简单类型
+          const val = value[key];
+          const isSimple =
+            val === null ||
+            val === undefined ||
+            typeof val === 'string' ||
+            typeof val === 'number' ||
+            typeof val === 'boolean';
+
+          if (isSimple) {
+            // 简单值，放在同一行
+            let valueStr = '';
+            if (val === null || val === undefined) {
+              valueStr = 'null';
+            } else if (typeof val === 'string') {
+              valueStr = `"${val}"`;
+            } else {
+              valueStr = String(val);
+            }
+
+            result.push({
+              content: `${keyIndent}"${key}": ${valueStr}${index < keys.length - 1 ? ',' : ''}`,
+              lineNumber: lineNumber++,
+              indent: currentIndent + 1,
+              path: keyPath,
+            });
+          } else {
+            // 复杂值，分多行
+            result.push({
+              content: `${keyIndent}"${key}": `,
+              lineNumber: lineNumber++,
+              indent: currentIndent + 1,
+              path: keyPath,
+            });
+
+            const valueLines = processValue(val, keyPath, currentIndent + 1, true);
+            if (valueLines.length > 0) {
+              result[result.length - 1].content += valueLines[0].content;
+              valueLines.shift();
+              result.push(...valueLines);
+            }
+
+            if (index < keys.length - 1) {
+              result[result.length - 1].content += ',';
+            }
+          }
+        });
+
+        result.push({
+          content: `${'  '.repeat(currentIndent)}}`,
+          lineNumber: lineNumber++,
+          indent: currentIndent,
+          path: currentPath,
+        });
+      }
+
+      return result;
+    };
+
+    return processValue(obj, path, indent, false);
+  };
+
   const renderDiffContent = () => {
     // 创建差异路径集合，用于高亮显示
-    const diffPaths = new Set(diffItems.map((item) => item.path));
+    // const diffPaths = new Set(diffItems.map((item) => item.path));
     const diffPathMap = new Map();
     diffItems.forEach((item) => {
       diffPathMap.set(item.path, item);
     });
 
-    // 递归渲染 JSON 对象，并标记差异
-    const renderJsonWithDiff = (obj: any, path: string = '', isLeft: boolean = true) => {
-      if (obj === null || obj === undefined) {
-        return <span style={{ color: '#999' }}>null</span>;
-      }
+    // 新的并排渲染方法
+    const renderSideBySideDiff = () => {
+      // 将JSON转换为行数组，用于对齐显示
+      const leftLines = jsonToLines(originJson);
+      const rightLines = jsonToLines(AIJson);
 
-      if (typeof obj === 'string') {
-        return <span style={{ color: '#d63384' }}>&quot;{obj}&quot;</span>;
-      }
+      // 标记差异行
+      leftLines.forEach((line) => {
+        const diffItem = diffPathMap.get(line.path);
+        if (diffItem) {
+          line.isDiff = true;
+          line.diffType = diffItem.type;
+        }
+      });
 
-      if (typeof obj === 'number') {
-        return <span style={{ color: '#fd7e14' }}>{obj}</span>;
-      }
+      rightLines.forEach((line) => {
+        const diffItem = diffPathMap.get(line.path);
+        if (diffItem) {
+          line.isDiff = true;
+          line.diffType = diffItem.type;
+        }
+      });
 
-      if (typeof obj === 'boolean') {
-        return <span style={{ color: '#fd7e14' }}>{obj.toString()}</span>;
-      }
+      // 渲染单行
+      const renderLine = (line: JsonLine | undefined, isLeft: boolean) => {
+        if (!line) {
+          return <div style={{ minHeight: '20px', padding: '2px 0' }}>&nbsp;</div>;
+        }
 
-      if (Array.isArray(obj)) {
+        const diffItem = diffPathMap.get(line.path);
+        const isDiff = line.isDiff;
+        const isAccepted = acceptedChanges.has(line.path);
+        const isRejected = rejectedChanges.has(line.path);
+
         return (
-          <span>
-            [
-            {obj.map((item, index) => {
-              const currentPath = path ? `${path}[${index}]` : `[${index}]`;
-              const diffItem = diffPathMap.get(currentPath);
-              const isDiff = diffPaths.has(currentPath);
+          <div
+            style={{
+              display: 'flex',
+              minHeight: '20px',
+              padding: '2px 0',
+              backgroundColor: isDiff
+                ? line.diffType === 'added'
+                  ? '#f6ffed'
+                  : line.diffType === 'removed'
+                    ? '#fff2f0'
+                    : '#e6f7ff'
+                : 'transparent',
+              borderLeft: isDiff
+                ? `3px solid ${
+                    line.diffType === 'added'
+                      ? '#52c41a'
+                      : line.diffType === 'removed'
+                        ? '#ff4d4f'
+                        : '#1890ff'
+                  }`
+                : 'none',
+              paddingLeft: isDiff ? '5px' : '8px',
+            }}
+          >
+            <span
+              style={{
+                color: '#999',
+                minWidth: '40px',
+                marginRight: '10px',
+                fontFamily: 'monospace',
+                fontSize: '12px',
+                userSelect: 'none',
+                flexShrink: 0,
+              }}
+            >
+              {line.lineNumber}
+            </span>
+            <div
+              style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 8,
+                minWidth: 0,
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: 'monospace',
+                  fontSize: '12px',
+                  flex: 1,
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-all',
+                  overflowWrap: 'break-word',
+                  minWidth: 0,
+                }}
+              >
+                {line.content}
+              </span>
 
-              return (
-                <div key={index} style={{ marginLeft: 20 }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                    <span
-                      style={{
-                        backgroundColor: isDiff
-                          ? diffItem?.type === 'added'
-                            ? '#f6ffed'
-                            : diffItem?.type === 'removed'
-                              ? '#fff2f0'
-                              : '#e6f7ff'
-                          : 'transparent',
-                        padding: isDiff ? '2px 4px' : '0',
-                        borderRadius: isDiff ? '3px' : '0',
-                        border: isDiff
-                          ? diffItem?.type === 'added'
-                            ? '1px solid #b7eb8f'
-                            : diffItem?.type === 'removed'
-                              ? '1px solid #ffccc7'
-                              : '1px solid #91d5ff'
-                          : 'none',
-                        flex: 1,
-                      }}
-                    >
-                      {renderJsonWithDiff(item, currentPath, isLeft)}
-                    </span>
-
-                    {/* 操作按钮显示逻辑 */}
-                    {isDiff &&
-                      diffItem &&
-                      // 删除操作在左侧面板显示，新增和修改操作在右侧面板显示
-                      ((isLeft && diffItem.type === 'removed') ||
-                        (!isLeft &&
-                          (diffItem.type === 'added' || diffItem.type === 'modified'))) && (
-                        <div
+              {/* 操作按钮 */}
+              {isDiff &&
+                diffItem &&
+                ((isLeft && diffItem.type === 'removed') ||
+                  (!isLeft && (diffItem.type === 'added' || diffItem.type === 'modified'))) && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: 4,
+                      marginRight: 8,
+                      flexShrink: 0,
+                      alignSelf: 'flex-start',
+                    }}
+                  >
+                    {isAccepted ? (
+                      <span
+                        style={{
+                          color: '#52c41a',
+                          fontSize: '11px',
+                          padding: '1px 4px',
+                          backgroundColor: '#f6ffed',
+                          borderRadius: '2px',
+                          border: '1px solid #b7eb8f',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        已接受
+                      </span>
+                    ) : isRejected ? (
+                      <span
+                        style={{
+                          color: '#fa8c16',
+                          fontSize: '11px',
+                          padding: '1px 4px',
+                          backgroundColor: '#fff7e6',
+                          borderRadius: '2px',
+                          border: '1px solid #ffd591',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        已拒绝
+                      </span>
+                    ) : (
+                      <>
+                        <Button
+                          type='primary'
+                          size='small'
+                          onClick={() => handleAcceptChange(line.path, diffItem.newValue)}
                           style={{
-                            display: 'flex',
-                            gap: 4,
-                            marginLeft: 8,
-                            flexShrink: 0,
+                            fontSize: '10px',
+                            height: '18px',
+                            padding: '0 4px',
+                            whiteSpace: 'nowrap',
                           }}
                         >
-                          {acceptedChanges.has(currentPath) ? (
-                            <span
-                              style={{
-                                color: '#52c41a',
-                                fontSize: '12px',
-                                padding: '2px 6px',
-                                backgroundColor: '#f6ffed',
-                                borderRadius: '3px',
-                                border: '1px solid #b7eb8f',
-                              }}
-                            >
-                              已接受
-                            </span>
-                          ) : rejectedChanges.has(currentPath) ? (
-                            <span
-                              style={{
-                                color: '#fa8c16',
-                                fontSize: '12px',
-                                padding: '2px 6px',
-                                backgroundColor: '#fff7e6',
-                                borderRadius: '3px',
-                                border: '1px solid #ffd591',
-                              }}
-                            >
-                              已拒绝
-                            </span>
-                          ) : (
-                            <>
-                              <Button
-                                type='primary'
-                                size='small'
-                                onClick={() => handleAcceptChange(currentPath, diffItem.newValue)}
-                                style={{
-                                  fontSize: '10px',
-                                  height: '20px',
-                                  padding: '0 6px',
-                                  lineHeight: '1',
-                                }}
-                              >
-                                接受
-                              </Button>
-                              <Button
-                                size='small'
-                                onClick={() => handleRejectChange(currentPath)}
-                                style={{
-                                  fontSize: '10px',
-                                  height: '20px',
-                                  padding: '0 6px',
-                                  lineHeight: '1',
-                                }}
-                              >
-                                拒绝
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      )}
+                          接受
+                        </Button>
+                        <Button
+                          size='small'
+                          onClick={() => handleRejectChange(line.path)}
+                          style={{
+                            fontSize: '10px',
+                            height: '18px',
+                            padding: '0 4px',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          拒绝
+                        </Button>
+                      </>
+                    )}
                   </div>
-                  {index < obj.length - 1 && ','}
-                </div>
-              );
-            })}
-            ]
-          </span>
+                )}
+            </div>
+          </div>
+        );
+      };
+
+      const maxLines = Math.max(leftLines.length, rightLines.length);
+      const rows = [];
+
+      for (let i = 0; i < maxLines; i++) {
+        rows.push(
+          <div
+            key={i}
+            style={{
+              display: 'flex',
+              borderBottom: '1px solid #f0f0f0',
+              width: '100%',
+            }}
+          >
+            <div
+              style={{
+                width: '50%',
+                borderRight: '1px solid #e8e8e8',
+                overflow: 'hidden',
+                boxSizing: 'border-box',
+              }}
+            >
+              {renderLine(leftLines[i], true)}
+            </div>
+            <div
+              style={{
+                width: '50%',
+                overflow: 'hidden',
+                boxSizing: 'border-box',
+              }}
+            >
+              {renderLine(rightLines[i], false)}
+            </div>
+          </div>,
         );
       }
 
-      if (typeof obj === 'object') {
-        const keys = Object.keys(obj);
-        return (
-          <span>
-            {'{'}
-            {keys.map((key, index) => {
-              const currentPath = path ? `${path}.${key}` : key;
-              const diffItem = diffPathMap.get(currentPath);
-              const isDiff = diffPaths.has(currentPath);
-
-              return (
-                <div key={key} style={{ marginLeft: 20 }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                    <span
-                      style={{
-                        backgroundColor: isDiff
-                          ? diffItem?.type === 'added'
-                            ? '#f6ffed'
-                            : diffItem?.type === 'removed'
-                              ? '#fff2f0'
-                              : '#e6f7ff'
-                          : 'transparent',
-                        padding: isDiff ? '2px 4px' : '0',
-                        borderRadius: isDiff ? '3px' : '0',
-                        border: isDiff
-                          ? diffItem?.type === 'added'
-                            ? '1px solid #b7eb8f'
-                            : diffItem?.type === 'removed'
-                              ? '1px solid #ffccc7'
-                              : '1px solid #91d5ff'
-                          : 'none',
-                        flex: 1,
-                      }}
-                    >
-                      <span style={{ color: '#0d6efd' }}>&quot;{key}&quot;</span>:{' '}
-                      {renderJsonWithDiff(obj[key], currentPath, isLeft)}
-                    </span>
-
-                    {/* 操作按钮显示逻辑 */}
-                    {isDiff &&
-                      diffItem &&
-                      ((isLeft && diffItem.type === 'removed') ||
-                        (!isLeft &&
-                          (diffItem.type === 'added' || diffItem.type === 'modified'))) && (
-                        <div
-                          style={{
-                            display: 'flex',
-                            gap: 4,
-                            marginLeft: 8,
-                            flexShrink: 0,
-                          }}
-                        >
-                          {acceptedChanges.has(currentPath) ? (
-                            <span
-                              style={{
-                                color: '#52c41a',
-                                fontSize: '12px',
-                                padding: '2px 6px',
-                                backgroundColor: '#f6ffed',
-                                borderRadius: '3px',
-                                border: '1px solid #b7eb8f',
-                              }}
-                            >
-                              已接受
-                            </span>
-                          ) : rejectedChanges.has(currentPath) ? (
-                            <span
-                              style={{
-                                color: '#fa8c16',
-                                fontSize: '12px',
-                                padding: '2px 6px',
-                                backgroundColor: '#fff7e6',
-                                borderRadius: '3px',
-                                border: '1px solid #ffd591',
-                              }}
-                            >
-                              已拒绝
-                            </span>
-                          ) : (
-                            <>
-                              <Button
-                                type='primary'
-                                size='small'
-                                onClick={() => handleAcceptChange(currentPath, diffItem.newValue)}
-                                style={{
-                                  fontSize: '10px',
-                                  height: '20px',
-                                  padding: '0 6px',
-                                  lineHeight: '1',
-                                }}
-                              >
-                                接受
-                              </Button>
-                              <Button
-                                size='small'
-                                onClick={() => handleRejectChange(currentPath)}
-                                style={{
-                                  fontSize: '10px',
-                                  height: '20px',
-                                  padding: '0 6px',
-                                  lineHeight: '1',
-                                }}
-                              >
-                                拒绝
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      )}
-                  </div>
-                  {index < keys.length - 1 && ','}
-                </div>
-              );
-            })}
-            {'}'}
-          </span>
-        );
-      }
-
-      return <span>{String(obj)}</span>;
+      return (
+        <div
+          style={{
+            backgroundColor: '#fff',
+            border: '1px solid #d9d9d9',
+            borderRadius: '4px',
+            overflow: 'auto',
+            maxHeight: '600px',
+            fontFamily: 'monospace',
+            width: '100%',
+            position: 'relative',
+          }}
+          ref={leftPanelRef}
+          onScroll={() => handleSyncScroll('left')}
+        >
+          <div
+            style={{
+              minWidth: '100%',
+              display: 'table',
+              tableLayout: 'fixed',
+            }}
+          >
+            {rows}
+          </div>
+        </div>
+      );
     };
 
     return (
       <div className='json-diff-container'>
-        <div className='diff-split-view'>
-          <div className='diff-left-panel'>
-            <div className='panel-header'>
-              <Title level={5}>原始数据</Title>
-              <Button
-                type='text'
-                icon={<CopyOutlined />}
-                size='small'
-                onClick={() => handleCopyToClipboard(originJson, '原始数据')}
-                style={{ marginLeft: 'auto' }}
-              ></Button>
-            </div>
-            <div className='json-display'>
-              <pre
-                style={{
-                  margin: 0,
-                  padding: 16,
-                  backgroundColor: '#f8f9fa',
-                  borderRadius: 6,
-                  fontSize: 12,
-                  lineHeight: 1.4,
-                  overflow: 'auto',
-                  maxHeight: '500px',
-                }}
-              >
-                {renderJsonWithDiff(originJson, '', true)}
-              </pre>
-            </div>
+        {/* 全局操作按钮 */}
+        <div style={{ marginBottom: 16, display: 'flex', gap: 8, justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Button
+              type='text'
+              icon={<CopyOutlined />}
+              size='small'
+              onClick={() => handleCopyToClipboard(originJson, '原始数据')}
+            >
+              复制原始数据
+            </Button>
+            <Button
+              type='text'
+              icon={<CopyOutlined />}
+              size='small'
+              onClick={() => handleCopyToClipboard(AIJson, 'AI建议数据')}
+            >
+              复制AI建议
+            </Button>
           </div>
-
-          <div className='diff-right-panel'>
-            <div className='panel-header'>
-              <Title level={5}>AI 建议数据</Title>
-              <Button
-                type='text'
-                icon={<CopyOutlined />}
-                size='small'
-                onClick={() => handleCopyToClipboard(AIJson, 'AI建议数据')}
-                style={{ marginLeft: 'auto' }}
-              ></Button>
-            </div>
-            <div className='json-display'>
-              <pre
-                style={{
-                  margin: 0,
-                  padding: 16,
-                  backgroundColor: '#f8f9fa',
-                  borderRadius: 6,
-                  fontSize: 12,
-                  lineHeight: 1.4,
-                  overflow: 'auto',
-                  maxHeight: '500px',
-                }}
-              >
-                {renderJsonWithDiff(AIJson, '', false)}
-              </pre>
-            </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Button
+              type='primary'
+              icon={<CheckOutlined />}
+              onClick={handleAcceptAll}
+              disabled={diffItems.length === 0}
+            >
+              接受所有更改 ({diffItems.length})
+            </Button>
+            <Button
+              icon={<CloseOutlined />}
+              onClick={handleRejectAll}
+              disabled={diffItems.length === 0}
+            >
+              拒绝所有更改
+            </Button>
           </div>
         </div>
+
+        {/* 标题栏 */}
+        <div
+          style={{
+            display: 'flex',
+            borderBottom: '2px solid #1890ff',
+            backgroundColor: '#fafafa',
+            fontWeight: 'bold',
+          }}
+        >
+          <div
+            style={{
+              flex: 1,
+              padding: '8px 16px',
+              borderRight: '1px solid #e8e8e8',
+            }}
+          >
+            <Title level={5} style={{ margin: 0 }}>
+              原始数据
+            </Title>
+          </div>
+          <div
+            style={{
+              flex: 1,
+              padding: '8px 16px',
+            }}
+          >
+            <Title level={5} style={{ margin: 0 }}>
+              AI 建议数据
+            </Title>
+          </div>
+        </div>
+
+        {/* 使用新的并排渲染 */}
+        {renderSideBySideDiff()}
 
         <div className='latest-json-panel'>
           <div className='panel-header'>
