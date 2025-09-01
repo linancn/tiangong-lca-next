@@ -48,15 +48,19 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
   const [acceptedChanges, setAcceptedChanges] = useState<Set<string>>(new Set());
   const [rejectedChanges, setRejectedChanges] = useState<Set<string>>(new Set());
   const [AIJson, setAIJson] = useState<any>(null);
-  const [operationHistory, setOperationHistory] = useState<
-    Array<{
+  interface OperationHistoryItem {
+    path?: string;
+    type: 'accept' | 'reject' | 'accept_all' | 'reject_all';
+    value?: any;
+    previousAcceptedChanges: Set<string>;
+    previousRejectedChanges: Set<string>;
+    items?: Array<{
       path: string;
-      type: 'accept' | 'reject';
       value?: any;
-      previousAcceptedChanges: Set<string>;
-      previousRejectedChanges: Set<string>;
-    }>
-  >([]);
+    }>;
+  }
+
+  const [operationHistory, setOperationHistory] = useState<OperationHistoryItem[]>([]);
 
   const leftPanelRef = React.useRef<HTMLDivElement>(null);
   const rightPanelRef = React.useRef<HTMLDivElement>(null);
@@ -357,10 +361,30 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
     setRejectedChanges(lastOperation.previousRejectedChanges);
 
     // 如果有回调函数，需要通知父组件
-    if (lastOperation.type === 'accept' && onRejectChange) {
+    if (lastOperation.type === 'accept' && lastOperation.path && onRejectChange) {
       onRejectChange(lastOperation.path);
-    } else if (lastOperation.type === 'reject' && lastOperation.value && onAcceptChange) {
+    } else if (
+      lastOperation.type === 'reject' &&
+      lastOperation.path &&
+      lastOperation.value &&
+      onAcceptChange
+    ) {
       onAcceptChange(lastOperation.path, lastOperation.value);
+    } else if (lastOperation.type === 'accept_all' && lastOperation.items) {
+      // 撤销所有接受的更改
+      lastOperation.items.forEach((item) => {
+        if (onRejectChange) {
+          onRejectChange(item.path);
+        }
+      });
+    } else if (lastOperation.type === 'reject_all' && lastOperation.items) {
+      // 撤销所有拒绝的更改
+      lastOperation.items.forEach((item) => {
+        const diffItem = diffItems.find((d) => d.path === item.path);
+        if (diffItem && onAcceptChange) {
+          onAcceptChange(item.path, diffItem.newValue);
+        }
+      });
     }
 
     // 从历史记录中移除最后一个操作
@@ -470,9 +494,28 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
 
   // 一键接受所有更改
   const handleAcceptAll = () => {
+    // 保存当前状态到历史记录
+    setOperationHistory((prev) => [
+      ...prev,
+      {
+        type: 'accept_all',
+        previousAcceptedChanges: new Set(acceptedChanges),
+        previousRejectedChanges: new Set(rejectedChanges),
+        // 保存所有项的值，以便撤销时能够正确恢复
+        items: diffItems.map((item) => ({
+          path: item.path,
+          value: item.newValue,
+        })),
+      },
+    ]);
+
     const newAccepted = new Set<string>();
     diffItems.forEach((item) => {
       newAccepted.add(item.path);
+      // 通知父组件每个接受的更改
+      if (onAcceptChange) {
+        onAcceptChange(item.path, item.newValue);
+      }
     });
     setAcceptedChanges(newAccepted);
     setRejectedChanges(new Set());
@@ -481,9 +524,26 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
 
   // 一键拒绝所有更改
   const handleRejectAll = () => {
+    // 保存当前状态到历史记录
+    setOperationHistory((prev) => [
+      ...prev,
+      {
+        type: 'reject_all',
+        previousAcceptedChanges: new Set(acceptedChanges),
+        previousRejectedChanges: new Set(rejectedChanges),
+        items: diffItems.map((item) => ({
+          path: item.path,
+        })),
+      },
+    ]);
+
     const newRejected = new Set<string>();
     diffItems.forEach((item) => {
       newRejected.add(item.path);
+      // 通知父组件每个拒绝的更改
+      if (onRejectChange) {
+        onRejectChange(item.path);
+      }
     });
     setRejectedChanges(newRejected);
     setAcceptedChanges(new Set());
