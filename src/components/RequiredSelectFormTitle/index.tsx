@@ -46,6 +46,8 @@ const RequiredSelectFormTitle = ({
                   id='pages.select.nonExistentRef'
                   defaultMessage='Data does not exist'
                 />
+              ) : errRef?.stateCode && errRef?.stateCode >= 20 && errRef?.stateCode < 100 ? (
+                <FormattedMessage id='pages.select.underReview' defaultMessage='Under review' />
               ) : (
                 ''
               )}

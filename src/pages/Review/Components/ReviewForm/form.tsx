@@ -171,6 +171,7 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                     />
                     <br />
                     <SourceSelectForm
+                      type='reviewReport'
                       parentName={name}
                       name={[subField.name, 'common:referenceToCompleteReviewReport']}
                       label={

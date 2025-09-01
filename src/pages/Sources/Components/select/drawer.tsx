@@ -17,18 +17,19 @@ type Props = {
   buttonText?: any;
   lang: string;
   onData: (rowKey: string, version: string) => void;
+  type?: 'reviewReport';
 };
 
 const { Search } = Input;
 
-const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }) => {
+const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, type }) => {
   const [tgKeyWord, setTgKeyWord] = useState<any>('');
   const [coKeyWord, setCoKeyWord] = useState<any>('');
   const [myKeyWord, setMyKeyWord] = useState<any>('');
   const [teKeyWord, setTeKeyWord] = useState<any>('');
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
-  const [activeTabKey, setActiveTabKey] = useState<string>('tg');
+  const [activeTabKey, setActiveTabKey] = useState<string>(type === 'reviewReport' ? 'my' : 'tg');
   const tgActionRefSelect = useRef<ActionType>();
   const coActionRefSelect = useRef<ActionType>();
   const myActionRefSelect = useRef<ActionType>();
@@ -191,8 +192,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData })
       },
     },
   ];
-
-  const tabList = [
+  const baseTabList = [
     {
       key: 'tg',
       tab: <FormattedMessage id='pages.tab.title.tgdata' defaultMessage='TianGong Data' />,
@@ -201,6 +201,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData })
     { key: 'my', tab: <FormattedMessage id='pages.tab.title.mydata' defaultMessage='My Data' /> },
     { key: 'te', tab: <FormattedMessage id='pages.tab.title.tedata' defaultMessage='TE Data' /> },
   ];
+  const tabList = type === 'reviewReport' ? baseTabList.slice(2) : baseTabList;
 
   const databaseList: Record<string, React.ReactNode> = {
     my: (
@@ -236,7 +237,14 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData })
             if (myKeyWord.length > 0) {
               return getSourceTablePgroongaSearch(params, lang, 'my', myKeyWord, {});
             }
-            return getSourceTableAll(params, sort, lang, 'my', []);
+            return getSourceTableAll(
+              params,
+              sort,
+              lang,
+              'my',
+              [],
+              type === 'reviewReport' ? 0 : undefined,
+            );
           }}
           columns={sourceColumns}
           rowSelection={{
@@ -362,7 +370,14 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData })
             if (teKeyWord.length > 0) {
               return getSourceTablePgroongaSearch(params, lang, 'te', teKeyWord, {});
             }
-            return getSourceTableAll(params, sort, lang, 'te', []);
+            return getSourceTableAll(
+              params,
+              sort,
+              lang,
+              'te',
+              [],
+              type === 'reviewReport' ? 0 : undefined,
+            );
           }}
           columns={sourceColumns}
           rowSelection={{

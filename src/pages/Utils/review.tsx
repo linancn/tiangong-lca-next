@@ -1,6 +1,7 @@
 import { getRefData, getReviewsOfData, updateDateToReviewState } from '@/services/general/api';
 import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
 import { addReviewsApi } from '@/services/reviews/api';
+import { getSourcesByIdsAndVersions } from '@/services/sources/api';
 import { getTeamMessageApi } from '@/services/teams/api';
 import { getUserId, getUsersByIds } from '@/services/users/api';
 
@@ -672,4 +673,47 @@ export function getErrRefTab(ref: refDataType, data: any): string | null {
   };
 
   return findRefInObject(data);
+}
+
+export async function checkReviewReport(reviews: any) {
+  const reportRefs: { id: string; version: string }[] = [];
+
+  if (Array.isArray(reviews)) {
+    reviews.forEach((review: any) => {
+      const report = review?.['common:referenceToCompleteReviewReport'];
+      if (report?.['@refObjectId'] && report?.['@version']) {
+        reportRefs.push({
+          id: report['@refObjectId'],
+          version: report['@version'],
+        });
+      }
+    });
+  } else {
+    const report = reviews?.['common:referenceToCompleteReviewReport'];
+    if (report?.['@refObjectId'] && report?.['@version']) {
+      reportRefs.push({
+        id: report['@refObjectId'],
+        version: report['@version'],
+      });
+    }
+  }
+
+  if (reportRefs.length === 0) {
+    return [];
+  }
+
+  const sources = await getSourcesByIdsAndVersions(reportRefs);
+
+  const reportUnderReview: any[] = [];
+  sources?.data?.forEach((item: any) => {
+    if (item.state_code >= 20 && item.state_code < 100) {
+      reportUnderReview.push({
+        id: item.id,
+        version: item.version,
+        stateCode: item.state_code,
+      });
+    }
+  });
+
+  return reportUnderReview;
 }

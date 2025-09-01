@@ -10,6 +10,7 @@ export type RefCheckType = {
   version: string;
   ruleVerification: boolean;
   nonExistent: boolean;
+  stateCode?: number;
 };
 
 type RefCheckContextType = {

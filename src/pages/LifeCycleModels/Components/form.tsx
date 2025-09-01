@@ -1822,6 +1822,7 @@ export const LifeCycleModelForm: FC<Props> = ({
     ),
     validation: (
       <ReveiwItemForm
+        type='reviewReport'
         name={['modellingAndValidation', 'validation', 'review']}
         lang={lang}
         formRef={formRef}

@@ -1826,7 +1826,7 @@ const getFinalProductGroup = (
   }
 
   const connectedEdges = allUp2DownEdges.filter((ud: Up2DownEdge) => {
-    if (ud?.upstreamId === finalProductProcessExchange?.nodeId) {
+    if (ud?.upstreamId === finalProductProcessExchange?.nodeId && ud?.dependence === 'upstream') {
       const connectedExhanges = finalProductProcessExchange?.exchanges?.filter((e: any) => {
         return (
           e?.referenceToFlowDataSet?.['@refObjectId'] === ud?.flowUUID &&
@@ -1838,7 +1838,10 @@ const getFinalProductGroup = (
       }
       return false;
     }
-    if (ud?.downstreamId === finalProductProcessExchange?.nodeId) {
+    if (
+      ud?.downstreamId === finalProductProcessExchange?.nodeId &&
+      ud?.dependence === 'downstream'
+    ) {
       const connectedExhanges = finalProductProcessExchange?.exchanges?.filter((e: any) => {
         return (
           e?.referenceToFlowDataSet?.['@refObjectId'] === ud?.flowUUID &&
@@ -1866,8 +1869,8 @@ const getFinalProductGroup = (
         const nextFinalProductGroups = getFinalProductGroup(
           nextChildProcessExchange,
           finalProductProcessExchange?.allocatedFraction ?? 1,
-          allUp2DownEdges,
           childProcessExchanges,
+          allUp2DownEdges,
         );
         if (nextFinalProductGroups?.length > 0) {
           finalProductGroups.push(...nextFinalProductGroups);
@@ -2318,6 +2321,7 @@ export async function genLifeCycleModelProcesses(
     const sumFinalProductGroups = await Promise.all(
       hasFinalProductProcessExchanges.map(async (cpe: any) => {
         const finalProductGroup = getFinalProductGroup(cpe, 1, childProcessExchanges, up2DownEdges);
+
         if (finalProductGroup?.length > 0) {
           let sumExchange: any = [];
 

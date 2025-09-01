@@ -6,6 +6,7 @@ import {
   getAllRefObj,
   getRefTableName,
 } from '@/pages/Utils/review';
+import { getCommentApi } from '@/services/comments/api';
 import { getRefData, updateDateToReviewState } from '@/services/general/api';
 import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
 import { getProcessDetail } from '@/services/processes/api';
@@ -210,6 +211,18 @@ const RejectReview: React.FC<RejectReviewProps> = ({
     await updateUnderReviewToUnReview(underReview);
   };
 
+  const updateUnderReviewCommentRefToUnReview = async () => {
+    const { data: commentDetail } = await getCommentApi(reviewId, 'assigned');
+    if (commentDetail && commentDetail.length > 0) {
+      const refObjs = getAllRefObj(commentDetail);
+      const userTeamId = await getUserTeamId();
+      const underReview: any[] = [];
+      await getUnderReviewReferences(refObjs, new Map<string, any>(), userTeamId, underReview);
+
+      await updateUnderReviewToUnReview(underReview);
+    }
+  };
+
   const handleOk = async () => {
     try {
       const values = await formRef?.current?.validateFields();
@@ -238,6 +251,8 @@ const RejectReview: React.FC<RejectReviewProps> = ({
           ],
         },
       });
+
+      await updateUnderReviewCommentRefToUnReview();
 
       if (!error) {
         if (isModel) {

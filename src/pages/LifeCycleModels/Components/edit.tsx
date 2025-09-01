@@ -132,6 +132,7 @@ const LifeCycleModelEdit: FC<Props> = ({
                     snap: true,
                     allowBlank: false,
                     allowLoop: false,
+                    // allowMulti: 'withPort',
                     allowMulti: false,
                     allowNode: false,
                     allowEdge: false,
