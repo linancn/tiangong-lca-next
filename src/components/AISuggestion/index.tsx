@@ -1,4 +1,4 @@
-import { CheckOutlined, CloseOutlined, CopyOutlined } from '@ant-design/icons';
+import { CheckOutlined, CloseOutlined, CopyOutlined, UndoOutlined } from '@ant-design/icons';
 import { createProcess, suggestData } from '@tiangong-lca/tidas-sdk';
 import { Button, message, Modal, Space, Spin, theme, Typography } from 'antd';
 import * as jsondiffpatch from 'jsondiffpatch';
@@ -48,6 +48,15 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
   const [acceptedChanges, setAcceptedChanges] = useState<Set<string>>(new Set());
   const [rejectedChanges, setRejectedChanges] = useState<Set<string>>(new Set());
   const [AIJson, setAIJson] = useState<any>(null);
+  const [operationHistory, setOperationHistory] = useState<
+    Array<{
+      path: string;
+      type: 'accept' | 'reject';
+      value?: any;
+      previousAcceptedChanges: Set<string>;
+      previousRejectedChanges: Set<string>;
+    }>
+  >([]);
 
   const leftPanelRef = React.useRef<HTMLDivElement>(null);
   const rightPanelRef = React.useRef<HTMLDivElement>(null);
@@ -333,9 +342,45 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
     setModalVisible(false);
     setAcceptedChanges(new Set());
     setRejectedChanges(new Set());
+    setOperationHistory([]);
+  };
+
+  const handleUndo = () => {
+    const lastOperation = operationHistory[operationHistory.length - 1];
+    if (!lastOperation) {
+      message.info('没有可撤销的操作');
+      return;
+    }
+
+    // 恢复到上一个状态
+    setAcceptedChanges(lastOperation.previousAcceptedChanges);
+    setRejectedChanges(lastOperation.previousRejectedChanges);
+
+    // 如果有回调函数，需要通知父组件
+    if (lastOperation.type === 'accept' && onRejectChange) {
+      onRejectChange(lastOperation.path);
+    } else if (lastOperation.type === 'reject' && lastOperation.value && onAcceptChange) {
+      onAcceptChange(lastOperation.path, lastOperation.value);
+    }
+
+    // 从历史记录中移除最后一个操作
+    setOperationHistory((prev) => prev.slice(0, -1));
+
+    message.success('已撤销上一次操作');
   };
 
   const handleAcceptChange = (path: string, value: any) => {
+    setOperationHistory((prev) => [
+      ...prev,
+      {
+        path,
+        type: 'accept',
+        value,
+        previousAcceptedChanges: new Set(acceptedChanges),
+        previousRejectedChanges: new Set(rejectedChanges),
+      },
+    ]);
+
     setAcceptedChanges((prev) => new Set(prev).add(path));
     setRejectedChanges((prev) => {
       const newSet = new Set(prev);
@@ -351,6 +396,16 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
   };
 
   const handleRejectChange = (path: string) => {
+    setOperationHistory((prev) => [
+      ...prev,
+      {
+        path,
+        type: 'reject',
+        previousAcceptedChanges: new Set(acceptedChanges),
+        previousRejectedChanges: new Set(rejectedChanges),
+      },
+    ]);
+
     setRejectedChanges((prev) => new Set(prev).add(path));
     setAcceptedChanges((prev) => {
       const newSet = new Set(prev);
@@ -939,6 +994,13 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
               disabled={diffItems.length === 0}
             >
               拒绝所有更改
+            </Button>
+            <Button
+              icon={<UndoOutlined />}
+              onClick={handleUndo}
+              disabled={operationHistory.length === 0}
+            >
+              撤销
             </Button>
           </div>
         </div>
