@@ -60,6 +60,7 @@
     "@ant-design/pro-table": "^3.21.0",
     "@antv/xflow": "^2.1.13",
     "@supabase/supabase-js": "^2.55.0",
+    "@tiangong-lca/tidas-sdk": "^0.1.15",
     "antd": "^5.27.0",
     "antd-style": "^3.7.1",
     "bignumber.js": "^9.3.1",
