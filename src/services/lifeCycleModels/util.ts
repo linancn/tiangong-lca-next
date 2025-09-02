@@ -1826,30 +1826,40 @@ const getFinalProductGroup = (
   }
 
   const connectedEdges = allUp2DownEdges.filter((ud: Up2DownEdge) => {
-    if (ud?.upstreamId === finalProductProcessExchange?.nodeId && ud?.dependence === 'upstream') {
-      const connectedExhanges = finalProductProcessExchange?.exchanges?.filter((e: any) => {
-        return (
-          e?.referenceToFlowDataSet?.['@refObjectId'] === ud?.flowUUID &&
-          (e?.exchangeDirection ?? '').toUpperCase() === 'OUTPUT'
-        );
-      });
-      if (connectedExhanges?.length > 0) {
-        return true;
+    if (ud?.upstreamId === finalProductProcessExchange?.nodeId) {
+      if (
+        (ud?.dependence === 'none' && ud?.mainDependence === 'upstream') ||
+        ud?.dependence === 'upstream'
+      ) {
+        const connectedExhanges = finalProductProcessExchange?.exchanges?.filter((e: any) => {
+          return (
+            e?.referenceToFlowDataSet?.['@refObjectId'] === ud?.flowUUID &&
+            (e?.exchangeDirection ?? '').toUpperCase() === 'OUTPUT'
+          );
+        });
+        if (connectedExhanges?.length > 0) {
+          return true;
+        }
+        return false;
       }
-      return false;
     }
-    if (
-      ud?.downstreamId === finalProductProcessExchange?.nodeId &&
-      ud?.dependence === 'downstream'
-    ) {
-      const connectedExhanges = finalProductProcessExchange?.exchanges?.filter((e: any) => {
-        return (
-          e?.referenceToFlowDataSet?.['@refObjectId'] === ud?.flowUUID &&
-          (e?.exchangeDirection ?? '').toUpperCase() === 'INPUT'
-        );
-      });
-      if (connectedExhanges?.length > 0) {
-        return true;
+
+    if (ud?.downstreamId === finalProductProcessExchange?.nodeId) {
+      if (
+        (ud?.dependence === 'none' && ud?.mainDependence === 'downstream') ||
+        ud?.dependence === 'downstream'
+      ) {
+        const connectedExhanges = finalProductProcessExchange?.exchanges?.filter((e: any) => {
+          return (
+            e?.referenceToFlowDataSet?.['@refObjectId'] === ud?.flowUUID &&
+            (e?.exchangeDirection ?? '').toUpperCase() === 'INPUT'
+          );
+        });
+
+        if (connectedExhanges?.length > 0) {
+          return true;
+        }
+        return false;
       }
       return false;
     }
@@ -1862,9 +1872,11 @@ const getFinalProductGroup = (
         return (
           cpe?.nodeId !== finalProductProcessExchange?.nodeId &&
           cpe?.finalProductType !== 'has' &&
-          (cpe?.nodeId === edge?.downstreamId || cpe?.nodeId === edge?.upstreamId)
+          (cpe?.nodeId === edge?.downstreamId || cpe?.nodeId === edge?.upstreamId) &&
+          cpe?.allocatedExchangeFlowId === edge?.flowUUID
         );
       });
+
       if (nextChildProcessExchange) {
         const nextFinalProductGroups = getFinalProductGroup(
           nextChildProcessExchange,
@@ -2149,6 +2161,7 @@ export async function genLifeCycleModelProcesses(
         uds.forEach((ud: any) => {
           if (ud.flowUUID !== ud.mainOutputFlowUUID) {
             ud.dependence = 'none';
+            ud.mainDependence = 'downstream';
           }
         });
       });
@@ -2173,6 +2186,7 @@ export async function genLifeCycleModelProcesses(
         uds.forEach((ud: any) => {
           if (ud.flowUUID !== ud.mainInputFlowUUID) {
             ud.dependence = 'none';
+            ud.mainDependence = 'upstream';
           }
         });
       });

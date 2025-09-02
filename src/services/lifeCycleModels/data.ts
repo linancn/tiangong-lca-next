@@ -17,6 +17,7 @@ export type Up2DownEdge = {
   downstreamProcessId: string;
   downstreamProcessVersion: string;
   dependence?: string;
+  mainDependence?: string;
   mainOutputFlowUUID: string;
   mainInputFlowUUID: string;
 };
