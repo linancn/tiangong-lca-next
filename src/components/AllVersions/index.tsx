@@ -21,6 +21,7 @@ interface AllVersionsListProps {
   children: React.ReactNode;
   columns: ProColumns<any>[];
   lang: string;
+  disabled?: boolean;
 }
 
 const AllVersionsList: FC<AllVersionsListProps> = ({
@@ -30,6 +31,7 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
   children,
   columns,
   lang,
+  disabled = false,
 }) => {
   const actionRef = useRef<ActionType>();
   const [showAllVersionsModal, setShowAllVersionsModal] = useState(false);
@@ -99,6 +101,7 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
         title={<FormattedMessage id='pages.button.allVersion' defaultMessage='All version' />}
       >
         <Button
+          disabled={disabled}
           size='small'
           shape='circle'
           icon={<BarsOutlined />}
