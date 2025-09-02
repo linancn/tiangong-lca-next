@@ -94,14 +94,7 @@ const ToolbarEdit: FC<Props> = ({
   const removeEdges = useGraphStore((state) => state.removeEdges);
   const updateEdge = useGraphStore((state) => state.updateEdge);
   const intl = useIntl();
-  const [showReview, setShowReview] = useState(false);
 
-  useEffect(() => {
-    const pathname = window.location.pathname;
-    if (pathname === '/mydata/processes') {
-      setShowReview(true);
-    }
-  }, []);
   const editInfoRef = useRef<any>(null);
   useEffect(() => {
     setThisAction(action);
@@ -1512,7 +1505,7 @@ const ToolbarEdit: FC<Props> = ({
           onClick={handleCheckData}
         />
       </Tooltip>
-      {showReview && !hideReviewButton ? (
+      {!hideReviewButton ? (
         <Tooltip
           title={<FormattedMessage id='pages.button.review' defaultMessage='Submit for review' />}
           placement='left'
