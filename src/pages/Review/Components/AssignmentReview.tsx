@@ -1,4 +1,3 @@
-import TeamView from '@/components/AllTeams/view';
 import AccountView from '@/pages/Account/view';
 import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
 import ProcessView from '@/pages/Processes/Components/view';
@@ -71,24 +70,6 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
               />
             )}
           </div>,
-        ];
-      },
-    },
-    {
-      title: (
-        <FormattedMessage id='pages.review.table.column.teamName' defaultMessage='Team Name' />
-      ),
-      dataIndex: 'teamName',
-      sorter: false,
-      search: false,
-      render: (_, row) => {
-        return [
-          <span key={0}>
-            {row.teamName}
-            {row?.json?.team?.id && (
-              <TeamView buttonTypeProp='text' id={row?.json?.team?.id} buttonType='icon' />
-            )}
-          </span>,
         ];
       },
     },
