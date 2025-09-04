@@ -308,8 +308,8 @@ const Review = () => {
     );
   };
 
-  const tabs = [
-    ...(userData?.role === 'review-admin'
+  const tabs =
+    userData?.role === 'review-admin'
       ? [
           {
             key: 'unassigned',
@@ -333,32 +333,36 @@ const Review = () => {
               />
             ),
           },
-        ]
-      : []),
-    {
-      key: 'reviewed',
-      label: <FormattedMessage id='pages.review.tabs.reviewed' />,
-      children: (
-        <AssignmentReview actionRef={reviewedTableRef} tableType='reviewed' userData={userData} />
-      ),
-    },
-    {
-      key: 'pending',
-      label: <FormattedMessage id='pages.review.tabs.pending' />,
-      children: (
-        <AssignmentReview actionRef={pendingTableRef} tableType='pending' userData={userData} />
-      ),
-    },
-    ...(userData?.role === 'review-admin'
-      ? [
           {
             key: 'members',
             label: <FormattedMessage id='pages.review.tabs.members' />,
             children: renderReviewMember(),
           },
         ]
-      : []),
-  ];
+      : [
+          {
+            key: 'reviewed',
+            label: <FormattedMessage id='pages.review.tabs.reviewed' />,
+            children: (
+              <AssignmentReview
+                actionRef={reviewedTableRef}
+                tableType='reviewed'
+                userData={userData}
+              />
+            ),
+          },
+          {
+            key: 'pending',
+            label: <FormattedMessage id='pages.review.tabs.pending' />,
+            children: (
+              <AssignmentReview
+                actionRef={pendingTableRef}
+                tableType='pending'
+                userData={userData}
+              />
+            ),
+          },
+        ];
 
   useEffect(() => {
     if (userData?.role === 'review-member' && activeTabKey !== 'reviewed') {
