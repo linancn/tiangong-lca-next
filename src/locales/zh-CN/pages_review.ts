@@ -3,7 +3,8 @@ export default {
 
   'pages.review.tabs.unassigned': '待分配任务',
   'pages.review.tabs.assigned': '已分配任务',
-  'pages.review.tabs.review': '审核任务',
+  'pages.review.tabs.reviewed': '已审核',
+  'pages.review.tabs.pending': '待审核',
   'pages.review.tabs.rejected': '已驳回',
   'pages.review.tabs.members': '成员管理',
 

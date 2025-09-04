@@ -19,7 +19,7 @@ const { Search } = Input;
 
 type AssignmentReviewProps = {
   userData: { user_id: string; role: string } | null;
-  tableType: 'unassigned' | 'assigned' | 'review';
+  tableType: 'unassigned' | 'assigned' | 'reviewed' | 'pending';
   actionRef: any;
 };
 
@@ -166,7 +166,7 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
     });
   }
 
-  if (tableType === 'review') {
+  if (tableType === 'reviewed' || tableType === 'pending') {
     columns.push({
       title: <FormattedMessage id='pages.review.actions' defaultMessage='Actions' />,
       dataIndex: 'actions',
@@ -224,6 +224,20 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
     });
   }
 
+  const getSubTitle = () => {
+    switch (tableType) {
+      case 'unassigned':
+        return <FormattedMessage id='pages.review.tabs.unassigned' defaultMessage='Unassigned' />;
+      case 'assigned':
+        return <FormattedMessage id='pages.review.tabs.assigned' defaultMessage='Assigned' />;
+      case 'reviewed':
+        return <FormattedMessage id='pages.review.tabs.reviewed' defaultMessage='Reviewed' />;
+      case 'pending':
+        return <FormattedMessage id='pages.review.tabs.pending' defaultMessage='Pending Review' />;
+      default:
+    }
+  };
+
   return (
     <>
       <Card>
@@ -263,14 +277,7 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
         }}
         headerTitle={
           <>
-            <FormattedMessage id='menu.review' defaultMessage='Review Management' /> /{' '}
-            {tableType === 'unassigned' ? (
-              <FormattedMessage id='pages.review.tabs.unassigned' defaultMessage='Unassigned' />
-            ) : tableType === 'assigned' ? (
-              <FormattedMessage id='pages.review.tabs.assigned' defaultMessage='Assigned' />
-            ) : (
-              <FormattedMessage id='pages.review.tabs.review' defaultMessage='Review' />
-            )}
+            <FormattedMessage id='menu.review' defaultMessage='Review Management' /> / {getSubTitle}
           </>
         }
         request={async (

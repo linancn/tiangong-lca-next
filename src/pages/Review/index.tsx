@@ -24,7 +24,8 @@ const Review = () => {
   const actionRef = useRef<any>();
   const unassignedTableRef = useRef<any>();
   const assignedTableRef = useRef<any>();
-  const reviewTableRef = useRef<any>();
+  const reviewedTableRef = useRef<any>();
+  const pendingTableRef = useRef<any>();
   const [addModalVisible, setAddModalVisible] = useState(false);
   const intl = useIntl();
   const { token } = theme.useToken();
@@ -48,14 +49,22 @@ const Review = () => {
 
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
-    if (key === 'unassigned' && unassignedTableRef.current) {
-      unassignedTableRef.current.reload();
-    } else if (key === 'assigned' && assignedTableRef.current) {
-      assignedTableRef.current.reload();
-    } else if (key === 'review' && reviewTableRef.current) {
-      reviewTableRef.current.reload();
-    } else if (key === 'members' && actionRef.current) {
-      actionRef.current.reload();
+    switch (key) {
+      case 'unassigned':
+        unassignedTableRef?.current?.reload();
+        break;
+      case 'assigned':
+        assignedTableRef?.current?.reload();
+        break;
+      case 'reviewed':
+        reviewedTableRef?.current?.reload();
+        break;
+      case 'pending':
+        pendingTableRef?.current?.reload();
+        break;
+      case 'members':
+        actionRef?.current?.reload();
+        break;
     }
   };
 
@@ -327,24 +336,35 @@ const Review = () => {
         ]
       : []),
     {
-      key: 'review',
-      label: <FormattedMessage id='pages.review.tabs.review' />,
+      key: 'reviewed',
+      label: <FormattedMessage id='pages.review.tabs.reviewed' />,
       children: (
-        <AssignmentReview actionRef={reviewTableRef} tableType='review' userData={userData} />
+        <AssignmentReview actionRef={reviewedTableRef} tableType='reviewed' userData={userData} />
       ),
     },
     {
-      key: 'members',
-      label: <FormattedMessage id='pages.review.tabs.members' />,
-      children: renderReviewMember(),
+      key: 'pending',
+      label: <FormattedMessage id='pages.review.tabs.pending' />,
+      children: (
+        <AssignmentReview actionRef={pendingTableRef} tableType='pending' userData={userData} />
+      ),
     },
+    ...(userData?.role === 'review-admin'
+      ? [
+          {
+            key: 'members',
+            label: <FormattedMessage id='pages.review.tabs.members' />,
+            children: renderReviewMember(),
+          },
+        ]
+      : []),
   ];
 
   useEffect(() => {
-    if (userData?.role === 'review-member' && activeTabKey !== 'review') {
-      setActiveTabKey('review');
-      if (reviewTableRef.current) {
-        reviewTableRef.current.reload();
+    if (userData?.role === 'review-member' && activeTabKey !== 'reviewed') {
+      setActiveTabKey('reviewed');
+      if (reviewedTableRef.current) {
+        reviewedTableRef.current.reload();
       }
     }
     if (userData?.role === 'review-admin' && activeTabKey !== 'unassigned') {

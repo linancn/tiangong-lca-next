@@ -55,3 +55,33 @@ export async function getCommentApi(reviewId: string, actionType: 'assigned' | '
   }
   return { data: [], error: true };
 }
+
+export async function getReviewedComment() {
+  const userId = await getUserId();
+
+  if (!userId) {
+    return { error: true, data: [] };
+  }
+
+  const result = await supabase
+    .from('comments')
+    .select('review_id')
+    .eq('reviewer_id', userId)
+    .eq('state_code', 1);
+  return result;
+}
+
+export async function getPendingComment() {
+  const userId = await getUserId();
+
+  if (!userId) {
+    return { error: true, data: [] };
+  }
+
+  const result = await supabase
+    .from('comments')
+    .select('review_id')
+    .eq('reviewer_id', userId)
+    .eq('state_code', 0);
+  return result;
+}

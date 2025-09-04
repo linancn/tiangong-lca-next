@@ -2,7 +2,8 @@ export default {
   'pages.review.title': 'Review Management',
   'pages.review.tabs.unassigned': 'Unassigned Task',
   'pages.review.tabs.assigned': 'Assigned Task',
-  'pages.review.tabs.review': 'Review Task',
+  'pages.review.tabs.reviewed': 'Reviewed',
+  'pages.review.tabs.pending': 'Pending Review',
   'pages.review.tabs.rejected': 'Rejected',
   'pages.review.tabs.members': 'Member Management',
 
