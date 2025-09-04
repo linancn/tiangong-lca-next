@@ -20,6 +20,8 @@ export default {
 
   'pages.review.members.email': '邮箱',
   'pages.review.members.memberName': '成员名称',
+  'pages.review.members.pending': '待审核',
+  'pages.review.members.reviewed': '已审核',
   'pages.review.members.role': '角色',
   'pages.review.members.role.admin': '管理员',
   'pages.review.members.role.member': '成员',

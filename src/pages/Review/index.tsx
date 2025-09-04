@@ -1,8 +1,8 @@
 import { ListPagination } from '@/services/general/data';
 import {
   delRoleApi,
-  getReviewMembersApi,
   getReviewUserRoleApi,
+  getUserManageTableData,
   updateRoleApi,
 } from '@/services/roles/api';
 import { TeamMemberTable } from '@/services/teams/data';
@@ -113,6 +113,18 @@ const Review = () => {
         title: <FormattedMessage id='pages.review.members.email' defaultMessage='Email' />,
         dataIndex: 'email',
         key: 'email',
+      },
+      {
+        title: (
+          <FormattedMessage id='pages.review.members.pending' defaultMessage='Pending Review' />
+        ),
+        dataIndex: 'pendingCount',
+        key: 'pendingCount',
+      },
+      {
+        title: <FormattedMessage id='pages.review.members.reviewed' defaultMessage='Reviewed' />,
+        dataIndex: 'reviewedCount',
+        key: 'reviewedCount',
       },
       {
         title: (
@@ -283,7 +295,7 @@ const Review = () => {
                 };
               }
               setMembersLoading(true);
-              return await getReviewMembersApi(params, sort);
+              return await getUserManageTableData(params, sort);
             } catch (error) {
               console.error(error);
               return {

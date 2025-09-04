@@ -277,7 +277,8 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
         }}
         headerTitle={
           <>
-            <FormattedMessage id='menu.review' defaultMessage='Review Management' /> / {getSubTitle}
+            <FormattedMessage id='menu.review' defaultMessage='Review Management' /> /{' '}
+            {getSubTitle()}
           </>
         }
         request={async (

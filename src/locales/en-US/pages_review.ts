@@ -19,6 +19,8 @@ export default {
 
   'pages.review.members.email': 'Email',
   'pages.review.members.memberName': 'Member Name',
+  'pages.review.members.pending': 'Pending Review',
+  'pages.review.members.reviewed': 'Reviewed',
   'pages.review.members.role': 'Role',
   'pages.review.members.role.admin': 'Administrator',
   'pages.review.members.role.member': 'Member',
