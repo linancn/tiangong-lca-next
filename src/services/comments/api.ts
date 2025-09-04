@@ -7,6 +7,11 @@ export async function addCommentApi(data: any) {
   return { error };
 }
 
+export async function updateCommentByreviewerApi(reviewerId: string, data: any) {
+  const { error } = await supabase.from('comments').update(data).eq('reviewer_id', reviewerId);
+  return { error };
+}
+
 export async function updateCommentApi(
   reviewId: string,
   data: any,

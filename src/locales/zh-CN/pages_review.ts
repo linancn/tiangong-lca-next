@@ -45,6 +45,22 @@ export default {
 
   'pages.review.selectReviewer.button': '分配审核人',
 
+  'pages.review.progress.button': '审核进度',
+  'pages.review.progress.drawer.title': '审核进度',
+  'pages.review.progress.table.reviewerName': '姓名',
+  'pages.review.progress.table.status': '审核状态',
+  'pages.review.progress.table.updateTime': '更新时间',
+  'pages.review.progress.table.actions': '操作',
+  'pages.review.progress.add': '添加审核员',
+  'pages.review.progress.delete.success': '撤销审核员成功',
+  'pages.review.progress.delete.error': '撤销审核员失败',
+  'pages.review.progress.status.pending': '待审核',
+  'pages.review.progress.status.reviewed': '已审核',
+  'pages.review.progress.status.unknown': '未知状态',
+  'pages.review.progress.confirm.title': '确认撤销',
+  'pages.review.progress.confirm.content': '确定要撤销该审核员吗？',
+  'pages.review.progress.tooltip.revoke': '撤销审核员',
+
   'pages.review.actions': '操作',
   'pages.review.actions.view': '查看',
   'pages.review.actions.review': '审核',

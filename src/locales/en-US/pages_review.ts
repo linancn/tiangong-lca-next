@@ -46,6 +46,22 @@ export default {
 
   'pages.review.selectReviewer.button': 'Assign Reviewer',
 
+  'pages.review.progress.button': 'Review Progress',
+  'pages.review.progress.drawer.title': 'Review Progress',
+  'pages.review.progress.table.reviewerName': 'Name',
+  'pages.review.progress.table.status': 'Review Status',
+  'pages.review.progress.table.updateTime': 'Update Time',
+  'pages.review.progress.table.actions': 'Actions',
+  'pages.review.progress.add': 'Add Reviewer',
+  'pages.review.progress.delete.success': 'Successfully revoked the auditor',
+  'pages.review.progress.delete.error': 'Failed to revoke the auditor',
+  'pages.review.progress.status.pending': 'Pending Review',
+  'pages.review.progress.status.reviewed': 'Reviewed',
+  'pages.review.progress.status.unknown': 'Unknown Status',
+  'pages.review.progress.confirm.title': 'Confirm Revocation',
+  'pages.review.progress.confirm.content': 'Are you sure to revoke this reviewer?',
+  'pages.review.progress.tooltip.revoke': 'Revoke Reviewer',
+
   'pages.review.actions.view': 'View',
   'pages.review.actions.review': 'Review',
 

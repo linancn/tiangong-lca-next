@@ -11,6 +11,7 @@ import { useState } from 'react';
 import RejectReview from './RejectReview';
 import ReviewLifeCycleModelsDetail from './reviewLifeCycleModels';
 import ReviewProcessDetail from './reviewProcess';
+import ReviewProgress from './ReviewProgress';
 import SelectReviewer from './SelectReviewer';
 
 type AssignmentReviewProps = {
@@ -148,6 +149,7 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
                 reviewId={record.id}
               />
             )}
+            <ReviewProgress reviewId={record.id} />
           </Space>,
         ];
       },
@@ -225,7 +227,14 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
       }}
       toolBarRender={() => {
         if (selectedRowKeys && selectedRowKeys?.length > 0 && tableType === 'unassigned') {
-          return [<SelectReviewer actionRef={actionRef} reviewIds={selectedRowKeys} key={0} />];
+          return [
+            <SelectReviewer
+              tabType='unassigned'
+              actionRef={actionRef}
+              reviewIds={selectedRowKeys}
+              key={0}
+            />,
+          ];
         }
         return [];
       }}

@@ -12,17 +12,19 @@ import { CloseOutlined, UsergroupAddOutlined } from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
 import { Button, Drawer, message, Space, Spin, Tooltip } from 'antd';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 type SelectReviewerProps = {
   reviewIds: React.Key[];
   actionRef: any;
+  tabType: 'unassigned' | 'assigned';
 };
 
-export default function SelectReviewer({ reviewIds, actionRef }: SelectReviewerProps) {
+export default function SelectReviewer({ reviewIds, actionRef, tabType }: SelectReviewerProps) {
   const intl = useIntl();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const defaultSelectedRowKeys = useRef<React.Key[]>([]);
   const [spinning, setSpinning] = useState(false);
 
   const handleRowSelectionChange = (keys: React.Key[]) => {
@@ -30,10 +32,21 @@ export default function SelectReviewer({ reviewIds, actionRef }: SelectReviewerP
   };
 
   useEffect(() => {
-    if (!drawerVisible) return;
+    if (!drawerVisible) {
+      setSelectedRowKeys([]);
+      defaultSelectedRowKeys.current = [];
+      return;
+    }
     const getReviewerIds = async () => {
       const result = await getReviewerIdsApi(reviewIds);
-      setSelectedRowKeys(result);
+      switch (tabType) {
+        case 'unassigned':
+          setSelectedRowKeys(result);
+          break;
+        case 'assigned':
+          defaultSelectedRowKeys.current = result;
+          break;
+      }
     };
     getReviewerIds();
   }, [drawerVisible]);
@@ -70,7 +83,6 @@ export default function SelectReviewer({ reviewIds, actionRef }: SelectReviewerP
   const addComment = async (data: any) => {
     const { error } = await addCommentApi(data);
     if (!error) {
-      setSelectedRowKeys([]);
       setDrawerVisible(false);
       actionRef.current?.reload();
     }
@@ -129,7 +141,6 @@ export default function SelectReviewer({ reviewIds, actionRef }: SelectReviewerP
             defaultMessage: 'Temporary save success',
           }),
         );
-        setSelectedRowKeys([]);
         setDrawerVisible(false);
         actionRef.current?.reload();
       } else {
@@ -179,7 +190,10 @@ export default function SelectReviewer({ reviewIds, actionRef }: SelectReviewerP
           };
 
           const { error, data } = await updateReviewApi([review.id], {
-            reviewer_id: selectedRowKeys,
+            reviewer_id:
+              tabType === 'unassigned'
+                ? selectedRowKeys
+                : [...defaultSelectedRowKeys.current, ...selectedRowKeys],
             state_code: 1,
             json: updatedJson,
           });
@@ -215,8 +229,6 @@ export default function SelectReviewer({ reviewIds, actionRef }: SelectReviewerP
         );
 
         await addComment(commentData);
-
-        setSelectedRowKeys([]);
         setDrawerVisible(false);
         actionRef.current?.reload();
       } else {
@@ -278,9 +290,14 @@ export default function SelectReviewer({ reviewIds, actionRef }: SelectReviewerP
               <Button onClick={() => setDrawerVisible(false)}>
                 <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
               </Button>
-              <Button onClick={handleTemporarySave} disabled={selectedRowKeys.length === 0}>
-                <FormattedMessage id='pages.button.temporarySave' defaultMessage='Temporary Save' />
-              </Button>
+              {tabType === 'unassigned' && (
+                <Button onClick={handleTemporarySave} disabled={selectedRowKeys.length === 0}>
+                  <FormattedMessage
+                    id='pages.button.temporarySave'
+                    defaultMessage='Temporary Save'
+                  />
+                </Button>
+              )}
               <Button onClick={handleSave} type='primary' disabled={selectedRowKeys.length === 0}>
                 <FormattedMessage id='pages.button.save' defaultMessage='Save' />
               </Button>
@@ -297,8 +314,11 @@ export default function SelectReviewer({ reviewIds, actionRef }: SelectReviewerP
             }}
             request={async (params, sort) => {
               const result = await getReviewMembersApi(params, sort, 'review-member');
+              const data = result.data.filter(
+                (item: any) => !defaultSelectedRowKeys.current.includes(item.user_id),
+              );
               return {
-                data: result.data || [],
+                data: data || [],
                 success: result.success,
                 total: result.total,
               };
