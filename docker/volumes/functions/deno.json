@@ -1,8 +1,8 @@
 {
   "imports": {
     "@aws-sdk/client-cognito-identity-provider": "npm:/@aws-sdk/client-cognito-identity-provider",
+    "@langchain/langgraph-sdk": "npm:@langchain/langgraph-sdk@^0.1.0",
     "@supabase/functions-js/edge-runtime.d.ts": "jsr:@supabase/functions-js/edge-runtime.d.ts",
-    "@hono/hono": "jsr:@hono/hono",
     "@langchain/core/messages": "npm:/@langchain/core/messages",
     "@langchain/core/prompts": "npm:/@langchain/core/prompts",
     "@langchain/core/runnables": "npm:/@langchain/core/runnables",
@@ -10,16 +10,15 @@
     "@langchain/langgraph": "npm:/@langchain/langgraph",
     "@langchain/langgraph/prebuilt": "npm:/@langchain/langgraph/prebuilt",
     "@langchain/openai": "npm:/@langchain/openai",
+    "@openai/openai": "jsr:/@openai/openai",
     "@opensearch-project/opensearch": "npm:/@opensearch-project/opensearch",
     "@opensearch-project/opensearch/aws": "npm:/@opensearch-project/opensearch/aws",
     "@pinecone-database/pinecone": "npm:/@pinecone-database/pinecone",
-    "@redis/client": "npm:/@redis/client",
     "@supabase/supabase-js@2": "jsr:@supabase/supabase-js@2",
     "@upstash/redis": "npm:/@upstash/redis",
-    "@tavily/core": "npm:/@tavily/core",
     "aws-jwt-verify": "npm:/aws-jwt-verify",
-    "duck-duck-scrape": "npm:/duck-duck-scrape",
-    "neo4j-driver": "https://deno.land/x/neo4j_driver_lite@5.27.0/mod.ts",
-    "zod": "npm:/zod"
+    "postgres": "https://deno.land/x/postgresjs@v3.4.7/mod.js",
+    "redis": "npm:redis@^5.8.2",
+    "zod": "npm:/zod@3.25.76"
   }
 }
