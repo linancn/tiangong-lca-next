@@ -17,6 +17,7 @@ export default {
   'pages.review.table.column.teamName': '团队名称',
   'pages.review.table.column.userName': '用户名称',
   'pages.review.table.column.createAt': '提交时间',
+  'pages.review.table.column.deadline': '截止时间',
 
   'pages.review.members.email': '邮箱',
   'pages.review.members.memberName': '成员名称',
@@ -40,13 +41,15 @@ export default {
   'pages.review.members.addError.notRegistered': '用户未注册',
   'pages.review.members.addError.duplicate': '用户已是审核员，请勿重复添加',
 
-  'pages.review.drawer.title': '选择审核人员',
+  'pages.review.drawer.title': '分配审核',
   'pages.review.saveSuccess': '保存成功',
   'pages.review.saveError': '保存失败',
   'pages.review.temporarySaveSuccess': '暂存成功',
   'pages.review.temporarySaveError': '暂存失败',
+  'pages.review.deadline': '审核截止时间',
+  'pages.review.deadline.placeholder': '选择审核截止时间',
 
-  'pages.review.selectReviewer.button': '分配审核人',
+  'pages.review.selectReviewer.button': '分配审核',
 
   'pages.review.progress.button': '审核进度',
   'pages.review.progress.drawer.title': '审核进度',

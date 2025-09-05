@@ -131,97 +131,123 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
     });
   }
   if (tableType === 'assigned') {
-    columns.push({
-      title: <FormattedMessage id='pages.review.actions' defaultMessage='Actions' />,
-      dataIndex: 'actions',
-      search: false,
-      render: (_, record) => {
-        return [
-          <Space key={0}>
-            {record.isFromLifeCycle ? (
-              <ReviewLifeCycleModelsDetail
-                tabType='assigned'
-                type='view'
-                actionRef={actionRef}
-                id={record.json?.data?.id}
-                version={record.json?.data?.version}
-                lang={lang}
-                reviewId={record.id}
-              />
-            ) : (
-              <ReviewProcessDetail
-                tabType='assigned'
-                type='view'
-                actionRef={actionRef}
-                id={record.json?.data?.id}
-                version={record.json?.data?.version}
-                lang={lang}
-                reviewId={record.id}
-              />
-            )}
-            <ReviewProgress reviewId={record.id} />
-          </Space>,
-        ];
-      },
-    });
+    columns.push(
+      ...[
+        {
+          title: (
+            <FormattedMessage id='pages.review.table.column.deadline' defaultMessage='Deadline' />
+          ),
+          dataIndex: 'deadline',
+          sorter: false,
+          search: false,
+          valueType: 'dateTime' as const,
+        },
+        {
+          title: <FormattedMessage id='pages.review.actions' defaultMessage='Actions' />,
+          dataIndex: 'actions',
+          search: false,
+          render: (_: any, record: ReviewsTable) => {
+            return [
+              <Space key={0}>
+                {record.isFromLifeCycle ? (
+                  <ReviewLifeCycleModelsDetail
+                    tabType='assigned'
+                    type='view'
+                    actionRef={actionRef}
+                    id={record.json?.data?.id}
+                    version={record.json?.data?.version}
+                    lang={lang}
+                    reviewId={record.id}
+                  />
+                ) : (
+                  <ReviewProcessDetail
+                    tabType='assigned'
+                    type='view'
+                    actionRef={actionRef}
+                    id={record.json?.data?.id}
+                    version={record.json?.data?.version}
+                    lang={lang}
+                    reviewId={record.id}
+                  />
+                )}
+                <ReviewProgress reviewId={record.id} />
+              </Space>,
+            ];
+          },
+        },
+      ],
+    );
   }
 
   if (tableType === 'reviewed' || tableType === 'pending') {
-    columns.push({
-      title: <FormattedMessage id='pages.review.actions' defaultMessage='Actions' />,
-      dataIndex: 'actions',
-      search: false,
-      render: (_, record) => {
-        return [
-          <Space key={0}>
-            {record.isFromLifeCycle ? (
-              <>
-                <ReviewLifeCycleModelsDetail
-                  type='edit'
-                  id={record.json?.data?.id}
-                  version={record.json?.data?.version}
-                  lang={lang}
-                  reviewId={record.id}
-                  tabType='review'
-                  actionRef={actionRef}
-                />
+    columns.push(
+      ...[
+        {
+          title: (
+            <FormattedMessage id='pages.review.table.column.deadline' defaultMessage='Deadline' />
+          ),
+          dataIndex: 'deadline',
+          sorter: false,
+          search: false,
+          valueType: 'dateTime' as const,
+        },
+        {
+          title: <FormattedMessage id='pages.review.actions' defaultMessage='Actions' />,
+          dataIndex: 'actions',
+          search: false,
+          render: (_: any, record: ReviewsTable) => {
+            return [
+              <Space key={0}>
+                {record.isFromLifeCycle ? (
+                  <>
+                    <ReviewLifeCycleModelsDetail
+                      type='edit'
+                      id={record.json?.data?.id}
+                      version={record.json?.data?.version}
+                      lang={lang}
+                      reviewId={record.id}
+                      tabType='review'
+                      actionRef={actionRef}
+                    />
 
-                <ReviewLifeCycleModelsDetail
-                  reviewId={record.id}
-                  tabType='review'
-                  type='view'
-                  id={record.json?.data?.id}
-                  version={record.json?.data?.version}
-                  lang={lang}
-                  actionRef={actionRef}
-                />
-              </>
-            ) : (
-              <>
-                <ReviewProcessDetail
-                  tabType='review'
-                  type='edit'
-                  actionRef={actionRef}
-                  id={record.json?.data?.id}
-                  version={record.json?.data?.version}
-                  lang={lang}
-                  reviewId={record.id}
-                />
-                <ReviewProcessDetail
-                  tabType='review'
-                  type='view'
-                  actionRef={actionRef}
-                  id={record.json?.data?.id}
-                  version={record.json?.data?.version}
-                  lang={lang}
-                  reviewId={record.id}
-                />
-              </>
-            )}
-          </Space>,
-        ];
-      },
-    });
+                    <ReviewLifeCycleModelsDetail
+                      reviewId={record.id}
+                      tabType='review'
+                      type='view'
+                      id={record.json?.data?.id}
+                      version={record.json?.data?.version}
+                      lang={lang}
+                      actionRef={actionRef}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <ReviewProcessDetail
+                      tabType='review'
+                      type='edit'
+                      actionRef={actionRef}
+                      id={record.json?.data?.id}
+                      version={record.json?.data?.version}
+                      lang={lang}
+                      reviewId={record.id}
+                    />
+                    <ReviewProcessDetail
+                      tabType='review'
+                      type='view'
+                      actionRef={actionRef}
+                      id={record.json?.data?.id}
+                      version={record.json?.data?.version}
+                      lang={lang}
+                      reviewId={record.id}
+                    />
+                  </>
+                )}
+              </Space>,
+            ];
+          },
+        },
+      ],
+    );
   }
 
   const getSubTitle = () => {

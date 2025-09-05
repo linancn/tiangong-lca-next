@@ -1,6 +1,7 @@
 import { addCommentApi } from '@/services/comments/api';
 import {
   getReviewerIdsApi,
+  getReviewsDetail,
   getReviewsDetailByReviewIds,
   updateReviewApi,
 } from '@/services/reviews/api';
@@ -11,7 +12,8 @@ import styles from '@/style/custom.less';
 import { CloseOutlined, UsergroupAddOutlined } from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
-import { Button, Drawer, message, Space, Spin, Tooltip } from 'antd';
+import { Button, DatePicker, Drawer, message, Space, Spin, theme, Tooltip } from 'antd';
+import dayjs, { Dayjs } from 'dayjs';
 import { useEffect, useRef, useState } from 'react';
 
 type SelectReviewerProps = {
@@ -26,7 +28,8 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const defaultSelectedRowKeys = useRef<React.Key[]>([]);
   const [spinning, setSpinning] = useState(false);
-
+  const [reviewDeadline, setReviewDeadline] = useState<Dayjs | null>(dayjs().add(15, 'day'));
+  const { token } = theme.useToken();
   const handleRowSelectionChange = (keys: React.Key[]) => {
     setSelectedRowKeys(keys);
   };
@@ -35,20 +38,27 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
     if (!drawerVisible) {
       setSelectedRowKeys([]);
       defaultSelectedRowKeys.current = [];
+      setReviewDeadline(dayjs().add(15, 'day'));
       return;
     }
-    const getReviewerIds = async () => {
+    const init = async () => {
       const result = await getReviewerIdsApi(reviewIds);
+      console.log('tabType', tabType);
       switch (tabType) {
         case 'unassigned':
           setSelectedRowKeys(result);
           break;
-        case 'assigned':
+        case 'assigned': {
+          const riviewDetail = await getReviewsDetail(reviewIds[0] as string);
+          if (riviewDetail?.deadline) {
+            setReviewDeadline(dayjs(riviewDetail.deadline));
+          }
           defaultSelectedRowKeys.current = result;
           break;
+        }
       }
     };
-    getReviewerIds();
+    init();
   }, [drawerVisible]);
 
   const columns: ProColumns<TeamMemberTable>[] = [
@@ -196,6 +206,7 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
                 : [...defaultSelectedRowKeys.current, ...selectedRowKeys],
             state_code: 1,
             json: updatedJson,
+            deadline: reviewDeadline?.toISOString(),
           });
 
           selectedRowKeys.forEach((userId) => {
@@ -291,14 +302,21 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
                 <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
               </Button>
               {tabType === 'unassigned' && (
-                <Button onClick={handleTemporarySave} disabled={selectedRowKeys.length === 0}>
+                <Button
+                  onClick={handleTemporarySave}
+                  disabled={selectedRowKeys.length === 0 || !reviewDeadline}
+                >
                   <FormattedMessage
                     id='pages.button.temporarySave'
                     defaultMessage='Temporary Save'
                   />
                 </Button>
               )}
-              <Button onClick={handleSave} type='primary' disabled={selectedRowKeys.length === 0}>
+              <Button
+                onClick={handleSave}
+                type='primary'
+                disabled={selectedRowKeys.length === 0 || !reviewDeadline}
+              >
                 <FormattedMessage id='pages.button.save' defaultMessage='Save' />
               </Button>
             </Space>
@@ -308,6 +326,31 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
             rowKey='user_id'
             search={false}
             options={{ fullScreen: true, reload: true }}
+            toolbar={{
+              title: (
+                <Space align='center'>
+                  <span style={{ fontSize: token.fontSize }}>
+                    <FormattedMessage
+                      id='pages.review.deadline'
+                      defaultMessage='Review Deadline:'
+                    />
+                  </span>
+                  <DatePicker
+                    value={reviewDeadline}
+                    onChange={(date) => setReviewDeadline(date)}
+                    showTime
+                    format='YYYY-MM-DD HH:mm:ss'
+                    placeholder={intl.formatMessage({
+                      id: 'pages.review.deadline.placeholder',
+                      defaultMessage: 'Select review deadline',
+                    })}
+                    disabledDate={(current) => current && current < dayjs().startOf('day')}
+                    size='middle'
+                    allowClear
+                  />
+                </Space>
+              ),
+            }}
             rowSelection={{
               selectedRowKeys,
               onChange: handleRowSelectionChange,

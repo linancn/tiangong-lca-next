@@ -146,6 +146,7 @@ export async function getReviewsTableData(
         userName: i?.json?.user?.name ?? '-',
         createAt: new Date(i.created_at).toISOString(),
         modifiedAt: new Date(i?.modified_at).toISOString(),
+        deadline: i?.deadline ? new Date(i?.deadline).toISOString() : i?.deadline,
         json: i?.json,
       };
     });

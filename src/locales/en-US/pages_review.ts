@@ -16,6 +16,7 @@ export default {
   'pages.review.table.column.teamName': 'Team Name',
   'pages.review.table.column.userName': 'User Name',
   'pages.review.table.column.createAt': 'Create At',
+  'pages.review.table.column.deadline': 'Deadline',
 
   'pages.review.members.email': 'Email',
   'pages.review.members.memberName': 'Member Name',
@@ -41,13 +42,15 @@ export default {
   'pages.review.members.addError.notRegistered': 'User not registered',
   'pages.review.members.addError.duplicate': 'User is already a reviewer, please do not add again',
 
-  'pages.review.drawer.title': 'Select Reviewer',
+  'pages.review.drawer.title': 'Assign for review',
   'pages.review.saveSuccess': 'Save successful',
   'pages.review.saveError': 'Save failed',
   'pages.review.temporarySaveSuccess': 'Temporary save successful',
   'pages.review.temporarySaveError': 'Temporary save failed',
+  'pages.review.deadline': 'Review Deadline',
+  'pages.review.deadline.placeholder': 'Select review deadline',
 
-  'pages.review.selectReviewer.button': 'Assign Reviewer',
+  'pages.review.selectReviewer.button': 'Assign for review',
 
   'pages.review.progress.button': 'Review Progress',
   'pages.review.progress.drawer.title': 'Review Progress',
