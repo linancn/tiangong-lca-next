@@ -7,9 +7,10 @@ import { useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 interface ImportDataProps {
   onJsonData: (data: any) => void;
+  disabled?: boolean;
 }
 
-const ImportData: FC<ImportDataProps> = ({ onJsonData }) => {
+const ImportData: FC<ImportDataProps> = ({ onJsonData, disabled = false }) => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [fileList, setFileList] = useState<RcFile[]>([]);
   const intl = useIntl();
@@ -110,6 +111,7 @@ const ImportData: FC<ImportDataProps> = ({ onJsonData }) => {
         type='text'
       ></Button> */}
       <ToolBarButton
+        disabled={disabled}
         icon={<UploadOutlined />}
         tooltip={<FormattedMessage id='component.importData.import' defaultMessage='Import' />}
         onClick={showModal}

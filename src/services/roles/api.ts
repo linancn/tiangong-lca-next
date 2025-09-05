@@ -441,3 +441,9 @@ export async function getLatestRolesOfMine() {
 
   return data;
 }
+
+export async function getRoleByUserId() {
+  const userId = await getUserId();
+  const { data } = await supabase.from('roles').select('team_id,role').eq('user_id', userId);
+  return data;
+}

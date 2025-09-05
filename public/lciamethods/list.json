@@ -2,67 +2,130 @@
     "metadata": {
         "description": "LCIA Methods compressed files list",
         "totalFiles": 25,
-        "totalSize": "16M",
         "format": "gzip compressed JSON",
-        "lastUpdated": "2025-07-18",
-        "compressionRatio": "91%",
-        "originalSize": "181M"
+        "lastUpdated": "2025-09-02",
+        "compressionRatio": "94%",
+        "originalSize": "260.6MB",
+        "totalSize": "14.8MB"
     },
     "files": [
         {
             "filename": "6209b35f-9447-40b5-b68c-a1099e3674a0_01.00.000.json.gz",
             "id": "6209b35f-9447-40b5-b68c-a1099e3674a0",
             "version": "01.00.000",
-            "size": "37.9KB",
-            "description": "Climate change",
+            "size": "36.6KB",
+            "description": [
+                {
+                    "@xml:lang": "en",
+                    "#text": "Climate change"
+                },
+                {
+                    "@xml:lang": "zh",
+                    "#text": "气候变化"
+                }
+            ],
             "impactModelName": "Baseline model of 100 years of the IPCC"
         },
         {
             "filename": "706261af-a357-4cc0-a50a-f3033fcbd556_01.00.000.json.gz",
             "id": "706261af-a357-4cc0-a50a-f3033fcbd556",
             "version": "01.00.000",
-            "size": "2.7KB",
-            "description": "Climate change-Biogenic",
+            "size": "2.8KB",
+            "description": [
+                {
+                    "@xml:lang": "en",
+                    "#text": "Climate change-Biogenic"
+                },
+                {
+                    "@xml:lang": "zh",
+                    "#text": "气候变化-生物源"
+                }
+            ],
             "impactModelName": "Baseline model of 100 years of the IPCC"
         },
         {
             "filename": "7fce5b3a-66b8-4ce1-91e8-a925aee1f186_01.00.000.json.gz",
             "id": "7fce5b3a-66b8-4ce1-91e8-a925aee1f186",
             "version": "01.00.000",
-            "size": "36.8KB",
-            "description": "Climate change-Fossil",
+            "size": "35.5KB",
+            "description": [
+                {
+                    "@xml:lang": "en",
+                    "#text": "Climate change-Fossil"
+                },
+                {
+                    "@xml:lang": "zh",
+                    "#text": "气候变化-化石源"
+                }
+            ],
             "impactModelName": "Baseline model of 100 years of the IPCC"
         },
         {
             "filename": "14af9ca7-aa1d-4832-b1d9-ab05a06dcb12_01.00.000.json.gz",
             "id": "14af9ca7-aa1d-4832-b1d9-ab05a06dcb12",
             "version": "01.00.000",
-            "size": "2.8KB",
-            "description": "Climate change-Land use and land use change",
+            "size": "3.0KB",
+            "description": [
+                {
+                    "@xml:lang": "en",
+                    "#text": "Climate change-Land use and land use change"
+                },
+                {
+                    "@xml:lang": "zh",
+                    "#text": "气候变化-土地利用和土地利用改变"
+                }
+            ],
             "impactModelName": "Baseline model of 100 years of the IPCC"
         },
         {
             "filename": "2299222a-bbd8-474f-9d4f-4dd1f18aea7c_01.01.000.json.gz",
             "id": "2299222a-bbd8-474f-9d4f-4dd1f18aea7c",
             "version": "01.01.000",
-            "size": "550KB",
-            "description": "Human toxicity, cancer",
+            "size": "542.1KB",
+            "description": [
+                {
+                    "@xml:lang": "en",
+                    "#text": "Human toxicity, cancer"
+                },
+                {
+                    "@xml:lang": "zh",
+                    "#text": "人类毒性, 致癌"
+                }
+            ],
             "impactModelName": "USEtox™"
         },
         {
             "filename": "01500b74-7ffb-463e-9bd4-72f17c2263ff_01.00.000.json.gz",
             "id": "01500b74-7ffb-463e-9bd4-72f17c2263ff",
             "version": "01.00.000",
-            "size": "15.3KB",
-            "description": "Human toxicity, cancer_inorganics",
+            "size": "14.9KB",
+            "description": [
+                {
+                    "@xml:lang": "en",
+                    "#text": "Human toxicity, cancer_inorganics"
+                },
+                {
+                    "@xml:lang": "zh",
+                    "#text": "人类毒性, 致癌-无机物"
+                }
+            ],
             "impactModelName": "USEtox™"
         },
         {
             "filename": "9ec743ea-6b00-400d-a53b-61547a3fc03c_01.01.000.json.gz",
             "id": "9ec743ea-6b00-400d-a53b-61547a3fc03c",
             "version": "01.01.000",
-            "size": "535KB",
-            "description": "Human toxicity, cancer_organics",
+            "size": "527.8KB",
+            "description": [
+                {
+                    "@xml:lang": "en",
+                    "#text": "Human toxicity, cancer_organics"
+                },
+                {
+                    "@xml:lang": "zh",
+                    "#text": "人类毒性, 致癌-有机物"
+                }
+            ],
             "impactModelName": "USEtox™"
         },
         {
@@ -70,15 +133,33 @@
             "id": "7cfdcfcf-b222-4b26-888a-a55f9fbf7ac8",
             "version": "01.00.000",
             "size": "2.4MB",
-            "description": "Human toxicity, non-cancer",
+            "description": [
+                {
+                    "@xml:lang": "en",
+                    "#text": "Human toxicity, non-cancer"
+                },
+                {
+                    "@xml:lang": "zh",
+                    "#text": "人类毒性，非致癌"
+                }
+            ],
             "impactModelName": "USEtox 2.1™"
         },
         {
             "filename": "9d1d43a2-e1aa-4c16-acd4-3dd8a6a2fb85_01.00.000.json.gz",
             "id": "9d1d43a2-e1aa-4c16-acd4-3dd8a6a2fb85",
             "version": "01.00.000",
-            "size": "191KB",
-            "description": "Human toxicity, non-cancer_inorganics",
+            "size": "188.3KB",
+            "description": [
+                {
+                    "@xml:lang": "en",
+                    "#text": "Human toxicity, non-cancer_inorganics"
+                },
+                {
+                    "@xml:lang": "zh",
+                    "#text": "人类毒性, 非致癌-无机物"
+                }
+            ],
             "impactModelName": "USEtox 2.1™"
         },
         {
@@ -86,7 +167,16 @@
             "id": "8c3141e9-1f15-43b5-bff2-182e49893a46",
             "version": "01.00.000",
             "size": "2.2MB",
-            "description": "Human toxicity, non-cancer_organics",
+            "description": [
+                {
+                    "@xml:lang": "en",
+                    "#text": "Human toxicity, non-cancer_organics"
+                },
+                {
+                    "@xml:lang": "zh",
+                    "#text": "人类毒性, 非致癌-有机物"
+                }
+            ],
             "impactModelName": "USEtox 2.1™"
         },
         {
@@ -94,15 +184,33 @@
             "id": "05316e7a-b254-4bea-9cf0-6bf33eb5c630",
             "version": "01.00.000",
             "size": "4.2MB",
-            "description": "Ecotoxicity, freshwater",
+            "description": [
+                {
+                    "@xml:lang": "en",
+                    "#text": "Ecotoxicity, freshwater"
+                },
+                {
+                    "@xml:lang": "zh",
+                    "#text": "生态毒性, 淡水"
+                }
+            ],
             "impactModelName": "USEtox™"
         },
         {
             "filename": "dacd48b5-4da5-49aa-aff4-cd5f5495c037_01.00.000.json.gz",
             "id": "dacd48b5-4da5-49aa-aff4-cd5f5495c037",
             "version": "01.00.000",
-            "size": "281KB",
-            "description": "Ecotoxicity, freshwater_inorganics",
+            "size": "275.2KB",
+            "description": [
+                {
+                    "@xml:lang": "en",
+                    "#text": "Ecotoxicity, freshwater_inorganics"
+                },
+                {
+                    "@xml:lang": "zh",
+                    "#text": "生态毒性, 淡水_无机物"
+                }
+            ],
             "impactModelName": "USEtox™"
         },
         {
@@ -110,103 +218,220 @@
             "id": "fd530f00-9325-424a-92ef-aaac67922fd9",
             "version": "01.00.000",
             "size": "3.9MB",
-            "description": "Ecotoxicity, freshwater_organics",
+            "description": [
+                {
+                    "@xml:lang": "en",
+                    "#text": "Ecotoxicity, freshwater_organics"
+                },
+                {
+                    "@xml:lang": "en",
+                    "#text": "生态毒性, 淡水_有机物"
+                }
+            ],
             "impactModelName": "USEtox™"
         },
         {
             "filename": "b5c619fa-def3-11e6-bf01-fe55135034f3_02.00.010.json.gz",
             "id": "b5c619fa-def3-11e6-bf01-fe55135034f3",
             "version": "02.00.010",
-            "size": "9.2KB",
-            "description": "Eutrophication marine",
+            "size": "9.8KB",
+            "description": [
+                {
+                    "@xml:lang": "en",
+                    "#text": "Eutrophication marine"
+                },
+                {
+                    "@xml:lang": "zh",
+                    "#text": "富营养化, 海水"
+                }
+            ],
             "impactModelName": "CARMEN model for waterborne emissions and EUTREND for airborne emissions."
         },
         {
             "filename": "b53ec18f-7377-4ad3-86eb-cc3f4f276b2b_01.00.010.json.gz",
             "id": "b53ec18f-7377-4ad3-86eb-cc3f4f276b2b",
             "version": "01.00.010",
-            "size": "4.6KB",
-            "description": "Eutrophication, freshwater",
+            "size": "4.7KB",
+            "description": [
+                {
+                    "@xml:lang": "en",
+                    "#text": "Eutrophication, freshwater"
+                },
+                {
+                    "@xml:lang": "zh",
+                    "#text": "富营养化, 淡水"
+                }
+            ],
             "impactModelName": "CARMEN model for waterborne emissions and EUTREND for airborne emissions."
         },
         {
             "filename": "b5c614d2-def3-11e6-bf01-fe55135034f3_01.02.009.json.gz",
             "id": "b5c614d2-def3-11e6-bf01-fe55135034f3",
             "version": "01.02.009",
-            "size": "9.5KB",
-            "description": "Eutrophication, terrestrial",
+            "size": "10.0KB",
+            "description": [
+                {
+                    "@xml:lang": "en",
+                    "#text": "Eutrophication, terrestrial"
+                },
+                {
+                    "@xml:lang": "zh",
+                    "#text": "富营养化, 陆地"
+                }
+            ],
             "impactModelName": "Accumulated Exceedance method (combination of models)."
         },
         {
             "filename": "b2ad6110-c78d-11e6-9d9d-cec0c932ce01_01.00.010.json.gz",
             "id": "b2ad6110-c78d-11e6-9d9d-cec0c932ce01",
             "version": "01.00.010",
-            "size": "2.4KB",
-            "description": "Resource use, fossils",
+            "size": "2.5KB",
+            "description": [
+                {
+                    "@xml:lang": "en",
+                    "#text": "Resource use, fossils"
+                },
+                {
+                    "@xml:lang": "zh",
+                    "#text": "资源消耗, 化石能源"
+                }
+            ],
             "impactModelName": "Abiotic resource depletion (ADP fossil)"
         },
         {
             "filename": "b2ad6494-c78d-11e6-9d9d-cec0c932ce01_01.00.010.json.gz",
             "id": "b2ad6494-c78d-11e6-9d9d-cec0c932ce01",
             "version": "01.00.010",
-            "size": "3.4KB",
-            "description": "Resource use, minerals and metals",
+            "size": "3.5KB",
+            "description": [
+                {
+                    "@xml:lang": "en",
+                    "#text": "Resource use, minerals and metals"
+                },
+                {
+                    "@xml:lang": "zh",
+                    "#text": "资源消耗, 矿物和金属"
+                }
+            ],
             "impactModelName": "Abiotic resource depletion (ADP ultimate reserve)"
         },
         {
             "filename": "b2ad66ce-c78d-11e6-9d9d-cec0c932ce01_03.00.014.json.gz",
             "id": "b2ad66ce-c78d-11e6-9d9d-cec0c932ce01",
             "version": "03.00.014",
-            "size": "27.3KB",
-            "description": "Water use",
+            "size": "26.4KB",
+            "description": [
+                {
+                    "@xml:lang": "en",
+                    "#text": "Water use"
+                },
+                {
+                    "@xml:lang": "zh",
+                    "#text": "水资源消耗"
+                }
+            ],
             "impactModelName": "AWARE 100 (Available water Remaining)"
         },
         {
             "filename": "b2ad6890-c78d-11e6-9d9d-cec0c932ce01_01.00.010.json.gz",
             "id": "b2ad6890-c78d-11e6-9d9d-cec0c932ce01",
             "version": "01.00.010",
-            "size": "540KB",
-            "description": "Land use",
+            "size": "512.6KB",
+            "description": [
+                {
+                    "@xml:lang": "en",
+                    "#text": "Land use"
+                },
+                {
+                    "@xml:lang": "zh",
+                    "#text": "土地利用"
+                }
+            ],
             "impactModelName": "Soil quality index"
         },
         {
             "filename": "b5c611c6-def3-11e6-bf01-fe55135034f3_01.04.000.json.gz",
             "id": "b5c611c6-def3-11e6-bf01-fe55135034f3",
             "version": "01.04.000",
-            "size": "16.1KB",
-            "description": "Acidification",
+            "size": "16.4KB",
+            "description": [
+                {
+                    "@xml:lang": "en",
+                    "#text": "Acidification"
+                },
+                {
+                    "@xml:lang": "zh",
+                    "#text": "酸雨"
+                }
+            ],
             "impactModelName": "Accumulated Exceedance method (combination of models)."
         },
         {
             "filename": "b5c629d6-def3-11e6-bf01-fe55135034f3_02.00.012.json.gz",
             "id": "b5c629d6-def3-11e6-bf01-fe55135034f3",
             "version": "02.00.012",
-            "size": "5.8KB",
-            "description": "Ozone depletion",
+            "size": "5.9KB",
+            "description": [
+                {
+                    "@xml:lang": "en",
+                    "#text": "Ozone depletion"
+                },
+                {
+                    "@xml:lang": "zh",
+                    "#text": "臭氧消耗"
+                }
+            ],
             "impactModelName": "1999 WMO assessment of ozone depletion (World Meteorological Organization 1999)."
         },
         {
             "filename": "b5c632be-def3-11e6-bf01-fe55135034f3_01.00.011.json.gz",
             "id": "b5c632be-def3-11e6-bf01-fe55135034f3",
             "version": "01.00.011",
-            "size": "7.2KB",
-            "description": "Ionising radiation, human health",
+            "size": "7.1KB",
+            "description": [
+                {
+                    "@xml:lang": "en",
+                    "#text": "Ionising radiation, human health"
+                },
+                {
+                    "@xml:lang": "zh",
+                    "#text": "电离辐射, 人类健康"
+                }
+            ],
             "impactModelName": "Unknown"
         },
         {
             "filename": "b5c610fe-def3-11e6-bf01-fe55135034f3_02.01.000.json.gz",
             "id": "b5c610fe-def3-11e6-bf01-fe55135034f3",
             "version": "02.01.000",
-            "size": "29.5KB",
-            "description": "Photochemical ozone formation - human health",
+            "size": "29.6KB",
+            "description": [
+                {
+                    "@xml:lang": "en",
+                    "#text": "Photochemical ozone formation - human health"
+                },
+                {
+                    "@xml:lang": "zh",
+                    "#text": "光化学烟雾, 人类健康"
+                }
+            ],
             "impactModelName": "LOTOS-EUROS"
         },
         {
             "filename": "b5c602c6-def3-11e6-bf01-fe55135034f3_02.00.011.json.gz",
             "id": "b5c602c6-def3-11e6-bf01-fe55135034f3",
             "version": "02.00.011",
-            "size": "12.1KB",
-            "description": "EF-particulate Matter",
+            "size": "12.4KB",
+            "description": [
+                {
+                    "@xml:lang": "en",
+                    "#text": "EF-particulate Matter"
+                },
+                {
+                    "@xml:lang": "zh",
+                    "#text": "颗粒物"
+                }
+            ],
             "impactModelName": "Unknown"
         }
     ]

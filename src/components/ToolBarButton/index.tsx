@@ -10,7 +10,7 @@ const ToolBarButton = ({ icon, tooltip, onClick, disabled = false }: Props) => {
     <div
       key='calculate'
       style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
-      className='ant-pro-table-list-toolbar-setting-item'
+      className={`ant-pro-table-list-toolbar-setting-item ${disabled ? 'ant-btn-disabled' : ''}`}
     >
       <span onClick={disabled ? undefined : onClick}>
         <Tooltip title={tooltip}>{icon}</Tooltip>
