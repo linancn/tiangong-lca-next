@@ -316,7 +316,7 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
               <Button
                 onClick={handleSave}
                 type='primary'
-                // disabled={selectedRowKeys.length === 0 || !reviewDeadline}
+                disabled={tabType === 'unassigned' ? selectedRowKeys.length === 0 : false}
               >
                 <FormattedMessage id='pages.button.save' defaultMessage='Save' />
               </Button>
