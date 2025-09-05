@@ -1,8 +1,9 @@
 // Setup type definitions for built-in Supabase Runtime APIs
 import '@supabase/functions-js/edge-runtime.d.ts';
 
-import { createClient } from '@supabase/supabase-js@2';
+import { authenticateRequest, AuthMethod } from '../_shared/auth.ts';
 import { corsHeaders } from '../_shared/cors.ts';
+import { supabaseClient } from '../_shared/supabase_client.ts';
 
 Deno.serve(async (req: Request): Promise<Response> => {
   if (req.method === 'OPTIONS') {
@@ -10,52 +11,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
 
   try {
-    // 添加鉴权逻辑
-    const authHeader = req.headers.get('Authorization');
-    const xKey = req.headers.get('x_key');
+    const authResult = await authenticateRequest(req, {
+      supabase: supabaseClient,
+      allowedMethods: [AuthMethod.JWT],
+    });
 
-    if (!authHeader && !xKey) {
-      return new Response(JSON.stringify({ error: 'Unauthorized Request' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 401,
-      });
-    }
-
-    let user;
-    let supabaseClient;
-
-    // 创建 Supabase 客户端
-    if (xKey === Deno.env.get('X_KEY')) {
-      user = { role: 'authenticated' };
-      supabaseClient = createClient(
-        Deno.env.get('REMOTE_SUPABASE_URL') ?? Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('REMOTE_SUPABASE_SERVICE_ROLE_KEY') ??
-          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ??
-          '',
-      );
-    } else {
-      const token = authHeader?.replace('Bearer ', '') ?? '';
-
-      supabaseClient = createClient(
-        Deno.env.get('REMOTE_SUPABASE_URL') ?? Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('REMOTE_SUPABASE_ANON_KEY') ?? Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      );
-
-      const { data } = await supabaseClient.auth.getUser(token);
-      if (!data || !data.user) {
-        return new Response(JSON.stringify({ error: 'User Not Found' }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 404,
-        });
-      }
-      user = data.user;
-    }
-
-    if (user?.role !== 'authenticated') {
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 403,
-      });
+    if (!authResult.isAuthenticated) {
+      return authResult.response!;
     }
 
     // Parse request body
