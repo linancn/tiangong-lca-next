@@ -1,38 +1,202 @@
-// Follow this setup guide to integrate the Deno language server with your editor:
-// https://deno.land/manual/getting_started/setup_your_environment
-// This enables autocomplete, go to definition, etc.
-
 // Setup type definitions for built-in Supabase Runtime APIs
-/// <reference types="https://esm.sh/@supabase/functions-js/src/edge-runtime.d.ts" />
+import '@supabase/functions-js/edge-runtime.d.ts';
 
-import { OpenAIEmbeddings } from 'https://esm.sh/@langchain/openai@0.1.1';
+import { z } from 'zod';
 
-const openai_api_key = Deno.env.get('OPENAI_API_KEY') ?? '';
-const openai_embedding_model = Deno.env.get('OPENAI_EMBEDDING_MODEL') ?? '';
+// We'll make a direct Postgres connection to update the document
+import postgres from 'postgres';
 
-Deno.serve(async (req) => {
-  const { query } = await req.json();
+const session = new Supabase.ai.Session('gte-small');
 
-  const embeddings = new OpenAIEmbeddings({
-    apiKey: openai_api_key,
-    model: openai_embedding_model,
-  });
+// Initialize Postgres client
+const sql = postgres(
+  // `SUPABASE_DB_URL` is a built-in environment variable
+  Deno.env.get('SUPABASE_DB_URL')!,
+);
 
-  const vectors = await embeddings.embedQuery(query);
-
-  return new Response(JSON.stringify(vectors), {
-    headers: { 'Content-Type': 'application/json' },
-  });
+// Job schema: now supports composite PK (id, version)
+const jobSchema = z.object({
+  jobId: z.number(),
+  id: z.string().uuid(),
+  version: z.string(),
+  schema: z.string(),
+  table: z.string(),
+  contentFunction: z.string(),
+  embeddingColumn: z.string(),
 });
 
-/* To invoke locally:
+const failedJobSchema = jobSchema.extend({
+  error: z.string(),
+});
 
-  1. Run `supabase start` (see: https://supabase.com/docs/reference/cli/supabase-start)
-  2. Make an HTTP request:
+type Job = z.infer<typeof jobSchema>;
+type FailedJob = z.infer<typeof failedJobSchema>;
 
-  curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/embedding' \
-    --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' \
-    --header 'Content-Type: application/json' \
-    --data '{"query":"Functions"}'
+type Row = {
+  id: string;
+  version: string;
+  content: unknown;
+};
 
-*/
+const QUEUE_NAME = 'embedding_jobs';
+
+// Listen for HTTP requests
+Deno.serve(async (req) => {
+  if (req.method !== 'POST') {
+    return new Response('expected POST request', { status: 405 });
+  }
+
+  if (req.headers.get('content-type') !== 'application/json') {
+    return new Response('expected json body', { status: 400 });
+  }
+
+  // Use Zod to parse and validate the request body
+  const parseResult = z.array(jobSchema).safeParse(await req.json());
+
+  if (parseResult.error) {
+    return new Response(`invalid request body: ${parseResult.error.message}`, {
+      status: 400,
+    });
+  }
+
+  const pendingJobs = parseResult.data;
+
+  // Track jobs that completed successfully
+  const completedJobs: Job[] = [];
+
+  // Track jobs that failed due to an error
+  const failedJobs: FailedJob[] = [];
+
+  async function processJobs() {
+    let currentJob: Job | undefined;
+
+    while ((currentJob = pendingJobs.shift()) !== undefined) {
+      try {
+        await processJob(currentJob);
+        completedJobs.push(currentJob);
+      } catch (error) {
+        failedJobs.push({
+          ...currentJob,
+          error: error instanceof Error ? error.message : JSON.stringify(error),
+        });
+      }
+    }
+  }
+
+  try {
+    // Process jobs while listening for worker termination
+    await Promise.race([processJobs(), catchUnload()]);
+  } catch (error) {
+    // If the worker is terminating (e.g. wall clock limit reached),
+    // add pending jobs to fail list with termination reason
+    failedJobs.push(
+      ...pendingJobs.map((job) => ({
+        ...job,
+        error: error instanceof Error ? error.message : JSON.stringify(error),
+      })),
+    );
+  }
+
+  // Log completed and failed jobs for traceability
+  console.log('finished processing jobs:', {
+    completedJobs: completedJobs.length,
+    failedJobs: failedJobs.length,
+  });
+
+  return new Response(
+    JSON.stringify({
+      completedJobs,
+      failedJobs,
+    }),
+    {
+      // 200 OK response
+      status: 200,
+
+      // Custom headers to report job status
+      headers: {
+        'content-type': 'application/json',
+        'x-completed-jobs': completedJobs.length.toString(),
+        'x-failed-jobs': failedJobs.length.toString(),
+      },
+    },
+  );
+});
+
+/**
+ * Generates an embedding for the given text.
+ */
+async function generateEmbedding(text: string) {
+  // Generate the embedding from the user input
+  const embedding = await session.run(text, {
+    mean_pool: true,
+    normalize: true,
+  });
+
+  if (!embedding) {
+    throw new Error('failed to generate embedding');
+  }
+
+  return embedding;
+}
+
+/**
+ * Processes an embedding job.
+ */
+async function processJob(job: Job) {
+  const { jobId, id, version, schema, table, contentFunction, embeddingColumn } = job;
+
+  // Log the id & version for traceability of each job
+  console.log('processing embedding job', { id, version, jobId, table: `${schema}.${table}` });
+
+  // Fetch content for the schema/table/row combination
+  const [row]: [Row] = await sql`
+    select
+      id,
+      version,
+      ${sql(contentFunction)}(t) as content
+    from
+      ${sql(schema)}.${sql(table)} t
+    where
+      id = ${id} and version = ${version}
+  `;
+
+  if (!row) {
+    throw new Error(`row not found: ${schema}.${table}/${id}/${version}`);
+  }
+
+  if (typeof row.content !== 'string') {
+    throw new Error(`invalid content - expected string: ${schema}.${table}/${id}/${version}`);
+  }
+
+  const embedding = await generateEmbedding(row.content);
+
+  await sql`
+    update
+      ${sql(schema)}.${sql(table)}
+    set
+      ${sql(embeddingColumn)} = ${JSON.stringify(embedding)},
+      embedding_at = now()
+    where
+      id = ${id} and version = ${version}
+  `;
+
+  await sql`
+    select pgmq.delete(${QUEUE_NAME}, ${jobId}::bigint)
+  `;
+
+  // Confirm completion for this id/version
+  console.log('finished embedding job', { id, version, jobId });
+}
+
+/**
+ * Returns a promise that rejects if the worker is terminating.
+ */
+function catchUnload() {
+  return new Promise((reject) => {
+    // Edge runtime beforeunload event detail isn't strongly typed; capture minimal shape
+    addEventListener('beforeunload', (ev: Event & { detail?: { reason?: string } }) => {
+      // Use optional chaining to avoid runtime errors if detail is absent
+      reject(new Error(ev.detail?.reason));
+    });
+  });
+}

@@ -3,36 +3,28 @@ import '@supabase/functions-js/edge-runtime.d.ts';
 
 import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { ChatOpenAI } from '@langchain/openai';
-import { createClient } from '@supabase/supabase-js@2';
-import { Redis } from '@upstash/redis';
-import { authenticateRequest } from '../_shared/auth_middleware.ts';
+import { authenticateRequest, AuthMethod } from '../_shared/auth.ts';
 import { corsHeaders } from '../_shared/cors.ts';
+import { supabaseClient as supabase } from '../_shared/supabase_client.ts';
+import { getRedisClient } from '../_shared/redis_client.ts';
 
 const openai_api_key = Deno.env.get('OPENAI_API_KEY') ?? '';
 const openai_chat_model = Deno.env.get('OPENAI_CHAT_MODEL') ?? '';
 
-const supabase_url = Deno.env.get('REMOTE_SUPABASE_URL') ?? Deno.env.get('SUPABASE_URL') ?? '';
-const supabase_service_key =
-  Deno.env.get('REMOTE_SUPABASE_SERVICE_ROLE_KEY') ??
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ??
-  '';
-
-const redis_url = Deno.env.get('UPSTASH_REDIS_URL') ?? '';
-const redis_token = Deno.env.get('UPSTASH_REDIS_TOKEN') ?? '';
-
-const redis = new Redis({
-  url: redis_url,
-  token: redis_token,
-});
-
-const supabase = createClient(supabase_url, supabase_service_key);
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
-  const authResult = await authenticateRequest(req, supabase, redis);
+  const redis = await getRedisClient();
+
+  const authResult = await authenticateRequest(req, {
+    supabase: supabase,
+    redis: redis,
+    allowedMethods: [AuthMethod.JWT, AuthMethod.USER_API_KEY, AuthMethod.SERVICE_API_KEY],
+    serviceApiKey: Deno.env.get('REMOTE_SERVICE_API_KEY') ?? Deno.env.get('SERVICE_API_KEY') ?? '',
+  });
 
   if (!authResult.isAuthenticated) {
     return authResult.response!;
@@ -46,7 +38,7 @@ Deno.serve(async (req) => {
 
   const model = new ChatOpenAI({
     model: openai_chat_model,
-    temperature: 0,
+    // temperature: 0,
     apiKey: openai_api_key,
   });
 
