@@ -394,6 +394,8 @@ export function classificationToJsonList(classifications: any, elementaryFlow: b
         }
       });
     }
+  } else if (classifications && Array.isArray(classifications)) {
+    return removeEmptyObjects(classifications);
   }
   return removeEmptyObjects(common_class);
 }
