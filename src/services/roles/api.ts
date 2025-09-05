@@ -390,15 +390,17 @@ export async function getUserManageTableData(params: any, sort: any, role?: stri
           };
         });
       }
-
-      const { data: comments } = await getUserManageComments(data.map((item) => item.user_id));
+      const { data: comments } = await getUserManageComments();
       if (comments && comments.length) {
         comments.forEach((item) => {
-          const user = res.find((user) => user.user_id === item.reviewer_id);
-          if (user) {
-            user.pendingCount = item.state_code === 0 ? user.pendingCount + 1 : user.pendingCount;
-            user.reviewedCount =
-              item.state_code === 1 ? user.reviewedCount + 1 : user.reviewedCount;
+          const userIndex = res.findIndex((user) => user.user_id === item.reviewer_id);
+          if (userIndex !== -1) {
+            res[userIndex].pendingCount =
+              item.state_code === 0 ? res[userIndex].pendingCount + 1 : res[userIndex].pendingCount;
+            res[userIndex].reviewedCount =
+              item.state_code === 1 || item.state_code === 2
+                ? res[userIndex].reviewedCount + 1
+                : res[userIndex].reviewedCount;
           }
         });
       }

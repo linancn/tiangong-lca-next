@@ -11,7 +11,7 @@ import {
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
 import { Button, Drawer, Flex, message, Modal, theme, Tooltip } from 'antd';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import AddMemberModal from './AddMemberModal';
 import AssignmentReview from './AssignmentReview';
 
@@ -28,6 +28,12 @@ const ReviewMember = ({ userData }: { userData: { user_id: string; role: string 
   const [drawerUserData, setDrawerUserData] = useState<{ user_id: string; role: string } | null>(
     null,
   );
+
+  useEffect(() => {
+    if (drawerVisible) {
+      actionRef.current?.reload();
+    }
+  }, [drawerVisible]);
 
   const updateRole = async (
     teamId: string,
@@ -318,8 +324,8 @@ const ReviewMember = ({ userData }: { userData: { user_id: string; role: string 
         onClose={() => setDrawerVisible(false)}
       >
         <AssignmentReview
+          actionRef={actionRef}
           actionFrom={'reviewMember'}
-          key={drawerTabType}
           tableType={drawerTabType}
           userData={drawerUserData}
         />

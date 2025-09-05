@@ -20,7 +20,7 @@ const { Search } = Input;
 type AssignmentReviewProps = {
   userData: { user_id: string; role: string } | null;
   tableType: 'unassigned' | 'assigned' | 'reviewed' | 'pending';
-  actionRef?: any;
+  actionRef: any;
   actionFrom?: 'reviewMember';
 };
 

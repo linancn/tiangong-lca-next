@@ -86,11 +86,10 @@ export async function getPendingComment(user_id?: string) {
   return result;
 }
 
-export async function getUserManageComments(userIds: string[]) {
+export async function getUserManageComments() {
   const result = await supabase
     .from('comments')
-    .select('state_code,reviewer_id')
-    .in('reviewer_id', userIds)
-    .in('state_code', [0, 1]);
+    .select('review_id,state_code,reviewer_id')
+    .in('state_code', [0, 1, 2]);
   return result;
 }
