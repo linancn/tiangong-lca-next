@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
     // console.log(`${table} ${record.id} ${record.version} summary ${type} request`);
 
     const systemPrompt =
-      'Summarize the following LCA process dataset from JSON input. Include: purpose, main inputs, main outputs, technology, location, and quantitative details if available. Keep it concise, self-contained, under 500 tokens. Output only the summary text.';
+      'Summarize the following lca models from JSON input. Include: name, classification, reference time, location, technology description, LCI method principle, LCI method approaches, intended applications if available. Keep it concise, self-contained, under 500 tokens. Output only the summary text.';
     const modelInput = `${systemPrompt}\nJSON:\n${JSON.stringify(jsonData)}`;
 
     const { text } = await openaiChat(modelInput, { stream: false });

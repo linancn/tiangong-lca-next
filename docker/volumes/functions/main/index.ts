@@ -70,7 +70,7 @@ serve(async (req: Request) => {
   const memoryLimitMb = 150
   const workerTimeoutMs = 1 * 60 * 1000
   const noModuleCache = false
-  const importMapPath = '/home/deno/functions/import_map.json'
+  const importMapPath = null
   const envVarsObj = Deno.env.toObject()
   const envVars = Object.keys(envVarsObj).map((k) => [k, envVarsObj[k]])
 

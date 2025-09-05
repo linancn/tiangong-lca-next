@@ -5,49 +5,31 @@
 import '@supabase/functions-js/edge-runtime.d.ts';
 import { corsHeaders } from '../_shared/cors.ts';
 
-import { createClient } from '@supabase/supabase-js@2';
+import { authenticateRequest, AuthMethod } from '../_shared/auth.ts';
 import check_state_code from '../_shared/check_state_code.ts';
 import getDataDetail from '../_shared/get_data.ts';
 import getUserRole from '../_shared/get_user_role.ts';
+import { supabaseClient } from '../_shared/supabase_client.ts';
 import updateData from '../_shared/update_data.ts';
-
-const supabase_url = Deno.env.get('REMOTE_SUPABASE_URL') ?? Deno.env.get('SUPABASE_URL') ?? '';
-const supabase_service_key =
-  Deno.env.get('REMOTE_SUPABASE_SERVICE_ROLE_KEY') ??
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ??
-  '';
-
-const supabase = createClient(supabase_url, supabase_service_key);
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
-  // Get the session or user object
-  const authHeader = req.headers.get('Authorization');
+  const authResult = await authenticateRequest(req, {
+    supabase: supabaseClient,
+    allowedMethods: [AuthMethod.JWT],
+  });
 
-  // If no Authorization header, return error immediately
-  if (!authHeader) {
+  if (!authResult.isAuthenticated) {
+    return authResult.response!;
+  }
+
+  const user = authResult.user;
+
+  if (!user || !user.id) {
     return new Response('Unauthorized Request', { status: 401 });
-  }
-
-  const token = authHeader.replace('Bearer ', '');
-
-  const userSupabase = createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-  );
-
-  const userData = await userSupabase.auth.getUser(token);
-
-  if (!userData?.data || !userData.data.user) {
-    return new Response('User Not Found', { status: 404 });
-  }
-
-  const user = userData.data.user;
-  if (user?.role !== 'authenticated') {
-    return new Response('Forbidden', { status: 403 });
   }
 
   const { id, version, table, data } = await req.json();
@@ -58,9 +40,9 @@ Deno.serve(async (req) => {
     id,
     version,
     table,
-    supabase,
+    supabaseClient,
   );
-  const { data: userRole } = await getUserRole(user.id, supabase);
+  const { data: userRole } = await getUserRole(user.id!, supabaseClient);
 
   if (!oldDataSuccess) {
     return new Response('Data Not Found', { status: 404 });
@@ -76,7 +58,7 @@ Deno.serve(async (req) => {
     return new Response('Forbidden', { status: 403 });
   }
 
-  const updateResult = await updateData(id, version, table, data, supabase);
+  const updateResult = await updateData(id, version, table, data, supabaseClient);
 
   return new Response(JSON.stringify(updateResult), {
     headers: { 'Content-Type': 'application/json', ...corsHeaders },

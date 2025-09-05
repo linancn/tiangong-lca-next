@@ -1,5 +1,5 @@
 import '@supabase/functions-js/edge-runtime.d.ts';
-import { createClient } from '@supabase/supabase-js@2';
+import { supabaseClient as supabase } from '../_shared/supabase_client.ts';
 
 export const ANT_CHAIN_KEY = JSON.parse(atob(Deno.env.get('ANT_CHAIN_KEY') ?? ''));
 
@@ -13,11 +13,6 @@ export const defaultAntchainConfig = {
   signatureMethod: ANT_CHAIN_KEY.signatureMethod,
 };
 const baseUrl = ANT_CHAIN_KEY.baseUrl;
-
-const supabase = createClient(
-  Deno.env.get('REMOTE_SUPABASE_URL') ?? Deno.env.get('SUPABASE_URL') ?? '',
-  Deno.env.get('REMOTE_SUPABASE_ANON_KEY') ?? Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-);
 
 const defaultHeaders = {
   'x-authentication-version': defaultAntchainConfig.authenticationVersion,

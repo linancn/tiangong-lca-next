@@ -1,8 +1,10 @@
 // Setup type definitions for built-in Supabase Runtime APIs
 import '@supabase/functions-js/edge-runtime.d.ts';
 
-import { createClient } from '@supabase/supabase-js@2';
+import { authenticateRequest, AuthMethod } from '../_shared/auth.ts';
 import { corsHeaders } from '../_shared/cors.ts';
+import { openaiChat } from '../_shared/openai_chat.ts';
+import { supabaseClient } from '../_shared/supabase_client.ts';
 
 interface WebhookPayload {
   type: 'INSERT' | 'UPDATE' | 'DELETE';
@@ -13,22 +15,18 @@ interface WebhookPayload {
 }
 
 Deno.serve(async (req) => {
-  // if (req.method === 'OPTIONS') {
-  //   return new Response('ok', { headers: corsHeaders });
-  // }
+  // Authenticate the request by apikey
+  const authResult = await authenticateRequest(req, {
+    supabase: supabaseClient,
+    allowedMethods: [AuthMethod.SERVICE_API_KEY],
+    serviceApiKey: Deno.env.get('REMOTE_SERVICE_API_KEY') ?? Deno.env.get('SERVICE_API_KEY') ?? '',
+  });
 
-  // Get the session or user object
-  const secretApiKey = req.headers.get('apikey');
-
-  // If no Authorization header, return error immediately
-  if (!secretApiKey) {
-    return new Response('Unauthorized Request', { status: 401 });
+  if (!authResult.isAuthenticated) {
+    return authResult.response!;
   }
 
   try {
-    const supabaseUrl = Deno.env.get('REMOTE_SUPABASE_URL') ?? Deno.env.get('SUPABASE_URL') ?? '';
-    const supabaseClient = createClient(supabaseUrl, secretApiKey);
-
     const payload: WebhookPayload = await req.json();
     const { type, table, record } = payload;
 
@@ -43,46 +41,33 @@ Deno.serve(async (req) => {
       throw new Error('No record data found');
     }
 
-    const jsonData = record.json;
+    const jsonData = record.json_ordered;
     if (!jsonData) {
-      throw new Error('No JSON data found in record');
+      throw new Error('No json_ordered data found in record');
     }
 
-    const embeddingServiceUrl = `${supabaseUrl}/functions/v1/flow_embedding`;
-    const response = await fetch(embeddingServiceUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        apikey: secretApiKey,
-      },
-      body: JSON.stringify(jsonData),
-    });
-    // console.log('response', response);
+    // console.log(`${table} ${record.id} ${record.version} summary ${type} request`);
 
-    if (!response.ok) {
-      throw new Error(
-        `Flow embedding service error:${JSON.stringify(
-          response.json(),
-        )} ${response.statusText} ${response.status}, embeddingServiceUrl: ${embeddingServiceUrl}, data: ${JSON.stringify(jsonData)}`,
-      );
-    }
+    const systemPrompt =
+      'Summarize the following LCA flow dataset from JSON. Extract only the fields explicitly present in the JSON (e.g., name, classification, synonyms, general comment, CAS number, etc.). Write one concise, factual English paragraph under 500 tokens. Do not invent, infer, or add any information not provided in the JSON. Output only the summary text.';
+    const modelInput = `${systemPrompt}\nJSON:\n${JSON.stringify(jsonData)}`;
 
-    const { embedding, extracted_text } = await response.json();
+    const { text } = await openaiChat(modelInput, { stream: false });
+    const summary = (text || '').trim();
+    if (!summary) throw new Error('Empty summary from model');
 
     const { error: updateError } = await supabaseClient
       .from(table)
       .update({
-        embedding: embedding,
-        extracted_text: extracted_text,
-        embedding_at: new Date().toISOString(),
+        extracted_text: summary,
       })
-      .eq('id', record.id);
-    console.log(`${table} ${record.id} embedding ${type} request`);
+      .eq('id', record.id)
+      .eq('version', record.version);
 
     if (updateError) {
       throw updateError;
     }
-    console.log(`${table} ${record.id} embedding ${type} success`);
+    console.log(summary);
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
