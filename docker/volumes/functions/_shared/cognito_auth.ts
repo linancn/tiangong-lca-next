@@ -1,12 +1,6 @@
 import { CognitoJwtVerifier } from 'aws-jwt-verify';
+import type { AuthResult } from './auth.ts';
 import { corsHeaders } from './cors.ts';
-
-export interface AuthResult {
-  isAuthenticated: boolean;
-  userId?: string;
-  response?: Response;
-  email?: string;
-}
 
 // Create Cognito JWT verifier for access tokens
 const verifier = CognitoJwtVerifier.create({
@@ -39,10 +33,17 @@ export async function authenticateCognitoToken(token: string): Promise<AuthResul
       };
     }
 
+    // Align to shared AuthResult shape used in _shared/auth.ts
     return {
       isAuthenticated: true,
-      userId,
-      email,
+      user: {
+        id: userId,
+        email,
+        app_metadata: { provider: 'cognito' },
+        user_metadata: { provider: 'cognito' },
+        aud: '',
+        created_at: '',
+      },
     };
   } catch (error) {
     console.error('Cognito token verification failed:', error);
