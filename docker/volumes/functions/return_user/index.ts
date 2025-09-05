@@ -1,35 +1,25 @@
 // Setup type definitions for built-in Supabase Runtime APIs
 import '@supabase/functions-js/edge-runtime.d.ts';
 
-import { createClient } from '@supabase/supabase-js@2';
+import { authenticateRequest, AuthMethod } from '../_shared/auth.ts';
 import { corsHeaders } from '../_shared/cors.ts';
+import { supabaseClient } from '../_shared/supabase_client.ts';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
-  // Get the session or user object
-  const authHeader = req.headers.get('Authorization');
+  const authResult = await authenticateRequest(req, {
+    supabase: supabaseClient,
+    allowedMethods: [AuthMethod.JWT, AuthMethod.USER_API_KEY],
+  });
 
-  // If no Authorization header, return error immediately
-  if (!authHeader) {
-    return new Response('Unauthorized Request', { status: 401 });
+  if (!authResult.isAuthenticated) {
+    return authResult.response!;
   }
 
-  const token = authHeader.replace('Bearer ', '');
-
-  const supabaseClient = createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-  );
-
-  const { data } = await supabaseClient.auth.getUser(token);
-  if (!data || !data.user) {
-    return new Response('User Not Found', { status: 404 });
-  }
-
-  const user = data.user;
+  const user = authResult.user;
   if (user?.role !== 'authenticated') {
     return new Response('Forbidden', { status: 403 });
   }

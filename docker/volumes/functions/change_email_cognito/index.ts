@@ -3,19 +3,16 @@
 // This enables autocomplete, go to definition, etc.
 
 import '@supabase/functions-js/edge-runtime.d.ts';
+import { authenticateRequest, AuthMethod } from '../_shared/auth.ts';
 import { corsHeaders } from '../_shared/cors.ts';
+import { supabaseClient } from '../_shared/supabase_client.ts';
 
 import {
   AdminGetUserCommand,
   AdminUpdateUserAttributesCommand,
   CognitoIdentityProviderClient,
 } from '@aws-sdk/client-cognito-identity-provider';
-import { createClient } from '@supabase/supabase-js@2';
-
-const userSupabase = createClient(
-  Deno.env.get('REMOTE_SUPABASE_URL') ?? Deno.env.get('SUPABASE_URL') ?? '',
-  Deno.env.get('REMOTE_SUPABASE_ANON_KEY') ?? Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-);
+// Using shared supabaseClient and unified auth middleware (see sign_up_cognito)
 
 const awsClient = new CognitoIdentityProviderClient({
   region: 'us-east-1',
@@ -70,38 +67,42 @@ Deno.serve(async (req) => {
     return new Response('ok', { headers: corsHeaders });
   }
 
-  // Get the session or user object
-  const authHeader = req.headers.get('Authorization');
+  // Authenticate the request via unified middleware (JWT only, like sign_up_cognito)
+  const authResult = await authenticateRequest(req, {
+    supabase: supabaseClient,
+    allowedMethods: [AuthMethod.JWT],
+    serviceApiKey: Deno.env.get('REMOTE_SERVICE_API_KEY') ?? Deno.env.get('SERVICE_API_KEY') ?? '',
+  });
 
-  // If no Authorization header, return error immediately
-  if (!authHeader) {
-    return new Response('Unauthorized Request', { status: 401 });
+  if (!authResult.isAuthenticated) {
+    return authResult.response!; // Already formed with proper headers
   }
 
-  const token = authHeader.replace('Bearer ', '');
-
-  const userData = await userSupabase.auth.getUser(token);
-
-  if (!userData?.data || !userData.data.user) {
-    return new Response('User Not Found', { status: 404 });
-  }
-
-  const user = userData.data.user;
-  if (user?.role !== 'authenticated') {
-    return new Response('Forbidden', { status: 403 });
+  const user = authResult.user;
+  if (!user) {
+    return new Response('User Not Found', {
+      status: 404,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 
   const body = await req.json();
   const { newEmail } = body;
 
   if (!newEmail) {
-    return new Response('New email is required', { status: 400 });
+    return new Response('New email is required', {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 
   // Basic email validation
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(newEmail)) {
-    return new Response('Invalid email format', { status: 400 });
+    return new Response('Invalid email format', {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 
   try {
