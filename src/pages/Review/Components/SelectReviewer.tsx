@@ -43,7 +43,6 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
     }
     const init = async () => {
       const result = await getReviewerIdsApi(reviewIds);
-      console.log('tabType', tabType);
       switch (tabType) {
         case 'unassigned':
           setSelectedRowKeys(result);
@@ -302,10 +301,7 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
                 <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
               </Button>
               {tabType === 'unassigned' && (
-                <Button
-                  onClick={handleTemporarySave}
-                  disabled={selectedRowKeys.length === 0 || !reviewDeadline}
-                >
+                <Button onClick={handleTemporarySave} disabled={selectedRowKeys.length === 0}>
                   <FormattedMessage
                     id='pages.button.temporarySave'
                     defaultMessage='Temporary Save'
@@ -315,7 +311,7 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
               <Button
                 onClick={handleSave}
                 type='primary'
-                disabled={selectedRowKeys.length === 0 || !reviewDeadline}
+                // disabled={selectedRowKeys.length === 0 || !reviewDeadline}
               >
                 <FormattedMessage id='pages.button.save' defaultMessage='Save' />
               </Button>
