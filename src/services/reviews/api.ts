@@ -62,6 +62,7 @@ export async function getReviewsTableData(
   sort: any,
   type: 'unassigned' | 'assigned' | 'reviewed' | 'pending' | 'rejected',
   lang: string,
+  userData?: { user_id: string },
 ) {
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
   const orderBy = sort[sortBy] ?? 'descend';
@@ -83,9 +84,9 @@ export async function getReviewsTableData(
       break;
     }
     case 'reviewed': {
-      const userId = await getUserId();
+      const userId = userData?.user_id ?? (await getUserId());
       if (userId) {
-        const reviewedComment = await getReviewedComment();
+        const reviewedComment = await getReviewedComment(userData?.user_id);
         if (reviewedComment && reviewedComment.data) {
           const reviewIds = reviewedComment.data.map((item: any) => item.review_id);
           query = query.in('id', reviewIds);
@@ -94,9 +95,9 @@ export async function getReviewsTableData(
       break;
     }
     case 'pending': {
-      const userId = await getUserId();
+      const userId = userData?.user_id ?? (await getUserId());
       if (userId) {
-        const pendingComment = await getPendingComment();
+        const pendingComment = await getPendingComment(userData?.user_id);
         if (pendingComment && pendingComment.data) {
           const reviewIds = pendingComment.data.map((item: any) => item.review_id);
           query = query.in('id', reviewIds);
@@ -105,7 +106,7 @@ export async function getReviewsTableData(
       break;
     }
     case 'rejected': {
-      const userId = await getUserId();
+      const userId = userData?.user_id ?? (await getUserId());
       query = query.eq('state_code', -1).filter('json->user->>id', 'eq', userId);
       break;
     }

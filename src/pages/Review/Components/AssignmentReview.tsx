@@ -20,10 +20,16 @@ const { Search } = Input;
 type AssignmentReviewProps = {
   userData: { user_id: string; role: string } | null;
   tableType: 'unassigned' | 'assigned' | 'reviewed' | 'pending';
-  actionRef: any;
+  actionRef?: any;
+  actionFrom?: 'reviewMember';
 };
 
-const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewProps) => {
+const AssignmentReview = ({
+  userData,
+  tableType,
+  actionRef,
+  actionFrom,
+}: AssignmentReviewProps) => {
   // const intl = useIntl();
   const { locale } = useIntl();
   const lang = locale === 'zh-CN' ? 'zh' : 'en';
@@ -266,18 +272,20 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
 
   return (
     <>
-      <Card>
-        <Row align={'middle'}>
-          <Col flex='auto' style={{ marginRight: '10px' }}>
-            <Search
-              size={'large'}
-              placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
-              onSearch={onSearch}
-              enterButton
-            />
-          </Col>
-        </Row>
-      </Card>
+      {!actionFrom && (
+        <Card>
+          <Row align={'middle'}>
+            <Col flex='auto' style={{ marginRight: '10px' }}>
+              <Search
+                size={'large'}
+                placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+                onSearch={onSearch}
+                enterButton
+              />
+            </Col>
+          </Row>
+        </Card>
+      )}
       <ProTable<ReviewsTable, ListPagination>
         loading={tableLoading}
         columns={columns}
@@ -303,8 +311,12 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
         }}
         headerTitle={
           <>
-            <FormattedMessage id='menu.review' defaultMessage='Review Management' /> /{' '}
-            {getSubTitle()}
+            {!actionFrom && (
+              <>
+                <FormattedMessage id='menu.review' defaultMessage='Review Management' /> /{' '}
+                {getSubTitle()}
+              </>
+            )}
           </>
         }
         request={async (
@@ -324,7 +336,13 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
             }
             setTableLoading(true);
             setSelectedRowKeys([]);
-            return await getReviewsTableData(params, sort, tableType, lang);
+            return await getReviewsTableData(
+              params,
+              sort,
+              tableType,
+              lang,
+              actionFrom === 'reviewMember' ? { user_id: userData?.user_id } : undefined,
+            );
           } catch (error) {
             console.error(error);
             return {

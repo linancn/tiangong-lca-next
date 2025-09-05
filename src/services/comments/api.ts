@@ -56,8 +56,8 @@ export async function getCommentApi(reviewId: string, actionType: 'assigned' | '
   return { data: [], error: true };
 }
 
-export async function getReviewedComment() {
-  const userId = await getUserId();
+export async function getReviewedComment(user_id?: string) {
+  const userId = user_id ?? (await getUserId());
 
   if (!userId) {
     return { error: true, data: [] };
@@ -71,8 +71,8 @@ export async function getReviewedComment() {
   return result;
 }
 
-export async function getPendingComment() {
-  const userId = await getUserId();
+export async function getPendingComment(user_id?: string) {
+  const userId = user_id ?? (await getUserId());
 
   if (!userId) {
     return { error: true, data: [] };
