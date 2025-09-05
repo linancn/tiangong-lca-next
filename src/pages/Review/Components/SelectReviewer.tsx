@@ -10,7 +10,7 @@ import { TeamMemberTable } from '@/services/teams/data';
 import { getUserId, getUsersByIds } from '@/services/users/api';
 import styles from '@/style/custom.less';
 import { CloseOutlined, UsergroupAddOutlined } from '@ant-design/icons';
-import { ProColumns, ProTable } from '@ant-design/pro-components';
+import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
 import { Button, DatePicker, Drawer, message, Space, Spin, theme, Tooltip } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
@@ -30,6 +30,7 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
   const [spinning, setSpinning] = useState(false);
   const [reviewDeadline, setReviewDeadline] = useState<Dayjs | null>(dayjs().add(15, 'day'));
   const { token } = theme.useToken();
+  const tableRef = useRef<ActionType>();
   const handleRowSelectionChange = (keys: React.Key[]) => {
     setSelectedRowKeys(keys);
   };
@@ -42,10 +43,12 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
       return;
     }
     const init = async () => {
+      setSpinning(true);
       const result = await getReviewerIdsApi(reviewIds);
       switch (tabType) {
         case 'unassigned':
           setSelectedRowKeys(result);
+          tableRef.current?.reload();
           break;
         case 'assigned': {
           const riviewDetail = await getReviewsDetail(reviewIds[0] as string);
@@ -53,9 +56,11 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
             setReviewDeadline(dayjs(riviewDetail.deadline));
           }
           defaultSelectedRowKeys.current = result;
+          tableRef.current?.reload();
           break;
         }
       }
+      setSpinning(false);
     };
     init();
   }, [drawerVisible]);
@@ -321,6 +326,8 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
           <ProTable<TeamMemberTable>
             rowKey='user_id'
             search={false}
+            manualRequest={true}
+            actionRef={tableRef}
             options={{ fullScreen: true, reload: true }}
             toolbar={{
               title: (
