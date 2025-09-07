@@ -1,6 +1,7 @@
 import { addCommentApi } from '@/services/comments/api';
 import {
   getReviewerIdsApi,
+  getReviewsDetail,
   getReviewsDetailByReviewIds,
   updateReviewApi,
 } from '@/services/reviews/api';
@@ -9,33 +10,59 @@ import { TeamMemberTable } from '@/services/teams/data';
 import { getUserId, getUsersByIds } from '@/services/users/api';
 import styles from '@/style/custom.less';
 import { CloseOutlined, UsergroupAddOutlined } from '@ant-design/icons';
-import { ProColumns, ProTable } from '@ant-design/pro-components';
+import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
-import { Button, Drawer, message, Space, Spin, Tooltip } from 'antd';
-import { useEffect, useState } from 'react';
+import { Button, DatePicker, Drawer, message, Space, Spin, theme, Tooltip } from 'antd';
+import dayjs, { Dayjs } from 'dayjs';
+import { useEffect, useRef, useState } from 'react';
 
 type SelectReviewerProps = {
   reviewIds: React.Key[];
   actionRef: any;
+  tabType: 'unassigned' | 'assigned';
 };
 
-export default function SelectReviewer({ reviewIds, actionRef }: SelectReviewerProps) {
+export default function SelectReviewer({ reviewIds, actionRef, tabType }: SelectReviewerProps) {
   const intl = useIntl();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const defaultSelectedRowKeys = useRef<React.Key[]>([]);
   const [spinning, setSpinning] = useState(false);
-
+  const [reviewDeadline, setReviewDeadline] = useState<Dayjs | null>(dayjs().add(15, 'day'));
+  const { token } = theme.useToken();
+  const tableRef = useRef<ActionType>();
   const handleRowSelectionChange = (keys: React.Key[]) => {
     setSelectedRowKeys(keys);
   };
 
   useEffect(() => {
-    if (!drawerVisible) return;
-    const getReviewerIds = async () => {
+    if (!drawerVisible) {
+      setSelectedRowKeys([]);
+      defaultSelectedRowKeys.current = [];
+      setReviewDeadline(dayjs().add(15, 'day'));
+      return;
+    }
+    const init = async () => {
+      setSpinning(true);
       const result = await getReviewerIdsApi(reviewIds);
-      setSelectedRowKeys(result);
+      switch (tabType) {
+        case 'unassigned':
+          setSelectedRowKeys(result);
+          tableRef.current?.reload();
+          break;
+        case 'assigned': {
+          const riviewDetail = await getReviewsDetail(reviewIds[0] as string);
+          if (riviewDetail?.deadline) {
+            setReviewDeadline(dayjs(riviewDetail.deadline));
+          }
+          defaultSelectedRowKeys.current = result;
+          tableRef.current?.reload();
+          break;
+        }
+      }
+      setSpinning(false);
     };
-    getReviewerIds();
+    init();
   }, [drawerVisible]);
 
   const columns: ProColumns<TeamMemberTable>[] = [
@@ -70,7 +97,6 @@ export default function SelectReviewer({ reviewIds, actionRef }: SelectReviewerP
   const addComment = async (data: any) => {
     const { error } = await addCommentApi(data);
     if (!error) {
-      setSelectedRowKeys([]);
       setDrawerVisible(false);
       actionRef.current?.reload();
     }
@@ -129,7 +155,6 @@ export default function SelectReviewer({ reviewIds, actionRef }: SelectReviewerP
             defaultMessage: 'Temporary save success',
           }),
         );
-        setSelectedRowKeys([]);
         setDrawerVisible(false);
         actionRef.current?.reload();
       } else {
@@ -179,9 +204,13 @@ export default function SelectReviewer({ reviewIds, actionRef }: SelectReviewerP
           };
 
           const { error, data } = await updateReviewApi([review.id], {
-            reviewer_id: selectedRowKeys,
+            reviewer_id:
+              tabType === 'unassigned'
+                ? selectedRowKeys
+                : [...defaultSelectedRowKeys.current, ...selectedRowKeys],
             state_code: 1,
             json: updatedJson,
+            deadline: reviewDeadline?.toISOString(),
           });
 
           selectedRowKeys.forEach((userId) => {
@@ -215,8 +244,6 @@ export default function SelectReviewer({ reviewIds, actionRef }: SelectReviewerP
         );
 
         await addComment(commentData);
-
-        setSelectedRowKeys([]);
         setDrawerVisible(false);
         actionRef.current?.reload();
       } else {
@@ -278,10 +305,19 @@ export default function SelectReviewer({ reviewIds, actionRef }: SelectReviewerP
               <Button onClick={() => setDrawerVisible(false)}>
                 <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
               </Button>
-              <Button onClick={handleTemporarySave} disabled={selectedRowKeys.length === 0}>
-                <FormattedMessage id='pages.button.temporarySave' defaultMessage='Temporary Save' />
-              </Button>
-              <Button onClick={handleSave} type='primary' disabled={selectedRowKeys.length === 0}>
+              {tabType === 'unassigned' && (
+                <Button onClick={handleTemporarySave} disabled={selectedRowKeys.length === 0}>
+                  <FormattedMessage
+                    id='pages.button.temporarySave'
+                    defaultMessage='Temporary Save'
+                  />
+                </Button>
+              )}
+              <Button
+                onClick={handleSave}
+                type='primary'
+                disabled={tabType === 'unassigned' ? selectedRowKeys.length === 0 : false}
+              >
                 <FormattedMessage id='pages.button.save' defaultMessage='Save' />
               </Button>
             </Space>
@@ -290,15 +326,45 @@ export default function SelectReviewer({ reviewIds, actionRef }: SelectReviewerP
           <ProTable<TeamMemberTable>
             rowKey='user_id'
             search={false}
+            manualRequest={true}
+            actionRef={tableRef}
             options={{ fullScreen: true, reload: true }}
+            toolbar={{
+              title: (
+                <Space align='center'>
+                  <span style={{ fontSize: token.fontSize }}>
+                    <FormattedMessage
+                      id='pages.review.deadline'
+                      defaultMessage='Review Deadline:'
+                    />
+                  </span>
+                  <DatePicker
+                    value={reviewDeadline}
+                    onChange={(date) => setReviewDeadline(date)}
+                    showTime
+                    format='YYYY-MM-DD HH:mm:ss'
+                    placeholder={intl.formatMessage({
+                      id: 'pages.review.deadline.placeholder',
+                      defaultMessage: 'Select review deadline',
+                    })}
+                    disabledDate={(current) => current && current < dayjs().startOf('day')}
+                    size='middle'
+                    allowClear
+                  />
+                </Space>
+              ),
+            }}
             rowSelection={{
               selectedRowKeys,
               onChange: handleRowSelectionChange,
             }}
             request={async (params, sort) => {
               const result = await getReviewMembersApi(params, sort, 'review-member');
+              const data = result.data.filter(
+                (item: any) => !defaultSelectedRowKeys.current.includes(item.user_id),
+              );
               return {
-                data: result.data || [],
+                data: data || [],
                 success: result.success,
                 total: result.total,
               };

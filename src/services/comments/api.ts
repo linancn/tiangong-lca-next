@@ -7,6 +7,11 @@ export async function addCommentApi(data: any) {
   return { error };
 }
 
+export async function updateCommentByreviewerApi(reviewerId: string, data: any) {
+  const { error } = await supabase.from('comments').update(data).eq('reviewer_id', reviewerId);
+  return { error };
+}
+
 export async function updateCommentApi(
   reviewId: string,
   data: any,
@@ -49,4 +54,42 @@ export async function getCommentApi(reviewId: string, actionType: 'assigned' | '
     return { data, error };
   }
   return { data: [], error: true };
+}
+
+export async function getReviewedComment(user_id?: string) {
+  const userId = user_id ?? (await getUserId());
+
+  if (!userId) {
+    return { error: true, data: [] };
+  }
+
+  const result = await supabase
+    .from('comments')
+    .select('review_id')
+    .eq('reviewer_id', userId)
+    .eq('state_code', 1);
+  return result;
+}
+
+export async function getPendingComment(user_id?: string) {
+  const userId = user_id ?? (await getUserId());
+
+  if (!userId) {
+    return { error: true, data: [] };
+  }
+
+  const result = await supabase
+    .from('comments')
+    .select('review_id')
+    .eq('reviewer_id', userId)
+    .eq('state_code', 0);
+  return result;
+}
+
+export async function getUserManageComments() {
+  const result = await supabase
+    .from('comments')
+    .select('review_id,state_code,reviewer_id')
+    .in('state_code', [0, 1, 2]);
+  return result;
 }

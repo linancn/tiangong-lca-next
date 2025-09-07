@@ -1,4 +1,3 @@
-import TeamView from '@/components/AllTeams/view';
 import AccountView from '@/pages/Account/view';
 import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
 import ProcessView from '@/pages/Processes/Components/view';
@@ -7,25 +6,42 @@ import { getReviewsTableData } from '@/services/reviews/api';
 import { ReviewsTable } from '@/services/reviews/data';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
-import { Space } from 'antd';
+import { Card, Col, Input, Row, Space } from 'antd';
+import { SearchProps } from 'antd/es/input/Search';
 import { useState } from 'react';
 import RejectReview from './RejectReview';
 import ReviewLifeCycleModelsDetail from './reviewLifeCycleModels';
 import ReviewProcessDetail from './reviewProcess';
+import ReviewProgress from './ReviewProgress';
 import SelectReviewer from './SelectReviewer';
+
+const { Search } = Input;
 
 type AssignmentReviewProps = {
   userData: { user_id: string; role: string } | null;
-  tableType: 'unassigned' | 'assigned' | 'review';
+  tableType: 'unassigned' | 'assigned' | 'reviewed' | 'pending';
   actionRef: any;
+  actionFrom?: 'reviewMember';
 };
 
-const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewProps) => {
+const AssignmentReview = ({
+  userData,
+  tableType,
+  actionRef,
+  actionFrom,
+}: AssignmentReviewProps) => {
   // const intl = useIntl();
   const { locale } = useIntl();
   const lang = locale === 'zh-CN' ? 'zh' : 'en';
   const [tableLoading, setTableLoading] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const intl = useIntl();
+
+  const onSearch: SearchProps['onSearch'] = () => {
+    // setKeyWord(value);
+    // actionRef.current?.setPageInfo?.({ current: 1 });
+    // actionRef.current?.reload();
+  };
 
   const handleRowSelectionChange = (keys: React.Key[]) => {
     setSelectedRowKeys(keys);
@@ -76,24 +92,6 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
     },
     {
       title: (
-        <FormattedMessage id='pages.review.table.column.teamName' defaultMessage='Team Name' />
-      ),
-      dataIndex: 'teamName',
-      sorter: false,
-      search: false,
-      render: (_, row) => {
-        return [
-          <span key={0}>
-            {row.teamName}
-            {row?.json?.team?.id && (
-              <TeamView buttonTypeProp='text' id={row?.json?.team?.id} buttonType='icon' />
-            )}
-          </span>,
-        ];
-      },
-    },
-    {
-      title: (
         <FormattedMessage id='pages.review.table.column.userName' defaultMessage='User Name' />
       ),
       dataIndex: 'userName',
@@ -139,166 +137,234 @@ const AssignmentReview = ({ userData, tableType, actionRef }: AssignmentReviewPr
     });
   }
   if (tableType === 'assigned') {
-    columns.push({
-      title: <FormattedMessage id='pages.review.actions' defaultMessage='Actions' />,
-      dataIndex: 'actions',
-      search: false,
-      render: (_, record) => {
-        return [
-          <Space key={0}>
-            {record.isFromLifeCycle ? (
-              <ReviewLifeCycleModelsDetail
-                tabType='assigned'
-                type='view'
-                actionRef={actionRef}
-                id={record.json?.data?.id}
-                version={record.json?.data?.version}
-                lang={lang}
-                reviewId={record.id}
-              />
-            ) : (
-              <ReviewProcessDetail
-                tabType='assigned'
-                type='view'
-                actionRef={actionRef}
-                id={record.json?.data?.id}
-                version={record.json?.data?.version}
-                lang={lang}
-                reviewId={record.id}
-              />
-            )}
-          </Space>,
-        ];
-      },
-    });
+    columns.push(
+      ...[
+        {
+          title: (
+            <FormattedMessage id='pages.review.table.column.deadline' defaultMessage='Deadline' />
+          ),
+          dataIndex: 'deadline',
+          sorter: false,
+          search: false,
+          valueType: 'dateTime' as const,
+        },
+        {
+          title: <FormattedMessage id='pages.review.actions' defaultMessage='Actions' />,
+          dataIndex: 'actions',
+          search: false,
+          render: (_: any, record: ReviewsTable) => {
+            return [
+              <Space key={0}>
+                {record.isFromLifeCycle ? (
+                  <ReviewLifeCycleModelsDetail
+                    tabType='assigned'
+                    type='view'
+                    actionRef={actionRef}
+                    id={record.json?.data?.id}
+                    version={record.json?.data?.version}
+                    lang={lang}
+                    reviewId={record.id}
+                  />
+                ) : (
+                  <ReviewProcessDetail
+                    tabType='assigned'
+                    type='view'
+                    actionRef={actionRef}
+                    id={record.json?.data?.id}
+                    version={record.json?.data?.version}
+                    lang={lang}
+                    reviewId={record.id}
+                  />
+                )}
+                <ReviewProgress reviewId={record.id} />
+              </Space>,
+            ];
+          },
+        },
+      ],
+    );
   }
 
-  if (tableType === 'review') {
-    columns.push({
-      title: <FormattedMessage id='pages.review.actions' defaultMessage='Actions' />,
-      dataIndex: 'actions',
-      search: false,
-      render: (_, record) => {
-        return [
-          <Space key={0}>
-            {record.isFromLifeCycle ? (
-              <>
-                <ReviewLifeCycleModelsDetail
-                  type='edit'
-                  id={record.json?.data?.id}
-                  version={record.json?.data?.version}
-                  lang={lang}
-                  reviewId={record.id}
-                  tabType='review'
-                  actionRef={actionRef}
-                />
+  if (tableType === 'reviewed' || tableType === 'pending') {
+    columns.push(
+      ...[
+        {
+          title: (
+            <FormattedMessage id='pages.review.table.column.deadline' defaultMessage='Deadline' />
+          ),
+          dataIndex: 'deadline',
+          sorter: false,
+          search: false,
+          valueType: 'dateTime' as const,
+        },
+        {
+          title: <FormattedMessage id='pages.review.actions' defaultMessage='Actions' />,
+          dataIndex: 'actions',
+          search: false,
+          render: (_: any, record: ReviewsTable) => {
+            return [
+              <Space key={0}>
+                {record.isFromLifeCycle ? (
+                  <>
+                    <ReviewLifeCycleModelsDetail
+                      type='edit'
+                      id={record.json?.data?.id}
+                      version={record.json?.data?.version}
+                      lang={lang}
+                      reviewId={record.id}
+                      tabType='review'
+                      actionRef={actionRef}
+                    />
 
-                <ReviewLifeCycleModelsDetail
-                  reviewId={record.id}
-                  tabType='review'
-                  type='view'
-                  id={record.json?.data?.id}
-                  version={record.json?.data?.version}
-                  lang={lang}
-                  actionRef={actionRef}
-                />
-              </>
-            ) : (
-              <>
-                <ReviewProcessDetail
-                  tabType='review'
-                  type='edit'
-                  actionRef={actionRef}
-                  id={record.json?.data?.id}
-                  version={record.json?.data?.version}
-                  lang={lang}
-                  reviewId={record.id}
-                />
-                <ReviewProcessDetail
-                  tabType='review'
-                  type='view'
-                  actionRef={actionRef}
-                  id={record.json?.data?.id}
-                  version={record.json?.data?.version}
-                  lang={lang}
-                  reviewId={record.id}
-                />
-              </>
-            )}
-          </Space>,
-        ];
-      },
-    });
+                    <ReviewLifeCycleModelsDetail
+                      reviewId={record.id}
+                      tabType='review'
+                      type='view'
+                      id={record.json?.data?.id}
+                      version={record.json?.data?.version}
+                      lang={lang}
+                      actionRef={actionRef}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <ReviewProcessDetail
+                      tabType='review'
+                      type='edit'
+                      actionRef={actionRef}
+                      id={record.json?.data?.id}
+                      version={record.json?.data?.version}
+                      lang={lang}
+                      reviewId={record.id}
+                    />
+                    <ReviewProcessDetail
+                      tabType='review'
+                      type='view'
+                      actionRef={actionRef}
+                      id={record.json?.data?.id}
+                      version={record.json?.data?.version}
+                      lang={lang}
+                      reviewId={record.id}
+                    />
+                  </>
+                )}
+              </Space>,
+            ];
+          },
+        },
+      ],
+    );
   }
+
+  const getSubTitle = () => {
+    switch (tableType) {
+      case 'unassigned':
+        return <FormattedMessage id='pages.review.tabs.unassigned' defaultMessage='Unassigned' />;
+      case 'assigned':
+        return <FormattedMessage id='pages.review.tabs.assigned' defaultMessage='Assigned' />;
+      case 'reviewed':
+        return <FormattedMessage id='pages.review.tabs.reviewed' defaultMessage='Reviewed' />;
+      case 'pending':
+        return <FormattedMessage id='pages.review.tabs.pending' defaultMessage='Pending Review' />;
+      default:
+    }
+  };
 
   return (
-    <ProTable<ReviewsTable, ListPagination>
-      loading={tableLoading}
-      columns={columns}
-      rowKey='id'
-      search={false}
-      pagination={{
-        pageSize: 10,
-        showSizeChanger: true,
-        showQuickJumper: true,
-      }}
-      toolBarRender={() => {
-        if (selectedRowKeys && selectedRowKeys?.length > 0 && tableType === 'unassigned') {
-          return [<SelectReviewer actionRef={actionRef} reviewIds={selectedRowKeys} key={0} />];
+    <>
+      {!actionFrom && (
+        <Card>
+          <Row align={'middle'}>
+            <Col flex='auto' style={{ marginRight: '10px' }}>
+              <Search
+                size={'large'}
+                placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+                onSearch={onSearch}
+                enterButton
+              />
+            </Col>
+          </Row>
+        </Card>
+      )}
+      <ProTable<ReviewsTable, ListPagination>
+        loading={tableLoading}
+        columns={columns}
+        rowKey='id'
+        search={false}
+        pagination={{
+          pageSize: 10,
+          showSizeChanger: true,
+          showQuickJumper: true,
+        }}
+        toolBarRender={() => {
+          if (selectedRowKeys && selectedRowKeys?.length > 0 && tableType === 'unassigned') {
+            return [
+              <SelectReviewer
+                tabType='unassigned'
+                actionRef={actionRef}
+                reviewIds={selectedRowKeys}
+                key={0}
+              />,
+            ];
+          }
+          return [];
+        }}
+        headerTitle={
+          <>
+            {!actionFrom && (
+              <>
+                <FormattedMessage id='menu.review' defaultMessage='Review Management' /> /{' '}
+                {getSubTitle()}
+              </>
+            )}
+          </>
         }
-        return [];
-      }}
-      headerTitle={
-        <>
-          <FormattedMessage id='menu.review' defaultMessage='Review Management' /> /{' '}
-          {tableType === 'unassigned' ? (
-            <FormattedMessage id='pages.review.tabs.unassigned' defaultMessage='Unassigned' />
-          ) : tableType === 'assigned' ? (
-            <FormattedMessage id='pages.review.tabs.assigned' defaultMessage='Assigned' />
-          ) : (
-            <FormattedMessage id='pages.review.tabs.review' defaultMessage='Review' />
-          )}
-        </>
-      }
-      request={async (
-        params: {
-          pageSize: number;
-          current: number;
-        },
-        sort,
-      ) => {
-        try {
-          if (!userData?.role) {
+        request={async (
+          params: {
+            pageSize: number;
+            current: number;
+          },
+          sort,
+        ) => {
+          try {
+            if (!userData?.role) {
+              return {
+                data: [],
+                success: true,
+                total: 0,
+              };
+            }
+            setTableLoading(true);
+            setSelectedRowKeys([]);
+            return await getReviewsTableData(
+              params,
+              sort,
+              tableType,
+              lang,
+              actionFrom === 'reviewMember' ? { user_id: userData?.user_id } : undefined,
+            );
+          } catch (error) {
+            console.error(error);
             return {
               data: [],
               success: true,
               total: 0,
             };
+          } finally {
+            setTableLoading(false);
           }
-          setTableLoading(true);
-          setSelectedRowKeys([]);
-          return await getReviewsTableData(params, sort, tableType, lang);
-        } catch (error) {
-          console.error(error);
-          return {
-            data: [],
-            success: true,
-            total: 0,
-          };
-        } finally {
-          setTableLoading(false);
+        }}
+        actionRef={actionRef}
+        rowSelection={
+          tableType === 'unassigned'
+            ? {
+                selectedRowKeys,
+                onChange: handleRowSelectionChange,
+              }
+            : undefined
         }
-      }}
-      actionRef={actionRef}
-      rowSelection={
-        tableType === 'unassigned'
-          ? {
-              selectedRowKeys,
-              onChange: handleRowSelectionChange,
-            }
-          : undefined
-      }
-    />
+      />
+    </>
   );
 };
 

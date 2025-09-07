@@ -310,6 +310,30 @@ const TableList: FC = () => {
             </Space>,
           ];
         }
+        if (dataSource === 'tg') {
+          return [
+            <Space size={'small'} key={0}>
+              <ProcessView
+                id={row.id}
+                version={row.version}
+                // dataSource={dataSource}
+                buttonType={'icon'}
+                lang={lang}
+                disabled={false}
+                actionRef={actionRef}
+              />
+              <ProcessCreate
+                actionType='copy'
+                id={row.id}
+                version={row.version}
+                lang={lang}
+                actionRef={actionRef}
+              />
+              <ReviewDetail processId={row.id} processVersion={row.version} />
+              <ExportData tableName='processes' id={row.id} version={row.version} />
+            </Space>,
+          ];
+        }
         return [
           <Space size={'small'} key={0}>
             <ProcessView

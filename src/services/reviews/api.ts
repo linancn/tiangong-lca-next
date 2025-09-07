@@ -2,6 +2,7 @@ import { getLifeCyclesByIds } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
 import { getUserId } from '@/services/users/api';
 import { FunctionRegion } from '@supabase/supabase-js';
+import { getPendingComment, getReviewedComment } from '../comments/api';
 import { getLangText } from '../general/util';
 import { genProcessName } from '../processes/util';
 
@@ -59,8 +60,9 @@ export async function getReviewsDetailByReviewIds(reviewIds: React.Key[]) {
 export async function getReviewsTableData(
   params: { pageSize: number; current: number },
   sort: any,
-  type: 'unassigned' | 'assigned' | 'review' | 'rejected',
+  type: 'unassigned' | 'assigned' | 'reviewed' | 'pending' | 'rejected',
   lang: string,
+  userData?: { user_id: string },
 ) {
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
   const orderBy = sort[sortBy] ?? 'descend';
@@ -72,23 +74,44 @@ export async function getReviewsTableData(
       ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
       (params.current ?? 1) * (params.pageSize ?? 10) - 1,
     );
-
-  if (type === 'unassigned') {
-    query = query.eq('state_code', 0);
-  }
-  if (type === 'assigned') {
-    query = query.eq('state_code', 1);
-  }
-  if (type === 'review') {
-    const userId = await getUserId();
-    if (userId) {
-      query = query.filter('reviewer_id', 'cs', `[${JSON.stringify(userId)}]`).eq('state_code', 1);
+  switch (type) {
+    case 'unassigned': {
+      query = query.eq('state_code', 0);
+      break;
+    }
+    case 'assigned': {
+      query = query.eq('state_code', 1);
+      break;
+    }
+    case 'reviewed': {
+      const userId = userData?.user_id ?? (await getUserId());
+      if (userId) {
+        const reviewedComment = await getReviewedComment(userData?.user_id);
+        if (reviewedComment && reviewedComment.data) {
+          const reviewIds = reviewedComment.data.map((item: any) => item.review_id);
+          query = query.in('id', reviewIds);
+        }
+      }
+      break;
+    }
+    case 'pending': {
+      const userId = userData?.user_id ?? (await getUserId());
+      if (userId) {
+        const pendingComment = await getPendingComment(userData?.user_id);
+        if (pendingComment && pendingComment.data) {
+          const reviewIds = pendingComment.data.map((item: any) => item.review_id);
+          query = query.in('id', reviewIds);
+        }
+      }
+      break;
+    }
+    case 'rejected': {
+      const userId = userData?.user_id ?? (await getUserId());
+      query = query.eq('state_code', -1).filter('json->user->>id', 'eq', userId);
+      break;
     }
   }
-  if (type === 'rejected') {
-    const userId = await getUserId();
-    query = query.eq('state_code', -1).filter('json->user->>id', 'eq', userId);
-  }
+
   const result = await query;
 
   if (result?.data) {
@@ -124,6 +147,7 @@ export async function getReviewsTableData(
         userName: i?.json?.user?.name ?? '-',
         createAt: new Date(i.created_at).toISOString(),
         modifiedAt: new Date(i?.modified_at).toISOString(),
+        deadline: i?.deadline ? new Date(i?.deadline).toISOString() : i?.deadline,
         json: i?.json,
       };
     });
