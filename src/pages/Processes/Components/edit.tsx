@@ -155,6 +155,25 @@ const ProcessEdit: FC<Props> = ({
   };
   const handleSubmit = async (closeDrawer: boolean) => {
     if (closeDrawer) setSpinning(true);
+    const output = exchangeDataSource.filter(
+      (e: any) => e.exchangeDirection.toUpperCase() === 'OUTPUT',
+    );
+    let allocatedFractionTotal = 0;
+    output.forEach((e: any) => {
+      allocatedFractionTotal += Number(
+        e.allocations.allocation['@allocatedFraction'].split('%')[0],
+      );
+    });
+    if (allocatedFractionTotal > 100) {
+      message.error(
+        intl.formatMessage({
+          id: 'pages.process.validator.allocatedFraction',
+          defaultMessage: 'Allocated fraction total of output is greater than 100%',
+        }),
+      );
+      setSpinning(false);
+      return;
+    }
     const updateResult = await updateProcess(id, version, {
       ...fromData,
     });

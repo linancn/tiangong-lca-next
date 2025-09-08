@@ -514,8 +514,9 @@ const ToolbarEdit: FC<Props> = ({
 
   const getPortLabelWithAllocation = (label: string, allocations: any) => {
     const allocatedFraction = allocations?.allocation?.['@allocatedFraction'];
+    const num = allocatedFraction?.split('%')[0];
     if (allocatedFraction) {
-      return `[${allocatedFraction}] ${label}`;
+      return `${num && num > 0 ? `[${allocatedFraction}]` : ''} ${label}`;
     }
     return label;
   };

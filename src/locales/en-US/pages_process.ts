@@ -372,6 +372,7 @@ export default {
 
   'pages.process.review.error': 'Referenced data is under review, cannot initiate another review',
 
+  'pages.process.validator.allocatedFraction': 'Allocated fraction total of output is greater than 100%',
   'pages.process.validator.UUID.required': 'Please input UUID',
   'pages.process.validator.baseName.required': 'Please input base name',
   'pages.process.validator.treatmentStandardsRoutes.required': 'Please input treatment,standards,routes',
