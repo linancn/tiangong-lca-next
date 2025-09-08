@@ -28,6 +28,23 @@ services:
       - realtime
       - storage
       - db
+      - redis
+
+  # Redis cache and session store
+  redis:
+    container_name: tiangong-redis
+    image: redis:7.2-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
 
   # Supabase services (copy all services from the original docker-compose.yml)
   studio:
@@ -558,3 +575,4 @@ services:
 
 volumes:
   db-config:
+  redis-data:
