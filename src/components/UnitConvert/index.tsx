@@ -27,6 +27,7 @@ const UnitConvert: React.FC<UnitConvertProps> = ({
     if (visible) {
       form.setFieldsValue({
         value: value,
+        unit: targetUnit,
       });
     }
   }, [visible, value]);

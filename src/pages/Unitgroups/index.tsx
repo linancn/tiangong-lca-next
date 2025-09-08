@@ -294,6 +294,7 @@ const TableList: FC = () => {
         <Row align={'middle'}>
           <Col flex='auto' style={{ marginRight: '10px' }}>
             <Search
+              disabled={dataSource === 'my' && !isSystemAdmin}
               size={'large'}
               placeholder={
                 openAI
@@ -342,6 +343,7 @@ const TableList: FC = () => {
           if (dataSource === 'my') {
             return [
               <TableFilter
+                disabled={!isSystemAdmin}
                 key={2}
                 onChange={async (val) => {
                   await setStateCode(val);
@@ -368,6 +370,13 @@ const TableList: FC = () => {
           },
           sort,
         ) => {
+          if (dataSource === 'my' && !isSystemAdmin) {
+            return {
+              data: [],
+              success: true,
+              total: 0,
+            };
+          }
           if (keyWord.length > 0) {
             if (openAI) {
               return unitgroup_hybrid_search(params, lang, dataSource, keyWord, {}, stateCode);
