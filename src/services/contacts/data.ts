@@ -20,7 +20,9 @@ export type FormContact = Pick<
 
 export type ContactDataSetObjectKeys = Exclude<
   {
-    [K in keyof Contact['contactDataSet']]: Contact['contactDataSet'][K] extends object ? K : never;
+    [K in keyof Contact['contactDataSet']]: Contact['contactDataSet'][K] extends object | undefined
+      ? K
+      : never;
   }[keyof Contact['contactDataSet']],
   undefined
 >;

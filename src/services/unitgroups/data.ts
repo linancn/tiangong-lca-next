@@ -1,3 +1,4 @@
+import { UnitGroup } from '@tiangong-lca/tidas-sdk';
 export type UnitGroupTable = {
   id: string;
   lang: string;
@@ -19,3 +20,16 @@ export type UnitTable = {
   generalComment: any;
   quantitativeReference: boolean;
 };
+
+export type UnitGroupDataSetObjectKeys = Exclude<
+  {
+    [K in keyof UnitGroup['unitGroupDataSet']]: UnitGroup['unitGroupDataSet'][K] extends
+      | object
+      | undefined
+      ? K
+      : never;
+  }[keyof UnitGroup['unitGroupDataSet']],
+  undefined
+>;
+
+export type FormUnitGroup = Pick<UnitGroup['unitGroupDataSet'], UnitGroupDataSetObjectKeys>;

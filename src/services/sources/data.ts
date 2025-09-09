@@ -14,7 +14,9 @@ export type SourceTable = {
 
 export type SourceDataSetObjectKeys = Exclude<
   {
-    [K in keyof Source['sourceDataSet']]: Source['sourceDataSet'][K] extends object ? K : never;
+    [K in keyof Source['sourceDataSet']]: Source['sourceDataSet'][K] extends object | undefined
+      ? K
+      : never;
   }[keyof Source['sourceDataSet']],
   undefined
 >;
