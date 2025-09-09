@@ -4,6 +4,7 @@ import type { refDataType } from '@/pages/Utils/review';
 import { ReffPath, checkData, getErrRefTab } from '@/pages/Utils/review';
 import { getFlowpropertyDetail } from '@/services/flowproperties/api';
 import { getFlowDetail, updateFlows } from '@/services/flows/api';
+import { FlowDataSetObjectKeys, FormFlow } from '@/services/flows/data';
 import { genFlowFromData } from '@/services/flows/util';
 import { getRuleVerification } from '@/services/general/util';
 import styles from '@/style/custom.less';
@@ -34,9 +35,9 @@ const FlowsEdit: FC<Props> = ({
 }) => {
   const formRefEdit = useRef<ProFormInstance>();
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [activeTabKey, setActiveTabKey] = useState<string>('flowInformation');
-  const [fromData, setFromData] = useState<any>(undefined);
-  const [initData, setInitData] = useState<any>({});
+  const [activeTabKey, setActiveTabKey] = useState<FlowDataSetObjectKeys>('flowInformation');
+  const [fromData, setFromData] = useState<FormFlow & { id?: string }>();
+  const [initData, setInitData] = useState<FormFlow & { id?: string }>();
   const [flowType, setFlowType] = useState<string>();
   const [spinning, setSpinning] = useState(false);
   const [propertyDataSource, setPropertyDataSource] = useState<any>([]);
@@ -84,7 +85,7 @@ const FlowsEdit: FC<Props> = ({
     setReferenceValue(referenceValue + 1);
   };
 
-  const onTabChange = (key: string) => {
+  const onTabChange = (key: FlowDataSetObjectKeys) => {
     setActiveTabKey(key);
   };
 
@@ -114,7 +115,7 @@ const FlowsEdit: FC<Props> = ({
       flowProperties: {
         flowProperty: [...propertyDataSource],
       },
-    });
+    } as any);
   }, [propertyDataSource]);
 
   const onEdit = () => {
@@ -431,7 +432,10 @@ const FlowsEdit: FC<Props> = ({
                 }}
                 onFinish={() => handleSubmit(true)}
                 onValuesChange={(_, allValues) => {
-                  setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+                  setFromData({
+                    ...fromData,
+                    [activeTabKey]: allValues[activeTabKey] ?? {},
+                  } as FormFlow);
                 }}
               >
                 <FlowForm
@@ -441,7 +445,7 @@ const FlowsEdit: FC<Props> = ({
                   formRef={formRefEdit}
                   onData={handletFromData}
                   flowType={flowType}
-                  onTabChange={onTabChange}
+                  onTabChange={(key) => onTabChange(key as FlowDataSetObjectKeys)}
                   propertyDataSource={propertyDataSource}
                   onPropertyData={handletPropertyData}
                   onPropertyDataCreate={handletPropertyDataCreate}
