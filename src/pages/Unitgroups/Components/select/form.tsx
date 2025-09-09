@@ -87,7 +87,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
       updateErrRefByDetail(result?.data);
       const selectedData = genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {});
 
-      const unitList = jsonToList(selectedData?.units.unit);
+      const unitList = jsonToList(selectedData?.units?.unit);
       const refUnit = unitList.find(
         (item) =>
           item?.['@dataSetInternalID'] ===

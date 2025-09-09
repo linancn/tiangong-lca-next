@@ -109,7 +109,7 @@ const ProcessView: FC<Props> = ({
   const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<any>({});
-  const [lciaResultDataSource, setLciaResultDataSource] = useState<LCIAResultTable[]>([]);
+  const [lciaResultDataSource, setLciaResultDataSource] = useState<any>([]);
   // const [lciaResultDataSourceLoading, setLciaResultDataSourceLoading] = useState(false);
   const tabList = [
     {

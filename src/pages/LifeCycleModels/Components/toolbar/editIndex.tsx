@@ -616,7 +616,7 @@ const ToolbarEdit: FC<Props> = ({
         const refExchange = exchange.find((i: any) => i?.quantitativeReference === true);
         const inOrOut = refExchange?.exchangeDirection.toUpperCase() === 'INPUT';
         const text = getLangText(
-          refExchange?.referenceToFlowDataSet?.['common:shortDescription'],
+          (refExchange?.referenceToFlowDataSet as any)?.['common:shortDescription'],
           lang,
         );
         const textWithAllocation = getPortLabelWithAllocation(text ?? '', refExchange?.allocations);
@@ -624,15 +624,18 @@ const ToolbarEdit: FC<Props> = ({
           id:
             (inOrOut ? 'INPUT' : 'OUTPUT') +
             ':' +
-            (refExchange?.referenceToFlowDataSet?.['@refObjectId'] ?? '-'),
+            ((refExchange?.referenceToFlowDataSet as any)?.['@refObjectId'] ?? '-'),
           args: { x: inOrOut ? 0 : '100%', y: 65 },
           attrs: {
             text: {
               text: `${genPortLabel(textWithAllocation ?? '', lang, nodeTemplate.width)}`,
               title: textWithAllocation,
               cursor: 'pointer',
-              fill: getPortTextColor(refExchange?.quantitativeReference, refExchange?.allocations),
-              'font-weight': getPortTextStyle(refExchange?.quantitativeReference),
+              fill: getPortTextColor(
+                (refExchange as any)?.quantitativeReference,
+                (refExchange as any)?.allocations,
+              ),
+              'font-weight': getPortTextStyle((refExchange as any)?.quantitativeReference),
             },
           },
           group:
@@ -640,10 +643,10 @@ const ToolbarEdit: FC<Props> = ({
               ? 'groupOutput'
               : 'groupInput',
           data: {
-            textLang: refExchange?.referenceToFlowDataSet?.['common:shortDescription'],
-            flowId: refExchange?.referenceToFlowDataSet?.['@refObjectId'],
-            flowVersion: refExchange?.referenceToFlowDataSet?.['@version'],
-            quantitativeReference: refExchange?.quantitativeReference,
+            textLang: (refExchange?.referenceToFlowDataSet as any)?.['common:shortDescription'],
+            flowId: (refExchange?.referenceToFlowDataSet as any)?.['@refObjectId'],
+            flowVersion: (refExchange?.referenceToFlowDataSet as any)?.['@version'],
+            quantitativeReference: (refExchange as any)?.quantitativeReference,
             allocations: refExchange?.allocations,
           },
         };
@@ -714,7 +717,7 @@ const ToolbarEdit: FC<Props> = ({
             });
             if (newItem) {
               const newTitle = getLangText(
-                newItem?.referenceToFlowDataSet?.['common:shortDescription'],
+                (newItem?.referenceToFlowDataSet as any)?.['common:shortDescription'],
                 lang,
               );
               const newTitleWithAllocation = getPortLabelWithAllocation(
@@ -729,16 +732,19 @@ const ToolbarEdit: FC<Props> = ({
                     text: `${genPortLabel(newTitleWithAllocation, lang, nodeWidth)}`,
                     title: newTitleWithAllocation,
                     cursor: 'pointer',
-                    fill: getPortTextColor(newItem?.quantitativeReference, newItem?.allocations),
-                    'font-weight': getPortTextStyle(newItem?.quantitativeReference),
+                    fill: getPortTextColor(
+                      (newItem as any)?.quantitativeReference,
+                      newItem?.allocations,
+                    ),
+                    'font-weight': getPortTextStyle((newItem as any)?.quantitativeReference),
                   },
                 },
                 data: {
                   ...item?.data,
-                  textLang: newItem?.referenceToFlowDataSet?.['common:shortDescription'],
-                  flowId: newItem?.referenceToFlowDataSet?.['@refObjectId'],
-                  flowVersion: newItem?.referenceToFlowDataSet?.['@version'],
-                  quantitativeReference: newItem?.quantitativeReference,
+                  textLang: (newItem?.referenceToFlowDataSet as any)?.['common:shortDescription'],
+                  flowId: (newItem?.referenceToFlowDataSet as any)?.['@refObjectId'],
+                  flowVersion: (newItem?.referenceToFlowDataSet as any)?.['@version'],
+                  quantitativeReference: (newItem as any)?.quantitativeReference,
                   allocations: newItem?.allocations,
                 },
               };

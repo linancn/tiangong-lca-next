@@ -48,8 +48,8 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
               item?.['@dataSetInternalID'] === quantitativeReference?.referenceToReferenceFlow,
           ) ?? {};
         const refNodeData = refNode?.data;
-        const targetAmount = refNodeData?.targetAmount ?? refExc?.meanAmount;
-        const originalAmount = refNodeData?.originalAmount ?? refExc?.meanAmount;
+        const targetAmount = refNodeData?.targetAmount ?? (refExc as any)?.meanAmount;
+        const originalAmount = refNodeData?.originalAmount ?? (refExc as any)?.meanAmount;
         const scalingFactor = refNodeData?.scalingFactor ?? targetAmount / originalAmount;
         formRefEdit.current?.setFieldsValue({
           targetAmount: targetAmount,
