@@ -266,7 +266,7 @@ const FlowsEdit: FC<Props> = ({
     if (
       !flowProperties ||
       !flowProperties?.flowProperty ||
-      flowProperties?.flowProperty?.length === 0
+      (flowProperties?.flowProperty as any)?.length === 0
     ) {
       message.error(
         intl.formatMessage({
@@ -275,7 +275,8 @@ const FlowsEdit: FC<Props> = ({
         }),
       );
     } else if (
-      flowProperties.flowProperty.filter((item: any) => item?.quantitativeReference).length !== 1
+      (flowProperties?.flowProperty as any)?.filter((item: any) => item?.quantitativeReference)
+        .length !== 1
     ) {
       message.error(
         intl.formatMessage({
