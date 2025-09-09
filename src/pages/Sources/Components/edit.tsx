@@ -3,6 +3,7 @@ import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import type { refDataType } from '@/pages/Utils/review';
 import { ReffPath, checkData, getErrRefTab } from '@/pages/Utils/review';
 import { getSourceDetail, updateSource } from '@/services/sources/api';
+import { FormSource, SourceDataSetObjectKeys } from '@/services/sources/data';
 import { genSourceFromData } from '@/services/sources/util';
 import { supabaseStorageBucket } from '@/services/supabase/key';
 import { getThumbFileUrls, removeFile, uploadFile } from '@/services/supabase/storage';
@@ -16,6 +17,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
 import { SourceForm } from './form';
+
 type Props = {
   id: string;
   version: string;
@@ -38,9 +40,9 @@ const SourceEdit: FC<Props> = ({
   const intl = useIntl();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
-  const [activeTabKey, setActiveTabKey] = useState<string>('sourceInformation');
-  const [fromData, setFromData] = useState<any>({});
-  const [initData, setInitData] = useState<any>({});
+  const [activeTabKey, setActiveTabKey] = useState<SourceDataSetObjectKeys>('sourceInformation');
+  const [fromData, setFromData] = useState<FormSource>();
+  const [initData, setInitData] = useState<FormSource>();
   const [spinning, setSpinning] = useState(false);
   const [fileList0, setFileList0] = useState<any[]>([]);
   const [fileList, setFileList] = useState<any[]>([]);
@@ -80,7 +82,7 @@ const SourceEdit: FC<Props> = ({
     actionRef?.current?.reload();
   }, [actionRef]);
 
-  const onTabChange = (key: string) => {
+  const onTabChange = (key: SourceDataSetObjectKeys) => {
     setActiveTabKey(key);
   };
 
@@ -140,9 +142,9 @@ const SourceEdit: FC<Props> = ({
     const result = await updateSource(id, version, {
       ...fieldsValue,
       sourceInformation: {
-        ...fromData.sourceInformation,
+        ...fromData?.sourceInformation,
         dataSetInformation: {
-          ...fromData.sourceInformation.dataSetInformation,
+          ...fromData?.sourceInformation?.dataSetInformation,
           referenceToDigitalFile: filePaths,
         },
       },
@@ -407,7 +409,10 @@ const SourceEdit: FC<Props> = ({
                 formRef={formRefEdit}
                 initialValues={initData}
                 onValuesChange={(_, allValues) => {
-                  setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+                  setFromData({
+                    ...fromData,
+                    [activeTabKey]: allValues[activeTabKey] ?? {},
+                  } as FormSource);
                 }}
                 submitter={{
                   render: () => {
@@ -421,7 +426,7 @@ const SourceEdit: FC<Props> = ({
                   activeTabKey={activeTabKey}
                   formRef={formRefEdit}
                   onData={handletFromData}
-                  onTabChange={onTabChange}
+                  onTabChange={(key) => onTabChange(key as SourceDataSetObjectKeys)}
                   loadFiles={loadFiles}
                   setLoadFiles={setLoadFiles}
                   fileList={fileList}

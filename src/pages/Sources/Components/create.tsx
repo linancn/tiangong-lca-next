@@ -2,6 +2,7 @@ import ToolBarButton from '@/components/ToolBarButton';
 import { initVersion } from '@/services/general/data';
 import { formatDateTime } from '@/services/general/util';
 import { createSource, getSourceDetail } from '@/services/sources/api';
+import { FormSource, SourceDataSetObjectKeys } from '@/services/sources/data';
 import { genSourceFromData } from '@/services/sources/util';
 import { supabaseStorageBucket } from '@/services/supabase/key';
 import { getThumbFileUrls, removeFile, uploadFile } from '@/services/supabase/storage';
@@ -51,9 +52,9 @@ const SourceCreate: FC<CreateProps> = ({
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
-  const [fromData, setFromData] = useState<any>({});
-  const [initData, setInitData] = useState<any>({});
-  const [activeTabKey, setActiveTabKey] = useState<string>('sourceInformation');
+  const [fromData, setFromData] = useState<FormSource>();
+  const [initData, setInitData] = useState<FormSource>();
+  const [activeTabKey, setActiveTabKey] = useState<SourceDataSetObjectKeys>('sourceInformation');
   const [fileList0, setFileList0] = useState<any[]>([]);
   const [fileList, setFileList] = useState<any[]>([]);
   const [loadFiles, setLoadFiles] = useState<any[]>([]);
@@ -68,7 +69,7 @@ const SourceCreate: FC<CreateProps> = ({
       });
   };
 
-  const onTabChange = (key: string) => {
+  const onTabChange = (key: SourceDataSetObjectKeys) => {
     setActiveTabKey(key);
   };
 
@@ -136,7 +137,7 @@ const SourceCreate: FC<CreateProps> = ({
           defaultMessage: 'Created successfully!',
         }),
       );
-      setFromData({});
+      setFromData(undefined);
       formRefCreate.current?.resetFields();
       formRefCreate.current?.setFieldsValue({});
       setDrawerVisible(false);
@@ -181,8 +182,8 @@ const SourceCreate: FC<CreateProps> = ({
     if (!drawerVisible) {
       onClose();
       formRefCreate.current?.resetFields();
-      setFromData({});
-      setInitData({});
+      setFromData(undefined);
+      setInitData(undefined);
       setFileList([]);
       setFileList0([]);
       return;
@@ -225,11 +226,11 @@ const SourceCreate: FC<CreateProps> = ({
         },
       },
     };
-    setInitData(newData);
+    setInitData(newData as FormSource);
     // formRefCreate.current?.resetFields();
     const currentData = formRefCreate.current?.getFieldsValue();
     formRefCreate.current?.setFieldsValue({ ...currentData, ...newData });
-    setFromData(newData);
+    setFromData(newData as FormSource);
     setFileList0([]);
     setFileList([]);
     // });
@@ -320,7 +321,10 @@ const SourceCreate: FC<CreateProps> = ({
             formRef={formRefCreate}
             initialValues={initData}
             onValuesChange={(_, allValues) => {
-              setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+              setFromData({
+                ...fromData,
+                [activeTabKey]: allValues[activeTabKey] ?? {},
+              } as FormSource);
             }}
             submitter={{
               render: () => {
@@ -335,7 +339,7 @@ const SourceCreate: FC<CreateProps> = ({
               activeTabKey={activeTabKey}
               formRef={formRefCreate}
               onData={handletFromData}
-              onTabChange={onTabChange}
+              onTabChange={(key) => onTabChange(key as SourceDataSetObjectKeys)}
               loadFiles={loadFiles}
               setLoadFiles={setLoadFiles}
               fileList={fileList}
