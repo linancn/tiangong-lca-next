@@ -3,6 +3,7 @@ import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import type { refDataType } from '@/pages/Utils/review';
 import { ReffPath, checkData, getErrRefTab } from '@/pages/Utils/review';
 import { getContactDetail, updateContact } from '@/services/contacts/api';
+import { ContactDataSetObjectKeys, FormContact } from '@/services/contacts/data';
 import { genContactFromData } from '@/services/contacts/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
@@ -35,9 +36,9 @@ const ContactEdit: FC<Props> = ({
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
   const [spinning, setSpinning] = useState(false);
-  const [initData, setInitData] = useState<any>({});
-  const [fromData, setFromData] = useState<any>(undefined);
-  const [activeTabKey, setActiveTabKey] = useState<string>('contactInformation');
+  const [initData, setInitData] = useState<FormContact>();
+  const [fromData, setFromData] = useState<FormContact>();
+  const [activeTabKey, setActiveTabKey] = useState<ContactDataSetObjectKeys>('contactInformation');
   const [referenceValue, setReferenceValue] = useState<number>(0);
   const [showRules, setShowRules] = useState<boolean>(false);
   const intl = useIntl();
@@ -72,7 +73,7 @@ const ContactEdit: FC<Props> = ({
       });
   };
 
-  const onTabChange = (key: string) => {
+  const onTabChange = (key: ContactDataSetObjectKeys) => {
     setActiveTabKey(key);
   };
 
@@ -351,7 +352,10 @@ const ContactEdit: FC<Props> = ({
               <ProForm
                 formRef={formRefEdit}
                 onValuesChange={(_, allValues) => {
-                  setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+                  setFromData({
+                    ...fromData,
+                    [activeTabKey]: allValues[activeTabKey] ?? {},
+                  } as FormContact);
                 }}
                 submitter={{
                   render: () => {
@@ -366,7 +370,7 @@ const ContactEdit: FC<Props> = ({
                   activeTabKey={activeTabKey}
                   formRef={formRefEdit}
                   onData={handletFromData}
-                  onTabChange={onTabChange}
+                  onTabChange={(key) => onTabChange(key as ContactDataSetObjectKeys)}
                   showRules={showRules}
                 />
               </ProForm>

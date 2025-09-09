@@ -1,5 +1,6 @@
 import ToolBarButton from '@/components/ToolBarButton';
 import { createContact, getContactDetail } from '@/services/contacts/api';
+import { ContactDataSetObjectKeys, FormContact } from '@/services/contacts/data';
 import { genContactFromData } from '@/services/contacts/util';
 import { initVersion } from '@/services/general/data';
 import { formatDateTime } from '@/services/general/util';
@@ -47,10 +48,10 @@ const ContactCreate: FC<CreateProps> = ({
   onClose = () => {},
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [fromData, setFromData] = useState<any>({});
-  const [initData, setInitData] = useState<any>({});
+  const [fromData, setFromData] = useState<FormContact>();
+  const [initData, setInitData] = useState<FormContact>();
   const formRefCreate = useRef<ProFormInstance>();
-  const [activeTabKey, setActiveTabKey] = useState<string>('contactInformation');
+  const [activeTabKey, setActiveTabKey] = useState<ContactDataSetObjectKeys>('contactInformation');
   const [spinning, setSpinning] = useState<boolean>(false);
   const intl = useIntl();
 
@@ -62,7 +63,7 @@ const ContactCreate: FC<CreateProps> = ({
       });
   };
 
-  const onTabChange = (key: string) => {
+  const onTabChange = (key: ContactDataSetObjectKeys) => {
     setActiveTabKey(key);
   };
 
@@ -93,14 +94,16 @@ const ContactCreate: FC<CreateProps> = ({
     if (!drawerVisible) {
       onClose();
       formRefCreate.current?.resetFields();
-      setInitData({});
-      setFromData({});
+      setInitData(undefined);
+      setFromData(undefined);
       return;
     }
     if (importData && importData.length > 0) {
-      const formData = genContactFromData(importData[0].contactDataSet);
-      formRefCreate.current?.setFieldsValue({ ...formData });
-      setFromData({ ...formData });
+      const importFormData = genContactFromData(importData[0].contactDataSet);
+      if (importFormData) {
+        formRefCreate.current?.setFieldsValue({ ...importFormData });
+        setFromData({ ...importFormData });
+      }
       return;
     }
     if (actionType === 'copy' || actionType === 'createVersion') {
@@ -120,11 +123,11 @@ const ContactCreate: FC<CreateProps> = ({
       },
     };
     // const newId = v4();
-    setInitData(newData);
+    setInitData(newData as FormContact);
     // formRefCreate.current?.resetFields();
     const currentData = formRefCreate.current?.getFieldsValue();
     formRefCreate.current?.setFieldsValue({ ...currentData, ...newData });
-    setFromData(newData);
+    setFromData(newData as FormContact);
   }, [drawerVisible]);
 
   return (
@@ -213,11 +216,14 @@ const ContactCreate: FC<CreateProps> = ({
         }
       >
         <Spin spinning={spinning}>
-          <ProForm
+          <ProForm<FormContact>
             formRef={formRefCreate}
             initialValues={initData}
             onValuesChange={(_, allValues) => {
-              setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+              setFromData({
+                ...fromData,
+                [activeTabKey]: allValues[activeTabKey] ?? {},
+              } as FormContact);
             }}
             submitter={{
               render: () => {
@@ -250,7 +256,7 @@ const ContactCreate: FC<CreateProps> = ({
               activeTabKey={activeTabKey}
               formRef={formRefCreate}
               onData={handletFromData}
-              onTabChange={onTabChange}
+              onTabChange={(key) => onTabChange(key as ContactDataSetObjectKeys)}
             />
           </ProForm>
         </Spin>

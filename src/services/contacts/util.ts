@@ -1,3 +1,5 @@
+import { FormContact } from '@/services/contacts/data';
+import { createContact as createTidasContact } from '@tiangong-lca/tidas-sdk';
 import {
   classificationToJsonList,
   classificationToStringList,
@@ -160,144 +162,157 @@ export function genContactJsonOrdered(id: string, data: any) {
   });
 }
 
-export function genContactFromData(data: any) {
-  if (!data) return {};
-  return removeEmptyObjects({
-    contactInformation: {
-      dataSetInformation: {
-        'common:UUID': data?.contactInformation?.dataSetInformation?.['common:UUID'],
-        'common:shortName': getLangList(
-          data?.contactInformation?.dataSetInformation?.['common:shortName'],
-        ),
-        'common:name': getLangList(data?.contactInformation?.dataSetInformation?.['common:name']),
-        classificationInformation: {
-          'common:classification': {
-            'common:class': classificationToStringList(
-              data?.contactInformation?.dataSetInformation?.classificationInformation?.[
-                'common:classification'
-              ]?.['common:class'],
+export function genContactFromData(data: any): FormContact | undefined {
+  if (!data) return undefined;
+  const contact = createTidasContact({
+    contactDataSet: {
+      '@xmlns:common': 'http://lca.jrc.it/ILCD/Common',
+      '@xmlns': 'http://lca.jrc.it/ILCD/Contact',
+      '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
+      '@version': '1.1',
+      '@xsi:schemaLocation': 'http://lca.jrc.it/ILCD/Contact ../../schemas/ILCD_ContactDataSet.xsd',
+      contactInformation: {
+        dataSetInformation: {
+          'common:UUID': data?.contactInformation?.dataSetInformation?.['common:UUID'],
+          'common:shortName': getLangList(
+            data?.contactInformation?.dataSetInformation?.['common:shortName'],
+          ),
+          'common:name': getLangList(data?.contactInformation?.dataSetInformation?.['common:name']),
+          classificationInformation: {
+            'common:classification': {
+              'common:class': classificationToStringList(
+                data?.contactInformation?.dataSetInformation?.classificationInformation?.[
+                  'common:classification'
+                ]?.['common:class'],
+              ) as any,
+            },
+          },
+          contactAddress: getLangList(data?.contactInformation?.dataSetInformation?.contactAddress),
+          telephone: data?.contactInformation?.dataSetInformation?.telephone,
+          telefax: data?.contactInformation?.dataSetInformation?.telefax,
+          email: data?.contactInformation?.dataSetInformation?.email,
+          WWWAddress: data?.contactInformation?.dataSetInformation?.WWWAddress,
+          centralContactPoint: getLangList(
+            data?.contactInformation?.dataSetInformation?.['centralContactPoint'],
+          ),
+          contactDescriptionOrComment: getLangList(
+            data?.contactInformation?.dataSetInformation?.['contactDescriptionOrComment'],
+          ),
+          referenceToContact: {
+            '@refObjectId':
+              data?.contactInformation?.dataSetInformation?.referenceToContact?.['@refObjectId'],
+            '@type': data?.contactInformation?.dataSetInformation?.referenceToContact?.['@type'],
+            '@uri': data?.contactInformation?.dataSetInformation?.referenceToContact?.['@uri'],
+            'common:shortDescription': getLangList(
+              data?.contactInformation?.dataSetInformation?.referenceToContact?.[
+                'common:shortDescription'
+              ],
+            ),
+            '@version':
+              data?.contactInformation?.dataSetInformation?.referenceToContact?.['@version'],
+          },
+          referenceToLogo: {
+            '@refObjectId':
+              data?.contactInformation?.dataSetInformation?.referenceToLogo?.['@refObjectId'],
+            '@type': data?.contactInformation?.dataSetInformation?.referenceToLogo?.['@type'],
+            '@uri': data?.contactInformation?.dataSetInformation?.referenceToLogo?.['@uri'],
+            'common:shortDescription': getLangList(
+              data?.contactInformation?.dataSetInformation?.referenceToLogo?.[
+                'common:shortDescription'
+              ],
+            ),
+            '@version': data?.contactInformation?.dataSetInformation?.referenceToLogo?.['@version'],
+          },
+        },
+      },
+      administrativeInformation: {
+        dataEntryBy: {
+          'common:timeStamp':
+            data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ??
+            formatDateTime(new Date()),
+          'common:referenceToDataSetFormat': {
+            '@refObjectId':
+              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
+                '@refObjectId'
+              ],
+            '@type':
+              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
+                '@type'
+              ],
+            '@uri':
+              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
+                '@uri'
+              ],
+            '@version':
+              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
+                '@version'
+              ],
+            'common:shortDescription': getLangList(
+              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
+                'common:shortDescription'
+              ],
             ),
           },
         },
-        contactAddress: getLangList(data?.contactInformation?.dataSetInformation?.contactAddress),
-        telephone: data?.contactInformation?.dataSetInformation?.telephone,
-        telefax: data?.contactInformation?.dataSetInformation?.telefax,
-        email: data?.contactInformation?.dataSetInformation?.email,
-        WWWAddress: data?.contactInformation?.dataSetInformation?.WWWAddress,
-        centralContactPoint: getLangList(
-          data?.contactInformation?.dataSetInformation?.['centralContactPoint'],
-        ),
-        contactDescriptionOrComment: getLangList(
-          data?.contactInformation?.dataSetInformation?.['contactDescriptionOrComment'],
-        ),
-        referenceToContact: {
-          '@refObjectId':
-            data?.contactInformation?.dataSetInformation?.referenceToContact?.['@refObjectId'],
-          '@type': data?.contactInformation?.dataSetInformation?.referenceToContact?.['@type'],
-          '@uri': data?.contactInformation?.dataSetInformation?.referenceToContact?.['@uri'],
-          'common:shortDescription': getLangList(
-            data?.contactInformation?.dataSetInformation?.referenceToContact?.[
-              'common:shortDescription'
+        publicationAndOwnership: {
+          'common:dataSetVersion':
+            data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'],
+          'common:referenceToOwnershipOfDataSet': {
+            '@refObjectId':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]?.['@refObjectId'],
+            '@type':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]?.['@type'],
+            '@uri':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]?.['@uri'],
+            '@version':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]?.['@version'],
+            'common:shortDescription': getLangList(
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]?.['common:shortDescription'],
+            ),
+          },
+          'common:referenceToPrecedingDataSetVersion': {
+            '@refObjectId':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToPrecedingDataSetVersion'
+              ]?.['@refObjectId'],
+            '@type':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToPrecedingDataSetVersion'
+              ]?.['@type'],
+            '@uri':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToPrecedingDataSetVersion'
+              ]?.['@uri'],
+            '@version':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToPrecedingDataSetVersion'
+              ]?.['@version'],
+            'common:shortDescription': getLangList(
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToPrecedingDataSetVersion'
+              ]?.['common:shortDescription'],
+            ),
+          },
+          'common:permanentDataSetURI':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:permanentDataSetURI'
             ],
-          ),
-          '@version':
-            data?.contactInformation?.dataSetInformation?.referenceToContact?.['@version'],
         },
-        referenceToLogo: {
-          '@refObjectId':
-            data?.contactInformation?.dataSetInformation?.referenceToLogo?.['@refObjectId'],
-          '@type': data?.contactInformation?.dataSetInformation?.referenceToLogo?.['@type'],
-          '@uri': data?.contactInformation?.dataSetInformation?.referenceToLogo?.['@uri'],
-          'common:shortDescription': getLangList(
-            data?.contactInformation?.dataSetInformation?.referenceToLogo?.[
-              'common:shortDescription'
-            ],
-          ),
-          '@version': data?.contactInformation?.dataSetInformation?.referenceToLogo?.['@version'],
-        },
-      },
-    },
-    administrativeInformation: {
-      dataEntryBy: {
-        'common:timeStamp':
-          data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ??
-          formatDateTime(new Date()),
-        'common:referenceToDataSetFormat': {
-          '@refObjectId':
-            data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-              '@refObjectId'
-            ],
-          '@type':
-            data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-              '@type'
-            ],
-          '@uri':
-            data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-              '@uri'
-            ],
-          '@version':
-            data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-              '@version'
-            ],
-          'common:shortDescription': getLangList(
-            data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-              'common:shortDescription'
-            ],
-          ),
-        },
-      },
-      publicationAndOwnership: {
-        'common:dataSetVersion':
-          data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'],
-        'common:referenceToOwnershipOfDataSet': {
-          '@refObjectId':
-            data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToOwnershipOfDataSet'
-            ]?.['@refObjectId'],
-          '@type':
-            data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToOwnershipOfDataSet'
-            ]?.['@type'],
-          '@uri':
-            data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToOwnershipOfDataSet'
-            ]?.['@uri'],
-          '@version':
-            data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToOwnershipOfDataSet'
-            ]?.['@version'],
-          'common:shortDescription': getLangList(
-            data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToOwnershipOfDataSet'
-            ]?.['common:shortDescription'],
-          ),
-        },
-        'common:referenceToPrecedingDataSetVersion': {
-          '@refObjectId':
-            data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToPrecedingDataSetVersion'
-            ]?.['@refObjectId'],
-          '@type':
-            data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToPrecedingDataSetVersion'
-            ]?.['@type'],
-          '@uri':
-            data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToPrecedingDataSetVersion'
-            ]?.['@uri'],
-          '@version':
-            data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToPrecedingDataSetVersion'
-            ]?.['@version'],
-          'common:shortDescription': getLangList(
-            data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToPrecedingDataSetVersion'
-            ]?.['common:shortDescription'],
-          ),
-        },
-        'common:permanentDataSetURI':
-          data?.administrativeInformation?.publicationAndOwnership?.['common:permanentDataSetURI'],
       },
     },
   });
+  return {
+    contactInformation: contact.contactDataSet.contactInformation,
+    administrativeInformation: contact.contactDataSet.administrativeInformation,
+  };
 }

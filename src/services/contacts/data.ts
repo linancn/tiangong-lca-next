@@ -1,3 +1,5 @@
+import { Contact } from '@tiangong-lca/tidas-sdk';
+
 export type ContactTable = {
   key: React.Key;
   id: string;
@@ -10,3 +12,15 @@ export type ContactTable = {
   modifiedAt: Date;
   teamId: string;
 };
+
+export type FormContact = Pick<
+  Contact['contactDataSet'],
+  'contactInformation' | 'administrativeInformation'
+>;
+
+export type ContactDataSetObjectKeys = Exclude<
+  {
+    [K in keyof Contact['contactDataSet']]: Contact['contactDataSet'][K] extends object ? K : never;
+  }[keyof Contact['contactDataSet']],
+  undefined
+>;
