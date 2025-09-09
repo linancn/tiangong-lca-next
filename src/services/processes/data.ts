@@ -1,3 +1,4 @@
+import { Process } from '@tiangong-lca/tidas-sdk';
 export type ProcessTable = {
   key: string;
   id: string;
@@ -31,3 +32,14 @@ export type ProcessExchangeTable = {
   refUnitRes?: any;
   stateCode: number;
 };
+
+export type ProcessDataSetObjectKeys = Exclude<
+  {
+    [K in keyof Process['processDataSet']]: Process['processDataSet'][K] extends object | undefined
+      ? K
+      : never;
+  }[keyof Process['processDataSet']],
+  undefined
+>;
+
+export type FormProcess = Pick<Process['processDataSet'], ProcessDataSetObjectKeys>;

@@ -13,7 +13,11 @@ import { v4 } from 'uuid';
 // import requiredFields from '../requiredFields';
 import ToolBarButton from '@/components/ToolBarButton';
 import { LCIAResultTable } from '@/services/lciaMethods/data';
+import { FormProcess, ProcessDataSetObjectKeys } from '@/services/processes/data';
 import { ProcessForm } from './form';
+
+type TabKeysType = ProcessDataSetObjectKeys | 'validation' | 'complianceDeclarations';
+type FormProcessWithId = FormProcess & { id?: string };
 
 type Props = {
   lang: string;
@@ -50,9 +54,9 @@ const ProcessCreate: FC<CreateProps> = ({
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
-  const [activeTabKey, setActiveTabKey] = useState<string>('processInformation');
-  const [fromData, setFromData] = useState<any>({});
-  const [initData, setInitData] = useState<any>({});
+  const [activeTabKey, setActiveTabKey] = useState<TabKeysType>('processInformation');
+  const [fromData, setFromData] = useState<FormProcessWithId>();
+  const [initData, setInitData] = useState<FormProcessWithId>();
   const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
   const [spinning, setSpinning] = useState<boolean>(false);
   const intl = useIntl();
@@ -67,7 +71,7 @@ const ProcessCreate: FC<CreateProps> = ({
           ...fromData?.modellingAndValidation,
           validation: { ...fieldsValue?.modellingAndValidation?.validation },
         },
-      });
+      } as FormProcessWithId);
     } else if (activeTabKey === 'complianceDeclarations') {
       await setFromData({
         ...fromData,
@@ -77,12 +81,12 @@ const ProcessCreate: FC<CreateProps> = ({
             ...fieldsValue?.modellingAndValidation?.complianceDeclarations,
           },
         },
-      });
+      } as FormProcessWithId);
     } else {
       await setFromData({
         ...fromData,
         [activeTabKey]: fieldsValue?.[activeTabKey] ?? {},
-      });
+      } as FormProcessWithId);
     }
   };
 
@@ -102,7 +106,7 @@ const ProcessCreate: FC<CreateProps> = ({
     if (fromData?.id) setExchangeDataSource([...data]);
   };
 
-  const onTabChange = (key: string) => {
+  const onTabChange = (key: TabKeysType) => {
     setActiveTabKey(key);
   };
 
@@ -131,8 +135,8 @@ const ProcessCreate: FC<CreateProps> = ({
     if (!drawerVisible) {
       onClose();
       formRefCreate.current?.resetFields();
-      setInitData({});
-      setFromData({});
+      setInitData(undefined);
+      setFromData(undefined);
       setExchangeDataSource([]);
       return;
     }
@@ -187,16 +191,16 @@ const ProcessCreate: FC<CreateProps> = ({
       },
     };
     const newId = v4();
-    setInitData({ ...newData, id: newId });
+    setInitData({ ...newData, id: newId } as FormProcessWithId);
     // formRefCreate.current?.resetFields();
     const currentData = formRefCreate.current?.getFieldsValue();
     formRefCreate.current?.setFieldsValue({ ...currentData, ...newData });
-    setFromData({ ...newData, id: newId });
+    setFromData({ ...newData, id: newId } as FormProcessWithId);
     setExchangeDataSource([]);
   }, [drawerVisible]);
 
   useEffect(() => {
-    setFromData({ ...fromData, exchanges: { exchange: exchangeDataSource } });
+    setFromData({ ...fromData, exchanges: { exchange: exchangeDataSource } } as FormProcessWithId);
   }, [exchangeDataSource]);
 
   const handleLciaResults = (result: LCIAResultTable[]) => {
@@ -208,7 +212,7 @@ const ProcessCreate: FC<CreateProps> = ({
           meanAmount: item.meanAmount,
         })),
       },
-    });
+    } as any);
   };
 
   return (
@@ -297,7 +301,7 @@ const ProcessCreate: FC<CreateProps> = ({
                     ...fromData?.modellingAndValidation,
                     validation: { ...allValues?.modellingAndValidation?.validation },
                   },
-                });
+                } as FormProcessWithId);
               } else if (activeTabKey === 'complianceDeclarations') {
                 await setFromData({
                   ...fromData,
@@ -307,9 +311,12 @@ const ProcessCreate: FC<CreateProps> = ({
                       ...allValues?.modellingAndValidation?.complianceDeclarations,
                     },
                   },
-                });
+                } as FormProcessWithId);
               } else {
-                await setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+                await setFromData({
+                  ...fromData,
+                  [activeTabKey]: allValues[activeTabKey] ?? {},
+                } as FormProcessWithId);
               }
             }}
             submitter={{
@@ -377,9 +384,9 @@ const ProcessCreate: FC<CreateProps> = ({
               onData={handletFromData}
               onExchangeData={handletExchangeData}
               onExchangeDataCreate={handletExchangeDataCreate}
-              onTabChange={onTabChange}
+              onTabChange={(key) => onTabChange(key as TabKeysType)}
               exchangeDataSource={exchangeDataSource}
-              lciaResults={fromData?.LCIAResults?.LCIAResult ?? []}
+              lciaResults={fromData?.LCIAResults?.LCIAResult ?? ([] as any)}
               onLciaResults={handleLciaResults}
             />
           </ProForm>

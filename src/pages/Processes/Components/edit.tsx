@@ -15,6 +15,7 @@ import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
 import { getRuleVerification } from '@/services/general/util';
 import { LCIAResultTable } from '@/services/lciaMethods/data';
 import { getProcessDetail, updateProcess } from '@/services/processes/api';
+import { FormProcess, ProcessDataSetObjectKeys } from '@/services/processes/data';
 import { genProcessFromData, genProcessJsonOrdered } from '@/services/processes/util';
 import { getUserTeamId } from '@/services/roles/api';
 import styles from '@/style/custom.less';
@@ -28,6 +29,12 @@ import { v4 } from 'uuid';
 import schema from '../processes_schema.json';
 import { ProcessForm } from './form';
 
+type TabKeysType = ProcessDataSetObjectKeys | 'validation' | 'complianceDeclarations';
+type FormProcessWithDatas = FormProcess & {
+  id?: string;
+  stateCode?: number;
+  ruleVerification?: boolean;
+};
 type Props = {
   id: string;
   version: string;
@@ -54,9 +61,9 @@ const ProcessEdit: FC<Props> = ({
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
-  const [activeTabKey, setActiveTabKey] = useState<string>('processInformation');
-  const [fromData, setFromData] = useState<any>({});
-  const [initData, setInitData] = useState<any>({});
+  const [activeTabKey, setActiveTabKey] = useState<TabKeysType>('processInformation');
+  const [fromData, setFromData] = useState<FormProcessWithDatas>();
+  const [initData, setInitData] = useState<FormProcessWithDatas>();
   const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
   const [spinning, setSpinning] = useState(false);
   const [showRules, setShowRules] = useState<boolean>(false);
@@ -444,7 +451,7 @@ const ProcessEdit: FC<Props> = ({
     }
   };
 
-  const onTabChange = (key: string) => {
+  const onTabChange = (key: TabKeysType) => {
     setActiveTabKey(key);
     if (showRules) {
       setTimeout(() => {
@@ -496,7 +503,7 @@ const ProcessEdit: FC<Props> = ({
       exchanges: {
         exchange: [...exchangeDataSource],
       },
-    });
+    } as FormProcessWithDatas);
   }, [exchangeDataSource]);
 
   const handleLciaResults = (result: LCIAResultTable[]) => {
@@ -509,7 +516,7 @@ const ProcessEdit: FC<Props> = ({
           meanAmount: item.meanAmount,
         })),
       },
-    });
+    } as any);
   };
 
   return (
@@ -656,7 +663,7 @@ const ProcessEdit: FC<Props> = ({
                         ...fromData?.modellingAndValidation,
                         validation: { ...allValues?.modellingAndValidation?.validation },
                       },
-                    });
+                    } as FormProcessWithDatas);
                   } else if (activeTabKey === 'complianceDeclarations') {
                     await setFromData({
                       ...fromData,
@@ -666,12 +673,12 @@ const ProcessEdit: FC<Props> = ({
                           ...allValues?.modellingAndValidation?.complianceDeclarations,
                         },
                       },
-                    });
+                    } as FormProcessWithDatas);
                   } else {
                     await setFromData({
                       ...fromData,
                       [activeTabKey]: allValues[activeTabKey] ?? {},
-                    });
+                    } as FormProcessWithDatas);
                   }
                 }}
                 submitter={{
@@ -688,10 +695,10 @@ const ProcessEdit: FC<Props> = ({
                   onData={handletFromData}
                   onExchangeData={handletExchangeData}
                   onExchangeDataCreate={handletExchangeDataCreate}
-                  onTabChange={onTabChange}
+                  onTabChange={(key) => onTabChange(key as TabKeysType)}
                   exchangeDataSource={exchangeDataSource}
                   showRules={showRules}
-                  lciaResults={fromData?.LCIAResults?.LCIAResult ?? []}
+                  lciaResults={fromData?.LCIAResults?.LCIAResult ?? ([] as any)}
                   onLciaResults={handleLciaResults}
                 />
                 <Form.Item name='id' hidden>
