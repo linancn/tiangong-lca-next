@@ -1548,13 +1548,13 @@ export function genProcessFromData(data: any): FormProcess {
       },
     },
   });
-  return {
+  return removeEmptyObjects({
     processInformation: process.processDataSet.processInformation,
     exchanges: process.processDataSet.exchanges,
     LCIAResults: process.processDataSet.LCIAResults,
     modellingAndValidation: process.processDataSet.modellingAndValidation,
     administrativeInformation: process.processDataSet.administrativeInformation,
-  };
+  });
 }
 
 export function genProcessExchangeTableData(data: any, lang: string) {

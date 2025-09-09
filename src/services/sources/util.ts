@@ -304,8 +304,8 @@ export function genSourceFromData(data: any): FormSource {
       },
     },
   });
-  return {
+  return removeEmptyObjects({
     sourceInformation: source.sourceDataSet.sourceInformation,
     administrativeInformation: source.sourceDataSet.administrativeInformation,
-  };
+  });
 }

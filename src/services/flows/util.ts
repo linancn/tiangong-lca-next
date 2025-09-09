@@ -573,12 +573,12 @@ export function genFlowFromData(data: any): FormFlow {
       },
     },
   });
-  return {
+  return removeEmptyObjects({
     flowInformation: flow.flowDataSet.flowInformation,
     modellingAndValidation: flow.flowDataSet.modellingAndValidation,
     administrativeInformation: flow.flowDataSet.administrativeInformation,
     flowProperties: flow.flowDataSet.flowProperties,
-  };
+  });
 }
 
 export function genFlowPropertyTabTableData(data: any, lang: string) {

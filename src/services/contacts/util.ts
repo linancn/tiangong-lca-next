@@ -311,8 +311,8 @@ export function genContactFromData(data: any): FormContact | undefined {
       },
     },
   });
-  return {
+  return removeEmptyObjects({
     contactInformation: contact.contactDataSet.contactInformation,
     administrativeInformation: contact.contactDataSet.administrativeInformation,
-  };
+  });
 }

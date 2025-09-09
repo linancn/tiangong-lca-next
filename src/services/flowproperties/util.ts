@@ -394,9 +394,9 @@ export function genFlowpropertyFromData(data: any): FormFlowProperty {
     },
   });
 
-  return {
+  return removeEmptyObjects({
     flowPropertiesInformation: flowproperty.flowPropertyDataSet.flowPropertiesInformation,
     administrativeInformation: flowproperty.flowPropertyDataSet.administrativeInformation,
     modellingAndValidation: flowproperty.flowPropertyDataSet.modellingAndValidation,
-  };
+  });
 }

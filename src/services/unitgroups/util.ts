@@ -365,12 +365,12 @@ export function genUnitGroupFromData(data: any): FormUnitGroup {
     },
   });
 
-  return {
+  return removeEmptyObjects({
     unitGroupInformation: unitGroup.unitGroupDataSet.unitGroupInformation,
     administrativeInformation: unitGroup.unitGroupDataSet.administrativeInformation,
     modellingAndValidation: unitGroup.unitGroupDataSet.modellingAndValidation,
     units: unitGroup.unitGroupDataSet.units,
-  };
+  });
 }
 
 export function genUnitTableData(data: any, lang: string) {
