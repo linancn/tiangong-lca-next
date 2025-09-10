@@ -619,6 +619,7 @@ const ProcessEdit: FC<Props> = ({
         footer={
           <Space size={'middle'} className={styles.footer_right}>
             <AISuggestion
+              type='process'
               onLatestJsonChange={handleLatestJsonChange}
               onClose={handleAISuggestionClose}
               originJson={originJson}

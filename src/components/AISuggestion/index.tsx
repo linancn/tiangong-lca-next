@@ -8,6 +8,7 @@ import './index.less';
 const { Text, Title } = Typography;
 
 interface AISuggestionProps {
+  type: 'process' | 'flow';
   originJson?: any;
   disabled?: boolean;
   onAcceptChange?: (path: string, value: any) => void;
@@ -37,6 +38,7 @@ interface JsonLine {
 }
 
 const AISuggestion: React.FC<AISuggestionProps> = ({
+  type,
   originJson,
   disabled = false,
   onAcceptChange,
@@ -72,7 +74,7 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
     const tidasData = createProcess();
     tidasData.processDataSet = originJson.processDataSet;
 
-    const suggestResult = await getAISuggestion(tidasData.toJSONString(2), 'process', {
+    const suggestResult = await getAISuggestion(tidasData.toJSONString(2), type, {
       outputDiffSummary: true,
       outputDiffHTML: true,
       maxRetries: 1,
