@@ -168,7 +168,7 @@ const ProcessEdit: FC<Props> = ({
     let allocatedFractionTotal = 0;
     output.forEach((e: any) => {
       allocatedFractionTotal += Number(
-        e.allocations.allocation['@allocatedFraction'].split('%')[0],
+        e?.allocations?.allocation['@allocatedFraction']?.split('%')[0],
       );
     });
     if (allocatedFractionTotal > 100) {
