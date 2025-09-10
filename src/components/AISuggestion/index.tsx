@@ -1,5 +1,6 @@
+import { getAISuggestion } from '@/services/general/api';
 import { CheckOutlined, CloseOutlined, CopyOutlined, UndoOutlined } from '@ant-design/icons';
-import { createProcess, suggestData } from '@tiangong-lca/tidas-sdk';
+import { createProcess } from '@tiangong-lca/tidas-sdk';
 import { Button, message, Modal, Space, Spin, theme, Typography } from 'antd';
 import * as jsondiffpatch from 'jsondiffpatch';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -68,15 +69,13 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
   const getSuggestData = async () => {
     // console.log('获取suggest数据',JSON.parse(JSON.stringify(originJson)));
     setLoading(true);
-    const suggestResult = await suggestData(JSON.stringify(createProcess(originJson)), 'process', {
+    const tidasData = createProcess();
+    tidasData.processDataSet = originJson.processDataSet;
+
+    const suggestResult = await getAISuggestion(tidasData.toJSONString(2), 'process', {
       outputDiffSummary: true,
       outputDiffHTML: true,
       maxRetries: 1,
-      modelConfig: {
-        model: process.env.OPENAI_CHAT_MODEL,
-        apiKey: process.env.OPENAI_API_KEY,
-        baseURL: process.env.OPENAI_BASE_URL,
-      },
     });
     // console.log('suggestResult', suggestResult);
     setAIJson(suggestResult?.data ?? {});
