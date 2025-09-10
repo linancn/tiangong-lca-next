@@ -4,6 +4,7 @@ import { createProcess } from '@tiangong-lca/tidas-sdk';
 import { Button, message, Modal, Space, Spin, theme, Typography } from 'antd';
 import * as jsondiffpatch from 'jsondiffpatch';
 import React, { useEffect, useMemo, useState } from 'react';
+import { FormattedMessage, useIntl } from 'umi';
 import './index.less';
 const { Text, Title } = Typography;
 
@@ -50,6 +51,7 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
   onLatestJsonChange,
   onClose = () => {},
 }) => {
+  const intl = useIntl();
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [acceptedChanges, setAcceptedChanges] = useState<Set<string>>(new Set());
@@ -59,7 +61,7 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
 
   const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
 
-  const styles = {
+  const colors = {
     background: token.colorBgContainer,
     backgroundSecondary: token.colorFillSecondary,
 
@@ -98,7 +100,6 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
   const leftPanelRef = React.useRef<HTMLDivElement>(null);
   const rightPanelRef = React.useRef<HTMLDivElement>(null);
   const getSuggestData = async () => {
-    // console.log('获取suggest数据',JSON.parse(JSON.stringify(originJson)));
     setLoading(true);
     const tidasData = createProcess();
     tidasData.processDataSet = originJson.processDataSet;
@@ -108,7 +109,6 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
       outputDiffHTML: true,
       maxRetries: 1,
     });
-    // console.log('suggestResult', suggestResult);
     setAIJson(suggestResult?.data ?? {});
     setLoading(false);
   };
@@ -382,7 +382,7 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
   const handleUndo = () => {
     const lastOperation = operationHistory[operationHistory.length - 1];
     if (!lastOperation) {
-      message.info('没有可撤销的操作');
+      message.info(intl.formatMessage({ id: 'component.aiSuggestion.message.noUndoOperation' }));
       return;
     }
 
@@ -420,7 +420,7 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
     // 从历史记录中移除最后一个操作
     setOperationHistory((prev) => prev.slice(0, -1));
 
-    message.success('已撤销上一次操作');
+    message.success(intl.formatMessage({ id: 'component.aiSuggestion.message.undoSuccess' }));
   };
 
   const handleAcceptChange = (path: string, value: any) => {
@@ -446,7 +446,9 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
       onAcceptChange(path, value);
     }
 
-    message.success(`已接受更改: ${path}`);
+    message.success(
+      `${intl.formatMessage({ id: 'component.aiSuggestion.message.acceptChange' })}: ${path}`,
+    );
   };
 
   const handleRejectChange = (path: string) => {
@@ -471,16 +473,20 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
       onRejectChange(path);
     }
 
-    message.warning(`已拒绝更改: ${path}`);
+    message.warning(
+      `${intl.formatMessage({ id: 'component.aiSuggestion.message.rejectChange' })}: ${path}`,
+    );
   };
 
   const handleCopyToClipboard = async (content: any, label: string) => {
     try {
       const jsonString = JSON.stringify(content, null, 2);
       await navigator.clipboard.writeText(jsonString);
-      message.success(`${label}已复制到剪贴板`);
+      message.success(
+        `${label}${intl.formatMessage({ id: 'component.aiSuggestion.message.copySuccess' })}`,
+      );
     } catch (err) {
-      message.error('复制失败，请手动复制');
+      message.error(intl.formatMessage({ id: 'component.aiSuggestion.message.copyFailed' }));
       console.error('复制失败:', err);
     }
   };
@@ -549,7 +555,9 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
     });
     setAcceptedChanges(newAccepted);
     setRejectedChanges(new Set());
-    message.success(`已接受所有 ${diffItems.length} 个更改`);
+    message.success(
+      `${intl.formatMessage({ id: 'component.aiSuggestion.message.acceptAllSuccess' })} ${diffItems.length} ${intl.formatMessage({ id: 'component.aiSuggestion.message.changes' })}`,
+    );
   };
 
   // 一键拒绝所有更改
@@ -577,7 +585,9 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
     });
     setRejectedChanges(newRejected);
     setAcceptedChanges(new Set());
-    message.warning(`已拒绝所有 ${diffItems.length} 个更改`);
+    message.warning(
+      `${intl.formatMessage({ id: 'component.aiSuggestion.message.rejectAllSuccess' })} ${diffItems.length} ${intl.formatMessage({ id: 'component.aiSuggestion.message.changes' })}`,
+    );
   };
 
   // 将JSON转换为带行号的文本行
@@ -938,19 +948,19 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
               backgroundColor:
                 isDiff || isInDeletedBlock || isInAddedBlock
                   ? line.diffType === 'added' || isInAddedBlock
-                    ? styles.addedBg
+                    ? colors.addedBg
                     : line.diffType === 'removed' || isInDeletedBlock
-                      ? styles.removedBg
-                      : styles.modifiedBg
+                      ? colors.removedBg
+                      : colors.modifiedBg
                   : 'transparent',
               borderLeft:
                 isDiff || isInDeletedBlock || isInAddedBlock
                   ? `3px solid ${
                       line.diffType === 'added' || isInAddedBlock
-                        ? styles.addedBorder
+                        ? colors.addedBorder
                         : line.diffType === 'removed' || isInDeletedBlock
-                          ? styles.removedBorder
-                          : styles.modifiedBorder
+                          ? colors.removedBorder
+                          : colors.modifiedBorder
                     }`
                   : 'none',
             }}
@@ -1020,30 +1030,30 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
                     return currentIsAccepted ? (
                       <span
                         style={{
-                          color: styles.acceptedText,
+                          color: colors.acceptedText,
                           fontSize: '11px',
                           padding: '1px 4px',
-                          backgroundColor: styles.acceptedBg,
+                          backgroundColor: colors.acceptedBg,
                           borderRadius: '2px',
-                          border: `1px solid ${styles.acceptedBorder}`,
+                          border: `1px solid ${colors.acceptedBorder}`,
                           whiteSpace: 'nowrap',
                         }}
                       >
-                        已接受
+                        <FormattedMessage id='component.aiSuggestion.status.accepted' />
                       </span>
                     ) : currentIsRejected ? (
                       <span
                         style={{
-                          color: styles.rejectedText,
+                          color: colors.rejectedText,
                           fontSize: '11px',
                           padding: '1px 4px',
-                          backgroundColor: styles.rejectedBg,
+                          backgroundColor: colors.rejectedBg,
                           borderRadius: '2px',
-                          border: `1px solid ${styles.rejectedBorder}`,
+                          border: `1px solid ${colors.rejectedBorder}`,
                           whiteSpace: 'nowrap',
                         }}
                       >
-                        已拒绝
+                        <FormattedMessage id='component.aiSuggestion.status.rejected' />
                       </span>
                     ) : (
                       <>
@@ -1061,7 +1071,7 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
                             boxShadow: 'none',
                           }}
                         >
-                          接受
+                          <FormattedMessage id='component.aiSuggestion.action.accept' />
                         </Button>
                         <Button
                           size='small'
@@ -1074,7 +1084,7 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
                             boxShadow: 'none',
                           }}
                         >
-                          拒绝
+                          <FormattedMessage id='component.aiSuggestion.action.reject' />
                         </Button>
                       </>
                     );
@@ -1091,14 +1101,14 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
           key={index}
           style={{
             display: 'flex',
-            borderBottom: `1px solid ${styles.borderTertiary}`,
+            borderBottom: `1px solid ${colors.borderTertiary}`,
             width: '100%',
           }}
         >
           <div
             style={{
               width: '50%',
-              borderRight: `1px solid ${styles.borderSecondary}`,
+              borderRight: `1px solid ${colors.borderSecondary}`,
               overflow: 'hidden',
               boxSizing: 'border-box',
             }}
@@ -1120,8 +1130,8 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
       return (
         <div
           style={{
-            backgroundColor: styles.background,
-            border: `1px solid ${styles.border}`,
+            backgroundColor: colors.background,
+            border: `1px solid ${colors.border}`,
             borderRadius: '4px',
             overflow: 'auto',
             maxHeight: '600px',
@@ -1162,17 +1172,27 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
               type='text'
               icon={<CopyOutlined />}
               size='small'
-              onClick={() => handleCopyToClipboard(originJson, '原始数据')}
+              onClick={() =>
+                handleCopyToClipboard(
+                  originJson,
+                  intl.formatMessage({ id: 'component.aiSuggestion.label.originalData' }),
+                )
+              }
             >
-              复制原始数据
+              <FormattedMessage id='component.aiSuggestion.button.copyOriginal' />
             </Button>
             <Button
               type='text'
               icon={<CopyOutlined />}
               size='small'
-              onClick={() => handleCopyToClipboard(AIJson, 'AI建议数据')}
+              onClick={() =>
+                handleCopyToClipboard(
+                  AIJson,
+                  intl.formatMessage({ id: 'component.aiSuggestion.label.aiSuggestionData' }),
+                )
+              }
             >
-              复制AI建议
+              <FormattedMessage id='component.aiSuggestion.button.copyAI' />
             </Button>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
@@ -1182,21 +1202,21 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
               onClick={handleAcceptAll}
               disabled={diffItems.length === 0}
             >
-              接受所有更改 ({diffItems.length})
+              <FormattedMessage id='component.aiSuggestion.button.acceptAll' /> ({diffItems.length})
             </Button>
             <Button
               icon={<CloseOutlined />}
               onClick={handleRejectAll}
               disabled={diffItems.length === 0}
             >
-              拒绝所有更改
+              <FormattedMessage id='component.aiSuggestion.button.rejectAll' />
             </Button>
             <Button
               icon={<UndoOutlined />}
               onClick={handleUndo}
               disabled={operationHistory.length === 0}
             >
-              撤销
+              <FormattedMessage id='component.aiSuggestion.button.undo' />
             </Button>
           </div>
         </div>
@@ -1205,8 +1225,8 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
         <div
           style={{
             display: 'flex',
-            borderBottom: `2px solid ${styles.modifiedBorder}`,
-            backgroundColor: styles.backgroundSecondary,
+            borderBottom: `2px solid ${colors.modifiedBorder}`,
+            backgroundColor: colors.backgroundSecondary,
             fontWeight: 'bold',
             borderRadius: '8px 8px 0 0',
           }}
@@ -1215,11 +1235,11 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
             style={{
               flex: 1,
               padding: '8px 16px',
-              // borderRight: `1px solid ${styles.borderSecondary}`,
+              // borderRight: `1px solid ${colors.borderSecondary}`,
             }}
           >
             <Title level={5} style={{ margin: 0 }}>
-              原始数据
+              <FormattedMessage id='component.aiSuggestion.panel.originalData' />
             </Title>
           </div>
           <div
@@ -1229,7 +1249,7 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
             }}
           >
             <Title level={5} style={{ margin: 0 }}>
-              AI 建议数据
+              <FormattedMessage id='component.aiSuggestion.panel.aiSuggestionData' />
             </Title>
           </div>
         </div>
@@ -1241,8 +1261,8 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
           <div
             style={{
               display: 'flex',
-              borderBottom: `2px solid ${styles.modifiedBorder}`,
-              backgroundColor: styles.backgroundSecondary,
+              borderBottom: `2px solid ${colors.modifiedBorder}`,
+              backgroundColor: colors.backgroundSecondary,
               fontWeight: 'bold',
             }}
           >
@@ -1253,7 +1273,7 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
               }}
             >
               <Title level={5} style={{ margin: 0 }}>
-                最新JSON结果
+                <FormattedMessage id='component.aiSuggestion.panel.latestJsonResult' />
               </Title>
             </div>
             <div
@@ -1262,7 +1282,8 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
               }}
             >
               <Text type='secondary'>
-                已处理: {acceptedChanges.size + rejectedChanges.size} / {diffItems.length}
+                <FormattedMessage id='component.aiSuggestion.panel.processed' />:{' '}
+                {acceptedChanges.size + rejectedChanges.size} / {diffItems.length}
               </Text>
             </div>
           </div>
@@ -1272,13 +1293,13 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
               style={{
                 margin: 0,
                 padding: 16,
-                backgroundColor: styles.background,
+                backgroundColor: colors.background,
                 borderRadius: 6,
                 fontSize: 12,
                 lineHeight: 1.4,
                 overflow: 'auto',
                 maxHeight: '400px',
-                border: `1px solid ${styles.borderTertiary}`,
+                border: `1px solid ${colors.borderTertiary}`,
               }}
             >
               {JSON.stringify(latestJson, null, 2)}
@@ -1289,13 +1310,15 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
             <div className='diff-summary'>
               <div className='summary-stats'>
                 <div className='stat-item'>
-                  <span className='stat-label'>新增字段:</span>
+                  <span className='stat-label'>
+                    <FormattedMessage id='component.aiSuggestion.stats.addedFields' />
+                  </span>
                   <span
                     className='stat-value'
                     style={{
-                      color: styles.acceptedText,
-                      backgroundColor: styles.acceptedBg,
-                      border: `1px solid ${styles.acceptedBorder}`,
+                      color: colors.acceptedText,
+                      backgroundColor: colors.acceptedBg,
+                      border: `1px solid ${colors.acceptedBorder}`,
                     }}
                   >
                     {
@@ -1306,13 +1329,15 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
                   </span>
                 </div>
                 <div className='stat-item'>
-                  <span className='stat-label'>修改字段:</span>
+                  <span className='stat-label'>
+                    <FormattedMessage id='component.aiSuggestion.stats.modifiedFields' />
+                  </span>
                   <span
                     className='stat-value'
                     style={{
-                      color: styles.modifiedBorder,
-                      backgroundColor: styles.modifiedBg,
-                      border: `1px solid ${styles.modifiedBorder}`,
+                      color: colors.modifiedBorder,
+                      backgroundColor: colors.modifiedBg,
+                      border: `1px solid ${colors.modifiedBorder}`,
                     }}
                   >
                     {
@@ -1323,13 +1348,15 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
                   </span>
                 </div>
                 <div className='stat-item'>
-                  <span className='stat-label'>删除字段:</span>
+                  <span className='stat-label'>
+                    <FormattedMessage id='component.aiSuggestion.stats.deletedFields' />
+                  </span>
                   <span
                     className='stat-value'
                     style={{
-                      color: styles.removedBorder,
-                      backgroundColor: styles.removedBg,
-                      border: `1px solid ${styles.removedBorder}`,
+                      color: colors.removedBorder,
+                      backgroundColor: colors.removedBg,
+                      border: `1px solid ${colors.removedBorder}`,
                     }}
                   >
                     {
@@ -1340,13 +1367,15 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
                   </span>
                 </div>
                 <div className='stat-item'>
-                  <span className='stat-label'>拒绝更改:</span>
+                  <span className='stat-label'>
+                    <FormattedMessage id='component.aiSuggestion.stats.rejectedChanges' />
+                  </span>
                   <span
                     className='stat-value'
                     style={{
-                      color: styles.rejectedText,
-                      backgroundColor: styles.rejectedBg,
-                      border: `1px solid ${styles.rejectedBorder}`,
+                      color: colors.rejectedText,
+                      backgroundColor: colors.rejectedBg,
+                      border: `1px solid ${colors.rejectedBorder}`,
                     }}
                   >
                     {rejectedChanges.size}
@@ -1363,10 +1392,14 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
   return (
     <>
       <Button disabled={disabled} onClick={handleButtonClick}>
-        AI校验
+        <FormattedMessage id='component.aiSuggestion.button.aiCheck' />
       </Button>
       <Modal
-        title={<Space>AI 数据校验</Space>}
+        title={
+          <Space>
+            <FormattedMessage id='component.aiSuggestion.modal.title' />
+          </Space>
+        }
         open={modalVisible}
         onCancel={handleModalClose}
         footer={null}
@@ -1378,7 +1411,10 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
           style: { borderColor: token.colorPrimary, color: token.colorPrimary },
         }}
       >
-        <Spin spinning={loading} tip='正在分析数据...'>
+        <Spin
+          spinning={loading}
+          tip={intl.formatMessage({ id: 'component.aiSuggestion.modal.loading' })}
+        >
           {renderDiffContent()}
         </Spin>
       </Modal>
