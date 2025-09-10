@@ -35,6 +35,10 @@ interface JsonLine {
   isCollapsible?: boolean;
   isCollapsed?: boolean;
   childCount?: number;
+  isDeleteBlockStart?: boolean;
+  deleteBlockDiffItem?: DiffItem;
+  isAddedBlockStart?: boolean;
+  addedBlockDiffItem?: DiffItem;
 }
 
 const AISuggestion: React.FC<AISuggestionProps> = ({
@@ -720,129 +724,210 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
         }
       });
 
-      // 使用双指针算法对齐
-      const alignedRows: Array<{ left: JsonLine | undefined; right: JsonLine | undefined }> = [];
-      let leftIdx = 0;
-      let rightIdx = 0;
+      // 预处理：为所有属于删除字段的行添加删除块标记
+      const markDiffBlocks = (lines: JsonLine[]) => {
+        diffItems.forEach((diffItem) => {
+          if (diffItem.type === 'removed') {
+            let hasFoundStart = false;
+            lines.forEach((line) => {
+              if (
+                line.path === diffItem.path ||
+                line.path.startsWith(diffItem.path + '.') ||
+                line.path.startsWith(diffItem.path + '[')
+              ) {
+                line.deleteBlockDiffItem = diffItem;
+                line.isDiff = true;
+                line.diffType = 'removed';
 
-      while (leftIdx < leftLines.length || rightIdx < rightLines.length) {
-        const leftLine = leftLines[leftIdx];
-        const rightLine = rightLines[rightIdx];
+                // 只为第一个匹配删除路径的行标记为开始
+                if (!hasFoundStart && line.path === diffItem.path) {
+                  line.isDeleteBlockStart = true;
+                  hasFoundStart = true;
+                }
+              }
+            });
+          } else if (diffItem.type === 'added') {
+            let hasFoundStart = false;
+            lines.forEach((line) => {
+              if (
+                line.path === diffItem.path ||
+                line.path.startsWith(diffItem.path + '.') ||
+                line.path.startsWith(diffItem.path + '[')
+              ) {
+                line.addedBlockDiffItem = diffItem;
+                line.isDiff = true;
+                line.diffType = 'added';
 
-        if (!leftLine && !rightLine) {
-          break;
-        }
+                // 只为第一个匹配新增路径的行标记为开始
+                if (!hasFoundStart && line.path === diffItem.path) {
+                  line.isAddedBlockStart = true;
+                  hasFoundStart = true;
+                }
+              }
+            });
+          }
+        });
+      };
 
-        // 如果只剩左边的行
-        if (leftLine && !rightLine) {
-          alignedRows.push({ left: leftLine, right: undefined });
-          leftIdx++;
-          continue;
-        }
+      markDiffBlocks(leftLines);
+      markDiffBlocks(rightLines);
 
-        // 如果只剩右边的行
-        if (!leftLine && rightLine) {
-          alignedRows.push({ left: undefined, right: rightLine });
-          rightIdx++;
-          continue;
-        }
+      // 智能对齐算法 - 基于路径匹配
+      const alignLinesByPath = () => {
+        const alignedRows: Array<{ left: JsonLine | undefined; right: JsonLine | undefined }> = [];
+        let leftIdx = 0;
+        let rightIdx = 0;
 
-        // 两边都有行，需要判断如何对齐
-        const leftDiff = leftLine ? diffPathMap.get(leftLine.path) : null;
-        const rightDiff = rightLine ? diffPathMap.get(rightLine.path) : null;
+        while (leftIdx < leftLines.length || rightIdx < rightLines.length) {
+          const leftLine = leftLines[leftIdx];
+          const rightLine = rightLines[rightIdx];
 
-        // 如果左边是删除的内容
-        if (leftDiff && leftDiff.type === 'removed') {
-          // 需要找到删除块的结束位置
-          const deletedPath = leftLine.path;
-          let endIdx = leftIdx;
+          if (!leftLine && !rightLine) {
+            break;
+          }
 
-          // 找到所有属于这个删除块的行
-          while (endIdx < leftLines.length) {
-            const nextLine = leftLines[endIdx];
-            if (!nextLine.path.startsWith(deletedPath) && nextLine.path !== deletedPath) {
-              // 如果下一行不是删除内容的子路径，检查是否是删除内容的结束
-              const nextDiff = diffPathMap.get(nextLine.path);
-              if (!nextDiff || nextDiff.type !== 'removed') {
+          // 如果只剩左边的行
+          if (leftLine && !rightLine) {
+            alignedRows.push({ left: leftLine, right: undefined });
+            leftIdx++;
+            continue;
+          }
+
+          // 如果只剩右边的行
+          if (!leftLine && rightLine) {
+            alignedRows.push({ left: undefined, right: rightLine });
+            rightIdx++;
+            continue;
+          }
+
+          // 两边都有行，进行智能匹配
+          const leftDiff = leftLine ? diffPathMap.get(leftLine.path) : null;
+          const rightDiff = rightLine ? diffPathMap.get(rightLine.path) : null;
+
+          // 如果路径完全匹配，直接对齐
+          if (leftLine.path === rightLine.path) {
+            alignedRows.push({ left: leftLine, right: rightLine });
+            leftIdx++;
+            rightIdx++;
+          }
+          // 如果左边是删除项
+          else if (leftDiff && leftDiff.type === 'removed') {
+            alignedRows.push({ left: leftLine, right: undefined });
+            leftIdx++;
+          }
+          // 如果右边是新增项
+          else if (rightDiff && rightDiff.type === 'added') {
+            alignedRows.push({ left: undefined, right: rightLine });
+            rightIdx++;
+          }
+          // 尝试在后续行中找到匹配的路径
+          else {
+            let foundMatch = false;
+
+            // 在右侧查找匹配左侧当前行的路径
+            for (let i = rightIdx + 1; i < Math.min(rightIdx + 10, rightLines.length); i++) {
+              if (rightLines[i].path === leftLine.path) {
+                // 找到匹配，先添加右侧的不匹配行
+                for (let j = rightIdx; j < i; j++) {
+                  alignedRows.push({ left: undefined, right: rightLines[j] });
+                }
+                // 添加匹配的行
+                alignedRows.push({ left: leftLine, right: rightLines[i] });
+                leftIdx++;
+                rightIdx = i + 1;
+                foundMatch = true;
                 break;
               }
             }
-            endIdx++;
-          }
 
-          // 添加所有删除的行，右边留空
-          for (let i = leftIdx; i < endIdx; i++) {
-            alignedRows.push({ left: leftLines[i], right: undefined });
-          }
-          leftIdx = endIdx;
-        }
-        // 如果右边是新增的内容
-        else if (rightDiff && rightDiff.type === 'added') {
-          // 需要找到新增块的结束位置
-          const addedPath = rightLine.path;
-          let endIdx = rightIdx;
-
-          // 找到所有属于这个新增块的行
-          while (endIdx < rightLines.length) {
-            const nextLine = rightLines[endIdx];
-            if (!nextLine.path.startsWith(addedPath) && nextLine.path !== addedPath) {
-              // 如果下一行不是新增内容的子路径，检查是否是新增内容的结束
-              const nextDiff = diffPathMap.get(nextLine.path);
-              if (!nextDiff || nextDiff.type !== 'added') {
-                break;
+            if (!foundMatch) {
+              // 在左侧查找匹配右侧当前行的路径
+              for (let i = leftIdx + 1; i < Math.min(leftIdx + 10, leftLines.length); i++) {
+                if (leftLines[i].path === rightLine.path) {
+                  // 找到匹配，先添加左侧的不匹配行
+                  for (let j = leftIdx; j < i; j++) {
+                    alignedRows.push({ left: leftLines[j], right: undefined });
+                  }
+                  // 添加匹配的行
+                  alignedRows.push({ left: leftLines[i], right: rightLine });
+                  leftIdx = i + 1;
+                  rightIdx++;
+                  foundMatch = true;
+                  break;
+                }
               }
             }
-            endIdx++;
-          }
 
-          // 添加所有新增的行，左边留空
-          for (let i = rightIdx; i < endIdx; i++) {
-            alignedRows.push({ left: undefined, right: rightLines[i] });
+            // 如果都没找到匹配，按原顺序对齐
+            if (!foundMatch) {
+              alignedRows.push({ left: leftLine, right: rightLine });
+              leftIdx++;
+              rightIdx++;
+            }
           }
-          rightIdx = endIdx;
         }
-        // 其他情况（包括修改和无差异的内容）
-        else {
-          alignedRows.push({ left: leftLine, right: rightLine });
-          leftIdx++;
-          rightIdx++;
-        }
-      }
+
+        return alignedRows;
+      };
+
+      const alignedRows = alignLinesByPath();
 
       // 渲染单行
       const renderLine = (line: JsonLine | undefined, isLeft: boolean) => {
         if (!line) {
-          return <div style={{ minHeight: '20px', padding: '2px 0' }}>&nbsp;</div>;
+          return (
+            <div
+              style={{
+                minHeight: '20px',
+                paddingTop: '2px',
+                paddingBottom: '2px',
+                paddingLeft: '0px',
+                paddingRight: '0px',
+              }}
+            >
+              &nbsp;
+            </div>
+          );
         }
 
         const diffItem = diffPathMap.get(line.path);
         const isDiff = line.isDiff;
-        const isAccepted = acceptedChanges.has(line.path);
-        const isRejected = rejectedChanges.has(line.path);
+
+        // 对于删除操作，使用预先设置的删除块信息
+        const isInDeletedBlock = !!line.deleteBlockDiffItem;
+        const deleteBlockDiffItem = line.deleteBlockDiffItem;
+
+        // 对于新增操作，使用预先设置的新增块信息
+        const isInAddedBlock = !!line.addedBlockDiffItem;
+        const addedBlockDiffItem = line.addedBlockDiffItem;
 
         return (
           <div
             style={{
               display: 'flex',
               minHeight: '20px',
-              padding: '2px 0',
-              backgroundColor: isDiff
-                ? line.diffType === 'added'
-                  ? '#f6ffed'
-                  : line.diffType === 'removed'
-                    ? '#fff2f0'
-                    : '#e6f7ff'
-                : 'transparent',
-              borderLeft: isDiff
-                ? `3px solid ${
-                    line.diffType === 'added'
-                      ? '#52c41a'
-                      : line.diffType === 'removed'
-                        ? '#ff4d4f'
-                        : '#1890ff'
-                  }`
-                : 'none',
-              paddingLeft: isDiff ? '5px' : '8px',
+              paddingTop: '2px',
+              paddingBottom: '2px',
+              paddingRight: '0px',
+              paddingLeft: isDiff || isInDeletedBlock || isInAddedBlock ? '5px' : '8px',
+              backgroundColor:
+                isDiff || isInDeletedBlock || isInAddedBlock
+                  ? line.diffType === 'added' || isInAddedBlock
+                    ? '#f6ffed'
+                    : line.diffType === 'removed' || isInDeletedBlock
+                      ? '#fff2f0'
+                      : '#e6f7ff'
+                  : 'transparent',
+              borderLeft:
+                isDiff || isInDeletedBlock || isInAddedBlock
+                  ? `3px solid ${
+                      line.diffType === 'added' || isInAddedBlock
+                        ? '#52c41a'
+                        : line.diffType === 'removed' || isInDeletedBlock
+                          ? '#ff4d4f'
+                          : '#1890ff'
+                    }`
+                  : 'none',
             }}
           >
             <span
@@ -882,20 +967,37 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
               </span>
 
               {/* 操作按钮 */}
-              {isDiff &&
-                diffItem &&
-                ((isLeft && diffItem.type === 'removed') ||
-                  (!isLeft && (diffItem.type === 'added' || diffItem.type === 'modified'))) && (
-                  <div
-                    style={{
-                      display: 'flex',
-                      gap: 4,
-                      marginRight: 8,
-                      flexShrink: 0,
-                      alignSelf: 'flex-start',
-                    }}
-                  >
-                    {isAccepted ? (
+              {// 对于删除操作，只在删除块的开始处显示按钮
+              ((isLeft && line.isDeleteBlockStart === true && deleteBlockDiffItem) ||
+                // 对于新增操作，只在新增块的开始处显示按钮
+                (!isLeft && line.isAddedBlockStart === true && addedBlockDiffItem) ||
+                // 对于修改操作，正常显示按钮
+                (!isLeft && diffItem && diffItem.type === 'modified')) && (
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: 4,
+                    marginRight: 8,
+                    flexShrink: 0,
+                    alignSelf: 'flex-start',
+                  }}
+                >
+                  {/* 根据不同操作类型使用对应的diffItem */}
+                  {(() => {
+                    const currentDiffItem = isInDeletedBlock
+                      ? deleteBlockDiffItem
+                      : isInAddedBlock
+                        ? addedBlockDiffItem
+                        : diffItem;
+                    const currentPath = isInDeletedBlock
+                      ? deleteBlockDiffItem?.path
+                      : isInAddedBlock
+                        ? addedBlockDiffItem?.path
+                        : line.path;
+                    const currentIsAccepted = acceptedChanges.has(currentPath || '');
+                    const currentIsRejected = rejectedChanges.has(currentPath || '');
+
+                    return currentIsAccepted ? (
                       <span
                         style={{
                           color: '#52c41a',
@@ -909,7 +1011,7 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
                       >
                         已接受
                       </span>
-                    ) : isRejected ? (
+                    ) : currentIsRejected ? (
                       <span
                         style={{
                           color: '#fa8c16',
@@ -928,32 +1030,37 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
                         <Button
                           type='primary'
                           size='small'
-                          onClick={() => handleAcceptChange(line.path, diffItem.newValue)}
+                          onClick={() =>
+                            handleAcceptChange(currentPath || '', currentDiffItem?.newValue)
+                          }
                           style={{
                             fontSize: '10px',
-                            height: '18px',
+                            height: '20px',
                             padding: '0 4px',
                             whiteSpace: 'nowrap',
+                            boxShadow: 'none',
                           }}
                         >
                           接受
                         </Button>
                         <Button
                           size='small'
-                          onClick={() => handleRejectChange(line.path)}
+                          onClick={() => handleRejectChange(currentPath || '')}
                           style={{
                             fontSize: '10px',
-                            height: '18px',
+                            height: '20px',
                             padding: '0 4px',
                             whiteSpace: 'nowrap',
+                            boxShadow: 'none',
                           }}
                         >
                           拒绝
                         </Button>
                       </>
-                    )}
-                  </div>
-                )}
+                    );
+                  })()}
+                </div>
+              )}
             </div>
           </div>
         );
