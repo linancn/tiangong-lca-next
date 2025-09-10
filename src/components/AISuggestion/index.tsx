@@ -55,6 +55,32 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
   const [acceptedChanges, setAcceptedChanges] = useState<Set<string>>(new Set());
   const [rejectedChanges, setRejectedChanges] = useState<Set<string>>(new Set());
   const [AIJson, setAIJson] = useState<any>(null);
+  const { token } = theme.useToken();
+
+  const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
+
+  const styles = {
+    background: token.colorBgContainer,
+    backgroundSecondary: token.colorFillSecondary,
+
+    border: token.colorBorder,
+    borderSecondary: token.colorBorderSecondary,
+    borderTertiary: token.colorSplit,
+
+    addedBg: token.colorSuccessBg,
+    addedBorder: token.colorSuccess,
+    removedBg: token.colorErrorBg,
+    removedBorder: token.colorError,
+    modifiedBg: token.colorInfoBg,
+    modifiedBorder: token.colorInfo,
+
+    acceptedBg: token.colorSuccessBg,
+    acceptedBorder: token.colorSuccessBorder,
+    acceptedText: token.colorSuccess,
+    rejectedBg: token.colorWarningBg,
+    rejectedBorder: token.colorWarningBorder,
+    rejectedText: token.colorWarning,
+  };
   interface OperationHistoryItem {
     path?: string;
     type: 'accept' | 'reject' | 'accept_all' | 'reject_all';
@@ -71,7 +97,6 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
 
   const leftPanelRef = React.useRef<HTMLDivElement>(null);
   const rightPanelRef = React.useRef<HTMLDivElement>(null);
-  const { token } = theme.useToken();
   const getSuggestData = async () => {
     // console.log('获取suggest数据',JSON.parse(JSON.stringify(originJson)));
     setLoading(true);
@@ -913,32 +938,32 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
               backgroundColor:
                 isDiff || isInDeletedBlock || isInAddedBlock
                   ? line.diffType === 'added' || isInAddedBlock
-                    ? '#f6ffed'
+                    ? styles.addedBg
                     : line.diffType === 'removed' || isInDeletedBlock
-                      ? '#fff2f0'
-                      : '#e6f7ff'
+                      ? styles.removedBg
+                      : styles.modifiedBg
                   : 'transparent',
               borderLeft:
                 isDiff || isInDeletedBlock || isInAddedBlock
                   ? `3px solid ${
                       line.diffType === 'added' || isInAddedBlock
-                        ? '#52c41a'
+                        ? styles.addedBorder
                         : line.diffType === 'removed' || isInDeletedBlock
-                          ? '#ff4d4f'
-                          : '#1890ff'
+                          ? styles.removedBorder
+                          : styles.modifiedBorder
                     }`
                   : 'none',
             }}
           >
             <span
               style={{
-                color: '#999',
                 minWidth: '40px',
                 marginRight: '10px',
                 fontFamily: 'monospace',
                 fontSize: '12px',
                 userSelect: 'none',
                 flexShrink: 0,
+                opacity: 0.6,
               }}
             >
               {line.lineNumber}
@@ -966,12 +991,8 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
                 {line.content}
               </span>
 
-              {/* 操作按钮 */}
-              {// 对于删除操作，只在删除块的开始处显示按钮
-              ((isLeft && line.isDeleteBlockStart === true && deleteBlockDiffItem) ||
-                // 对于新增操作，只在新增块的开始处显示按钮
+              {((isLeft && line.isDeleteBlockStart === true && deleteBlockDiffItem) ||
                 (!isLeft && line.isAddedBlockStart === true && addedBlockDiffItem) ||
-                // 对于修改操作，正常显示按钮
                 (!isLeft && diffItem && diffItem.type === 'modified')) && (
                 <div
                   style={{
@@ -982,7 +1003,6 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
                     alignSelf: 'flex-start',
                   }}
                 >
-                  {/* 根据不同操作类型使用对应的diffItem */}
                   {(() => {
                     const currentDiffItem = isInDeletedBlock
                       ? deleteBlockDiffItem
@@ -1000,12 +1020,12 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
                     return currentIsAccepted ? (
                       <span
                         style={{
-                          color: '#52c41a',
+                          color: styles.acceptedText,
                           fontSize: '11px',
                           padding: '1px 4px',
-                          backgroundColor: '#f6ffed',
+                          backgroundColor: styles.acceptedBg,
                           borderRadius: '2px',
-                          border: '1px solid #b7eb8f',
+                          border: `1px solid ${styles.acceptedBorder}`,
                           whiteSpace: 'nowrap',
                         }}
                       >
@@ -1014,12 +1034,12 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
                     ) : currentIsRejected ? (
                       <span
                         style={{
-                          color: '#fa8c16',
+                          color: styles.rejectedText,
                           fontSize: '11px',
                           padding: '1px 4px',
-                          backgroundColor: '#fff7e6',
+                          backgroundColor: styles.rejectedBg,
                           borderRadius: '2px',
-                          border: '1px solid #ffd591',
+                          border: `1px solid ${styles.rejectedBorder}`,
                           whiteSpace: 'nowrap',
                         }}
                       >
@@ -1071,14 +1091,14 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
           key={index}
           style={{
             display: 'flex',
-            borderBottom: '1px solid #f0f0f0',
+            borderBottom: `1px solid ${styles.borderTertiary}`,
             width: '100%',
           }}
         >
           <div
             style={{
               width: '50%',
-              borderRight: '1px solid #e8e8e8',
+              borderRight: `1px solid ${styles.borderSecondary}`,
               overflow: 'hidden',
               boxSizing: 'border-box',
             }}
@@ -1100,8 +1120,8 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
       return (
         <div
           style={{
-            backgroundColor: '#fff',
-            border: '1px solid #d9d9d9',
+            backgroundColor: styles.background,
+            border: `1px solid ${styles.border}`,
             borderRadius: '4px',
             overflow: 'auto',
             maxHeight: '600px',
@@ -1126,9 +1146,17 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
     };
 
     return (
-      <div className='json-diff-container'>
+      <div className='json-diff-container' data-theme={isDarkMode ? 'dark' : 'light'}>
         {/* 全局操作按钮 */}
-        <div style={{ marginBottom: 16, display: 'flex', gap: 8, justifyContent: 'space-between' }}>
+        <div
+          style={{
+            marginBottom: 16,
+            display: 'flex',
+            gap: 8,
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
           <div style={{ display: 'flex', gap: 8 }}>
             <Button
               type='text'
@@ -1177,16 +1205,17 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
         <div
           style={{
             display: 'flex',
-            borderBottom: '2px solid #1890ff',
-            backgroundColor: '#fafafa',
+            borderBottom: `2px solid ${styles.modifiedBorder}`,
+            backgroundColor: styles.backgroundSecondary,
             fontWeight: 'bold',
+            borderRadius: '8px 8px 0 0',
           }}
         >
           <div
             style={{
               flex: 1,
               padding: '8px 16px',
-              borderRight: '1px solid #e8e8e8',
+              // borderRight: `1px solid ${styles.borderSecondary}`,
             }}
           >
             <Title level={5} style={{ margin: 0 }}>
@@ -1209,11 +1238,33 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
         {renderSideBySideDiff()}
 
         <div className='latest-json-panel'>
-          <div className='panel-header'>
-            <Title level={5}>最新JSON结果</Title>
-            <Text type='secondary'>
-              已处理: {acceptedChanges.size + rejectedChanges.size} / {diffItems.length}
-            </Text>
+          <div
+            style={{
+              display: 'flex',
+              borderBottom: `2px solid ${styles.modifiedBorder}`,
+              backgroundColor: styles.backgroundSecondary,
+              fontWeight: 'bold',
+            }}
+          >
+            <div
+              style={{
+                flex: 1,
+                padding: '8px 16px',
+              }}
+            >
+              <Title level={5} style={{ margin: 0 }}>
+                最新JSON结果
+              </Title>
+            </div>
+            <div
+              style={{
+                padding: '8px 16px',
+              }}
+            >
+              <Text type='secondary'>
+                已处理: {acceptedChanges.size + rejectedChanges.size} / {diffItems.length}
+              </Text>
+            </div>
           </div>
 
           <div className='json-display'>
@@ -1221,13 +1272,13 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
               style={{
                 margin: 0,
                 padding: 16,
-                backgroundColor: '#f8f9fa',
+                backgroundColor: styles.background,
                 borderRadius: 6,
                 fontSize: 12,
                 lineHeight: 1.4,
                 overflow: 'auto',
                 maxHeight: '400px',
-                border: '1px solid #f0f0f0',
+                border: `1px solid ${styles.borderTertiary}`,
               }}
             >
               {JSON.stringify(latestJson, null, 2)}
@@ -1239,7 +1290,14 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
               <div className='summary-stats'>
                 <div className='stat-item'>
                   <span className='stat-label'>新增字段:</span>
-                  <span className='stat-value accepted'>
+                  <span
+                    className='stat-value'
+                    style={{
+                      color: styles.acceptedText,
+                      backgroundColor: styles.acceptedBg,
+                      border: `1px solid ${styles.acceptedBorder}`,
+                    }}
+                  >
                     {
                       diffItems.filter(
                         (item) => item.type === 'added' && acceptedChanges.has(item.path),
@@ -1249,7 +1307,14 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
                 </div>
                 <div className='stat-item'>
                   <span className='stat-label'>修改字段:</span>
-                  <span className='stat-value modified'>
+                  <span
+                    className='stat-value'
+                    style={{
+                      color: styles.modifiedBorder,
+                      backgroundColor: styles.modifiedBg,
+                      border: `1px solid ${styles.modifiedBorder}`,
+                    }}
+                  >
                     {
                       diffItems.filter(
                         (item) => item.type === 'modified' && acceptedChanges.has(item.path),
@@ -1259,7 +1324,14 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
                 </div>
                 <div className='stat-item'>
                   <span className='stat-label'>删除字段:</span>
-                  <span className='stat-value removed'>
+                  <span
+                    className='stat-value'
+                    style={{
+                      color: styles.removedBorder,
+                      backgroundColor: styles.removedBg,
+                      border: `1px solid ${styles.removedBorder}`,
+                    }}
+                  >
                     {
                       diffItems.filter(
                         (item) => item.type === 'removed' && acceptedChanges.has(item.path),
@@ -1269,7 +1341,16 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
                 </div>
                 <div className='stat-item'>
                   <span className='stat-label'>拒绝更改:</span>
-                  <span className='stat-value rejected'>{rejectedChanges.size}</span>
+                  <span
+                    className='stat-value'
+                    style={{
+                      color: styles.rejectedText,
+                      backgroundColor: styles.rejectedBg,
+                      border: `1px solid ${styles.rejectedBorder}`,
+                    }}
+                  >
+                    {rejectedChanges.size}
+                  </span>
                 </div>
               </div>
             </div>
