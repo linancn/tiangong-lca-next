@@ -7,6 +7,7 @@ import TableFilter from '@/components/TableFilter';
 import { contributeSource } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
 import { getDataSource, getLang, getLangText } from '@/services/general/util';
+import { getRoleByUserId } from '@/services/roles/api';
 import { getTeamById } from '@/services/teams/api';
 import {
   getUnitGroupTableAll,
@@ -35,6 +36,7 @@ const TableList: FC = () => {
   const [team, setTeam] = useState<any>(null);
   const [importData, setImportData] = useState<any>(null);
   const [openAI, setOpenAI] = useState<boolean>(false);
+  const [isSystemAdmin, setIsSystemAdmin] = useState<boolean>(false);
   const { token } = theme.useToken();
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
@@ -108,6 +110,7 @@ const TableList: FC = () => {
           <Space size={'small'}>
             {row.version}
             <AllVersionsList
+              disabled={!isSystemAdmin}
               lang={lang}
               searchTableName='unitgroups'
               columns={getAllVersionsColumns(unitGroupColumns, 4)}
@@ -124,6 +127,7 @@ const TableList: FC = () => {
               id={row.id}
             >
               <UnitGroupCreate
+                disabled={!isSystemAdmin}
                 actionType='createVersion'
                 id={row.id}
                 version={row.version}
@@ -192,6 +196,7 @@ const TableList: FC = () => {
                     key: 'copy',
                     name: (
                       <UnitGroupCreate
+                        disabled={!isSystemAdmin}
                         actionType='copy'
                         id={row.id}
                         version={row.version}
@@ -241,6 +246,7 @@ const TableList: FC = () => {
               buttonType={'icon'}
             />
             <UnitGroupCreate
+              disabled={!isSystemAdmin}
               actionType='copy'
               id={row.id}
               version={row.version}
@@ -259,6 +265,12 @@ const TableList: FC = () => {
     }
     getTeamById(tid ?? '').then((res) => {
       if (res.data.length > 0) setTeam(res.data[0]);
+    });
+    getRoleByUserId().then((res) => {
+      const systemAdmin = res?.find(
+        (item) => item.team_id === '00000000-0000-0000-0000-000000000000' && item.role === 'admin',
+      );
+      setIsSystemAdmin(!!systemAdmin);
     });
   }, []);
   const onSearch: SearchProps['onSearch'] = (value) => {
@@ -282,6 +294,7 @@ const TableList: FC = () => {
         <Row align={'middle'}>
           <Col flex='auto' style={{ marginRight: '10px' }}>
             <Search
+              disabled={dataSource === 'my' && !isSystemAdmin}
               size={'large'}
               placeholder={
                 openAI
@@ -309,6 +322,14 @@ const TableList: FC = () => {
           <>
             {getDataTitle(dataSource)} /{' '}
             <FormattedMessage id='menu.tgdata.unitgroups' defaultMessage='Unit Groups' />
+            {((dataSource === 'my' && !isSystemAdmin) || dataSource === 'te') && (
+              <span style={{ color: token.red, fontSize: token.fontSize }}>
+                <FormattedMessage
+                  id='pages.unitgroup.title.tips'
+                  defaultMessage='(Note: If you need to supplement the unit group data, please contact the administrator!)'
+                />
+              </span>
+            )}
           </>
         }
         actionRef={actionRef}
@@ -322,6 +343,7 @@ const TableList: FC = () => {
           if (dataSource === 'my') {
             return [
               <TableFilter
+                disabled={!isSystemAdmin}
                 key={2}
                 onChange={async (val) => {
                   await setStateCode(val);
@@ -329,13 +351,14 @@ const TableList: FC = () => {
                 }}
               />,
               <UnitGroupCreate
+                disabled={!isSystemAdmin}
                 importData={importData}
                 onClose={() => setImportData(null)}
                 key={0}
                 lang={lang}
                 actionRef={actionRef}
               />,
-              <ImportData onJsonData={handleImportData} key={1} />,
+              <ImportData disabled={!isSystemAdmin} onJsonData={handleImportData} key={1} />,
             ];
           }
           return [];
@@ -347,6 +370,13 @@ const TableList: FC = () => {
           },
           sort,
         ) => {
+          if (dataSource === 'my' && !isSystemAdmin) {
+            return {
+              data: [],
+              success: true,
+              total: 0,
+            };
+          }
           if (keyWord.length > 0) {
             if (openAI) {
               return unitgroup_hybrid_search(params, lang, dataSource, keyWord, {}, stateCode);

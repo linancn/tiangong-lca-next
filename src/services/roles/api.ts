@@ -3,6 +3,7 @@ import { addTeam } from '@/services/teams/api';
 import { getUserId, getUserIdByEmail, getUsersByIds } from '@/services/users/api';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/lib/table/interface';
+import { getUserManageComments } from '../comments/api';
 
 export async function getUserTeamId() {
   const session = await supabase.auth.getSession();
@@ -348,6 +349,76 @@ export async function getReviewUserRoleApi() {
     return null;
   }
 }
+
+export async function getUserManageTableData(params: any, sort: any, role?: string) {
+  try {
+    const sortBy = Object.keys(sort)[0] ?? 'created_at';
+    const orderBy = sort[sortBy] ?? 'descend';
+
+    let res: any[] = [];
+
+    let query = supabase
+      .from('roles')
+      .select('user_id,role', { count: 'exact' })
+      .eq('team_id', '00000000-0000-0000-0000-000000000000')
+      .in('role', ['review-admin', 'review-member'])
+      .order(sortBy, { ascending: orderBy === 'ascend' })
+      .range(
+        ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
+        (params.current ?? 1) * (params.pageSize ?? 10) - 1,
+      );
+
+    if (role) {
+      query = query.eq('role', role);
+    }
+
+    const { data, error, count } = await query;
+
+    if (!error) {
+      const users = await getUsersByIds(data.map((item) => item.user_id));
+      if (users) {
+        res = data.map((roleItem: any) => {
+          const user = users.find((user) => user.id === roleItem.user_id);
+          return {
+            user_id: roleItem.user_id,
+            role: roleItem.role,
+            email: user?.email,
+            display_name: user?.display_name,
+            team_id: '00000000-0000-0000-0000-000000000000',
+            pendingCount: 0,
+            reviewedCount: 0,
+          };
+        });
+      }
+      const { data: comments } = await getUserManageComments();
+      if (comments && comments.length) {
+        comments.forEach((item) => {
+          const userIndex = res.findIndex((user) => user.user_id === item.reviewer_id);
+          if (userIndex !== -1) {
+            res[userIndex].pendingCount =
+              item.state_code === 0 ? res[userIndex].pendingCount + 1 : res[userIndex].pendingCount;
+            res[userIndex].reviewedCount =
+              item.state_code === 1 || item.state_code === 2
+                ? res[userIndex].reviewedCount + 1
+                : res[userIndex].reviewedCount;
+          }
+        });
+      }
+    }
+
+    return {
+      data: res || [],
+      success: true,
+      total: count || 0,
+    };
+  } catch (error) {
+    return {
+      data: [],
+      total: 0,
+      success: true,
+    };
+  }
+}
 export async function getReviewMembersApi(params: any, sort: any, role?: string) {
   try {
     const sortBy = Object.keys(sort)[0] ?? 'created_at';
@@ -439,5 +510,11 @@ export async function getLatestRolesOfMine() {
     .limit(1)
     .maybeSingle();
 
+  return data;
+}
+
+export async function getRoleByUserId() {
+  const userId = await getUserId();
+  const { data } = await supabase.from('roles').select('team_id,role').eq('user_id', userId);
   return data;
 }

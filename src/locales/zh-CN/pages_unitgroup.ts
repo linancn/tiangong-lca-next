@@ -1,4 +1,5 @@
 export default {
+  'pages.unitgroup.title.tips': '（注：如需补充单位组数据，请联系管理员！）',
   'pages.unitgroup.refObjectId': '引用参考单位数据集标识符',
   'pages.unitgroup.drawer.title.create': '创建单位组',
   'pages.unitgroup.drawer.title.view': '查看单位组',

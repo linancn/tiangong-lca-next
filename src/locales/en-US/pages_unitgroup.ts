@@ -1,4 +1,5 @@
 export default {
+  'pages.unitgroup.title.tips': '(Note: If you need to supplement the unit group data, please contact the administrator!)',
   'pages.unitgroup.refObjectId': 'Reference unit dataset identifier',
   'pages.unitgroup.drawer.title.create': 'Create Unit group',
   'pages.unitgroup.drawer.title.view': 'View Unit group',

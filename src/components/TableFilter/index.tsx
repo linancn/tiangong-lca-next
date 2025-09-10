@@ -1,10 +1,16 @@
 import { Select } from 'antd';
 import { FormattedMessage } from 'umi';
 
-const TableFilter = ({ onChange }: { onChange: (value: string | number) => void }) => {
+const TableFilter = ({
+  onChange,
+  disabled = false,
+}: {
+  onChange: (value: string | number) => void;
+  disabled?: boolean;
+}) => {
   return (
     <div>
-      <Select defaultValue={'all'} style={{ width: 100 }} onChange={onChange}>
+      <Select disabled={disabled} defaultValue={'all'} style={{ width: 100 }} onChange={onChange}>
         <Select.Option value={'all'}>
           <FormattedMessage id='pages.table.filter.all' />
         </Select.Option>

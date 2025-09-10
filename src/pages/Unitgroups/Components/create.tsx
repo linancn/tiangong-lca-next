@@ -21,6 +21,7 @@ type Props = {
   version?: string;
   importData?: any;
   onClose?: () => void;
+  disabled?: boolean;
 };
 
 // When type is 'copy' or 'createVersion', id and version are required parameters
@@ -45,6 +46,7 @@ const UnitGroupCreate: FC<CreateProps> = ({
   version,
   importData,
   onClose = () => {},
+  disabled = false,
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
@@ -179,6 +181,7 @@ const UnitGroupCreate: FC<CreateProps> = ({
       >
         {actionType === 'copy' ? (
           <Button
+            disabled={disabled}
             shape='circle'
             icon={<CopyOutlined />}
             size='small'
@@ -188,6 +191,7 @@ const UnitGroupCreate: FC<CreateProps> = ({
           ></Button>
         ) : (
           <ToolBarButton
+            disabled={disabled}
             icon={<PlusOutlined />}
             tooltip={<FormattedMessage id='pages.button.create' defaultMessage='Create' />}
             onClick={() => {
