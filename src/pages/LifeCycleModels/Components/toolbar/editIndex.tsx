@@ -1499,7 +1499,12 @@ const ToolbarEdit: FC<Props> = ({
         actionRef={undefined}
         disabled={false}
       /> */}
-      <ModelResult submodels={jsonTg?.submodels ?? []} modelVersion={version} lang={lang} />
+      <ModelResult
+        submodels={jsonTg?.submodels ?? []}
+        modelVersion={version}
+        lang={lang}
+        actionType='edit'
+      />
       <Tooltip
         title={<FormattedMessage id='pages.button.check' defaultMessage='Data check' />}
         placement='left'

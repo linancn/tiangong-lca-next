@@ -47,6 +47,7 @@ type Props = {
   hideReviewButton?: boolean;
   updateNodeCb?: (ref: refDataType) => Promise<void>;
   autoOpen?: boolean;
+  actionFrom?: 'modelResult';
 };
 const ProcessEdit: FC<Props> = ({
   id,
@@ -59,6 +60,7 @@ const ProcessEdit: FC<Props> = ({
   hideReviewButton = false,
   updateNodeCb = () => {},
   autoOpen = false,
+  actionFrom,
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
@@ -577,6 +579,20 @@ const ProcessEdit: FC<Props> = ({
             disabled={disabled}
           />
         </Tooltip>
+      ) : buttonType === 'toolResultIcon' ? (
+        <Tooltip
+          title={<FormattedMessage id='pages.button.model.result' defaultMessage='Model result' />}
+          placement='left'
+        >
+          <Button
+            disabled={id === ''}
+            type='primary'
+            icon={<ProductOutlined />}
+            size='small'
+            style={{ boxShadow: 'none' }}
+            onClick={onEdit}
+          />
+        </Tooltip>
       ) : buttonType === 'tool' ? (
         <Tooltip
           title={<FormattedMessage id='pages.button.model.result' defaultMessage='Model result' />}
@@ -740,6 +756,7 @@ const ProcessEdit: FC<Props> = ({
                   onExchangeDataCreate={handletExchangeDataCreate}
                   onTabChange={(key) => onTabChange(key as TabKeysType)}
                   exchangeDataSource={exchangeDataSource}
+                  exchangeDisabled={actionFrom === 'modelResult'}
                   showRules={showRules}
                   lciaResults={fromData?.LCIAResults?.LCIAResult ?? ([] as any)}
                   onLciaResults={handleLciaResults}

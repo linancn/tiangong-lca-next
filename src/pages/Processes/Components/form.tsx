@@ -56,6 +56,7 @@ type Props = {
   lciaResults: LCIAResultTable[];
   formType?: string;
   showRules?: boolean;
+  exchangeDisabled?: boolean;
 };
 
 export const ProcessForm: FC<Props> = ({
@@ -71,6 +72,7 @@ export const ProcessForm: FC<Props> = ({
   formType,
   showRules = false,
   lciaResults,
+  exchangeDisabled = false,
 }) => {
   const refCheckContext = useRefCheckContext();
   const actionRefExchangeTableInput = useRef<ActionType>();
@@ -167,8 +169,10 @@ export const ProcessForm: FC<Props> = ({
               onData={onExchangeData}
               setViewDrawerVisible={() => {}}
               showRules={showRules}
+              disabled={exchangeDisabled}
             />
             <ProcessExchangeDelete
+              disabled={exchangeDisabled}
               id={row.dataSetInternalID}
               data={exchangeDataSource}
               buttonType={'icon'}
@@ -1922,6 +1926,7 @@ export const ProcessForm: FC<Props> = ({
                   toolBarRender={() => {
                     return [
                       <ProcessExchangeCreate
+                        disabled={exchangeDisabled}
                         showRules={showRules}
                         key={0}
                         direction={'input'}
@@ -2008,6 +2013,7 @@ export const ProcessForm: FC<Props> = ({
                   toolBarRender={() => {
                     return [
                       <ProcessExchangeCreate
+                        disabled={exchangeDisabled}
                         showRules={showRules}
                         key={0}
                         direction={'output'}
