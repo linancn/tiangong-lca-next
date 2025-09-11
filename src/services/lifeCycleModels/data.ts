@@ -11,13 +11,15 @@ export type LifeCycleModelTable = {
 export type Up2DownEdge = {
   flowUUID: string;
   upstreamId: string;
-  upstreamProcessId: string;
-  upstreamProcessVersion: string;
+  // upstreamProcessId: string;
+  // upstreamProcessVersion: string;
   downstreamId: string;
-  downstreamProcessId: string;
-  downstreamProcessVersion: string;
+  // downstreamProcessId: string;
+  // downstreamProcessVersion: string;
   dependence?: string;
   mainDependence?: string;
+  mainScalingFactor?: number;
   mainOutputFlowUUID: string;
   mainInputFlowUUID: string;
+  scalingFactor?: number;
 };
