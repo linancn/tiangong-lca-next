@@ -1,3 +1,4 @@
+import AISuggestion from '@/components/AISuggestion';
 import { RefCheckContext } from '@/contexts/refCheckContext';
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import type { refDataType } from '@/pages/Utils/review';
@@ -57,6 +58,8 @@ const ProcessEdit: FC<Props> = ({
   const [activeTabKey, setActiveTabKey] = useState<string>('processInformation');
   const [fromData, setFromData] = useState<any>({});
   const [initData, setInitData] = useState<any>({});
+  const [originJson, setOriginJson] = useState<any>({});
+  let AISuggestionData: any;
   const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
   const [spinning, setSpinning] = useState(false);
   const [showRules, setShowRules] = useState<boolean>(false);
@@ -80,6 +83,20 @@ const ProcessEdit: FC<Props> = ({
     }
   }, [autoOpen, id, version]);
 
+  const handleLatestJsonChange = (latestJson: any) => {
+    AISuggestionData = latestJson;
+  };
+
+  const handleAISuggestionClose = () => {
+    const dataSet = genProcessFromData(AISuggestionData?.processDataSet ?? {});
+    setFromData({ ...dataSet, id: id });
+    setExchangeDataSource(dataSet?.exchanges?.exchange ?? []);
+    formRefEdit.current?.resetFields();
+    formRefEdit.current?.setFieldsValue({
+      ...dataSet,
+      id: id,
+    });
+  };
   const handletFromData = async () => {
     if (fromData?.id) {
       const fieldsValue = formRefEdit.current?.getFieldsValue();
@@ -155,6 +172,25 @@ const ProcessEdit: FC<Props> = ({
   };
   const handleSubmit = async (closeDrawer: boolean) => {
     if (closeDrawer) setSpinning(true);
+    const output = exchangeDataSource.filter(
+      (e: any) => e.exchangeDirection.toUpperCase() === 'OUTPUT',
+    );
+    let allocatedFractionTotal = 0;
+    output.forEach((e: any) => {
+      allocatedFractionTotal += Number(
+        e?.allocations?.allocation['@allocatedFraction']?.split('%')[0],
+      );
+    });
+    if (allocatedFractionTotal > 100) {
+      message.error(
+        intl.formatMessage({
+          id: 'pages.process.validator.allocatedFraction',
+          defaultMessage: 'Allocated fraction total of output is greater than 100%',
+        }),
+      );
+      setSpinning(false);
+      return;
+    }
     const updateResult = await updateProcess(id, version, {
       ...fromData,
     });
@@ -461,6 +497,7 @@ const ProcessEdit: FC<Props> = ({
   const onReset = () => {
     setSpinning(true);
     getProcessDetail(id, version).then(async (result: any) => {
+      setOriginJson(result.data?.json ?? {});
       const dataSet = genProcessFromData(result.data?.json?.processDataSet ?? {});
       setInitData({
         ...dataSet,
@@ -581,6 +618,12 @@ const ProcessEdit: FC<Props> = ({
         onClose={() => setDrawerVisible(false)}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
+            <AISuggestion
+              type='process'
+              onLatestJsonChange={handleLatestJsonChange}
+              onClose={handleAISuggestionClose}
+              originJson={originJson}
+            />
             <Button
               onClick={async () => {
                 setSpinning(true);

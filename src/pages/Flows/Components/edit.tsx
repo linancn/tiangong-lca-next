@@ -1,3 +1,4 @@
+import AISuggestion from '@/components/AISuggestion';
 import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
 import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import type { refDataType } from '@/pages/Utils/review';
@@ -37,6 +38,8 @@ const FlowsEdit: FC<Props> = ({
   const [activeTabKey, setActiveTabKey] = useState<string>('flowInformation');
   const [fromData, setFromData] = useState<any>(undefined);
   const [initData, setInitData] = useState<any>({});
+  const [originJson, setOriginJson] = useState<any>({});
+  let AISuggestionData: any;
   const [flowType, setFlowType] = useState<string>();
   const [spinning, setSpinning] = useState(false);
   const [propertyDataSource, setPropertyDataSource] = useState<any>([]);
@@ -124,6 +127,7 @@ const FlowsEdit: FC<Props> = ({
   const onReset = () => {
     setSpinning(true);
     getFlowDetail(id, version).then(async (result: any) => {
+      setOriginJson(result.data?.json ?? {});
       const fromData0 = await genFlowFromData(result.data?.json?.flowDataSet ?? {});
       setInitData({ ...fromData0, id: id });
       setPropertyDataSource(fromData0?.flowProperties?.flowProperty ?? []);
@@ -353,6 +357,19 @@ const FlowsEdit: FC<Props> = ({
     }
     setSpinning(false);
   };
+  const handleLatestJsonChange = (latestJson: any) => {
+    AISuggestionData = latestJson;
+  };
+  const handleAISuggestionClose = () => {
+    const dataSet = genFlowFromData(AISuggestionData?.flowDataSet ?? {});
+    setFromData({ ...dataSet, id: id });
+    setPropertyDataSource(dataSet?.flowProperties?.flowProperty ?? []);
+    formRefEdit.current?.resetFields();
+    formRefEdit.current?.setFieldsValue({
+      ...dataSet,
+      id: id,
+    });
+  };
   return (
     <>
       <Tooltip title={<FormattedMessage id={'pages.button.edit'} defaultMessage={'Edit'} />}>
@@ -385,6 +402,12 @@ const FlowsEdit: FC<Props> = ({
         onClose={() => setDrawerVisible(false)}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
+            <AISuggestion
+              type='flow'
+              onLatestJsonChange={handleLatestJsonChange}
+              onClose={handleAISuggestionClose}
+              originJson={originJson}
+            />
             <Button onClick={handleCheckData}>
               <FormattedMessage id='pages.button.check' defaultMessage='Data check' />
             </Button>

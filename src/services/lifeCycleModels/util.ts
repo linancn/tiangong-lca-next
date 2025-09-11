@@ -1566,6 +1566,7 @@ export function genLifeCycleModelData(data: any, lang: string) {
 const calculateProcessExchange = (
   thisMdProcess: any,
   thisDbProcess: any,
+  dependence: any,
   scalingFactor: number,
   allUp2DownEdges: Up2DownEdge[],
   mdProcessInstances: any[],
@@ -1585,6 +1586,7 @@ const calculateProcessExchange = (
 
   newProcessExchanges.push({
     nodeId: thisMdProcess?.['@dataSetInternalID'],
+    dependence: dependence,
     processId: thisDbProcess.id,
     processVersion: thisDbProcess.version,
     scalingFactor: scalingFactor,
@@ -1633,6 +1635,12 @@ const calculateProcessExchange = (
         const upProcessExchanges = calculateProcessExchange(
           upMdProcess,
           upDbProcess,
+          {
+            direction: 'downstream',
+            nodeId: thisMdProcess?.['@dataSetInternalID'],
+            flowUUID: dependenceDownstream?.flowUUID,
+            // scalingFactor: upScalingFactor,
+          },
           upScalingFactor,
           allUp2DownEdges,
           mdProcessInstances,
@@ -1686,6 +1694,12 @@ const calculateProcessExchange = (
         const downProcessExchanges = calculateProcessExchange(
           downMdProcess,
           downDbProcess,
+          {
+            direction: 'upstream',
+            nodeId: thisMdProcess?.['@dataSetInternalID'],
+            flowUUID: dependenceUpstream?.flowUUID,
+            // scalingFactor: downScalingFactor,
+          },
           downScalingFactor,
           allUp2DownEdges,
           mdProcessInstances,
@@ -1880,7 +1894,8 @@ const getFinalProductGroup = (
       if (nextChildProcessExchange) {
         const nextFinalProductGroups = getFinalProductGroup(
           nextChildProcessExchange,
-          finalProductProcessExchange?.allocatedFraction ?? 1,
+          ((finalProductProcessExchange?.allocatedFraction ?? 1) * (edge?.scalingFactor ?? 1)) /
+            (nextChildProcessExchange?.scalingFactor ?? 1),
           childProcessExchanges,
           allUp2DownEdges,
         );
@@ -1896,7 +1911,9 @@ const getFinalProductGroup = (
 
 const sumProcessExchange = (processExchanges: any[]) => {
   let allExchanges: any[] = [];
+  let sumScalingFactor = 0;
   processExchanges?.forEach((pe: any) => {
+    sumScalingFactor += pe?.scalingFactor ?? 0;
     allExchanges.push(...jsonToList(pe?.exchanges ?? []));
   });
 
@@ -1914,8 +1931,9 @@ const sumProcessExchange = (processExchanges: any[]) => {
       }
       return acc;
     }, []) ?? [];
-  const sumDataList = Object.values(sumData);
-  return sumDataList;
+  const sumExchanges = Object.values(sumData);
+
+  return { sumScalingFactor, sumExchanges };
 };
 
 export async function genLifeCycleModelProcesses(
@@ -2064,11 +2082,11 @@ export async function genLifeCycleModelProcesses(
         const nowUp2DownEdge = {
           flowUUID: o?.['@flowUUID'],
           upstreamId: p?.['@dataSetInternalID'],
-          upstreamProcessId: p?.['@id'],
-          upstreamProcessVersion: p?.['@version'],
+          // upstreamProcessId: p?.['@id'],
+          // upstreamProcessVersion: p?.['@version'],
           downstreamId: dp?.['@id'],
-          downstreamProcessId: dp?.['@id'],
-          downstreamProcessVersion: dp?.['@version'],
+          // downstreamProcessId: dp?.['@id'],
+          // downstreamProcessVersion: dp?.['@version'],
           mainOutputFlowUUID: mainOutputExchange?.['@flowUUID'],
           mainInputFlowUUID: mainInputExchange?.['@flowUUID'],
         };
@@ -2107,35 +2125,36 @@ export async function genLifeCycleModelProcesses(
         whileGO11 = false;
         break;
       }
+
       let newBaseIds: any[] = [];
 
       if (direction1 === 'OUTPUT') {
-        baseIds1.forEach((baseId: string) => {
+        for (const baseId of baseIds1) {
           const uds = up2DownEdges.filter(
             (up2DownEdge: any) => up2DownEdge?.downstreamId === baseId,
           );
-          uds.forEach((ud: any) => {
+          for (const ud of uds) {
             if (ud?.dependence) {
-              return;
+              continue;
             } else {
               newBaseIds.push(ud?.upstreamId);
               ud.dependence = 'downstream';
             }
-          });
-        });
+          }
+        }
         baseIds1 = newBaseIds;
       } else if (direction1 === 'INPUT') {
-        baseIds1.forEach((baseId: string) => {
+        for (const baseId of baseIds1) {
           const uds = up2DownEdges.filter((up2DownEdge: any) => up2DownEdge?.upstreamId === baseId);
-          uds.forEach((ud: any) => {
+          for (const ud of uds) {
             if (ud?.dependence) {
-              return;
+              continue;
             } else {
               newBaseIds.push(ud?.downstreamId);
               ud.dependence = 'upstream';
             }
-          });
-        });
+          }
+        }
         baseIds1 = newBaseIds;
       }
     }
@@ -2154,17 +2173,17 @@ export async function genLifeCycleModelProcesses(
         .filter(([, count]) => count > 1)
         .map(([id]) => id);
 
-      duplicatedIds.forEach((duplicatedId: string) => {
+      for (const duplicatedId of duplicatedIds) {
         const uds = up2DownEdges.filter(
           (up2DownEdge: any) => up2DownEdge?.upstreamId === duplicatedId,
         );
-        uds.forEach((ud: any) => {
+        for (const ud of uds) {
           if (ud.flowUUID !== ud.mainOutputFlowUUID) {
             ud.dependence = 'none';
             ud.mainDependence = 'downstream';
           }
-        });
-      });
+        }
+      }
     } else if (direction1 === 'INPUT') {
       const upstreamItems = up2DownEdges.filter((item: any) => item.dependence === 'upstream');
       const duplicatedIds = Object.entries(
@@ -2179,17 +2198,17 @@ export async function genLifeCycleModelProcesses(
         .filter(([, count]) => count > 1)
         .map(([id]) => id);
 
-      duplicatedIds.forEach((duplicatedId: string) => {
+      for (const duplicatedId of duplicatedIds) {
         const uds = up2DownEdges.filter(
           (up2DownEdge: any) => up2DownEdge?.downstreamId === duplicatedId,
         );
-        uds.forEach((ud: any) => {
+        for (const ud of uds) {
           if (ud.flowUUID !== ud.mainInputFlowUUID) {
             ud.dependence = 'none';
             ud.mainDependence = 'upstream';
           }
-        });
-      });
+        }
+      }
     }
 
     const hasDependenceItems = up2DownEdges.filter((ud: any) => ud?.dependence !== undefined) ?? [];
@@ -2255,11 +2274,58 @@ export async function genLifeCycleModelProcesses(
     const calculatedProcessExchanges = calculateProcessExchange(
       refMdProcess,
       refDbProcess,
+      {
+        direction: '',
+        nodeId: '',
+        flowUUID: '',
+        // scalingFactor: 1,
+      },
       scalingFactor,
       up2DownEdges,
       mdProcessInstances,
       dbProcessExchanges,
     );
+
+    const newUp2DownEdges = up2DownEdges.map((ud: Up2DownEdge) => {
+      if (ud?.dependence === 'downstream') {
+        const cpe = calculatedProcessExchanges.find((c: any) => {
+          return (
+            c?.dependence?.direction === 'downstream' &&
+            c?.dependence?.flowUUID === ud?.flowUUID &&
+            c?.dependence?.nodeId === ud?.downstreamId &&
+            c?.nodeId === ud?.upstreamId
+          );
+        });
+        if (cpe) {
+          return {
+            ...ud,
+            scalingFactor: cpe?.scalingFactor,
+          };
+        } else {
+          return ud;
+        }
+      }
+
+      if (ud?.dependence === 'upstream') {
+        const cpe = calculatedProcessExchanges.find((c: any) => {
+          return (
+            c?.dependence?.direction === 'upstream' &&
+            c?.dependence?.flowUUID === ud?.flowUUID &&
+            c?.dependence?.nodeId === ud?.upstreamId &&
+            c?.nodeId === ud?.downstreamId
+          );
+        });
+        if (cpe) {
+          return {
+            ...ud,
+            scalingFactor: cpe?.scalingFactor,
+          };
+        } else {
+          return ud;
+        }
+      }
+      return ud;
+    });
 
     const groupedProcessExchanges: Record<string, any[]> = {};
     calculatedProcessExchanges.forEach((npe: any) => {
@@ -2270,10 +2336,11 @@ export async function genLifeCycleModelProcesses(
     });
 
     const newProcessExchanges = Object.values(groupedProcessExchanges).map((group: any[]) => {
-      const sumExchanges = sumProcessExchange(group);
+      const sumData = sumProcessExchange(group);
       return {
         ...group[0],
-        exchanges: sumExchanges,
+        scalingFactor: sumData.sumScalingFactor,
+        exchanges: sumData.sumExchanges,
       };
     });
 
@@ -2285,7 +2352,7 @@ export async function genLifeCycleModelProcesses(
         return;
       }
       if (cpe?.isAllocated) {
-        const downstreamEdges = up2DownEdges.filter(
+        const downstreamEdges = newUp2DownEdges.filter(
           (ud: Up2DownEdge) =>
             ud?.upstreamId === cpe?.nodeId && ud?.flowUUID === cpe?.allocatedExchangeFlowId,
         );
@@ -2301,6 +2368,7 @@ export async function genLifeCycleModelProcesses(
         return;
       }
     });
+
     let whileCount = 0;
     let whileUnknown = true;
     const unknownCount = childProcessExchanges.filter(
@@ -2313,7 +2381,7 @@ export async function genLifeCycleModelProcesses(
       unknownCPEs.forEach((cpe: any) => {
         const finalProductType = hasFinalProductProcessExchange(
           cpe,
-          up2DownEdges,
+          newUp2DownEdges,
           childProcessExchanges,
         );
         cpe.finalProductType = finalProductType;
@@ -2334,13 +2402,18 @@ export async function genLifeCycleModelProcesses(
 
     const sumFinalProductGroups = await Promise.all(
       hasFinalProductProcessExchanges.map(async (cpe: any) => {
-        const finalProductGroup = getFinalProductGroup(cpe, 1, childProcessExchanges, up2DownEdges);
+        const finalProductGroup = getFinalProductGroup(
+          cpe,
+          1,
+          childProcessExchanges,
+          newUp2DownEdges,
+        );
 
         if (finalProductGroup?.length > 0) {
-          let sumExchange: any = [];
+          let newSumExchanges: any = [];
 
           const unconnectedProcessExchanges = finalProductGroup.map((npe: any) => {
-            const connectedInputFlowIds = up2DownEdges
+            const connectedInputFlowIds = newUp2DownEdges
               .map((ud: Up2DownEdge) => {
                 if (ud?.downstreamId === npe?.nodeId) {
                   return ud?.flowUUID;
@@ -2349,7 +2422,7 @@ export async function genLifeCycleModelProcesses(
               })
               .filter((flowUUID: any) => flowUUID !== null);
 
-            const connectedOutputFlowIds = up2DownEdges
+            const connectedOutputFlowIds = newUp2DownEdges
               .map((ud: Up2DownEdge) => {
                 if (ud?.upstreamId === npe?.nodeId) {
                   return ud?.flowUUID;
@@ -2384,7 +2457,7 @@ export async function genLifeCycleModelProcesses(
           });
 
           if (unconnectedProcessExchanges.length > 0) {
-            sumExchange = sumProcessExchange(unconnectedProcessExchanges).map(
+            newSumExchanges = sumProcessExchange(unconnectedProcessExchanges).sumExchanges.map(
               (e: any, index: number) => {
                 return {
                   ...e,
@@ -2423,7 +2496,7 @@ export async function genLifeCycleModelProcesses(
             let newId = v4();
             let option = 'create';
             let type = 'secondary';
-            const newExchanges = sumExchange?.map((e: any) => {
+            const newExchanges = newSumExchanges?.map((e: any) => {
               if (
                 finalProductProcessExchange?.nodeId === referenceToReferenceProcess &&
                 e?.referenceToFlowDataSet?.['@refObjectId'] ===

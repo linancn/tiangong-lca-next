@@ -414,21 +414,43 @@ const ProcessExchangeEdit: FC<Props> = ({
                 }
                 name={['allocations', 'allocation', '@allocatedFraction']}
                 getValueFromEvent={(value) => {
+                  if (value === null || value === undefined || value === '' || value === 0) {
+                    return '';
+                  }
                   if (typeof value === 'number') {
                     return `${value}%`;
                   }
-                  if (typeof value === 'string' && !value.includes('%')) {
+                  if (typeof value === 'string' && value.trim() !== '' && !value.includes('%')) {
                     return `${value}%`;
                   }
                   return value;
+                }}
+                getValueProps={(value) => {
+                  if (value === '' || value === null || value === undefined) {
+                    return { value: 0 };
+                  }
+                  if (typeof value === 'string' && value.includes('%')) {
+                    const numValue = parseFloat(value.replace('%', ''));
+                    return { value: isNaN(numValue) ? null : numValue };
+                  }
+                  if (typeof value === 'number') {
+                    return { value };
+                  }
+                  return { value: null };
                 }}
               >
                 <InputNumber<number>
                   style={{ width: '100%' }}
                   min={0}
                   max={100}
-                  // formatter={(value) => `${value}%`}
-                  // parser={(value) => value?.replace('%', '') as unknown as number}
+                  formatter={(value) => (value !== null && value !== undefined ? `${value}%` : '')}
+                  parser={(value) => {
+                    if (!value || value.trim() === '' || value === '%') {
+                      return null as unknown as number;
+                    }
+                    const numValue = parseFloat(value.replace('%', ''));
+                    return isNaN(numValue) ? (null as unknown as number) : numValue;
+                  }}
                 />
               </Form.Item>
             </Card>

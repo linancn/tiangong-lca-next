@@ -735,3 +735,21 @@ export async function getAllVersions(
     });
   }
 }
+
+export async function getAISuggestion(tidasData: any, dataType: string, options: any) {
+  let result: any = {};
+  const session = await supabase.auth.getSession();
+  if (session.data.session) {
+    result = await supabase.functions.invoke('ai_suggest', {
+      headers: {
+        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+      },
+      body: { tidasData, dataType, options },
+      region: FunctionRegion.UsEast1,
+    });
+  }
+  if (result.error) {
+    console.log('error', result.error);
+  }
+  return result?.data;
+}
