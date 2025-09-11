@@ -167,7 +167,7 @@ const LifeCycleModelCreate: FC<CreateProps> = ({
                     snap: true,
                     allowBlank: false,
                     allowLoop: false,
-                    allowMulti: false,
+                    allowMulti: 'withPort',
                     allowNode: false,
                     allowEdge: false,
                     router: {
