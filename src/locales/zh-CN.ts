@@ -1,4 +1,5 @@
 import component from './zh-CN/component';
+import component_AISuggestion from './zh-CN/component_AISuggestion';
 import component_allTeams from './zh-CN/component_allTeams';
 import component_allVersions from './zh-CN/component_allVersions';
 import component_connectableProcesses from './zh-CN/component_connectableProcesses';
@@ -60,4 +61,5 @@ export default {
   ...importData,
   ...component_rejectReview,
   ...component_connectableProcesses,
+  ...component_AISuggestion,
 };

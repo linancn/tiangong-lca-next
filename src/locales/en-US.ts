@@ -1,4 +1,5 @@
 import component from './en-US/component';
+import component_AISuggestion from './en-US/component_AISuggestion';
 import component_allTeams from './en-US/component_allTeams';
 import component_allVersions from './en-US/component_allVersions';
 import component_connectableProcesses from './en-US/component_connectableProcesses';
@@ -60,4 +61,5 @@ export default {
   ...importData,
   ...component_rejectReview,
   ...component_connectableProcesses,
+  ...component_AISuggestion,
 };
