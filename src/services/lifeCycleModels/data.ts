@@ -1,3 +1,5 @@
+import { LifeCycleModel } from '@tiangong-lca/tidas-sdk';
+
 export type LifeCycleModelTable = {
   id: string;
   name: string;
@@ -21,3 +23,19 @@ export type Up2DownEdge = {
   mainOutputFlowUUID: string;
   mainInputFlowUUID: string;
 };
+
+export type LifeCycleModelDataSetObjectKeys = Exclude<
+  {
+    [K in keyof LifeCycleModel['lifeCycleModelDataSet']]: LifeCycleModel['lifeCycleModelDataSet'][K] extends
+      | object
+      | undefined
+      ? K
+      : never;
+  }[keyof LifeCycleModel['lifeCycleModelDataSet']],
+  undefined
+>;
+
+export type FormLifeCycleModel = Pick<
+  LifeCycleModel['lifeCycleModelDataSet'],
+  LifeCycleModelDataSetObjectKeys
+>;
