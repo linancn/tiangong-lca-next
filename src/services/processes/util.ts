@@ -390,11 +390,17 @@ export function genProcessJsonOrdered(id: string, data: any) {
         },
         validation: {
           review: listToJson(
-            data?.modellingAndValidation?.validation?.review?.map((review: any) => {
+            (Array.isArray(data?.modellingAndValidation?.validation?.review)
+              ? data?.modellingAndValidation?.validation?.review
+              : [data?.modellingAndValidation?.validation?.review]
+            )?.map((review: any) => {
               return {
                 '@type': review?.['@type'] ?? {},
                 'common:scope': listToJson(
-                  review?.['common:scope']?.map((scope: any) => {
+                  (Array.isArray(review?.['common:scope'])
+                    ? review?.['common:scope']
+                    : [review?.['common:scope']]
+                  )?.map((scope: any) => {
                     return {
                       '@name': scope?.['@name'] ?? {},
                       'common:method': {
@@ -405,14 +411,17 @@ export function genProcessJsonOrdered(id: string, data: any) {
                 ),
                 'common:dataQualityIndicators': {
                   'common:dataQualityIndicator': listToJson(
-                    review?.['common:dataQualityIndicators']?.['common:dataQualityIndicator']?.map(
-                      (dataQualityIndicator: any) => {
-                        return {
-                          '@name': dataQualityIndicator?.['@name'] ?? {},
-                          '@value': dataQualityIndicator?.['@value'] ?? {},
-                        };
-                      },
-                    ),
+                    (Array.isArray(
+                      review?.['common:dataQualityIndicators']?.['common:dataQualityIndicator'],
+                    )
+                      ? review?.['common:dataQualityIndicators']?.['common:dataQualityIndicator']
+                      : [review?.['common:dataQualityIndicators']?.['common:dataQualityIndicator']]
+                    )?.map((dataQualityIndicator: any) => {
+                      return {
+                        '@name': dataQualityIndicator?.['@name'] ?? {},
+                        '@value': dataQualityIndicator?.['@value'] ?? {},
+                      };
+                    }),
                   ),
                 },
                 'common:reviewDetails': getLangJson(review?.['common:reviewDetails']),
@@ -450,35 +459,34 @@ export function genProcessJsonOrdered(id: string, data: any) {
         },
         complianceDeclarations: {
           compliance: listToJson(
-            data?.modellingAndValidation?.complianceDeclarations?.compliance?.map(
-              (compliance: any) => {
-                return {
-                  'common:referenceToComplianceSystem': {
-                    '@refObjectId':
-                      compliance?.['common:referenceToComplianceSystem']?.['@refObjectId'] ?? {},
-                    '@type': compliance?.['common:referenceToComplianceSystem']?.['@type'] ?? {},
-                    '@uri': compliance?.['common:referenceToComplianceSystem']?.['@uri'] ?? {},
-                    '@version':
-                      compliance?.['common:referenceToComplianceSystem']?.['@version'] ?? {},
-                    'common:shortDescription': getLangJson(
-                      compliance?.['common:referenceToComplianceSystem']?.[
-                        'common:shortDescription'
-                      ],
-                    ),
-                  },
-                  'common:approvalOfOverallCompliance':
-                    compliance?.['common:approvalOfOverallCompliance'] ?? {},
-                  'common:nomenclatureCompliance':
-                    compliance?.['common:nomenclatureCompliance'] ?? {},
-                  'common:methodologicalCompliance':
-                    compliance?.['common:methodologicalCompliance'] ?? {},
-                  'common:reviewCompliance': compliance?.['common:reviewCompliance'] ?? {},
-                  'common:documentationCompliance':
-                    compliance?.['common:documentationCompliance'] ?? {},
-                  'common:qualityCompliance': compliance?.['common:qualityCompliance'] ?? {},
-                };
-              },
-            ),
+            (Array.isArray(data?.modellingAndValidation?.complianceDeclarations?.compliance)
+              ? data?.modellingAndValidation?.complianceDeclarations?.compliance
+              : [data?.modellingAndValidation?.complianceDeclarations?.compliance]
+            )?.map((compliance: any) => {
+              return {
+                'common:referenceToComplianceSystem': {
+                  '@refObjectId':
+                    compliance?.['common:referenceToComplianceSystem']?.['@refObjectId'] ?? {},
+                  '@type': compliance?.['common:referenceToComplianceSystem']?.['@type'] ?? {},
+                  '@uri': compliance?.['common:referenceToComplianceSystem']?.['@uri'] ?? {},
+                  '@version':
+                    compliance?.['common:referenceToComplianceSystem']?.['@version'] ?? {},
+                  'common:shortDescription': getLangJson(
+                    compliance?.['common:referenceToComplianceSystem']?.['common:shortDescription'],
+                  ),
+                },
+                'common:approvalOfOverallCompliance':
+                  compliance?.['common:approvalOfOverallCompliance'] ?? {},
+                'common:nomenclatureCompliance':
+                  compliance?.['common:nomenclatureCompliance'] ?? {},
+                'common:methodologicalCompliance':
+                  compliance?.['common:methodologicalCompliance'] ?? {},
+                'common:reviewCompliance': compliance?.['common:reviewCompliance'] ?? {},
+                'common:documentationCompliance':
+                  compliance?.['common:documentationCompliance'] ?? {},
+                'common:qualityCompliance': compliance?.['common:qualityCompliance'] ?? {},
+              };
+            }),
           ),
         },
       },

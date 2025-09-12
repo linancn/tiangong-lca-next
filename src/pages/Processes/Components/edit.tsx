@@ -756,7 +756,7 @@ const ProcessEdit: FC<Props> = ({
                   onExchangeDataCreate={handletExchangeDataCreate}
                   onTabChange={(key) => onTabChange(key as TabKeysType)}
                   exchangeDataSource={exchangeDataSource}
-                  exchangeDisabled={actionFrom === 'modelResult'}
+                  actionFrom={actionFrom}
                   showRules={showRules}
                   lciaResults={fromData?.LCIAResults?.LCIAResult ?? ([] as any)}
                   onLciaResults={handleLciaResults}

@@ -36,7 +36,7 @@ const ModelResult: FC<Props> = ({ submodels, modelVersion, lang, actionType }) =
     return actionType === 'edit' ? (
       <ProcessEdit
         id={singleProcess.id}
-        version={singleProcess.version}
+        version={singleProcess.version ?? modelVersion}
         buttonType='toolResultIcon'
         lang={lang}
         disabled={false}
@@ -47,7 +47,7 @@ const ModelResult: FC<Props> = ({ submodels, modelVersion, lang, actionType }) =
     ) : (
       <ProcessView
         id={singleProcess.id}
-        version={singleProcess.version}
+        version={singleProcess.version ?? modelVersion}
         buttonType='toolResultIcon'
         lang={lang}
         disabled={false}
@@ -85,7 +85,7 @@ const ModelResult: FC<Props> = ({ submodels, modelVersion, lang, actionType }) =
           <ProcessView
             key={0}
             id={record.id}
-            version={record.version}
+            version={record.version ?? modelVersion}
             buttonType='icon'
             lang={lang}
             disabled={false}
@@ -97,7 +97,7 @@ const ModelResult: FC<Props> = ({ submodels, modelVersion, lang, actionType }) =
               actionFrom='modelResult'
               key={1}
               id={record.id}
-              version={record.version}
+              version={record.version ?? modelVersion}
               buttonType='icon'
               lang={lang}
               disabled={false}

@@ -56,7 +56,7 @@ type Props = {
   lciaResults: LCIAResultTable[];
   formType?: string;
   showRules?: boolean;
-  exchangeDisabled?: boolean;
+  actionFrom?: 'modelResult';
 };
 
 export const ProcessForm: FC<Props> = ({
@@ -72,7 +72,7 @@ export const ProcessForm: FC<Props> = ({
   formType,
   showRules = false,
   lciaResults,
-  exchangeDisabled = false,
+  actionFrom,
 }) => {
   const refCheckContext = useRefCheckContext();
   const actionRefExchangeTableInput = useRef<ActionType>();
@@ -169,10 +169,10 @@ export const ProcessForm: FC<Props> = ({
               onData={onExchangeData}
               setViewDrawerVisible={() => {}}
               showRules={showRules}
-              disabled={exchangeDisabled}
+              disabled={actionFrom === 'modelResult'}
             />
             <ProcessExchangeDelete
-              disabled={exchangeDisabled}
+              disabled={actionFrom === 'modelResult'}
               id={row.dataSetInternalID}
               data={exchangeDataSource}
               buttonType={'icon'}
@@ -1687,7 +1687,7 @@ export const ProcessForm: FC<Props> = ({
               ]['rules'],
             )}
           >
-            <Input />
+            <Input disabled={actionFrom === 'modelResult'} />
           </Form.Item>
 
           <Form.Item
@@ -1926,7 +1926,7 @@ export const ProcessForm: FC<Props> = ({
                   toolBarRender={() => {
                     return [
                       <ProcessExchangeCreate
-                        disabled={exchangeDisabled}
+                        disabled={actionFrom === 'modelResult'}
                         showRules={showRules}
                         key={0}
                         direction={'input'}
@@ -2013,7 +2013,7 @@ export const ProcessForm: FC<Props> = ({
                   toolBarRender={() => {
                     return [
                       <ProcessExchangeCreate
-                        disabled={exchangeDisabled}
+                        disabled={actionFrom === 'modelResult'}
                         showRules={showRules}
                         key={0}
                         direction={'output'}

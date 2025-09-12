@@ -369,7 +369,7 @@ export function genFlowFromData(data: any): FormFlow {
           'common:other': {
             'ecn:ECNumber':
               data?.flowInformation?.dataSetInformation?.['common:other']?.['ecn:ECNumber'],
-          },
+          } as any,
         },
         quantitativeReference: {
           referenceToReferenceFlowProperty:
