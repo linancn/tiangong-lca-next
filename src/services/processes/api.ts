@@ -102,7 +102,7 @@ export async function getProcessTableAll(
       (params.current ?? 1) * (params.pageSize ?? 10) - 1,
     );
 
-  if (typeOfDataSet !== 'all') {
+  if (typeOfDataSet && typeOfDataSet !== 'all') {
     query = query.eq(
       'json_ordered->processDataSet->modellingAndValidation->LCIMethodAndAllocation->>typeOfDataSet',
       typeOfDataSet,
@@ -537,7 +537,7 @@ export async function getProcessTablePgroongaSearch(
     if (typeof stateCode === 'number') {
       requestParams['state_code'] = stateCode;
     }
-    if (typeOfDataSet !== 'all') {
+    if (typeOfDataSet && typeOfDataSet !== 'all') {
       requestParams['type_of_data_set'] = typeOfDataSet;
     }
     result = await supabase.rpc('pgroonga_search_processes', requestParams);
@@ -690,7 +690,7 @@ export async function process_hybrid_search(
   if (typeof stateCode === 'number') {
     bodyParams['state_code'] = stateCode;
   }
-  if (typeOfDataSet !== 'all') {
+  if (typeOfDataSet && typeOfDataSet !== 'all') {
     bodyParams['type_of_data_set'] = typeOfDataSet;
   }
   const session = await supabase.auth.getSession();
