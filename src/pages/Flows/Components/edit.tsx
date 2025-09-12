@@ -5,6 +5,7 @@ import type { refDataType } from '@/pages/Utils/review';
 import { ReffPath, checkData, getErrRefTab } from '@/pages/Utils/review';
 import { getFlowpropertyDetail } from '@/services/flowproperties/api';
 import { getFlowDetail, updateFlows } from '@/services/flows/api';
+import { FlowDataSetObjectKeys, FormFlow } from '@/services/flows/data';
 import { genFlowFromData } from '@/services/flows/util';
 import { getRuleVerification } from '@/services/general/util';
 import styles from '@/style/custom.less';
@@ -35,9 +36,9 @@ const FlowsEdit: FC<Props> = ({
 }) => {
   const formRefEdit = useRef<ProFormInstance>();
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [activeTabKey, setActiveTabKey] = useState<string>('flowInformation');
-  const [fromData, setFromData] = useState<any>(undefined);
-  const [initData, setInitData] = useState<any>({});
+  const [activeTabKey, setActiveTabKey] = useState<FlowDataSetObjectKeys>('flowInformation');
+  const [fromData, setFromData] = useState<FormFlow & { id?: string }>();
+  const [initData, setInitData] = useState<FormFlow & { id?: string }>();
   const [originJson, setOriginJson] = useState<any>({});
   let AISuggestionData: any;
   const [flowType, setFlowType] = useState<string>();
@@ -87,7 +88,7 @@ const FlowsEdit: FC<Props> = ({
     setReferenceValue(referenceValue + 1);
   };
 
-  const onTabChange = (key: string) => {
+  const onTabChange = (key: FlowDataSetObjectKeys) => {
     setActiveTabKey(key);
   };
 
@@ -117,7 +118,7 @@ const FlowsEdit: FC<Props> = ({
       flowProperties: {
         flowProperty: [...propertyDataSource],
       },
-    });
+    } as any);
   }, [propertyDataSource]);
 
   const onEdit = () => {
@@ -269,7 +270,7 @@ const FlowsEdit: FC<Props> = ({
     if (
       !flowProperties ||
       !flowProperties?.flowProperty ||
-      flowProperties?.flowProperty?.length === 0
+      (flowProperties?.flowProperty as any)?.length === 0
     ) {
       message.error(
         intl.formatMessage({
@@ -278,7 +279,8 @@ const FlowsEdit: FC<Props> = ({
         }),
       );
     } else if (
-      flowProperties.flowProperty.filter((item: any) => item?.quantitativeReference).length !== 1
+      (flowProperties?.flowProperty as any)?.filter((item: any) => item?.quantitativeReference)
+        .length !== 1
     ) {
       message.error(
         intl.formatMessage({
@@ -454,7 +456,10 @@ const FlowsEdit: FC<Props> = ({
                 }}
                 onFinish={() => handleSubmit(true)}
                 onValuesChange={(_, allValues) => {
-                  setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+                  setFromData({
+                    ...fromData,
+                    [activeTabKey]: allValues[activeTabKey] ?? {},
+                  } as FormFlow);
                 }}
               >
                 <FlowForm
@@ -464,7 +469,7 @@ const FlowsEdit: FC<Props> = ({
                   formRef={formRefEdit}
                   onData={handletFromData}
                   flowType={flowType}
-                  onTabChange={onTabChange}
+                  onTabChange={(key) => onTabChange(key as FlowDataSetObjectKeys)}
                   propertyDataSource={propertyDataSource}
                   onPropertyData={handletPropertyData}
                   onPropertyDataCreate={handletPropertyDataCreate}

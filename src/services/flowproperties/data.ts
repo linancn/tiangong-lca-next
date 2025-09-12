@@ -1,3 +1,5 @@
+import { FlowProperty } from '@tiangong-lca/tidas-sdk';
+
 export type FlowpropertyTable = {
   id: string;
   version: string;
@@ -10,3 +12,19 @@ export type FlowpropertyTable = {
   teamId: string;
   refUnitRes: { [key: string]: any };
 };
+
+export type FlowPropertyDataSetObjectKeys = Exclude<
+  {
+    [K in keyof FlowProperty['flowPropertyDataSet']]: FlowProperty['flowPropertyDataSet'][K] extends
+      | object
+      | undefined
+      ? K
+      : never;
+  }[keyof FlowProperty['flowPropertyDataSet']],
+  undefined
+>;
+
+export type FormFlowProperty = Pick<
+  FlowProperty['flowPropertyDataSet'],
+  FlowPropertyDataSetObjectKeys
+>;

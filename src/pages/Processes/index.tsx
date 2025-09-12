@@ -3,7 +3,7 @@ import {
   getProcessTablePgroongaSearch,
   process_hybrid_search,
 } from '@/services/processes/api';
-import { Card, Checkbox, Col, Input, Row, Space, Tooltip, message } from 'antd';
+import { Card, Checkbox, Col, Input, message, Row, Select, Space, Tooltip } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 
@@ -43,6 +43,7 @@ export const getProcesstypeOfDataSetOptions = (value: string) => {
 const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<any>('');
   const [stateCode, setStateCode] = useState<string | number>('all');
+  const [typeOfDataSet, setTypeOfDataSet] = useState<string>('all');
   const [team, setTeam] = useState<any>(null);
   const [importData, setImportData] = useState<any>(null);
   const [openAI, setOpenAI] = useState<boolean>(false);
@@ -63,6 +64,24 @@ const TableList: FC = () => {
   const lang = getLang(intl.locale);
 
   const actionRef = useRef<ActionType>();
+  const typeOfDataSetFilter = () => {
+    const onChange = (value: string) => {
+      setTypeOfDataSet(value);
+      actionRef.current?.reloadAndRest?.();
+    };
+    return (
+      <Select defaultValue={'all'} style={{ width: 160 }} onChange={onChange}>
+        <Select.Option value={'all'}>
+          <FormattedMessage id='pages.table.filter.all' />
+        </Select.Option>
+        {processtypeOfDataSetOptions.map((option) => (
+          <Select.Option key={option.value} value={option.value}>
+            {option.label}
+          </Select.Option>
+        ))}
+      </Select>
+    );
+  };
   const processColumns: ProColumns<ProcessTable>[] = [
     {
       title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
@@ -440,6 +459,7 @@ const TableList: FC = () => {
         toolBarRender={() => {
           if (dataSource === 'my') {
             return [
+              <span key={3}>{typeOfDataSetFilter()}</span>,
               <TableFilter
                 key={2}
                 onChange={async (val) => {
@@ -457,7 +477,7 @@ const TableList: FC = () => {
               <ImportData onJsonData={handleImportData} key={1} />,
             ];
           }
-          return [];
+          return [<span key={0}>{typeOfDataSetFilter()}</span>];
         }}
         request={async (
           params: {
@@ -468,9 +488,25 @@ const TableList: FC = () => {
         ) => {
           if (keyWord.length > 0) {
             if (openAI) {
-              return process_hybrid_search(params, lang, dataSource, keyWord, {}, stateCode);
+              return process_hybrid_search(
+                params,
+                lang,
+                dataSource,
+                keyWord,
+                {},
+                stateCode,
+                typeOfDataSet,
+              );
             }
-            return getProcessTablePgroongaSearch(params, lang, dataSource, keyWord, {}, stateCode);
+            return getProcessTablePgroongaSearch(
+              params,
+              lang,
+              dataSource,
+              keyWord,
+              {},
+              stateCode,
+              typeOfDataSet,
+            );
           }
 
           const sortFields: Record<string, string> = {
@@ -489,7 +525,15 @@ const TableList: FC = () => {
             }
           }
 
-          return getProcessTableAll(params, convertedSort, lang, dataSource, tid ?? '', stateCode);
+          return getProcessTableAll(
+            params,
+            convertedSort,
+            lang,
+            dataSource,
+            tid ?? '',
+            stateCode,
+            typeOfDataSet,
+          );
         }}
         columns={processColumns}
       />

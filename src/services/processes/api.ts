@@ -73,6 +73,7 @@ export async function getProcessTableAll(
   dataSource: string,
   tid: string | [],
   stateCode?: string | number,
+  typeOfDataSet?: string,
 ) {
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
   const orderBy = sort[sortBy] ?? 'descend';
@@ -101,6 +102,12 @@ export async function getProcessTableAll(
       (params.current ?? 1) * (params.pageSize ?? 10) - 1,
     );
 
+  if (typeOfDataSet && typeOfDataSet !== 'all') {
+    query = query.eq(
+      'json_ordered->processDataSet->modellingAndValidation->LCIMethodAndAllocation->>typeOfDataSet',
+      typeOfDataSet,
+    );
+  }
   if (dataSource === 'tg') {
     query = query.eq('state_code', 100);
     if (tid.length > 0) {
@@ -246,11 +253,11 @@ export async function getConnectableProcessesTable(
   let query = supabase
     .from(tableName)
     .select(selectStr, { count: 'exact' })
-    .order(sortBy, { ascending: orderBy === 'ascend' })
-    .range(
-      ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-      (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-    );
+    .order(sortBy, { ascending: orderBy === 'ascend' });
+  // .range(
+  //   ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
+  //   (params.current ?? 1) * (params.pageSize ?? 10) - 1,
+  // );
 
   const baseFlowRef = flowVersion
     ? { '@refObjectId': flowId, '@version': flowVersion }
@@ -367,9 +374,9 @@ export async function getConnectableProcessesTable(
 
   return {
     data,
-    page: params?.current ?? 1,
+    // page: params?.current ?? 1,
     success: true,
-    total: result?.count ?? 0,
+    // total: result?.count ?? 0,
   };
 }
 // export async function getProcessTableAllByTeam(
@@ -512,32 +519,28 @@ export async function getProcessTablePgroongaSearch(
   queryText: string,
   filterCondition: any,
   stateCode?: string | number,
+  typeOfDataSet?: string,
 ) {
   // const time_start = new Date();
   let result: any;
+
   const session = await supabase.auth.getSession();
   if (session.data.session) {
-    result = await supabase.rpc(
-      'pgroonga_search_processes',
-      typeof stateCode === 'number'
-        ? {
-            query_text: queryText,
-            filter_condition: filterCondition,
-            page_size: params.pageSize ?? 10,
-            page_current: params.current ?? 1,
-            data_source: dataSource,
-            this_user_id: session.data.session.user?.id,
-            state_code: stateCode,
-          }
-        : {
-            query_text: queryText,
-            filter_condition: filterCondition,
-            page_size: params.pageSize ?? 10,
-            page_current: params.current ?? 1,
-            data_source: dataSource,
-            this_user_id: session.data.session.user?.id,
-          },
-    );
+    const requestParams: { [key: string]: any } = {
+      query_text: queryText,
+      filter_condition: filterCondition,
+      page_size: params.pageSize ?? 10,
+      page_current: params.current ?? 1,
+      data_source: dataSource,
+      this_user_id: session.data.session.user?.id,
+    };
+    if (typeof stateCode === 'number') {
+      requestParams['state_code'] = stateCode;
+    }
+    if (typeOfDataSet && typeOfDataSet !== 'all') {
+      requestParams['type_of_data_set'] = typeOfDataSet;
+    }
+    result = await supabase.rpc('pgroonga_search_processes', requestParams);
   }
   if (result.error) {
     console.log('error', result.error);
@@ -680,18 +683,23 @@ export async function process_hybrid_search(
   queryText: string,
   filterCondition: any,
   stateCode?: string | number,
+  typeOfDataSet?: string,
 ) {
   let result: any = {};
+  const bodyParams: { [key: string]: any } = { query: queryText, filter: filterCondition };
+  if (typeof stateCode === 'number') {
+    bodyParams['state_code'] = stateCode;
+  }
+  if (typeOfDataSet && typeOfDataSet !== 'all') {
+    bodyParams['type_of_data_set'] = typeOfDataSet;
+  }
   const session = await supabase.auth.getSession();
   if (session.data.session) {
     result = await supabase.functions.invoke('process_hybrid_search', {
       headers: {
         Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
       },
-      body:
-        typeof stateCode === 'number'
-          ? { query: queryText, filter: filterCondition, state_code: stateCode }
-          : { query: queryText, filter: filterCondition },
+      body: bodyParams,
       region: FunctionRegion.UsEast1,
     });
   }

@@ -2,6 +2,7 @@ import ToolBarButton from '@/components/ToolBarButton';
 import { initVersion } from '@/services/general/data';
 import { formatDateTime } from '@/services/general/util';
 import { createUnitGroup, getUnitGroupDetail } from '@/services/unitgroups/api';
+import { FormUnitGroup, UnitGroupDataSetObjectKeys } from '@/services/unitgroups/data';
 import { genUnitGroupFromData } from '@/services/unitgroups/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, CopyOutlined, PlusOutlined } from '@ant-design/icons';
@@ -50,9 +51,10 @@ const UnitGroupCreate: FC<CreateProps> = ({
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
-  const [activeTabKey, setActiveTabKey] = useState<string>('unitGroupInformation');
-  const [fromData, setFromData] = useState<any>({});
-  const [initData, setInitData] = useState<any>({});
+  const [activeTabKey, setActiveTabKey] =
+    useState<UnitGroupDataSetObjectKeys>('unitGroupInformation');
+  const [fromData, setFromData] = useState<FormUnitGroup & { id?: string }>();
+  const [initData, setInitData] = useState<FormUnitGroup & { id?: string }>();
   const [unitDataSource, setUnitDataSource] = useState<any>([]);
   const [spinning, setSpinning] = useState<boolean>(false);
   const intl = useIntl();
@@ -81,7 +83,7 @@ const UnitGroupCreate: FC<CreateProps> = ({
     if (fromData) setUnitDataSource([...data]);
   };
 
-  const onTabChange = (key: string) => {
+  const onTabChange = (key: UnitGroupDataSetObjectKeys) => {
     setActiveTabKey(key);
   };
 
@@ -115,8 +117,8 @@ const UnitGroupCreate: FC<CreateProps> = ({
   useEffect(() => {
     if (drawerVisible === false) {
       onClose();
-      setInitData({});
-      setFromData({});
+      setInitData(undefined);
+      setFromData(undefined);
       setUnitDataSource([]);
       formRefCreate.current?.resetFields();
       return;
@@ -152,15 +154,15 @@ const UnitGroupCreate: FC<CreateProps> = ({
         },
       },
     };
-    setInitData(newData);
+    setInitData(newData as FormUnitGroup);
     const currentData = formRefCreate.current?.getFieldsValue();
     formRefCreate.current?.setFieldsValue({ ...currentData, ...newData });
-    setFromData(newData);
+    setFromData(newData as FormUnitGroup);
     setUnitDataSource([]);
   }, [drawerVisible]);
 
   useEffect(() => {
-    setFromData({ ...fromData, units: { unit: unitDataSource } });
+    setFromData({ ...(fromData ?? {}), units: { unit: unitDataSource } } as FormUnitGroup);
   }, [unitDataSource]);
 
   return (
@@ -256,7 +258,10 @@ const UnitGroupCreate: FC<CreateProps> = ({
             formRef={formRefCreate}
             initialValues={initData}
             onValuesChange={(_, allValues) => {
-              setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+              setFromData({
+                ...fromData,
+                [activeTabKey]: allValues[activeTabKey] ?? {},
+              } as FormUnitGroup);
             }}
             submitter={{
               render: () => {
@@ -265,7 +270,7 @@ const UnitGroupCreate: FC<CreateProps> = ({
             }}
             onFinish={async () => {
               const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
-              const units = fromData.units;
+              const units = fromData?.units;
               const formFieldsValue = {
                 ...formRefCreate.current?.getFieldsValue(),
                 units,
@@ -295,7 +300,7 @@ const UnitGroupCreate: FC<CreateProps> = ({
               onData={handletFromData}
               onUnitData={handletUnitData}
               onUnitDataCreate={handletUnitDataCreate}
-              onTabChange={onTabChange}
+              onTabChange={(key) => onTabChange(key as UnitGroupDataSetObjectKeys)}
               unitDataSource={unitDataSource}
             />
           </ProForm>
