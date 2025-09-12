@@ -253,11 +253,11 @@ export async function getConnectableProcessesTable(
   let query = supabase
     .from(tableName)
     .select(selectStr, { count: 'exact' })
-    .order(sortBy, { ascending: orderBy === 'ascend' })
-    .range(
-      ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-      (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-    );
+    .order(sortBy, { ascending: orderBy === 'ascend' });
+  // .range(
+  //   ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
+  //   (params.current ?? 1) * (params.pageSize ?? 10) - 1,
+  // );
 
   const baseFlowRef = flowVersion
     ? { '@refObjectId': flowId, '@version': flowVersion }
@@ -374,9 +374,9 @@ export async function getConnectableProcessesTable(
 
   return {
     data,
-    page: params?.current ?? 1,
+    // page: params?.current ?? 1,
     success: true,
-    total: result?.count ?? 0,
+    // total: result?.count ?? 0,
   };
 }
 // export async function getProcessTableAllByTeam(
