@@ -19,6 +19,7 @@ if [ -f /docker-entrypoint-initdb.d/migrations/data.sql ]; then
     sed -i "s|\${JWT_SECRET}|$JWT_SECRET|g" /tmp/data.sql.tmp
     sed -i "s|\${JWT_EXPIRY}|$JWT_EXPIRY|g" /tmp/data.sql.tmp
     sed -i "s|\${X_KEY}|$X_KEY|g" /tmp/data.sql.tmp
+    sed -i "s|\${SERVICE_API_KEY}|$SERVICE_API_KEY|g" /tmp/data.sql.tmp
     # If there are other environment variables that need to be replaced, please add more sed commands here
     
     # Write the processed file content back to the original file

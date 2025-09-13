@@ -12,6 +12,13 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 
+CREATE EXTENSION IF NOT EXISTS "pg_cron" WITH SCHEMA "pg_catalog";
+
+
+
+
+
+
 CREATE EXTENSION IF NOT EXISTS "pg_net" WITH SCHEMA "extensions";
 
 
@@ -37,6 +44,19 @@ COMMENT ON SCHEMA "public" IS 'standard public schema';
 
 
 
+CREATE SCHEMA IF NOT EXISTS "util";
+
+
+ALTER SCHEMA "util" OWNER TO "postgres";
+
+
+CREATE EXTENSION IF NOT EXISTS "hstore" WITH SCHEMA "extensions";
+
+
+
+
+
+
 CREATE EXTENSION IF NOT EXISTS "http" WITH SCHEMA "extensions";
 
 
@@ -59,6 +79,23 @@ CREATE EXTENSION IF NOT EXISTS "pg_stat_statements" WITH SCHEMA "extensions";
 
 
 CREATE EXTENSION IF NOT EXISTS "pgcrypto" WITH SCHEMA "extensions";
+
+
+
+
+
+
+-- Create pgmq schema first
+CREATE SCHEMA IF NOT EXISTS "pgmq";
+
+-- Try to create pgmq extension if available (may not exist in standard Supabase image)
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_available_extensions WHERE name = 'pgmq') THEN
+        CREATE EXTENSION IF NOT EXISTS "pgmq" WITH SCHEMA "pgmq";
+    END IF;
+END
+$$;
 
 
 
@@ -93,6 +130,122 @@ CREATE TYPE "public"."filtered_row" AS (
 
 
 ALTER TYPE "public"."filtered_row" OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."_navicat_temp_stored_proc"("query_text" "text", "query_embedding" "extensions"."vector", "filter_condition" "text" DEFAULT ''::"text", "match_threshold" double precision DEFAULT 0.5, "match_count" integer DEFAULT 20, "full_text_weight" numeric DEFAULT 0.3, "extracted_text_weight" numeric DEFAULT 0.2, "semantic_weight" numeric DEFAULT 0.5, "rrf_k" integer DEFAULT 10, "data_source" "text" DEFAULT 'tg'::"text", "this_user_id" "text" DEFAULT ''::"text", "page_size" integer DEFAULT 10, "page_current" integer DEFAULT 1) RETURNS TABLE("id" "uuid", "json" "jsonb")
+    LANGUAGE "plpgsql"
+    SET "search_path" TO 'public', 'extensions', 'pg_temp'
+    AS $$ BEGIN
+		RETURN QUERY WITH 
+		full_text AS (
+			SELECT
+				ps.RANK AS ps_rank,
+				ps.ID AS ps_id,
+				ps.JSON AS ps_json 
+			FROM
+				pgroonga_search_processes ( query_text, filter_condition, 20, -- page_size: 获取足够多候选
+					1, -- page_current: 第1页
+				data_source, this_user_id ) ps 
+		),
+		ex_text AS (
+    SELECT
+      ex.rank AS ex_rank,
+      ex.id   AS ex_id,
+      p.json  AS ex_json
+    FROM pgroonga_search_processes_text(
+           query_text,
+           20,          -- page_size
+           1,      -- page_current
+           data_source,
+           this_user_id
+         ) ex
+    JOIN public.processes p ON p.id = ex.id
+  ),
+		semantic AS (
+			SELECT
+				ss.RANK AS ss_rank,
+				ss.ID AS ss_id,
+				ss.JSON AS ss_json 
+			FROM
+				semantic_search_processes ( query_embedding, filter_condition, match_threshold, match_count, data_source, this_user_id ) ss 
+		) SELECT COALESCE
+		( full_text.ps_id, semantic.ss_id, ex_text.ex_id ) AS ID,
+		COALESCE ( full_text.ps_json, semantic.ss_json, ex_text.ex_json) AS JSON, 
+		COALESCE(1.0 / (rrf_k + full_text.ps_rank), 0.0) * full_text_weight
+      + COALESCE(1.0 / (rrf_k + ex_text.ex_rank), 0.0) * text_weight
+      + COALESCE(1.0 / (rrf_k + semantic.ss_rank), 0.0) * semantic_weight
+      AS score
+		FROM
+			full_text
+			FULL OUTER JOIN semantic ON full_text.ps_id = semantic.ss_id
+			FULL OUTER JOIN ex_text ON ex_text.ex_id = COALESCE(full_text.ps_id, semantic.ss_id) 
+		ORDER BY
+			score DESC 
+			LIMIT page_size OFFSET ( page_current - 1 ) * page_size;
+		
+	END;
+$$;
+
+
+ALTER FUNCTION "public"."_navicat_temp_stored_proc"("query_text" "text", "query_embedding" "extensions"."vector", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" numeric, "extracted_text_weight" numeric, "semantic_weight" numeric, "rrf_k" integer, "data_source" "text", "this_user_id" "text", "page_size" integer, "page_current" integer) OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."_navicat_temp_stored_proc"("query_text" "text", "query_embedding" "text", "filter_condition" "text" DEFAULT ''::"text", "match_threshold" double precision DEFAULT 0.5, "match_count" integer DEFAULT 20, "full_text_weight" numeric DEFAULT 0.3, "extracted_text_weight" numeric DEFAULT 0.2, "semantic_weight" numeric DEFAULT 0.5, "rrf_k" integer DEFAULT 10, "data_source" "text" DEFAULT 'tg'::"text", "this_user_id" "text" DEFAULT ''::"text", "page_size" integer DEFAULT 10, "page_current" integer DEFAULT 1) RETURNS TABLE("id" "uuid", "json" "jsonb")
+    LANGUAGE "plpgsql"
+    SET "search_path" TO 'public', 'extensions', 'pg_temp'
+    AS $$ BEGIN
+		RETURN QUERY WITH 
+		full_text AS (
+			SELECT
+				ps.RANK AS ps_rank,
+				ps.ID AS ps_id,
+				ps.JSON AS ps_json 
+			FROM
+				pgroonga_search_processes ( query_text, filter_condition, 20, -- page_size: 获取足够多候选
+					1, -- page_current: 第1页
+				data_source, this_user_id ) ps 
+		),
+		ex_text AS (
+    SELECT
+      ex.rank AS ex_rank,
+      ex.id   AS ex_id,
+      p.json  AS ex_json
+    FROM pgroonga_search_processes_text(
+           query_text,
+           20,          -- page_size
+           1,      -- page_current
+           data_source,
+           this_user_id
+         ) ex
+    JOIN public.processes p ON p.id = ex.id
+  ),
+		semantic AS (
+			SELECT
+				ss.RANK AS ss_rank,
+				ss.ID AS ss_id,
+				ss.JSON AS ss_json 
+			FROM
+				semantic_search_processes ( query_embedding, filter_condition, match_threshold, match_count, data_source, this_user_id ) ss 
+		) SELECT COALESCE
+		( full_text.ps_id, semantic.ss_id, ex_text.ex_id ) AS ID,
+		COALESCE ( full_text.ps_json, semantic.ss_json, ex_text.ex_json) AS JSON, 
+		COALESCE(1.0 / (rrf_k + full_text.ps_rank), 0.0) * full_text_weight
+      + COALESCE(1.0 / (rrf_k + ex_text.ex_rank), 0.0) * text_weight
+      + COALESCE(1.0 / (rrf_k + semantic.ss_rank), 0.0) * semantic_weight
+      AS score
+		FROM
+			full_text
+			FULL OUTER JOIN semantic ON full_text.ps_id = semantic.ss_id
+			FULL OUTER JOIN ex_text ON ex_text.ex_id = COALESCE(full_text.ps_id, semantic.ss_id) 
+		ORDER BY
+			score DESC 
+			LIMIT page_size OFFSET ( page_current - 1 ) * page_size;
+		
+	END;
+$$;
+
+
+ALTER FUNCTION "public"."_navicat_temp_stored_proc"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" numeric, "extracted_text_weight" numeric, "semantic_weight" numeric, "rrf_k" integer, "data_source" "text", "this_user_id" "text", "page_size" integer, "page_current" integer) OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."contacts_sync_jsonb_version"() RETURNS "trigger"
@@ -132,6 +285,45 @@ $$;
 
 
 ALTER FUNCTION "public"."flowproperties_sync_jsonb_version"() OWNER TO "postgres";
+
+SET default_tablespace = '';
+
+SET default_table_access_method = "heap";
+
+
+CREATE TABLE IF NOT EXISTS "public"."flows" (
+    "id" "uuid" NOT NULL,
+    "json" "jsonb",
+    "created_at" timestamp with time zone DEFAULT "now"(),
+    "json_ordered" json,
+    "user_id" "uuid" DEFAULT "auth"."uid"(),
+    "state_code" integer DEFAULT 0,
+    "version" character(9) NOT NULL,
+    "modified_at" timestamp with time zone DEFAULT "now"(),
+    "embedding" "extensions"."halfvec"(384),
+    "embedding_at" timestamp(6) with time zone DEFAULT NULL::timestamp with time zone,
+    "extracted_text" "text",
+    "team_id" "uuid",
+    "review_id" "uuid",
+    "rule_verification" boolean,
+    "reviews" "jsonb"
+);
+
+
+ALTER TABLE "public"."flows" OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."flows_embedding_input"("flow" "public"."flows") RETURNS "text"
+    LANGUAGE "plpgsql" IMMUTABLE
+    SET "search_path" TO ''
+    AS $$
+begin
+  return flow.extracted_text;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."flows_embedding_input"("flow" "public"."flows") OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."flows_sync_jsonb_version"() RETURNS "trigger"
@@ -174,110 +366,169 @@ $$;
 ALTER FUNCTION "public"."generate_flow_embedding"() OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."hybrid_search_flows"("query_text" "text", "query_embedding" "text", "filter_condition" "text" DEFAULT '{}'::"text", "match_threshold" double precision DEFAULT 0.5, "match_count" integer DEFAULT 20, "full_text_weight" integer DEFAULT 3, "semantic_weight" integer DEFAULT 1, "rrf_k" integer DEFAULT 10, "data_source" "text" DEFAULT 'tg'::"text", "this_user_id" "text" DEFAULT ''::"text", "page_size" bigint DEFAULT 10, "page_current" bigint DEFAULT 1) RETURNS TABLE("id" "uuid", "json" "jsonb")
+CREATE OR REPLACE FUNCTION "public"."hybrid_search_flows"("query_text" "text", "query_embedding" "text", "filter_condition" "text" DEFAULT ''::"text", "match_threshold" double precision DEFAULT 0.5, "match_count" integer DEFAULT 20, "full_text_weight" double precision DEFAULT 0.3, "extracted_text_weight" double precision DEFAULT 0.2, "semantic_weight" double precision DEFAULT 0.5, "rrf_k" integer DEFAULT 10, "data_source" "text" DEFAULT 'tg'::"text", "this_user_id" "text" DEFAULT ''::"text", "page_size" integer DEFAULT 10, "page_current" integer DEFAULT 1) RETURNS TABLE("id" "uuid", "json" "jsonb")
     LANGUAGE "plpgsql"
     SET "search_path" TO 'public', 'extensions', 'pg_temp'
-    AS $$
-BEGIN
-    RETURN QUERY
-    WITH 
-    full_text AS (
-        SELECT 
-            ps.rank AS ps_rank,
-            ps.id AS ps_id,
-            ps.json AS ps_json
-        FROM pgroonga_search_flows(
-            query_text,
-            filter_condition,
-            20,               -- page_size: 获取足够多候选
-            1,                 -- page_current: 第1页
-            data_source,
-            this_user_id
-        ) ps
-    ),
-    semantic AS (
-        SELECT 
-            ss.rank AS ss_rank,
-            ss.id AS ss_id,
-            ss.json AS ss_json
-        FROM semantic_search_flows(
-            query_embedding,
-            filter_condition,
-            match_threshold,
-            match_count,
-            data_source,
-            this_user_id
-        ) ss
-    )
-    SELECT
-        COALESCE(full_text.ps_id, semantic.ss_id) AS id,
-        COALESCE(full_text.ps_json, semantic.ss_json) AS json
-    FROM
-        full_text
-        FULL OUTER JOIN semantic ON full_text.ps_id = semantic.ss_id
-    ORDER BY
-        COALESCE(1.0 / (rrf_k + full_text.ps_rank), 0.0) * full_text_weight +
-        COALESCE(1.0 / (rrf_k + semantic.ss_rank), 0.0) * semantic_weight DESC
-		LIMIT page_size
-		OFFSET (page_current -1) * page_size;
-END;
+    AS $$ BEGIN
+		RETURN QUERY WITH full_text AS (
+			SELECT
+				ps.RANK AS ps_rank,
+				ps.ID AS ps_id,
+				ps.JSON AS ps_json 
+			FROM
+				pgroonga_search_flows ( query_text, filter_condition, 20, -- page_size: 获取足够多候选
+					1, -- page_current: 第1页
+				data_source, this_user_id ) ps 
+		),
+		ex_text AS (
+			SELECT
+				ex.RANK AS ex_rank,
+				ex.ID AS ex_id,
+				P.JSON AS ex_json 
+			FROM
+				pgroonga_search_flows_text ( query_text, 20, -- page_size
+					1, -- page_current
+				data_source, this_user_id ) ex
+				JOIN PUBLIC.flows P ON P.ID = ex.ID 
+		),
+		semantic AS (
+			SELECT
+				ss.RANK AS ss_rank,
+				ss.ID AS ss_id,
+				ss.JSON AS ss_json 
+			FROM
+				semantic_search_flows ( query_embedding, filter_condition, match_threshold, match_count, data_source, this_user_id ) ss 
+		), 
+		fused as (
+		SELECT 
+			COALESCE ( full_text.ps_id, semantic.ss_id, ex_text.ex_id ) AS ID,
+			COALESCE ( full_text.ps_json, semantic.ss_json, ex_text.ex_json ) AS JSON,
+			COALESCE ( 1.0 / ( rrf_k + full_text.ps_rank ), 0.0 ) * full_text_weight + COALESCE ( 1.0 / ( rrf_k + ex_text.ex_rank ), 0.0 ) * extracted_text_weight + COALESCE ( 1.0 / ( rrf_k + semantic.ss_rank ), 0.0 ) * semantic_weight AS score 
+		FROM
+			full_text
+			FULL OUTER JOIN semantic ON full_text.ps_id = semantic.ss_id
+			FULL OUTER JOIN ex_text ON ex_text.ex_id = COALESCE ( full_text.ps_id, semantic.ss_id ) 
+		)
+		SELECT f.id, f.json
+		FROM fused AS f
+		ORDER BY f.score DESC
+		LIMIT page_size OFFSET ( page_current - 1 ) * page_size;
+		
+	END;
 $$;
 
 
-ALTER FUNCTION "public"."hybrid_search_flows"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" integer, "semantic_weight" integer, "rrf_k" integer, "data_source" "text", "this_user_id" "text", "page_size" bigint, "page_current" bigint) OWNER TO "postgres";
+ALTER FUNCTION "public"."hybrid_search_flows"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" double precision, "extracted_text_weight" double precision, "semantic_weight" double precision, "rrf_k" integer, "data_source" "text", "this_user_id" "text", "page_size" integer, "page_current" integer) OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."hybrid_search_processes"("query_text" "text", "query_embedding" "text", "filter_condition" "text" DEFAULT '{}'::"text", "match_threshold" double precision DEFAULT 0.5, "match_count" integer DEFAULT 20, "full_text_weight" integer DEFAULT 3, "semantic_weight" integer DEFAULT 1, "rrf_k" integer DEFAULT 10, "data_source" "text" DEFAULT 'tg'::"text", "this_user_id" "text" DEFAULT ''::"text", "page_size" bigint DEFAULT 10, "page_current" bigint DEFAULT 1) RETURNS TABLE("id" "uuid", "json" "jsonb")
+CREATE OR REPLACE FUNCTION "public"."hybrid_search_lifecyclemodels"("query_text" "text", "query_embedding" "text", "filter_condition" "text" DEFAULT ''::"text", "match_threshold" double precision DEFAULT 0.5, "match_count" integer DEFAULT 20, "full_text_weight" double precision DEFAULT 0.3, "extracted_text_weight" double precision DEFAULT 0.2, "semantic_weight" double precision DEFAULT 0.5, "rrf_k" integer DEFAULT 10, "data_source" "text" DEFAULT 'tg'::"text", "this_user_id" "text" DEFAULT ''::"text", "page_size" integer DEFAULT 10, "page_current" integer DEFAULT 1) RETURNS TABLE("id" "uuid", "json" "jsonb")
     LANGUAGE "plpgsql"
     SET "search_path" TO 'public', 'extensions', 'pg_temp'
-    AS $$
-BEGIN
-    RETURN QUERY
-    WITH 
-    full_text AS (
-        SELECT 
-            ps.rank AS ps_rank,
-            ps.id AS ps_id,
-            ps.json AS ps_json
-        FROM pgroonga_search_processes(
-            query_text,
-            filter_condition,
-            20,               -- page_size: 获取足够多候选
-            1,                 -- page_current: 第1页
-            data_source,
-            this_user_id
-        ) ps
-    ),
-    semantic AS (
-        SELECT 
-            ss.rank AS ss_rank,
-            ss.id AS ss_id,
-            ss.json AS ss_json
-        FROM semantic_search_processes(
-            query_embedding,
-            filter_condition,
-            match_threshold,
-            match_count,
-            data_source,
-            this_user_id
-        ) ss
-    )
-    SELECT
-        COALESCE(full_text.ps_id, semantic.ss_id) AS id,
-        COALESCE(full_text.ps_json, semantic.ss_json) AS json
-    FROM
-        full_text
-        FULL OUTER JOIN semantic ON full_text.ps_id = semantic.ss_id
-    ORDER BY
-        COALESCE(1.0 / (rrf_k + full_text.ps_rank), 0.0) * full_text_weight +
-        COALESCE(1.0 / (rrf_k + semantic.ss_rank), 0.0) * semantic_weight DESC
-		LIMIT page_size
-		OFFSET (page_current -1) * page_size;
-END;
+    AS $$ BEGIN
+		RETURN QUERY WITH full_text AS (
+			SELECT
+				ps.RANK AS ps_rank,
+				ps.ID AS ps_id,
+				ps.JSON AS ps_json 
+			FROM
+				pgroonga_search_lifecyclemodels ( query_text, filter_condition, 20, -- page_size: 获取足够多候选
+					1, -- page_current: 第1页
+				data_source, this_user_id ) ps 
+		),
+		ex_text AS (
+			SELECT
+				ex.RANK AS ex_rank,
+				ex.ID AS ex_id,
+				P.JSON AS ex_json 
+			FROM
+				pgroonga_search_lifecyclemodels_text ( query_text, 20, -- page_size
+					1, -- page_current
+				data_source, this_user_id ) ex
+				JOIN PUBLIC.lifecyclemodels P ON P.ID = ex.ID 
+		),
+		semantic AS (
+			SELECT
+				ss.RANK AS ss_rank,
+				ss.ID AS ss_id,
+				ss.JSON AS ss_json 
+			FROM
+				semantic_search_lifecyclemodels ( query_embedding, filter_condition, match_threshold, match_count, data_source, this_user_id ) ss 
+		), 
+		fused as (
+		SELECT 
+			COALESCE ( full_text.ps_id, semantic.ss_id, ex_text.ex_id ) AS ID,
+			COALESCE ( full_text.ps_json, semantic.ss_json, ex_text.ex_json ) AS JSON,
+			COALESCE ( 1.0 / ( rrf_k + full_text.ps_rank ), 0.0 ) * full_text_weight + COALESCE ( 1.0 / ( rrf_k + ex_text.ex_rank ), 0.0 ) * extracted_text_weight + COALESCE ( 1.0 / ( rrf_k + semantic.ss_rank ), 0.0 ) * semantic_weight AS score 
+		FROM
+			full_text
+			FULL OUTER JOIN semantic ON full_text.ps_id = semantic.ss_id
+			FULL OUTER JOIN ex_text ON ex_text.ex_id = COALESCE ( full_text.ps_id, semantic.ss_id ) 
+		)
+		SELECT f.id, f.json
+		FROM fused AS f
+		ORDER BY f.score DESC
+		LIMIT page_size OFFSET ( page_current - 1 ) * page_size;
+		
+	END;
 $$;
 
 
-ALTER FUNCTION "public"."hybrid_search_processes"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" integer, "semantic_weight" integer, "rrf_k" integer, "data_source" "text", "this_user_id" "text", "page_size" bigint, "page_current" bigint) OWNER TO "postgres";
+ALTER FUNCTION "public"."hybrid_search_lifecyclemodels"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" double precision, "extracted_text_weight" double precision, "semantic_weight" double precision, "rrf_k" integer, "data_source" "text", "this_user_id" "text", "page_size" integer, "page_current" integer) OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."hybrid_search_processes"("query_text" "text", "query_embedding" "text", "filter_condition" "text" DEFAULT ''::"text", "match_threshold" double precision DEFAULT 0.5, "match_count" integer DEFAULT 20, "full_text_weight" double precision DEFAULT 0.3, "extracted_text_weight" double precision DEFAULT 0.2, "semantic_weight" double precision DEFAULT 0.5, "rrf_k" integer DEFAULT 10, "data_source" "text" DEFAULT 'tg'::"text", "this_user_id" "text" DEFAULT ''::"text", "page_size" integer DEFAULT 10, "page_current" integer DEFAULT 1) RETURNS TABLE("id" "uuid", "json" "jsonb")
+    LANGUAGE "plpgsql"
+    SET "search_path" TO 'public', 'extensions', 'pg_temp'
+    AS $$ BEGIN
+		RETURN QUERY WITH full_text AS (
+			SELECT
+				ps.RANK AS ps_rank,
+				ps.ID AS ps_id,
+				ps.JSON AS ps_json 
+			FROM
+				pgroonga_search_processes ( query_text, filter_condition, 20, -- page_size: 获取足够多候选
+					1, -- page_current: 第1页
+				data_source, this_user_id ) ps 
+		),
+		ex_text AS (
+			SELECT
+				ex.RANK AS ex_rank,
+				ex.ID AS ex_id,
+				P.JSON AS ex_json 
+			FROM
+				pgroonga_search_processes_text ( query_text, 20, -- page_size
+					1, -- page_current
+				data_source, this_user_id ) ex
+				JOIN PUBLIC.processes P ON P.ID = ex.ID 
+		),
+		semantic AS (
+			SELECT
+				ss.RANK AS ss_rank,
+				ss.ID AS ss_id,
+				ss.JSON AS ss_json 
+			FROM
+				semantic_search_processes ( query_embedding, filter_condition, match_threshold, match_count, data_source, this_user_id ) ss 
+		), 
+		fused as (
+		SELECT 
+			COALESCE ( full_text.ps_id, semantic.ss_id, ex_text.ex_id ) AS ID,
+			COALESCE ( full_text.ps_json, semantic.ss_json, ex_text.ex_json ) AS JSON,
+			COALESCE ( 1.0 / ( rrf_k + full_text.ps_rank ), 0.0 ) * full_text_weight + COALESCE ( 1.0 / ( rrf_k + ex_text.ex_rank ), 0.0 ) * extracted_text_weight + COALESCE ( 1.0 / ( rrf_k + semantic.ss_rank ), 0.0 ) * semantic_weight AS score 
+		FROM
+			full_text
+			FULL OUTER JOIN semantic ON full_text.ps_id = semantic.ss_id
+			FULL OUTER JOIN ex_text ON ex_text.ex_id = COALESCE ( full_text.ps_id, semantic.ss_id ) 
+		)
+		SELECT f.id, f.json
+		FROM fused AS f
+		ORDER BY f.score DESC
+		LIMIT page_size OFFSET ( page_current - 1 ) * page_size;
+		
+	END;
+$$;
+
+
+ALTER FUNCTION "public"."hybrid_search_processes"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" double precision, "extracted_text_weight" double precision, "semantic_weight" double precision, "rrf_k" integer, "data_source" "text", "this_user_id" "text", "page_size" integer, "page_current" integer) OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."ilcd_classification_get"("this_file_name" "text", "category_type" "text", "get_values" "text"[]) RETURNS SETOF "jsonb"
@@ -373,6 +624,41 @@ $$;
 
 
 ALTER FUNCTION "public"."lciamethods_sync_jsonb_version"() OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."lifecyclemodels" (
+    "id" "uuid" NOT NULL,
+    "json" "jsonb",
+    "created_at" timestamp(6) with time zone DEFAULT "now"(),
+    "json_ordered" json,
+    "user_id" "uuid" DEFAULT "auth"."uid"(),
+    "state_code" integer DEFAULT 0,
+    "version" character(9) NOT NULL,
+    "json_tg" "jsonb",
+    "modified_at" timestamp with time zone DEFAULT "now"(),
+    "team_id" "uuid",
+    "rule_verification" boolean,
+    "reviews" "jsonb",
+    "extracted_text" "text",
+    "embedding" "extensions"."halfvec"(384),
+    "embedding_at" timestamp with time zone
+);
+
+
+ALTER TABLE "public"."lifecyclemodels" OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."lifecyclemodels_embedding_input"("models" "public"."lifecyclemodels") RETURNS "text"
+    LANGUAGE "plpgsql" IMMUTABLE
+    SET "search_path" TO 'public'
+    AS $$
+begin
+  return models.extracted_text;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."lifecyclemodels_embedding_input"("models" "public"."lifecyclemodels") OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."lifecyclemodels_sync_jsonb_version"() RETURNS "trigger"
@@ -471,41 +757,62 @@ ALTER FUNCTION "public"."pgroonga_search_flowproperties"("query_text" "text", "f
 CREATE OR REPLACE FUNCTION "public"."pgroonga_search_flows"("query_text" "text", "filter_condition" "text" DEFAULT ''::"text", "page_size" bigint DEFAULT 10, "page_current" bigint DEFAULT 1, "data_source" "text" DEFAULT 'tg'::"text", "this_user_id" "text" DEFAULT ''::"text") RETURNS TABLE("rank" bigint, "id" "uuid", "json" "jsonb", "version" character, "modified_at" timestamp with time zone, "total_count" bigint)
     LANGUAGE "plpgsql"
     SET "search_path" TO 'public', 'extensions', 'pg_temp'
+    AS $$ 
+DECLARE 
+	filter_condition_jsonb JSONB; 
+	flowType TEXT; 
+	flowTypeArray TEXT[]; 
+	asInput BOOLEAN; 
+BEGIN 
+	filter_condition_jsonb := filter_condition::JSONB; 
+	flowType := filter_condition_jsonb->>'flowType'; 
+	flowTypeArray := string_to_array(flowType, ','); 
+	filter_condition_jsonb := filter_condition_jsonb - 'flowType'; 
+	asInput := (filter_condition_jsonb->'asInput')::BOOLEAN; 
+	filter_condition_jsonb := filter_condition_jsonb - 'asInput'; 
+	RETURN QUERY 
+		SELECT 
+			RANK () OVER (ORDER BY pgroonga_score(f.tableoid, f.ctid) DESC) AS rank, 
+			f.id, 
+			f.json, 
+			f.version, 
+			f.modified_at, 
+			COUNT(*) OVER() AS total_count 
+		FROM flows f 
+		WHERE f.json @> filter_condition_jsonb AND f.json &@~ query_text AND ((data_source = 'tg' AND state_code = 100) or (data_source = 'co' AND state_code = 200) or (data_source = 'my' AND user_id::text = this_user_id) or (data_source = 'te' and EXISTS ( SELECT 1 FROM roles r WHERE r.user_id::text = this_user_id and r.team_id = f.team_id AND r.role::text IN ('admin', 'member', 'owner') ) ) ) AND ( flowType IS NULL OR flowType = '' OR (f.json->'flowDataSet'->'modellingAndValidation'->'LCIMethod'->>'typeOfDataSet') = ANY(flowTypeArray) ) and ( asInput is NULL OR asInput=false or not(f.json @> '{"flowDataSet":{"flowInformation":{"dataSetInformation":{"classificationInformation":{"common:elementaryFlowCategorization":{"common:category":[{"#text": "Emissions", "@level": "0"}]}}}}}}')) 
+		ORDER BY pgroonga_score(tableoid, ctid) DESC 
+		LIMIT page_size OFFSET (page_current -1) * page_size; 
+	END; 
+	$$;
+
+
+ALTER FUNCTION "public"."pgroonga_search_flows"("query_text" "text", "filter_condition" "text", "page_size" bigint, "page_current" bigint, "data_source" "text", "this_user_id" "text") OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."pgroonga_search_flows_text"("query_text" "text", "page_size" integer DEFAULT 10, "page_current" integer DEFAULT 1, "data_source" "text" DEFAULT 'tg'::"text", "this_user_id" "text" DEFAULT ''::"text") RETURNS TABLE("rank" bigint, "id" "uuid", "extracted_text" "text", "version" character, "modified_at" timestamp with time zone, "total_count" bigint)
+    LANGUAGE "plpgsql"
+    SET "search_path" TO 'public', 'extensions', 'pg_temp'
     AS $$
-DECLARE
-    filter_condition_jsonb JSONB;
-		flowType TEXT;
-    flowTypeArray TEXT[];
-	asInput BOOLEAN;
 BEGIN
-	filter_condition_jsonb := filter_condition::JSONB;
-	flowType := filter_condition_jsonb->>'flowType';
-	flowTypeArray := string_to_array(flowType, ',');
-	filter_condition_jsonb := filter_condition_jsonb - 'flowType';
-	asInput := (filter_condition_jsonb->'asInput')::BOOLEAN;
-	filter_condition_jsonb := filter_condition_jsonb - 'asInput';
   RETURN QUERY
 		SELECT 
 			RANK () OVER (ORDER BY pgroonga_score(f.tableoid, f.ctid) DESC) AS rank, 
 			f.id, 
-			f.json,
+			f.extracted_text,
 			f.version,
 			f.modified_at,
 			COUNT(*) OVER() AS total_count
-		FROM flows f
-		WHERE f.json @> filter_condition_jsonb AND f.json &@~ query_text AND ((data_source = 'tg' AND state_code = 100)  or (data_source = 'co' AND state_code = 200)  or (data_source = 'my' AND user_id::text = this_user_id) or (data_source = 'te' and
+		FROM public.flows AS f
+		WHERE f.extracted_text &@~ query_text AND ((data_source = 'tg' AND state_code = 100) or (data_source = 'co' AND state_code = 200) or (data_source = 'my' AND user_id::text = this_user_id)
+																			  or (data_source = 'te' and
 		EXISTS ( 
-                        SELECT 1
-                        FROM roles r
-                        WHERE r.user_id::text = this_user_id and r.team_id =  f.team_id
-                        AND r.role::text IN ('admin', 'member', 'owner') 
-                    )
-  )
-		) AND (
-            flowType IS NULL OR
-            flowType = '' OR
-            (f.json->'flowDataSet'->'modellingAndValidation'->'LCIMethod'->>'typeOfDataSet') = ANY(flowTypeArray)
-        )  and ( asInput is NULL OR asInput=false or not(f.json @> '{"flowDataSet":{"flowInformation":{"dataSetInformation":{"classificationInformation":{"common:elementaryFlowCategorization":{"common:category":[{"#text": "Emissions", "@level": "0"}]}}}}}}'))
+						SELECT 1
+						FROM roles r
+						WHERE r.user_id::text = this_user_id and r.team_id =  f.team_id
+						AND r.role::text IN ('admin', 'member', 'owner') 
+				)
+			)
+		)
 		ORDER BY pgroonga_score(tableoid, ctid) DESC
 		LIMIT page_size
 		OFFSET (page_current -1) * page_size;
@@ -513,7 +820,7 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."pgroonga_search_flows"("query_text" "text", "filter_condition" "text", "page_size" bigint, "page_current" bigint, "data_source" "text", "this_user_id" "text") OWNER TO "postgres";
+ALTER FUNCTION "public"."pgroonga_search_flows_text"("query_text" "text", "page_size" integer, "page_current" integer, "data_source" "text", "this_user_id" "text") OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."pgroonga_search_lifecyclemodels"("query_text" "text", "filter_condition" "text" DEFAULT ''::"text", "page_size" bigint DEFAULT 10, "page_current" bigint DEFAULT 1, "data_source" "text" DEFAULT 'tg'::"text", "this_user_id" "text" DEFAULT ''::"text") RETURNS TABLE("rank" bigint, "id" "uuid", "json" "jsonb", "version" character, "modified_at" timestamp with time zone, "total_count" bigint)
@@ -542,6 +849,40 @@ $$;
 
 
 ALTER FUNCTION "public"."pgroonga_search_lifecyclemodels"("query_text" "text", "filter_condition" "text", "page_size" bigint, "page_current" bigint, "data_source" "text", "this_user_id" "text") OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."pgroonga_search_lifecyclemodels_text"("query_text" "text", "page_size" integer DEFAULT 10, "page_current" integer DEFAULT 1, "data_source" "text" DEFAULT 'tg'::"text", "this_user_id" "text" DEFAULT ''::"text") RETURNS TABLE("rank" bigint, "id" "uuid", "extracted_text" "text", "version" character, "modified_at" timestamp with time zone, "total_count" bigint)
+    LANGUAGE "plpgsql"
+    SET "search_path" TO 'public', 'extensions', 'pg_temp'
+    AS $$
+BEGIN
+  RETURN QUERY
+		SELECT 
+			RANK () OVER (ORDER BY pgroonga_score(f.tableoid, f.ctid) DESC) AS rank, 
+			f.id, 
+			f.extracted_text,
+			f.version,
+			f.modified_at,
+			COUNT(*) OVER() AS total_count
+		FROM public.lifecyclemodels AS f
+		WHERE f.extracted_text &@~ query_text AND ((data_source = 'tg' AND state_code = 100) or (data_source = 'co' AND state_code = 200) or (data_source = 'my' AND user_id::text = this_user_id)
+																			  or (data_source = 'te' and
+		EXISTS ( 
+						SELECT 1
+						FROM roles r
+						WHERE r.user_id::text = this_user_id and r.team_id =  f.team_id
+						AND r.role::text IN ('admin', 'member', 'owner') 
+				)
+			)
+		)
+		ORDER BY pgroonga_score(tableoid, ctid) DESC
+		LIMIT page_size
+		OFFSET (page_current -1) * page_size;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."pgroonga_search_lifecyclemodels_text"("query_text" "text", "page_size" integer, "page_current" integer, "data_source" "text", "this_user_id" "text") OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."pgroonga_search_processes"("query_text" "text", "filter_condition" "text" DEFAULT ''::"text", "page_size" bigint DEFAULT 10, "page_current" bigint DEFAULT 1, "data_source" "text" DEFAULT 'tg'::"text", "this_user_id" "text" DEFAULT ''::"text") RETURNS TABLE("rank" bigint, "id" "uuid", "json" "jsonb", "version" character, "modified_at" timestamp with time zone, "total_count" bigint)
@@ -579,6 +920,40 @@ $$;
 
 
 ALTER FUNCTION "public"."pgroonga_search_processes"("query_text" "text", "filter_condition" "text", "page_size" bigint, "page_current" bigint, "data_source" "text", "this_user_id" "text") OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."pgroonga_search_processes_text"("query_text" "text", "page_size" integer DEFAULT 10, "page_current" integer DEFAULT 1, "data_source" "text" DEFAULT 'tg'::"text", "this_user_id" "text" DEFAULT ''::"text") RETURNS TABLE("rank" bigint, "id" "uuid", "extracted_text" "text", "version" character, "modified_at" timestamp with time zone, "total_count" bigint)
+    LANGUAGE "plpgsql"
+    SET "search_path" TO 'public', 'extensions', 'pg_temp'
+    AS $$
+BEGIN
+  RETURN QUERY
+		SELECT 
+			RANK () OVER (ORDER BY pgroonga_score(f.tableoid, f.ctid) DESC) AS rank, 
+			f.id, 
+			f.extracted_text,
+			f.version,
+			f.modified_at,
+			COUNT(*) OVER() AS total_count
+		FROM public.processes AS f
+		WHERE f.extracted_text &@~ query_text AND ((data_source = 'tg' AND state_code = 100) or (data_source = 'co' AND state_code = 200) or (data_source = 'my' AND user_id::text = this_user_id)
+																			  or (data_source = 'te' and
+		EXISTS ( 
+						SELECT 1
+						FROM roles r
+						WHERE r.user_id::text = this_user_id and r.team_id =  f.team_id
+						AND r.role::text IN ('admin', 'member', 'owner') 
+				)
+			)
+		)
+		ORDER BY pgroonga_score(tableoid, ctid) DESC
+		LIMIT page_size
+		OFFSET (page_current -1) * page_size;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."pgroonga_search_processes_text"("query_text" "text", "page_size" integer, "page_current" integer, "data_source" "text", "this_user_id" "text") OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."pgroonga_search_sources"("query_text" "text", "filter_condition" "text" DEFAULT ''::"text", "page_size" bigint DEFAULT 10, "page_current" bigint DEFAULT 1, "data_source" "text" DEFAULT 'tg'::"text", "this_user_id" "text" DEFAULT ''::"text") RETURNS TABLE("rank" bigint, "id" "uuid", "json" "jsonb", "version" character, "modified_at" timestamp with time zone, "total_count" bigint)
@@ -641,6 +1016,41 @@ $$;
 
 
 ALTER FUNCTION "public"."pgroonga_search_unitgroups"("query_text" "text", "filter_condition" "text", "page_size" bigint, "page_current" bigint, "data_source" "text", "this_user_id" "text") OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."processes" (
+    "id" "uuid" NOT NULL,
+    "json" "jsonb",
+    "created_at" timestamp with time zone DEFAULT "now"(),
+    "json_ordered" json,
+    "user_id" "uuid" DEFAULT "auth"."uid"(),
+    "state_code" integer DEFAULT 0,
+    "version" character(9) NOT NULL,
+    "modified_at" timestamp with time zone DEFAULT "now"(),
+    "team_id" "uuid",
+    "extracted_text" "text",
+    "embedding" "extensions"."halfvec"(384),
+    "embedding_at" timestamp with time zone,
+    "review_id" "uuid",
+    "rule_verification" boolean,
+    "reviews" "jsonb"
+);
+
+
+ALTER TABLE "public"."processes" OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."processes_embedding_input"("proc" "public"."processes") RETURNS "text"
+    LANGUAGE "plpgsql" IMMUTABLE
+    SET "search_path" TO ''
+    AS $$
+begin
+  return proc.extracted_text;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."processes_embedding_input"("proc" "public"."processes") OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."processes_sync_jsonb_version"() RETURNS "trigger"
@@ -744,6 +1154,42 @@ $$;
 
 
 ALTER FUNCTION "public"."semantic_search_flows"("query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "data_source" "text", "this_user_id" "text") OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."semantic_search_lifecyclemodels"("query_embedding" "text", "filter_condition" "text" DEFAULT ''::"text", "match_threshold" double precision DEFAULT 0.5, "match_count" integer DEFAULT 20, "data_source" "text" DEFAULT 'tg'::"text", "this_user_id" "text" DEFAULT ''::"text") RETURNS TABLE("rank" bigint, "id" "uuid", "json" "jsonb", "version" character, "modified_at" timestamp with time zone, "total_count" bigint)
+    LANGUAGE "plpgsql"
+    SET "search_path" TO 'public', 'extensions', 'pg_temp'
+    AS $$
+DECLARE
+    query_embedding_vector vector(384);
+		filter_condition_jsonb JSONB;
+BEGIN
+    -- Convert the input TEXT to vector(1536) once
+    query_embedding_vector := query_embedding::vector(384);
+		filter_condition_jsonb := filter_condition::JSONB;
+
+    RETURN QUERY
+    SELECT
+        RANK () OVER (ORDER BY f.embedding <=> query_embedding_vector) AS rank,
+        f.id,
+        f.json,
+				f.version,
+				f.modified_at,
+				COUNT(*) OVER() AS total_count
+    FROM lifecyclemodels f
+    WHERE f.embedding <=> query_embedding_vector < 1 - match_threshold
+					AND f.json @> filter_condition_jsonb
+          AND (
+               (data_source = 'tg' AND state_code = 100)
+               OR (data_source = 'my' AND f.user_id::text = this_user_id)
+          )
+    ORDER BY f.embedding <=> query_embedding_vector
+    LIMIT match_count;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."semantic_search_lifecyclemodels"("query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "data_source" "text", "this_user_id" "text") OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."semantic_search_processes"("query_embedding" "text", "filter_condition" "text" DEFAULT ''::"text", "match_threshold" double precision DEFAULT 0.5, "match_count" integer DEFAULT 20, "data_source" "text" DEFAULT 'tg'::"text", "this_user_id" "text" DEFAULT ''::"text") RETURNS TABLE("rank" bigint, "id" "uuid", "json" "jsonb", "version" character, "modified_at" timestamp with time zone, "total_count" bigint)
@@ -878,9 +1324,149 @@ $$;
 
 ALTER FUNCTION "public"."update_modified_at"() OWNER TO "postgres";
 
-SET default_tablespace = '';
 
-SET default_table_access_method = "heap";
+CREATE OR REPLACE FUNCTION "util"."clear_column"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    SET "search_path" TO ''
+    AS $$
+declare
+    clear_column text := TG_ARGV[0];
+begin
+    NEW := NEW #= public.hstore(clear_column, NULL);
+    return NEW;
+end;
+$$;
+
+
+ALTER FUNCTION "util"."clear_column"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "util"."invoke_edge_function"("name" "text", "body" "jsonb", "timeout_milliseconds" integer DEFAULT ((5 * 60) * 1000)) RETURNS "void"
+    LANGUAGE "plpgsql"
+    SET "search_path" TO ''
+    AS $$
+declare
+  headers_raw text;
+  auth_header text;
+begin
+  -- If we're in a PostgREST session, reuse the request headers for authorization
+  headers_raw := current_setting('request.headers', true);
+
+  -- Only try to parse if headers are present
+  auth_header := case
+    when headers_raw is not null then
+      (headers_raw::json->>'authorization')
+    else
+      null
+  end;
+
+  -- Perform async HTTP request to the edge function
+  perform net.http_post(
+    url => util.project_url() || '/functions/v1/' || name,
+    headers => jsonb_build_object(
+      'Content-Type', 'application/json',
+      'Authorization', auth_header
+    ),
+    body => body,
+    timeout_milliseconds => timeout_milliseconds
+  );
+end;
+$$;
+
+
+ALTER FUNCTION "util"."invoke_edge_function"("name" "text", "body" "jsonb", "timeout_milliseconds" integer) OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "util"."process_embeddings"("batch_size" integer DEFAULT 10, "max_requests" integer DEFAULT 10, "timeout_milliseconds" integer DEFAULT ((5 * 60) * 1000)) RETURNS "void"
+    LANGUAGE "plpgsql"
+    SET "search_path" TO ''
+    AS $$
+declare
+  job_batches jsonb[];
+  batch jsonb;
+begin
+  with
+    -- First get jobs and assign batch numbers
+    numbered_jobs as (
+      select
+        message || jsonb_build_object('jobId', msg_id) as job_info,
+        (row_number() over (order by 1) - 1) / batch_size as batch_num
+      from pgmq.read(
+        queue_name => 'embedding_jobs',
+        vt => timeout_milliseconds / 1000,
+        qty => max_requests * batch_size
+      )
+    ),
+    -- Then group jobs into batches
+    batched_jobs as (
+      select
+        jsonb_agg(job_info) as batch_array,
+        batch_num
+      from numbered_jobs
+      group by batch_num
+    )
+  -- Finally aggregate all batches into array
+  select array_agg(batch_array)
+  from batched_jobs
+  into job_batches;
+
+  -- Invoke the embed edge function for each batch
+  foreach batch in array job_batches loop
+    perform util.invoke_edge_function(
+      name => 'embedding',
+      body => batch,
+      timeout_milliseconds => timeout_milliseconds
+    );
+  end loop;
+end;
+$$;
+
+
+ALTER FUNCTION "util"."process_embeddings"("batch_size" integer, "max_requests" integer, "timeout_milliseconds" integer) OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "util"."project_url"() RETURNS "text"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO ''
+    AS $$
+declare
+  secret_value text;
+begin
+  -- Retrieve the project URL from Vault
+  select decrypted_secret into secret_value from vault.decrypted_secrets where name = 'project_url';
+  return secret_value;
+end;
+$$;
+
+
+ALTER FUNCTION "util"."project_url"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "util"."queue_embeddings"() RETURNS "trigger"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO ''
+    AS $$
+declare
+  content_function text = TG_ARGV[0];
+  embedding_column text = TG_ARGV[1];
+begin
+  perform pgmq.send(
+    queue_name => 'embedding_jobs',
+    msg => jsonb_build_object(
+      'id', NEW.id,
+			'version', NEW.version,
+      'schema', TG_TABLE_SCHEMA,
+      'table', TG_TABLE_NAME,
+      'contentFunction', content_function,
+      'embeddingColumn', embedding_column
+    )
+  );
+  return NEW;
+end;
+$$;
+
+
+ALTER FUNCTION "util"."queue_embeddings"() OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."comments" (
@@ -936,28 +1522,6 @@ CREATE TABLE IF NOT EXISTS "public"."flowproperties" (
 ALTER TABLE "public"."flowproperties" OWNER TO "postgres";
 
 
-CREATE TABLE IF NOT EXISTS "public"."flows" (
-    "id" "uuid" NOT NULL,
-    "json" "jsonb",
-    "created_at" timestamp with time zone DEFAULT "now"(),
-    "json_ordered" json,
-    "user_id" "uuid" DEFAULT "auth"."uid"(),
-    "state_code" integer DEFAULT 0,
-    "version" character(9) NOT NULL,
-    "modified_at" timestamp with time zone DEFAULT "now"(),
-    "embedding" "extensions"."vector"(384),
-    "embedding_at" timestamp(6) with time zone DEFAULT NULL::timestamp with time zone,
-    "extracted_text" "text",
-    "team_id" "uuid",
-    "review_id" "uuid",
-    "rule_verification" boolean,
-    "reviews" "jsonb"
-);
-
-
-ALTER TABLE "public"."flows" OWNER TO "postgres";
-
-
 CREATE TABLE IF NOT EXISTS "public"."ilcd" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "file_name" character varying(255),
@@ -987,46 +1551,27 @@ CREATE TABLE IF NOT EXISTS "public"."lciamethods" (
 ALTER TABLE "public"."lciamethods" OWNER TO "postgres";
 
 
-CREATE TABLE IF NOT EXISTS "public"."lifecyclemodels" (
-    "id" "uuid" NOT NULL,
-    "json" "jsonb",
-    "created_at" timestamp(6) with time zone DEFAULT "now"(),
-    "json_ordered" json,
-    "user_id" "uuid" DEFAULT "auth"."uid"(),
-    "state_code" integer DEFAULT 0,
-    "version" character(9) NOT NULL,
-    "json_tg" "jsonb",
-    "modified_at" timestamp with time zone DEFAULT "now"(),
-    "team_id" "uuid",
-    "rule_verification" boolean,
-    "reviews" "jsonb",
-    "submodels" "jsonb"
+CREATE TABLE IF NOT EXISTS "public"."logs" (
+    "id" bigint NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "log" "jsonb",
+    "log_type" character varying,
+    "user_id" "uuid" DEFAULT "auth"."uid"()
 );
 
 
-ALTER TABLE "public"."lifecyclemodels" OWNER TO "postgres";
+ALTER TABLE "public"."logs" OWNER TO "postgres";
 
 
-CREATE TABLE IF NOT EXISTS "public"."processes" (
-    "id" "uuid" NOT NULL,
-    "json" "jsonb",
-    "created_at" timestamp with time zone DEFAULT "now"(),
-    "json_ordered" json,
-    "user_id" "uuid" DEFAULT "auth"."uid"(),
-    "state_code" integer DEFAULT 0,
-    "version" character(9) NOT NULL,
-    "modified_at" timestamp with time zone DEFAULT "now"(),
-    "team_id" "uuid",
-    "extracted_text" "text",
-    "embedding" "extensions"."vector"(384),
-    "embedding_at" timestamp with time zone,
-    "review_id" "uuid",
-    "rule_verification" boolean,
-    "reviews" "jsonb"
+ALTER TABLE "public"."logs" ALTER COLUMN "id" ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME "public"."logs_id_seq"
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
 );
 
-
-ALTER TABLE "public"."processes" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."reviews" (
@@ -1037,7 +1582,8 @@ CREATE TABLE IF NOT EXISTS "public"."reviews" (
     "state_code" integer DEFAULT 0,
     "data_version" character(9),
     "reviewer_id" "jsonb",
-    "json" "jsonb"
+    "json" "jsonb",
+    "deadline" timestamp with time zone
 );
 
 
@@ -1111,7 +1657,8 @@ ALTER TABLE "public"."unitgroups" OWNER TO "postgres";
 
 CREATE TABLE IF NOT EXISTS "public"."users" (
     "id" "uuid" NOT NULL,
-    "raw_user_meta_data" "jsonb"
+    "raw_user_meta_data" "jsonb",
+    "contact" "jsonb"
 );
 
 
@@ -1150,6 +1697,11 @@ ALTER TABLE ONLY "public"."lciamethods"
 
 ALTER TABLE ONLY "public"."lifecyclemodels"
     ADD CONSTRAINT "lifecyclemodels_pkey" PRIMARY KEY ("id", "version");
+
+
+
+ALTER TABLE ONLY "public"."logs"
+    ADD CONSTRAINT "logs_pkey" PRIMARY KEY ("id");
 
 
 
@@ -1260,6 +1812,10 @@ CREATE INDEX "flows_created_at_idx" ON "public"."flows" USING "btree" ("created_
 
 
 
+CREATE INDEX "flows_embedding_hnsw_idx" ON "public"."flows" USING "hnsw" ("embedding" "extensions"."halfvec_cosine_ops");
+
+
+
 CREATE INDEX "flows_json_casnumber" ON "public"."flows" USING "btree" (((((("json" -> 'flowDataSet'::"text") -> 'flowInformation'::"text") -> 'dataSetInformation'::"text") ->> 'CASNumber'::"text")));
 
 
@@ -1352,6 +1908,10 @@ CREATE INDEX "lifecyclemodels_created_at_idx" ON "public"."lifecyclemodels" USIN
 
 
 
+CREATE INDEX "lifecyclemodels_embedding_hnsw_idx" ON "public"."lifecyclemodels" USING "hnsw" ("embedding" "extensions"."halfvec_cosine_ops");
+
+
+
 CREATE INDEX "lifecyclemodels_json_dataversion" ON "public"."lifecyclemodels" USING "btree" (((((("json" -> 'lifeCycleModelDataSet'::"text") -> 'administrativeInformation'::"text") -> 'publicationAndOwnership'::"text") ->> 'common:dataSetVersion'::"text")));
 
 
@@ -1372,11 +1932,19 @@ CREATE INDEX "lifecyclemodels_modified_at_idx" ON "public"."lifecyclemodels" USI
 
 
 
+CREATE INDEX "lifecyclemodels_text_pgroonga" ON "public"."lifecyclemodels" USING "pgroonga" ("extracted_text");
+
+
+
 CREATE INDEX "lifecyclemodels_user_id_created_at_idx" ON "public"."lifecyclemodels" USING "btree" ("user_id", "created_at" DESC);
 
 
 
 CREATE INDEX "processes_created_at_idx" ON "public"."processes" USING "btree" ("created_at" DESC);
+
+
+
+CREATE INDEX "processes_embedding_hnsw_idx" ON "public"."processes" USING "hnsw" ("embedding" "extensions"."halfvec_cosine_ops");
 
 
 
@@ -1516,6 +2084,10 @@ CREATE OR REPLACE TRIGGER "contacts_set_modified_at_trigger" BEFORE UPDATE ON "p
 
 
 
+CREATE OR REPLACE TRIGGER "flow_embedding_on_extract_text_update" AFTER UPDATE OF "extracted_text" ON "public"."flows" FOR EACH ROW EXECUTE FUNCTION "util"."queue_embeddings"('flows_embedding_input', 'embedding');
+
+
+
 CREATE OR REPLACE TRIGGER "flow_embedding_trigger_insert" AFTER INSERT ON "public"."flows" FOR EACH ROW EXECUTE FUNCTION "supabase_functions"."http_request"('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_flow_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
 
 
@@ -1556,11 +2128,27 @@ CREATE OR REPLACE TRIGGER "lciamethods_set_modified_at_trigger" BEFORE UPDATE ON
 
 
 
+CREATE OR REPLACE TRIGGER "lifecyclemodels_embedding_on_extract_text_update" AFTER UPDATE OF "extracted_text" ON "public"."lifecyclemodels" FOR EACH ROW EXECUTE FUNCTION "util"."queue_embeddings"('lifecyclemodels_embedding_input', 'embedding');
+
+
+
+CREATE OR REPLACE TRIGGER "lifecyclemodels_embedding_trigger_insert" AFTER INSERT ON "public"."lifecyclemodels" FOR EACH ROW EXECUTE FUNCTION "supabase_functions"."http_request"('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_model_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
+
+
+
+CREATE OR REPLACE TRIGGER "lifecyclemodels_embedding_trigger_update" AFTER UPDATE ON "public"."lifecyclemodels" FOR EACH ROW WHEN (("new"."json" IS DISTINCT FROM "old"."json")) EXECUTE FUNCTION "supabase_functions"."http_request"('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_model_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
+
+
+
 CREATE OR REPLACE TRIGGER "lifecyclemodels_json_sync_trigger" BEFORE INSERT OR UPDATE ON "public"."lifecyclemodels" FOR EACH ROW EXECUTE FUNCTION "public"."lifecyclemodels_sync_jsonb_version"();
 
 
 
 CREATE OR REPLACE TRIGGER "lifecyclemodels_set_modified_at_trigger" BEFORE UPDATE ON "public"."lifecyclemodels" FOR EACH ROW EXECUTE FUNCTION "public"."update_modified_at"();
+
+
+
+CREATE OR REPLACE TRIGGER "process_embedding_on_extract_text_update" AFTER UPDATE OF "extracted_text" ON "public"."processes" FOR EACH ROW EXECUTE FUNCTION "util"."queue_embeddings"('processes_embedding_input', 'embedding');
 
 
 
@@ -1601,11 +2189,6 @@ CREATE OR REPLACE TRIGGER "unitgroups_json_sync_trigger" BEFORE INSERT OR UPDATE
 
 
 CREATE OR REPLACE TRIGGER "unitgroups_set_modified_at_trigger" BEFORE UPDATE ON "public"."unitgroups" FOR EACH ROW EXECUTE FUNCTION "public"."update_modified_at"();
-
-
-
-ALTER TABLE ONLY "public"."reviews"
-    ADD CONSTRAINT "reviews_data_id_data_version_fkey" FOREIGN KEY ("data_id", "data_version") REFERENCES "public"."processes"("id", "version") ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 
@@ -1826,6 +2409,9 @@ ALTER TABLE "public"."lciamethods" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "public"."lifecyclemodels" ENABLE ROW LEVEL SECURITY;
 
 
+ALTER TABLE "public"."logs" ENABLE ROW LEVEL SECURITY;
+
+
 ALTER TABLE "public"."processes" ENABLE ROW LEVEL SECURITY;
 
 
@@ -1868,12 +2454,21 @@ CREATE POLICY "update by owner and admin" ON "public"."teams" FOR UPDATE TO "aut
 
 
 
+CREATE POLICY "update by review-admin or data owener" ON "public"."comments" FOR UPDATE TO "authenticated" USING ((("reviewer_id" = "auth"."uid"()) OR (EXISTS ( SELECT 1
+   FROM "public"."roles"
+  WHERE (("roles"."user_id" = "auth"."uid"()) AND (("roles"."role")::"text" = 'review-admin'::"text"))))));
+
+
+
 ALTER TABLE "public"."users" ENABLE ROW LEVEL SECURITY;
 
 
 
 
 ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
+
+
+
 
 
 GRANT USAGE ON SCHEMA "public" TO "anon";
@@ -2873,6 +3468,216 @@ GRANT USAGE ON SCHEMA "public" TO "postgres";
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+GRANT ALL ON FUNCTION "public"."_navicat_temp_stored_proc"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" numeric, "extracted_text_weight" numeric, "semantic_weight" numeric, "rrf_k" integer, "data_source" "text", "this_user_id" "text", "page_size" integer, "page_current" integer) TO "anon";
+GRANT ALL ON FUNCTION "public"."_navicat_temp_stored_proc"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" numeric, "extracted_text_weight" numeric, "semantic_weight" numeric, "rrf_k" integer, "data_source" "text", "this_user_id" "text", "page_size" integer, "page_current" integer) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."_navicat_temp_stored_proc"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" numeric, "extracted_text_weight" numeric, "semantic_weight" numeric, "rrf_k" integer, "data_source" "text", "this_user_id" "text", "page_size" integer, "page_current" integer) TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."contacts_sync_jsonb_version"() TO "anon";
 GRANT ALL ON FUNCTION "public"."contacts_sync_jsonb_version"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."contacts_sync_jsonb_version"() TO "service_role";
@@ -2882,6 +3687,18 @@ GRANT ALL ON FUNCTION "public"."contacts_sync_jsonb_version"() TO "service_role"
 GRANT ALL ON FUNCTION "public"."flowproperties_sync_jsonb_version"() TO "anon";
 GRANT ALL ON FUNCTION "public"."flowproperties_sync_jsonb_version"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."flowproperties_sync_jsonb_version"() TO "service_role";
+
+
+
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."flows" TO "anon";
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."flows" TO "authenticated";
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."flows" TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."flows_embedding_input"("flow" "public"."flows") TO "anon";
+GRANT ALL ON FUNCTION "public"."flows_embedding_input"("flow" "public"."flows") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."flows_embedding_input"("flow" "public"."flows") TO "service_role";
 
 
 
@@ -2897,15 +3714,21 @@ GRANT ALL ON FUNCTION "public"."generate_flow_embedding"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."hybrid_search_flows"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" integer, "semantic_weight" integer, "rrf_k" integer, "data_source" "text", "this_user_id" "text", "page_size" bigint, "page_current" bigint) TO "anon";
-GRANT ALL ON FUNCTION "public"."hybrid_search_flows"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" integer, "semantic_weight" integer, "rrf_k" integer, "data_source" "text", "this_user_id" "text", "page_size" bigint, "page_current" bigint) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."hybrid_search_flows"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" integer, "semantic_weight" integer, "rrf_k" integer, "data_source" "text", "this_user_id" "text", "page_size" bigint, "page_current" bigint) TO "service_role";
+GRANT ALL ON FUNCTION "public"."hybrid_search_flows"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" double precision, "extracted_text_weight" double precision, "semantic_weight" double precision, "rrf_k" integer, "data_source" "text", "this_user_id" "text", "page_size" integer, "page_current" integer) TO "anon";
+GRANT ALL ON FUNCTION "public"."hybrid_search_flows"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" double precision, "extracted_text_weight" double precision, "semantic_weight" double precision, "rrf_k" integer, "data_source" "text", "this_user_id" "text", "page_size" integer, "page_current" integer) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."hybrid_search_flows"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" double precision, "extracted_text_weight" double precision, "semantic_weight" double precision, "rrf_k" integer, "data_source" "text", "this_user_id" "text", "page_size" integer, "page_current" integer) TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."hybrid_search_processes"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" integer, "semantic_weight" integer, "rrf_k" integer, "data_source" "text", "this_user_id" "text", "page_size" bigint, "page_current" bigint) TO "anon";
-GRANT ALL ON FUNCTION "public"."hybrid_search_processes"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" integer, "semantic_weight" integer, "rrf_k" integer, "data_source" "text", "this_user_id" "text", "page_size" bigint, "page_current" bigint) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."hybrid_search_processes"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" integer, "semantic_weight" integer, "rrf_k" integer, "data_source" "text", "this_user_id" "text", "page_size" bigint, "page_current" bigint) TO "service_role";
+GRANT ALL ON FUNCTION "public"."hybrid_search_lifecyclemodels"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" double precision, "extracted_text_weight" double precision, "semantic_weight" double precision, "rrf_k" integer, "data_source" "text", "this_user_id" "text", "page_size" integer, "page_current" integer) TO "anon";
+GRANT ALL ON FUNCTION "public"."hybrid_search_lifecyclemodels"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" double precision, "extracted_text_weight" double precision, "semantic_weight" double precision, "rrf_k" integer, "data_source" "text", "this_user_id" "text", "page_size" integer, "page_current" integer) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."hybrid_search_lifecyclemodels"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" double precision, "extracted_text_weight" double precision, "semantic_weight" double precision, "rrf_k" integer, "data_source" "text", "this_user_id" "text", "page_size" integer, "page_current" integer) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."hybrid_search_processes"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" double precision, "extracted_text_weight" double precision, "semantic_weight" double precision, "rrf_k" integer, "data_source" "text", "this_user_id" "text", "page_size" integer, "page_current" integer) TO "anon";
+GRANT ALL ON FUNCTION "public"."hybrid_search_processes"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" double precision, "extracted_text_weight" double precision, "semantic_weight" double precision, "rrf_k" integer, "data_source" "text", "this_user_id" "text", "page_size" integer, "page_current" integer) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."hybrid_search_processes"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" double precision, "extracted_text_weight" double precision, "semantic_weight" double precision, "rrf_k" integer, "data_source" "text", "this_user_id" "text", "page_size" integer, "page_current" integer) TO "service_role";
 
 
 
@@ -2927,6 +3750,18 @@ GRANT ALL ON FUNCTION "public"."ilcd_location_get"("this_file_name" "text", "get
 GRANT ALL ON FUNCTION "public"."lciamethods_sync_jsonb_version"() TO "anon";
 GRANT ALL ON FUNCTION "public"."lciamethods_sync_jsonb_version"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."lciamethods_sync_jsonb_version"() TO "service_role";
+
+
+
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."lifecyclemodels" TO "anon";
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."lifecyclemodels" TO "authenticated";
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."lifecyclemodels" TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."lifecyclemodels_embedding_input"("models" "public"."lifecyclemodels") TO "anon";
+GRANT ALL ON FUNCTION "public"."lifecyclemodels_embedding_input"("models" "public"."lifecyclemodels") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."lifecyclemodels_embedding_input"("models" "public"."lifecyclemodels") TO "service_role";
 
 
 
@@ -2960,15 +3795,33 @@ GRANT ALL ON FUNCTION "public"."pgroonga_search_flows"("query_text" "text", "fil
 
 
 
+GRANT ALL ON FUNCTION "public"."pgroonga_search_flows_text"("query_text" "text", "page_size" integer, "page_current" integer, "data_source" "text", "this_user_id" "text") TO "anon";
+GRANT ALL ON FUNCTION "public"."pgroonga_search_flows_text"("query_text" "text", "page_size" integer, "page_current" integer, "data_source" "text", "this_user_id" "text") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."pgroonga_search_flows_text"("query_text" "text", "page_size" integer, "page_current" integer, "data_source" "text", "this_user_id" "text") TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."pgroonga_search_lifecyclemodels"("query_text" "text", "filter_condition" "text", "page_size" bigint, "page_current" bigint, "data_source" "text", "this_user_id" "text") TO "anon";
 GRANT ALL ON FUNCTION "public"."pgroonga_search_lifecyclemodels"("query_text" "text", "filter_condition" "text", "page_size" bigint, "page_current" bigint, "data_source" "text", "this_user_id" "text") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."pgroonga_search_lifecyclemodels"("query_text" "text", "filter_condition" "text", "page_size" bigint, "page_current" bigint, "data_source" "text", "this_user_id" "text") TO "service_role";
 
 
 
+GRANT ALL ON FUNCTION "public"."pgroonga_search_lifecyclemodels_text"("query_text" "text", "page_size" integer, "page_current" integer, "data_source" "text", "this_user_id" "text") TO "anon";
+GRANT ALL ON FUNCTION "public"."pgroonga_search_lifecyclemodels_text"("query_text" "text", "page_size" integer, "page_current" integer, "data_source" "text", "this_user_id" "text") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."pgroonga_search_lifecyclemodels_text"("query_text" "text", "page_size" integer, "page_current" integer, "data_source" "text", "this_user_id" "text") TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."pgroonga_search_processes"("query_text" "text", "filter_condition" "text", "page_size" bigint, "page_current" bigint, "data_source" "text", "this_user_id" "text") TO "anon";
 GRANT ALL ON FUNCTION "public"."pgroonga_search_processes"("query_text" "text", "filter_condition" "text", "page_size" bigint, "page_current" bigint, "data_source" "text", "this_user_id" "text") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."pgroonga_search_processes"("query_text" "text", "filter_condition" "text", "page_size" bigint, "page_current" bigint, "data_source" "text", "this_user_id" "text") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."pgroonga_search_processes_text"("query_text" "text", "page_size" integer, "page_current" integer, "data_source" "text", "this_user_id" "text") TO "anon";
+GRANT ALL ON FUNCTION "public"."pgroonga_search_processes_text"("query_text" "text", "page_size" integer, "page_current" integer, "data_source" "text", "this_user_id" "text") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."pgroonga_search_processes_text"("query_text" "text", "page_size" integer, "page_current" integer, "data_source" "text", "this_user_id" "text") TO "service_role";
 
 
 
@@ -2981,6 +3834,18 @@ GRANT ALL ON FUNCTION "public"."pgroonga_search_sources"("query_text" "text", "f
 GRANT ALL ON FUNCTION "public"."pgroonga_search_unitgroups"("query_text" "text", "filter_condition" "text", "page_size" bigint, "page_current" bigint, "data_source" "text", "this_user_id" "text") TO "anon";
 GRANT ALL ON FUNCTION "public"."pgroonga_search_unitgroups"("query_text" "text", "filter_condition" "text", "page_size" bigint, "page_current" bigint, "data_source" "text", "this_user_id" "text") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."pgroonga_search_unitgroups"("query_text" "text", "filter_condition" "text", "page_size" bigint, "page_current" bigint, "data_source" "text", "this_user_id" "text") TO "service_role";
+
+
+
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."processes" TO "anon";
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."processes" TO "authenticated";
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."processes" TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."processes_embedding_input"("proc" "public"."processes") TO "anon";
+GRANT ALL ON FUNCTION "public"."processes_embedding_input"("proc" "public"."processes") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."processes_embedding_input"("proc" "public"."processes") TO "service_role";
 
 
 
@@ -2999,6 +3864,12 @@ GRANT ALL ON FUNCTION "public"."semantic_search"("query_embedding" "text", "matc
 GRANT ALL ON FUNCTION "public"."semantic_search_flows"("query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "data_source" "text", "this_user_id" "text") TO "anon";
 GRANT ALL ON FUNCTION "public"."semantic_search_flows"("query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "data_source" "text", "this_user_id" "text") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."semantic_search_flows"("query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "data_source" "text", "this_user_id" "text") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."semantic_search_lifecyclemodels"("query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "data_source" "text", "this_user_id" "text") TO "anon";
+GRANT ALL ON FUNCTION "public"."semantic_search_lifecyclemodels"("query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "data_source" "text", "this_user_id" "text") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."semantic_search_lifecyclemodels"("query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "data_source" "text", "this_user_id" "text") TO "service_role";
 
 
 
@@ -3071,6 +3942,12 @@ GRANT ALL ON FUNCTION "public"."update_modified_at"() TO "service_role";
 
 
 
+
+
+
+
+
+
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."comments" TO "anon";
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."comments" TO "authenticated";
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."comments" TO "service_role";
@@ -3089,12 +3966,6 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public".
 
 
 
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."flows" TO "anon";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."flows" TO "authenticated";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."flows" TO "service_role";
-
-
-
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."ilcd" TO "anon";
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."ilcd" TO "authenticated";
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."ilcd" TO "service_role";
@@ -3107,15 +3978,15 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public".
 
 
 
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."lifecyclemodels" TO "anon";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."lifecyclemodels" TO "authenticated";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."lifecyclemodels" TO "service_role";
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."logs" TO "anon";
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."logs" TO "authenticated";
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."logs" TO "service_role";
 
 
 
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."processes" TO "anon";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."processes" TO "authenticated";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."processes" TO "service_role";
+GRANT ALL ON SEQUENCE "public"."logs_id_seq" TO "anon";
+GRANT ALL ON SEQUENCE "public"."logs_id_seq" TO "authenticated";
+GRANT ALL ON SEQUENCE "public"."logs_id_seq" TO "service_role";
 
 
 
