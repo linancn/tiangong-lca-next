@@ -269,10 +269,11 @@ export function getLangJson(langTexts: any) {
     return {};
   }
   if (Array.isArray(langTexts)) {
-    if (langTexts.length === 1) {
-      return langTexts[0];
-    } else if (langTexts.length > 1) {
-      return langTexts;
+    const newLangTexts = langTexts.filter((item) => !!item);
+    if (newLangTexts.length === 1) {
+      return newLangTexts[0];
+    } else if (newLangTexts.length > 1) {
+      return newLangTexts;
     }
   } else {
     return langTexts;

@@ -38,6 +38,7 @@ const ConnectableProcesses: FC<Props> = ({
   const myActionRefSelect = useRef<ActionType>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [activeTabKey, setActiveTabKey] = useState<string>('tg');
+  const [tableLoading, setTableLoading] = useState<boolean>(false);
 
   const onTabChange = async (key: string) => {
     setActiveTabKey(key);
@@ -151,6 +152,7 @@ const ConnectableProcesses: FC<Props> = ({
       <>
         <ProTable<ProcessTable, ListPagination>
           actionRef={tgActionRefSelect}
+          loading={tableLoading}
           search={false}
           pagination={{
             showSizeChanger: false,
@@ -163,7 +165,8 @@ const ConnectableProcesses: FC<Props> = ({
             },
             sort,
           ) => {
-            return getConnectableProcessesTable(
+            setTableLoading(true);
+            const data = await getConnectableProcessesTable(
               params,
               sort,
               lang,
@@ -172,6 +175,8 @@ const ConnectableProcesses: FC<Props> = ({
               portId,
               flowVersion,
             );
+            setTableLoading(false);
+            return data;
           }}
           columns={processColumns}
           rowSelection={
@@ -189,6 +194,7 @@ const ConnectableProcesses: FC<Props> = ({
       <>
         <ProTable<ProcessTable, ListPagination>
           actionRef={coActionRefSelect}
+          loading={tableLoading}
           search={false}
           pagination={{
             showSizeChanger: false,
@@ -201,7 +207,8 @@ const ConnectableProcesses: FC<Props> = ({
             },
             sort,
           ) => {
-            return getConnectableProcessesTable(
+            setTableLoading(true);
+            const data = await getConnectableProcessesTable(
               params,
               sort,
               lang,
@@ -210,6 +217,8 @@ const ConnectableProcesses: FC<Props> = ({
               portId,
               flowVersion,
             );
+            setTableLoading(false);
+            return data;
           }}
           columns={processColumns}
           rowSelection={
@@ -227,6 +236,7 @@ const ConnectableProcesses: FC<Props> = ({
       <>
         <ProTable<ProcessTable, ListPagination>
           actionRef={myActionRefSelect}
+          loading={tableLoading}
           search={false}
           pagination={{
             showSizeChanger: false,
@@ -239,7 +249,8 @@ const ConnectableProcesses: FC<Props> = ({
             },
             sort,
           ) => {
-            return getConnectableProcessesTable(
+            setTableLoading(true);
+            const data = await getConnectableProcessesTable(
               params,
               sort,
               lang,
@@ -248,6 +259,8 @@ const ConnectableProcesses: FC<Props> = ({
               portId,
               flowVersion,
             );
+            setTableLoading(false);
+            return data;
           }}
           columns={processColumns}
           rowSelection={
@@ -266,6 +279,7 @@ const ConnectableProcesses: FC<Props> = ({
         <ProTable<ProcessTable, ListPagination>
           actionRef={teActionRefSelect}
           search={false}
+          loading={tableLoading}
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
@@ -277,7 +291,8 @@ const ConnectableProcesses: FC<Props> = ({
             },
             sort,
           ) => {
-            return getConnectableProcessesTable(
+            setTableLoading(true);
+            const data = await getConnectableProcessesTable(
               params,
               sort,
               lang,
@@ -286,6 +301,8 @@ const ConnectableProcesses: FC<Props> = ({
               portId,
               flowVersion,
             );
+            setTableLoading(false);
+            return data;
           }}
           columns={processColumns}
           rowSelection={

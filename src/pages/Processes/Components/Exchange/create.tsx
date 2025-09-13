@@ -35,8 +35,15 @@ type Props = {
   lang: string;
   onData: (data: any) => void;
   showRules?: boolean;
+  disabled?: boolean;
 };
-const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData, showRules = false }) => {
+const ProcessExchangeCreate: FC<Props> = ({
+  direction,
+  lang,
+  onData,
+  showRules = false,
+  disabled = false,
+}) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
   const [fromData, setFromData] = useState<any>({});
@@ -68,6 +75,7 @@ const ProcessExchangeCreate: FC<Props> = ({ direction, lang, onData, showRules =
   return (
     <>
       <ToolBarButton
+        disabled={disabled}
         icon={<PlusOutlined />}
         tooltip={<FormattedMessage id='pages.button.create' defaultMessage='Create' />}
         onClick={() => {

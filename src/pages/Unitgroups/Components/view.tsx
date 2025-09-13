@@ -382,7 +382,8 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
     getUnitGroupDetail(id, version).then(async (result: any) => {
       setInitData({ ...genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {}) });
       setUnitDataSource([
-        ...(genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {})?.units?.unit ?? []),
+        ...(genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {})?.units?.unit ??
+          ([] as any)),
       ]);
       // if (dataSource === 'my') {
       //   setFooterButtons(

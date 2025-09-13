@@ -137,6 +137,180 @@ export async function createLifeCycleModel(data: any) {
   return result;
 }
 
+const overrideWithOldProcess = function (newData: any, oldData: any) {
+  if (oldData?.processDataSet?.processInformation?.dataSetInformation?.identifierOfSubDataSet) {
+    newData.processDataSet.processInformation.dataSetInformation.identifierOfSubDataSet =
+      oldData.processDataSet.processInformation.dataSetInformation.identifierOfSubDataSet;
+  }
+
+  if (oldData?.processDataSet?.processInformation?.dataSetInformation?.['common:synonyms']) {
+    newData.processDataSet.processInformation.dataSetInformation['common:synonyms'] =
+      oldData.processDataSet.processInformation.dataSetInformation['common:synonyms'];
+  }
+
+  if (
+    oldData?.processDataSet?.processInformation?.technology
+      ?.technologyDescriptionAndIncludedProcesses
+  ) {
+    if (!newData.processDataSet.processInformation.technology) {
+      newData.processDataSet.processInformation.technology = {} as any;
+    }
+    (
+      newData.processDataSet.processInformation.technology as any
+    ).technologyDescriptionAndIncludedProcesses =
+      oldData.processDataSet.processInformation.technology.technologyDescriptionAndIncludedProcesses;
+  }
+
+  if (oldData?.processDataSet?.processInformation?.technology?.technologicalApplicability) {
+    if (!newData.processDataSet.processInformation.technology) {
+      newData.processDataSet.processInformation.technology = {} as any;
+    }
+    (newData.processDataSet.processInformation.technology as any).technologicalApplicability =
+      oldData.processDataSet.processInformation.technology.technologicalApplicability;
+  }
+
+  if (oldData?.processDataSet?.processInformation?.technology?.referenceToTechnologyPictogramme) {
+    if (!newData.processDataSet.processInformation.technology) {
+      newData.processDataSet.processInformation.technology = {} as any;
+    }
+    (newData.processDataSet.processInformation.technology as any).referenceToTechnologyPictogramme =
+      oldData.processDataSet.processInformation.technology.referenceToTechnologyPictogramme;
+  }
+
+  if (
+    oldData?.processDataSet?.processInformation?.technology
+      ?.referenceToTechnologyFlowDiagrammOrPicture
+  ) {
+    if (!newData.processDataSet.processInformation.technology) {
+      newData.processDataSet.processInformation.technology = {} as any;
+    }
+    (
+      newData.processDataSet.processInformation.technology as any
+    ).referenceToTechnologyFlowDiagrammOrPicture =
+      oldData.processDataSet.processInformation.technology.referenceToTechnologyFlowDiagrammOrPicture;
+  }
+
+  if (oldData?.processDataSet?.modellingAndValidation?.LCIMethodAndAllocation) {
+    newData.processDataSet.modellingAndValidation.LCIMethodAndAllocation =
+      oldData.processDataSet.modellingAndValidation.LCIMethodAndAllocation;
+  }
+
+  if (oldData?.processDataSet?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness) {
+    newData.processDataSet.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness =
+      oldData.processDataSet.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness;
+  }
+
+  if (oldData?.processDataSet?.modellingAndValidation?.completeness) {
+    newData.processDataSet.modellingAndValidation.completeness =
+      oldData.processDataSet.modellingAndValidation.completeness;
+  }
+
+  if (
+    oldData?.processDataSet?.administrativeInformation?.dataEntryBy?.[
+      'common:referenceToConvertedOriginalDataSetFrom'
+    ]
+  ) {
+    newData.processDataSet.administrativeInformation.dataEntryBy[
+      'common:referenceToConvertedOriginalDataSetFrom'
+    ] =
+      oldData.processDataSet.administrativeInformation.dataEntryBy[
+        'common:referenceToConvertedOriginalDataSetFrom'
+      ];
+  }
+
+  if (
+    oldData?.processDataSet?.administrativeInformation?.dataEntryBy?.[
+      'common:referenceToDataSetUseApproval'
+    ]
+  ) {
+    newData.processDataSet.administrativeInformation.dataEntryBy[
+      'common:referenceToDataSetUseApproval'
+    ] =
+      oldData.processDataSet.administrativeInformation.dataEntryBy[
+        'common:referenceToDataSetUseApproval'
+      ];
+  }
+
+  if (
+    oldData?.processDataSet?.administrativeInformation?.publicationAndOwnership?.[
+      'common:dateOfLastRevision'
+    ]
+  ) {
+    newData.processDataSet.administrativeInformation.publicationAndOwnership[
+      'common:dateOfLastRevision'
+    ] =
+      oldData.processDataSet.administrativeInformation.publicationAndOwnership[
+        'common:dateOfLastRevision'
+      ];
+  }
+
+  if (
+    oldData?.processDataSet?.administrativeInformation?.publicationAndOwnership?.[
+      'common:workflowAndPublicationStatus'
+    ]
+  ) {
+    newData.processDataSet.administrativeInformation.publicationAndOwnership[
+      'common:workflowAndPublicationStatus'
+    ] =
+      oldData.processDataSet.administrativeInformation.publicationAndOwnership[
+        'common:workflowAndPublicationStatus'
+      ];
+  }
+
+  if (
+    oldData?.processDataSet?.administrativeInformation?.publicationAndOwnership?.[
+      'common:referenceToUnchangedRepublication'
+    ]
+  ) {
+    newData.processDataSet.administrativeInformation.publicationAndOwnership[
+      'common:referenceToUnchangedRepublication'
+    ] =
+      oldData.processDataSet.administrativeInformation.publicationAndOwnership[
+        'common:referenceToUnchangedRepublication'
+      ];
+  }
+
+  if (
+    oldData?.processDataSet?.administrativeInformation?.publicationAndOwnership?.[
+      'common:referenceToRegistrationAuthority'
+    ]
+  ) {
+    newData.processDataSet.administrativeInformation.publicationAndOwnership[
+      'common:referenceToRegistrationAuthority'
+    ] =
+      oldData.processDataSet.administrativeInformation.publicationAndOwnership[
+        'common:referenceToRegistrationAuthority'
+      ];
+  }
+
+  if (
+    oldData?.processDataSet?.administrativeInformation?.publicationAndOwnership?.[
+      'common:registrationNumber'
+    ]
+  ) {
+    newData.processDataSet.administrativeInformation.publicationAndOwnership[
+      'common:registrationNumber'
+    ] =
+      oldData.processDataSet.administrativeInformation.publicationAndOwnership[
+        'common:registrationNumber'
+      ];
+  }
+
+  if (oldData?.processDataSet?.processInformation?.time) {
+    newData.processDataSet.processInformation.time = oldData.processDataSet.processInformation.time;
+  }
+
+  if (oldData?.processDataSet?.processInformation?.geography) {
+    newData.processDataSet.processInformation.geography =
+      oldData.processDataSet.processInformation.geography;
+  }
+
+  if (oldData?.processDataSet?.processInformation?.mathematicalRelations) {
+    newData.processDataSet.processInformation.mathematicalRelations =
+      oldData.processDataSet.processInformation.mathematicalRelations;
+  }
+};
+
 export async function updateLifeCycleModel(data: any) {
   const result = await supabase
     .from('lifecyclemodels')
@@ -207,6 +381,10 @@ export async function updateLifeCycleModel(data: any) {
           });
 
         if (newLifeCycleModelProcesses && newLifeCycleModelProcesses.length > 0) {
+          const { data: oldProcesses } = await getProcessesByIdsAndVersions(
+            newLifeCycleModelProcesses.map((n: any) => n.modelInfo.id),
+            [data.version],
+          );
           newLifeCycleModelProcesses.forEach(async (n: any) => {
             if (n.option === 'update')
               try {
@@ -215,6 +393,12 @@ export async function updateLifeCycleModel(data: any) {
                   data.version,
                 );
                 if (validate) {
+                  const oldProcess = oldProcesses?.find(
+                    (p: any) => p.id === n.modelInfo.id && p.version === data.version,
+                  );
+                  if (oldProcess) {
+                    overrideWithOldProcess(n.data, oldProcess.json);
+                  }
                   await updateProcess(n.modelInfo.id, data.version, n.data.processDataSet);
                 } else {
                   await createProcess(n.modelInfo.id, n.data.processDataSet);

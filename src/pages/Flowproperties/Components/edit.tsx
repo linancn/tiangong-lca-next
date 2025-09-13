@@ -2,6 +2,7 @@ import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext'
 import type { refDataType } from '@/pages/Utils/review';
 import { checkData } from '@/pages/Utils/review';
 import { getFlowpropertyDetail, updateFlowproperties } from '@/services/flowproperties/api';
+import { FlowPropertyDataSetObjectKeys, FormFlowProperty } from '@/services/flowproperties/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -48,9 +49,11 @@ const FlowpropertiesEdit: FC<Props> = ({
 }) => {
   const formRefEdit = useRef<ProFormInstance>();
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [activeTabKey, setActiveTabKey] = useState<string>('flowPropertiesInformation');
-  const [fromData, setFromData] = useState<any>({});
-  const [initData, setInitData] = useState<any>({});
+  const [activeTabKey, setActiveTabKey] = useState<FlowPropertyDataSetObjectKeys>(
+    'flowPropertiesInformation',
+  );
+  const [fromData, setFromData] = useState<FormFlowProperty & { id?: string }>();
+  const [initData, setInitData] = useState<FormFlowProperty & { id?: string }>();
   const [spinning, setSpinning] = useState(false);
   const [showRules, setShowRules] = useState<boolean>(false);
   const [referenceValue, setReferenceValue] = useState(0);
@@ -78,7 +81,7 @@ const FlowpropertiesEdit: FC<Props> = ({
   const updateReference = async () => {
     setReferenceValue(referenceValue + 1);
   };
-  const onTabChange = (key: string) => {
+  const onTabChange = (key: FlowPropertyDataSetObjectKeys) => {
     setActiveTabKey(key);
   };
 
@@ -383,7 +386,10 @@ const FlowpropertiesEdit: FC<Props> = ({
                 }}
                 onFinish={() => handleSubmit(true)}
                 onValuesChange={(_, allValues) => {
-                  setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+                  setFromData({
+                    ...fromData,
+                    [activeTabKey]: allValues[activeTabKey] ?? {},
+                  } as FormFlowProperty);
                 }}
               >
                 <FlowpropertyForm
@@ -392,7 +398,7 @@ const FlowpropertiesEdit: FC<Props> = ({
                   drawerVisible={drawerVisible}
                   formRef={formRefEdit}
                   onData={handletFromData}
-                  onTabChange={onTabChange}
+                  onTabChange={(key) => onTabChange(key as FlowPropertyDataSetObjectKeys)}
                   showRules={showRules}
                 />
               </ProForm>

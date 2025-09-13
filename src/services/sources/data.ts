@@ -1,3 +1,4 @@
+import { Source } from '@tiangong-lca/tidas-sdk';
 export type SourceTable = {
   key: React.Key;
   id: string;
@@ -10,3 +11,14 @@ export type SourceTable = {
   modifiedAt: Date;
   teamId: string;
 };
+
+export type SourceDataSetObjectKeys = Exclude<
+  {
+    [K in keyof Source['sourceDataSet']]: Source['sourceDataSet'][K] extends object | undefined
+      ? K
+      : never;
+  }[keyof Source['sourceDataSet']],
+  undefined
+>;
+
+export type FormSource = Pick<Source['sourceDataSet'], SourceDataSetObjectKeys>;

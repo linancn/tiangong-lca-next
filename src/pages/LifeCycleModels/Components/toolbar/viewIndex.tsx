@@ -465,7 +465,12 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
         buttonType={'toolResultIcon'}
         disabled={false}
       /> */}
-      <ModelResult submodels={jsonTg?.submodels ?? []} modelVersion={version} lang={lang} />
+      <ModelResult
+        submodels={jsonTg?.submodels ?? []}
+        modelVersion={version}
+        lang={lang}
+        actionType='view'
+      />
       <Control items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin']} />
       <Spin spinning={spinning} fullscreen />
       <IoPortView

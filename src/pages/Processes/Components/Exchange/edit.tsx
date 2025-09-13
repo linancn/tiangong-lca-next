@@ -39,6 +39,7 @@ type Props = {
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
   onData: (data: any) => void;
   showRules: boolean;
+  disabled?: boolean;
 };
 const ProcessExchangeEdit: FC<Props> = ({
   id,
@@ -49,6 +50,7 @@ const ProcessExchangeEdit: FC<Props> = ({
   setViewDrawerVisible,
   onData,
   showRules = false,
+  disabled = false,
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
@@ -95,9 +97,15 @@ const ProcessExchangeEdit: FC<Props> = ({
     <>
       <Tooltip title={<FormattedMessage id='pages.button.edit' defaultMessage='Edit' />}>
         {buttonType === 'icon' ? (
-          <Button shape='circle' icon={<FormOutlined />} size='small' onClick={onEdit} />
+          <Button
+            disabled={disabled}
+            shape='circle'
+            icon={<FormOutlined />}
+            size='small'
+            onClick={onEdit}
+          />
         ) : (
-          <Button onClick={onEdit}>
+          <Button disabled={disabled} onClick={onEdit}>
             <FormattedMessage id='pages.button.edit' defaultMessage='Edit' />
           </Button>
         )}

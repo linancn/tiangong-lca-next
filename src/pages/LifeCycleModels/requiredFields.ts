@@ -9,18 +9,6 @@ const requiredFields = {
   'lifeCycleModelInformation.dataSetInformation.classificationInformation.common:classification.common:class':
     'lifeCycleModelInformation',
   'lifeCycleModelInformation.dataSetInformation.common:generalComment': 'lifeCycleModelInformation',
-  'lifeCycleModelInformation.time.common:referenceYear': 'lifeCycleModelInformation',
-  'lifeCycleModelInformation.geography.locationOfOperationSupplyOrProduction.@location':
-    'lifeCycleModelInformation',
-  'lifeCycleModelInformation.technology.technologyDescriptionAndIncludedProcesses':
-    'lifeCycleModelInformation',
-
-  'modellingAndValidation.LCIMethodAndAllocation.typeOfDataSet': 'modellingAndValidation',
-  'modellingAndValidation.dataSourcesTreatmentAndRepresentativeness.dataCutOffAndCompletenessPrinciples':
-    'modellingAndValidation',
-  'modellingAndValidation.dataSourcesTreatmentAndRepresentativeness.referenceToDataSource':
-    'modellingAndValidation',
-
   'administrativeInformation.common:commissionerAndGoal.common:referenceToCommissioner':
     'administrativeInformation',
   'administrativeInformation.common:commissionerAndGoal.common:intendedApplications':

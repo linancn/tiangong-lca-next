@@ -1,3 +1,4 @@
+import { Flow } from '@tiangong-lca/tidas-sdk';
 export type FlowTable = {
   id: string;
   version: string;
@@ -30,3 +31,12 @@ export type FlowpropertyTabTable = {
   quantitativeReference: boolean;
   refUnitRes?: any;
 };
+
+export type FlowDataSetObjectKeys = Exclude<
+  {
+    [K in keyof Flow['flowDataSet']]: Flow['flowDataSet'][K] extends object | undefined ? K : never;
+  }[keyof Flow['flowDataSet']],
+  undefined
+>;
+
+export type FormFlow = Pick<Flow['flowDataSet'], FlowDataSetObjectKeys>;

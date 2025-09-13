@@ -3,7 +3,7 @@ import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import type { refDataType } from '@/pages/Utils/review';
 import { ReffPath, checkData, getErrRefTab } from '@/pages/Utils/review';
 import { getUnitGroupDetail, updateUnitGroup } from '@/services/unitgroups/api';
-import { UnitTable } from '@/services/unitgroups/data';
+import { FormUnitGroup, UnitGroupDataSetObjectKeys, UnitTable } from '@/services/unitgroups/data';
 import { genUnitGroupFromData } from '@/services/unitgroups/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
@@ -33,9 +33,10 @@ const UnitGroupEdit: FC<Props> = ({
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
-  const [activeTabKey, setActiveTabKey] = useState<string>('unitGroupInformation');
-  const [initData, setInitData] = useState<any>({});
-  const [fromData, setFromData] = useState<any>({});
+  const [activeTabKey, setActiveTabKey] =
+    useState<UnitGroupDataSetObjectKeys>('unitGroupInformation');
+  const [initData, setInitData] = useState<FormUnitGroup & { id?: string }>();
+  const [fromData, setFromData] = useState<FormUnitGroup & { id?: string }>();
   const [unitDataSource, setUnitDataSource] = useState<UnitTable[]>([]);
   const [spinning, setSpinning] = useState(false);
   const [showRules, setShowRules] = useState<boolean>(false);
@@ -83,7 +84,7 @@ const UnitGroupEdit: FC<Props> = ({
     if (fromData) setUnitDataSource([...data]);
   };
 
-  const onTabChange = (key: string) => {
+  const onTabChange = (key: UnitGroupDataSetObjectKeys) => {
     setActiveTabKey(key);
   };
 
@@ -100,7 +101,8 @@ const UnitGroupEdit: FC<Props> = ({
         id: id,
       });
       setUnitDataSource(
-        genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {})?.units?.unit ?? [],
+        (genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {})?.units?.unit ??
+          []) as UnitTable[],
       );
       formRefEdit.current?.resetFields();
       formRefEdit.current?.setFieldsValue({
@@ -126,12 +128,12 @@ const UnitGroupEdit: FC<Props> = ({
       units: {
         unit: [...unitDataSource],
       },
-    });
+    } as FormUnitGroup);
   }, [unitDataSource]);
 
   const handleSubmit = async (autoClose: boolean) => {
     if (autoClose) setSpinning(true);
-    const units = fromData.units;
+    const units = fromData?.units;
     const formFieldsValue = {
       ...formRefEdit.current?.getFieldsValue(),
       units,
@@ -228,7 +230,7 @@ const UnitGroupEdit: FC<Props> = ({
     } else {
       setRefCheckData([]);
     }
-    const units = fromData.units;
+    const units = fromData?.units;
     if (!units?.unit || !Array.isArray(units.unit) || units.unit.length === 0) {
       message.error(
         intl.formatMessage({
@@ -397,7 +399,10 @@ const UnitGroupEdit: FC<Props> = ({
                 formRef={formRefEdit}
                 initialValues={initData}
                 onValuesChange={(_, allValues) => {
-                  setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+                  setFromData({
+                    ...fromData,
+                    [activeTabKey]: allValues[activeTabKey] ?? {},
+                  } as FormUnitGroup);
                 }}
                 submitter={{
                   render: () => {
@@ -413,7 +418,7 @@ const UnitGroupEdit: FC<Props> = ({
                   onData={handletFromData}
                   onUnitData={handletUnitData}
                   onUnitDataCreate={handletUnitDataCreate}
-                  onTabChange={onTabChange}
+                  onTabChange={(key) => onTabChange(key as UnitGroupDataSetObjectKeys)}
                   unitDataSource={unitDataSource}
                   showRules={showRules}
                 />

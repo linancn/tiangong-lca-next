@@ -1,11 +1,12 @@
+import ProcessEdit from '@/pages/Processes/Components/edit';
 import ProcessView from '@/pages/Processes/Components/view';
 import { getProcessDetailByIdAndVersion } from '@/services/processes/api';
 import { genProcessName } from '@/services/processes/util';
 import { CloseOutlined, ProductOutlined } from '@ant-design/icons';
-import { ProColumns, ProTable } from '@ant-design/pro-components';
+import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Drawer, Tooltip } from 'antd';
 import type { FC } from 'react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 
 type Props = {
@@ -15,6 +16,7 @@ type Props = {
   }>;
   modelVersion: string;
   lang: string;
+  actionType: 'view' | 'edit';
 };
 
 type ProcessTableItem = {
@@ -25,15 +27,27 @@ type ProcessTableItem = {
   modifiedAt: Date;
 };
 
-const ModelResult: FC<Props> = ({ submodels, modelVersion, lang }) => {
+const ModelResult: FC<Props> = ({ submodels, modelVersion, lang, actionType }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
+  const processTableRef = useRef<ActionType>();
 
   if (submodels.length === 1) {
     const singleProcess = submodels[0];
-    return (
+    return actionType === 'edit' ? (
+      <ProcessEdit
+        id={singleProcess.id}
+        version={singleProcess.version ?? modelVersion}
+        buttonType='toolResultIcon'
+        lang={lang}
+        disabled={false}
+        actionRef={processTableRef}
+        setViewDrawerVisible={() => {}}
+        actionFrom='modelResult'
+      />
+    ) : (
       <ProcessView
         id={singleProcess.id}
-        version={singleProcess.version}
+        version={singleProcess.version ?? modelVersion}
         buttonType='toolResultIcon'
         lang={lang}
         disabled={false}
@@ -67,16 +81,32 @@ const ModelResult: FC<Props> = ({ submodels, modelVersion, lang }) => {
       search: false,
       width: 100,
       render: (_, record) => {
-        return [
+        const result = [
           <ProcessView
             key={0}
             id={record.id}
-            version={record.version}
+            version={record.version ?? modelVersion}
             buttonType='icon'
             lang={lang}
             disabled={false}
           />,
         ];
+        if (actionType === 'edit') {
+          result.push(
+            <ProcessEdit
+              actionFrom='modelResult'
+              key={1}
+              id={record.id}
+              version={record.version ?? modelVersion}
+              buttonType='icon'
+              lang={lang}
+              disabled={false}
+              actionRef={processTableRef}
+              setViewDrawerVisible={() => {}}
+            />,
+          );
+        }
+        return result;
       },
     },
   ];
@@ -120,6 +150,7 @@ const ModelResult: FC<Props> = ({ submodels, modelVersion, lang }) => {
             showSizeChanger: false,
             pageSize: 10,
           }}
+          actionRef={processTableRef}
           request={async () => {
             const processData = submodels.map((submodel) => ({
               id: submodel.id,
