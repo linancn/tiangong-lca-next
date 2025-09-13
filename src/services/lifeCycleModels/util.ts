@@ -1613,8 +1613,6 @@ export async function genLifeCycleModelProcesses(
             ...ud,
             scalingFactor: cpe?.scalingFactor,
           };
-        } else {
-          return ud;
         }
       }
 
@@ -1632,11 +1630,37 @@ export async function genLifeCycleModelProcesses(
             ...ud,
             scalingFactor: cpe?.scalingFactor,
           };
-        } else {
-          return ud;
         }
       }
-      return ud;
+
+      if (ud?.dependence === 'none') {
+        if (ud?.mainDependence === 'downstream') {
+          const cpe = calculatedProcessExchanges.find((c: any) => {
+            return c?.nodeId === ud?.upstreamId;
+          });
+          if (cpe) {
+            return {
+              ...ud,
+              scalingFactor: cpe?.scalingFactor,
+            };
+          }
+        }
+        if (ud?.mainDependence === 'upstream') {
+          const cpe = calculatedProcessExchanges.find((c: any) => {
+            return c?.nodeId === ud?.downstreamId;
+          });
+          if (cpe) {
+            return {
+              ...ud,
+              scalingFactor: cpe?.scalingFactor,
+            };
+          }
+        }
+      }
+      return {
+        ...ud,
+        scalingFactor: 0,
+      };
     });
 
     const groupedProcessExchanges: Record<string, any[]> = {};
