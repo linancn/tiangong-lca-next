@@ -19,6 +19,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 // import UnitgroupsFrom from '@/pages/Unitgroups/Components/Unit/edit';
 import ToolBarButton from '@/components/ToolBarButton';
+import { FlowPropertyDataSetObjectKeys, FormFlowProperty } from '@/services/flowproperties/data';
 import { initVersion } from '@/services/general/data';
 import { formatDateTime } from '@/services/general/util';
 import { ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -59,9 +60,11 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
-  const [activeTabKey, setActiveTabKey] = useState<string>('flowPropertiesInformation');
-  const [initData, setInitData] = useState<any>({});
-  const [fromData, setFromData] = useState<any>({});
+  const [activeTabKey, setActiveTabKey] = useState<FlowPropertyDataSetObjectKeys>(
+    'flowPropertiesInformation',
+  );
+  const [initData, setInitData] = useState<FormFlowProperty & { id?: string }>();
+  const [fromData, setFromData] = useState<FormFlowProperty & { id?: string }>();
   const [spinning, setSpinning] = useState<boolean>(false);
   const intl = useIntl();
 
@@ -77,7 +80,7 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
       });
   };
 
-  const onTabChange = (key: string) => {
+  const onTabChange = (key: FlowPropertyDataSetObjectKeys) => {
     setActiveTabKey(key);
   };
 
@@ -114,8 +117,8 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
     if (drawerVisible === false) {
       onClose();
       formRefCreate.current?.resetFields();
-      setInitData({});
-      setFromData({});
+      setInitData(undefined);
+      setFromData(undefined);
       return;
     }
     if (importData && importData.length > 0) {
@@ -148,10 +151,10 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
       },
     };
 
-    setInitData(newData);
+    setInitData(newData as FormFlowProperty);
     const currentData = formRefCreate.current?.getFieldsValue();
     formRefCreate.current?.setFieldsValue({ ...currentData, ...newData });
-    setFromData(newData);
+    setFromData(newData as FormFlowProperty);
   }, [drawerVisible]);
 
   return (
@@ -233,7 +236,10 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
             formRef={formRefCreate}
             initialValues={initData}
             onValuesChange={(_, allValues) => {
-              setFromData({ ...fromData, [activeTabKey]: allValues[activeTabKey] ?? {} });
+              setFromData({
+                ...fromData,
+                [activeTabKey]: allValues[activeTabKey] ?? {},
+              } as FormFlowProperty);
             }}
             submitter={{
               render: () => {
@@ -254,7 +260,7 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
                 formRefCreate.current?.resetFields();
                 setDrawerVisible(false);
                 setActiveTabKey('flowPropertiesInformation');
-                setFromData({});
+                setFromData(undefined);
                 reload();
               } else {
                 message.error(result.error.message);
@@ -268,7 +274,7 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
               drawerVisible={drawerVisible}
               formRef={formRefCreate}
               onData={handletFromData}
-              onTabChange={onTabChange}
+              onTabChange={(key) => onTabChange(key as FlowPropertyDataSetObjectKeys)}
               formType='create'
             />
           </ProForm>

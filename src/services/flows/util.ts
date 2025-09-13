@@ -1,3 +1,5 @@
+import { FormFlow } from '@/services/flows/data';
+import { createFlow as createTidasFlow } from '@tiangong-lca/tidas-sdk';
 import {
   classificationToJsonList,
   classificationToStringList,
@@ -296,7 +298,7 @@ export function genFlowJsonOrdered(id: string, data: any) {
   });
 }
 
-export function genFlowFromData(data: any) {
+export function genFlowFromData(data: any): FormFlow {
   const flowProperty = data?.flowProperties?.flowProperty ?? [];
   let flowPropertyList = [];
   if (!Array.isArray(flowProperty)) {
@@ -305,7 +307,8 @@ export function genFlowFromData(data: any) {
     flowPropertyList = flowProperty;
   }
 
-  let classificationInformation = {};
+  let classificationInformation: FormFlow['flowInformation']['dataSetInformation']['classificationInformation'] =
+    {};
   if (data?.modellingAndValidation?.LCIMethod?.typeOfDataSet === 'Elementary flow') {
     classificationInformation = {
       'common:elementaryFlowCategorization': {
@@ -328,234 +331,253 @@ export function genFlowFromData(data: any) {
     };
   }
 
-  return removeEmptyObjects({
-    flowInformation: {
-      dataSetInformation: {
-        'common:UUID': data?.flowInformation?.dataSetInformation?.['common:UUID'],
-        name: {
-          baseName: getLangList(data?.flowInformation?.dataSetInformation?.['name']?.['baseName']),
-          treatmentStandardsRoutes: getLangList(
-            data?.flowInformation?.dataSetInformation?.name?.treatmentStandardsRoutes,
+  const flow = createTidasFlow({
+    flowDataSet: {
+      '@xmlns': 'http://lca.jrc.it/ILCD/Flow',
+      '@xmlns:common': 'http://lca.jrc.it/ILCD/Common',
+      '@xmlns:ecn': 'http://eplca.jrc.ec.europa.eu/ILCD/Extensions/2018/ECNumber',
+      '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
+      '@version': '1.1',
+      '@locations': '../ILCDLocations.xml',
+      '@xsi:schemaLocation': 'http://lca.jrc.it/ILCD/Flow ../../schemas/ILCD_FlowDataSet.xsd',
+      flowInformation: {
+        dataSetInformation: {
+          'common:UUID': data?.flowInformation?.dataSetInformation?.['common:UUID'],
+          name: {
+            baseName: getLangList(
+              data?.flowInformation?.dataSetInformation?.['name']?.['baseName'],
+            ),
+            treatmentStandardsRoutes: getLangList(
+              data?.flowInformation?.dataSetInformation?.name?.treatmentStandardsRoutes,
+            ),
+            mixAndLocationTypes: getLangList(
+              data?.flowInformation?.dataSetInformation?.name?.mixAndLocationTypes,
+            ),
+            flowProperties: getLangList(
+              data?.flowInformation?.dataSetInformation?.name?.flowProperties,
+            ),
+          },
+          'common:synonyms': getLangList(
+            data?.flowInformation?.dataSetInformation?.['common:synonyms'],
           ),
-          mixAndLocationTypes: getLangList(
-            data?.flowInformation?.dataSetInformation?.name?.mixAndLocationTypes,
+          classificationInformation: classificationInformation,
+          CASNumber: data?.flowInformation?.dataSetInformation?.['CASNumber'],
+          sumFormula: data?.flowInformation?.dataSetInformation?.['sumFormula'],
+          'common:generalComment': getLangList(
+            data?.flowInformation?.dataSetInformation?.['common:generalComment'],
           ),
-          flowProperties: getLangList(
-            data?.flowInformation?.dataSetInformation?.name?.flowProperties,
-          ),
+          'common:other': {
+            'ecn:ECNumber':
+              data?.flowInformation?.dataSetInformation?.['common:other']?.['ecn:ECNumber'],
+          } as any,
         },
-        'common:synonyms': getLangList(
-          data?.flowInformation?.dataSetInformation?.['common:synonyms'],
-        ),
-        classificationInformation: classificationInformation,
-        CASNumber: data?.flowInformation?.dataSetInformation?.['CASNumber'],
-        sumFormula: data?.flowInformation?.dataSetInformation?.['sumFormula'],
-        'common:generalComment': getLangList(
-          data?.flowInformation?.dataSetInformation?.['common:generalComment'],
-        ),
-        'common:other': {
-          'ecn:ECNumber':
-            data?.flowInformation?.dataSetInformation?.['common:other']?.['ecn:ECNumber'],
+        quantitativeReference: {
+          referenceToReferenceFlowProperty:
+            data?.flowInformation?.quantitativeReference?.referenceToReferenceFlowProperty,
         },
-      },
-      quantitativeReference: {
-        referenceToReferenceFlowProperty:
-          data?.flowInformation?.quantitativeReference?.referenceToReferenceFlowProperty,
-      },
-      geography: {
-        locationOfSupply: data?.flowInformation?.geography?.locationOfSupply,
-      },
-      technology: {
-        technologicalApplicability: getLangList(
-          data?.flowInformation?.technology?.technologicalApplicability,
-        ),
-        referenceToTechnicalSpecification: {
-          '@type':
-            data?.flowInformation?.technology?.referenceToTechnicalSpecification?.['@type'] ?? {},
-          '@refObjectId':
-            data?.flowInformation?.technology?.referenceToTechnicalSpecification?.[
-              '@refObjectId'
-            ] ?? {},
-          '@version':
-            data?.flowInformation?.technology?.referenceToTechnicalSpecification?.['@version'] ??
-            {},
-          '@uri':
-            data?.flowInformation?.technology?.referenceToTechnicalSpecification?.['@uri'] ?? {},
-          'common:shortDescription': getLangList(
-            data?.flowInformation?.technology?.referenceToTechnicalSpecification?.[
-              'common:shortDescription'
-            ],
+        geography: {
+          locationOfSupply: data?.flowInformation?.geography?.locationOfSupply,
+        },
+        technology: {
+          technologicalApplicability: getLangList(
+            data?.flowInformation?.technology?.technologicalApplicability,
           ),
-        },
-      },
-    },
-    modellingAndValidation: {
-      LCIMethod: {
-        typeOfDataSet: data?.modellingAndValidation?.LCIMethod?.typeOfDataSet,
-      },
-      complianceDeclarations: {
-        compliance: {
-          'common:referenceToComplianceSystem': {
-            '@refObjectId':
-              data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                'common:referenceToComplianceSystem'
-              ]?.['@refObjectId'],
-            '@version':
-              data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                'common:referenceToComplianceSystem'
-              ]?.['@version'],
+          referenceToTechnicalSpecification: {
             '@type':
+              data?.flowInformation?.technology?.referenceToTechnicalSpecification?.['@type'] ?? {},
+            '@refObjectId':
+              data?.flowInformation?.technology?.referenceToTechnicalSpecification?.[
+                '@refObjectId'
+              ] ?? {},
+            '@version':
+              data?.flowInformation?.technology?.referenceToTechnicalSpecification?.['@version'] ??
+              {},
+            '@uri':
+              data?.flowInformation?.technology?.referenceToTechnicalSpecification?.['@uri'] ?? {},
+            'common:shortDescription': getLangList(
+              data?.flowInformation?.technology?.referenceToTechnicalSpecification?.[
+                'common:shortDescription'
+              ],
+            ),
+          },
+        },
+      },
+      modellingAndValidation: {
+        LCIMethod: {
+          typeOfDataSet: data?.modellingAndValidation?.LCIMethod?.typeOfDataSet,
+        },
+        complianceDeclarations: {
+          compliance: {
+            'common:referenceToComplianceSystem': {
+              '@refObjectId':
+                data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
+                  'common:referenceToComplianceSystem'
+                ]?.['@refObjectId'],
+              '@version':
+                data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
+                  'common:referenceToComplianceSystem'
+                ]?.['@version'],
+              '@type':
+                data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
+                  'common:referenceToComplianceSystem'
+                ]?.['@type'],
+              '@uri':
+                data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
+                  'common:referenceToComplianceSystem'
+                ]?.['@uri'],
+              'common:shortDescription': getLangList(
+                data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
+                  'common:referenceToComplianceSystem'
+                ]?.['common:shortDescription'],
+              ),
+            },
+            'common:approvalOfOverallCompliance':
               data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                'common:referenceToComplianceSystem'
+                'common:approvalOfOverallCompliance'
+              ],
+          },
+        },
+      },
+      administrativeInformation: {
+        dataEntryBy: {
+          'common:timeStamp': data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'],
+          'common:referenceToDataSetFormat': {
+            '@refObjectId':
+              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
+                '@refObjectId'
+              ],
+            '@version':
+              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
+                '@version'
+              ],
+            '@type':
+              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
+                '@type'
+              ],
+            '@uri':
+              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
+                '@uri'
+              ],
+            'common:shortDescription': getLangList(
+              data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
+                'common:shortDescription'
+              ],
+            ),
+          },
+          'common:referenceToPersonOrEntityEnteringTheData': {
+            '@refObjectId':
+              data?.administrativeInformation?.dataEntryBy?.[
+                'common:referenceToPersonOrEntityEnteringTheData'
+              ]?.['@refObjectId'],
+            '@type':
+              data?.administrativeInformation?.dataEntryBy?.[
+                'common:referenceToPersonOrEntityEnteringTheData'
               ]?.['@type'],
             '@uri':
-              data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                'common:referenceToComplianceSystem'
+              data?.administrativeInformation?.dataEntryBy?.[
+                'common:referenceToPersonOrEntityEnteringTheData'
               ]?.['@uri'],
+            '@version':
+              data?.administrativeInformation?.dataEntryBy?.[
+                'common:referenceToPersonOrEntityEnteringTheData'
+              ]?.['@version'],
             'common:shortDescription': getLangList(
-              data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                'common:referenceToComplianceSystem'
+              data?.administrativeInformation?.dataEntryBy?.[
+                'common:referenceToPersonOrEntityEnteringTheData'
               ]?.['common:shortDescription'],
             ),
           },
-          'common:approvalOfOverallCompliance':
-            data?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-              'common:approvalOfOverallCompliance'
-            ],
         },
-      },
-    },
-    administrativeInformation: {
-      dataEntryBy: {
-        'common:timeStamp': data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'],
-        'common:referenceToDataSetFormat': {
-          '@refObjectId':
-            data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-              '@refObjectId'
+        publicationAndOwnership: {
+          'common:dataSetVersion':
+            data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'],
+          'common:permanentDataSetURI':
+            data?.administrativeInformation?.publicationAndOwnership?.[
+              'common:permanentDataSetURI'
             ],
-          '@version':
-            data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-              '@version'
-            ],
-          '@type':
-            data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-              '@type'
-            ],
-          '@uri':
-            data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-              '@uri'
-            ],
-          'common:shortDescription': getLangList(
-            data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
-              'common:shortDescription'
-            ],
-          ),
-        },
-        'common:referenceToPersonOrEntityEnteringTheData': {
-          '@refObjectId':
-            data?.administrativeInformation?.dataEntryBy?.[
-              'common:referenceToPersonOrEntityEnteringTheData'
-            ]?.['@refObjectId'],
-          '@type':
-            data?.administrativeInformation?.dataEntryBy?.[
-              'common:referenceToPersonOrEntityEnteringTheData'
-            ]?.['@type'],
-          '@uri':
-            data?.administrativeInformation?.dataEntryBy?.[
-              'common:referenceToPersonOrEntityEnteringTheData'
-            ]?.['@uri'],
-          '@version':
-            data?.administrativeInformation?.dataEntryBy?.[
-              'common:referenceToPersonOrEntityEnteringTheData'
-            ]?.['@version'],
-          'common:shortDescription': getLangList(
-            data?.administrativeInformation?.dataEntryBy?.[
-              'common:referenceToPersonOrEntityEnteringTheData'
-            ]?.['common:shortDescription'],
-          ),
-        },
-      },
-      publicationAndOwnership: {
-        'common:dataSetVersion':
-          data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'],
-        'common:permanentDataSetURI':
-          data?.administrativeInformation?.publicationAndOwnership?.['common:permanentDataSetURI'],
-        'common:referenceToOwnershipOfDataSet': {
-          '@refObjectId':
-            data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToOwnershipOfDataSet'
-            ]?.['@refObjectId'],
-          '@type':
-            data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToOwnershipOfDataSet'
-            ]?.['@type'],
-          '@uri':
-            data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToOwnershipOfDataSet'
-            ]?.['@uri'],
-          '@version':
-            data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToOwnershipOfDataSet'
-            ]?.['@version'],
-          'common:shortDescription': getLangList(
-            data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToOwnershipOfDataSet'
-            ]?.['common:shortDescription'],
-          ),
-        },
-        'common:referenceToPrecedingDataSetVersion': {
-          '@refObjectId':
-            data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToPrecedingDataSetVersion'
-            ]?.['@refObjectId'],
-          '@type':
-            data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToPrecedingDataSetVersion'
-            ]?.['@type'],
-          '@uri':
-            data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToPrecedingDataSetVersion'
-            ]?.['@uri'],
-          '@version':
-            data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToPrecedingDataSetVersion'
-            ]?.['@version'],
-          'common:shortDescription': getLangList(
-            data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:referenceToPrecedingDataSetVersion'
-            ]?.['common:shortDescription'],
-          ),
-        },
-      },
-    },
-    flowProperties: {
-      flowProperty: flowPropertyList?.map((item: any) => {
-        return {
-          '@dataSetInternalID': item?.['@dataSetInternalID'],
-          referenceToFlowPropertyDataSet: {
-            '@refObjectId': item?.referenceToFlowPropertyDataSet?.['@refObjectId'],
-            '@type': item?.referenceToFlowPropertyDataSet?.['@type'],
-            '@uri': item?.referenceToFlowPropertyDataSet?.['@uri'],
-            '@version': item?.referenceToFlowPropertyDataSet?.['@version'],
+          'common:referenceToOwnershipOfDataSet': {
+            '@refObjectId':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]?.['@refObjectId'],
+            '@type':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]?.['@type'],
+            '@uri':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]?.['@uri'],
+            '@version':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]?.['@version'],
             'common:shortDescription': getLangList(
-              item?.referenceToFlowPropertyDataSet?.['common:shortDescription'],
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToOwnershipOfDataSet'
+              ]?.['common:shortDescription'],
             ),
           },
-          meanValue: item?.['meanValue'],
-          minimumValue: item?.['minimumValue'],
-          maximumValue: item?.['maximumValue'],
-          uncertaintyDistributionType: item?.['uncertaintyDistributionType'],
-          relativeStandardDeviation95In: item?.['relativeStandardDeviation95In'],
-          dataDerivationTypeStatus: item?.['dataDerivationTypeStatus'],
-          ['common:generalComment']: getLangJson(item?.['common:generalComment']),
-          quantitativeReference:
-            item?.['@dataSetInternalID'] ===
-            data?.flowInformation?.quantitativeReference?.referenceToReferenceFlowProperty
-              ? true
-              : false,
-        };
-      }),
+          'common:referenceToPrecedingDataSetVersion': {
+            '@refObjectId':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToPrecedingDataSetVersion'
+              ]?.['@refObjectId'],
+            '@type':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToPrecedingDataSetVersion'
+              ]?.['@type'],
+            '@uri':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToPrecedingDataSetVersion'
+              ]?.['@uri'],
+            '@version':
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToPrecedingDataSetVersion'
+              ]?.['@version'],
+            'common:shortDescription': getLangList(
+              data?.administrativeInformation?.publicationAndOwnership?.[
+                'common:referenceToPrecedingDataSetVersion'
+              ]?.['common:shortDescription'],
+            ),
+          },
+        },
+      },
+      flowProperties: {
+        flowProperty: flowPropertyList?.map((item) => {
+          return {
+            '@dataSetInternalID': item?.['@dataSetInternalID'],
+            referenceToFlowPropertyDataSet: {
+              '@refObjectId': item?.referenceToFlowPropertyDataSet?.['@refObjectId'],
+              '@type': item?.referenceToFlowPropertyDataSet?.['@type'],
+              '@uri': item?.referenceToFlowPropertyDataSet?.['@uri'],
+              '@version': item?.referenceToFlowPropertyDataSet?.['@version'],
+              'common:shortDescription': getLangList(
+                item?.referenceToFlowPropertyDataSet?.['common:shortDescription'],
+              ),
+            },
+            meanValue: item?.['meanValue'],
+            minimumValue: item?.['minimumValue'],
+            maximumValue: item?.['maximumValue'],
+            uncertaintyDistributionType: item?.['uncertaintyDistributionType'],
+            relativeStandardDeviation95In: item?.['relativeStandardDeviation95In'],
+            dataDerivationTypeStatus: item?.['dataDerivationTypeStatus'],
+            ['common:generalComment']: getLangJson(item?.['common:generalComment']),
+            quantitativeReference:
+              item?.['@dataSetInternalID'] ===
+              data?.flowInformation?.quantitativeReference?.referenceToReferenceFlowProperty
+                ? true
+                : false,
+          };
+        }) as any,
+      },
     },
+  });
+  return removeEmptyObjects({
+    flowInformation: flow.flowDataSet.flowInformation,
+    modellingAndValidation: flow.flowDataSet.modellingAndValidation,
+    administrativeInformation: flow.flowDataSet.administrativeInformation,
+    flowProperties: flow.flowDataSet.flowProperties,
   });
 }
 
