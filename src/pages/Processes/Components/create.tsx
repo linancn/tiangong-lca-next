@@ -333,15 +333,20 @@ const ProcessCreate: FC<CreateProps> = ({
               let allocatedFractionTotal = 0;
               output.forEach((e: any) => {
                 allocatedFractionTotal += Number(
-                  e?.allocations?.allocation['@allocatedFraction']?.split('%')[0],
+                  e?.allocations?.allocation['@allocatedFraction']?.split('%')[0] ?? 0,
                 );
               });
-              if (allocatedFractionTotal > 100) {
+
+              if (allocatedFractionTotal < 99.999999 && allocatedFractionTotal > 100.0000001) {
                 message.error(
                   intl.formatMessage({
                     id: 'pages.process.validator.allocatedFraction',
-                    defaultMessage: 'Allocated fraction total of output is greater than 100%',
-                  }),
+                    defaultMessage:
+                      'Allocated fraction total of output is greater than 100%. It is',
+                  }) +
+                    ' ' +
+                    allocatedFractionTotal +
+                    '%.',
                 );
                 setSpinning(false);
                 return;
