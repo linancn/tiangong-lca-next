@@ -369,7 +369,7 @@ export default {
 
   'pages.process.review.error': '相关引用数据处于审核阶段，不能再发起审核',
 
-  'pages.process.validator.allocatedFraction': '输出的分配份额总和大于100%',
+  'pages.process.validator.allocatedFraction': '输出的分配份额总和大于100%，为',
   'pages.process.validator.UUID.required': '请输入UUID',
   'pages.process.validator.baseName.required': '请输入基础名称',
   'pages.process.validator.treatmentStandardsRoutes.required': '请输入处理，标准，路线',
