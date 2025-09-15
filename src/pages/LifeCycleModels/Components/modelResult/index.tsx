@@ -14,6 +14,7 @@ type Props = {
     id: string;
     version: string;
   }>;
+  modelId: string;
   modelVersion: string;
   lang: string;
   actionType: 'view' | 'edit';
@@ -27,33 +28,10 @@ type ProcessTableItem = {
   modifiedAt: Date;
 };
 
-const ModelResult: FC<Props> = ({ submodels, modelVersion, lang, actionType }) => {
+const ModelResult: FC<Props> = ({ submodels, modelId, modelVersion, lang, actionType }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const processTableRef = useRef<ActionType>();
-
-  if (submodels.length === 1) {
-    const singleProcess = submodels[0];
-    return actionType === 'edit' ? (
-      <ProcessEdit
-        id={singleProcess.id}
-        version={singleProcess.version ?? modelVersion}
-        buttonType='toolResultIcon'
-        lang={lang}
-        disabled={false}
-        actionRef={processTableRef}
-        setViewDrawerVisible={() => {}}
-        actionFrom='modelResult'
-      />
-    ) : (
-      <ProcessView
-        id={singleProcess.id}
-        version={singleProcess.version ?? modelVersion}
-        buttonType='toolResultIcon'
-        lang={lang}
-        disabled={false}
-      />
-    );
-  }
+  const subProcuctTableRef = useRef<ActionType>();
+  const mainProcuctTableRef = useRef<ActionType>();
 
   const columns: ProColumns<ProcessTableItem>[] = [
     {
@@ -101,7 +79,7 @@ const ModelResult: FC<Props> = ({ submodels, modelVersion, lang, actionType }) =
               buttonType='icon'
               lang={lang}
               disabled={false}
-              actionRef={processTableRef}
+              actionRef={record.id === modelId ? mainProcuctTableRef : subProcuctTableRef}
               setViewDrawerVisible={() => {}}
             />,
           );
@@ -146,13 +124,53 @@ const ModelResult: FC<Props> = ({ submodels, modelVersion, lang, actionType }) =
       >
         <ProTable<ProcessTableItem>
           search={false}
-          pagination={{
-            showSizeChanger: false,
-            pageSize: 10,
-          }}
-          actionRef={processTableRef}
+          pagination={false}
+          headerTitle={<FormattedMessage id='pages.lifeCycleModel.modelResults.mainProduct' />}
+          actionRef={mainProcuctTableRef}
           request={async () => {
-            const processData = submodels.map((submodel) => ({
+            const mainProduct = submodels.filter((e) => e.id === modelId);
+            const processData = mainProduct.map((submodel) => ({
+              id: submodel.id,
+              version: modelVersion,
+            }));
+
+            const result = await getProcessDetailByIdAndVersion(processData);
+
+            if (result?.data && result.data.length > 0) {
+              const data = result.data.map((item: any) => {
+                const processInfo = item?.json?.processDataSet?.processInformation;
+                return {
+                  key: `${item.id}:${item.version}`,
+                  id: item.id,
+                  version: item.version,
+                  name: genProcessName(processInfo?.dataSetInformation?.name ?? {}, lang) || '-',
+                  modifiedAt: new Date(item.modified_at),
+                };
+              });
+
+              return {
+                data,
+                success: true,
+                total: data.length,
+              };
+            }
+
+            return {
+              data: [],
+              success: true,
+              total: 0,
+            };
+          }}
+          columns={columns}
+        />
+        <ProTable<ProcessTableItem>
+          search={false}
+          pagination={false}
+          headerTitle={<FormattedMessage id='pages.lifeCycleModel.modelResults.subProduct' />}
+          actionRef={subProcuctTableRef}
+          request={async () => {
+            const subProducts = submodels.filter((e) => e.id !== modelId);
+            const processData = subProducts.map((submodel) => ({
               id: submodel.id,
               version: modelVersion,
             }));
