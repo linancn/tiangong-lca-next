@@ -53,7 +53,8 @@ const Notification: React.FC = () => {
     const update_team_notification_time = user?.update_team_notification_time ?? 0;
     const update_data_notification_time = user?.update_data_notification_time ?? 0;
 
-    const latestReview = await getLatestReviewOfMine();
+    const data = await getLatestReviewOfMine();
+    const latestReview = data?.[0];
     const latestRoles = await getLatestRolesOfMine();
 
     if (update_data_notification_time && latestReview && latestReview.modified_at) {
