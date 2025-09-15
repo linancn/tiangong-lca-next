@@ -1,4 +1,6 @@
 export default {
+  'pages.lifeCycleModel.modelResults.subProduct': '子产品',
+  'pages.lifeCycleModel.modelResults.mainProduct': '主产品',
   'pages.lifeCycleModel.drawer.title.create': '创建模型',
   'pages.lifeCycleModel.view.lifeCycleModelInformation': '生命周期模型信息',
   'pages.lifeCycleModel.view.modellingAndValidation': '建模信息',

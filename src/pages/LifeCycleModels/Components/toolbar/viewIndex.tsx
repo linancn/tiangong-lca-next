@@ -467,6 +467,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
       /> */}
       <ModelResult
         submodels={jsonTg?.submodels ?? []}
+        modelId={id}
         modelVersion={version}
         lang={lang}
         actionType='view'

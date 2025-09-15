@@ -1,4 +1,7 @@
 export default {
+  'pages.lifeCycleModel.modelResults.subProduct': 'Sub Product',
+  'pages.lifeCycleModel.modelResults.mainProduct': 'Main Product',
+
   'pages.lifeCycleModel.drawer.title.create': 'Create Model',
   'pages.lifeCycleModel.view.lifeCycleModelInformation': 'Life cycle model information',
   'pages.lifeCycleModel.view.modellingAndValidation': 'Modelling',
