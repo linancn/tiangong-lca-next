@@ -4,6 +4,7 @@
         "totalFiles": 25,
         "format": "gzip compressed JSON",
         "lastUpdated": "2025-09-02",
+        "source": "data2 directory",
         "compressionRatio": "94%",
         "originalSize": "260.6MB",
         "totalSize": "14.8MB"
@@ -24,7 +25,7 @@
                     "#text": "气候变化"
                 }
             ],
-            "impactModelName": "Baseline model of 100 years of the IPCC"
+            "modelName": "Baseline model of 100 years of the IPCC"
         },
         {
             "filename": "706261af-a357-4cc0-a50a-f3033fcbd556_01.00.000.json.gz",
@@ -41,7 +42,7 @@
                     "#text": "气候变化-生物源"
                 }
             ],
-            "impactModelName": "Baseline model of 100 years of the IPCC"
+            "modelName": "Baseline model of 100 years of the IPCC"
         },
         {
             "filename": "7fce5b3a-66b8-4ce1-91e8-a925aee1f186_01.00.000.json.gz",
@@ -58,7 +59,7 @@
                     "#text": "气候变化-化石源"
                 }
             ],
-            "impactModelName": "Baseline model of 100 years of the IPCC"
+            "modelName": "Baseline model of 100 years of the IPCC"
         },
         {
             "filename": "14af9ca7-aa1d-4832-b1d9-ab05a06dcb12_01.00.000.json.gz",
@@ -75,7 +76,7 @@
                     "#text": "气候变化-土地利用和土地利用改变"
                 }
             ],
-            "impactModelName": "Baseline model of 100 years of the IPCC"
+            "modelName": "Baseline model of 100 years of the IPCC"
         },
         {
             "filename": "2299222a-bbd8-474f-9d4f-4dd1f18aea7c_01.01.000.json.gz",
@@ -92,7 +93,7 @@
                     "#text": "人类毒性, 致癌"
                 }
             ],
-            "impactModelName": "USEtox™"
+            "modelName": "USEtox™"
         },
         {
             "filename": "01500b74-7ffb-463e-9bd4-72f17c2263ff_01.00.000.json.gz",
@@ -109,7 +110,7 @@
                     "#text": "人类毒性, 致癌-无机物"
                 }
             ],
-            "impactModelName": "USEtox™"
+            "modelName": "USEtox™"
         },
         {
             "filename": "9ec743ea-6b00-400d-a53b-61547a3fc03c_01.01.000.json.gz",
@@ -126,7 +127,7 @@
                     "#text": "人类毒性, 致癌-有机物"
                 }
             ],
-            "impactModelName": "USEtox™"
+            "modelName": "USEtox™"
         },
         {
             "filename": "7cfdcfcf-b222-4b26-888a-a55f9fbf7ac8_01.00.000.json.gz",
@@ -140,10 +141,10 @@
                 },
                 {
                     "@xml:lang": "zh",
-                    "#text": "人类毒性，非致癌"
+                    "#text": "人类毒性, 致癌"
                 }
             ],
-            "impactModelName": "USEtox 2.1™"
+            "modelName": "USEtox 2.1™"
         },
         {
             "filename": "9d1d43a2-e1aa-4c16-acd4-3dd8a6a2fb85_01.00.000.json.gz",
@@ -160,7 +161,7 @@
                     "#text": "人类毒性, 非致癌-无机物"
                 }
             ],
-            "impactModelName": "USEtox 2.1™"
+            "modelName": "USEtox 2.1™"
         },
         {
             "filename": "8c3141e9-1f15-43b5-bff2-182e49893a46_01.00.000.json.gz",
@@ -177,7 +178,7 @@
                     "#text": "人类毒性, 非致癌-有机物"
                 }
             ],
-            "impactModelName": "USEtox 2.1™"
+            "modelName": "USEtox 2.1™"
         },
         {
             "filename": "05316e7a-b254-4bea-9cf0-6bf33eb5c630_01.00.000.json.gz",
@@ -194,7 +195,7 @@
                     "#text": "生态毒性, 淡水"
                 }
             ],
-            "impactModelName": "USEtox™"
+            "modelName": "USEtox™"
         },
         {
             "filename": "dacd48b5-4da5-49aa-aff4-cd5f5495c037_01.00.000.json.gz",
@@ -211,7 +212,7 @@
                     "#text": "生态毒性, 淡水_无机物"
                 }
             ],
-            "impactModelName": "USEtox™"
+            "modelName": "USEtox™"
         },
         {
             "filename": "fd530f00-9325-424a-92ef-aaac67922fd9_01.00.000.json.gz",
@@ -224,11 +225,11 @@
                     "#text": "Ecotoxicity, freshwater_organics"
                 },
                 {
-                    "@xml:lang": "en",
+                    "@xml:lang": "zh",
                     "#text": "生态毒性, 淡水_有机物"
                 }
             ],
-            "impactModelName": "USEtox™"
+            "modelName": "USEtox™"
         },
         {
             "filename": "b5c619fa-def3-11e6-bf01-fe55135034f3_02.00.010.json.gz",
@@ -245,7 +246,7 @@
                     "#text": "富营养化, 海水"
                 }
             ],
-            "impactModelName": "CARMEN model for waterborne emissions and EUTREND for airborne emissions."
+            "modelName": "CARMEN model for waterborne emissions and EUTREND for airborne emissions."
         },
         {
             "filename": "b53ec18f-7377-4ad3-86eb-cc3f4f276b2b_01.00.010.json.gz",
@@ -262,7 +263,7 @@
                     "#text": "富营养化, 淡水"
                 }
             ],
-            "impactModelName": "CARMEN model for waterborne emissions and EUTREND for airborne emissions."
+            "modelName": "CARMEN model for waterborne emissions and EUTREND for airborne emissions."
         },
         {
             "filename": "b5c614d2-def3-11e6-bf01-fe55135034f3_01.02.009.json.gz",
@@ -279,7 +280,7 @@
                     "#text": "富营养化, 陆地"
                 }
             ],
-            "impactModelName": "Accumulated Exceedance method (combination of models)."
+            "modelName": "Accumulated Exceedance method (combination of models)."
         },
         {
             "filename": "b2ad6110-c78d-11e6-9d9d-cec0c932ce01_01.00.010.json.gz",
@@ -296,7 +297,7 @@
                     "#text": "资源消耗, 化石能源"
                 }
             ],
-            "impactModelName": "Abiotic resource depletion (ADP fossil)"
+            "modelName": "Abiotic resource depletion (ADP fossil)"
         },
         {
             "filename": "b2ad6494-c78d-11e6-9d9d-cec0c932ce01_01.00.010.json.gz",
@@ -313,7 +314,7 @@
                     "#text": "资源消耗, 矿物和金属"
                 }
             ],
-            "impactModelName": "Abiotic resource depletion (ADP ultimate reserve)"
+            "modelName": "Abiotic resource depletion (ADP ultimate reserve)"
         },
         {
             "filename": "b2ad66ce-c78d-11e6-9d9d-cec0c932ce01_03.00.014.json.gz",
@@ -330,7 +331,7 @@
                     "#text": "水资源消耗"
                 }
             ],
-            "impactModelName": "AWARE 100 (Available water Remaining)"
+            "modelName": "AWARE 100 (Available water Remaining)"
         },
         {
             "filename": "b2ad6890-c78d-11e6-9d9d-cec0c932ce01_01.00.010.json.gz",
@@ -347,7 +348,7 @@
                     "#text": "土地利用"
                 }
             ],
-            "impactModelName": "Soil quality index"
+            "modelName": "Soil quality index"
         },
         {
             "filename": "b5c611c6-def3-11e6-bf01-fe55135034f3_01.04.000.json.gz",
@@ -364,7 +365,7 @@
                     "#text": "酸雨"
                 }
             ],
-            "impactModelName": "Accumulated Exceedance method (combination of models)."
+            "modelName": "Accumulated Exceedance method (combination of models)."
         },
         {
             "filename": "b5c629d6-def3-11e6-bf01-fe55135034f3_02.00.012.json.gz",
@@ -381,7 +382,7 @@
                     "#text": "臭氧消耗"
                 }
             ],
-            "impactModelName": "1999 WMO assessment of ozone depletion (World Meteorological Organization 1999)."
+            "modelName": "1999 WMO assessment of ozone depletion (World Meteorological Organization 1999)."
         },
         {
             "filename": "b5c632be-def3-11e6-bf01-fe55135034f3_01.00.011.json.gz",
@@ -398,7 +399,7 @@
                     "#text": "电离辐射, 人类健康"
                 }
             ],
-            "impactModelName": "Unknown"
+            "modelName": "Unknown"
         },
         {
             "filename": "b5c610fe-def3-11e6-bf01-fe55135034f3_02.01.000.json.gz",
@@ -415,7 +416,7 @@
                     "#text": "光化学烟雾, 人类健康"
                 }
             ],
-            "impactModelName": "LOTOS-EUROS"
+            "modelName": "LOTOS-EUROS"
         },
         {
             "filename": "b5c602c6-def3-11e6-bf01-fe55135034f3_02.00.011.json.gz",
@@ -432,7 +433,7 @@
                     "#text": "颗粒物"
                 }
             ],
-            "impactModelName": "Unknown"
+            "modelName": "Unknown"
         }
     ]
 }
