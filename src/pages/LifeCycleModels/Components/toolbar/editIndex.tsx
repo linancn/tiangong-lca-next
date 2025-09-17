@@ -1501,6 +1501,7 @@ const ToolbarEdit: FC<Props> = ({
       /> */}
       <ModelResult
         submodels={jsonTg?.submodels ?? []}
+        modelId={id}
         modelVersion={version}
         lang={lang}
         actionType='edit'

@@ -272,8 +272,7 @@ export async function getLatestReviewOfMine() {
     .filter('json->user->>id', 'eq', userId)
     .in('state_code', [1, 2, -1])
     .order('modified_at', { ascending: false })
-    .limit(1)
-    .single();
+    .limit(1);
 
   return data;
 }
