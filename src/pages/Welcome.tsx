@@ -1,6 +1,6 @@
 import { getLang, getLangText } from '@/services/general/util';
 import styles from '@/style/custom.less';
-import { Card, Col, Divider, Row, Statistic, StatisticProps, theme } from 'antd';
+import { Card, Col, Modal, Row, Spin, Statistic, StatisticProps, Typography, theme } from 'antd';
 import React, { useEffect, useState } from 'react';
 
 import { getThumbFileUrls } from '@/services/supabase/storage';
@@ -20,13 +20,18 @@ const Welcome: React.FC = () => {
   const [color3, setColor3] = useState(token.colorPrimary);
 
   const [teams, setTeams] = React.useState<any>(null);
+  const [isDataModalOpen, setIsDataModalOpen] = useState(false);
+  const [isTeamsLoading, setIsTeamsLoading] = useState(false);
+  const [modalWidth, setModalWidth] = useState(720);
 
-  useEffect(() => {
-    if (teams) {
+  const loadTeams = React.useCallback(async () => {
+    if (teams || isTeamsLoading) {
       return;
     }
-    getTeams().then(async (res) => {
-      if (res.data && res.data.length > 0) {
+    setIsTeamsLoading(true);
+    try {
+      const res = await getTeams();
+      if (res?.data && res.data.length > 0) {
         const processTeams = [...res.data];
         const promises = processTeams.map(async (team, index) => {
           if (team.json?.lightLogo) {
@@ -46,11 +51,13 @@ const Welcome: React.FC = () => {
 
         await Promise.all(promises);
         setTeams(processTeams);
-        return;
+      } else {
+        setTeams(res?.data);
       }
-      setTeams(res.data);
-    });
-  }, []);
+    } finally {
+      setIsTeamsLoading(false);
+    }
+  }, [isTeamsLoading, teams]);
 
   useEffect(() => {
     if (isDarkMode) {
@@ -59,6 +66,33 @@ const Welcome: React.FC = () => {
       setColor3(token.colorPrimary);
     }
   }, [isDarkMode]);
+
+  useEffect(() => {
+    if (isDataModalOpen) {
+      loadTeams();
+    }
+  }, [isDataModalOpen, loadTeams]);
+
+  useEffect(() => {
+    if (!isDataModalOpen) {
+      return;
+    }
+    const resize = () => {
+      if (typeof window === 'undefined') {
+        return;
+      }
+      const maxWidth = 1600;
+      const horizontalGap = 48;
+      const availableWidth = Math.min(window.innerWidth, maxWidth);
+      const preferredWidth = Math.min(Math.max(window.innerWidth - horizontalGap, 0), maxWidth);
+      setModalWidth(preferredWidth > 0 ? preferredWidth : availableWidth);
+    };
+    resize();
+    window.addEventListener('resize', resize);
+    return () => {
+      window.removeEventListener('resize', resize);
+    };
+  }, [isDataModalOpen]);
 
   const info = {
     data1: {
@@ -175,55 +209,66 @@ const Welcome: React.FC = () => {
               value={info.data4.value}
               formatter={formatter}
             />
+            <div>
+              <Typography.Link onClick={() => setIsDataModalOpen(true)}>
+                <FormattedMessage id='pages.dataEcosystem' defaultMessage='Data Ecosystem' />
+              </Typography.Link>
+            </div>
           </Col>
         </Row>
-        <br />
-        <Divider
-          orientation='left'
-          orientationMargin='0'
-          style={{ fontSize: '1.2em', fontWeight: 'bold', color: token.colorText }}
-        >
-          <FormattedMessage id='pages.dataEcosystem' defaultMessage='Data Ecosystem' />
-        </Divider>
-        <Row gutter={16}>
-          {teams?.map((team: any, index: React.Key | null | undefined) => {
-            let logoUrl = '';
-            if (team.json?.previewLightUrl) {
-              logoUrl = isDarkMode ? team.json?.previewDarkUrl : team.json?.previewLightUrl;
-            } else {
-              logoUrl = isDarkMode
-                ? `/images/dataLogo/${team.json?.darkLogo}`
-                : `/images/dataLogo/${team.json?.lightLogo}`;
-            }
-            return (
-              <Col span={8} key={index}>
-                <Card
-                  hoverable
-                  style={{
-                    width: '100%',
-                    backgroundColor: 'transparent',
-                    border: 'none',
-                    paddingTop: '24px',
-                  }}
-                  cover={
-                    <div className={styles.team_logo_container}>
-                      <img src={logoUrl} className={styles.team_logo} />
-                    </div>
-                  }
-                  onClick={() => {
-                    window.location.href = `/tgdata/models?tid=${team.id}`;
-                  }}
-                >
-                  <Meta
-                    title={getLangText(team.json?.title, lang)}
-                    description={getLangText(team.json?.description, lang)}
-                  />
-                </Card>
-              </Col>
-            );
-          })}
-        </Row>
       </div>
+      <Modal
+        open={isDataModalOpen}
+        onCancel={() => setIsDataModalOpen(false)}
+        footer={null}
+        width={modalWidth}
+        title={<FormattedMessage id='pages.dataEcosystem' defaultMessage='Data Ecosystem' />}
+      >
+        {isTeamsLoading ? (
+          <Row justify='center'>
+            <Spin />
+          </Row>
+        ) : (
+          <Row gutter={16}>
+            {teams?.map((team: any, index: React.Key | null | undefined) => {
+              let logoUrl = '';
+              if (team.json?.previewLightUrl) {
+                logoUrl = isDarkMode ? team.json?.previewDarkUrl : team.json?.previewLightUrl;
+              } else {
+                logoUrl = isDarkMode
+                  ? `/images/dataLogo/${team.json?.darkLogo}`
+                  : `/images/dataLogo/${team.json?.lightLogo}`;
+              }
+              return (
+                <Col span={8} key={index}>
+                  <Card
+                    hoverable
+                    style={{
+                      width: '100%',
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      paddingTop: '24px',
+                    }}
+                    cover={
+                      <div className={styles.team_logo_container}>
+                        {logoUrl && <img src={logoUrl} className={styles.team_logo} />}
+                      </div>
+                    }
+                    onClick={() => {
+                      window.location.href = `/tgdata/models?tid=${team.id}`;
+                    }}
+                  >
+                    <Meta
+                      title={getLangText(team.json?.title, lang)}
+                      description={getLangText(team.json?.description, lang)}
+                    />
+                  </Card>
+                </Col>
+              );
+            })}
+          </Row>
+        )}
+      </Modal>
     </PageContainer>
   );
 };
