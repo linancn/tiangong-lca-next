@@ -1,5 +1,12 @@
 import { getLang, getLangText } from '@/services/general/util';
 import styles from '@/style/custom.less';
+import {
+  BuildOutlined,
+  ProductOutlined,
+  ShareAltOutlined,
+  TeamOutlined,
+  UserOutlined,
+} from '@ant-design/icons';
 import { Card, Col, Modal, Row, Spin, Statistic, StatisticProps, Typography, theme } from 'antd';
 import React, { useEffect, useState } from 'react';
 
@@ -182,7 +189,16 @@ const Welcome: React.FC = () => {
           <Col flex='1 0 20%'>
             <Statistic
               title={
-                <span style={{ fontSize: '1.2em', fontWeight: 'bold', color: color3 }}>
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    fontSize: '1.2em',
+                    fontWeight: 'bold',
+                    color: color3,
+                  }}
+                >
+                  <ShareAltOutlined style={{ marginRight: '0.4em' }} />
                   {getLangText(info.data1.title, lang)}
                 </span>
               }
@@ -193,7 +209,16 @@ const Welcome: React.FC = () => {
           <Col flex='1 0 20%'>
             <Statistic
               title={
-                <span style={{ fontSize: '1.2em', fontWeight: 'bold', color: color3 }}>
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    fontSize: '1.2em',
+                    fontWeight: 'bold',
+                    color: color3,
+                  }}
+                >
+                  <BuildOutlined style={{ marginRight: '0.4em' }} />
                   {getLangText(info.data2.title, lang)}
                 </span>
               }
@@ -204,7 +229,16 @@ const Welcome: React.FC = () => {
           <Col flex='1 0 20%'>
             <Statistic
               title={
-                <span style={{ fontSize: '1.2em', fontWeight: 'bold', color: color3 }}>
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    fontSize: '1.2em',
+                    fontWeight: 'bold',
+                    color: color3,
+                  }}
+                >
+                  <ProductOutlined style={{ marginRight: '0.4em' }} />
                   {getLangText(info.data3.title, lang)}
                 </span>
               }
@@ -215,7 +249,16 @@ const Welcome: React.FC = () => {
           <Col flex='1 0 20%'>
             <Statistic
               title={
-                <span style={{ fontSize: '1.2em', fontWeight: 'bold', color: color3 }}>
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    fontSize: '1.2em',
+                    fontWeight: 'bold',
+                    color: color3,
+                  }}
+                >
+                  <UserOutlined style={{ marginRight: '0.4em' }} />
                   {getLangText(info.data4.title, lang)}
                 </span>
               }
@@ -233,7 +276,16 @@ const Welcome: React.FC = () => {
             >
               <Statistic
                 title={
-                  <span style={{ fontSize: '1.2em', fontWeight: 'bold', color: color3 }}>
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      fontSize: '1.2em',
+                      fontWeight: 'bold',
+                      color: color3,
+                    }}
+                  >
+                    <TeamOutlined style={{ marginRight: '0.4em' }} />
                     {getLangText(info.data5.title, lang)}
                   </span>
                 }
