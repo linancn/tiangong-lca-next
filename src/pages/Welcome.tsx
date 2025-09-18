@@ -147,6 +147,19 @@ const Welcome: React.FC = () => {
         },
       ],
     },
+    data5: {
+      value: 9,
+      title: [
+        {
+          '@xml:lang': 'zh',
+          '#text': '数据团队',
+        },
+        {
+          '@xml:lang': 'en',
+          '#text': 'Data Teams',
+        },
+      ],
+    },
   };
 
   const formatter: StatisticProps['formatter'] = (value) => (
@@ -165,8 +178,8 @@ const Welcome: React.FC = () => {
         <Row gutter={16}>
           <Col span={8}></Col>
         </Row>
-        <Row gutter={16}>
-          <Col span={6}>
+        <Row gutter={16} wrap={false}>
+          <Col flex='1 0 20%'>
             <Statistic
               title={
                 <span style={{ fontSize: '1.2em', fontWeight: 'bold', color: color3 }}>
@@ -177,7 +190,7 @@ const Welcome: React.FC = () => {
               formatter={formatter}
             />
           </Col>
-          <Col span={6}>
+          <Col flex='1 0 20%'>
             <Statistic
               title={
                 <span style={{ fontSize: '1.2em', fontWeight: 'bold', color: color3 }}>
@@ -188,7 +201,7 @@ const Welcome: React.FC = () => {
               formatter={formatter}
             />
           </Col>
-          <Col span={6}>
+          <Col flex='1 0 20%'>
             <Statistic
               title={
                 <span style={{ fontSize: '1.2em', fontWeight: 'bold', color: color3 }}>
@@ -199,7 +212,7 @@ const Welcome: React.FC = () => {
               formatter={formatter}
             />
           </Col>
-          <Col span={6}>
+          <Col flex='1 0 20%'>
             <Statistic
               title={
                 <span style={{ fontSize: '1.2em', fontWeight: 'bold', color: color3 }}>
@@ -209,11 +222,25 @@ const Welcome: React.FC = () => {
               value={info.data4.value}
               formatter={formatter}
             />
-            <div>
-              <Typography.Link onClick={() => setIsDataModalOpen(true)}>
-                <FormattedMessage id='pages.dataEcosystem' defaultMessage='Data Ecosystem' />
-              </Typography.Link>
-            </div>
+          </Col>
+          <Col flex='1 0 20%'>
+            <Typography.Link
+              onClick={(event: React.MouseEvent<HTMLElement>) => {
+                event.preventDefault();
+                setIsDataModalOpen(true);
+              }}
+              style={{ display: 'block' }}
+            >
+              <Statistic
+                title={
+                  <span style={{ fontSize: '1.2em', fontWeight: 'bold', color: color3 }}>
+                    {getLangText(info.data5.title, lang)}
+                  </span>
+                }
+                value={info.data5.value}
+                formatter={formatter}
+              />
+            </Typography.Link>
           </Col>
         </Row>
       </div>
