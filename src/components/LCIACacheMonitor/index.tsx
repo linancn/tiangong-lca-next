@@ -6,7 +6,7 @@ import {
 } from '../../services/lciaMethods/util';
 
 const CACHE_KEY = 'lcia_methods_cache_manifest';
-const CACHE_VERSION = '1.2.1'; // Increment this when you want to force re-cache
+const CACHE_VERSION = '1.2.2'; // Increment this when you want to force re-cache
 
 const LCIACacheMonitor = () => {
   useEffect(() => {
