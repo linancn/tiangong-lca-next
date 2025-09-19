@@ -17,6 +17,7 @@ import {
   Image,
   Modal,
   Row,
+  Space,
   Spin,
   Statistic,
   StatisticProps,
@@ -397,33 +398,72 @@ const Welcome: React.FC = () => {
       <Divider />
       <Row gutter={[24, 24]} align='stretch'>
         <Col xs={24} lg={11}>
-          <Typography.Paragraph
-            style={{
-              fontSize: '1.2em',
-              lineHeight: 1.6,
-            }}
-          >
-            {currentContent.intro}
-          </Typography.Paragraph>
-          <Typography.Title level={4}>{currentContent.coreTitle}</Typography.Title>
-          {currentContent.sections.map((section) => (
-            <Typography.Paragraph key={section.key}>
-              <span
+          <Space direction='vertical' size={24} style={{ width: '100%' }}>
+            <Card
+              bordered={false}
+              style={{
+                background: token.colorBgElevated,
+                borderRadius: 16,
+                boxShadow: token.boxShadow,
+              }}
+              bodyStyle={{
+                padding: '20px 24px',
+              }}
+            >
+              <Typography.Paragraph
                 style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
                   fontSize: '1.2em',
-                  fontWeight: 'bold',
-                  color: color3,
+                  lineHeight: 1.7,
+                  margin: 0,
+                  color: token.colorText,
                 }}
               >
-                {sectionIconMap[section.key]}
-                {section.heading}
-              </span>
-              <br />
-              {section.description}
-            </Typography.Paragraph>
-          ))}
+                {currentContent.intro}
+              </Typography.Paragraph>
+            </Card>
+            <div>
+              <Typography.Title level={4} style={{ marginBottom: 16 }}>
+                {currentContent.coreTitle}
+              </Typography.Title>
+              <Space direction='vertical' size={16} style={{ width: '100%' }}>
+                {currentContent.sections.map((section) => (
+                  <Card
+                    key={section.key}
+                    bordered={false}
+                    style={{
+                      background: token.colorFillSecondary,
+                      borderRadius: 16,
+                      boxShadow: 'none',
+                    }}
+                    bodyStyle={{
+                      padding: '24px 28px',
+                    }}
+                  >
+                    <Typography.Text
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        fontSize: '1.2em',
+                        fontWeight: 'bold',
+                        color: color3,
+                      }}
+                    >
+                      {sectionIconMap[section.key]}
+                      {section.heading}
+                    </Typography.Text>
+                    <Typography.Paragraph
+                      style={{
+                        margin: '12px 0 0',
+                        color: token.colorTextSecondary,
+                      }}
+                    >
+                      {section.description}
+                    </Typography.Paragraph>
+                  </Card>
+                ))}
+              </Space>
+            </div>
+          </Space>
         </Col>
         <Col
           xs={0}
