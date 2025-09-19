@@ -204,14 +204,12 @@ const Welcome: React.FC = () => {
     'en' | 'zh',
     {
       intro: string;
-      coreTitle: string;
       sections: Array<{ key: SectionKey; heading: string; description: string }>;
     }
   > = {
     zh: {
       intro:
         '天工LCA数据平台是一个用于生命周期评价 (LCA) 与碳管理的软件平台。它基于开源的 TIDAS (TIangong DAta System) 核心构建，提供了一个支持标准化、互操作性及可扩展的分析环境。',
-      coreTitle: '核心能力',
       sections: [
         {
           key: 'internationalMethodology',
@@ -235,7 +233,6 @@ const Welcome: React.FC = () => {
     en: {
       intro:
         'TianGong LCA Data Platform supports life cycle assessment (LCA) and carbon management workflows. Built on the open-source TIDAS (TIangong DAta System) core, it provides a standardized, interoperable, and extensible analysis environment.',
-      coreTitle: 'Core Capabilities',
       sections: [
         {
           heading: 'Grounded in International Methodologies',
@@ -400,6 +397,7 @@ const Welcome: React.FC = () => {
         <Col xs={24} lg={11}>
           <Space direction='vertical' size={24} style={{ width: '100%' }}>
             <Card
+              className={styles.intro_card}
               bordered={false}
               style={{
                 background: token.colorBgElevated,
@@ -421,48 +419,43 @@ const Welcome: React.FC = () => {
                 {currentContent.intro}
               </Typography.Paragraph>
             </Card>
-            <div>
-              <Typography.Title level={4} style={{ marginBottom: 16 }}>
-                {currentContent.coreTitle}
-              </Typography.Title>
-              <Space direction='vertical' size={16} style={{ width: '100%' }}>
-                {currentContent.sections.map((section) => (
-                  <Card
-                    key={section.key}
-                    bordered={false}
+            <Space direction='vertical' size={16} style={{ width: '100%' }}>
+              {currentContent.sections.map((section) => (
+                <Card
+                  key={section.key}
+                  bordered={false}
+                  style={{
+                    background: token.colorFillSecondary,
+                    borderRadius: 16,
+                    boxShadow: 'none',
+                  }}
+                  bodyStyle={{
+                    padding: '24px 28px',
+                  }}
+                >
+                  <Typography.Text
                     style={{
-                      background: token.colorFillSecondary,
-                      borderRadius: 16,
-                      boxShadow: 'none',
-                    }}
-                    bodyStyle={{
-                      padding: '24px 28px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      fontSize: '1.2em',
+                      fontWeight: 'bold',
+                      color: color3,
                     }}
                   >
-                    <Typography.Text
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        fontSize: '1.2em',
-                        fontWeight: 'bold',
-                        color: color3,
-                      }}
-                    >
-                      {sectionIconMap[section.key]}
-                      {section.heading}
-                    </Typography.Text>
-                    <Typography.Paragraph
-                      style={{
-                        margin: '12px 0 0',
-                        color: token.colorTextSecondary,
-                      }}
-                    >
-                      {section.description}
-                    </Typography.Paragraph>
-                  </Card>
-                ))}
-              </Space>
-            </div>
+                    {sectionIconMap[section.key]}
+                    {section.heading}
+                  </Typography.Text>
+                  <Typography.Paragraph
+                    style={{
+                      margin: '12px 0 0',
+                      color: token.colorTextSecondary,
+                    }}
+                  >
+                    {section.description}
+                  </Typography.Paragraph>
+                </Card>
+              ))}
+            </Space>
           </Space>
         </Col>
         <Col
