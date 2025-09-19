@@ -901,6 +901,8 @@ const calculateProcessExchange = (
     dependence: dependence,
     processId: thisDbProcess.id,
     processVersion: thisDbProcess.version,
+    quantitativeReferenceFlowIndex:
+      thisDbProcess?.quantitativeReference?.['referenceToReferenceFlow'],
     scalingFactor: scalingFactor,
     exchanges: scalingFactorExchanges,
   });
@@ -1035,13 +1037,19 @@ const allocatedProcessExchange = (calculatedProcessExchanges: any[]) => {
     npeExchanges.forEach((npeExchange: any) => {
       const allocations = jsonToList(npeExchange?.allocations ?? []);
       if (allocations.length > 0) {
-        const allocatedFractionStr = allocations[0]?.allocation?.['@allocatedFraction'];
-        if (allocatedFractionStr) {
-          const allocatedFraction = percentStringToNumber(allocatedFractionStr);
-          if (allocatedFraction && allocatedFraction > 0) {
+        const allocatedFractionStr = allocations[0]?.allocation?.['@allocatedFraction'] ?? '';
+        const allocatedFraction = percentStringToNumber(allocatedFractionStr);
+        if (allocatedFraction && allocatedFraction > 0) {
+          allocatedExchanges.push({
+            exchange: npeExchange,
+            allocatedFraction: allocatedFraction,
+          });
+          return;
+        } else {
+          if (npeExchange['@dataSetInternalID'] === npe?.quantitativeReferenceFlowIndex) {
             allocatedExchanges.push({
               exchange: npeExchange,
-              allocatedFraction: allocatedFraction,
+              allocatedFraction: 1,
             });
             return;
           }
@@ -1123,6 +1131,9 @@ const getFinalProductGroup = (
     finalProductProcessExchange?.isAllocated &&
     finalProductProcessExchange?.allocatedFraction > 0
   ) {
+    const newAllocatedFraction = new BigNumber(finalProductProcessExchange.allocatedFraction)
+      .times(allocatedFraction)
+      .toNumber();
     finalProductGroups.push({
       ...finalProductProcessExchange,
       exchanges: finalProductProcessExchange?.exchanges?.map((e: any) => {
@@ -1135,87 +1146,83 @@ const getFinalProductGroup = (
         } else {
           return {
             ...e,
-            meanAmount: new BigNumber(e?.meanAmount)
-              .times(finalProductProcessExchange.allocatedFraction)
-              .times(allocatedFraction)
-              .toNumber(),
+            meanAmount: new BigNumber(e?.meanAmount).times(newAllocatedFraction).toNumber(),
             resultingAmount: new BigNumber(e?.resultingAmount)
-              .times(finalProductProcessExchange.allocatedFraction)
-              .times(allocatedFraction)
+              .times(newAllocatedFraction)
               .toNumber(),
           };
         }
       }),
     });
-  } else {
-    finalProductGroups.push(finalProductProcessExchange);
-  }
 
-  const connectedEdges = allUp2DownEdges.filter((ud: Up2DownEdge) => {
-    if (ud?.upstreamId === finalProductProcessExchange?.nodeId) {
-      if (
-        (ud?.dependence === 'none' && ud?.mainDependence === 'upstream') ||
-        ud?.dependence === 'upstream'
-      ) {
-        const connectedExhanges = finalProductProcessExchange?.exchanges?.filter((e: any) => {
-          return (
-            e?.referenceToFlowDataSet?.['@refObjectId'] === ud?.flowUUID &&
-            (e?.exchangeDirection ?? '').toUpperCase() === 'OUTPUT'
-          );
-        });
-        if (connectedExhanges?.length > 0) {
-          return true;
+    const connectedEdges = allUp2DownEdges.filter((ud: Up2DownEdge) => {
+      if (ud?.upstreamId === finalProductProcessExchange?.nodeId) {
+        if (
+          (ud?.dependence === 'none' && ud?.mainDependence === 'upstream') ||
+          ud?.dependence === 'upstream'
+        ) {
+          const connectedExhanges = finalProductProcessExchange?.exchanges?.filter((e: any) => {
+            return (
+              e?.referenceToFlowDataSet?.['@refObjectId'] === ud?.flowUUID &&
+              (e?.exchangeDirection ?? '').toUpperCase() === 'OUTPUT'
+            );
+          });
+          if (connectedExhanges?.length > 0) {
+            return true;
+          }
+          return false;
         }
-        return false;
       }
-    }
 
-    if (ud?.downstreamId === finalProductProcessExchange?.nodeId) {
-      if (
-        (ud?.dependence === 'none' && ud?.mainDependence === 'downstream') ||
-        ud?.dependence === 'downstream'
-      ) {
-        const connectedExhanges = finalProductProcessExchange?.exchanges?.filter((e: any) => {
-          return (
-            e?.referenceToFlowDataSet?.['@refObjectId'] === ud?.flowUUID &&
-            (e?.exchangeDirection ?? '').toUpperCase() === 'INPUT'
-          );
-        });
+      if (ud?.downstreamId === finalProductProcessExchange?.nodeId) {
+        if (
+          (ud?.dependence === 'none' && ud?.mainDependence === 'downstream') ||
+          ud?.dependence === 'downstream'
+        ) {
+          const connectedExhanges = finalProductProcessExchange?.exchanges?.filter((e: any) => {
+            return (
+              e?.referenceToFlowDataSet?.['@refObjectId'] === ud?.flowUUID &&
+              (e?.exchangeDirection ?? '').toUpperCase() === 'INPUT'
+            );
+          });
 
-        if (connectedExhanges?.length > 0) {
-          return true;
+          if (connectedExhanges?.length > 0) {
+            return true;
+          }
+          return false;
         }
         return false;
       }
       return false;
-    }
-    return false;
-  });
-
-  if (connectedEdges.length > 0) {
-    connectedEdges.forEach((edge: Up2DownEdge) => {
-      const nextChildProcessExchange = childProcessExchanges.find((cpe: any) => {
-        return (
-          cpe?.nodeId !== finalProductProcessExchange?.nodeId &&
-          cpe?.finalProductType !== 'has' &&
-          (cpe?.nodeId === edge?.downstreamId || cpe?.nodeId === edge?.upstreamId) &&
-          cpe?.allocatedExchangeFlowId === edge?.flowUUID
-        );
-      });
-
-      if (nextChildProcessExchange) {
-        const nextFinalProductGroups = getFinalProductGroup(
-          nextChildProcessExchange,
-          ((finalProductProcessExchange?.allocatedFraction ?? 1) * (edge?.scalingFactor ?? 1)) /
-            (nextChildProcessExchange?.scalingFactor ?? 1),
-          childProcessExchanges,
-          allUp2DownEdges,
-        );
-        if (nextFinalProductGroups?.length > 0) {
-          finalProductGroups.push(...nextFinalProductGroups);
-        }
-      }
     });
+
+    if (connectedEdges.length > 0) {
+      connectedEdges.forEach((edge: Up2DownEdge) => {
+        const nextChildProcessExchange = childProcessExchanges.find((cpe: any) => {
+          return (
+            cpe?.nodeId !== finalProductProcessExchange?.nodeId &&
+            cpe?.finalProductType !== 'has' &&
+            (cpe?.nodeId === edge?.downstreamId || cpe?.nodeId === edge?.upstreamId) &&
+            cpe?.allocatedExchangeFlowId === edge?.flowUUID
+          );
+        });
+
+        if (nextChildProcessExchange) {
+          const nextFinalProductGroups = getFinalProductGroup(
+            nextChildProcessExchange,
+            ((newAllocatedFraction ?? 1) * (edge?.scalingFactor ?? 1)) /
+              (nextChildProcessExchange?.scalingFactor ?? 1),
+            childProcessExchanges,
+            allUp2DownEdges,
+          );
+          if (nextFinalProductGroups?.length > 0) {
+            finalProductGroups.push(...nextFinalProductGroups);
+          }
+        }
+      });
+    }
+  } else {
+    finalProductGroups.push(finalProductProcessExchange);
   }
 
   return finalProductGroups;
