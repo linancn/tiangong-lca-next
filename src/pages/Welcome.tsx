@@ -2,6 +2,9 @@ import { getLang, getLangText } from '@/services/general/util';
 import styles from '@/style/custom.less';
 import {
   BuildOutlined,
+  DeploymentUnitOutlined,
+  GlobalOutlined,
+  InteractionOutlined,
   ProductOutlined,
   ShareAltOutlined,
   TeamOutlined,
@@ -185,55 +188,69 @@ const Welcome: React.FC = () => {
     <CountUp end={value as number} separator=',' />
   );
 
+  type SectionKey =
+    | 'internationalMethodology'
+    | 'ecosystemInteroperability'
+    | 'architectureExtensibility';
+
+  const sectionIconMap: Record<SectionKey, React.ReactNode> = {
+    internationalMethodology: <GlobalOutlined style={{ marginRight: '0.4em' }} />,
+    ecosystemInteroperability: <InteractionOutlined style={{ marginRight: '0.4em' }} />,
+    architectureExtensibility: <DeploymentUnitOutlined style={{ marginRight: '0.4em' }} />,
+  };
+
   const tidasContent: Record<
     'en' | 'zh',
     {
-      title: string;
       intro: string;
       coreTitle: string;
-      sections: Array<{ heading: string; description: string }>;
+      sections: Array<{ key: SectionKey; heading: string; description: string }>;
     }
   > = {
     zh: {
-      title: '天工LCA数据平台',
       intro:
         '天工LCA数据平台是一个用于生命周期评价 (LCA) 与碳管理的软件平台。它基于开源的 TIDAS (TIangong DAta System) 核心构建，提供了一个支持标准化、互操作性及可扩展的分析环境。',
-      coreTitle: '平台核心能力',
+      coreTitle: '核心能力',
       sections: [
         {
+          key: 'internationalMethodology',
           heading: '基于国际方法论',
           description: '平台的数据体系与方法论依据 ILCD Handbook 等国际标准进行构建。',
         },
         {
           heading: '生态互操作性',
+          key: 'ecosystemInteroperability',
           description:
             '平台采用 TIDAS 的统一数据格式 (JSON)，并提供格式转换工具，可与 openLCA、Brightway 等第三方软件进行数据交换。系统支持与 eILCD 格式的无损转换，实现了数据在不同LCA工具生态中的流通。',
         },
         {
           heading: '技术架构与扩展性',
+          key: 'architectureExtensibility',
           description:
             '平台采用可扩展的数据结构，为集成大语言模型 (LLM) 及接入数据空间 (Data Spaces) 提供支持。其服务层架构已包含隐私计算等技术的调用接口，为未来的功能扩展预留了空间。',
         },
       ],
     },
     en: {
-      title: 'TianGong LCA Data Platform',
       intro:
-        'The TianGong LCA Data Platform supports life cycle assessment (LCA) and carbon management workflows. Built on the open-source TIDAS (TIangong DAta System) core, it provides a standardized, interoperable, and extensible analysis environment.',
+        'TianGong LCA Data Platform supports life cycle assessment (LCA) and carbon management workflows. Built on the open-source TIDAS (TIangong DAta System) core, it provides a standardized, interoperable, and extensible analysis environment.',
       coreTitle: 'Core Capabilities',
       sections: [
         {
           heading: 'Grounded in International Methodologies',
+          key: 'internationalMethodology',
           description:
             'The data system and methodologies follow international standards such as the ILCD Handbook.',
         },
         {
           heading: 'Ecosystem Interoperability',
+          key: 'ecosystemInteroperability',
           description:
             'Unified TIDAS JSON data structures and conversion tools enable data exchange with third-party software like openLCA and Brightway. Lossless conversion to the eILCD format keeps data flowing across LCA tool ecosystems.',
         },
         {
           heading: 'Architecture and Extensibility',
+          key: 'architectureExtensibility',
           description:
             'An extensible data design supports integrating large language models (LLMs) and connecting to data spaces. The service layer already exposes privacy computing interfaces, leaving room for future capabilities.',
         },
@@ -252,7 +269,7 @@ const Welcome: React.FC = () => {
         ? '/images/tidas/TIDAS-en-dark.svg'
         : '/images/tidas/TIDAS-en.svg';
 
-  const tidasImageAlt = currentContent.title;
+  const tidasImageAlt = currentContent.intro;
 
   return (
     <PageContainer title={false}>
@@ -380,12 +397,29 @@ const Welcome: React.FC = () => {
       <Divider />
       <Row gutter={[24, 24]} align='stretch'>
         <Col xs={24} lg={11}>
-          <Typography.Title level={3}>{currentContent.title}</Typography.Title>
-          <Typography.Paragraph>{currentContent.intro}</Typography.Paragraph>
+          <Typography.Paragraph
+            style={{
+              fontSize: '1.2em',
+              lineHeight: 1.6,
+            }}
+          >
+            {currentContent.intro}
+          </Typography.Paragraph>
           <Typography.Title level={4}>{currentContent.coreTitle}</Typography.Title>
           {currentContent.sections.map((section) => (
-            <Typography.Paragraph key={section.heading}>
-              <Typography.Text strong>{section.heading}</Typography.Text>
+            <Typography.Paragraph key={section.key}>
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  fontSize: '1.2em',
+                  fontWeight: 'bold',
+                  color: color3,
+                }}
+              >
+                {sectionIconMap[section.key]}
+                {section.heading}
+              </span>
               <br />
               {section.description}
             </Typography.Paragraph>
@@ -393,7 +427,7 @@ const Welcome: React.FC = () => {
         </Col>
         <Col
           xs={0}
-          lg={2}
+          lg={1}
           style={{ display: 'flex', justifyContent: 'center', alignItems: 'stretch' }}
         >
           <div
@@ -407,12 +441,22 @@ const Welcome: React.FC = () => {
         <Col xs={24} lg={0}>
           <Divider />
         </Col>
-        <Col xs={24} lg={11}>
-          <Row justify='center'>
-            <Col>
-              <Image src={tidasImageSrc} alt={tidasImageAlt} preview={false} />
-            </Col>
-          </Row>
+        <Col
+          xs={24}
+          lg={11}
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingInline: 24,
+          }}
+        >
+          <Image
+            src={tidasImageSrc}
+            alt={tidasImageAlt}
+            preview={false}
+            style={{ display: 'block', margin: '0 auto', maxWidth: '100%' }}
+          />
         </Col>
       </Row>
       <Modal
