@@ -7,7 +7,19 @@ import {
   TeamOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { Card, Col, Modal, Row, Spin, Statistic, StatisticProps, Typography, theme } from 'antd';
+import {
+  Card,
+  Col,
+  Divider,
+  Image,
+  Modal,
+  Row,
+  Spin,
+  Statistic,
+  StatisticProps,
+  Typography,
+  theme,
+} from 'antd';
 import React, { useEffect, useState } from 'react';
 
 import { getThumbFileUrls } from '@/services/supabase/storage';
@@ -21,7 +33,7 @@ const Welcome: React.FC = () => {
   const { token } = theme.useToken();
 
   const { locale } = useIntl();
-  const lang = getLang(locale);
+  const lang = getLang(locale) as 'en' | 'zh';
 
   const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
   const [color3, setColor3] = useState(token.colorPrimary);
@@ -173,6 +185,75 @@ const Welcome: React.FC = () => {
     <CountUp end={value as number} separator=',' />
   );
 
+  const tidasContent: Record<
+    'en' | 'zh',
+    {
+      title: string;
+      intro: string;
+      coreTitle: string;
+      sections: Array<{ heading: string; description: string }>;
+    }
+  > = {
+    zh: {
+      title: '天工LCA数据平台',
+      intro:
+        '天工LCA数据平台是一个用于生命周期评价 (LCA) 与碳管理的软件平台。它基于开源的 TIDAS (TIangong DAta System) 核心构建，提供了一个支持标准化、互操作性及可扩展的分析环境。',
+      coreTitle: '平台核心能力',
+      sections: [
+        {
+          heading: '基于国际方法论',
+          description: '平台的数据体系与方法论依据 ILCD Handbook 等国际标准进行构建。',
+        },
+        {
+          heading: '生态互操作性',
+          description:
+            '平台采用 TIDAS 的统一数据格式 (JSON)，并提供格式转换工具，可与 openLCA、Brightway 等第三方软件进行数据交换。系统支持与 eILCD 格式的无损转换，实现了数据在不同LCA工具生态中的流通。',
+        },
+        {
+          heading: '技术架构与扩展性',
+          description:
+            '平台采用可扩展的数据结构，为集成大语言模型 (LLM) 及接入数据空间 (Data Spaces) 提供支持。其服务层架构已包含隐私计算等技术的调用接口，为未来的功能扩展预留了空间。',
+        },
+      ],
+    },
+    en: {
+      title: 'TianGong LCA Data Platform',
+      intro:
+        'The TianGong LCA Data Platform supports life cycle assessment (LCA) and carbon management workflows. Built on the open-source TIDAS (TIangong DAta System) core, it provides a standardized, interoperable, and extensible analysis environment.',
+      coreTitle: 'Core Capabilities',
+      sections: [
+        {
+          heading: 'Grounded in International Methodologies',
+          description:
+            'The data system and methodologies follow international standards such as the ILCD Handbook.',
+        },
+        {
+          heading: 'Ecosystem Interoperability',
+          description:
+            'Unified TIDAS JSON data structures and conversion tools enable data exchange with third-party software like openLCA and Brightway. Lossless conversion to the eILCD format keeps data flowing across LCA tool ecosystems.',
+        },
+        {
+          heading: 'Architecture and Extensibility',
+          description:
+            'An extensible data design supports integrating large language models (LLMs) and connecting to data spaces. The service layer already exposes privacy computing interfaces, leaving room for future capabilities.',
+        },
+      ],
+    },
+  };
+
+  const currentContent = tidasContent[lang] ?? tidasContent.en;
+
+  const tidasImageSrc =
+    lang === 'zh'
+      ? isDarkMode
+        ? '/images/tidas/TIDAS-zh-CN-dark.svg'
+        : '/images/tidas/TIDAS-zh-CN.svg'
+      : isDarkMode
+        ? '/images/tidas/TIDAS-en-dark.svg'
+        : '/images/tidas/TIDAS-en.svg';
+
+  const tidasImageAlt = currentContent.title;
+
   return (
     <PageContainer title={false}>
       <div
@@ -296,6 +377,44 @@ const Welcome: React.FC = () => {
           </Col>
         </Row>
       </div>
+      <Divider />
+      <Row gutter={[24, 24]} align='stretch'>
+        <Col xs={24} lg={11}>
+          <Typography.Title level={3}>{currentContent.title}</Typography.Title>
+          <Typography.Paragraph>{currentContent.intro}</Typography.Paragraph>
+          <Typography.Title level={4}>{currentContent.coreTitle}</Typography.Title>
+          {currentContent.sections.map((section) => (
+            <Typography.Paragraph key={section.heading}>
+              <Typography.Text strong>{section.heading}</Typography.Text>
+              <br />
+              {section.description}
+            </Typography.Paragraph>
+          ))}
+        </Col>
+        <Col
+          xs={0}
+          lg={2}
+          style={{ display: 'flex', justifyContent: 'center', alignItems: 'stretch' }}
+        >
+          <div
+            style={{
+              width: 1,
+              backgroundColor: token.colorSplit,
+              alignSelf: 'stretch',
+            }}
+          />
+        </Col>
+        <Col xs={24} lg={0}>
+          <Divider />
+        </Col>
+        <Col xs={24} lg={11}>
+          <Row justify='center'>
+            <Col>
+              <Image src={tidasImageSrc} alt={tidasImageAlt} preview={false} />
+            </Col>
+          </Row>
+        </Col>
+      </Row>
       <Modal
         open={isDataModalOpen}
         onCancel={() => setIsDataModalOpen(false)}
