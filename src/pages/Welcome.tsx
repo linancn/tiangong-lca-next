@@ -209,48 +209,49 @@ const Welcome: React.FC = () => {
   > = {
     zh: {
       intro:
-        '天工LCA数据平台是一个用于生命周期评价 (LCA) 与碳管理的软件平台。它基于开源的 TIDAS (TIangong DAta System) 核心构建，提供了一个支持标准化、互操作性及可扩展的分析环境。',
+        '天工LCA数据平台，一个支持全流程生命周期分析与产品碳管理的开放平台。基于开源TIDAS核心构建，融合了标准化、互操作性与可扩展性三大特性，旨在实现碳数据管理的四个核心目标：合规透明、国际互通、结果可信、数据安全。',
       sections: [
         {
+          heading: '严谨合规',
           key: 'internationalMethodology',
-          heading: '基于国际方法论',
-          description: '平台的数据体系与方法论依据 ILCD Handbook 等国际标准进行构建。',
+          description:
+            '平台集成了国标(GB)、ISO、ILCD、GHGP等国内外公认的LCA方法论。其计算过程与数据结构严格遵循相应准则，以保障分析结果的透明性、可比性与可复现性。',
         },
         {
-          heading: '生态互操作性',
+          heading: '开放互联',
           key: 'ecosystemInteroperability',
           description:
-            '平台采用 TIDAS 的统一数据格式 (JSON)，并提供格式转换工具，可与 openLCA、Brightway 等第三方软件进行数据交换。系统支持与 eILCD 格式的无损转换，实现了数据在不同LCA工具生态中的流通。',
+            '基于TIDAS统一数据格式，平台实现了与eILCD数据结构的原生兼容，数据可便捷地进行导入或导出，在支持eILCD数据结构的其他主流LCA工具上使用。',
         },
         {
-          heading: '技术架构与扩展性',
+          heading: '智能安全',
           key: 'architectureExtensibility',
           description:
-            '平台采用可扩展的数据结构，为集成大语言模型 (LLM) 及接入数据空间 (Data Spaces) 提供支持。其服务层架构已包含隐私计算等技术的调用接口，为未来的功能扩展预留了空间。',
+            '平台内嵌AI算法以辅助数据的研制与验证。其模块化架构亦支持集成区块链、隐私计算等前沿技术，用以保障企业数据的完整性与保密性。',
         },
       ],
     },
     en: {
       intro:
-        'TianGong LCA Data Platform supports life cycle assessment (LCA) and carbon management workflows. Built on the open-source TIDAS (TIangong DAta System) core, it provides a standardized, interoperable, and extensible analysis environment.',
+        'The Tiangong LCA Data Platform is an open platform for lifecycle assessment and product carbon management. Based on the TianGong LCA Data System (TIDAS), it is founded on three key principles: standardization, interoperability, and extensibility. Our mission is to achieve four core objectives in carbon data management: regulatory compliance, global interoperability, verifiable results, and robust data security.',
       sections: [
         {
-          heading: 'Grounded in International Methodologies',
+          heading: 'Standards & Compliance',
           key: 'internationalMethodology',
           description:
-            'The data system and methodologies follow international standards such as the ILCD Handbook.',
+            'TThe platform integrates internationally recognized LCA methodologies, including ISO, ILCD, GHG Protocol, and national standards. Its calculation processes and data structures strictly adhere to these guidelines to ensure the transparency, comparability, and reproducibility of all analysis results.',
         },
         {
-          heading: 'Ecosystem Interoperability',
+          heading: 'Open & Interoperability',
           key: 'ecosystemInteroperability',
           description:
-            'Unified TIDAS JSON data structures and conversion tools enable data exchange with third-party software like openLCA and Brightway. Lossless conversion to the eILCD format keeps data flowing across LCA tool ecosystems.',
+            'Based on the unified TIDAS format, the platform offers native compatibility with the eILCD data structure. This allows for seamless data import and export, ensuring usability across other mainstream LCA tools that support the eILCD format.',
         },
         {
-          heading: 'Architecture and Extensibility',
+          heading: 'Intelligence & Security',
           key: 'architectureExtensibility',
           description:
-            'An extensible data design supports integrating large language models (LLMs) and connecting to data spaces. The service layer already exposes privacy computing interfaces, leaving room for future capabilities.',
+            'The platform embeds AI algorithms to assist in data modeling and validation. Its modular architecture also supports the integration of cutting-edge technologies like blockchain and privacy-enhancing computation (PEC) to ensure the integrity and confidentiality of enterprise data.',
         },
       ],
     },
