@@ -37,7 +37,6 @@ import {
   LCIMethodPrincipleOptions,
   licenseTypeOptions,
   processtypeOfDataSetOptions,
-  reviewTypeOptions,
 } from './optiondata';
 
 type Props = {
@@ -60,10 +59,6 @@ const getLCIMethodPrincipleOptions = (value: string) => {
 };
 const getLCIMethodApproachOptions = (value: string) => {
   const option = LCIMethodApproachOptions.find((opt) => opt.value === value);
-  return option ? option.label : '-';
-};
-const getReviewTypeOptions = (value: string) => {
-  const option = reviewTypeOptions.find((opt) => opt.value === value);
   return option ? option.label : '-';
 };
 const getCopyrightOptions = (value: string) => {
@@ -1132,56 +1127,6 @@ const ProcessView: FC<Props> = ({
           />
         </Card>
         <br />
-        <Card
-          size='small'
-          title={
-            <FormattedMessage
-              id='pages.process.view.modellingAndValidation.Review'
-              defaultMessage='Review'
-            />
-          }
-        >
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.process.view.modellingAndValidation.type'
-                  defaultMessage='Type of review'
-                />
-              }
-              styles={{ label: { width: '130px' } }}
-            >
-              {getReviewTypeOptions(
-                initData.modellingAndValidation?.validation?.review?.['@type'] ?? '-',
-              )}
-            </Descriptions.Item>
-          </Descriptions>
-          <Divider orientationMargin='0' orientation='left' plain>
-            <FormattedMessage
-              id='pages.process.view.modellingAndValidation.reviewDetails'
-              defaultMessage='Review details'
-            />
-          </Divider>
-          <LangTextItemDescription
-            data={initData.modellingAndValidation?.validation?.review?.['common:reviewDetails']}
-          />
-          <br />
-          <ContactSelectDescription
-            title={
-              <FormattedMessage
-                id='pages.process.view.modellingAndValidation.referenceToNameOfReviewerAndInstitution'
-                defaultMessage='Reviewer name and institution'
-              />
-            }
-            lang={lang}
-            data={
-              initData.modellingAndValidation?.validation?.review?.[
-                'common:referenceToNameOfReviewerAndInstitution'
-              ]
-            }
-          />
-        </Card>
       </>
     ),
     administrativeInformation: (
