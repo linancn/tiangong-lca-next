@@ -197,11 +197,13 @@ const ProcessEdit: FC<Props> = ({
         (e: any) =>
           e.quantitativeReference === true && e.exchangeDirection.toUpperCase() === 'OUTPUT',
       );
-      output[referenceIndex].allocations = {
-        allocation: {
-          '@allocatedFraction': '100%',
-        },
-      };
+      if (referenceIndex > -1) {
+        output[referenceIndex].allocations = {
+          allocation: {
+            '@allocatedFraction': '100%',
+          },
+        };
+      }
     }
     if (allocatedFractionTotal.isGreaterThan(100)) {
       message.error(
