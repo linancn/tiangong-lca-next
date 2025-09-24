@@ -173,6 +173,7 @@ export default {
   'processExchange.uncertaintyDistributionType': 'Uncertainty distribution type',
   'processExchange.quantitativeReference': 'Quantitative reference',
   'processExchange.referenceToFlowDataSet': 'Flow',
+  'processExchange.typeOfDataSet': 'Type of data set',
 
   'processExchange.generalComment': 'Comment',
   'pages.process.view.exchanges.exchange': 'Inputs and Outputs',

@@ -169,6 +169,7 @@ export default {
   'processExchange.uncertaintyDistributionType': '不确定性分布类型',
   'processExchange.quantitativeReference': '量值参考',
   'processExchange.referenceToFlowDataSet': '流',
+  'processExchange.typeOfDataSet': '流类型',
 
   'processExchange.generalComment': '概述',
   'pages.process.view.exchanges.exchange': '输入/输出',

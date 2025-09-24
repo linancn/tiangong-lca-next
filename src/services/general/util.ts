@@ -62,6 +62,7 @@ export async function getUnitData(idType: string, data: any) {
                   (flowProperty: any) => flowProperty?.id === item?.referenceToFlowDataSetId,
                 );
               }
+              item['typeOfDataSet'] = flowProperty?.typeOfDataSet ?? '-';
 
               let unitGroup = unitGroupsRes?.data.find(
                 (group: any) =>

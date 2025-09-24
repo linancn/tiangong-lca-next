@@ -23,6 +23,7 @@ import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined, ProductOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { Button, Drawer, Form, Input, Space, Spin, Tooltip, message } from 'antd';
+import BigNumber from 'bignumber.js';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
@@ -184,21 +185,34 @@ const ProcessEdit: FC<Props> = ({
     const output = exchangeDataSource.filter(
       (e: any) => e.exchangeDirection.toUpperCase() === 'OUTPUT',
     );
-    let allocatedFractionTotal = 0;
+    let allocatedFractionTotal = new BigNumber(0);
     output.forEach((e: any) => {
-      allocatedFractionTotal += Number(
-        e?.allocations?.allocation['@allocatedFraction']?.split('%')[0] ?? 0,
-      );
+      if (e?.allocations?.allocation && e?.allocations?.allocation['@allocatedFraction']) {
+        const fraction = e?.allocations?.allocation['@allocatedFraction']?.split('%')[0] ?? 0;
+        allocatedFractionTotal = allocatedFractionTotal.plus(new BigNumber(fraction));
+      }
     });
-
-    if (allocatedFractionTotal < 99.999999 && allocatedFractionTotal > 100.0000001) {
+    if (allocatedFractionTotal.isEqualTo(0)) {
+      const referenceIndex = output.findIndex(
+        (e: any) =>
+          e.quantitativeReference === true && e.exchangeDirection.toUpperCase() === 'OUTPUT',
+      );
+      if (referenceIndex > -1) {
+        output[referenceIndex].allocations = {
+          allocation: {
+            '@allocatedFraction': '100%',
+          },
+        };
+      }
+    }
+    if (allocatedFractionTotal.isGreaterThan(100)) {
       message.error(
         intl.formatMessage({
           id: 'pages.process.validator.allocatedFraction',
           defaultMessage: 'Allocated fraction total of output is greater than 100%. It is',
         }) +
           ' ' +
-          allocatedFractionTotal +
+          allocatedFractionTotal.toString() +
           '%.',
       );
       setSpinning(false);
