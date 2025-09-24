@@ -228,6 +228,7 @@ export default function ReviewProgress({ reviewId }: ReviewProgressProps) {
         />
       </Tooltip>
       <Drawer
+        destroyOnClose={true}
         title={
           <FormattedMessage
             id='pages.review.progress.drawer.title'
@@ -263,13 +264,6 @@ export default function ReviewProgress({ reviewId }: ReviewProgressProps) {
           ]}
           request={async () => {
             try {
-              if (!drawerVisible) {
-                return {
-                  data: [],
-                  success: true,
-                  total: 0,
-                };
-              }
               return await fetchTableData();
             } catch (error) {
               console.error(error);
