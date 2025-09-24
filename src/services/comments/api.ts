@@ -93,3 +93,11 @@ export async function getUserManageComments() {
     .in('state_code', [0, 1, 2]);
   return result;
 }
+
+export async function getReviewerIdsByReviewId(reviewId: string) {
+  const { data } = await supabase
+    .from('comments')
+    .select('state_code,reviewer_id')
+    .eq('review_id', reviewId);
+  return data;
+}

@@ -31,6 +31,7 @@ export type ProcessExchangeTable = {
   functionalUnitOrOther: any;
   refUnitRes?: any;
   stateCode: number;
+  typeOfDataSet?: string;
 };
 
 export type ProcessDataSetObjectKeys = Exclude<
