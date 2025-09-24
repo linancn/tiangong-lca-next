@@ -2,6 +2,7 @@ import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import ProcessExchangeView from '@/pages/Processes/Components/Exchange/view';
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import AlignedNumber from '@/components/AlignedNumber';
+import { flowTypeOptions, myFlowTypeOptions } from '@/pages/Flows/Components/optiondata';
 import { ListPagination } from '@/services/general/data';
 import { getLangText, getUnitData } from '@/services/general/util';
 import { getProcessDetail, getProcessExchange } from '@/services/processes/api';
@@ -15,6 +16,10 @@ import type { FC, Key } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 
+export const getFolwypeOfDataSetOptions = (value: string) => {
+  const option = [...myFlowTypeOptions, ...flowTypeOptions].find((opt) => opt.value === value);
+  return option ? option.label : '-';
+};
 type Props = {
   node: any;
   lang: string;
@@ -55,6 +60,17 @@ const IoPortSelect: FC<Props> = ({
           {row.referenceToFlowDataSet}
         </Tooltip>,
       ],
+    },
+    {
+      title: (
+        <FormattedMessage id='processExchange.typeOfDataSet' defaultMessage='Type of data set' />
+      ),
+      dataIndex: 'typeOfDataSet',
+      sorter: false,
+      search: false,
+      render: (_, row) => {
+        return getFolwypeOfDataSetOptions(row.typeOfDataSet ?? '');
+      },
     },
     {
       title: <FormattedMessage id='pages.table.title.version' defaultMessage='Version' />,

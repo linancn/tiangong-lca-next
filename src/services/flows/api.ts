@@ -627,6 +627,7 @@ export async function getFlowProperties(params: { id: string; version: string }[
         id,
         version,
         json->flowDataSet->flowInformation->dataSetInformation->name,
+        json->flowDataSet->modellingAndValidation->LCIMethod->>typeOfDataSet,
         json->flowDataSet->flowInformation->quantitativeReference->referenceToReferenceFlowProperty,
         json->flowDataSet->flowProperties->flowProperty
     `;
@@ -657,6 +658,7 @@ export async function getFlowProperties(params: { id: string; version: string }[
           id: property?.id,
           version: property?.version,
           name: property?.name ?? '-',
+          typeOfDataSet: property?.typeOfDataSet ?? '-',
           refFlowPropertytId: refData?.referenceToFlowPropertyDataSet?.['@refObjectId'] ?? '-',
           refFlowPropertyShortDescription:
             refData?.referenceToFlowPropertyDataSet?.['shortDescription'] ?? {},

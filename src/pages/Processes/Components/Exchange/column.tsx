@@ -1,5 +1,6 @@
 import { QuantitativeReferenceIcon } from '@/components';
 import AlignedNumber from '@/components/AlignedNumber';
+import { getFolwypeOfDataSetOptions } from '@/pages/LifeCycleModels/Components/toolbar/Exchange/ioPortSelect';
 import { getLangText } from '@/services/general/util';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { ProColumns } from '@ant-design/pro-components';
@@ -40,6 +41,17 @@ export function getExchangeColumns(lang: string): ProColumns<ProcessExchangeTabl
           {row.referenceToFlowDataSet}
         </Tooltip>,
       ],
+    },
+    {
+      title: (
+        <FormattedMessage id='processExchange.typeOfDataSet' defaultMessage='Type of data set' />
+      ),
+      dataIndex: 'typeOfDataSet',
+      sorter: false,
+      search: false,
+      render: (_, row) => {
+        return getFolwypeOfDataSetOptions(row.typeOfDataSet ?? '');
+      },
     },
     {
       title: <FormattedMessage id='pages.table.title.version' defaultMessage='Version' />,

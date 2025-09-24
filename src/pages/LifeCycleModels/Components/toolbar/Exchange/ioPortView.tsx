@@ -13,6 +13,7 @@ import { Button, Drawer, Space, Tooltip } from 'antd';
 import type { FC, Key } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
+import { getFolwypeOfDataSetOptions } from './ioPortSelect';
 
 type Props = {
   node: any;
@@ -46,6 +47,17 @@ const IoPortSelector: FC<Props> = ({ node, lang, direction, drawerVisible, onDra
           {row.referenceToFlowDataSet}
         </Tooltip>,
       ],
+    },
+    {
+      title: (
+        <FormattedMessage id='processExchange.typeOfDataSet' defaultMessage='Type of data set' />
+      ),
+      dataIndex: 'typeOfDataSet',
+      sorter: false,
+      search: false,
+      render: (_, row) => {
+        return getFolwypeOfDataSetOptions(row.typeOfDataSet ?? '');
+      },
     },
     {
       title: <FormattedMessage id='pages.table.title.version' defaultMessage='Version' />,
