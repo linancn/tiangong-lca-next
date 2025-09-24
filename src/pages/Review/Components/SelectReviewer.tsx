@@ -1,4 +1,4 @@
-import { addCommentApi } from '@/services/comments/api';
+import { addCommentApi, getReviewerIdsByReviewId } from '@/services/comments/api';
 import {
   getReviewerIdsApi,
   getReviewsDetail,
@@ -44,18 +44,23 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
     }
     const init = async () => {
       setSpinning(true);
-      const result = await getReviewerIdsApi(reviewIds);
       switch (tabType) {
-        case 'unassigned':
+        case 'unassigned': {
+          const result = await getReviewerIdsApi(reviewIds);
           setSelectedRowKeys(result);
           tableRef.current?.reload();
           break;
+        }
         case 'assigned': {
+          const result = await getReviewerIdsByReviewId(reviewIds[0] as string);
+          const keys = result
+            .filter((item: any) => item.state_code >= 0)
+            .map((item: any) => item.reviewer_id);
           const riviewDetail = await getReviewsDetail(reviewIds[0] as string);
           if (riviewDetail?.deadline) {
             setReviewDeadline(dayjs(riviewDetail.deadline));
           }
-          defaultSelectedRowKeys.current = result;
+          defaultSelectedRowKeys.current = keys;
           tableRef.current?.reload();
           break;
         }
@@ -146,7 +151,7 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
       });
 
       const results = await Promise.all(updatePromises);
-      const successCount = results.filter((result) => result.success).length;
+      const successCount = results.filter((result: any) => result.success).length;
 
       if (successCount === reviews.length) {
         message.success(
@@ -232,7 +237,7 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
       });
 
       const results = await Promise.all(updatePromises);
-      const successResults = results.filter((result) => result.success);
+      const successResults = results.filter((result: any) => result.success);
       const successCount = successResults.length;
 
       if (successCount === reviews.length) {
