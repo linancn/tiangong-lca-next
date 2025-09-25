@@ -53,9 +53,9 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
         }
         case 'assigned': {
           const result = await getReviewerIdsByReviewId(reviewIds[0] as string);
-          const keys =
-            result ??
-            [].filter((item: any) => item.state_code >= 0).map((item: any) => item.reviewer_id);
+          const keys = (result ?? [])
+            .filter((item: any) => item.state_code >= 0)
+            .map((item: any) => item.reviewer_id);
           const riviewDetail = await getReviewsDetail(reviewIds[0] as string);
           if (riviewDetail?.deadline) {
             setReviewDeadline(dayjs(riviewDetail.deadline));
