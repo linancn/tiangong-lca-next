@@ -53,7 +53,7 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
         }
         case 'assigned': {
           const result = await getReviewerIdsByReviewId(reviewIds[0] as string);
-          const keys = result
+          const keys = (result ?? [])
             .filter((item: any) => item.state_code >= 0)
             .map((item: any) => item.reviewer_id);
           const riviewDetail = await getReviewsDetail(reviewIds[0] as string);
@@ -285,49 +285,44 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
           size='large'
         />
       </Tooltip>
-      <Spin spinning={spinning}>
-        <Drawer
-          destroyOnClose={true}
-          styles={{ body: { paddingTop: 0 } }}
-          getContainer={() => document.body}
-          title={
-            <FormattedMessage id='pages.review.drawer.title' defaultMessage='Select Reviewer' />
-          }
-          width='90%'
-          closable={false}
-          extra={
+      <Drawer
+        destroyOnClose={true}
+        styles={{ body: { paddingTop: 0 } }}
+        getContainer={() => document.body}
+        title={<FormattedMessage id='pages.review.drawer.title' defaultMessage='Select Reviewer' />}
+        width='90%'
+        closable={false}
+        extra={
+          <Button
+            icon={<CloseOutlined />}
+            style={{ border: 0 }}
+            onClick={() => setDrawerVisible(false)}
+          />
+        }
+        maskClosable={true}
+        open={drawerVisible}
+        onClose={() => setDrawerVisible(false)}
+        footer={
+          <Space size={'middle'} className={styles.footer_right}>
+            <Button onClick={() => setDrawerVisible(false)}>
+              <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
+            </Button>
+            {tabType === 'unassigned' && (
+              <Button onClick={handleTemporarySave} disabled={selectedRowKeys.length === 0}>
+                <FormattedMessage id='pages.button.temporarySave' defaultMessage='Temporary Save' />
+              </Button>
+            )}
             <Button
-              icon={<CloseOutlined />}
-              style={{ border: 0 }}
-              onClick={() => setDrawerVisible(false)}
-            />
-          }
-          maskClosable={true}
-          open={drawerVisible}
-          onClose={() => setDrawerVisible(false)}
-          footer={
-            <Space size={'middle'} className={styles.footer_right}>
-              <Button onClick={() => setDrawerVisible(false)}>
-                <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
-              </Button>
-              {tabType === 'unassigned' && (
-                <Button onClick={handleTemporarySave} disabled={selectedRowKeys.length === 0}>
-                  <FormattedMessage
-                    id='pages.button.temporarySave'
-                    defaultMessage='Temporary Save'
-                  />
-                </Button>
-              )}
-              <Button
-                onClick={handleSave}
-                type='primary'
-                disabled={tabType === 'unassigned' ? selectedRowKeys.length === 0 : false}
-              >
-                <FormattedMessage id='pages.button.save' defaultMessage='Save' />
-              </Button>
-            </Space>
-          }
-        >
+              onClick={handleSave}
+              type='primary'
+              disabled={tabType === 'unassigned' ? selectedRowKeys.length === 0 : false}
+            >
+              <FormattedMessage id='pages.button.save' defaultMessage='Save' />
+            </Button>
+          </Space>
+        }
+      >
+        <Spin spinning={spinning}>
           <ProTable<TeamMemberTable>
             rowKey='user_id'
             search={false}
@@ -376,8 +371,8 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
             }}
             columns={columns}
           />
-        </Drawer>
-      </Spin>
+        </Spin>
+      </Drawer>
     </>
   );
 }

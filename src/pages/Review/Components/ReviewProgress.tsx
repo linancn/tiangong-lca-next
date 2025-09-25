@@ -119,7 +119,7 @@ export default function ReviewProgress({ reviewId }: ReviewProgressProps) {
       onOk: async () => {
         try {
           setTableLoading(true);
-          const result = await updateCommentByreviewerApi(reviewerId, { state_code: -2 });
+          const result = await updateCommentByreviewerApi(reviewId, reviewerId, { state_code: -2 });
           const reivewerIds: string[] = [];
           tableData.forEach((item: ReviewerData) => {
             if (item.reviewer_id !== reviewerId) {
