@@ -939,6 +939,15 @@ export async function getProcessesByIdsAndVersions(ids: string[], versions: stri
   return result;
 }
 
+export async function getProcessesByIdsAndVersion(ids: string[], version: string) {
+  const result = await supabase
+    .from('processes')
+    .select('id,json,version, modified_at,user_id')
+    .eq('version', version)
+    .in('id', ids);
+  return result;
+}
+
 export async function validateProcessesByIdAndVersion(id: string, version: string) {
   const resultVersion = await supabase
     .from('processes')

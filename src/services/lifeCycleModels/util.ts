@@ -15,7 +15,6 @@ import {
   removeEmptyObjects,
   toAmountNumber,
 } from '../general/util';
-import LCIAResultCalculation from '../lciaMethods/util';
 import { genProcessName } from '../processes/util';
 import { supabase } from '../supabase';
 import { FormLifeCycleModel, Up2DownEdge } from './data';
@@ -875,28 +874,19 @@ export function genLifeCycleModelData(data: any, lang: string) {
   };
 }
 
-const calculateProcessExchange = (
+const calculateProcessScalingFactor = (
   thisMdProcess: any,
   thisDbProcess: any,
   dependence: any,
   scalingFactor: number,
   allUp2DownEdges: Up2DownEdge[],
-  mdProcessInstances: any[],
-  dbProcessExchanges: any[],
+  mdProcesses: any[],
+  dbProcesses: any[],
 ) => {
-  let newProcessExchanges: any[] = [];
+  let newProcesses: any[] = [];
+  const thisDbProcessExchanges = jsonToList(thisDbProcess?.exchange);
 
-  const thisExchanges = jsonToList(thisDbProcess?.exchange);
-  const scalingFactorExchanges = thisExchanges.map((e: any) => {
-    const newAmount = new BigNumber(e?.meanAmount).times(scalingFactor).toNumber();
-    return {
-      ...e,
-      meanAmount: newAmount,
-      resultingAmount: newAmount,
-    };
-  });
-
-  newProcessExchanges.push({
+  newProcesses.push({
     nodeId: thisMdProcess?.['@dataSetInternalID'],
     dependence: dependence,
     processId: thisDbProcess.id,
@@ -904,7 +894,7 @@ const calculateProcessExchange = (
     quantitativeReferenceFlowIndex:
       thisDbProcess?.quantitativeReference?.['referenceToReferenceFlow'],
     scalingFactor: scalingFactor,
-    exchanges: scalingFactorExchanges,
+    exchanges: thisDbProcessExchanges,
   });
 
   const dependenceDownstreams = allUp2DownEdges.filter((ud: Up2DownEdge) => {
@@ -915,17 +905,17 @@ const calculateProcessExchange = (
 
   if (dependenceDownstreams.length > 0) {
     dependenceDownstreams.forEach((dependenceDownstream: Up2DownEdge) => {
-      const upMdProcess = mdProcessInstances.find(
+      const upMdProcess = mdProcesses.find(
         (mdp: any) => mdp?.['@dataSetInternalID'] === dependenceDownstream?.upstreamId,
       );
-      const upDbProcess = dbProcessExchanges.find(
+      const upDbProcess = dbProcesses.find(
         (dbp: any) =>
           dbp?.id === upMdProcess?.referenceToProcess?.['@refObjectId'] &&
           dbp?.version === upMdProcess?.referenceToProcess?.['@version'],
       );
 
       if (upMdProcess && upDbProcess) {
-        const downExchange = scalingFactorExchanges.find(
+        const downExchange = thisDbProcessExchanges.find(
           (e: any) =>
             e?.referenceToFlowDataSet?.['@refObjectId'] === dependenceDownstream?.flowUUID &&
             (e?.exchangeDirection ?? '').toUpperCase() === 'INPUT',
@@ -938,7 +928,9 @@ const calculateProcessExchange = (
         );
 
         const upMeanAmount = toAmountNumber(upExchange?.meanAmount);
-        const upTargetAmount = Number(downExchange?.meanAmount ?? '0');
+        const upTargetAmount = new BigNumber(downExchange?.meanAmount)
+          .times(scalingFactor)
+          .toNumber();
 
         let upScalingFactor = 1;
 
@@ -946,7 +938,7 @@ const calculateProcessExchange = (
           upScalingFactor = new BigNumber(upTargetAmount).div(upMeanAmount).toNumber();
         }
 
-        const upProcessExchanges = calculateProcessExchange(
+        const upProcesses = calculateProcessScalingFactor(
           upMdProcess,
           upDbProcess,
           {
@@ -957,11 +949,11 @@ const calculateProcessExchange = (
           },
           upScalingFactor,
           allUp2DownEdges,
-          mdProcessInstances,
-          dbProcessExchanges,
+          mdProcesses,
+          dbProcesses,
         );
-        if (upProcessExchanges) {
-          newProcessExchanges.push(...upProcessExchanges);
+        if (upProcesses) {
+          newProcesses.push(...upProcesses);
         }
       }
     });
@@ -975,16 +967,16 @@ const calculateProcessExchange = (
 
   if (dependenceUpstreams.length > 0) {
     dependenceUpstreams.forEach((dependenceUpstream: Up2DownEdge) => {
-      const downMdProcess = mdProcessInstances.find(
+      const downMdProcess = mdProcesses.find(
         (mdp: any) => mdp?.['@dataSetInternalID'] === dependenceUpstream?.downstreamId,
       );
-      const downDbProcess = dbProcessExchanges.find(
+      const downDbProcess = dbProcesses.find(
         (dbp: any) =>
           dbp?.id === downMdProcess?.referenceToProcess?.['@refObjectId'] &&
           dbp?.version === downMdProcess?.referenceToProcess?.['@version'],
       );
       if (downMdProcess && downDbProcess) {
-        const upExchange = scalingFactorExchanges?.find(
+        const upExchange = thisDbProcessExchanges?.find(
           (e: any) =>
             e?.referenceToFlowDataSet?.['@refObjectId'] === dependenceUpstream?.flowUUID &&
             (e?.exchangeDirection ?? '').toUpperCase() === 'OUTPUT',
@@ -997,7 +989,9 @@ const calculateProcessExchange = (
         );
 
         const downMeanAmount = toAmountNumber(downExchange?.meanAmount);
-        const downTargetAmount = Number(upExchange?.meanAmount ?? '0');
+        const downTargetAmount = new BigNumber(upExchange?.meanAmount)
+          .times(scalingFactor)
+          .toNumber();
 
         let downScalingFactor = 1;
 
@@ -1005,7 +999,7 @@ const calculateProcessExchange = (
           downScalingFactor = new BigNumber(downTargetAmount).div(downMeanAmount).toNumber();
         }
 
-        const downProcessExchanges = calculateProcessExchange(
+        const downProcesses = calculateProcessScalingFactor(
           downMdProcess,
           downDbProcess,
           {
@@ -1016,72 +1010,102 @@ const calculateProcessExchange = (
           },
           downScalingFactor,
           allUp2DownEdges,
-          mdProcessInstances,
-          dbProcessExchanges,
+          mdProcesses,
+          dbProcesses,
         );
-        if (downProcessExchanges) {
-          newProcessExchanges.push(...downProcessExchanges);
+        if (downProcesses) {
+          newProcesses.push(...downProcesses);
         }
       }
     });
   }
-  return newProcessExchanges;
+  return newProcesses;
 };
 
-const allocatedProcessExchange = (calculatedProcessExchanges: any[]) => {
-  let childProcessExchanges: any[] = [];
-  calculatedProcessExchanges.forEach((npe: any) => {
-    const npeExchanges = jsonToList(npe?.exchanges ?? []);
+const allocatedProcess = (processes: any[]) => {
+  let childProcesses: any[] = [];
+  processes.forEach((p: any) => {
+    const pExchanges = jsonToList(p?.exchanges ?? []);
     const allocatedExchanges: any[] = [];
     const nonAllocatedExchanges: any[] = [];
-    npeExchanges.forEach((npeExchange: any) => {
-      const allocations = jsonToList(npeExchange?.allocations ?? []);
+
+    pExchanges.forEach((pExchange: any) => {
+      if (pExchange?.exchangeDirection?.toUpperCase() !== 'OUTPUT') {
+        nonAllocatedExchanges.push(pExchange);
+        return;
+      }
+
+      const allocations = jsonToList(pExchange?.allocations ?? []);
       if (allocations.length > 0) {
         const allocatedFractionStr = allocations[0]?.allocation?.['@allocatedFraction'] ?? '';
         const allocatedFraction = percentStringToNumber(allocatedFractionStr);
         if (allocatedFraction && allocatedFraction > 0) {
           allocatedExchanges.push({
-            exchange: npeExchange,
+            exchange: pExchange,
             allocatedFraction: allocatedFraction,
           });
           return;
-        } else {
-          if (npeExchange['@dataSetInternalID'] === npe?.quantitativeReferenceFlowIndex) {
-            allocatedExchanges.push({
-              exchange: npeExchange,
-              allocatedFraction: 1,
-            });
-            return;
-          }
         }
       }
-      nonAllocatedExchanges.push(npeExchange);
+      if (pExchange['@dataSetInternalID'] !== p?.quantitativeReferenceFlowIndex) {
+        nonAllocatedExchanges.push(pExchange);
+      }
     });
-    if (allocatedExchanges.length > 0) {
-      allocatedExchanges.forEach((allocatedExchange: any) => {
-        const childNonAllocatedExchanges = nonAllocatedExchanges?.map((ne: any) => {
-          return {
-            ...ne,
-            allocatedFraction: allocatedExchange?.allocatedFraction,
-          };
+
+    if (allocatedExchanges.length === 0) {
+      const refOutputExchange = pExchanges.find(
+        (pe: any) =>
+          pe['@dataSetInternalID'] === p?.quantitativeReferenceFlowIndex &&
+          pe?.exchangeDirection?.toUpperCase() === 'OUTPUT',
+      );
+      if (refOutputExchange) {
+        allocatedExchanges.push({
+          exchange: refOutputExchange,
+          allocatedFraction: 1,
         });
-        const childProcessExchange = {
-          ...npe,
+      }
+    }
+
+    if (allocatedExchanges.length > 0) {
+      const refExchange = pExchanges.find(
+        (pe: any) => pe['@dataSetInternalID'] === p?.quantitativeReferenceFlowIndex,
+      );
+
+      if (
+        refExchange &&
+        refExchange?.exchangeDirection?.toUpperCase() === 'OUTPUT' &&
+        !allocatedExchanges.find(
+          (ne: any) => ne?.exchange?.['@dataSetInternalID'] === refExchange?.['@dataSetInternalID'],
+        )
+      ) {
+        nonAllocatedExchanges.push(refExchange);
+      }
+
+      allocatedExchanges.forEach((allocatedExchange: any) => {
+        const childProcess = {
+          ...p,
           isAllocated: true,
           allocatedExchangeId: allocatedExchange.exchange?.['@dataSetInternalID'],
           allocatedExchangeFlowId:
             allocatedExchange.exchange?.referenceToFlowDataSet?.['@refObjectId'],
-          allocatedExchangeDirection: allocatedExchange.exchange?.exchangeDirection,
           allocatedFraction: allocatedExchange.allocatedFraction,
-          exchanges: [...childNonAllocatedExchanges, allocatedExchange.exchange],
+          exchanges: [...nonAllocatedExchanges, allocatedExchange.exchange],
         };
-        childProcessExchanges.push(childProcessExchange);
+        childProcesses.push(childProcess);
       });
     } else {
-      childProcessExchanges.push(npe);
+      const childProcess = {
+        ...p,
+        isAllocated: false,
+        allocatedExchangeId: '',
+        allocatedExchangeFlowId: '',
+        allocatedFraction: 1,
+        exchanges: nonAllocatedExchanges,
+      };
+      childProcesses.push(childProcess);
     }
   });
-  return childProcessExchanges;
+  return childProcesses;
 };
 
 const hasFinalProductProcessExchange = (
@@ -1121,47 +1145,47 @@ const hasFinalProductProcessExchange = (
 };
 
 const getFinalProductGroup = (
-  finalProductProcessExchange: any,
+  finalProductProcess: any,
   allocatedFraction: number,
-  childProcessExchanges: any[],
+  scalingPercentage: number,
+  childProcesses: any[],
   allUp2DownEdges: Up2DownEdge[],
 ) => {
   const finalProductGroups: any[] = [];
-  if (
-    finalProductProcessExchange?.isAllocated &&
-    finalProductProcessExchange?.allocatedFraction > 0
-  ) {
-    const newAllocatedFraction = new BigNumber(finalProductProcessExchange.allocatedFraction)
+  if (finalProductProcess?.isAllocated && finalProductProcess?.allocatedFraction > 0) {
+    const newAllocatedFraction = new BigNumber(finalProductProcess.allocatedFraction)
       .times(allocatedFraction)
       .toNumber();
     finalProductGroups.push({
-      ...finalProductProcessExchange,
-      exchanges: finalProductProcessExchange?.exchanges?.map((e: any) => {
-        if (e['@dataSetInternalID'] === finalProductProcessExchange?.allocatedExchangeId) {
-          return {
-            ...e,
-            meanAmount: new BigNumber(e?.meanAmount).times(allocatedFraction).toNumber(),
-            resultingAmount: new BigNumber(e?.resultingAmount).times(allocatedFraction).toNumber(),
-          };
-        } else {
-          return {
-            ...e,
-            meanAmount: new BigNumber(e?.meanAmount).times(newAllocatedFraction).toNumber(),
-            resultingAmount: new BigNumber(e?.resultingAmount)
-              .times(newAllocatedFraction)
-              .toNumber(),
-          };
-        }
-      }),
+      ...finalProductProcess,
+      childAllocatedFraction: newAllocatedFraction,
+      childScalingPercentage: scalingPercentage,
+      // exchanges: finalProductProcess?.exchanges?.map((e: any) => {
+      //   if (e['@dataSetInternalID'] === finalProductProcess?.allocatedExchangeId) {
+      //     return {
+      //       ...e,
+      //       meanAmount: new BigNumber(e?.meanAmount).times(allocatedFraction).toNumber(),
+      //       resultingAmount: new BigNumber(e?.resultingAmount).times(allocatedFraction).toNumber(),
+      //     };
+      //   } else {
+      //     return {
+      //       ...e,
+      //       meanAmount: new BigNumber(e?.meanAmount).times(newAllocatedFraction).toNumber(),
+      //       resultingAmount: new BigNumber(e?.resultingAmount)
+      //         .times(newAllocatedFraction)
+      //         .toNumber(),
+      //     };
+      //   }
+      // }),
     });
 
     const connectedEdges = allUp2DownEdges.filter((ud: Up2DownEdge) => {
-      if (ud?.upstreamId === finalProductProcessExchange?.nodeId) {
+      if (ud?.upstreamId === finalProductProcess?.nodeId) {
         if (
           (ud?.dependence === 'none' && ud?.mainDependence === 'upstream') ||
           ud?.dependence === 'upstream'
         ) {
-          const connectedExhanges = finalProductProcessExchange?.exchanges?.filter((e: any) => {
+          const connectedExhanges = finalProductProcess?.exchanges?.filter((e: any) => {
             return (
               e?.referenceToFlowDataSet?.['@refObjectId'] === ud?.flowUUID &&
               (e?.exchangeDirection ?? '').toUpperCase() === 'OUTPUT'
@@ -1174,12 +1198,12 @@ const getFinalProductGroup = (
         }
       }
 
-      if (ud?.downstreamId === finalProductProcessExchange?.nodeId) {
+      if (ud?.downstreamId === finalProductProcess?.nodeId) {
         if (
           (ud?.dependence === 'none' && ud?.mainDependence === 'downstream') ||
           ud?.dependence === 'downstream'
         ) {
-          const connectedExhanges = finalProductProcessExchange?.exchanges?.filter((e: any) => {
+          const connectedExhanges = finalProductProcess?.exchanges?.filter((e: any) => {
             return (
               e?.referenceToFlowDataSet?.['@refObjectId'] === ud?.flowUUID &&
               (e?.exchangeDirection ?? '').toUpperCase() === 'INPUT'
@@ -1198,21 +1222,24 @@ const getFinalProductGroup = (
 
     if (connectedEdges.length > 0) {
       connectedEdges.forEach((edge: Up2DownEdge) => {
-        const nextChildProcessExchange = childProcessExchanges.find((cpe: any) => {
+        const nextChildProcess = childProcesses.find((childProcess: any) => {
           return (
-            cpe?.nodeId !== finalProductProcessExchange?.nodeId &&
-            cpe?.finalProductType !== 'has' &&
-            (cpe?.nodeId === edge?.downstreamId || cpe?.nodeId === edge?.upstreamId) &&
-            cpe?.allocatedExchangeFlowId === edge?.flowUUID
+            childProcess?.nodeId !== finalProductProcess?.nodeId &&
+            childProcess?.finalProductType !== 'has' &&
+            (childProcess?.nodeId === edge?.downstreamId ||
+              childProcess?.nodeId === edge?.upstreamId) &&
+            childProcess?.allocatedExchangeFlowId === edge?.flowUUID
           );
         });
 
-        if (nextChildProcessExchange) {
+        if (nextChildProcess) {
           const nextFinalProductGroups = getFinalProductGroup(
-            nextChildProcessExchange,
-            ((newAllocatedFraction ?? 1) * (edge?.scalingFactor ?? 1)) /
-              (nextChildProcessExchange?.scalingFactor ?? 1),
-            childProcessExchanges,
+            nextChildProcess,
+            newAllocatedFraction ?? 1,
+            new BigNumber(edge?.scalingFactor ?? 1)
+              .div(nextChildProcess?.scalingFactor ?? 1)
+              .toNumber(),
+            childProcesses,
             allUp2DownEdges,
           );
           if (nextFinalProductGroups?.length > 0) {
@@ -1222,18 +1249,54 @@ const getFinalProductGroup = (
       });
     }
   } else {
-    finalProductGroups.push(finalProductProcessExchange);
+    finalProductGroups.push({
+      ...finalProductProcess,
+      childAllocatedFraction: allocatedFraction,
+      childScalingPercentage: scalingPercentage,
+    });
   }
 
   return finalProductGroups;
 };
 
+const calculateProcess = (process: any) => {
+  const newExchanges = process?.exchanges?.map((e: any) => {
+    if (e['@dataSetInternalID'] === process?.allocatedExchangeId) {
+      return {
+        ...e,
+        meanAmount: new BigNumber(e?.meanAmount).times(process?.scalingFactor).toNumber(),
+        resultingAmount: new BigNumber(e?.resultingAmount).times(process?.scalingFactor).toNumber(),
+      };
+    } else {
+      return {
+        ...e,
+        meanAmount: new BigNumber(e?.meanAmount)
+          .times(process?.scalingFactor)
+          .times(process?.childAllocatedFraction ?? 1)
+          .times(process?.childScalingPercentage ?? 1)
+          .toNumber(),
+        resultingAmount: new BigNumber(e?.resultingAmount)
+          .times(process?.scalingFactor)
+          .times(process?.childAllocatedFraction ?? 1)
+          .times(process?.childScalingPercentage ?? 1)
+          .toNumber(),
+      };
+    }
+  });
+  return {
+    ...process,
+    exchanges: newExchanges,
+  };
+};
+
 const sumProcessExchange = (processExchanges: any[]) => {
+  const newProcessExchanges = processExchanges.map((process) => {
+    return calculateProcess(process);
+  });
+
   let allExchanges: any[] = [];
-  let sumScalingFactor = 0;
-  processExchanges?.forEach((pe: any) => {
-    sumScalingFactor += pe?.scalingFactor ?? 0;
-    allExchanges.push(...jsonToList(pe?.exchanges ?? []));
+  newProcessExchanges.forEach((pes) => {
+    allExchanges.push(...(pes?.exchanges ?? []));
   });
 
   const sumData =
@@ -1252,7 +1315,7 @@ const sumProcessExchange = (processExchanges: any[]) => {
     }, []) ?? [];
   const sumExchanges = Object.values(sumData);
 
-  return { sumScalingFactor, sumExchanges };
+  return { sumExchanges };
 };
 
 export async function genLifeCycleModelProcesses(
@@ -1261,10 +1324,10 @@ export async function genLifeCycleModelProcesses(
   data: any,
   oldSubmodels: any[],
 ) {
-  const mdProcessInstances = jsonToList(
+  const mdProcesses = jsonToList(
     data?.lifeCycleModelInformation?.technology?.processes?.processInstance,
   );
-  const processKeys = mdProcessInstances.map((p: any) => {
+  const processKeys = mdProcesses.map((p: any) => {
     return {
       id: p?.referenceToProcess?.['@refObjectId'],
       version: p?.referenceToProcess?.['@version'],
@@ -1273,7 +1336,7 @@ export async function genLifeCycleModelProcesses(
   const orConditions = processKeys
     .map((k) => `and(id.eq.${k.id},version.eq.${k.version})`)
     .join(',');
-  const dbProcessExchanges =
+  const dbProcesses =
     (
       await supabase
         .from('processes')
@@ -1289,138 +1352,139 @@ export async function genLifeCycleModelProcesses(
     )?.data ?? [];
 
   let up2DownEdges: Up2DownEdge[] = [];
-  mdProcessInstances.forEach((p: any) => {
-    const thisPE = dbProcessExchanges.find(
-      (pe: any) =>
-        pe['id'] === p?.['referenceToProcess']?.['@refObjectId'] &&
-        pe['version'] === p?.['referenceToProcess']?.['@version'],
-    );
-    const thisExchanges = jsonToList(thisPE?.exchange);
-    const thisRefExchange = thisExchanges?.find(
-      (e: any) =>
-        e?.['@dataSetInternalID'] ===
-        (thisPE?.quantitativeReference as any)?.referenceToReferenceFlow,
-    );
-    const thisRefFlowId = thisRefExchange?.referenceToFlowDataSet?.['@refObjectId'] ?? '';
-    const thisRefFlowDirection = (thisRefExchange?.exchangeDirection ?? '').toUpperCase();
-
-    const pOutputExchanges = jsonToList(p?.connections?.outputExchange);
+  mdProcesses.forEach((mdProcess: any) => {
+    const mdProcessOutputExchanges = jsonToList(mdProcess?.connections?.outputExchange);
     let mainOutputExchange = { '@flowUUID': '' };
 
-    if (pOutputExchanges?.length === 0) {
-      mainOutputExchange = { '@flowUUID': '' };
-    } else if (pOutputExchanges?.length === 1) {
-      mainOutputExchange = { '@flowUUID': pOutputExchanges[0]?.['@flowUUID'] ?? '' };
-    } else {
-      const thisMF = pOutputExchanges.find(
-        (o: any) => o?.['@flowUUID'] === thisRefFlowId && thisRefFlowDirection === 'OUTPUT',
-      );
-      if (thisMF) {
-        mainOutputExchange = { '@flowUUID': thisMF?.['@flowUUID'] ?? '' };
+    if (mdProcessOutputExchanges?.length > 0) {
+      if (mdProcessOutputExchanges?.length === 1) {
+        mainOutputExchange = { '@flowUUID': mdProcessOutputExchanges[0]?.['@flowUUID'] ?? '' };
       } else {
-        const thisFlowIds = pOutputExchanges.map((o: any) => o?.['@flowUUID']);
-        const fes = thisExchanges.filter(
+        const dbProcess = dbProcesses.find(
+          (pe: any) =>
+            pe['id'] === mdProcess?.['referenceToProcess']?.['@refObjectId'] &&
+            pe['version'] === mdProcess?.['referenceToProcess']?.['@version'],
+        );
+        const dbProcessExchanges = jsonToList(dbProcess?.exchange);
+        const dbProcessRefExchange = dbProcessExchanges?.find(
           (e: any) =>
-            e?.exchangeDirection?.toUpperCase() === 'OUTPUT' &&
-            thisFlowIds.includes(e?.referenceToFlowDataSet?.['@refObjectId']),
+            e?.['@dataSetInternalID'] ===
+            (dbProcess?.quantitativeReference as any)?.referenceToReferenceFlow,
         );
-        const allocatedFractions = fes.map(
-          (e: any) => e.allocations.allocation['@allocatedFraction'],
+        const dbProcessRefExchangeFlowId =
+          dbProcessRefExchange?.referenceToFlowDataSet?.['@refObjectId'] ?? '';
+        const dbProcessRefExchangeFlowDirection = (
+          dbProcessRefExchange?.exchangeDirection ?? ''
+        ).toUpperCase();
+
+        const refMdProcessOutputExchange = mdProcessOutputExchanges.find(
+          (o: any) =>
+            o?.['@flowUUID'] === dbProcessRefExchangeFlowId &&
+            dbProcessRefExchangeFlowDirection === 'OUTPUT',
         );
-        const maxAF = allocatedFractions.sort(comparePercentDesc)[0];
-        const maxFlow = fes.find(
-          (e: any) => e.allocations.allocation['@allocatedFraction'] === maxAF,
-        );
-        mainOutputExchange = { '@flowUUID': maxFlow?.referenceToFlowDataSet['@refObjectId'] ?? '' };
+        if (refMdProcessOutputExchange) {
+          mainOutputExchange = { '@flowUUID': refMdProcessOutputExchange?.['@flowUUID'] ?? '' };
+        } else {
+          const mdProcessOutputExchangeFlowIds = mdProcessOutputExchanges.map(
+            (o: any) => o?.['@flowUUID'] ?? '',
+          );
+          const fes = dbProcessExchanges.filter(
+            (e: any) =>
+              e?.exchangeDirection?.toUpperCase() === 'OUTPUT' &&
+              mdProcessOutputExchangeFlowIds.includes(e?.referenceToFlowDataSet?.['@refObjectId']),
+          );
+          const allocatedFractions = fes.map(
+            (e: any) => e.allocations.allocation['@allocatedFraction'],
+          );
+          const maxAF = allocatedFractions.sort(comparePercentDesc)[0];
+          const maxFlow = fes.find(
+            (e: any) => e.allocations.allocation['@allocatedFraction'] === maxAF,
+          );
+          mainOutputExchange = {
+            '@flowUUID': maxFlow?.referenceToFlowDataSet['@refObjectId'] ?? '',
+          };
+        }
       }
     }
 
-    pOutputExchanges.forEach((o: any) => {
+    mdProcessOutputExchanges.forEach((o: any) => {
       jsonToList(o?.downstreamProcess).forEach((dp: any) => {
-        let mainInputExchange = { '@flowUUID': '' };
-        let inputExchanges: any[] = [];
-        const dp_upstreamProcesses = mdProcessInstances.filter((pi: any) => {
-          return jsonToList(pi?.connections?.outputExchange)?.some((piOutputExchange: any) => {
-            return jsonToList(piOutputExchange?.downstreamProcess)?.some((pi_dp: any) => {
-              return pi_dp?.['@id'] === dp?.['@id'];
-            });
-          });
-        });
-
-        dp_upstreamProcesses.forEach((usModelProcess: any) => {
-          const dp_upstreamModelProcessOutputExchanges = jsonToList(
-            usModelProcess?.connections?.outputExchange,
-          );
-
-          const dp_upstreamModelProcessOutputExchangesFilter =
-            dp_upstreamModelProcessOutputExchanges.filter((dp_o: any) =>
-              jsonToList(dp_o?.downstreamProcess)?.some(
-                (dp_dp: any) => dp_dp?.['@id'] === dp?.['@id'],
-              ),
-            );
-
-          dp_upstreamModelProcessOutputExchangesFilter.forEach(
-            (dp_upstreamModelProcessOutputExchange: any) => {
-              inputExchanges.push({
-                '@flowUUID': dp_upstreamModelProcessOutputExchange?.['@flowUUID'],
-              });
-            },
-          );
-        });
-
-        if (inputExchanges?.length === 0) {
-          mainInputExchange = { '@flowUUID': '' };
-        } else if (inputExchanges?.length === 1) {
-          mainInputExchange = { '@flowUUID': inputExchanges[0]?.['@flowUUID'] ?? '' };
-        } else {
-          const thisMF = inputExchanges.find(
-            (i: any) => i?.['@flowUUID'] === thisRefFlowId && thisRefFlowDirection === 'INPUT',
-          );
-          if (thisMF) {
-            mainInputExchange = { '@flowUUID': thisMF?.['@flowUUID'] ?? '' };
-          } else {
-            const thisFlowIds = inputExchanges.map((i: any) => i?.['@flowUUID']);
-            const fes = thisExchanges.filter(
-              (e: any) =>
-                e?.exchangeDirection?.toUpperCase() === 'INPUT' &&
-                thisFlowIds.includes(e?.referenceToFlowDataSet?.['@refObjectId']),
-            );
-            const allocatedFractions = fes.map(
-              (e: any) => e.allocations.allocation['@allocatedFraction'],
-            );
-            const maxAF = allocatedFractions.sort(comparePercentDesc)[0];
-            const maxFlow = fes.find(
-              (e: any) => e.allocations.allocation['@allocatedFraction'] === maxAF,
-            );
-            mainInputExchange = {
-              '@flowUUID': maxFlow?.referenceToFlowDataSet['@refObjectId'] ?? '',
-            };
-          }
-        }
-
-        const nowUp2DownEdge = {
+        const nowUp2DownEdge: Up2DownEdge = {
           flowUUID: o?.['@flowUUID'],
-          upstreamId: p?.['@dataSetInternalID'],
-          // upstreamProcessId: p?.['@id'],
-          // upstreamProcessVersion: p?.['@version'],
+          upstreamId: mdProcess?.['@dataSetInternalID'],
           downstreamId: dp?.['@id'],
-          // downstreamProcessId: dp?.['@id'],
-          // downstreamProcessVersion: dp?.['@version'],
           mainOutputFlowUUID: mainOutputExchange?.['@flowUUID'],
-          mainInputFlowUUID: mainInputExchange?.['@flowUUID'],
+          mainInputFlowUUID: '',
         };
         up2DownEdges.push(nowUp2DownEdge);
       });
     });
+  });
 
-    // return {
-    //   ...p,
-    //   connections: {
-    //     ...p?.connections,
-    //     outputExchange: jsonToList(p?.connections?.outputExchange),
-    //     mainOutputExchange: mainOutputExchange,
-    //   },
-    // };
+  mdProcesses.forEach((mdProcess: any) => {
+    const inputEdges = up2DownEdges.filter((edge: Up2DownEdge) => {
+      return edge?.downstreamId === mdProcess?.['@dataSetInternalID'];
+    });
+
+    if (inputEdges.length > 0) {
+      const dbProcess = dbProcesses.find(
+        (pe: any) =>
+          pe['id'] === mdProcess?.['referenceToProcess']?.['@refObjectId'] &&
+          pe['version'] === mdProcess?.['referenceToProcess']?.['@version'],
+      );
+      if (inputEdges.length === 1) {
+        inputEdges[0].mainInputFlowUUID = inputEdges[0]?.flowUUID ?? '';
+      } else {
+        const dbProcessExchanges = jsonToList(dbProcess?.exchange);
+        const dbProcessRefExchange = dbProcessExchanges?.find(
+          (e: any) =>
+            e?.['@dataSetInternalID'] ===
+            (dbProcess?.quantitativeReference as any)?.referenceToReferenceFlow,
+        );
+        const dbProcessRefExchangeFlowId =
+          dbProcessRefExchange?.referenceToFlowDataSet?.['@refObjectId'] ?? '';
+        const dbProcessRefExchangeFlowDirection = (
+          dbProcessRefExchange?.exchangeDirection ?? ''
+        ).toUpperCase();
+
+        const refInputEdge = inputEdges.find(
+          (ie) =>
+            ie.flowUUID === dbProcessRefExchangeFlowId &&
+            dbProcessRefExchangeFlowDirection === 'INPUT',
+        );
+
+        let mainInputExchange = { '@flowUUID': '' };
+        if (refInputEdge) {
+          mainInputExchange = { '@flowUUID': refInputEdge?.flowUUID ?? '' };
+        } else {
+          const inputEdgeFlowIds = inputEdges.map((ie) => ie?.flowUUID ?? '');
+          const fes = dbProcessExchanges.filter(
+            (e: any) =>
+              e?.exchangeDirection?.toUpperCase() === 'INPUT' &&
+              inputEdgeFlowIds.includes(e?.referenceToFlowDataSet?.['@refObjectId']),
+          );
+          const allocatedFractions = fes.map(
+            (e: any) => e.allocations.allocation['@allocatedFraction'] ?? '',
+          );
+          const maxAF = allocatedFractions.sort(comparePercentDesc)[0];
+          if (maxAF !== '') {
+            const maxFlow = fes.find(
+              (e: any) => e.allocations.allocation['@allocatedFraction'] === maxAF,
+            );
+            const mainInputEdge = inputEdges.find(
+              (ie) => ie.flowUUID === maxFlow?.referenceToFlowDataSet?.['@refObjectId'],
+            );
+            if (mainInputEdge) {
+              mainInputExchange = { '@flowUUID': mainInputEdge?.flowUUID ?? '' };
+            }
+          }
+        }
+
+        inputEdges.forEach((ie) => {
+          ie.mainInputFlowUUID = mainInputExchange?.['@flowUUID'] ?? '';
+        });
+      }
+    }
   });
 
   const referenceToReferenceProcess =
@@ -1566,11 +1630,11 @@ export async function genLifeCycleModelProcesses(
     }
   }
 
-  const refMdProcess = mdProcessInstances.find(
+  const refMdProcess = mdProcesses.find(
     (p: any) => p?.['@dataSetInternalID'] === referenceToReferenceProcess,
   );
 
-  const refDbProcess = dbProcessExchanges.find(
+  const refDbProcess = dbProcesses.find(
     (p: any) =>
       p?.id === refMdProcess?.referenceToProcess?.['@refObjectId'] &&
       p?.version === refMdProcess?.referenceToProcess?.['@version'],
@@ -1582,7 +1646,7 @@ export async function genLifeCycleModelProcesses(
   );
 
   const thisRefMeanAmount = toAmountNumber(thisRefFlow?.meanAmount);
-  const targetAmount = Number(refNode?.data?.targetAmount ?? '0');
+  const targetAmount = Number(refNode?.data?.targetAmount) ?? thisRefMeanAmount;
 
   let scalingFactor = 1;
 
@@ -1590,7 +1654,7 @@ export async function genLifeCycleModelProcesses(
     scalingFactor = new BigNumber(targetAmount).div(thisRefMeanAmount).toNumber();
   }
   if (refMdProcess && refDbProcess) {
-    const calculatedProcessExchanges = calculateProcessExchange(
+    const processScalingFactors = calculateProcessScalingFactor(
       refMdProcess,
       refDbProcess,
       {
@@ -1601,65 +1665,72 @@ export async function genLifeCycleModelProcesses(
       },
       scalingFactor,
       up2DownEdges,
-      mdProcessInstances,
-      dbProcessExchanges,
+      mdProcesses,
+      dbProcesses,
     );
 
     const newUp2DownEdges = up2DownEdges.map((ud: Up2DownEdge) => {
       if (ud?.dependence === 'downstream') {
-        const cpe = calculatedProcessExchanges.find((c: any) => {
+        const processScalingFactor = processScalingFactors.find((psf: any) => {
           return (
-            c?.dependence?.direction === 'downstream' &&
-            c?.dependence?.flowUUID === ud?.flowUUID &&
-            c?.dependence?.nodeId === ud?.downstreamId &&
-            c?.nodeId === ud?.upstreamId
+            psf?.dependence?.direction === 'downstream' &&
+            psf?.dependence?.flowUUID === ud?.flowUUID &&
+            psf?.dependence?.nodeId === ud?.downstreamId &&
+            psf?.nodeId === ud?.upstreamId
           );
         });
-        if (cpe) {
+        if (processScalingFactor) {
           return {
             ...ud,
-            scalingFactor: cpe?.scalingFactor,
+            scalingFactor: processScalingFactor?.scalingFactor,
           };
         }
       }
 
       if (ud?.dependence === 'upstream') {
-        const cpe = calculatedProcessExchanges.find((c: any) => {
+        const processScalingFactor = processScalingFactors.find((psf: any) => {
           return (
-            c?.dependence?.direction === 'upstream' &&
-            c?.dependence?.flowUUID === ud?.flowUUID &&
-            c?.dependence?.nodeId === ud?.upstreamId &&
-            c?.nodeId === ud?.downstreamId
+            psf?.dependence?.direction === 'upstream' &&
+            psf?.dependence?.flowUUID === ud?.flowUUID &&
+            psf?.dependence?.nodeId === ud?.upstreamId &&
+            psf?.nodeId === ud?.downstreamId
           );
         });
-        if (cpe) {
+        if (processScalingFactor) {
           return {
             ...ud,
-            scalingFactor: cpe?.scalingFactor,
+            scalingFactor: processScalingFactor?.scalingFactor,
           };
         }
       }
 
       if (ud?.dependence === 'none') {
         if (ud?.mainDependence === 'downstream') {
-          const cpe = calculatedProcessExchanges.find((c: any) => {
-            return c?.nodeId === ud?.upstreamId;
+          const processScalingFactor = processScalingFactors.filter((psf: any) => {
+            return psf?.nodeId === ud?.upstreamId;
           });
-          if (cpe) {
+
+          if (processScalingFactor) {
+            const sumProcessScalingFactor = processScalingFactor.reduce((acc, curr) => {
+              return acc + (curr?.scalingFactor ?? 0);
+            }, 0);
             return {
               ...ud,
-              scalingFactor: cpe?.scalingFactor,
+              scalingFactor: sumProcessScalingFactor,
             };
           }
         }
         if (ud?.mainDependence === 'upstream') {
-          const cpe = calculatedProcessExchanges.find((c: any) => {
-            return c?.nodeId === ud?.downstreamId;
+          const processScalingFactor = processScalingFactors.filter((psf: any) => {
+            return psf?.nodeId === ud?.downstreamId;
           });
-          if (cpe) {
+          if (processScalingFactor) {
+            const sumScalingFactor = processScalingFactor.reduce((acc, curr) => {
+              return acc + (curr?.scalingFactor ?? 0);
+            }, 0);
             return {
               ...ud,
-              scalingFactor: cpe?.scalingFactor,
+              scalingFactor: sumScalingFactor,
             };
           }
         }
@@ -1670,62 +1741,64 @@ export async function genLifeCycleModelProcesses(
       };
     });
 
-    const groupedProcessExchanges: Record<string, any[]> = {};
-    calculatedProcessExchanges.forEach((npe: any) => {
-      if (!groupedProcessExchanges[npe.nodeId]) {
-        groupedProcessExchanges[npe.nodeId] = [];
+    const groupedProcesses: Record<string, any[]> = {};
+    processScalingFactors.forEach((npe: any) => {
+      if (!groupedProcesses[npe.nodeId]) {
+        groupedProcesses[npe.nodeId] = [];
       }
-      groupedProcessExchanges[npe.nodeId].push(npe);
+      groupedProcesses[npe.nodeId].push(npe);
     });
 
-    const newProcessExchanges = Object.values(groupedProcessExchanges).map((group: any[]) => {
-      const sumData = sumProcessExchange(group);
+    const newProcesses = Object.values(groupedProcesses).map((group: any[]) => {
+      // const sumData = sumProcessExchange(group);
+      const sumScalingFactor = group.reduce((acc, curr) => {
+        return acc + (curr?.scalingFactor ?? 0);
+      }, 0);
+
       return {
         ...group[0],
-        scalingFactor: sumData.sumScalingFactor,
-        exchanges: sumData.sumExchanges,
+        scalingFactor: sumScalingFactor,
       };
     });
 
-    const childProcessExchanges = allocatedProcessExchange(newProcessExchanges);
+    const childProcesses = allocatedProcess(newProcesses);
 
-    childProcessExchanges.forEach((cpe: any) => {
-      if (cpe?.nodeId === referenceToReferenceProcess) {
-        cpe.finalProductType = 'has';
+    childProcesses.forEach((childProcess: any) => {
+      if (childProcess?.nodeId === referenceToReferenceProcess) {
+        childProcess.finalProductType = 'has';
         return;
       }
-      if (cpe?.isAllocated) {
+      if (childProcess?.isAllocated) {
         const downstreamEdges = newUp2DownEdges.filter(
           (ud: Up2DownEdge) =>
-            ud?.upstreamId === cpe?.nodeId && ud?.flowUUID === cpe?.allocatedExchangeFlowId,
+            ud?.upstreamId === childProcess?.nodeId &&
+            ud?.flowUUID === childProcess?.allocatedExchangeFlowId,
         );
         if (downstreamEdges.length === 0) {
-          cpe.finalProductType = 'has';
+          childProcess.finalProductType = 'has';
           return;
         } else {
-          cpe.finalProductType = 'unknown';
+          childProcess.finalProductType = 'unknown';
           return;
         }
       } else {
-        cpe.finalProductType = 'no';
+        childProcess.finalProductType = 'no';
         return;
       }
     });
 
     let whileCount = 0;
     let whileUnknown = true;
-    const unknownCount = childProcessExchanges.filter(
+    const unknownCount = childProcesses.filter(
       (cpe: any) => cpe?.finalProductType === 'unknown',
     )?.length;
     while (whileUnknown) {
-      const unknownCPEs = childProcessExchanges.filter(
-        (cpe: any) => cpe?.finalProductType === 'unknown',
-      );
+      const unknownCPEs = childProcesses.filter((cpe: any) => cpe?.finalProductType === 'unknown');
       unknownCPEs.forEach((cpe: any) => {
         const finalProductType = hasFinalProductProcessExchange(
           cpe,
           newUp2DownEdges,
-          childProcessExchanges,
+          childProcesses,
         );
         cpe.finalProductType = finalProductType;
       });
@@ -1739,16 +1812,17 @@ export async function genLifeCycleModelProcesses(
       }
     }
 
-    const hasFinalProductProcessExchanges = childProcessExchanges.filter(
+    const hasFinalProductProcesses = childProcesses.filter(
       (cpe: any) => cpe?.finalProductType === 'has',
     );
 
     const sumFinalProductGroups = await Promise.all(
-      hasFinalProductProcessExchanges.map(async (cpe: any) => {
+      hasFinalProductProcesses.map(async (hasFinalProductProcess: any) => {
         const finalProductGroup = getFinalProductGroup(
-          cpe,
+          hasFinalProductProcess,
           1,
-          childProcessExchanges,
+          1,
+          childProcesses,
           newUp2DownEdges,
         );
 
@@ -1886,7 +1960,7 @@ export async function genLifeCycleModelProcesses(
               }
             });
 
-            const LCIAResults = await LCIAResultCalculation(newExchanges);
+            // const LCIAResults = await LCIAResultCalculation(newExchanges);
 
             if (type === 'secondary') {
               const oldProcesses = oldSubmodels?.find(
@@ -1928,9 +2002,6 @@ export async function genLifeCycleModelProcesses(
                     subproductRightBracket,
                     jsonToList(data?.lifeCycleModelInformation?.dataSetInformation?.name?.baseName),
                   );
-
-            // const functionalUnitFlowProperties = type === 'primary' ? data?.lifeCycleModelInformation?.dataSetInformation?.name
-            //   ?.functionalUnitFlowProperties : refExchange.referenceToFlowDataSet["common:shortDescription"];
 
             const newData = removeEmptyObjects({
               option: option,
@@ -2516,11 +2587,15 @@ export async function genLifeCycleModelProcesses(
                     exchange: newExchanges,
                   },
                   LCIAResults: {
-                    LCIAResult: LCIAResults,
+                    // LCIAResult: LCIAResults,
                   },
                 },
               },
             });
+
+            // if(type==='primary'){
+            //   console.log('primary newData', newData);
+            // }
 
             return newData;
           }
