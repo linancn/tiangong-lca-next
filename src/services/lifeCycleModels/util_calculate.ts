@@ -8,6 +8,7 @@ import {
   removeEmptyObjects,
   toAmountNumber,
 } from '../general/util';
+import LCIAResultCalculation from '../lciaMethods/util';
 import { supabase } from '../supabase';
 import { Up2DownEdge } from './data';
 
@@ -1166,7 +1167,7 @@ export async function genLifeCycleModelProcesses(
               }
             });
 
-            // const LCIAResults = await LCIAResultCalculation(newExchanges);
+            const LCIAResults = await LCIAResultCalculation(newExchanges);
 
             if (type === 'secondary') {
               const oldProcesses = oldSubmodels?.find(
@@ -1795,7 +1796,7 @@ export async function genLifeCycleModelProcesses(
                     exchange: newExchanges,
                   },
                   LCIAResults: {
-                    // LCIAResult: LCIAResults,
+                    LCIAResult: LCIAResults,
                   },
                 },
               },
