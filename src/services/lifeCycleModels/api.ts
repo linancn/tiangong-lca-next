@@ -21,7 +21,8 @@ import {
 } from '../processes/api';
 import { genProcessName } from '../processes/util';
 import { getUserId } from '../users/api';
-import { genLifeCycleModelJsonOrdered, genLifeCycleModelProcesses } from './util';
+import { genLifeCycleModelJsonOrdered } from './util';
+import { genLifeCycleModelProcesses } from './util_calculate';
 
 const updateLifeCycleModelProcesses = async (id: string, version: string, data: any) => {
   const result = await supabase
