@@ -1142,7 +1142,15 @@ export async function genLifeCycleModelProcesses(
 
             const LCIAResults = await LCIAResultCalculation(newExchanges);
 
-            console.log('LCIAResults: ', JSON.stringify(LCIAResults, null, 2));
+            // log execution time for LCIAResultCalculation
+            // const __lciaLabel = `[LCIA] LCIAResultCalculation (exchanges=${Array.isArray(newExchanges) ? newExchanges.length : 'n/a'}, type=${type}, id=${newId})`;
+            // console.time(__lciaLabel);
+            // let LCIAResults: any;
+            // try {
+            //   LCIAResults = await LCIAResultCalculation(newExchanges);
+            // } finally {
+            //   console.timeEnd(__lciaLabel);
+            // }
 
             if (type === 'secondary') {
               const oldProcesses = oldSubmodels?.find(

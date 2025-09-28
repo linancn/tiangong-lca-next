@@ -293,6 +293,7 @@ export const getCachedMethodList = async (): Promise<string[]> => {
 const LCIAResultCalculation = async (exchangeDataSource: any) => {
   const lciaResults: LCIAResultTable[] = [];
 
+  const flow_factors_file = 'flow_factors.json.gz';
   try {
     // First try to get the list from cache
     let listData = await getDecompressedMethod('list.json');
@@ -308,127 +309,105 @@ const LCIAResultCalculation = async (exchangeDataSource: any) => {
       listData = await getDecompressedMethod('list.json');
     }
 
-    for (const file of listData.files) {
-      try {
-        // First try to get from cache
-        let jsonData = await getDecompressedMethod(file.filename);
+    let factors = await getDecompressedMethod(flow_factors_file);
+    if (!factors) {
+      // If not cached, cache it first (this will download, decompress and store)
+      const cached = await cacheAndDecompressMethod(flow_factors_file);
+      if (!cached) {
+        console.warn(`Failed to cache file: ${flow_factors_file}`);
+        return lciaResults;
+      }
+      // Now get from cache
+      factors = await getDecompressedMethod(flow_factors_file);
+    }
 
-        if (!jsonData) {
-          // If not cached, cache it first (this will download, decompress and store)
-          const cached = await cacheAndDecompressMethod(file.filename);
-          if (!cached) {
-            console.warn(`Failed to cache file: ${file.filename}`);
-            continue;
-          }
-          // Now get from cache
-          jsonData = await getDecompressedMethod(file.filename);
-        }
+    if (!Array.isArray(factors) || factors.length === 0) {
+      console.warn(`No characterisation factors found in file: ${flow_factors_file}`);
+      return lciaResults;
+    }
 
-        const lciaMethodDataSet = jsonData?.LCIAMethodDataSet;
-        if (!lciaMethodDataSet) {
-          console.warn(`Invalid LCIA method data in file: ${file.filename}`);
-          continue;
-        }
+    // Build an index for fast factor lookup: flowId+direction -> factor
+    const factorIndex = new Map<string, any>();
+    factors.forEach((factor: any) => {
+      const flowId = factor['@refObjectId'];
+      const direction = String(factor.exchangeDirection || '').toUpperCase();
+      if (flowId && direction) {
+        const key = `${flowId}:${direction}`;
+        factorIndex.set(key, factor);
+      }
+    });
 
-        const methodInfo = lciaMethodDataSet.LCIAMethodInformation?.dataSetInformation;
-        const methodName = methodInfo['common:name'];
-        const methodId = methodInfo['common:UUID'];
-        const methodVersion =
-          lciaMethodDataSet?.administrativeInformation?.publicationAndOwnership?.[
-            'common:dataSetVersion'
-          ];
+    let lciaFlowResults: any[] = [];
 
-        const factors = lciaMethodDataSet?.characterisationFactors?.factor || [];
-        if (!Array.isArray(factors) || factors.length === 0) {
-          console.warn(`No characterisation factors found in file: ${file.filename}`);
-          continue;
-        }
-
-        // Build an index for fast factor lookup: flowId+direction -> factor
-        const factorIndex = new Map<string, any>();
-        factors.forEach((factor: any) => {
-          const flowId = factor.referenceToFlowDataSet?.['@refObjectId'];
-          const direction = String(factor.exchangeDirection || '').toLowerCase();
-          if (flowId && direction) {
-            const key = `${flowId}:${direction}`;
-            factorIndex.set(key, factor);
-          }
-        });
-
-        let sumLCIA = new BigNumber(0);
-        let matchedExchanges = 0;
-
-        exchangeDataSource.forEach((exchange: any) => {
-          const exchangeFlowId = exchange.referenceToFlowDataSet?.['@refObjectId'];
-          const exchangeDirection = String(exchange.exchangeDirection || '').toLowerCase();
-
-          if (exchangeFlowId && exchangeDirection) {
-            const key = `${exchangeFlowId}:${exchangeDirection}`;
-            const matchingFactor = factorIndex.get(key);
-
-            if (matchingFactor) {
-              const exchangeAmount = new BigNumber(exchange.meanAmount);
-              const factorValue = new BigNumber(matchingFactor.meanValue);
-
-              if (!exchangeAmount.isNaN() && !factorValue.isNaN()) {
-                const contribution = exchangeAmount.times(factorValue);
-                sumLCIA = sumLCIA.plus(contribution);
-                matchedExchanges++;
+    exchangeDataSource.forEach((exchange: any) => {
+      const exchangeFlowId = exchange.referenceToFlowDataSet?.['@refObjectId'];
+      const exchangeDirection = String(exchange.exchangeDirection || '').toUpperCase();
+      if (exchangeFlowId && exchangeDirection) {
+        const key = `${exchangeFlowId}:${exchangeDirection}`;
+        const matchingFactor = factorIndex.get(key);
+        if (matchingFactor) {
+          const exchangeAmount = new BigNumber(exchange.meanAmount);
+          if (
+            !exchangeAmount.isNaN() &&
+            matchingFactor?.factor &&
+            matchingFactor?.factor.length > 0
+          ) {
+            const newFactor = matchingFactor.factor.map((f: any) => {
+              const factorValue = new BigNumber(f.value);
+              if (!factorValue.isNaN()) {
+                return { ...f, value: exchangeAmount.times(factorValue) };
+              } else {
+                return { ...f, value: 0 };
               }
-            }
-          }
-        });
-
-        // Fallback: If no matches found with index, try original method for comparison
-        if (matchedExchanges === 0) {
-          exchangeDataSource.forEach((exchange: any) => {
-            const originalMatchingFactor = factors.find((factor: any) => {
-              const factorFlowId = factor.referenceToFlowDataSet?.['@refObjectId'];
-              const exchangeFlowId = exchange.referenceToFlowDataSet?.['@refObjectId'];
-              const factorDirection = String(factor.exchangeDirection || '').toLowerCase();
-              const exchangeDirection = String(exchange.exchangeDirection || '').toLowerCase();
-
-              return factorFlowId === exchangeFlowId && factorDirection === exchangeDirection;
             });
-
-            if (originalMatchingFactor) {
-              const exchangeAmount = new BigNumber(exchange.meanAmount);
-              const factorValue = new BigNumber(originalMatchingFactor.meanValue);
-
-              if (!exchangeAmount.isNaN() && !factorValue.isNaN()) {
-                const contribution = exchangeAmount.times(factorValue);
-                sumLCIA = sumLCIA.plus(contribution);
-                matchedExchanges++;
-              }
-            }
-          });
+            lciaFlowResults.push(...newFactor);
+          }
         }
+      }
+    });
 
-        if (matchedExchanges > 0) {
-          const lciaResult: LCIAResultTable = {
-            key: file.id,
-            referenceToLCIAMethodDataSet: {
-              '@refObjectId': methodId,
-              '@type': 'lCIA method data set',
-              '@uri': `../lciamethods/${methodId}.xml`,
-              '@version': methodVersion,
-              'common:shortDescription': methodName,
-            },
-            meanAmount: sumLCIA.toNumber(),
-          };
+    const lciaFlowResultsAggregated: any[] = Array.from(
+      lciaFlowResults
+        .filter((it: any) => it && it.key !== undefined && it.key !== null)
+        .reduce((map: Map<string, BigNumber>, it: any) => {
+          const key = String(it.key);
+          const raw = it.value;
+          const val = BigNumber.isBigNumber(raw) ? (raw as BigNumber) : new BigNumber(raw);
+          if (!val.isNaN()) {
+            map.set(key, (map.get(key) ?? new BigNumber(0)).plus(val));
+          }
+          return map;
+        }, new Map<string, BigNumber>())
+        .entries(),
+    )
+      .map(([key, sum]) => ({ key, value: sum.toString() }))
+      .filter((it: any) => {
+        const bn = new BigNumber(it.value);
+        return !bn.isNaN() && !bn.isZero();
+      });
 
-          lciaResults.push(lciaResult);
-        }
-      } catch (fileError) {
-        console.error(`Error processing file ${file.filename}:`, fileError);
+    if (lciaFlowResultsAggregated.length > 0) {
+      for (const result of lciaFlowResultsAggregated) {
+        const methodInfo = listData.files.find((it: any) => it.id === result.key);
+
+        const lciaResult: LCIAResultTable = {
+          key: methodInfo.id,
+          referenceToLCIAMethodDataSet: {
+            '@refObjectId': methodInfo.id,
+            '@type': 'lCIA method data set',
+            '@uri': `../lciamethods/${methodInfo.id}.xml`,
+            '@version': methodInfo.version,
+            'common:shortDescription': methodInfo.description,
+          },
+          meanAmount: result.value,
+        };
+        lciaResults.push(lciaResult);
       }
     }
-  } catch (error) {
-    console.error('Error in LCIA methods processing:', error);
+    return lciaResults;
+  } catch (fileError) {
+    console.error(`Error processing file ${flow_factors_file}:`, fileError);
   }
-
-  // console.log(`Total LCIA results calculated: ${lciaResults.length}`,lciaResults);
-  return lciaResults;
 };
 
 export default LCIAResultCalculation;
