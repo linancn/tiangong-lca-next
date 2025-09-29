@@ -399,14 +399,16 @@ const Welcome: React.FC = () => {
           <Space direction='vertical' size={24} style={{ width: '100%' }}>
             <Card
               className={styles.intro_card}
-              bordered={false}
+              variant='outlined'
               style={{
                 background: token.colorBgElevated,
                 borderRadius: 16,
                 boxShadow: token.boxShadow,
               }}
-              bodyStyle={{
-                padding: '20px 24px',
+              styles={{
+                body: {
+                  padding: '20px 24px',
+                },
               }}
             >
               <Typography.Paragraph
@@ -424,14 +426,16 @@ const Welcome: React.FC = () => {
               {currentContent.sections.map((section) => (
                 <Card
                   key={section.key}
-                  bordered={false}
+                  variant='outlined'
                   style={{
                     background: token.colorFillSecondary,
                     borderRadius: 16,
                     boxShadow: 'none',
                   }}
-                  bodyStyle={{
-                    padding: '24px 28px',
+                  styles={{
+                    body: {
+                      padding: '24px 28px',
+                    },
                   }}
                 >
                   <Typography.Text
