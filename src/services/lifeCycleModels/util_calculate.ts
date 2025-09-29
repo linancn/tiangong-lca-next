@@ -866,7 +866,6 @@ export async function genLifeCycleModelProcesses(
         direction: '',
         nodeId: '',
         flowUUID: '',
-        // scalingFactor: 1,
       },
       scalingFactor,
       up2DownEdges,
@@ -874,76 +873,54 @@ export async function genLifeCycleModelProcesses(
       dbProcesses,
     );
 
+    // Pre-index processScalingFactors for O(1) lookups and per-node sums
+    const psfKey = (
+      direction: string,
+      flowUUID?: string,
+      dependenceNodeId?: string,
+      nodeId?: string,
+    ) => `${direction}|${flowUUID ?? ''}|${dependenceNodeId ?? ''}|${nodeId ?? ''}`;
+
+    const psfMap = new Map<string, number>();
+    const sumByNodeId = new Map<string, number>();
+    for (const psf of processScalingFactors as any[]) {
+      const dir = psf?.dependence?.direction;
+      const flowUUID = psf?.dependence?.flowUUID;
+      const depNodeId = psf?.dependence?.nodeId;
+      const nodeId = psf?.nodeId;
+      const sf = psf?.scalingFactor ?? 0;
+      if (dir && flowUUID && depNodeId && nodeId) {
+        const key = psfKey(dir, flowUUID, depNodeId, nodeId);
+        // preserve first-match behavior of Array.find
+        if (!psfMap.has(key)) psfMap.set(key, sf);
+      }
+      if (nodeId) sumByNodeId.set(nodeId, (sumByNodeId.get(nodeId) ?? 0) + sf);
+    }
+
     const newUp2DownEdges = up2DownEdges.map((ud: Up2DownEdge) => {
       if (ud?.dependence === 'downstream') {
-        const processScalingFactor = processScalingFactors.find((psf: any) => {
-          return (
-            psf?.dependence?.direction === 'downstream' &&
-            psf?.dependence?.flowUUID === ud?.flowUUID &&
-            psf?.dependence?.nodeId === ud?.downstreamId &&
-            psf?.nodeId === ud?.upstreamId
-          );
-        });
-        if (processScalingFactor) {
-          return {
-            ...ud,
-            scalingFactor: processScalingFactor?.scalingFactor,
-          };
+        const k = psfKey('downstream', ud?.flowUUID, ud?.downstreamId, ud?.upstreamId);
+        const sf = psfMap.get(k);
+        if (sf !== undefined) {
+          return { ...ud, scalingFactor: sf };
         }
-      }
-
-      if (ud?.dependence === 'upstream') {
-        const processScalingFactor = processScalingFactors.find((psf: any) => {
-          return (
-            psf?.dependence?.direction === 'upstream' &&
-            psf?.dependence?.flowUUID === ud?.flowUUID &&
-            psf?.dependence?.nodeId === ud?.upstreamId &&
-            psf?.nodeId === ud?.downstreamId
-          );
-        });
-        if (processScalingFactor) {
-          return {
-            ...ud,
-            scalingFactor: processScalingFactor?.scalingFactor,
-          };
+      } else if (ud?.dependence === 'upstream') {
+        const k = psfKey('upstream', ud?.flowUUID, ud?.upstreamId, ud?.downstreamId);
+        const sf = psfMap.get(k);
+        if (sf !== undefined) {
+          return { ...ud, scalingFactor: sf };
         }
-      }
-
-      if (ud?.dependence === 'none') {
+      } else if (ud?.dependence === 'none') {
         if (ud?.mainDependence === 'downstream') {
-          const processScalingFactor = processScalingFactors.filter((psf: any) => {
-            return psf?.nodeId === ud?.upstreamId;
-          });
-
-          if (processScalingFactor) {
-            const sumProcessScalingFactor = processScalingFactor.reduce((acc, curr) => {
-              return acc + (curr?.scalingFactor ?? 0);
-            }, 0);
-            return {
-              ...ud,
-              scalingFactor: sumProcessScalingFactor,
-            };
-          }
+          const sum = sumByNodeId.get(ud?.upstreamId) ?? 0;
+          return { ...ud, scalingFactor: sum };
         }
         if (ud?.mainDependence === 'upstream') {
-          const processScalingFactor = processScalingFactors.filter((psf: any) => {
-            return psf?.nodeId === ud?.downstreamId;
-          });
-          if (processScalingFactor) {
-            const sumScalingFactor = processScalingFactor.reduce((acc, curr) => {
-              return acc + (curr?.scalingFactor ?? 0);
-            }, 0);
-            return {
-              ...ud,
-              scalingFactor: sumScalingFactor,
-            };
-          }
+          const sum = sumByNodeId.get(ud?.downstreamId) ?? 0;
+          return { ...ud, scalingFactor: sum };
         }
       }
-      return {
-        ...ud,
-        scalingFactor: 0,
-      };
+      return { ...ud, scalingFactor: 0 };
     });
 
     const groupedProcesses: Record<string, any[]> = {};
@@ -1094,8 +1071,6 @@ export async function genLifeCycleModelProcesses(
               (npe: any) => npe?.finalProductType === 'has',
             );
 
-            console.log('finalProductProcessExchange', finalProductProcessExchange);
-
             let finalId: any = {
               nodeId: finalProductProcessExchange?.nodeId ?? '',
               processId: finalProductProcessExchange?.processId ?? '',
@@ -1137,7 +1112,6 @@ export async function genLifeCycleModelProcesses(
                   allocations: undefined,
                   meanAmount: targetAmount.toString(),
                   resultingAmount: targetAmount.toString(),
-                  // quantitativeReference: true,
                 };
               } else {
                 if (
@@ -1153,7 +1127,6 @@ export async function genLifeCycleModelProcesses(
                     allocations: undefined,
                     meanAmount: e?.meanAmount.toString(),
                     resultingAmount: e?.resultingAmount.toString(),
-                    // quantitativeReference: true,
                   };
                 } else {
                   return {
@@ -1168,6 +1141,16 @@ export async function genLifeCycleModelProcesses(
             });
 
             const LCIAResults = await LCIAResultCalculation(newExchanges);
+
+            // log execution time for LCIAResultCalculation
+            // const __lciaLabel = `[LCIA] LCIAResultCalculation (exchanges=${Array.isArray(newExchanges) ? newExchanges.length : 'n/a'}, type=${type}, id=${newId})`;
+            // console.time(__lciaLabel);
+            // let LCIAResults: any;
+            // try {
+            //   LCIAResults = await LCIAResultCalculation(newExchanges);
+            // } finally {
+            //   console.timeEnd(__lciaLabel);
+            // }
 
             if (type === 'secondary') {
               const oldProcesses = oldSubmodels?.find(
@@ -1185,8 +1168,6 @@ export async function genLifeCycleModelProcesses(
             }
 
             const refExchange = newExchanges.find((e: any) => e?.quantitativeReference);
-            console.log('newExchanges', newExchanges);
-            console.log('refExchange', refExchange);
 
             const subproductPrefix = [
               { '@xml:lang': 'zh', '#text': '子产品: ' },
@@ -1211,7 +1192,6 @@ export async function genLifeCycleModelProcesses(
                     subproductRightBracket,
                     jsonToList(data?.lifeCycleModelInformation?.dataSetInformation?.name?.baseName),
                   );
-            console.log('baseName', baseName);
             const newData = removeEmptyObjects({
               option: option,
               modelInfo: {
